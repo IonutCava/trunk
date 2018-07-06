@@ -43,7 +43,6 @@ bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
     if(descriptor._useRefCompare){
         GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,  GL_COMPARE_R_TO_TEXTURE));
         GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_FUNC,  glCompareFuncTable[descriptor._cmpFunc]));
-        GLCheck(glSamplerParameteri(_samplerID, GL_DEPTH_TEXTURE_MODE,    glImageFormatTable[descriptor._depthCompareMode]));
     }
 
     if (descriptor.anisotrophyLevel() > 1 && descriptor.generateMipMaps()) {

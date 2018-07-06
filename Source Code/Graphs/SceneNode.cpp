@@ -47,9 +47,8 @@ SceneNode::~SceneNode() {
     SAFE_DELETE(_physicsAsset);
 }
 
-void SceneNode::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-    if(!_material)
-        return;
+void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+    if(!_material) return;
 
     _refreshMaterialData = _material->isDirty();
     _material->clean();
@@ -168,9 +167,16 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
                 s->Uniform(_textureOperationUniformSlots[i], (I32)_material->getTextureOperation(i));
         }
 
+
+    if(_material->isTranslucent()){
+        s->Uniform("opacity", _material->getOpacityValue());
+        s->Uniform("useAlphaTest", _material->useAlphaTest());
+    }
+
     s->Uniform("material",_material->getMaterialMatrix());
-    s->Uniform("opacity", _material->getOpacityValue());
+    
     s->Uniform("textureCount", _material->getTextureCount());
+
     s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
 
     if(lightMgr.shadowMappingEnabled()){
@@ -181,6 +187,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         s->Uniform("dvd_enableShadowMapping",false);
     }
 
+    s->Uniform("dvd_lightIndex",       lightMgr.getLightIndicesForCurrentNode());
     s->Uniform("dvd_lightType",        lightMgr.getLightTypesForCurrentNode());
     s->Uniform("dvd_lightCount",       lightMgr.getLightCountForCurrentNode());
     s->Uniform("dvd_lightCastsShadows",lightMgr.getShadowCastingLightsForCurrentNode());
@@ -192,7 +199,7 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         s->Uniform("hasAnimations", true);
         s->Uniform("boneTransforms", sgn->animationTransforms());
     }else{
-        s->Uniform("hasAnimations",false);
+        s->Uniform("hasAnimations", false);
     }
 }
 
@@ -224,24 +231,25 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     s->bind();
 
     if(_material->isTranslucent()){
-    
-        Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-        if(opacityMap)
-            opacityMap->Bind(Material::TEXTURE_OPACITY);
-        else{
-            // maybe the diffuse texture has an alpha channel so use it as an opacity map
-            Texture2D* diffuse = _material->getTexture(Material::TEXTURE_UNIT0);
-            diffuse->Bind(Material::TEXTURE_OPACITY);
-        }
-
-        s->Uniform("opacity", _material->getOpacityValue());
+        switch(_material->getTranslucencySource()){
+            case Material::TRANSLUCENT_DIFFUSE :
+                 s->Uniform("material", _material->getMaterialMatrix());
+            case Material::TRANSLUCENT_OPACITY :
+                s->Uniform("opacity", _material->getOpacityValue());
+            case Material::TRANSLUCENT_OPACITY_MAP :
+                _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);
+                break;
+            case Material::TRANSLUCENT_DIFFUSE_MAP :
+                _material->getTexture(Material::TEXTURE_UNIT0)->Bind(Material::TEXTURE_UNIT0);
+                break;
+        };
     }
 
     if(!sgn->animationTransforms().empty()){
         s->Uniform("hasAnimations", true);
         s->Uniform("boneTransforms", sgn->animationTransforms());
     }else{
-        s->Uniform("hasAnimations",false);
+        s->Uniform("hasAnimations", false);
     }
 }
 

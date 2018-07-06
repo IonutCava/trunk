@@ -24,7 +24,6 @@ CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_CubeMa
 	depthMapSampler.toggleMipMaps(false);
 	depthMapSampler._useRefCompare = true; //< Use compare function
 	depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-	depthMapSampler._depthCompareMode = LUMINANCE;
 	depthMapDescriptor.setSampler(depthMapSampler);
 
 	_depthMap = GFX_DEVICE.newFBO(FBO_CUBE_DEPTH);
@@ -64,15 +63,15 @@ void CubeShadowMap::render(const SceneRenderState& renderState, boost::function0
 
 void CubeShadowMap::renderInternal(const SceneRenderState& renderState) const {
 	//Get some global vars. We limit ourselves to drawing only the objects in the light's range. If range is infinit (-1) we use the GFX limit
-	F32 zNear  = Frustum::getInstance().getZPlanes().x;
-	F32 zFar   = _light->getRange();
+	/*F32 zNear  = Frustum::getInstance().getZPlanes().x;
+	F32 zFar   = _light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS);
 	F32 oldzFar = Frustum::getInstance().getZPlanes().y;
 	if(zFar < zNear){
 		zFar = oldzFar;
 	}
-	Frustum::getInstance().setZPlanes(vec2<F32>(zNear,zFar));
+	Frustum::getInstance().setZPlanes(vec2<F32>(zNear,zFar));*/
 
 	GFX_DEVICE.generateCubeMap(*_depthMap, _light->getPosition(), _callback, SHADOW_STAGE);
 
-	Frustum::getInstance().setZPlanes(vec2<F32>(zNear,oldzFar));
+	//Frustum::getInstance().setZPlanes(vec2<F32>(zNear,oldzFar));
 }

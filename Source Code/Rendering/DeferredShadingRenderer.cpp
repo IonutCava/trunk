@@ -26,8 +26,8 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     _previewDeferredShader = CreateResource<ShaderProgram>(deferredPreview);
     SamplerDescriptor gBufferSampler;
     gBufferSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-	gBufferSampler.setFilters(TEXTURE_FILTER_NEAREST);
-	gBufferSampler.toggleMipMaps(false);
+    gBufferSampler.setFilters(TEXTURE_FILTER_NEAREST);
+    gBufferSampler.toggleMipMaps(false);
 
     TextureDescriptor gBuffer[4]; /// 4 Gbuffer elements (mipmaps are ignored for deferredBufferObjects)
     //Albedo
@@ -58,8 +58,8 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     _deferredBuffer->AddAttachment(gBuffer[1],TextureDescriptor::Color1);
     _deferredBuffer->AddAttachment(gBuffer[2],TextureDescriptor::Color2);
     _deferredBuffer->AddAttachment(gBuffer[3],TextureDescriptor::Color3);
-	_deferredBuffer->toggleDepthBuffer(true);
-	_deferredBuffer->setClearColor(DefaultColors::BLACK());
+    _deferredBuffer->toggleDepthBuffer(true);
+    _deferredBuffer->setClearColor(DefaultColors::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true); //no default material
     ResourceDescriptor mrt("MRT RenderQuad");
@@ -167,16 +167,15 @@ void DeferredShadingRenderer::render(boost::function0<void> renderCallback, cons
         }
     }
     _lightTexture->End();
-    firstPass(renderCallback,sceneRenderState);
+    firstPass(renderCallback, sceneRenderState);
     secondPass(sceneRenderState);
 }
 
 void DeferredShadingRenderer::firstPass(boost::function0<void> renderCallback, const SceneRenderState& sceneRenderState){
     //Pass 1
     //Draw the geometry, saving parameters into the buffer
-    _deferredBuffer->Begin();
+    _deferredBuffer->Begin(FrameBufferObject::defaultPolicy());
         renderCallback();
-        RenderPassManager::getInstance().render(sceneRenderState);
     _deferredBuffer->End();
 }
 

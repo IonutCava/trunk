@@ -95,9 +95,8 @@ void PhysXSceneInterface::release(){
     _gScene->release();
 }
 
-void PhysXSceneInterface::update(const D32 deltaTime){
-    if(!_gScene) 
-        return;
+void PhysXSceneInterface::update(const U64 deltaTime){
+    if(!_gScene) return;
 
     for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it){
         PhysXActor& crtActor = *(*it);
@@ -125,13 +124,14 @@ void PhysXSceneInterface::updateActor(const PhysXActor& actor){
     }else{
 
         PxU32 nShapes = actor._actor->getNbShapes();
-        PxShape** shapes=New PxShape*[nShapes];
+        PxShape* shapes[2048];// = New PxShape*[nShapes];
+        assert(nShapes < 2048);
         actor._actor->getShapes(shapes, nShapes);
 
         while(nShapes--)  
             updateShape(shapes[nShapes], actor);
         
-        SAFE_DELETE_ARRAY(shapes);
+        //SAFE_DELETE_ARRAY(shapes);
     }
 }
 
@@ -153,11 +153,10 @@ void PhysXSceneInterface::updateShape(PxShape* const shape, const PhysXActor& ac
     actor._transform->cleanPhysics();
 }
 
-void PhysXSceneInterface::process(const D32 deltaTime){
-    if(!_gScene)
-        return;
+void PhysXSceneInterface::process(const U64 deltaTime){
+    if(!_gScene) return;
 
-    _gScene->simulate((physx::PxReal)deltaTime);
+    _gScene->simulate(static_cast<physx::PxReal>(getUsToMs(deltaTime)));
 
     while(!_gScene->fetchResults()) idle();
 }

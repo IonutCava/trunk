@@ -59,40 +59,41 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
         temp = binMapiter->second;
     }else{
         switch(rbType){
-            case RenderBin::RBT_SKY:
-                temp = New RenderBinDelegate(RenderBin::RBT_SKY,RenderingOrder::NONE,0.01);
-                break;
             case RenderBin::RBT_MESH :
-                temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::BY_STATE,0.1);
-                break;
-            case RenderBin::RBT_IMPOSTOR:
-                temp = New RenderBinDelegate(RenderBin::RBT_IMPOSTOR,RenderingOrder::FRONT_TO_BACK,0.95);
+                temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::BY_STATE, 0.0f);
                 break;
             case RenderBin::RBT_TERRAIN:
-                temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::FRONT_TO_BACK,0.2);
+                temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::FRONT_TO_BACK, 1.0f);
                 break;
             case RenderBin::RBT_DELEGATE:
-                temp = New RenderBinDelegate(RenderBin::RBT_DELEGATE,RenderingOrder::FRONT_TO_BACK,0.3);
+                temp = New RenderBinDelegate(RenderBin::RBT_DELEGATE,RenderingOrder::FRONT_TO_BACK, 2.0f);
                 break;
             case RenderBin::RBT_SHADOWS:
-                temp = New RenderBinDelegate(RenderBin::RBT_SHADOWS,RenderingOrder::NONE,0.4);
+                temp = New RenderBinDelegate(RenderBin::RBT_SHADOWS,RenderingOrder::NONE, 3.0f);
                 break;
             case RenderBin::RBT_DECALS:
-                temp = New RenderBinMesh(RenderBin::RBT_DECALS,RenderingOrder::FRONT_TO_BACK,0.5);
+                temp = New RenderBinMesh(RenderBin::RBT_DECALS,RenderingOrder::FRONT_TO_BACK, 4.0f);
+                break;
+			case RenderBin::RBT_SKY:
+				//Draw sky after opaque but before translucent to prevent overdraw
+                temp = New RenderBinDelegate(RenderBin::RBT_SKY,RenderingOrder::NONE, 5.0f);
                 break;
             case RenderBin::RBT_WATER:
-                ///Water does not count as translucency, because rendering is very specific
-                temp = New RenderBinDelegate(RenderBin::RBT_WATER,RenderingOrder::BACK_TO_FRONT,0.6);
+				//Water does not count as translucency, because rendering is very specific
+                temp = New RenderBinDelegate(RenderBin::RBT_WATER,RenderingOrder::BACK_TO_FRONT, 6.0f);
                 break;
             case RenderBin::RBT_FOLIAGE:
-                temp = New RenderBinDelegate(RenderBin::RBT_FOLIAGE,RenderingOrder::BACK_TO_FRONT,0.7);
+                temp = New RenderBinDelegate(RenderBin::RBT_FOLIAGE,RenderingOrder::BACK_TO_FRONT, 7.0f);
                 break;
             case RenderBin::RBT_PARTICLES:
-                temp = New RenderBinParticles(RenderBin::RBT_PARTICLES,RenderingOrder::BACK_TO_FRONT,0.8);
+                temp = New RenderBinParticles(RenderBin::RBT_PARTICLES,RenderingOrder::BACK_TO_FRONT, 8.0f);
                 break;
             case RenderBin::RBT_TRANSLUCENT:
                 ///When rendering translucent objects, we should also sort each object's polygons depending on it's distance from the camera
-                temp = New RenderBinTranslucent(RenderBin::RBT_TRANSLUCENT,RenderingOrder::BACK_TO_FRONT,0.9);
+                temp = New RenderBinTranslucent(RenderBin::RBT_TRANSLUCENT,RenderingOrder::BACK_TO_FRONT, 9.0f);
+                break;
+			case RenderBin::RBT_IMPOSTOR:
+                temp = New RenderBinDelegate(RenderBin::RBT_IMPOSTOR,RenderingOrder::FRONT_TO_BACK, 9.9f);
                 break;
             default:
             case RenderBin::RBT_PLACEHOLDER:

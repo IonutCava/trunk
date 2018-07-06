@@ -21,10 +21,10 @@ void PingPongScene::preRender(){
 }
 //<<end copy-paste
 
-void PingPongScene::processTasks(const D32 deltaTime){
+void PingPongScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _taskTimers[0] = 0.0;
     }
     Scene::processTasks(deltaTime);
@@ -164,7 +164,7 @@ void PingPongScene::test(boost::any a, CallbackParam b){
     }
 }
 
-void PingPongScene::processInput(const D32 deltaTime){
+void PingPongScene::processInput(const U64 deltaTime){
     //Move FB = Forward/Back = up/down
     //Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
@@ -219,7 +219,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     tempLight.setId(2);
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     Light* light = CreateResource<Light>(tempLight);
-    light->setRange(30);
+    light->setLightProperties(LIGHT_PROPERTY_BRIGHTNESS, 30.0f);
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6 ,2));
     _sceneGraph->getRoot()->addNode(light);

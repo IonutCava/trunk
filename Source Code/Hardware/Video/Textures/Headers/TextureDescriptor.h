@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -45,9 +45,8 @@ public:
         setAnisotrophy(16);
         setLOD();
         toggleMipMaps(true);
-        //The following 3 are mainly used by depthmaps for hardware comparisons
+        //The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = CMP_FUNC_LEQUAL;
-        _depthCompareMode = LUMINANCE;
         _useRefCompare  = false;
     }
 
@@ -106,7 +105,6 @@ public:
     */
 
     //HW comparison settings
-    GFXImageFormat     _depthCompareMode;  ///<Used as the basis for DEPTH_TEXTURE_MODE
     ComparisonFunction _cmpFunc;           ///<Used by RefCompare
     bool               _useRefCompare;     ///<use red channel as comparison (e.g. for shadows)
 

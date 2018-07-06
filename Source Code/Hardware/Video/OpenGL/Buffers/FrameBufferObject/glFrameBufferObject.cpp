@@ -6,19 +6,22 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+bool glFrameBufferObject::_viewportChanged = false;
+bool glFrameBufferObject::_mipMapsDirty = false;
+
 glFrameBufferObject::glFrameBufferObject(FBOType type) : FrameBufferObject(type)
 {
     memset(_textureId, 0, 5 * sizeof(GLuint));
     memset(_mipMapEnabled, false, 5 * sizeof(bool));
 
     _imageLayers = 0;
-    _mipMapsDirty = _hasDepth = _hasColor = false;
+    _hasDepth = _hasColor = false;
 
     switch(type){
         default:
         case FBO_2D_DEPTH:
-        case FBO_2D_COLOR_MS:
         case FBO_2D_DEFERRED: _textureType = GL_TEXTURE_2D; break;
+        case FBO_2D_COLOR_MS: _textureType = GL_TEXTURE_2D_MULTISAMPLE; break;
         case FBO_CUBE_DEPTH:
         case FBO_CUBE_COLOR: _textureType = GL_TEXTURE_CUBE_MAP; break;
         case FBO_2D_ARRAY_COLOR:
@@ -30,6 +33,10 @@ glFrameBufferObject::glFrameBufferObject(FBOType type) : FrameBufferObject(type)
     if(type == FBO_CUBE_DEPTH || type == FBO_2D_ARRAY_DEPTH || type == FBO_CUBE_DEPTH_ARRAY || type == FBO_2D_DEPTH){
         toggleColorWrites(false);
     }
+	// if MSAA is disabled, this will be a simple color buffer
+	if(type == FBO_2D_COLOR_MS && !GL_API::useMSAA()){
+		_textureType = GL_TEXTURE_2D;
+	}
 }
 
 glFrameBufferObject::~glFrameBufferObject()
@@ -43,8 +50,13 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
     //If it changed
     if(_attachementDirty[type]){
         U8 slot = type;
+		TextureType currentType = texDescriptor._type;
+		// convert to proper type if we are using msaa
+		if(type == FBO_2D_COLOR_MS && GL_API::useMSAA() && currentType == TEXTURE_2D){
+			currentType = TEXTURE_2D_MS;
+		}
         //And get the image formats and data type
-        if(_textureType != glTextureTypeTable[texDescriptor._type]){
+        if(_textureType != glTextureTypeTable[currentType]){
             ERROR_FN(Locale::get("ERROR_FBO_ATTACHEMENT_DIFFERENT"), (I32)slot);
         }
 
@@ -73,7 +85,6 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
         if(sampler._useRefCompare){
             GLCheck(glTexParameteri(_textureType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE));
             GLCheck(glTexParameteri(_textureType, GL_TEXTURE_COMPARE_FUNC,  glCompareFuncTable[sampler._cmpFunc]));
-            GLCheck(glTexParameteri(_textureType, GL_DEPTH_TEXTURE_MODE, glImageFormatTable[sampler._depthCompareMode]));
         }
   
         //General texture parameters for either color or depth
@@ -160,7 +171,6 @@ void glFrameBufferObject::AddDepthBuffer(){
         
     screenSampler._useRefCompare = true; //< Use compare function
     screenSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-    screenSampler._depthCompareMode = LUMINANCE;
     depthDescriptor.setSampler(screenSampler);
     _attachementDirty[TextureDescriptor::Depth] = true;
     _attachement[TextureDescriptor::Depth] = depthDescriptor;
@@ -246,7 +256,7 @@ void glFrameBufferObject::Destroy() {
     _width = _height = 0;
 }
 
-void glFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) const {
+void glFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) {
     GLCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, inputFBO->getHandle()));
     GLCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->_frameBufferHandle));
     GLCheck(glBlitFramebuffer(0, 0, inputFBO->getWidth(), inputFBO->getHeight(), 0, 0, 
@@ -267,48 +277,68 @@ void glFrameBufferObject::Unbind(GLubyte unit) const {
     GLCheck(glBindTexture(_textureType, 0 ));
 }
 
-void glFrameBufferObject::Begin(GLubyte nFace) const {
-    assert(nFace<6);
-    GL_API::setViewport(vec4<U32>(0,0,_width,_height));
-    GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
-
-    if(_textureType == GL_TEXTURE_CUBE_MAP) {
-		if(_hasColor)
-			GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[TextureDescriptor::Color0], 0));
-		if(_hasDepth)
-			GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[TextureDescriptor::Depth], 0));
+void glFrameBufferObject::Begin(const FrameBufferObjectTarget& drawPolicy) {
+    if(_viewportChanged) {
+        GL_API::restoreViewport();
+        _viewportChanged = false;
     }
+
+    GL_API::setViewport(vec4<U32>(0,0,_width,_height));
+    _viewportChanged = true;
+
+    GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
 
     if(_clearColorState)     GL_API::clearColor( _clearColor );//< this is checked so it isn't called twice on the GPU
     if(_clearBuffersState)   GLCheck(glClear(_clearBufferMask));
+
+    if(!drawPolicy._depthOnly) _mipMapsDirty = true;
 }
 
-void glFrameBufferObject::End(GLubyte nFace) const {
-    assert(nFace<6);
+void glFrameBufferObject::End() {
     GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     GL_API::restoreViewport();
-    _mipMapsDirty = true;
+    _viewportChanged = false;
 }
 
-void glFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) const
-{
+void glFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) const {
     // only for array textures (it's better to simply ignore the command if the fomrat isn't supported (debugging reasons)
     if(_textureType != GL_TEXTURE_2D_ARRAY && _textureType != GL_TEXTURE_CUBE_MAP_ARRAY)
         return;
+
+    assert(layer < _imageLayers);
 
     if(_hasDepth && includeDepth)
         GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureId[TextureDescriptor::Depth], 0, layer));
     if(_hasColor)
         GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, _textureId[slot], 0, layer));
 
-     if(_clearBuffersState){
-         if(includeDepth)
+    if(_clearBuffersState){
+        if(includeDepth)
             GLCheck(glClear(_clearBufferMask));
-         else{
-             if(_hasColor)
+        else{
+            if(_hasColor)
                 GLCheck(glClear(GL_COLOR_BUFFER_BIT));
-         }
-     }
+        }
+    }
+}
+
+void glFrameBufferObject::DrawToFace(TextureDescriptor::AttachmentType slot, GLubyte nFace, bool includeDepth) const {
+    if(_textureType != GL_TEXTURE_CUBE_MAP && _textureType != GL_TEXTURE_CUBE_MAP_ARRAY)
+        return;
+
+    assert(nFace<6);
+
+    if(_hasDepth && includeDepth)
+        GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[TextureDescriptor::Depth], 0));
+    if(_hasColor)
+        GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[slot], 0));
+
+    if(_clearBuffersState){
+        if(includeDepth)   GLCheck(glClear(_clearBufferMask));
+        else{
+            if(_hasColor)  GLCheck(glClear(GL_COLOR_BUFFER_BIT));
+        }
+    }
 }
 
 void glFrameBufferObject::UpdateMipMaps(TextureDescriptor::AttachmentType slot) const {

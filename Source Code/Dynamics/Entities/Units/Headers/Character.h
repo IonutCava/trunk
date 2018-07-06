@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -80,6 +80,11 @@ public:
 
     Character(CharacterType type, SceneGraphNode* const node);
     ~Character();
+
+    void load();
+    void load(const vec3<F32>& position);
+    void unload();
+
     /// Set unit type
     inline void setCharacterType(CharacterType type)      {_type = type;}
     /// Get unit type
@@ -100,7 +105,7 @@ public:
       * the detour agent position (possibly with additional physics engine clipping
       * and collision testing).
       **/
-    virtual void update(const D32 deltaTime);
+    virtual void update(const U64 deltaTime);
     /**
       * Update the destination for this agent.
       * If updatePreviousPath is set to true the previous path will be reused instead
@@ -174,7 +179,10 @@ protected:
       * the change in state (see OgreRecastApplication friendship).
     **/
     void setDestination(const vec3<F32>& destination);
-
+    /**
+      * Update current position of this character to the current position of its agent.
+    **/
+    virtual void updatePosition(const U64 deltaTime);
     inline bool isLoaded() const { return _agentID >= 0; }
 
 private:

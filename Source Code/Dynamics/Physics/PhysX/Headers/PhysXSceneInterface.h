@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -45,8 +45,8 @@ public:
     virtual bool exit();
     virtual void idle();
     virtual void release();
-    virtual void update(const D32 deltaTime);
-    virtual void process(const D32 deltaTime);
+    virtual void update(const U64 deltaTime);
+    virtual void process(const U64 deltaTime);
 
     PhysXActor* getOrCreateRigidActor(const std::string& actorName);
     void addRigidActor(PhysXActor* const actor, bool threaded = true);

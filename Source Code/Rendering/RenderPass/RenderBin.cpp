@@ -82,7 +82,7 @@ RenderBin::RenderBin(const RenderBinType& rbType,const RenderingOrder::List& ren
                                                                                                         _renderOrder(renderOrder),
                                                                                                         _drawKey(drawKey)
 {
-    _renderBinStack.reserve(250);
+    _renderBinStack.reserve(125);
     renderBinTypeToNameMap[RBT_PLACEHOLDER] = "Invalid Bin";
     renderBinTypeToNameMap[RBT_MESH]        = "Mesh Bin";
     renderBinTypeToNameMap[RBT_IMPOSTOR]    = "Impostor Bin";
@@ -122,6 +122,7 @@ void RenderBin::sort(){
 void RenderBin::refresh(){
     //WriteLock w_lock(_renderBinGetMutex);
     _renderBinStack.resize(0);
+    _renderBinStack.reserve(125);
 }
 
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn){

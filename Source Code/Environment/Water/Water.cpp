@@ -29,7 +29,7 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     _planeTransform = _planeSGN->getTransform();
     _plane->renderInstance()->transform(_planeTransform);
     ///The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-    getSceneNodeRenderState().addToDrawExclusionMask(DEPTH_STAGE);
+    getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
 
     _shader->UniformTexture("texWaterNoiseNM", 0);
     _shader->UniformTexture("texWaterReflection", 1);
@@ -169,7 +169,7 @@ void WaterPlane::updateReflection(){
     }
 
     // bind the reflective texture
-    _reflectedTexture->Begin();
+    _reflectedTexture->Begin(FrameBufferObject::defaultPolicy());
         // render to the reflective texture
         _renderCallback();
     _reflectedTexture->End();

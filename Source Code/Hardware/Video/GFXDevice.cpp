@@ -26,12 +26,20 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
 {
    _prevShaderId = 0;
    _prevTextureId = 0;
+   _interpolationFactor = 1.0;
    _currentStateBlock = NULL;
+   _depthBuffer = NULL;
+   _screenBuffer[0] = NULL;
+   _screenBuffer[1] = NULL;
    _newStateBlock = NULL;
    _previousStateBlock = NULL;
    _stateBlockDirty = false;
    _drawDebugAxis = false;
+   _enablePostProcessing = false;
+   _enableAnaglyph = false;
+   _enableHDR = false;
    _clippingPlanesDirty = true;
+   _isDepthPrePass = false;
    _renderer = NULL;
    _renderStage = INVALID_STAGE;
    _worldMatrices.push(mat4<F32>(/*identity*/));
@@ -44,6 +52,58 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to O
    RenderPass* diffusePass = New RenderPass("diffusePass");
    RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
+}
+
+I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
+    I8 hardwareState = _api.initHardware(resolution,argc,argv);
+
+    if(hardwareState == NO_ERR){
+        //Screen FBO should use MSAA if available, else fallback to normal color FBO (no AA or FXAA)
+        _screenBuffer[0] = newFBO(FBO_2D_COLOR_MS);
+        _depthBuffer = newFBO(FBO_2D_DEPTH);
+
+        SamplerDescriptor screenSampler;
+        TextureDescriptor screenDescriptor(TEXTURE_2D,
+                                           RGBA,
+                                           _enableHDR ? RGBA16F : RGBA8,
+                                           _enableHDR ? FLOAT_16 : UNSIGNED_BYTE);
+
+        screenSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
+        screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+        screenSampler.toggleMipMaps(false);
+        screenDescriptor.setSampler(screenSampler);
+
+        SamplerDescriptor depthSampler;
+        depthSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
+        depthSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+        depthSampler.toggleMipMaps(false);
+        depthSampler._useRefCompare = true; //< Use compare function
+        depthSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
+
+        TextureDescriptor depthDescriptor(TEXTURE_2D,
+                                          DEPTH_COMPONENT,
+                                          DEPTH_COMPONENT,
+                                          UNSIGNED_INT);
+        depthDescriptor.setSampler(depthSampler);
+
+        _depthBuffer->AddAttachment(depthDescriptor, TextureDescriptor::Depth);
+        _depthBuffer->toggleColorWrites(false);
+
+        _screenBuffer[0]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
+        _screenBuffer[0]->toggleDepthBuffer(true);
+        if(_enableAnaglyph){
+            _screenBuffer[1] = newFBO(FBO_2D_COLOR_MS);
+            _screenBuffer[1]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
+            _screenBuffer[1]->toggleDepthBuffer(true);
+        }
+
+        _depthBuffer->Create(resolution.width, resolution.height);
+        _screenBuffer[0]->Create(resolution.width, resolution.height);
+         if(_enableAnaglyph)
+            _screenBuffer[1]->Create(resolution.width, resolution.height);
+    }
+
+    return hardwareState;
 }
 
 void GFXDevice::setApi(const RenderAPI& api){
@@ -69,6 +129,9 @@ void GFXDevice::closeRenderingApi(){
     Frustum::destroyInstance();
     ///Destroy all rendering Passes
     RenderPassManager::getInstance().destroyInstance();
+    SAFE_DELETE(_depthBuffer);
+    SAFE_DELETE(_screenBuffer[0]);
+    SAFE_DELETE(_screenBuffer[1]);
 }
 
 void GFXDevice::closeRenderer(){
@@ -96,26 +159,32 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
         return;
     }
      
-    if(model->getType() == Object3D::TEXT_3D){
-        Text3D* text = dynamic_cast<Text3D*>(model);
-        drawText(text->getText(),text->getWidth(),text->getFont(),text->getHeight());
+    if(model->getType() == Object3D::TEXT_3D) {
+        //Text3D* text = dynamic_cast<Text3D*>(model);
+        //drawText(text->getText(),text->getWidth(),text->getFont(),text->getHeight(),false,false);
+        //3D text disabled for now - to add lader - Ionut
         return;
     }
 
     Transform* transform = instance->transform();
+    Transform* prevTransform = instance->prevTransform();
+    if(transform) {
+        if(_interpolationFactor < 0.99 && prevTransform) {
+            Transform* prevTransform = instance->prevTransform();
+            pushWorldMatrix(transform->interpolate(prevTransform, _interpolationFactor), transform->isUniformScaled());
+        }else{
+            pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
+        }
+    }
+
     VertexBufferObject* VBO = model->getGeometryVBO();
     assert(VBO != NULL);
-
-    if(transform) 
-        pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
-
     //Send our transformation matrixes (projection, world, view, inv model view, etc)
     VBO->currentShader()->uploadNodeMatrices();
     //Render our current vertex array object
     VBO->Draw(model->getCurrentLOD());
 
-    if(transform) 
-        popWorldMatrix();
+    if(transform) popWorldMatrix();
 }
 
 void GFXDevice::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform){
@@ -137,7 +206,7 @@ void GFXDevice::renderBuffer(VertexBufferObject* const vbo, Transform* const vbo
     }
 }
 
-void GFXDevice::renderGUIElement(GUIElement* const element,ShaderProgram* const guiShader){
+void GFXDevice::renderGUIElement(U64 renderInterval, GUIElement* const element,ShaderProgram* const guiShader){
     if(!element)
         return; //< Console not created, for example
 
@@ -147,8 +216,8 @@ void GFXDevice::renderGUIElement(GUIElement* const element,ShaderProgram* const 
     switch(element->getGuiType()){
         case GUI_TEXT:{
             GUIText* text = dynamic_cast<GUIText*>(element);
-            guiShader->Attribute("inColorData",text->_color);
-            drawText(text->_text,text->_width,text->getPosition(),text->_font,text->_height);
+            drawText(*text, text->getPosition());
+            text->_lastDrawTimer = _kernel->getCurrentTime();
             }break;
         case GUI_FLASH:
             dynamic_cast<GUIFlash* >(element)->playMovie();
@@ -159,13 +228,13 @@ void GFXDevice::renderGUIElement(GUIElement* const element,ShaderProgram* const 
 }
 
 void GFXDevice::render(boost::function0<void> renderFunction, const SceneRenderState& sceneRenderState){
-    //Call the specific renderfunction that prepares the scene for presentation
-    _renderer->render(renderFunction,sceneRenderState);
+    //Call the specific render function that prepares the scene for presentation
+    _renderer->render(renderFunction, sceneRenderState);
 }
 
-bool GFXDevice::isCurrentRenderStage(U16 renderStageMask){
+bool GFXDevice::isCurrentRenderStage(U8 renderStageMask){
     assert((renderStageMask & ~(INVALID_STAGE-1)) == 0);
-    return bitCompare(renderStageMask,_renderStage);
+    return bitCompare(renderStageMask, _renderStage);
 }
 
 void GFXDevice::setRenderer(Renderer* const renderer) {
@@ -180,7 +249,7 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
     //Don't need to override cubemap rendering callback
     if(callback.empty()){
         //Default case is that everything is reflected
-        callback = SCENE_GRAPH_UPDATE(GET_ACTIVE_SCENEGRAPH());
+        callback = DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance()));
     }
     //Only use cube map FBO's
     if(cubeMap.getType() != FBO_CUBE_COLOR && cubeMap.getType() != FBO_CUBE_DEPTH){
@@ -217,20 +286,22 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
     setPerspectiveProjection(90.0f,1.0f,Frustum::getInstance().getZPlanes());
     //And set the current render stage to
     setRenderStage(renderStage);
+    //Bind our FBO
+    cubeMap.Begin(FrameBufferObject::defaultPolicy());
     //For each of the environment's faces (TOP,DOWN,NORTH,SOUTH,EAST,WEST)
     for(U8 i = 0; i < 6; i++){
+        // true to the current cubemap face
+        cubeMap.DrawToFace(TextureDescriptor::Color0, i);
         ///Set our Rendering API to render the desired face
         GFX_DEVICE.lookAt(pos,TabCenter[i],TabUp[i]);
         GET_ACTIVE_SCENE()->renderState().getCamera().updateListeners();
         ///Extract the view frustum associated with this face
         Frustum::getInstance().Extract(pos);
-        //Bind our FBO's current face
-        cubeMap.Begin(i);
             //draw our scene
             render(callback, GET_ACTIVE_SCENE()->renderState());
-        //Unbind this face
-        cubeMap.End(i);
     }
+    //Unbind this fbo
+    cubeMap.End();
     //Return to our previous rendering stage
     setPreviousRenderStage();
     //Restore transfom matrices
@@ -293,6 +364,20 @@ bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){
     return (exclusionMask & currentType) == currentType ? true : false;
 }
 
+void GFXDevice::changeResolution(U16 w, U16 h) {
+
+    if(_screenBuffer[0] != NULL) {
+        if(w == _screenBuffer[0]->getWidth() && h == _screenBuffer[0]->getHeight()) return;
+
+        _depthBuffer->Create(w, h);
+        _screenBuffer[0]->Create(w, h);
+        if(_enableAnaglyph) 
+            _screenBuffer[1]->Create(w, h);
+    }
+
+    _api.changeResolution(w,h);
+}
+
 void GFXDevice::setHorizontalFoV(I32 newFoV){
     F32 ratio  = ParamHandler::getInstance().getParam<F32>("runtime.aspectRatio");
     ParamHandler::getInstance().setParam("runtime.verticalFOV", Util::xfov_to_yfov((F32)newFoV,ratio));
@@ -311,12 +396,12 @@ void GFXDevice::enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32
     ShaderManager::getInstance().refresh();
 }
 
- void GFXDevice::popWorldMatrix(bool force){
+ void GFXDevice::popWorldMatrix(const bool force){
      _worldMatrices.pop();
      _isUniformedScaled = _WDirty = true;
 }
 
-void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, bool isUniformedScaled){
+void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled){
     _worldMatrices.push(worldMatrix);
     _isUniformedScaled = isUniformedScaled;
     _WDirty = true;

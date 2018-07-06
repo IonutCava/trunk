@@ -1,4 +1,4 @@
-/* Copyright (c) 2013 DIVIDE-Studio
+/* Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -277,6 +277,20 @@ inline vec3<T> vec3<T>::lerp(vec3 &u, vec3 &v, vec3& factor) const {
     return (vec3((u.x * (1 - factor.x)) + (v.x * factor.x),
                  (u.y * (1 - factor.y)) + (v.y * factor.y),
                  (u.z * (1 - factor.z)) + (v.z * factor.z)));
+}
+
+ /// lerp between this and the specified vector by the specified ammount
+template<class T>
+inline void vec3<T>::lerp(vec3 &v, T factor) const{
+    set((this->x * (1 - factor.x)) + (v.x * factor.x),
+        (this->y * (1 - factor.y)) + (v.y * factor.y),
+        (this->z * (1 - factor.z)) + (v.z * factor.z));
+}
+
+/// lerp between this and the specified vector by the specified ammount for each component
+template<class T>
+inline void vec3<T>::lerp(vec3 &v, vec3& factor) const {
+    set((this * (1 - factor)) + (v * factor));
 }
 
 /// rotate this vector on the X axis

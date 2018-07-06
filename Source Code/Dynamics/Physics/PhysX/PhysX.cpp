@@ -115,9 +115,9 @@ inline void PhysX::updateTimeStep(U8 timeStepFactor) {
 }
 
 ///Process results
-void PhysX::process(const D32 deltaTime){
+void PhysX::process(const U64 deltaTime){
     if(_targetScene && _timeStep > EPSILON){
-        _accumulator  += deltaTime;
+        _accumulator  += static_cast<physx::PxReal>(getUsToMs(deltaTime));
         
         if(_accumulator < _timeStep)
             return;
@@ -128,7 +128,7 @@ void PhysX::process(const D32 deltaTime){
 }
 
 ///Update actors
-void PhysX::update(const D32 deltaTime){
+void PhysX::update(const U64 deltaTime){
     if(_targetScene){
         _targetScene->update(deltaTime);
     }
@@ -237,11 +237,19 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
             tempActor->_actor = _gPhysicsSDK->createRigidDynamic(posePxTransform);
             tempActor->_isDynamic = true;
         }
+
+		if(!tempActor->_actor) {
+			SAFE_DELETE(tempActor);
+			return false;
+		}
+
         tempActor->_type = PxGeometryType::eTRIANGLEMESH;
         targetScene->addRigidActor(tempActor, false);
         nodeTransform->cleanPhysics();
     }
     
+	assert(tempActor->_actor);
+
     physx::PxGeometry* geometry = NULL;
     if(!isSkinnedMesh){
         PxToolkit::FileInputData stream(nodeName.c_str());
@@ -265,6 +273,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     static physx::PxMaterial* material = _gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f);
 
     tempActor->_actor->createShape(*geometry, *material);
+
     return true;
 };
 

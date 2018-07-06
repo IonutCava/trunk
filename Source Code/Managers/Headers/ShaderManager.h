@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -47,7 +47,7 @@ public:
     bool    init();
     void    Destroy();
     ///Called once per frame
-    U8      update(const D32 deltaTime);
+    U8      update(const U64 deltaTime);
     ///Called once per frame after a swap buffer request
     U8      idle();
     ///Calling refresh will mark all shader programs as dirty

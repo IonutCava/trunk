@@ -18,24 +18,25 @@ void main(void){
 in vec2 _texCoord;
 in vec4 _vertexWVP;
 
-//Opacity and specular maps
 uniform float opacity = 1.0;
-#if defined(USE_OPACITY_MAP)
-//Opacity and specular maps
 uniform sampler2D texOpacityMap;
-#endif
+uniform sampler2D texDiffuse0;
+uniform mat4      material;
 
 out vec4 _colorOut;
 
 void main(){
-    
-    float opacityValue = opacity;
 
-#if defined(USE_OPACITY_MAP)
+#if defined(USE_OPACITY_DIFFUSE)
+    if(material[1].w < ALPHA_DISCARD_THRESHOLD) discard;
+#elif defined(USE_OPACITY)
+    if(opacity< ALPHA_DISCARD_THRESHOLD) discard;
+#elif defined(USE_OPACITY_MAP)
     // discard material if it is bellow opacity threshold
     if(texture(texOpacityMap, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
-#else
-    if(opacity< ALPHA_DISCARD_THRESHOLD) discard;
+#elif defined(USE_OPACITY_DIFFUSE_MAP)
+    // discard material if it is bellow opacity threshold
+    if(texture(texDiffuse0, _texCoord).a < ALPHA_DISCARD_THRESHOLD) discard;
 #endif
 
     float depth = 0.5 * (_vertexWVP.z / _vertexWVP.w) + 0.5;

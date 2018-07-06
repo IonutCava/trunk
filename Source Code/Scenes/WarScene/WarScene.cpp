@@ -2,6 +2,7 @@
 #include "Headers/WarSceneAIActionList.h"
 
 #include "Core/Math/Headers/Transform.h"
+#include "Geometry/Shapes/Headers/SkinnedMesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
@@ -13,10 +14,16 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/AIManager.h"
 #include "Rendering/Headers/Frustum.h"
+#include "AI/PathFinding/Headers/DivideRecast.h"
 
 REGISTER_SCENE(WarScene);
 
 void WarScene::preRender(){
+    
+}
+
+void WarScene::processTasks(const U64 deltaTime){
+
     static vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
     static bool direction = false;
     if(!direction){
@@ -37,22 +44,46 @@ void WarScene::preRender(){
     LightManager::getInstance().getLight(0)->setDirection(_sunvector);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 
-    if(_lampLightNode && _bob){
-        /*Transform* lampTransform = _lampLightNode->getParent()->getTransform();
-
-        vec3<F32> lightTransform = _lampLightNode->getTransform()->getPosition();
-        mat4<F32> bobLampTransform = _bob->getCurrentBoneTransform("lamp");
-        vec4<F32> tempA = _bob->getCurrentBoneTransform("lamp") * vec4<F32>(lightTransform, 1.0f);
-        _lampLightNode->getTransform()->setTransforms(bobLampTransform * lampTransform);*/
-    } 
-}
-
-void WarScene::processTasks(const D32 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
+    D32 BobTimer = getSecToMs(5);
+    D32 DwarfTimer = getSecToMs(8);
+    D32 BullTimer = getSecToMs(10);
+
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
+        const Camera& cam = renderState().getCamera();
+        //const vec3<F32>& lampPos = _lampLightNode->getTransform()->getPosition();
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        GUI::getInstance().modifyText("camPosition","Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                              cam.getEye().x,
+                              cam.getEye().y,
+                              cam.getEye().z,
+                              cam.getEuler().pitch,
+                              cam.getEuler().yaw);
+        /*GUI::getInstance().modifyText("lampPosition","Lamp Position  [ X: %5.2f | Y: %5.2f | Z: %5.2f ]",
+                                      lampPos.x,
+                                      lampPos.y,
+                                      lampPos.z);*/
+        
         _taskTimers[0] = 0.0;
+    }
+    if(_taskTimers[1] >= BobTimer){
+        if(_bobNode)
+            _bobNode->getNode<SkinnedMesh>()->playNextAnimation();
+
+        _taskTimers[1] = 0.0;
+    }
+    if(_taskTimers[2] >= DwarfTimer){
+        SceneGraphNode* dwarf = _sceneGraph->findNode("Soldier1");
+         if(dwarf)
+            dwarf->getNode<SkinnedMesh>()->playNextAnimation();
+        _taskTimers[2] = 0.0;
+    }
+    if(_taskTimers[3] >= BullTimer){
+        SceneGraphNode* bull = _sceneGraph->findNode("Soldier2");
+         if(bull)
+            bull->getNode<SkinnedMesh>()->playNextAnimation();
+        _taskTimers[3] = 0.0;
     }
     Scene::processTasks(deltaTime);
 }
@@ -69,6 +100,7 @@ void WarScene::startSimulation(){
         Task_ptr newSim(New Task(kernel->getThreadPool(),12,true,false,DELEGATE_BIND(&WarScene::processSimulation,this,rand() % 5,TYPE_INTEGER)));
         addTask(newSim);
     }
+
 }
 
 void WarScene::processSimulation(boost::any a, CallbackParam b){
@@ -78,7 +110,7 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
     //assert(_groundPlaceholder);
 }
 
-void WarScene::processInput(const D32 deltaTime){
+void WarScene::processInput(const U64 deltaTime){
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 
@@ -93,14 +125,61 @@ void WarScene::processInput(const D32 deltaTime){
     }
 }
 
+void WarScene::updateSceneState(const U64 deltaTime){
+	static U64 totalTime = 0;
+	static bool navMeshCreated = false;
+	totalTime += deltaTime;
+	if(getUsToSec(totalTime) > 20 && !navMeshCreated){
+		/*Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
+		temp->setFileName(GET_ACTIVE_SCENE()->getName());
+		bool loaded = temp->load(NULL);//<Start from root for now
+
+		if(!loaded){
+			loaded = temp->build(NULL,false);
+			temp->save();
+		}
+
+		if(loaded){
+			navMeshCreated = AIManager::getInstance().addNavMesh(temp);
+		}*/
+	}
+    Scene::updateSceneState(deltaTime);
+    if(_lampLightNode && _bobNodeBody){
+      /*  static mat4<F32> position = _lampLightNode->getTransform()->getMatrix(); 
+        const mat4<F32>& fingerPosition = _bobNodeBody->getBoneTransform("fingerstip.R");
+        mat4<F32> finalTransform(fingerPosition * position);
+        _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());*/
+    }
+		
+	Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
+
+	for_each(AIEntity* character, _army1){
+
+	     // Update character (position, animations, state)
+        character->update(deltaTime);
+        // If destination reached: Set new random destination
+        if ( character->getUnitRef()->destinationReached() ) {
+			character->getUnitRef()->updateDestination(navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army2[0]->getBoundNode()->getTransform()->getPosition());
+        }
+	}
+
+	
+	for_each(AIEntity* character, _army2){
+
+	     // Update character (position, animations, state)
+        character->update(deltaTime);
+        // If destination reached: Set new random destination
+        if ( character->getUnitRef()->destinationReached() ) {
+			character->getUnitRef()->updateDestination( navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army1[0]->getBoundNode()->getTransform()->getPosition());
+        }
+	}
+}
+
 bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
     //Add a light
-    Light* light = addDefaultLight();
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,DefaultColors::WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,DefaultColors::WHITE());
+    addDefaultLight();
     //Add a skybox
     addDefaultSky();
     //Position camera
@@ -111,20 +190,25 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
     _faction2 = New AICoordination(2);
 
     _bobNode = _sceneGraph->findNode("Soldier3");
-    SceneGraphNode* sgn = _bobNode->findNode("Soldier3_Bob.md5mesh-submesh-4");
-    _bob = NULL;
+    _bobNodeBody = _sceneGraph->findNode("Soldier3_Bob.md5mesh-submesh-0");
     _lampLightNode = NULL;
-    if(sgn != NULL){
-        /*ResourceDescriptor tempLight("Light_lamp");
+    if(_bobNodeBody != NULL){
+        ResourceDescriptor tempLight("Light_lamp");
         tempLight.setId(2);
         tempLight.setEnumValue(LIGHT_TYPE_POINT);
-        light = CreateResource<Light>(tempLight);
+        // Create a point light for Bob's lamp
+        /*Light* light = CreateResource<Light>(tempLight);
         light->setDrawImpostor(true);
-        light->setRange(10);
-        light->setLightProperties(LIGHT_PROPERTY_DIFFUSE, vec4<F32>(1.0f, 1.0f, 0.0f, 1.0f));
-        _bob = sgn->getNode<SkinnedSubMesh>();
-        _lampLightNode = addLight(light, sgn);
-        _lampLightNode->getTransform()->setPosition(vec3<F32>(0.0f, -100.0f, -100.0f));*/
+        // Make it small and yellow
+        light->setCastShadows(false);
+        light->setLightProperties(LIGHT_PROPERTY_BRIGHTNESS, 2.0f);
+        light->setLightProperties(LIGHT_PROPERTY_DIFFUSE, vec3<F32>(1.0f, 0.5f, 0.0f));
+        _lampTransform = new SceneTransform();
+        // Add it to Bob's body
+        _lampTransformNode = _bobNodeBody->addNode(_lampTransform, "lampTransform");
+        _lampLightNode = addLight(light, _lampTransformNode);
+        // Move it to the lamp's position
+        _lampTransformNode->getTransform()->setPosition(vec3<F32>(-75.0f, -45.0f, -5.0f));*/
     }
     //------------------------ The rest of the scene elements -----------------------------///
 //	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
@@ -181,11 +265,12 @@ bool WarScene::initializeAI(bool continueOnErrors){
     bool state = !(_army1.empty() || _army2.empty());
 
     if(state || continueOnErrors) Scene::initializeAI(continueOnErrors);
-
+	AIManager::getInstance().pauseUpdate(false);
     return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors){
+	AIManager::getInstance().pauseUpdate(true);
     for(U8 i = 0; i < _army1NPCs.size(); i++){
         SAFE_DELETE(_army1NPCs[i]);
     }
@@ -224,6 +309,21 @@ bool WarScene::loadResources(bool continueOnErrors){
                                 vec3<F32>(0.6f,0.2f,0.2f),
                                 "Number of items in Render Bin: %d",0);
 
+    GUI::getInstance().addText("camPosition",  vec2<I32>(60,100),
+                                Font::DIVIDE_DEFAULT,
+                                vec3<F32>(0.2f,0.8f,0.2f),
+                                "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                                renderState().getCamera().getEye().x,
+                                renderState().getCamera().getEye().y,
+                                renderState().getCamera().getEye().z,
+                                renderState().getCamera().getEuler().pitch,
+                                renderState().getCamera().getEuler().yaw);
+
+    GUI::getInstance().addText("lampPosition",  vec2<I32>(60,120),
+                                Font::DIVIDE_DEFAULT,
+                                vec3<F32>(0.2f,0.8f,0.2f),
+                                "Lamp Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",
+                                0.0f, 0.0f, 0.0f);
     //Add a first person camera
     Camera* cam = New FirstPersonCamera();
     cam->setMoveSpeedFactor(0.2f);
@@ -236,6 +336,9 @@ bool WarScene::loadResources(bool continueOnErrors){
     _cameraMgr->addNewCamera("tpsCamera", cam);
 
     _taskTimers.push_back(0.0); //Fps
+    _taskTimers.push_back(0.0); //animation bull
+    _taskTimers.push_back(0.0); //animation dwarf
+    _taskTimers.push_back(0.0); //animation bob
     return true;
 }
 

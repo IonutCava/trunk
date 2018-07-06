@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -44,13 +44,6 @@ protected:
    BlendProperty _blendDest;
    BlendOperation _blendOp;
 
-   /// Separate Alpha Blending
-   bool _alphaBlendDefined;
-   bool _alphaBlendEnable;
-   BlendProperty _alphaBlendSrc;
-   BlendProperty _alphaBlendDest;
-   BlendOperation _alphaBlendOp;
-
     /// Rasterizer
    bool _cullDefined;
    CullMode _cullMode;
@@ -70,9 +63,6 @@ protected:
    U32 _stencilRef;
    U32 _stencilMask;
    U32 _stencilWriteMask;
-
-   /// Color material?
-   bool _vertexColorEnable;
 
    FillMode   _fillMode;
 
@@ -95,11 +85,6 @@ public:
                   BlendProperty src = BLEND_PROPERTY_SRC_ALPHA,
                   BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
                   BlendOperation op = BLEND_OPERATION_ADD );
-
-   void setAlphaBlend( bool enable,
-                        BlendProperty src = BLEND_PROPERTY_ONE,
-                        BlendProperty dest = BLEND_PROPERTY_ZERO,
-                        BlendOperation op = BLEND_OPERATION_ADD );
 
    void setColorWrites( bool red, bool green, bool blue, bool alpha );
 };

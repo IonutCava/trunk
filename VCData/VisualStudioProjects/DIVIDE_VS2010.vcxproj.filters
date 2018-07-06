@@ -394,9 +394,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -854,6 +851,12 @@
     <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\pxShapeScaling.cpp">
       <Filter>Dynamics\Physics\PhysX\Actors</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\ApplicationTimer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -873,9 +876,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h">
       <Filter>Rendering\PostFX\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\Headers\Framerate.h">
-      <Filter>Rendering\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Frustum.h">
       <Filter>Rendering\Headers</Filter>
@@ -1363,6 +1363,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\Headers\pxShapeScaling.h">
       <Filter>Dynamics\Physics\PhysX\Actors\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\ApplicationTimer.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\TextLabel.h">
+      <Filter>Utility\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -38,7 +38,7 @@ DEFINE_SINGLETON( GUIEditor )
         bool init();
         void setVisible(bool visible); //< Hide or show the editor
         bool isVisible();              //< Return true if editor is visible, false if is hidden
-        bool update(const D32 deltaTime);    //< Used to update time dependent elements
+        bool update(const U64 deltaTime);    //< Used to update time dependent elements
 
     private:
         GUIEditor();

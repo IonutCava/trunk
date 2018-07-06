@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -28,12 +28,12 @@
 #include "Rendering/Headers/FrameListener.h"
 
 enum FrameEventType{
-	FRAME_EVENT_ANY,
-	FRAME_EVENT_STARTED,
-	FRAME_PRERENDER_START,
-	FRAME_PRERENDER_END,
-	FRAME_EVENT_PROCESS,
-	FRAME_EVENT_ENDED,
+    FRAME_EVENT_ANY,
+    FRAME_EVENT_STARTED,
+    FRAME_PRERENDER_START,
+    FRAME_PRERENDER_END,
+    FRAME_EVENT_PROCESS,
+    FRAME_EVENT_ENDED,
 };
 
 class FrameListener;
@@ -41,33 +41,36 @@ struct FrameEvent;
 DEFINE_SINGLETON(FrameListenerManager)
 
 typedef Unordered_map<std::string, FrameListener* > ListenerMap;
-typedef vectorImpl<F32> EventTimeMap;
+typedef vectorImpl<D32> EventTimeMap;
 
 public:
-	void registerFrameListener(FrameListener* listener);
-	void removeFrameListener(FrameListener* listener);
-	void idle();
+    void registerFrameListener(FrameListener* listener);
+    void removeFrameListener(FrameListener* listener);
+    void idle();
 
-	bool frameStarted(const FrameEvent& evt);
-	bool framePreRenderStarted(const FrameEvent& evt);
-	bool framePreRenderEnded(const FrameEvent& evt);
-	bool frameRenderingQueued(const FrameEvent& evt);
-	bool frameEnded(const FrameEvent& evt);
+    bool frameStarted(const FrameEvent& evt);
+    bool framePreRenderStarted(const FrameEvent& evt);
+    bool framePreRenderEnded(const FrameEvent& evt);
+    bool frameRenderingQueued(const FrameEvent& evt);
+    bool frameEnded(const FrameEvent& evt);
 
-	void createEvent(FrameEventType type, FrameEvent& evt);
-
-private:
-	F32 calculateEventTime(F32 currentTime, FrameEventType type);
+    /// pass the current time in microseconds as the first parameter
+    void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt);
 
 private:
-	ListenerMap _listeners;
-	ListenerMap _removedListeners;
-	EventTimeMap _eventTimers[6];
+    /// pass the current time in milliseconds as the first parameter
+    /// returns the event timp in milliseconds
+    D32 calculateEventTime(const D32 currentTime, FrameEventType type);
+
+private:
+    ListenerMap _listeners;
+    ListenerMap _removedListeners;
+    EventTimeMap _eventTimers[6];
 
 END_SINGLETON
 
 inline void REGISTER_FRAME_LISTENER(FrameListener* listener){
-	FrameListenerManager::getInstance().registerFrameListener(listener);
+    FrameListenerManager::getInstance().registerFrameListener(listener);
 }
 
 #endif

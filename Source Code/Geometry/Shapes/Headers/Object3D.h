@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -57,7 +57,7 @@ public:
     inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
     inline  RenderInstance*   const   renderInstance()  const {return _renderInstance;}
     /// Called from SceneGraph "sceneUpdate"
-    virtual void  sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+    virtual void  sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
         SceneNode::sceneUpdate(deltaTime,sgn,sceneState);
     }
     virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing

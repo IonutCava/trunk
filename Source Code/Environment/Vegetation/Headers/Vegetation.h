@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -55,8 +55,8 @@ public:
       _terrain(NULL),
       _terrainSGN(NULL),
       _grassShader(NULL),
-      _stateRefreshIntervalBuffer(0),
-      _stateRefreshInterval(1000) ///<Every second?
+      _stateRefreshIntervalBuffer(0ULL),
+      _stateRefreshInterval(1000 * 1000) ///<Every second?
       {
           _map.create(map);
       }
@@ -65,7 +65,7 @@ public:
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
     void draw(const RenderStage& currentStage, Transform* const parentTransform);
-    void sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
 private:
     bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
@@ -82,8 +82,8 @@ private:
     U16 _billboardCount;          ///< Vegetation cumulated density
     F32 _grassSize,_grassScale, _treeScale;
     F32 _windX, _windZ, _windS, _time;
-    F32 _stateRefreshInterval;
-    F32 _stateRefreshIntervalBuffer;
+    U64 _stateRefreshInterval;
+    U64 _stateRefreshIntervalBuffer;
     ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
     vectorImpl<Texture2D*>	_grassBillboards;
     ShaderProgram*		    _grassShader;

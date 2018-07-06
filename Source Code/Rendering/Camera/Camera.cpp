@@ -59,13 +59,16 @@ void Camera::restoreCamera() {
     }
 }
 
-void Camera::update(const D32 deltaTime) {
-    //static bool oddFrame = true;
-    _cameraMoveSpeed = FRAME_SPEED_FACTOR * _moveSpeedFactor;
-    _cameraTurnSpeed = FRAME_SPEED_FACTOR * _turnSpeedFactor;
-    //if(oddFrame)
-        _orientation.normalize();
-    //oddFrame = !oddFrame;
+void Camera::update(const U64 deltaTime) {
+    _cameraMoveSpeed = _moveSpeedFactor;
+    _cameraTurnSpeed = _turnSpeedFactor;
+#if USE_FIXED_TIMESTEP
+    _cameraMoveSpeed *= Config::TICK_DIVISOR;
+    _cameraTurnSpeed *= Config::TICK_DIVISOR;
+#else
+    _cameraMoveSpeed *= FRAME_SPEED_FACTOR;
+    _cameraTurnSpeed *= FRAME_SPEED_FACTOR;
+#endif
 }
 
 void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
@@ -188,14 +191,12 @@ void Camera::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F3
     _viewMatrixDirty = false;
 }
 
-void Camera::renderAnaglyph(bool rightEye){
-    GFX_DEVICE.setAnaglyphFrustum(_camIOD,rightEye);
+void Camera::setAnaglyph(bool rightEye){
+    GFX_DEVICE.setAnaglyphFrustum(_camIOD, rightEye);
     if(rightEye) _eye.x += _camIOD/2;
     else         _eye.x -= _camIOD/2;
 
     _viewMatrixDirty = true;
-
-    renderLookAt();
 }
 
 ///Tell the rendering API to set up our desired PoV
@@ -226,6 +227,8 @@ void Camera::renderLookAtReflected(const Plane<F32>& reflectionPlane, bool inver
 void Camera::updateViewMatrix(){
     if(!_viewMatrixDirty)
         return;
+        
+    _orientation.normalize();
 
     // Reconstruct the view matrix.
     _viewMatrix = _orientation.getMatrix();

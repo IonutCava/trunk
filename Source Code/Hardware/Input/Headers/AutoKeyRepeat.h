@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -52,8 +52,8 @@ public:
     void begin(const OIS::KeyEvent &evt);
     ///Called when a key is released
     void end(const OIS::KeyEvent &evt);
-    ///Update the internal time interval between frames
-    void update(const D32 deltaTime);
+    ///Update the internal time interval between frames (microseconds)
+    void update(const U64 deltaTime);
     ///Adjust delay between key injections
     inline void setRepeatDelay(F32 repeatDelay) {_repeatDelay = repeatDelay;}
     ///Adjust the initial delay before we start injecting key repeats

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -72,15 +72,15 @@ public:
     bool removeGeometry(SceneNode* node);
 
     /**Begin scene logic loop*/
-    virtual void processInput(const D32 deltaTime) = 0;  //<Get all input commands from the user
-    virtual void processTasks(const D32 deltaTime); //<Update the scene based on the inputs
+    virtual void processInput(const U64 deltaTime) = 0;  //<Get all input commands from the user
+    virtual void processTasks(const U64 deltaTime); //<Update the scene based on the inputs
     virtual void preRender() = 0;                   //<Prepare the scene for rendering after the update
     virtual void postRender();                      //<Perform any post rendering operations
     bool idle();                                    //<Scene is rendering, so add intensive tasks here to save CPU cycles
     /**End scene logic loop*/
 
     /// Update animations, network data, sounds, triggers etc.
-    virtual void updateSceneState(const D32 deltaTime);
+    virtual void updateSceneState(const U64 deltaTime);
     inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return NULL;} CLAMP<I32>(index,0,_skiesSGN.size() - 1); return _skiesSGN[index];}
     inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
     inline vectorImpl<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}

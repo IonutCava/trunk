@@ -17,6 +17,10 @@ GLuint GL_API::_activeVAOId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
 vec4<GLfloat> GL_API::_prevClearColor = DefaultColors::DIVIDE_BLUE();
 
+bool GL_API::_viewportForced = false;
+bool GL_API::_viewportUpdateGL = false;
+bool GL_API::_useMSAA = false;
+
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
     if(!skipShader || forceAll) {
         setActiveProgram(NULL,forceAll);
@@ -38,12 +42,12 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
     assert(block != NULL);
 
-   glRenderStateBlock* glBlock = static_cast<glRenderStateBlock*>(block);
-   glRenderStateBlock* glCurrent = NULL;
-   if(!force){
-      glCurrent = static_cast<glRenderStateBlock*>(GFX_DEVICE._currentStateBlock);
-   }
-   glBlock->activate(glCurrent);
+    glRenderStateBlock* glBlock = static_cast<glRenderStateBlock*>(block);
+    glRenderStateBlock* glCurrent = NULL;
+    if(!force){
+        glCurrent = static_cast<glRenderStateBlock*>(GFX_DEVICE._currentStateBlock);
+    }
+    glBlock->activate(glCurrent);
    _currentGLRenderStateBlock = glBlock;
 }
 
@@ -72,35 +76,30 @@ void GL_API::toggle2D(bool state){
 ///Update OpenGL light state
 void GL_API::setLight(Light* const light){
     assert(light != NULL);
-    GLubyte slot = light->getSlot();
 
-    if(!light->getEnabled()){
-      return;
+    LightProperties crtLight = light->getProperties();
+    
+    F32 lightType = crtLight._position.w;
+	
+    
+    mat4<F32> viewMatrix;
+	getMatrix(VIEW_MATRIX, viewMatrix);
+
+    crtLight._position.set(viewMatrix * vec4<F32>(crtLight._position.xyz(), std::min(crtLight._position.w, 1.0f)));
+
+    if(lightType < 0.5f){ //directional light
+        crtLight._position.normalize();
+    }else if(lightType > 1.5f){ //spot light
+		F32 spotExponent = crtLight._direction.w;
+	    crtLight._direction.set(viewMatrix * vec4<F32>(crtLight._direction.xyz(), 0.0f));
+        crtLight._direction.normalize();
+		crtLight._direction.w = spotExponent;
     }
-
-    GLuint offset = slot * sizeof(light->getProperties());
-    _uniformBufferObjects[Lights_UBO]->ChangeSubData(offset,
-                                                     sizeof(light->getProperties()),
-                                                     (const GLvoid*)(&(light->getProperties())));
-
-    LightType type = light->getLightType();
-
-    vec4<F32> position(light->getPosition(), type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f);
-    GLCheck(glLightfv(GL_LIGHT0+slot, GL_POSITION, &position.x));
-
-    GLCheck(glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  light->getVProperty(LIGHT_PROPERTY_AMBIENT)));
-    GLCheck(glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  light->getVProperty(LIGHT_PROPERTY_DIFFUSE)));
-    GLCheck(glLightfv(GL_LIGHT0+slot, GL_SPECULAR, light->getVProperty(LIGHT_PROPERTY_SPECULAR)));
-    if(type == LIGHT_TYPE_SPOT){
-        GLCheck(glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, light->getDirection()));
-        GLCheck(glLightf(GL_LIGHT0+slot, GL_SPOT_EXPONENT,light->getFProperty(LIGHT_PROPERTY_SPOT_EXPONENT)));
-        GLCheck(glLightf(GL_LIGHT0+slot, GL_SPOT_CUTOFF, light->getFProperty(LIGHT_PROPERTY_SPOT_CUTOFF)));
-    }
-    if(type != LIGHT_TYPE_DIRECTIONAL){
-        GLCheck(glLightf(GL_LIGHT0+slot, GL_CONSTANT_ATTENUATION,light->getFProperty(LIGHT_PROPERTY_CONST_ATT)));
-        GLCheck(glLightf(GL_LIGHT0+slot, GL_LINEAR_ATTENUATION,light->getFProperty(LIGHT_PROPERTY_LIN_ATT)));
-        GLCheck(glLightf(GL_LIGHT0+slot, GL_QUADRATIC_ATTENUATION,light->getFProperty(LIGHT_PROPERTY_QUAD_ATT)));
-    }
+    crtLight._position.w = lightType;
+   
+    _uniformBufferObjects[Lights_UBO]->ChangeSubData(light->getSlot() * sizeof(LightProperties),  // offset
+                                                     sizeof(LightProperties),                     // size
+                                                     (const GLvoid*)(&crtLight)); // data
 }
 
 const size_t mat4Size = 16 * sizeof(GLfloat);
@@ -270,24 +269,27 @@ void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force){
     }
 }
 
-static bool popViewport = false;
 void GL_API::restoreViewport(){
-    if(popViewport)
-        Divide::GL::_viewport.pop();
-    const vec4<GLuint>& prevViewport = Divide::GL::_viewport.top();
-    GLCheck(glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w));
+	if(!_viewportUpdateGL)  return;
+
+	if(!_viewportForced) Divide::GL::_viewport.pop(); //push / pop only if new viewport (not-forced)
+
+	const vec4<GLuint>& prevViewport = Divide::GL::_viewport.top();
+	GLCheck(glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w));
+	
 }
 
 vec4<GLuint> GL_API::setViewport(const vec4<GLuint>& viewport, bool force){
-    bool updateGL = !viewport.compare(Divide::GL::_viewport.top());
-    popViewport = !force;
-    if(force)
-        Divide::GL::_viewport.top() = viewport;
-    else
-        Divide::GL::_viewport.push(viewport);
+    _viewportUpdateGL = !viewport.compare(Divide::GL::_viewport.top());
 
-    if(updateGL)
-        GLCheck(glViewport(viewport.x,viewport.y,viewport.z,viewport.w));
+	if(_viewportUpdateGL) {
 
+		_viewportForced = force;
+		if(!_viewportForced) Divide::GL::_viewport.push(viewport); //push / pop only if new viewport (not-forced)
+		else                 Divide::GL::_viewport.top() = viewport;
+		
+		GLCheck(glViewport(viewport.x,viewport.y,viewport.z,viewport.w));
+	}
+	
     return Divide::GL::_viewport.top();
 }

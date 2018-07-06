@@ -4,22 +4,43 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
-void SkinnedMesh::sceneUpdate(const D32 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState){
-    ///sceneTime is in milliseconds. Convert to seconds
+void SkinnedMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+    bool playAnimation = (_playAnimation && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
+
     for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
-        assert(subMesh.second);
-        dynamic_cast<SkinnedSubMesh*>(subMesh.second)->updateAnimations(deltaTime,sgn);
+        dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playAnimation(playAnimation);
     }
+
     Object3D::sceneUpdate(deltaTime,sgn,sceneState);
 }
 
-bool SkinnedMesh::playAnimations() {
-    if(_playAnimations && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")){
-        return true;
+/// Select next available animation
+bool SkinnedMesh::playNextAnimation(){
+    bool success = true;
+    for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+        if(!dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playNextAnimation())
+            success =  false;
     }
-
-    return false;
+    return success;
 }
 
-void SkinnedMesh::updateTransform(SceneGraphNode* const sgn){
+/// Select an animation by index
+bool SkinnedMesh::playAnimation(I32 index){
+    bool success = true;
+    for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+        if(!dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playAnimation(index))
+            success =  false;
+    }
+
+    return success;
+}
+
+/// Select an animation by name
+bool SkinnedMesh::playAnimation(const std::string& animationName){
+    bool success = true;
+    for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
+        if(!dynamic_cast<SkinnedSubMesh*>(subMesh.second)->playAnimation(animationName))
+            success =  false;
+    }
+    return success;
 }

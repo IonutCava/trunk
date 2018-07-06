@@ -2,8 +2,9 @@
 
 #include "vboInputData.vert"
 #include "foliage.vert"
+#include "lightInput.cmn"
 
-uniform bool dvd_enableShadowMapping;
+uniform bool dvd_enableShadowMapping = false;
 uniform mat4 dvd_lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
 
 out vec3 _lightDirection[MAX_LIGHT_COUNT];
@@ -19,7 +20,7 @@ void computeLightVectorsPhong(){
     int i = 0; ///Only the first light for now
     //for(int i = 0; i < MAX_LIGHT_COUNT; i++){
     //	if(dvd_lightCount == i) break;
-    vec4 vLightPosMV = gl_LightSource[i].position;	
+    vec4 vLightPosMV = dvd_ViewMatrix * dvd_LightSource[dvd_lightIndex[i]]._position;	
     if(vLightPosMV.w == 0.0){ ///<Directional Light
         tmpVec = -vLightPosMV.xyz;					
     }else{///<Omni or spot. Change later if spot
@@ -65,14 +66,15 @@ uniform sampler2D texDiffuse;
 ///Global NDotL, basically
 float iDiffuse;
 #include "shadowMapping.frag"
+#include "lightInput.cmn"
 
 void main (void){
 
     vec4 cBase = texture(texDiffuse, _texCoord);
-    if(cBase.a < ALPHA_DISCARD_THRESHOLD + 0.1) discard;
-    
-    vec4 cAmbient = gl_LightSource[0].ambient;
-    vec4 cDiffuse = gl_LightSource[0].diffuse * gl_Color;
+
+    int i = 0;
+    float cAmbient = dvd_LightSource[dvd_lightIndex[i]]._diffuse.w;
+    vec3 cDiffuse = dvd_LightSource[dvd_lightIndex[i]]._diffuse.rgb * gl_Color.rgb;
     vec3 L = normalize(_lightDirection[0]);
     iDiffuse = max(dot(L, _normalWV), 0.0);
     // SHADOW MAPPING
@@ -80,7 +82,7 @@ void main (void){
     float shadow = 1.0;
     applyShadowDirectional(0, shadow);
 
-    _colorOut = cAmbient * cBase + (0.2 + 0.8 * shadow) * cDiffuse * cBase;
+    _colorOut.rgb = cAmbient * cBase + (0.2 + 0.8 * shadow) * cDiffuse * cBase.rgb;
     
     _colorOut.a = gl_Color.a;
 }

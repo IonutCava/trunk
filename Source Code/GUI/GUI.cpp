@@ -17,7 +17,8 @@
 GUI::GUI() : _init(false),
              _enableCEGUIRendering(false),
              _rootSheet(NULL),
-             _console(New GUIConsole())
+             _console(New GUIConsole()),
+             _textRenderInterval(getMsToUs(10))
 {
     //500ms
     _input.setInitialDelay(0.500f);
@@ -43,9 +44,9 @@ void GUI::onResize(const vec2<U16>& newResolution){
     _cachedResolution = newResolution;
 }
 
-void GUI::draw(const D32 deltaTime){
-    if(!_init) 
-        return;
+void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
+    if(!_init) return;
+
     GFXDevice& gfx = GFX_DEVICE;
 
     gfx.toggle2D(true);
@@ -57,16 +58,18 @@ void GUI::draw(const D32 deltaTime){
         GUIElement* guiElement = guiStackIterator.second;
         if(!guiElement->isVisible() || guiElement->getGuiType() == GUI_BUTTON) continue;
         SET_STATE_BLOCK(guiElement->_guiSB);
-        gfx.renderGUIElement(guiElement,_guiShader);
+        gfx.renderGUIElement(_textRenderInterval, guiElement,_guiShader);
     }
     //------------------------------------------------------------------------
     _guiShader->unbind();
     gfx.toggle2D(false);
 
-    D32 deltaTimeSec = getMsToSec(deltaTime);
-    _input.update(deltaTimeSec);
+    D32 deltaTimeSec = getUsToSec(deltaTime);
+
+    _input.update(deltaTime);
     CEGUI::System::getSingleton().injectTimePulse(deltaTimeSec);
-    GUIEditor::getInstance().update(deltaTimeSec);
+
+    GUIEditor::getInstance().update(deltaTime);
 
     if(_enableCEGUIRendering){
         CEGUI::System::getSingleton().renderAllGUIContexts();
@@ -225,7 +228,7 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
     return !_console->isVisible() && !GUIEditor::getInstance().isVisible();
 }
 
-GUIElement* GUI::addButton(const std::string& id, const std::string& text,
+GUIButton* GUI::addButton(const std::string& id, const std::string& text,
                     const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
                     ButtonCallback callback,const std::string& rootSheetId){
     CEGUI::Window* parent = NULL;
@@ -238,7 +241,7 @@ GUIElement* GUI::addButton(const std::string& id, const std::string& text,
     return btn;
 }
 
-GUIElement* GUI::addText(const std::string& id,const vec2<I32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
+GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
     va_list args;
     std::string fmt_text;
 
@@ -250,7 +253,7 @@ GUIElement* GUI::addText(const std::string& id,const vec2<I32> &position, const 
     SAFE_DELETE_ARRAY(text);
     va_end(args);
 
-    GUIElement *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
+    GUIText *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
     _resultGuiElement = _guiStack.insert(make_pair(id,t));
     if(!_resultGuiElement.second) (_resultGuiElement.first)->second = t;
     fmt_text.empty();
@@ -258,7 +261,7 @@ GUIElement* GUI::addText(const std::string& id,const vec2<I32> &position, const 
     return t;
 }
 
-GUIElement* GUI::addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent){
+GUIFlash* GUI::addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent){
     GUIFlash *flash = New GUIFlash(_rootSheet);
     _resultGuiElement = _guiStack.insert(make_pair(id,flash));
     if(!_resultGuiElement.second) (_resultGuiElement.first)->second = flash;
@@ -266,7 +269,7 @@ GUIElement* GUI::addFlash(const std::string& id, std::string movie, const vec2<U
     return flash;
 }
 
-GUIElement* GUI::modifyText(const std::string& id, char* format, ...){
+GUIText* GUI::modifyText(const std::string& id, char* format, ...){
     if(_guiStack.find(id) == _guiStack.end()) return NULL;
 
     va_list args;
@@ -281,10 +284,12 @@ GUIElement* GUI::modifyText(const std::string& id, char* format, ...){
     va_end(args);
 
     GUIElement* element = _guiStack[id];
-    if(element->getGuiType() == GUI_TEXT)
-        dynamic_cast<GUIText*>(element)->_text = fmt_text;
+    assert(element->getGuiType() == GUI_TEXT);
+
+    GUIText* textElement = dynamic_cast<GUIText*>(element);
+    textElement->_text = fmt_text;
     fmt_text.empty();
-    return element;
+    return textElement;
 }
 
 /*   void onRightMouseUp(const GuiEvent &event);

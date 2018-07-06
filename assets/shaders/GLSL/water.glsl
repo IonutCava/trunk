@@ -1,5 +1,7 @@
 -- Vertex
 #include "vboInputData.vert"
+#include "lightInput.cmn"
+
 out vec3 _pixToLight;		
 out vec3 _pixToEye;	
 
@@ -16,7 +18,7 @@ void main(void)
 	vec3 vPositionNormalized = (vertex - water_bb_min) / water_bb_diff;
 	_texCoord = vPositionNormalized.xz;
 	
-	_pixToLight = -(gl_LightSource[0].position.xyz);
+	_pixToLight = -(dvd_LightSource[dvd_LightIndex[0]].position.xyz);
 	_pixToEye = -vec3(dvd_WorldViewMatrix * dvd_Vertex);	
 
 	gl_Position = dvd_ViewProjectionMatrix * _vertexW;
@@ -73,11 +75,11 @@ void main (void)
 	vec3 V = normalize(_pixToEye);
 	float iSpecular = pow(clamp(dot(normalize(-reflect(L, N)), V), 0.0, 1.0), _waterShininess);
 
-	//vec4 cAmbient = gl_LightSource[0].ambient * material[0];
+	//vec4 cAmbient = dvd_LightSource[dvd_LightIndex[0]]._diffuse.w * material[0];
 	// add Diffuse
 	_colorOut = texture(texWaterReflection, uvFinal);
 	// add Specular
-	_colorOut.rgb += vec4(gl_LightSource[0].specular * material[2] * iSpecular).rgb;
+	_colorOut.rgb += dvd_LightSource[dvd_LightIndex[0]]._specular.rgb * mat3(material[2]) * iSpecular;
 
 	// shadow mapping
 	

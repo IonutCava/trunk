@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -24,13 +24,15 @@
 #define _TRANSFORM_H_
 
 #include <boost/atomic.hpp>
+#include <boost/noncopyable.hpp>
 #include "Quaternion.h"
 
-class Transform {
+class Transform : private boost::noncopyable {
 public:
 
     Transform();
     Transform(const Quaternion<F32>& orientation, const vec3<F32>& translation, const vec3<F32>& scale);
+
     ~Transform();
 
     void translate(const vec3<F32>& position)          { setDirty(); WriteLock w_lock(_lock); _translation += position; }
@@ -43,14 +45,14 @@ public:
     inline bool isDirty()         const {return _dirty;}
     inline bool isPhysicsDirty()  const {return _physicsDirty;}
     inline bool isUniformScaled() const {
-		if(_hasParentTransform){
-			ReadLock r_lock(_parentLock);
-			return _scale.isUniform() && _parentTransform->isUniformScaled();
-		}
+        if(_hasParentTransform){
+            ReadLock r_lock(_parentLock);
+            return _scale.isUniform() && _parentTransform->isUniformScaled();
+        }
 
-		ReadLock r_lock(_lock);
-		return _scale.isUniform();
-	}
+        ReadLock r_lock(_lock);
+        return _scale.isUniform();
+    }
     ///Transformation helper functions. These just call the normal translate/rotate/scale functions
     inline void scale(const F32 scale)            {this->scale(vec3<F32>(scale,scale,scale)); }
     inline void scaleX(const F32 scale)           {this->scale(vec3<F32>(scale,_scale.y,_scale.z));}
@@ -66,37 +68,37 @@ public:
     inline void setPositionY(const F32 positionY) {this->setPosition(vec3<F32>(_translation.x,positionY,_translation.z));}
     inline void setPositionZ(const F32 positionZ) {this->setPosition(vec3<F32>(_translation.x,_translation.y,positionZ));}
     ///Transformation helper functions. These return the curent, local scale, position and orientation
-	inline const vec3<F32>&       getLocalScale()       const {ReadLock r_lock(_lock); return _scale; }
-	inline const vec3<F32>&       getLocalPosition()    const {ReadLock r_lock(_lock); return _translation; }
-	inline const Quaternion<F32>& getLocalOrientation() const {ReadLock r_lock(_lock); return _orientation; }
+    inline const vec3<F32>&       getLocalScale()       const {ReadLock r_lock(_lock); return _scale; }
+    inline const vec3<F32>&       getLocalPosition()    const {ReadLock r_lock(_lock); return _translation; }
+    inline const Quaternion<F32>& getLocalOrientation() const {ReadLock r_lock(_lock); return _orientation; }
 
     inline vec3<F32> getScale() const {
-		if(_hasParentTransform){
+        if(_hasParentTransform){
             ReadLock r_lock(_parentLock);
             return _parentTransform->getScale() * _scale;
         }
-		ReadLock r_lock(_lock);
-		return _scale;
-	}
+        ReadLock r_lock(_lock);
+        return _scale;
+    }
 
     inline vec3<F32> getPosition() const {
-		if(_hasParentTransform){
+        if(_hasParentTransform){
             ReadLock r_lock(_parentLock);
             return _parentTransform->getPosition() + _translation;
         }
 
-		ReadLock r_lock(_lock); 
-		return _translation;
-	}
+        ReadLock r_lock(_lock); 
+        return _translation;
+    }
 
     inline Quaternion<F32> getOrientation() const {
-		 if(_hasParentTransform){
+         if(_hasParentTransform){
             ReadLock r_lock(_parentLock);
             return _parentTransform->getOrientation().inverse() * _orientation;
         }
-		ReadLock r_lock(_parentLock);
-		return _orientation;
-	}
+        ReadLock r_lock(_parentLock);
+        return _orientation;
+    }
 
     ///Get the local transformation matrix
     inline const mat4<F32>&  getMatrix() { return this->applyTransforms(); }
@@ -118,6 +120,7 @@ public:
         Util::Mat4::decompose(transform, _scale, _orientation, _translation);
         setDirty();
     }
+
     ///Get the parent's global transformation
     inline Transform* const getParentTransform() const {
         if(_hasParentTransform){ //<avoid an extra mutex lock
@@ -132,6 +135,17 @@ public:
         _parentTransform = transform;
         _hasParentTransform = (_parentTransform != NULL);
     }
+
+    inline void clone(Transform* const transform){
+        WriteLock w_lock(_lock);
+        _scale.set(transform->getLocalScale());
+        _translation.set(transform->getLocalPosition());
+        _orientation.set(transform->getLocalOrientation());
+        setParentTransform(transform->getParentTransform());
+        setDirty();
+    }
+    
+    const mat4<F32>& interpolate(Transform* const transform, const D32 factor);
 
     ///Creates the local transformation matrix using the position, scale and position values
     const mat4<F32>& applyTransforms();
@@ -153,6 +167,8 @@ private:
     vec3<F32> _scale;
     ///This is the actual model matrix, but it will not convert to world space as it depends on it's parent in graph
     mat4<F32> _worldMatrix;
+    ///The interpolated matrix cache. Represents an intermediate matrix between the current matrix and another, external matrix, interpolated by the given factor
+    mat4<F32> _worldMatrixInterp;
     ///All orientation/rotation info is stored in a Quaternion (because they are awesome and also have an internal mat4 if needed)
     Quaternion<F32> _orientation;
     ///_dirty is set to true whenever a translation, rotation or scale is applied

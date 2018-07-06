@@ -6,11 +6,6 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
                                                            _blendSrc(BLEND_PROPERTY_ONE),
                                                            _blendDest(BLEND_PROPERTY_ONE),
                                                            _blendOp(BLEND_OPERATION_ADD),
-                                                           _alphaBlendDefined(false),
-                                                           _alphaBlendEnable(false),
-                                                           _alphaBlendSrc(BLEND_PROPERTY_ONE),
-                                                           _alphaBlendDest(BLEND_PROPERTY_ZERO),
-                                                           _alphaBlendOp(BLEND_OPERATION_ADD),
                                                            _enableColorWrite(true),
                                                            _writeRedChannel(true),
                                                            _writeBlueChannel(true),
@@ -33,7 +28,6 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
                                                            _stencilRef(0),
                                                            _stencilMask(0xFFFFFFFF),
                                                            _stencilWriteMask(0xFFFFFFFF),
-                                                           _vertexColorEnable(false),
                                                            _fillMode(FILL_MODE_SOLID)
 {
 }
@@ -43,11 +37,7 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
       setBlend(descriptor._blendEnable,descriptor._blendSrc,descriptor._blendDest,descriptor._blendOp);
    }
 
-   if ( descriptor._alphaBlendDefined )  {
-      setAlphaBlend(descriptor._alphaBlendEnable,descriptor._alphaBlendSrc,descriptor._alphaBlendDest,descriptor._alphaBlendOp);
-   }
-
-   if (descriptor._enableColorWrite)     {
+   if (descriptor._enableColorWrite) {
        setColorWrites(descriptor._writeRedChannel,descriptor._writeGreenChannel,descriptor._writeBlueChannel,descriptor._writeAlphaChannel);
    }
 
@@ -74,7 +64,6 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
       _stencilWriteMask = descriptor._stencilWriteMask;
    }
 
-   _vertexColorEnable = descriptor._vertexColorEnable;
    _fillMode = descriptor._fillMode;
 }
 
@@ -100,14 +89,6 @@ void RenderStateBlockDescriptor::setBlend( bool enable, BlendProperty src, Blend
    _blendSrc = src;
    _blendDest = dest;
    _blendOp = op;
-}
-
-void RenderStateBlockDescriptor::setAlphaBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) {
-   _alphaBlendDefined = true;
-   _alphaBlendEnable = enable;
-   _alphaBlendSrc = src;
-   _alphaBlendDest = dest;
-   _alphaBlendOp = op;
 }
 
 void RenderStateBlockDescriptor::setColorWrites( bool red, bool green, bool blue, bool alpha ) {

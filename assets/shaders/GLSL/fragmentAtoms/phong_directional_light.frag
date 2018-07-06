@@ -5,10 +5,11 @@ void phong_directionalLight(in int light,
 							in vec4 specularIn,
 							inout MaterialProperties materialProp)
 {
+    int lightIndex = dvd_lightIndex[light];
 	//add the lighting contributions
-	materialProp.ambient  += gl_LightSource[light].ambient * material[0];
+	materialProp.ambient  += material[0] * dvd_LightSource[lightIndex]._diffuse.w;
 	if(NdotL > 0.0){
-		materialProp.diffuse  += gl_LightSource[light].diffuse * material[1] *  NdotL;
-		materialProp.specular += gl_LightSource[light].specular * specularIn * iSpecular;
+		materialProp.diffuse  += vec4(dvd_LightSource[lightIndex]._diffuse.rgb, 1.0) * material[1] *  NdotL;
+		materialProp.specular += vec4(dvd_LightSource[lightIndex]._specular.rgb, 1.0) * specularIn * iSpecular;
 	}
 }

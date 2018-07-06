@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -77,8 +77,7 @@ private:
 
     void toggle2D(bool _2D);
 
-    void drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize);
-    void drawText(const std::string& text, const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize);
+    void drawText(const TextLabel& textLabel, const vec2<I32>& position);
     void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
     void drawLines(const vectorImpl<vec3<F32> >& pointsA,
                    const vectorImpl<vec3<F32> >& pointsB,
@@ -103,6 +102,7 @@ private:
 
     bool loadInContext(const CurrentContext& context, boost::function0<void> callback);
 
+    U64 getFrameDurationGPU() const { return 0; }
 END_SINGLETON
 
 #endif

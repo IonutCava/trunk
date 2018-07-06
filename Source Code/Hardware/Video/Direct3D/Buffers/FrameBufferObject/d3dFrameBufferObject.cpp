@@ -17,11 +17,11 @@ void d3dFrameBufferObject::Destroy()
 {
 }
 
-void d3dFrameBufferObject::Begin(U8 nFace) const
+void d3dFrameBufferObject::Begin(const FrameBufferObjectTarget& drawPolicy)
 {
 }
 
-void d3dFrameBufferObject::End(U8 nFace) const 
+void d3dFrameBufferObject::End() 
 {
 }
 
@@ -37,12 +37,16 @@ void d3dFrameBufferObject::DrawToLayer(TextureDescriptor::AttachmentType slot, U
 {
 }
 
+void d3dFrameBufferObject::DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth) const
+{
+}
+
 bool d3dFrameBufferObject::checkStatus() const 
 {
 	return true;
 }
 
-void d3dFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) const 
+void d3dFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) 
 {
 }
 

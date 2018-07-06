@@ -41,7 +41,7 @@ void ShaderManager::registerShaderProgram(const std::string& name, ShaderProgram
     }
 }
 
-U8 ShaderManager::update(const D32 deltaTime){
+U8 ShaderManager::update(const U64 deltaTime){
     for_each(ShaderProgramMap::value_type& it, _shaderPrograms){
         std::string name = it.first;
         if(it.second->update(deltaTime) == 0)

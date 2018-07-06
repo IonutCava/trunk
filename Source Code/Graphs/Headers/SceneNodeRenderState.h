@@ -30,7 +30,7 @@ protected:
 	bool _isVisible;
 	bool _drawState;
 	bool _noDefaultMaterial;
-	U8  _exclusionMask;
+	U16  _exclusionMask;
 
 	RenderStateBlock* _depthStateBlock;
 };

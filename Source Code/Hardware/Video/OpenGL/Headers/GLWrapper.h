@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -34,8 +34,6 @@
 #include <boost/lockfree/spsc_queue.hpp>
 
 class Text3D;
-class FTFont;
-class FTPoint;
 class glIMPrimitive;
 class glUniformBufferObject;
 class glRenderStateBlock;
@@ -52,13 +50,13 @@ private:
                _currentGLRenderStateBlock(NULL),
                _state2DRendering(NULL),
                _defaultStateNoDepth(NULL),
-               _useMSAA(false),
-               _2DRendering(false),
-               _msaaSamples(0),
+                _2DRendering(false),
                _prevWidthNode(0),
                _prevWidthString(0),
                _prevSizeNode(0),
-               _prevSizeString(0)
+               _prevSizeString(0),
+               _frameDurationGPU(0),
+			   _lineWidthLimit(1)
     {
     }
 
@@ -109,8 +107,7 @@ private:
     void toggle2D(bool state);
 
     void debugDraw();
-    void drawText(const std::string& text, const GLint width, const std::string& fontName, const GLfloat fontSize);
-    void drawText(const std::string& text, const GLint width, const vec2<GLint> position, const std::string& fontName, const GLfloat fontSize);
+    void drawText(const TextLabel& textLabel, const vec2<I32>& position);
     void drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset);
     void drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
                    const vectorImpl<vec3<GLfloat> >& pointsB,
@@ -134,6 +131,13 @@ private:
 
     bool loadInContext(const CurrentContext& context, boost::function0<GLvoid> callback);
 
+    inline GLuint64 getFrameDurationGPU() const {
+#if defined(_DEBUG) || defined(_PROFILE)
+        return _frameDurationGPU; 
+#else
+        return 0;
+#endif
+    }
 protected:
     friend class glVertexArrayObject;
     inline static glShaderProgram* getActiveProgram()  {return _activeShaderProgram;}
@@ -143,8 +147,9 @@ protected:
     friend class glFrameBufferObject;
     friend class glDeferredBufferObject;
     friend class glTextureArrayBufferObject;
+	inline static bool useMSAA() {return _useMSAA; }
            static void restoreViewport();
-           static vec4<GLuint> setViewport(const vec4<GLuint>& viewport ,bool force = false);
+           static vec4<GLuint> setViewport(const vec4<GLuint>& viewport, bool force = false);
            static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
            inline static void clearColor(const vec4<GLfloat>& color,bool force = false) {
                clearColor(color.r,color.g,color.b,color.a,force);
@@ -173,7 +178,7 @@ private:
     boost::thread *_loaderThread;
     boost::atomic_bool _closeLoadingThread;
 
-    FTFont* getFont(const std::string& fontName);
+    I32 getFont(const std::string& fontName);
     glIMPrimitive* getOrCreateIMPrimitive(bool allowPrimitiveRecycle = true);
     ///Used for rendering skeletons
     void setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawState,const bool ortho);
@@ -187,7 +192,7 @@ private: //OpenGL specific:
 
     ///Text Rendering
     ///The previous plain text string's relative position on screen
-    FTPoint* _prevPointString;
+    //FTPoint* _prevPointString;
     ///The previous Text3D node's font face size
     GLfloat _prevSizeNode;
     ///The previous plain text string's font face size
@@ -204,20 +209,20 @@ private: //OpenGL specific:
     RenderStateBlock*     _defaultStateNoDepth; //<The default render state buth with GL_DEPTH_TEST false
     bool                  _2DRendering;
 
-    vectorImpl<vec3<GLfloat> > _pointsA;
-    vectorImpl<vec3<GLfloat> > _pointsB;
-    vectorImpl<vec4<GLubyte> > _colors;
+	// line width limit
+	GLint _lineWidthLimit;
+    vectorImpl<vec3<GLfloat> > _pointsA, _axisPointsA;
+    vectorImpl<vec3<GLfloat> > _pointsB, _axisPointsB;
+    vectorImpl<vec4<GLubyte> > _colors, _axisColors;
     vectorImpl<glUniformBufferObject* > _uniformBufferObjects;
     //Immediate mode emulation
     ShaderProgram*               _imShader;       //<The shader used to render VBO data
     vectorImpl<glIMPrimitive* >  _glimInterfaces; //<The interface that coverts IM calls to VBO data
 
-    ///A cache of all fonts used (use a separate map for 3D text
-    typedef Unordered_map<std::string , FTFont* > FontCache;
+    ///A cache of all fonts used 
+    typedef Unordered_map<std::string , I32 > FontCache;
     ///2D GUI-like text (bitmap fonts) go in this
     FontCache  _fonts;
-    GLuint     _msaaSamples;
-    bool       _useMSAA;///<set to falls for FXAA or SMAA
 
 	mat4<F32> _ViewProjectionCacheMatrix;
     static glslopt_ctx* _GLSLOptContex;
@@ -225,8 +230,21 @@ private: //OpenGL specific:
     static GLuint _activeVAOId;
     static GLuint _activeTextureUnit;
     static vec4<GLfloat> _prevClearColor;
-
+	static bool _viewportForced;
+	static bool _viewportUpdateGL;
+	static bool _useMSAA;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
+
+    /// performance counters
+    // front and back
+    static const GLint PERFORMANCE_COUNTER_BUFFERS = 2;
+    // number of queries
+    static const GLint PERFORMANCE_COUNTERS = 1;
+    GLuint _queryID[PERFORMANCE_COUNTER_BUFFERS][PERFORMANCE_COUNTERS];
+    GLuint _queryBackBuffer, _queryFrontBuffer;
+    GLuint64 _frameDurationGPU;
+
+    struct FONScontext* _fonsContext;
 
 END_SINGLETON
 

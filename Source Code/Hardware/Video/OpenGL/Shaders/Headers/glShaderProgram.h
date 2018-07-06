@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -35,7 +35,7 @@ public:
     bool unload(){unbind(); return true;}
     void bind();
     void unbind(bool resetActiveProgram = true);
-    U8   update(const D32 deltaTime);
+    U8   update(const U64 deltaTime);
     void attachShader(Shader* const shader,const bool refresh = false);
     void detachShader(Shader* const shader);
     //Attributes

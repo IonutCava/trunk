@@ -11,7 +11,7 @@ namespace Navigation {
                                                             _activeAgents(0)
     {
         _crowd = dtAllocCrowd();
-
+		_targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;
         if(!_crowd){
             ERROR_FN(Locale::get("ERROR_DETOUR_CROWD_INSTANCE"));
             assert(_crowd != NULL);
@@ -80,12 +80,12 @@ namespace Navigation {
         dtFreeObstacleAvoidanceDebugData(_vod);
     }
 
-    void DivideDtCrowd::update(const D32 deltaTime) {
+    void DivideDtCrowd::update(const U64 deltaTime) {
         dtNavMesh* nav = _recast->getNavigationMesh();
         dtCrowd* crowd = _crowd;
         if (!nav || !crowd) return;
         // TimeVal startTime = getPerfTime();
-        crowd->update(deltaTime, &_agentDebug);
+        crowd->update(getUsToMs(deltaTime), &_agentDebug);
         // TimeVal endTime = getPerfTime();
         // Update agent trails
         for(I32 i = 0; i < crowd->getAgentCount(); ++i) {
@@ -242,7 +242,7 @@ namespace Navigation {
     }
 
     F32 DivideDtCrowd::getDistanceToGoal(const dtCrowdAgent* agent, const F32 maxRange) {
-        if (!agent->ncorners)
+		if (!agent || !agent->ncorners || agent->ncorners < 0)
             return maxRange;
 
         const bool endOfPath = (agent->cornerFlags[agent->ncorners-1] & DT_STRAIGHTPATH_END) ? true : false;

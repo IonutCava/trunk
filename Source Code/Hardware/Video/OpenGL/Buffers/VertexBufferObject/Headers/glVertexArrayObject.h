@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -39,31 +39,31 @@
 class glVertexArrayObject : public VertexBufferObject {
 public:
     glVertexArrayObject(const PrimitiveType& type);
-    virtual ~glVertexArrayObject();
+    ~glVertexArrayObject();
 
     //Shader manipulation to replace the fixed pipeline. Always specify a shader before the draw calls!
     void setShaderProgram(ShaderProgram* const shaderProgram);
 
-    virtual bool Create(bool staticDraw = true);
-    virtual void Destroy();
+    bool Create(bool staticDraw = true);
+    void Destroy();
 
     virtual bool SetActive();
 
-    virtual void Draw(const U8 LODindex = 0);
-    virtual void DrawRange();
+    void Draw(const U8 LODindex = 0);
+    void DrawRange();
 
     ///Never call Refresh() just queue it and the data will update before drawing
     inline bool queueRefresh() {_refreshQueued = true; return true;}
 
 protected:
-    virtual bool computeTriangleList();
+    bool computeTriangleList();
     /// If we have a shader, we create a VAO, if not, we use simple VBO + IBO. If that fails, use VA
-    virtual bool Refresh();
+    bool Refresh();
     /// Internally create the VBO
-    virtual bool CreateInternal();
+    bool CreateInternal();
     /// Enable full VAO based VBO (all pointers are tracked by VAO's)
-    virtual void Upload_VBO_Attributes();
-    virtual void Upload_VBO_Depth_Attributes();
+    void Upload_VBO_Attributes();
+    void Upload_VBO_Depth_Attributes();
     /// Integrity checks
     void checkStatus();
 

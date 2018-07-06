@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -28,6 +28,8 @@
 #include <boost/functional/factory.hpp>
 
 enum RenderStage;
+class RenderPassCuller;
+
 DEFINE_SINGLETON_EXT1(SceneManager, FrameListener)
 
 public:
@@ -43,6 +45,8 @@ public:
     void preRender();
     void render(const RenderStage& stage);
     void postRender();
+    // updates and culls the scene graph and renders the visible nodes
+    void renderVisibleNodes();
 
     inline void idle()                                 { _activeScene->idle(); }
     inline bool unloadCurrentScene()                   { return _activeScene->unload(); }
@@ -56,11 +60,11 @@ public:
     inline bool deinitializeAI(bool continueOnErrors)  { return _activeScene->deinitializeAI(continueOnErrors); }
     /// Update animations, network data, sounds, triggers etc.
     inline void updateCameras()                           { _activeScene->updateCameras();}
-    inline void updateSceneState(const D32 deltaTime)     { _activeScene->updateSceneState(deltaTime); }
+    inline void updateSceneState(const U64 deltaTime)     { _activeScene->updateSceneState(deltaTime); }
 
     ///Gather input events and process them in the current scene
-    inline void processInput(const D32 deltaTime)   { _activeScene->processInput(deltaTime); }
-    inline void processTasks(const D32 deltaTime)   { _activeScene->processTasks(deltaTime); }
+    inline void processInput(const U64 deltaTime)   { _activeScene->processInput(deltaTime); }
+    inline void processTasks(const U64 deltaTime)   { _activeScene->processTasks(deltaTime); }
 
     inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
     ///Get the number of frames render since the application started
@@ -87,6 +91,8 @@ private:
     U32  _frameCount;
     ///Pointer to the currently active scene
     Scene* _activeScene;
+    ///Pointer to the scene graph culler that's used to determine what nodes are visible in the current frame
+    RenderPassCuller* _renderPassCuller;
     ///Scene pool
     SceneMap _sceneMap;
     ///Scene_Name -Scene_Factory table

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -50,32 +50,42 @@ public:
     inline bool HasSkeleton() const { return !_bones.empty(); }
     /// the set animation returns whether the animation changed or is still the same.
     bool SetAnimIndex(I32 pAnimIndex);// this takes an index to set the current animation to
+    bool SetNextAnimation(); // loops through all available animations wrapping around if needed
     bool SetAnimation(const std::string& name);// this takes a string to set the animation to, i.e. SetAnimation("Idle");
     /// the next two functions are good if you want to change the direction of the current animation. You could use a forward walking animation and reverse it to get a walking backwards
     inline void PlayAnimationForward() { _animations[_currentAnimIndex]._playAnimationForward = true; }
     inline void PlayAnimationBackward() { _animations[_currentAnimIndex]._playAnimationForward = false; }
     ///this function will adjust the current animations speed by a percentage. So, passing 100, would do nothing, passing 50, would decrease the speed by half, and 150 increase it by 50%
-    inline void AdjustAnimationSpeedBy(D32 percent) { _animations[_currentAnimIndex]._ticksPerSecond*=percent/100.0f; }
+    inline void AdjustAnimationSpeedBy(const D32 percent) { _animations[_currentAnimIndex]._ticksPerSecond*=percent/100.0f; }
     ///This will set the animation speed
-    inline void AdjustAnimationSpeedTo(D32 tickspersecond) { _animations[_currentAnimIndex]._ticksPerSecond=tickspersecond; }
+    inline void AdjustAnimationSpeedTo(const D32 tickspersecond) { _animations[_currentAnimIndex]._ticksPerSecond=tickspersecond; }
     /// get the animationspeed... in ticks per second
     inline F32 GetAnimationSpeed() const { return _animations[_currentAnimIndex]._ticksPerSecond; }
     /// get the transforms needed to pass to the vertex shader. This will wrap the dt value passed, so it is safe to pass 50000000 as a valid number
-    inline vectorImpl<mat4<F32> >& GetTransforms(D32 dt){ return _animations[_currentAnimIndex].GetTransforms(dt); }
+    inline vectorImpl<mat4<F32> >& GetTransforms(const D32 dt){ return _animations[_currentAnimIndex].GetTransforms(dt); }
     inline vectorImpl<mat4<F32> >& GetTransformsByIndex(U32 index){ return _animations[_currentAnimIndex]._transforms[index]; }
     inline U32 GetFrameIndex() const { return _animations[_currentAnimIndex].GetFrameIndex(); }
     inline U32 GetFrameCount() const {return _animations[_currentAnimIndex].GetFrameCount(); }
     inline U32 GetAnimationIndex() const { return _currentAnimIndex; }
     inline std::string GetAnimationName() const { return _animations[_currentAnimIndex]._name;  }
     ///GetBoneTransform will return the matrix of the bone given its name and the time. be careful with this to make sure and send the correct dt. If the dt is different from what the model is currently at, the transform will be off
-    inline const mat4<F32>& GetBoneTransform(D32 dt, const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return _cacheIdentity; return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+    inline const mat4<F32>& GetBoneTransform(const D32 dt,  const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return _cacheIdentity; return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
     /// same as above, except takes the index
-    inline const mat4<F32>& GetBoneTransform(D32 dt, U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
-    vectorImpl<AnimEvaluator> _animations;// a vector that holds each animation
+    inline const mat4<F32>& GetBoneTransform(const D32 dt,  U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+	/// get the bone's global transform
+	inline const mat4<F32>& GetBoneOffsetTransform(const std::string& bname) {
+		I32 bindex=GetBoneIndex(bname);
+		if(bindex != -1) {
+			AnimUtils::TransformMatrix(_cacheIdentity, _bonesByName[bname]->_offsetMatrix);
+		}
+		return _cacheIdentity;
+	}
 
+    vectorImpl<AnimEvaluator> _animations;// a vector that holds each animation
+    Bone* GetBoneByName(const std::string& name) const;
 	///GetBoneIndex will return the index of the bone given its name. The index can be used to index directly into the vector returned from GetTransform
     I32 GetBoneIndex(const std::string& bname) const;
-    I32 RenderSkeleton(D32 dt);
+    I32 RenderSkeleton(const D32 dt);
 
 private:
 
@@ -84,7 +94,7 @@ private:
     Bone* LoadSkeleton(std::ifstream& file, Bone* pNode);
 
     void UpdateTransforms(Bone* pNode);
-    void Calculate(D32 pTime);
+    void Calculate(const D32 pTime);
     void CalcBoneMatrices();
     /// Calculates the global transformation matrix for the given internal node
     void CalculateBoneToWorldTransform(Bone* pInternalNode);

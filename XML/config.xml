@@ -28,7 +28,6 @@
 	<zNear>0.125</zNear>
 	<zFar>1000.0</zFar>
 	<verticalFOV>60</verticalFOV>
-	<useGLCompatProfile>true</useGLCompatProfile>
 </runtime>	
 
 <GUI>
@@ -74,6 +73,6 @@
 	<playAnimations>true</playAnimations>
 </mesh>
 
-<title>DIVIDE Framework</title>
+<title>DIVIDE Framework - (C) Ionut Cava 2014</title>
 <defaultTextureLocation>textures</defaultTextureLocation>
 <defaultShadersLocation>shaders</defaultShadersLocation>

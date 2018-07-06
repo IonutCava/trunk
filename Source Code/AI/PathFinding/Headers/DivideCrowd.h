@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -143,7 +143,7 @@ namespace Navigation {
           * limit the maximum amount of time spent for preparing a frame. This can have as consequence
           * that some agents will only start to move after a few frames, when their paths are calculated.
           **/
-        void update(const D32 deltaTime);
+        void update(const U64 deltaTime);
         /// The height of agents in this crowd. All agents in a crowd have the same height, and height is
         /// determined by the agent height parameter with which the navmesh is build.
         inline D32 getAgentHeight() const { return _recast->getConfigParams().getAgentHeight(); }

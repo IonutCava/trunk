@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -75,6 +75,7 @@ class SubMesh;
 class Texture;
 class Material;
 class Object3D;
+class TextLabel;
 class Transform;
 class SceneGraph;
 class GUIElement;
@@ -164,8 +165,7 @@ protected:
     /*State Matrix Manipulation*/
 
     virtual void toggle2D(bool _2D) = 0;
-    virtual void drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize) = 0;
-    virtual void drawText(const std::string& text,  const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize) = 0;
+    virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
     /*Object viewing*/
     virtual void renderInViewport(const vec4<U32>& rect, boost::function0<void> callback) = 0;
@@ -194,6 +194,8 @@ protected:
     virtual void Screenshot(char *filename, const vec4<F32>& rect) = 0;
     virtual ~RenderAPIWrapper(){};
     virtual bool loadInContext(const CurrentContext& context, boost::function0<void> callback) = 0;
+
+    virtual U64 getFrameDurationGPU() const = 0;
 
 public: //RenderAPIWrapper global
 

@@ -47,7 +47,7 @@ void Terrain::loadVisualResources(){
     terrainDesc.setCullMode(CULL_MODE_CCW);
     _terrainDepthRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
     //For now, terrain doesn't cast shadows
-    //getSceneNodeRenderState().addToDrawExclusionMask(DEPTH_STAGE);
+    //getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
 }
 
 bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){

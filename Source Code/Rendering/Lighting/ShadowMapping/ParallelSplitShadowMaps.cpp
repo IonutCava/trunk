@@ -149,7 +149,7 @@ void PSShadowMaps::renderInternal(const SceneRenderState& renderState) const {
     //Set the camera to the light's view
     _light->setCameraToLightView(eyePos);
     //bind the associated depth map
-    _depthMap->Begin();
+    _depthMap->Begin(FrameBufferObject::defaultPolicy());
     //For each depth pass
     for(U8 i = 0; i < _numSplits; i++) {
         //Set the appropriate projection
@@ -181,7 +181,7 @@ void PSShadowMaps::postRender(){
     GFX_DEVICE.toggle2D(true);
 
     //Blur horizontally
-    _blurBuffer->Begin();
+    _blurBuffer->Begin(FrameBufferObject::defaultPolicy());
     _depthMap->Bind(0, TextureDescriptor::Color0);
     _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
     for(U8 i = 0; i < _numSplits; i++) {
@@ -195,7 +195,7 @@ void PSShadowMaps::postRender(){
     _blurDepthMapShader->Uniform("horizontal", false);
 
     //Blur vertically
-    _depthMap->Begin();
+    _depthMap->Begin(FrameBufferObject::defaultPolicy());
     _blurBuffer->Bind(0, TextureDescriptor::Color0);
     for(U8 i = 0; i < _numSplits; i++) {
         _blurDepthMapShader->Uniform("layer", i);

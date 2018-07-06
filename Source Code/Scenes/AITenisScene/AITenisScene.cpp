@@ -27,14 +27,16 @@ void AITenisScene::preRender(){
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void AITenisScene::processTasks(const D32 deltaTime){
+void AITenisScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = 0.7;
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _taskTimers[0] = 0.0;
     }
+
     Scene::processTasks(deltaTime);
+
     checkCollisions();
 
     if(s_gameStarted && !_gamePlaying && _scoreTeam1 < 10 && _scoreTeam2 < 10)
@@ -229,7 +231,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
     }
 }
 
-void AITenisScene::processInput(const D32 deltaTime){
+void AITenisScene::processInput(const U64 deltaTime){
     if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
     if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
@@ -242,10 +244,7 @@ bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr)
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
 
     //Add a light
-    Light* light = addDefaultLight();
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,DefaultColors::WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,DefaultColors::WHITE());
+    addDefaultLight();
     addDefaultSky();
 
 //	ResourceDescriptor tempLight1("Light omni");

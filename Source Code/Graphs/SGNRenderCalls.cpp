@@ -34,13 +34,24 @@ void SceneGraphNode::checkBoundingBoxes(){
         _node->computeBoundingBox(this);
         _boundingSphere.fromBoundingBox(_boundingBox);
         
-        if(_parent)
+        if(_parent){
            _parent->getBoundingBox().setComputed(false);
-        _updateBB = false;
+        }
     }
 
     //Recreate bounding boxes for current frame
     _node->updateBBatCurrentFrame(this);
+}
+
+void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
+    if(!getParent())
+        return;
+
+    //Transform the bounding box if we have a new transform
+    WriteLock w_lock(_queryLock);
+    _boundingBox.Transform(_initialBoundingBox,transform);
+    //Update the bounding sphere
+    _boundingSphere.fromBoundingBox(_boundingBox);
 }
 
 //This function eats up a lot of processing power
@@ -64,17 +75,6 @@ void SceneGraphNode::updateTransforms(){
     }
 }
 
-void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
-    if(!getParent())
-        return;
-
-    //Transform the bounding box if we have a new transform
-    WriteLock w_lock(_queryLock);
-    _boundingBox.Transform(_initialBoundingBox,transform);
-    //Update the bounding sphere
-    _boundingSphere.fromBoundingBox(_boundingBox);
-}
-
 void SceneGraphNode::setSelected(bool state) {
     _selected = state;
      for_each(NodeChildren::value_type& it, _children){
@@ -82,69 +82,11 @@ void SceneGraphNode::setSelected(bool state) {
     }
 }
 
-///Another resource hungry subroutine
-///After all bounding boxes and transforms have been updated,
-///perform Frustum Culling on the entire scene.
-void SceneGraphNode::updateVisualInformation(){
-    //Check if sceneUpdate was called for this node first
-    if(!_currentSceneState)  return;
-    //No point in updating visual information if the scene disabled object rendering
-    //or rendering of their bounding boxes
-    if(!_currentSceneState->getRenderState().drawObjects() && !_currentSceneState->getRenderState().drawBBox())
-        return;
-
-    //Bounding Boxes should be updated, so we can early cull now.
-    bool skipChildren = false;
-    //Skip all of this for inactive nodes.
-    if(_active && _parent) {
-        //If this node isn't render-disabled, check if it is visible
-        //Skip expensive frustum culling if we shouldn't draw the node in the first place
-
-        if(_node->getSceneNodeRenderState().getDrawState()){
-            switch(GFX_DEVICE.getRenderStage()){
-                default: {
-                    //Perform visibility test on current node
-                    _inView = _node->isInView(getBoundingBox(),getBoundingSphere());
-                } break;
-
-                case SHADOW_STAGE: {
-                    _inView = false;
-                    if(_node->getMaterial()){
-                        if(_node->getMaterial()->getCastsShadows()){
-                            _inView = _node->isInView(getBoundingBox(),getBoundingSphere());
-                        }
-                    }
-                }break;
-            };
-        }else{
-            //If the current SceneGraphNode isn't visible, it's children aren't visible as well
-            _inView = false;
-            skipChildren = true;
-        }
-
-        if(_inView){
-            //If the current node is visible, add it to the render queue
-            RenderQueue::getInstance().addNodeToQueue(this);
-        }
-    }
-    //If we don't need to skip child testing
-    if(!skipChildren){
-        for_each(NodeChildren::value_type& it, _children){
-            it.second->updateVisualInformation();
-        }
-    }
-}
-
-void SceneGraphNode::sceneUpdate(const D32 deltaTime, SceneState& sceneState) {
+void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     for_each(NodeChildren::value_type& it, _children){
         it.second->sceneUpdate(deltaTime, sceneState);
     }
 
-    _currentSceneState = &sceneState;
-
-    if(_node)
-        _node->sceneUpdate(deltaTime, this, sceneState);
-
-    if(_shouldDelete)
-        GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+    if(_node)         _node->sceneUpdate(deltaTime, this, sceneState);
+    if(_shouldDelete) GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
 }

@@ -1,7 +1,7 @@
 #include "core.h"
 
 #include "Headers/Console.h"
-#include "Rendering/Headers/Framerate.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "config.h"
 #include <iomanip>
 #include <stdarg.h>
@@ -9,7 +9,7 @@
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
 void Console::printCopyrightNotice() const {
     std::cout << "------------------------------------------------------------------------------" << std::endl;
-    std::cout << "Copyright (c) 2013 DIVIDE-Studio" << std::endl;
+    std::cout << "Copyright (c) 2014 DIVIDE-Studio" << std::endl;
     std::cout << "Copyright (c) 2009 Ionut Cava" << std::endl;
     std::cout << std::endl;
     std::cout << "This file is part of DIVIDE Framework." << std::endl;
@@ -136,7 +136,7 @@ void Console::output(const char* output, const bool error) const {
     std::ostream& outputStream = error ? std::cerr : std::cout;
 
     if(_timestamps)
-        outputStream << "[ " << std::setprecision(4) << GETTIME() << " ] ";
+        outputStream << "[ " << std::setprecision(2) << GETTIME(true) << " ] ";
 
     if(error)
         outputStream << " Error: ";

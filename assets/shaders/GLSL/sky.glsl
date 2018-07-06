@@ -17,6 +17,7 @@ void main(void){
     vec4 dvd_Vertex = vec4(inVertexData,1.0);
     _vertex = normalize(dvd_Vertex.xyz);
     gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * dvd_Vertex;
+	gl_Position.z = gl_Position.w -0.00001; //fix to far plane.
 }
 
 -- Fragment
@@ -29,6 +30,7 @@ uniform vec3 sun_vector;
 
 uniform samplerCube texSky;
 
+#include "lightInput.cmn"
 
 void main (void){
 
@@ -43,12 +45,12 @@ void main (void){
         float day_factor = max(-sun.y, 0.0);
         
         float dotv = max(dot(vert, -sun), 0.0);
-        vec4 sun_color = clamp(gl_LightSource[0].diffuse*1.5, 0.0, 1.0);
+        vec3 sun_color = clamp(dvd_LightSource[0]._diffuse.rgb*1.5, 0.0, 1.0);
     
         float pow_factor = day_factor * 175.0 + 25.0;
         float sun_factor = clamp(pow(dotv, pow_factor), 0.0, 1.0);
         
-        _skyColor *= day_factor + sun_color * sun_factor;
+        _skyColor *= day_factor + vec4(sun_color, 1.0) * sun_factor;
     
     }
 

@@ -20,14 +20,17 @@ glUniformBufferObject::glUniformBufferObject() : GUIDWrapper(), _UBOid(0), _bind
 {
     assert(glewIsSupported("GL_ARB_uniform_buffer_object"));
     _bindIndex = getBindingIndice();
-    GLint maxUniformIndex;
-    GLCheck(glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformIndex));
+    static GLint maxUniformIndex = -1;
+    if(maxUniformIndex == -1){
+        GLCheck(glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformIndex));
+    }
     CLAMP<GLuint>(_bindIndex, 0, maxUniformIndex);
 }
 
 glUniformBufferObject::~glUniformBufferObject()
 {
-    if(_UBOid > 0) GLCheck(glDeleteBuffers(1, &_UBOid));
+    if(_UBOid > 0) 
+        GLCheck(glDeleteBuffers(1, &_UBOid));
 }
 
 void glUniformBufferObject::Create(GLint bufferIndex, bool dynamic, bool stream){

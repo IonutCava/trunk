@@ -127,45 +127,13 @@ void GLCheckError(const std::string& File, GLuint Line, char* operation) {
 }
 
 void CALLBACK DebugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam){
-    DebugOutputToFile(source, type, id, severity, message);
+    DebugOutputToFile((GLuint)(userParam), source, type, id, severity, message);
 }
 
-void CALLBACK DebugCallbackAMD(GLenum source, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam){
-    DebugOutputToFileAMD(source, id, severity, message);
-}
 std::string gl_source;
 std::string gl_severity;
 std::string gl_type;
-
-void DebugOutputToFileAMD(GLenum source, GLuint id, GLenum severity, const GLchar* message) {
-    if(source == GL_DEBUG_CATEGORY_API_ERROR_AMD)
-        gl_source = "OpenGL";
-    else if(source == GL_DEBUG_CATEGORY_WINDOW_SYSTEM_AMD)
-        gl_source = "Windows";
-    else if(source == GL_DEBUG_CATEGORY_SHADER_COMPILER_AMD)
-        gl_source = "Shader Compiler";
-    else if(source == GL_DEBUG_CATEGORY_UNDEFINED_BEHAVIOR_AMD)
-        gl_source = "Undefined Behavior";
-    else if(source == GL_DEBUG_CATEGORY_DEPRECATION_AMD)
-        gl_source = "Deprecation";
-    else if(source == GL_DEBUG_CATEGORY_PERFORMANCE_AMD)
-        gl_source = "Performance";
-    else if(source == GL_DEBUG_CATEGORY_APPLICATION_AMD)
-        gl_source = "Application";
-    else if(source == GL_DEBUG_CATEGORY_OTHER_AMD)
-        gl_source = "Other";
-
-    if(severity == GL_DEBUG_SEVERITY_HIGH_AMD)
-      gl_severity = "High";
-    else if(severity == GL_DEBUG_SEVERITY_MEDIUM_AMD)
-      gl_severity = "Medium";
-    else if(severity == GL_DEBUG_SEVERITY_LOW_AMD)
-      gl_severity = "Low";
-
-    ERROR_FN(Locale::get("ERROR_GENERIC_GL_AMD"),gl_source.c_str(),id,gl_severity.c_str(),message);
-}
-
-void DebugOutputToFile(GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message) {
+void DebugOutputToFile(GLuint contextId, GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message) {
     if(source == GL_DEBUG_SOURCE_API_ARB)
        gl_source = "OpenGL";
     else if(source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
@@ -200,6 +168,7 @@ void DebugOutputToFile(GLenum source, GLenum type, GLuint id, GLenum severity, c
        gl_severity = "Low";
 
     ERROR_FN(Locale::get("ERROR_GENERIC_GL_ARB"),
+             contextId == 0 ? " [Main Thread] " : " [Loader Thread] ",
              gl_source.c_str(),
              gl_type.c_str(),
              id,

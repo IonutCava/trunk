@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -55,7 +55,7 @@ public:
     virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     virtual void postLoad(SceneGraphNode* const sgn);
     virtual	void onDraw(const RenderStage& currentStage);
     inline  void render(SceneGraphNode* const sgn){};

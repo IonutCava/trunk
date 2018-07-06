@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -41,7 +41,7 @@ enum SceneNodeType;
 class Light;
 class Camera;
 class Object3D;
-class Framerate;
+class ApplicationTimer;
 class SceneRenderState;
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
@@ -49,14 +49,14 @@ friend class Frustum; ///< For matrix recovery operations
 typedef std::stack<mat4<F32>, vectorImpl<mat4<F32> > > matrixStack;
 
 public:
-	///Compund matrices or sub-matrices
-	enum EXTENDED_MATRIX{
-		WORLD_MATRIX   = 0, //<Current model's world matrix. Changed for each render call, mainly
-		WV_MATRIX      = 1, //<WorldView matrix : ViewMatrix * WorldMatrix (as per OpenGL standards: name is backwards)
-		WV_INV_MATRIX  = 2, //<WorldViewInverse matrix: (ViewMatrix * WorldMatrix)^-1
-		WVP_MATRIX     = 4, //<WorldViewProjection matrix: ProjectionMatrix * ViewMatrix * WorldMatrix
-		NORMAL_MATRIX  = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * WorldMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*WorldMatrix)
-	};
+    ///Compund matrices or sub-matrices
+    enum EXTENDED_MATRIX{
+        WORLD_MATRIX   = 0, //<Current model's world matrix. Changed for each render call, mainly
+        WV_MATRIX      = 1, //<WorldView matrix : ViewMatrix * WorldMatrix (as per OpenGL standards: name is backwards)
+        WV_INV_MATRIX  = 2, //<WorldViewInverse matrix: (ViewMatrix * WorldMatrix)^-1
+        WVP_MATRIX     = 4, //<WorldViewProjection matrix: ProjectionMatrix * ViewMatrix * WorldMatrix
+        NORMAL_MATRIX  = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * WorldMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*WorldMatrix)
+    };
 
     void setApi(const RenderAPI& api);
 
@@ -64,15 +64,15 @@ public:
     inline RenderAPIVersion getApiVersion() {return _api.getVersionId();}
     inline GPUVendor        getGPUVendor()  {return _api.getGPUVendor();}
 
-    inline I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv){return _api.initHardware(resolution,argc,argv);}
+    I8 initHardware(const vec2<U16>& resolution, I32 argc, char **argv);
 
     inline void      registerKernel(Kernel* const kernel)           {_kernel = kernel;}
     inline void      initDevice(U32 targetFrameRate)                {_api.initDevice(targetFrameRate);}
-    inline void      changeResolution(U16 w, U16 h)                 {_api.changeResolution(w,h);}
     inline void      setWindowPos(U16 w, U16 h)               const {_api.setWindowPos(w,h);}
     inline vec3<F32> unproject(const vec3<F32>& windowCoord)  const {return _api.unproject(windowCoord); }
     inline void      exitRenderLoop(bool killCommand = false)       {_api.exitRenderLoop(killCommand);}
            void      closeRenderingApi();
+           void      changeResolution(U16 w, U16 h);
 
     inline void beginFrame() {_api.beginFrame();}
     inline void endFrame()   {_api.endFrame();  }
@@ -82,12 +82,16 @@ public:
     inline Shader*             newShader(const std::string& name,
                                          const  ShaderType& type,
                                          const bool optimise = false)                 {return _api.newShader(name,type,optimise); }
+
+    /// Rendering buffer management
     inline FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR)             {return _api.newFBO(type); }
     inline VertexBufferObject* newVBO(const PrimitiveType& type = TRIANGLES)          {return _api.newVBO(type); }
     inline PixelBufferObject*  newPBO(const PBOType& type = PBO_TEXTURE_2D)           {return _api.newPBO(type); }
     inline Texture2D*          newTexture2D(const bool flipped = false)               {return _api.newTexture2D(flipped);}
     inline TextureCubemap*     newTextureCubemap(const bool flipped = false)          {return _api.newTextureCubemap(flipped);}
     inline ShaderProgram*      newShaderProgram(const bool optimise = false)          {return _api.newShaderProgram(optimise); }
+    inline FrameBufferObject*  getScreenBuffer(U8 index)                       const  {assert(index < 2 && index >= 0); return _screenBuffer[index];}
+    inline FrameBufferObject*  getDepthBuffer()                                const  {return _depthBuffer;}
 
     ///Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool            initShaders()                                        {return _api.initShaders();}
@@ -114,6 +118,9 @@ public:
     //allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
     inline IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) { return _api.createPrimitive(allowPrimitiveRecycle); }
 
+    inline void setInterpolation(const D32 interpolation)       {_interpolationFactor = interpolation; }
+    inline D32  getInterpolation()                        const {return _interpolationFactor;} 
+
     inline void drawDebugAxis(const bool state)       {_drawDebugAxis = state;}
     inline bool drawDebugAxis()                 const {return _drawDebugAxis;}
     inline void debugDraw()                           {_api.debugDraw();}
@@ -128,10 +135,8 @@ public:
     ///Usefull to perform pre-draw operations on the model if it's drawn outside the scenegraph
     void renderInstance(RenderInstance* const instance);
     void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
-    void renderGUIElement(GUIElement* const guiElement,ShaderProgram* const guiShader);
+    void renderGUIElement(U64 renderInterval, GUIElement* const guiElement,ShaderProgram* const guiShader);
     ///The render callback must update all visual information and populate the "RenderBin"'s!
-    ///Use the sceneGraph::update callback as default using the macro SCENE_GRAPH_UPDATE(pointer)
-    ///pointer = a pointer to the sceneGraph instance used for rendering
     void render(boost::function0<void> renderFunction, const SceneRenderState& sceneRenderState);
     ///Update light properties internally in the Rendering API
     inline void setLight(Light* const light)           {_api.setLight(light);}
@@ -142,7 +147,7 @@ public:
     inline void  setPreviousRenderStage()          {setRenderStage(_prevRenderStage);}
     ///Checks if the current rendering stage is any of the stages defined in renderStageMask
     ///@param renderStageMask Is a bitmask of the stages we whish to check if active
-           bool         isCurrentRenderStage(U16 renderStageMask);
+           bool         isCurrentRenderStage(U8 renderStageMask);
     inline RenderStage  getRenderStage()                 {return _renderStage;}
     inline void         setPrevShaderId(const U32& id)   {_prevShaderId = id;}
     inline U32          getPrevShaderId()                {return _prevShaderId;}
@@ -178,6 +183,18 @@ public:
     inline bool clippingPlanesDirty()           const {return _clippingPlanesDirty;}
     /// get the entire list of clipping planes
     inline const PlaneList& getClippingPlanes() const {return _clippingPlanes;}
+    /// Post Prcessing state
+    inline bool postProcessingEnabled()                 const {return _enablePostProcessing;}
+    inline void postProcessingEnabled(const bool state)       {_enablePostProcessing = state;}
+    /// Anaglyph rendering state
+    inline bool anaglyphEnabled()                 const {return _enableAnaglyph;}
+    inline void anaglyphEnabled(const bool state)       {_enableAnaglyph = state;}
+    /// High Dynamic Range rendering
+    inline bool hdrEnabled()                 const {return _enableHDR;}
+    inline void hdrEnabled(const bool state)       {_enableHDR = state;}
+    /// Depth pre-pass
+    inline bool isDepthPrePass()                 const { return _isDepthPrePass; }
+    inline void isDepthPrePass(const bool state)       { _isDepthPrePass = state;}
     ///Save a screenshot in TGA format
     inline void Screenshot(char *filename, const vec4<F32>& rect){_api.Screenshot(filename,rect);}
     /// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
@@ -209,16 +226,19 @@ public:
                           const RenderStage& renderStage = ENVIRONMENT_MAPPING_STAGE);
 
     inline bool loadInContext(const CurrentContext& context, boost::function0<void> callback) {return _api.loadInContext(context, callback);}
+
+    /// Matrix management 
     inline void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)       {_api.getMatrix(mode, mat);}
-
            void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat);
-   		   void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
-	       void pushWorldMatrix(const mat4<F32>& worldMatrix, bool isUniformedScaled);
-	       void popWorldMatrix(bool force = false); 
-		   void cleanMatrices();
+           void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
+           void pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled);
+           void popWorldMatrix(const bool force = false); 
+           void cleanMatrices();
 
-    inline void setViewDirty(bool state)        {_VDirty = state;}
-    inline void setProjectionDirty(bool state)  {_PDirty = state;}
+	inline void setViewDirty(const bool state)        { _VDirty = state; }
+    inline void setProjectionDirty(const bool state)  {_PDirty = state;}
+
+    inline U64 getFrameDurationGPU() const { return _api.getFrameDurationGPU(); }
 
 #if defined(OS_WINDOWS)
     HWND getHWND() {return _api.getHWND();}
@@ -240,9 +260,7 @@ private:
 
     ///Returns an API dependend stateblock based on the description
     inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) { return _api.newRenderStateBlock(descriptor); }
-
-    inline void drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize) {_api.drawText(text,width,fontName,fontSize);}
-    inline void drawText(const std::string& text, const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize) {_api.drawText(text,width,position,fontName,fontSize);}
+    inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) {_api.drawText(textLabel, position);}
 
 private:
     RenderAPIWrapper& _api;
@@ -250,11 +268,15 @@ private:
     RenderStage _renderStage, _prevRenderStage;
     U32  _prevShaderId,  _prevTextureId;
     bool _drawDebugAxis;
+    bool _isDepthPrePass;
 
 protected:
     friend class GL_API;
     friend class DX_API;
     Renderer* _renderer;
+    /* Rendering buffers*/
+    FrameBufferObject* _depthBuffer;
+    FrameBufferObject* _screenBuffer[2];
     /*State management */
     typedef Unordered_map<I64, RenderStateBlock* > RenderStateMap;
     RenderStateMap _stateBlockMap;
@@ -264,22 +286,27 @@ protected:
     RenderStateBlock* _newStateBlock;
     RenderStateBlock* _previousStateBlock;
     RenderStateBlock* _defaultStateBlock;
-	matrixStack       _worldMatrices;
-	mat4<F32>         _WVCachedMatrix;
-	mat4<F32>         _VPCachedMatrix;
-	mat4<F32>         _WVPCachedMatrix;
-	mat4<F32>         _viewCacheMatrix;
-	mat4<F32>         _projectionCacheMatrix;
-	bool              _isUniformedScaled;
-	bool              _WDirty;
-	///If the _view changed, this will change to true
-	bool              _VDirty;
+    matrixStack       _worldMatrices;
+    mat4<F32>         _WVCachedMatrix;
+    mat4<F32>         _VPCachedMatrix;
+    mat4<F32>         _WVPCachedMatrix;
+    mat4<F32>         _viewCacheMatrix;
+    mat4<F32>         _projectionCacheMatrix;
+    //The interpolation factor between the current and the last frame
+    D32               _interpolationFactor;
+    bool              _isUniformedScaled;
+    bool              _WDirty;
+    ///If the _view changed, this will change to true
+    bool              _VDirty;
     ///If _projection changed, this will change to true
     bool              _PDirty;
     ///Pointer to current kernel
-    Kernel* _kernel;
+    Kernel*    _kernel;
     PlaneList _clippingPlanes;
     bool      _clippingPlanesDirty;
+    bool      _enablePostProcessing;
+    bool      _enableAnaglyph;
+    bool      _enableHDR;
 
 END_SINGLETON
 

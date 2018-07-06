@@ -1,15 +1,4 @@
-struct Light{
-    vec4  _position;
-    vec4  _direction;
-    vec4  _ambient;
-    vec4  _diffuse;
-    vec4  _specular;
-    vec4  _attenuation; //x = constAtt, y = linearAtt, z = quadraticAtt, w = range
-    float _spotExponent;
-    float _spotCutoff;
-    float _brightness;
-    float _padding;
-};
+invariant gl_Position;
 
 vec4  dvd_Vertex;
 vec3  dvd_Normal;
@@ -51,11 +40,6 @@ layout(std140) uniform dvd_MatrixBlock
    mat4 dvd_ViewMatrix;
    mat4 dvd_ViewProjectionMatrix;
 };
-
-//layout(std140) uniform dvd_LightBlock
-//{
-//	Light _LightSources[MAX_LIGHT_COUNT];
-//};
 
 void setClipPlanes(){
     if(dvd_clip_plane_count == 0)

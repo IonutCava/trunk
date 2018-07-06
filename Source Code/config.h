@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -38,10 +38,14 @@ namespace Config
     const int MAX_TEXTURE_STORAGE = 6;
     /// Application desired framerate for physics simulations
     const int TARGET_FRAME_RATE = 60;
+    /// Application update rate divisor (how many draw calls per render call e.g. 2 = 30Hz update rate at 60Hz rendering)
+    const int TICK_DIVISOR = 2;
     ///	Application update rate
-    const int TICKS_PER_SECOND = 25;
+    const int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
     /// Maximum frameskip
     const int MAX_FRAMESKIP = 5;
+    /// AI update frequency
+    const int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
     /// Minimum triangle count for a mesh to apply depth rendering optimisations
     const int DEPTH_VBO_MIN_TRIANGLES = 1000;
     /// Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
@@ -52,6 +56,9 @@ namespace Config
     const int MAX_CLIP_PLANES = 6;
     /// How many lights should affect a single node
     const int MAX_LIGHTS_PER_SCENE_NODE = 4;
+    /// How many lights total to use in the application (32 should be enough)
+    const int MAX_LIGHTS_PER_SCENE = 16;
+    /// How many lights (in order as passed to the shader for the node) should cast shadows
     const int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
     /// How many "units" away should a directional light source be from the camera's position
     const int DIRECTIONAL_LIGHT_DISTANCE = 500;
@@ -71,7 +78,13 @@ namespace Config
     /// Edit the maximum number of concurrent threads that this application may start excluding tasks.
     /// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
     const int THREAD_LIMIT = 2;
+
+	/// Use HW AA'ed lines
+	const bool USE_HARDWARE_AA_LINES = true;
 }
+
+/// if this is 0, a variable timestep will be used for the game loop
+#define USE_FIXED_TIMESTEP 1
 
 ///Direct 3D desired target version
 #define TARGET_D3D_VERSION D3D11 /*or D3D10*/

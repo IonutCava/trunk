@@ -12,10 +12,12 @@ Material::Material() : Resource(),
                        _castsShadows(true),
                        _receiveShadows(true),
                        _hardwareSkinning(false),
-                       _useStripInput(false),
+                       _useAlphaTest(true),
+                       _gsInputType(GS_TRIANGLES),
                        _translucencyCheck(false),
                        _shadingMode(SHADING_PHONG), /// phong shading by default
-                       _bumpMethod(BUMP_NONE)
+                       _bumpMethod(BUMP_NONE),
+                       _translucencySource(TRANSLUCENT_NONE)
 {
    _materialMatrix.setCol(0,_shaderData._ambient);
    _materialMatrix.setCol(1,_shaderData._diffuse);
@@ -196,9 +198,25 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
             }
         }
 
-        if(_textures[TEXTURE_OPACITY] || (depthPassShader && isTranslucent())){
-            shader += ".Opacity";
-            addShaderDefines(id, "USE_OPACITY_MAP");
+        if(isTranslucent()){
+            switch(_translucencySource){
+                case TRANSLUCENT_DIFFUSE :{
+                    shader += ".OpacityDiffuse";
+                    addShaderDefines(id, "USE_OPACITY_DIFFUSE");
+                }break;
+                case TRANSLUCENT_OPACITY :{
+                    shader += ".Opacity";
+                    addShaderDefines(id, "USE_OPACITY");
+                }break;
+                case TRANSLUCENT_OPACITY_MAP :{
+                    shader += ".OpacityMap";
+                    addShaderDefines(id, "USE_OPACITY_MAP");
+                }break;
+                case TRANSLUCENT_DIFFUSE_MAP :{
+                    shader += ".OpacityDiffuseMap";
+                    addShaderDefines(id, "USE_OPACITY_DIFFUSE_MAP");
+                }break;
+            }
         }
 
         if(_textures[TEXTURE_SPECULAR]){
@@ -206,10 +224,17 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
             addShaderDefines(id, "USE_SPECULAR_MAP");
         }
         //if this is true, geometry shader will take a triangle strip as input, else it will use triangles
-        if(_useStripInput){
-            shader += ".Strip";
-            addShaderDefines(id, "USE_GEOMETRY_STRIP_INPUT");
-        }
+        if(_gsInputType == GS_TRIANGLES){
+            shader += ".Triangles";
+            addShaderDefines(id, "USE_GEOMETRY_TRIANGLE_INPUT");
+        }else if(_gsInputType == GS_LINES){
+			shader += ".Lines";
+            addShaderDefines(id, "USE_GEOMETRY_LINE_INPUT");
+		}else{
+			shader += ".Points";
+            addShaderDefines(id, "USE_GEOMETRY_POINT_INPUT");
+		}
+
         //Add the GPU skinnig module to the vertex shader?
         if(_hardwareSkinning){
             addShaderDefines(id, "USE_GPU_SKINNING");
@@ -321,26 +346,40 @@ void Material::setDoubleSided(bool state) {
 
 bool Material::isTranslucent() {
     bool state = false;
+
+    // In order of importance (less to more)!
+    // diffuse channel alpha
+    if(_materialMatrix.getCol(1).a < 0.98f) {
+        state = true;
+        _translucencySource = TRANSLUCENT_DIFFUSE;
+        _useAlphaTest = (getOpacityValue() < 0.15f);
+    }
+
     // base texture is translucent
     if(_textures[TEXTURE_UNIT0]){
         if(_textures[TEXTURE_UNIT0]->hasTransparency()) state = true;
+        _translucencySource = TRANSLUCENT_DIFFUSE_MAP;
     }
+
     // opacity map
-    if(_textures[TEXTURE_OPACITY])
+    if(_textures[TEXTURE_OPACITY]){
         state = true;
-    // diffuse channel alpha
-    if(_materialMatrix.getCol(1).a < 1.0f)
-        state = true;
+        _translucencySource = TRANSLUCENT_OPACITY_MAP;
+    }
 
     // if we have a global opacity value
-    if(getOpacityValue() < 1.0f)
+    if(getOpacityValue() < 0.98f){
         state = true;
+        _translucencySource = TRANSLUCENT_OPACITY;
+        _useAlphaTest = (getOpacityValue() < 0.15f);
+    }
 
     // Disable culling for translucent items
     if(state && !_translucencyCheck){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
         for_each(stateValue& it, _defaultRenderStates){
             it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
+            if(!_useAlphaTest) it.second->getDescriptor().setBlend(true);
         }
         _translucencyCheck = true;
     }

@@ -2,10 +2,13 @@
 #include "Headers/AIManager.h"
 
 #include "SceneList.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
+#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 SceneManager::SceneManager() : FrameListener(),
                                _activeScene(NULL),
+                               _renderPassCuller(NULL),
                                _init(false),
                                _frameCount(0)
 {
@@ -19,13 +22,20 @@ SceneManager::~SceneManager(){
     for_each(SceneMap::value_type& it, _sceneMap){
         SAFE_DELETE(it.second);
     }
+    SAFE_DELETE(_renderPassCuller);
     _sceneMap.clear();
     //Destroy the model loader;
     DVDConverter::getInstance().destroyInstance();
 }
 
 bool SceneManager::init(){
+    //Load default material
+    PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
+    XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial");
+
     REGISTER_FRAME_LISTENER(&(this->getInstance()));
+
+    _renderPassCuller = New RenderPassCuller();
     _init = true;
     return true;
 }
@@ -66,12 +76,19 @@ void SceneManager::preRender() {
     _activeScene->preRender();
 }
 
+void SceneManager::renderVisibleNodes() {
+    SceneGraph* sceneGraph = _activeScene->getSceneGraph();
+    sceneGraph->update();
+    _renderPassCuller->cullSceneGraph(sceneGraph->getRoot(), _activeScene->state());
+    RenderPassManager::getInstance().render(_activeScene->renderState());
+}
+
 void SceneManager::render(const RenderStage& stage) {
     assert(_activeScene != NULL);
 
     if(_renderFunction.empty()){
         if(_activeScene->renderCallback().empty()){
-            _renderFunction = DELEGATE_BIND(&SceneGraph::update, _activeScene->getSceneGraph());
+            _renderFunction = DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance()));
         }else{
             _renderFunction = _activeScene->renderCallback();
         }
@@ -79,7 +96,7 @@ void SceneManager::render(const RenderStage& stage) {
 
     GFXDevice& GFX = GFX_DEVICE;
     GFX.setRenderStage(stage);
-    GFX.render(_renderFunction,_activeScene->renderState());
+    GFX.render(_renderFunction, _activeScene->renderState());
 
     if(bitCompare(stage,FINAL_STAGE) || bitCompare(stage,DEFERRED_STAGE)){
         // Draw bounding boxes, skeletons, axis gizmo, etc.

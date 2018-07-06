@@ -2,21 +2,7 @@
 #include "Headers/glResources.h"
 
 #include "core.h"
-#include <glim/include/glim.h>
-
-#ifdef GLEW_MX
-#	ifdef _DEBUG
-#		pragma comment(lib, "GLIMOGL_MX_d.lib")
-#	else //_DEBUG
-#		pragma comment(lib, "GLIMOGL_MX.lib")
-#	endif //_DEBUG
-#else //GLEW_MX
-#	ifdef _DEBUG
-#		pragma comment(lib, "GLIMOGL_d.lib")
-#	else//_DEBUG
-#		pragma comment(lib, "GLIMOGL.lib")
-#	endif //_DEBUG
-#endif //GLEW_MX
+#include <glim.h>
 
 NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
 

@@ -22,10 +22,10 @@ void AutoRepeatKey::end(const OIS::KeyEvent &evt) {
 }
 
 //Inject key repeats if the _repeatDelay expired between calls
-void AutoRepeatKey::update(const D32 deltaTime) {
+void AutoRepeatKey::update(const U64 deltaTime) {
     if (_key == OIS::KC_UNASSIGNED) return;
 
-    _elapsed += deltaTime;
+    _elapsed += (deltaTime * 0.000001); //< use seconds
     if (_elapsed < _delay) return;
 
     _elapsed -= _delay;

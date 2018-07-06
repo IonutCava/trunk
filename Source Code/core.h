@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -57,18 +57,35 @@ void free_simd(void * pxData);
 #include "Hardware/Platform/Headers/PlatformDefines.h" //For data types
 #include "Hardware/Platform/Headers/SharedMutex.h"     //For multi-threading
 #include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
-#include "Rendering/Headers/Framerate.h"       //For time management
+#include "Core/Headers/ApplicationTimer.h"       //For time management
 #include "Core/Headers/Console.h"              //For printing to the standard output
 #include "Utility/Headers/Localization.h"      //For language parsing
 #include "Utility/Headers/UnorderedMap.h"
 #include "Utility/Headers/Vector.h"
 
-inline D32 GETMSTIME() {
-    return Framerate::getInstance().getElapsedTime();
+inline U64 GETUSTIME() {
+    return ApplicationTimer::getInstance().getElapsedTime();
 }
 
 inline D32 GETTIME() {
-    return getMsToSec(GETMSTIME());
+    return getUsToSec(GETUSTIME());
+}
+
+inline D32 GETMSTIME() {
+    return getUsToMs(GETUSTIME());
+}
+
+/// The following functions force a timer update (a call to query performance timer. Use these for profiling!
+inline U64 GETUSTIME(bool state) {
+    return ApplicationTimer::getInstance().getElapsedTime(state);
+}
+
+inline D32 GETTIME(bool state) {
+    return getUsToSec(GETUSTIME(state));
+}
+
+inline D32 GETMSTIME(bool state) {
+    return getUsToMs(GETUSTIME(state));
 }
 
 //Helper method to emulate GLSL

@@ -19,17 +19,27 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
     Object3D::postLoad(sgn);
 }
 
-void SkinnedSubMesh::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-    if(_playAnimations)
-        sgn->animationTransforms(_animator->GetTransforms(_elapsedTime));
-    else
-        sgn->animationTransforms().clear();
+void SkinnedSubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+    updateAnimations(deltaTime, sgn);
+    if(_animator)
+        sgn->animationTransforms(_animator->GetTransforms(_playAnimation ? getUsToSec(_elapsedTime) : 0.0));
 
     Object3D::sceneUpdate(deltaTime,sgn,sceneState);
 }
 
-const mat4<F32>& SkinnedSubMesh::getCurrentBoneTransform(const std::string& name){
-	return _animator->GetBoneTransform(_elapsedTime, name);
+const mat4<F32>& SkinnedSubMesh::getCurrentBoneTransform(SceneGraphNode* const sgn, const std::string& name){
+    assert(_animator != NULL);
+    I32 boneIndex = _animator->GetBoneIndex(name);
+    if(boneIndex == -1){
+        static mat4<F32> cacheIdentity;
+        return cacheIdentity; 
+    }
+
+    return sgn->animationTransforms()[boneIndex];
+}
+
+Bone* SkinnedSubMesh::getBoneByName(const std::string& bname) const {
+    return _animator ? _animator->GetBoneByName(bname) : NULL;
 }
 
 /// Create a mesh animator from assimp imported data
@@ -43,28 +53,21 @@ bool SkinnedSubMesh::createAnimatorFromScene(const aiScene* scene,U8 subMeshPoin
 }
 
 void SkinnedSubMesh::renderSkeleton(SceneGraphNode* const sgn){
-    if(!_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) return;
+    if(!_animator || !_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) return;
     // update possible animation
-    assert(_animator != NULL);
-
     _animator->setGlobalMatrix(sgn->getTransform()->getGlobalMatrix());
-    _animator->RenderSkeleton(_elapsedTime);
+    _animator->RenderSkeleton(_playAnimation ? getUsToSec(_elapsedTime) : 0.0);
 }
 
 // update possible animations
-void SkinnedSubMesh::updateAnimations(const D32 deltaTime, SceneGraphNode* const sgn){
-    _elapsedTime = GETTIME();
+void SkinnedSubMesh::updateAnimations(const U64 deltaTime, SceneGraphNode* const sgn){
+    if(_playAnimation)
+        _elapsedTime += deltaTime;
 
     _skeletonAvailable = false;
+
     if(!_animator ||!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
         return;
-
-    if(ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")){
-        _playAnimations = dynamic_cast<SkinnedMesh*>(getParentMesh())->playAnimations();
-    }else{
-        _playAnimations = false;
-        return;
-    }
 
     //All animation data is valid, so we have a skeleton to render if needed
     _skeletonAvailable = true;
@@ -117,9 +120,6 @@ void SkinnedSubMesh::updateTransform(SceneGraphNode* const sgn){
     Transform* transform = sgn->getTransform();
     //a submesh should always have a transform
     assert(transform);
-    if(transform->isDirty() && _animator != NULL  && _playAnimations){
-        _animator->setGlobalMatrix(sgn->getTransform()->getGlobalMatrix());
-    }
     transform = sgn->getParent()->getTransform();
     //a mesh should always have a transform
     assert(transform);
@@ -132,8 +132,23 @@ void SkinnedSubMesh::preFrameDrawEnd(SceneGraphNode* const sgn){
     SceneNode::preFrameDrawEnd(sgn);
 }
 
+/// Select next available animation
+bool SkinnedSubMesh::playNextAnimation(){
+    return _animator ? _animator->SetNextAnimation() : false;
+}
+
+/// Select an animation by index
+bool SkinnedSubMesh::playAnimation(I32 index){
+    return _animator ? _animator->SetAnimIndex(index) : false;
+}
+
+/// Select an animation by name
+bool SkinnedSubMesh::playAnimation(const std::string& animationName){
+    return _animator ? _animator->SetAnimation(animationName) : false;
+}
+
 void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-    if(!_animator || !_playAnimations) return;
+    if(!_animator) return;
 
     _currentAnimationID = _animator->GetAnimationIndex();
     _currentFrameIndex  = _animator->GetFrameIndex();

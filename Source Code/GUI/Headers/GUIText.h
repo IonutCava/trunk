@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -23,8 +23,9 @@
 #ifndef _GUI_TEXT_H_
 #define _GUI_TEXT_H_
 #include "GUIElement.h"
-
-class GUIText : public GUIElement{
+#include "Utility/Headers/TextLabel.h"
+   
+class GUIText : public GUIElement, public TextLabel {
 friend class GUI;
 public:
     GUIText(const std::string& id,
@@ -33,27 +34,22 @@ public:
             const std::string& font,
             const vec3<F32>& color,
             CEGUI::Window* parent,
-            U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position),
-      _width(1.0f),
-      _text(text),
-      _font(font),
-      _height(textHeight),
-      _color(color){}
+            U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position), 
+                                   TextLabel(text, font, color, textHeight),
+                                   _lastDrawTimer(0)
+    {
+    }
+      
+    U64         _lastDrawTimer;
 
-    std::string _text;
-    std::string _font;
-    U32         _height;
-    U32         _width;
-    vec4<F32>   _color;
-
-     void onMouseMove(const GUIEvent &event);
-     void onMouseUp(const GUIEvent &event);
-     void onMouseDown(const GUIEvent &event);
-     void onResize(const vec2<I32>& newSize);
-/*   void onRightMouseUp(const GUIEvent &event);
-     void onRightMouseDown(const GUIEvent &event);
-     bool onKeyUp(const GUIEvent &event);
-     bool onKeyDown(const GUIEvent &event);
+    void onMouseMove(const GUIEvent &event);
+    void onMouseUp(const GUIEvent &event);
+    void onMouseDown(const GUIEvent &event);
+    void onResize(const vec2<I32>& newSize);
+/*  void onRightMouseUp(const GUIEvent &event);
+    void onRightMouseDown(const GUIEvent &event);
+    bool onKeyUp(const GUIEvent &event);
+    bool onKeyDown(const GUIEvent &event);
 */
 };
 

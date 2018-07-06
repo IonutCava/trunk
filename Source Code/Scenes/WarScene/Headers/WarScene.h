@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -35,7 +35,12 @@ public:
 	WarScene() : Scene(),
 		_groundPlaceholder(NULL),
 		_faction1(NULL),
-		_faction2(NULL)
+		_faction2(NULL),
+        _bobNode(NULL),
+        _bobNodeBody(NULL),
+        _lampLightNode(NULL),
+        _lampTransform(NULL),
+        _lampTransformNode(NULL)
 	{
 		_scorTeam1 = 0;
 		_scorTeam2 = 0;
@@ -47,8 +52,9 @@ public:
 	bool loadResources(bool continueOnErrors);
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
-	void processInput(const D32 deltaTime);
-	void processTasks(const D32 deltaTime);
+	void processInput(const U64 deltaTime);
+	void processTasks(const U64 deltaTime);
+    void updateSceneState(const U64 deltaTime);
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
 	void onMouseMove(const OIS::MouseEvent& key);
@@ -76,9 +82,11 @@ private: //Joc
 	vectorImpl<NPC *> _army2NPCs;
 	///Team's are factions for AIEntites so they can manage friend/foe situations
 	AICoordination *_faction1, *_faction2;
-	SkinnedSubMesh *_bob;
-	SceneGraphNode *_lampLightNode;
 	SceneGraphNode *_bobNode;
+    SceneGraphNode *_bobNodeBody;
+    SceneGraphNode *_lampLightNode;
+    SceneGraphNode *_lampTransformNode;
+    SceneNode      *_lampTransform;
 };
 
 #endif

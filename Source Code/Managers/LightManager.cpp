@@ -52,7 +52,10 @@ bool LightManager::addLight(Light* const light){
         return false;
     }
 
+    light->setSlot(_lights.size());
+
     _lights.insert(std::make_pair(light->getId(),light));
+    
     return true;
 }
 
@@ -97,9 +100,9 @@ void LightManager::idle(){
 ///Check light properties for every light (this is bound to the camera change listener group
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
-void LightManager::update(){
+void LightManager::update(const bool force){
     for_each(Light* light, _currLightsPerNode){
-        light->updateState();
+        light->updateState(force);
         if(!_dominantLight){ //if we do not have a dominant light registered, search for one
             if(light->getLightMode() == LIGHT_MODE_DOMINANT){
                 //setting a light as dominant, will automatically inform the lightmanager, but just in case, make sure
@@ -251,6 +254,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     _tempLightsPerNode.resize(_lights.size());
     _currLightsPerNode.resize(0);
     _currLightTypes.resize(0);
+    _currLightIndices.resize(0);
     _currShadowLights.resize(0);
     // loop over every light in the scene
     // ToDo: add a grid based light search system? -Ionut
@@ -262,10 +266,10 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
         LightType lType = light->getLightType();
         if(lType != LIGHT_TYPE_DIRECTIONAL )  {
             // get the luminosity.
-            luminace = vec3<F32>(light->getVProperty(LIGHT_PROPERTY_DIFFUSE)).dot(lumDot);
+            luminace = light->getVProperty(LIGHT_PROPERTY_DIFFUSE).dot(lumDot);
             luminace *= light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS);
 
-            F32 radiusSq = squared(light->getFProperty(LIGHT_PROPERTY_RANGE) + node->getBoundingSphere().getRadius());
+            F32 radiusSq = squared(light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS) + node->getBoundingSphere().getRadius());
             // get the distance to the light... score it 1 to 0 near to far.
             vec3<F32> distToLight(node->getBoundingBox().getCenter()  - light->getPosition());
             F32 distSq = radiusSq - distToLight.lengthSquared();
@@ -297,6 +301,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     for(U8 i = 0; i < maxLights; i++){
         _currLightsPerNode.push_back(_tempLightsPerNode[i]);
         _currLightTypes.push_back(_tempLightsPerNode[i]->getLightType());
+        _currLightIndices.push_back(_tempLightsPerNode[i]->getSlot());
         _currShadowLights.push_back(_tempLightsPerNode[i]->castsShadows() ? 1 : 0);
     }
 

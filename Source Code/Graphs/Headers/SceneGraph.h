@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -22,8 +22,6 @@
 
 #ifndef _SCENE_GRAPH_H_
 #define _SCENE_GRAPH_H_
-
-#define SCENE_GRAPH_UPDATE(pointer) DELEGATE_BIND(&SceneGraph::update, pointer)
 
 #include "SceneGraphNode.h"
 #include "Core/Headers/Console.h"
@@ -58,7 +56,7 @@ public:
     /// Update transforms and bounding boxes (this can be called on demand from multiple threads => no deltaTime. compute internally)
     void update();
     /// Update all nodes. Called from "updateSceneState" from class Scene
-    void sceneUpdate(const D32 deltaTime, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 
     void print();
 

@@ -13,7 +13,7 @@ DEFINE_SINGLETON(Console)
 	typedef boost::function2<void, const char*, bool > consolePrintCallback;
 
 public:
-	static const I32 CONSOLE_OUTPUT_BUFFER_SIZE = 2048;
+	static const I32 CONSOLE_OUTPUT_BUFFER_SIZE = 5096 * 16;
 
 	void printCopyrightNotice() const;
 	void printfn(const char* format, ...) const;
@@ -53,10 +53,10 @@ END_SINGLETON
 #define D_ERROR_F(x, ...) Console::getInstance().d_errorf(x, __VA_ARGS__);
 #define D_ERROR_FN(x, ...) Console::getInstance().d_errorfn(x, __VA_ARGS__);
 #else
-#define D_PRINT_F(x, ...)
-#define D_PRINT_FN(x, ...)
-#define D_ERROR_F(x, ...)
-#define D_ERROR_FN(x, ...)
+#define D_PRINT_F(x, ...) ;
+#define D_PRINT_FN(x, ...) ;
+#define D_ERROR_F(x, ...) ;
+#define D_ERROR_FN(x, ...) ;
 #endif
 /// Misc
 #define CONSOLE_TIMESTAMP_OFF() Console::getInstance().toggleTimeStamps(false)

@@ -5,9 +5,10 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
-static const D32 DESTINATION_RADIUS = 1 * 1;
+static const D32 DESTINATION_RADIUS = 1 * 0.5;
 
 Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit::UNIT_TYPE_CHARACTER, node),
+																	   _detourCrowd(NULL),
                                                                        _type(type),
                                                                        _agent(NULL),
                                                                        _agentID(-1),
@@ -25,10 +26,40 @@ Character::~Character()
     _agent = NULL;
 }
 
+void Character::load()
+{
+    if(isLoaded())
+        return; // nothing to do
+
+    load(getBoundNode()->getTransform()->getPosition());
+}
+
+void Character::load(const vec3<F32>& position) {
+    if(isLoaded()) {
+        setPosition(position);
+    } else {
+        _agentID = _detourCrowd->addAgent(position);
+        _agent = _detourCrowd->getAgent(_agentID);
+    }
+
+    setPosition(position);
+}
+
+void Character::unload() {
+    _detourCrowd->removeAgent(getAgentID());
+    _agentID = -1;
+    _agent = NULL;
+}
+
 void Character::resetCrowd(Navigation::DivideDtCrowd* const crowd){
-    _detourCrowd = crowd;
-    if(_detourCrowd)
+	if(_detourCrowd)
+		unload();
+
+	_detourCrowd = crowd;
+    if(_detourCrowd){
         _destination = _detourCrowd->getLastDestination();
+		load();
+	}
 }
 
 D32 Character::getAgentHeight() const {
@@ -39,7 +70,8 @@ D32 Character::getAgentRadius() const {
     return _detourCrowd ? _detourCrowd->getAgentRadius() : 0.0;
 }
 
-void Character::update(const D32 deltaTime) {
+void Character::update(const U64 deltaTime) {
+	updatePosition(deltaTime);
 }
 
 void Character::updateDestination(const vec3<F32>& destination, bool updatePreviousPath ){
@@ -61,6 +93,22 @@ vec3<F32> Character::getDestination() const {
         return _destination;
 
     return vec3<F32>();     // TODO this is not ideal
+}
+
+void Character::updatePosition(const U64 deltaTime){
+	 if(!isLoaded())
+        return;
+
+    if (_agentControlled) {
+        if(getAgent()->active) {
+            vec3<F32> agentPos(getAgent()->npos);
+            _node->getTransform()->setPosition(agentPos);
+        }
+    } else {
+        // Move character manually to new position
+        if(getVelocity().length() <= 0.0f)   return;
+        _node->getTransform()->setPosition(getPosition() + getVelocity() * getUsToSec(deltaTime));
+    }
 }
 
 void Character::setPosition(const vec3<F32> position) {
@@ -161,6 +209,7 @@ void Character::setAgentControlled(bool agentControlled){
     if (_agentControlled != agentControlled) {
         if (agentControlled) {
             _agentID = _detourCrowd->addAgent(getPosition());
+			_agent = _detourCrowd->getAgent(_agentID);
             _destination = _detourCrowd->getLastDestination();
             _manualVelocity.reset();
             _stopped = true;

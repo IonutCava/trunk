@@ -19,17 +19,17 @@ void PhysXScene::preRender(){
 }
 //<<end copy-paste
 
-void PhysXScene::processTasks(const D32 deltaTime){
+void PhysXScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _taskTimers[0] = 0.0;
     }
     Scene::processTasks(deltaTime);
 }
 
-void PhysXScene::processInput(const D32 deltaTime){
+void PhysXScene::processInput(const U64 deltaTime){
     if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
     if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
@@ -45,9 +45,6 @@ bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
     _sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
     Light* light = addDefaultLight();
     light->setDirection(_sunvector);
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
     addDefaultSky();
     s_sceneState = STATE_IDLE;
     return loadState;

@@ -1,5 +1,5 @@
 
-uniform bool hasAnimations;
+uniform bool hasAnimations = false;
 uniform mat4 boneTransforms[60];
 
 void applyBoneTransforms(inout vec4 position, inout vec3 normal){

@@ -1,14 +1,19 @@
 #include "Headers/Unit.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Rendering/Headers/Framerate.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Core/Math/Headers/Transform.h"
 
 Unit::Unit(UnitType type, SceneGraphNode* const node) : _type(type),
                                                         _node(node),
                                                         _moveSpeed(metre(1)),
                                                         _moveTolerance(0.1f),
-                                                        _prevTime(0){}
-Unit::~Unit(){}
+                                                        _prevTime(0)
+{
+}
+
+Unit::~Unit()
+{
+}
 
 /// Pathfinding, collision detection, animation playback should all be controlled from here
 bool Unit::moveTo(const vec3<F32>& targetPosition){
@@ -22,6 +27,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 
     if(_prevTime <= 0)
         _prevTime = GETMSTIME();
+
     // get current time in ms
     D32 currentTime = GETMSTIME();
     // figure out how many milliseconds have elapsed since last move time
@@ -43,7 +49,9 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
         bool yTolerance = IS_TOLERANCE(yDelta, _moveTolerance);
         bool zTolerance = IS_TOLERANCE(zDelta, _moveTolerance);
         // apply framerate variance
+#if !USE_FIXED_TIMESTEP
         //moveDistance *= FRAME_SPEED_FACTOR;
+#endif
         // Compute the destination point for current frame step
         vec3<F32> interpPosition;
         if(!yTolerance && !IS_ZERO( yDelta ) )

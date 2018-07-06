@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -43,7 +43,7 @@ public:
     Camera(const CameraType& type);
     virtual ~Camera() {}
 
-    virtual void update(const D32 deltaTime);
+    virtual void update(const U64 deltaTime);
     ///Camera save/load system
     ///Saves the minimum ammount of information in order to restore the camera at a later stage
     void saveCamera();
@@ -55,9 +55,9 @@ public:
     void renderLookAt(bool invertX = false);
     ///Creates a reflection matrix using the specified plane height and passes it to the rendering API
     void renderLookAtReflected(const Plane<F32>& reflectionPlane, bool invertX = false);
-    ///Creates the appropriate eye offset and frustum depending on the desired eye.This method calls "renderLookAt"
+    ///Creates the appropriate eye offset and frustum depending on the desired eye.This method does not calls "renderLookAt"
     ///rightEye = false => left eye's frustum+view; rightEye = true => right eye's frustum + view.
-    void renderAnaglyph(bool rightEye = false);
+    void setAnaglyph(bool rightEye = false);
     ///Moves the camera by the specified offsets in each direction
     void move(F32 dx, F32 dy, F32 dz);
     ///Global rotations are applied relative to the world axis, not the camera's

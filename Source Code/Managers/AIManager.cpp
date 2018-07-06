@@ -1,9 +1,14 @@
 #include "Headers/AIManager.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
-AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _deltaTimeMS(0.0)
+AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _updateNavMeshes(false),_deltaTimeMS(0.0)
 {
     Navigation::DivideRecast::createInstance();
+}
+
+AIManager::~AIManager() 
+{
+    Destroy();
 }
 
 ///Clear up any remaining AIEntities
@@ -51,10 +56,20 @@ void AIManager::processData(){   //think
     }
 }
 
-void AIManager::updateEntities(const D32 deltaTime){//react
+void AIManager::updateEntities(const U64 deltaTime){//react
+	for_each(AITeamMap::value_type& team, _aiTeams){
+		team.second->update(deltaTime);
+	}
+
     for_each(AIEntityMap::value_type& entity, _aiEntities){
         entity.second->update(deltaTime);
     }
+	if(_updateNavMeshes){
+	    ReadLock w_lock(_navMeshMutex);
+		for_each(AITeamMap::value_type& team, _aiTeams){
+			team.second->resetNavMeshes();
+		}
+	}
 }
 
 bool AIManager::addEntity(AIEntity* entity){
@@ -99,6 +114,7 @@ bool AIManager::addNavMesh(Navigation::NavigationMesh* const navMesh){
     navMesh->debugDraw(_navMeshDebugDraw);
     WriteLock w_lock(_navMeshMutex);
     _navMeshes.push_back(navMesh);
+	_updateNavMeshes = true;
     return true;
 }
 
@@ -113,6 +129,7 @@ void AIManager::destroyNavMesh(Navigation::NavigationMesh* const navMesh){
             return;
         }
     }
+	_updateNavMeshes = true;
 }
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {

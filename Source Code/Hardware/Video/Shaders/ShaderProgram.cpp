@@ -16,7 +16,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
                                                     _compiled(false),
                                                     _bound(false),
                                                     _dirty(true),
-                                                    _wasBound(false)
+                                                    _wasBound(false),
+                                                    _elapsedTime(0ULL)
 {
     _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
@@ -34,7 +35,8 @@ ShaderProgram::~ShaderProgram()
     _shaderIdMap.clear();
 }
 
-U8 ShaderProgram::update(const D32 deltaTime){
+U8 ShaderProgram::update(const U64 deltaTime){
+    _elapsedTime += deltaTime;
     ParamHandler& par = ParamHandler::getInstance();
     this->Uniform("dvd_enableFog",par.getParam<bool>("rendering.enableFog"));
     this->Uniform("dvd_lightAmbient", LightManager::getInstance().getAmbientLight());
@@ -100,7 +102,7 @@ void ShaderProgram::bind(){
         return;
 
     //Apply global shader values valid throughout current render call:
-    this->Uniform("dvd_time", static_cast<F32>(GETMSTIME()));
+    this->Uniform("dvd_time", static_cast<F32>(getUsToMs(_elapsedTime)));
     this->Attribute("dvd_cameraPosition",Frustum::getInstance().getEyePos());
 }
 

@@ -97,7 +97,7 @@ Mesh* DVDConverter::load(const std::string& file){
         ERROR_FN(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(), importer->GetErrorString());
         return NULL;
     }
-    start = GETMSTIME();
+    start = GETMSTIME(true);
     Mesh* tempMesh = NULL;
     for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
         //Skip points and lines ... for now -Ionut
@@ -122,14 +122,13 @@ Mesh* DVDConverter::load(const std::string& file){
                                                    std::string(s->getName()+ "_material"));
                 s->setMaterial(m);
                 m->setHardwareSkinning(skinnedSubMesh);
-                m->setTriangleStripInput(true);
             }//else the Resource manager created a copy of the material
             tempMesh->addSubMesh(s->getName());
         }
     }
     assert(tempMesh != NULL);
     tempMesh->getSceneNodeRenderState().setDrawState(true);
-    elapsed = GETMSTIME() - start;
+    elapsed = GETMSTIME(true) - start;
     D_PRINT_FN(Locale::get("PARSE_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
     _loadcount++; //< increment counter
     return tempMesh;

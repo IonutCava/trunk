@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -32,40 +32,45 @@ class Transform;
 ///Wraps geometry with transform and additional rendering params. Pass to the rendering API for presenting to screen
 class RenderInstance : private boost::noncopyable{
 public:
-	RenderInstance(Object3D* const geometry) : _geometry(geometry),
-											   _transform(NULL),
-											   _preDraw(false),
-											   _draw2D(false)
-	{
-	}
+    RenderInstance(Object3D* const geometry) : _geometry(geometry),
+                                               _transform(NULL),
+                                               _prevTransform(NULL),
+                                               _preDraw(false),
+                                               _draw2D(false)
+    {
+    }
 
-	~RenderInstance()
-	{
-		_geometry = NULL;
-	}
+    ~RenderInstance()
+    {
+        _geometry = NULL;
+    }
 
-	///Model transform manipulation
-	Transform* transform()                           const {return _transform;}
-	void       transform(Transform* const transform)       {_transform = transform;}
-	///Geometry manipulation
-	Object3D* const object3D()                         const {return _geometry;}
-	void            object3D(Object3D* const geometry)       {_geometry = geometry;}
-	///PreDraw checks
-	bool preDraw()                   const {return _preDraw;}
-	void preDraw(const bool preDraw)       {_preDraw = preDraw;}
-	///2D drawing
-	bool draw2D()                  const {return _draw2D;}
-	void draw2D(const bool draw2D)       {_draw2D = draw2D;}
+    ///Model transform manipulation
+    Transform* transform()                               const {return _transform;}
+    void       transform(Transform* const transform)           {_transform = transform;}
+    Transform* prevTransform()                           const {return _prevTransform;}
+    void       prevTransform(Transform* const transform)       {_prevTransform = transform;}
+    ///Geometry manipulation
+    Object3D* const object3D()                         const {return _geometry;}
+    void            object3D(Object3D* const geometry)       {_geometry = geometry;}
+    ///PreDraw checks
+    bool preDraw()                   const {return _preDraw;}
+    void preDraw(const bool preDraw)       {_preDraw = preDraw;}
+    ///2D drawing
+    bool draw2D()                  const {return _draw2D;}
+    void draw2D(const bool draw2D)       {_draw2D = draw2D;}
 
 private:
-	///The actual geometry wrapper
-	Object3D*  _geometry;
-	///The geometry's transformation information
-	Transform* _transform;
-	///Perform a preDraw operation on the model
-	bool       _preDraw;
-	///Use 2D drawing
-	bool       _draw2D;
+    ///The actual geometry wrapper
+    Object3D*  _geometry;
+    ///The geometry's transformation information
+    Transform* _transform;
+    ///The geoemtry's previous transformation information. Used for interpolation purposes
+    Transform* _prevTransform;
+    ///Perform a preDraw operation on the model
+    bool       _preDraw;
+    ///Use 2D drawing
+    bool       _draw2D;
 };
 
 #endif

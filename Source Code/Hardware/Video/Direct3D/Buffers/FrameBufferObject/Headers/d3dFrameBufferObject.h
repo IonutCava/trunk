@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -30,18 +30,19 @@ class d3dFrameBufferObject : public FrameBufferObject
 public:
 
     d3dFrameBufferObject(FBOType type);
-    virtual ~d3dFrameBufferObject();
+    ~d3dFrameBufferObject();
 
-    virtual bool Create(U16 width, U16 height, U8 imageLayers = 0);
+    bool Create(U16 width, U16 height, U8 imageLayers = 0);
 
-    virtual void Destroy();
-    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) const; ///<Use by multilayerd FBO's
-    virtual void Begin(U8 nFace=0) const;
-    virtual void End(U8 nFace=0) const;
+    void Destroy();
+    void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) const; ///<Use by multilayerd FBO's
+    void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) const;
+    void Begin(const FrameBufferObjectTarget& drawPolicy);
+    void End();
 
-    virtual void Bind(U8 unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
-    virtual void Unbind(U8 unit=0) const;
-    void BlitFrom(FrameBufferObject* inputFBO) const;
+    void Bind(U8 unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
+    void Unbind(U8 unit=0) const;
+    void BlitFrom(FrameBufferObject* inputFBO);
 
     void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const;
 

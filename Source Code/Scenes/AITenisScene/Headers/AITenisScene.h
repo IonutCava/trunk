@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -64,8 +64,8 @@ public:
     bool loadResources(bool continueOnErrors);
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);
-    void processInput(const D32 deltaTime);
-    void processTasks(const D32 deltaTime);
+    void processInput(const U64 deltaTime);
+    void processTasks(const U64 deltaTime);
     void onKeyDown(const OIS::KeyEvent& key);
     void onKeyUp(const OIS::KeyEvent& key);
     void onMouseMove(const OIS::MouseEvent& key);

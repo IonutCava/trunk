@@ -51,6 +51,26 @@ const mat4<F32>& Transform::applyTransforms(){
 	return _worldMatrix;
 }
 
+const mat4<F32>& Transform::interpolate(Transform* const transform, const D32 factor){
+  /*mat4<F32> prevMatrix = transform->getGlobalMatrix().transpose();
+    vec3<F32> scale, translation;
+    Quaternion<F32> orientation;
+    Util::Mat4::decompose(prevMatrix, scale, orientation, translation);
+
+    scale.lerp(getScale(), factor);
+    translation.lerp(getPosition(), factor);
+    orientation.slerp(getOrientation(), factor);
+    
+    _worldMatrixInterp.identity();
+    _worldMatrix.setScale(scale);
+    _worldMatrixInterp *= orientation.getMatrix();
+    _worldMatrixInterp.setTranslation(translation);
+
+    return _worldMatrixInterp;*/
+
+    return applyTransforms();
+}
+
 bool Transform::compare(const Transform* const t){
     ReadLock r_lock(_lock);
     return (_scale.compare(t->_scale) &&

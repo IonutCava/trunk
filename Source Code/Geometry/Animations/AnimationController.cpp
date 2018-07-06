@@ -124,9 +124,15 @@ bool SceneAnimator::SetAnimIndex( I32  pAnimIndex){
     return oldindex != _currentAnimIndex;
 }
 
+bool SceneAnimator::SetNextAnimation() {
+    I32 oldindex = _currentAnimIndex;
+    _currentAnimIndex = ++_currentAnimIndex % _animations.size();
+    return oldindex != _currentAnimIndex;
+}
+
 // ------------------------------------------------------------------------------------------------
 // Calculates the node transformations for the scene.
-void SceneAnimator::Calculate(D32 pTime){
+void SceneAnimator::Calculate(const D32 pTime){
     if( (_currentAnimIndex < 0) || (_currentAnimIndex >= (I32)_animations.size()) ) return;// invalid animation
     _animations[_currentAnimIndex].Evaluate( pTime, _bonesByName);
     UpdateTransforms(_skeleton);
@@ -164,6 +170,14 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
     }
 }
 
+Bone* SceneAnimator::GetBoneByName(const std::string& bname) const {
+    Unordered_map<std::string, Bone*>::const_iterator found = _bonesByName.find(bname);
+	if(found != _bonesByName.end()) 
+		return found->second; 
+	else 
+		return NULL;
+}
+
 I32 SceneAnimator::GetBoneIndex(const std::string& bname) const {
 	Unordered_map<std::string, U32>::const_iterator found = _bonesToIndex.find(bname);
 	if(found != _bonesToIndex.end()) 
@@ -171,6 +185,7 @@ I32 SceneAnimator::GetBoneIndex(const std::string& bname) const {
 	else 
 		return -1;
 }
+
 /// ------------------------------------------------------------------------------------------------
 /// Calculates the global transformation matrix for the given internal node
 void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
@@ -191,7 +206,7 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 }
 
 ///Renders the current skeleton pose at time index dt
-I32 SceneAnimator::RenderSkeleton(D32 dt){
+I32 SceneAnimator::RenderSkeleton(const D32 dt){
     U32 frameIndex = _animations[_currentAnimIndex].GetFrameIndexAt(dt);
 
     if(_pointsA.find(_currentAnimIndex) == _pointsA.end()){

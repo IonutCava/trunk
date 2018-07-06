@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -66,7 +66,7 @@ public:
     void releaseMaterial();
     void prepareDepthMaterial(SceneGraphNode* const sgn);
     void releaseDepthMaterial();
-    void sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void drawBoundingBox(SceneGraphNode* const sgn);
 
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
@@ -111,8 +111,8 @@ private:
     F32  _terrainScaleFactor;
     F32  _terrainHeightScaleFactor;
     F32	 _farPlane;
-    F32  _stateRefreshInterval;
-    F32  _stateRefreshIntervalBuffer;
+    U64  _stateRefreshInterval;
+    U64  _stateRefreshIntervalBuffer;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
     bool _shadowMapped;

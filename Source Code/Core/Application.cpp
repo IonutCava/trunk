@@ -6,12 +6,13 @@
 Application::Application() : _kernel(NULL),
                              _mainWindowId(-1),
                              _totalMemoryOcuppied(0),
-                             _requestShutdown(false)
+                             _requestShutdown(false),
+                             _hasFocus(true)
 {
     _threadId = boost::this_thread::get_id();
     ParamHandler::createInstance();
     Console::createInstance();
-    Framerate::createInstance();
+    ApplicationTimer::createInstance();
 }
 
 Application::~Application(){
@@ -20,7 +21,7 @@ Application::~Application(){
     SAFE_DELETE(_kernel);
     PRINT_FN(Locale::get("STOP_APPLICATION"));
     Console::destroyInstance();
-    Framerate::destroyInstance();
+    ApplicationTimer::destroyInstance();
 }
 
 I8 Application::initialize(const std::string& entryPoint,I32 argc, char **argv){

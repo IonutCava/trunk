@@ -154,13 +154,14 @@ namespace Navigation {
     bool NavigationMesh::buildProcess(){
         _building = true;
         // Create mesh
-        D32 timeStart = GETMSTIME();
+        D32 timeStart = GETTIME();
         bool success = generateMesh();
+        D32 endTime = GETTIME(true) - timeStart;
 
         if(success){
-            PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),getMsToSec(GETMSTIME() - timeStart));
+            PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),  endTime);
         }else{
-            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"),getMsToSec(GETMSTIME() - timeStart));
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"),endTime);
         }
 
         _navigationMeshLock.lock();
@@ -484,7 +485,7 @@ namespace Navigation {
         return true;
     }
 
-    void NavigationMesh::update(const D32 deltaTime) {
+    void NavigationMesh::update(const U64 deltaTime) {
        _debugDrawInterface->paused(!_debugDraw);
     }
 
@@ -608,8 +609,7 @@ namespace Navigation {
 
         // Save our NavigationMesh into a file to load from next time
         FILE* fp = fopen(_fileName.c_str(), "wb");
-        if(!fp)	
-            return false;
+        if(!fp)	return false;
 
         boost::mutex::scoped_lock(_navigationMeshLock);
 

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -38,6 +38,7 @@ public:
     Quaternion(const mat3<T>& rotationMatrix) : _dirty(true){fromMatrix(rotationMatrix);}
     Quaternion(const vec3<T>& axis, T angle) : _dirty(true) {fromAxisAngle(axis, angle);}
     Quaternion(T pitch, T yaw, T roll,bool inDegrees = true) : _dirty(true) {fromEuler(pitch,yaw,roll,inDegrees);}
+    Quaternion(const Quaternion& q) : _dirty(true) { set(q); }
 
     inline T dot(const Quaternion& rq)  const { return _w*rq._w+_x*rq._x+_y*rq._y+_z*rq._z;  }
     inline T magnitude()                const { return sqrtf(magnituteSq()); }
@@ -53,6 +54,8 @@ public:
     }
 
     inline void set(T x, T y, T z, T w) {_x = x; _y = y; _z = z; _w = w; _dirty = true;}
+
+    inline void set(const Quaternion& q) {_x = q._x; _y = q._y; _z = q._z; _w = q._w; _dirty = true; } 
 
     //! normalising a quaternion works similar to a vector. This method will not do anything
     //! if the quaternion is close enough to being unit-length. define EPSILON as something

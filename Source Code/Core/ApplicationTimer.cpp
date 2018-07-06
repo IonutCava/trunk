@@ -1,7 +1,10 @@
-#include "Headers/Framerate.h"
+#include "Headers/ApplicationTimer.h"
 #include "Core/Headers/Console.h"
 #include "Core/Math/Headers/MathHelper.h"
 #include "Utility/Headers/Localization.h"
+
+#pragma message("DIVIDE Framework uses U64 (unsigned long long) data types for timing with microsecond resolution!")
+#pragma message("Use apropriate conversion in time sensitive code (see core.h)")
 
 #if defined(_DEBUG) || defined(_PROFILE)
 ProfileTimer::ProfileTimer() : _init(false), _timer(0.0), _timerAverage(0.0), _timerCounter(0)
@@ -10,7 +13,7 @@ ProfileTimer::ProfileTimer() : _init(false), _timer(0.0), _timerAverage(0.0), _t
 
 ProfileTimer::~ProfileTimer()
 {
-    Framerate::getInstance().removeTimer(this);
+    ApplicationTimer::getInstance().removeTimer(this);
     SAFE_DELETE(_name);
 }
 
@@ -20,11 +23,11 @@ void ProfileTimer::reset() {
 }
 
 void ProfileTimer::start(){
-    _timer = Framerate::getInstance().getElapsedTime();
+    _timer = getUsToMs(ApplicationTimer::getInstance().getElapsedTime(true));
 }
 
 void ProfileTimer::stop(){
-    _timer = Framerate::getInstance().getElapsedTime() - _timer;
+    _timer = getUsToMs(ApplicationTimer::getInstance().getElapsedTime(true)) - _timer;
     _timerAverage = _timerAverage + _timer;
     _timerCounter++;
 }
@@ -35,18 +38,18 @@ void ProfileTimer::create(const char* name){
     _name = strdup(name);
     _init = true;
     // should never be called twice for the same object
-    Framerate::getInstance().addTimer(this);
+    ApplicationTimer::getInstance().addTimer(this);
 }
 
 void ProfileTimer::print() const {
     PRINT_FN("[ %s ] : [ %5.3f ms]", _name, _timerAverage / _timerCounter);
 }
 
-void Framerate::addTimer(ProfileTimer* const timer) {
+void ApplicationTimer::addTimer(ProfileTimer* const timer) {
     _profileTimers.push_back(timer);
 }
 
-void Framerate::removeTimer(ProfileTimer* const timer) {
+void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
     for(vectorImpl<ProfileTimer* >::iterator it = _profileTimers.begin(); it != _profileTimers.end(); ++it){
         if(strcmp((*it)->name(), timer->name()) == 0){
             _profileTimers.erase(it);
@@ -56,23 +59,37 @@ void Framerate::removeTimer(ProfileTimer* const timer) {
 }
 #endif
 
+ApplicationTimer::ApplicationTimer() : _targetFrameRate(60.0f),
+                                       _ticksPerMicrosecond(0.0),
+                                       _speedfactor(1.0f),
+                                       _elapsedTimeUs(0ULL),
+                                       _init(false),
+                                       _benchmark(false)
+{
+    _ticksPerSecond.QuadPart = 0LL;
+    _frameDelay.QuadPart = 0LL;
+    _startupTicks.QuadPart = 0LL;
+    _currentTicks.QuadPart = 0LL;
+}
+
 ///No need for init to be threadsafe
-void Framerate::init(U8 targetFrameRate) {
+void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);//<prevent double init
 
     _targetFrameRate = static_cast<F32>(targetFrameRate);
 
 #if defined( OS_WINDOWS )
-    QueryPerformanceCounter(&_startupTicks);
     if(!QueryPerformanceFrequency(&_ticksPerSecond))
-        assert("Current system does not support 'QueryPerformanceFrequency calls!");
-#elif defined( OS_APPLE ) // Apple OS X
+        assert(false && "Current system does not support 'QueryPerformanceFrequency calls!");
+
+    QueryPerformanceCounter(&_startupTicks);
+//#elif defined( OS_APPLE ) // Apple OS X
     //??
 #else //Linux
     gettimeofday(&_startupTicks,NULL);
 #endif
 
-    _ticksPerMillisecond = _ticksPerSecond.QuadPart / 1000;
+    _ticksPerMicrosecond = static_cast<D32>(_ticksPerSecond.QuadPart / 1000000.0);
     _frameDelay = _startupTicks;
     _init = true;
 }
@@ -86,32 +103,36 @@ namespace {
     static F32 averageFpsTotal = 0.0f;
 };
 
-void Framerate::update(){
-    LI currentTicks;
+U64 ApplicationTimer::getElapsedTimeInternal() {
 
 #if defined( OS_WINDOWS )
-    QueryPerformanceCounter(&currentTicks);
-    QueryPerformanceFrequency(&_ticksPerSecond);
-#elif defined( OS_APPLE ) // Apple OS X
+    QueryPerformanceCounter(&_currentTicks);
+//#elif defined( OS_APPLE ) // Apple OS X
     //??
 #else
-    gettimeofday(&currentTicks,NULL);
+    gettimeofday(&_currentTicks,NULL);
 #endif
 
-    _ticksPerMillisecond = _ticksPerSecond.QuadPart / 1000;
-    _speedfactor = (currentTicks.QuadPart-_frameDelay.QuadPart) / (_ticksPerSecond.QuadPart / (F32)(_targetFrameRate));
+    return static_cast<U64>((_currentTicks.QuadPart -_startupTicks.QuadPart) / _ticksPerMicrosecond);
+}
+
+void ApplicationTimer::update(){
+    _elapsedTimeUs = getElapsedTimeInternal();
+
+    _speedfactor = static_cast<F32>((_currentTicks.QuadPart - _frameDelay.QuadPart) / 
+                                    (_ticksPerSecond.QuadPart / _targetFrameRate));
+    _frameDelay = _currentTicks;
 
     if(_speedfactor <= 0.0f)
        _speedfactor = 1.0f;
 
-    _frameDelay = currentTicks;
     _fps = _targetFrameRate / _speedfactor;
-    _frameTime = 1000.0f / _fps;
+    _frameTime = 1000.0 / _fps;
 
     if(_benchmark) benchmarkInternal();
 }
 
-void Framerate::benchmarkInternal(){
+void ApplicationTimer::benchmarkInternal(){
     //Average FPS
     averageFps += _fps;
     averageCount++;
@@ -133,6 +154,7 @@ void Framerate::benchmarkInternal(){
             (*it)->print();
             (*it)->reset();
         }
+
 #endif
         averageFps = 0;
         count = 0;

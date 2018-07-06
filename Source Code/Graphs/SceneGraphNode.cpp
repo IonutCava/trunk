@@ -6,6 +6,7 @@
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Environment/Water/Headers/Water.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
@@ -14,13 +15,11 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _parent(NULL),
                                                   _grandParent(NULL),
                                                   _transform(NULL),
-                                                  _currentSceneState(NULL),
                                                   _wasActive(true),
                                                   _active(true),
                                                   _selected(false),
                                                   _isSelectable(false),
                                                   _noDefaultTransform(false),
-                                                  _inView(true),
                                                   _sorted(false),
                                                   _silentDispose(false),
                                                   _updateBB(true),
@@ -35,6 +34,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _physicsCollisionGroup(NODE_COLLIDE_IGNORE)
 {
     _animationTransforms.clear();
+    _animationTransforms.reserve(60);
 }
 
 ///If we are destroyng the current graph node
@@ -73,6 +73,7 @@ const BoundingBox& SceneGraphNode::getBoundingBoxTransformed() {
         updateBoundingBoxTransform(_transform->getGlobalMatrix());
     return _boundingBox;
 }
+
 ///When unloading the current graph node
 bool SceneGraphNode::unload(){
     //Unload every sub node recursively
@@ -258,10 +259,49 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
         it.second->Intersect(ray,start,end,selectionHits);
     }
 }
+const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
+    assert(_node != NULL);
+
+    if(getNode<Object3D>()->getType() != Object3D::SUBMESH ||
+       (getNode<Object3D>()->getType() == Object3D::SUBMESH &&
+        getNode<Object3D>()->getFlag() != Object3D::OBJECT_FLAG_SKINNED) ||
+       _animationTransforms.empty()){
+        assert(getTransform());
+        return getTransform()->getMatrix();
+    }
+
+    return getNode<SkinnedSubMesh>()->getCurrentBoneTransform(this, name);
+}
 
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
     SAFE_UPDATE(_transform,t);
+}
+
+void SceneGraphNode::setPrevTransform(Transform* const t) {
+    if(!t && _transformPrevious) {
+        SAFE_DELETE(_transformPrevious);
+        return;
+    }
+
+    if(!t) return;
+
+    if(!_transformPrevious){
+        _transformPrevious = New Transform();
+        assert(_transformPrevious);
+    }
+
+    _transformPrevious->clone(t);
+}
+
+Transform* const SceneGraphNode::getPrevTransform(){
+    if(!_noDefaultTransform && !_transformPrevious){
+        _transformPrevious = New Transform();
+        assert(_transformPrevious);
+        _transformPrevious->clone(getTransform());
+    }
+
+    return _transformPrevious;
 }
 
 //Get the node's transform

@@ -72,7 +72,7 @@ void glShader::validate() {
 
     GLCheck(glGetShaderiv(_shader, GL_COMPILE_STATUS, &status));
     GLCheck(glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length));
-    if(length <= 0) return;
+    if(length <= 1) return;
     std::vector<char> shaderLog(length);
     GLCheck(glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]));
     shaderLog.push_back('\n');
@@ -113,6 +113,8 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
                 loc =  "geometryAtoms";
             }else if(include_file.find("tess") != std::string::npos){
                 loc =  "tessellationAtoms";
+            }else if(include_file.find("cmn") != std::string::npos){
+                loc = "common";
             }
 
             include_string = ShaderManager::getInstance().shaderFileRead(include_file,shaderAtomLocationPrefix+loc);

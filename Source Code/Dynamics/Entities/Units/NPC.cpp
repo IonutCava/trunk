@@ -8,7 +8,7 @@ NPC::NPC(SceneGraphNode* const node) : Character(Character::CHARACTER_TYPE_NPC, 
 NPC::NPC(AIEntity* const aiEntity) : Character(Character::CHARACTER_TYPE_NPC, aiEntity->getBoundNode()), _aiUnit(aiEntity)
 {
     aiEntity->addUnitRef(this);
-    resetCrowd(aiEntity->getTeam()->getCrowdPtr());
+    resetCrowd(_aiUnit->getTeam()->getCrowdPtr());
 }
 
 NPC::~NPC()

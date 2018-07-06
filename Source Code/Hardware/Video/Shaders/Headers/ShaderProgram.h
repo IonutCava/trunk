@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -36,7 +36,7 @@ public:
 
     virtual void bind();
     virtual void unbind(bool resetActiveProgram = true);
-    virtual U8   update(const D32 deltaTime);
+    virtual U8   update(const U64 deltaTime);
 
     ///Attributes
     virtual void Attribute(const std::string& ext, D32 value) = 0;
@@ -124,6 +124,7 @@ protected:
     boost::atomic_bool _bound;
     boost::atomic_bool _compiled;
     U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
+    U64 _elapsedTime;
     I32 _maxCombinedTextureUnits;
     ///A list of preprocessor defines
     vectorImpl<std::string > _definesList;

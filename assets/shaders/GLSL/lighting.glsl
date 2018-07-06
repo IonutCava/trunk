@@ -76,7 +76,6 @@ void main (void){
     vec4 color = NormalMapping(_texCoord);
 #endif
 
-    if(color.a < ALPHA_DISCARD_THRESHOLD) discard;	
     applyFog(color);
 
     _colorOut = color;

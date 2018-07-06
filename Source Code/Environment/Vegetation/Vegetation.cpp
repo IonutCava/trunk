@@ -60,9 +60,9 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
     _render = true;
 }
 
-void Vegetation::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     if(!_render || !_success) return;
-    ///Query shadow state every "_stateRefreshInterval" milliseconds
+    ///Query shadow state every "_stateRefreshInterval" microseconds
     if (_stateRefreshIntervalBuffer >= _stateRefreshInterval){
         _windX = sceneState.getWindDirX();
         _windZ = sceneState.getWindDirZ();

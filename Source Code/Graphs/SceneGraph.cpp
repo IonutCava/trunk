@@ -11,10 +11,8 @@ SceneGraph::SceneGraph(){
 }
 
 void SceneGraph::update(){
-    //_root->getBoundingBox().reset();//<reset world box
     _root->checkBoundingBoxes();
     _root->updateTransforms();
-    _root->updateVisualInformation();
 }
 
 void SceneGraph::idle(){
@@ -37,7 +35,7 @@ void SceneGraph::print(){
 void SceneGraph::startUpdateThread(){
 }
 
-void SceneGraph::sceneUpdate(const D32 deltaTime, SceneState& sceneState){
+void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState){
     _root->sceneUpdate(deltaTime, sceneState);
 }
 

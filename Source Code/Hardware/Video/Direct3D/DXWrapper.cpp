@@ -96,11 +96,7 @@ void DX_API::updateClipPlanes()
 {
 }
 
-void DX_API::drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize)
-{
-}
-
-void DX_API::drawText(const std::string& text, const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize)
+void DX_API::drawText(const TextLabel& textLabel, const vec2<I32>& position)
 {
 }
 

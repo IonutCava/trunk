@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -30,6 +30,7 @@
 #include <boost/atomic.hpp>
 DEFINE_SINGLETON(AIManager)
     typedef Unordered_map<I64, AIEntity*> AIEntityMap;
+	typedef Unordered_map<U32, AICoordination*> AITeamMap;
 
 public:
     /// Destroy all entities
@@ -43,6 +44,8 @@ public:
     bool addEntity(AIEntity* entity);
     ///Remove an AI Entity from the manager
     void destroyEntity(U32 guid);
+	///Register an AI Team
+	inline void registerTeam(AICoordination* const team) {_aiTeams[team->getTeamID()] = team;}
     ///Add a nav mesh
     bool addNavMesh(Navigation::NavigationMesh* const navMesh);
     Navigation::NavigationMesh* getNavMesh(U16 index) const {return (index >= _navMeshes.size() ? NULL : _navMeshes[index]);}
@@ -57,17 +60,20 @@ public:
 
 protected:
     AIManager();
+    ~AIManager();
 
 private:
     void processInput();  ///< sensors
     void processData();   ///< think
-    void updateEntities(const D32 deltaTime);///< react
+    void updateEntities(const U64 deltaTime);///< react
 
 private:
     D32 _deltaTimeMS;
     boost::atomic<bool> _navMeshDebugDraw;
     boost::atomic<bool> _pauseUpdate;
+	boost::atomic<bool> _updateNavMeshes;
     AIEntityMap _aiEntities;
+	AITeamMap   _aiTeams;
     mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;
     boost::function0<void> _sceneCallback;

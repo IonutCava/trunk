@@ -10,7 +10,7 @@ REGISTER_SCENE(CubeScene);
 void CubeScene::render(){
 }
 
-void CubeScene::processTasks(const D32 deltaTime){
+void CubeScene::processTasks(const U64 deltaTime){
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
 	D32 updateLights = getSecToMs(0.05);
 
@@ -55,7 +55,7 @@ void CubeScene::preRender() {
 	dwarf->getTransform()->rotate(vec3<F32>(0,1,0),i);
 }
 
-void CubeScene::processInput(const D32 deltaTime){
+void CubeScene::processInput(const U64 deltaTime){
 	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
 	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
 	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
@@ -80,7 +80,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 			tempLight.setEnumValue(LIGHT_TYPE_POINT);
 			Light* light = CreateResource<Light>(tempLight);
 			light->setDrawImpostor(true);
-			light->setRange(30);
+			light->setLightProperties(LIGHT_PROPERTY_BRIGHTNESS, 30.0f);
 			light->setCastShadows(false); //ToDo: Shadows are ... for another time -Ionut
 			_sceneGraph->getRoot()->addNode(light);
 			addLight(light);

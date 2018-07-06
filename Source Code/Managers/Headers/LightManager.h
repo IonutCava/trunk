@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -33,8 +33,10 @@ class SceneRenderState;
 DEFINE_SINGLETON_EXT1(LightManager,FrameListener)
 
 public:
-    void init();
     typedef Unordered_map<U32, Light*> LightMap;
+
+	void init();
+
     ///Add a new light to the manager
     bool addLight(Light* const light);
     ///remove a light from the manager
@@ -47,10 +49,10 @@ public:
     ///Note: the returned value is clamped between 0 and MAX_LIGHTS_PER_SCENE_NODE
     ///Use typeFilter to find only lights of a certain type
     U8 findLightsForSceneNode(SceneGraphNode* const node, LightType typeFilter = LIGHT_TYPE_PLACEHOLDER );
+	U32  generateNewID();
     bool clear();
-    U32  generateNewID();
-    void update();
     void idle();
+	void update(const bool force = false);
     inline LightMap& getLights()      {return _lights;}
     inline Light*    getLight(U32 id) {return _lights[id];}
     inline Light*    getLightForCurrentNode(U8 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}
@@ -68,6 +70,7 @@ public:
     inline       U16                     getLightCountForCurrentNode()          const {return _currLightsPerNode.size();}
     inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
     inline const vectorImpl<I32>&        getLightTypesForCurrentNode()          const {return _currLightTypes;}
+    inline const vectorImpl<I32>&        getLightIndicesForCurrentNode()        const {return _currLightIndices;}
     inline const vectorImpl<I32>&        getShadowCastingLightsForCurrentNode() const {return _currShadowLights;}
     bool checkId(U32 value);
     void drawDepthMap(U8 light, U8 index);
@@ -90,6 +93,7 @@ private:
     vec4<F32> _ambientLight;
     vectorImpl<I32>         _currLightTypes;
     vectorImpl<I32>         _currShadowLights;
+    vectorImpl<I32>         _currLightIndices;
     vectorImpl<Light* >     _currLightsPerNode;
     vectorImpl<Light* >     _tempLightsPerNode;
     vectorImpl<mat4<F32 > > _lightProjectionMatricesCache;

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -44,7 +44,6 @@ enum LightMode{
 ///Defines all light properties that are stores as a 3 or 4 component vector
 enum LightPropertiesV{
     LIGHT_PROPERTY_DIFFUSE,
-    LIGHT_PROPERTY_AMBIENT,
     LIGHT_PROPERTY_SPECULAR,
 };
 ///Defines all light properties that are stored as a floating point value
@@ -55,20 +54,15 @@ enum LightPropertiesF{
     LIGHT_PROPERTY_LIN_ATT,
     LIGHT_PROPERTY_QUAD_ATT,
     LIGHT_PROPERTY_BRIGHTNESS,
-    LIGHT_PROPERTY_RANGE
+    LIGHT_PROPERTY_AMBIENT
 };
 
 struct LightProperties {
-    vec4<F32> _position; ///<Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point 2.0 - spot
-    vec4<F32> _direction; ///<Used by spot lights; w-component - padding
-    vec4<F32> _ambient;
-    vec4<F32> _diffuse;
-    vec4<F32> _specular;
-    vec4<F32> _attenuation; //x = constAtt, y = linearAtt, z = quadraticAtt, w = range
-    F32 _spotExponent;
-    F32 _spotCutoff;
-    F32 _brightness;
-    F32 _padding;
+    vec4<F32> _attenuation; //x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
+    vec4<F32> _position; ///<Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4<F32> _direction; ///<xyz = Used by spot lights, w = spotExponent
+    vec4<F32> _diffuse;   ///< rgb = diffuse,  w = ambientFactor;
+    vec4<F32> _specular;  ///< rgb = specular color, w = brightness
 };
 
 class Impostor;
@@ -85,17 +79,15 @@ public:
     Light(const U8 slot,const F32 range,const LightType& type);
     virtual ~Light();
 
-    ///Light range controls the distance in which all contained objects are lit by it
-    void setRange(const F32 range);
     ///Light score determines the importance of this light for the current node queries
     inline F32  getScore()                const {return _score;}
     inline void setScore(const F32 score)       {_score = score;}
     ///Set all light vector-properties
-    virtual void setLightProperties(const LightPropertiesV& propName, const vec4<F32>& value);
+    virtual void setLightProperties(const LightPropertiesV& propName, const vec3<F32>& value);
     ///Set all light float-properties
     virtual void setLightProperties(const LightPropertiesF& propName, F32 value);
     ///Get light vector properties
-    virtual const vec4<F32>& getVProperty(const LightPropertiesV& key) const;
+    virtual vec3<F32> getVProperty(const LightPropertiesV& key) const;
     ///Get light floating point properties
     virtual F32 getFProperty(const LightPropertiesF& key) const;
     ///Get light ID
@@ -107,15 +99,13 @@ public:
     ///Get the entire property block
     inline const LightProperties& getProperties() const {return _properties;}
     ///Get light diffuse color
-    inline const vec4<F32>& getDiffuseColor() const {return _properties._diffuse;}
+    inline vec3<F32>  getDiffuseColor() const {return _properties._diffuse.rgb();}
     ///Get light position for omni and spot or direction for a directional light (also accesible via the "getDirection" method of the "DirectionalLight" class
-    inline vec3<F32>  getPosition() const {return _properties._position.rgb();}
+    inline vec3<F32>  getPosition()     const {return _properties._position.rgb();}
            void       setPosition(const vec3<F32>& newPosition);
     ///Get direction for spot lights
-    inline vec3<F32>  getDirection() const {return _properties._direction.rgb();}
+    inline vec3<F32>  getDirection() const {return _properties._direction.xyz();}
            void       setDirection(const vec3<F32>& newDirection);
-    ///Light effect range
-    inline F32   getRange()   const {return _properties._attenuation.w;}
     ///Light state (on/off)
     inline bool  getEnabled() const {return _enabled;}
 
@@ -139,7 +129,7 @@ public:
     ///Get a pointer to the light's imposter
     inline Impostor* const getImpostor() const {return _impostor;}
     //Checks if this light needs and update
-    void updateState();
+    void updateState(const bool force = false);
 
     ///Dummy function from SceneNode;
     void onDraw(const RenderStage& currentStage) {};
@@ -148,7 +138,7 @@ public:
     bool unload();
     void postLoad(SceneGraphNode* const sgn);
     bool computeBoundingBox(SceneGraphNode* const sgn);
-    bool isInView(const bool distanceCheck,const BoundingBox& boundingBox, const BoundingSphere& sphere);
+    bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 	virtual void updateTransform(SceneGraphNode* const sgn) {}
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
@@ -178,6 +168,7 @@ protected:
     ///Set light mode
     ///@param mode Togglable, Movable, Simple, Dominant (see LightMode enum)
     void setLightMode(const LightMode& mode);
+
 private:
     ///Enum to char* translation for vector properties
     const char* LightEnum(const LightPropertiesV& key) const;
@@ -196,6 +187,7 @@ private:
 
     U8   _slot;
     bool _drawImpostor, _castsShadows;
+    bool _updateLightBB;
     Impostor* _impostor; ///< Used for debug rendering -Ionut
     SceneGraphNode *_lightSGN, *_impostorSGN;
     boost::function0<void> _callback;

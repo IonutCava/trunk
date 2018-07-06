@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -31,6 +31,7 @@
 class Transform;
 class SceneGraph;
 class SceneState;
+// This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode{
 public:
     SceneRoot() : SceneNode("root",TYPE_ROOT)
@@ -46,6 +47,23 @@ public:
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
+};
+// Add as many SceneTransform nodes are needed as parent nodes for any scenenode to create complex transforms in the scene
+class SceneTransform : public SceneNode {
+public:
+    SceneTransform() : SceneNode(TYPE_TRANSFORM)
+    {
+        _renderState.useDefaultMaterial(false);
+        setState(RES_LOADED);
+    }
+    
+    void render(SceneGraphNode* const sgn)             {return;}
+    void postLoad(SceneGraphNode* const sgn)           {return;}
+    void onDraw(const RenderStage& currentStage)       {return;}
+    void updateTransform(SceneGraphNode* const sgn)    {return;}
+    bool unload()                                      {return true;}
+    bool load(const std::string& name)                 {return true;}
+    bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
 };
 
 class SceneGraphNode{
@@ -81,10 +99,8 @@ public:
     void updateTransforms();
     /// Apply current transform to the node's BB
     void updateBoundingBoxTransform(const mat4<F32>& transform);
-    /// Culling and visibility checks
-    void updateVisualInformation();
     /// Called from SceneGraph "sceneUpdate"
-    void sceneUpdate(const D32 deltaTime, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
     /*Node Management*/
     template<class T>
     ///Always use the level of redirection needed to reduce virtual function overhead
@@ -142,11 +158,16 @@ public:
     /*Transform management*/
     Transform* const getTransform();
                void	 setTransform(Transform* const t);
+
+    Transform* const getPrevTransform();
+               void  setPrevTransform(Transform* const t);
+
     inline     void  silentDispose(const bool state)       {_silentDispose = state;}
     inline     void  useDefaultTransform(const bool state) {_noDefaultTransform = !state;}
-    /// Animations (if needed)
-    inline     void  animationTransforms(const vectorImpl<mat4<F32> >& animationTransforms) {_animationTransforms = animationTransforms;}
-    vectorImpl<mat4<F32> >& animationTransforms()                                           {return _animationTransforms;}
+    // Animations (if needed)
+    const mat4<F32>& getBoneTransform(const std::string& name);
+    inline void animationTransforms(const vectorImpl<mat4<F32> >& animationTransforms)       {_animationTransforms = animationTransforms;}
+    inline const vectorImpl<mat4<F32> >& animationTransforms()                         const {return _animationTransforms;}
     /*Transform management*/
 
     /*Node State*/
@@ -188,8 +209,6 @@ private:
     NodeChildren _children;
     SceneGraphNode *_parent, *_grandParent;
     SceneGraph     *_sceneGraph;
-    // keep track of the scene state
-    SceneState* _currentSceneState;
     boost::atomic<bool> _active;
     //Used to skip certain BB's (sky, ligts, etc);
     U32 _bbAddExclusionList;
@@ -197,7 +216,6 @@ private:
     bool _isSelectable;
     bool _wasActive;
     bool _noDefaultTransform;
-    bool _inView;
     bool _sorted;
     bool _silentDispose;
     boost::atomic<bool> _updateBB;
@@ -210,6 +228,8 @@ private:
     BoundingSphere _boundingSphere; ///<For faster visibility culling
 
     Transform*	_transform;
+    Transform*  _transformPrevious;
+
     U32 _childQueue;
     D32 _updateTimer;
     std::string _name;
@@ -219,8 +239,9 @@ private:
     UsageContext _usageContext;
     NavigationContext _navigationContext;
     bool              _overrideNavMeshDetail;
-    ///Animations
+    ///Animations (current and previous for interpolation)
     vectorImpl<mat4<F32> > _animationTransforms;
+    vectorImpl<mat4<F32> > _animationTransformsPrev;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -20,15 +20,41 @@
 
  */
 
-#ifndef _GL_VERTEX_ARRAY_OBJECT_INTERLEAVED_H_
-#define _GL_VERTEX_ARRAY_OBJECT_INTERLEAVED_H_
+#ifndef _TEXT_LABEL_H_
+#define _TEXT_LABEL_H_
 
-#include "glVertexArrayObject.h"
+#include "Core/Math/Headers/MathClasses.h"
 
-class glVertexArrayObjectInterleaved : public glVertexArrayObject {
+class TextLabel {
+
 public:
-    glVertexArrayObjectInterleaved(PrimitiveType type);
-    ~glVertexArrayObjectInterleaved();
+    TextLabel(const std::string& text,
+              const std::string& font,
+              const vec3<F32>& color,
+              U32 textHeight = 16) : _width(1.0f),
+                                     _text(text),
+                                     _font(font),
+                                     _height(textHeight),
+                                     _color(color),
+                                     _blurAmount(0.0f),
+                                     _spacing(0.0f),
+                                     _alignFlag(0),
+                                     _bold(false),
+                                     _italic(false)
+    {
+    }
+
+    std::string _text;
+    std::string _font;
+    U32         _height;
+    U32         _width;
+    F32         _blurAmount;
+    F32         _spacing;
+    U32         _alignFlag; ///< Check font-stash alignment for details
+    vec4<F32>   _color;
+    bool        _bold;
+    bool        _italic;
+
 };
 
 #endif

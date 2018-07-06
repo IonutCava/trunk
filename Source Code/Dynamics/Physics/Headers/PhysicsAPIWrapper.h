@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -57,8 +57,8 @@ protected:
     virtual bool exitPhysics() = 0;
     virtual void updateTimeStep(U8 timeStepFactor)  = 0;
     virtual void updateTimeStep()  = 0;
-    virtual void update(const D32 deltaTime) = 0;
-    virtual void process(const D32 deltaTime) = 0;
+    virtual void update(const U64 deltaTime) = 0;
+    virtual void process(const U64 deltaTime) = 0;
     virtual void idle() = 0;
     virtual PhysicsSceneInterface* NewSceneInterface(Scene* scene) = 0;
 

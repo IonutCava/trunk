@@ -9,7 +9,7 @@ uniform sampler2DShadow      texDepthMapFromLight3;
 uniform sampler2D            texDiffuseProjected;
 
 uniform float mixWeight;
-uniform bool  dvd_enableShadowMapping;
+uniform bool  dvd_enableShadowMapping = false;
 ////////////////////
 
 #include "shadow_directional.frag"

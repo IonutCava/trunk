@@ -1,7 +1,7 @@
 -- Vertex
 #include "vertexDefault.vert"
 
-in vec3 dvd_cameraPosition;
+uniform vec3 dvd_cameraPosition;
 out vec3 _eyePos;
 
 void main(void)

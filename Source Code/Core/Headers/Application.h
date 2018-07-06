@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -55,6 +55,9 @@ public:
     ///Append to "_memLogBuffer" the string contained in "logMsg" and update _totalMemoryOcuppied with "size" accordingly based on the "allocation" flag
     void logMemoryOperation(bool allocation, const char* logMsg, size_t size);
 
+    inline bool hasFocus()                 const {return _hasFocus;}
+    inline void hasFocus(const bool state)       {_hasFocus = state;}
+
 protected:
     friend class InputInterface;
     void setMousePosition(D32 x, D32 y) const;
@@ -66,6 +69,8 @@ private:
 private:
     I8        _mainWindowId;
     bool      _requestShutdown;
+    /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
+    bool      _hasFocus; 
     /// size in bytes of currently allocated memory by the "New" override (delete calls are taken in consideration)
     size_t    _totalMemoryOcuppied;
     vec2<U16> _resolution;

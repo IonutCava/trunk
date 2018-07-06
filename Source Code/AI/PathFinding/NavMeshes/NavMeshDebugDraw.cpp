@@ -24,7 +24,8 @@ namespace Navigation {
    {
        SAFE_DELETE(_navMeshStateBlock);
        //Allow the primitive to be deleted
-       _primitive->_canZombify = true;
+       if(_primitive)
+	       _primitive->_canZombify = true;
    }
 
    void NavMeshDebugDraw::paused(bool state) {
@@ -42,9 +43,11 @@ namespace Navigation {
 
    void NavMeshDebugDraw::prepareMaterial(){
         SET_STATE_BLOCK(_navMeshStateBlock);
+        GFX_DEVICE.pushWorldMatrix(mat4<F32>(), true);
    }
 
    void NavMeshDebugDraw::releaseMaterial(){
+       GFX_DEVICE.popWorldMatrix();
    }
 
    void NavMeshDebugDraw::beginBatch(){
@@ -55,18 +58,21 @@ namespace Navigation {
                                       DELEGATE_BIND(&NavMeshDebugDraw::releaseMaterial,this));
       }
 
+	  assert(_primitive != NULL);
+
       if(_dirty) _primitive->beginBatch();
    }
 
    void NavMeshDebugDraw::endBatch(){
       if(_dirty) {
-          _primitive->endBatch();
+          if(_primitive)
+			  _primitive->endBatch();
           _dirty = false;
       }
    }
 
    void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size){
-        if(!_dirty) return;
+        if(!_dirty || !_primitive) return;
 
         switch(prim){
             default :
@@ -85,7 +91,7 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z, U32 color){
-       if(!_dirty) return;
+       if(!_dirty || !_primitive) return;
        if(_overrideColor)  color = _color;
 
        vec4<U8> colorVec;
@@ -106,7 +112,7 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::end() {
-      if(_dirty) _primitive->end();
+      if(_dirty && _primitive) _primitive->end();
    }
 
    void NavMeshDebugDraw::overrideColor(U32 col) {

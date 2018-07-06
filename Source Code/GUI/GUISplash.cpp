@@ -46,6 +46,6 @@ void GUISplash::render(){
         _splashShader->UniformTexture("tex",0);
         _splashImage->Bind(0);
         GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
-    _splashImage->Unbind(0);
+        _splashImage->Unbind(0);
     GFX_DEVICE.toggle2D(false);
 }

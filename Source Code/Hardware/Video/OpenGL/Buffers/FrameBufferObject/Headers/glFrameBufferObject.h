@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -30,19 +30,21 @@ class glFrameBufferObject : public FrameBufferObject {
 public:
 
     glFrameBufferObject(FBOType type);
-    virtual ~glFrameBufferObject();
+    ~glFrameBufferObject();
 
-    virtual bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
-    virtual void Destroy();
-    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true) const; ///<Use by multilayerd FBO's
-    virtual void AddDepthBuffer();
+    bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
+    void Destroy();
+    void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true) const; ///<Use by multilayerd FBO's
+    void DrawToFace(TextureDescriptor::AttachmentType slot, GLubyte nFace, bool includeDepth = true) const;
+    void AddDepthBuffer();
 
-    virtual void Begin(GLubyte nFace=0) const;
-    virtual void End(GLubyte nFace=0) const;
-    virtual void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
-    virtual void Unbind(GLubyte unit=0) const;
+    void Begin(const FrameBufferObjectTarget& drawPolicy);
+    void End();
 
-    void BlitFrom(FrameBufferObject* inputFBO) const;
+    void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
+    void Unbind(GLubyte unit=0) const;
+
+    void BlitFrom(FrameBufferObject* inputFBO);
 
     void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const ;
 
@@ -55,10 +57,15 @@ protected:
     GLuint _textureId[5];  ///<4 color attachements and 1 depth
     GLuint _imageLayers;
     GLuint _clearBufferMask;
+    GLuint _msaaSamples;
     bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
     bool   _hasDepth;
     bool   _hasColor;
-    mutable bool _mipMapsDirty;
+    static bool         _viewportChanged;
+    vectorImpl<GLenum > _colorBuffers;
+    bool _colorMaskChanged;
+    bool _depthMaskChanged;
+    static bool _mipMapsDirty;
 };
 
 #endif

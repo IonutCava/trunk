@@ -79,6 +79,8 @@ in vec3 _normalMV;
 in vec4 _vertexW;
 in vec4 _vertexWV;
 
+#include "lightInput.cmn"
+
 #if defined(SKIP_HARDWARE_CLIPPING)
 in float dvd_ClipDistance[MAX_CLIP_PLANES];
 uniform int  dvd_clip_plane_active[MAX_CLIP_PLANES];
@@ -180,9 +182,11 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
     vec4 cAmbient = dvd_lightAmbient * material[0];
     vec4 cDiffuse = material[1] * iDiffuse;
 
+    Light currentLight = dvd_LightSource[dvd_lightIndex[0]];
+
     if(dvd_lightCount > 0){
-        cAmbient += gl_LightSource[0].ambient * material[0];
-        cDiffuse *= gl_LightSource[0].diffuse;
+        cAmbient += currentLight._diffuse.w * material[0];
+        cDiffuse *= vec4(currentLight._diffuse.rgb, 1.0);
     }
 
     // SHADOW MAPS
@@ -223,12 +227,13 @@ vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
     
     float alpha = 0.0f;
     vec4 caustic = cSpecular;
+    Light currentLight = dvd_LightSource[dvd_lightIndex[0]];
 
     if(dvd_lightCount > 0){
-        cAmbient += gl_LightSource[0].ambient * material[0];
-        cDiffuse *= gl_LightSource[0].diffuse;
+        cAmbient += currentLight._diffuse.w * material[0];
+        cDiffuse *= vec4(currentLight._diffuse.rgb, 1.0);
         // Add specular intensity
-        cSpecular = gl_LightSource[0].specular * material[2] * iSpecular;
+        cSpecular = vec4(currentLight._specular.rgb, 1.0) * material[2] * iSpecular;
         alpha = (_waterHeight - _vertexW.y) / (2*(_waterHeight - bbox_min.y));
         caustic = alpha * CausticsColor();
     }

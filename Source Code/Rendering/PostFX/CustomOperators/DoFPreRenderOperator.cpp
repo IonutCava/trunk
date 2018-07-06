@@ -45,10 +45,10 @@ void DoFPreRenderOperator::operation(){
     GFXDevice& gfx = GFX_DEVICE;
 
     gfx.toggle2D(true);
-    _outputFBO->Begin();
+    _outputFBO->Begin(FrameBufferObject::defaultPolicy());
         _dofShader->bind();
             _samplerCopy->Bind(0); //screenFBO
-            _inputFBO[1]->Bind(1); //depthFBO
+            _inputFBO[1]->Bind(1, TextureDescriptor::Depth); //depthFBO
             _dofShader->UniformTexture("texScreen", 0);
             _dofShader->UniformTexture("texDepth",1);
             _renderQuad->setCustomShader(_dofShader);

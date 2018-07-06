@@ -21,6 +21,11 @@ uniform sampler2D texNoise;
 
 uniform bool enable_underwater;
 
+#ifdef USE_DEPTH_PREVIEW
+uniform vec2 dvd_zPlanes;
+uniform bool enable_depth_preview;
+#endif
+
 uniform float _noiseTile;
 uniform float _noiseFactor;
 uniform float dvd_time;
@@ -91,11 +96,18 @@ vec4 UnderWater() {
 
 
 void main(void){
-	
-	if(enable_underwater)
+
+#if defined(USE_DEPTH_PREVIEW)
+    if(enable_depth_preview){
+        float z = (2 * dvd_zPlanes.x) / (dvd_zPlanes.y +dvd_zPlanes.x - texture(texScreen, _texCoord).r * (dvd_zPlanes.y - dvd_zPlanes.x));
+        _colorOut = vec4(z, z, z, 1.0);
+    }else{
+#endif
+
+    if(enable_underwater)
 		_colorOut = UnderWater();
-	else
-		_colorOut = texture(texScreen, _texCoord);
+	else 
+        _colorOut = texture(texScreen, _texCoord);
 
 #if defined(POSTFX_ENABLE_SSAO)
 	_colorOut = SSAO(_colorOut);
@@ -110,4 +122,8 @@ void main(void){
 	
 	if(enableVignette)
 		_colorOut = VignetteEffect(_colorOut);
+   
+#if defined(USE_DEPTH_PREVIEW)
+    }
+#endif
 }

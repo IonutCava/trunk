@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -38,6 +38,7 @@ public:
     AICoordination(U32 id);
     ~AICoordination();
 
+	void update(const U64 deltaTime);
     bool addTeamMember(AIEntity* entity);
     bool removeTeamMember(AIEntity* entity);
     bool addEnemyTeam(teamMap& enemyTeam);
@@ -49,7 +50,7 @@ public:
     inline teamMap& getTeam()         {return _team;}
     inline teamMap& getEnemyTeam()    {return _enemyTeam;}
 
-    inline const Navigation::DivideDtCrowd& getCrowd(U16 radiusIndex = 0)   const {return *_teamCrowd[radiusIndex];}
+    inline const Navigation::DivideDtCrowd& getCrowd(U16 radiusIndex = 0)    const {return *_teamCrowd[radiusIndex];}
     inline       Navigation::DivideDtCrowd* getCrowdPtr(U16 radiusIndex = 0) const {return _teamCrowd[radiusIndex];}
     inline memberVariable&  getMemberVariable()    {return _memberVariable;}
    

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -67,7 +67,7 @@ private:
     vec3<F32>		  _sunVect;
     Sphere3D          *_sky,*_sun;
     SceneGraphNode    *_sunNode, *_skyGeom;
-    U8				  _exclusionMask;
+    U16				  _exclusionMask;
     RenderStateBlock* _skyboxRenderState;
 };
 

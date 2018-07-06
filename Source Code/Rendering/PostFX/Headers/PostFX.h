@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -25,8 +25,6 @@
 
 #include "core.h"
 
-#define FBO_BLOOM_SAMPLES 1
-
 class GFXDevice;
 class Quad3D;
 class Camera;
@@ -39,13 +37,30 @@ typedef Texture Texture2D;
 
 DEFINE_SINGLETON( PostFX )
 
+private:
+    ~PostFX();
+    PostFX();
+    void createOperators();
+
 public:
-    FrameBufferObject* _screenFBO;
-    FrameBufferObject* _depthFBO;
 
-    /// Anaglyph (a second "screen" fbo, for the other "eye")
-    FrameBufferObject* _anaglyphFBO;
+    void displaySceneWithoutAnaglyph();
+    void displaySceneWithAnaglyph();
 
+    void init(const vec2<U16>& resolution);
+    void idle();
+    void reshapeFBO(I32 newwidth , I32 newheight);
+
+    inline void toggleDepthPreview(const bool state) {_depthPreview = state;}
+
+private:
+    bool _enableBloom;
+    bool _enableDOF;
+    bool _enableNoise;
+    bool _enableSSAO;
+    bool _enableFXAA;
+    bool _underwater;
+    bool _depthPreview;
     /// Bloom
     FrameBufferObject* _bloomFBO;
     PreRenderOperator* _bloomOP;
@@ -67,38 +82,12 @@ public:
 
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
     D32 _timer, _tickInterval;
-    F32 _eyeOffset;
 
     Quad3D*	_renderQuad;
     ShaderProgram* _anaglyphShader;
     ShaderProgram* _postProcessingShader;
     Texture2D* _underwaterTexture;
     GFXDevice& _gfx;
-    ///Update the current camera at every render loop
-    Camera*   _currentCamera;
-
-private:
-    void displaySceneWithoutAnaglyph(bool deferred);
-    void displaySceneWithAnaglyph(bool deferred);
-    void createOperators();
-    ~PostFX();
-    PostFX();
-
-    bool _enablePostProcessing;
-    bool _enableAnaglyph;
-    bool _enableBloom;
-    bool _enableDOF;
-    bool _enableNoise;
-    bool _enableSSAO;
-    bool _enableFXAA;
-    bool _enableHDR;
-    bool _underwater;
-
-public:
-    void init(const vec2<U16>& resolution);
-    void idle();
-    void render();
-    void reshapeFBO(I32 newwidth , I32 newheight);
 
 END_SINGLETON
 

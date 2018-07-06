@@ -69,7 +69,7 @@ bool GUIEditor::isVisible(){
     return _editorWindow->isVisible();
 }
 
-bool GUIEditor::update(const D32 deltaTime){
+bool GUIEditor::update(const U64 deltaTime){
     bool state = GUIEditorAIInterface::getInstance().update(deltaTime);
     if(state) state = GUIEditorLightInterface::getInstance().update(deltaTime);
     if(state) state = GUIEditorSceneGraphInterface::getInstance().update(deltaTime);

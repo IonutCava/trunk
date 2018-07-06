@@ -13,26 +13,25 @@ void NetworkScene::preRender(){
                                                       0.25f + cosf(_sunAngle.y) * 0.75f);
 
     light->setDirection(_sunvector);
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
     light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vSunColor);
     light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vSunColor);
 
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void NetworkScene::processInput(const D32 deltaTime){
+void NetworkScene::processInput(const U64 deltaTime){
     if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
     if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-void NetworkScene::processTasks(const D32 deltaTime){
+void NetworkScene::processTasks(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     D32 TimeDisplay = getSecToMs(0.01);
     D32 ServerPing = getSecToMs(1.0);
     if (_taskTimers[0] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", ApplicationTimer::getInstance().getFps());
         _taskTimers[0] = 0.0;
     }
 

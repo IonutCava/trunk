@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -40,14 +40,16 @@ public:
 	void setActiveCamera(const std::string& name);
 	void addNewCamera(const std::string& cameraName, Camera* const camera);
 
-	void addCameraChangeListener(boost::function0<void> f) {_listeners.push_back(f);}
+	void addCameraChangeListener(boost::function0<void> f) {_changeCameralisteners.push_back(f);}
+	void addCameraUpdateListener(boost::function0<void> f) {_updateCameralisteners.push_back(f);}
 
-	void update(const D32 deltaTime);
+	void update(const U64 deltaTime);
 
 private:
 	Camera* _camera;
 	CameraPool _cameraPool;
-	vectorImpl<boost::function0<void> > _listeners;
+	vectorImpl<boost::function0<void> > _changeCameralisteners;
+	vectorImpl<boost::function0<void> > _updateCameralisteners;
 };
 
 #endif

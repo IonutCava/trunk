@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -437,7 +437,7 @@ namespace Navigation {
 
         /**
           * Returns the id of the specified convex obstacle. Returns -1 if this obstacle is not currently added to the tilecache.
-          * Note: Ids are just array indexes and can change when obstacles are added or removed. Use with care!
+          * Note: Ids are just array indices and can change when obstacles are added or removed. Use with care!
           **/
         I32 getConvexShapeObstacleId(ConvexVolume *convexHull);
 

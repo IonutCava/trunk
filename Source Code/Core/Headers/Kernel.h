@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -79,8 +79,8 @@ public:
     SFXDevice& getSFXDevice() const {return _SFX;}
     PXDevice&  getPXDevice()  const {return _PFX;}
     /// get elapsed time since kernel initialization
-    inline D32 getCurrentTime()      const {return _currentTime;}
-    inline D32 getCurrentTimeDelta() const {return _currentTimeDelta;}
+    inline U64 getCurrentTime()      const {return _currentTime;}
+    inline U64 getCurrentTimeDelta() const {return _currentTimeDelta;}
     /// get a pointer to the kernel's threadpool to add,remove,pause or stop tasks
     inline boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != NULL); return _mainTaskPool;}
 
@@ -108,8 +108,10 @@ public: ///Input
 
 private:
    static void firstLoop();
+   void displayScene();
+   void displaySceneAnaglyph();
    bool mainLoopScene(FrameEvent& evt);
-   bool presentToScreen(FrameEvent& evt);
+   bool presentToScreen(FrameEvent& evt, const D32 interpolationFactor);
 
 private:
     Application&    _APP;
@@ -122,31 +124,23 @@ private:
     ///The graphical user interface
     GUI&			_GUI;
     ///The SceneManager/ Scene Pool
-    SceneManager&	_sceneMgr;
-    ///The active scene
-    Scene*          _activeScene;
-    ///The ShaderMAnager
-    ShaderManager&  _shaderMgr;
-    ///The manager class responsible for sending frame update events
-    FrameListenerManager& _frameMgr;
-    ///Access to all of the input devices
-    InputInterface& _inputInterface;
-    ///General light management and rendering (individual lights are handled by each scene)
-    ///Unloading the lights is a scene level responsibility
-    LightManager&   _lightPool;
+    SceneManager&	SceneMgr;
+    ///Keep track of all active cameras used by the engine
+    CameraManager* _cameraMgr;
+
     static bool   _keepAlive;
     static bool   _applicationReady;
     static bool   _renderingPaused;
 
-private:
    static boost::function0<void> _mainLoopCallback;
    boost::threadpool::pool*      _mainTaskPool;
    // both are in ms
-   static D32 _currentTime;
-   static D32 _currentTimeDelta;
-   static D32 _lastFrameTime;
-   CameraManager* _cameraMgr;
-   D32 _nextGameTick;
+   static U64 _currentTime;
+   static U64 _currentTimeDelta;
+   static U64 _previousTime;
+   static D32 _nextGameTick;
+
+
    U8 _loops;
    //Command line arguments
    I32    _argc;

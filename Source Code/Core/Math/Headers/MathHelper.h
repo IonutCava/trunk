@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -61,16 +61,41 @@ template<class T>
 inline F32 millimeter(T a)  { return a*0.001f; }
 
 template<class T>
+inline D32 getUsToSec(T a) {return a * 0.000001; }
+
+template<class T>
+inline D32 getUsToMs(T a)  {return getMsToSec(a); }
+
+template<class T>
 inline D32 getMsToSec(T a) { return a*0.001; }
 
 template<class T>
 inline D32 getSecToMs(T a) { return a*1000.0; }
 
 template<class T>
+inline D32 getSecToUs(T a) { return a * 1000000.0;}
+
+template<class T>
+inline D32 getMsToUs(T a)  { return getSecToMs(a);}
+
+template<class T>
 inline void MsToSec(T& a)  { a*=0.001; }
 
 template<class T>
 inline void SecToMs(T& a)  { a*=1000.0; }
+
+template<class T>
+inline void UsToSec(T& a)  { a*=0.000001; }
+
+template<class T>
+inline void SecToUs(T& a)  { a*=1000000.0; }
+
+template<class T>
+inline void UsToMs(T& a)   { MsToSec(a); }
+
+template<class T>
+inline void MsToUs(T& a)   { SecToMs(a); }
+
 
 const  F32 INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
 

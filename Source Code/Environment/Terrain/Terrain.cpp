@@ -35,10 +35,10 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _terrainRenderState(NULL),
     _terrainDepthRenderState(NULL),
     _terrainReflectionRenderState(NULL),
-    _stateRefreshIntervalBuffer(0),
+    _stateRefreshIntervalBuffer(0ULL),
     _diffuseUVScale(1.0f),
     _normalMapUVScale(1.0f),
-    _stateRefreshInterval(500) ///<Every half a second
+    _stateRefreshInterval(500 * 1000) ///<Every half a second
 {
     _terrainTextures[TERRAIN_TEXTURE_DIFFUSE]   = NULL;
     _terrainTextures[TERRAIN_TEXTURE_NORMALMAP] = NULL;
@@ -52,8 +52,8 @@ Terrain::~Terrain()
 {
 }
 
-void Terrain::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-    ///Query shadow state every "_stateRefreshInterval" milliseconds
+void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+    ///Query shadow state every "_stateRefreshInterval" microseconds
     if (_stateRefreshIntervalBuffer >= _stateRefreshInterval){
         _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
 
@@ -61,7 +61,7 @@ void Terrain::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneS
     }
     _stateRefreshIntervalBuffer += deltaTime;
 
-    _veg->sceneUpdate(deltaTime,sgn,sceneState);
+    _veg->sceneUpdate(deltaTime, sgn, sceneState);
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
@@ -98,6 +98,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     }else{
         SET_STATE_BLOCK(_terrainRenderState);
     }
+    const vectorImpl<I32>& indices = LightManager::getInstance().getLightIndicesForCurrentNode();
     const vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
     const vectorImpl<I32>& lightShadowCast = LightManager::getInstance().getShadowCastingLightsForCurrentNode();
 
@@ -116,6 +117,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     terrainShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
     terrainShader->Uniform("dvd_lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
     terrainShader->Uniform("dvd_lightType",types);
+    terrainShader->Uniform("dvd_lightIndex", indices);
     terrainShader->Uniform("dvd_lightCastsShadows",lightShadowCast);
 }
 
@@ -170,12 +172,12 @@ void Terrain::postDraw(const RenderStage& currentStage){
 }
 
 void Terrain::drawInfinitePlain(){
-    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE | DEPTH_STAGE)) return;
+    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE | SHADOW_STAGE)) return;
 
     SET_STATE_BLOCK(_terrainDepthRenderState);
     _planeTransform->setPosition(vec3<F32>(_eyePos.x,_planeTransform->getPosition().y,_eyePos.z));
     _planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),
-                                          _planeTransform->getMatrix());
+                                          _planeTransform->getGlobalMatrix());
 
     GFX_DEVICE.renderInstance(_plane->renderInstance());
 }

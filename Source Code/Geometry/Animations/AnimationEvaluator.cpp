@@ -47,8 +47,8 @@ U32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime){
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
-void AnimEvaluator::Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bones) {
-	pTime *= _ticksPerSecond;
+void AnimEvaluator::Evaluate(const D32 dt, Unordered_map<std::string, Bone*>& bones) {
+	D32 pTime = dt * _ticksPerSecond;
 
 	D32 time = 0.0f;
 	if( _duration > 0.0)

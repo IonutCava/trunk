@@ -234,7 +234,9 @@ namespace XML {
         U8 aaSamples = pt.get<U8>("rendering.FSAAsamples",2);
         bool postProcessing = pt.get("rendering.enablePostFX",false);
         if(aaMethod == FS_FXAA && !postProcessing) aaMethod = FS_MSAA;
-        par.setParam("postProcessing.enablePostFX",postProcessing);
+        GFX_DEVICE.postProcessingEnabled(postProcessing);
+        GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D",false));
+        GFX_DEVICE.hdrEnabled(pt.get("rendering.enableHDR",false));
         par.setParam("postProcessing.enableFXAA",((aaMethod == FS_FXAA || aaMethod == FS_MSwFXAA) && aaSamples > 0));
         par.setParam("GUI.CEGUI.ExtraStates",pt.get("GUI.CEGUI.ExtraStates",false));
         par.setParam("GUI.CEGUI.SkipRendering",pt.get("GUI.CEGUI.SkipRendering",false));
@@ -258,7 +260,6 @@ namespace XML {
         par.setParam("runtime.zNear",(F32)pt.get("runtime.zNear",0.1f));
         par.setParam("runtime.zFar",(F32)pt.get("runtime.zFar",1200.0f));
         par.setParam("runtime.verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
-        par.setParam("runtime.useGLCompatProfile",pt.get("runtime.useGLCompatProfile",true));
         par.setParam("runtime.aspectRatio",1.0f * (I32)resWidth / (I32)resHeight);
         par.setParam("runtime.resolutionWidth",resWidth);
         par.setParam("runtime.resolutionHeight",resHeight);
@@ -268,19 +269,12 @@ namespace XML {
         par.setParam("runtime.groundPos", pt.get("runtime.groundPos",-2000.0f)); ///<Safety net for physics actors
         Application::getInstance().setResolutionHeight(resHeight);
         Application::getInstance().setResolutionWidth(resWidth);
-        if(postProcessing){
-            bool enable3D = pt.get("rendering.enable3D",false);
-            par.setParam("postProcessing.enable3D",enable3D);
-            if(enable3D){
-                par.setParam("postProcessing.anaglyphOffset",pt.get("rendering.anaglyphOffset",0.16f));
-            }
-            par.setParam("postProcessing.enableNoise",pt.get("rendering.enableNoise",false));
-            par.setParam("postProcessing.enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
-            par.setParam("postProcessing.enableBloom",pt.get("rendering.enableBloom",false));
-            par.setParam("postProcessing.enableSSAO",pt.get("rendering.enableSSAO",false));
-            par.setParam("postProcessing.bloomFactor",pt.get("rendering.bloomFactor",0.4f));
-            par.setParam("postProcessing.enableHDR",pt.get("rendering.enableHDR",false));
-        }
+        par.setParam("postProcessing.anaglyphOffset",pt.get("rendering.anaglyphOffset",0.16f));
+        par.setParam("postProcessing.enableNoise",pt.get("rendering.enableNoise",false));
+        par.setParam("postProcessing.enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
+        par.setParam("postProcessing.enableBloom",pt.get("rendering.enableBloom",false));
+        par.setParam("postProcessing.enableSSAO",pt.get("rendering.enableSSAO",false));
+        par.setParam("postProcessing.bloomFactor",pt.get("rendering.bloomFactor",0.4f));
         par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
 
         //global fog values

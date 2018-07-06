@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -20,8 +20,8 @@
 
  */
 
-#ifndef _FRAMERATE_H_
-#define _FRAMERATE_H_
+#ifndef _APPLICATION_TIMER_H_
+#define _APPLICATION_TIMER_H_
 
 #include "config.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
@@ -46,37 +46,33 @@
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
-DEFINE_SINGLETON(Framerate)
+DEFINE_SINGLETON(ApplicationTimer)
 
 #if defined( OS_WINDOWS )
   typedef LARGE_INTEGER LI;
-#elif defined( OS_APPLE ) // Apple OS X
+//#elif defined( OS_APPLE ) // Apple OS X
     //??
 #else //Linux
   typedef timeval LI;
 #endif
 
 private:
-    Framerate() : _targetFrameRate(60),
-                  _ticksPerMillisecond(0),
-                  _speedfactor(1.0f),
-                  _init(false),
-                  _benchmark(false)
-    {
-    }
+    ApplicationTimer();
 
-    U8   _targetFrameRate;
+    F32  _fps;
     F32  _frameTime;
+    F32  _speedfactor;
+    F32  _targetFrameRate; // float for division benefits
+    D32  _ticksPerMicrosecond;
     LI	 _ticksPerSecond; //Processor's ticks per second
     LI	 _frameDelay;     //Previous frame's number of ticks
     LI	 _startupTicks;   //Ticks at class initialization
     LI   _currentTicks;
     bool _benchmark;      //Measure average FPS and output max/min/average fps to console
+    bool _init;
+    
+    boost::atomic<U64> _elapsedTimeUs;
 
-    boost::atomic_bool _init;
-    boost::atomic_uint _ticksPerMillisecond;
-    boost::atomic<F32> _speedfactor;
-    boost::atomic<F32> _fps;
 public:
 
     void init(U8 targetFrameRate);
@@ -88,16 +84,14 @@ public:
     inline F32  getFrameTime()   const {return _frameTime;}
     inline F32  getSpeedfactor() const {return _speedfactor;}
 
-    inline D32 getElapsedTime(){ //in milliseconds
-        if(!_init)
-            return 0.0;
-
-        QueryPerformanceCounter(&_currentTicks);
-        return (_currentTicks.QuadPart-_startupTicks.QuadPart) / static_cast<D32>(_ticksPerMillisecond);
-  }
+    inline U64 getElapsedTime(bool state = false) { 
+        if(state) return getElapsedTimeInternal();
+        else      return _elapsedTimeUs; 
+    }
 
 protected:
   void benchmarkInternal();
+  U64  getElapsedTimeInternal();
 
 #if defined(_DEBUG) || defined(_PROFILE)
   friend class ProfileTimer;
@@ -108,7 +102,7 @@ protected:
 
 END_SINGLETON
 
-#define FRAME_SPEED_FACTOR  Framerate::getInstance().getSpeedfactor()
+#define FRAME_SPEED_FACTOR  ApplicationTimer::getInstance().getSpeedfactor()
 
 #if defined(_DEBUG) || defined(_PROFILE)
 class ProfileTimer {

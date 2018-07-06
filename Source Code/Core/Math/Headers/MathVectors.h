@@ -21,7 +21,7 @@
  * Author: Scott Lee
 */
 
-/* Copyright (c) 2013 DIVIDE-Studio
+/* Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -102,10 +102,16 @@ public:
     inline void swap(vec2 *iv)             { std::swap(this->x,iv->x); std::swap(this->x,iv->x);}
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec2 &iv)             { std::swap(this->x,iv.x);  std::swap(this->x,iv.x); }
+     /// set the 2 components of the vector manually using a source pointer to a (large enough) array
+    inline void setV(const T* v)           { this->x = v[0]; this->y = v[1]; }
     /// set the 2 components of the vector manually
     inline void set(T _x,T _y)             { this->x = _x; this->y = _y; }
     /// set the 2 components of the vector using a source vector
     inline void set(const vec2& source)    { this->x = source.x; this->y = source.y; }
+     /// set the 2 components of the vector using the first 2 components of the source vector
+    inline void set(const vec3<T>& v)   { this->set(t.xy()); }
+     /// set the 2 components of the vector using the first 2 components of the source vector
+    inline void set(const vec4<T>& v)   { this->set(t.xy()); }
     /// set the 2 components of the vector back to 0
     inline void reset()                    { this->x = this->y = 0; }
     /// return the vector's length
@@ -187,10 +193,16 @@ public:
     inline vec2<T> gb() const { return vec2<T>(this->g, this->b);}
     inline vec2<T> yz() const { return this->gb();}
 
+    /// set the 3 components of the vector manually using a source pointer to a (large enough) array
+    inline void setV(const T* v)        { this->x = v[0]; this->y = v[1]; this->z = v[2]; }
     /// set the 3 components of the vector manually
     inline void set(T _x, T _y, T _z)   { this->x = _x;  this->y = _y;  this->z = _z; }
+    /// set the 3 components of the vector using a smaller source vector
+    inline void set(const vec2<T>& v)   { this->x = v.x; this->y = v.y; this->z = 0.0;}
     /// set the 3 components of the vector using a source vector
     inline void set(const vec3& v)      { this->x = v.x; this->y = v.y; this->z = v.z; }
+    /// set the 3 components of the vector using the first 3 components of the source vector
+    inline void set(const vec4<T>& v)   { this->set(v.xyz()); }
     /// set all the components back to 0
     inline void reset()                 { this->x = this->y = this->z = 0; }
     /// return the vector's length
@@ -223,6 +235,10 @@ public:
     inline vec3 lerp(vec3 &u, vec3 &v, T factor) const;
     /// lerp between the 2 specified vectors by the specified ammount for each component
     inline vec3 lerp(vec3 &u, vec3 &v, vec3& factor) const;
+    /// lerp between this and the specified vector by the specified ammount
+    inline void lerp(vec3 &v, T factor) const;
+    /// lerp between this and the specified vector by the specified ammount for each component
+    inline void lerp(vec3 &v, vec3& factor) const;
     /// this calculates a vector between the two specified points and returns the result
     inline vec3 vector(const vec3 &vp1, const vec3 &vp2) const;
     /// set this vector to be equal to the cross of the 2 specified vectors
@@ -305,10 +321,16 @@ public:
     inline vec3<T> bgr() const {return vec3<T>(this->b,this->g,this->r);}
     inline vec3<T> zyx() const {return this->bgr();}
 
-    /// set the 3 components of the vector manually
+    /// set the 4 components of the vector manually using a source pointer to a (large enough) array
+    inline void setV(const T* v)         { this->x = v[0]; this->y = v[1]; this->z = v[2]; if(v[3]) this->w = v[3]; else this->w = 1.0f; }
+    /// set the 4 components of the vector manually
     inline void set(T _x,T _y,T _z,T _w) { this->x = _x;  this->y =_y;   this->z =_z;   this->w =_w;}
-    /// set the 3 components of the vector using a source vector
+    /// set the 4 components of the vector using a source vector
     inline void set(const vec4& v)       { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w;}
+    /// set the 4 components of the vector using a smaller source vector
+    inline void set(const vec3<T>& v)    { this->x = v.x; this->y = v.y; this->z = v.z; this->w = 1.0;}
+    /// set the 4 components of the vector using a smaller source vector
+    inline void set(const vec2<T>& v)    { this->x = v.x; this->y = v.y; this->z = 0.0; this->w = 1.0;}
     /// set all the components back to 0
     inline void reset()                  { this->x = this->y = this->z = this->w = 0;}
     /// compare 2 vectors within the specified tolerance

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -36,7 +36,7 @@ protected:
 	GUIEditorAIInterface();
 	~GUIEditorAIInterface();
 	bool init(CEGUI::Window *parent);
-	bool update(const D32 deltaTime);
+	bool update(const U64 deltaTime);
 
 	bool Handle_CreateNavMesh(const CEGUI::EventArgs &e);
 	bool Handle_ToggleDebugDraw(const CEGUI::EventArgs &e);

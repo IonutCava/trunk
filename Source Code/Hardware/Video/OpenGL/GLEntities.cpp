@@ -5,13 +5,8 @@
 #include "Headers/glImmediateModeEmulation.h"
 
 #include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexArrayObject.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glMSTextureBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glFrameBufferObject.h"
 #include "Hardware/Video/OpenGL/Buffers/PixelBufferObject/Headers/glPixelBufferObject.h"
-
-#ifndef FTGL_LIBRARY_STATIC
-#define FTGL_LIBRARY_STATIC
-#endif
-#include <FTGL/ftgl.h>
 
 namespace IMPrimitiveValidation{
     inline bool isValid(glIMPrimitive* const priv){ return (priv && !priv->inUse()); }
@@ -41,35 +36,11 @@ glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
     return tempPriv;
 }
 
-FTFont* GL_API::getFont(const std::string& fontName){
-    FontCache::iterator itr = _fonts.find(fontName);
-    if(itr == _fonts.end()){
-        std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
-        fontPath += "GUI/";
-        fontPath += "fonts/";
-        fontPath += fontName;
-        FTFont* tempFont = New FTTextureFont(fontPath.c_str());
-        if (!tempFont) {
-            ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName.c_str());
-        }
-        _fonts.insert(std::make_pair(fontName, tempFont));
-        ftglSetAttributeLocations(Divide::GL::VERTEX_POSITION_LOCATION, Divide::GL::VERTEX_TEXCOORD_LOCATION);
-    }
-    return _fonts[fontName];
-}
-
 RenderStateBlock* GL_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor){
     return New glRenderStateBlock(descriptor);
 }
 
 FrameBufferObject* GL_API::newFBO(const FBOType& type)  {
-    if(type == FBO_2D_COLOR_MS){
-        if(_msaaSamples > 1 && _useMSAA)
-            return New glMSTextureBufferObject(); ///<No MS cube support yet
-      
-        return New glFrameBufferObject(FBO_2D_COLOR);
-    }
-
     return New glFrameBufferObject(type);
 }
 

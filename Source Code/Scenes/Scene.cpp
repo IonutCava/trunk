@@ -196,7 +196,6 @@ SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const pa
 		returnNode = parentNode->addNode(lightItem);
 	else
 		returnNode = _sceneGraph->getRoot()->addNode(lightItem);
-    LightManager::getInstance().addLight(lightItem);
 
 	return returnNode;
 }
@@ -204,8 +203,6 @@ SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const pa
 Camera* Scene::addDefaultCamera(){
     PRINT_FN(Locale::get("SCENE_ADD_DEFAULT_CAMERA"), getName().c_str());
     Camera* camera = New FreeFlyCamera();
-    // force all lights to update on camera change (to keep them still actually)
-    camera->addUpdateListener(DELEGATE_BIND(&LightManager::update, DELEGATE_REF(LightManager::getInstance())));
     camera->setMoveSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.move"));
     camera->setTurnSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.turn"));
     camera->setFixedYawAxis(true);
@@ -296,7 +293,7 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
     _aiTask.reset(New Task(kernel->getThreadPool(),
-                           10,
+                           Config::AI_THREAD_UPDATE_FREQUENCY,
                            false,
                            false,
                            DELEGATE_BIND(&AIManager::update,
@@ -371,7 +368,7 @@ void Scene::clearLights(){
     LightManager::getInstance().clear();
 }
 
-void Scene::updateSceneState(const D32 deltaTime){
+void Scene::updateSceneState(const U64 deltaTime){
     _sceneGraph->sceneUpdate(deltaTime, _sceneState);
 }
 
@@ -414,7 +411,7 @@ void Scene::removeTask(U32 guid){
     }
 }
 
-void Scene::processTasks(const D32 deltaTime){
+void Scene::processTasks(const U64 deltaTime){
     for(U16 i = 0; i < _taskTimers.size(); ++i)
-        _taskTimers[i] += deltaTime;
+        _taskTimers[i] += getUsToMs(deltaTime);
 }

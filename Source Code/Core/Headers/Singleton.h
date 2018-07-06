@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -33,6 +33,10 @@ public :
 
 		return *_instance;
 	}
+
+    inline static bool hasInstance() {
+        return _instance != NULL;
+    }
 
 	inline static T& getInstance() {
 		return *_instance;

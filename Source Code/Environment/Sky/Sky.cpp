@@ -23,7 +23,7 @@ Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
     ///Generate a render state
     RenderStateBlockDescriptor skyboxDesc;
     skyboxDesc.setCullMode(CULL_MODE_CCW);
-    skyboxDesc.setZReadWrite(false,false);
+    //skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
     _skyboxRenderState = GFX_DEVICE.createStateBlock(skyboxDesc);
 }
 
@@ -96,6 +96,7 @@ void Sky::onDraw(const RenderStage& currentStage){
 }
 
 void Sky::render(SceneGraphNode* const sgn){
+
     vec3<F32> eyeTemp(Frustum::getInstance().getEyePos());
 
     sgn->getTransform()->setPosition(eyeTemp);

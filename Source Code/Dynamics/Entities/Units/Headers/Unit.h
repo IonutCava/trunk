@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -68,6 +68,8 @@ public:
 	inline void setUnitType(UnitType type) {_type = type;}
 	/// Get unit type
 	inline UnitType getUnitType()          {return _type;}
+	/// Get bound node
+	inline SceneGraphNode* const getBoundNode() {return _node;} 
 
 protected:
 	/// Unit type

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -103,7 +103,7 @@ namespace Navigation {
         /// Load a saved NavigationMesh from a file.
         bool load(SceneGraphNode* const node);
         /// Called once per frame with the time diff between this and the last frame
-        void update(const D32 deltaTime);
+        void update(const U64 deltaTime);
         /// Render the debug mesh if debug drawing is enabled
         void render();
         inline void debugDraw(bool state)       {_debugDraw = state;}

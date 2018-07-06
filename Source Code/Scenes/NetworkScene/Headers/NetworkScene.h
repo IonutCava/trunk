@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -34,8 +34,8 @@ public:
 	bool load(const std::string& name, CameraManager* const cameraMgr);
 	bool loadResources(bool continueOnErrors);
 
-	void processTasks(const D32 deltaTime);
-	void processInput(const D32 deltaTime);
+	void processTasks(const U64 deltaTime);
+	void processInput(const U64 deltaTime);
 
 private:
 	void test();

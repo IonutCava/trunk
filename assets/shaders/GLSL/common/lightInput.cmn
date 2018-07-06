@@ -1,0 +1,14 @@
+struct Light{
+    vec4 _attenuation; ///< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
+    vec4 _position;    ///< xyz = position/direction (omni,spot / directional). w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4 _direction;   ///< xyz = Used by spot lights, w = spotExponent
+    vec4 _diffuse;     ///< rgb = diffuse,  w = ambientFactor;
+    vec4 _specular;    ///< rgb = specular color, w = brightness
+};
+
+layout(std140) uniform dvd_LightBlock
+{
+	Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
+};
+
+uniform int dvd_lightIndex[MAX_LIGHT_COUNT]; //<What lights to use from the light UBO for the current geometry

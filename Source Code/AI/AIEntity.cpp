@@ -5,6 +5,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "PathFinding/Waypoints/Headers/WaypointGraph.h"  ///< For waypoint movement
 #include "PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh movement
+#include "Dynamics/Entities/Units/Headers/NPC.h"
 
 AIEntity::AIEntity(const std::string& name)  : GUIDWrapper(),
                                               _name(name),
@@ -83,10 +84,12 @@ void AIEntity::processData(){
     _actionProcessor->processData();
 }
 
-void AIEntity::update(const D32 deltaTime){
+void AIEntity::update(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
     if(!_actionProcessor) return;
     _actionProcessor->update(_node, _unitRef);
+	if(_unitRef)
+		_unitRef->update(deltaTime);
 }
 
 void AIEntity::setTeam(AICoordination* const coordination) {

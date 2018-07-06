@@ -2,6 +2,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 
 struct selectionQueueDistanceFrontToBack{
     bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
@@ -80,7 +81,30 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
                 cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 0.1f);
             }
         }break;
-        case OIS::KC_F2:{
+    }
+}
+
+void Scene::onKeyUp(const OIS::KeyEvent& key){
+    switch( key.key ){
+        case OIS::KC_LEFT :
+        case OIS::KC_RIGHT:	state()._angleLR = 0; break;
+        case OIS::KC_UP   :
+        case OIS::KC_DOWN : state()._angleUD = 0; break;
+        case OIS::KC_F3:
+            _paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
+            break;
+        case OIS::KC_F4:
+            _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
+            break;
+        case OIS::KC_F5:
+            GFX_DEVICE.drawDebugAxis(!GFX_DEVICE.drawDebugAxis());
+            break;
+        case OIS::KC_F6: {
+            static bool state = true;
+            PostFX::getInstance().toggleDepthPreview(state);
+            state = !state;
+        }break;
+                    case OIS::KC_F2:{
             D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
             renderState().toggleSkeletons();
             }break;
@@ -89,7 +113,7 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
             renderState().toggleBoundingBoxes();
             }break;
         case OIS::KC_F7:
-            _paramHandler.setParam("postProcessing.enablePostFX",!_paramHandler.getParam<bool>("postProcessing.enablePostFX"));
+            GFX_DEVICE.postProcessingEnabled(!GFX_DEVICE.postProcessingEnabled());
             break;
         case OIS::KC_F8:
             renderState().drawDebugLines(!renderState()._debugDrawLines);
@@ -108,24 +132,6 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
             break;
         case OIS::KC_F12:
             GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()._cachedResolution.x,renderState()._cachedResolution.y));
-            break;
-    }
-}
-
-void Scene::onKeyUp(const OIS::KeyEvent& key){
-    switch( key.key ){
-        case OIS::KC_LEFT :
-        case OIS::KC_RIGHT:	state()._angleLR = 0; break;
-        case OIS::KC_UP   :
-        case OIS::KC_DOWN : state()._angleUD = 0; break;
-        case OIS::KC_F3:
-            _paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
-            break;
-        case OIS::KC_F4:
-            _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
-            break;
-        case OIS::KC_F5:
-            GFX_DEVICE.drawDebugAxis(!GFX_DEVICE.drawDebugAxis());
             break;
         default:
             break;

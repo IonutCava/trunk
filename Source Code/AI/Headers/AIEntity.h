@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -40,7 +40,7 @@ public:
 	~AIEntity();
 	void processInput();
 	void processData();
-	void update(const D32 deltaTime);
+	void update(const U64 deltaTime);
 
 	SceneGraphNode* getBoundNode() {return _node;}
 	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}

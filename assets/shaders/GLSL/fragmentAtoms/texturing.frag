@@ -12,6 +12,8 @@ uniform int  textureOperation0;
 uniform int  textureOperation1;
 uniform int  textureOperation2;
 
+uniform vec4 dvd_TextureEnvColor[3];
+
 const int MODULATE   = 0;
 const int ADD        = 1;
 const int SUBSTRACT  = 2;
@@ -38,7 +40,7 @@ void applyTexture(in sampler2D texUnit, in int type, in int index, in vec2 uv, i
         }break;
         case BLEND      : {
             vec4 tex = texture(texUnit,uv);
-            color = vec4(mix(color.rgb, gl_TextureEnvColor[index].rgb, tex.rgb), color.a * tex.a);
+            color = vec4(mix(color.rgb, dvd_TextureEnvColor[index].rgb, tex.rgb), color.a * tex.a);
         }break;
         case ADD        : {
             vec4 tex = texture(texUnit,uv);

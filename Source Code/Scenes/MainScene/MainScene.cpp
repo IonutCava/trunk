@@ -58,10 +58,11 @@ void MainScene::renderEnvironment(bool waterReflection){
     for_each(Terrain* ter, _visibleTerrains){
         ter->toggleReflection(waterReflection);
     }
-    GFX_DEVICE.render(SCENE_GRAPH_UPDATE(_sceneGraph),renderState());
+
+    SceneManager::getInstance().renderVisibleNodes();
 }
 
-void MainScene::processInput(const D32 deltaTime){
+void MainScene::processInput(const U64 deltaTime){
     bool update = false;
     Camera& cam = renderState().getCamera();
     if(state()._angleLR){
@@ -110,7 +111,7 @@ void MainScene::processInput(const D32 deltaTime){
     }
 }
 
-void MainScene::processTasks(const D32 deltaTime){
+void MainScene::processTasks(const U64 deltaTime){
     D32 SunDisplay = getSecToMs(1.50);
     D32 FpsDisplay = getSecToMs(0.5);
     D32 TimeDisplay = getSecToMs(1.0);
@@ -124,7 +125,7 @@ void MainScene::processTasks(const D32 deltaTime){
     }
 
     if (_taskTimers[1] >= FpsDisplay){
-        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
+        GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         GUI::getInstance().modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _taskTimers[1] = 0.0;
@@ -145,10 +146,7 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr){
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
 
     if(state().getWaterLevel() == RAND_MAX) computeWaterHeight = true;
-    Light* light = addDefaultLight();
-    light->setLightProperties(LIGHT_PROPERTY_AMBIENT,DefaultColors::WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,DefaultColors::WHITE());
-    light->setLightProperties(LIGHT_PROPERTY_SPECULAR,DefaultColors::WHITE());
+    addDefaultLight();
     addDefaultSky();
 
     for(U8 i = 0; i < _terrainInfoArray.size(); i++){
@@ -175,7 +173,7 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr){
     _waterGraphNode->setUsageContext(SceneGraphNode::NODE_STATIC);
     _waterGraphNode->setNavigationContext(SceneGraphNode::NODE_IGNORE);
     ///General rendering callback
-    renderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this,false));
+    renderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, false));
     ///Render the scene for water reflection FBO generation
     _water->setRenderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, true));
     return loadState;

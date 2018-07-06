@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -20,28 +20,33 @@
 
  */
 
-#ifndef _GL_MS_TEXTURE_BUFFER_OBJECT_H
-#define _GL_MS_TEXTURE_BUFFER_OBJECT_H
+#ifndef _RENDER_PASS_CULLER_H_
+#define _RENDER_PASS_CULLER_H_
 
-#include "glFrameBufferObject.h"
-//Multisampled version of the glTextureBufferObject
-class glMSTextureBufferObject : public glFrameBufferObject {
+#include "Utility/Headers/Vector.h"
+
+/// This class performs all the necessary visibility checks on the scene's scenegraph to decide what get's rendered and what not
+/// All node's that should be rendered, will be added to the RenderQueue
+class SceneState;
+class SceneGraphNode;
+
+class RenderPassCuller {
+
 public:
+    RenderPassCuller();
+    ~RenderPassCuller();
+    /// This method performs the visibility check on the given node and all of it's children and adds them to the RenderQueue
+    void cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState);
 
-    glMSTextureBufferObject();
-    ~glMSTextureBufferObject();
+protected:
+    /// Perform CPU-based culling (Frustrum - AABB, distance check, etc)
+    void cullSceneGraphCPU(SceneGraphNode* const currentNode, SceneState& sceneState);
+    /// Perform GPU-based culling (e.g. Occlusion queries)
+    void cullSceneGraphGPU(SceneState& sceneState);
 
-    bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
+protected:
+    vectorImpl<SceneGraphNode* > _visibleNodes;
 
-    void Destroy();
-
-    void End(GLubyte nFace=0) const;
-
-private:
-    GLuint _depthBufferHandle;
-    GLuint _colorBufferHandle;
-    GLuint _msaaBufferResolver;
-    GLuint _msaaSamples;
 };
 
 #endif

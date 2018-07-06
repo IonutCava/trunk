@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -30,24 +30,38 @@
 
 class FrameBufferObject : private boost::noncopyable{
 public:
+    struct FrameBufferObjectTarget {
+        bool _depthOnly;
+        bool _colorOnly;
+        U32  _numColorChannels;
+
+        FrameBufferObjectTarget() : _depthOnly(false), _colorOnly(false), _numColorChannels(1)
+        {
+        }
+    };
+
+    inline static FrameBufferObjectTarget& defaultPolicy() {static FrameBufferObjectTarget _defaultPolicy; return _defaultPolicy;}
+
     bool AddAttachment(const TextureDescriptor& decriptor, TextureDescriptor::AttachmentType slot);
 
     virtual bool Create(U16 width, U16 height, U8 imageLayers = 0) = 0;
 
     virtual void Destroy() = 0;
     virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) const = 0; ///<Use by multilayerd FBO's
-    virtual void Begin(U8 nFace=0) const = 0;
-    virtual void End(U8 nFace=0) const = 0;
+    virtual void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) const = 0; ///<Used by cubemap FBO's    
+
+    virtual void Begin(const FrameBufferObjectTarget& drawPolicy) = 0;
+    virtual void End() = 0;
 
     virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) const;
     virtual void Unbind(U8 unit = 0) const;
     // regenerates mip maps for the currently bound color attachement (must be called  between Bind() / Unbind() to take effect)
     virtual void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const = 0;
-    virtual void BlitFrom(FrameBufferObject* inputFBO) const = 0;
+    virtual void BlitFrom(FrameBufferObject* inputFBO) = 0;
     //Enable/Disable color writes
-    virtual void toggleColorWrites(bool state) {_disableColorWrites = !state;}
+    virtual void toggleColorWrites(const bool state) {_disableColorWrites = !state;}
     //Enable/Disable the presence of a depth renderbuffer
-    virtual void toggleDepthBuffer(bool state, bool useFloatingPoint = false) {_useDepthBuffer = state; _fpDepth = useFloatingPoint;}
+    virtual void toggleDepthBuffer(const bool state, bool useFloatingPoint = false) {_useDepthBuffer = state; _fpDepth = useFloatingPoint;}
     //Set the color the FBO will clear to when drawing to it
     inline void setClearColor(const vec4<F32>& clearColor) { _clearColor.set(clearColor); }
 
@@ -69,7 +83,7 @@ protected:
 
 protected:
     typedef Unordered_map<TextureDescriptor::AttachmentType, TextureDescriptor >  TextureAttachements;
-
+    
     mutable bool _bound;
     bool        _clearBuffersState;
     bool        _clearColorState;

@@ -33,6 +33,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target,
     _outputFBO->Create(width, height);
     _bright = CreateResource<ShaderProgram>(ResourceDescriptor("bright"));
     _blur = CreateResource<ShaderProgram>(ResourceDescriptor("blur"));
+    _blur->Uniform("size", vec2<F32>((F32)_outputFBO->getWidth(), (F32)_outputFBO->getHeight()));
     _bright->UniformTexture("texScreen", 0);
     _bright->UniformTexture("texExposure", 1);
     _bright->UniformTexture("texPrevExposure", 2);
@@ -75,6 +76,7 @@ void BloomPreRenderOperator::reshape(I32 width, I32 height){
         _luminaMipLevel = 0;
         while(lumaRez>>=1) _luminaMipLevel++;
     }
+    _blur->Uniform("size", vec2<F32>((F32)w, (F32)h));
 }
 
 void BloomPreRenderOperator::operation(){
@@ -99,35 +101,33 @@ void BloomPreRenderOperator::operation(){
     _bright->Uniform("toneMap", false);
 
     // render all of the "bright spots"
-    _outputFBO->Begin();
-        //screen FBO
-        _inputFBO[0]->Bind(0);
-            gfx.renderInstance(quadRI);
-        _inputFBO[0]->Unbind(0);
-    _outputFBO->End();
+    _outputFBO->Begin(FrameBufferObject::defaultPolicy());
+    //screen FBO
+    _inputFBO[0]->Bind(0);
+        gfx.renderInstance(quadRI);
+
 
     _blur->bind();
-    _blur->Uniform("size", vec2<F32>((F32)_outputFBO->getWidth(), (F32)_outputFBO->getHeight()));
     _blur->Uniform("horizontal", true);
     _renderQuad->setCustomShader(_blur);
 
     //Blur horizontally
-    _tempBloomFBO->Begin();
-        //bright spots
-        _outputFBO->Bind(0);
-            gfx.renderInstance(quadRI);
-        _outputFBO->Unbind(0);
-    _tempBloomFBO->End();
-
+    _tempBloomFBO->Begin(FrameBufferObject::defaultPolicy());
+    //bright spots
+    _outputFBO->Bind(0);
+        gfx.renderInstance(quadRI);
+        
     _blur->Uniform("size", vec2<F32>((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
     _blur->Uniform("horizontal", false);
 
     //Blur vertically
-    _outputFBO->Begin();
-        //horizontally blurred bright spots
-        _tempBloomFBO->Bind(0);
-            gfx.renderInstance(quadRI);
-        _tempBloomFBO->Unbind(0);
+    _outputFBO->Begin(FrameBufferObject::defaultPolicy());
+    //horizontally blurred bright spots
+    _tempBloomFBO->Bind(0);
+        gfx.renderInstance(quadRI);
+    
+    // clear states
+    _tempBloomFBO->Unbind(0);
     _outputFBO->End();
     gfx.toggle2D(false);
 }
@@ -179,27 +179,23 @@ void BloomPreRenderOperator::toneMapScreen()
 
     _luminaFBO[1]->BlitFrom(_luminaFBO[0]);
 
-    _luminaFBO[0]->Begin();
-        _inputFBO[0]->Bind(0);
-        _luminaFBO[1]->Bind(2);
-            GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
-        _luminaFBO[1]->Unbind(2);
-        _inputFBO[0]->Unbind(0);
-    _luminaFBO[0]->End();
-
-    _bright->Uniform("toneMap", true);
+    _luminaFBO[0]->Begin(FrameBufferObject::defaultPolicy());
+    _inputFBO[0]->Bind(0);
+    _luminaFBO[1]->Bind(2);
+        GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
+    _luminaFBO[1]->Unbind(2);
+    
     _bright->Uniform("luminancePass", false);
+    _bright->Uniform("toneMap", true);
 
     _tempHDRFBO->BlitFrom(_inputFBO[0]);
 
-    _inputFBO[0]->Begin();
-       //screen FBO
-        _tempHDRFBO->Bind(0);
-        // luminance FBO
-        _luminaFBO[0]->Bind(1);
-        _luminaFBO[0]->UpdateMipMaps(TextureDescriptor::Color0);
-            GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
-        _luminaFBO[0]->Unbind(1);
-        _tempHDRFBO->Unbind(0);
-    _inputFBO[0]->End();
+    _inputFBO[0]->Begin(FrameBufferObject::defaultPolicy());
+    //screen FBO
+    _tempHDRFBO->Bind(0);
+    // luminance FBO
+    _luminaFBO[0]->Bind(1);
+    _luminaFBO[0]->UpdateMipMaps(TextureDescriptor::Color0);
+        GFX_DEVICE.renderInstance(_renderQuad->renderInstance());
+    _luminaFBO[0]->Unbind(1);
 }

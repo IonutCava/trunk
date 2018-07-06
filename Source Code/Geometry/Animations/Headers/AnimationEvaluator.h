@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -55,7 +55,7 @@ public:
 
 	AnimEvaluator( const aiAnimation* pAnim);
 
-	void Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bones);
+	void Evaluate(const D32 dt, Unordered_map<std::string, Bone*>& bones);
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
 	U32 GetFrameIndexAt(const D32 elapsedTime);

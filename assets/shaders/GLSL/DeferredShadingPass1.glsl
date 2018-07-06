@@ -67,7 +67,6 @@ in mat4 TBN;
 void main( void ){
 
     vec4 color = material[1]; //diffuse
-    if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
     diffuseOutput = color;
     posOutput     = vec4(position,1);
@@ -92,7 +91,6 @@ uniform sampler2D texDiffuse0;
 
 void main( void ){
    vec4 color = texture(texDiffuse0,_texCoord);
-   if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
    diffuseOutput = color;
    posOutput     = vec4(position,1);
@@ -118,7 +116,6 @@ uniform sampler2D  texNormalMap;
 void main( void ){
 
    vec4 color = texture(texDiffuse0,_texCoord);
-   if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
    
    diffuseOutput = color;
    posOutput     = vec4(position,1);
@@ -144,7 +141,6 @@ uniform mat4 material;
 void main( void )
 {
     vec4 color = material[1]; //diffuse
-    if(color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
     diffuseOutput	= color;
     posOutput  		= vec4(position,1);

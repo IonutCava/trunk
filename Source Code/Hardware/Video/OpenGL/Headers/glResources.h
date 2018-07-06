@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -82,15 +82,14 @@ enum MATRIX_MODE;
 
 namespace Divide {
     namespace GL {
+        void glfw_focus_callback(GLFWwindow *window, I32);
         void glfw_error_callback(GLint error, const char* description);
         void initGlew();
 #ifdef _DEBUG
         ///from: https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
         ///Check the current operation for errors
-        void DebugOutputToFile(GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message);
-        void DebugOutputToFileAMD(GLenum source, GLuint id, GLenum severity, const GLchar* message);
+        void DebugOutputToFile(GLuint contexId, GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message);
         void CALLBACK DebugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
-        void CALLBACK DebugCallbackAMD(GLenum source, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam);
         ///Check the current operation for errors
         void GLCheckError(const std::string& File, GLuint Line, GLchar* operation);
         ///Clear previous error codes

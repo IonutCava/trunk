@@ -30,7 +30,6 @@ SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_Si
     depthMapSampler.toggleMipMaps(false);
     depthMapSampler._useRefCompare = true; //< Use compare function
     depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
-    depthMapSampler._depthCompareMode = LUMINANCE;
 
     TextureDescriptor depthMapDescriptor(TEXTURE_2D,
                                          DEPTH_COMPONENT,
@@ -89,9 +88,9 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState) const 
     //Set the appropriate projection
     _light->renderFromLightView(0);
     //bind the associated depth map
-    _depthMap->Begin();
-    //draw the scene
-    GFX_DEVICE.render(_callback, renderState);
+    _depthMap->Begin(FrameBufferObject::defaultPolicy());
+        //draw the scene
+        GFX_DEVICE.render(_callback, renderState);
     //unbind the associated depth map
     _depthMap->End();
 

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -38,8 +38,8 @@ public:
     inline bool exitPhysics() {return _api.exitPhysics();}
     inline void updateTimeStep(U8 timeStepFactor) {_api.updateTimeStep(timeStepFactor);}
     inline void updateTimeStep()                  {_api.updateTimeStep();}
-    inline void update(const D32 deltaTime) {_api.update(deltaTime);}
-    inline void process(const D32 deltaTime) {_api.process(deltaTime);}
+    inline void update(const U64 deltaTime) {_api.update(deltaTime);}
+    inline void process(const U64 deltaTime) {_api.process(deltaTime);}
     inline void idle() {_api.idle();}
     inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {_api.setPhysicsScene(targetScene);}
     inline void initScene(){_api.initScene();}

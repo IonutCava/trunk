@@ -11,10 +11,20 @@ class SamplerDescriptor;
 ///It's called a prerender operator because it operates on the buffer before "rendering" to the screen
 ///Technically, it's a post render operation
 class PreRenderOperator {
+
+protected:
+	enum PostFXRenderStage {
+		FXAA_STAGE        = toBit(1),
+	    SSAO_STAGE	      = toBit(2),
+	    DOF_STAGE         = toBit(3),
+		BLOOM_STAGE       = toBit(4),
+		LIGHT_SHAFT_STAGE = toBit(5)
+	};
+
 public:
 	///The RenderStage is used to inform the GFXDevice of what we are currently doing to set up apropriate states
 	///The target is the full screen quad to which we want to apply our operation to generate the result
-	PreRenderOperator(RenderStage stage, Quad3D* target,
+	PreRenderOperator(PostFXRenderStage stage, Quad3D* target,
 		              const vec2<U16>& resolution, SamplerDescriptor* const sampler) : _internalSampler(sampler),
 					                                                                   _stage(stage),
 																					   _renderQuad(target),
@@ -37,6 +47,7 @@ public:
 	inline void addInputFBO(FrameBufferObject* const input)          {_inputFBO.push_back(input);}
 
 protected:
+
 	///Target to render to;
 	Quad3D*	_renderQuad;
 	bool    _enabled;
@@ -47,7 +58,7 @@ protected:
 	SamplerDescriptor* _internalSampler;
 
 private:
-	RenderStage _stage;
+	PostFXRenderStage _stage;
 };
 
 #endif

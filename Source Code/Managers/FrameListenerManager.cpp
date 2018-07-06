@@ -87,27 +87,28 @@ void FrameListenerManager::idle(){
 }
 
 ///Please see the Ogre3D documentation about this
-void FrameListenerManager::createEvent(FrameEventType type, FrameEvent& evt){
-        evt._currentTime = GETMSTIME();
-        evt._timeSinceLastEvent = calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
-        evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
+void FrameListenerManager::createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt){
+    evt._currentTime = getUsToMs(currentTime);
+    evt._timeSinceLastEvent = calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
+    evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
 }
 
-F32 FrameListenerManager::calculateEventTime(F32 currentTime, FrameEventType type){
-        EventTimeMap& times = _eventTimers[type];
-        times.push_back(currentTime);
+D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventType type){
 
-        if(times.size() == 1){
-            return 0;
+    EventTimeMap& times = _eventTimers[type];
+    times.push_back(currentTime);
+
+    if(times.size() == 1){
+        return 0.0;
+    }
+    EventTimeMap::iterator it = times.begin(), end = times.end()-2;
+    while(it != end){
+        if (currentTime - *it > 0){
+            ++it;
+        }else{
+            break;
         }
-        EventTimeMap::iterator it = times.begin(), end = times.end()-2;
-        while(it != end){
-            if (currentTime - *it > 0){
-                ++it;
-            }else{
-                break;
-            }
-        }
-        times.erase(times.begin(), it);
-        return F32(times.back() - times.front()) / getSecToMs(times.size()-1);
+    }
+    times.erase(times.begin(), it);
+    return (times.back() - times.front()) / getSecToMs(times.size()-1);
 }

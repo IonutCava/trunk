@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -27,19 +27,28 @@
 
 class SkinnedMesh : public Mesh {
 public:
-    SkinnedMesh() : Mesh(OBJECT_FLAG_SKINNED),
-                   _playAnimations(true)
+    SkinnedMesh() : Mesh(OBJECT_FLAG_SKINNED), _playAnimation(true)
     {
     }
+
     ~SkinnedMesh()
     {
     }
-    void sceneUpdate(const D32 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState);
-    bool playAnimations();
-    void preFrameDrawEnd() {}
-    void updateTransform(SceneGraphNode* const sgn);
 
-private:
-    bool _playAnimations;
+    void sceneUpdate(const U64 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState);
+
+    /// Use playAnimations() to toggle animation playback for the current mesh (and all submeshes) on or off
+    inline void playAnimation(const bool state)       {_playAnimation = state;}
+    inline bool playAnimation()                 const {return _playAnimation;}
+
+    /// Select next available animation
+    bool playNextAnimation();
+    /// Select an animation by index
+    bool playAnimation(I32 index);
+    /// Select an animation by name
+    bool playAnimation(const std::string& animationName);
+
+protected:
+    bool _playAnimation;
 };
 #endif;

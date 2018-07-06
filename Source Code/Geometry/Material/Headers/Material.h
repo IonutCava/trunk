@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -85,6 +85,19 @@ public:
     TextureOperation_PLACEHOLDER = 0x10
   };
 
+  enum GeometryShaderType {
+	  GS_TRIANGLES = 0,
+	  GS_LINES,
+	  GS_POINTS
+  };
+
+  enum TranslucencySource {
+      TRANSLUCENT_DIFFUSE = 0,
+      TRANSLUCENT_OPACITY,
+      TRANSLUCENT_OPACITY_MAP,
+      TRANSLUCENT_DIFFUSE_MAP,
+      TRANSLUCENT_NONE
+  };
   /// Not used yet but implemented for shading model selection in shaders
   /// This enum matches the ASSIMP one on a 1-to-1 basis
   enum ShadingMode {
@@ -105,7 +118,9 @@ public:
   ~Material();
 
   bool unload();
-  inline void setTriangleStripInput(const bool state)   {_dirty = true; _useStripInput = state;}
+
+  inline void setGeometryInputType(GeometryShaderType gsType)   {_dirty = true; _gsInputType = gsType;}
+
   inline void setHardwareSkinning(const bool state)     {_dirty = true; _hardwareSkinning = state;}
   inline void setAmbient(const vec4<F32>& value)        {_dirty = true; _shaderData._ambient = value; _materialMatrix.setCol(0,value);}
   inline void setDiffuse(const vec4<F32>& value)        {_dirty = true; _shaderData._diffuse = value; _materialMatrix.setCol(1,value);}
@@ -120,7 +135,7 @@ public:
                                          _shaderData._emissive.y,
                                          _shaderData._emissive.z));
   }
-
+ inline void useAlphaTest(const bool state) {_useAlphaTest = state;}
  inline void setShadingMode(const ShadingMode& mode) {_shadingMode = mode;}
         void setCastsShadows(const bool state);
         void setReceivesShadows(const bool state);
@@ -139,7 +154,7 @@ public:
         ///For example, to define max light count and max shadow casters add this string:
         ///"MAX_LIGHT_COUNT 4, MAX_SHADOW_CASTERS 2"
         ///The above strings becomes, in the shader:
-        ///#define MAX_LIGHT COUNT 4
+        ///#define MAX_LIGHT_COUNT 4
         ///#define MAX_SHADOW_CASTERS 2
         void addShaderDefines(U8 shaderId, const std::string& shaderDefines,const bool force = false);
         inline void addShaderDefines(const std::string& shaderDefines,const bool force = false)	{
@@ -176,6 +191,8 @@ public:
   inline bool isDirty()       const {return _dirty;}
   inline bool isDoubleSided() const {return _doubleSided;}
          bool isTranslucent();
+  inline bool useAlphaTest()  const {return _useAlphaTest;}
+  inline TranslucencySource   getTranslucencySource() const {return _translucencySource;}
 
   void computeShader(bool force = false,const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
   inline void dumpToXML() {XML::dumpMaterial(*this);}
@@ -185,14 +202,16 @@ private:
   mat4<F32> _materialMatrix; /* all properties bundled togheter */
   ShadingMode _shadingMode;
   std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
+  TranslucencySource _translucencySource;
   vectorImpl<std::string > _shaderDefines[2]; //<Add shader preprocessor defines;
   bool _dirty;
   bool _translucencyCheck;
+  bool _useAlphaTest; //< use discard if true / blend if otherwise
   bool _doubleSided;
   bool _castsShadows;
   bool _receiveShadows;
   bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
-  bool _useStripInput;        ///< Use triangle strip as geometry shader input
+  GeometryShaderType _gsInputType;        ///< Use triangles, lines or points as geometry shader input
   Unordered_map<RenderStage, ShaderProgram* > _shaderRef;
   ///Used to render geometry without materials.
   ///Should emmulate the basic fixed pipeline functions (no lights, just color and texture)

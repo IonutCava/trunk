@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2013 DIVIDE-Studio
+   Copyright (c) 2014 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -56,18 +56,14 @@ enum RenderStage {
     DEFERRED_STAGE			   = toBit(1),
     SHADOW_STAGE			   = toBit(2),
     REFLECTION_STAGE		   = toBit(3),
-    SSAO_STAGE				   = toBit(4),
-    BLOOM_STAGE                = toBit(5),
-    DOF_STAGE                  = toBit(6),
-    LIGHT_SHAFT_STAGE          = toBit(7),
-    FINAL_STAGE				   = toBit(8),
-    ENVIRONMENT_MAPPING_STAGE  = toBit(9),
-    FXAA_STAGE                 = toBit(10),
-    DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
-    POSTFX_STAGE               = SSAO_STAGE | BLOOM_STAGE | DOF_STAGE | LIGHT_SHAFT_STAGE,
-    DEPTH_STAGE                = SSAO_STAGE | DOF_STAGE | SHADOW_STAGE,
+    FINAL_STAGE				   = toBit(4),
+    ENVIRONMENT_MAPPING_STAGE  = toBit(5),
+    Z_PRE_PASS                 = toBit(6),
     //Place all stages above this
-    INVALID_STAGE		       = toBit(11)
+    INVALID_STAGE		       = toBit(7),
+    //Special composite stages go here
+    DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
+    DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS
 };
 
 enum PBOType {

@@ -43,7 +43,7 @@ void FXAAPreRenderOperator::operation(){
     //Copy current screen
     _samplerCopy->BlitFrom(_inputFBO[0]);
     ///Apply FXAA to the output screen using the sampler copy as the texture input
-    _outputFBO->Begin();
+    _outputFBO->Begin(FrameBufferObject::defaultPolicy());
         _samplerCopy->Bind(0);
         _fxaa->bind();
         _fxaa->UniformTexture("texScreen", 0);
