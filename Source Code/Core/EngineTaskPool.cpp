@@ -57,7 +57,7 @@ TaskHandle parallel_for(PlatformContext& context,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        Task::TaskPriority priority,
+                        TaskPriority priority,
                         U32 taskFlags)
 {
     TaskPool& pool = context.taskPool();

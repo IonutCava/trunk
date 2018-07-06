@@ -196,7 +196,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
                             }
                         }
                     }
-                    if (parent.stopRequested()) {
+                    if (StopRequested(&parent)) {
                         break;
                     }
                 }

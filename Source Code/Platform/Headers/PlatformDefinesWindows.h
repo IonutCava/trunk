@@ -33,11 +33,12 @@
 #ifndef _PLATFORM_DEFINES_WINDOWS_H_
 #define _PLATFORM_DEFINES_WINDOWS_H_
 
-#include "Platform/File/Headers/FileWithPath.h"
-
-#pragma warning(disable : 4127)  //< Constant conditional expressions
+#pragma warning(disable : 4127)  //< constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct
 #pragma warning(disable : 4522)  //< multiple assignment operators specified (MSVC 14)
+#pragma warning(disable : 4324)  //< structure was padded due to alignment specifier
+
+#include "Platform/File/Headers/FileWithPath.h"
 
 #ifndef USE_VLD
 //#define USE_VLD

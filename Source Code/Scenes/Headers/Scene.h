@@ -131,7 +131,7 @@ class Scene : public Resource, public PlatformContextComponent {
     inline const SceneInput& input() const { return *_input; }
 
     inline SceneGraph& sceneGraph() { return *_sceneGraph; }
-    I64 registerTask(const TaskHandle& taskItem, bool start = true, U32 flags = 0, Task::TaskPriority priority = Task::TaskPriority::DONT_CARE);
+    I64 registerTask(const TaskHandle& taskItem, bool start = true, U32 flags = 0, TaskPriority priority = TaskPriority::DONT_CARE);
     void clearTasks();
     void removeTask(I64 jobIdentifier);
 

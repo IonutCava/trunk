@@ -45,7 +45,7 @@
 
 namespace Divide {
 
-class Task;
+struct Task;
 class GFXDevice;
 class SceneGraphNode;
 class RenderingComponent;

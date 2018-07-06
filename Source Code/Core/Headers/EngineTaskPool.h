@@ -81,7 +81,7 @@ TaskHandle parallel_for(PlatformContext& context,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        Task::TaskPriority priority = Task::TaskPriority::DONT_CARE,
+                        TaskPriority priority = TaskPriority::DONT_CARE,
                         U32 taskFlags = 0);
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear);

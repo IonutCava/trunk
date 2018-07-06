@@ -133,7 +133,7 @@ void TenisScene::checkCollisions() {
 // Team 1: Player1 + Player2
 // Team 2: Player3 + Player4
 void TenisScene::playGame(const Task& parentTask, AnyParam a, CallbackParam b) {
-    while (!parentTask.stopRequested()) {
+    while (!StopRequested(&parentTask)) {
         bool updated = false;
         stringImpl message;
         if (!_gamePlaying) {

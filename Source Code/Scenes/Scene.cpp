@@ -160,9 +160,12 @@ bool Scene::idle() {  // Called when application is idle
     _lightPool->idle();
 
     WriteLock w_lock(_tasksMutex);
-    _tasks.erase(std::remove_if(std::begin(_tasks), std::end(_tasks),
-                 [](const TaskHandle& handle) -> bool { return !handle._task->finished(); }),
-        std::end(_tasks));
+    _tasks.erase(std::remove_if(std::begin(_tasks),
+                                std::end(_tasks),
+                                [](const TaskHandle& handle) -> bool { 
+                                    return !handle.taskRunning();
+                                }),
+                std::end(_tasks));
 
     return true;
 }
@@ -1127,7 +1130,7 @@ void Scene::onLostFocus() {
     //_paramHandler.setParam(_ID("freezeLoopTime"), true);
 }
 
-I64 Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, Task::TaskPriority priority) {
+I64 Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, TaskPriority priority) {
     WriteLock w_lock(_tasksMutex);
     _tasks.push_back(taskItem);
     if (start) {
@@ -1141,8 +1144,8 @@ void Scene::clearTasks() {
     // Performance shouldn't be an issue here
     WriteLock w_lock(_tasksMutex);
     for (TaskHandle& task : _tasks) {
-        task._task->stopTask();
-        task.wait();
+        Stop(task._task);
+        Wait(task._task);
     }
 
     _tasks.clear();
@@ -1153,7 +1156,7 @@ void Scene::removeTask(I64 jobIdentifier) {
     vector<TaskHandle>::iterator it;
     for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
         if ((*it).jobIdentifier() == jobIdentifier) {
-            (*it)._task->stopTask();
+            Stop((*it)._task);
             _tasks.erase(it);
             (*it).wait();
             return;

@@ -16,111 +16,101 @@ namespace {
     const bool g_DebugTaskStartStop = false;
 };
 
-TaskHandle& TaskHandle::startTask(Task::TaskPriority prio, U32 taskFlags) {
+typedef DELEGATE_CBK<void, size_t> OnFinishCbk;
+
+void finish(Task* task) {
+    if (task->_unfinishedJobs.fetch_sub(1) == 1) {
+        //task->_taskDoneCV.notify_one();
+        if (task->_parent != nullptr) {
+           finish(task->_parent);
+        }
+    }
+}
+
+void run(Task* task, const OnFinishCbk& onFinish) {
+    //UniqueLock lk(_taskDoneMutex);
+    //_taskDoneCV.wait(lk, [this]() -> bool { return _unfinishedJobs.load() == 1; });
+    while (task->_unfinishedJobs.load() > 1) {
+        std::this_thread::yield();
+    }
+
+    if (task->_callback) {
+        task->_callback(*task);
+    }
+
+    onFinish(task->_id);
+
+    finish(task);
+}
+
+
+void runTaskWithDebugInfo(Task* task, const OnFinishCbk& onFinish) {
+    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id.load(), std::this_thread::get_id());
+    run(task, onFinish);
+    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), task->_id.load(), std::this_thread::get_id());
+}
+
+PoolTask getRunTask(Task* task, const OnFinishCbk& onFinish, TaskPriority priority, U32 taskFlags) {
+    if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
+        return PoolTask([task, onFinish]() { runTaskWithDebugInfo(task, onFinish); });
+    }
+
+    return PoolTask([task, onFinish]() { run(task, onFinish); });
+}
+
+void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags) {
+    assert(task != nullptr);
+
     if (Config::USE_SINGLE_THREADED_TASK_POOLS) {
-        if (prio != Task::TaskPriority::REALTIME) {
-            prio = Task::TaskPriority::REALTIME;
+        if (priority != TaskPriority::REALTIME) {
+            priority = TaskPriority::REALTIME;
         }
     }
 
-    assert(_tp != nullptr && _task != nullptr);
-    _tp->taskStarted(_task->poolIndex());
-    _task->startTask(*_tp, prio, taskFlags);
-    return *this;
-}
-
-Task::Task()
-    : Task(TaskDescriptor())
-{
-    _unfinishedJobs.fetch_sub(1);
-}
-
-Task::Task(const TaskDescriptor& descriptor)
-   : GUIDWrapper(),
-    _parent(descriptor.parentTask),
-    _poolIndex(descriptor.index),
-    _callback(descriptor.cbk),
-    _unfinishedJobs{ 1 } //1 == this task
-{
-    _stopRequested.store(false);
-    if (_parent != nullptr) {
-        _parent->_unfinishedJobs.fetch_add(1);
-    }
-}
-
-Task::~Task()
-{
-    stopTask();
-    wait();
-}
-
-void Task::runTaskWithDebugInfo() {
-    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
-    run();
-    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
-}
-
-PoolTask Task::getRunTask(TaskPriority priority, U32 taskFlags) {
-    if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
-         return PoolTask(to_base(priority), [this]() { runTaskWithDebugInfo(); });
-    }
-
-    return PoolTask(to_base(priority), [this]() { run(); });
-}
-
-void Task::startTask(TaskPool& pool, TaskPriority priority, U32 taskFlags) {
     if (g_DebugTaskStartStop) {
         SetBit(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO));
     }
 
     bool runCallback = priority == TaskPriority::REALTIME;
-    _onFinish = [&pool, runCallback](size_t index) {
+    OnFinishCbk onFinish = [&pool, runCallback](size_t index) {
         pool.taskCompleted(index, runCallback);
     };
 
-    if (priority != TaskPriority::REALTIME)
-    {
-        PoolTask task(getRunTask(priority, taskFlags));
-        while (!pool.threadPool().enqueue(task)) {
+    PoolTask wrappedTask(getRunTask(task, onFinish, priority, taskFlags));
+
+    if (priority != TaskPriority::REALTIME) {
+        while (!pool.enqueue(wrappedTask)) {
             Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         }
     } else {
-        getRunTask(priority, taskFlags)();
+        wrappedTask();
     }
 }
 
-void Task::stopTask() {
-    _stopRequested.store(true);
+void Wait(const Task* task) {
+    /*UniqueLock lk(task->_taskDoneMutex);
+    task->_taskDoneCV.wait(lk, [task]() -> bool { return task->_unfinishedJobs.load() == 0; });*/
+    while (!Finished(task)) {
+        std::this_thread::yield();
+    }
 }
 
-void Task::wait() {
-    UniqueLock lk(_taskDoneMutex);
-    _taskDoneCV.wait(lk, [this]() -> bool { return finished(); });
+void Stop(Task* task) {
+    task->_stopRequested.store(true);
 }
 
-void Task::run() {
-    _taskThread = std::this_thread::get_id();
-    {
-        UniqueLock lk(_childTaskMutex);
-        _childTaskCV.wait(lk, [this]() -> bool { return _unfinishedJobs.load() == 1; });
-    }
-
-    if (_callback) {
-        _callback(*this);
-    }
-
-    _onFinish(_poolIndex);
-
-    if (_parent != nullptr) {
-        _parent->_unfinishedJobs.fetch_sub(1);
-    }
-    _unfinishedJobs.fetch_sub(1);
-
-    _taskDoneCV.notify_one();
+bool StopRequested(const Task *task) {
+    return task->_stopRequested.load() ||
+           task->_parentPool->stopRequested();
 }
 
-bool Task::finished() const {
-    return _unfinishedJobs.load() == 0;
+bool Finished(const Task *task) {
+    return task->_unfinishedJobs.load() == 0;
+}
+
+TaskHandle& TaskHandle::startTask(TaskPriority prio, U32 taskFlags) {
+    Start(_task, *_tp, prio, taskFlags);
+    return *this;
 }
 
 };

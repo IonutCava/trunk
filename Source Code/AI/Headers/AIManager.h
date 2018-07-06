@@ -38,7 +38,7 @@
 namespace Divide {
 
 class Scene;
-class Task;
+struct Task;
 class TaskPool;
 
 namespace GFX {

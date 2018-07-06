@@ -138,7 +138,7 @@ void RenderPassCuller::frustumCullNode(const Task& parentTask,
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     isVisible = isVisible && !currentNode.cullNode(currentCamera, cullMaxDistance, stage, collisionResult, distanceSqToCamera);
 
-    if (isVisible && !parentTask.stopRequested()) {
+    if (isVisible && !StopRequested(&parentTask)) {
         nodes.emplace_back(VisibleNode{ distanceSqToCamera, &currentNode });
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children

@@ -8,104 +8,79 @@
 
 namespace Divide {
 
-namespace {
-    const U32 g_TestTaskPoolSize = 4;
-};
-
 TEST(TaskPoolContructionTest)
 {
     Console::toggleErrorStream(false);
+    TaskPool test;
 
-    for (U8 i = 0; i < to_U8(TaskPool::TaskPoolType::COUNT); ++i) {
-        //ToDo: Prio queues have issues with boost 1.65+
-        if (static_cast<TaskPool::TaskPoolType>(i) == TaskPool::TaskPoolType::PRIORITY_QUEUE) {
-            continue;
-        }
+    // Not enough workers
+    bool init = test.init(0);
+    CHECK_FALSE(init);
 
-        TaskPool test(g_TestTaskPoolSize);
-        // Not enough workers
-        bool init = test.init(0, static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_FALSE(init);
+    // Valid
+    init = test.init(1);
+    CHECK_TRUE(init);
 
-        // Valid
-        init = test.init(1, static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_TRUE(init);
-
-        // Double init
-        init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_FALSE(init);
-    }
+    // Double init
+    init = test.init(HARDWARE_THREAD_COUNT());
+    CHECK_FALSE(init);
 }
 
 TEST(ParallelForTest)
 {
     Console::toggleErrorStream(false);
 
-    for (U8 i = 0; i < to_U8(TaskPool::TaskPoolType::COUNT); ++i) {
-        //ToDo: Prio queues have issues with boost 1.65+
-        if (static_cast<TaskPool::TaskPoolType>(i) == TaskPool::TaskPoolType::PRIORITY_QUEUE) {
-            continue;
+    TaskPool test;
+    bool init = test.init(HARDWARE_THREAD_COUNT());
+    CHECK_TRUE(init);
+
+    const U32 partitionSize = 4;
+    const U32 loopCount = partitionSize * 4 + 2;
+
+    std::atomic_uint loopCounter = 0;
+    std::atomic_uint totalCounter = 0;
+    auto loop = [&totalCounter, &loopCounter](const Task& parentTask, U32 start, U32 end) {
+        ++loopCounter;
+        for (U32 i = start; i < end; ++i) {
+            ++totalCounter;
         }
+    };
 
-        TaskPool test(g_TestTaskPoolSize * 4);
-        bool init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_TRUE(init);
+    parallel_for(test, loop, loopCount, partitionSize);
 
-        const U32 partitionSize = 4;
-        const U32 loopCount = partitionSize * 4 + 2;
-
-        std::atomic_uint loopCounter = 0;
-        std::atomic_uint totalCounter = 0;
-        auto loop = [&totalCounter, &loopCounter](const Task& parentTask, U32 start, U32 end) {
-            ++loopCounter;
-            for (U32 i = start; i < end; ++i) {
-                ++totalCounter;
-            }
-        };
-
-        parallel_for(test, loop, loopCount, partitionSize);
-
-        CHECK_EQUAL(loopCounter, 5u);
-        CHECK_EQUAL(totalCounter, 18u);
-    }
+    CHECK_EQUAL(loopCounter, 5u);
+    CHECK_EQUAL(totalCounter, 18u);
 }
 
 
 TEST(TaskCallbackTest)
 {
-    for (U8 i = 0; i < to_U8(TaskPool::TaskPoolType::COUNT); ++i) {
-        //ToDo: Prio queues have issues with boost 1.65+
-        if (static_cast<TaskPool::TaskPoolType>(i) == TaskPool::TaskPoolType::PRIORITY_QUEUE) {
-            continue;
-        }
+    TaskPool test;
+    bool init = test.init(HARDWARE_THREAD_COUNT());
+    CHECK_TRUE(init);
 
-        TaskPool test(g_TestTaskPoolSize);
-        bool init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_TRUE(init);
+    std::atomic_bool testValue = false;
 
-        std::atomic_bool testValue = false;
+    auto task = [](const Task& parentTask) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    };
 
-        auto task = [](const Task& parentTask) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        };
+    auto callback = [&testValue]() {
+        testValue = true;
+    };
 
-        auto callback = [&testValue]() {
-            testValue = true;
-        };
+    TaskHandle job = CreateTask(test, task, callback);
+    job.startTask();
 
-        TaskHandle job = CreateTask(test, task, callback);
-        job.startTask();
+    CHECK_FALSE(testValue);
 
-        CHECK_FALSE(testValue);
+    job.wait();
 
-        job.wait();
+    CHECK_FALSE(testValue);
 
-        CHECK_FALSE(testValue);
+    test.flushCallbackQueue();
 
-        test.flushCallbackQueue();
-
-        CHECK_TRUE(testValue);
-    }
+    CHECK_TRUE(testValue);
 }
 
 namespace {
@@ -135,74 +110,60 @@ namespace {
 
 TEST(TaskClassMemberCallbackTest)
 {
-    for (U8 i = 0; i < to_U8(TaskPool::TaskPoolType::COUNT); ++i) {
-        //ToDo: Prio queues have issues with boost 1.65+
-        if (static_cast<TaskPool::TaskPoolType>(i) == TaskPool::TaskPoolType::PRIORITY_QUEUE) {
-            continue;
-        }
+    TaskPool test;
+    bool init = test.init(HARDWARE_THREAD_COUNT());
+    CHECK_TRUE(init);
 
-        TaskPool test(g_TestTaskPoolSize);
-        bool init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_TRUE(init);
+    ThreadedTest testObj;
 
-        ThreadedTest testObj;
+    TaskHandle job = CreateTask(test,
+        DELEGATE_BIND(&ThreadedTest::threadedFunction, &testObj, std::placeholders::_1),
+        DELEGATE_BIND(&ThreadedTest::setTestValue, &testObj, false));
+    job.startTask();
 
-        TaskHandle job = CreateTask(test,
-            DELEGATE_BIND(&ThreadedTest::threadedFunction, &testObj, std::placeholders::_1),
-            DELEGATE_BIND(&ThreadedTest::setTestValue, &testObj, false));
-        job.startTask();
+    CHECK_FALSE(testObj.getTestValue());
 
-        CHECK_FALSE(testObj.getTestValue());
+    job.wait();
 
-        job.wait();
+    CHECK_TRUE(testObj.getTestValue());
 
-        CHECK_TRUE(testObj.getTestValue());
+    test.flushCallbackQueue();
 
-        test.flushCallbackQueue();
-
-        CHECK_FALSE(testObj.getTestValue());
-    }
+    CHECK_FALSE(testObj.getTestValue());
 }
 
 TEST(TaskPriorityTest)
 {
-    for (U8 i = 0; i < to_U8(TaskPool::TaskPoolType::COUNT); ++i) {
-        //ToDo: Prio queues have issues with boost 1.65+
-        if (static_cast<TaskPool::TaskPoolType>(i) == TaskPool::TaskPoolType::PRIORITY_QUEUE) {
-            continue;
-        }
+    TaskPool test;
+    bool init = test.init(HARDWARE_THREAD_COUNT());
+    CHECK_TRUE(init);
 
-        TaskPool test(g_TestTaskPoolSize);
-        bool init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_TRUE(init);
+    U32 callbackValue = 0;
+    auto testFunction = [&callbackValue](const Task& parentTask) {
+        callbackValue++;
+    };
 
-        U32 callbackValue = 0;
-        auto testFunction = [&callbackValue](const Task& parentTask) {
-            callbackValue++;
-        };
+    auto callback = [&callbackValue]() {
+        callbackValue++;
+    };
 
-        auto callback = [&callbackValue]() {
-            callbackValue++;
-        };
+    TaskHandle job = CreateTask(test, testFunction, callback);
+    job.startTask();
+    job.wait();
+    CHECK_EQUAL(callbackValue, 1u);
+    test.flushCallbackQueue();
+    CHECK_EQUAL(callbackValue, 2u);
 
-        TaskHandle job = CreateTask(test, testFunction, callback);
-        job.startTask();
-        job.wait();
-        CHECK_EQUAL(callbackValue, 1u);
-        test.flushCallbackQueue();
-        CHECK_EQUAL(callbackValue, 2u);
+    job.startTask(TaskPriority::REALTIME);
+    job.wait();
+    CHECK_EQUAL(callbackValue, 3u);
+    test.flushCallbackQueue();
+    CHECK_EQUAL(callbackValue, 3u);
 
-        job.startTask(Task::TaskPriority::REALTIME);
-        job.wait();
-        CHECK_EQUAL(callbackValue, 3u);
-        test.flushCallbackQueue();
-        CHECK_EQUAL(callbackValue, 3u);
-        job.startTask(Task::TaskPriority::REALTIME);
-        job.wait();
-        CHECK_EQUAL(callbackValue, 4u);
-        test.flushCallbackQueue();
-        CHECK_EQUAL(callbackValue, 5u);
-    }
+    job = CreateTask(test, testFunction, callback);
+    job.startTask(TaskPriority::REALTIME);
+    job.wait();
+    CHECK_EQUAL(callbackValue, 5u);
 }
 
 }; //namespace Divide

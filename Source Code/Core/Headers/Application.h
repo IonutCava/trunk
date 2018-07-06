@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-class Task;
+struct Task;
 class Kernel;
 class Configuration;
 const char* getErrorCodeName(ErrorCode code) noexcept;

@@ -30,7 +30,7 @@ PlatformContext::~PlatformContext()
 }
 
 void PlatformContext::init() {
-    _taskPool = std::make_unique<TaskPool>(Config::MAX_POOLED_TASKS);
+    _taskPool = std::make_unique<TaskPool>();
     _gfx = std::make_unique<GFXDevice>(_kernel);        // Video
     _sfx = std::make_unique<SFXDevice>(_kernel);        // Audio
     _pfx = std::make_unique<PXDevice>(_kernel);         // Physics

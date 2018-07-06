@@ -38,77 +38,34 @@
 
 namespace Divide {
 
-class Task;
+struct Task;
 class TaskPool;
-struct TaskDescriptor {
-    size_t index = 0;
-    Task* parentTask = nullptr;
-    DELEGATE_CBK<void, const Task&> cbk;
+
+enum class TaskPriority : U8 {
+    DONT_CARE = 0,
+    REALTIME = 1, //<= not threaded
+    COUNT
 };
-/**
- *@brief Using std::atomic for thread-shared data to avoid locking
- */
-class Task : public GUIDWrapper, protected NonCopyable {
-   public:
-       static constexpr U16 MAX_CHILD_TASKS = to_base(std::numeric_limits<I8>::max());
 
-       enum class TaskPriority : U8 {
-           DONT_CARE = 0,
-           REALTIME = 1, //<= not threaded
-           COUNT
-       };
+enum class TaskFlags : U8 {
+    PRINT_DEBUG_INFO = toBit(1),
+    COUNT = 1,
+};
 
-      enum class TaskFlags : U8 {
-        PRINT_DEBUG_INFO = toBit(1),
-        COUNT = 1,
-      };
-
-    Task();
-    Task(const TaskDescriptor& descriptor);
-    ~Task();
-
-    void startTask(TaskPool& pool, TaskPriority priority, U32 taskFlags);
-
-    void stopTask();
-
-    bool finished() const;
-
-    inline size_t poolIndex() const noexcept {
-        return _poolIndex;
-    }
-
-    inline bool stopRequested() const noexcept {
-        if (_parent != nullptr) {
-            return _stopRequested.load() || _parent->stopRequested();
-        }
-        return _stopRequested.load();
-    }
-
-    void wait();
-
-   protected:
-    void run();
-    void runTaskWithDebugInfo();
-    PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
-
-   private:
-    size_t _poolIndex;
-    Task* _parent;
+struct alignas(64) Task {
+    Task* _parent = nullptr;
+    TaskPool* _parentPool = nullptr;
+    std::atomic_size_t _id;
     std::atomic_size_t _unfinishedJobs;
-
-    std::atomic_bool _stopRequested;
-
+    std::atomic_bool _stopRequested = false;
     DELEGATE_CBK<void, const Task&> _callback;
-    DELEGATE_CBK<void, size_t> _onFinish;
-
-    std::atomic<std::thread::id> _taskThread;
-
-    std::mutex _taskDoneMutex;
-    std::condition_variable _taskDoneCV;
-
-    std::mutex _childTaskMutex;
-    std::condition_variable _childTaskCV;
 };
+
+void Start(Task *task, TaskPool& pool, TaskPriority priority, U32 taskFlags);
+void Stop(Task *task);
+void Wait(const Task *task);
+bool StopRequested(const Task *task);
+bool Finished(const Task *task);
 
 // A task object may be used for multiple jobs
 struct TaskHandle {
@@ -124,11 +81,11 @@ struct TaskHandle {
     {
     }
 
-    TaskHandle& startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE, U32 taskFlags = 0);
+    TaskHandle& startTask(TaskPriority prio = TaskPriority::DONT_CARE, U32 taskFlags = 0);
 
     inline TaskHandle& wait() {
         if (_task != nullptr) {
-            _task->wait();
+            Wait(_task);
         }
         return *this;
     }
@@ -139,6 +96,10 @@ struct TaskHandle {
 
     inline TaskPool& getOwningPool() {
         return *_tp;
+    }
+
+    inline bool taskRunning() const {
+        return !Finished(_task);
     }
 
     Task* _task;

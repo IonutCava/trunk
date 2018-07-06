@@ -6,15 +6,18 @@
 
 namespace Divide {
 
-TaskPool::TaskPool(U32 maxTaskCount)
-    : _threadedCallbackBuffer(maxTaskCount),
+namespace {
+    thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
+    thread_local U32  g_allocatedTasks = 0u;
+};
+
+TaskPool::TaskPool()
+    : _threadedCallbackBuffer(Config::MAX_POOLED_TASKS),
+      _taskCallbacks(Config::MAX_POOLED_TASKS),
+      _runningTaskCount(0u),
       _workerThreadCount(0u),
-      _tasksPool(maxTaskCount),
-      _taskCallbacks(maxTaskCount),
-      _taskStates(maxTaskCount, TaskState::TASK_FREE)
+      _stopRequested(false)
 {
-    assert(isPowerOfTwo(maxTaskCount));
-    _allocatedJobs.store(0);
 }
 
 TaskPool::~TaskPool()
@@ -22,47 +25,39 @@ TaskPool::~TaskPool()
     shutdown();
 }
 
-bool TaskPool::init(U32 threadCount, TaskPoolType type, const stringImpl& workerName) {
+bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
     if (threadCount == 0 || _mainTaskPool != nullptr) {
         return false;
     }
 
     _workerThreadCount = threadCount;
-
-    switch (type) {
-        case TaskPoolType::PRIORITY_QUEUE:
-            _mainTaskPool = std::make_unique<ThreadPoolBoostPrio>(_workerThreadCount);
-            break;
-        case TaskPoolType::FIFO_QUEUE:
-            _mainTaskPool = std::make_unique<ThreadPoolBoostFifo>(_workerThreadCount);
-            break;
-        case TaskPoolType::DONT_CARE:
-        default:
-            _mainTaskPool = std::make_unique<ThreadPoolC11>(_workerThreadCount);
-            break;
-    };
-
-    nameThreadpoolWorkers(workerName.c_str(), *_mainTaskPool);
+    _mainTaskPool = std::make_unique<boost::asio::thread_pool>(_workerThreadCount);
+    _stopRequested.store(false);
+    nameThreadpoolWorkers(workerName.c_str());
 
     return true;
 }
 
 void TaskPool::shutdown() {
     waitForAllTasks(true, true, true);
-    _tasksPool.clear();
 }
-void TaskPool::runCbkAndClearTask(size_t taskIndex) {
-    DELEGATE_CBK<void>& cbk = _taskCallbacks[taskIndex];
+
+bool TaskPool::enqueue(const PoolTask& task) {
+    assert(_mainTaskPool != nullptr);
+    boost::asio::post(*_mainTaskPool, task);
+    _runningTaskCount.fetch_add(1);
+
+    return true;
+}
+
+void TaskPool::runCbkAndClearTask(size_t taskIdentifier) {
+    DELEGATE_CBK<void>& cbk = _taskCallbacks[taskIdentifier];
     if (cbk) {
         cbk();
         cbk = DELEGATE_CBK<void>();
     }
 }
 
-TaskPool::TaskState TaskPool::state(size_t index) const {
-    ReadLock lk(_taskStateLock);
-    return _taskStates[index];
-}
 
 void TaskPool::flushCallbackQueue()
 {
@@ -76,20 +71,10 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     bool finished = _workerThreadCount == 0;
     while (!finished) {
         if (forceClear) {
-            std::for_each(std::begin(_tasksPool),
-                          std::end(_tasksPool),
-                          [](Task& task) {
-                              task.stopTask();
-                          });
+            _stopRequested.store(true);
         }
-        // Possible race condition. Try to set all child states to false as well!
-        ReadLock lk(_taskStateLock);
-        finished = std::find_if(std::cbegin(_taskStates),
-                                std::cend(_taskStates),
-                                [](TaskState entry) {
-                                    return entry != TaskState::TASK_FREE;
-                                }) == std::cend(_taskStates);
-        if (yield) {
+        finished = _runningTaskCount.load() == 0;
+        if (!finished && yield) {
             std::this_thread::yield();
         }
     }
@@ -97,23 +82,19 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
         flushCallbackQueue();
     }
 
-    _mainTaskPool->stopAll();
-    _mainTaskPool->waitAll();
+    _stopRequested.store(false);
+    _mainTaskPool->stop();
+    _mainTaskPool->join();
 }
 
-void TaskPool::taskStarted(size_t poolIndex) {
-    WriteLock lk(_taskStateLock);
-    _taskStates[poolIndex] = TaskState::TASK_RUNNING;
-}
 
-void TaskPool::taskCompleted(size_t poolIndex, bool runCallback) {
+void TaskPool::taskCompleted(size_t taskIndex, bool runCallback) {
     if (runCallback) {
-        runCbkAndClearTask(poolIndex);
+        runCbkAndClearTask(taskIndex);
     } else {
-        WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
+        WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(taskIndex));
+        _runningTaskCount.fetch_sub(1);
     }
-    WriteLock lk(_taskStateLock);
-    _taskStates[poolIndex] = TaskState::TASK_FREE;
 }
 
 Task* TaskPool::createTask(Task* parentTask,
@@ -121,49 +102,55 @@ Task* TaskPool::createTask(Task* parentTask,
                            const DELEGATE_CBK<void, const Task&>& threadedFunction,
                            const DELEGATE_CBK<void>& onCompletionFunction) 
 {
-    TaskDescriptor descriptor;
-    descriptor.parentTask = parentTask;
-    descriptor.cbk = threadedFunction;
-
-    const size_t poolSize = to_base(_tasksPool.size());
-
-    size_t taskIndex = _allocatedJobs.fetch_add(1u) & (poolSize - 1u);
-    size_t failCount = 0;
-
-    {
-        WriteLock lk(_taskStateLock);
-        while(_taskStates[taskIndex] != TaskState::TASK_FREE) {
-            failCount++;
-            taskIndex = _allocatedJobs.fetch_add(1u) & (poolSize - 1u);
-            assert(failCount < poolSize * 2);
-        }
-        _taskStates[taskIndex] = TaskState::TASK_ALLOCATED;
+    if (parentTask != nullptr) {
+        parentTask->_unfinishedJobs.fetch_add(1);
     }
 
-    _taskCallbacks[taskIndex] = onCompletionFunction;
-    descriptor.index = taskIndex;
-    return new(&_tasksPool[taskIndex]) Task{ descriptor };
+    const U32 index = g_allocatedTasks++;
+    Task* task = &g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
+    task->_parentPool = this;
+    task->_parent = parentTask;
+    task->_callback = threadedFunction;
+    task->_unfinishedJobs = 1;
+
+    if (task->_id == 0) {
+        static size_t id = 1;
+        task->_id = id++;
+    }
+
+    if (onCompletionFunction) {
+        _taskCallbacks[task->_id] = onCompletionFunction;
+    }
+
+    return task;
 }
 
 //Ref: https://gist.github.com/shotamatsuda/e11ed41ee2978fa5a2f1/
-void TaskPool::nameThreadpoolWorkers(const char* name, ThreadPool& pool) {
+void TaskPool::nameThreadpoolWorkers(const char* name) {
     std::mutex mutex;
     std::condition_variable condition;
     bool predicate = false;
+    std::atomic_size_t count = 0;
     UniqueLock lock(mutex);
-    for (std::size_t i = 0; i < pool.numThreads(); ++i) {
-        pool.enqueue(PoolTask(1, [i, &name, &mutex, &condition, &predicate]() {
+    for (std::size_t i = 0; i < _workerThreadCount; ++i) {
+        enqueue([i, &name, &mutex, &condition, &predicate, &count]() {
             UniqueLock lock(mutex);
             while (!predicate) {
                 condition.wait(lock);
             }
             setThreadName(Util::StringFormat("%s_%d", name, i).c_str());
-        }));
+            ++count;
+        });
     }
     predicate = true;
     condition.notify_all();
     lock.unlock();
-    pool.waitAll();
+    _runningTaskCount.store(0);
+    WAIT_FOR_CONDITION(count.load() == _workerThreadCount);
+}
+
+bool TaskPool::stopRequested() const {
+    return _stopRequested.load();
 }
 
 TaskHandle CreateTask(TaskPool& pool,
@@ -186,7 +173,7 @@ TaskHandle CreateTask(TaskPool& pool,
                       const DELEGATE_CBK<void, const Task&>& threadedFunction,
                       const DELEGATE_CBK<void>& onCompletionFunction)
 {
-    return CreateTask(pool, nullptr, jobIdentifier, threadedFunction);
+    return CreateTask(pool, nullptr, jobIdentifier, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
@@ -211,7 +198,7 @@ TaskHandle parallel_for(TaskPool& pool,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        Task::TaskPriority priority,
+                        TaskPriority priority,
                         U32 taskFlags)
 {
     TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());

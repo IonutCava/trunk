@@ -33,77 +33,9 @@
 #ifndef _PLATFORM_TASK_POOL_H_
 #define _PLATFORM_TASK_POOL_H_
 
-#include <Threadpool-Boost/include/threadpool.hpp>
-#include <Threadpool-c++11/Threadpool.hpp>
-
 namespace Divide {
 
-class PoolTask {
-public:
-    explicit PoolTask(std::function<void()> task);
-    explicit PoolTask(I32 priority, std::function<void()> task);
-
-    void operator()();
-
-    I32 _priority;
-    std::function<void()> _task;
-};
-
-class ThreadPool {
-public:
-    explicit ThreadPool(I32 numThreads);
-    virtual ~ThreadPool();
-
-    virtual bool enqueue(const PoolTask& task) = 0;
-    virtual void stopAll() = 0;
-    virtual void waitAll() = 0;
-    I32 numThreads() const;
-
-protected:
-    I32 _numThreads;
-};
-
-class ThreadPoolC11 final : public ThreadPool
-{
-public:
-    explicit ThreadPoolC11(I32 numThreads);
-    virtual ~ThreadPoolC11();
-
-    bool enqueue(const PoolTask& task) override;
-    void stopAll() override;
-    void waitAll() override;
-
-private:
-    ctpl::thread_pool _pool;
-};
-
-class ThreadPoolBoostPrio final : public ThreadPool
-{
-public:
-    explicit ThreadPoolBoostPrio(I32 numThreads);
-    virtual ~ThreadPoolBoostPrio();
-
-    bool enqueue(const PoolTask& task) override;
-    void stopAll() override;
-    void waitAll() override;
-
-private:
-    boost::threadpool::prio_pool _pool;
-};
-
-class ThreadPoolBoostFifo final : public ThreadPool
-{
-public:
-    explicit ThreadPoolBoostFifo(I32 numThreads);
-    virtual ~ThreadPoolBoostFifo();
-
-    bool enqueue(const PoolTask& task) override;
-    void stopAll() override;
-    void waitAll() override;
-
-private:
-    boost::threadpool::fifo_pool _pool;
-};
+typedef std::function<void()> PoolTask;
 
 }; //namespace Divide
 

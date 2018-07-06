@@ -38,25 +38,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class TaskPool {
-  protected:
-    enum class TaskState : U8 {
-        TASK_FREE = 0,
-        TASK_ALLOCATED,
-        TASK_RUNNING
-    };
-
   public:
-    enum class TaskPoolType : U8 {
-        PRIORITY_QUEUE = 0,
-        FIFO_QUEUE,
-        DONT_CARE,
-        COUNT
-    };
 
-    explicit TaskPool(U32 maxTaskCount);
+    explicit TaskPool();
     ~TaskPool();
     
-    bool init(U32 threadCount, TaskPoolType type, const stringImpl& workerName = "DVD_WORKER_");
+    bool init(U32 threadCount,const stringImpl& workerName = "DVD_WORKER");
     void shutdown();
 
     void flushCallbackQueue();
@@ -73,33 +60,25 @@ class TaskPool {
 
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
-    friend class Task;
+    friend struct Task;
     friend struct TaskHandle;
-    void taskStarted(size_t poolIndex);
-    void taskCompleted(size_t poolIndex, bool runCallback);
+    friend void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags);
+    friend bool StopRequested(const Task *task);
+
+    void taskCompleted(size_t taskIndex, bool runCallback);
     
-    inline ThreadPool& threadPool() {
-        assert(_mainTaskPool != nullptr);
-        return *_mainTaskPool;
-    }
+    bool enqueue(const PoolTask& task);
+    bool stopRequested() const;
 
-    void nameThreadpoolWorkers(const char* name, ThreadPool& pool);
-    void runCbkAndClearTask(size_t taskIndex);
-
-    TaskState state(size_t index) const;
+    void nameThreadpoolWorkers(const char* name);
+    void runCbkAndClearTask(size_t taskIdentifier);
 
   private:
-    std::unique_ptr<ThreadPool> _mainTaskPool;
+    std::unique_ptr<boost::asio::thread_pool> _mainTaskPool;
     boost::lockfree::queue<size_t> _threadedCallbackBuffer;
-
-    vector<Task> _tasksPool;
-    vector<TaskState> _taskStates;
-    vector<DELEGATE_CBK<void>> _taskCallbacks;
-
-    mutable SharedLock _taskStateLock;
-
-    std::atomic<size_t> _allocatedJobs;
-
+    std::atomic_size_t _runningTaskCount;
+    std::atomic_bool _stopRequested = false;
+    hashMap<size_t, DELEGATE_CBK<void>> _taskCallbacks;
     U32 _workerThreadCount;
 };
 
@@ -127,7 +106,7 @@ TaskHandle parallel_for(TaskPool& pool,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        Task::TaskPriority priority = Task::TaskPriority::DONT_CARE,
+                        TaskPriority priority = TaskPriority::DONT_CARE,
                         U32 taskFlags = 0);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);

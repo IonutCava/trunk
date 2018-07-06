@@ -180,7 +180,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
             [this]() mutable
             {
                 _octreeUpdating = false;
-            }).startTask(Task::TaskPriority::REALTIME);
+            }).startTask(TaskPriority::REALTIME);
     }
 }
 

@@ -34,18 +34,19 @@ ResourceCache::~ResourceCache()
 void ResourceCache::clear() {
     WriteLock w_lock(_creationMutex);
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
-    while (!_resDB.empty()) {
-        for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB);)
+
+    for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB); ++it)
+    {
+        if (!it->second.expired()) 
         {
-            if (it->second.expired() ||
-                it->second.lock()->getType() == ResourceType::GPU_OBJECT)
-            {
-                it = _resDB.erase(it);
-            } else {
-                ++it;
+            CachedResource_ptr res = it->second.lock();
+            if (res->getType() != ResourceType::GPU_OBJECT) {
+                Console::printfn(Locale::get(_ID("WARN_RESOURCE_LEAKED")), res->name().c_str(), res->getGUID());
             }
         }
     }
+
+    _resDB.clear();
 }
 
 void ResourceCache::add(CachedResource_wptr res) {

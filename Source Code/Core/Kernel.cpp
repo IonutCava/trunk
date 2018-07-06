@@ -121,7 +121,7 @@ void Kernel::startSplashScreen() {
             break;
         }
     });
-    _splashTask.startTask(Task::TaskPriority::REALTIME/*HIGH*/);
+    _splashTask.startTask(TaskPriority::REALTIME/*HIGH*/);
 }
 
 void Kernel::stopSplashScreen() {
@@ -608,7 +608,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     U32 hardwareThreads = HARDWARE_THREAD_COUNT();
     if (!_platformContext->taskPool().init(
         std::max(hardwareThreads, 5u) - 3, //at least two worker threads
-        TaskPool::TaskPoolType::DONT_CARE,
         "DIVIDE_WORKER_THREAD_"))
     {
         return ErrorCode::CPU_NOT_SUPPORTED;

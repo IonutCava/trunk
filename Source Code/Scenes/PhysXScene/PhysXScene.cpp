@@ -146,7 +146,7 @@ void PhysXScene::createStack(const Task& parentTask, U32 size) {
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
     while (stackSize) {
-        if (parentTask.stopRequested()){
+        if (StopRequested(&parentTask)){
             return;
         }
         for (U16 i = 0; i < stackSize; i++) {
@@ -168,7 +168,7 @@ void PhysXScene::createTower(const Task& parentTask, U32 size) {
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
     for (U8 i = 0; i < size; i++) {
-        if (parentTask.stopRequested()) {
+        if (StopRequested(&parentTask)) {
             return;
         }
         DIVIDE_UNEXPECTED_CALL();

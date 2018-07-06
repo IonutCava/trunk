@@ -41,7 +41,7 @@ namespace Divide {
 class SceneState;
 class SceneRenderState;
 
-class Task;
+struct Task;
 class Camera;
 class SceneGraph;
 class SceneGraphNode;

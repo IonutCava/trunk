@@ -276,7 +276,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
 
             Time::ApplicationTimer::instance().resetFPSCounter();
             
-        }).startTask(threaded ? Task::TaskPriority::DONT_CARE : Task::TaskPriority::REALTIME);
+        }).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     _sceneSwitchTarget.reset();
 
