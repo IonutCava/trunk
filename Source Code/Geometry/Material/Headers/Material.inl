@@ -200,9 +200,9 @@ inline F32 Material::getParallaxFactor() const {
 
 /// Add a texture <-> bind slot pair to be bound with the default textures
 /// on each "bindTexture" call
-inline void Material::addCustomTexture(const Texture_ptr& texture, U8 offset) {
+inline void Material::addExternalTexture(const Texture_ptr& texture, U8 slot, bool activeForDepth) {
     // custom textures are not material dependencies!
-    _customTextures.push_back(std::make_pair(texture, offset));
+    _externalTextures.push_back(ExternalTexture { texture, slot, activeForDepth });
 }
 
 inline std::weak_ptr<Texture> Material::getTexture(ShaderProgram::TextureUsage textureUsage) const {

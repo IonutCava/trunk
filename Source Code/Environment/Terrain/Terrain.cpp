@@ -90,9 +90,9 @@ void Terrain::buildQuadtree() {
     const vec3<F32>& bbExtent = _boundingBox.getExtent();
 
     TerrainTextureLayer* textureLayer = _terrainTextures;
-    getMaterialTpl()->addCustomTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0);
-    getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(),   to_U8(ShaderProgram::TextureUsage::COUNT) + 1);
-    getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2);
+    getMaterialTpl()->addExternalTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0/*, true*/);
+    getMaterialTpl()->addExternalTexture(textureLayer->tileMaps(),   to_U8(ShaderProgram::TextureUsage::COUNT) + 1);
+    getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2/*, true*/);
     
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass::stagePass(i)).getProgram();

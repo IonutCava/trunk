@@ -50,8 +50,9 @@ void main (void)
 #   define texWaterNoiseNM texDiffuse0
 #   define texWaterNoiseDUDV texDiffuse1
 
-    dvd_private_light = dvd_LightSource[0];
+    _noiseFactor = vec2(0.0, 0.0);
 
+    dvd_private_light = dvd_LightSource[0];
     float time2 = float(dvd_time) * 0.00001;
     const float kDistortion = 1.0;// 0.015;
     vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;

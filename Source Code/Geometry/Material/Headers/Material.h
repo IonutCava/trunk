@@ -102,6 +102,12 @@ class Material : public CachedResource {
         COUNT
     };
 
+    struct ExternalTexture {
+        Texture_ptr _texture = nullptr;
+        U8 _bindSlot = 0;
+        bool _activeForDepth = false;
+    };
+
     /// ShaderData stores information needed by the shader code to properly
     /// shade objects
     struct ColourData {
@@ -163,10 +169,10 @@ class Material : public CachedResource {
                     const TextureOperation& op = TextureOperation::REPLACE);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call
-    void addCustomTexture(const Texture_ptr& texture, U8 offset);
+    void addExternalTexture(const Texture_ptr& texture, U8 slot, bool activeForDepth = false);
 
     /// Remove the custom texture assigned to the specified offset
-    bool removeCustomTexture(U8 index);
+    bool removeCustomTexture(U8 bindslot);
 
     /// Set the desired bump mapping method.
     void setBumpMethod(const BumpMethod& newBumpMethod);
@@ -327,7 +333,8 @@ class Material : public CachedResource {
     /// use this map to add textures to the material
     std::array<Texture_ptr, to_base(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_base(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
-    vectorImpl<std::pair<Texture_ptr, U8>> _customTextures;
+
+    vectorImpl<ExternalTexture> _externalTextures;
 
     /// use the below map to define texture operation
     TextureOperation _operation;

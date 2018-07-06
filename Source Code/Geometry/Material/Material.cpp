@@ -139,9 +139,9 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
             }
         }
     }
-    for (const std::pair<Texture_ptr, U8>& tex : base._customTextures) {
-        if (tex.first) {
-            cloneMat->addCustomTexture(tex.first, tex.second);
+    for (const ExternalTexture& tex : base._externalTextures) {
+        if (tex._texture) {
+            cloneMat->addExternalTexture(tex._texture, tex._bindSlot, tex._activeForDepth);
         }
     }
 
@@ -509,16 +509,20 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
 }
 
 /// Remove the custom texture assigned to the specified offset
-bool Material::removeCustomTexture(U8 index) {
-    vectorImpl<std::pair<Texture_ptr, U8>>::iterator it =
-        std::find_if(std::begin(_customTextures), std::end(_customTextures),
-            [&index](const std::pair<Texture_ptr, U8>& tex)
-            -> bool { return tex.second == index; });
-    if (it == std::end(_customTextures)) {
+bool Material::removeCustomTexture(U8 bindslot) {
+    vectorImpl<ExternalTexture>::iterator it =
+        std::find_if(std::begin(_externalTextures),
+                    std::end(_externalTextures),
+                    [&bindslot](const ExternalTexture& tex)
+                    -> bool {
+                        return tex._bindSlot == bindslot;
+                    });
+
+    if (it == std::end(_externalTextures)) {
         return false;
     }
 
-    _customTextures.erase(it);
+    _externalTextures.erase(it);
 
     return true;
 }
@@ -536,39 +540,33 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 
 void Material::getTextureData(TextureDataContainer& textureData) {
     const U32 textureCount = to_base(ShaderProgram::TextureUsage::COUNT);
+    const bool depthstage = _context.isDepthStage();
 
-    if (!_context.isDepthStage()) {
-        getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
+    getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
+    getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
+    getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
+
+    if (!depthstage) {
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
-        getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
-        getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
         getTextureData(ShaderProgram::TextureUsage::REFLECTION_PLANAR, textureData);
         getTextureData(ShaderProgram::TextureUsage::REFRACTION_PLANAR, textureData);
         getTextureData(ShaderProgram::TextureUsage::REFLECTION_CUBE, textureData);
         getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData);
+    }
 
-        for (std::pair<Texture_ptr, U8>& tex : _customTextures) {
-            TextureData data = tex.first->getData();
-            data.setHandleLow(to_U32(tex.second));
+    for (const ExternalTexture& tex : _externalTextures) {
+        if (!depthstage || (depthstage && tex._activeForDepth)) {
+            TextureData data = tex._texture->getData();
+            data.setHandleLow(to_U32(tex._bindSlot));
             textureData.addTexture(data);
         }
-    } else {
-        getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
-        switch(_translucencySource) {
-            case TranslucencySource::OPACITY_MAP : {
-                getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
-            } break;
-            case TranslucencySource::DIFFUSE_MAP: {
-                getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
-            } break;
-        };
     }
 }
 
 bool Material::unload() {
     _textures.fill(nullptr);
-    _customTextures.clear();
+    _externalTextures.clear();
     _shaderInfo.fill(ShaderProgramInfo());
 
     return true;
