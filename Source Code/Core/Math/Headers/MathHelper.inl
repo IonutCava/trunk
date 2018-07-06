@@ -114,6 +114,19 @@ template <typename T>
 /*constexpr*/ T RadiansToDegrees(T angleRadians) {
     return static_cast<T>(angleRadians * M_180DIVPI);
 }
+
+/// Returns the specified value. Used only for emphasis
+template <typename T>
+/*constexpr*/ T Degrees(T degrees) {
+    return degrees;
+}
+
+/// Returns the specified value. Used only for emphasis
+template <typename T>
+/*constexpr*/ T Radians(T radians) {
+    return radians;
+}
+
 };  // namespace Angle
 
 namespace Metric {

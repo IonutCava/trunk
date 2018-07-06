@@ -68,22 +68,29 @@ class Unit : public FrameListener {
     virtual bool teleportTo(const vec3<F32>& targetPosition);
 
     /// Accesors
-    /// Get the units position in the world
+    /// Get the unit's position in the world
     inline const vec3<F32>& getCurrentPosition() const {
         return _currentPosition;
     }
-    /// Get the units target coordinates in the world
+    /// Get the unit's target coordinates in the world
     inline const vec3<F32>& getTargetPosition() const {
         return _currentTargetPosition;
     }
-    /// Set the units movement speed in metres per second (minimum is 0 = the
+    /// Set the unit's movement speed in metres per second (minimum is 0 = the
     /// unit does not move / is rooted)
     virtual void setMovementSpeed(F32 movementSpeed) {
         _moveSpeed = movementSpeed;
         CLAMP<F32>(_moveSpeed, 0.0f, 100.0f);
     }
-    /// Get the units current movement speed
+    /// Set the unit's acceleration in metres per second squared
+    virtual void setAcceleration(F32 acceleration) {
+        _acceleration = acceleration;
+        CLAMP<F32>(_moveSpeed, 0.0f, 100.0f);
+    }
+    /// Get the unit's current movement speed
     virtual F32 getMovementSpeed() const { return _moveSpeed; }
+    /// Get the unit's acceleration rate
+    virtual F32 getAcceleration() const { return _acceleration; }
     /// Set destination tolerance
     inline void setMovementTolerance(F32 movementTolerance) {
         _moveTolerance = std::max(0.1f, movementTolerance);
@@ -107,8 +114,10 @@ class Unit : public FrameListener {
    protected:
     /// Unit type
     UnitType _type;
-    /// Movement speed (per second)
+    /// Movement speed (meters per second)
     F32 _moveSpeed;
+    /// Acceleration (meters per second squared
+    F32 _acceleration;
     /// acceptable distance from target
     F32 _moveTolerance;
     /// previous time, in milliseconds when last move was applied

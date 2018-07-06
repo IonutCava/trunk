@@ -114,6 +114,8 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
 
         _activeGoal = _activeGoals.back();
         _currentStep = -1;
+        assert(_activeGoal != nullptr);
+
         return _activeGoal;
     }
 

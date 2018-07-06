@@ -198,7 +198,10 @@ bool WarScene::addUnits() {
     SceneGraphNode& root = GET_ACTIVE_SCENEGRAPH().getRoot();
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < 15; ++i) {
-            F32 speed = -1.0f;
+
+            F32 speed = Metric::Base(-1.0f);
+            F32 acc = Metric::Base(-1.0f);
+
             F32 zFactor = 0.0f;
             I32 damage = 5;
             AI::WarSceneAISceneImpl::AIType type;
@@ -207,14 +210,16 @@ bool WarScene::addUnits() {
                 currentScale =
                     lightNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_1_%d_%d", k, i);
-                speed = random(6.5f, 8.5f);
+                speed = Metric::Base(random(6.5f, 8.5f));
+                acc = Metric::Base(random(4.0f, 8.0f));
                 type = AI::WarSceneAISceneImpl::AIType::LIGHT;
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
                     animalNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_2_%d_%d", k, i % 5);
-                speed = random(8.5f, 10.5f);
+                speed = Metric::Base(random(8.5f, 10.5f));
+                acc = Metric::Base(random(6.0f, 8.0f));
                 zFactor = 1.0f;
                 type = AI::WarSceneAISceneImpl::AIType::ANIMAL;
                 damage = 10;
@@ -223,7 +228,8 @@ bool WarScene::addUnits() {
                 currentScale =
                     heavyNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_3_%d_%d", k, i % 10);
-                speed = random(4.5f, 6.5f);
+                speed = Metric::Base(random(4.5f, 6.5f));
+                acc = Metric::Base(random(4.0f, 6.0f));
                 zFactor = 2.0f;
                 type = AI::WarSceneAISceneImpl::AIType::HEAVY;
                 damage = 15;
@@ -240,16 +246,18 @@ bool WarScene::addUnits() {
             if (k == 0) {
                 zFactor *= -25;
                 zFactor -= 200;
-                pComp->translateX(-25);
+                pComp->translateX(Metric::Base(-25));
             } else {
                 zFactor *= 25;
                 zFactor += 200;
-                pComp->rotateY(180);
-                pComp->translateX(100);
-                pComp->translateX(25);
+                pComp->rotateY(Angle::Degrees(180));
+                pComp->translateX(Metric::Base(100));
+                pComp->translateX(Metric::Base(25));
             }
 
-            pComp->setPosition(vec3<F32>(-125 + 25 * (i % 5), -0.01f, zFactor));
+            pComp->setPosition(vec3<F32>(Metric::Base(-125 + 25 * (i % 5)),
+                                         Metric::Base(-0.01f),
+                                         Metric::Base(zFactor)));
 
             aiSoldier = MemoryManager_NEW AI::AIEntity(pComp->getPosition(),
                                                        currentNode.getName());
@@ -270,7 +278,8 @@ bool WarScene::addUnits() {
             soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);
             soldier->setAttribute(to_uint(AI::UnitAttributes::ALIVE_FLAG), 1);
-            soldier->setMovementSpeed(speed * 4);
+            soldier->setMovementSpeed(speed);
+            soldier->setAcceleration(acc);
 
             _army[k].push_back(aiSoldier);
             _armyNPCs[k].push_back(soldier);

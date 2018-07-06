@@ -173,6 +173,10 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     U32 count = 0;
     for (U8 i = 0; i < 2; ++i) {
         for (AI::AIEntity* const character : _army[i]) {
+            if (!character->getUnitRef()->getBoundNode()->isActive()) {
+                continue;
+            }
+
             _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)][count]._startPoint.set(
                 character->getPosition());
             _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)][count]._endPoint.set(

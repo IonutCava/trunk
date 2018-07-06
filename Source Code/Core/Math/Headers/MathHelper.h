@@ -123,6 +123,12 @@ T DegreesToRadians(T angleDegrees);
 /// Return the degree equivalent of the given radian value
 template <typename T>
 T RadiansToDegrees(T angleRadians);
+/// Returns the specified value. Used only for emphasis
+template <typename T>
+T Degrees(T degrees);
+/// Returns the specified value. Used only for emphasis
+template <typename T>
+T Radians(T radians);
 };
 
 namespace Metric {

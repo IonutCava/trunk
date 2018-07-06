@@ -53,7 +53,8 @@ void AIEntity::load(const vec3<F32>& position) {
         _agentID = _detourCrowd->addAgent(
             position, _unitRef ? _unitRef->getMovementSpeed()
                                : (_detourCrowd->getAgentHeight() / 2) * 3.5f,
-            10.0f);
+            _unitRef ? _unitRef->getAcceleration(): 
+            5.0f);
         _agent = _detourCrowd->getAgent(_agentID);
         _destination = position;
     }
@@ -221,7 +222,9 @@ bool AIEntity::setPosition(const vec3<F32> position) {
     // Remove agent from crowd and re-add at position
     _detourCrowd->removeAgent(_agentID);
     _agentID = _detourCrowd->addAgent(
-        result, (_detourCrowd->getAgentHeight() / 2) * 3.5f, 10.0f);
+        result, _unitRef ? _unitRef->getMovementSpeed()
+                         : (_detourCrowd->getAgentHeight() / 2) * 3.5f,
+        _unitRef ? _unitRef->getAcceleration() : 5.0f);
     _agent = _detourCrowd->getAgent(_agentID);
 
     if (_unitRef) {
