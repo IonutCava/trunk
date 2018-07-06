@@ -49,22 +49,21 @@ void main()
 in vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform bool useScenePlanes = false;
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    float n = dvd_ZPlanesCombined.x;
+#if defined(USE_SCENE_ZPLANES)
+	float n = dvd_ZPlanesCombined.z;
+	float f = dvd_ZPlanesCombined.w * 0.5;
+#else
+	float n = dvd_ZPlanesCombined.x;
     float f = dvd_ZPlanesCombined.y * 0.5;
-    if (useScenePlanes){
-        n = dvd_ZPlanesCombined.z;
-        f = dvd_ZPlanesCombined.w * 0.5;
-    }
+#endif
 
     float depth = texture(texDiffuse0, _texCoord).r;
     float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
-    _colorOut.rgb = vec3(linearDepth);
-    _colorOut.a = 1.0;
+    _colorOut = vec4(vec3(linearDepth), 1.0);
 }
 
 -- Fragment.Layered
@@ -87,19 +86,20 @@ out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
-uniform bool useScenePlanes = false;
 
 void main()
 {
-    float n = dvd_ZPlanesCombined.x;
+#if defined(USE_SCENE_ZPLANES)
+	float n = dvd_ZPlanesCombined.z;
+	float f = dvd_ZPlanesCombined.w * 0.5;
+#else
+	float n = dvd_ZPlanesCombined.x;
     float f = dvd_ZPlanesCombined.y * 0.5;
-    if (useScenePlanes){
-        n = dvd_ZPlanesCombined.z;
-        f = dvd_ZPlanesCombined.w * 0.5;
-    }
+#endif
 
     float depth = texture(texDiffuse0, vec3(_texCoord, layer)).r;
-    _colorOut.rgb = vec3((2 * n) / (f + n - (depth)* (f - n)));
+	float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
+    _colorOut = vec4(vec3(linearDepth), 1.0);
 }
 
 --Fragment.Layered.LinearDepth.ESM
@@ -110,10 +110,23 @@ out vec4 _colorOut;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 
+#if !defined(USE_SCENE_ZPLANES)
+uniform vec2 dvd_zPlanes;
+#endif
+
 void main()
 {
+#if defined(USE_SCENE_ZPLANES)
+	float n = dvd_ZPlanesCombined.z;
+	float f = dvd_ZPlanesCombined.w * 0.5;
+#else
+	float n = dvd_zPlanes.x;
+    float f = dvd_zPlanes.y * 0.5;
+#endif
+
     float depth = texture(texDiffuse0, vec3(_texCoord, layer)).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
     
-    _colorOut.rgb = vec3(depth);
+	float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
+    _colorOut = vec4(vec3(linearDepth), 1.0);
 }

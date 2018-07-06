@@ -71,10 +71,6 @@ void WarScene::processGUI(const U64 deltaTime) {
                          "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: "
                          "%5.2f | Yaw: %5.2f]",
                          eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
-        /*_GUI->modifyText("lampPosition","Lamp Position  [ X: %5.2f | Y: %5.2f
-        | Z: %5.2f ]",
-        lampPos.x, lampPos.y, lampPos.z);*/
-
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -100,9 +96,9 @@ void WarScene::processTasks(const U64 deltaTime) {
         _sunAngle.y >= Angle::DegreesToRadians(70))
         direction = !direction;
 
-    _sunvector =
-        vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
-                  -sinf(_sunAngle.x) * sinf(_sunAngle.y));
+    _sunvector.x = -cosf(_sunAngle.x) * sinf(_sunAngle.y);
+    _sunvector.y = -cosf(_sunAngle.y);
+    _sunvector.z = -sinf(_sunAngle.x) * sinf(_sunAngle.y);
 
     _sun->setDirection(_sunvector);
     _currentSky->getNode<Sky>()->setSunProperties(_sunvector,
@@ -113,20 +109,23 @@ void WarScene::processTasks(const U64 deltaTime) {
     D32 BullTimer = Time::SecondsToMilliseconds(10);
 
     if (_taskTimers[0] >= BobTimer) {
-        if (_bobNode)
+        if (_bobNode) {
             _bobNode->getComponent<AnimationComponent>()->playNextAnimation();
-
+        }
         _taskTimers[0] = 0.0;
     }
     if (_taskTimers[1] >= DwarfTimer) {
         SceneGraphNode* dwarf = _sceneGraph.findNode("Soldier1");
-        if (dwarf)
+        if (dwarf) {
             dwarf->getComponent<AnimationComponent>()->playNextAnimation();
+        }
         _taskTimers[1] = 0.0;
     }
     if (_taskTimers[2] >= BullTimer) {
         SceneGraphNode* bull = _sceneGraph.findNode("Soldier2");
-        if (bull) bull->getComponent<AnimationComponent>()->playNextAnimation();
+        if (bull) {
+            bull->getComponent<AnimationComponent>()->playNextAnimation();
+        }
         _taskTimers[2] = 0.0;
     }
     Scene::processTasks(deltaTime);
@@ -254,7 +253,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LightType::LIGHT_TYPE_DIRECTIONAL,
+    _sun = addLight(LightType::DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     // Add a skybox
     _currentSky =
@@ -321,7 +320,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             currentPos.second = 200 - 40 * (i % 30) - 50;
         }
 
-        SceneGraphNode& crtNode = _sceneGraph.getRoot().addNode(currentMesh,
+        SceneGraphNode& crtNode = _sceneGraph.getRoot().addNode(*currentMesh,
                                                                 currentName);
         crtNode.setSelectable(true);
         crtNode.usageContext(baseNode->usageContext());
@@ -341,7 +340,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
     SceneGraphNode* baseFlagNode = cylinder[1];
-    _flag[0] = &_sceneGraph.getRoot().addNode(cylinderMeshNW, "Team1Flag");
+    _flag[0] = &_sceneGraph.getRoot().addNode(*cylinderMeshNW, "Team1Flag");
     _flag[0]->setSelectable(false);
     _flag[0]->usageContext(baseFlagNode->usageContext());
     PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
@@ -355,7 +354,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(0.05f, 1.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
-    _flag[1] = &_sceneGraph.getRoot().addNode(cylinderMeshNW, "Team2Flag");
+    _flag[1] = &_sceneGraph.getRoot().addNode(*cylinderMeshNW, "Team2Flag");
     _flag[1]->setSelectable(false);
     _flag[1]->usageContext(baseFlagNode->usageContext());
 
@@ -551,58 +550,57 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     retrieveFlag.setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
                              AI::GOAPValue(true));
 
-    for (U8 k = 0; k < 2; ++k) {
-        for (U8 i = 0; i < 15; ++i) {
+    for (I32 k = 0; k < 2; ++k) {
+        for (I32 i = 0; i < /*15*/1; ++i) {
             F32 speed = 5.5f;  // 5.5 m/s
             U8 zFactor = 0;
+            AI::WarSceneAISceneImpl::AIType type;
             if (i < 5) {
                 currentMesh = soldierMesh1;
                 currentScale =
                     soldierNode1->getComponent<PhysicsComponent>()->getScale();
-                currentName = "Soldier_1_" +std::to_string((I32)k) + "_" +
-                              std::to_string((I32)i);
+                currentName = Util::stringFormat("Soldier_1_%d_%d", k, i);
+                type = AI::WarSceneAISceneImpl::AIType::LIGHT;
             } else if (i >= 5 && i < 10) {
                 currentMesh = soldierMesh2;
                 currentScale =
                     soldierNode2->getComponent<PhysicsComponent>()->getScale();
-                currentName = "Soldier_2_" + std::to_string((I32)k) + "_" +
-                              std::to_string((I32)i % 5);
+                currentName = Util::stringFormat("Soldier_2_%d_%d", k, i % 5);
                 speed = 5.75f;
                 zFactor = 1;
+                type = AI::WarSceneAISceneImpl::AIType::ANIMAL;
             } else {
                 currentMesh = soldierMesh3;
                 currentScale =
                     soldierNode3->getComponent<PhysicsComponent>()->getScale();
-                currentName = "Soldier_3_" + std::to_string((I32)k) + "_" +
-                              std::to_string((I32)i % 10);
+                currentName = Util::stringFormat("Soldier_3_%d_%d", k, i % 10);
                 speed = 5.35f;
                 zFactor = 2;
+                type = AI::WarSceneAISceneImpl::AIType::HEAVY;
             }
 
             currentNode =
-                &GET_ACTIVE_SCENEGRAPH().getRoot().addNode(currentMesh,
+                &GET_ACTIVE_SCENEGRAPH().getRoot().addNode(*currentMesh,
                                                            currentName);
-            currentNode->getComponent<PhysicsComponent>()->setScale(
-                currentScale);
+            PhysicsComponent* pComp =
+                currentNode->getComponent<PhysicsComponent>();
+            pComp->setScale(currentScale);
             DIVIDE_ASSERT(currentNode != nullptr,
                           "WarScene error: INVALID SOLDIER NODE TEMPLATE!");
             currentNode->setSelectable(true);
             I8 side = k == 0 ? -1 : 1;
 
-            currentNode->getComponent<PhysicsComponent>()->setPosition(
-                vec3<F32>(-125 + 25 * (i % 5), -0.01f,
-                          200 * side + 25 * zFactor * side));
+            pComp->setPosition(vec3<F32>(-125 + 25 * (i % 5), -0.01f,
+                                         200 * side + 25 * zFactor * side));
             if (side == 1) {
-                currentNode->getComponent<PhysicsComponent>()->rotateY(180);
-                currentNode->getComponent<PhysicsComponent>()->translateX(100);
+                pComp->rotateY(180);
+                pComp->translateX(100);
             }
 
-            currentNode->getComponent<PhysicsComponent>()->translateX(25 *
-                                                                      side);
+            pComp->translateX(25 * side);
 
-            aiSoldier = MemoryManager_NEW AI::AIEntity(
-                currentNode->getComponent<PhysicsComponent>()->getPosition(),
-                currentNode->getName());
+            aiSoldier = MemoryManager_NEW AI::AIEntity(pComp->getPosition(),
+                                                       currentNode->getName());
             aiSoldier->addSensor(AI::SensorType::VISUAL_SENSOR);
             k == 0
                 ? currentNode->getComponent<RenderingComponent>()
@@ -611,7 +609,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                       ->renderSkeleton(true);
 
             AI::WarSceneAISceneImpl* brain =
-                MemoryManager_NEW AI::WarSceneAISceneImpl();
+                MemoryManager_NEW AI::WarSceneAISceneImpl(type);
 
             // GOAP
             brain->worldState().setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),

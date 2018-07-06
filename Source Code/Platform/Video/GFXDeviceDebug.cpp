@@ -21,10 +21,10 @@ void GFXDevice::previewDepthBuffer() {
     if (!_previewDepthMapShader) {
         // The LinearDepth variant converts the depth values to linear values
         // between the 2 scene z-planes
-        _previewDepthMapShader = CreateResource<ShaderProgram>(
-            ResourceDescriptor("fbPreview.LinearDepth"));
+        ResourceDescriptor fbPreview("fbPreview.LinearDepth.ScenePlanes");
+        fbPreview.setPropertyList("USE_SCENE_ZPLANES");
+        _previewDepthMapShader = CreateResource<ShaderProgram>(fbPreview);
         assert(_previewDepthMapShader != nullptr);
-        _previewDepthMapShader->Uniform("useScenePlanes", true);
     }
 
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {

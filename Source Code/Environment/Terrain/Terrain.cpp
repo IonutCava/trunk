@@ -55,12 +55,12 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    SceneGraphNode& planeSGN = sgn.addNode(_plane);
+    SceneGraphNode& planeSGN = sgn.addNode(*_plane);
     planeSGN.setActive(false);
     _plane->computeBoundingBox(planeSGN);
     computeBoundingBox(sgn);
     for (TerrainChunk* chunk : _terrainChunks) {
-        sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk));
+        sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
     }
     SceneNode::postLoad(sgn);
 }

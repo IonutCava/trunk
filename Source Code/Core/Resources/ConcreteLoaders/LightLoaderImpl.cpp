@@ -11,13 +11,13 @@ Light* ImplResourceLoader<Light>::operator()() {
     // descriptor ID is not the same as light ID. This is the light's slot!!
     switch (static_cast<LightType>(_descriptor.getEnumValue())) {
         default:
-        case LightType::LIGHT_TYPE_POINT:
+        case LightType::POINT:
             ptr = MemoryManager_NEW PointLight();
             break;
-        case LightType::LIGHT_TYPE_DIRECTIONAL:
+        case LightType::DIRECTIONAL:
             ptr = MemoryManager_NEW DirectionalLight();
             break;
-        case LightType::LIGHT_TYPE_SPOT:
+        case LightType::SPOT:
             ptr = MemoryManager_NEW SpotLight();
             break;
     };

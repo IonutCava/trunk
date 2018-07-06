@@ -129,7 +129,7 @@ class NOINITVTABLE Scene : public Resource {
     }
     void addPatch(vectorImpl<FileData>& data);
 
-    SceneGraphNode& addLight(Light* const lightItem,
+    SceneGraphNode& addLight(Light& lightItem,
                              SceneGraphNode& parentNode);
     SceneGraphNode& addLight(LightType type,
                              SceneGraphNode& parentNode);

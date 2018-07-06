@@ -26,9 +26,9 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
+SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
     : GUIDWrapper(),
-      _node(node),
+      _node(&node),
       _elapsedTime(0ULL),
       _parent(nullptr),
       _loaded(true),
@@ -49,7 +49,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
     assert(_node != nullptr);
 
     setName(name);
-    _instanceID = (node->GetRef() - 1);
+    _instanceID = (_node->GetRef() - 1);
     Material* const materialTpl = _node->getMaterialTpl();
 
     _components[to_uint(SGNComponent::ComponentType::ANIMATION)].reset(
@@ -154,29 +154,27 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
     // That's it. Parent Transforms will be updated in the next render pass;
 }
 
-SceneGraphNode& SceneGraphNode::addNode(SceneNode* const node,
+SceneGraphNode& SceneGraphNode::addNode(SceneNode& node,
                                         const stringImpl& name) {
     STUBBED(
         "SceneGraphNode: This add/create node system is an ugly HACK "
         "so it should probably be removed soon! -Ionut")
 
-    if (Attorney::SceneNodeGraph::hasSGNParent(*node)) {
-        node->AddRef();
+    if (Attorney::SceneNodeGraph::hasSGNParent(node)) {
+        node.AddRef();
     }
     return createNode(node, name);
 }
 
 /// Add a new SceneGraphNode to the current node's child list based on a
 /// SceneNode
-SceneGraphNode& SceneGraphNode::createNode(SceneNode* const node,
+SceneGraphNode& SceneGraphNode::createNode(SceneNode& node,
                                            const stringImpl& name) {
-    // assert(node != nullptr && FindResourceImpl<Resource>(node->getName()) !=
-    // nullptr);
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
     SceneGraphNode* sceneGraphNode = MemoryManager_NEW SceneGraphNode(
-        node, name.empty() ? node->getName() : name);
+        node, name.empty() ? node.getName() : name);
     DIVIDE_ASSERT(
         sceneGraphNode != nullptr,
         "SceneGraphNode::createNode error: New node allocation failed");
@@ -185,15 +183,15 @@ SceneGraphNode& SceneGraphNode::createNode(SceneNode* const node,
     // Do all the post load operations on the SceneNode
     // Pass a reference to the newly created SceneGraphNode in case we need
     // transforms or bounding boxes
-    Attorney::SceneNodeGraph::postLoad(*node, *sceneGraphNode);
+    Attorney::SceneNodeGraph::postLoad(node, *sceneGraphNode);
     // return the newly created node
     return *sceneGraphNode;
 }
 
 // Remove a child node from this Node
-void SceneGraphNode::removeNode(SceneGraphNode* node) {
+void SceneGraphNode::removeNode(SceneGraphNode& node) {
     // find the node in the children map
-    NodeChildren::iterator it = _children.find(node->getName());
+    NodeChildren::iterator it = _children.find(node.getName());
     // If we found the node we are looking for
     if (it != std::end(_children)) {
         // Remove it from the map

@@ -33,25 +33,28 @@
 #define DIVIDE_LIGHT_H_
 
 #include "Graphs/Headers/SceneNode.h"
+#include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 namespace Divide {
 
 /// The different types of lights supported
 enum class LightType : U32 {
-    LIGHT_TYPE_DIRECTIONAL = 0,
-    LIGHT_TYPE_POINT = 1,  ///< or omni light, if you prefer
-    LIGHT_TYPE_SPOT = 2,
+    DIRECTIONAL = 0,
+    POINT = 1,
+    SPOT = 2,
     COUNT
 };
 
 enum class LightMode : U32 {
-    LIGHT_MODE_SIMPLE =
-        0,  ///< normal light. Can't be moved or changed at runtime
-    LIGHT_MODE_TOGGLABLE = 1,  ///< can be switched on or off, change
-                               ///brightness, color, range at runtime
-    LIGHT_MODE_MOVABLE =
-        2,  ///< can change position at runtime / most expensive
-    // LIGHT_MODE_DOMINANT = 3 ///< only shadow caster in scene
+    /// normal light. Can't be moved or changed at runtime
+    SIMPLE = 0,
+    /// can be switched on or off, change
+    /// brightness, color, range at runtime
+    TOGGLABLE = 1,
+    /// can change position at runtime / most expensive
+    MOVABLE = 2,
+    /// only shadow caster in scene
+    // DOMINANT = 3
     COUNT
 };
 
@@ -97,18 +100,10 @@ struct LightShadowProperties {
 class Camera;
 class Impostor;
 class ParamHandler;
-class ShadowMapInfo;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position
 class Light : public SceneNode {
    public:
-    enum class PropertyType : U32 {
-        PROPERTY_TYPE_VISUAL = 0,
-        PROPERTY_TYPE_PHYSICAL = 1,
-        PROPERTY_TYPE_SHADOW = 2,
-        COUNT
-    };
-
     typedef vectorImpl<Light*> LightList;
 
     /// Create a new light assigned to the specified slot with the specified
@@ -118,12 +113,6 @@ class Light : public SceneNode {
     /// @param range = the light influence range (for spot/point lights)
     Light(const F32 range, const LightType& type);
     virtual ~Light();
-
-    /// Light score determines the importance of this light for the current node
-    /// queries
-    inline F32 getScore() const { return _score; }
-
-    inline void setScore(const F32 score) { _score = score; }
 
     /// Is the light a shadow caster?
     inline bool castsShadows() const { return _properties._options.y == 1; }
@@ -200,8 +189,7 @@ class Light : public SceneNode {
                      SceneState& sceneState);
 
     /*----------- Shadow Mapping-------------------*/
-    /// Set the function used to generate shadows for this light (usually
-    /// _scenegraph->render)
+    /// Set the function used to generate shadows for this light
     inline ShadowMapInfo* getShadowMapInfo() const { return _shadowMapInfo; }
 
     inline void setShadowMappingCallback(const DELEGATE_CBK<>& callback) {
@@ -258,9 +246,9 @@ class Light : public SceneNode {
 
     /// Set light type
     /// @param type Directional/Spot/Omni (see LightType enum)
-    inline void setLightType(const LightType& type) {
+    inline void setLightType(LightType type) {
         _type = type;
-        _properties._options.x = getLightTypeValue();
+        _properties._options.x = to_int(_type);
     }
 
     /// Set light mode
@@ -271,19 +259,14 @@ class Light : public SceneNode {
     /// Get a ref to the shadow camera used by this light
     Camera* const shadowCamera() const { return _shadowCamera; }
 
-    const I32 getLightTypeValue() const {
-        return _type == LightType::LIGHT_TYPE_DIRECTIONAL
-                   ? 0
-                   : (_type == LightType::LIGHT_TYPE_POINT ? 1 : 2);
-    }
-
    protected:
     LightProperties _properties;
     LightShadowProperties _shadowProperties;
+    ShadowMapInfo* _shadowMapInfo;
 
     LightType _type;
     LightMode _mode;
-    std::array<bool, to_const_uint(PropertyType::COUNT)> _dirty;
+    bool _placementDirty;
 
    private:
     U8 _resolutionFactor;
@@ -295,15 +278,7 @@ class Light : public SceneNode {
     SceneGraphNode* _impostorSGN;
     Camera* _shadowCamera;
     DELEGATE_CBK<> _callback;
-    F32 _score;
     bool _enabled;
-
-   protected:
-    vec2<F32> _zPlanes;
-    vec3<F32> _eyePos;
-    mat4<F32> _lightViewMatrix;
-    ShadowMapInfo* _shadowMapInfo;
-    ParamHandler& _par;
 };
 
 };  // namespace Divide

@@ -20,7 +20,7 @@ namespace Divide {
 
 CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
                                        F32 numSplits)
-    : ShadowMap(light, shadowCamera, ShadowType::CSM) {
+    : ShadowMap(light, shadowCamera, ShadowType::LAYERED) {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
@@ -42,6 +42,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
     _previewDepthMapShader->Uniform("useScenePlanes", false);
+
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
@@ -310,12 +311,18 @@ bool CascadedShadowMaps::BindInternal(U8 offset) {
 }
 
 void CascadedShadowMaps::previewShadowMaps() {
+    if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
+        return;
+    }
+
+
     _depthMap->Bind();
     for (U8 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform(
-            "zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
-        GFX::ScopedViewport viewport(130 * i, 0, 128, 128);
+            "dvd_zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
+
+        GFX::ScopedViewport viewport(256 * i, 1, 256, 256);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                               _previewDepthMapShader);
     }

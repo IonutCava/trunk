@@ -44,17 +44,10 @@ class SceneRenderState;
 DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
 
   public:
-    enum class ShadowSlotType : U32 {
-        NORMAL = 0,
-        CUBE = 1,
-        ARRAY = 2,
-        COUNT
-    };
-
     void init();
 
     /// Add a new light to the manager
-    bool addLight(Light* const light);
+    bool addLight(Light& light);
     /// remove a light from the manager
     bool removeLight(I64 lightGUID);
     /// Update the ambient light values used in shader programs
@@ -81,17 +74,17 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     void updateAndUploadLightData(const mat4<F32>& viewMatrix);
 
     /// Get the appropriate shadow bind slot for every light's shadow
-    U8 getShadowBindSlotOffset(ShadowSlotType type);
+    U8 getShadowBindSlotOffset(ShadowType type);
     /// Get the appropriate shadow bind slot offset for every light's shadow
     inline U8 getShadowBindSlotOffset(LightType lightType) {
         switch (lightType) {
             default:
-            case LightType::LIGHT_TYPE_SPOT:
-                return getShadowBindSlotOffset(ShadowSlotType::NORMAL);
-            case LightType::LIGHT_TYPE_POINT:
-                return getShadowBindSlotOffset(ShadowSlotType::CUBE);
-            case LightType::LIGHT_TYPE_DIRECTIONAL:
-                return getShadowBindSlotOffset(ShadowSlotType::ARRAY);
+            case LightType::SPOT:
+                return getShadowBindSlotOffset(ShadowType::SINGLE);
+            case LightType::POINT:
+                return getShadowBindSlotOffset(ShadowType::CUBEMAP);
+            case LightType::DIRECTIONAL:
+                return getShadowBindSlotOffset(ShadowType::LAYERED);
         };
     }
 
@@ -130,13 +123,10 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     vec2<U16> _cachedResolution;
     mat4<F32> _viewMatrixCache;
 
-    vectorImpl<LightProperties> _lightProperties;
-    vectorImpl<LightShadowProperties> _lightShadowProperties;
-
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>
         _lightShaderBuffer;
 
-    std::array<U8, to_const_uint(ShadowSlotType::COUNT)> _shadowLocation;
+    std::array<U8, to_const_uint(ShadowType::COUNT)> _shadowLocation;
 
 END_SINGLETON
 

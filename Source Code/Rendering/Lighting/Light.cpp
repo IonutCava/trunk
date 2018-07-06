@@ -5,7 +5,6 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "ShadowMapping/Headers/ShadowMap.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
@@ -22,12 +21,10 @@ Light::Light(const F32 range, const LightType& type)
       _impostor(nullptr),
       _resolutionFactor(1),
       _impostorSGN(nullptr),
-      _par(ParamHandler::getInstance()),
-      _shadowMapInfo(nullptr),
-      _score(0.0f)
+      _shadowMapInfo(nullptr)
 {
     // All lights default to fully dynamic for now.
-    setLightMode(LightMode::LIGHT_MODE_MOVABLE);
+    setLightMode(LightMode::MOVABLE);
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         _shadowProperties._lightVP[i].identity();
     }
@@ -40,14 +37,13 @@ Light::Light(const F32 range, const LightType& type)
 
     _properties._diffuse.set(DefaultColors::WHITE());
     _properties._position.w = 35.0f;
-    _properties._options.x = getLightTypeValue();
+    _properties._options.x = to_int(_type);
     _properties._options.y = 0;
     _properties._options.z = -1;
     _properties._direction.w = 0.0f;
     _properties._attenuation =
         vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f);  // constAtt, linearAtt, quadAtt
 
-    _dirty.fill(true);
     _enabled = true;
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
     _renderState.addToDrawExclusionMask(RenderStage::Z_PRE_PASS);
@@ -60,7 +56,7 @@ bool Light::load(const stringImpl& name) {
     setShadowMappingCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
                                            &SceneManager::getInstance(),
                                            true));
-    return LightManager::getInstance().addLight(this);
+    return LightManager::getInstance().addLight(*this);
 }
 
 bool Light::unload() {
@@ -94,10 +90,10 @@ void Light::onCameraChange() {
         return;
     }
 
-    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
+    _placementDirty = true;
 
-    if (_type != LightType::LIGHT_TYPE_DIRECTIONAL) {
-        if (_mode == LightMode::LIGHT_MODE_MOVABLE) {
+    if (_type != LightType::DIRECTIONAL) {
+        if (_mode == LightMode::MOVABLE) {
             const vec3<F32>& newPosition =
                 _lightSGN->getComponent<PhysicsComponent>()->getPosition();
             if (_properties._position.xyz() != newPosition) {
@@ -119,7 +115,7 @@ void Light::onCameraChange() {
 
 void Light::setPosition(const vec3<F32>& newPosition) {
     // Togglable lights can't be moved.
-    if (_mode == LightMode::LIGHT_MODE_TOGGLABLE) {
+    if (_mode == LightMode::TOGGLABLE) {
         Console::errorfn(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(),
                          "Light_Togglable", "LIGHT_POSITION");
         return;
@@ -127,27 +123,26 @@ void Light::setPosition(const vec3<F32>& newPosition) {
 
     _properties._position.xyz(newPosition);
 
-    if (_mode == LightMode::LIGHT_MODE_MOVABLE) {
+    if (_mode == LightMode::MOVABLE) {
         _lightSGN->getComponent<PhysicsComponent>()->setPosition(newPosition);
     }
     _updateLightBB = true;
 
-    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
+    _placementDirty = true;
 }
 
 void Light::setDiffuseColor(const vec3<F32>& newDiffuseColor) {
     _properties._diffuse.set(newDiffuseColor, _properties._diffuse.a);
-    _dirty[to_uint(PropertyType::PROPERTY_TYPE_VISUAL)] = true;
 }
 
 void Light::setRange(F32 range) {
     _properties._attenuation.w = range;
-    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
+    _placementDirty = true;
 }
 
 void Light::setDirection(const vec3<F32>& newDirection) {
     // Togglable lights can't be moved.
-    if (_mode == LightMode::LIGHT_MODE_TOGGLABLE) {
+    if (_mode == LightMode::TOGGLABLE) {
         Console::errorfn(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(),
                          "Light_Togglable", "LIGHT_DIRECTION");
         return;
@@ -155,19 +150,19 @@ void Light::setDirection(const vec3<F32>& newDirection) {
     vec3<F32> newDirectionNormalized(newDirection);
     newDirectionNormalized.normalize();
 
-    if (_type == LightType::LIGHT_TYPE_SPOT) {
+    if (_type == LightType::SPOT) {
         _properties._direction.xyz(newDirectionNormalized);
     } else {
         _properties._position.xyz(newDirectionNormalized);
     }
 
     _updateLightBB = true;
-    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
+    _placementDirty = true;
 }
 
 void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                         SceneState& sceneState) {
-    if (_type == LightType::LIGHT_TYPE_DIRECTIONAL) {
+    if (_type == LightType::DIRECTIONAL) {
         return;
     }
 
@@ -184,7 +179,7 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 }
 
 bool Light::computeBoundingBox(SceneGraphNode& sgn) {
-    if (_type == LightType::LIGHT_TYPE_DIRECTIONAL) {
+    if (_type == LightType::DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _properties._position.xyz() *
             Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
@@ -211,7 +206,7 @@ bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
             CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_properties._attenuation.w);
         _impostor->renderState().setDrawState(true);
-        _lightSGN->addNode(_impostor).setActive(true);
+        _lightSGN->addNode(*_impostor).setActive(true);
     }
     SceneGraphNode* impostorSGN = std::begin(_lightSGN->getChildren())->second;
     Material* const impostorMaterialInst =
@@ -255,8 +250,6 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
 
     sm->render(sceneRenderState, _callback);
     sm->postRender();
-
-    _dirty[to_uint(PropertyType::PROPERTY_TYPE_SHADOW)] = true;
 }
 
 void Light::setLightMode(const LightMode& mode) { _mode = mode; }

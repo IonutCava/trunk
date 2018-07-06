@@ -145,7 +145,12 @@ class WarSceneAISceneImpl : public AISceneImpl {
     friend class Attorney::WarAISceneWarAction;
 
    public:
-    WarSceneAISceneImpl();
+       enum class AIType {
+           ANIMAL = 0,
+           LIGHT = 1,
+           HEAVY = 2
+       };
+    WarSceneAISceneImpl(AIType type);
     ~WarSceneAISceneImpl();
 
     void processData(const U64 deltaTime);
@@ -176,6 +181,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     void initInternal();
 
    private:
+    AIType _type;
     U16 _tickCount;
     U64 _deltaTime;
     U8 _orderRequestTryCount;

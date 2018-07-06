@@ -85,7 +85,7 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
     _omniLightList.reserve(static_cast<vectorAlg::vecSize>(lights.size()));
 
     for (Light* const light : lights) {
-        if (light->getLightType() == LightType::LIGHT_TYPE_POINT) {
+        if (light->getLightType() == LightType::POINT) {
             _omniLightList.push_back(LightGrid::makeLight(
                 light->getPosition(), light->getDiffuseColor(),
                 light->getRange()));

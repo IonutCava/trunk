@@ -49,17 +49,17 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
     }
 
     switch (_light->getLightType()) {
-        case LightType::LIGHT_TYPE_POINT: {
+        case LightType::POINT: {
             _numLayers = 6;
             _shadowMap = MemoryManager_NEW CubeShadowMap(_light, shadowCamera);
         } break;
-        case LightType::LIGHT_TYPE_DIRECTIONAL: {
+        case LightType::DIRECTIONAL: {
             DirectionalLight* dirLight = static_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
             _shadowMap = MemoryManager_NEW CascadedShadowMaps(
                 _light, shadowCamera, _numLayers);
         } break;
-        case LightType::LIGHT_TYPE_SPOT: {
+        case LightType::SPOT: {
             _shadowMap =
                 MemoryManager_NEW SingleShadowMap(_light, shadowCamera);
         } break;

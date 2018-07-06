@@ -267,7 +267,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
     // Add a light
-    _sun = addLight(LightType::LIGHT_TYPE_DIRECTIONAL,
+    _sun = addLight(LightType::DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _currentSky =
         &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
@@ -275,7 +275,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     //    ResourceDescriptor tempLight1("Light omni");
     //    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
     //    light1 = CreateResource<Light>(tempLight1);
-    //    addLight(light1);
+    //    addLight(*light1);
 
     // Position camera
     // renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
@@ -393,7 +393,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN = &_sceneGraph.addNode(_ball, "TenisBallSGN");
+    _ballSGN = &_sceneGraph.addNode(*_ball, "TenisBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN->setSelectable(true);

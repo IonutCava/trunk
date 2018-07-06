@@ -37,12 +37,11 @@
 
 namespace Divide {
 
-enum class ShadowType : I32 {
-    NONE = -1,
-    Single,
-    CSM,
-    CubeMap,
-    COUNT,
+enum class ShadowType : U32 {
+    SINGLE = 0,
+    LAYERED,
+    CUBEMAP,
+    COUNT
 };
 
 class Light;
@@ -114,7 +113,6 @@ class ShadowMapInfo {
     void resolution(U16 resolution);
 
     inline U16 resolution() const { return _resolution; }
-
     inline U8 numLayers() const { return _numLayers; }
 
     inline void numLayers(U8 layerCount) {

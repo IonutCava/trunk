@@ -155,7 +155,7 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    sgn.addNode(_impostor).setActive(false);
+    sgn.addNode(*_impostor).setActive(false);
     SceneNode::postLoad(sgn);
 }
 

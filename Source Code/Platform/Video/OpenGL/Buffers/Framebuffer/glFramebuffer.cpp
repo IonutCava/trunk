@@ -339,34 +339,31 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB,
 
     GLuint previousFB =
         GL_API::getActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE);
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY, input->_framebufferHandle);
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY, this->_framebufferHandle);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY,
+                        input->_framebufferHandle);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY,
+                        this->_framebufferHandle);
 
     if (blitColor && _hasColor) {
         for (U8 i = 0; i < this->_colorBuffers.size(); ++i) {
-            /*GLUtil::DSAWrapper::dsaNamedFramebufferDrawBuffer(this->_framebufferHandle, this->_colorBuffers[i]);
-            GLUtil::DSAWrapper::dsaNamedFramebufferReadBuffer(input->_framebufferHandle, input->_colorBuffers[i]);*/
             glDrawBuffer(this->_colorBuffers[i]);
             glReadBuffer(input->_colorBuffers[i]);
-            glext::glBlitNamedFramebuffer(input->_framebufferHandle, 
-                                          this->_framebufferHandle,
-                                          0, 0, input->_width, input->_height, 0, 0,
-                                          this->_width, this->_height, GL_COLOR_BUFFER_BIT,
-                                          GL_NEAREST);
+            glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0,
+                              this->_width, this->_height, GL_COLOR_BUFFER_BIT,
+                              GL_NEAREST);
             GFX_DEVICE.registerDrawCall();
         }
     }
 
     if (blitDepth && _hasDepth) {
-        glext::glBlitNamedFramebuffer(input->_framebufferHandle,
-                                      this->_framebufferHandle,
-                                      0, 0, input->_width, input->_height, 0, 0,
-                                      this->_width, this->_height, GL_DEPTH_BUFFER_BIT,
-                                      GL_NEAREST);
+        glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0,
+                          this->_width, this->_height, GL_DEPTH_BUFFER_BIT,
+                          GL_NEAREST);
         GFX_DEVICE.registerDrawCall();
     }
 
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, previousFB);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE,
+                        previousFB);
 }
 
 Texture* glFramebuffer::GetAttachment(TextureDescriptor::AttachmentType slot) {
@@ -379,7 +376,7 @@ Texture* glFramebuffer::GetAttachment(TextureDescriptor::AttachmentType slot) {
 }
 
 void glFramebuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
-    this->GetAttachment(slot)->Bind(unit);
+    GetAttachment(slot)->Bind(unit);
 }
 
 void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
@@ -395,7 +392,7 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
         _viewportChanged = true;
     }
 
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY, _framebufferHandle);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, _framebufferHandle);
     // this is checked so it isn't called twice on the GPU
     GL_API::clearColor(_clearColor, _prevClearColor);
     if (_clearBuffersState && drawPolicy._clearBuffersOnBind) {

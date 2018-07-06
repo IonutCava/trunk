@@ -14,8 +14,8 @@ void SceneGraph::load() {
         return;
     }
 
-    _root.reset(MemoryManager_NEW SceneGraphNode(MemoryManager_NEW SceneRoot(),
-                                                 "ROOT"));
+    SceneNode* rootNode = MemoryManager_NEW SceneRoot();
+    _root.reset(MemoryManager_NEW SceneGraphNode(*rootNode, "ROOT"));
     _root->getComponent<RenderingComponent>()->castsShadows(false);
     _root->getComponent<RenderingComponent>()->receivesShadows(false);
     _root->setBBExclusionMask(
@@ -43,7 +43,7 @@ void SceneGraph::unload() {
 void SceneGraph::idle() {
     for (SceneGraphNode*& it : _pendingDeletionNodes) {
         it->unload();
-        it->getParent()->removeNode(it);
+        it->getParent()->removeNode(*it);
     }
 
     MemoryManager::DELETE_VECTOR(_pendingDeletionNodes);

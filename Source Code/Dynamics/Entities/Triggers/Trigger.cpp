@@ -23,7 +23,7 @@ bool Trigger::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     if (!_triggerImpostor) {
         ResourceDescriptor impostorDesc(_name + "_impostor");
         _triggerImpostor = CreateResource<Impostor>(impostorDesc);
-        sgn.addNode(_triggerImpostor);
+        sgn.addNode(*_triggerImpostor);
     }
     /// update dummy position if it is so
     sgn.getChildren()[0]->getComponent<PhysicsComponent>()->setPosition(

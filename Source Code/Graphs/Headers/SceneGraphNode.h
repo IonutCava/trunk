@@ -123,14 +123,14 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     }
     /// Create node never increments the node's ref counter (used for scene
     /// loading)
-    SceneGraphNode& createNode(SceneNode* const node,
+    SceneGraphNode& createNode(SceneNode& node,
                                const stringImpl& name = "");
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode& addNode(SceneNode* const node, const stringImpl& name = "");
-    void removeNode(SceneGraphNode* node);
+    SceneGraphNode& addNode(SceneNode& node, const stringImpl& name = "");
+    void removeNode(SceneGraphNode& node);
     inline void deleteNode(SceneGraphNode*& node) {
-        removeNode(node);
+        removeNode(*node);
         MemoryManager::DELETE(node);
     }
     /// Find a node in the graph based on the SceneGraphNode's name
@@ -263,7 +263,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
     friend class SceneGraph;
     friend vectorImpl<SceneGraphNode>;
-    explicit SceneGraphNode(SceneNode* const node, const stringImpl& name);
+    explicit SceneGraphNode(SceneNode& node, const stringImpl& name);
     ~SceneGraphNode();
 
    protected:

@@ -73,7 +73,7 @@ WaterPlane::WaterPlane()
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
-    sgn.addNode(_plane);
+    sgn.addNode(*_plane);
     SceneNode::postLoad(sgn);
 }
 

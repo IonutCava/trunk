@@ -121,7 +121,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    _sun = addLight(LightType::LIGHT_TYPE_DIRECTIONAL,
+    _sun = addLight(LightType::DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _sun->csmSplitCount(3);  // 3 splits
     _sun->csmSplitLogFactor(0.965f);
@@ -149,7 +149,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
-    _waterGraphNode = &_sceneGraph.getRoot().addNode(_water);
+    _waterGraphNode = &_sceneGraph.getRoot().addNode(*_water);
     _waterGraphNode->useDefaultTransform(false);
     _waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     _waterGraphNode->getComponent<NavigationComponent>()->navigationContext(

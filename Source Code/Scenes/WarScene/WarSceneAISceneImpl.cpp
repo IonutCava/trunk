@@ -24,16 +24,20 @@ SmallCounterFact WorkingMemory::_flagProtectors[2];
 SmallCounterFact WorkingMemory::_flagRetrievers[2];
 vec3<F32> WarSceneAISceneImpl::_initialFlagPositions[2];
 
-WarSceneAISceneImpl::WarSceneAISceneImpl()
+WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
     : AISceneImpl(),
+      _type(type),
       _tickCount(0),
       _orderRequestTryCount(0),
       _visualSensorUpdateCounter(0),
       _deltaTime(0ULL),
       _visualSensor(nullptr),
-      _audioSensor(nullptr) {}
+      _audioSensor(nullptr)
+{
+}
 
-WarSceneAISceneImpl::~WarSceneAISceneImpl() {
+WarSceneAISceneImpl::~WarSceneAISceneImpl()
+{
     MemoryManager::DELETE_VECTOR(actionSetPtr());
 }
 

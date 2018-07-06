@@ -261,7 +261,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor,
     if (actor._type != PxGeometryType::eTRIANGLEMESH) {
         if (sceneNode) {
             sceneNode->renderState().setDrawState(true);
-            outNode = &_parentScene->getSceneGraph().addNode(sceneNode,
+            outNode = &_parentScene->getSceneGraph().addNode(*sceneNode,
                                                              sgnName);
             outNode->getComponent<RenderingComponent>()->castsShadows(
                 shadowState);

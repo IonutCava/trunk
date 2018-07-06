@@ -71,14 +71,11 @@ void LightManager::init() {
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] =
         GFX_DEVICE.newSB("dvd_ShadowBlock");
 
-    _lightProperties.resize(Config::Lighting::MAX_LIGHTS_PER_SCENE);
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->Create(
         Config::Lighting::MAX_LIGHTS_PER_SCENE, 1, sizeof(LightProperties));
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->Bind(
         ShaderBufferLocation::LIGHT_NORMAL);
 
-    _lightShadowProperties.resize(
-        Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->Create(
         Config::Lighting::MAX_LIGHTS_PER_SCENE, 1, sizeof(LightShadowProperties));
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->Bind(
@@ -112,31 +109,25 @@ bool LightManager::clear() {
     return _lights.empty();
 }
 
-bool LightManager::addLight(Light* const light) {
-    assert(light != nullptr);
+bool LightManager::addLight(Light& light) {
+    light.addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(&light));
 
-    light->addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(light));
-
-    if (findLight(light->getGUID()) != std::end(_lights)) {
+    if (findLight(light.getGUID()) != std::end(_lights)) {
         Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"),
-                         light->getGUID());
+                         light.getGUID());
         return false;
     }
 
-    vectorAlg::emplace_back(_lights, light->getGUID(), light);
+    vectorAlg::emplace_back(_lights, light.getGUID(), &light);
 
     GET_ACTIVE_SCENE()->renderState().getCameraMgr().addNewCamera(
-        light->getName(), light->shadowCamera());
+        light.getName(), light.shadowCamera());
 
     return true;
 }
 
 // try to remove any leftover lights
 bool LightManager::removeLight(I64 lightGUID) {
-    /// we can't remove a light if the light list is empty. That light has to
-    /// exist somewhere!
-    assert(!_lights.empty());
-
     Light::LightList::const_iterator it = findLight(lightGUID);
 
     if (it == std::end(_lights)) {
@@ -164,19 +155,16 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight) {
     _cachedResolution.set(newWidth, newHeight);
 }
 
-U8 LightManager::getShadowBindSlotOffset(ShadowSlotType type) {
+U8 LightManager::getShadowBindSlotOffset(ShadowType type) {
     if (_shadowLocation.front() == 255) {
         const I32 maxTextureStorage = ParamHandler::getInstance().getParam<I32>(
             "rendering.maxTextureSlots", 16);
         const U32 maxShadowSources =
             Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
-
-        _shadowLocation[to_uint(ShadowSlotType::CUBE)] =
-            maxTextureStorage - (maxShadowSources * 3);
-        _shadowLocation[to_uint(ShadowSlotType::NORMAL)] =
-            maxTextureStorage - (maxShadowSources * 2);
-        _shadowLocation[to_uint(ShadowSlotType::ARRAY)] =
-            maxTextureStorage - (maxShadowSources * 1);
+        _shadowLocation.fill(maxTextureStorage);
+        _shadowLocation[to_uint(ShadowType::CUBEMAP)] -= (maxShadowSources * 3);
+        _shadowLocation[to_uint(ShadowType::SINGLE)]  -= (maxShadowSources * 2);
+        _shadowLocation[to_uint(ShadowType::LAYERED)] -= (maxShadowSources * 1);
     }
 
     return _shadowLocation[to_uint(type)];
@@ -267,7 +255,7 @@ void LightManager::bindDepthMaps() {
             DIVIDE_ASSERT(sm != nullptr,
                 "LightManager::bindDepthMaps error: Shadow casting light "
                 "with no shadow map found!");
-            sm->Bind(getShadowBindSlotOffset(light->getLightType()) + ++idx);
+            sm->Bind(getShadowBindSlotOffset(light->getLightType()) + idx++);
 
             if (idx >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE) {
                 break;
@@ -304,67 +292,58 @@ Light* LightManager::getLight(I64 lightGUID) {
 }
 
 void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
-    U32 physicalIndex = to_uint(Light::PropertyType::PROPERTY_TYPE_PHYSICAL);
-    U32 shadowIndex = to_uint(Light::PropertyType::PROPERTY_TYPE_SHADOW);
-    U32 visualIndex = to_uint(Light::PropertyType::PROPERTY_TYPE_VISUAL);
-
-    bool physycalFlag = false;
-    bool shadowFlag = false;
-
     bool viewMatrixDirty = _viewMatrixCache != viewMatrix;
     if (viewMatrixDirty) {
         _viewMatrixCache.set(viewMatrix);
     }
 
-    U32 i = 0, j = 0;
     U32 lightCount = std::min(static_cast<U32>(_lights.size()),
                               Config::Lighting::MAX_LIGHTS_PER_SCENE);
     U32 lightShadowCount =
         std::min(static_cast<U32>(_lights.size()),
                  Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
 
-    for (; i < lightCount; ++i) {
-        Light* light = _lights[i];
+    vectorImpl<LightProperties> lightProperties;
+    lightProperties.reserve(_lights.size());
+    vectorImpl<LightShadowProperties> lightShadowProperties;
+    lightShadowProperties.reserve(lightShadowCount);
 
-        LightProperties& temp = _lightProperties[i];
-        temp.set(light->getProperties());
-        if (light->_dirty[physicalIndex] || viewMatrixDirty) {
-            if (light->getLightType() == LightType::LIGHT_TYPE_DIRECTIONAL) {
+    for (Light* light : _lights) {
+        lightProperties.push_back(light->getProperties());
+        LightProperties& temp = lightProperties.back();
+
+        if (light->_placementDirty || viewMatrixDirty) {
+            if (light->getLightType() == LightType::DIRECTIONAL) {
                 temp._position.set(
                     vec3<F32>(_viewMatrixCache *
                               vec4<F32>(temp._position.xyz(), 0.0f)),
                     temp._position.w);
-            } else if (light->getLightType() == LightType::LIGHT_TYPE_SPOT) {
+            } else if (light->getLightType() == LightType::SPOT) {
                 temp._direction.set(
                     vec3<F32>(_viewMatrixCache *
                               vec4<F32>(temp._direction.xyz(), 0.0f)),
                     temp._direction.w);
             }
 
-            light->_dirty[physicalIndex] = false;
-            physycalFlag = true;
+            light->_placementDirty = false;
         }
 
-        if (light->castsShadows() && j < lightShadowCount) {
-            light->_dirty[shadowIndex] = false;
-            LightShadowProperties& tempShadow = _lightShadowProperties[j];
-            tempShadow.set(light->getShadowProperties());
-            temp._options.z = j;
-            ++j;
-            shadowFlag = true;
-        }
+        if (light->castsShadows() &&
+            lightShadowProperties.size() < lightShadowCount) {
 
-        light->_dirty[visualIndex] = false;
+            temp._options.z = static_cast<I32>(lightShadowProperties.size());
+            lightShadowProperties.push_back(light->getShadowProperties());
+        }
     }
 
-    if (physycalFlag) {
+    if (!lightProperties.empty()) {
         _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->UpdateData(
-            0, lightCount, _lightProperties.data());
+            0, lightProperties.size(), lightProperties.data());
     }
 
-    if (shadowFlag) {
+    if (!lightShadowProperties.empty()) {
         _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->UpdateData(
-            0, lightShadowCount, _lightShadowProperties.data());
+            0, lightShadowProperties.size(), lightShadowProperties.data());
     }
 }
 };

@@ -152,7 +152,7 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode& meshNode =
-        _sceneGraph.getRoot().createNode(thisObj, data.ItemName);
+        _sceneGraph.getRoot().createNode(*thisObj, data.ItemName);
     meshNode.getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
     meshNode.getComponent<RenderingComponent>()->receivesShadows(
@@ -227,7 +227,7 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode& thisObjSGN = _sceneGraph.getRoot().createNode(thisObj);
+    SceneGraphNode& thisObjSGN = _sceneGraph.getRoot().createNode(*thisObj);
     thisObjSGN.getComponent<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN.getComponent<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN.getComponent<PhysicsComponent>()->setPosition(data.position);
@@ -268,14 +268,12 @@ SceneGraphNode& Scene::addParticleEmitter(const stringImpl& name,
 
     emitter->initData(std::make_shared<ParticleData>(data));
 
-    return parentNode.addNode(emitter);
+    return parentNode.addNode(*emitter);
 }
 
-SceneGraphNode& Scene::addLight(Light* const lightItem,
+SceneGraphNode& Scene::addLight(Light& lightItem,
                                 SceneGraphNode& parentNode) {
-    assert(lightItem != nullptr);
-
-    lightItem->setCastShadows(lightItem->getLightType() != LightType::LIGHT_TYPE_POINT);
+    lightItem.setCastShadows(lightItem.getLightType() != LightType::POINT);
 
     return parentNode.addNode(lightItem);
 }
@@ -284,13 +282,13 @@ SceneGraphNode& Scene::addLight(LightType type,
                                 SceneGraphNode& parentNode) {
     const char* lightType = "";
     switch (type) {
-        case LightType::LIGHT_TYPE_DIRECTIONAL:
+        case LightType::DIRECTIONAL:
             lightType = "Default_directional_light ";
             break;
-        case LightType::LIGHT_TYPE_POINT:
+        case LightType::POINT:
             lightType = "Default_point_light_";
             break;
-        case LightType::LIGHT_TYPE_SPOT:
+        case LightType::SPOT:
             lightType = "Default_spot_light_";
             break;
     }
@@ -299,12 +297,12 @@ SceneGraphNode& Scene::addLight(LightType type,
         lightType +
         std::to_string(LightManager::getInstance().getLights().size()));
     defaultLight.setEnumValue(to_uint(type));
-    return addLight(CreateResource<Light>(defaultLight), parentNode);
+    return addLight(*CreateResource<Light>(defaultLight), parentNode);
 }
 
 SceneGraphNode& Scene::addSky(Sky* const skyItem) {
     assert(skyItem != nullptr);
-    return _sceneGraph.getRoot().createNode(skyItem);
+    return _sceneGraph.getRoot().createNode(*skyItem);
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
@@ -322,7 +320,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode& terrainTemp = root.createNode(temp);
+            SceneGraphNode& terrainTemp = root.createNode(*temp);
             terrainTemp.setActive(terrainInfo->getActive());
             terrainTemp.usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 

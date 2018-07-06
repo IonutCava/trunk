@@ -62,7 +62,7 @@ class SceneGraph : private NonCopyable {
         return _root->findNode(name, sceneNodeName);
     }
 
-    inline SceneGraphNode& addNode(SceneNode* const node,
+    inline SceneGraphNode& addNode(SceneNode& node,
                                    const stringImpl& nodeName) {
         return _root->addNode(node, nodeName);
     }

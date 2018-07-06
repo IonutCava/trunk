@@ -100,14 +100,13 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             ss << (U32)lightID;
             ResourceDescriptor tempLight(
                 stringAlg::toBase("Light Deferred " + ss.str()));
-            tempLight.setEnumValue(to_uint(LightType::LIGHT_TYPE_POINT));
+            tempLight.setEnumValue(to_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
             light->setRange(30.0f);
-            light->setCastShadows(
-                false);  // ToDo: Shadows are ... for another time -Ionut
-            _sceneGraph.getRoot().addNode(light);
-            addLight(light, _sceneGraph.getRoot());
+            light->setCastShadows(false);  
+            _sceneGraph.getRoot().addNode(*light);
+            addLight(*light, _sceneGraph.getRoot());
         }
 
     _taskTimers.push_back(0.0);

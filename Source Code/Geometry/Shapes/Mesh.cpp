@@ -55,7 +55,9 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
     for (SubMeshRefMap::value_type it : _subMeshRefMap) {
-        sgn.addNode(it.second, sgn.getName() + "_" + std::to_string(it.first));
+        sgn.addNode(
+            *(it.second),
+            Util::stringFormat("%s_%d", sgn.getName().c_str(), it.first));
     }
 
     Object3D::postLoad(sgn);
@@ -71,8 +73,11 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 
         for (value_type it : sgn.getChildren()) {
             AnimationComponent* comp = it.second->getComponent<AnimationComponent>();
-            comp->playAnimations(playAnimations);
-            comp->incParentTimeStamp(deltaTime);
+            // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
+            if (comp) {
+                comp->playAnimations(playAnimations);
+                comp->incParentTimeStamp(deltaTime);
+            }
         }
     }
 
