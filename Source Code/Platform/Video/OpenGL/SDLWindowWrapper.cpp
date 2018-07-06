@@ -151,15 +151,16 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
         
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
-    _maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
-    _maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
+    s_maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
+    s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
+    s_vaoBufferData.init(s_maxAttribBindings);
 
-    assert(to_const_uint(AttribLocation::COUNT) < to_uint(_maxAttribBindings) &&
+    assert(to_const_uint(AttribLocation::COUNT) < to_uint(s_maxAttribBindings) &&
            "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
-    Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), _maxTextureUnits);
+    Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), s_maxTextureUnits);
     
-    par.setParam<I32>(_ID("rendering.maxTextureSlots"), _maxTextureUnits);
+    par.setParam<I32>(_ID("rendering.maxTextureSlots"), s_maxTextureUnits);
     // Maximum number of colour attachments per framebuffer
     par.setParam<I32>(_ID("rendering.maxRenderTargetOutputs"),
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
@@ -327,7 +328,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Initialize our VAO pool
     GLUtil::_vaoPool.init(g_maxVAOS);
     // We need a dummy VAO object for point rendering
-    _dummyVAO = GLUtil::_vaoPool.allocate();
+    s_dummyVAO = GLUtil::_vaoPool.allocate();
 
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
@@ -369,20 +370,20 @@ void GL_API::closeRenderingAPI() {
     _GUIGLrenderer = nullptr;
     // Destroy sampler objects
     {
-        WriteLock w_lock(_samplerMapLock);
-        MemoryManager::DELETE_HASHMAP(_samplerMap);
+        WriteLock w_lock(s_samplerMapLock);
+        MemoryManager::DELETE_HASHMAP(s_samplerMap);
     }
     // Destroy the text rendering system
     deleteFonsContext();
     _fonts.clear();
     // If we have an indirect draw buffer, delete it
-    if (_indirectDrawBuffer > 0) {
-        glDeleteBuffers(1, &_indirectDrawBuffer);
-        _indirectDrawBuffer = 0;
+    if (s_indirectDrawBuffer > 0) {
+        glDeleteBuffers(1, &s_indirectDrawBuffer);
+        s_indirectDrawBuffer = 0;
     }
-    if (_dummyVAO > 0) {
-        glDeleteVertexArrays(1, &_dummyVAO);
-        _dummyVAO = 0;
+    if (s_dummyVAO > 0) {
+        glDeleteVertexArrays(1, &s_dummyVAO);
+        s_dummyVAO = 0;
     }
     glVertexArray::cleanup();
     GLUtil::clearVBOs();

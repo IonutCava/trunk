@@ -105,14 +105,20 @@ void TaskPool::taskCompleted(U32 poolIndex, Task::TaskPriority priority) {
 }
 
 TaskHandle TaskPool::getTaskHandle(I64 taskGUID) {
-    for (Task& freeTask : _tasksPool) {
-        if (freeTask.getGUID() == taskGUID) {
-            return TaskHandle(&freeTask, freeTask.jobIdentifier());
-        }
+    vectorImpl<Task>::iterator
+        it = std::find_if(std::begin(_tasksPool),
+                          std::end(_tasksPool),
+                          [taskGUID](const Task& entry) {
+                            return entry.getGUID() == taskGUID;
+                          });
+
+    if (it != std::cend(_tasksPool)) {
+        Task& task = *it;
+        return TaskHandle(&task, task.jobIdentifier());
     }
+
     // return the first task instead of a dummy result
-    return _tasksPool.empty() ? TaskHandle(nullptr, -1) 
-                              : TaskHandle(&_tasksPool.front(), -1);
+    return TaskHandle(&_tasksPool.front(), -1);
 }
 
 Task& TaskPool::getAvailableTask() {

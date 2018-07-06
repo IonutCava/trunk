@@ -190,6 +190,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
                 case _ID(teseAtomExt): typeIndex = ShaderType::TESSELATION_EVAL; break;
                 case _ID(compAtomExt): typeIndex = ShaderType::COMPUTE; break;
                 case _ID(comnAtomExt): typeIndex = ShaderType::COUNT; break;
+                default: DIVIDE_UNEXPECTED_CALL("Invalid shader include type"); break;
             };
 
             include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_uint(typeIndex)]);

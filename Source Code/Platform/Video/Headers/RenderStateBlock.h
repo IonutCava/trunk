@@ -40,9 +40,9 @@ namespace Divide {
 class RenderStateBlock : public GUIDWrapper {
    public:
       typedef hashMapImpl<size_t, RenderStateBlock> RenderStateMap;
-      static RenderStateMap _stateBlockMap;
+      static RenderStateMap s_stateBlockMap;
    private:
-      static SharedLock _stateBlockMapMutex;
+      static SharedLock s_stateBlockMapMutex;
    public:
        static void init();
        static void clear();
@@ -86,6 +86,8 @@ class RenderStateBlock : public GUIDWrapper {
 
     size_t _cachedHash;
     bool _lockHash;
+
+    static size_t s_defaultCacheValue;
 
   private:
     void operator=(const RenderStateBlock& b) = delete;

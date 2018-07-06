@@ -56,11 +56,11 @@ namespace Time {
     class ProfileTimer;
 };
 
-    static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
+static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
 
-    enum class WindowType : U32;
+enum class WindowType : U32;
 
-    class DisplayWindow;
+class DisplayWindow;
 
 /// OpenGL implementation of the RenderAPIWrapper
 DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
@@ -113,7 +113,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     GLuint64 getFrameDurationGPU() override;
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
-        return _activeFBID[to_uint(usage)];
+        return s_activeFBID[to_uint(usage)];
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
@@ -218,7 +218,11 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     typedef std::array<GLint, to_const_uint(ShaderType::COUNT) + 1> ShaderOffsetArray;
     void appendToShaderHeader(ShaderType type, const stringImpl& entry,
                               ShaderOffsetArray& inOutOffset);
-
+  protected:
+      /// Number of available texture units
+      static GLint s_maxTextureUnits;
+      /// Number of available attribute binding indices
+      static GLint s_maxAttribBindings;
   private:
     GFXDevice& _context;
     /// The previous Text3D node's font face size
@@ -232,34 +236,30 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Line width limit (hardware upper limit)
     GLint _lineWidthLimit;
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
-    GLuint _dummyVAO;
-    /// Number of available texture units
-    static GLint _maxTextureUnits;
-    /// Number of available attribute binding indices
-    static GLint _maxAttribBindings;
+    static GLuint s_dummyVAO;
     /// Used to store all of the indirect draw commands
-    static GLuint _indirectDrawBuffer;
+    static GLuint s_indirectDrawBuffer;
     /// A cache of all fonts used
     typedef hashMapImpl<U64, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
     /// Current active vertex array object's handle
-    static GLuint _activeVAOID;
+    static GLuint s_activeVAOID;
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current
     /// write only framebuffer
-    static GLuint _activeFBID[3];
+    static GLuint s_activeFBID[3];
     /// VB, IB, SB, TB, UB, PUB, DIB
-    static GLuint _activeBufferID[7];
-    static GLuint _activeTransformFeedback;
-    static GLint _activePackUnpackAlignments[2];
-    static GLint _activePackUnpackRowLength[2];
-    static GLint _activePackUnpackSkipPixels[2];
-    static GLint _activePackUnpackSkipRows[2];
-    static GLuint _activeShaderProgram;
+    static GLuint s_activeBufferID[7];
+    static GLuint s_activeTransformFeedback;
+    static GLint  s_activePackUnpackAlignments[2];
+    static GLint  s_activePackUnpackRowLength[2];
+    static GLint  s_activePackUnpackSkipPixels[2];
+    static GLint  s_activePackUnpackSkipRows[2];
+    static GLuint s_activeShaderProgram;
     /// Boolean value used to verify if primitive restart index is enabled or
     /// disabled
-    static bool _primitiveRestartEnabled;
-    static bool _rasterizationEnabled;
+    static bool s_primitiveRestartEnabled;
+    static bool s_rasterizationEnabled;
     /// Current state of all available clipping planes
     std::array<bool, to_const_uint(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
@@ -270,23 +270,20 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     FONScontext* _fonsContext;
     /// /*texture slot*/ /*<texture handle , texture type>*/
     typedef std::array<std::pair<GLuint, GLenum>, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
-    static textureBoundMapDef _textureBoundMap;
+    static textureBoundMapDef s_textureBoundMap;
 
     typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
-    static imageBoundMapDef _imageBoundMap;
+    static imageBoundMapDef s_imageBoundMap;
 
     /// /*texture slot*/ /*sampler hash value*/
     typedef std::array<size_t, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
-    static samplerBoundMapDef _samplerBoundMap;
+    static samplerBoundMapDef s_samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
     typedef hashMapImpl<size_t, glSamplerObject*> samplerObjectMap;
-    static SharedLock _samplerMapLock;
-    static samplerObjectMap _samplerMap;
+    static SharedLock s_samplerMapLock;
+    static samplerObjectMap s_samplerMap;
 
-    typedef std::tuple<GLuint, GLintptr, GLsizei> BufferBindingParams;
-    typedef hashMapImpl<GLuint /*bind index*/, BufferBindingParams> VAOBufferData;
-    typedef hashMapImpl<GLuint /*vao ID*/, VAOBufferData> VAOBindings;
-    static VAOBindings _vaoBufferData;
+    static VAOBindings s_vaoBufferData;
 
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
 

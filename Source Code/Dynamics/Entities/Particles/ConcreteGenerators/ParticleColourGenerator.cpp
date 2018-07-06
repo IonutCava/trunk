@@ -13,6 +13,8 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
     const vec4<F32> minEndCol(Util::ToFloatColour(_minEndCol));
     const vec4<F32> maxEndCol(Util::ToFloatColour(_maxEndCol));
 
+    TaskPool& tp = packagedTasksParent._task->getOwningPool();
+
     typedef decltype(std::begin(p._startColour)) iter_t_start;
     typedef decltype(std::begin(p._endColour)) iter_t_end;
     for_each_interval<iter_t_start>(std::begin(p._startColour) + startIndex,
@@ -20,7 +22,7 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
                                     ParticleData::g_threadPartitionSize,
                                     [&](iter_t_start from, iter_t_start to)
     {
-        packagedTasksParent.addChildTask(CreateTask(
+        packagedTasksParent.addChildTask(CreateTask(tp,
             [from, to, minStartCol, maxStartCol](const std::atomic_bool& stopRequested) {
                 std::for_each(from, to, [&](iter_t_start::value_type& colour)
                 {
@@ -34,7 +36,7 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
                                   ParticleData::g_threadPartitionSize,
                                   [&](iter_t_end from, iter_t_end to)
     {
-        packagedTasksParent.addChildTask(CreateTask(
+        packagedTasksParent.addChildTask(CreateTask(tp,
             [from, to, minEndCol, maxEndCol](const std::atomic_bool& stopRequested) {
                 std::for_each(from, to, [&](iter_t_end::value_type& colour)
                 {

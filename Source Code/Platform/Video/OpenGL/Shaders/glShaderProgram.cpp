@@ -556,7 +556,7 @@ bool glShaderProgram::isValid() const {
 }
 
 bool glShaderProgram::isBound() const {
-    return GL_API::_activeShaderProgram == _shaderProgramID;
+    return GL_API::s_activeShaderProgram == _shaderProgramID;
 }
 
 /// Cache uniform/attribute locations for shader programs

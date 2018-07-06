@@ -42,6 +42,8 @@ class TaskPool;
  */
 class Task : public GUIDWrapper, private NonCopyable {
    public:
+       static constexpr U16 MAX_CHILD_TASKS = 256;
+
        enum class TaskPriority : U32 {
            DONT_CARE = 0,
            LOW = 1,
@@ -78,6 +80,11 @@ class Task : public GUIDWrapper, private NonCopyable {
         _poolIndex = poolIndex;
     }
 
+    inline TaskPool& getOwningPool() {
+        assert(_tp != nullptr);
+        return *_tp;
+    }
+
     inline bool isRunning() const {
         return !_done;
     }
@@ -97,8 +104,8 @@ class Task : public GUIDWrapper, private NonCopyable {
 
     void addChildTask(Task* task) {
         task->_parentTask = this;
-        _childTasks.push_back(task);
-        _childTaskCount += 1;
+        _childTasks[_childTaskCount++] = task;
+        assert(_childTaskCount < MAX_CHILD_TASKS);
     }
 
     void wait();
@@ -114,8 +121,9 @@ class Task : public GUIDWrapper, private NonCopyable {
     std::condition_variable _taskDoneCV;
     std::atomic_bool _done;
 
+    I64 _jobIdentifier;
+
     std::atomic_bool _stopRequested;
-    std::atomic<I64> _jobIdentifier;
 
     DELEGATE_CBK_PARAM<const std::atomic_bool&> _callback;
     
@@ -124,8 +132,8 @@ class Task : public GUIDWrapper, private NonCopyable {
     U32 _poolIndex;
 
     Task* _parentTask;
-    vectorImpl<Task*> _childTasks;
-    std::atomic<I64> _childTaskCount;
+    std::array<Task*, MAX_CHILD_TASKS> _childTasks;
+    std::atomic_ushort _childTaskCount;
 
 
     U32 _taskFlags;

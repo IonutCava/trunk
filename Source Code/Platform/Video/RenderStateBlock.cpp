@@ -4,8 +4,9 @@
 
 namespace Divide {
 
-RenderStateBlock::RenderStateMap RenderStateBlock::_stateBlockMap;
-SharedLock RenderStateBlock::_stateBlockMapMutex;
+RenderStateBlock::RenderStateMap RenderStateBlock::s_stateBlockMap;
+SharedLock RenderStateBlock::s_stateBlockMapMutex;
+size_t RenderStateBlock::s_defaultCacheValue = 0;
 
 RenderStateBlock::RenderStateBlock()
     : GUIDWrapper(), 
@@ -13,6 +14,10 @@ RenderStateBlock::RenderStateBlock()
      _lockHash(false)
 {
     setDefaultValues();
+    clean();
+    if (s_defaultCacheValue == 0) {
+        s_defaultCacheValue = _cachedHash;
+    }
 }
 
 RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
@@ -174,46 +179,44 @@ void RenderStateBlock::setDefaultValues() {
     setFillMode(FillMode::SOLID);
     setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
     setStencil(false);
+    _cachedHash = s_defaultCacheValue;
     _lockHash = false;
-
-    clean();
 }
 
 void RenderStateBlock::clean() {
-    if (_lockHash) {
-        return;
-    }
-    size_t previousCache = _cachedHash;
+    if (!_lockHash) {
+        size_t previousCache = _cachedHash;
 
-    // Avoid small float rounding errors offsetting the general hash value
-    U32 zBias = to_uint(floor((_zBias * 1000.0) + 0.5));
-    U32 zUnits = to_uint(floor((_zUnits * 1000.0) + 0.5));
+        // Avoid small float rounding errors offsetting the general hash value
+        U32 zBias = to_uint(std::floor((_zBias * 1000.0f) + 0.5f));
+        U32 zUnits = to_uint(std::floor((_zUnits * 1000.0f) + 0.5f));
 
-    _cachedHash = 0;
-    Util::Hash_combine(_cachedHash, _colourWrite.i);
-    Util::Hash_combine(_cachedHash, _blendEnable);
-    Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
-    Util::Hash_combine(_cachedHash, to_uint(_blendDest));
-    Util::Hash_combine(_cachedHash, to_uint(_blendOp));
-    Util::Hash_combine(_cachedHash, to_uint(_cullMode));
-    Util::Hash_combine(_cachedHash, _cullEnabled);
-    Util::Hash_combine(_cachedHash, _zEnable);
-    Util::Hash_combine(_cachedHash, to_uint(_zFunc));
-    Util::Hash_combine(_cachedHash, zBias);
-    Util::Hash_combine(_cachedHash, zUnits);
-    Util::Hash_combine(_cachedHash, _stencilEnable);
-    Util::Hash_combine(_cachedHash, _stencilRef);
-    Util::Hash_combine(_cachedHash, _stencilMask);
-    Util::Hash_combine(_cachedHash, _stencilWriteMask);
-    Util::Hash_combine(_cachedHash, to_uint(_stencilFailOp));
-    Util::Hash_combine(_cachedHash, to_uint(_stencilZFailOp));
-    Util::Hash_combine(_cachedHash, to_uint(_stencilPassOp));
-    Util::Hash_combine(_cachedHash, to_uint(_stencilFunc));
-    Util::Hash_combine(_cachedHash, to_uint(_fillMode));
+        _cachedHash = 0;
+        Util::Hash_combine(_cachedHash, _colourWrite.i);
+        Util::Hash_combine(_cachedHash, _blendEnable);
+        Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
+        Util::Hash_combine(_cachedHash, to_uint(_blendDest));
+        Util::Hash_combine(_cachedHash, to_uint(_blendOp));
+        Util::Hash_combine(_cachedHash, to_uint(_cullMode));
+        Util::Hash_combine(_cachedHash, _cullEnabled);
+        Util::Hash_combine(_cachedHash, _zEnable);
+        Util::Hash_combine(_cachedHash, to_uint(_zFunc));
+        Util::Hash_combine(_cachedHash, zBias);
+        Util::Hash_combine(_cachedHash, zUnits);
+        Util::Hash_combine(_cachedHash, _stencilEnable);
+        Util::Hash_combine(_cachedHash, _stencilRef);
+        Util::Hash_combine(_cachedHash, _stencilMask);
+        Util::Hash_combine(_cachedHash, _stencilWriteMask);
+        Util::Hash_combine(_cachedHash, to_uint(_stencilFailOp));
+        Util::Hash_combine(_cachedHash, to_uint(_stencilZFailOp));
+        Util::Hash_combine(_cachedHash, to_uint(_stencilPassOp));
+        Util::Hash_combine(_cachedHash, to_uint(_stencilFunc));
+        Util::Hash_combine(_cachedHash, to_uint(_fillMode));
 
-    if (previousCache != _cachedHash) {
-        WriteLock w_lock(_stateBlockMapMutex);
-        hashAlg::emplace(_stateBlockMap, _cachedHash, *this);
+        if (previousCache != _cachedHash) {
+            WriteLock w_lock(s_stateBlockMapMutex);
+            hashAlg::emplace(s_stateBlockMap, _cachedHash, *this);
+        }
     }
 }
 
@@ -221,27 +224,27 @@ void RenderStateBlock::init() {
 }
 
 void RenderStateBlock::clear() {
-    WriteLock w_lock(_stateBlockMapMutex);
-    _stateBlockMap.clear();
+    WriteLock w_lock(s_stateBlockMapMutex);
+    s_stateBlockMap.clear();
 }
 
-/// Return the the render state block defined by the specified hash value.
+/// Return the render state block defined by the specified hash value.
 const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash) {
-    ReadLock r_lock(_stateBlockMapMutex);
+    ReadLock r_lock(s_stateBlockMapMutex);
     // Find the render state block associated with the received hash value
-    RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
+    RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
     // Assert if it doesn't exist. Avoids programming errors.
-    DIVIDE_ASSERT(it != std::cend(_stateBlockMap),
+    DIVIDE_ASSERT(it != std::cend(s_stateBlockMap),
                   "RenderStateBlock error: Invalid render state block hash specified for getRenderStateBlock!");
     // Return the state block's descriptor
     return it->second;
 }
 
 bool RenderStateBlock::get(size_t renderStateBlockHash, RenderStateBlock& blockOut) {
-    ReadLock r_lock(_stateBlockMapMutex);
+    ReadLock r_lock(s_stateBlockMapMutex);
     // Find the render state block associated with the received hash value
-    RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
-    if(it != std::cend(_stateBlockMap) ) {
+    RenderStateMap::const_iterator it = s_stateBlockMap.find(renderStateBlockHash);
+    if(it != std::cend(s_stateBlockMap) ) {
         blockOut.copy(it->second);
         return true;
     }

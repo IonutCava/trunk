@@ -439,13 +439,17 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     if (_previousMask != drawPolicy.drawMask()) {
         // handle colour buffers first
-        colourBuffers.resize(0);
         RTAttachment::Type type = RTAttachment::Type::Colour;
         U8 bufferCount = _attachments.attachmentCount(type);
+        if (to_ubyte(colourBuffers.size()) < bufferCount) {
+            colourBuffers.resize(bufferCount);
+        }
+
         for (U8 j = 0; j < bufferCount; ++j) {
             RTAttachment* thisAtt = _attachments.get(type, j).get();
             thisAtt->enabled(drawPolicy.drawMask().isEnabled(type, j) && thisAtt->used());
-            colourBuffers.push_back(thisAtt->enabled() ? static_cast<GLenum>(thisAtt->binding()): GL_NONE);
+            colourBuffers[j] = thisAtt->enabled() ? static_cast<GLenum>(thisAtt->binding())
+                                                  : GL_NONE;
         }
         glDrawBuffers(to_uint(bufferCount), colourBuffers.data());
         

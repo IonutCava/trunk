@@ -37,6 +37,7 @@
 namespace Divide {
 namespace Time {
 
+class ApplicationTimer;
 class ProfileTimer {
    public:
     ProfileTimer();
@@ -67,9 +68,11 @@ class ProfileTimer {
    // timer <-> timer relationship
    public:
     void addChildTimer(ProfileTimer& child);
+
    protected:
      vectorImpl<U32> _children;
      U32 _parent;
+     ApplicationTimer& _appTimer;
 };
 
 class ScopedTimer : private NonCopyable {

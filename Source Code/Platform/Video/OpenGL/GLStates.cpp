@@ -12,41 +12,42 @@
 namespace Divide {
 
 /// The following static variables are used to remember the current OpenGL state
-GLint  GL_API::_maxTextureUnits = 0;
-GLint  GL_API::_maxAttribBindings = 0;
-GLuint GL_API::_activeShaderProgram = 0;
-GLuint GL_API::_indirectDrawBuffer = 0;
-GLint  GL_API::_activePackUnpackAlignments[] = {1, 1};
-GLint  GL_API::_activePackUnpackRowLength[] = {0, 0};
-GLint  GL_API::_activePackUnpackSkipPixels[] = {0, 0};
-GLint  GL_API::_activePackUnpackSkipRows[] = {0, 0};
-GLuint GL_API::_activeVAOID = GLUtil::_invalidObjectID;
-GLuint GL_API::_activeTransformFeedback = GLUtil::_invalidObjectID;
-GLuint GL_API::_activeFBID[] = {GLUtil::_invalidObjectID,
-                                GLUtil::_invalidObjectID,
-                                GLUtil::_invalidObjectID};
-GLuint GL_API::_activeBufferID[] = {GLUtil::_invalidObjectID,
-                                    GLUtil::_invalidObjectID,
-                                    GLUtil::_invalidObjectID,
-                                    GLUtil::_invalidObjectID,
-                                    GLUtil::_invalidObjectID,
-                                    GLUtil::_invalidObjectID,
-                                    GLUtil::_invalidObjectID};
-GL_API::VAOBindings GL_API::_vaoBufferData;
-bool GL_API::_primitiveRestartEnabled = false;
-bool GL_API::_rasterizationEnabled = true;
-GL_API::textureBoundMapDef GL_API::_textureBoundMap;
-GL_API::imageBoundMapDef GL_API::_imageBoundMap;
-GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
-GL_API::samplerObjectMap GL_API::_samplerMap;
-SharedLock GL_API::_samplerMapLock;
+GLuint GL_API::s_dummyVAO = 0;
+GLint  GL_API::s_maxTextureUnits = 0;
+GLint  GL_API::s_maxAttribBindings = 0;
+GLuint GL_API::s_activeShaderProgram = 0;
+GLuint GL_API::s_indirectDrawBuffer = 0;
+GLint  GL_API::s_activePackUnpackAlignments[] = {1, 1};
+GLint  GL_API::s_activePackUnpackRowLength[] = {0, 0};
+GLint  GL_API::s_activePackUnpackSkipPixels[] = {0, 0};
+GLint  GL_API::s_activePackUnpackSkipRows[] = {0, 0};
+GLuint GL_API::s_activeVAOID = GLUtil::_invalidObjectID;
+GLuint GL_API::s_activeTransformFeedback = GLUtil::_invalidObjectID;
+GLuint GL_API::s_activeFBID[] = {GLUtil::_invalidObjectID,
+                                 GLUtil::_invalidObjectID,
+                                 GLUtil::_invalidObjectID};
+GLuint GL_API::s_activeBufferID[] = {GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID};
+VAOBindings GL_API::s_vaoBufferData;
+bool GL_API::s_primitiveRestartEnabled = false;
+bool GL_API::s_rasterizationEnabled = true;
+GL_API::textureBoundMapDef GL_API::s_textureBoundMap;
+GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
+GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
+GL_API::samplerObjectMap GL_API::s_samplerMap;
+SharedLock GL_API::s_samplerMapLock;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {
     static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
 
-    for(U16 i = 0; i < to_ushort(GL_API::_maxTextureUnits); ++i) {
-        std::pair<GLuint, GLenum>& it  = _textureBoundMap[i];
+    for(U16 i = 0; i < to_ushort(GL_API::s_maxTextureUnits); ++i) {
+        const std::pair<GLuint, GLenum>& it  = s_textureBoundMap[i];
         if (it.second != GL_ZERO) {
             GL_API::bindTexture(i, 0, it.second);
         }
@@ -75,27 +76,27 @@ bool GL_API::setPixelPackAlignment(GLint packAlignment,
                                    GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
-    if (_activePackUnpackAlignments[0] != packAlignment) {
+    if (s_activePackUnpackAlignments[0] != packAlignment) {
         glPixelStorei(GL_PACK_ALIGNMENT, packAlignment);
-        _activePackUnpackAlignments[0] = packAlignment;
+        s_activePackUnpackAlignments[0] = packAlignment;
         changed = true;
     }
 
-    if (_activePackUnpackRowLength[0] != rowLength) {
+    if (s_activePackUnpackRowLength[0] != rowLength) {
         glPixelStorei(GL_PACK_ROW_LENGTH, rowLength);
-        _activePackUnpackRowLength[0] = rowLength;
+        s_activePackUnpackRowLength[0] = rowLength;
         changed = true;
     }
 
-    if (_activePackUnpackSkipRows[0] != skipRows) {
+    if (s_activePackUnpackSkipRows[0] != skipRows) {
         glPixelStorei(GL_PACK_SKIP_ROWS, skipRows);
-        _activePackUnpackSkipRows[0] = skipRows;
+        s_activePackUnpackSkipRows[0] = skipRows;
         changed = true;
     }
 
-    if (_activePackUnpackSkipPixels[0] != skipPixels) {
+    if (s_activePackUnpackSkipPixels[0] != skipPixels) {
         glPixelStorei(GL_PACK_SKIP_PIXELS, skipPixels);
-        _activePackUnpackSkipPixels[0] = skipPixels;
+        s_activePackUnpackSkipPixels[0] = skipPixels;
         changed = true;
     }
 
@@ -110,27 +111,27 @@ bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment,
                                      GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
-    if (_activePackUnpackAlignments[1] != unpackAlignment) {
+    if (s_activePackUnpackAlignments[1] != unpackAlignment) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
-        _activePackUnpackAlignments[1] = unpackAlignment;
+        s_activePackUnpackAlignments[1] = unpackAlignment;
         changed = true;
     }
 
-    if (_activePackUnpackRowLength[1] != rowLength) {
+    if (s_activePackUnpackRowLength[1] != rowLength) {
         glPixelStorei(GL_UNPACK_ROW_LENGTH, rowLength);
-        _activePackUnpackRowLength[1] = rowLength;
+        s_activePackUnpackRowLength[1] = rowLength;
         changed = true;
     }
 
-    if (_activePackUnpackSkipRows[1] != skipRows) {
+    if (s_activePackUnpackSkipRows[1] != skipRows) {
         glPixelStorei(GL_UNPACK_SKIP_ROWS, skipRows);
-        _activePackUnpackSkipRows[1] = skipRows;
+        s_activePackUnpackSkipRows[1] = skipRows;
         changed = true;
     }
 
-    if (_activePackUnpackSkipPixels[1] != skipPixels) {
+    if (s_activePackUnpackSkipPixels[1] != skipPixels) {
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, skipPixels);
-        _activePackUnpackSkipPixels[1] = skipPixels;
+        s_activePackUnpackSkipPixels[1] = skipPixels;
         changed = true;
     }
 
@@ -142,8 +143,8 @@ bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment,
 /// is used
 void GL_API::togglePrimitiveRestart(bool state) {
     // Toggle primitive restart on or off
-    if (_primitiveRestartEnabled != state) {
-        _primitiveRestartEnabled = state;
+    if (s_primitiveRestartEnabled != state) {
+        s_primitiveRestartEnabled = state;
         state ? glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX)
               : glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
     }
@@ -152,8 +153,8 @@ void GL_API::togglePrimitiveRestart(bool state) {
 /// Enable or disable primitive rasterization
 void GL_API::toggleRasterization(bool state) {
     // Toggle primitive restart on or off
-    if (_rasterizationEnabled != state) {
-        _rasterizationEnabled = state;
+    if (s_rasterizationEnabled != state) {
+        s_rasterizationEnabled = state;
         state ? glDisable(GL_RASTERIZER_DISCARD)
               : glEnable(GL_RASTERIZER_DISCARD);
     }
@@ -182,17 +183,17 @@ bool GL_API::bindSamplers(GLushort unitOffset,
                           GLuint samplerCount,
                           GLuint* samplerHandles) {
     if (samplerCount > 0 &&
-        unitOffset + samplerCount < static_cast<GLuint>(GL_API::_maxTextureUnits))
+        unitOffset + samplerCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
         glBindSamplers(unitOffset, samplerCount, samplerHandles);
 
         if (!samplerHandles) {
             for (GLushort i = 0; i < samplerCount; ++i) {
-               _samplerBoundMap[unitOffset + i] = 0;
+               s_samplerBoundMap[unitOffset + i] = 0;
             }
         } else {
             for (GLushort i = 0; i < samplerCount; ++i) {
-                _samplerBoundMap[unitOffset + i] = samplerHandles[i];
+                s_samplerBoundMap[unitOffset + i] = samplerHandles[i];
             }
         }
 
@@ -215,18 +216,18 @@ bool GL_API::bindTextures(GLushort unitOffset,
                           GLenum* targets,
                           GLuint* samplerHandles) {
     if (textureCount > 0 &&
-        unitOffset + textureCount < static_cast<GLuint>(GL_API::_maxTextureUnits))
+        unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
         GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
         glBindTextures(unitOffset, textureCount, textureHandles);
 
         if (!textureHandles) {
             for (GLushort i = 0; i < textureCount; ++i) {
-                _textureBoundMap[unitOffset + i].first = 0;
+                s_textureBoundMap[unitOffset + i].first = 0;
             }
         } else {
             for (GLushort i = 0; i < textureCount; ++i) {
-                std::pair<GLuint, GLenum>& currentMapping = _textureBoundMap[unitOffset + i];
+                std::pair<GLuint, GLenum>& currentMapping = s_textureBoundMap[unitOffset + i];
                 currentMapping.first = textureHandles[i];
                 currentMapping.second = targets[i];
             }
@@ -245,7 +246,7 @@ bool GL_API::bindTexture(GLushort unit,
                          size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
-    DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::_maxTextureUnits),
+    DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::s_maxTextureUnits),
                   "GLStates error: invalid texture unit specified as a texture binding slot!");
     GLuint samplerHandle = getSamplerHandle(samplerHash);
     return bindTextures(unit, 1, &handle, &target, &samplerHandle);
@@ -257,7 +258,7 @@ bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,
     static ImageBindSettings tempSettings;
     tempSettings = {handle, level, layered ? GL_TRUE : GL_FALSE, layer, access, format};
 
-    ImageBindSettings& settings = _imageBoundMap[unit];
+    ImageBindSettings& settings = s_imageBoundMap[unit];
     if (settings != tempSettings) {
         glBindImageTexture(unit, handle, level, layered ? GL_TRUE : GL_FALSE, layer, access, format);
         settings = tempSettings;
@@ -269,18 +270,18 @@ bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,
 
 /// Single place to change buffer objects for every target available
 bool GL_API::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLintptr offset, GLsizei stride) {
-    BufferBindingParams& bindings = _vaoBufferData[vaoID][location];
-    BufferBindingParams currentParams(bufferID, offset, stride);
-    if (bindings == currentParams) {
-        return false;
+    const VAOBindings::BufferBindingParams& bindings = s_vaoBufferData.bindingParams(vaoID, location);
+
+    VAOBindings::BufferBindingParams currentParams(bufferID, offset, stride);
+    if (bindings != currentParams) {
+        // Bind the specified buffer handle to the desired buffer target
+        glVertexArrayVertexBuffer(vaoID, location, bufferID, offset, stride);
+        // Remember the new binding for future reference
+        s_vaoBufferData.bindingParams(vaoID, location, currentParams);
+        return true;
     }
-    // Remember the new binding for future reference
-    bindings = currentParams;
 
-    // Bind the specified buffer handle to the desired buffer target
-    glVertexArrayVertexBuffer(vaoID, location, bufferID, offset, stride);
-
-    return true;
+    return false;
 }
 
 bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID) {
@@ -297,12 +298,12 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
     if (ID == GLUtil::_invalidObjectID) {
         ID = 0;
     }
-    previousID = _activeFBID[to_uint(usage)];
+    previousID = s_activeFBID[to_uint(usage)];
     // Prevent double bind
-    if (_activeFBID[to_uint(usage)] == ID) {
+    if (s_activeFBID[to_uint(usage)] == ID) {
         if (usage == RenderTarget::RenderTargetUsage::RT_READ_WRITE) {
-            if (_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] == ID &&
-                _activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] == ID) {
+            if (s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] == ID &&
+                s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] == ID) {
                 return false;
             }
         } else {
@@ -317,8 +318,8 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            _activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] = ID;
-            _activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] = ID;
+            s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] = ID;
+            s_activeFBID[to_const_uint(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] = ID;
         } break;
         case RenderTarget::RenderTargetUsage::RT_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
@@ -327,8 +328,9 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ID);
         } break;
     };
+
     // Remember the new binding state for future reference
-    _activeFBID[to_uint(usage)] = ID;
+    s_activeFBID[to_uint(usage)] = ID;
     return true;
 }
 
@@ -339,17 +341,18 @@ bool GL_API::setActiveVAO(GLuint ID) {
 
 /// Switch the currently active vertex array object
 bool GL_API::setActiveVAO(GLuint ID, GLuint& previousID) {
-    previousID = _activeVAOID;
+    previousID = s_activeVAOID;
     // Prevent double bind
-    if (_activeVAOID == ID) {
-        return false;
+    if (s_activeVAOID != ID) {
+        // Remember the new binding for future reference
+        s_activeVAOID = ID;
+        setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // Activate the specified VAO
+        glBindVertexArray(ID);
+        return true;
     }
-    // Remember the new binding for future reference
-    _activeVAOID = ID;
-    setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    // Activate the specified VAO
-    glBindVertexArray(ID);
-    return true;
+
+    return false;
 }
 
 bool GL_API::setActiveTransformFeedback(GLuint ID) {
@@ -359,17 +362,17 @@ bool GL_API::setActiveTransformFeedback(GLuint ID) {
 
 /// Bind the specified transform feedback object
 bool GL_API::setActiveTransformFeedback(GLuint ID, GLuint& previousID) {
-    previousID = _activeTransformFeedback;
+    previousID = s_activeTransformFeedback;
     // Prevent double bind
-    if (_activeTransformFeedback == ID) {
-        return false;
+    if (s_activeTransformFeedback != ID) {
+        // Remember the new binding for future reference
+        s_activeTransformFeedback = ID;
+        // Activate the specified TFO
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, ID);
+        return true;
     }
-    // Remember the new binding for future reference
-    _activeTransformFeedback = ID;
-    // Activate the specified TFO
-    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, ID);
 
-    return true;
+    return false;
 }
 
 /// Single place to change buffer objects for every target available
@@ -409,16 +412,16 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
     };
 
     // Prevent double bind
-    previousID = _activeBufferID[index];
-    if (previousID == ID) {
-        return false;
+    previousID = s_activeBufferID[index];
+    if (previousID != ID) {
+        // Remember the new binding for future reference
+        s_activeBufferID[index] = ID;
+        // Bind the specified buffer handle to the desired buffer target
+        glBindBuffer(target, ID);
+        return true;
     }
-    // Remember the new binding for future reference
-    _activeBufferID[index] = ID;
-    // Bind the specified buffer handle to the desired buffer target
-    glBindBuffer(target, ID);
 
-    return true;
+    return false;
 }
 
 bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {
@@ -431,15 +434,15 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {
 bool GL_API::setActiveProgram(GLuint programHandle) {
     // Check if we are binding a new program or unbinding all shaders
     // Prevent double bind
-    if (GL_API::_activeShaderProgram == programHandle) {
-        return false;
+    if (GL_API::s_activeShaderProgram != programHandle) {
+        // Remember the new binding for future reference
+        GL_API::s_activeShaderProgram = programHandle;
+        // Bind the new program
+        glUseProgram(programHandle);
+        return true;
     }
-    // Remember the new binding for future reference
-    GL_API::_activeShaderProgram = programHandle;
-    // Bind the new program
-    glUseProgram(programHandle);
 
-    return true;
+    return false;
 }
 
 /// Change the current viewport area. Redundancy check is performed in GFXDevice

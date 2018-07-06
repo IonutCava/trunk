@@ -53,7 +53,6 @@ GL_API::GL_API()
       _prevWidthNode(0),
       _prevWidthString(0),
       _lineWidthLimit(1),
-      _dummyVAO(0),
       _currentStateBlockHash(0),
       _previousStateBlockHash(0),
       _fonsContext(nullptr),
@@ -65,8 +64,8 @@ GL_API::GL_API()
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
-    _samplerBoundMap.fill(0);
-    _textureBoundMap.fill(std::make_pair(0, GL_NONE));
+    s_samplerBoundMap.fill(0);
+    s_textureBoundMap.fill(std::make_pair(0, GL_NONE));
 
     _hardwareQueries.reserve(g_performanceQueryCount);
     for (U32 i = 0; i < g_performanceQueryCount; ++i) {
@@ -103,7 +102,7 @@ void GL_API::beginFrame() {
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
     _context.registerDrawCall();
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, s_indirectDrawBuffer);
     _previousStateBlockHash = 0;
 }
 
@@ -385,7 +384,7 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::_maxTextureUnits),
+        "#define MAX_TEXTURE_SLOTS " + to_stringImpl(GL_API::s_maxTextureUnits),
         lineOffsets);
 
     appendToShaderHeader(
@@ -721,7 +720,7 @@ bool GL_API::setState(const GenericDrawCommand& cmd) {
 bool GL_API::draw(const GenericDrawCommand& cmd) {
     if (setState(cmd)) {
         if (cmd.sourceBuffer() == nullptr) {
-            GL_API::setActiveVAO(_dummyVAO);
+            GL_API::setActiveVAO(s_dummyVAO);
         
             U32 indexCount = 0;
             switch(cmd.primitiveType()) {
@@ -814,8 +813,8 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
 }
 
 void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
-    _indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
+    s_indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, s_indirectDrawBuffer);
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
@@ -840,14 +839,14 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // Get the descriptor's hash value
     size_t hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map
-    UpgradableReadLock ur_lock(_samplerMapLock);
-    samplerObjectMap::const_iterator it = _samplerMap.find(hashValue);
+    UpgradableReadLock ur_lock(s_samplerMapLock);
+    samplerObjectMap::const_iterator it = s_samplerMap.find(hashValue);
     // If we fail to find it, we need to create a new sampler object
-    if (it == std::end(_samplerMap)) {
+    if (it == std::end(s_samplerMap)) {
         UpgradeToWriteLock w_lock(ur_lock);
         // Create and store the newly created sample object. GL_API is
         // responsible for deleting these!
-        hashAlg::emplace(_samplerMap, hashValue, MemoryManager_NEW glSamplerObject(descriptor));
+        hashAlg::emplace(s_samplerMap, hashValue, MemoryManager_NEW glSamplerObject(descriptor));
     }
     // Return the sampler object's hash value
     return hashValue;
@@ -860,9 +859,9 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
     if (samplerHash > 0) {
         // If we fail to find the sampler object for the given hash, we print an
         // error and return the default OpenGL handle
-        ReadLock r_lock(_samplerMapLock);
-        samplerObjectMap::const_iterator it = _samplerMap.find(samplerHash);
-        if (it != std::cend(_samplerMap)) {
+        ReadLock r_lock(s_samplerMapLock);
+        samplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
+        if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
             samplerHandle = it->second->getObjectHandle();
         } else {

@@ -30,7 +30,8 @@ ProfileTimer::ProfileTimer()
       _timerAverage(0UL),
       _timerCounter(0),
       _globalIndex(0),
-      _parent(Config::Profile::MAX_PROFILE_TIMERS + 1)
+      _parent(Config::Profile::MAX_PROFILE_TIMERS + 1),
+      _appTimer(ApplicationTimer::instance())
 {
 }
 
@@ -40,13 +41,13 @@ ProfileTimer::~ProfileTimer()
 
 void ProfileTimer::start() {
     if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
-        _timer = ElapsedMicroseconds(true);
+        _timer = _appTimer.getElapsedTime(true);
     }
 }
 
 void ProfileTimer::stop() {
     if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
-        _timerAverage += ElapsedMicroseconds(true) - _timer;
+        _timerAverage += _appTimer.getElapsedTime(true) - _timer;
         _timerCounter++;
     }
 }

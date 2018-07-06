@@ -122,6 +122,23 @@ struct ImageBindSettings {
     }
 };
 
+class VAOBindings {
+public:
+    typedef std::tuple<GLuint, GLintptr, GLsizei> BufferBindingParams;
+
+    VAOBindings();
+    ~VAOBindings();
+    void init(U32 maxBindings);
+
+    const BufferBindingParams& bindingParams(GLuint vao, GLuint index);
+    void bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams);
+
+private:
+    typedef vectorImpl<BufferBindingParams> VAOBufferData;
+    hashMapImpl<GLuint /*vao ID*/, VAOBufferData> _bindings;
+    U32 _maxBindings;
+};
+
 namespace GLUtil {
 
 /// Wrapper for glGetIntegerv

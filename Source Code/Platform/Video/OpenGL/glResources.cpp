@@ -152,6 +152,40 @@ void glHardwareQueryRing::initQueries() {
     }
 }
 
+
+VAOBindings::VAOBindings()
+    : _maxBindings(0)
+{
+}
+
+VAOBindings::~VAOBindings()
+{
+}
+
+void VAOBindings::init(U32 maxBindings) {
+    _maxBindings = maxBindings;
+}
+
+const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, GLuint index) {
+    VAOBufferData& data = _bindings[vao];
+    vectorAlg::vecSize count = data.size();
+    if (count > 0) {
+        assert(index <= count);
+        return data[index];
+    }
+
+    assert(_maxBindings != 0);
+    data.resize(_maxBindings);
+    return data.front();
+}
+
+void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams) {
+    VAOBufferData& data = _bindings[vao];
+    vectorAlg::vecSize count = data.size();
+    assert(count > 0 && count > index);
+    data[index] = newParams;
+}
+
 namespace GLUtil {
 
 /*-----------Object Management----*/

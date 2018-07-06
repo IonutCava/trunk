@@ -296,7 +296,7 @@ void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescri
 
     // If the attribute wasn't activate until now, enable it
     if (!descriptor.wasSet()) {
-        assert(descriptor.attribIndex() < to_uint(GL_API::_maxAttribBindings) &&
+        assert(descriptor.attribIndex() < to_uint(GL_API::s_maxAttribBindings) &&
                "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
         glEnableVertexArrayAttrib(activeVAO, descriptor.attribIndex());

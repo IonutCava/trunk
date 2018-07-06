@@ -24,7 +24,7 @@ Task::Task()
     _childTaskCount = 0;
     _done = true;
     _stopRequested = false;
-
+    _childTasks.fill(nullptr);
     if (g_DebugTaskStartStop) {
         SetBit(_taskFlags, to_const_uint(TaskFlags::PRINT_DEBUG_INFO));
     }
@@ -47,7 +47,6 @@ void Task::reset() {
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;
-    _childTasks.resize(0);
     _childTaskCount = 0;
 }
 
@@ -76,8 +75,12 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
         priority != TaskPriority::REALTIME_WITH_CALLBACK &&
         _tp != nullptr && _tp->workerThreadCount() > 0)
     {
+        U32 failCount = 0;
         while (!_tp->threadPool().schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
-            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
+            ++failCount;
+        }
+        if (failCount > 0) {
+            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), failCount);
         }
     } else {
         run();
@@ -91,8 +94,8 @@ void Task::stopTask() {
         }
     }
 
-    for (Task* child : _childTasks){
-        child->stopTask();
+    for (U8 i = 0; i < _childTaskCount; ++i) {
+        _childTasks[i]->stopTask();
     }
 
     _stopRequested = true;
@@ -100,9 +103,7 @@ void Task::stopTask() {
 
 void Task::wait() {
     std::unique_lock<std::mutex> lk(_taskDoneMutex);
-    while (!_done) {
-        _taskDoneCV.wait(lk);
-    }
+    _taskDoneCV.wait(lk, [this]() -> bool { return _done; } );
 }
 
 //ToDo: Add better wait for children system. Just manually balance calls for now -Ionut
