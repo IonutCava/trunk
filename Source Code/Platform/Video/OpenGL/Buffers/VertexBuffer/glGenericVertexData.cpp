@@ -34,6 +34,7 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
 glGenericVertexData::~glGenericVertexData() {
     if (!_bufferObjects.empty()) {
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
+            _lockManagers[i]->WaitForLockedRange(0, _elementCount[i] * _elementSize[i] * _sizeFactor[i], true);
             GLUtil::freeBuffer(_bufferObjects[i], _bufferPersistentData[i]);
         }
     }
@@ -152,7 +153,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     if (_persistentMapped) {
         _lockManagers.reserve(numBuffers);
         for (U8 i = 0; i < numBuffers; ++i) {
-            _lockManagers.push_back(std::make_unique<glBufferLockManager>(true));
+            _lockManagers.push_back(std::make_unique<glBufferLockManager>());
         }
     }
 }
@@ -372,7 +373,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
         DIVIDE_ASSERT(_bufferPersistentData[buffer] != nullptr,
                       "glGenericVertexData error: persistent mapping failed "
                       "when setting the current buffer!");
-        _lockManagers[buffer]->WaitForLockedRange(0, bufferSize * sizeFactor);
+        _lockManagers[buffer]->WaitForLockedRange(0, bufferSize * sizeFactor, true);
         // Create sizeFactor copies of the data and store them in the buffer
         for (U8 i = 0; i < sizeFactor; ++i) {
             bufferPtr dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
@@ -424,7 +425,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
     } else {
         // Wait for the target part of the buffer to become available for
         // writing
-        _lockManagers[buffer]->WaitForLockedRange(_startDestOffset[buffer], dataCurrentSize);
+        _lockManagers[buffer]->WaitForLockedRange(_startDestOffset[buffer], dataCurrentSize, true);
         // Offset the data pointer by the required offset taking in account the
         // current data copy we are writing into
         bufferPtr dst = (U8*)_bufferPersistentData[buffer] + _startDestOffset[buffer] + offset;

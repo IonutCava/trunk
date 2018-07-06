@@ -17,7 +17,7 @@ glShaderProgram::glShaderProgram()
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
-     _lockManager(new glLockManager(true))
+     _lockManager(new glLockManager())
 {
     _validationQueued = false;
     // each API has it's own invalid id. This is OpenGL's
@@ -27,6 +27,10 @@ glShaderProgram::glShaderProgram()
 }
 
 glShaderProgram::~glShaderProgram() {
+    if (_lockManager) {
+        _lockManager->Wait(true);
+    }
+
     // remove shader stages
     for (ShaderIDMap::value_type& it : _shaderIDMap) {
         detachShader(it.second);
@@ -72,7 +76,7 @@ void glShaderProgram::validateInternal() {
 /// Called once per frame. Used to update internal state
 bool glShaderProgram::update(const U64 deltaTime) {
     if (_lockManager) {
-        _lockManager->Wait();
+        _lockManager->Wait(true);
     }
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued && _shaderProgramID != 0) {
@@ -532,7 +536,7 @@ bool glShaderProgram::bind() {
     }
 
     if (_lockManager) {
-        _lockManager->Wait();
+        _lockManager->Wait(true);
         _lockManager.reset(nullptr);
     }
 

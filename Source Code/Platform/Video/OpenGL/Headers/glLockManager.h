@@ -37,18 +37,16 @@ namespace Divide {
 
 class glLockManager {
    public:
-    glLockManager(bool cpuUpdates);
+    glLockManager();
     virtual ~glLockManager();
 
-    void Wait();
+    void Wait(bool blockClient);
     void Lock();
 
    protected:
-    void wait(GLsync* syncObj);
+    void wait(GLsync* syncObj, bool blockClient);
 
    protected:
-    // Whether it's the CPU (true) that updates, or the GPU (false)
-    bool _CPUUpdates;
     GLsync _defaultSync;
 };
 

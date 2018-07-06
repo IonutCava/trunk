@@ -11,7 +11,7 @@ namespace Divide {
 
 glTexture::glTexture(TextureType type)
     : Texture(type),
-    _lockManager(new glLockManager(true))
+    _lockManager(new glLockManager())
 {
     _internalFormat = GFXImageFormat::COUNT;
     _allocatedStorage = false;
@@ -32,6 +32,9 @@ glTexture::~glTexture()
 }
 
 bool glTexture::unload() {
+    if (_lockManager) {
+        _lockManager->Wait(true);
+    }
     U32 textureID = _textureData.getHandleHigh();
     if (textureID > 0) {
         glDeleteTextures(1, &textureID);
@@ -286,7 +289,7 @@ bool glTexture::flushTextureState() {
         return false;
     }
     if (_lockManager) {
-        _lockManager->Wait();
+        _lockManager->Wait(true);
         _lockManager.reset(nullptr);
     }
     updateSampler();

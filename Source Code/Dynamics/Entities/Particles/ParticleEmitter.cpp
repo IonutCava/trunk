@@ -198,7 +198,12 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
                   "calculation requested without valid particle data "
                   "available!");
     _updateParticleEmitterBB = true;
-    sgn.getBoundingBox().set(vec3<F32>(-5), vec3<F32>(5));
+    BoundingBox& bb = sgn.getBoundingBox();
+    bb.reset();
+    if (_particles->_renderingPositions.size() > 2) {
+        bb.Add(_particles->_renderingPositions.front());
+        bb.Add(_particles->_renderingPositions.back());
+    }
     return SceneNode::computeBoundingBox(sgn);
 }
 
@@ -255,7 +260,7 @@ void ParticleEmitter::uploadToGPU() {
     //_updateTask.get();
 
     _particles->sort();
-
+    
     U32 writeOffset = _writeOffset * to_uint(_particles->totalCount());
     U32 readOffset = _readOffset * to_uint(_particles->totalCount());
 
@@ -281,6 +286,7 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              RenderStage currentStage) {
     if (_enabled) {
         uploadToGPU();
+        sgn.getBoundingBox().setComputed(false);
         return true;
     }
 
@@ -318,7 +324,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
             U32 count = _particles->totalCount();
             for (U32 i = 0; i < count; ++i) {
                 _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
-                _particles->_position[i].w = 1.0f;
+                _particles->_position[i].w = 1.0f * _particles->_misc[i].z;
                 _particles->_acceleration[i].set(0.0f);
                 _particles->lodLevel(lodLevel);
             }

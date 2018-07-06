@@ -5,8 +5,8 @@ namespace Divide {
 // --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
-glBufferLockManager::glBufferLockManager(bool cpuUpdates)
-    : glLockManager(cpuUpdates)
+glBufferLockManager::glBufferLockManager()
+    : glLockManager()
 {
 }
 
@@ -21,14 +21,15 @@ glBufferLockManager::~glBufferLockManager() {
 
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
-                                             size_t lockLength) {
+                                             size_t lockLength,
+                                             bool blockClient) {
     BufferRange testRange = {lockBeginBytes, lockLength};
 
     vectorImpl<BufferLock> swapLocks;
 
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
-            wait(&lock._syncObj);
+            wait(&lock._syncObj, blockClient);
             cleanup(&lock);
         } else {
             swapLocks.push_back(lock);

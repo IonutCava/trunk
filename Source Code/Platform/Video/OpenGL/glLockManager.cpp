@@ -5,19 +5,18 @@ namespace Divide {
 
 GLuint64 kOneSecondInNanoSeconds = 1000000000;
 
-glLockManager::glLockManager(bool cpuUpdates) : _CPUUpdates(cpuUpdates),
-                                                _defaultSync(nullptr)
+glLockManager::glLockManager() : _defaultSync(nullptr)
 {
 }
 
 glLockManager::~glLockManager()
 {
-    Wait();
+    Wait(false);
 }
 
-void glLockManager::Wait() {
+void glLockManager::Wait(bool blockClient) {
     if (_defaultSync != nullptr) {
-        wait(&_defaultSync);
+        wait(&_defaultSync, blockClient);
         glDeleteSync(_defaultSync);
         _defaultSync = nullptr;
     }
@@ -28,8 +27,8 @@ void glLockManager::Lock() {
     _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
 }
 
-void glLockManager::wait(GLsync* syncObj) {
-    if (_CPUUpdates) {
+void glLockManager::wait(GLsync* syncObj, bool blockClient) {
+    if (blockClient) {
         SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
         GLuint64 waitDuration = 0;
         while (true) {

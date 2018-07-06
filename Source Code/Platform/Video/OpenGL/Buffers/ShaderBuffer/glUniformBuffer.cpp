@@ -44,7 +44,7 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
       _allignedBufferSize(0),
       _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER),
       _lockManager(_persistentMapped
-                       ? std::make_unique<glBufferLockManager>(true)
+                       ? std::make_unique<glBufferLockManager>()
                        : nullptr)
 
 {
@@ -60,7 +60,7 @@ glUniformBuffer::~glUniformBuffer()
 
 void glUniformBuffer::destroy() {
     if (_persistentMapped) {
-        _lockManager->WaitForLockedRange(0, _allignedBufferSize);
+        _lockManager->WaitForLockedRange(0, _allignedBufferSize, false);
     } else {
         glInvalidateBufferData(_UBOid);
     }
@@ -119,7 +119,7 @@ void glUniformBuffer::updateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
     offset += _queueWriteIndex * _allignedBufferSize;
 
     if (_persistentMapped) {
-        _lockManager->WaitForLockedRange(offset, range);
+        _lockManager->WaitForLockedRange(offset, range, true);
         memcpy((U8*)(_mappedBuffer) + offset, data, range);
     } else {
         //glInvalidateBufferSubData(_UBOid, offset, range);
@@ -204,7 +204,7 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,
     }
 
     if (_persistentMapped) {
-        _lockManager->WaitForLockedRange(0, _bufferSize);
+        _lockManager->WaitForLockedRange(0, _bufferSize, false);
     }
 
     // Fetch uniform block name:

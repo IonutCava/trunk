@@ -107,7 +107,7 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 uniform int layer;
-uniform float blurSize;
+uniform vec2 blurSize;
 
 out vec3 _blurCoords[7];
 
@@ -116,24 +116,24 @@ subroutine uniform BlurRoutineType BlurRoutine;
 
 subroutine(BlurRoutineType)
 void computeCoordsH(in float texCoordX, in float texCoordY){
-    _blurCoords[0] = vec3(texCoordX, texCoordY - 3.0 * blurSize, layer);
-    _blurCoords[1] = vec3(texCoordX, texCoordY - 2.0 * blurSize, layer);
-    _blurCoords[2] = vec3(texCoordX, texCoordY - 1.0 * blurSize, layer);
-    _blurCoords[3] = vec3(texCoordX, texCoordY,                  layer);
-    _blurCoords[4] = vec3(texCoordX, texCoordY + 1.0 * blurSize, layer);
-    _blurCoords[5] = vec3(texCoordX, texCoordY + 2.0 * blurSize, layer);
-    _blurCoords[6] = vec3(texCoordX, texCoordY + 3.0 * blurSize, layer);
+    _blurCoords[0] = vec3(texCoordX, texCoordY - 3.0 * blurSize.x, layer);
+    _blurCoords[1] = vec3(texCoordX, texCoordY - 2.0 * blurSize.x, layer);
+    _blurCoords[2] = vec3(texCoordX, texCoordY - 1.0 * blurSize.x, layer);
+    _blurCoords[3] = vec3(texCoordX, texCoordY,                    layer);
+    _blurCoords[4] = vec3(texCoordX, texCoordY + 1.0 * blurSize.x, layer);
+    _blurCoords[5] = vec3(texCoordX, texCoordY + 2.0 * blurSize.x, layer);
+    _blurCoords[6] = vec3(texCoordX, texCoordY + 3.0 * blurSize.x, layer);
 }
 
 subroutine(BlurRoutineType)
 void computeCoordsV(in float texCoordX, in float texCoordY){
-    _blurCoords[0] = vec3(texCoordX - 3.0*blurSize, texCoordY, layer);
-    _blurCoords[1] = vec3(texCoordX - 2.0*blurSize, texCoordY, layer);
-    _blurCoords[2] = vec3(texCoordX - 1.0*blurSize, texCoordY, layer);
-    _blurCoords[3] = vec3(texCoordX,                texCoordY, layer);
-    _blurCoords[4] = vec3(texCoordX + 1.0*blurSize, texCoordY, layer);
-    _blurCoords[5] = vec3(texCoordX + 2.0*blurSize, texCoordY, layer);
-    _blurCoords[6] = vec3(texCoordX + 3.0*blurSize, texCoordY, layer);
+    _blurCoords[0] = vec3(texCoordX - 3.0*blurSize.y, texCoordY, layer);
+    _blurCoords[1] = vec3(texCoordX - 2.0*blurSize.y, texCoordY, layer);
+    _blurCoords[2] = vec3(texCoordX - 1.0*blurSize.y, texCoordY, layer);
+    _blurCoords[3] = vec3(texCoordX,                  texCoordY, layer);
+    _blurCoords[4] = vec3(texCoordX + 1.0*blurSize.y, texCoordY, layer);
+    _blurCoords[5] = vec3(texCoordX + 2.0*blurSize.y, texCoordY, layer);
+    _blurCoords[6] = vec3(texCoordX + 3.0*blurSize.y, texCoordY, layer);
 }
 
 void main() {
