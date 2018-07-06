@@ -21,10 +21,7 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
                                                                                   : _descriptor.getID()),
                                   DeleteResource(_cache));
 
-    if (_descriptor.getFlag()) {
-        ptr->renderState().useDefaultMaterial(false);
-    } else {
-
+    if (!_descriptor.getFlag()) {
         ResourceDescriptor matDesc("Material_" + _descriptor.name());
         matDesc.setEnumValue(to_U32(Material::ShadingMode::BLINN_PHONG));
         Material_ptr matTemp = CreateResource<Material>(_cache, matDesc);

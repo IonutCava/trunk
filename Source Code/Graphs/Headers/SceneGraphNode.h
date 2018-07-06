@@ -74,7 +74,6 @@ class SceneRoot : public SceneNode {
     SceneRoot(ResourceCache& parentCache, size_t descriptorHash)
         : SceneNode(parentCache, descriptorHash, "root", SceneNodeType::TYPE_ROOT)
     {
-        _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_LOADED);
         _boundingBox.set(VECTOR3_UNIT, -VECTOR3_UNIT);
 
@@ -90,7 +89,6 @@ class SceneTransform : public SceneNode {
         : SceneNode(parentCache, descriptorHash, "TransformNode", SceneNodeType::TYPE_TRANSFORM),
           _extents(extents)
     {
-        _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_LOADED);
     }
 
@@ -121,7 +119,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     friend class Attorney::SceneGraphNodeEditor;
     friend class Attorney::SceneGraphNodeComponent;
-
    public:
 
     enum class SelectionFlag : U8 {
@@ -379,6 +376,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
     void invalidateRelationshipCache();
 
+    void saveToXML(const stringImpl& sceneLocation) const;
+    void loadFromXML(const stringImpl& sceneLocation);
+
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
@@ -436,6 +436,7 @@ namespace Attorney {
         friend class Divide::RenderingComponent;
         friend class Divide::TransformComponent;
     };
+
 };  // namespace Attorney
 
 

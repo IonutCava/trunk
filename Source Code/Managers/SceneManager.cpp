@@ -44,7 +44,6 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _resourceCache(nullptr),
       _sceneData(nullptr),
       _renderPassCuller(nullptr),
-      _defaultMaterial(nullptr),
       _processInput(false),
       _scenePool(nullptr),
       _init(false),
@@ -117,12 +116,6 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
         _sceneGraphCullTimers[to_U32(RenderStage::REFRACTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Refraction").c_str());
         _sceneGraphCullTimers[to_U32(RenderStage::SHADOW)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Shadow").c_str());
 
-        // Load default material
-        Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
-        _defaultMaterial = XML::loadMaterialXML(*_platformContext,
-                                                Paths::g_xmlDataLocation + "defaultMaterial",
-                                                false);
-        _defaultMaterial->dumpToFile(false);
         _sceneData = MemoryManager_NEW SceneShaderData(platformContext.gfx());
         _renderPassCuller = MemoryManager_NEW RenderPassCuller();
         _scenePool->init();
@@ -145,7 +138,6 @@ void SceneManager::destroy() {
         MemoryManager::DELETE(_renderPassCuller);
         AI::Navigation::DivideRecast::destroyInstance();
         _platformContext = nullptr;
-        _defaultMaterial.reset();
         _init = false;
     }
 }
@@ -559,7 +551,7 @@ namespace {
             if (type == SceneNodeType::TYPE_SKY) {
                 return true;
             }
-            if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::DECAL) {
+            if (type == SceneNodeType::TYPE_OBJECT3D && node.getNode<Object3D>()->getObjectType()._value == ObjectType::DECAL) {
                 return true;
             }
             RenderingComponent* rComp = node.get<RenderingComponent>();

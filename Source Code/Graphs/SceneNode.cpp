@@ -17,8 +17,7 @@ namespace {
         // If nodes need more complex physical relationships, they can be added as first tier nodes and linked together
         // with a joint type system and the "parent" node's 'relative' mass set to infinite so the child node couldn't move it
         if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType crtType = static_cast<Object3D&>(node).getObjectType();
-            if (crtType != Object3D::ObjectType::SUBMESH) {
+            if (static_cast<Object3D&>(node).getObjectType()._value != ObjectType::SUBMESH) {
                 return true;
             }
         }
@@ -92,13 +91,8 @@ bool SceneNode::getDrawState(RenderStagePass currentStagePass) {
     return _renderState.getDrawState(currentStagePass);
 }
 
-const Material_ptr& SceneNode::getMaterialTpl() {
+const Material_ptr& SceneNode::getMaterialTpl() const {
     // UpgradableReadLock ur_lock(_materialLock);
-    if (_materialTemplate == nullptr && _renderState.useDefaultMaterial()) {
-        // UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = CreateResource<Material>(_parentCache, ResourceDescriptor("defaultMaterial_" + name()));
-        _materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-    }
     return _materialTemplate;
 }
 

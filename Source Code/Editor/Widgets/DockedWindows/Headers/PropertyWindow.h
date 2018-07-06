@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class Material;
 class Transform;
 struct EditorComponentField;
 class PropertyWindow : public DockedWindow, public PlatformContextComponent {
@@ -51,6 +52,7 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
      bool processField(EditorComponentField& field);
      bool processBasicField(EditorComponentField& field);
      bool processTransform(Transform* transform, bool readOnly);
+     bool processMaterial(Material* material, bool readOnly);
      void drawTransformSettings();
 };
 }; //namespace Divide

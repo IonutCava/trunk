@@ -284,7 +284,7 @@ void Material::clean() {
     if (_dirty && _dumpToFile) {
         updateTranslucency();
         if (!Config::Build::IS_DEBUG_BUILD) {
-            //XML::dumpMaterial(_context, *this);
+            //ToDo: Save to XML ... 
         }
     }
 
@@ -714,6 +714,291 @@ void Material::rebuild() {
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         computeShader(RenderStagePass::stagePass(i), _highPriority);
         _shaderInfo[i]._shaderRef->recompile();
+    }
+}
+
+namespace {
+    const char* getTexUsageName(ShaderProgram::TextureUsage texUsage) {
+        switch (texUsage) {
+            case ShaderProgram::TextureUsage::UNIT0      : return "UNIT0";
+            case ShaderProgram::TextureUsage::UNIT1      : return "UNIT1";
+            case ShaderProgram::TextureUsage::NORMALMAP  : return "NORMALMAP";
+            case ShaderProgram::TextureUsage::OPACITY    : return "OPACITY";
+            case ShaderProgram::TextureUsage::SPECULAR   : return "SPECULAR";
+            case ShaderProgram::TextureUsage::PROJECTION : return "PROJECTION";
+        };
+
+        return "";
+    }
+
+    const char *getBumpMethodName(Material::BumpMethod bumpMethod) {
+        switch(bumpMethod) {
+            case Material::BumpMethod::NORMAL   : return "NORMAL";
+            case Material::BumpMethod::PARALLAX : return "PARALLAX";
+            case Material::BumpMethod::RELIEF   : return "RELIEF";
+        }
+
+        return "NONE";
+    }
+
+    Material::BumpMethod getBumpMethodByName(const stringImpl& name) {
+        if (Util::CompareIgnoreCase(name, "NORMAL")) {
+            return Material::BumpMethod::NORMAL;
+        } else if (Util::CompareIgnoreCase(name, "PARALLAX")) {
+            return Material::BumpMethod::PARALLAX;
+        } else if (Util::CompareIgnoreCase(name, "RELIEF")) {
+            return Material::BumpMethod::RELIEF;
+        }
+
+        return Material::BumpMethod::COUNT;
+    }
+
+    const char *getShadingModeName(Material::ShadingMode shadingMode) {
+        switch (shadingMode) {
+            case Material::ShadingMode::FLAT          : return "FLAT";
+            case Material::ShadingMode::PHONG         : return "PHONG";
+            case Material::ShadingMode::BLINN_PHONG   : return "BLINN_PHONG";
+            case Material::ShadingMode::TOON          : return "TOON";
+            case Material::ShadingMode::OREN_NAYAR    : return "OREN_NAYAR";
+            case Material::ShadingMode::COOK_TORRANCE : return "COOK_TORRANCE";
+        }
+
+        return "NONE";
+    }
+
+    Material::ShadingMode getShadingModeByName(const stringImpl& name) {
+        if (Util::CompareIgnoreCase(name, "FLAT")) {
+            return Material::ShadingMode::FLAT;
+        } else if (Util::CompareIgnoreCase(name, "PHONG")) {
+            return Material::ShadingMode::PHONG;
+        } else if (Util::CompareIgnoreCase(name, "BLINN_PHONG")) {
+            return Material::ShadingMode::BLINN_PHONG;
+        } else if (Util::CompareIgnoreCase(name, "TOON")) {
+             return Material::ShadingMode::TOON;
+        } else if (Util::CompareIgnoreCase(name, "OREN_NAYAR")) {
+             return Material::ShadingMode::OREN_NAYAR;
+        } else if (Util::CompareIgnoreCase(name, "COOK_TORRANCE")) {
+             return Material::ShadingMode::COOK_TORRANCE;
+        }
+
+        return Material::ShadingMode::COUNT;
+    }
+
+    Material::TextureOperation getTextureOperationByName(const stringImpl& operation) {
+        if (Util::CompareIgnoreCase(operation, "TEX_OP_MULTIPLY")) {
+            return Material::TextureOperation::MULTIPLY;
+        } else if (Util::CompareIgnoreCase(operation, "TEX_OP_DECAL")) {
+            return Material::TextureOperation::DECAL;
+        } else if (Util::CompareIgnoreCase(operation, "TEX_OP_ADD")) {
+            return Material::TextureOperation::ADD;
+        } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SMOOTH_ADD")) {
+            return Material::TextureOperation::SMOOTH_ADD;
+        } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SIGNED_ADD")) {
+            return Material::TextureOperation::SIGNED_ADD;
+        } else if (Util::CompareIgnoreCase(operation, "TEX_OP_DIVIDE")) {
+            return Material::TextureOperation::DIVIDE;
+        } else if (Util::CompareIgnoreCase(operation, "TEX_OP_SUBTRACT")) {
+            return Material::TextureOperation::SUBTRACT;
+        }
+
+        return Material::TextureOperation::REPLACE;
+    }
+
+    const char *getTextureOperationName(Material::TextureOperation textureOp) {
+        switch(textureOp) {
+            case Material::TextureOperation::MULTIPLY   : return "TEX_OP_MULTIPLY";
+            case Material::TextureOperation::DECAL      : return "TEX_OP_DECAL";
+            case Material::TextureOperation::ADD        : return "TEX_OP_ADD";
+            case Material::TextureOperation::SMOOTH_ADD : return "TEX_OP_SMOOTH_ADD";
+            case Material::TextureOperation::SIGNED_ADD : return "TEX_OP_SIGNED_ADD";
+            case Material::TextureOperation::DIVIDE     : return "TEX_OP_DIVIDE";
+            case Material::TextureOperation::SUBTRACT   : return "TEX_OP_SUBTRACT";
+        }
+
+        return "TEX_OP_REPLACE";
+    }
+
+    const char *getWrapModeName(TextureWrap wrapMode) {
+        switch(wrapMode) {
+            case TextureWrap::CLAMP           : return "CLAMP";
+            case TextureWrap::CLAMP_TO_EDGE   : return "CLAMP_TO_EDGE";
+            case TextureWrap::CLAMP_TO_BORDER : return "CLAMP_TO_BORDER";
+            case TextureWrap::DECAL           : return "DECAL";
+        }
+
+        return "REPEAT";
+    }
+
+    TextureWrap getWrapModeByName(const stringImpl& wrapMode) {
+        if (Util::CompareIgnoreCase(wrapMode, "CLAMP")) {
+            return TextureWrap::CLAMP;
+        } else if (Util::CompareIgnoreCase(wrapMode, "CLAMP_TO_EDGE")) {
+            return TextureWrap::CLAMP_TO_EDGE;
+        } else if (Util::CompareIgnoreCase(wrapMode, "CLAMP_TO_BORDER")) {
+            return TextureWrap::CLAMP_TO_BORDER;
+        } else if (Util::CompareIgnoreCase(wrapMode, "DECAL")) {
+            return TextureWrap::DECAL;
+        }
+
+        return TextureWrap::REPEAT;
+    }
+
+    const char *getFilterName(TextureFilter filter) {
+        switch(filter) {
+            case TextureFilter::LINEAR: return "LINEAR";
+            case TextureFilter::NEAREST_MIPMAP_NEAREST : return "NEAREST_MIPMAP_NEAREST";
+            case TextureFilter::LINEAR_MIPMAP_NEAREST : return "LINEAR_MIPMAP_NEAREST";
+            case TextureFilter::NEAREST_MIPMAP_LINEAR : return "NEAREST_MIPMAP_LINEAR";
+            case TextureFilter::LINEAR_MIPMAP_LINEAR : return "LINEAR_MIPMAP_LINEAR";
+        }
+
+        return "NEAREST";
+    }
+
+
+    TextureFilter getFilterByName(const stringImpl& filter) {
+        if (Util::CompareIgnoreCase(filter, "LINEAR")) {
+            return TextureFilter::LINEAR;
+        } else if (Util::CompareIgnoreCase(filter, "NEAREST_MIPMAP_NEAREST")) {
+            return TextureFilter::NEAREST_MIPMAP_NEAREST;
+        } else if (Util::CompareIgnoreCase(filter, "LINEAR_MIPMAP_NEAREST")) {
+            return TextureFilter::LINEAR_MIPMAP_NEAREST;
+        } else if (Util::CompareIgnoreCase(filter, "NEAREST_MIPMAP_LINEAR")) {
+            return TextureFilter::NEAREST_MIPMAP_LINEAR;
+        } else if (Util::CompareIgnoreCase(filter, "LINEAR_MIPMAP_LINEAR")) {
+            return TextureFilter::LINEAR_MIPMAP_LINEAR;
+        }
+
+        return TextureFilter::NEAREST;
+    }
+
+    Texture_ptr loadTextureXML(ResourceCache& targetCache,
+                               const stringImpl &textureNode,
+                               const stringImpl &textureName,
+                               const boost::property_tree::ptree& pt)
+    {
+        stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
+        stringImpl pathName(textureName.substr(0, textureName.rfind("/") + 1));
+
+        TextureWrap wrapU = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapU", "REPEAT"));
+        TextureWrap wrapV = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapV", "REPEAT"));
+        TextureWrap wrapW = getWrapModeByName(pt.get<stringImpl>(textureNode + ".MapW", "REPEAT"));
+        TextureFilter minFilterValue = getFilterByName(pt.get<stringImpl>(textureNode + ".minFilter", "LINEAR"));
+        TextureFilter magFilterValue = getFilterByName(pt.get<stringImpl>(textureNode + ".magFilter", "LINEAR"));
+        U8 anisotropy = to_U8(pt.get(textureNode + ".anisotropy", 0U));
+
+        SamplerDescriptor sampDesc;
+        sampDesc.setWrapMode(wrapU, wrapV, wrapW);
+        sampDesc.setFilters(minFilterValue, magFilterValue);
+        sampDesc.setAnisotropy(anisotropy);
+
+        TextureDescriptor texDesc(TextureType::TEXTURE_2D);
+        texDesc.setSampler(sampDesc);
+
+        ResourceDescriptor texture(img_name);
+        texture.setResourceLocation(pathName + img_name);
+        texture.setPropertyDescriptor(texDesc);
+
+        return CreateResource<Texture>(targetCache, texture);
+    }
+};
+
+void Material::saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
+    pt.put(entryName + ".colour.<xmlattr>.r", getColourData()._diffuse.r);
+    pt.put(entryName + ".colour.<xmlattr>.g", getColourData()._diffuse.g);
+    pt.put(entryName + ".colour.<xmlattr>.b", getColourData()._diffuse.b);
+    pt.put(entryName + ".colour.<xmlattr>.a", getColourData()._diffuse.a);
+
+    pt.put(entryName + ".emissive.<xmlattr>.r", getColourData()._emissive.r);
+    pt.put(entryName + ".emissive.<xmlattr>.g", getColourData()._emissive.g);
+    pt.put(entryName + ".emissive.<xmlattr>.b", getColourData()._emissive.b);
+    pt.put(entryName + ".emissive.<xmlattr>.a", getColourData()._emissive.a);
+
+    pt.put(entryName + ".specular.<xmlattr>.r", getColourData()._specular.r);
+    pt.put(entryName + ".specular.<xmlattr>.g", getColourData()._specular.g);
+    pt.put(entryName + ".specular.<xmlattr>.b", getColourData()._specular.b);
+    pt.put(entryName + ".specular.<xmlattr>.a", getColourData()._specular.a);
+
+    pt.put(entryName + ".shininess", getColourData()._shininess);
+
+    pt.put(entryName + ".doubleSided", isDoubleSided());
+
+    pt.put(entryName + ".bumpMethod", getBumpMethodName(getBumpMethod()));
+
+    pt.put(entryName + ".shadingMode", getShadingModeName(getShadingMode()));
+
+    pt.put(entryName + ".parallaxFactor", getParallaxFactor());
+
+    for (U8 i = 0; i <= to_U8(ShaderProgram::TextureUsage::PROJECTION); ++i) {
+        ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
+        Texture_wptr tex = getTexture(usage);
+        if (!tex.expired()) {
+            const SamplerDescriptor &sampler = tex.lock()->getCurrentSampler();
+
+            stringImpl textureNode = entryName + ".texture.";
+            textureNode += getTexUsageName(usage);
+
+            pt.put(textureNode + ".name", tex.lock()->name());
+            if (usage == ShaderProgram::TextureUsage::UNIT1) {
+                pt.put(textureNode + ".usage", getTextureOperationName(_operation));
+            }
+            pt.put(textureNode + ".MapU", getWrapModeName(sampler.wrapU()));
+            pt.put(textureNode + ".MapV", getWrapModeName(sampler.wrapV()));
+            pt.put(textureNode + ".MapW", getWrapModeName(sampler.wrapW()));
+            pt.put(textureNode + ".minFilter", getFilterName(sampler.minFilter()));
+            pt.put(textureNode + ".magFilter", getFilterName(sampler.magFilter()));
+            pt.put(textureNode + ".anisotropy", to_U32(sampler.anisotropyLevel()));
+        }
+    }
+}
+
+void Material::loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
+    setDiffuse(FColour(pt.get<F32>(entryName + ".colour.<xmlattr>.r", 0.6f),
+                       pt.get<F32>(entryName + ".colour.<xmlattr>.g", 0.6f),
+                       pt.get<F32>(entryName + ".colour.<xmlattr>.b", 0.6f),
+                       pt.get<F32>(entryName + ".colour.<xmlattr>.a", 1.f)));
+
+    setEmissive(FColour(pt.get<F32>(entryName + ".emissive.<xmlattr>.r", 0.f),
+                        pt.get<F32>(entryName + ".emissive.<xmlattr>.g", 0.f),
+                        pt.get<F32>(entryName + ".emissive.<xmlattr>.b", 0.f),
+                        pt.get<F32>(entryName + ".emissive.<xmlattr>.a", 0.f)));
+
+    setSpecular(FColour(pt.get<F32>(entryName + ".specular.<xmlattr>.r", 1.f),
+                        pt.get<F32>(entryName + ".specular.<xmlattr>.g", 1.f),
+                        pt.get<F32>(entryName + ".specular.<xmlattr>.b", 1.f),
+                        pt.get<F32>(entryName + ".specular.<xmlattr>.a", 1.f)));
+
+    setShininess(pt.get<F32>(entryName + ".shininess", 0.0f));
+
+    setDoubleSided(pt.get<bool>(entryName + ".doubleSided", false));
+
+    setBumpMethod(getBumpMethodByName(pt.get<stringImpl>(entryName + ".bumpMethod", "NORMAL")));
+
+    setShadingMode(getShadingModeByName(pt.get<stringImpl>(entryName + ".shadingMode", "FLAT")));
+
+    setParallaxFactor(pt.get<F32>(entryName + ".parallaxFactor", 1.0f));
+
+
+    for (U8 i = 0; i <= to_U8(ShaderProgram::TextureUsage::PROJECTION); ++i) {
+        ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
+
+        if (auto child = pt.get_child_optional(((entryName + ".texture.") + getTexUsageName(usage)) + ".name")) {
+            stringImpl textureNode = entryName + ".texture.";
+            textureNode += getTexUsageName(usage);
+
+            stringImpl texName = pt.get<stringImpl>(textureNode + ".name", "");
+            if (!texName.empty()) {
+                Texture_ptr tex = loadTextureXML(_context.parent().resourceCache(), textureNode, texName, pt);
+                if (tex != nullptr) {
+                    if (usage == ShaderProgram::TextureUsage::UNIT1) {
+                        TextureOperation op = getTextureOperationByName(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));
+                        setTexture(usage, tex, op);
+                    } else {
+                        setTexture(usage, tex);
+                    }
+                }
+            }
+        }
     }
 }
 

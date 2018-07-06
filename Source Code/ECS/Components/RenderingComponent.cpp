@@ -33,8 +33,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
       _context(context),
       _lodLevel(0),
       _renderMask(0),
-      _depthStateBlockHash(0),
-      _shadowStateBlockHash(0),
       _descriptorSetCache(_context.newDescriptorSet()),
       _reflectorType(ReflectorType::PLANAR_REFLECTOR),
       _materialInstance(materialInstance),
@@ -49,21 +47,24 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     toggleRenderOption(RenderOptions::IS_OCCLUSION_CULLABLE, _parentSGN.getNode<Object3D>()->type() != SceneNodeType::TYPE_SKY);
 
     const Object3D_ptr& node = parentSGN.getNode<Object3D>();
-    Object3D::ObjectType type = node->getObjectType();
 
-    bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
+    bool isSubMesh = node->getObjectType()._value == ObjectType::SUBMESH;
     bool nodeSkinned = node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
-    assert(!_materialInstance || (_materialInstance && !_materialInstance->name().empty()));
+    assert(_materialInstance && !_materialInstance->name().empty());
 
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        if (_materialInstance) {
-            if (!isSubMesh) {
-                _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
-                _materialInstance->setShaderDefines(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
-            }
+    if (!isSubMesh) {
+        for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+            _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
+            _materialInstance->setShaderDefines(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
         }
     }
+
+    _editorComponent.registerField("Material", 
+                                   _materialInstance.get(),
+                                   EditorComponentFieldType::MATERIAL,
+                                   false);
+
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         RenderPackagesPerPassType& packages = _renderPackages[to_base(RenderStagePass::stage(i))];
@@ -74,18 +75,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         STUBBED("ToDo: Use quality requirements for rendering packages! -Ionut");
         pkg->qualityRequirement(RenderPackage::MinQuality::FULL);
     }
-
-    RenderStateBlock depthDesc;
-    depthDesc.setColourWrites(false, false, false, false);
-    depthDesc.setZFunc(ComparisonFunction::LESS);
-    _depthStateBlockHash = depthDesc.getHash();
-
-    RenderStateBlock shadowDesc;
-    /// Cull back faces for shadow rendering
-    shadowDesc.setCullMode(CullMode::CCW);
-    // depthDesc.setZBias(1.0f, 1.0f);
-    shadowDesc.setColourWrites(true, true, false, false);
-    _shadowStateBlockHash = shadowDesc.getHash();
 
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
@@ -181,8 +170,8 @@ void RenderingComponent::rebuildDrawCommands(RenderStagePass stagePass) {
 
     // We also have a pipeline
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = getMaterialStateHash(stagePass);
-    pipelineDescriptor._shaderProgramHandle = getDrawShader(stagePass)->getID();
+    pipelineDescriptor._stateHash = getMaterialInstance()->getRenderStateBlock(stagePass);
+    pipelineDescriptor._shaderProgramHandle = getMaterialInstance()->getShaderInfo(stagePass).getProgram()->getID();
 
     GFX::BindPipelineCommand pipelineCommand;
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
@@ -205,8 +194,8 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         mat->update(deltaTimeUS);
     }
 
-    Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-    if (type == Object3D::ObjectType::SUBMESH)
+    ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+    if (type._value == ObjectType::SUBMESH)
     {
         StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
         parentStates.setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
@@ -317,7 +306,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         switch(sceneRenderState.gizmoState()){
             case SceneRenderState::GizmoState::ALL_GIZMO: {
                 if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
-                    if (_parentSGN.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::SUBMESH) {
+                    if (_parentSGN.getNode<Object3D>()->getObjectType()._value == ObjectType::SUBMESH) {
                         drawDebugAxis();
                         bufferInOut.add(_axisGizmo->toCommandBuffer());
                     }
@@ -350,8 +339,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour(0, 0, 255, 255));
         bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
 
-        Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-        bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
+        bool isSubMesh = _parentSGN.getNode<Object3D>()->getObjectType()._value == ObjectType::SUBMESH;
         if (isSubMesh) {
             bool renderParentBBFlagInitialized = false;
             bool renderParentBB = parentStates.getTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED,
@@ -430,29 +418,6 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
     if (it != std::cend(shaderBuffersCache)) {
         shaderBuffersCache.erase(it);
     }
-}
-
-ShaderProgram_ptr RenderingComponent::getDrawShader(RenderStagePass renderStagePass) {
-    if (_materialInstance) {
-        return _materialInstance->getShaderInfo(renderStagePass).getProgram();
-    }
-
-    return nullptr;
-}
-
-size_t RenderingComponent::getMaterialStateHash(RenderStagePass renderStagePass) {
-    bool shadowStage = renderStagePass._stage == RenderStage::SHADOW;
-    bool depthPass   = renderStagePass._passType == RenderPassType::DEPTH_PASS || shadowStage;
-
-    if (!getMaterialInstance() && depthPass) {
-        return shadowStage ? _shadowStateBlockHash : _depthStateBlockHash;
-    }
-
-    if (!_materialInstance) {
-        return 0;
-    }
-
-    return _materialInstance->getRenderStateBlock(renderStagePass);
 }
 
 void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass) {

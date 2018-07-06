@@ -35,8 +35,6 @@ TerrainChunk::TerrainChunk(GFXDevice& context,
     VegetationDetails& vegDetails =  Attorney::TerrainChunk::vegetationDetails(*parentTerrain);
     //<Deleted by the sceneGraph on "unload"
     _vegetation = MemoryManager_NEW Vegetation(context, parentTerrain->parentResourceCache(), parentTerrain->getDescriptorHash(), _chunkID, vegDetails);
-    _vegetation->renderState().useDefaultMaterial(false);
-    _vegetation->setMaterialTpl(nullptr);
     assert(_vegetation != nullptr);
 }
 

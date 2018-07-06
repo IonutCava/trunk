@@ -39,10 +39,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     class ByteBuffer;
+    class SceneGraphNode;
     class PropertyWindow;
 
     namespace Attorney {
         class EditorComponentEditor;
+        class EditorComponentSceneGraphNode;
     }; //namespace Attorney
 
     enum class EditorComponentFieldType : U8 {
@@ -50,6 +52,7 @@ namespace Divide {
         BOUNDING_BOX,
         BOUNDING_SPHERE,
         TRANSFORM,
+        MATERIAL,
         COUNT
     };
 
@@ -65,6 +68,8 @@ namespace Divide {
     class EditorComponent : public GUIDWrapper
     {
         friend class Attorney::EditorComponentEditor;
+        friend class Attorney::EditorComponentSceneGraphNode;
+
       public:
 
         EditorComponent(const stringImpl& name);
@@ -95,6 +100,10 @@ namespace Divide {
 
       protected:
         void onChanged(EditorComponentField& field);
+        virtual void saveToXML(boost::property_tree::ptree& pt) const;
+        virtual void loadFromXML(const boost::property_tree::ptree& pt);
+
+        void saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const;
 
       protected:
         const stringImpl _name;
@@ -117,6 +126,18 @@ namespace Divide {
                 comp.onChanged(field);
             }
             friend class Divide::PropertyWindow;
+        };
+
+        class EditorComponentSceneGraphNode {
+           private:
+            static void saveToXML(EditorComponent& comp, boost::property_tree::ptree& pt) {
+                comp.saveToXML(pt);
+            }
+            static void loadFromXML(EditorComponent& comp, const boost::property_tree::ptree& pt) {
+                comp.loadFromXML(pt);
+            }
+
+            friend class Divide::SceneGraphNode;
         };
     };  // namespace Attorney
 

@@ -187,10 +187,9 @@ class Scene : public Resource, public PlatformContextComponent {
 
     virtual bool frameStarted();
     virtual bool frameEnded();
-    /// if singleStep is true, only the first model from the modelArray will be loaded.
-    /// Useful for loading one model per frame
-    virtual void loadXMLAssets(bool singleStep = false);
-    virtual void saveXMLAssets();
+
+    virtual void loadFromXML();
+    virtual void saveToXML();
 
     virtual void loadDefaultCamera();
 

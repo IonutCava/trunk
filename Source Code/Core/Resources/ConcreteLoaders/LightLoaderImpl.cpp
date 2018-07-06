@@ -38,8 +38,6 @@ CachedResource_ptr ImplResourceLoader<Light>::operator()() {
 
     if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
-    } else {
-        ptr->renderState().useDefaultMaterial(false);
     }
 
     return ptr;

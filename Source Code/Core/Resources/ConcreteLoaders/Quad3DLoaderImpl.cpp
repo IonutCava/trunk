@@ -18,10 +18,6 @@ CachedResource_ptr ImplResourceLoader<Quad3D>::operator()() {
 
     if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
-    } else {
-        if (_descriptor.getFlag()) {
-            ptr->renderState().useDefaultMaterial(false);
-        }
     }
 
     return ptr;

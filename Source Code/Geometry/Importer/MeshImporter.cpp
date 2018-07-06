@@ -286,31 +286,13 @@ namespace Import {
 
     /// Load the material for the current SubMesh
     Material_ptr MeshImporter::loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned) {
-        // See if the material already exists in a cooked state (XML file)
-        STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
-#if !defined(DEBUG)
-            const bool DISABLE_MAT_FROM_FILE = true;
-#else
-            const bool DISABLE_MAT_FROM_FILE = true;
-#endif
-
-        Material_ptr tempMaterial;
-        if (!DISABLE_MAT_FROM_FILE) {
-            tempMaterial = XML::loadMaterial(context, importData._name);
-            if (tempMaterial) {
-                return tempMaterial;
-            }
-        }
-
-        // If we found it in the Resource Cache, return a copy of it
         ResourceDescriptor materialDesc(importData._name);
         if (skinned) {
             materialDesc.setEnumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
 
-        // If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
         bool wasInCache = false;
-        tempMaterial = CreateResource<Material>(cache, materialDesc, wasInCache);
+        Material_ptr tempMaterial = CreateResource<Material>(cache, materialDesc, wasInCache);
         if (wasInCache) {
             return tempMaterial;
         }

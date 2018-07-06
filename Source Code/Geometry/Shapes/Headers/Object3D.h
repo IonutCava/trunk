@@ -36,24 +36,27 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+#include <BetterEnums/include/enum.h>
+
 namespace Divide {
 
 class BoundingBox;
 enum class RigidBodyShape : U8;
 
+BETTER_ENUM(ObjectType, U8,
+    SPHERE_3D = 0,
+    BOX_3D,
+    QUAD_3D,
+    PATCH_3D,
+    MESH,
+    SUBMESH,
+    TERRAIN,
+    DECAL,
+    COUNT
+);
+
 class Object3D : public SceneNode {
    public:
-    enum class ObjectType : U8 {
-        SPHERE_3D = 0,
-        BOX_3D = 1,
-        QUAD_3D = 2,
-        PATCH_3D = 3,
-        MESH = 4,
-        SUBMESH = 5,
-        TERRAIN = 6,
-        DECAL = 7,
-        COUNT
-    };
 
     enum class ObjectFlag : U8 {
         OBJECT_FLAG_SKINNED = toBit(1),

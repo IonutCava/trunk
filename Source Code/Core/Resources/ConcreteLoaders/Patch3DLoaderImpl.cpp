@@ -18,10 +18,6 @@ namespace Divide {
 
         if (!load(ptr, _descriptor.onLoadCallback())) {
             ptr.reset();
-        } else {
-            if (_descriptor.getFlag()) {
-                ptr->renderState().useDefaultMaterial(false);
-            }
         }
 
         return ptr;

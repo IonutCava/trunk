@@ -75,10 +75,10 @@ Object3D::~Object3D()
 }
 
 bool Object3D::isPrimitive() {
-    return _geometryType == ObjectType::BOX_3D ||
-           _geometryType == ObjectType::QUAD_3D ||
-           _geometryType == ObjectType::PATCH_3D ||
-           _geometryType == ObjectType::SPHERE_3D;
+    return _geometryType._value == ObjectType::BOX_3D ||
+           _geometryType._value == ObjectType::QUAD_3D ||
+           _geometryType._value == ObjectType::PATCH_3D ||
+           _geometryType._value == ObjectType::SPHERE_3D;
 }
 
 void Object3D::postLoad(SceneGraphNode& sgn) {
@@ -147,8 +147,8 @@ bool Object3D::computeTriangleList() {
 
     U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = geometry->getPartitionIndexCount(_geometryPartitionID);
-    PrimitiveType type = (_geometryType == ObjectType::MESH ||
-                          _geometryType == ObjectType::SUBMESH
+    PrimitiveType type = (_geometryType._value == ObjectType::MESH ||
+                          _geometryType._value == ObjectType::SUBMESH
                               ? PrimitiveType::TRIANGLES
                               : PrimitiveType::TRIANGLE_STRIP);
     // We can't have a VB without vertex positions

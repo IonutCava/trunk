@@ -9,7 +9,6 @@ namespace Divide {
 
 SceneNodeRenderState::SceneNodeRenderState()
   : _drawState(true),
-    _noDefaultMaterial(false),
     _exclusionMask(to_base(RenderPassType::COUNT), 0u)
 {
 }

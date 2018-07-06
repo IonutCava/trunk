@@ -21,7 +21,7 @@ namespace {
         const SceneGraphNode* sgn = node._node;
         const SceneNode_ptr& sceneNode = sgn->getNode();
         if (sceneNode->type() == SceneNodeType::TYPE_OBJECT3D) {
-            return sgn->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::MESH;
+            return sgn->getNode<Object3D>()->getObjectType()._value == ObjectType::MESH;
         }
         return false;
     }

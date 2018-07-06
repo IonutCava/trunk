@@ -108,7 +108,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
     virtual bool unload();
     virtual void setMaterialTpl(const Material_ptr& material);
-    const Material_ptr& getMaterialTpl();
+    const Material_ptr& getMaterialTpl() const;
 
     inline void type(const SceneNodeType& type) { _type = type; }
     inline const SceneNodeType& type() const { return _type; }

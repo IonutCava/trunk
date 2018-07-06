@@ -86,9 +86,15 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
         GFXDevice& gfxContext = _sceneGraph.parentScene().context().gfx();
 
         const Material_ptr& materialTpl = _node->getMaterialTpl();
+        if (!materialTpl) {
+            Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
+            Material_ptr materialTemplate = CreateResource<Material>(parentGraph().parentScene().resourceCache(), ResourceDescriptor("defaultMaterial_" + name()));
+            materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+            _node->setMaterialTpl(materialTemplate);
+        }
+
         AddSGNComponent<RenderingComponent>(gfxContext,
-                                            materialTpl ? materialTpl->clone("_instance_" + name())
-                                                        : nullptr,
+                                            materialTpl->clone("_instance_" + name()),
                                             *this);
     }
 
@@ -707,4 +713,41 @@ bool SceneGraphNode::load(ByteBuffer& inputBuffer) {
     });
 }
 
+void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
+    static boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
+
+    boost::property_tree::ptree pt;
+
+    const SceneNode_ptr& sceneNode = getNode();
+    SceneNodeType type = sceneNode->type();
+    // Only 3D objects for now
+    if (type == SceneNodeType::TYPE_OBJECT3D) {
+        if (getNode<Object3D>()->isPrimitive()) {
+            pt.put("model", getNode<Object3D>()->getObjectType()._to_string());
+            if (Util::CompareIgnoreCase(sceneNode->name(), "Box3D")) {
+                pt.put("size", getNode<Box3D>()->getHalfExtent().x * 2);
+            } else if (Util::CompareIgnoreCase(sceneNode->name(), "Sphere3D")) {
+                pt.put("radius", getNode<Sphere3D>()->getRadius());
+            }
+        } else {
+            pt.put("model", sceneNode->name());
+        }
+    }
+
+    pt.put("static", usageContext() == NodeUsageContext::NODE_STATIC);
+
+    for (EditorComponent* editorComponent : _editorComponents) {
+        Attorney::EditorComponentSceneGraphNode::saveToXML(*editorComponent, pt);
+    }
+
+    write_xml((sceneLocation + "/nodes/" + name() + ".xml").c_str(), pt, std::locale(), settings);
+}
+
+void SceneGraphNode::loadFromXML(const stringImpl& sceneLocation) {
+    boost::property_tree::ptree pt;
+
+    for (EditorComponent* editorComponent : _editorComponents) {
+        Attorney::EditorComponentSceneGraphNode::loadFromXML(*editorComponent, pt);
+    }
+}
 };

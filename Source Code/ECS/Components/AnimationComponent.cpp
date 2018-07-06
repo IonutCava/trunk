@@ -172,8 +172,8 @@ mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeSt
     assert(node != nullptr);
     assert(_animator != nullptr);
 
-    if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
-        (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
+    if (node->getObjectType()._value != ObjectType::SUBMESH ||
+        (node->getObjectType()._value == ObjectType::SUBMESH &&
          !node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
         return _parentSGN.get<TransformComponent>()->getWorldMatrix();
     }

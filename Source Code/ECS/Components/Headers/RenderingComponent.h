@@ -131,8 +131,6 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
 
-    ShaderProgram_ptr getDrawShader(RenderStagePass renderStagePass);
-
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
     void getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
@@ -165,7 +163,6 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
    protected:
     bool canDraw(RenderStagePass renderStagePass);
     void updateLoDLevel(const Camera& camera, RenderStagePass renderStagePass);
-    size_t getMaterialStateHash(RenderStagePass renderStagePass);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
@@ -218,9 +215,6 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     EnvironmentProbeList _envProbes;
     vector<Line> _axisLines;
     IMPrimitive* _axisGizmo;
-
-    size_t _depthStateBlockHash;
-    size_t _shadowStateBlockHash;
 
     ReflectorType _reflectorType;
     DescriptorSet_ptr _descriptorSetCache;

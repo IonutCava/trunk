@@ -279,4 +279,65 @@ bool SceneGraph::save(ByteBuffer& outputBuffer) const {
 bool SceneGraph::load(ByteBuffer& inputBuffer) {
     return _root->load(inputBuffer);
 }
+
+namespace {
+    const char* getSceneNodeTypeName(SceneNodeType type) {
+        switch (type) {
+            case SceneNodeType::TYPE_ROOT: return "ROOT";
+            case SceneNodeType::TYPE_OBJECT3D: return "OBJECT3D";
+            case SceneNodeType::TYPE_TRANSFORM: return "TRANSFORM";
+            case SceneNodeType::TYPE_WATER: return "WATER";
+            case SceneNodeType::TYPE_LIGHT: return "LIGHT";
+            case SceneNodeType::TYPE_TRIGGER: return "TRIGGER";
+            case SceneNodeType::TYPE_PARTICLE_EMITTER: return "PARTICLE_EMITTER";
+            case SceneNodeType::TYPE_SKY: return "SKY";
+            case SceneNodeType::TYPE_VEGETATION_GRASS: return "VEGETATION_GRASS";
+            case SceneNodeType::TYPE_VEGETATION_TREES: return "VEGETATION_TREES";
+        }
+
+        return "";
+    }
+
+    boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode& node) {
+        boost::property_tree::ptree entry;
+        entry.put("<xmlattr>.name", node.name());
+
+        SceneNodeType nodeType = node.getNode()->type();
+        if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
+            entry.put("<xmlattr>.type", node.getNode<Object3D>()->getObjectType()._to_string());
+        } else {
+            entry.put("<xmlattr>.type", getSceneNodeTypeName(nodeType));
+        }
+
+        node.forEachChild([&entry](const SceneGraphNode& child) {
+            entry.add_child("node", dumpSGNtoAssets(child));
+        });
+
+        return entry;
+    }
+};
+
+void SceneGraph::saveToXML() {
+    const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
+
+    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), parentScene().name().c_str());
+    std::string sceneLocation(scenePath + "/" + parentScene().name());
+
+    {
+        boost::property_tree::ptree pt;
+        pt.add_child("entities.node", dumpSGNtoAssets(getRoot()));
+
+        copyFile(sceneLocation + "/", "assets.xml", sceneLocation + "/", "assets.xml.bak", true);
+        write_xml((sceneLocation + "/" + "assets.xml").c_str(), pt, std::locale(), settings);
+    }
+
+    getRoot().forEachChild([&sceneLocation](const SceneGraphNode& child) {
+        child.saveToXML(sceneLocation);
+    });
+}
+
+void SceneGraph::loadFromXML() {
+
+}
 };

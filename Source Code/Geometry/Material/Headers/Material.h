@@ -289,6 +289,10 @@ class Material : public CachedResource {
     U32 defaultReflectionTextureIndex() const;
     U32 defaultRefractionTextureIndex() const;
 
+
+    void saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
+    void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
+
    private:
     bool getTextureData(ShaderProgram::TextureUsage slot, TextureDataContainer& container);
 

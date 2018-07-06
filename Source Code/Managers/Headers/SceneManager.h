@@ -223,7 +223,6 @@ private:
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
     U64 _saveTimer;
-    Material_ptr _defaultMaterial;
 
     std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> _sceneGraphCullTimers;
     PlayerList _players;

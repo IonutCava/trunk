@@ -136,10 +136,6 @@ bool Scene::frameEnded() {
 }
 
 bool Scene::idle() {  // Called when application is idle
-    if (!_modelDataArray.empty()) {
-        loadXMLAssets(true);
-    }
-
     _sceneGraph->idle();
 
     Attorney::SceneRenderStateScene::playAnimations(renderState(), _context.config().debug.mesh.playAnimations);
@@ -181,11 +177,72 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
                     CreateResource<AudioDescriptor>(_resCache, music));
 }
 
-void Scene::saveXMLAssets() {
-    XML::saveScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, name(), this, _context.config());
+
+void Scene::saveToXML() {
+    using boost::property_tree::ptree;
+
+    const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
+
+    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE")), name().c_str());
+    std::string sceneLocation(scenePath + "/" + name().c_str());
+    std::string sceneDataFile(sceneLocation + ".xml");
+
+    createDirectory((sceneLocation + "/collisionMeshes/").c_str());
+    createDirectory((sceneLocation + "/navMeshes/").c_str());
+    createDirectory((sceneLocation + "/nodes/").c_str());
+
+    // A scene does not necessarily need external data files
+    // Data can be added in code for simple scenes
+    {
+        ParamHandler& par = ParamHandler::instance();
+
+        ptree pt;
+        pt.put("assets", "assets.xml");
+        pt.put("terrain", "terrain.xml");
+        pt.put("musicPlaylist", "musicPlaylist.xml");
+
+        pt.put("vegetation.grassVisibility", state().renderState().grassVisibility());
+        pt.put("vegetation.treeVisibility", state().renderState().treeVisibility());
+
+        pt.put("wind.windDirX", state().windDirX());
+        pt.put("wind.windDirZ", state().windDirZ());
+        pt.put("wind.windSpeed", state().windSpeed());
+
+        pt.put("water.waterLevel", state().waterLevel());
+        pt.put("water.waterDepth", state().waterDepth());
+
+        pt.put("options.visibility", state().renderState().generalVisibility());
+        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.move").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.turn").c_str())));
+        pt.put("options.autoCookPhysicsAssets", true);
+
+        pt.put("fog.fogDensity", state().fogDescriptor().density());
+        pt.put("fog.fogColour.<xmlattr>.r", state().fogDescriptor().colour().r);
+        pt.put("fog.fogColour.<xmlattr>.g", state().fogDescriptor().colour().g);
+        pt.put("fog.fogColour.<xmlattr>.b", state().fogDescriptor().colour().b);
+
+        copyFile(scenePath, name() + ".xml", scenePath, name() + ".xml.bak", true);
+        write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
+    }
+    //save terrain
+    {
+        ptree pt;
+        copyFile(sceneLocation + "/", "terrain.xml", sceneLocation + "/", "terrain.xml.bak", true);
+        write_xml((sceneLocation + "/" + "terrain.xml.dev").c_str(), pt, std::locale(), settings);
+    }
+
+    sceneGraph().saveToXML();
+
+    //save music
+    {
+        ptree pt;
+        copyFile(sceneLocation + "/", "musicPlaylist.xml", sceneLocation + "/", "musicPlaylist.xml.bak", true);
+        write_xml((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt, std::locale(), settings);
+    }
 }
 
-void Scene::loadXMLAssets(bool singleStep) {
+void Scene::loadFromXML() {
     constexpr bool terrainThreadedLoading = true;
 
     while (!_modelDataArray.empty()) {
@@ -193,10 +250,6 @@ void Scene::loadXMLAssets(bool singleStep) {
         ++_loadingTasks;
 
         _modelDataArray.pop();
-
-        if (singleStep) {
-            return;
-        }
     }
 
     auto registerTerrain = [this](Resource_wptr res) {
@@ -232,10 +285,6 @@ void Scene::loadXMLAssets(bool singleStep) {
         CreateResource<Terrain>(_resCache, terrain);
         ++_loadingTasks;
         _terrainInfoArray.pop_back();
-
-        if (singleStep) {
-            return;
-        }
     }
 }
 
@@ -323,8 +372,6 @@ Object3D_ptr Scene::loadAsset(const FileData& data, bool addToSceneGraph) {
         ret = std::static_pointer_cast<Object3D>(CreateResource<Mesh>(_resCache, model));
     }
 
-    ret->getMaterialTpl()->setDiffuse(data.colour);
-
     if (!ret) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), data.ModelName.c_str());
     } else {
@@ -346,6 +393,8 @@ Object3D_ptr Scene::loadAsset(const FileData& data, bool addToSceneGraph) {
             if (BitCompare(data.componentMask, ComponentType::NAVIGATION)){
                 node->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
             }
+
+            node->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(data.colour);
         }
     }
 
@@ -718,9 +767,13 @@ void Scene::loadKeyBindings() {
 void Scene::loadDefaultCamera() {
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
     
-
+    
     // Camera position is overridden in the scene's XML configuration file
-    if (ParamHandler::instance().getParam<bool>(_ID_RT((name() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (!_paramHandler.isParam<bool>(_ID_RT((name() + ".options.cameraStartPositionOverride").c_str()))) {
+        return;
+    }
+
+    if (_paramHandler.getParam<bool>(_ID_RT((name() + ".options.cameraStartPositionOverride").c_str()))) {
         baseCamera->setEye(vec3<F32>(
             _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.x").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.y").c_str())),
@@ -775,7 +828,7 @@ bool Scene::load(const stringImpl& name) {
     _name = name;
 
     loadDefaultCamera();
-    loadXMLAssets();
+    loadFromXML();
 
     U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
@@ -848,7 +901,7 @@ void Scene::postLoad() {
 void Scene::postLoadMainThread() {
     assert(Runtime::isMainThread());
 
-    saveXMLAssets();
+    saveToXML();
 
     setState(ResourceState::RES_LOADED);
 }
@@ -1239,7 +1292,7 @@ void Scene::findHoverTarget(PlayerIndex idx, bool force) {
 
         const SceneNode_ptr& node = target->getNode();
         if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
-            if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::SUBMESH) {
+            if (static_cast<Object3D*>(node.get())->getObjectType()._value == ObjectType::SUBMESH) {
                 crtCandidate = target->getParent()->getGUID();
             }
         }

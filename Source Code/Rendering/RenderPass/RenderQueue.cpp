@@ -112,12 +112,12 @@ RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_
         case SceneNodeType::TYPE_OBJECT3D: {
         case SceneNodeType::TYPE_VEGETATION_TREES:
             if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
-                Object3D::ObjectType type = static_cast<Object3D*>(node.get())->getObjectType();
+                ObjectType type = static_cast<Object3D*>(node.get())->getObjectType();
                 switch (type) {
-                    case Object3D::ObjectType::TERRAIN:
+                    case ObjectType::TERRAIN:
                         return getOrCreateBin(RenderBinType::RBT_TERRAIN);
 
-                    case Object3D::ObjectType::DECAL:
+                    case ObjectType::DECAL:
                         return getOrCreateBin(RenderBinType::RBT_DECAL);
                 }
             }

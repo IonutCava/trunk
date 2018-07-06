@@ -43,10 +43,6 @@ void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
 
     if (!loadData._mesh->load(loadData._descriptor.onLoadCallback())) {
         loadData._mesh.reset();
-    } else {
-        if (loadData._descriptor.getFlag()) {
-            loadData._mesh->renderState().useDefaultMaterial(false);
-        }
     }
 }
 

@@ -270,7 +270,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
         }
 
         VertexBuffer* nodeVB = sNode->getGeometryVB();
-        if (sNode->getObjectType() == Object3D::ObjectType::SUBMESH) {
+        if (sNode->getObjectType() == ObjectType::SUBMESH) {
             SceneGraphNode* grandParent = node.getParent().lock();
             nodeVB = grandParent->getNode<Object3D>()->getGeometryVB();
         }

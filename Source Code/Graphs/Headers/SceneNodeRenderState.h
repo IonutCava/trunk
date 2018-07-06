@@ -13,8 +13,6 @@ class SceneNodeRenderState {
     SceneNodeRenderState();
     ~SceneNodeRenderState();
 
-    inline void useDefaultMaterial(bool state) { _noDefaultMaterial = !state; }
-    inline bool useDefaultMaterial() const { return !_noDefaultMaterial; }
     inline void setDrawState(bool state) { _drawState = state; }
     inline bool getDrawState() const { return _drawState; }
 
@@ -28,7 +26,6 @@ class SceneNodeRenderState {
 
    protected:
     bool _drawState;
-    bool _noDefaultMaterial;
     vector<U32> _exclusionMask;
 };
 

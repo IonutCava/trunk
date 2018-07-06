@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assets>assets.xml</assets>
+<terrain>terrain.xml</terrain>
+<musicPlaylist>musicPlaylist.xml</musicPlaylist>
+<vegetation>
+    <grassVisibility>40000</grassVisibility>
+    <treeVisibility>40000</treeVisibility>
+</vegetation>
+<wind>
+    <windDirX>1</windDirX>
+    <windDirZ>-1</windDirZ>
+    <windSpeed>1</windSpeed>
+</wind>
+<water>
+    <waterLevel>0</waterLevel>
+    <waterDepth>0</waterDepth>
+</water>
+<options>
+    <visibility>2.74877907e+13</visibility>
+    <cameraSpeed move="20.2000008" turn="20.75"/>
+    <autoCookPhysicsAssets>true</autoCookPhysicsAssets>
+</options>
+<fog>
+    <fogDensity>4</fogDensity>
+    <fogColour r="0.800000012" g="0.800000012" b="0.800000012"/>
+</fog>

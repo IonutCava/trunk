@@ -9,6 +9,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Widgets/Headers/PanelManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
+#include "Geometry/Material/Headers/Material.h"
 
 #undef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -174,18 +175,22 @@ namespace Divide {
                 BoundingBox* bb = static_cast<BoundingBox*>(field._data);
                 F32* bbMin = Attorney::BoundingBoxEditor::min(*bb);
                 F32* bbMax = Attorney::BoundingBoxEditor::max(*bb);
-                ret = ImGui::InputFloat3("- Min ", bbMin, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
-                      ImGui::InputFloat3("- Max ", bbMax, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                ret = ImGui::InputFloat3("- Min ", bbMin, 2, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                      ImGui::InputFloat3("- Max ", bbMax, 2, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
             }break;
             case EditorComponentFieldType::BOUNDING_SPHERE: {
                 BoundingSphere* bs = static_cast<BoundingSphere*>(field._data);
                 F32* center = Attorney::BoundingSphereEditor::center(*bs);
                 F32& radius = Attorney::BoundingSphereEditor::radius(*bs);
-                ret = ImGui::InputFloat3("- Center ", center, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                ret = ImGui::InputFloat3("- Center ", center, 2, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
                       ImGui::InputFloat("- Radius ", &radius, 0.0f, 0.0f, -1, field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
             }break;
             case EditorComponentFieldType::TRANSFORM: {
                 ret = processTransform(static_cast<Transform*>(field._data), field._readOnly);
+            }break;
+
+            case EditorComponentFieldType::MATERIAL: {
+                ret = processMaterial(static_cast<Material*>(field._data), field._readOnly);
             }break;
         };
 
@@ -205,19 +210,56 @@ namespace Divide {
              transform->getOrientation(orientation);
              orientation.getEuler(orientationEuler);
 
-             if (ImGui::InputFloat3(" - Position ", position._v, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+             if (ImGui::InputFloat3(" - Position ", position._v, 2, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
                  transform->setPosition(position);
                  ret = true;
              }
-             if (ImGui::InputFloat3(" - Rotation ", orientationEuler._v, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+             if (ImGui::InputFloat3(" - Rotation ", orientationEuler._v, 2, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
                  orientation.fromEuler(orientationEuler);
                  transform->setRotation(orientation);
                  ret = true;
              }
 
-             if (ImGui::InputFloat3(" - Scale ", scale._v, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+             if (ImGui::InputFloat3(" - Scale ", scale._v, 2, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
                  transform->setScale(scale);
                  ret = true;
+             }
+         }
+
+         return ret;
+     }
+
+     bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
+         bool ret = false;
+         if (material) {
+             FColour diffuse = material->getColourData()._diffuse;
+             if (ImGui::InputFloat4(" - Diffuse", diffuse._v, 2, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+                 material->setDiffuse(diffuse);
+             }
+
+             FColour emissive = material->getColourData()._emissive;
+             if (ImGui::InputFloat4(" - Emissive", diffuse._v, 2, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+                 material->setEmissive(emissive);
+             }
+
+
+             FColour specular = material->getColourData()._specular;
+             if (ImGui::InputFloat4(" - Specular", specular._v, 2, readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+                 material->setSpecular(specular);
+             }
+
+             F32 shininess = material->getColourData()._shininess;
+             if (ImGui::InputFloat(" - Shininess", &shininess, 0.0f, 0.0f, "%.3f", readOnly ? ImGuiInputTextFlags_ReadOnly : 0)) {
+                 material->setShininess(shininess);
+             }
+
+             
+             ImGui::SameLine();
+             bool doubleSided = material->isDoubleSided();
+             if (readOnly) {
+                 ImGui::Checkbox("DobuleSided", &doubleSided);
+             }  else {
+                 material->setDoubleSided(ImGui::Checkbox("DobuleSided", &doubleSided));
              }
          }
 

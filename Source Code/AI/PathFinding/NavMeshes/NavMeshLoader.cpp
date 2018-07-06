@@ -339,8 +339,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         }
 
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType crtType = static_cast<Object3D*>(sn.get())->getObjectType();
-            if (crtType == Object3D::ObjectType::MESH) {
+            ObjectType crtType = static_cast<Object3D*>(sn.get())->getObjectType();
+            if (crtType._value == ObjectType::MESH) {
                 goto next;
             }
         }
@@ -360,8 +360,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                      sgn.usageContext() == NodeUsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }
-                if (static_cast<Object3D*>(sn.get())->getObjectType() ==
-                    Object3D::ObjectType::TERRAIN) {
+                if (static_cast<Object3D*>(sn.get())->getObjectType()._value ==
+                    ObjectType::TERRAIN) {
                     areaType = SamplePolyAreas::SAMPLE_POLYAREA_GROUND;
                 }
             } break;
@@ -400,7 +400,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                 static_cast<Object3D*>(sn.get())->getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
                (nodeType == SceneNodeType::TYPE_OBJECT3D &&
-                static_cast<Object3D*>(sn.get())->getObjectType() != Object3D::ObjectType::TERRAIN))
+                static_cast<Object3D*>(sn.get())->getObjectType()._value != ObjectType::TERRAIN))
             {
                 mat4<F32> nodeTransform = nodeSGN->get<TransformComponent>()->getWorldMatrix();
                 for (U32 i = 0; i < vertices.size(); ++i) {
