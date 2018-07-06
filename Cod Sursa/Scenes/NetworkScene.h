@@ -10,7 +10,7 @@ public:
 	void render();
 	void preRender();
 
-	bool load(const string& name);
+	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 
 	void processEvents(F32 time);
@@ -25,7 +25,7 @@ private:
 private:
 	vec2 _sunAngle;
 	vec4 _sunVector;
-	vector<F32> _eventTimers;
+	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
 };
 

@@ -8,7 +8,7 @@ class FlashScene : public Scene
 public:
 	void render();
 	void preRender();
-	bool load(const string& name);
+	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	bool loadEvents(bool continueOnErrors){return true;}
 	void processInput();
@@ -20,7 +20,7 @@ private:
 	vec4 _sunVector;
 	F32 angleLR,angleUD,moveFB,moveLR,update_time;
 	vec4 _vSunColor;
-	vector<F32> _eventTimers;
+	std::vector<F32> _eventTimers;
 
 };
 

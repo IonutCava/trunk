@@ -28,12 +28,15 @@ public:
 
 	  ~Scene();
 	void addGeometry(Object3D* const object);
-	void addModel(DVDFile* const model);
+	void addModel(Mesh* const model);
+	bool removeGeometry(const std::string& name);
+	bool removeModel(const std::string& name);
+
 	virtual bool unload();
 
 	virtual void render() = 0;
 	virtual void preRender() = 0;
-	virtual bool load(const string& name) = 0;
+	virtual bool load(const std::string& name) = 0;
 	
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
@@ -43,19 +46,19 @@ public:
 
    TerrainManager* getTerrainManager() {return _terMgr;}
 
-   inline unordered_map<string,DVDFile*>& getModelArray(){return ModelArray;}
-   inline unordered_map<string,Object3D*>& getGeometryArray(){return GeometryArray;}
+   inline std::tr1::unordered_map<std::string,Mesh*>& getModelArray(){return ModelArray;}
+   inline std::tr1::unordered_map<std::string,Object3D*>& getGeometryArray(){return GeometryArray;}
 
-   inline vector<FileData>& getModelDataArray() {return ModelDataArray;}
-   inline vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
+   inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
+   inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
 
-   inline vector<Light*>& getLights() {return _lights;}
-   inline vector<Event*>& getEvents() {return _events;}
+   inline std::vector<Light*>& getLights() {return _lights;}
+   inline std::vector<Event*>& getEvents() {return _events;}
 
    void addModel(FileData& model) {ModelDataArray.push_back(model);}
    void addTerrain(const TerrainInfo& ter) {TerrainInfoArray.push_back(ter);}
-   void addPatch(vector<FileData>& data);
-   void clean();
+   void addPatch(std::vector<FileData>& data);
+   bool clean();
 
    bool drawBBox() {return _drawBB;}
    void drawBBox(bool visibility) {_drawBB = visibility;}
@@ -68,20 +71,20 @@ protected:
 	TerrainManager* _terMgr;
 
 	//Dynamic geometry
-	unordered_map<string, DVDFile*> ModelArray;
-	unordered_map<string, DVDFile*>::iterator ModelIterator;
+	std::tr1::unordered_map<std::string, Mesh*> ModelArray;
+	std::tr1::unordered_map<std::string, Mesh*>::iterator ModelIterator;
 
 	//Static geometry
-	unordered_map<string, Object3D*> GeometryArray;
-	unordered_map<string, Object3D*>::iterator GeometryIterator;
+	std::tr1::unordered_map<std::string, Object3D*> GeometryArray;
+	std::tr1::unordered_map<std::string, Object3D*>::iterator GeometryIterator;
 
 	//Datablocks for models,vegetation and terrains
-	vector<FileData> ModelDataArray, PendingDataArray;
-	vector<FileData> VegetationDataArray;
-	vector<TerrainInfo> TerrainInfoArray;
+	std::vector<FileData> ModelDataArray, PendingDataArray;
+	std::vector<FileData> VegetationDataArray;
+	std::vector<TerrainInfo> TerrainInfoArray;
 	
-	vector<Event*> _events;
-	vector<Light*> _lights;
+	std::vector<Event*> _events;
+	std::vector<Light*> _lights;
 
 	Light* _defaultLight;
 
@@ -97,8 +100,8 @@ protected:
 	virtual bool loadResources(bool continueOnErrors){return true;}
 	virtual bool loadEvents(bool continueOnErrors){return true;}
 	virtual void setInitialData();
-	void clearEvents(){/*foreach(_events as event) event.end()*/_events.empty();}
-	void clearObjects(){/*foreach(_ModelArray as model) model.unload();*/ GeometryArray.empty(); ModelArray.empty();}
+	void clearEvents(){_events.empty();}
+	void clearObjects(){GeometryArray.empty(); ModelArray.empty();}
 	bool loadModel(const FileData& data);
 	bool loadGeometry(const FileData& data);
 	bool addDefaultLight();

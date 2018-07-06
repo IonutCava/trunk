@@ -3,6 +3,7 @@
 #include "resource.h"
 #include "glTexture.h"
 #include "Hardware/Video/GFXDevice.h"
+using namespace std;
 
 bool glTexture::load(const string& name)
 {
@@ -133,4 +134,19 @@ void glTexture::Unbind(U32 slot) const {
 	glPopAttrib();//RenderState
 }
 
+void glTexture::SetMatrix(U32 slot, const mat4& transformMatrix)
+{
+	glMatrixMode(GL_TEXTURE);
+	glActiveTexture(GL_TEXTURE0+slot);
+	glLoadMatrixf( transformMatrix );
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void glTexture::RestoreMatrix(U32 slot)
+{
+	glMatrixMode(GL_TEXTURE);
+	glActiveTexture(GL_TEXTURE0+slot);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+}
 

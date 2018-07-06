@@ -4,6 +4,7 @@
 #include "Utility/Headers/ParamHandler.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Rendering/common.h"
+using namespace std;
 
 void glShader::validateShader(U32 shader, const string &file) {
 	const U32 BUFFER_SIZE = 512;

@@ -12,7 +12,7 @@ public:
 	void render();
 	void preRender();
 
-	bool load(const string& name);
+	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	void processInput();
 	void processEvents(F32 time);
@@ -27,10 +27,10 @@ private:
 	void servesteMingea();
 
 private:
-	vector<F32> _eventTimers;
+	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
 	I32 _scor;
-	vector<string> _quotes;
+	std::vector<std::string> _quotes;
 
 	Sphere3D* _minge;
 

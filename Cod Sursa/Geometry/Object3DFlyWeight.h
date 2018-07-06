@@ -7,14 +7,14 @@ class Object3DFlyWeight
 {
 
 public:
-	Object3DFlyWeight(Object3D* referenceObject, Transform* realTransform):
-			_reference(referenceObject),
-			_realTransform(realTransform)
+	Object3DFlyWeight(Object3D* referenceObject):
+			_reference(referenceObject)
 	{
+		_realTransform = NULL;
 	}
 
 	Object3D* getObject() {return _reference;}
-	Transform* getTransform() {return _realTransform;}
+	Transform* getTransform() {if(!_realTransform) _realTransform = new Transform(); return _realTransform;}
 
 	void setTransform(Transform* transform){delete _realTransform; _realTransform = transform;}
 	void setObject(Object3D* object){delete _reference; _reference = object;}

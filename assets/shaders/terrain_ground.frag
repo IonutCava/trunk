@@ -1,5 +1,3 @@
-
-
 varying vec4 vPixToLightTBN;	// Vecteur du pixel courant à la lumière
 varying vec3 vPixToEyeTBN;		// Vecteur du pixel courant à l'oeil
 varying vec3 vPosition;

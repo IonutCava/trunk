@@ -6,6 +6,7 @@
 #include "Headers/ParamHandler.h"
 #include "Headers/XMLParser.h"
 #include "Rendering/common.h"
+using namespace std;
 
 void Guardian::LoadApplication(const string& entryPoint)
 {

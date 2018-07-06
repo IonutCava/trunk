@@ -8,13 +8,13 @@
 #include "Managers/TerrainManager.h"
 #include "Managers/SceneManager.h"
 #include "Terrain/Sky.h"
-#include "Camera.h"
+#include "Managers/CameraManager.h"
+#include "Camera/FreeFlyCamera.h"
 #include "Hardware/Video/ShaderHandler.h"
 #include "Frustum.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "GUI/GUI.h"
 #include "Framerate.h"
-
 #include "Utility/Headers/Event.h"
 #include "Geometry/Predefined/Text3D.h"
 
@@ -28,16 +28,15 @@ Engine::Engine() :
 	_GFX(GFXDevice::getInstance()),
     _px(PhysX::getInstance()),
 	_scene(SceneManager::getInstance()),
-	_camera(Camera::getInstance()),
 	_gui(GUI::getInstance())
 {
 	//BEGIN CONSTRUCTOR
 	 time = 0;
 	 timebase = 0;
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
-
- 
 	 mainWindowId = -1;
+	 _camera = new FreeFlyCamera();
+	 CameraManager::getInstance().add("defaultCamera",_camera);
 	 //END CONSTRUCTOR
 }
 
@@ -57,7 +56,7 @@ void Engine::DrawScene()
 	
 	_GFX.enable_MODELVIEW();
 	_GFX.loadIdentityMatrix();
-	_camera.RenderLookAt();
+	_camera->RenderLookAt();
 	_px.GetPhysicsResults();
 	if(_px.getScene() != NULL)
 	{
@@ -66,7 +65,7 @@ void Engine::DrawScene()
 	}
 	_px.StartPhysics();
 
-	vector<Light*> & lights = _scene.getActiveScene()->getLights();
+	std::vector<Light*> & lights = _scene.getActiveScene()->getLights();
 	for(U8 i = 0; i < lights.size(); i++)
 		lights[i]->update();
 
@@ -87,8 +86,8 @@ void Engine::Initialize()
 	ResourceManager& res = ResourceManager::getInstance();
 	_GFX.setApi(OpenGL32);
 	_GFX.initHardware();
-	_camera.setEye(vec3(0,50,0));
-	F32 fogColor[4] = {0.5, 0.5, 0.5, 1.0}; 
+	_camera->setEye(vec3(0,50,0));
+	F32 fogColor[4] = {0.7f, 0.7f, 0.9f, 1.0}; 
 	_GFX.enableFog(0.3f,fogColor);
 }
 

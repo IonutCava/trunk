@@ -1,7 +1,6 @@
 #include "QuadtreeNode.h"
 #include "Rendering/Frustum.h"
 #include "Utility/Headers/BoundingBox.h"
-#include "Geometry/Object3DFlyWeight.h"
 
 void QuadtreeNode::Build(U32 depth,		
 						 ivec2 pos,					
@@ -103,12 +102,12 @@ void QuadtreeNode::Destroy()
 	}
 }
 
-void QuadtreeNode::DrawGrass(bool drawInReflexion,bool drawDepthMap)
+void QuadtreeNode::DrawGrass(bool drawInReflexion)
 {
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			m_pTerrainChunk->DrawGrass( (U32)m_nLOD, m_fDistance, drawDepthMap );
+			m_pTerrainChunk->DrawGrass( (U32)m_nLOD, m_fDistance );
 		else
 			return;
 	}
@@ -116,17 +115,17 @@ void QuadtreeNode::DrawGrass(bool drawInReflexion,bool drawDepthMap)
 		int ret = 0;
 		if( m_nLOD>=0 )
 			for(int i=0; i<4; i++)
-				m_pChildren[i].DrawGrass(drawInReflexion, drawDepthMap);
+				m_pChildren[i].DrawGrass(drawInReflexion);
 		return;		
 	}
 }
 
-void QuadtreeNode::DrawTrees(bool drawInReflexion,bool drawDepthMap)
+void QuadtreeNode::DrawTrees(bool drawInReflexion)
 {
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			m_pTerrainChunk->DrawTrees(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD , m_fDistance,drawDepthMap );
+			m_pTerrainChunk->DrawTrees(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD , m_fDistance );
 		else
 			return;
 	}
@@ -134,7 +133,7 @@ void QuadtreeNode::DrawTrees(bool drawInReflexion,bool drawDepthMap)
 		int ret = 0;
 		if( m_nLOD>=0 )
 			for(int i=0; i<4; i++)
-				m_pChildren[i].DrawTrees(drawInReflexion, drawDepthMap);
+				m_pChildren[i].DrawTrees(drawInReflexion);
 		return;		
 	}
 }

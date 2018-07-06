@@ -42,7 +42,7 @@ private:
 	void HandleGeometryAppendOpCode(WorldPacket& p);
 
 private:  	
-	auto_ptr<io_service::work> work;
+	std::auto_ptr<io_service::work> work;
 	boost::thread *t;
 	bool _connected,_debugOutput;
 	client *c;

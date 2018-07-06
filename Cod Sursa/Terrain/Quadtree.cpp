@@ -3,24 +3,24 @@
 #include "Utility/Headers/BoundingBox.h"
 #include "Rendering/Frustum.h"
  
-int Quadtree::DrawGround(bool drawInReflexion,bool drawDepthMap) {
+int Quadtree::DrawGround(bool drawInReflexion) {
 	assert(m_pRoot);
 	int options = CHUNK_BIT_TESTCHILDREN;
 	if(drawInReflexion)	options |= CHUNK_BIT_WATERREFLECTION;
-	if(drawDepthMap) options |= CHUNK_BIT_DEPTHMAP;
+	if(GFXDevice::getInstance().getDepthMapRendering()) options |= CHUNK_BIT_DEPTHMAP;
 	return m_pRoot->DrawGround(options);
 }
 
-void Quadtree::DrawGrass(bool drawInReflexion,bool drawDepthMap)
+void Quadtree::DrawGrass(bool drawInReflexion)
 {
 	assert(m_pRoot);
-	m_pRoot->DrawGrass(drawInReflexion,drawDepthMap);
+	m_pRoot->DrawGrass(drawInReflexion);
 }
 
-void Quadtree::DrawTrees(bool drawInReflexion,bool drawDepthMap)
+void Quadtree::DrawTrees(bool drawInReflexion)
 {
 	assert(m_pRoot);
-	m_pRoot->DrawTrees(drawInReflexion,drawDepthMap);
+	m_pRoot->DrawTrees(drawInReflexion);
 }
 
 void Quadtree::DrawBBox() {

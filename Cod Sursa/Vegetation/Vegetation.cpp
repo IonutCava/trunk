@@ -22,7 +22,7 @@ void Vegetation::initialize(const string& grassShader)
 
 }
 
-void Vegetation::draw(bool drawInReflexion,bool drawDepthMap)
+void Vegetation::draw(bool drawInReflexion)
 {
 	if(!_render || !_success) return;
 	_grassShader->bind();
@@ -38,22 +38,21 @@ void Vegetation::draw(bool drawInReflexion,bool drawDepthMap)
 		_grassShader->Uniform("windDirectionX",_windX);
 		_grassShader->Uniform("windDirectionZ",_windZ);
 		_grassShader->Uniform("windSpeed", _windS);
-		_grassShader->Uniform("scale", _grassScale);
-			DrawGrass(index,drawInReflexion,drawDepthMap);
+			DrawGrass(index,drawInReflexion);
 		_grassBillboards[index]->Unbind(0);
 		
 		
 	}
 	_grassShader->unbind();
 
-	DrawTrees(drawInReflexion,drawDepthMap);
+	DrawTrees(drawInReflexion);
 }
 
 
 
 bool Vegetation::generateGrass(int index)
 {
-	Con::getInstance().printfn("Generating Grass...[ %d ]", _grassDensity);
+	Con::getInstance().printfn("Generating Grass...[ %d ]", (U32)_grassDensity);
 	assert(_map.data);
 	vec2 pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
 	vec2 pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
@@ -88,7 +87,7 @@ bool Vegetation::generateGrass(int index)
 			continue;
 		}
 
-		size = (F32)(map_color.green+1) / (256 / _grassScale);
+		_grassSize = (F32)(map_color.green+1) / (256 / _grassScale);
 		vec3 P = _terrain.getPosition(x, y);
 		vec3 N = _terrain.getNormal(x, y);
 		vec3 T = _terrain.getTangent(x, y);
@@ -110,13 +109,12 @@ bool Vegetation::generateGrass(int index)
 
 			for(int i=0; i<3*4; i++)
 			{
-				vec3 data = matRot*(tVertices[i]*size);
+				vec3 data = matRot*(tVertices[i]*_grassSize);
 				vec3 vertex = P;
 				vertex.x += Dot(data, T);
 				vertex.y += Dot(data, B);
 				vertex.z += Dot(data, N);
 				
-				//vertex.y -= 1/_grassScale;
 				_grassVBO[index]->getPosition().push_back( vertex );
 				_grassVBO[index]->getNormal().push_back( tTexcoords[i].t < 0.2f ? -N : N );
 				_grassVBO[index]->getTexcoord().push_back( uv_offset + tTexcoords[i] );
@@ -126,9 +124,11 @@ bool Vegetation::generateGrass(int index)
 		}
 	}
 	bool ret = _grassVBO[index]->Create();
+
 	_grassShader->bind();
-		_grassShader->Uniform("depth_map_size", 1024);
-		_grassShader->Uniform("lod_metric", 1000.0f);
+		_grassShader->Uniform("depth_map_size", 512);
+		_grassShader->Uniform("lod_metric", 100.0f);
+		_grassShader->Uniform("scale", _grassSize);
 	_grassShader->unbind();
 
 	Con::getInstance().printfn("Generating Grass OK");
@@ -137,54 +137,73 @@ bool Vegetation::generateGrass(int index)
 
 bool Vegetation::generateTrees()
 {
+	//--> Unique position generation
+	vector<vec3> positions;
+	vector<vec3>::iterator positionIterator;
+	//<-- End unique position generation
 	vector<FileData>& DA = SceneManager::getInstance().getActiveScene()->getVegetationDataArray();
-	if(DA.size() < 1)
+	if(DA.empty())
 	{
 		Con::getInstance().errorf("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
 		return true;
 	}
 	Con::getInstance().printf("Generating Vegetation... [ %f ]\n", _treeDensity);
-	Shader *s = ResourceManager::getInstance().LoadResource<Shader>("terrain_tree");
+	Shader *tree_shader = ResourceManager::getInstance().LoadResource<Shader>("terrain_tree");
+	tree_shader->bind();
+		tree_shader->Uniform("enable_shadow_mapping", 0);
+		tree_shader->Uniform("tile_factor", 1.0f);	
+	tree_shader->unbind();
 
-	for(int k=0; k<(int)_treeDensity; k++) {
-		F32 x = random(1.0f);
-		F32 y = random(1.0f);
-		int map_x = (int)(x * _map.w);
-		int map_y = (int)(y * _map.h);
+	for(U32 k=0; k<(U32)_treeDensity; k++) {
+		I32 map_x = (I32)random((F32)_map.w);
+		I32 map_y = (I32)random((F32)_map.h);
 		ivec3 map_color = _map.getColor(map_x, map_y);
 		if(map_color.green < 55) {
 			k--;
 			continue;
 		}
-
-		vec3 P = _terrain.getPosition(x, y);
+		
+		vec3 P = _terrain.getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
 		P.y -= 0.2f;
 
+		for(positionIterator = positions.begin(); positionIterator != positions.end(); positionIterator++)
+		{
+			vec3 temp = *positionIterator;
+			if(temp.compare(P) || (temp.distance(P) < 0.02f))
+			{
+				k--;
+				break; //iterator for
+				continue; //addTree for
+			}
+			
+		}
+		positions.push_back(P);
 		QuadtreeNode* node = _terrain.getQuadtree().FindLeaf(vec2(P.x, P.z));
 		assert(node);
 		TerrainChunk* chunk = node->getChunk();
 		assert(chunk);
 		
 		int index = rand() % DA.size();
-		chunk->addTree(P, random(360.0f),_treeScale,s,DA[index]);
-		
-
+		chunk->addTree(P, random(360.0f),_treeScale,tree_shader,DA[index]);
 	}
-	Con::getInstance().printf("Generating Vegetation OK\n");;
+
+	positions.clear();
+	Con::getInstance().printf("Generating Vegetation OK\n");
+	DA.empty();
 	return true;
 }
 
-void Vegetation::DrawTrees(bool drawInReflexion,bool drawDepthMap)
+void Vegetation::DrawTrees(bool drawInReflexion)
 {
-	_terrain.getQuadtree().DrawTrees(drawInReflexion,drawDepthMap);
+	_terrain.getQuadtree().DrawTrees(drawInReflexion);
 }
 
-void Vegetation::DrawGrass(int index,bool drawInReflexion,bool drawDepthMap)
+void Vegetation::DrawGrass(int index,bool drawInReflexion)
 {
 	if(_grassVBO[index])
 	{
 		_grassVBO[index]->Enable();
-			_terrain.getQuadtree().DrawGrass(drawInReflexion,drawDepthMap);
+			_terrain.getQuadtree().DrawGrass(drawInReflexion);
 		_grassVBO[index]->Disable();
 	}
 }

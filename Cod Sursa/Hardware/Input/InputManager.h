@@ -43,7 +43,7 @@ class EffectManager
     JoystickManager* _pJoystickMgr;
 
     // Vector to hold variable effects
-    vector<VariableEffect*> _vecEffects;
+    std::vector<VariableEffect*> _vecEffects;
 
     // Selected effect
     int _nCurrEffectInd;
@@ -52,7 +52,7 @@ class EffectManager
     unsigned int _nUpdateFreq;
 
 	// Indexes (in _vecEffects) of the variable effects that are playable by the selected joystick.
-	vector<size_t> _vecPlayableEffectInd;
+	std::vector<size_t> _vecPlayableEffectInd;
 
 
   public:
@@ -154,14 +154,14 @@ class EffectManager
 
     ~EffectManager()
     {
-	  vector<VariableEffect*>::iterator iterEffs;
+	  std::vector<VariableEffect*>::iterator iterEffs;
 	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); iterEffs++)
 		delete *iterEffs;
 	}
 
     void updateActiveEffects()
     {
-	  vector<VariableEffect*>::iterator iterEffs;
+	  std::vector<VariableEffect*>::iterator iterEffs;
 	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); iterEffs++)
 		if ((*iterEffs)->isActive())
 		{
@@ -191,14 +191,14 @@ class EffectManager
 	  // Print details about playable effects
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		cout << endl << endl << "The device can't play any effect of the test set" << endl;
+		  Con::getInstance().printfn("InputManager: The device can't play any effect of the test set");
 	  }
 	  else
 	  {
-		cout << endl << endl << "Selected device can play the following effects :" << endl;
+		  Con::getInstance().printfn("InputManager: Selected device can play the following effects :");
 		for (size_t nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); nEffIndInd++)
 			printEffect(_vecPlayableEffectInd[nEffIndInd]);
-		cout << endl;
+		Con::getInstance().printfn("");
 	  }
 	}
 
@@ -210,14 +210,14 @@ class EffectManager
 	  // Nothing to do if no joystick currently selected
 	  if (!_pJoystickMgr->getCurrentFFDevice())
 	  {
-		  cout << "\nNo Joystick selected.\n";  
+		  Con::getInstance().printfn("InputManager: No Joystick selected.");  
 		return;
 	  }
 
 	  // Nothing to do if joystick cannot play any effect
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  cout << "\nNo playable effects.\n"; 
+		  Con::getInstance().printfn("InputManager: No playable effects."); 
 		return;
 	  }
 
@@ -254,7 +254,7 @@ class EffectManager
 
     void printEffect(size_t nEffInd)
     {
-	  cout << "* #" << nEffInd << " : " << _vecEffects[nEffInd]->getDescription() << endl;
+		Con::getInstance().printfn("InputManager: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
 	}
 
     void printEffects()
@@ -338,38 +338,52 @@ public:
 
 	  // Create the event handler.
 	  _pEventHdlr = new EventHandler(this);
+	  try{
+		// Create a simple keyboard
+		_pKeyboard = (OIS::Keyboard*)_pInputMgr->createInputObject( OIS::OISKeyboard, true );
+		_pKeyboard->setEventCallback( _pEventHdlr );
+	  }
+	  catch(OIS::Exception &ex)
+	  {
+		Con::getInstance().printf("Exception raised on keyboard creation: %s\n",ex.eText);
+	  }
 
-	  // Create a simple keyboard
-	  _pKeyboard = (OIS::Keyboard*)_pInputMgr->createInputObject( OIS::OISKeyboard, true );
-	  _pKeyboard->setEventCallback( _pEventHdlr );
 	  try{
 			_pJoystick = (OIS::JoyStick*) _pInputMgr->createInputObject(OIS::OISJoyStick, true);
 			_pJoystick->setEventCallback( _pEventHdlr );
 	  }
-	  	catch(OIS::Exception &ex)
-		{
-			std::cout << "\nException raised on joystick creation: " << ex.eText << std::endl;
-		}
-	  // Create a simple mouse
-	  _pMouse = (OIS::Mouse*)_pInputMgr->createInputObject(OIS::OISMouse,true);
-	  _pMouse->setEventCallback( _pEventHdlr );
-	  const OIS::MouseState &ms = _pMouse->getMouseState();
-	  ms.width = Engine::getInstance().getWindowWidth();
-	  ms.height = Engine::getInstance().getWindowHeight();
+	  catch(OIS::Exception &ex)
+	  {
+			Con::getInstance().printf("Exception raised on joystick creation: %s\n",ex.eText);
+	  }
+
+	  try{
+	  
+		_pMouse = (OIS::Mouse*)_pInputMgr->createInputObject(OIS::OISMouse,true);
+		_pMouse->setEventCallback( _pEventHdlr );
+		const OIS::MouseState &ms = _pMouse->getMouseState();
+		ms.width = Engine::getInstance().getWindowDimensions().width;
+		ms.height = Engine::getInstance().getWindowDimensions().height;
+	  }
+	  catch(OIS::Exception &ex)
+	  {
+		Con::getInstance().printf("Exception raised on mouse creation: %s\n",ex.eText);
+	  }
+	  
 	  // Create the joystick manager.
 	  _pJoystickMgr = new JoystickManager(_pInputMgr, _pEventHdlr);
-	  /*if( !_pJoystickMgr->wasFFDetected() )
+	  if( !_pJoystickMgr->wasFFDetected() )
 	  {
 		Con::getInstance().printf("InputManager: No Force Feedback device detected.\n");
-		_nStatus = 1;
-		return _nStatus;
-	  }*/
-
-	  // Create force feedback effect manager.
-	  _pEffectMgr = new EffectManager(_pJoystickMgr, _nEffectUpdateFreq);
-
-	  // Initialize the event handler.
-	  _pEventHdlr->initialize(_pJoystickMgr, _pEffectMgr);
+		delete _pJoystickMgr;
+		_pJoystickMgr = NULL;
+	  }
+	  else
+	  {	  // Create force feedback effect manager.
+	      _pEffectMgr = new EffectManager(_pJoystickMgr, _nEffectUpdateFreq);
+		  // Initialize the event handler.
+		  _pEventHdlr->initialize(_pJoystickMgr, _pEffectMgr);
+	  }
 
 	  _bIsInitialized = true;
 
@@ -413,16 +427,18 @@ public:
 			_pMouse->capture();
 
 		  // This fires off buffered events for each joystick we have
-		  //_pJoystickMgr->captureEvents();
-
-		  // Update currently selected effects if time has come to.
-		  /*if (!nEffectUpdateCnt)
+		  if(_pJoystickMgr)
 		  {
-			_pEffectMgr->updateActiveEffects();
-			nEffectUpdateCnt = nMaxEffectUpdateCnt;
+			_pJoystickMgr->captureEvents();
+	        // Update currently selected effects if time has come to.
+			if (!nEffectUpdateCnt)
+			{
+				_pEffectMgr->updateActiveEffects();
+				nEffectUpdateCnt = nMaxEffectUpdateCnt;
+			}
+			else
+				nEffectUpdateCnt--;
 		  }
-		  else
-			nEffectUpdateCnt--;*/
 
 
 	  }
@@ -475,15 +491,15 @@ public:
 #endif
 	}
 
-    /*JoystickManager* getJoystickManager()
+    JoystickManager* getJoystickManager()
     {
 	  return _pJoystickMgr;
-	}*/
+	}
 
-    /*EffectManager* getEffectManager()
+    EffectManager* getEffectManager()
     {
 	  return _pEffectMgr;
-	}*/
+	}
 
 
 SINGLETON_END()

@@ -10,6 +10,7 @@
 #include "Geometry/Predefined/Text3D.h"
 #include "GUI/GUI.h"
 #include "GUI/GLUIManager.h"
+using namespace std;
 
 Scene::~Scene()
 {
@@ -25,24 +26,15 @@ Scene::~Scene()
 	}
 	_events.clear();
 	_inputManager.terminate();
+	unload();
 }
 
-void Scene::clean() //Called when application is idle
+bool Scene::clean() //Called when application is idle
 {
-	if(ModelArray.empty() && GeometryArray.empty()) return;
+	if(ModelArray.empty() && GeometryArray.empty()) return false;
 
-	for(unordered_map<string,DVDFile*>::iterator iter = ModelArray.begin(); iter != ModelArray.end(); iter++)
-	{
-		if((iter->second)->clean())
-		{
-			delete (iter->second);
-			iter->second = NULL;
-			ModelArray.erase(iter);
-			break;
-		}
-	}
 	bool _updated = false;
-
+	if(!PendingDataArray.empty())
 	for(vector<FileData>::iterator iter = PendingDataArray.begin(); iter != PendingDataArray.end(); iter++)
 	{
 		if(!loadModel(*iter))
@@ -74,13 +66,14 @@ void Scene::clean() //Called when application is idle
 			
 		}
 	}
+	return true;
 }
 
 void Scene::addPatch(vector<FileData>& data)
 {
 	for(vector<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
 	{
-		for(unordered_map<string,DVDFile*>::iterator iter2 = ModelArray.begin(); iter2 != ModelArray.end(); iter2++)
+		for(tr1::unordered_map<string,Mesh*>::iterator iter2 = ModelArray.begin(); iter2 != ModelArray.end(); iter2++)
 			if((iter2->second)->getItemName().compare((*iter).ItemName) == 0)
 			{
 				(iter2->second)->scheduleDeletion(); //ToDo: Fix OpenGL context switch between threads; -Ionut
@@ -91,7 +84,7 @@ void Scene::addPatch(vector<FileData>& data)
 				PendingDataArray.push_back(*iter);
 			}
 
-		for(unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
+		for(tr1::unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
 			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
 			{
 				//ToDo: MUTEX!!!!!!!!!!!!!!!! -Ionut
@@ -131,7 +124,7 @@ bool Scene::loadModel(const FileData& data)
 	if(data.type == PRIMITIVE) 
 		return loadGeometry(data);
 
-	DVDFile *thisObj = ResourceManager::getInstance().LoadResource<DVDFile>(data.ModelName);
+	Mesh *thisObj = ResourceManager::getInstance().LoadResource<Mesh>(data.ModelName);
 	if (!thisObj)
 	{
 		Con::getInstance().errorfn("SceneManager: Error loading model [ %s ]",  data.ModelName.c_str());
@@ -144,8 +137,8 @@ bool Scene::loadModel(const FileData& data)
 	thisObj->getTransform()->rotateEuler(data.orientation);
 	thisObj->getTransform()->translate(data.position);
 
-	pair<unordered_map<string,DVDFile*>::iterator,bool> _result;
-	_result = ModelArray.insert(pair<string,DVDFile*>(data.ItemName,thisObj));
+	pair<tr1::unordered_map<string,Mesh*>::iterator,bool> _result;
+	_result = ModelArray.insert(pair<string,Mesh*>(data.ItemName,thisObj));
 	if(!_result.second) (_result.first)->second = thisObj;
 
 	return true;
@@ -209,7 +202,7 @@ bool Scene::loadGeometry(const FileData& data)
 		return false;
 	}
 
-	pair<unordered_map<string,Object3D*>::iterator,bool> _result;
+	pair<tr1::unordered_map<string,Object3D*>::iterator,bool> _result;
 	_result = GeometryArray.insert(pair<string,Object3D*>(thisObj->getName(),thisObj));
 	if(!_result.second) (_result.first)->second = thisObj;
 	return true;
@@ -240,9 +233,31 @@ void Scene::addGeometry(Object3D* const object)
 	GeometryArray.insert(pair<string,Object3D*>(object->getName(),object));
 }
 
-void Scene::addModel(DVDFile* const model)
+void Scene::addModel(Mesh* const model)
 {
-	ModelArray.insert(pair<string,DVDFile*>(model->getName(),model));
+	ModelArray.insert(pair<string,Mesh*>(model->getName(),model));
+}
+
+bool Scene::removeGeometry(const std::string& name)
+{
+	if(GeometryArray.find(name) != GeometryArray.end())
+	{
+		GeometryArray[name]->unload();
+		GeometryArray.erase(name);
+		return true;
+	}
+	return false;
+}
+
+bool Scene::removeModel(const std::string& name)
+{
+	if(ModelArray.find(name) != ModelArray.end())
+	{
+		ModelArray[name]->unload();
+		ModelArray.erase(name);
+		return true;
+	}
+	return false;
 }
 
 bool Scene::unload()

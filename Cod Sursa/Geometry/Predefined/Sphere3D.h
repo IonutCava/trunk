@@ -9,7 +9,7 @@ public:
 	Sphere3D(F32 size,U32 resolution) : _size(size), _resolution(resolution),_texture(NULL),_shader(NULL)
 			{_geometryType = SPHERE_3D;}
 	
-	bool load(const string &name) {return true;}
+	bool load(const std::string &name) {return true;}
 	bool unload() {return true;}
 
 	F32&			  getSize()       {return _size;}

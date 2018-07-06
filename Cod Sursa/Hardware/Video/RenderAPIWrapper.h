@@ -56,7 +56,7 @@ enum Type
 };
 
 //Forward declarations
-class DVDFile;
+class Mesh;
 class Text;
 class Shader;
 class Button;
@@ -73,7 +73,7 @@ class mat4;
 class Material;
 #include <iostream>
 #include <unordered_map>
-using namespace std;
+
 //Renderer Programming Interface
 class RenderAPI
 {
@@ -139,7 +139,7 @@ protected:
 	/*Primitives Rendering*/
 
 	/*Mesh Rendering*/
-	virtual void renderModel(DVDFile* const model) = 0;
+	virtual void renderModel(Mesh* const model) = 0;
 	virtual void renderElements(Type t, U32 count, const void* first_element) = 0;
 	/*Mesh Rendering*/
 
@@ -149,9 +149,13 @@ protected:
 	virtual void setColor(const vec3& v) = 0;
 	/*Color Management*/
 
-	virtual void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties) = 0;
+	/*Light Management*/
+	virtual void setLight(U32 slot, std::tr1::unordered_map<std::string,vec4>& properties) = 0;
 	virtual void createLight(U32 slot) = 0;
-	
+	virtual void setLightCameraMatrices(const vec3& lightVector) = 0;
+	virtual void restoreLightCameraMatrices() = 0;
+	/*Light Management*/
+
 	virtual void toggleWireframe(bool state) = 0;
 	virtual ~RenderAPI(){};
 

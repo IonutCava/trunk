@@ -1,8 +1,9 @@
 #include "FlashScene.h"
 #include "GUI/GUI.h"
 #include "PhysX/PhysX.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Rendering/Framerate.h"
+using namespace std;
 
 void FlashScene::render()
 {
@@ -26,15 +27,17 @@ void FlashScene::preRender()
 
 void FlashScene::processInput()
 {
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
+
 	moveFB  = Engine::getInstance().moveFB;
 	moveLR  = Engine::getInstance().moveLR;
 	angleLR = Engine::getInstance().angleLR;
 	angleUD = Engine::getInstance().angleUD;
 	
-	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
+	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
+	if(moveFB)	cam->PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(moveLR)	cam->PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 
 }
 

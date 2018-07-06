@@ -12,8 +12,8 @@ class JoystickManager
     OIS::InputManager* _pInputMgr;
 
     // Vectors to hold joysticks and associated force feedback devices
-    vector<OIS::JoyStick*> _vecJoys;
-    vector<OIS::ForceFeedback*> _vecFFDev;
+    std::vector<OIS::JoyStick*> _vecJoys;
+    std::vector<OIS::ForceFeedback*> _vecFFDev;
 
     // Selected joystick
     int _nCurrJoyInd;
@@ -38,8 +38,7 @@ class JoystickManager
 	  {
 		//Create the stick
 		OIS::JoyStick* pJoy = (OIS::JoyStick*)pInputMgr->createInputObject( OIS::OISJoyStick, true );
-		cout << endl << "Created buffered joystick #" << nJoyInd << " '" << pJoy->vendor() 
-			 << "' (Id=" << pJoy->getID() << ")";
+		Con::getInstance().printfn("Created buffered joystick # %d '%s' (Id='%d')",nJoyInd,pJoy->vendor(),pJoy->getID());
 		
 		// Check for FF, and if so, keep the joy and dump FF info
 		OIS::ForceFeedback* pFFDev = (OIS::ForceFeedback*)pJoy->queryInterface(OIS::Interface::ForceFeedback );
@@ -55,20 +54,19 @@ class JoystickManager
 		  _vecFFDev.push_back(pFFDev);
 		  
 		  // Dump FF supported effects and other info.
-		  cout << endl << " * Number of force feedback axes : " 
-			   << pFFDev->getFFAxesNumber() << endl;
+		  Con::getInstance().printfn(" * Number of force feedback axes : %d", pFFDev->getFFAxesNumber());
 		  const OIS::ForceFeedback::SupportedEffectList &lstFFEffects = 
 			pFFDev->getSupportedEffects();
 		  if (lstFFEffects.size() > 0)
 		  {
-			cout << " * Supported effects :";
+			  Con::getInstance().printf(" * Supported effects :");
 			OIS::ForceFeedback::SupportedEffectList::const_iterator itFFEff;
 			for(itFFEff = lstFFEffects.begin(); itFFEff != lstFFEffects.end(); ++itFFEff)
-			  cout << " " << OIS::Effect::getEffectTypeName(itFFEff->second);
-			cout << endl << endl;
+				Con::getInstance().printf(" %s",OIS::Effect::getEffectTypeName(itFFEff->second));
+			Con::getInstance().printf("\n");//Double new line - Ionut
 		  }
 		  else
-			cout << "Warning: no supported effect found !" << endl;
+			  Con::getInstance().printfn("Warning: no supported effect found !");
 		}
 		/*else
 		{

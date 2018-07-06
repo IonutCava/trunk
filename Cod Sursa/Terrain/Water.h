@@ -14,8 +14,8 @@ class WaterPlane : public Object3D
 public:
 	WaterPlane();
 	~WaterPlane(){ unload(); }
-	void draw(FrameBufferObject& _fbo);
-	bool load(const string& name) {return true;}
+	void draw(FrameBufferObject* fbo[]);
+	bool load(const std::string& name) {return true;}
 	bool unload();
 
 	void setParams(F32 shininess, F32 noiseTile, F32 noiseFactor){_shininess = shininess; _noiseTile = noiseTile; _noiseFactor = noiseFactor; } 

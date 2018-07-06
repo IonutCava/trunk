@@ -53,7 +53,7 @@ private:
 	void drawQuad3D(Quad3D* const quad);
 	void drawText3D(Text3D* const text);
 
-	void renderModel(DVDFile* const model);
+	void renderModel(Mesh* const model);
 	void renderElements(Type t, U32 count, const void* first_element);
 
 	void setMaterial(Material& mat);
@@ -64,8 +64,10 @@ private:
 	typedef void (*callback)();
 	void dxCommand(callback f){(*f)();};
 
-	void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties){};
+	void setLight(U32 slot, std::tr1::unordered_map<std::string,vec4>& properties){};
 	void createLight(U32 slot){};
+	void setLightCameraMatrices(const vec3& lightVector){}
+	void restoreLightCameraMatrices(){}
 
 	void toggleWireframe(bool state);
 SINGLETON_END()

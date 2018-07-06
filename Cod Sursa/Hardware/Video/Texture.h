@@ -13,6 +13,8 @@ public:
 	virtual void Unbind(U32 slot) const = 0;
 	virtual void Destroy() = 0;;
 	virtual void LoadData(U32 target, U8* ptr, U32& w, U32& h, U32 d) = 0;
+	virtual void SetMatrix(U32 slot, const mat4& transformMatrix) = 0;
+	virtual void RestoreMatrix(U32 slot) = 0;
 
 protected:
 	virtual void Bind() const = 0;
@@ -25,17 +27,17 @@ public:
 	U32 getWidth() const {return _width;}
 	U32 getHeight() const {return _height;}
 	U32 getBitDepth() const {return _bitDepth;}
-	const string& getName() const {return m_nName;}
+	const std::string& getName() const {return m_nName;}
 
 	static void EnableGenerateMipmaps(bool b) {s_bGenerateMipmaps=b;}
-	bool LoadFile(U32 target, const string& name);
+	bool LoadFile(U32 target, const std::string& name);
 	
 protected:
 	Texture() : m_nHandle(0){}
 
 protected:
 	U32	m_nHandle,_width,_height,_bitDepth;				
-	string m_nName;
+	std::string m_nName;
 	ImageTools::ImageData img;
 	static bool s_bGenerateMipmaps;	
 };

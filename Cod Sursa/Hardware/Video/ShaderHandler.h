@@ -9,28 +9,28 @@ class Shader : public Resource
 
 public:
 	
-    virtual void init(const string &vsFile, const string &fsFile) = 0;
+    virtual void init(const std::string &vsFile, const std::string &fsFile) = 0;
 	bool unload(){unbind(); return true;}
 
-    virtual bool loadVertOnly(const string& name) = 0;
-	virtual bool loadFragOnly(const string& name) = 0;
+    virtual bool loadVertOnly(const std::string& name) = 0;
+	virtual bool loadFragOnly(const std::string& name) = 0;
 
 	virtual void bind() = 0;
 	virtual void unbind() = 0;
 	
 	virtual U32 getId() = 0;
-	virtual string& getName() = 0;
+	virtual std::string& getName() = 0;
 
-	virtual void Uniform(const string& ext, int value) = 0;
-	virtual void Uniform(const string& ext, F32 value) = 0 ;
-	virtual void Uniform(const string& ext, const vec2& value) = 0;
-	virtual void Uniform(const string& ext, const vec3& value) = 0;
-	virtual void UniformTexture(const string& ext, int slot) = 0;
+	virtual void Uniform(const std::string& ext, int value) = 0;
+	virtual void Uniform(const std::string& ext, F32 value) = 0 ;
+	virtual void Uniform(const std::string& ext, const vec2& value) = 0;
+	virtual void Uniform(const std::string& ext, const vec3& value) = 0;
+	virtual void UniformTexture(const std::string& ext, int slot) = 0;
 
 	virtual ~Shader(){};
 
 protected:
-	virtual char* shaderFileRead(const string &fn) = 0;
+	virtual char* shaderFileRead(const std::string &fn) = 0;
 	virtual int   shaderFileWrite(char *fn, char *s) = 0;
 
 protected:

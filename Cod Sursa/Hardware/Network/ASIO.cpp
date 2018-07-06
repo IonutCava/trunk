@@ -4,6 +4,8 @@
 #include "Utility/Headers/BaseClasses.h"
 #include "Managers/SceneManager.h"
 
+using namespace std;
+
 	void ASIO::disconnect()
 	{
 		if(!_connected) return;

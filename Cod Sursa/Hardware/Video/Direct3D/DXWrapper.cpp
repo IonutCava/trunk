@@ -1,8 +1,9 @@
 #include "DXWrapper.h"
 #include "Utility/Headers/DataTypes.h"
 #include "Importer/DVDConverter.h"
-
 #include <iostream>
+using namespace std;
+
 void DX_API::initHardware()
 {
 	Con::getInstance().printfn("Initializing Direct3D rendering API! ");
@@ -106,7 +107,7 @@ void DX_API::drawText3D(Text3D* const text)
 {
 }
 
-void DX_API::renderModel(DVDFile* const model)
+void DX_API::renderModel(Mesh* const model)
 {
 	if(!model->isVisible()) return;
 	

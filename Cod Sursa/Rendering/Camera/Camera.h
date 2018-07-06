@@ -2,13 +2,15 @@
 #define CAMERA_H
 
 #include "resource.h"
-#include "Utility/Headers/Singleton.h"
 #include "Utility/Headers/MathClasses.h"
-class vec3;
-SINGLETON_BEGIN( Camera)
+#include "Utility/Headers/BaseClasses.h"
 
-public:	enum TYPE {FREE, DRIVEN};
-private:
+class vec3;
+class Camera : public Resource
+{
+
+public:	enum TYPE {FREE_FLY, FIRST_PERSON, THIRD_PERSON, ORBIT,SCRIPTED};
+protected:
 	vec3	vEye;
 	vec3	vCenter;
 	vec3	vViewDir;
@@ -26,16 +28,17 @@ private:
 	F32   terHeightMin;
 
 public:
+	Camera();
+
 	inline TYPE  getType()				const	{return eType;}
 	inline const vec3& getEye()			const	{return vEye;}
 	inline const vec3& getCenter()		const	{return vCenter;}
 	inline const vec3& getViewDir()		const	{return vViewDir;}
-	inline F32 getAngleX()			const	{return fAngleX;}
-	inline F32 getAngleY()			const	{return fAngleY;}
+	inline F32 getAngleX()				const	{return fAngleX;}
+	inline F32 getAngleY()				const	{return fAngleY;}
 
-
-protected:
-	Camera();
+	virtual bool load(const std::string& name) {return true;}
+	virtual bool unload() {return true;}
 
 public:
 	void SaveCamera();
@@ -85,6 +88,6 @@ public:
 
 	void RenderLookAtToCubeMap(const vec3& eye, U32 nFace);
 	
-	SINGLETON_END()
+};
 #endif
 

@@ -202,7 +202,7 @@ bool PhysX::RemoveActor(NxActor  &actor)
 // Fiecare element din din vector trebuie sa contine 3 vertecsi. Fiecare vertex are 3 parametri
 // Singura metoda eficienta pentru crearea acestui vector este cu un "struct" de "struct"
 
-bool PhysX::AddShape(DVDFile *mesh,bool convex/*,string cook*/)
+bool PhysX::AddShape(Mesh *mesh,bool convex/*,string cook*/)
 {
 	/*
 	if(mesh == NULL)
@@ -229,7 +229,7 @@ bool PhysX::AddShape(DVDFile *mesh,bool convex/*,string cook*/)
 	return true;
 }
 
-bool PhysX::AddConvexShape(DVDFile *mesh)
+bool PhysX::AddConvexShape(Mesh *mesh)
 {
 /*	NxVec3 objectLocation = NxVec3(mesh->getPosition());
 
@@ -305,7 +305,7 @@ bool PhysX::AddConvexShape(DVDFile *mesh)
 
 }
 
-bool PhysX::AddTriangleShape(DVDFile *mesh)
+bool PhysX::AddTriangleShape(Mesh *mesh)
 {
 /*	NxVec3 objectLocation = NxVec3(mesh->getPosition());
 
@@ -443,7 +443,7 @@ void PhysX::DrawObjects(NxShape *obj)
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
     //glMultMatrixf(&(orient[0]));
-	//GFXDevice::getInstance().renderModel((DVDFile*)obj->getActor().userData);
+	//GFXDevice::getInstance().renderModel((Mesh*)obj->getActor().userData);
 	//GFXDevice::getInstance().popMatrix();
 	delete orient;
 }

@@ -16,10 +16,10 @@ public:
 	virtual void Disable() = 0;
 
 	
-	inline vector<vec3>&	getPosition()	{return _dataPosition;}
-	inline vector<vec3>&	getNormal()		{return _dataNormal;}
-	inline vector<vec2>&	getTexcoord()	{return _dataTexcoord;}
-	inline vector<vec3>&	getTangent()	{return _dataTangent;}
+	inline std::vector<vec3>&	getPosition()	{return _dataPosition;}
+	inline std::vector<vec3>&	getNormal()		{return _dataNormal;}
+	inline std::vector<vec2>&	getTexcoord()	{return _dataTexcoord;}
+	inline std::vector<vec3>&	getTangent()	{return _dataTangent;}
 
 	virtual ~VertexBufferObject(){};
 
@@ -38,10 +38,10 @@ protected:
 	ptrdiff_t	_VBOoffsetTangent;
 
 	
-	vector<vec3>	_dataPosition;
-	vector<vec3>	_dataNormal;
-	vector<vec2>	_dataTexcoord;
-	vector<vec3>	_dataTangent;
+	std::vector<vec3>	_dataPosition;
+	std::vector<vec3>	_dataNormal;
+	std::vector<vec2>	_dataTexcoord;
+	std::vector<vec3>	_dataTangent;
 };
 
 #endif

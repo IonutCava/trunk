@@ -6,7 +6,7 @@ class Box3D : public Object3D
 {
 public:
 	Box3D(F32 size) : _size(size),_texture(NULL),_shader(NULL) {_geometryType = BOX_3D;}
-	bool load(const string &name) {return true;}
+	bool load(const std::string &name) {return true;}
 	bool unload() {return true;}
 
 	F32&              getSize()    {return _size;}

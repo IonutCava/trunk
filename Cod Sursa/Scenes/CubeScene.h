@@ -8,7 +8,7 @@ class CubeScene : public Scene
 public:
 	void render();
 	void preRender();
-	bool load(const string& name);
+	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	bool loadEvents(bool continueOnErrors){return true;}
 	void processInput();

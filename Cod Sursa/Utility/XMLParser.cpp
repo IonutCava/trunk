@@ -4,8 +4,8 @@
 #include "Managers/SceneManager.h"
 #include "Managers/TerrainManager.h"
 #include "Rendering/common.h"
-
 #include "SceneList.h"
+using namespace std;
 
 namespace XML
 {
@@ -15,18 +15,16 @@ namespace XML
 
 	void loadScripts(const string& file)
 	{
-		Con::getInstance().printf("XML: Loading Scripts!\n");
+		Con::getInstance().printfn("XML: Loading Scripts!");
 		read_xml(file,pt);
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
 		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
 		par.setParam("serverAddress",pt.get("server","127.0.0.1"));
-
 		loadConfig(par.getParam<string>("scriptLocation") + "/" + pt.get("config","config.xml"));
 
 		read_xml(par.getParam<string>("scriptLocation") + "/" +
 			     par.getParam<string>("scenesLocation") + "/Scenes.xml",pt);
-
 		loadScene(pt.get("MainScene","MainScene")); 
 	}
 

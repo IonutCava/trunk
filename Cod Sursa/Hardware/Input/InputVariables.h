@@ -23,9 +23,9 @@ class Variable
 
     virtual void setValue(double dValue) { _dValue = dValue; }
 
-    virtual string toString() const
+    virtual std::string toString() const
     {
-	  ostringstream oss;
+	  std::ostringstream oss;
 	  oss << _dValue;
 	  return oss.str();
 	}
@@ -107,7 +107,7 @@ class TriangleVariable : public LimitedVariable
 
 //////////// Variable effect class //////////////////////////////////////////////////////////
 
-typedef map<string, Variable*> MapVariables;
+typedef std::map<std::string, Variable*> MapVariables;
 typedef void (*EffectVariablesApplier)(MapVariables& mapVars, OIS::Effect* pEffect);
 
 class VariableEffect
@@ -191,9 +191,9 @@ class VariableEffect
 	  _pfApplyVariables(_mapVariables, _pEffect);
     }
 
-    string toString() const
+    std::string toString() const
     {
-	  string str;
+	  std::string str;
 	  MapVariables::const_iterator iterVars;
 	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); iterVars++)
 		str += iterVars->first + ":" + iterVars->second->toString() + " ";

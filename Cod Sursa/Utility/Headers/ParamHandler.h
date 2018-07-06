@@ -30,7 +30,7 @@ SINGLETON_BEGIN (ParamHandler)
 public:
 
 	template <class T>	
-	T getParam(const string& name)
+	T getParam(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -41,7 +41,7 @@ public:
 	}
 
 	template<>
-	F32 getParam<F32>(const string& name)
+	F32 getParam<F32>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -49,18 +49,22 @@ public:
 		{
 			try
 			{
-				return any_cast<F32>(it->second);
+				F32 temp = any_cast<F32>(it->second);
+				Con::getInstance().printfn("Got float with name %s with value %f",name.c_str(),temp);
+				return temp;
 			}
 			catch(const boost::bad_any_cast &)
 			{
+				Con::getInstance().printfn("error for %s",name.c_str());
 				return 0;
+				
 			}
 		}
 		else return 0;
 	}
 
 	template<>
-	D32 getParam<D32>(const string& name)
+	D32 getParam<D32>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -79,7 +83,7 @@ public:
 	}
 
 	template<>
-	U32 getParam<U32>(const string& name)
+	U32 getParam<U32>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -91,7 +95,7 @@ public:
 			}
 			catch(const boost::bad_any_cast &)
 			{
-				cout << "ParamHandler: error casting [ " << name << " ] to U32" << endl;
+				Con::getInstance().printfn("ParamHandler: error casting [ %s ] to U32",name.c_str());
 				return 0;
 			}
 		}
@@ -99,7 +103,7 @@ public:
 	}
 
 	template<>
-	int getParam<int>(const string& name)
+	int getParam<int>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -118,7 +122,7 @@ public:
 	}
 
 	template<>
-	bool getParam<bool>(const string& name)
+	bool getParam<bool>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -137,7 +141,7 @@ public:
 	}
 
 	template<>
-	const char* getParam<const char*>(const string& name)
+	const char* getParam<const char*>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -156,7 +160,7 @@ public:
 	}
 
 	template<>
-	string getParam<string>(const string& name)
+	std::string getParam<std::string>(const std::string& name)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
@@ -164,7 +168,7 @@ public:
 		{
 			try
 			{
-				return any_cast<string>(it->second);
+				return any_cast<std::string>(it->second);
 			}
 			catch(const boost::bad_any_cast &)
 			{
@@ -174,16 +178,16 @@ public:
 		else return "ParamHandler: Error! not found";
 	}
 
-	void setParam(const string& name, const boost::any& value)
+	void setParam(const std::string& name, const boost::any& value)
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
-		_result = _params.insert(pair<string,boost::any>(name,value));
+		_result = _params.insert(std::pair<std::string,boost::any>(name,value));
 		if(!_result.second) (_result.first)->second = value;
 		if (_logState) printOutput(name,value,_result.second);
 
 	}
 
-	void delParam(const string& name)
+	void delParam(const std::string& name)
 	{
 		_params.erase(name); 
 		if(_logState) Con::getInstance().printfn("ParamHandler: Removed saved parameter [ %s ]", name.c_str());
@@ -194,9 +198,9 @@ public:
 	int getSize(){return _params.size();}
 
 private: 
-	void printOutput(const string& name, const boost::any& value,bool inserted)
+	void printOutput(const std::string& name, const boost::any& value,bool inserted)
 	{
-		string param = "ParamHandler: Updated param \""+name+"\" : ";
+		std::string param = "ParamHandler: Updated param \""+name+"\" : ";
 		if(inserted)  param = "ParamHandler: Saved param \""+name+"\" : ";
 		Con::getInstance().printf("%s",param.c_str());
 		if(value.type() == typeid(F32))				    Con::getInstance().printf("%f",any_cast<F32>(value));
@@ -204,16 +208,16 @@ private:
 		else if(value.type() == typeid(bool))			Con::getInstance().printf("%s",any_cast<bool>(value)? "true" : "false");
 		else if(value.type() == typeid(int))			Con::getInstance().printf("%d",any_cast<I32>(value));
 		else if(value.type() == typeid(U32))			Con::getInstance().printf("%d",any_cast<U32>(value));
-		else if(value.type() == typeid(string))  		Con::getInstance().printf("%s",any_cast<string>(value).c_str());
+		else if(value.type() == typeid(std::string)) 	Con::getInstance().printf("%s",any_cast<std::string>(value).c_str());
 		else if(value.type() == typeid(const char*))	Con::getInstance().printf("%s",any_cast<const char*>(value));
 		else Con::getInstance().printf("unconvertible %s",value.type().name());
 		Con::getInstance().printf("\n");
 	}
 private:
 	bool _logState;
-	tr1::unordered_map<string, boost::any> _params;
-	typedef std::tr1::unordered_map<string, boost::any> params;
-	pair<tr1::unordered_map<string, boost::any>::iterator, bool> _result;
+	std::tr1::unordered_map<std::string, boost::any> _params;
+	typedef std::tr1::unordered_map<std::string, boost::any> params;
+	std::pair<std::tr1::unordered_map<std::string, boost::any>::iterator, bool> _result;
 	boost::mutex mutex_;
  
 SINGLETON_END()

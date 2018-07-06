@@ -68,7 +68,7 @@ public:
 	
 
 private:
-	string _name;
+	std::string _name;
 	F32 _tickInterval;
 	U32 _numberOfTicks;
 	Thread _thrd;

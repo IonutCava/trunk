@@ -21,9 +21,9 @@ void Light::update()
 	GFXDevice::getInstance().setLight(_slot,_lightProperties);
 }
 
-void Light::setLightProperties(const string& name, vec4 values)
+void Light::setLightProperties(const std::string& name, vec4 values)
 {
-	tr1::unordered_map<string,vec4>::iterator it = _lightProperties.find(name);
+	std::tr1::unordered_map<std::string,vec4>::iterator it = _lightProperties.find(name);
 	if (it != _lightProperties.end())
 		_lightProperties[name] = values;
 

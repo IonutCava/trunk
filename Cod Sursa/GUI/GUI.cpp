@@ -3,16 +3,13 @@
 #include "Hardware/Video/GFXDevice.h"
 #include "Rendering/common.h"
 #include "guiFlash.h"
+using namespace std;
 
-void GUI::resize(I32 newWidth, I32 newHeight)
+void GUI::onResize(F32 newWidth, F32 newHeight)
 {
-	I32 difWidth = Engine::getInstance().getWindowWidth() - newWidth;
-	I32 difHeight = Engine::getInstance().getWindowHeight() - newHeight;
+	vec2 difDimensions = Engine::getInstance().getWindowDimensions() - vec2(newWidth,newHeight);
 	for(_guiStackIterator = _guiStack.begin(); _guiStackIterator != _guiStack.end(); _guiStackIterator++)
-	{
-		(_guiStackIterator->second)->_position.x -= difWidth;
-		(_guiStackIterator->second)->_position.y -= difHeight;
-	}
+		(_guiStackIterator->second)->onResize(difDimensions);
 }
 
 void GUI::draw()
@@ -58,7 +55,8 @@ void GUI::close()
 void GUI::checkItem(int x, int y)
 {
 	GuiEvent event;
-	event.mousePoint.x = x;event.mousePoint.y = y;
+	event.mousePoint.x = x;
+	event.mousePoint.y = y;
 	for(_guiStackIterator = _guiStack.begin(); _guiStackIterator != _guiStack.end(); _guiStackIterator++)
 	{
 		GuiElement* _gui = (*_guiStackIterator).second;
@@ -197,6 +195,7 @@ void GUI::modifyText(const string& id, char* format, ...)
 		dynamic_cast<Text*>(_guiStack[id])->_text = fmt_text;
 	fmt_text.empty();
 }
+
 
 void Button::onMouseMove(const GuiEvent &event)
 {

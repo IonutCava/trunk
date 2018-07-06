@@ -1,9 +1,10 @@
 #include "CubeScene.h"
 #include "Rendering/Framerate.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
 #include "GUI/GUI.h"
+using namespace std;
 
 void CubeScene::render()
 {
@@ -30,7 +31,7 @@ void CubeScene::preRender()
 
 	i >= 180 ? j = -1 : j = 1;
 
-	for(unordered_map<string,Object3D*>::iterator iter = GeometryArray.begin(); iter != GeometryArray.end(); iter++)
+	for(tr1::unordered_map<string,Object3D*>::iterator iter = GeometryArray.begin(); iter != GeometryArray.end(); iter++)
 	{
 		if((iter->second)->getName().compare("Cutia1") == 0)
 			(iter->second)->getTransform()->rotateEuler(vec3(0.3f*i, 0.6f*i,0));
@@ -48,15 +49,17 @@ void CubeScene::preRender()
 
 void CubeScene::processInput()
 {
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
+
 	moveFB  = Engine::getInstance().moveFB;
 	moveLR  = Engine::getInstance().moveLR;
 	angleLR = Engine::getInstance().angleLR;
 	angleUD = Engine::getInstance().angleUD;
 	
-	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
+	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
+	if(moveFB)	cam->PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(moveLR)	cam->PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 
 }
 

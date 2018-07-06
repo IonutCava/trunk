@@ -4,6 +4,7 @@
 #include "Geometry/Object3DFlyWeight.h"
 #include "Importer/DVDConverter.h"
 #include "Managers/TextureManager.h"
+using namespace std;
 
 void GFXDevice::setApi(GraphicsAPI api)
 {
@@ -37,9 +38,9 @@ void GFXDevice::resizeWindow(U32 w, U32 h)
 	_api.resizeWindow(w,h);
 }
 
-void GFXDevice::renderElements(unordered_map<string,Object3D*>& primitiveArray)
+void GFXDevice::renderElements(tr1::unordered_map<string,Object3D*>& primitiveArray)
 {
-	unordered_map<string,Object3D*>::iterator _iter;
+	tr1::unordered_map<string,Object3D*>::iterator _iter;
 	for(_iter = primitiveArray.begin();  _iter != primitiveArray.end();  _iter++)
 	{
 		(_iter->second)->onDraw();
@@ -69,7 +70,7 @@ void GFXDevice::renderElements(vector<Object3DFlyWeight*>& geometryArray)
 	vector<Object3DFlyWeight*>::iterator _iter;
 	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
 	{
-		DVDFile *temp = dynamic_cast<DVDFile*>((*_iter)->getObject());
+		Mesh *temp = dynamic_cast<Mesh*>((*_iter)->getObject());
 		temp->getTransform()->setPosition((*_iter)->getTransform()->getPosition());
 		temp->getTransform()->scale((*_iter)->getTransform()->getScale());
 		temp->getTransform()->rotateQuaternion((*_iter)->getTransform()->getOrientation());
@@ -77,22 +78,33 @@ void GFXDevice::renderElements(vector<Object3DFlyWeight*>& geometryArray)
 	}
 }
 
-void GFXDevice::renderElements(vector<DVDFile*>& geometryArray)
+void GFXDevice::renderElements(vector<Mesh*>& geometryArray)
 {
-	vector<DVDFile*>::iterator _iter;
+	vector<Mesh*>::iterator _iter;
 	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
 	{
 		renderModel(*_iter);
 	}
 }
 
-void GFXDevice::renderElements(unordered_map<string,DVDFile*>& geometryArray)
+void GFXDevice::renderElements(tr1::unordered_map<string,Mesh*>& geometryArray)
 {
-	unordered_map<string,DVDFile*>::iterator _iter;
+	tr1::unordered_map<string,Mesh*>::iterator _iter;
 	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
 	{
 		renderModel(_iter->second);
 	}
+}
+
+void GFXDevice::renderModel(Mesh* const model)
+{
+	if(model->clean()){
+		delete model;
+		return;
+	}
+	model->onDraw(); //Update BB, shaders etc.
+	if(!model->isVisible()) return;
+	_api.renderModel(model);
 }
 
 void GFXDevice::toggleWireframe(bool state)

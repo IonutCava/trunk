@@ -3,11 +3,13 @@
 #include "Rendering/Frustum.h"
 #include "Managers/SceneManager.h"
 #include "Utility/Headers/Quaternion.h"
+using namespace std;
 
 Mesh::Mesh(const Mesh& old) : Object3D(old),
 							  _computedLightShaders(old._computedLightShaders),
 							  _visibleToNetwork(old._visibleToNetwork)
 {
+	
 	vector<SubMesh* >::const_iterator it;
 	vector<Shader* >::const_iterator it2;
 	_subMeshes.reserve(old._subMeshes.size());
@@ -16,6 +18,43 @@ Mesh::Mesh(const Mesh& old) : Object3D(old),
 		_subMeshes.push_back(*it);
 	for(it2 = old._shaders.begin(); it2 != old._shaders.end(); ++it2)
 		_shaders.push_back(*it2);
+}
+
+bool Mesh::load(const string& name)
+{
+	if(name.compare(getName()) == 0 && getSubMeshes().size() > 0)
+		return true;
+	else 
+		return false;
+}
+
+bool Mesh::unload()
+{
+	ResourceManager::getInstance().remove(getName());
+	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end(); _subMeshIterator++)
+	{
+		SubMesh* s = (*_subMeshIterator);
+		if(s->unload())	
+		{
+			delete s;
+			s= NULL;
+		}
+		else return false;
+	}
+	getSubMeshes().clear();
+
+	if(!getShaders().empty())
+	{
+		for(U8 i = 0; i < getShaders().size(); i++)
+		{
+			ResourceManager::getInstance().remove(getShaders()[i]->getName());
+			delete getShaders()[i];
+		}
+		getShaders().clear();
+	}
+
+	else return false;
+	return true;
 }
 
 void Mesh::onDraw()
@@ -44,7 +83,13 @@ void Mesh::computeLightShaders()
 	{
 		vector<Light*>& lights = SceneManager::getInstance().getActiveScene()->getLights();
 		for(U8 i = 0; i < lights.size(); i++)
+		{
 			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("lighting"));
+			_shaders[_shaders.size()-1]->bind();
+				_shaders[_shaders.size()-1]->Uniform("enable_shadow_mapping", 0);
+				_shaders[_shaders.size()-1]->Uniform("tile_factor", 1.0f);
+			_shaders[_shaders.size()-1]->unbind();
+		}
 	}
 	_computedLightShaders = true;
 }
@@ -53,11 +98,11 @@ bool Mesh::isInView()
 {
 	if(!_render) return false;
 
-	// Bellow code is still buggy. ToDo: FIX THIS!!!!!!!
-	
-	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
-	if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
-	// END BUGGY CODE :P
+	if(!GFXDevice::getInstance().getDepthMapRendering())
+	{
+		vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
+		if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
+	}
 
 	vec3 center = getBoundingBox().getCenter();
 	float radius = (getBoundingBox().getMax()-center).length();
@@ -125,3 +170,9 @@ bool Mesh::optimizeSubMeshes()
 	return true;
 }
 
+bool Mesh::clean()
+{
+	if(_shouldDelete)
+		return SceneManager::getInstance().getActiveScene()->removeModel(getName());
+	else return false;
+}

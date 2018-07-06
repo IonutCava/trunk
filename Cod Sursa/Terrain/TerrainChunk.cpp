@@ -14,22 +14,21 @@ void TerrainChunk::Load(U32 depth, ivec2 pos, ivec2 HMsize)
 
 void TerrainChunk::addTree(const vec3& pos,F32 rotation,F32 scale, Shader* tree_shader, const FileData& tree)
 {
-	DVDFile* t = ResourceManager::getInstance().LoadResource<DVDFile>(tree.ModelName);
+	Mesh* t = ResourceManager::getInstance().LoadResource<Mesh>(tree.ModelName);
 	if(t)
 	{	
 		t->addShader(tree_shader);
-		Transform* tran = new Transform();
+		Object3DFlyWeight* tempTree = New Object3DFlyWeight(t);
+		Transform* tran = tempTree->getTransform();
 		tran->scale(scale * tree.scale);
 		tran->rotateY(rotation);
 		tran->setPosition(pos);
-		m_tTrees.push_back(new Object3DFlyWeight(t,tran));
-
+		m_tTrees.push_back(tempTree);
 	}
 	else
 	{
 		Con::getInstance().errorf("Can't add tree: %s\n",tree.ModelName);
 	}
-
 
 }
 
@@ -79,11 +78,11 @@ void TerrainChunk::Destroy()
 
 }
 
-void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawDepthMap)
+void TerrainChunk::DrawTrees(U32 lod, F32 d)
 {
-	//F32 treeVisibility = SceneManager::getInstance().getTerrainManager()->getTreeVisibility();
-	//assert(lod < TERRAIN_CHUNKS_LOD);
-	//if(d > treeVisibility && !drawDepthMap) return;
+	F32 treeVisibility = SceneManager::getInstance().getTerrainManager()->getTreeVisibility();
+	assert(lod < TERRAIN_CHUNKS_LOD);
+	if(d > treeVisibility && !GFXDevice::getInstance().getDepthMapRendering()) return;
 
 	F32 _windX = SceneManager::getInstance().getTerrainManager()->getWindDirX();
 	F32 _windZ = SceneManager::getInstance().getTerrainManager()->getWindDirX();
@@ -119,13 +118,13 @@ int TerrainChunk::DrawGround(U32 lod)
 	return 1;
 }
 
-void  TerrainChunk::DrawGrass(U32 lod, F32 d,bool drawDepthMap)
+void  TerrainChunk::DrawGrass(U32 lod, F32 d)
 {
 	
 	F32 grassVisibility = SceneManager::getInstance().getTerrainManager()->getGrassVisibility();
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
-	if(d > grassVisibility && !drawDepthMap) return;
+	if(d > grassVisibility && !GFXDevice::getInstance().getDepthMapRendering()) return;
 	RenderState s(false,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 

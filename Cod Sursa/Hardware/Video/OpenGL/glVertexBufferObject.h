@@ -17,11 +17,6 @@ public:
 	void		Disable();
 
 	
-	inline vector<vec3>&	getPosition()	{return _dataPosition;}
-	inline vector<vec3>&	getNormal()		{return _dataNormal;}
-	inline vector<vec2>&	getTexcoord()	{return _dataTexcoord;}
-	inline vector<vec3>&	getTangent()	{return _dataTangent;}
-
 	glVertexBufferObject();
 	~glVertexBufferObject() {Destroy();}
 

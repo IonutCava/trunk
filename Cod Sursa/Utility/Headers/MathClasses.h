@@ -146,6 +146,7 @@ public:
 	union {
 		struct {float x,y;};
 		struct {float s,t;};
+		struct {float width,height;};
 		float v[2];
 	};
 };
@@ -220,7 +221,7 @@ public:
 
 	float dot(const vec3 &v) { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); }
 	bool compare(const vec3 &_v,float epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi); }
-
+	float distance(const vec3 &_v) {return sqrt(((_v.x - this->x)*(_v.x - this->x)) + ((_v.y - this->y)*(_v.y - this->y)) + ((_v.z - this->z)*(_v.z - this->z)));}
 	//Returns the angle in radians between '*this' and 'v'
 	float angle(vec3 &v) { 
 		float angle = (float)fabs(acos(this->dot(v)/(this->length()*v.length())));
@@ -249,6 +250,7 @@ public:
 		struct {float s,t,p;};
 		struct {float r,g,b;};
 		struct {float pitch,yaw,roll;};
+		struct {float width,height,depth;};
 		float v[3];
 	};
 	
@@ -278,6 +280,7 @@ inline vec3& Vector(const vec3 &vp1, const vec3 &vp2) {
 	vec3 *ret = new vec3(vp1.x - vp2.x, vp1.y - vp2.y, vp1.z - vp2.z);
 	return *ret;
 }
+
 
 /*****************************************************************************/
 /*                                                                           */
@@ -332,6 +335,7 @@ public:
 		struct {float s,t,p,q;};
 		struct {float r,g,b,a;};
 		struct {float fov,ratio,znear,zfar;};
+		struct {float width,height,depth,key;};
 		float v[4];
 	};
 };
@@ -1020,6 +1024,7 @@ public:
 	union {
 		struct {long a,b;};
 		struct {long x,y;};
+		struct {long width,height;};
 		long i[2];
 	};
 };
@@ -1070,6 +1075,7 @@ public:
 		struct {long a,b,c;};
 		struct {long x,y,z;};
 		struct {long red,green,blue;};
+		struct {long width,height,depth;};
 		long i[3];
 	};
 };
@@ -1121,6 +1127,7 @@ public:
 		struct {long a,b,c,d;};
 		struct {long x,y,z,w;};
 		struct {long red,green,blue,alpha;};
+		struct {long width,height,depth,key;};
 		long i[4];
 	};
 };

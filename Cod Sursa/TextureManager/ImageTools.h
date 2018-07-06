@@ -11,7 +11,7 @@ namespace ImageTools
 		U8*	data;
 		U32 w, h, d;
 		U32 type;
-		string name;
+		std::string name;
 		bool _flip;
 		ivec3	getColor(U32 x, U32 y) const;
 
@@ -20,11 +20,11 @@ namespace ImageTools
 		void Destroy();
 	};
 	void Flip(ImageData& image);
-	void     OpenImage(const string& filename, ImageData& img);
-	unsigned char* OpenImage(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip=false);
+	void     OpenImage(const std::string& filename, ImageData& img);
+	unsigned char* OpenImage(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip=false);
 
-	unsigned char* OpenImagePPM(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip=false);
-	unsigned char* OpenImageDevIL(const string& filename, U32& w, U32& h, U32& d, U32& t,bool flip=false);
+	unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip=false);
+	unsigned char* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& d, U32& t,bool flip=false);
 }
 
 #endif

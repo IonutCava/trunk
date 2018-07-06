@@ -8,7 +8,7 @@
 #include "QuadtreeNode.h"
 #include "TerrainChunk.h"
 #include "Hardware/Video/VertexBufferObject.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Sky.h"
 #include "Hardware/Video/GFXDevice.h"
 
@@ -175,9 +175,6 @@ bool Terrain::load(const string& heightmap)
 bool Terrain::postLoad()
 {
 	_postLoaded = m_pGroundVBO->Create();
-	Con::getInstance().printfn("Generating lightmap!");
-	m_fboDepthMapFromLight[0]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
-	m_fboDepthMapFromLight[1]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
 	Con::getInstance().printfn("Loading Terrain OK");
 	if(!_postLoaded) _loaded = false;
 	return _postLoaded;
@@ -252,34 +249,39 @@ void Terrain::draw() const
 {
 	if(!_loaded) return;
 
-	_veg->draw(_drawInReflexion,_drawDepthMap);
+	_veg->draw(_drawInReflexion);
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, _ambientColor);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0f);
-	
+    if(GFXDevice::getInstance().getDepthMapRendering()) return;
+
+	Material mat;
+	mat.name = "TerrainMaterial";
+	mat.ambient = _ambientColor;
+	mat.diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat.specular = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	mat.shininess = 50.0f;
+	GFXDevice::getInstance().setMaterial(mat);
+
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
-	
+
+	m_tTextures[0]->SetMatrix(0,_sunModelviewProj); //Add sun projection matrix to the normal map for parallax rendering
+
 		U32 idx=0;
 		for(U32 i=0; i<m_tTextures.size(); i++)
 			m_tTextures[i]->Bind(idx++);
 		m_pTerrainDiffuseMap->Bind(idx++);
-		if(!_drawDepthMap) {
-			for(GLuint i=0; i<2; i++)
+		if(!GFXDevice::getInstance().getDepthMapRendering()) {
+			for(U32 i=0; i<2; i++)
 				m_fboDepthMapFromLight[i]->Bind(idx++);
 		}
 		terrainShader->bind();
 		{
 			terrainShader->Uniform("detail_scale", 200.0f);
 			terrainShader->Uniform("diffuse_scale", 200.0f);
-
-			terrainShader->Uniform("water_height", 1);
+			terrainShader->Uniform("parallax_factor",0.2f);
+			terrainShader->Uniform("water_height", ParamHandler::getInstance().getParam<F32>("minHeight"));
 			terrainShader->Uniform("water_reflection_rendering", _drawInReflexion);
-
 			terrainShader->Uniform("time", GETTIME());
-
 			terrainShader->UniformTexture("texNormalHeightMap", 0);
 			terrainShader->UniformTexture("texDiffuse0", 1);
 			terrainShader->UniformTexture("texDiffuse1", 2);
@@ -295,13 +297,16 @@ void Terrain::draw() const
 			drawGround(_drawInReflexion);
 		}
 		terrainShader->unbind();
-		if(!_drawDepthMap) {
+
+		if(!GFXDevice::getInstance().getDepthMapRendering()) {
 			for(GLint i=2-1; i>=0; i--)
 				m_fboDepthMapFromLight[i]->Unbind(--idx);
 		}
 		m_pTerrainDiffuseMap->Unbind(--idx);
 		for(int i=(GLint)m_tTextures.size()-1; i>=0; i--)
 			m_tTextures[i]->Unbind(--idx);
+
+		m_tTextures[0]->RestoreMatrix(0);
 }
 
 
@@ -311,7 +316,7 @@ int Terrain::drawGround(bool drawInReflexion) const
 	assert(m_pGroundVBO);
 
 	m_pGroundVBO->Enable();
-		int ret = terrain_Quadtree->DrawGround(drawInReflexion,_drawDepthMap);
+		int ret = terrain_Quadtree->DrawGround(drawInReflexion);
 	m_pGroundVBO->Disable();
 
 	return ret;

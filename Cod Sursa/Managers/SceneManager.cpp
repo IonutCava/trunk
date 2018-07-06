@@ -1,10 +1,12 @@
 #include "SceneManager.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Rendering/common.h"
 #include "SceneList.h"
+using namespace std;
 
 SceneManager::SceneManager()
 {
+	_scene = NULL;
 	_scenes.insert(make_pair("MainScene", New MainScene()));
 	_scenes.insert(make_pair("CubeScene", New CubeScene()));
 	_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
@@ -50,9 +52,9 @@ void SceneManager::findSelection(int x, int y)
 {
 	ParamHandler& par = ParamHandler::getInstance();
     float value_fov = 0.7853f;    //this is 45 degrees converted to radians
-    float value_aspect = (F32)Engine::getInstance().getWindowWidth() / (F32)Engine::getInstance().getWindowHeight();
-	float half_window_width = Engine::getInstance().getWindowWidth() / 2.0f;
-	float half_window_height = Engine::getInstance().getWindowHeight() / 2.0f;
+    float value_aspect = (F32)Engine::getInstance().getWindowDimensions().width / (F32)Engine::getInstance().getWindowDimensions().height;
+	float half_window_width = Engine::getInstance().getWindowDimensions().width / 2.0f;
+	float half_window_height = Engine::getInstance().getWindowDimensions().height / 2.0f;
 
     float modifier_x;
     float modifier_y;
@@ -132,8 +134,8 @@ void SceneManager::findSelection(int x, int y)
     final_point[1] = point_xformed[1] + camera_origin[1];
     final_point[2] = point_xformed[2] + camera_origin[2];
 
-	unordered_map<string, DVDFile* >::iterator it;
-	vec3 origin = vec3(Camera::getInstance().getEye().x,Camera::getInstance().getEye().y,Camera::getInstance().getEye().z);
+	tr1::unordered_map<string, Mesh* >::iterator it;
+	vec3 origin(CameraManager::getInstance().getActiveCamera()->getEye());
 	vec3 dir = origin.direction(vec3(final_point[0],final_point[1],final_point[2]));
 	
 	Ray r(origin,dir);

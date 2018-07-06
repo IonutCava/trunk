@@ -6,6 +6,7 @@
 #include "IL/ilu.h"
 #include "IL/ilut.h"
 #include "Hardware/Video/GFXDevice.h"
+using namespace std;
 
 namespace ImageTools {
 

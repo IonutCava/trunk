@@ -30,11 +30,15 @@ public:
 	
 	bool optimizeSubMeshes();
 	
-	inline vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
-	inline SubMesh*            getSubMesh(const string& name);
+	inline std::vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
+	inline SubMesh*				    getSubMesh(const std::string& name);
 
 	bool				isVisible();
 	void				onDraw();
+
+	bool load(const std::string& file);
+	bool unload();
+	bool clean();
 
 protected:
 	bool isInView();
@@ -44,8 +48,8 @@ protected:
 protected:
 	
 	bool _visibleToNetwork, _loaded, _computedLightShaders;
-	vector<SubMesh* >			 _subMeshes;
-	vector<SubMesh* >::iterator  _subMeshIterator;
+	std::vector<SubMesh* >		      _subMeshes;
+	std::vector<SubMesh* >::iterator  _subMeshIterator;
 };
 
 #endif

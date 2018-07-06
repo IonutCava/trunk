@@ -63,22 +63,25 @@ public:
 	void drawQuad3D(Quad3D* const quad){_api.drawQuad3D(quad);}
 	void drawText3D(Text3D* const text){_api.drawText3D(text);}
 
-	void renderModel(DVDFile* const model){_api.renderModel(model);}
+	void renderModel(Mesh* const model);
 	void renderElements(Type t, U32 count, const void* first_element){_api.renderElements(t,count,first_element);}
-	void renderElements(unordered_map<string,Object3D*>&  primitiveArray);
-	void renderElements(unordered_map<string,DVDFile*>&  geometryArray);
-	void renderElements(vector<DVDFile*>& geometryArray);
-	void renderElements(vector<Object3DFlyWeight*>& geometryArray);
+	void renderElements(std::tr1::unordered_map<std::string,Object3D*>&  primitiveArray);
+	void renderElements(std::tr1::unordered_map<std::string,Mesh*>&  geometryArray);
+	void renderElements(std::vector<Mesh*>& geometryArray);
+	void renderElements(std::vector<Object3DFlyWeight*>& geometryArray);
 	
 	void setMaterial(Material& mat){_api.setMaterial(mat);}
 	void setColor(const vec4& v){_api.setColor(v);}
 	void setColor(const vec3& v){_api.setColor(v);}
 
-	void setLight(U32 slot, unordered_map<string,vec4>& properties){_api.setLight(slot,properties);}
+	void setLight(U32 slot, std::tr1::unordered_map<std::string,vec4>& properties){_api.setLight(slot,properties);}
 	void createLight(U32 slot){_api.createLight(slot);}
+	void setLightCameraMatrices(const vec3& lightVector){_api.setLightCameraMatrices(lightVector);}
+	void restoreLightCameraMatrices(){_api.restoreLightCameraMatrices();}
 
    void toggleWireframe(bool state = false);
-
+   void setDepthMapRendering(bool state) {_depthMapRendering = state;}
+   bool getDepthMapRendering() {return _depthMapRendering;}
    bool wireframeRendering() {return _wireframeMode;}  
    void Screenshot(char *filename, int xmin, int ymin, int xmax, int ymax);
 private:
@@ -86,9 +89,10 @@ private:
 	   _api(GL_API::getInstance()) //Defaulting to OpenGL if no api has been defined
 	   {
 		   _wireframeMode = false;
+		   _depthMapRendering = false;
 	   }
 	RenderAPI& _api;
-	bool _wireframeMode;
+	bool _wireframeMode,_depthMapRendering;
 SINGLETON_END()
 
 #endif

@@ -20,7 +20,7 @@ public:
 	Terrain(vec3 pos, vec2 scale);
 	~Terrain() {destroy();}
 
-	bool load(const string& heightmap);
+	bool load(const std::string& heightmap);
 	bool unload(){destroy(); if(!m_pGroundVBO) return true; else return false;}
 	bool computeBoundingBox();
 	
@@ -33,6 +33,8 @@ public:
 	vec3  getNormal(F32 x_clampf, F32 z_clampf) const;
 	vec3  getTangent(F32 x_clampf, F32 z_clampf) const;
 	vec2  getDimensions(){return vec2((F32)terrainWidth, (F32)terrainHeight);}
+	Vegetation* getVegetation() const {return _veg;}
+
 	Quadtree& getQuadtree() {return *terrain_Quadtree;}
 	const BoundingBox&	getBoundingBox() const	{return terrain_BBox;}
 
@@ -43,12 +45,13 @@ public:
 	void setDiffuse(Texture2D *t){m_pTerrainDiffuseMap = t;}
 	void setLoaded(bool loaded){if(!_loaded) _wasLoaded = _loaded; _loaded = loaded;} 
 	void restoreLoaded(){_loaded = _wasLoaded;}
-	void addVegetation(Vegetation* veg, string grassShader){_veg = veg; _grassShader = grassShader;} 
+	void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
 	void initializeVegetation() { _veg->initialize(_grassShader);}
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
-	void toggleRenderingParams(bool drawInReflexion,bool drawDepthMap,vec4& ambientcolor){_drawInReflexion = drawInReflexion; _drawDepthMap = drawDepthMap, _ambientColor = ambientcolor; }
+	void toggleRenderingParams(bool drawInReflexion,vec4& ambientcolor,mat4& sunModelviewProj){_drawInReflexion = drawInReflexion; _ambientColor = ambientcolor; _sunModelviewProj = sunModelviewProj;}
 	bool postLoad();
 	bool isPostLoaded() {return _postLoaded;}
+
 private:
 	
 
@@ -59,16 +62,17 @@ private:
 	VertexBufferObject*		m_pGroundVBO;
 	
 	F32 terrainScaleFactor, terrainHeightScaleFactor;
-	bool	m_bShowDetail, _loaded,_wasLoaded,_drawInReflexion,_postLoaded,_drawDepthMap;
+	bool	m_bShowDetail, _loaded,_wasLoaded,_drawInReflexion,_postLoaded;
 	int detailId;
 
 
 	Shader *terrainShader;
-	vector<Texture2D*>	m_tTextures;
+	std::vector<Texture2D*>	m_tTextures;
 	Texture2D*				m_pTerrainDiffuseMap;
 	Vegetation*             _veg;
-	string                  _grassShader;
+	std::string             _grassShader;
 	vec4                    _ambientColor;
+	mat4					_sunModelviewProj;
 	
 };
 

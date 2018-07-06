@@ -95,11 +95,11 @@ public:
 	                                                                                //sau ultimul actor creat de aplciatie
 	void SetSelectedActor(/*NxActor Object*/){/*pxWorld->currentActor = Object*/}; //Aici redirectionam pointerul "currentActor" catre obiectului specifica ca parametru;                                             
 	
-	bool AddShape(DVDFile *mesh,bool convex/*,string cook*/);           //Cea mai ineficienta si costisitoare functie a intregii aplicatii
+	bool AddShape(Mesh *mesh,bool convex/*,string cook*/);           //Cea mai ineficienta si costisitoare functie a intregii aplicatii
 																	  //Competitie directa cu LoadOBJ din modelImporter
 																		//Detalii in corpul functiei
-	bool AddConvexShape(DVDFile *mesh);
-	bool AddTriangleShape(DVDFile *mesh);
+	bool AddConvexShape(Mesh *mesh);
+	bool AddTriangleShape(Mesh *mesh);
 	void CreateStack(int size);                           //Aceasta metoda creaza o piramida de "size"*cuburi
 	void CreateCube(NxVec3 position,int size);            //Creaza un singur cub de dimensiunea data la pozitia data
 	void CreateCube(int size);                            //Creaza un singur cub de dimensiunea data la pozitia dorita

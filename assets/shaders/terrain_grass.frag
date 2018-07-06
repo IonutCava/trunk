@@ -1,5 +1,3 @@
-
-
 uniform sampler2D texDiffuse;
 
 

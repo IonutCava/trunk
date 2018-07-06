@@ -18,19 +18,18 @@ private:
 	int time, timebase;
 	static int status;
 	int mainWindowId;
-	int width, height;
+	vec2 _dimensions;
 
 	GFXDevice&    _GFX;
     PhysX&        _px;
 	SceneManager& _scene;
-	Camera&       _camera;
+	Camera*       _camera;
 	GUI&          _gui;
 
 public:
-	int getWindowWidth(){return width;}
-	int getWindowHeight(){return height;}
-	void setWindowWidth(int w){width = w;}
-	void setWindowHeight(int h){height = h;}
+	const vec2& getWindowDimensions() const {return _dimensions;}
+	void setWindowWidth(int w){_dimensions.x = w;}
+	void setWindowHeight(int h){_dimensions.y = h;}
 
    F32 moveFB,moveLR,angleUD,angleLR;
    void LoadControls();

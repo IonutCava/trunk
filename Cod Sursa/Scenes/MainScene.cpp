@@ -6,12 +6,13 @@
 #include "Managers/ResourceManager.h"
 #include "Managers/TerrainManager.h"
 #include "Rendering/Framerate.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
 #include "Terrain/Sky.h"
 #include "GUI/GUI.h"
 #include "Rendering/Frustum.h"
+using namespace std;
 
 bool MainScene::updateLights()
 {
@@ -31,29 +32,22 @@ void MainScene::preRender()
 {
 	ResourceManager& res = ResourceManager::getInstance();
 	Sky &sky = Sky::getInstance();
-	Camera& cam = Camera::getInstance();
-	
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	ParamHandler &par = ParamHandler::getInstance();
-/*
+
+
 	//SHADOW MAPPING
-	GLdouble tabOrtho[2] = {20.0, 100.0};
-	F32 zNear = 0.01f;//par.getParam<F32>("zNear");
-	F32 zFar = 5000.0f;//par.getParam<F32>("zFar");
-	vec3 eye_pos = Camera::getInstance().getEye();
+	GFXDevice::getInstance().setDepthMapRendering(true);
+	D32 tabOrtho[2] = {20.0, 100.0};
+
+	GFXDevice::getInstance().setLightCameraMatrices(_sunVector);
+
+	D32 zNear = par.getParam<D32>("zNear");
+	D32 zFar = par.getParam<D32>("zFar");
+	vec3 eye_pos = CameraManager::getInstance().getActiveCamera()->getEye();
 	vec3 sun_pos = eye_pos - vec3(_sunVector);
+	vec3 eye = CameraManager::getInstance().getActiveCamera()->getEye();
 
-
-	vec3 eye = Camera::getInstance().getEye();
-
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	gluLookAt(	eye.x - 500*_sunVector.x,		eye.y - 500*_sunVector.y,		eye.z - 500*_sunVector.z,
-				eye.x,							eye.y,							eye.z,
-				0.0,							1.0,							0.0	);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
 	for(U32 i=0; i<2; i++)
 	{
 		glMatrixMode(GL_PROJECTION);
@@ -65,66 +59,62 @@ void MainScene::preRender()
 		_depthMap[i]->Begin();
 			_GFX.clearBuffers(0x00004000| 0x00000100);
 			renderActors();
-			vec4 vGroundAmbient = _white.lerp(_white*0.2f, _black, _sun_cosy);
-			_terMgr->drawTerrains(true,true,true,vGroundAmbient);
+			_terMgr->drawVegetation(false);
 		_depthMap[i]->End();
 	}
 
-		glMatrixMode(GL_PROJECTION);
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-1.0, 1.0, -1.0, 1.0, zNear, zFar);
 	Frustum::getInstance().Extract(sun_pos);
+	mat4& matLightMV = Frustum::getInstance().getModelviewMatrix();
+	mat4& matLightProj = Frustum::getInstance().getProjectionMatrix();
+	_sunModelviewProj = matLightProj * matLightMV;
 
-	// On remet les matrices comme avant
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+	GFXDevice::getInstance().restoreLightCameraMatrices();
 	Frustum::getInstance().Extract(eye_pos);
 	
     _terMgr->setDepthMap(0,_depthMap[0]);
 	_terMgr->setDepthMap(1,_depthMap[1]);
+	GFXDevice::getInstance().setDepthMapRendering(false);
 
 	//SHADOW MAPPING
-*/
+
 	_skyFBO->Begin();
-
-	_GFX.clearBuffers(0x00004000/*GL_COLOR_BUFFER_BIT*/ | 0x00000100/*GL_DEPTH_BUFFER_BIT*/);
-
-	updateLights();
-
-	sky.setParams(Camera::getInstance().getEye(),vec3(_sunVector),true,true,true);
-	vec4 vGroundAmbient = _white.lerp(_white*0.2f, _black, _sun_cosy);
-	
-	sky.draw();
-	_terMgr->drawTerrains(true,true,false,vGroundAmbient);
-
+		_GFX.clearBuffers(0x00004000 | 0x00000100);
+		updateLights();
+		sky.setParams(cam->getEye(),vec3(_sunVector),true,true,true);
+		sky.draw();
+		_terMgr->drawTerrains(_sunModelviewProj,true,true,_white.lerp(_white*0.2f, _black, _sun_cosy));
 	_skyFBO->End();
 }
 
 void MainScene::render()
 {
-
 	Sky &sky = Sky::getInstance();
 	GUI &gui = GUI::getInstance();
-	Camera& cam = Camera::getInstance();
-	Frustum::getInstance().Extract(cam.getEye());
-
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
+	ParamHandler& par = ParamHandler::getInstance();
+	Frustum::getInstance().Extract(cam->getEye());
 	updateLights();
 
-	sky.setParams(Camera::getInstance().getEye(),vec3(_sunVector),false,true,true);
+	sky.setParams(cam->getEye(),vec3(_sunVector),false,true,true);
 	sky.draw();
 
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, _white/6);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, _white);
+	Material mat;
+	mat.name = "ActorMaterial";
+	mat.ambient = _white/6;
+	mat.diffuse = _white;
+	mat.specular = _white;
+	mat.shininess = 50.0f;
+	GFXDevice::getInstance().setMaterial(mat);
 
 	renderActors();
 
-	vec4 vGroundAmbient = _white.lerp(_white*0.2f, _black, _sun_cosy);
+	_terMgr->drawTerrains(_sunModelviewProj,true,false,_white.lerp(_white*0.2f, _black, _sun_cosy));
 
-	_terMgr->drawTerrains(true,false,false,vGroundAmbient);
-	_terMgr->drawInfinitePlane(2.0f*4500,*_skyFBO);
+	FrameBufferObject* fbo[] = {_skyFBO,_depthMap[0],_depthMap[1]};
+	_terMgr->drawInfinitePlane(2.0f*par.getParam<D32>("zFar"),fbo);
 
 	gui.draw();	
 	
@@ -134,20 +124,22 @@ void MainScene::renderActors()
 {
 	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
-
 }
 
 void MainScene::processInput()
 {
+	_inputManager.tick();
+
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	moveFB  = Engine::getInstance().moveFB;
 	moveLR  = Engine::getInstance().moveLR;
 	angleLR = Engine::getInstance().angleLR;
 	angleUD = Engine::getInstance().angleUD;
 	
-	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
-	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
-	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
-	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
+	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor()/5);
+	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor()/5);
+	if(moveFB)	cam->PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
+	if(moveLR)	cam->PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
 
 }
 
@@ -187,6 +179,7 @@ bool MainScene::load(const string& name)
 {
 	bool state = false;
 	addDefaultLight();
+	_sunModelviewProj.identity();
 	_terMgr->createTerrains(TerrainInfoArray);
 	state = loadResources(true);	
 	state = loadEvents(true);
@@ -252,8 +245,11 @@ bool MainScene::loadResources(bool continueOnErrors)
 	_skyFBO = GFXDevice::getInstance().newFBO();
 	_depthMap[0] = GFXDevice::getInstance().newFBO();
 	_depthMap[1] = GFXDevice::getInstance().newFBO();
-
+	
 	_skyFBO->Create(FrameBufferObject::FBO_2D_COLOR, 1024, 1024);
+	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
+	_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
+	
 	_sunAngle = vec2(0.0f, RADIANS(45.0f));
 	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
@@ -265,4 +261,46 @@ bool MainScene::loadResources(bool continueOnErrors)
 
 
 	return true;
+}
+
+
+void MainScene::onKeyDown(const OIS::KeyEvent& key)
+{
+	Scene::onKeyDown(key);
+	switch(key.key)
+	{
+		case OIS::KC_W:
+			Engine::getInstance().moveFB = 0.25f;
+			break;
+		case OIS::KC_A:
+			Engine::getInstance().moveLR = 0.25f;
+			break;
+		case OIS::KC_S:
+			Engine::getInstance().moveFB = -0.25f;
+			break;
+		case OIS::KC_D:
+			Engine::getInstance().moveLR = -0.25f;
+			break;
+		default:
+			break;
+	}
+}
+
+void MainScene::onKeyUp(const OIS::KeyEvent& key)
+{
+	Scene::onKeyUp(key);
+	switch(key.key)
+	{
+		case OIS::KC_W:
+		case OIS::KC_S:
+			Engine::getInstance().moveFB = 0;
+			break;
+		case OIS::KC_A:
+		case OIS::KC_D:
+			Engine::getInstance().moveLR = 0;
+			break;
+		default:
+			break;
+	}
+
 }

@@ -6,7 +6,7 @@ Object3D::Object3D(const Object3D& old) : _color(old._color), _selected(old._sel
 										  _originalBB(old._originalBB),_geometryType(old._geometryType),
 										  _drawBB(old._drawBB),_render(old._render)
 {
-	if(old._transform)	_transform = new Transform(*old._transform);
+	if(old._transform)	_transform = New Transform(*old._transform);
 }
 
 void Object3D::onDraw()
@@ -24,4 +24,14 @@ void Object3D::drawBBox()
 
 	if(_bb.getVisibility())
 		GFXDevice::getInstance().drawBox3D(_bb.getMin(),_bb.getMax());
+}
+
+Transform*	const Object3D::getTransform()  
+{
+	if(!_transform){
+		Quaternion rotation; rotation.FromEuler(0,0,-1);
+		_transform = New Transform(rotation, vec3(0,0,0),vec3(1,1,1));
+	}
+
+	return _transform;
 }

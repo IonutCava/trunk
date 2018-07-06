@@ -8,10 +8,10 @@
 SINGLETON_BEGIN_EXT1( ResourceManager,Manager )
 
 public:
-	Resource* LoadResource(const string& name);
+	Resource* LoadResource(const std::string& name);
 
 	template<class T>
-	T* LoadResource(const string& name,bool flag = false);
+	T* LoadResource(const std::string& name,bool flag = false);
 
 protected:
 	~ResourceManager() {destroy();}

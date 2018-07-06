@@ -14,9 +14,14 @@ varying vec3 vPixToLight;		// Vecteur du pixel courant à la lumière
 varying vec3 vPixToEye;			// Vecteur du pixel courant à l'oeil
 varying vec4 vPosition;
 
+// SHADOW MAPPING //
+uniform int depth_map_size;
+uniform sampler2DShadow texDepthMapFromLight0;
+uniform sampler2DShadow texDepthMapFromLight1;
 #define Z_TEST_SIGMA 0.0001
 ////////////////////
 
+float ShadowMapping(vec4 vVertexFromLightView);
 
 float Fresnel(vec3 incident, vec3 normal, float bias, float power);
 
@@ -46,6 +51,16 @@ void main (void)
 	gl_FragColor += gl_LightSource[0].specular * iSpecular;
 	gl_FragColor = clamp(gl_FragColor, vec4(0.0, 0.0, 0.0, 0.0),  vec4(1.0, 1.0, 1.0, 1.0));
 
+	// SHADOW MAPPING
+/*
+	vec4 posInLightView = vPosition;
+	posInLightView.x += noise_factor*normal.x;
+	posInLightView.z += noise_factor*normal.y;
+	float shadow = ShadowMapping( gl_TextureMatrix[0] * posInLightView );
+*/
+	float shadow = ShadowMapping( gl_TexCoord[1] );
+	shadow = shadow * 0.5 + 0.5;
+	gl_FragColor *= shadow;
 
 	// FRESNEL ALPHA
 	gl_FragColor.a	= Fresnel(V, N, 0.5, 2.0);
@@ -59,5 +74,59 @@ float Fresnel(vec3 incident, vec3 normal, float bias, float power)
 	return bias + pow(1.0 - dot(incident, normal), power) * scale;
 }
 
+
+float ShadowMapping(vec4 vVertexFromLightView)
+{
+	float fShadow = 0.0;
+						
+	float tOrtho[2];
+	tOrtho[0] = 20.0;
+	tOrtho[1] = 100.0;
+
+	if( length(vPixToEye) <= 140.0)
+	{
+		bool ok = false;
+		int id = 0;
+		vec3 vPixPosInDepthMap;
+
+		for(int i=0; i<2; i++) 
+		{
+			if(!ok)
+			{
+				vPixPosInDepthMap = vec3(vVertexFromLightView.xy/tOrtho[i], vVertexFromLightView.z) / (vVertexFromLightView.w);
+				vPixPosInDepthMap = (vPixPosInDepthMap + 1.0) * 0.5;					// de l'intervale [-1 1] à [0 1]
+				
+				if(vPixPosInDepthMap.x >= 0.0 && vPixPosInDepthMap.y >= 0.0 && vPixPosInDepthMap.x <= 1.0 && vPixPosInDepthMap.y <= 1.0)
+				{
+					id = i;
+					ok = true;
+				}
+			}
+		}
+		
+		if(ok)
+		{
+			vec4 vDepthMapColor = vec4(0.0, 0.0, 0.0, 1.0);
+			if(id == 0)	vDepthMapColor = shadow2D(texDepthMapFromLight0, vPixPosInDepthMap);
+			else		vDepthMapColor = shadow2D(texDepthMapFromLight1, vPixPosInDepthMap);
+
+
+			if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z)
+			{
+				fShadow = clamp((vPixPosInDepthMap.z - vDepthMapColor.z)*10.0, 0.0, 1.0);
+			}
+			else
+			{
+				fShadow = 1.0;
+			}
+
+			fShadow = clamp(fShadow, 0.0, 1.0);
+		}
+		else fShadow = 1.0;
+	}
+	else fShadow = 1.0;
+	
+	return fShadow;
+}
 
 

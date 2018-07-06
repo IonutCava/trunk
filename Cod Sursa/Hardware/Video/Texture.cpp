@@ -2,7 +2,7 @@
 
 bool Texture::s_bGenerateMipmaps = true;
 
-bool Texture::LoadFile(U32 target, const string& name)
+bool Texture::LoadFile(U32 target, const std::string& name)
 {
 	m_nName = name;
 	ImageTools::OpenImage(name,img);

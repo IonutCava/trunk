@@ -26,7 +26,7 @@ uniform float tile_factor;
 // SHADOW MAPPING //
 uniform int depth_map_size;
 uniform int enable_shadow_mapping;	// 0->no  1->shadow mapping  2->shadow mapping + projected texture
-//uniform sampler2DShadow texDepthMapFromLight;
+uniform sampler2DShadow texDepthMapFromLight;
 uniform sampler2D texDiffuseProjected;
 #define Z_TEST_SIGMA 0.0001
 ////////////////////
@@ -272,8 +272,8 @@ float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 	vPixPosInDepthMap = (vPixPosInDepthMap + 1.0) * 0.5;					// de l'intervale [-1 1] à [0 1]
 	
 	
-	//vec4 vDepthMapColor = shadow2D(texDepthMapFromLight, vPixPosInDepthMap);
-/*
+	vec4 vDepthMapColor = shadow2D(texDepthMapFromLight, vPixPosInDepthMap);
+
 	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z)
 	{
 		fShadow = 0.0;
@@ -300,7 +300,7 @@ float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 	{
 		fShadow = 1.0;
 	}
-*/
+
 	fShadow = clamp(fShadow, 0.0, 1.0);
 	return fShadow;
 }

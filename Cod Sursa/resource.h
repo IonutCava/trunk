@@ -53,7 +53,4 @@ void operator delete(void * pxData ,char* zFile, int nLine);
 #define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
-using namespace std;
-using namespace tr1;
-
 #endif

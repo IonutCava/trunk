@@ -1,6 +1,6 @@
 uniform float time;
 uniform float lod_metric;
-//uniform float scale;
+uniform float scale;
 uniform float windDirectionX;
 uniform float windDirectionZ;
 uniform float windSpeed;
@@ -17,11 +17,8 @@ void main(void)
 
 	if(gl_Normal.y < 0.0 ) {
 		normalMV = -normalMV;
-		vertex.x += (0.5*cos(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionX;
-		vertex.z += (0.5*sin(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionZ;
-		//vertex.x *= scale;
-		//vertex.z *= scale;
-		
+		vertex.x += ((0.5*scale)*cos(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionX;
+		vertex.z += ((0.5*scale)*sin(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionZ;
 	}
 	
 	vec4 vLightPosMV = -gl_LightSource[0].position;	

@@ -6,9 +6,9 @@
 namespace Util
 {
 	template<class T>
-	string toString(T data)
+	std::string toString(T data)
 	{
-		stringstream s;
+		std::stringstream s;
 		s << data;
 		return s.str();
 	}

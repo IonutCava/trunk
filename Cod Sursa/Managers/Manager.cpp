@@ -1,4 +1,5 @@
 #include "Manager.h"
+using namespace std;
 
 void Manager::add(const string& name, Resource* res)
 {
@@ -22,15 +23,4 @@ Resource* Manager::find(const string& name)
 		return _resDB[name];
 	else
 		return NULL;
-}
-
-Resource* Manager::add(Resource* data, const string& name)
-{
-	if(!data) return NULL;
-
-	if(_resDB.find(name) != _resDB.end())
-		return _resDB.find(name)->second;
-
-	_resDB[name] = data;
-	return data;
 }

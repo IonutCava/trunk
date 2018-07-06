@@ -1,12 +1,13 @@
 #include "PingPongScene.h"
 #include "Rendering/Framerate.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
 #include "Importer/DVDConverter.h"
 #include "Terrain/Sky.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Box3D.h"
+using namespace std;
 
 vec4 _lightPosition(0,20,6,1.0);
 
@@ -35,7 +36,7 @@ void PingPongScene::preRender()
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
 	Sky& sky = Sky::getInstance();
-	sky.setParams(Camera::getInstance().getEye(),_sunVector,false,true,true);
+	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),_sunVector,false,true,true);
 	sky.draw();
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 }
@@ -213,6 +214,7 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 void PingPongScene::processInput()
 {
 	_inputManager.tick();
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	//Move FB = Forward/Back = sus/jos
 	//Move LR = Left/Right = stanga/dreapta
 	moveFB  = Engine::getInstance().moveFB;
@@ -222,8 +224,8 @@ void PingPongScene::processInput()
 	angleLR = Engine::getInstance().angleLR;
 	angleUD = Engine::getInstance().angleUD;
 
-	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
+	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
+	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
 
 	vec3 pos = ModelArray["paleta"]->getTransform()->getPosition();
 	//Miscarea pe ambele directii de deplasare este limitata in intervalul [-3,3] cu exceptia coborarii pe Y;
@@ -252,8 +254,8 @@ bool PingPongScene::load(const string& name)
 	state = loadEvents(true);
 
 	//Pozitionam camera
-	Camera::getInstance().setAngleX(RADIANS(-90));
-	Camera::getInstance().setEye(vec3(0,2.5f,6.5f));
+	CameraManager::getInstance().getActiveCamera()->setAngleX(RADIANS(-90));
+	CameraManager::getInstance().getActiveCamera()->setEye(vec3(0,2.5f,6.5f));
 	
 	return state;
 }
@@ -272,17 +274,17 @@ bool PingPongScene::loadResources(bool continueOnErrors)
 	addGeometry(_minge);
 
 	//Adaugam butoane si text labels
-	GUI::getInstance().addButton("Serveste", "Serveste", vec2(Engine::getInstance().getWindowWidth()-120 ,
-															 Engine::getInstance().getWindowHeight()/1.1f),
+	GUI::getInstance().addButton("Serveste", "Serveste", vec2(Engine::getInstance().getWindowDimensions().width-120 ,
+															 Engine::getInstance().getWindowDimensions().height/1.1f),
 													    	 vec2(100,25),vec3(0.65f,0.65f,0.65f),
 															 boost::bind(&PingPongScene::servesteMingea,this));
 
-	GUI::getInstance().addText("Scor",vec3(Engine::getInstance().getWindowWidth() - 120, Engine::getInstance().getWindowHeight()/1.3f, 0),
+	GUI::getInstance().addText("Scor",vec3(Engine::getInstance().getWindowDimensions().width - 120, Engine::getInstance().getWindowDimensions().height/1.3f, 0),
 							   BITMAP_8_BY_13,vec3(1,0,0), "Scor: %d",0);
 
-	GUI::getInstance().addText("Mesaj",vec3(Engine::getInstance().getWindowWidth() - 120, Engine::getInstance().getWindowHeight()/1.5f, 0),
+	GUI::getInstance().addText("Mesaj",vec3(Engine::getInstance().getWindowDimensions().width - 120, Engine::getInstance().getWindowDimensions().height/1.5f, 0),
 							   BITMAP_8_BY_13,vec3(1,0,0), "");
-	GUI::getInstance().addText("insulte",vec3(Engine::getInstance().getWindowWidth()/4, Engine::getInstance().getWindowHeight()/3, 0),
+	GUI::getInstance().addText("insulte",vec3(Engine::getInstance().getWindowDimensions().width/4, Engine::getInstance().getWindowDimensions().height/3, 0),
 							   BITMAP_TIMES_ROMAN_24,vec3(0,1,0), "");
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec3(60,60,0),          //Position

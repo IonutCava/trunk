@@ -4,9 +4,10 @@
 #include "GUI/GUI.h"
 #include "Rendering/Framerate.h"
 #include "Rendering/common.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Terrain/Sky.h"
 #include "PhysX/PhysX.h"
+using namespace std;
 
 void NetworkScene::render()
 {
@@ -34,22 +35,24 @@ void NetworkScene::preRender()
 	_lights[0]->setLightProperties(string("specular"),vSunColor);
 	_lights[0]->update();
 
-	Sky::getInstance().setParams(Camera::getInstance().getEye(),vec3(_sunVector),false,true,false);
+	Sky::getInstance().setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,false);
 	Sky::getInstance().draw();
 
 }
 
 void NetworkScene::processInput()
 {
+	_inputManager.tick();
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	moveFB  = Engine::getInstance().moveFB;
 	moveLR  = Engine::getInstance().moveLR;
 	angleLR = Engine::getInstance().angleLR;
 	angleUD = Engine::getInstance().angleUD;
 	
-	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
-	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
-	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
+	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
+	if(moveFB)	cam->PlayerMoveForward(moveFB * (Framerate::getInstance().getSpeedfactor()/5));
+	if(moveLR)	cam->PlayerMoveStrafe(moveLR * (Framerate::getInstance().getSpeedfactor()/5));
 }
 
 void NetworkScene::processEvents(F32 time)
@@ -108,7 +111,7 @@ bool NetworkScene::load(const string& name)
 	bool state = loadResources(true);
 	ParamHandler::getInstance().setParam("serverResponse",string("waiting"));
 	addDefaultLight();
-	Camera::getInstance().setEye(vec3(0,30,-30));
+	CameraManager::getInstance().getActiveCamera()->setEye(vec3(0,30,-30));
 	return state;
 }
 
@@ -156,30 +159,30 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 								"Elapsed time: %5.0f",GETTIME());
 
 	gui.addText("serverMessage",
-								vec3(Engine::getInstance().getWindowWidth() / 4.0f,
-								     Engine::getInstance().getWindowHeight() / 1.6f,
+								vec3(Engine::getInstance().getWindowDimensions().width / 4.0f,
+								     Engine::getInstance().getWindowDimensions().height / 1.6f,
 									 0),
 								BITMAP_8_BY_13,
 								vec3(0.5f,0.5f,0.2f),
 								"Server says: %s", "<< nothing yet >>");
 	gui.addText("statusText",
-								vec3(Engine::getInstance().getWindowWidth() / 3.0f,
-								     Engine::getInstance().getWindowHeight() / 1.2f,
+								vec3(Engine::getInstance().getWindowDimensions().width / 3.0f,
+								     Engine::getInstance().getWindowDimensions().height / 1.2f,
 									 0),
 								BITMAP_HELVETICA_12,
 								vec3(0.2f,0.5f,0.2f),
 								"");
 
-	gui.addButton("getPing", "ping me", vec2(60 , Engine::getInstance().getWindowHeight()/1.1f),
+	gui.addButton("getPing", "ping me", vec2(60 , Engine::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.6f,0.6f,0.6f),
 										boost::bind(&NetworkScene::test,this));
-	gui.addButton("disconnect", "disconnect", vec2(180 , Engine::getInstance().getWindowHeight()/1.1f),
+	gui.addButton("disconnect", "disconnect", vec2(180 , Engine::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.5f,0.5f,0.5f),
 										boost::bind(&NetworkScene::disconnect,this));
-	gui.addButton("connect", "connect", vec2(300 , Engine::getInstance().getWindowHeight()/1.1f),
+	gui.addButton("connect", "connect", vec2(300 , Engine::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::connect,this));
-	gui.addButton("patch", "patch",     vec2(420 , Engine::getInstance().getWindowHeight()/1.1f),
+	gui.addButton("patch", "patch",     vec2(420 , Engine::getInstance().getWindowDimensions().height/1.1f),
 										vec2(100,25),vec3(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::checkPatches,this));
 		

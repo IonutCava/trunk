@@ -3,8 +3,9 @@
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/ResourceManager.h"
 #include "Managers/SceneManager.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Hardware/Video/GFXDevice.h"
+using namespace std;
 
 Sky::Sky()
 {
@@ -55,7 +56,6 @@ void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool d
 void Sky::drawSkyAndSun() const
 {
 	_sky->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
-
 	_sky->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
 
 	RenderState s(false,true,false,true);
@@ -67,7 +67,7 @@ void Sky::drawSkyAndSun() const
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", true);
 		_skyShader->Uniform("sun_vector", _sunVect);
-		_skyShader->Uniform("view_vector", Camera::getInstance().getViewDir());
+		_skyShader->Uniform("view_vector", CameraManager::getInstance().getActiveCamera()->getViewDir());
 	
 		GFXDevice::getInstance().drawSphere3D(_sky);
 	}
@@ -89,7 +89,7 @@ void Sky::drawSky() const
 	{
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", false);
-		_skyShader->Uniform("view_vector", Camera::getInstance().getViewDir());
+		_skyShader->Uniform("view_vector", CameraManager::getInstance().getActiveCamera()->getViewDir());
 
 		GFXDevice::getInstance().drawSphere3D(_sky);
 	}

@@ -41,7 +41,6 @@ Camera::Camera() {
 
 	vUp			= vec3(0.0f, 1.0f, 0.0f);
 	vEye		= vec3(0.0f, 0.0f, 0.0f);
-	eType = FREE;
 	bSaved = false;
 	Refresh();
 }
@@ -51,7 +50,7 @@ void Camera::Refresh()
 {	
 
 	switch(eType) {
-	case FREE:
+	case FREE_FLY:
 		vViewDir.x = cosf(fAngleX) * sinf(fAngleY);
 		vViewDir.y = cosf(fAngleY);
 		vViewDir.z = sinf(fAngleX) * sinf(fAngleY);
@@ -60,7 +59,7 @@ void Camera::Refresh()
 		vLeftDir.normalize();
 		break;
 
-	case DRIVEN:
+	case SCRIPTED:
 		vViewDir = vCenter - vEye;
 		vViewDir.normalize();
 		vLeftDir.cross(vUp, vViewDir);

@@ -16,7 +16,6 @@
 #include "Utility/Headers/MathClasses.h"
 #include <string>
 #include <vector>
-using namespace std;
 #define COORD(x,y,w)	((y)*(w)+(x))
 
 
@@ -35,14 +34,14 @@ typedef Texture TextureCubemap;
 class Material
 {
 public:
-	Material() : bumpMap(NULL) {}
-  string name;            /* name of the material */
+  Material() : bumpMap(NULL) {}
+  std::string name;       /* name of the material */
   vec4 diffuse;           /* diffuse component */
   vec4 ambient;           /* ambient component */
   vec4 specular;          /* specular component */
   vec4 emmissive;         /* emmissive component */
   F32 shininess;          /* specular exponent */
-  vector<Texture2D*> textures;
+  std::vector<Texture2D*> textures;
   Texture2D* bumpMap;
 };
 

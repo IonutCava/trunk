@@ -9,17 +9,19 @@
 #include "Utility/Headers/ParamHandler.h"
 #include "Utility/Headers/MathHelper.h"
 #include "Managers/SceneManager.h"
+#include "Managers/CameraManager.h"
 
 #include "Geometry/Predefined/Box3D.h"
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Quad3D.h"
 #include "Geometry/Predefined/Text3D.h"
+using namespace std;
 
 #define USE_FREEGLUT
 
 void resizeWindowCallback(int w, int h)
 {
-	GUI::getInstance().resize(w,h);
+	GUI::getInstance().onResize(w,h);
 	GFXDevice::getInstance().resizeWindow(w,h);
 }
 
@@ -30,15 +32,13 @@ void GL_API::initHardware()
     glutInit(&argc, argv);
 	glutInitContextVersion(2,0);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_DOUBLE);
-	glutInitWindowSize(Engine::getInstance().getWindowWidth(),Engine::getInstance().getWindowHeight());
+	glutInitWindowSize(Engine::getInstance().getWindowDimensions().width,Engine::getInstance().getWindowDimensions().height);
 	glutInitWindowPosition(10,50);
 	Engine::getInstance().setMainWindowId(glutCreateWindow("DIVIDE Engine"));
 	U32 err = glewInit();
 	if (GLEW_OK != err)
 	{
-		cout << "Error: "<< glewGetErrorString(err) << endl
-			  << "Try switching to DX (version 9.0c required) or upgrade hardware." << endl
-			  << "Application will now exit!" << endl;
+		Con::getInstance().errorfn("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
 		exit(1);
 	}
 	string ver;
@@ -350,17 +350,17 @@ void GL_API::drawButton(Button* b)
 void GL_API::beginRenderStateProcessing()
 {
 	//ToDo: Enable these and fix texturing issues -Ionut
-		glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LIGHTING_BIT);
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		if(_state.isEnabled())
 		{
-			if( !_state.blendingEnabled()) glDisable(GL_BLEND);
-			//else glEnable(GL_BLEND);
+			/*if( !_state.blendingEnabled()) glDisable(GL_BLEND);
+			else glEnable(GL_BLEND);
 			if(!_state.cullingEnabled() ) glDisable(GL_CULL_FACE);
-			//else glEnable(GL_CULL_FACE);
+			else glEnable(GL_CULL_FACE);
 			if(!_state.lightingEnabled()) glDisable(GL_LIGHTING);
-			//else glEnable(GL_LIGHTING);
+			else glEnable(GL_LIGHTING);
 			if(!_state.texturesEnabled()) glDisable(GL_TEXTURE_2D);
-			//else glEnable(GL_TEXTURE_2D);
+			else glEnable(GL_TEXTURE_2D);*/
 		}
 }
 
@@ -451,7 +451,7 @@ void GL_API::drawSphere3D(Sphere3D* const sphere)
 
 void GL_API::drawQuad3D(Quad3D* const quad)
 {
-	//beginRenderStateProcessing();
+	beginRenderStateProcessing();
 
 	pushMatrix();
 
@@ -478,7 +478,7 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 	
 	popMatrix();
 
-	//endRenderStateProcessing();
+	endRenderStateProcessing();
 }
 
 void GL_API::drawText3D(Text3D* const text)
@@ -515,8 +515,8 @@ void GL_API::toggle2D(bool _2D)
 	
 	if(_2D)
 	{
-		F32 width = Engine::getInstance().getWindowWidth();
-		F32 height = Engine::getInstance().getWindowHeight();
+		F32 width = Engine::getInstance().getWindowDimensions().width;
+		F32 height = Engine::getInstance().getWindowDimensions().height;
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		glMatrixMode(GL_PROJECTION);
@@ -540,23 +540,14 @@ void GL_API::toggle2D(bool _2D)
 	}
 }
 
-void GL_API::renderModel(DVDFile* const model)
+void GL_API::renderModel(Mesh* const model)
 {
-	model->onDraw(); //Update BB, shaders etc.
-	if(!model->isVisible()) return;
 	//beginRenderStateProcessing();
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	
 	pushMatrix();
 	glMultMatrixf(model->getTransform()->getMatrix());
-
-	for(U8 n = 0; n < model->getShaders().size(); n++)
-	{
-		model->getShaders()[n]->bind();
-			model->getShaders()[n]->Uniform("enable_shadow_mapping", 0);
-			model->getShaders()[n]->Uniform("tile_factor", 1.0f);	
-	}
 
 	for(_subMeshIterator = model->getSubMeshes().begin(); 
 		_subMeshIterator != model->getSubMeshes().end(); 
@@ -567,8 +558,6 @@ void GL_API::renderModel(DVDFile* const model)
 		setMaterial(s->getMaterial());
 		
 		U8 count = s->getMaterial().textures.size();
-		for(U8 n = 0; n < model->getShaders().size(); n++)
-			model->getShaders()[n]->Uniform("textureCount",count <= 2 ? count : 2);
 		U8 i = 0;
 		if(count)
 		{
@@ -577,6 +566,8 @@ void GL_API::renderModel(DVDFile* const model)
 
 			for(U8 n = 0; n < model->getShaders().size(); n++)
 			{
+				model->getShaders()[n]->bind();
+				model->getShaders()[n]->Uniform("textureCount",count <= 2 ? count : 2);
 				model->getShaders()[n]->UniformTexture("texDiffuse0",0);
 				if(count > 1) model->getShaders()[n]->UniformTexture("texDiffuse1",1);			
 			}
@@ -678,4 +669,27 @@ void GL_API::toggleWireframe(bool state)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void GL_API::setLightCameraMatrices(const vec3& lightVector)
+{
+	vec3 eye = CameraManager::getInstance().getActiveCamera()->getEye();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	gluLookAt(	eye.x - 500*lightVector.x,		eye.y - 500*lightVector.y,		eye.z - 500*lightVector.z,
+				eye.x,							eye.y,							eye.z,
+				0.0,							1.0,							0.0	);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+}
+
+
+void GL_API::restoreLightCameraMatrices()
+{
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 }

@@ -1,13 +1,15 @@
 #include "TerrainManager.h"
-#include "Rendering/Camera.h"
+#include "Managers/CameraManager.h"
 #include "Managers/ResourceManager.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Rendering/common.h"
+using namespace std;
 
 TerrainManager::TerrainManager()
 {
 	_loaded = false;
 	_computedMinHeight = false;
+	_sunModelviewProj.identity();
 }
 
 TerrainManager::~TerrainManager()
@@ -85,32 +87,44 @@ void TerrainManager::setDepthMap(int index, FrameBufferObject* depthMap)
 	else return;
 }
 
-void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion, bool drawDepthMap, vec4& ambientColor)
+void TerrainManager::drawVegetation(bool drawInReflexion)
 {
+	if(_resDB.size() > 0)
+		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
+		{
+			_terrain = dynamic_cast<Terrain*>(_resDBiter->second);
+			_terrain->getVegetation()->draw(drawInReflexion);
+		}
+}
+
+
+void TerrainManager::drawTerrains(mat4& sunModelviewProj, bool drawInactive, bool drawInReflexion, vec4& ambientColor)
+{
+	_sunModelviewProj = sunModelviewProj;
 	if(!_loaded) return;
 	if(_resDB.size() > 1)
 	{
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
 			_terrain = (Terrain*)_resDBiter->second;
-			drawTerrain(drawInactive,drawInReflexion,drawDepthMap,ambientColor);
+			drawTerrain(drawInactive,drawInReflexion,ambientColor);
 			
 		}
 	}
 	else if(_resDB.size() == 1)
 	{
 		_terrain = (Terrain*)_resDB.begin()->second;
-		drawTerrain(drawInactive,drawInReflexion,drawDepthMap,ambientColor);
+		drawTerrain(drawInactive,drawInReflexion,ambientColor);
 	}
 	else return;
 }
 
-void TerrainManager::drawTerrain(bool drawInactive, bool drawInReflexion,bool drawDepthMap,vec4& ambientColor)
+void TerrainManager::drawTerrain(bool drawInactive, bool drawInReflexion,vec4& ambientColor)
 {
 	if(drawInactive) _terrain->setLoaded(true);
 	else _terrain->restoreLoaded();
 
-	_terrain->toggleRenderingParams(drawInReflexion,drawDepthMap,ambientColor);
+	_terrain->toggleRenderingParams(drawInReflexion,ambientColor,_sunModelviewProj);
 	_terrain->draw();
 }
 
@@ -132,31 +146,29 @@ void TerrainManager::generateVegetation(const string& name)
 	}
 }
 
-void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
+void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject* fbo[])
 {
 	
 	if(!_loaded) return;
 	ParamHandler&  par = ParamHandler::getInstance();
 	if(!_computedMinHeight)
 	{
-		_minHeight = 1000;_maxHeight = 1; F32 temp = 0;
+		_minHeight = 1000; F32 temp = 0;
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
 			temp = ((Terrain*)_resDBiter->second)->getBoundingBox().getMin().y;
 			if(temp < _minHeight)
-			{
 				_minHeight = temp;
-				_maxHeight = ((Terrain*)_resDBiter->second)->getBoundingBox().getMax().y;
-			}
 		}
 		_minHeight -= 75;
 		par.setParam("minHeight",_minHeight);
 		_computedMinHeight = true;
 	}
-	const vec3& eye = Camera::getInstance().getEye();
+
+	const vec3& eye = CameraManager::getInstance().getActiveCamera()->getEye();
 	_water->getQuad()->_tl = vec3(eye.x - max_distance, _minHeight, eye.z - max_distance);
 	_water->getQuad()->_tr = vec3(eye.x + max_distance, _minHeight, eye.z - max_distance);
 	_water->getQuad()->_bl = vec3(eye.x - max_distance, _minHeight, eye.z + max_distance);
 	_water->getQuad()->_br = vec3(eye.x + max_distance, _minHeight, eye.z + max_distance);
-	_water->draw(_fbo);
+	_water->draw(fbo);
 }

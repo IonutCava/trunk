@@ -6,7 +6,7 @@ class PendingActor
     virtual ~PendingActor(){}
 	virtual NxActorDesc createActor() = 0;
 	virtual void setBody(NxBodyDesc *b) = 0;
-	virtual void setName(const string& n) = 0;
+	virtual void setName(const std::string& n) = 0;
 	virtual void setConvexShape(NxConvexShapeDesc meshDescription) = 0;
 	virtual void setTriangleShape(NxTriangleMeshShapeDesc meshDescription) = 0;
 	virtual void setUseConvex(bool status) = 0;
@@ -36,7 +36,7 @@ public:
 	    Con::getInstance().printfn("Setting Body");
 		body = b;
 	}
-	void setName(const string& n)
+	void setName(const std::string& n)
 	{
 		Con::getInstance().printfn("Setting Name");
 		name = n;
@@ -61,7 +61,7 @@ private:
 	NxActorDesc actorDesc;
 	NxBodyDesc *body;
 	NxVec3 position;
-	string name;
+	std::string name;
 	bool UseConvex;
 	NxConvexShapeDesc staticMeshDesc;
 	NxTriangleMeshShapeDesc staticTMeshDesc;
@@ -81,7 +81,7 @@ class DecorateActor : public PendingActor
 	NxActorDesc createActor(){return m_wrappee->createActor();}
 	void setPos(NxVec3 pos){m_wrappee->setPos(pos);}
 	void setBody(NxBodyDesc *b){m_wrappee->setBody(b);}
-	void setName(const string& n){m_wrappee->setName(n);}
+	void setName(const std::string& n){m_wrappee->setName(n);}
 	void setUseConvex(bool status){m_wrappee->setUseConvex(status);}
 	void setTriangleShape(NxTriangleMeshShapeDesc meshDescription){m_wrappee->setTriangleShape(meshDescription);}
 	void setConvexShape(NxConvexShapeDesc meshDescription){m_wrappee->setConvexShape(meshDescription);}
@@ -102,7 +102,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(const string& n)
+	void setName(const std::string& n)
 	{
 		DecorateActor::setName(n);
 	}
@@ -138,7 +138,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(const string& n)
+	void setName(const std::string& n)
 	{
 		DecorateActor::setName(n);
 	}
@@ -174,7 +174,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(const string& n)
+	void setName(const std::string& n)
 	{
 		DecorateActor::setName(n);
 	}
@@ -210,7 +210,7 @@ public:
 	{
 		DecorateActor::setBody(b);
 	}
-	void setName(const string& n)
+	void setName(const std::string& n)
 	{
 		DecorateActor::setName(n);
 	}

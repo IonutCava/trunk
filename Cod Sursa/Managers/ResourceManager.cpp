@@ -9,6 +9,7 @@
 #include "Geometry/Predefined/Sphere3D.h"
 #include "Geometry/Predefined/Text3D.h"
 #include "Geometry/Predefined/Quad3D.h"
+using namespace std;
 
 U32 maxAlloc = 0;
 char* zMaxFile = "";
@@ -105,19 +106,19 @@ Shader* ResourceManager::LoadResource<Shader>(const string& name,bool flag)
 }
 
 template<>
-DVDFile* ResourceManager::LoadResource<DVDFile>(const string& name,bool flag)
+Mesh* ResourceManager::LoadResource<Mesh>(const string& name,bool flag)
 {
 
 	Resource* ptr = LoadResource(name);
 
 	if(!ptr)
 	{
-		ptr = new DVDFile();
-		if(!dynamic_cast<DVDFile*>(ptr)->load(name) || !ptr) return NULL;
+		ptr = DVDConverter::getInstance().load(name);
+		if(!dynamic_cast<Mesh*>(ptr)->load(name) || !ptr) return NULL;
 
 		_resDB[name] = ptr;
 	}
-	return dynamic_cast<DVDFile*>(ptr);
+	return dynamic_cast<Mesh*>(ptr);
 }
 
 template<>
