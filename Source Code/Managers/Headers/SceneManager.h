@@ -100,17 +100,22 @@ struct SceneShaderData {
 enum class RenderStage : U32;
 namespace Attorney {
     class SceneManagerKernel;
+    class SceneManagerRenderPass;
 };
 
 DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                       Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
+    friend class Attorney::SceneManagerRenderPass;
+
   public:
     static bool initStaticData();
 
     vectorImpl<stringImpl> sceneNameList() const;
 
-    inline Scene& getActiveScene() { return *_activeScene; }
+    inline Scene& getActiveScene() { 
+        return _activeScene == nullptr ? *_defaultScene.get() 
+                                       : *_activeScene; }
 
     void setActiveScene(Scene& scene);
 
@@ -135,11 +140,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(*_activeScene);
-    }
-    /// Create AI entities, teams, NPC's etc
-    inline bool initializeAI(bool continueOnErrors) {
-        return Attorney::SceneManager::initializeAI(*_activeScene,
-                                                  continueOnErrors);
     }
     /// Update animations, network data, sounds, triggers etc.
     void updateSceneState(const U64 deltaTime);
@@ -202,11 +202,14 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Lookup the factory methods table and return the pointer to a newly
     /// constructed scene bound to that name
     Scene* createScene(const stringImpl& name);
+    bool   unloadScene(Scene*& scene);
 
   protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
     void onCameraUpdate(Camera& camera);
+    void preRender();
+    bool generateShadowMaps();
 
   private:
     SceneManager();
@@ -253,6 +256,20 @@ class SceneManagerKernel {
 
     friend class Divide::Kernel;
 };
+
+class SceneManagerRenderPass {
+   private:
+    static void preRender() {
+        Divide::SceneManager::instance().preRender();
+    }
+
+    static bool generateShadowMaps() {
+        return Divide::SceneManager::instance().generateShadowMaps();
+    }
+
+    friend class Divide::RenderPass;
+};
+
 };  // namespace Attorney
 
 /// Return a pointer to the currently active scene's scenegraph

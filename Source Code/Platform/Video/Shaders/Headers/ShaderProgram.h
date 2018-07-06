@@ -55,6 +55,7 @@ class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
         PROJECTION = 5,
         DEPTH = 6,
         REFLECTION = 7,
+        REFRACTION = 8,
         COUNT,
 
         GLOSS = SPECULAR,

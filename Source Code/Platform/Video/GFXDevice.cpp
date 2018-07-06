@@ -73,6 +73,9 @@ GFXDevice::GFXDevice()
     for (RenderTarget& renderTarget : _reflectionTarget) {
         renderTarget._buffer = nullptr;
     }
+    for (RenderTarget& renderTarget : _refractionTarget) {
+        renderTarget._buffer = nullptr;
+    }
     // To allow calls to "setBaseViewport"
     
     _viewport.push(vec4<I32>(-1));

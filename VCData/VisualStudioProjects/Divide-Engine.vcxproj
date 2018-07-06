@@ -312,7 +312,6 @@
     <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysicsAPIWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysicsAsset.cpp" />
@@ -333,6 +332,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightPool.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\PointLight.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp" />
@@ -345,7 +345,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderBatch.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\Reflector.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBin.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp" />
@@ -458,6 +457,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Renderer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightPool.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\PointLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\SpotLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h" />
@@ -471,7 +471,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderOperator.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderBatch.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBin.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPass.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h" />
@@ -497,7 +496,6 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\AIManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h" />
-    <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h" />

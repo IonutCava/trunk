@@ -1,6 +1,5 @@
 #include "Headers/ShaderProgram.h"
 
-#include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"

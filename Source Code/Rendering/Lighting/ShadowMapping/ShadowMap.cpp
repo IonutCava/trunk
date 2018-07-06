@@ -4,9 +4,9 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Headers/CascadedShadowMaps.h"
-#include "Managers/Headers/LightManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
@@ -95,14 +95,12 @@ void ShadowMap::clearShadowMaps() {
 }
 
 void ShadowMap::bindShadowMaps() {
-    LightManager& lightMgr = LightManager::instance();
-
     for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
         TextureDescriptor::AttachmentType attachment
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
                                           ? TextureDescriptor::AttachmentType::Color0
                                           : TextureDescriptor::AttachmentType::Depth;
-        _depthMaps[i]->bind(lightMgr.getShadowBindSlotOffset(static_cast<ShadowType>(i)), attachment);
+        _depthMaps[i]->bind(LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i)), attachment);
     }
 }
 

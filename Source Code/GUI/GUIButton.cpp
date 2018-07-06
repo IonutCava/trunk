@@ -16,7 +16,6 @@ GUIButton::GUIButton(ULL ID,
                      CEGUI::Window* parent,
                      ButtonCallback callback)
     : GUIElement(ID, parent, GUIType::GUI_BUTTON),
-      _text(text),
       _color(color),
       _callbackFunction(callback),
       _highlight(false),
@@ -41,6 +40,20 @@ GUIButton::GUIButton(ULL ID,
 GUIButton::~GUIButton()
 {
     _parent->removeChild(_btnWindow);
+}
+
+void GUIButton::setActive(const bool active) {
+    _btnWindow->setEnabled(active);
+    GUIElement::setActive(active);
+}
+
+void GUIButton::setVisible(const bool visible) {
+    _btnWindow->setVisible(visible);
+    GUIElement::setVisible(visible);
+}
+
+void GUIButton::setText(const stringImpl& text) {
+    _btnWindow->setText(text.c_str());
 }
 
 void GUIButton::draw() const {

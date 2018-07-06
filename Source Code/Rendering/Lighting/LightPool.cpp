@@ -1,8 +1,8 @@
-#include "Headers/LightManager.h"
-#include "Headers/SceneManager.h"
+#include "Headers/LightPool.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Time/Headers/ProfileTimer.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -14,11 +14,19 @@
 
 namespace Divide {
 
-LightManager::LightManager()
+std::array<U8, to_const_uint(ShadowType::COUNT)> LightPool::_shadowLocation = { {
+    to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 2u, //Single
+    to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 3u, //Layered
+    to_const_ubyte(ShaderProgram::TextureUsage::COUNT) + 1u  //Cubemap
+}};
+
+Light* LightPool::_currentShadowCastingLight = nullptr;
+
+bool LightPool::_previewShadowMaps = false;
+bool LightPool::_shadowMapsEnabled = true;
+
+LightPool::LightPool()
     : _init(false),
-      _shadowMapsEnabled(true),
-      _previewShadowMaps(false),
-      _currentShadowCastingLight(nullptr),
       _lightImpostorShader(nullptr),
       _lightIconsTexture(nullptr),
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
@@ -35,15 +43,12 @@ LightManager::LightManager()
     // ViewProjection Matrices, View Space Position, etc
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = nullptr;
 
-    const U8 startOffset = to_const_ubyte(ShaderProgram::TextureUsage::COUNT);
-    _shadowLocation[to_const_uint(ShadowType::CUBEMAP)] = startOffset + 1;
-    _shadowLocation[to_const_uint(ShadowType::SINGLE)] = startOffset + 2;
-    _shadowLocation[to_const_uint(ShadowType::LAYERED)] = startOffset + 3;
-
     ParamHandler::instance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
+
+    init();
 }
 
-LightManager::~LightManager()
+LightPool::~LightPool()
 {
     clear();
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]);
@@ -54,7 +59,7 @@ LightManager::~LightManager()
     ShadowMap::clearShadowMaps();
 }
 
-void LightManager::init() {
+void LightPool::init() {
     if (_init) {
         return;
     }
@@ -62,7 +67,7 @@ void LightManager::init() {
     ShadowMap::initShadowMaps();
 
     GFX_DEVICE.add2DRenderFunction(
-        DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
+        DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr), 1);
     // NORMAL holds general info about the currently active lights: position, color, etc.
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock",
                                                                                     1,
@@ -105,7 +110,7 @@ void LightManager::init() {
     _init = true;
 }
 
-bool LightManager::clear() {
+bool LightPool::clear() {
     if (!_init) {
         return true;
     }
@@ -127,7 +132,7 @@ bool LightManager::clear() {
     return true;
 }
 
-bool LightManager::addLight(Light& light) {
+bool LightPool::addLight(Light& light) {
     light.addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(&light));
 
     const LightType type = light.getLightType();
@@ -135,7 +140,7 @@ bool LightManager::addLight(Light& light) {
 
     if (findLight(light.getGUID(), type) != std::end(_lights[lightTypeIdx])) {
 
-        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_MANAGER_DUPLICATE")),
+        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
                          light.getGUID());
         return false;
     }
@@ -146,11 +151,11 @@ bool LightManager::addLight(Light& light) {
 }
 
 // try to remove any leftover lights
-bool LightManager::removeLight(I64 lightGUID, LightType type) {
+bool LightPool::removeLight(I64 lightGUID, LightType type) {
     Light::LightList::const_iterator it = findLight(lightGUID, type);
 
     if (it == std::end(_lights[to_uint(type)])) {
-        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_MANAGER_REMOVE_LIGHT")),
+        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
                          lightGUID);
         return false;
     }
@@ -159,31 +164,26 @@ bool LightManager::removeLight(I64 lightGUID, LightType type) {
     return true;
 }
 
-void LightManager::idle() {
-    _shadowMapsEnabled =
-        ParamHandler::instance().getParam<bool>(_ID("rendering.enableShadows"));
+void LightPool::idle() {
+    _shadowMapsEnabled = ParamHandler::instance().getParam<bool>(_ID("rendering.enableShadows"));
 }
 
-U8 LightManager::getShadowBindSlotOffset(ShadowType type) {
-    return _shadowLocation[to_uint(type)];
-}
 
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
-bool LightManager::generateShadowMaps() {
+bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
     if (!_shadowMapsEnabled) {
         return true;
     }
     ShadowMap::clearShadowMapBuffers();
     Time::ScopedTimer timer(_shadowPassTimer);
-    SceneRenderState& state = SceneManager::instance().getActiveScene().renderState();
     // generate shadowmaps for each light
     for (Light* light : _shadowCastingLights) {
         if (light != nullptr) {
             _currentShadowCastingLight = light;
-            light->validateOrCreateShadowMaps(state);
-            light->generateShadowMaps(state);
+            light->validateOrCreateShadowMaps(sceneRenderState);
+            light->generateShadowMaps(sceneRenderState);
         }
     }
 
@@ -191,21 +191,17 @@ bool LightManager::generateShadowMaps() {
     return true;
 }
 
-void LightManager::togglePreviewShadowMaps() {
+void LightPool::togglePreviewShadowMaps() {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (!_shadowMapsEnabled ||
-        GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
-        ParamHandler::instance().setParam(
-            _ID("rendering.debug.displayShadowDebugInfo"), false);
-        return;
+    if (!_shadowMapsEnabled || GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
+        ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), false);
+    } else {
+        ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
     }
-
-    ParamHandler::instance().setParam(
-        _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
 }
 
-void LightManager::previewShadowMaps(Light* light) {
+void LightPool::previewShadowMaps(Light* light) {
 #ifdef _DEBUG
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled || !_previewShadowMaps || _lights.empty() ||
@@ -234,7 +230,7 @@ void LightManager::previewShadowMaps(Light* light) {
 }
 
 // If we have computed shadowmaps, bind them before rendering any geometry;
-void LightManager::bindShadowMaps() {
+void LightPool::bindShadowMaps() {
     // Skip applying shadows if we are rendering to depth map, or we have
     // shadows disabled
     if (!_shadowMapsEnabled) {
@@ -244,37 +240,18 @@ void LightManager::bindShadowMaps() {
     ShadowMap::bindShadowMaps();
 }
 
-bool LightManager::shadowMappingEnabled() const {
-    if (!_shadowMapsEnabled) {
-        return false;
-    }
-
-    for (const Light::LightList& lights : _lights) {
-        for (Light* const light : lights) {
-            if (!light->castsShadows()) {
-                continue;
-            }
-            ShadowMap* sm = light->getShadowMapInfo()->getShadowMap();
-            // no shadow map;
-            assert(sm != nullptr);
-
-            if (sm->getDepthMap()) {
-                return true;
-            }
-        }
-    }
-
-    return false;
+bool LightPool::shadowMappingEnabled() {
+    return _shadowMapsEnabled;
 }
 
-Light* LightManager::getLight(I64 lightGUID, LightType type) {
+Light* LightPool::getLight(I64 lightGUID, LightType type) {
     Light::LightList::const_iterator it = findLight(lightGUID, type);
     assert(it != std::end(_lights[to_uint(type)]));
 
     return *it;
 }
 
-void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     // Sort all lights (Sort in parallel by type)   
     TaskHandle cullTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     for (Light::LightList& lights : _lights) {
@@ -358,11 +335,11 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
 }
 
-void LightManager::uploadLightData(ShaderBufferLocation location) {
+void LightPool::uploadLightData(ShaderBufferLocation location) {
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(location);
 }
 
-void LightManager::drawLightImpostors() const {
+void LightPool::drawLightImpostors() const {
     if (!_previewShadowMaps) {
         return;
     }

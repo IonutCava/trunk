@@ -56,7 +56,10 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res) {
 
 template<>
 WaterPlane* ImplResourceLoader<WaterPlane>::operator()() {
-    WaterPlane* ptr = MemoryManager_NEW WaterPlane(_descriptor.getName());
+    U32 sideLength = _descriptor.getID();
+    assert(sideLength > 0 && sideLength < to_uint(std::numeric_limits<I32>::max()));
+
+    WaterPlane* ptr = MemoryManager_NEW WaterPlane(_descriptor.getName(), to_int(sideLength));
 
     if (!load(ptr)) {
         MemoryManager::DELETE(ptr);

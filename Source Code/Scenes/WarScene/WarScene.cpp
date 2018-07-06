@@ -415,6 +415,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setUserPtr(_lightPool.get());
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(25.0f);
@@ -427,6 +428,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setUserPtr(_lightPool.get());
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(35.0f);
@@ -439,6 +441,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::SPOT));
+            tempLight.setUserPtr(_lightPool.get());
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(55.0f);
@@ -580,6 +583,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         for (U8 col = 0; col < 4; col++) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setUserPtr(_lightPool.get());
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(20.0f);
@@ -626,26 +630,25 @@ U16 WarScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_5, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, [](InputParams param) {
-        LightManager& lightMgr = LightManager::instance();
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
-        bool dir = lightMgr.lightTypeEnabled(LightType::DIRECTIONAL);
-        bool point = lightMgr.lightTypeEnabled(LightType::POINT);
-        bool spot = lightMgr.lightTypeEnabled(LightType::SPOT);
+        bool dir   = _lightPool->lightTypeEnabled(LightType::DIRECTIONAL);
+        bool point = _lightPool->lightTypeEnabled(LightType::POINT);
+        bool spot  = _lightPool->lightTypeEnabled(LightType::SPOT);
         if (dir && point && spot) {
-            lightMgr.toggleLightType(LightType::SPOT, false);
+            _lightPool->toggleLightType(LightType::SPOT, false);
         } else if (dir && point && !spot) {
-            lightMgr.toggleLightType(LightType::POINT, false);
+            _lightPool->toggleLightType(LightType::POINT, false);
         } else if (dir && !point && !spot) {
-            lightMgr.toggleLightType(LightType::DIRECTIONAL, false);
-            lightMgr.toggleLightType(LightType::SPOT, true);
+            _lightPool->toggleLightType(LightType::DIRECTIONAL, false);
+            _lightPool->toggleLightType(LightType::SPOT, true);
         } else if (!dir && !point && spot) {
-            lightMgr.toggleLightType(LightType::POINT, true);
+            _lightPool->toggleLightType(LightType::POINT, true);
         } else if (!dir && point && spot) {
-            lightMgr.toggleLightType(LightType::DIRECTIONAL, true);
-            lightMgr.toggleLightType(LightType::POINT, false);
+            _lightPool->toggleLightType(LightType::DIRECTIONAL, true);
+            _lightPool->toggleLightType(LightType::POINT, false);
         } else {
-            lightMgr.toggleLightType(LightType::POINT, true);
+            _lightPool->toggleLightType(LightType::POINT, true);
         }
     });
     actions._onReleaseAction = actionID;

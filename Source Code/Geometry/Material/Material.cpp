@@ -35,13 +35,15 @@ Material::Material(const stringImpl& name)
       _dumpToFile(true),
       _translucencyCheck(true),
       _highPriority(false),
-      _reflectionIndex(0),
+      _reflectionIndex(-1),
+      _refractionIndex(-1),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE)
 {
     _textures.fill(nullptr);
     _textureExtenalFlag.fill(false);
     _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFLECTION)] = true;
+    _textureExtenalFlag[to_const_uint(ShaderProgram::TextureUsage::REFRACTION)] = true;
 
     REGISTER_FRAME_LISTENER(this, 9999);
 
@@ -112,6 +114,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_bumpMethod = base._bumpMethod;
     cloneMat->_parallaxFactor = base._parallaxFactor;
     cloneMat->_reflectionIndex = base._reflectionIndex;
+    cloneMat->_refractionIndex = base._refractionIndex;
 
     cloneMat->_translucencySource.clear();
 
@@ -218,7 +221,8 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
             RemoveResource(_textures[slot]);
         }
     } else {
-        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION) {
+        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION &&
+            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION) {
             // if we add a new type of texture recompute shaders
             computeShaders = true;
         }
@@ -238,7 +242,8 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         recomputeShaders();
     }
 
-    _dirty = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION;
+    _dirty = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION &&
+             textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION;
 
     return true;
 }
@@ -336,6 +341,17 @@ void Material::updateReflectionIndex(I32 index) {
         setTexture(ShaderProgram::TextureUsage::REFLECTION, reflectionTarget._buffer->getAttachment());
     } else {
         setTexture(ShaderProgram::TextureUsage::REFLECTION, nullptr);
+    }
+}
+
+void Material::updateRefractionIndex(I32 index) {
+    _refractionIndex = index;
+    if (_refractionIndex > -1) {
+        GFXDevice::RenderTarget& refractionTarget = GFX_DEVICE.refractionTarget(index);
+        assert(refractionTarget._buffer != nullptr);
+        setTexture(ShaderProgram::TextureUsage::REFRACTION, refractionTarget._buffer->getAttachment());
+    } else {
+        setTexture(ShaderProgram::TextureUsage::REFRACTION, nullptr);
     }
 }
 
@@ -569,7 +585,8 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
         getTextureData(ShaderProgram::TextureUsage::REFLECTION, textureData);
-        
+        getTextureData(ShaderProgram::TextureUsage::REFRACTION, textureData);
+
         for (std::pair<Texture*, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
                 textureData.push_back(tex.first->getData());

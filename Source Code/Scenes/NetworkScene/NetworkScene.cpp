@@ -8,7 +8,7 @@
 namespace Divide {
 
 void NetworkScene::processInput(const U64 deltaTime) {
-    Light* light = LightManager::instance().getLight(0, LightType::DIRECTIONAL);
+    Light* light = _lightPool->getLight(0, LightType::DIRECTIONAL);
     vec4<F32> vSunColor = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
         vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
         0.25f + cosf(_sunAngle.y) * 0.75f);

@@ -29,8 +29,8 @@
 
  */
 
-#ifndef _LIGHT_MANAGER_H_
-#define _LIGHT_MANAGER_H_
+#ifndef _LIGHT_POOL_H_
+#define _LIGHT_POOL_H_
 
 #include "Rendering/Lighting/Headers/Light.h"
 
@@ -40,7 +40,7 @@ class ShaderBuffer;
 class SceneGraphNode;
 class SceneRenderState;
 
-DEFINE_SINGLETON(LightManager)
+class LightPool {
   protected:
       struct LightProperties {
           /// rgb = diffuse
@@ -69,7 +69,14 @@ DEFINE_SINGLETON(LightManager)
 
 
   public:
-    void init();
+    enum class ShaderBufferType : U32 {
+        NORMAL = 0,
+        SHADOW = 1,
+        COUNT
+    };
+
+    LightPool();
+    ~LightPool();
 
     /// Add a new light to the manager
     bool addLight(Light& light);
@@ -87,28 +94,32 @@ DEFINE_SINGLETON(LightManager)
     }
     /// Retrieve the number of active lights in the scene;
     inline const U32 getActiveLightCount(LightType type) const { return _activeLightCount[to_uint(type)]; }
-    inline Light* currentShadowCastingLight() const { return _currentShadowCastingLight; }
 
     bool clear();
-    void idle();
     inline Light::LightList& getLights(LightType type) { return _lights[to_uint(type)]; }
     Light* getLight(I64 lightGUID, LightType type);
 
     /// shadow mapping
-    void bindShadowMaps();
-    bool shadowMappingEnabled() const;
-
-    /// shadow mapping
     void previewShadowMaps(Light* light);
-    void togglePreviewShadowMaps();
 
     void updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
     void uploadLightData(ShaderBufferLocation location);
 
+    void drawLightImpostors() const;
+
+    static void idle();
+    /// shadow mapping
+    static void bindShadowMaps();
+    static bool shadowMappingEnabled();
+    static void togglePreviewShadowMaps();
+
     /// Get the appropriate shadow bind slot for every light's shadow
-    U8 getShadowBindSlotOffset(ShadowType type);
+    static U8 getShadowBindSlotOffset(ShadowType type) {
+        return _shadowLocation[to_uint(type)];
+    }
+
     /// Get the appropriate shadow bind slot offset for every light's shadow
-    inline U8 getShadowBindSlotOffset(LightType lightType) {
+    static U8 getShadowBindSlotOffset(LightType lightType) {
         switch (lightType) {
             default:
             case LightType::SPOT:
@@ -120,11 +131,13 @@ DEFINE_SINGLETON(LightManager)
         };
     }
 
-    void drawLightImpostors() const;
+    static Light* currentShadowCastingLight() { 
+        return _currentShadowCastingLight;
+    }
 
   protected:
-    friend class RenderPass;
-    bool generateShadowMaps();
+    friend class SceneManager;
+    bool generateShadowMaps(SceneRenderState& sceneRenderState);
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
         return std::find_if(std::begin(_lights[to_uint(type)]), std::end(_lights[to_uint(type)]),
@@ -134,28 +147,17 @@ DEFINE_SINGLETON(LightManager)
     }
 
   private:
-    enum class ShaderBufferType : U32 {
-        NORMAL = 0,
-        SHADOW = 1,
-        COUNT
-    };
-
-    LightManager();
-    ~LightManager();
+      void init();
 
   private:
     std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
     bool _init;
-    bool _previewShadowMaps;
-    bool _shadowMapsEnabled;
     Texture* _lightIconsTexture;
-    Light* _currentShadowCastingLight;
     ShaderProgram* _lightImpostorShader;
     std::array<U32, to_const_uint(LightType::COUNT)> _activeLightCount;
 
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>  _lightShaderBuffer;
-    std::array<U8, to_const_uint(ShadowType::COUNT)> _shadowLocation;
 
     typedef std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> LightPropertiesArray;
     std::array<LightPropertiesArray, to_const_uint(LightType::COUNT)> _lightProperties;
@@ -164,7 +166,13 @@ DEFINE_SINGLETON(LightManager)
 
 
     Time::ProfileTimer& _shadowPassTimer;
-END_SINGLETON
+
+    static bool _previewShadowMaps;
+    static bool _shadowMapsEnabled;
+    static Light* _currentShadowCastingLight;
+    static std::array<U8, to_const_uint(ShadowType::COUNT)> _shadowLocation;
+};
 
 };  // namespace Divide
-#endif
+
+#endif //_LIGHT_POOL_H_

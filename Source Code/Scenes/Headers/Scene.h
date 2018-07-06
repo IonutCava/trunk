@@ -47,8 +47,7 @@
 #include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Rendering/Camera/Headers/Camera.h"
-// Managers
-#include "Managers/Headers/LightManager.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 // Hardware
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
@@ -202,6 +201,7 @@ class Scene : public Resource {
     inline bool SCENE_LOAD(const stringImpl& name, GUI* const gui,
                            const bool contOnErrorRes,
                            const bool contOnErrorTasks) {
+        _lightPool.reset(new LightPool());
         if (!Scene::load(name, gui)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
                              "scene load function");
@@ -270,6 +270,7 @@ class Scene : public Resource {
        vectorImpl<SceneGraphNode_cwptr> _sceneSelectionCandidates;
 
    protected:
+       std::unique_ptr<LightPool> _lightPool;
        std::unique_ptr<SceneInput> _input;
 #ifdef _DEBUG
        IMPrimitive* _linesPrimitive;
@@ -281,6 +282,10 @@ class Scene : public Resource {
 namespace Attorney {
 class SceneManager {
    private:
+    static LightPool* lightPool(Scene& scene) {
+        return scene._lightPool.get();
+    }
+
     static bool updateCameraControls(Scene& scene) {
         return scene.updateCameraControls();
     }

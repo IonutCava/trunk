@@ -127,7 +127,7 @@ class Quaternion {
     //! Convert to Axis/Angles
     void getAxisAngle(vec3<T>* axis, T* angle, bool inDegrees) const;
 
-    void getEuler(vec3<T>* euler, bool toDegrees = false) const;
+    void getEuler(vec3<T>& euler, bool toDegrees = false) const;
 
     inline F32 X() const;
     inline F32 Y() const;

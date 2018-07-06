@@ -74,14 +74,6 @@ class SceneGraph : private NonCopyable, public FrameListener {
         return *_octree;
     }
 
-    inline Scene& parentScene() {
-        return _parentScene;
-    }
-
-    inline const Scene& parentScene() const {
-        return _parentScene;
-    }
-
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 

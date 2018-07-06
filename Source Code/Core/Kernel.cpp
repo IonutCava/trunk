@@ -6,7 +6,6 @@
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/AIManager.h"
-#include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -73,9 +72,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
-    // General light management and rendering (individual lights are handled by each scene)
-    // Unloading the lights is a scene level responsibility
-    LightManager::createInstance();
     OpenCLInterface::createInstance();
     _cameraMgr.reset(new CameraManager(this));  // Camera manager
     assert(_cameraMgr != nullptr);
@@ -95,7 +91,6 @@ void Kernel::idle() {
     _GFX.idle();
     _PFX.idle();
     _sceneMgr.idle();
-    LightManager::instance().idle();
     FrameListenerManager::instance().idle();
 
     ParamHandler& par = ParamHandler::instance();
@@ -202,7 +197,7 @@ if (Config::Profile::BENCHMARK_PERFORMANCE ||
         }
         Console::printfn(profileData.c_str());
 
-        _GUI.modifyText(_ID("ProfileData"), profileData);
+        _GUI.modifyGlobalText(_ID("ProfileData"), profileData);
     }
 
     Util::RecordFloatEvent("kernel.mainLoopApp",
@@ -316,8 +311,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     Time::ScopedTimer time(_flushToScreenTimer);
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
-    frameMgr.createEvent(_timingData._currentTime,
-                         FrameEventType::FRAME_PRERENDER_START, evt);
+    frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_START, evt);
 
     if (!frameMgr.frameEvent(evt)) {
         return false;
@@ -326,8 +320,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     // perform time-sensitive shader tasks
     ShaderManager::instance().update(_timingData._currentTimeDelta);
 
-    frameMgr.createEvent(_timingData._currentTime,
-                         FrameEventType::FRAME_PRERENDER_END, evt);
+    frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_END, evt);
 
     if (!frameMgr.frameEvent(evt)) {
         return false;
@@ -496,13 +489,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Initialize GUI with our current resolution
     _GUI.init(renderResolution);
-    _GUI.addText(_ID("ProfileData"),                    // Unique ID
+    _GUI.addGlobalText(_ID("ProfileData"),              // Unique ID
         vec2<I32>(renderResolution.width * 0.75, 100),  // Position
         Font::DROID_SERIF_BOLD,          // Font
         vec4<U8>(255,  50, 0, 255),      // Color
         "PROFILE DATA",                  // Text
         12);                             // Font size
-    LightManager::instance().init();
 
     _sceneMgr.init(&_GUI);
 
@@ -521,10 +513,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Console::printfn(Locale::get(_ID("INITIAL_DATA_LOADED")));
-    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
-    // Initialize and start the AI
-    _sceneMgr.initializeAI(true);
-    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
 
     return initError;
 }
@@ -535,10 +523,10 @@ void Kernel::shutdown() {
     // release the scene
     _sceneMgr.unloadCurrentScene();
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
-    GUI::destroyInstance();  /// Deactivate GUI
     SceneManager::destroyInstance();
+    GUI::destroyInstance();  /// Deactivate GUI
     _cameraMgr.reset(nullptr);
-    LightManager::destroyInstance();
+    ShadowMap::clearShadowMaps();
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
     Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
     _PFX.closePhysicsAPI();

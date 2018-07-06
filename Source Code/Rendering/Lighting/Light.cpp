@@ -1,9 +1,9 @@
 #include "Headers/Light.h"
+#include "Headers/LightPool.h"
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
@@ -11,8 +11,9 @@
 
 namespace Divide {
 
-Light::Light(const stringImpl& name, const F32 range, const LightType& type)
+Light::Light(const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool)
     : SceneNode(name, SceneNodeType::TYPE_LIGHT),
+      _parentPool(parentPool),
       _type(type),
       _rangeChanged(true),
       _drawImpostor(false),
@@ -52,7 +53,7 @@ bool Light::load() {
     _shadowCamera->setTurnSpeedFactor(0.0f);
     _shadowCamera->setFixedYawAxis(true);
 
-    if (LightManager::instance().addLight(*this)) {
+    if (_parentPool.addLight(*this)) {
         return Resource::load();
     }
 
@@ -60,7 +61,7 @@ bool Light::load() {
 }
 
 bool Light::unload() {
-    LightManager::instance().removeLight(getGUID(), getLightType());
+    _parentPool.removeLight(getGUID(), getLightType());
 
     removeShadowMapInfo();
 

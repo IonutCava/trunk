@@ -97,6 +97,7 @@ class ResourceDescriptor {
     inline U32 getEnumValue() const { return _enumValue; }
     inline U32 getID() const { return _ID; }
     inline P32 getMask() const { return _mask; }
+    inline void* getUserPtr() const { return _userPtr; }
 
     inline void setPropertyList(const stringImpl& propertyListString) {
         _properties = propertyListString;
@@ -109,6 +110,8 @@ class ResourceDescriptor {
     inline void setFlag(bool flag) { _flag = flag; }
     inline void setID(U32 ID) { _ID = ID; }
     inline void setBoolMask(P32 mask) { _mask = mask; }
+    inline void setUserPtr(void* ptr) { _userPtr = ptr; }
+
     inline void setThreadedLoading(const bool threaded) {
         _threaded = threaded;
     }
@@ -131,6 +134,7 @@ class ResourceDescriptor {
     /// 4 bool values representing  ... anything ...
     P32 _mask;
     U32 _enumValue;
+    void *_userPtr;
     /// Use for extra resource properties: textures, samplers, terrain etc.
     PropertyDescriptor* _propertyDescriptor;
 };

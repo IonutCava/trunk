@@ -52,7 +52,7 @@ void OrbitCamera::update(const U64 deltaTime) {
     static vec3<F32> newTargetOrientation;
 
     if (/*trans->changedLastFrame() || */ _rotationDirty || true) {
-        trans->getOrientation().getEuler(&newTargetOrientation);
+        trans->getOrientation().getEuler(newTargetOrientation);
         newTargetOrientation.yaw = to_float(M_PI) - newTargetOrientation.yaw;
         newTargetOrientation += _cameraRotation;
         Util::Normalize(newTargetOrientation, false);

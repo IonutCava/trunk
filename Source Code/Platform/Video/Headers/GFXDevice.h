@@ -398,6 +398,11 @@ DEFINE_SINGLETON(GFXDevice)
         return _reflectionTarget[index];
     }
 
+    inline RenderTarget& refractionTarget(I32 index) {
+        assert(index < _refractionTarget.size());
+        return _refractionTarget[index];
+    }
+
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
 
     void shadowDetailLevel(RenderDetailLevel detailLevel) {
@@ -575,6 +580,7 @@ DEFINE_SINGLETON(GFXDevice)
     /* Rendering buffers*/
     std::array<RenderTarget, to_const_uint(RenderTargetID::COUNT)> _renderTarget;
     std::array<RenderTarget, Config::MAX_REFLECTIVE_NODES_IN_VIEW> _reflectionTarget;
+    std::array<RenderTarget, Config::MAX_REFRACTIVE_NODES_IN_VIEW> _refractionTarget;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;

@@ -51,6 +51,7 @@ private:
 
 private:
     hashMapImpl<I64, stringImpl> _buttonToSceneMap;
+    stringImpl _sceneToLoad;
 };
 };
 

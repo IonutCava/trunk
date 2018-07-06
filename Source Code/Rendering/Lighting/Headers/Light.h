@@ -46,8 +46,9 @@ enum class LightType : U32 {
 };
 
 class Camera;
-class ImpostorSphere;
+class LightPool;
 class ParamHandler;
+class ImpostorSphere;
 class SceneRenderState;
 /// A light object placed in the scene at a certain position
 class Light : public SceneNode {
@@ -76,7 +77,7 @@ class Light : public SceneNode {
     /// Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
-    explicit Light(const stringImpl& name, const F32 range, const LightType& type);
+    explicit Light(const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool);
     virtual ~Light();
 
     /// Is the light a shadow caster?
@@ -197,7 +198,7 @@ class Light : public SceneNode {
     }
 
    protected:
-    friend class LightManager;
+    friend class LightPool;
     template <typename T>
     friend class ImplResourceLoader;
     bool load() override;
@@ -239,6 +240,7 @@ class Light : public SceneNode {
     ImpostorSphere* _impostor;
     SceneGraphNode_wptr _impostorSGN;
     Camera* _shadowCamera;
+    LightPool& _parentPool;
     bool _enabled;
 };
 

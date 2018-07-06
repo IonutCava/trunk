@@ -55,6 +55,10 @@ namespace Attorney {
     class RenderingCompSceneNode;
 };
 
+typedef DELEGATE_CBK_PARAM_3<const SceneGraphNode&, 
+                             const SceneRenderState&,
+                             GFXDevice::RenderTarget&> RenderCallback;
+
 class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
@@ -110,6 +114,9 @@ class RenderingComponent : public SGNComponent {
     void registerTextureDependency(const TextureData& additionalTexture);
     void removeTextureDependency(const TextureData& additionalTexture);
 
+    inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }
+    inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
+
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
@@ -148,8 +155,12 @@ class RenderingComponent : public SGNComponent {
     // and saves it in the appropriate material slot
     bool updateReflection(U32 reflectionIndex, 
                           const vec3<F32>& camPos,
-                          const vec2<F32>& camZPlanes);
+                          const SceneRenderState& renderState);
+    bool updateRefraction(U32 refractionIndex,
+                          const vec3<F32>& camPos,
+                          const SceneRenderState& renderState);
     bool clearReflection();
+    bool clearRefraction();
 
    protected:
     Material* _materialInstance;
@@ -172,6 +183,8 @@ class RenderingComponent : public SGNComponent {
     IMPrimitive* _boundingSpherePrimitive;
     IMPrimitive* _skeletonPrimitive;
 
+    RenderCallback _reflectionCallback;
+    RenderCallback _refractionCallback;
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;
@@ -184,16 +197,29 @@ class RenderingCompRenderPass {
         static bool updateReflection(RenderingComponent& renderable,
                                      U32 reflectionIndex,
                                      const vec3<F32>& camPos,
-                                     const vec2<F32>& camZPlanes)
+                                     const SceneRenderState& renderState)
         {
-            return renderable.updateReflection(reflectionIndex, camPos, camZPlanes);
+            return renderable.updateReflection(reflectionIndex, camPos, renderState);
+        }
+
+        static bool updateRefraction(RenderingComponent& renderable,
+                                     U32 refractionIndex,
+                                     const vec3<F32>& camPos,
+                                     const SceneRenderState& renderState)
+        {
+            return renderable.updateRefraction(refractionIndex, camPos, renderState);
         }
 
         static bool clearReflection(RenderingComponent& renderable)
         {
             return renderable.clearReflection();
         }
-        
+
+        static bool clearRefraction(RenderingComponent& renderable)
+        {
+            return renderable.clearRefraction();
+        }
+
         friend class Divide::RenderPass;
 };
 

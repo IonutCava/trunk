@@ -4,8 +4,8 @@
 
 namespace Divide {
 
-SpotLight::SpotLight(const stringImpl& name, F32 range)
-     : Light(name, range, LightType::SPOT)
+SpotLight::SpotLight(const stringImpl& name, F32 range, LightPool& parentPool)
+     : Light(name, range, LightType::SPOT, parentPool)
 {
     setRange(2.0f);
     setSpotAngle(35.0f);

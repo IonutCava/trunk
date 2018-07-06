@@ -10,7 +10,8 @@ ResourceDescriptor::ResourceDescriptor(const stringImpl& name,
       _resourceLocation(resourceLocation),
       _flag(flag),
       _ID(ID),
-      _enumValue(enumValue)
+      _enumValue(enumValue),
+      _userPtr(nullptr)
 {
     _mask.i = 0;
     _threaded = true;
@@ -30,6 +31,7 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
     _ID = old._ID;
     _mask = old._mask;
     _enumValue = old._enumValue;
+    _userPtr = old._userPtr;
     if (old._propertyDescriptor != nullptr) {
         _propertyDescriptor = old._propertyDescriptor->clone();
     }
@@ -46,6 +48,7 @@ ResourceDescriptor& ResourceDescriptor::operator=(
         _ID = old._ID;
         _mask = old._mask;
         _enumValue = old._enumValue;
+        _userPtr = old._userPtr;
         if (old._propertyDescriptor != nullptr) {
             MemoryManager::SAFE_UPDATE(_propertyDescriptor,
                                        old._propertyDescriptor->clone());

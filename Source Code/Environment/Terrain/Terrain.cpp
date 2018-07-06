@@ -113,7 +113,7 @@ void Terrain::sceneUpdate(const U64 deltaTime,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
     _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
-    _waterHeight = sgn.parentGraph().parentScene().state().waterLevel();
+    _waterHeight = sceneState.waterLevel();
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 

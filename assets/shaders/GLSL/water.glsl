@@ -29,7 +29,6 @@ out vec4 _colorOut;
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 uniform float _waterShininess;
-uniform float _transparencyBias;
 uniform bool  underwater;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterNoiseNM;

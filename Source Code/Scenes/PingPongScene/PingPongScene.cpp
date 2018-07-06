@@ -316,6 +316,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
 
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
+    tempLight.setUserPtr(_lightPool.get());
     Light* light = CreateResource<Light>(tempLight);
     _sceneGraph->getRoot()->addNode(*light, lightMask);
     light->setRange(30.0f);

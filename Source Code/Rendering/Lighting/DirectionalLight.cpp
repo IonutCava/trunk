@@ -6,8 +6,8 @@
 
 namespace Divide {
 
-DirectionalLight::DirectionalLight(const stringImpl& name)
-    : Light(name, -1, LightType::DIRECTIONAL),
+DirectionalLight::DirectionalLight(const stringImpl& name, LightPool& parentPool)
+    : Light(name, -1, LightType::DIRECTIONAL, parentPool),
       _csmSplitCount(3),
       _csmSplitLogFactor(0.95f),
       _csmNearClipOffset(100.0f)

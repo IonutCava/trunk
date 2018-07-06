@@ -1,7 +1,6 @@
 #include "Headers/RenderPass.h"
 
 #include "Graphs/Headers/SceneGraph.h"
-#include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
@@ -10,6 +9,7 @@
 #include "Geometry/Material/Headers/Material.h"
 
 #include "Rendering/Headers/Renderer.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 namespace Divide {
@@ -38,6 +38,26 @@ namespace {
             return g_reflectionBudget;
         }
     };
+    namespace RefractionUtil {
+        U32 g_refractionBudget = 0;
+
+        inline bool isInBudget() {
+            return g_refractionBudget <
+                Config::MAX_REFRACTIVE_NODES_IN_VIEW;
+        }
+
+        inline void resetBudget() {
+            g_refractionBudget = 0;
+        }
+
+        inline void updateBudget() {
+            ++g_refractionBudget;
+        }
+        inline U32 currentEntry() {
+            return g_refractionBudget;
+        }
+    };
+    
 };
 
 RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags)
@@ -86,13 +106,11 @@ void RenderPass::render(SceneRenderState& renderState) {
                     renderState);
             } break;
             case RenderStage::SHADOW: {
-                LightManager::instance().generateShadowMaps();
+                Attorney::SceneManagerRenderPass::generateShadowMaps();
             } break;
             case RenderStage::REFLECTION: {
-                const vec2<F32>& zPlanes= renderState.getCameraConst().getZPlanes();
-                // Get list of reflective nodes from the scene manager
-                const RenderPassCuller::VisibleNodeList& nodeCache = 
-                    SceneManager::instance().getSortedReflectiveNodes();
+                // Get list of reflective and refractive nodes from the scene manager
+                const RenderPassCuller::VisibleNodeList& nodeCache = SceneManager::instance().getSortedReflectiveNodes();
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
@@ -104,10 +122,27 @@ void RenderPass::render(SceneRenderState& renderState) {
                         Attorney::RenderingCompRenderPass::updateReflection(*rComp, 
                                                                             ReflectionUtil::currentEntry(),
                                                                             pComp->getPosition(),
-                                                                            zPlanes);
+                                                                            renderState);
                         ReflectionUtil::updateBudget();
                     } else {
                         Attorney::RenderingCompRenderPass::clearReflection(*rComp);
+                    }
+                }
+                
+                // While in budget, update refractions
+                RefractionUtil::resetBudget();
+                for (const RenderPassCuller::VisibleNode& node : nodeCache) {
+                    SceneGraphNode_cptr nodePtr = node.second.lock();
+                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                    if (RefractionUtil::isInBudget()) {
+                        PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
+                        Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
+                                                                             RefractionUtil::currentEntry(),
+                                                                             pComp->getPosition(),
+                                                                             renderState);
+                        RefractionUtil::updateBudget();
+                    } else {
+                        Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
                     }
                 }
 
@@ -151,7 +186,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, U32 pass) {
     };
     
     if (bindShadowMaps) {
-        LightManager::instance().bindShadowMaps();
+        LightPool::bindShadowMaps();
     }
 
     return true;
@@ -173,9 +208,7 @@ bool RenderPass::postRender(SceneRenderState& renderState, U32 pass) {
 
             if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {
                 GFX.constructHIZ();
-                LightManager::instance().updateAndUploadLightData(renderState.getCameraConst().getEye(),
-                                                                     GFX.getMatrix(MATRIX::VIEW));
-                SceneManager::instance().getRenderer().preRender();
+                Attorney::SceneManagerRenderPass::preRender();
                 renderTarget.cacheSettings();
             } else {
                 if (_useZPrePass) {

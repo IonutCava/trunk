@@ -368,7 +368,7 @@ void Quaternion<T>::getAxisAngle(vec3<T>* axis, T* angle, bool inDegrees) const 
 }
 
 template <typename T>
-void Quaternion<T>::getEuler(vec3<T>* euler, bool toDegrees) const {
+void Quaternion<T>::getEuler(vec3<T>& euler, bool toDegrees) const {
     T heading = 0, attitude = 0, bank = 0;
     const T& x = X();
     const T& y = Y();
@@ -386,8 +386,7 @@ void Quaternion<T>::getEuler(vec3<T>* euler, bool toDegrees) const {
         heading = 2 * std::atan2(x, w);
         attitude = static_cast<T>(M_PI2);
         bank = 0;
-    } else if (test <
-               -(0.5f - EPSILON_F32) * unit) {  // singularity at south pole
+    } else if (test < -(0.5f - EPSILON_F32) * unit) {  // singularity at south pole
         heading = -2 * std::atan2(x, w);
         attitude = -static_cast<T>(M_PI2);
         bank = 0;
@@ -401,13 +400,13 @@ void Quaternion<T>::getEuler(vec3<T>* euler, bool toDegrees) const {
     }
     // Convert back from Z = pitch to Z = roll
     if (toDegrees) {
-        euler->yaw = Angle::RadiansToDegrees(heading);
-        euler->pitch = Angle::RadiansToDegrees(bank);
-        euler->roll = Angle::RadiansToDegrees(attitude);
+        euler.yaw = Angle::RadiansToDegrees(heading);
+        euler.pitch = Angle::RadiansToDegrees(bank);
+        euler.roll = Angle::RadiansToDegrees(attitude);
     } else {
-        euler->yaw = heading;
-        euler->pitch = bank;
-        euler->roll = attitude;
+        euler.yaw = heading;
+        euler.pitch = bank;
+        euler.roll = attitude;
     }
 }
 
@@ -525,7 +524,7 @@ inline mat4<T> GetMatrix(const Quaternion<T>& q) {
 template <typename T>
 inline vec3<T> GetEuler(const Quaternion<T>& q, const bool toDegrees) {
     vec3<T> euler;
-    q.getEuler(&euler, toDegrees);
+    q.getEuler(euler, toDegrees);
     return euler;
 }
 };  // namespace Divide

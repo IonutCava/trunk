@@ -1,8 +1,8 @@
 #include "Headers/ForwardPlusRenderer.h"
 
 #include "Core/Headers/Console.h"
-#include "Managers/Headers/LightManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
@@ -33,11 +33,10 @@ ForwardPlusRenderer::~ForwardPlusRenderer()
     RemoveResource(_lightCullComputeShader);
 }
 
-void ForwardPlusRenderer::preRender() {
-    Renderer::preRender();
+void ForwardPlusRenderer::preRender(LightPool& lightPool) {
+    Renderer::preRender(lightPool);
 
-    LightManager& lightMgr = LightManager::instance();
-    lightMgr.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
+    lightPool.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
 
     GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer
         ->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),

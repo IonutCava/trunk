@@ -41,12 +41,12 @@ class ForwardPlusRenderer : public Renderer {
     ForwardPlusRenderer();
     ~ForwardPlusRenderer();
 
-    void preRender();
+    void preRender(LightPool& lightPool) override;
 
     void render(const DELEGATE_CBK<>& renderCallback,
-                const SceneRenderState& sceneRenderState);
+                const SceneRenderState& sceneRenderState)  override;
 
-    void updateResolution(U16 width, U16 height);
+    void updateResolution(U16 width, U16 height)  override;
 
    private:
        U32 getMaxNumLightsPerTile() const;

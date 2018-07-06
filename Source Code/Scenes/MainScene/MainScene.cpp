@@ -139,6 +139,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
     /*ResourceDescriptor infiniteWater("waterEntity");
+    infiniteWater.setID(to_uint(renderState().getCameraConst().getZPlanes().y));
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
@@ -146,6 +147,8 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
+    waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel);
+
     // Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
                                                 &SceneManager::instance(),
@@ -183,12 +186,6 @@ U16 MainScene::registerInputActions() {
     });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_M, actions);
-    actionID++;
-
-
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) { _water->togglePreviewReflection(); });
-    actions._onReleaseAction = actionID;
-    _input->addKeyMapping(Input::KeyCode::KC_R, actions);
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {

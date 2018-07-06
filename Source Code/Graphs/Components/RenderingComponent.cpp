@@ -3,12 +3,12 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Managers/Headers/LightManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 
 namespace Divide {
 
@@ -73,7 +73,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
         _skeletonPrimitive->paused(true);
     }
-
+    
 #ifdef _DEBUG
     // Red X-axis
     _axisLines.push_back(
@@ -514,7 +514,7 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     I32 variant = 0;
 
     if (shadowStage) {
-        LightType type = LightManager::instance().currentShadowCastingLight()->getLightType();
+        LightType type = LightPool::currentShadowCastingLight()->getLightType();
         type == LightType::DIRECTIONAL
                ? 0
                : type == LightType::POINT 
@@ -604,7 +604,10 @@ bool RenderingComponent::clearReflection() {
     return true;
 }
 
-bool RenderingComponent::updateReflection(U32 reflectionIndex, const vec3<F32>& camPos, const vec2<F32>& camZPlanes) {
+bool RenderingComponent::updateReflection(U32 reflectionIndex,
+                                          const vec3<F32>& camPos,
+                                          const SceneRenderState& renderState)
+{
     // Low lod entities don't need up to date reflections
     if (_lodLevel > 1) {
         return false;
@@ -624,11 +627,57 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex, const vec3<F32>& 
     GFXDevice::RenderTarget& reflectionTarget = GFX_DEVICE.reflectionTarget(reflectionIndex);
     assert(reflectionTarget._buffer != nullptr);
 
-    GFX_DEVICE.generateCubeMap(*reflectionTarget._buffer,
-                               0,
-                               camPos,
-                               vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
-                               RenderStage::REFLECTION);
+    if (_reflectionCallback) {
+        _reflectionCallback(_parentSGN, renderState, reflectionTarget);
+    } else {
+        const vec2<F32>& camZPlanes = renderState.getCameraConst().getZPlanes();
+
+        GFX_DEVICE.generateCubeMap(*reflectionTarget._buffer, 0, camPos,
+                                   vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
+                                   RenderStage::REFLECTION);
+    }
+
+    return true;
+}
+
+bool RenderingComponent::clearRefraction() {
+    Material* mat = getMaterialInstance();
+    if (mat == nullptr) {
+        return false;
+    }
+    if (!mat->isTranslucent()) {
+        return false;
+    }
+    mat->updateRefractionIndex(-1);
+    return true;
+}
+
+bool RenderingComponent::updateRefraction(U32 refractionIndex,
+                                          const vec3<F32>& camPos,
+                                          const SceneRenderState& renderState) {
+    // no default refraction system!
+    if (!_refractionCallback) {
+        return false;
+    }
+    // Low lod entities don't need up to date reflections
+    if (_lodLevel > 1) {
+        return false;
+    }
+    // If we lake a material, we don't use reflections
+    Material* mat = getMaterialInstance();
+    if (mat == nullptr) {
+        return false;
+    }
+    // If shininess is below a certain threshold, we don't have any reflections 
+    if (!mat->isTranslucent()) {
+        return false;
+    }
+
+    mat->updateRefractionIndex(refractionIndex);
+
+    GFXDevice::RenderTarget& refractionTarget = GFX_DEVICE.refractionTarget(refractionIndex);
+    assert(refractionTarget._buffer != nullptr);
+    _refractionCallback(_parentSGN, renderState, refractionTarget);
 
     return true;
 }

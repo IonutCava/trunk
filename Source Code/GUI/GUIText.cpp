@@ -25,9 +25,11 @@ const bool GUIText::isVisible() const {
 }
 
 void GUIText::draw() const {
-    Attorney::GFXDeviceGUI::drawText(*this,
-                                     getStateBlockHash(),
-                                     vec2<F32>(_position.width, _heightCache - _position.height));
+    if (!text().empty()) {
+        Attorney::GFXDeviceGUI::drawText(*this,
+                                         getStateBlockHash(),
+                                         vec2<F32>(_position.width, _heightCache - _position.height));
+    }
 }
 
 void GUIText::onChangeResolution(U16 w, U16 h) {

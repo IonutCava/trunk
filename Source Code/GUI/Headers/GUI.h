@@ -69,13 +69,17 @@ class Scene;
 /// Graphical User Interface
 
 DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
-    typedef hashMapImpl<ULL, GUIElement*> guiMap;
+    typedef hashMapImpl<ULL, GUIElement*> GUIMap;
+    typedef hashMapImpl<I64, GUIMap> GUIMapPerScene;
+
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
 
   public:
     /// Create the GUI
     bool init(const vec2<U16>& renderResolution);
     void onChangeResolution(U16 w, U16 h);
+    void onChangeScene(I64 newSceneGUID);
+    I64  activeSceneGUID() const;
     /// Main update call
     void update(const U64 deltaTime);
     /// Add a text label
@@ -85,35 +89,74 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
                      const vec4<U8>& color,
                      const stringImpl& text,
                      U32 fontSize = 16);
+    GUIText* addGlobalText(ULL ID,
+                           const vec2<I32>& position,
+                           const stringImpl& font,
+                           const vec4<U8>& color,
+                           const stringImpl& text,
+                           U32 fontSize = 16);
     /// Modify a text label
-    GUIText* modifyText(ULL ID,
-                        const stringImpl& text);
+    GUIText* modifyText(ULL ID, const stringImpl& text);
+    GUIText* modifyGlobalText(ULL ID, const stringImpl& text);
+
     GUIMessageBox* addMsgBox(ULL ID, 
                              const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre = vec2<I32>(0));
+    GUIMessageBox* addGlobalMsgBox(ULL ID,
+                                   const stringImpl& title,
+                                   const stringImpl& message,
+                                   const vec2<I32>& offsetFromCentre = vec2<I32>(0));
     /// Add a button with a specific callback.
     /// The root of the window positioning system is bottom left, so 100,60 will
     /// place the button 100 pixels to the right and 60 up
     /// from the bottom
-    GUIButton* addButton(ULL ID, 
+    GUIButton* addButton(ULL ID,
                          const stringImpl& text,
                          const vec2<I32>& position,
                          const vec2<U32>& dimensions,
                          const vec3<F32>& color,
                          ButtonCallback callback,
                          const stringImpl& rootSheetID = "");
+    GUIButton* addGlobalButton(ULL ID,
+                               const stringImpl& text,
+                               const vec2<I32>& position,
+                               const vec2<U32>& dimensions,
+                               const vec3<F32>& color,
+                               ButtonCallback callback,
+                               const stringImpl& rootSheetID = "");
     /// Add a flash element -DEPRECATED-
     GUIFlash* addFlash(ULL ID, 
                        stringImpl movie,
-                       const vec2<U32>& position, const vec2<U32>& extent);
+                       const vec2<U32>& position,
+                       const vec2<U32>& extent);
+    GUIFlash* addGlobalFlash(ULL ID,
+                             stringImpl movie,
+                             const vec2<U32>& position,
+                             const vec2<U32>& extent);
     /// Get a pointer to our console window
     inline GUIConsole* const getConsole() { return _console; }
     inline const GUIEditor& getEditor() { return GUIEditor::instance(); }
-    /// Get a const pointer to an element by name/id
-    inline GUIElement* const getItem(ULL ID) { return _guiStack[ID]; }
     /// Get a pointer to an element by name/id
-    inline GUIElement* getGuiElement(ULL ID) { return _guiStack[ID]; }
+    template<typename T = GUIElement>
+    inline T* getGuiElement(I64 sceneID, ULL elementName) { 
+        static_assert(std::is_base_of<GUIElement, T>::value, "getGuiElement error: Target is not a valid GUI item");
+        return static_cast<T*>(_guiStack[sceneID][elementName]);
+    }
+    template<typename T = GUIElement>
+    inline T* getGuiElement(I64 sceneID, I64 elementID) {
+        static_assert(std::is_base_of<GUIElement, T>::value, "getGuiElement error: Target is not a valid GUI item");
+        const GUIMap& guiStackForScene = _guiStack[sceneID];
+
+        GUIElement* element = nullptr;
+        for (GUIMap::value_type it : guiStackForScene) {
+            if (it.second->getGUID() == elementID) {
+                element = it.second;
+                break;
+            }
+        }
+        return static_cast<T*>(element);
+    }
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
     void selectionChangeCallback(Scene* const activeScene);
@@ -156,10 +199,12 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     inline const vec2<U16>& getDisplayResolution() const {
         return _resolutionCache;
     }
+
   private:
     GUI();            //< Constructor
     ~GUI();           //< Destructor
     void draw() const;
+    void addElement(ULL id, I64 sceneID, GUIElement* element);
 
   private:
     bool _init;              //< Set to true when the GUI has finished loading
@@ -169,19 +214,23 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     GUIConsole* _console;    //< Pointer to the GUIConsole object
     GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for
                                     //general purpose messages
-    guiMap _guiStack;               //< All the GUI elements created
     U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible
                               //for performance reasons
     CEGUI::Window* _rootSheet;  //< gui root Window
     stringImpl _defaultGUIScheme;
     ShaderProgram* _guiShader;  //<Used to apply color for text for now
 
+    /// Each scene has its own gui elements! (0 = global)
+    I64 _activeSceneGUID;
     vec2<U16> _resolutionCache;
     bool _enableCEGUIRendering;
 
     U32 _debugVarCacheCount;
     // GROUP, VAR
     vectorImpl<std::pair<I64, I64>> _debugDisplayEntries;
+
+    /// All the GUI elements created per scene
+    GUIMapPerScene _guiStack;               
 END_SINGLETON
 
 };  // namespace Divide

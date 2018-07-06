@@ -47,6 +47,13 @@ class GUIButton : public GUIElement {
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
     friend class GUI;
 
+   public:
+    void setTooltip(const stringImpl& tooltipText);
+    void setText(const stringImpl& text);
+    void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
+    void setActive(const bool active) override;
+    void setVisible(const bool visible) override;
+
    protected:
     GUIButton(ULL ID,
               const stringImpl& text,
@@ -59,12 +66,9 @@ class GUIButton : public GUIElement {
     ~GUIButton();
 
     void draw() const;
-    void setTooltip(const stringImpl& tooltipText);
-    void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
    protected:
-    stringImpl _text;
     vec3<F32> _color;
     bool _pressed;
     bool _highlight;

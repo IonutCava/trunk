@@ -108,6 +108,8 @@ bool Scene::idle() {  // Called when application is idle
         }
     }
 
+    _lightPool->idle();
+
     return true;
 }
 
@@ -287,21 +289,23 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     const char* lightType = "";
     switch (type) {
         case LightType::DIRECTIONAL:
-            lightType = "Default_directional_light ";
+            lightType = "_directional_light ";
             break;
         case LightType::POINT:
-            lightType = "Default_point_light_";
+            lightType = "_point_light_";
             break;
         case LightType::SPOT:
-            lightType = "Default_spot_light_";
+            lightType = "_spot_light_";
             break;
     }
 
     ResourceDescriptor defaultLight(
+        getName() +
         lightType +
-        to_stringImpl(LightManager::instance().getLights(type).size()));
+        to_stringImpl(_lightPool->getLights(type).size()));
 
     defaultLight.setEnumValue(to_uint(type));
+    defaultLight.setUserPtr(_lightPool.get());
     Light* light = CreateResource<Light>(defaultLight);
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
@@ -318,6 +322,7 @@ void Scene::toggleFlashlight() {
 
         ResourceDescriptor tempLightDesc("MainFlashlight");
         tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
+        tempLightDesc.setUserPtr(_lightPool.get());
         Light* tempLight = CreateResource<Light>(tempLightDesc);
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
@@ -407,7 +412,7 @@ U16 Scene::registerInputActions() {
     auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleBoundingBoxes();};
     auto toggleShadowMapDepthBufferPreview = [](InputParams param) {
         ParamHandler& par = ParamHandler::instance();
-        LightManager::instance().togglePreviewShadowMaps();
+        LightPool::togglePreviewShadowMaps();
         par.setParam<bool>(
             _ID("rendering.previewDepthBuffer"),
             !par.getParam<bool>(_ID("rendering.previewDepthBuffer"), false));
@@ -615,9 +620,9 @@ bool Scene::unload() {
         return false;
     }
     clearTasks();
+    _lightPool->clear();
     /// Destroy physics (:D)
     PHYSICS_DEVICE.setPhysicsScene(nullptr);
-    LightManager::instance().clear();
     clearObjects();
     _loadComplete = false;
     return true;
@@ -815,7 +820,7 @@ void Scene::debugDraw(RenderStage stage) {
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes
         AI::AIManager::instance().debugDraw(false);
-        LightManager::instance().drawLightImpostors();
+        _lightPool->drawLightImpostors();
     }
 }
 

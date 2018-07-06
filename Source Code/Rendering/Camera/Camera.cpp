@@ -120,7 +120,7 @@ void Camera::rotate(const Quaternion<F32>& q) {
 
     if (_type == CameraType::FIRST_PERSON) {
         vec3<F32> euler;
-        q.getEuler(&euler);
+        q.getEuler(euler);
         rotate(euler.yaw, euler.pitch, euler.roll);
     } else {
         _tempOrientation.set(q);
@@ -321,7 +321,7 @@ bool Camera::updateViewMatrix() {
     _viewMatrix.m[3][0] = -_xAxis.dot(_eye);
     _viewMatrix.m[3][1] = -_yAxis.dot(_eye);
     _viewMatrix.m[3][2] = -_zAxis.dot(_eye);
-    _orientation.getEuler(&_euler, true);
+    _orientation.getEuler(_euler, true);
 
     _viewMatrixDirty = false;
     _frustumDirty = true;

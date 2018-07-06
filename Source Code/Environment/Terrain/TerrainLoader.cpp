@@ -445,11 +445,10 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, const TerrainDescrip
     Attorney::TerrainLoader::buildQuadtree(*terrain);
 
 
-    F32& farPlane = Attorney::TerrainLoader::farPlane(*terrain);
     Quad3D& plane = *CreateResource<Quad3D>(infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
     F32 height = bMin.y + yOffset;
-    farPlane = 2.0f * terrainBB.getWidth();
+    F32 farPlane = 2.0f * terrainBB.getWidth();
 
     plane.setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(-farPlane * 1.5f, height, -farPlane * 1.5f));
     plane.setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(farPlane * 1.5f, height, -farPlane * 1.5f));

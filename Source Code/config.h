@@ -80,8 +80,14 @@ const unsigned int MAX_REFLECTIVE_NODES_IN_VIEW = 3;
 #   else
 const unsigned int  MAX_REFLECTIVE_NODES_IN_VIEW = 5;
 #   endif
+#   if defined(_DEBUG)
+const unsigned int MAX_REFRACTIVE_NODES_IN_VIEW = 2;
+#   else
+const unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
+#   endif
 /// Reflection render target resolution
 const unsigned int REFLECTION_TARGET_RESOLUTION = 256;
+const unsigned int REFRACTION_TARGET_RESOLUTION = 1024;
 const unsigned int MAX_CLIP_PLANES = 6;
 /// Generic index value used to separate primitives within the same vertex
 /// buffer

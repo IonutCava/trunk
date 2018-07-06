@@ -144,7 +144,6 @@ class Terrain : public Object3D {
     Quadtree _terrainQuadtree;
 
     vec2<F32> _terrainScaleFactor;
-    F32 _farPlane;
     F32 _waterHeight;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
@@ -213,8 +212,9 @@ class TerrainLoader {
     static BoundingBox& boundingBox(Terrain& terrain) {
         return terrain._boundingBox;
     }
-    static F32& farPlane(Terrain& terrain) { return terrain._farPlane; }
+
     static void plane(Terrain& terrain, Quad3D* plane) { terrain._plane = plane; }
+
     static vec2<U16>& dimensions(Terrain& terrain) {
         return terrain._terrainDimensions;
     }

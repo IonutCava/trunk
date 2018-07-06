@@ -34,7 +34,6 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Rendering/RenderPass/Headers/Reflector.h"
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
@@ -42,7 +41,7 @@ namespace Divide {
 class Texture;
 class CameraManager;
 class ShaderProgram;
-class WaterPlane : public SceneNode, public Reflector {
+class WaterPlane : public SceneNode {
    public:
     /// Resource inherited "unload"
     bool unload() override;
@@ -60,27 +59,9 @@ class WaterPlane : public SceneNode, public Reflector {
 
     inline Quad3D* getQuad() const { return _plane; }
 
-    inline const ClipPlaneIndex getReflectionPlaneID() {
-        return _reflectionPlaneID;
-    }
-    inline const ClipPlaneIndex getRefractionPlaneID() {
-        return _refractionPlaneID;
-    }
-    /// Reflector overwrite
-    void updateReflection();
-    void updateRefraction();
-    void updatePlaneEquation();
-    /// Used for many things, such as culling switches, and underwater effects
-    inline bool isPointUnderWater(const vec3<F32>& pos) {
-        return (pos.y < _waterLevel);
-    }
-
-    inline void setReflectionCallback(const DELEGATE_CBK<>& callback) {
-        Reflector::setRenderCallback(callback);
-    }
-    inline void setRefractionCallback(const DELEGATE_CBK<>& callback) {
-        _refractionCallback = callback;
-    }
+    void updatePlaneEquation(const SceneGraphNode& sgn,
+                             Plane<F32>& reflectionPlane,
+                             Plane<F32>& refractionPlane);
 
    protected:
     SET_DELETE_FRIEND
@@ -88,7 +69,7 @@ class WaterPlane : public SceneNode, public Reflector {
     template <typename T>
     friend class ImplResourceLoader;
 
-    explicit WaterPlane(const stringImpl& name);
+    explicit WaterPlane(const stringImpl& name, I32 sideLength);
 
     ~WaterPlane();
 
@@ -99,38 +80,38 @@ class WaterPlane : public SceneNode, public Reflector {
 
     void postLoad(SceneGraphNode& sgn) override;
 
-    void previewReflection();
-
-    inline const Plane<F32>& getRefractionPlane() { return _refractionPlane; }
+    inline void setSideLength(I32 length) { 
+        _sideLength = std::max(length, 1);
+        _paramsDirty = true;
+    }
 
    private:
     void updateBoundsInternal(SceneGraphNode& sgn) override;
+    void updateReflection(const SceneGraphNode& sgn,
+                          const SceneRenderState& sceneRenderState,
+                          GFXDevice::RenderTarget& renderTarget);
+    void updateRefraction(const SceneGraphNode& sgn,
+                          const SceneRenderState& sceneRenderState,
+                          GFXDevice::RenderTarget& renderTarget);
+    bool cameraUnderwater(const SceneGraphNode& sgn, const SceneRenderState& sceneRenderState);
 
    private:
-    /// the hw clip-plane index for the water
-    ClipPlaneIndex _reflectionPlaneID;
-    ClipPlaneIndex _refractionPlaneID;
     /// cached far plane value
-    F32 _farPlane;
-    /// cached water level
-    F32 _waterLevel;
-    /// cached water depth
-    F32 _waterDepth;
-    /// Last used orientation
-    Quaternion<F32> _orientation;
+    I32 _sideLength;
     /// the water's "geometry"
     Quad3D* _plane;
-    Framebuffer* _refractionTexture;
-    Plane<F32> _refractionPlane;
-    DELEGATE_CBK<> _refractionCallback;
     bool _refractionRendering;
     bool _reflectionRendering;
-    bool _dirty, _paramsDirty;
-    bool _cameraUnderWater;
+    bool _paramsDirty;
     F32 _shininess;
     vec2<F32> _noiseTile;
     vec2<F32> _noiseFactor;
-    F32 _transparency;
+
+    /// used for render exclusion. Do not render self in own reflection
+    bool _updateSelf;
+    /// Use this to force current reflector to draw itself in reflection
+    bool _excludeSelfReflection;
+
     CameraManager& _cameraMgr;
 };
 

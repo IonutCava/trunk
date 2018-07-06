@@ -65,20 +65,58 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
     }
 
 
+    _GUI->addText(_ID("globalMessage"),
+                  vec2<I32>(windowCenterX,
+                            windowCenterY + (numRows + 1)* btnHeight),
+                  Font::DIVIDE_DEFAULT,
+                  vec4<U8>(128, 64, 64, 255),
+                  "");
+
+    _taskTimers.push_back(0.0);
+
     return true;
 }
 
 void DefaultScene::processInput(const U64 deltaTime) {
+    if (!_sceneToLoad.empty()) {
+        _GUI->modifyText(_ID("globalMessage"),
+                         Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
+        Scene* newScene = SceneManager::instance().load(_sceneToLoad);
+        SceneManager::instance().setActiveScene(*newScene);
+        _sceneToLoad = "";
+    }
 }
 
 void DefaultScene::processTasks(const U64 deltaTime) {
+    static F32 angle = 0;
+
+    D64 SpinTimer = Time::Milliseconds(16);
+    if (_taskTimers[0] >= SpinTimer) {
+        angle += 0.0125f;
+        if (angle >= 360.0f) {
+            angle = 0.0f;
+        }
+        renderState().getCamera().setYaw(angle);
+
+        _taskTimers[0] = 0.0;
+    }
+
+    Scene::processTasks(deltaTime);
 }
 
 void DefaultScene::loadScene(I64 btnGUID) {
-    const stringImpl& scene = _buttonToSceneMap[btnGUID];
-    Console::d_printf("Loading scene [ %s ]", scene.c_str());
-    Scene* newScene = SceneManager::instance().load(scene);
-    SceneManager::instance().setActiveScene(*newScene);
+    _sceneToLoad = _buttonToSceneMap[btnGUID];
+    Console::d_printf("Loading scene [ %s ]", _sceneToLoad.c_str());
+
+    GUIButton* selection = _GUI->getGuiElement<GUIButton>(getGUID(), btnGUID);
+    selection->setText("Loading ...");
+    for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
+        GUIButton* btn = _GUI->getGuiElement<GUIButton>(getGUID(), it.first);
+        if (btn->getGUID() != btnGUID) {
+            btn->setActive(false);
+            btn->setVisible(false);
+        }
+    }
 }
 
 };

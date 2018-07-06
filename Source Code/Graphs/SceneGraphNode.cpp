@@ -207,7 +207,7 @@ void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
     
     if (recursive) {
         for (U32 i = 0; i < childCount; ++i) {
-            removeNode(nodeName);
+            getChild(i, childCount).removeNode(nodeName);
         }
     }
 

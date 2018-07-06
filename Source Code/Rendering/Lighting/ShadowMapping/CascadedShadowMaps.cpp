@@ -8,7 +8,6 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"
 
-#include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"

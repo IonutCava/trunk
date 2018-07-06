@@ -14,8 +14,8 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Time/Headers/ProfileTimer.h"
-#include "Managers/Headers/LightManager.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 
 #ifndef GLFONTSTASH_IMPLEMENTATION
 #define GLFONTSTASH_IMPLEMENTATION
@@ -450,23 +450,29 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
+        "#define TEXTURE_REFRACTION " +
+            to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::REFRACTION)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
             to_stringImpl(
-                to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::CUBEMAP))),
+                to_uint(LightPool::getShadowBindSlotOffset(ShadowType::CUBEMAP))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
             to_stringImpl(
-                to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::SINGLE))),
+                to_uint(LightPool::getShadowBindSlotOffset(ShadowType::SINGLE))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_LAYERED_MAP_ARRAY " +
             to_stringImpl(
-                to_uint(LightManager::instance().getShadowBindSlotOffset(ShadowType::LAYERED))),
+                to_uint(LightPool::getShadowBindSlotOffset(ShadowType::LAYERED))),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);

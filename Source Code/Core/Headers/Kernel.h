@@ -46,7 +46,6 @@ class PXDevice;
 class GFXDevice;
 class SFXDevice;
 class Application;
-class LightManager;
 class SceneManager;
 class ShaderManager;
 class InputInterface;

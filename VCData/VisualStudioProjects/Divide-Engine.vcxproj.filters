@@ -241,9 +241,6 @@
     <ClCompile Include="..\..\Source Code\Graphs\SceneNode.cpp">
       <Filter>Graphs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
     </ClCompile>
@@ -252,9 +249,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp">
       <Filter>Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\Reflector.cpp">
-      <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp">
       <Filter>Rendering\RenderPass</Filter>
@@ -542,6 +536,9 @@
     <ClCompile Include="..\..\Source Code\Physics\PhysX\PhysXActor.cpp">
       <Filter>Physics\PhysX</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightPool.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -598,9 +595,6 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h">
-      <Filter>Managers\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h">
       <Filter>Geometry\Material\Headers</Filter>
     </ClInclude>
@@ -653,9 +647,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h">
       <Filter>Managers\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h">
-      <Filter>Rendering\RenderPass\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h">
       <Filter>Rendering\RenderPass\Headers</Filter>
@@ -957,6 +948,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\PhysXActor.h">
       <Filter>Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightPool.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

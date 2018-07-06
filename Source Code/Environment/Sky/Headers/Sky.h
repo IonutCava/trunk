@@ -70,9 +70,9 @@ class Sky : public SceneNode {
     ShaderProgram* _skyShader;
     ShaderProgram* _skyShaderPrePass;
 
-    Texture* _skybox;
+    U32       _diameter;
+    Texture*  _skybox;
     Sphere3D* _sky;
-    F32    _farPlane;
     size_t _skyboxRenderStateHash;
     size_t _skyboxRenderStateHashPrePass;
     size_t _skyboxRenderStateReflectedHash;

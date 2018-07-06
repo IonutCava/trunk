@@ -42,6 +42,7 @@ enum class RendererType : U32 {
     COUNT
 };
 
+class LightPool;
 /// A n abstract renderer used to switch between different rendering techniques:
 /// ForwardPlus, Deferred Shading, etc
 class NOINITVTABLE Renderer {
@@ -50,7 +51,7 @@ class NOINITVTABLE Renderer {
 
     virtual ~Renderer() {}
 
-    virtual void preRender() {
+    virtual void preRender(LightPool& lightPool) {
         Attorney::GFXDeviceRenderer::uploadGPUBlock();
     }
 

@@ -248,7 +248,7 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
         assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
 
         I32 buttonId = Util::ConvertData<I32, std::string>(buttonElements[1].c_str());
-        return JoystickElement(JoystickElementType::BUTTON_PRESS, buttonId);
+        return JoystickElement(JoystickElementType::BUTTON_PRESS, to_ubyte(buttonId));
     }
 
     return JoystickElement(JoystickElementType::COUNT);

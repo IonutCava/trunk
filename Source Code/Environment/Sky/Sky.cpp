@@ -15,7 +15,7 @@ Sky::Sky(const stringImpl& name, U32 diameter)
       _skyShader(nullptr),
       _skyShaderPrePass(nullptr),
       _skybox(nullptr),
-      _farPlane(to_float(diameter * 0.5f))
+      _diameter(diameter)
 {
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
@@ -61,10 +61,12 @@ bool Sky::load() {
     skyboxTextures.setThreadedLoading(false);
     _skybox = CreateResource<Texture>(skyboxTextures);
 
+    F32 radius = _diameter * 0.5f;
+
     ResourceDescriptor skybox("SkyBox");
     skybox.setFlag(true);  // no default material;
     skybox.setID(4); // resolution
-    skybox.setEnumValue(to_uint(_farPlane / 2.0f)); // radius
+    skybox.setEnumValue(to_uint(radius)); // radius
     _sky = CreateResource<Sphere3D>(skybox);
     
     ResourceDescriptor skyShaderDescriptor("sky.Display");
@@ -76,7 +78,7 @@ bool Sky::load() {
     assert(_skyShader && _skyShaderPrePass);
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
-    _boundingBox.set(vec3<F32>(-_farPlane / 2), vec3<F32>(_farPlane / 2));
+    _boundingBox.set(vec3<F32>(-radius), vec3<F32>(radius));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
     return Resource::load();
 }

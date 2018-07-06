@@ -71,11 +71,14 @@ void WriteTextFile(const stringImpl& filePath, const stringImpl& content) {
 vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
                               vectorImpl<stringImpl>& elems) {
     elems.resize(0);
-    istringstreamImpl ss(input);
-    stringImpl item;
-    while (std::getline(ss, item, delimiter)) {
-        vectorAlg::emplace_back(elems, item);
+    if (!input.empty()) {
+        istringstreamImpl ss(input);
+        stringImpl item;
+        while (std::getline(ss, item, delimiter)) {
+            vectorAlg::emplace_back(elems, item);
+        }
     }
+
     return elems;
 
 }

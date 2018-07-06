@@ -90,6 +90,8 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             ss << to_uint(lightID);
             ResourceDescriptor tempLight("Light Deferred " + ss.str());
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
+            tempLight.setUserPtr(_lightPool.get());
+
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
             light->setRange(30.0f);

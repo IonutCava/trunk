@@ -3,7 +3,6 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Managers/Headers/LightManager.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"

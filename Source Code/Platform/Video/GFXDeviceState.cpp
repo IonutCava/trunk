@@ -196,7 +196,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         buffer->create(Config::REFLECTION_TARGET_RESOLUTION);
         buffer->setClearColor(DefaultColors::WHITE());
     }
+    for (RenderTarget& target : _refractionTarget) {
+        Framebuffer*& buffer = target._buffer;
 
+        buffer = newFB(false);
+        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+        buffer->useAutoDepthBuffer(true);
+        buffer->create(Config::REFRACTION_TARGET_RESOLUTION);
+        buffer->setClearColor(DefaultColors::WHITE());
+    }
+    
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));

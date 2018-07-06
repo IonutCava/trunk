@@ -26,14 +26,11 @@ namespace {
         {
         }
 
-        bool operator()(const RenderPassCuller::VisibleNode& a,
-                        const RenderPassCuller::VisibleNode& b) const {
+        bool operator()(const RenderPassCuller::VisibleNode& a, const RenderPassCuller::VisibleNode& b) const {
             F32 distASQ = a.second.lock()->get<BoundsComponent>()->getBoundingSphere()
-                .getCenter()
-                .distanceSquared(_camPos);
+                .getCenter().distanceSquared(_camPos);
             F32 distBSQ = b.second.lock()->get<BoundsComponent>()->getBoundingSphere()
-                .getCenter()
-                .distanceSquared(_camPos);
+                .getCenter().distanceSquared(_camPos);
             return distASQ < distBSQ;
         }
 
@@ -70,6 +67,12 @@ SceneManager::SceneManager()
 
 SceneManager::~SceneManager()
 {
+    if (_defaultScene != nullptr) {
+        Scene* defaultScene = _defaultScene.get();
+        unloadScene(defaultScene);
+        _defaultScene.reset(nullptr);
+    }
+
     _sceneShaderData->destroy();
     AI::AIManager::destroyInstance();
     UNREGISTER_FRAME_LISTENER(&(this->instance()));
@@ -115,10 +118,14 @@ Scene* SceneManager::load(stringImpl sceneName) {
         loadingScene = createScene(sceneName);
     }
 
+    I64 guiSceneCache = _GUI->activeSceneGUID();
+
     ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
     if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return nullptr;
+    } else {
+        _GUI->onChangeScene(loadingScene->getGUID());
     }
 
     if (!loadDefaultScene) {
@@ -126,18 +133,56 @@ Scene* SceneManager::load(stringImpl sceneName) {
     }
 
     bool state = Attorney::SceneManager::load(*loadingScene, sceneName, _GUI);
-    if (state) {
+    if (state && !loadDefaultScene) {
         state = LoadSave::loadScene(*loadingScene);
     }
     if (state) {
         Attorney::SceneManager::postLoad(*loadingScene);
     }
 
+    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
+    state = Attorney::SceneManager::initializeAI(*loadingScene, true);
+    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
+
+    if (!state) {
+        _GUI->onChangeScene(guiSceneCache);
+    }
+
     return state ? loadingScene : nullptr;
+}
+
+bool SceneManager::unloadScene(Scene*& scene) {
+    assert(scene != nullptr);
+
+    AI::AIManager::instance().pauseUpdate(true);
+
+    bool isDefaultScene = scene->getGUID() == _defaultScene->getGUID();
+    if (isDefaultScene) {
+        RemoveResource(_defaultMaterial);
+    }
+    bool state = Attorney::SceneManager::deinitializeAI(*scene);
+    if (state) {
+        state = Attorney::SceneManager::unload(*scene);
+
+        if (!isDefaultScene) {
+            _sceneMap.erase(_sceneMap.find(scene->getName()));
+        }
+
+        if (!isDefaultScene && scene != nullptr) {
+            delete scene;
+            scene = nullptr;
+        }
+    }
+    return state;
+}
+
+bool SceneManager::unloadCurrentScene() {
+    return unloadScene(_activeScene);
 }
 
 void SceneManager::setActiveScene(Scene& scene) {
     _activeScene = &scene;
+    _GUI->onChangeScene(scene.getGUID());
     ParamHandler::instance().setParam(_ID("activeScene"), scene.getName());
 }
 
@@ -163,30 +208,6 @@ Scene* SceneManager::createScene(const stringImpl& name) {
     return scene;
 }
 
-bool SceneManager::unloadCurrentScene() {
-    AI::AIManager::instance().pauseUpdate(true);
-
-    bool isDefaultScene = _activeScene->getGUID() == _defaultScene->getGUID();
-    if (isDefaultScene) {
-        RemoveResource(_defaultMaterial);
-    }
-
-    bool state = Attorney::SceneManager::deinitializeAI(*_activeScene);
-    if (state) {
-        state = Attorney::SceneManager::unload(*_activeScene);
-
-        if (!isDefaultScene) {
-            _sceneMap.erase(_sceneMap.find(_activeScene->getName()));
-        }
-
-        if (!isDefaultScene && _activeScene != nullptr) {
-            delete _activeScene;
-            _activeScene = nullptr;
-        }
-    }
-    return state;
-}
-
 void SceneManager::initPostLoadState() {
     _processInput = true;
 }
@@ -210,20 +231,20 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
     ParamHandler& par = ParamHandler::instance();
-    LightManager& lightMgr = LightManager::instance();
+    LightPool* lightPool = Attorney::SceneManager::lightPool(*_activeScene);
 
     // Shadow splits are only visible in debug builds
     _sceneData.enableDebugRender(par.getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData.elapsedTime(_elapsedTimeMS);
     _sceneData.deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTime));
-    _sceneData.lightCount(LightType::DIRECTIONAL, lightMgr.getActiveLightCount(LightType::DIRECTIONAL));
-    _sceneData.lightCount(LightType::POINT, lightMgr.getActiveLightCount(LightType::POINT));
-    _sceneData.lightCount(LightType::SPOT, lightMgr.getActiveLightCount(LightType::SPOT));
+    _sceneData.lightCount(LightType::DIRECTIONAL, lightPool->getActiveLightCount(LightType::DIRECTIONAL));
+    _sceneData.lightCount(LightType::POINT, lightPool->getActiveLightCount(LightType::POINT));
+    _sceneData.lightCount(LightType::SPOT, lightPool->getActiveLightCount(LightType::SPOT));
 
     _sceneData.setRendererFlag(getRenderer().getFlag());
 
-    _sceneData.toggleShadowMapping(lightMgr.shadowMappingEnabled());
+    _sceneData.toggleShadowMapping(lightPool->shadowMappingEnabled());
 
     _sceneData.fogDensity(par.getParam<bool>(_ID("rendering.enableFog"))
                             ? par.getParam<F32>(_ID("rendering.sceneState.fogDensity"))
@@ -245,6 +266,18 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     }
 }
 
+void SceneManager::preRender() {
+    LightPool* lightPool = Attorney::SceneManager::lightPool(*_activeScene);
+    lightPool->updateAndUploadLightData(_activeScene->renderState().getCameraConst().getEye(), GFX_DEVICE.getMatrix(MATRIX::VIEW));
+    getRenderer().preRender(*lightPool);
+}
+
+bool SceneManager::generateShadowMaps() {
+    LightPool* lightPool = Attorney::SceneManager::lightPool(*_activeScene);
+    assert(lightPool != nullptr);
+    return lightPool->generateShadowMaps(_activeScene->renderState());
+}
+
 /// Update fog values
 void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
     ParamHandler& par = ParamHandler::instance();
@@ -263,8 +296,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
         if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D) {
             return true;
         } else {
-            return sgnNode->getNode<Object3D>()->getObjectType() 
-                       == Object3D::ObjectType::FLYWEIGHT;
+            return sgnNode->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::FLYWEIGHT;
         }
         return false;
     };
@@ -275,9 +307,15 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
     // Get list of nodes in view from the previous frame
     RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::Z_PRE_PASS);
 
+    RenderPassCuller::VisibleNodeList waterNodes;
     _reflectiveNodesCache.resize(0);
     for (RenderPassCuller::VisibleNode& node : nodeCache) {
-        _reflectiveNodesCache.push_back(node);
+        SceneGraphNode_cptr sgnNode = node.second.lock();
+        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_WATER) {
+            _reflectiveNodesCache.push_back(node);
+        } else {
+            waterNodes.push_back(node);
+        }
     }
 
     // Cull nodes that are not valid reflection targets
@@ -290,6 +328,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
     std::sort(std::begin(_reflectiveNodesCache),
               std::end(_reflectiveNodesCache),
               VisibleNodesFrontToBack(camPos));
+    _reflectiveNodesCache.insert(std::begin(_reflectiveNodesCache), std::begin(waterNodes), std::end(waterNodes));
 
     return _reflectiveNodesCache;
 }
