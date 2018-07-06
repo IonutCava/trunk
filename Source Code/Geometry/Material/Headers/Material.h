@@ -100,18 +100,39 @@ public:
             _diffuse(vec4<F32>(vec3<F32>(1.0f) / 1.5f, 1)),
             _specular(0.8f, 0.8f, 0.8f, 1.0f),
             _emissive(0.6f, 0.6f, 0.6f, 1.0f),
-            _shininess(5) {}
+            _shininess(5)
+        {
+        }
+
+        ShaderData& operator=(const ShaderData& other) {
+            _diffuse.set(other._diffuse);
+            _ambient.set(other._ambient); 
+            _specular.set(other._specular);
+            _emissive.set(other._emissive);
+            _shininess = other._shininess;     
+            _textureCount = other._textureCount;
+            return *this;
+        }
     };
 
     /// ShaderInfo stores information about the shader programs used by this material
     struct ShaderInfo {
+
+        enum ShaderCompilationStage {
+            SHADER_STAGE_REQUESTED = 0,
+            SHADER_STAGE_QUEUED = 1,
+            SHADER_STAGE_COMPUTED = 2,
+            SHADER_STAGE_ERROR = 3,
+            ShaderCompilationStage_PLACEHOLDER = 4
+        };
+
         ShaderProgram* _shaderRef;
         stringImpl _shader;
-        bool _computedShader;
+        ShaderCompilationStage _shaderCompStage;
         bool _isCustomShader;
         vectorImpl<stringImpl> _shaderDefines;
 
-        ShaderProgram* const getProgram();
+        ShaderProgram* const getProgram() const;
 
         inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
@@ -119,10 +140,26 @@ public:
         {
             _shaderRef = nullptr;
             _shader = "";
-            _computedShader = false;
+            _shaderCompStage = ShaderCompilationStage_PLACEHOLDER;
             _isCustomShader = false;
-            for(U8 i = 0; i < ShaderType_PLACEHOLDER; ++i)
+            for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i){
                 memset(_shadingFunction[i], 0, BumpMethod_PLACEHOLDER * sizeof(U32));
+            }
+        }
+
+        ShaderInfo& operator=(const ShaderInfo& other){
+            _shaderRef = other.getProgram();
+            _shaderRef->AddRef();
+            _shader = other._shader;
+            _shaderCompStage = other._shaderCompStage;
+            _isCustomShader = other._isCustomShader;
+            for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i){
+                for (U8 j = 0; j < BumpMethod_PLACEHOLDER; ++j){
+                    _shadingFunction[i][j] = other._shadingFunction[i][j];
+                }
+            }
+            _trackedBools = other._trackedBools;
+            return *this;
         }
 
         U32 _shadingFunction[ShaderType_PLACEHOLDER][BumpMethod_PLACEHOLDER];
@@ -135,6 +172,9 @@ public:
     Material();
     ~Material();
 
+    /// Return a new instance of this material with the name composed of the base material's name appended with the give name suffix.
+    /// Call RemoveResource on the returned pointer to free memory. (clone calls CreateResource internally!)
+    Material* clone(const stringImpl& nameSuffix);
     bool unload();
     void update(const U64 deltaTime);
 
@@ -192,11 +232,18 @@ public:
         addShaderDefines(FINAL_STAGE, shaderDefines);
         addShaderDefines(Z_PRE_PASS_STAGE, shaderDefines);
         addShaderDefines(SHADOW_STAGE, shaderDefines);
+        addShaderDefines(REFLECTION_STAGE, shaderDefines);
     }
 
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
-    void setShaderProgram(const stringImpl& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
+    void setShaderProgram(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>());
+    inline void setShaderProgram(const stringImpl& shader, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()){
+        setShaderProgram(shader, FINAL_STAGE, computeOnAdd, shaderCompileCallback);
+        setShaderProgram(shader, Z_PRE_PASS_STAGE, computeOnAdd, shaderCompileCallback);
+        setShaderProgram(shader, SHADOW_STAGE, computeOnAdd, shaderCompileCallback);
+        setShaderProgram(shader, REFLECTION_STAGE, computeOnAdd, shaderCompileCallback);
+    }
     size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
@@ -230,15 +277,15 @@ public:
     inline bool useAlphaTest()  const {return _useAlphaTest;}
 
     // Checks if the shader needed for the current stage is already constructed. Returns false if the shader was already ready.
-    bool computeShader(const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
-
+    bool computeShader(const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback); //Set shaders;
+    
     static void unlockShaderQueue()   {_shaderQueueLocked = false; }
     static void serializeShaderLoad(const bool state) { _serializeShaderLoad = state; }
 
 private:
     void recomputeShaders();
     void computeShaderInternal();
-    void setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
+    void setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback);
     static bool isShaderQueueLocked() {return _shaderQueueLocked; }
     static void lockShaderQueue()     {if(_serializeShaderLoad) _shaderQueueLocked = true; }
     
@@ -246,7 +293,7 @@ private:
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
 
-    std::queue<std::pair<RenderStage, ResourceDescriptor> > _shaderComputeQueue;
+    std::queue<std::tuple<RenderStage, ResourceDescriptor, DELEGATE_CBK<> >> _shaderComputeQueue;
     ShadingMode _shadingMode;
     stringImpl _shaderModifier; //<use for special shader tokens, such as "Tree"
     vectorImpl<TranslucencySource > _translucencySource;
@@ -265,7 +312,7 @@ private:
     /// 3 render state's: Normal, reflection and shadow
     typedef hashMapImpl<RenderStage, size_t /*renderStateBlockHash*/, hashAlg::hash<I32>> renderStateBlockMap;
     renderStateBlockMap _defaultRenderStates;
-    
+
     /// use this map to add textures to the material
     vectorImpl<Texture* > _textures;
     vectorImpl<std::pair<Texture*, U32> > _customTextures;

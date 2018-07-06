@@ -13,7 +13,7 @@ RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, SceneG
                                                                                                         _sortKeyB( sortKeyB ),
                                                                                                         _distanceToCameraSq(distToCamSq)
 {
-    Material* mat = _node->getNode()->getMaterial();
+    Material* mat = _node->getMaterialInstance();
     // If we do not have a material, no need to continue
     if (!mat) {
         return;
@@ -121,7 +121,7 @@ void RenderBin::refresh(){
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
     I32 keyA = (U32)_renderBinStack.size() + 1;
     I32 keyB = keyA;
-    Material* nodeMaterial = sgn->getNode()->getMaterial();
+    Material* nodeMaterial = sgn->getMaterialInstance();
     if(nodeMaterial){
         nodeMaterial->getSortKeys(keyA, keyB);
     }

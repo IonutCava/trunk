@@ -48,8 +48,8 @@ void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     _drawCmd.renderWireframe(sgn->renderWireframe());
     _drawCmd.LoD(sgn->lodLevel());
     _drawCmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-    _drawCmd.stateHash(getDrawStateHash(currentRenderStage));
-    _drawCmd.shaderProgram(getDrawShader(currentRenderStage));
+    _drawCmd.stateHash(sgn->getDrawStateHash(currentRenderStage));
+    _drawCmd.shaderProgram(sgn->getDrawShader(currentRenderStage));
     _parentMesh->addDrawCommand(_drawCmd);
 
     GFX_DEVICE.submitRenderCommand(_parentMesh->getGeometryVB(), _drawCmd);

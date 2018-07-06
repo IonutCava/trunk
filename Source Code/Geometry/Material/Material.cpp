@@ -58,6 +58,53 @@ Material::~Material()
     _defaultRenderStates.clear();
 }
 
+Material* Material::clone(const stringImpl& nameSuffix) {
+    DIVIDE_ASSERT(!nameSuffix.empty(),
+                  "Material error: clone called without a valid name suffix!");
+
+    const Material& base = *this;
+    Material* cloneMat = CreateResource<Material>(ResourceDescriptor(getName() + nameSuffix));
+
+    cloneMat->_translucencySource.clear();
+    for (const shaderInfoMap::value_type& it : base._shaderInfo) {
+        cloneMat->_shaderInfo[it.first] = it.second;
+    }
+    for (const TranslucencySource& trans : base._translucencySource){
+        cloneMat->_translucencySource.push_back(trans);
+    }
+    for (const renderStateBlockMap::value_type& it : base._defaultRenderStates){
+        cloneMat->_defaultRenderStates[it.first] = it.second;
+    }
+    for (U8 i = 0; i < static_cast<U8>(base._textures.size()); ++i) {
+        Texture* const tex = base._textures[i];
+        if (tex) {
+            tex->AddRef();
+            cloneMat->setTexture(static_cast<ShaderProgram::TextureUsage>(i), tex);
+        }
+    }
+    for (const std::pair<Texture*, U32>& tex : base._customTextures) {
+        if (tex.first) {
+            tex.first->AddRef();
+            cloneMat->addCustomTexture(tex.first, tex.second);
+        }
+    }
+    cloneMat->_shadingMode = base._shadingMode;
+    cloneMat->_shaderModifier = base._shaderModifier;
+    cloneMat->_translucencyCheck = base._translucencyCheck;
+    cloneMat->_dirty = base._dirty;
+    cloneMat->_dumpToFile = base._dumpToFile;
+    cloneMat->_useAlphaTest = base._useAlphaTest;
+    cloneMat->_doubleSided = base._doubleSided;
+    cloneMat->_hardwareSkinning = base._hardwareSkinning;
+    cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
+    cloneMat->_computedShaderTextures = base._computedShaderTextures;
+    cloneMat->_operation = base._operation;
+    cloneMat->_bumpMethod = base._bumpMethod;
+    cloneMat->_shaderData = base._shaderData;
+
+    return cloneMat;
+}
+
 void Material::update(const U64 deltaTime){
     // build one shader per frame
     computeShaderInternal();
@@ -120,12 +167,12 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot, Texture*
 }
 
 //Here we set the shader's name
-void Material::setShaderProgram(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd) {
+void Material::setShaderProgram(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback) {
     _shaderInfo[renderStage]._isCustomShader = true;
-    setShaderProgramInternal(shader, renderStage, computeOnAdd);
+    setShaderProgramInternal(shader, renderStage, computeOnAdd, shaderCompileCallback);
 }
 
-void Material::setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd) {
+void Material::setShaderProgramInternal(const stringImpl& shader, const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback) {
     ShaderProgram* shaderReference = _shaderInfo[renderStage]._shaderRef;
     //if we already had a shader assigned ...
     if (!_shaderInfo[renderStage]._shader.empty()){
@@ -155,11 +202,15 @@ void Material::setShaderProgramInternal(const stringImpl& shader, const RenderSt
     _computedShaderTextures = true;
     if (computeOnAdd){
         _shaderInfo[renderStage]._shaderRef = CreateResource<ShaderProgram>(shaderDescriptor);
+        _shaderInfo[renderStage]._shaderCompStage = ShaderInfo::SHADER_STAGE_COMPUTED;
         REGISTER_TRACKED_DEPENDENCY(_shaderInfo[renderStage]._shaderRef); 
+        if (shaderCompileCallback){
+            shaderCompileCallback();
+        }
     }else{
-        _shaderComputeQueue.push(std::make_pair(renderStage, shaderDescriptor));
+        _shaderComputeQueue.push(std::make_tuple(renderStage, shaderDescriptor, shaderCompileCallback));
+        _shaderInfo[renderStage]._shaderCompStage = ShaderInfo::SHADER_STAGE_QUEUED;
     }
-    _shaderInfo[renderStage]._computedShader = true;
 }
 
 void Material::clean() {
@@ -173,17 +224,17 @@ void Material::clean() {
 void Material::recomputeShaders() {
 	for (shaderInfoMap::value_type& it : _shaderInfo) {
         if ( !it.second._isCustomShader ) {
-            it.second._computedShader = false;
-            computeShader( it.first );
+            it.second._shaderCompStage = ShaderInfo::SHADER_STAGE_REQUESTED;
+            computeShader( it.first, false, DELEGATE_CBK<>() );
         }
     }
 }
 
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
-bool Material::computeShader(const RenderStage& renderStage){
-    if ( _shaderInfo[renderStage]._computedShader ) {
-        return false;
+bool Material::computeShader(const RenderStage& renderStage, const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback){
+    if ( _shaderInfo[renderStage]._shaderCompStage == ShaderInfo::SHADER_STAGE_COMPUTED ) {
+        return true;
     }
 
     if ( ( _textures[ShaderProgram::TEXTURE_UNIT0] && _textures[ShaderProgram::TEXTURE_UNIT0]->getState() != RES_LOADED ) ||
@@ -262,7 +313,7 @@ bool Material::computeShader(const RenderStage& renderStage){
         shader += _shaderModifier;
     }
 
-    setShaderProgramInternal(shader, renderStage);
+    setShaderProgramInternal(shader, renderStage, computeOnAdd, shaderCompileCallback);
 
     return true;
 }
@@ -273,11 +324,18 @@ void Material::computeShaderInternal(){
     }
     //Material::lockShaderQueue();
 
-    const std::pair<RenderStage, ResourceDescriptor>& currentItem = _shaderComputeQueue.front();
-
+    const std::tuple<RenderStage, ResourceDescriptor, DELEGATE_CBK<>>& currentItem = _shaderComputeQueue.front();
+    const RenderStage& renderStage = std::get<0>(currentItem);
+    const ResourceDescriptor& descriptor = std::get<1>(currentItem);
+    const DELEGATE_CBK<>& callback = std::get<2>(currentItem);
     _dirty = true;
-    _shaderInfo[currentItem.first]._shaderRef = CreateResource<ShaderProgram>(currentItem.second);
-    REGISTER_TRACKED_DEPENDENCY( _shaderInfo[currentItem.first]._shaderRef );
+    
+    _shaderInfo[renderStage]._shaderRef = CreateResource<ShaderProgram>(descriptor);
+    _shaderInfo[renderStage]._shaderCompStage = ShaderInfo::SHADER_STAGE_COMPUTED;
+    if (callback){
+        callback();
+    }
+    REGISTER_TRACKED_DEPENDENCY(_shaderInfo[renderStage]._shaderRef);
     _shaderComputeQueue.pop();
 }
 
@@ -309,7 +367,7 @@ void Material::bindTextures(){
     }
 }
 
-ShaderProgram* const Material::ShaderInfo::getProgram(){
+ShaderProgram* const Material::ShaderInfo::getProgram() const {
     return _shaderRef == nullptr ? ShaderManager::getInstance().getDefaultShader() : _shaderRef;
 }
 

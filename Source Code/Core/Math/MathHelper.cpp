@@ -3,6 +3,22 @@
 
 namespace Divide {
 namespace Util {
+    vec4<U8> toByteColor(const vec4<F32>& floatColor) {
+        return vec4<U8>(static_cast<U8>(floatColor.r * 255), static_cast<U8>(floatColor.g * 255), static_cast<U8>(floatColor.b * 255), static_cast<U8>(floatColor.a * 255));
+    }
+
+    vec3<U8> toByteColor(const vec3<F32>& floatColor) {
+        return vec3<U8>(static_cast<U8>(floatColor.r * 255), static_cast<U8>(floatColor.g * 255), static_cast<U8>(floatColor.b * 255));
+    }
+
+    vec4<F32> toFloatColor(const vec4<U8>& byteColor) {
+        return vec4<F32>(static_cast<F32>(byteColor.r / 255), static_cast<F32>(byteColor.g / 255), static_cast<F32>(byteColor.b / 255), static_cast<F32>(byteColor.a / 255));
+    }
+
+    vec3<F32> toFloatColor(const vec3<U8>& byteColor) {
+        return vec3<F32>(static_cast<F32>(byteColor.r / 255), static_cast<F32>(byteColor.g / 255), static_cast<F32>(byteColor.b / 255));
+    }
+
     void normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw, bool normPitch, bool normRoll) {
         if(normYaw)
         {

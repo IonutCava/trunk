@@ -10,11 +10,9 @@ namespace Divide {
         Impostor* ptr = New Impostor( _descriptor.getName(), 1.0f );
 
         if ( _descriptor.getFlag() ) {
-            ptr->getSceneNodeRenderState().useDefaultMaterial( false );
-            ptr->setMaterial( nullptr );
+            ptr->renderState().useDefaultMaterial( false );
         } else {
-            ResourceDescriptor impostorMaterial( "Material_" + _descriptor.getName() );
-            ptr->setMaterial( CreateResource<Material>( impostorMaterial ) );
+            ptr->setMaterialTpl(CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName())));
         }
 
         if ( !load( ptr, _descriptor.getName() ) ) {

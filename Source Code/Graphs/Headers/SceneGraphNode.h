@@ -158,8 +158,6 @@ public:
         getComponent<PhysicsComponent>()->useDefaultTransform(!state);
     }
 
-    /*Transform management*/
-
     /*Node State*/
     inline void setActive(const bool state) {_wasActive = _active; _active = state;}
     inline void restoreActive()       {_active = _wasActive;}
@@ -214,6 +212,11 @@ public:
     inline U8   lodLevel() const { return ( _lodLevel < ( _node->getLODcount() - 1 ) ? _lodLevel : ( _node->getLODcount() - 1 ) ); }
     inline void lodLevel( U8 LoD ) { _lodLevel = std::min( static_cast<U8>(_node->getLODcount() - 1), std::max( LoD, static_cast<U8>(0) ) ); }
 
+    virtual ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
+    virtual size_t               getDrawStateHash(RenderStage renderStage);
+
+    inline Material* const getMaterialInstance() { return _materialInstance; }
+
     inline const mat4<F32>& getMaterialColorMatrix()    const { return _materialColorMatrix; }
     inline const mat4<F32>& getMaterialPropertyMatrix() const { return _materialPropertyMatrix; }
 
@@ -252,6 +255,7 @@ private:
 
 private:
     SceneNode* _node;
+    Material*  _materialInstance;
     NodeChildren _children;
     SceneGraphNode *_parent;
     SceneGraph     *_sceneGraph;

@@ -62,39 +62,42 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     SceneNode::postLoad(sgn);
 }
 
-void Terrain::buildQaudtree() {
+void Terrain::buildQuadtree() {
     reserveTriangleCount( ( _terrainWidth - 1 ) * ( _terrainHeight - 1 ) * 2 );
     _terrainQuadtree->Build( _boundingBox, vec2<U32>( _terrainWidth, _terrainHeight ), _chunkSize, this);
     //The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox = _terrainQuadtree->computeBoundingBox();
 
-    ShaderProgram* drawShader = getDrawShader();
-    drawShader->Uniform( "dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel() );
-    drawShader->Uniform( "bbox_min", _boundingBox.getMin() );
-    drawShader->Uniform( "bbox_extent", _boundingBox.getExtent() );
-    drawShader->UniformTexture( "texWaterCaustics", ShaderProgram::TEXTURE_UNIT0 );
-    drawShader->UniformTexture( "texUnderwaterAlbedo", ShaderProgram::TEXTURE_UNIT1 );
-    drawShader->UniformTexture( "texUnderwaterDetail", ShaderProgram::TEXTURE_NORMALMAP );
-    drawShader->Uniform( "underwaterDiffuseScale", _underwaterDiffuseScale );
+    Material* mat = getMaterialTpl();
+    for (U8 i = 0; i < 3; ++i){
+        ShaderProgram* const drawShader = mat->getShaderInfo(i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE)).getProgram();
+        drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
+        drawShader->Uniform("bbox_min", _boundingBox.getMin());
+        drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
+        drawShader->UniformTexture("texWaterCaustics", ShaderProgram::TEXTURE_UNIT0);
+        drawShader->UniformTexture("texUnderwaterAlbedo", ShaderProgram::TEXTURE_UNIT1);
+        drawShader->UniformTexture("texUnderwaterDetail", ShaderProgram::TEXTURE_NORMALMAP);
+        drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-    U8 textureOffset = ShaderProgram::TEXTURE_NORMALMAP + 1;
-    U8 layerOffset = 0;
-    stringImpl layerIndex;
-    for ( U32 i = 0; i < _terrainTextures.size(); ++i ) {
-        layerOffset = i * 3 + textureOffset;
-        layerIndex = stringAlg::toBase( Util::toString( i ) );
-        TerrainTextureLayer* textureLayer = _terrainTextures[i];
-        drawShader->UniformTexture( "texBlend[" + layerIndex + "]", layerOffset );
-        drawShader->UniformTexture( "texTileMaps[" + layerIndex + "]", layerOffset + 1 );
-        drawShader->UniformTexture( "texNormalMaps[" + layerIndex + "]", layerOffset + 2 );
+        U8 textureOffset = ShaderProgram::TEXTURE_NORMALMAP + 1;
+        U8 layerOffset = 0;
+        stringImpl layerIndex;
+        for (U32 i = 0; i < _terrainTextures.size(); ++i) {
+            layerOffset = i * 3 + textureOffset;
+            layerIndex = stringAlg::toBase(Util::toString(i));
+            TerrainTextureLayer* textureLayer = _terrainTextures[i];
+            drawShader->UniformTexture("texBlend[" + layerIndex + "]", layerOffset);
+            drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);
+            drawShader->UniformTexture("texNormalMaps[" + layerIndex + "]", layerOffset + 2);
 
-        getMaterial()->addCustomTexture( textureLayer->blendMap(), layerOffset );
-        getMaterial()->addCustomTexture( textureLayer->tileMaps(), layerOffset + 1 );
-        getMaterial()->addCustomTexture( textureLayer->normalMaps(), layerOffset + 2 );
+            getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
+            getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
+            getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
 
-        drawShader->Uniform( "diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales() );
-        drawShader->Uniform( "detailScale[" + layerIndex + "]", textureLayer->getDetailScales() );
+            drawShader->Uniform("diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales());
+            drawShader->Uniform("detailScale[" + layerIndex + "]", textureLayer->getDetailScales());
 
+        }
     }
 }
 
@@ -116,23 +119,17 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-size_t Terrain::getDrawStateHash(RenderStage renderStage){
-    if(GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE))
-        return GFX_DEVICE.isCurrentRenderStage(Z_PRE_PASS_STAGE) ? _terrainRenderStateHash : _terrainDepthRenderStateHash;
-
-    return GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash;
-}
-
-ShaderProgram* const Terrain::getDrawShader(RenderStage renderStage){
-    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
-        renderStage = FINAL_STAGE;
-
-    return SceneNode::getDrawShader(renderStage);
-}
-
 void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
-    size_t drawStateHash = getDrawStateHash(currentRenderStage);
-    ShaderProgram* drawShader = getDrawShader(currentRenderStage);
+
+    size_t drawStateHash = 0;
+
+    if (bitCompare(currentRenderStage, DEPTH_STAGE)) {
+        drawStateHash = bitCompare(currentRenderStage, Z_PRE_PASS_STAGE) ? _terrainRenderStateHash : _terrainDepthRenderStateHash;
+    } else{
+        drawStateHash = bitCompare(currentRenderStage, REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash;
+    }
+
+    ShaderProgram* drawShader = sgn->getDrawShader(bitCompare(currentRenderStage, REFLECTION_STAGE) ? FINAL_STAGE : currentRenderStage);
     I32 drawID = GFX_DEVICE.getDrawID(sgn->getGUID());
 
     if(_terrainInView){
@@ -168,8 +165,10 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     }
 }
 
-void Terrain::drawBoundingBox(SceneGraphNode* const sgn) const {
-    if(_drawBBoxes)	_terrainQuadtree->DrawBBox();
+void Terrain::postDrawBoundingBox(SceneGraphNode* const sgn) const {
+    if (_drawBBoxes)	{
+        _terrainQuadtree->DrawBBox();
+    }
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

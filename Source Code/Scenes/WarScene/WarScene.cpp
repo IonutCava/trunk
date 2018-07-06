@@ -230,14 +230,22 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     _sun->csmSplitLogFactor(0.925f);
     _sun->csmNearClipOffset(25.0f);
     // Add some obstacles
+    SceneGraphNode* cylinderC  = _sceneGraph->findNode("cylinderC");
     SceneGraphNode* cylinderNW = _sceneGraph->findNode("cylinderNW");
     SceneGraphNode* cylinderNE = _sceneGraph->findNode("cylinderNE");
     SceneGraphNode* cylinderSW = _sceneGraph->findNode("cylinderSW");
     SceneGraphNode* cylinderSE = _sceneGraph->findNode("cylinderSE");
 
-    SceneGraphNode::NodeChildren& children = cylinderNW->getChildren();
-    (*children.begin()).second->getNode()->getMaterial()->setDoubleSided(true);
-    
+    (*cylinderC->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
+    (*cylinderC->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
+    (*cylinderNW->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
+    (*cylinderNW->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
+    (*cylinderNE->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
+    (*cylinderNE->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
+    (*cylinderSW->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
+    (*cylinderSW->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
+    (*cylinderSE->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
+    (*cylinderSE->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
 
     assert(cylinderNW && cylinderNE && cylinderSW && cylinderSE);
     SceneNode* cylinderMeshNW = cylinderNW->getNode();

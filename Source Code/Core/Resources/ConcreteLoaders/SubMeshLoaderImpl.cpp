@@ -17,8 +17,7 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()(){
         MemoryManager::SAFE_DELETE( ptr );
     } else {
         if ( _descriptor.getFlag() ) {
-            ptr->getSceneNodeRenderState().useDefaultMaterial( false );
-            ptr->setMaterial( nullptr );
+            ptr->renderState().useDefaultMaterial( false );
         }
         ptr->setId( _descriptor.getId() );
     }

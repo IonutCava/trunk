@@ -43,6 +43,8 @@ SceneGraphNode::SceneGraphNode( SceneGraph* const sg, SceneNode* const node, con
 
     setName( name );
     _instanceID = (node->GetRef() - 1);
+    Material* const materialTemplate = _node->getMaterialTpl();
+    _materialInstance = materialTemplate != nullptr ? materialTemplate->clone("_instance_" + name) : nullptr;
 
     _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
     _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
@@ -132,6 +134,9 @@ bool SceneGraphNode::unload(){
     if ( !_silentDispose && getParent() ) {
         PRINT_FN( Locale::get( "REMOVE_SCENEGRAPH_NODE" ), _node->getName().c_str(), getName().c_str() );
     }
+    if (_materialInstance){
+        RemoveResource(_materialInstance);
+    }
     //if not root
     if ( getParent() ) {
         RemoveResource( _node );
@@ -142,7 +147,6 @@ bool SceneGraphNode::unload(){
     for ( DELEGATE_CBK<>& cbk : _deletionCallbacks ) {
         cbk();
     }
-
     return true;
 }
 

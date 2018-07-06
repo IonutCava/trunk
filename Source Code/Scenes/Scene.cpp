@@ -192,7 +192,7 @@ bool Scene::loadGeometry( const FileData& data ) {
         tempMaterial->setDiffuse( data.color );
     }
 
-    thisObj->setMaterial( tempMaterial );
+    thisObj->setMaterialTpl( tempMaterial );
     SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->createNode( thisObj );
     thisObjSGN->getComponent<PhysicsComponent>()->setScale( data.scale );
     thisObjSGN->getComponent<PhysicsComponent>()->setRotation( data.orientation );

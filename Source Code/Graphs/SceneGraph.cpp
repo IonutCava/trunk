@@ -67,7 +67,7 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn){
         i++;
     }
     //get out material's name
-    Material* mat = parent->getNode()->getMaterial();
+    Material* mat = parent->getMaterialInstance();
 
     //Some strings to hold the names of our material and shader
     stringImpl material("none"), shader("none"), depthShader("none");

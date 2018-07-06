@@ -167,8 +167,8 @@ Mesh* DVDConverter::load(const stringImpl& file){
         tempSubMesh = loadSubMeshGeometry(currentMesh, tempMesh, n);
 
         if (tempSubMesh){
-            if(!tempSubMesh->getMaterial()){
-                tempSubMesh->setMaterial(loadSubMeshMaterial(skinned, _aiScenePointer->mMaterials[currentMesh->mMaterialIndex], stringImpl(tempSubMesh->getName() + "_material")));
+            if(!tempSubMesh->getMaterialTpl()){
+                tempSubMesh->setMaterialTpl(loadSubMeshMaterial(skinned, _aiScenePointer->mMaterials[currentMesh->mMaterialIndex], stringImpl(tempSubMesh->getName() + "_material")));
             }
           
             tempMesh->addSubMesh(tempSubMesh);
@@ -177,7 +177,7 @@ Mesh* DVDConverter::load(const stringImpl& file){
 
     assert(tempMesh != nullptr);
 
-    tempMesh->getSceneNodeRenderState().setDrawState( true );
+    tempMesh->renderState().setDrawState( true );
     tempMesh->getGeometryVB()->Create();
 
     elapsed = GETMSTIME(true) - start;

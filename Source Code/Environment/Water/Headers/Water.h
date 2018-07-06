@@ -99,8 +99,12 @@ private:
 	DELEGATE_CBK<>  _refractionCallback;
     bool            _refractionRendering;
     bool            _reflectionRendering;
-    bool            _dirty;
+    bool            _dirty, _paramsDirty;
     bool            _cameraUnderWater;
+    F32 _shininess;
+    vec2<F32> _noiseTile;
+    vec2<F32> _noiseFactor;
+    F32 _transparency;
     CameraManager&  _cameraMgr;
 };
 

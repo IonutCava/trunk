@@ -138,6 +138,8 @@ class mat4;
 template <typename T>
 class vec3;
 template <typename T>
+class vec4;
+template <typename T>
 class Quaternion;
 
 namespace Util {
@@ -250,6 +252,11 @@ namespace Util {
     @param normRoll If false, the roll isn't normalized.
     */
     void normalize(vec3<F32>& inputRotation, bool degrees = false, bool normYaw = true, bool normPitch = true, bool normRoll = true);
+    
+    vec4<U8>  toByteColor(const vec4<F32>& floatColor);
+    vec3<U8>  toByteColor(const vec3<F32>& floatColor);
+    vec4<F32> toFloatColor(const vec4<U8>& byteColor);
+    vec3<F32> toFloatColor(const vec3<U8>& byteColor);
 
     namespace Mat4 {
         // ----------------------------------------------------------------------------------------

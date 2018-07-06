@@ -219,7 +219,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
                 boxMaterial->setAmbient(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
                 boxMaterial->setEmissive(vec4<F32>(0.1f,0.1f,0.1f,1.0f));
                 boxMaterial->setShininess(2);
-                sceneNode->setMaterial(boxMaterial);
+                sceneNode->setMaterialTpl(boxMaterial);
             }
         }
         break;
@@ -241,7 +241,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
             planeMaterial->setEmissive(vec4<F32>(0.3f,0.3f,0.3f,1.0f));
             planeMaterial->setShininess(0);
             shadowState = false;
-            sceneNode->setMaterial(planeMaterial);
+            sceneNode->setMaterialTpl(planeMaterial);
         }break;
     }
 
@@ -249,7 +249,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
 
     if(actor._type != PxGeometryType::eTRIANGLEMESH) {
         if(sceneNode){
-            sceneNode->getSceneNodeRenderState().setDrawState(true);
+            sceneNode->renderState().setDrawState(true);
             outNode = _parentScene->getSceneGraph()->addNode(sceneNode, sgnName);
             outNode->castsShadows(shadowState);
         }

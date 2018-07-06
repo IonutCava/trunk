@@ -111,7 +111,6 @@ protected:
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     void onCameraChange(SceneGraphNode* const sgn);
-    ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
 
 private:
     I32 findUnusedParticle();

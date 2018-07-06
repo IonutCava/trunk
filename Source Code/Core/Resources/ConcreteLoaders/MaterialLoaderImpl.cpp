@@ -13,7 +13,7 @@ Material* ImplResourceLoader<Material>::operator()(){
         MemoryManager::SAFE_DELETE( ptr );
     } else {
         if ( _descriptor.getFlag() ) {
-            ptr->setShaderProgram( "" );
+            ptr->setShaderProgram( "", true );
         }
         if ( _descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED ) {
             ptr->setHardwareSkinning( true );

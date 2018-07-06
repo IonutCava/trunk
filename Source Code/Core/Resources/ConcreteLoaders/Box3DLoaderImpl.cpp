@@ -17,8 +17,7 @@ Box3D* ImplResourceLoader<Box3D>::operator()() {
         MemoryManager::SAFE_DELETE( ptr );
     } else {
         if ( _descriptor.getFlag() ) {
-            ptr->getSceneNodeRenderState().useDefaultMaterial( false );
-            ptr->setMaterial( nullptr );
+            ptr->renderState().useDefaultMaterial( false );
         }
     }
 

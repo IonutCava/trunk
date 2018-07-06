@@ -197,12 +197,12 @@ void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRende
     if ( !_impostor ) {
         _impostor = CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius( _properties._attenuation.w );
-        _impostor->getSceneNodeRenderState().setDrawState( true );
+        _impostor->renderState().setDrawState( true );
         _lightSGN->addNode( _impostor )->setActive( true );
     }
-
-    _impostor->getMaterial()->setDiffuse(getDiffuseColor());
-    _impostor->getMaterial()->setAmbient(getDiffuseColor());
+    Material* const impostorMaterialInst = _lightSGN->getChildren().begin()->second->getMaterialInstance();
+    impostorMaterialInst->setDiffuse(getDiffuseColor());
+    impostorMaterialInst->setAmbient(getDiffuseColor());
 
     //Updating impostor range is expensive, so check if we need to
     if ( !FLOAT_COMPARE( getRange(), _impostor->getRadius() ) ) {

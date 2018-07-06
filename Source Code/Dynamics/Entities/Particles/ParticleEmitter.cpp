@@ -72,9 +72,9 @@ bool ParticleEmitter::initData(){
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
     _impostor = CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
-    _impostor->getSceneNodeRenderState().setDrawState( false );
-    _impostor->getMaterial()->setDiffuse( vec4<F32>( 0.0f, 0.0f, 1.0f, 1.0f ) );
-    _impostor->getMaterial()->setAmbient( vec4<F32>( 0.0f, 0.0f, 1.0f, 1.0f ) );
+    _impostor->renderState().setDrawState( false );
+    _impostor->getMaterialTpl()->setDiffuse( vec4<F32>( 0.0f, 0.0f, 1.0f, 1.0f ) );
+    _impostor->getMaterialTpl()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
     _renderState.addToDrawExclusionMask(SHADOW_STAGE);
     return (_particleShader != nullptr);
 }
@@ -122,10 +122,6 @@ void ParticleEmitter::onCameraChange(SceneGraphNode* const sgn){
     _particleDepthShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
 }
 
-ShaderProgram* const ParticleEmitter::getDrawShader(RenderStage renderStage){
-    return renderStage == FINAL_STAGE ? _particleShader : _particleDepthShader;
-}
-
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
 void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     if(_particlesCurrentCount > 0 && _enabled && _created){
@@ -136,7 +132,7 @@ void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& 
         _drawCommand.stateHash(_particleStateBlockHash);
         _drawCommand.instanceCount(_particlesCurrentCount);
         _drawCommand.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-        _drawCommand.shaderProgram(getDrawShader(currentRenderStage));
+        _drawCommand.shaderProgram(currentRenderStage == FINAL_STAGE ? _particleShader : _particleDepthShader);
         GFX_DEVICE.submitRenderCommand(_particleGPUBuffer, _drawCommand);
     }
 }

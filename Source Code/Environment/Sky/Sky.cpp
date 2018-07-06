@@ -74,7 +74,7 @@ void Sky::postLoad( SceneGraphNode* const sgn ) {
     if ( _sky == nullptr ) {
         load();
     }
-    _sky->getSceneNodeRenderState().setDrawState( false );
+    _sky->renderState().setDrawState( false );
     sgn->addNode( _sky )->getComponent<PhysicsComponent>()->physicsGroup( PhysicsComponent::NODE_COLLIDE_IGNORE );
 
     SceneNode::postLoad( sgn );

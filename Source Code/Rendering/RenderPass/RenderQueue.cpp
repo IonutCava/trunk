@@ -121,21 +121,33 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
     return temp;
 }
 
-RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
+RenderBin* RenderQueue::getBinForNode(SceneNode* const node, Material* const matInstance){
+    assert(node != nullptr);
     switch(node->getType()){
-        case TYPE_LIGHT            : return getOrCreateBin(RenderBin::RBT_IMPOSTOR);
-        case TYPE_WATER            : return getOrCreateBin(RenderBin::RBT_WATER);
-        case TYPE_PARTICLE_EMITTER : return getOrCreateBin(RenderBin::RBT_PARTICLES);
-        case TYPE_VEGETATION_GRASS : return getOrCreateBin(RenderBin::RBT_VEGETATION_GRASS);
-        case TYPE_VEGETATION_TREES : return getOrCreateBin(RenderBin::RBT_VEGETATION_TREES);
-        case TYPE_SKY              : return getOrCreateBin(RenderBin::RBT_SKY);
+        case TYPE_LIGHT: {
+            return getOrCreateBin(RenderBin::RBT_IMPOSTOR);
+        }
+        case TYPE_WATER: {
+            return getOrCreateBin(RenderBin::RBT_WATER);
+        }
+        case TYPE_PARTICLE_EMITTER: {
+            return getOrCreateBin(RenderBin::RBT_PARTICLES);
+        }
+        case TYPE_VEGETATION_GRASS: {
+            return getOrCreateBin(RenderBin::RBT_VEGETATION_GRASS);
+        }
+        case TYPE_VEGETATION_TREES: {
+            return getOrCreateBin(RenderBin::RBT_VEGETATION_TREES);
+        }
+        case TYPE_SKY: {
+            return getOrCreateBin(RenderBin::RBT_SKY);
+        }
         case TYPE_OBJECT3D         : { 
             if(static_cast<Object3D*>(node)->getType() == Object3D::TERRAIN){
                 return getOrCreateBin(RenderBin::RBT_TERRAIN);
             }
             //Check if the object has a material with translucency
-            Material* nodeMaterial = node->getMaterial();
-            if(nodeMaterial && nodeMaterial->isTranslucent()){
+            if (matInstance && matInstance->isTranslucent()){
                 //Add it to the appropriate bin if so ...
                 return getOrCreateBin(RenderBin::RBT_TRANSLUCENT);
             }
@@ -148,7 +160,7 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
     assert(sgn != nullptr);
-    RenderBin* rb = getBinForNode(sgn->getNode());
+    RenderBin* rb = getBinForNode(sgn->getNode(), sgn->getMaterialInstance());
     if (rb) {
         rb->addNodeToBin(sgn, eyePos);
     }

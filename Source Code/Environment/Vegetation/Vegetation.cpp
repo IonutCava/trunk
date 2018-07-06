@@ -115,7 +115,7 @@ void Vegetation::initialize( TerrainChunk* const terrainChunk ) {
     vegMaterial->setShaderProgram(_grassShaderName + ".PrePass", Z_PRE_PASS_STAGE, true);
     vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
-    setMaterial(vegMaterial);
+    setMaterialTpl(vegMaterial);
 
     Kernel* kernel = Application::getInstance().getKernel();
     _generateVegetation.reset(kernel->AddTask(0, 1, DELEGATE_BIND(&Vegetation::generateGrass, this), DELEGATE_BIND(&Vegetation::uploadGrassData, this)));
@@ -191,7 +191,7 @@ void Vegetation::uploadGrassData(){
         }
     }
 
-    Material* mat = getMaterial();
+    Material* mat = getMaterialTpl();
     for (U8 i = 0; i < 3; ++i){
         ShaderProgram* const shaderProg = mat->getShaderInfo(i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE)).getProgram();
         shaderProg->Uniform("positionOffsets", grassBlades);
@@ -252,12 +252,12 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
             _windX = sceneState.getWindDirX();
             _windZ = sceneState.getWindDirZ();
             _windS = sceneState.getWindSpeed();
-            Material* mat = getMaterial();
+            Material* mat = sgn->getMaterialInstance();
             for (U8 i = 0; i < 3; ++i){
                 RenderStage stage = (i == 0 ? FINAL_STAGE : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
                 mat->getShaderInfo(stage).getProgram()->Uniform("grassScale",/* _grassSize*/1.0f);
             }
-             _stateRefreshIntervalBuffer -= _stateRefreshInterval;
+            _stateRefreshIntervalBuffer -= _stateRefreshInterval;
             _cullShader->Uniform("dvd_visibilityDistance", sceneState.getGrassVisibility());
             _staticDataUpdated = true;
         }
@@ -339,7 +339,7 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
     _renderDrawCommand.instanceCount(instanceCount);
     _renderDrawCommand.LoD(1);
     _renderDrawCommand.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-    _renderDrawCommand.shaderProgram(getDrawShader(currentRenderStage));
+    _renderDrawCommand.shaderProgram(sgn->getDrawShader(currentRenderStage));
     buffer->getDrawAttribDescriptor(posLocation).offset(_instanceCountGrass * queryId);
     buffer->getDrawAttribDescriptor(scaleLocation).offset(_instanceCountGrass * queryId);
     buffer->getDrawAttribDescriptor(instLocation).offset(_instanceCountGrass * queryId);

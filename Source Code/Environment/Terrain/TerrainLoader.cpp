@@ -164,7 +164,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
 
     terrainMaterial->setShaderLoadThreaded(false);
     terrainMaterial->dumpToFile(false);
-    terrain->setMaterial(terrainMaterial);
+    terrain->setMaterialTpl(terrainMaterial);
 
     //Generate a render state
     RenderStateBlockDescriptor terrainDesc;
@@ -375,7 +375,7 @@ bool TerrainLoader::loadThreadedResources(Terrain* terrain, TerrainDescriptor* t
         }
     }
     groundVB->Create();
-    terrain->buildQaudtree();
+    terrain->buildQuadtree();
 
     initializeVegetation(terrain, terrainDescriptor);
     PRINT_FN(Locale::get("TERRAIN_LOAD_END"), terrain->getName().c_str());

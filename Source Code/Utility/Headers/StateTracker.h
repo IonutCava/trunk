@@ -40,6 +40,14 @@ public:
         _trackedValues.clear();
     }
 
+    StateTracker& operator=(const StateTracker& other){
+        _trackedValues.clear();
+        for (const optionalValue& val: other._trackedValues){
+            _trackedValues.push_back(val);
+        }
+        return *this;
+    }
+
     inline T getTrackedValue(U32 index) { 
         while(index >= _trackedValues.size()){
             _trackedValues.push_back(optionalValue());

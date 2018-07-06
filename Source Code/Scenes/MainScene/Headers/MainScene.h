@@ -66,7 +66,7 @@ private:
     bool _freeflyCamera;
     bool _updateLights;
     AudioDescriptor* _beep;
-    vectorImpl<Terrain*> _visibleTerrains;
+    vectorImpl<SceneGraphNode*> _visibleTerrains;
     WaterPlane* _water;
 	DirectionalLight* _sun;
     SceneGraphNode* _waterGraphNode;

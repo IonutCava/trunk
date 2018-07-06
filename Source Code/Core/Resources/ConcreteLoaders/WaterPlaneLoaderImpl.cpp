@@ -45,7 +45,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const stringImp
     Material* waterMat = CreateResource<Material>(waterMaterial);
     assert(waterMat != nullptr);
     //The material is responsible for the destruction of the textures and shaders it receives!!!!
-    res->setMaterial(waterMat);
+    res->setMaterialTpl(waterMat);
 
     waterMat->dumpToFile(false);
     waterMat->setTexture(ShaderProgram::TEXTURE_UNIT0, waterNM);

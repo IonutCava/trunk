@@ -50,7 +50,7 @@ void Trigger::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     /// update dummy position if it is so
     sgn->getChildren()[0]->getComponent<PhysicsComponent>()->setPosition( _triggerPosition );
     _triggerImpostor->setRadius( _radius );
-    _triggerImpostor->getSceneNodeRenderState().setDrawState(true);
+    _triggerImpostor->renderState().setDrawState(true);
     sgn->addNode( _triggerImpostor )->setActive( true );
 }
 

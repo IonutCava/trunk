@@ -45,7 +45,6 @@ public:
     void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor);
     ///Skies are always visible (for now. Interiors will change that. Windows will require a occlusion query(?))
     bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = false ) { return true; }
-    void drawBoundingBox(SceneGraphNode* const sgn) const {}
 
 protected:
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);

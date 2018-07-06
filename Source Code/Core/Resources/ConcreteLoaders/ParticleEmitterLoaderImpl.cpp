@@ -11,8 +11,7 @@ ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
     if ( !load( ptr, _descriptor.getName() ) ) {
         MemoryManager::SAFE_DELETE( ptr );
     } else {
-        ptr->getSceneNodeRenderState().useDefaultMaterial( false );
-        ptr->setMaterial( nullptr );
+        ptr->renderState().useDefaultMaterial( false );
         if ( !ptr->initData() ) {
             MemoryManager::SAFE_DELETE( ptr );
         } else {

@@ -87,7 +87,7 @@ public:
 
     bool unload();
 
-    void drawBoundingBox(SceneGraphNode* const sgn) const;
+    void postDrawBoundingBox(SceneGraphNode* const sgn) const;
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
 
     vec3<F32>  getPositionFromGlobal(F32 x, F32 z) const;
@@ -111,13 +111,11 @@ protected:
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
-    void buildQaudtree();
+    void buildQuadtree();
     void postLoad(SceneGraphNode* const sgn);
 
     inline void setUnderwaterDiffuseScale(F32 diffuseScale) {_underwaterDiffuseScale = diffuseScale;}
 
-    size_t getDrawStateHash(RenderStage renderStage);
-    ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
     bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true );
 
 protected:

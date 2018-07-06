@@ -11,12 +11,15 @@ namespace Divide {
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)),
                            _plane(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER), 
                            _reflectionPlaneID(ClipPlaneIndex_PLACEHOLDER), _reflectionRendering(false), _refractionRendering(false), _refractionTexture(nullptr), 
-                           _dirty(true), _cameraUnderWater(false), _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
+                           _dirty(true), _paramsDirty(true), _cameraUnderWater(false), _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
 {
     //Set water plane to be single-sided
     P32 quadMask;
     quadMask.i = 0;
     quadMask.b.b0 = true;
+
+    setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f), 0.34f);
+
     ResourceDescriptor waterPlane("waterPlane");
     waterPlane.setFlag(true); //No default material
     waterPlane.setBoolMask(quadMask);
@@ -27,9 +30,9 @@ WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,v
     _plane->setCorner( Quad3D::BOTTOM_LEFT, vec3<F32>( -_farPlane * 1.5f, 0, _farPlane * 1.5f ) );
     _plane->setCorner( Quad3D::BOTTOM_RIGHT, vec3<F32>( _farPlane * 1.5f, 0, _farPlane * 1.5f ) );
     _plane->setNormal( Quad3D::CORNER_ALL, WORLD_Y_AXIS );
-    _plane->getSceneNodeRenderState().setDrawState( false );
+    _plane->renderState().setDrawState( false );
     //The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-    getSceneNodeRenderState().addToDrawExclusionMask( SHADOW_STAGE );
+    renderState().addToDrawExclusionMask( SHADOW_STAGE );
     PRINT_FN( Locale::get( "REFRACTION_INIT_FB" ), _resolution.x, _resolution.y );
     SamplerDescriptor refractionSampler;
     refractionSampler.setWrapMode( TEXTURE_CLAMP_TO_EDGE );
@@ -74,11 +77,11 @@ bool WaterPlane::unload(){
 }
 
 void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency){
-    ShaderProgram* shader = getMaterial()->getShaderInfo(FINAL_STAGE).getProgram();
-    shader->Uniform("_waterShininess",   shininess   );
-    shader->Uniform("_noiseFactor",      noiseFactor );
-    shader->Uniform("_noiseTile",        noiseTile   );
-    shader->Uniform("_transparencyBias", transparency);
+    _shininess = shininess;
+    _noiseTile = noiseTile;
+    _noiseFactor = noiseFactor;
+    _transparency = transparency;
+    _paramsDirty = true;
 }
 
 void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
@@ -86,6 +89,14 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
     if(_dirty){
        sgn->getBoundingSphere().fromBoundingBox(sgn->getBoundingBoxConst());
        _dirty = false;
+    }
+    if (_paramsDirty){
+        ShaderProgram* shader = sgn->getMaterialInstance()->getShaderInfo(FINAL_STAGE).getProgram();
+        shader->Uniform("_waterShininess", _shininess);
+        shader->Uniform("_noiseFactor", _noiseFactor);
+        shader->Uniform("_noiseTile", _noiseTile);
+        shader->Uniform("_transparencyBias", _transparency);
+        _paramsDirty = false;
     }
 }
 
@@ -114,11 +125,11 @@ void WaterPlane::render(SceneGraphNode* const sgn, const SceneRenderState& scene
         }
     }
 
-    ShaderProgram* drawShader = getDrawShader(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE);
+    ShaderProgram* drawShader = sgn->getDrawShader(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE);
     drawShader->Uniform("underwater", _cameraUnderWater);
     GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
     cmd.renderWireframe(sgn->renderWireframe());
-    cmd.stateHash(getMaterial()->getRenderStateBlock(FINAL_STAGE));
+    cmd.stateHash(sgn->getMaterialInstance()->getRenderStateBlock(FINAL_STAGE));
     cmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
     cmd.shaderProgram(drawShader);
     GFX_DEVICE.submitRenderCommand(_plane->getGeometryVB(), cmd);

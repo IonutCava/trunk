@@ -255,14 +255,14 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     //Create a ball
     ResourceDescriptor minge("Ping Pong Ball");
     _ball = CreateResource<Sphere3D>(minge);
-    _ballSGN = _sceneGraph->addNode(_ball, "PingPongBallSGN");
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
+    _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.4f, 0.4f, 1.0f));
+    _ball->getMaterialTpl()->setAmbient(vec4<F32>(0.25f, 0.25f, 0.25f, 1.0f));
+    _ball->getMaterialTpl()->setShininess(36.8f);
+    _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
+    _ballSGN = _sceneGraph->addNode(_ball, "PingPongBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2 ,2));
-    _ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.4f,0.4f,1.0f));
-    _ball->getMaterial()->setAmbient(vec4<F32>(0.25f,0.25f,0.25f,1.0f));
-    _ball->getMaterial()->setShininess(36.8f);
-    _ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);

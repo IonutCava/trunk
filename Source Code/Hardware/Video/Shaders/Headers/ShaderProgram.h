@@ -44,7 +44,9 @@ public:
         TEXTURE_OPACITY   = 3,
         TEXTURE_SPECULAR  = 4,
         TEXTURE_PROJECTION = 5,
-        TextureUsage_PLACEHOLDER = 6
+        TextureUsage_PLACEHOLDER = 6,
+        TEXTURE_GLOSS = TEXTURE_SPECULAR,
+        TEXTURE_ROUGHNESS = TEXTURE_GLOSS
     };
 
     virtual ~ShaderProgram();

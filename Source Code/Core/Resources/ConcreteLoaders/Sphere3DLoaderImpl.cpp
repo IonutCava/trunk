@@ -10,11 +10,9 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
     Sphere3D* ptr = New Sphere3D(1,32);
 
     if ( _descriptor.getFlag() ) {
-        ptr->getSceneNodeRenderState().useDefaultMaterial( false );
-        ptr->setMaterial( nullptr );
+        ptr->renderState().useDefaultMaterial( false );
     } else {
-        ResourceDescriptor sphere3DMaterial( "Material_" + _descriptor.getName() );
-        ptr->setMaterial( CreateResource<Material>( sphere3DMaterial ) );
+        ptr->setMaterialTpl(CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName())));
     }
 
     if(!load(ptr,_descriptor.getName())){

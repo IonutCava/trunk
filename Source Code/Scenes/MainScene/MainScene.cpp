@@ -25,8 +25,8 @@ void MainScene::updateLights(){
     _sun->setDirection(_sunvector);
 	_sun->setDiffuseColor(_sunColor);
 	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
-    for(Terrain* ter : _visibleTerrains){
-        ter->getMaterial()->setAmbient(_sunColor);
+    for(SceneGraphNode* const ter : _visibleTerrains){
+        ter->getMaterialInstance()->setAmbient(_sunColor);
     }
 
     _updateLights = false;
@@ -41,7 +41,9 @@ void MainScene::processInput(const U64 deltaTime){
         if(!_freeflyCamera){
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
-            for(Terrain* ter : _visibleTerrains){
+            for(SceneGraphNode* const terrainNode : _visibleTerrains){
+                Terrain* ter = terrainNode->getNode<Terrain>();
+                assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x, ter->getDimensions().width  * 0.5 * -1.0f, ter->getDimensions().width  * 0.5f);
                 CLAMP<F32>(eyePosition.z, ter->getDimensions().height * 0.5 * -1.0f, ter->getDimensions().height * 0.5f);
                
@@ -114,7 +116,7 @@ bool MainScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI
             Terrain* tempTerrain = terrainNode->getNode<Terrain>();
             if(terrainNode->isActive()){
                 tempTerrain->toggleBoundingBoxes();
-                _visibleTerrains.push_back(tempTerrain);
+                _visibleTerrains.push_back(terrainNode);
              }
         }else{
             ERROR_FN(Locale::get("ERROR_MISSING_TERRAIN"), _terrainInfoArray[i]->getVariable("terrainName"));
@@ -256,8 +258,8 @@ bool MainScene::onKeyUp(const Input::KeyEvent& key){
             renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
             }break;
         case Input::KeyCode::KC_T:
-            for(Terrain* ter : _visibleTerrains){
-                ter->toggleBoundingBoxes();
+            for(SceneGraphNode* const ter : _visibleTerrains){
+                ter->getNode<Terrain>()->toggleBoundingBoxes();
             }
             break;
     }

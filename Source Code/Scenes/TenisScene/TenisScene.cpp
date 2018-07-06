@@ -355,14 +355,14 @@ bool TenisScene::loadResources(bool continueOnErrors){
     //Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(ballDescriptor);
-    _ballSGN = _sceneGraph->addNode( _ball, "TenisBallSGN" );
+    _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.5f, 0.5f, 1.0f));
+    _ball->getMaterialTpl()->setAmbient(vec4<F32>(0.5f, 0.5f, 0.5f, 1.0f));
+    _ball->getMaterialTpl()->setShininess(0.2f);
+    _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
+    _ballSGN = _sceneGraph->addNode(_ball, "TenisBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(3.0f, 0.2f ,7.0f));
-    _ball->getMaterial()->setDiffuse(vec4<F32>(0.4f,0.5f,0.5f,1.0f));
-    _ball->getMaterial()->setAmbient(vec4<F32>(0.5f,0.5f,0.5f,1.0f));
-    _ball->getMaterial()->setShininess(0.2f);
-    _ball->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
     _ballSGN->setSelectable(true);
     GUIElement* btn = _GUI->addButton("Serve", "Serve",
                                       vec2<I32>(renderState().cachedResolution().width-220,60),

@@ -71,19 +71,17 @@ public:
 
     virtual	bool	  unload();
     virtual bool	  isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true );
-    virtual	void	  setMaterial(Material* const m);
-    Material*   const getMaterial();
-    virtual ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
-    virtual size_t               getDrawStateHash(RenderStage renderStage);
+    virtual	void	  setMaterialTpl(Material* const m);
+    Material*   const getMaterialTpl();
 
     /// Every SceneNode computes a bounding box in it's own way.
     virtual	bool computeBoundingBox(SceneGraphNode* const sgn);
-    virtual void drawBoundingBox(SceneGraphNode* const sgn) const;
+    virtual void postDrawBoundingBox(SceneGraphNode* const sgn) const;
 
     inline       void           setType(const SceneNodeType& type)        { _type = type; }
     inline const SceneNodeType& getType()					        const { return _type; }
 
-    inline SceneNodeRenderState& getSceneNodeRenderState() { return _renderState; }
+    inline SceneNodeRenderState& renderState() { return _renderState; }
 
     inline void incLODcount() { _LODcount++; }
     inline void decLODcount() { _LODcount--; }
@@ -104,9 +102,6 @@ protected:
 
     virtual void onCameraChange(SceneGraphNode* const sgn) {}
 
-    /* Material */
-    virtual	void bindTextures();
-
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad( SceneGraphNode* const sgn ) { _hasSGNParent = ( sgn != nullptr ); };
 
@@ -119,9 +114,8 @@ protected:
 
 private:
     //mutable SharedLock _materialLock;
-    Material*	  _material;
+    Material*	  _materialTemplate;
     bool          _hasSGNParent;
-    bool          _refreshMaterialData;
     SceneNodeType _type;
 };
 

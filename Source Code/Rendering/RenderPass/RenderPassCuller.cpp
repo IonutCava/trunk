@@ -63,7 +63,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
         RenderStage currentStage = GFX_DEVICE.getRenderStage();
         //If this node isn't render-disabled, check if it is visible
         //Skip expensive frustum culling if we shouldn't draw the node in the first place
-        if ( !node->getSceneNodeRenderState().getDrawState( currentStage ) ) {
+        if ( !node->renderState().getDrawState( currentStage ) ) {
             //If the current SceneGraphNode isn't visible, it's children aren't visible as well
             skipChildren = true;
         } else {

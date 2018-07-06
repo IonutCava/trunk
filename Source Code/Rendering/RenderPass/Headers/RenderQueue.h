@@ -27,6 +27,7 @@
 
 namespace Divide {
 
+class Material;
 class SceneNode;
 
 ///This class manages all of the RenderBins and renders them in the correct order
@@ -58,7 +59,7 @@ private:
     RenderQueue();
     ~RenderQueue();
 
-    RenderBin* getBinForNode(SceneNode* const nodeType);
+    RenderBin* getBinForNode(SceneNode* const nodeType, Material* const matInstance);
     RenderBin* getOrCreateBin(const RenderBin::RenderBinType& rbType);
 
 private:

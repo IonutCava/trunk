@@ -140,9 +140,10 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     _node->sceneUpdate(deltaTime, this, sceneState);
 
-    Material* mat = _node->getMaterial();
+    Material* mat = getMaterialInstance();
     if ( mat ) {
         mat->update( deltaTime );
+        mat->clean();
     }
 
     if ( _shouldDelete ) {
@@ -157,7 +158,9 @@ void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const Rend
         // If the SGN isn't ready for rendering, skip it this frame
         return;
     }
-    _node->bindTextures();
+    if (getMaterialInstance()) {
+        getMaterialInstance()->bindTextures();
+    }
     _node->render(this, sceneRenderState, currentRenderStage);
 
     postDraw(sceneRenderState, currentRenderStage);
@@ -181,19 +184,19 @@ bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStag
         }
     }
     //Call any pre-draw operations on the SceneNode (refresh VB, update materials, etc)
-    Material* mat = _node->getMaterial();
-    if ( mat ) {
-        if ( mat->computeShader( renderStage ) ) {
-            scheduleDrawReset( renderStage ); //reset animation on next draw call
+    Material* mat = getMaterialInstance();
+    if (mat) {
+        if (!mat->computeShader(renderStage, false, DELEGATE_BIND(&SceneGraphNode::scheduleDrawReset, this, renderStage))) {
+            return false;
+        }
+        if (mat->getShaderInfo(renderStage)._shaderCompStage != Material::ShaderInfo::SHADER_STAGE_COMPUTED) {
             return false;
         }
     }
-
-    if ( _node->onDraw( this, renderStage ) ) {
-        return _node->getDrawState( renderStage );
+    if (!_node->onDraw(this, renderStage)) {
+        return false;
     }
-
-    return false;
+    return _node->getDrawState(renderStage);
 }
 
 void SceneGraphNode::postDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage){
@@ -212,16 +215,38 @@ void SceneGraphNode::postDraw(const SceneRenderState& sceneRenderState, RenderSt
             _axisGizmo->paused(true);   
         }
     }
-
+#endif
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     if (renderBoundingBox() || bitCompare(sceneRenderState.objectState(), SceneRenderState::DRAW_BOUNDING_BOX)) {
-        _node->drawBoundingBox(this);
+        const BoundingBox& bb = getBoundingBoxConst();
+        GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
+        _node->postDrawBoundingBox(this);
     }
-#endif
-
+    
     if (getComponent<AnimationComponent>()) {
         getComponent<AnimationComponent>()->renderSkeleton();
     }
+}
+
+ShaderProgram* const SceneGraphNode::getDrawShader(RenderStage renderStage) {
+    return (getMaterialInstance() ? _materialInstance->getShaderInfo(renderStage).getProgram() : nullptr);
+}
+
+size_t SceneGraphNode::getDrawStateHash(RenderStage renderStage){
+    if (!getMaterialInstance()) {
+        return 0L;
+    }
+
+    bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
+    bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
+
+    if (!_materialInstance && depthPass) {
+        return shadowStage ? _node->renderState().getShadowStateBlock() : _node->renderState().getDepthStateBlock();
+    }
+
+    bool reflectionStage = GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE);
+
+    return _materialInstance->getRenderStateBlock(depthPass ? (shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE) : (reflectionStage ? REFLECTION_STAGE : FINAL_STAGE));
 }
 
 void SceneGraphNode::isInViewCallback(){
@@ -234,7 +259,7 @@ void SceneGraphNode::isInViewCallback(){
 
     _materialPropertyMatrix.setCol(0, vec4<F32>(isSelected() ? 1.0f : 0.0f, receivesShadows() ? 1.0f : 0.0f, 0.0f, 0.0f));
 
-    Material* mat = _node->getMaterial();
+    Material* mat = getMaterialInstance();
     
     if (mat){
         mat->getMaterialMatrix(_materialColorMatrix);

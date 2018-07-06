@@ -9,11 +9,11 @@ namespace Divide {
 
 Impostor::Impostor(const stringImpl& name, F32 radius) : Sphere3D(radius, 8)
 {
-    getSceneNodeRenderState().setDrawState(false);
+    renderState().setDrawState(false);
     
-    RenderStateBlockDescriptor dummyDesc(GFX_DEVICE.getStateBlockDescriptor(getMaterial()->getRenderStateBlock(FINAL_STAGE)));
+    RenderStateBlockDescriptor dummyDesc(GFX_DEVICE.getStateBlockDescriptor(getMaterialTpl()->getRenderStateBlock(FINAL_STAGE)));
     dummyDesc.setFillMode(FILL_MODE_WIREFRAME);
-    getMaterial()->setRenderStateBlock(dummyDesc, FINAL_STAGE);
+    getMaterialTpl()->setRenderStateBlock(dummyDesc, FINAL_STAGE);
 }
 
 Impostor::~Impostor()
