@@ -24,13 +24,11 @@ void ParticleSource::emit(const U64 deltaTime, std::shared_ptr<ParticleData> p) 
 
     for (std::shared_ptr<ParticleGenerator>& gen : _particleGenerators) {
         gen->generate(_generatorTasks, deltaTime, p, startID, endID);
+        for (std::future<void>& task : _generatorTasks) {
+            task.get();
+        }
+        _generatorTasks.resize(0);
     }
-
-    for (std::future<void>& task : _generatorTasks) {
-        task.get();
-    }
-
-    _generatorTasks.resize(0);
 
     for (U32 i = startID; i < endID; ++i) {
         p->wake(i);

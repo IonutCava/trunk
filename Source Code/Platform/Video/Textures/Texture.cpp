@@ -120,26 +120,24 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     U16 height = img.dimensions().height;
     // If we have an alpha channel, we must check for translucency
     if (img.alpha()) {
-        // Each pixel is independent so this is a brilliant place to parallelize
-        // work
+        // Each pixel is independent so this is a brilliant place to parallelize work
         I32 i = 0;
         bool abort = false;
 #       pragma omp parallel for
-        for (i = 0; i < width; i++) {
+        for (i = 0; i < width; ++i) {
 #           pragma omp flush(abort)
             if (!abort) {
                 // We process one column per thread
-                for (I32 j = 0; j < height; j++) {
+                for (I32 j = 0; j < height; ++j) {
                     // Check alpha value
-                    if (img.getColor(to_ushort(i), to_ushort(j)).a < 250) {
-                        // If the pixel is transparent, toggle translucency flag
-#                       pragma omp critical
-                        {
-                            // Should be thread-safe
-                            _hasTransparency = true;
-                            abort = true;
-#                           pragma omp flush(abort)
-                        }
+                    U8 tempR, tempG, tempB, tempA;
+                    img.getColor(i, j, tempR, tempG, tempB, tempA);
+                    // If the pixel is transparent, toggle translucency flag
+#                   pragma omp critical
+                    {
+                        // Should be thread-safe
+                        _hasTransparency = abort = (tempA < 253);
+#                       pragma omp flush(abort)
                     }
                 }
             }

@@ -165,7 +165,9 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         }
 
         // Generate and upload all lighting data
-        LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
+        if (stage == RenderStage::Z_PRE_PASS) {
+            LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
+        }
     }
     queue.sort(stage);
     sortVisibleNodes(nodes);

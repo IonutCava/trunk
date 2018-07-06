@@ -115,9 +115,6 @@ class GPUState : private NonCopyable {
         return _closeLoadingThread;
     }
 
-    inline ThreadPool& getRenderingPool() {
-        return _renderingPool;
-    }
    protected:
     /// Threading system
     LoadQueue _loadQueue;
@@ -128,8 +125,6 @@ class GPUState : private NonCopyable {
     /// Atomic boolean value used to signal the loading thread to stop
     std::atomic_bool _closeLoadingThread;
     std::unique_ptr<std::thread> _loaderThread;
-    /// Context specific pool
-    ThreadPool _renderingPool;
     /// AA system
     U8 _MSAASamples;
     U8 _FXAASamples;

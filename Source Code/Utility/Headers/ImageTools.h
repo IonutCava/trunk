@@ -65,7 +65,8 @@ class ImageData : private NonCopyable {
     /// the image format as given by DevIL
     inline GFXImageFormat format() const { return _format; }
     /// get the texel color at the specified offset from the origin
-    vec4<U8> getColor(U16 x, U16 y) const;
+    vec4<U8> getColor(I32 x, I32 y) const;
+    void getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a) const;
 
   protected:
     friend class ImageDataInterface;

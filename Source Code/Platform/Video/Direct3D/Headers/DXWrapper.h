@@ -71,13 +71,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void endFrame() override;
 
     inline ShaderBuffer* newSB(const stringImpl& bufferName,
-                               const U32 sizeFactor = 1,
+                               const U32 ringBufferLength = 1,
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
                                    BufferUpdateFrequency::ONCE) const override {
         return MemoryManager_NEW d3dConstantBuffer(bufferName, 
-                                                   sizeFactor,
+                                                   ringBufferLength,
                                                    unbound,
                                                    persistentMapped,
                                                    frequency);

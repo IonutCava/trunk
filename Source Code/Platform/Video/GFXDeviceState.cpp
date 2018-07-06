@@ -58,34 +58,31 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
                   "GFXDevice error: No immediate mode emulation shader available!");
     PostFX::createInstance();
     // Create a shader buffer to store the following info:
-    // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec,
-    // ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
-    // It should translate to (as seen by OpenGL) a uniform buffer without
-    // persistent mapping.
-    // (Many small updates with BufferSubData are recommended with the target
-    // usage of the buffer)
+    // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
+    // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping.
+    // (Many small updates with BufferSubData are recommended with the target usage of the buffer)
     _gfxDataBuffer.reset(newSB("dvd_GPUBlock", 1, false, false, BufferUpdateFrequency::OFTEN));
     _gfxDataBuffer->create(1, sizeof(GPUBlock));
-    // Every visible node will first update this buffer with required data
-    // (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
-    // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
-    // Shader Storage Buffer that's persistently and coherently mapped
+    // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
+    // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
+    // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame
+    STUBBED("ToDo: Use different sizes for node buffer and command buffer, as commands for Z PrePas and Display are different -Ionut")
+    STUBBED("ToDo: Increase buffer size to handle multiple shadow passes. Round robin with size factor 3 should suffice for shadows -Ionut")
+    U32 bufferSizeFactor = renderStageBufferSize();
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true, true, BufferUpdateFrequency::OFTEN));
-    _nodeBuffer->create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
+    _nodeBuffer->create(Config::MAX_VISIBLE_NODES + 1, sizeof(NodeData), bufferSizeFactor);
     // Create a shader buffer to hold all of our indirect draw commands
     // Usefull if we need access to the buffer in GLSL/Compute programs
-    // ToDo: Might need to be unbound for access in compute shaders! -Ionut
-    _indirectCommandBuffer.reset(newSB("dvd_GPUCmds", 1, true, false, BufferUpdateFrequency::OFTEN));
-    _indirectCommandBuffer->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
-//#if defined(_DEBUG)
-    _indirectCommandBuffer->addAtomicCounter(3);
-//#endif
-    registerCommandBuffer(*_indirectCommandBuffer);
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        _indirectCommandBuffers[i].reset(newSB("dvd_GPUCmds", 1, true, false, BufferUpdateFrequency::OFTEN));
+        _indirectCommandBuffers[i]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
+        _indirectCommandBuffers[i]->addAtomicCounter(3);
+    }
+    
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();
     changeResolution(resolution.width, resolution.height);
     setBaseViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
-
     // Create general purpose render state blocks
     RenderStateBlock defaultState;
     _defaultStateBlockHash = defaultState.getHash();
@@ -242,7 +239,9 @@ void GFXDevice::closeRenderingAPI() {
     MemoryManager::DELETE_VECTOR(_imInterfaces);
     _gfxDataBuffer->destroy();
     _nodeBuffer->destroy();
-    _indirectCommandBuffer->destroy();
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        _indirectCommandBuffers[i]->destroy();
+    }
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets

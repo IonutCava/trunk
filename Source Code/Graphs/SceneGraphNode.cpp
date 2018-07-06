@@ -31,7 +31,6 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _elapsedTime(0ULL),
       _wasActive(true),
       _active(true),
-      _inView(false),
       _isSelectable(false),
       _sorted(false),
       _boundingBoxDirty(true),
@@ -406,15 +405,10 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
 }
 
 void SceneGraphNode::frameEnded() {
-    setInView(false);
     U32 childCount = getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
         getChild(i, childCount).frameEnded();
     }
-}
-
-void SceneGraphNode::setInView(const bool state) {
-    _inView = state;
 }
 
 bool SceneGraphNode::canDraw(const SceneRenderState& sceneRenderState,

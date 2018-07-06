@@ -19,8 +19,8 @@ void ParticleBoxGenerator::generate(vectorImpl<std::future<void>>& packagedTasks
     {
         packagedTasks.push_back(
             std::async(std::launch::async | std::launch::deferred,
-                      [from, to, &min, &max]() {
-                          std::for_each(from, to, [&](iter_t::value_type& position)
+                      [from, to, min, max]() {
+                          std::for_each(from, to, [min, max](iter_t::value_type& position)
                           {
                               position.xyz(Random(min, max));
                           });

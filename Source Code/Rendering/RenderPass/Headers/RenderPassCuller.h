@@ -33,6 +33,7 @@
 #define _RENDER_PASS_CULLER_H_
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
+#include <future>
 
 /// This class performs all the necessary visibility checks on the scene's
 /// scenegraph to decide what get's rendered and what not
@@ -77,6 +78,7 @@ class RenderPassCuller {
 
    protected:
     CullingFunction _cullingFunction;
+    vectorImpl<std::future<void>> _cullingTasks;
     vectorImpl<VisibleNodeList> _perThreadNodeList;
     std::array<VisibleNodeCache, to_const_uint(RenderStage::COUNT)> _visibleNodes;
 };

@@ -84,8 +84,8 @@ void Kernel::threadPoolCompleted(I64 onExitTaskID) {
 }
 
 Task_ptr Kernel::AddTask(U64 tickInterval, I32 numberOfTicks,
-                      const DELEGATE_CBK<>& threadedFunction,
-                      const DELEGATE_CBK<>& onCompletionFunction) {
+                         const DELEGATE_CBK<>& threadedFunction,
+                         const DELEGATE_CBK<>& onCompletionFunction) {
     Task_ptr taskPtr(new Task(_mainTaskPool,
                               tickInterval,
                               numberOfTicks,

@@ -418,12 +418,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     }
 
     inline ShaderBuffer* newSB(const stringImpl& bufferName,
-                               const U32 sizeFactor = 1,
+                               const U32 ringBufferLength = 1,
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
                                    BufferUpdateFrequency::ONCE) const override {
-        return _api->newSB(bufferName, sizeFactor, unbound, persistentMapped, frequency);
+        return _api->newSB(bufferName, ringBufferLength, unbound, persistentMapped, frequency);
     }
 
     inline HardwareQuery* newHardwareQuery() const override {
@@ -545,6 +545,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void processVisibleNode(SceneGraphNode_wptr node, NodeData& dataOut);
 
+    inline ShaderBuffer& getCommandBuffer(RenderStage stage) const {
+        return *_indirectCommandBuffers[to_uint(stage)].get();
+    }
+
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;
@@ -616,7 +620,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
-    std::unique_ptr<ShaderBuffer> _indirectCommandBuffer;
+    std::array<std::unique_ptr<ShaderBuffer>, to_const_uint(RenderStage::COUNT)> _indirectCommandBuffers;
     GenericDrawCommand _defaultDrawCmd;
 END_SINGLETON
 

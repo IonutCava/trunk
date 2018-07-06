@@ -190,7 +190,6 @@ class SceneGraphNode : public GUIDWrapper,
     void restoreActive();
     inline void scheduleDeletion() { _shouldDelete = true; }
     
-    inline bool wasInView() const { return _inView; }
     inline bool isActive() const { return _active; }
 
     inline U32 getInstanceID() const { return _instanceID; }
@@ -262,7 +261,6 @@ class SceneGraphNode : public GUIDWrapper,
 
    protected:
     friend class RenderPassCuller;
-    void setInView(const bool state);
     bool canDraw(const SceneRenderState& sceneRenderState,
                  RenderStage currentStage);
 
@@ -281,7 +279,6 @@ class SceneGraphNode : public GUIDWrapper,
     SceneNode* _node;
     std::weak_ptr<SceneGraphNode> _parent;
     std::atomic<bool> _active;
-    std::atomic<bool> _inView;
     std::atomic<bool> _boundingBoxDirty;
     U32 _bbAddExclusionList;
     SelectionFlag _selectionFlag;

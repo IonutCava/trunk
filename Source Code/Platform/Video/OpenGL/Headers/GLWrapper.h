@@ -143,7 +143,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// unbound is false
     /// or a 'Shader Storage Block Object' otherwise
     ShaderBuffer* newSB(const stringImpl& bufferName, 
-                        const U32 sizeFactor = 1,
+                        const U32 ringBufferLength = 1,
                         const bool unbound = false,
                         const bool persistentMapped = true,
                         BufferUpdateFrequency frequency =

@@ -199,8 +199,8 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
                   "available!");
     _updateParticleEmitterBB = true;
     BoundingBox& bb = sgn.getBoundingBox();
-    bb.reset();
     if (_particles->_renderingPositions.size() > 2) {
+        bb.reset();
         bb.Add(_particles->_renderingPositions.front());
         bb.Add(_particles->_renderingPositions.back());
     }
@@ -290,7 +290,8 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
 }
 
 /// Pre-process particles
-void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+void ParticleEmitter::sceneUpdate(const U64 deltaTime,
+                                  SceneGraphNode& sgn,
                                   SceneState& sceneState) {
     if (!_enabled && !_uploaded) {
         return;
@@ -299,37 +300,35 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     bool validCount = getAliveParticleCount() > 0;
     renderState().setDrawState(validCount);
 
-    //if (validCount) {
-        _uploaded = false;
+    _uploaded = false;
 
-        PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
-        if (_updateParticleEmitterBB) {
-            sgn.updateBoundingBoxTransform(transform->getWorldMatrix());
-            _updateParticleEmitterBB = false;
-        }
+    PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
+    if (_updateParticleEmitterBB) {
+        sgn.updateBoundingBoxTransform(transform->getWorldMatrix());
+        _updateParticleEmitterBB = false;
+    }
 
-        const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
-        U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
+    const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
+    U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
 
-        for (std::shared_ptr<ParticleSource>& source : _sources) {
-            source->emit(deltaTime, _particles);
-        }
+    for (std::shared_ptr<ParticleSource>& source : _sources) {
+        source->emit(deltaTime, _particles);
+    }
             
-        U32 count = _particles->totalCount();
-        for (U32 i = 0; i < count; ++i) {
-            _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
-            _particles->_position[i].w = 1.0f * _particles->_misc[i].z;
-            _particles->_acceleration[i].set(0.0f);
-            _particles->lodLevel(lodLevel);
-        }
+    U32 count = _particles->totalCount();
+    for (U32 i = 0; i < count; ++i) {
+        _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
+        _particles->_position[i].w = 1.0f * _particles->_misc[i].z;
+        _particles->_acceleration[i].set(0.0f);
+        _particles->lodLevel(lodLevel);
+    }
 
-        for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
-            up->update(deltaTime, _particles);
-        }
+    for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
+        up->update(deltaTime, _particles);
+    }
 
-        // const vec3<F32>& origin = transform->getPosition();
-        // const Quaternion<F32>& orientation = transform->getOrientation();
-    // }
+    // const vec3<F32>& origin = transform->getPosition();
+    // const Quaternion<F32>& orientation = transform->getOrientation();
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }

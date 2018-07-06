@@ -72,7 +72,7 @@ void GFXDevice::uploadGPUBlock() {
 
     // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
     _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-    _nodeBuffer->bind(ShaderBufferLocation::NODE_INFO);
+    _nodeBuffer->bind(ShaderBufferLocation::NODE_INFO, renderStageToBufferOffset(getRenderStage()));
 }
 
 /// A draw command is composed of a target buffer and a command. The command
@@ -213,7 +213,6 @@ void GFXDevice::processVisibleNode(SceneGraphNode_wptr node, NodeData& dataOut) 
     // Since the normal matrix is 3x3, we can use the extra row and column
     // to store additional data
     normalMatrix.element(3, 2, true) = to_float(animComp ? animComp->boneCount() : 0);
-
     // Get the color matrix (diffuse, ambient, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._matrix[2]);
     // Get the material property matrix (alpha test, texture count,
@@ -239,7 +238,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
 
     RenderStage currentStage = getRenderStage();
-
     U32 nodeCount = 1; U32 cmdCount = 1;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
         [&](GFXDevice::VisibleNodeList::value_type& node) -> void {
@@ -269,13 +267,13 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         }
     });
     
-    
-
-    _indirectCommandBuffer->updateData(0, cmdCount, _drawCommandsCache.data());
+    ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage);
+    cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());
+    registerCommandBuffer(cmdBuffer);
     _lastCommandCount = cmdCount;
 
     if (refreshNodeData) {
-        _nodeBuffer->updateData(0, nodeCount, _matricesData.data());
+        _nodeBuffer->updateData(0, nodeCount, _matricesData.data(), renderStageToBufferOffset(currentStage));
         _lastNodeCount = nodeCount;
     } else {
         occlusionCull();
@@ -290,16 +288,18 @@ void GFXDevice::occlusionCull() {
     _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
     getRenderTarget(RenderTarget::DEPTH)->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
                                                TextureDescriptor::AttachmentType::Depth);
-    _indirectCommandBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
-    _indirectCommandBuffer->bindAtomicCounter();
+
+    RenderStage currentStage = getRenderStage();
+    getCommandBuffer(currentStage).bind(ShaderBufferLocation::GPU_COMMANDS);
+    getCommandBuffer(currentStage).bindAtomicCounter();
     _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     _HIZCullProgram->SetMemoryBarrier();
 }
 
 U32 GFXDevice::getLastCullCount() const {
-    U32 cullCount = _indirectCommandBuffer->getAtomicCounter();
+    U32 cullCount = getCommandBuffer(getRenderStage()).getAtomicCounter();
     if (cullCount > 0) {
-        _indirectCommandBuffer->resetAtomicCounter();
+        getCommandBuffer(getRenderStage()).resetAtomicCounter();
     }
     return cullCount;
 }

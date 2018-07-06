@@ -2,12 +2,13 @@
 
 namespace Divide {
     ShaderBuffer::ShaderBuffer(const stringImpl& bufferName,
-                               const U32 sizeFactor,
+                               const U32 ringBufferLength,
                                bool unbound,
                                bool persistentMapped,
                                BufferUpdateFrequency frequency)
-                                                      : RingBuffer(sizeFactor),
+                                                      : RingBuffer(ringBufferLength),
                                                         GUIDWrapper(),
+                                                        _sizeFactor(1),
                                                         _bufferSize(0),
                                                         _primitiveSize(0),
                                                         _primitiveCount(0),
@@ -23,16 +24,17 @@ namespace Divide {
     {
     }
 
-    void ShaderBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
+    void ShaderBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {
         _primitiveCount = primitiveCount;
         _primitiveSize = primitiveSize;
         _bufferSize = primitiveSize * primitiveCount;
+        _sizeFactor = sizeFactor;
         DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::Create error: Invalid buffer size!");
     }
 
-    void ShaderBuffer::setData(const bufferPtr data) {
+    void ShaderBuffer::setData(const bufferPtr data, U32 sizeFactorOffset) {
         DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::SetData error: Invalid buffer size!");
-        updateData(0, _primitiveCount, data);
+        updateData(0, _primitiveCount, data, sizeFactorOffset);
     }
 
 }; //namespace Divide;

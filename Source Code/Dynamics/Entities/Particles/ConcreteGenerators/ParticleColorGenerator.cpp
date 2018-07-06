@@ -27,7 +27,7 @@ void ParticleColorGenerator::generate(vectorImpl<std::future<void>>& packagedTas
     {
         packagedTasks.push_back(
             std::async(std::launch::async | std::launch::deferred,
-                       [from, to, &minStartCol, &maxStartCol]() {
+                       [from, to, minStartCol, maxStartCol]() {
                            std::for_each(from, to, [&](iter_t_start::value_type& color)
                            {
                                color.set(Random(minStartCol, maxStartCol));
@@ -42,7 +42,7 @@ void ParticleColorGenerator::generate(vectorImpl<std::future<void>>& packagedTas
     {
         packagedTasks.push_back(
             std::async(std::launch::async | std::launch::deferred,
-                       [from, to, &minEndCol, &maxEndCol]() {
+                       [from, to, minEndCol, maxEndCol]() {
                            std::for_each(from, to, [&](iter_t_end::value_type& color)
                            {
                                color.set(Random(minEndCol, maxEndCol));

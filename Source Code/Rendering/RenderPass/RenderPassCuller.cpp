@@ -53,30 +53,28 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         // No point in updating visual information if the scene disabled object
         // rendering or rendering of their bounding boxes
         SceneGraphNode& root = *sceneGraph.getRoot();
-        if (!frustumCullNode(root, stage, renderState)) {
-            vectorImpl<std::future<void>> tasks;
-            U32 childCount = root.getChildCount();
-            tasks.reserve(childCount);
-            _perThreadNodeList.resize(childCount);
-            for (U32 i = 0; i < childCount; ++i) {
-                SceneGraphNode& child = root.getChild(i, childCount);
-                VisibleNodeList& container = _perThreadNodeList[i];
-                container.resize(0);
-                tasks.push_back(std::async(/*std::launch::async | */std::launch::deferred, [&]() {
-                    frustumCullRecursive(child, stage, renderState, container);
-                }));
-            }
+        U32 childCount = root.getChildCount();
+        _cullingTasks.resize(0);
+        _perThreadNodeList.resize(childCount);
+        for (U32 i = 0; i < childCount; ++i) {
+            SceneGraphNode& child = root.getChild(i, childCount);
+            VisibleNodeList& container = _perThreadNodeList[i];
+            container.resize(0);
+            _cullingTasks.push_back(std::async(std::launch::async | std::launch::deferred, [&]() {
+                frustumCullRecursive(child, stage, renderState, container);
+            }));
+        }
 
-            for (std::future<void>& task : tasks) {
-                task.get();
-            }
+        for (std::future<void>& task : _cullingTasks) {
+            task.get();
+        }
 
-            for (VisibleNodeList& nodeList : _perThreadNodeList) {
-                for (SceneGraphNode_wptr ptr : nodeList) {
-                    nodeCache._visibleNodes.push_back(ptr);
-                }
+        for (VisibleNodeList& nodeList : _perThreadNodeList) {
+            for (SceneGraphNode_wptr ptr : nodeList) {
+                nodeCache._visibleNodes.push_back(ptr);
             }
         }
+        
         nodeCache._sorted = false;
     }
 }
@@ -84,24 +82,20 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 bool RenderPassCuller::frustumCullNode(SceneGraphNode& node,
                                        RenderStage currentStage,
                                        SceneRenderState& sceneRenderState) {
-    bool nodeVisible = false;
-
-    if (node.getParent().lock()) {
-        // Skip all of this for inactive nodes.
-        if (node.isActive()) {
-            // Perform visibility test on current node
-            if (node.canDraw(sceneRenderState, currentStage)) {
-                // If the current node is visible, add it to the render
-                // queue (if it passes our custom culling function)
-                if (!_cullingFunction(node)) {
-                    nodeVisible = true;
-                }
+    // Skip all of this for inactive nodes.
+    if (node.isActive()) {
+        // Perform visibility test on current node
+        if (node.canDraw(sceneRenderState, currentStage)) {
+            // If the current node is visible, add it to the render
+            // queue (if it passes our custom culling function)
+            if (!_cullingFunction(node)) {
+                return false;
             }
         }
     }
+    
 
-    node.setInView(nodeVisible);
-    return nodeVisible;
+    return true;
 }
 
 /// This method performs the visibility check on the given node and all of its

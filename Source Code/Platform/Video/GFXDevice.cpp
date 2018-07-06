@@ -43,7 +43,6 @@ GFXDevice::GFXDevice()
     _imShaderLines = nullptr;
     _nodeBuffer = nullptr;
     _gfxDataBuffer = nullptr;
-    _indirectCommandBuffer = nullptr;
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;
     _previewDepthMapShader = nullptr;

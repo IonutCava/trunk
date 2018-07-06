@@ -17,7 +17,7 @@ void ParticleVelocityGenerator::generate(vectorImpl<std::future<void>>& packaged
     {
         packagedTasks.push_back(
             std::async(std::launch::async | std::launch::deferred,
-                       [from, to, &min, &max]() {
+                       [from, to, min, max]() {
                            std::for_each(from, to, [&](iter_t::value_type& velocity)
                            {
                                velocity.set(Random(min, max));

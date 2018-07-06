@@ -41,7 +41,7 @@ class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public GUIDWrapper {
    public:
     explicit ShaderBuffer(const stringImpl& bufferName,
-                          const U32 sizeFactor,
+                          const U32 ringBufferLength,
                           bool unbound,
                           bool persistentMapped,
                           BufferUpdateFrequency frequency);
@@ -49,31 +49,35 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
     virtual ~ShaderBuffer();
 
     /// Create a new buffer to hold our shader data
-    virtual void create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    virtual void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1);
     virtual void destroy() = 0;
 
     virtual void updateData(ptrdiff_t offsetElementCount,
                             ptrdiff_t rangeElementCount,
-                            const bufferPtr data) = 0;
+                            const bufferPtr data,
+                            U32 sizeFactorOffset = 0) = 0;
 
-    virtual void setData(const bufferPtr data);
+    virtual void setData(const bufferPtr data, U32 sizeFactorOffset = 0);
 
     virtual bool bindRange(U32 bindIndex,
                            U32 offsetElementCount,
-                           U32 rangeElementCount) = 0;
+                           U32 rangeElementCount,
+                           U32 sizeFactorOffset = 1) = 0;
 
-    virtual bool bind(U32 bindIndex) = 0;
+    virtual bool bind(U32 bindIndex, U32 sizeFactorOffset = 0) = 0;
 
-    inline bool bind(ShaderBufferLocation bindIndex) {
-        return bind(to_uint(bindIndex));
+    inline bool bind(ShaderBufferLocation bindIndex, U32 sizeFactorOffset = 0) {
+        return bind(to_uint(bindIndex), sizeFactorOffset);
     }
 
     inline bool bindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
-                          U32 rangeElementCount) {
+                          U32 rangeElementCount,
+                          U32 sizeFactorOffset = 0) {
         return bindRange(to_uint(bindIndex),
                          offsetElementCount,
-                         rangeElementCount);
+                         rangeElementCount,
+                         sizeFactorOffset);
 
     }
 
@@ -91,6 +95,7 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
     size_t _primitiveSize;
     size_t _alignmentRequirement;
     U32 _primitiveCount;
+    U32 _sizeFactor;
 
     const bool _unbound;
     const bool _persistentMapped;

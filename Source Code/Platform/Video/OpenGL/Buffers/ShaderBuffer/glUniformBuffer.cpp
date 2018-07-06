@@ -33,11 +33,11 @@ namespace {
 };
 
 glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
-                                 const U32 sizeFactor,
+                                 const U32 ringBufferLength,
                                  bool unbound,
                                  bool persistentMapped,
                                  BufferUpdateFrequency frequency)
-    : ShaderBuffer(bufferName, sizeFactor, unbound, persistentMapped, frequency),
+    : ShaderBuffer(bufferName, ringBufferLength, unbound, persistentMapped, frequency),
       _UBOid(0),
       _mappedBuffer(nullptr),
       _alignment(0),
@@ -72,18 +72,18 @@ void glUniformBuffer::destroy() {
     _atomicCounters.clear();
 }
 
-void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
+void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {
     DIVIDE_ASSERT(
         _UBOid == 0,
         "glUniformBuffer::Create error: Tried to double create current UBO");
 
-    ShaderBuffer::create(primitiveCount, primitiveSize);
+    ShaderBuffer::create(primitiveCount, primitiveSize, sizeFactor);
 
     _allignedBufferSize = realign_offset(_bufferSize, _alignmentRequirement);
 
     if (_persistentMapped) {
         _mappedBuffer = 
-            GLUtil::createAndAllocPersistentBuffer(_allignedBufferSize * queueLength(),
+            GLUtil::createAndAllocPersistentBuffer(_allignedBufferSize * sizeFactor * queueLength(),
                                                    GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
                                                    GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
                                                    _UBOid);
@@ -98,13 +98,13 @@ void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
                                     : _frequency == BufferUpdateFrequency::OCASSIONAL
                                                   ? GL_DYNAMIC_DRAW
                                                   : GL_STREAM_DRAW;
-        GLUtil::createAndAllocBuffer(_allignedBufferSize * queueLength(),
+        GLUtil::createAndAllocBuffer(_allignedBufferSize * sizeFactor * queueLength(),
                                      _usage,
                                      _UBOid);
     }
 }
 
-void glUniformBuffer::updateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount, const bufferPtr data) {
+void glUniformBuffer::updateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount, const bufferPtr data, U32 sizeFactorOffset) {
 
     if (rangeElementCount == 0) {
         return;
@@ -117,11 +117,12 @@ void glUniformBuffer::updateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
     GLintptr range = rangeElementCount * _primitiveSize;
     GLintptr offset = offsetElementCount * _primitiveSize;
 
-    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize,
+    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize && sizeFactorOffset < _sizeFactor,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
     offset += _queueWriteIndex * _allignedBufferSize;
+    offset += _allignedBufferSize * sizeFactorOffset;
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, range, true);
@@ -132,7 +133,7 @@ void glUniformBuffer::updateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
     }
 }
 
-bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
+bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount, U32 sizeFactorOffset) {
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
@@ -143,9 +144,13 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
     size_t range = rangeElementCount * _primitiveSize;
     size_t offset = offsetElementCount * _primitiveSize;
     offset += _queueReadIndex * _allignedBufferSize;
-
+    offset += _allignedBufferSize * sizeFactorOffset;
     bool success = false;
-    if (setIfDifferentBindRange(_UBOid, bindIndex, offsetElementCount, rangeElementCount)) {
+    if (setIfDifferentBindRange(_UBOid, 
+                                bindIndex,
+                                offsetElementCount + (offsetElementCount * sizeFactorOffset),
+                                rangeElementCount + (rangeElementCount * sizeFactorOffset)))
+    {
         glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
         success = true;
     }
@@ -157,8 +162,8 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
     return success;
 }
 
-bool glUniformBuffer::bind(U32 bindIndex) {
-    return bindRange(bindIndex, 0, _primitiveCount);
+bool glUniformBuffer::bind(U32 bindIndex, U32 sizeFactorOffset) {
+    return bindRange(bindIndex, 0, _primitiveCount, sizeFactorOffset);
 }
 
 void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {

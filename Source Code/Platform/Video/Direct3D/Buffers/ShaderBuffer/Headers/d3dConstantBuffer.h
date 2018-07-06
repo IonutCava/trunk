@@ -39,7 +39,7 @@ namespace Divide {
 class d3dConstantBuffer final : public ShaderBuffer {
    public:
     d3dConstantBuffer(const stringImpl& bufferName,
-                      const U32 sizeFactor,
+                      const U32 ringBufferLength,
                       bool unbound,
                       bool persistentMapped,
                       BufferUpdateFrequency frequency);
@@ -48,17 +48,19 @@ class d3dConstantBuffer final : public ShaderBuffer {
     void destroy() override;
     /// Reserve primitiveCount * implementation specific primitive size of space
     /// in the buffer and fill it with NULL values
-    void create(U32 primitiveCount, ptrdiff_t primitiveSize) override;
+    void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1) override;
 
     void updateData(ptrdiff_t offsetElementCount,
                     ptrdiff_t rangeElementCount,
-                    const bufferPtr data) override;
+                    const bufferPtr data,
+                    U32 sizeFactorOffset = 0) override;
 
     bool bindRange(U32 bindIndex,
                    U32 offsetElementCount,
-                   U32 rangeElementCount) override;
+                   U32 rangeElementCount,
+                   U32 sizeFactorOffset = 0) override;
 
-    bool bind(U32 bindIndex) override;
+    bool bind(U32 bindIndex, U32 sizeFactorOffset = 0) override;
 
     void addAtomicCounter(U32 sizeFactor = 1) override;
 

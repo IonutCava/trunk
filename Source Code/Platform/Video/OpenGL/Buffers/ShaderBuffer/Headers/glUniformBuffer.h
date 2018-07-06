@@ -43,7 +43,7 @@ class glBufferLockManager;
 class glUniformBuffer final : public ShaderBuffer {
    public:
      glUniformBuffer(const stringImpl &bufferName,
-                     const U32 sizeFactor, 
+                     const U32 ringBufferLength,
                      bool unbound,
                      bool persistentMapped,
                      BufferUpdateFrequency frequency);
@@ -51,17 +51,19 @@ class glUniformBuffer final : public ShaderBuffer {
 
     void destroy() override;
     /// Create a new buffer object to hold our uniform shader data
-    void create(U32 primitiveCount, ptrdiff_t primitiveSize) override;
+    void create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor = 1) override;
 
     void updateData(GLintptr offsetElementCount,
                     GLsizeiptr rangeElementCount,
-                    const bufferPtr data) override;
+                    const bufferPtr data,
+                    U32 sizeFactorOffset = 0) override;
 
     bool bindRange(U32 bindIndex,
                    U32 offsetElementCount,
-                   U32 rangeElementCount) override;
+                   U32 rangeElementCount,
+                   U32 sizeFactorOffset = 0) override;
 
-    bool bind(U32 bindIndex) override;
+    bool bind(U32 bindIndex, U32 sizeFactorOffset = 0) override;
 
     GLuint getBufferID() const { return _UBOid; }
 

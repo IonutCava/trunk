@@ -143,12 +143,19 @@ bool ImageData::create(const stringImpl& filename) {
     return true;
 }
 
-vec4<U8> ImageData::getColor(U16 x, U16 y) const {
-    I32 idx = (y * _dimensions.width + x) * _bpp;
-    return vec4<U8>(_data[idx + 0], _data[idx + 1], _data[idx + 2],
-                    _alpha ? _data[idx + 3] : 255);
+vec4<U8> ImageData::getColor(I32 x, I32 y) const {
+    vec4<U8> returnColor;
+    getColor(x, y, returnColor.r, returnColor.g, returnColor.b, returnColor.a);
+    return returnColor;
 }
 
+void ImageData::getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a) const {
+    I32 idx = (y * _dimensions.width + x) * _bpp;
+    r = _data[idx + 0];
+    g = _data[idx + 1];
+    b = _data[idx + 2];
+    a = _alpha ? _data[idx + 3] : 255;
+}
 
 std::mutex ImageDataInterface::_loadingMutex;
 void ImageDataInterface::CreateImageData(const stringImpl& filename, ImageData& imgOut) {

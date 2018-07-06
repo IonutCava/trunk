@@ -3,11 +3,11 @@
 namespace Divide {
 
 d3dConstantBuffer::d3dConstantBuffer(const stringImpl& bufferName,
-                                     const U32 sizeFactor, 
+                                     const U32 ringBufferLength,
                                      bool unbound,
                                      bool persistentMapped,
                                      BufferUpdateFrequency frequency)
-    : ShaderBuffer(bufferName, sizeFactor, unbound, persistentMapped, frequency)
+    : ShaderBuffer(bufferName, ringBufferLength, unbound, persistentMapped, frequency)
 
 {
 }
@@ -19,21 +19,24 @@ d3dConstantBuffer::~d3dConstantBuffer()
 void d3dConstantBuffer::destroy() {
 }
 
-void d3dConstantBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
-    ShaderBuffer::create(primitiveCount, primitiveSize);
+void d3dConstantBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 sizeFactor) {
+    ShaderBuffer::create(primitiveCount, primitiveSize, sizeFactor);
 }
 
 void d3dConstantBuffer::updateData(ptrdiff_t offsetElementCount,
                                    ptrdiff_t rangeElementCount,
-                                   const bufferPtr data) {
+                                   const bufferPtr data,
+                                   U32 sizeFactorOffset) {
 }
 
-bool d3dConstantBuffer::bindRange(U32 bindIndex, U32 offsetElementCount,
-                                  U32 rangeElementCount) {
+bool d3dConstantBuffer::bindRange(U32 bindIndex,
+                                  U32 offsetElementCount,
+                                  U32 rangeElementCount,
+                                  U32 sizeFactorOffset) {
     return false;
 }
 
-bool d3dConstantBuffer::bind(U32 bindIndex) {
+bool d3dConstantBuffer::bind(U32 bindIndex, U32 sizeFactorOffset) {
     return false;
 }
 

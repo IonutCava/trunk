@@ -374,6 +374,8 @@ class RingBuffer {
         }
 
         const inline U32 queueLength() const { return _queueLength; }
+        const inline U32 queueWriteIndex() const { return _queueWriteIndex; }
+        const inline U32 queueReadIndex() const { return _queueReadIndex; }
 
         inline void incQueue() { 
             if (queueLength() > 1) {
@@ -413,7 +415,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual Framebuffer* newFB(bool multisampled) const = 0;
     virtual VertexBuffer* newVB() const = 0;
     virtual ShaderBuffer* newSB(const stringImpl& bufferName,
-                                const U32 sizeFactor = 1,
+                                const U32 ringBufferLength = 1,
                                 const bool unbound = false,
                                 const bool persistentMapped = true,
                                 BufferUpdateFrequency frequency =

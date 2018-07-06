@@ -246,6 +246,28 @@ inline void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDraw
     processCommands(cmds, true);
 }
 
+inline U32 renderStageToBufferOffset(RenderStage stage) {
+    switch (stage) {
+    case RenderStage::REFLECTION:
+        return 1;
+    case RenderStage::SHADOW:
+        return 2;
+    default:
+        break;
+    };
+
+    return 0;
+}
+
+inline U32 renderStageBufferSize() {
+    U32 result = 0;
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        result =
+            std::max(result,
+                renderStageToBufferOffset(static_cast<RenderStage>(i)) + 1);
+    }
+    return result;
+}
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE \
     RenderPassManager::getInstance().getLastTotalBinSize(0)
