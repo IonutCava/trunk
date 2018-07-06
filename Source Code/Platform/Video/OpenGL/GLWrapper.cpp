@@ -580,7 +580,7 @@ void GL_API::uploadDrawCommands(
     glNamedBufferData(
         _indirectDrawBuffer,
         (GLsizeiptr)(sizeof(IndirectDrawCommand) * drawCommands.size()),
-        (GLUtil::bufferPtr)drawCommands.data(), GL_DYNAMIC_DRAW);
+        (bufferPtr)drawCommands.data(), GL_DYNAMIC_DRAW);
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

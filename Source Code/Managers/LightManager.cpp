@@ -26,13 +26,11 @@ LightManager::LightManager()
     s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
     // NORMAL holds general info about the currently active
     // lights: position, color, etc.
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] =
-        nullptr;
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] = nullptr;
     // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] =
-        nullptr;
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = nullptr;
     // We bind shadow maps to the last available texture slots that the hardware
     // supports.
     // Starting offsets for each texture type is stored here
@@ -46,16 +44,17 @@ LightManager::LightManager()
 LightManager::~LightManager() {
     clear();
     Time::REMOVE_TIMER(s_shadowPassTimer);
-    MemoryManager::DELETE(_lightShaderBuffer[to_uint(
-        ShaderBufferType::NORMAL)]);
-    MemoryManager::DELETE(_lightShaderBuffer[to_uint(
-        ShaderBufferType::SHADOW)]);
+    MemoryManager::DELETE(
+        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]);
+    MemoryManager::DELETE(
+        _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]);
 }
 
 void LightManager::init() {
     if (_init) {
         return;
     }
+
     STUBBED(
         "Replace light map bind slots with bindless textures! Max texture "
         "units is currently used! -Ionut!");
@@ -74,21 +73,21 @@ void LightManager::init() {
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] =
         GFX_DEVICE.newSB("dvd_ShadowBlock");
 
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]
-        ->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE,
-                 sizeof(LightProperties));
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]
-        ->Bind(ShaderBufferLocation::LIGHT_NORMAL);
+    _lightProperties.resize(Config::Lighting::MAX_LIGHTS_PER_SCENE);
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->Create(
+        Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->Bind(
+        ShaderBufferLocation::LIGHT_NORMAL);
 
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
-        ->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE,
-                 sizeof(LightShadowProperties));
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
-        ->Bind(ShaderBufferLocation::LIGHT_SHADOW);
+    _lightShadowProperties.resize(
+        Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->Create(
+        Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->Bind(
+        ShaderBufferLocation::LIGHT_SHADOW);
 
     _cachedResolution.set(
-        GFX_DEVICE.getRenderTarget(
-                       GFXDevice::RenderTarget::SCREEN)
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)
             ->getResolution());
     _init = true;
 }
@@ -116,17 +115,21 @@ bool LightManager::clear() {
 }
 
 bool LightManager::addLight(Light* const light) {
+    assert(light != nullptr);
+
     light->addShadowMapInfo(MemoryManager_NEW ShadowMapInfo(light));
 
-    if (_lights.find(light->getGUID()) != std::end(_lights)) {
+    if (findLight(light->getGUID()) != std::end(_lights)) {
         Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"),
                          light->getGUID());
         return false;
     }
 
-    hashAlg::emplace(_lights, light->getGUID(), light);
+    vectorAlg::emplace_back(_lights, light->getGUID(), light);
+
     GET_ACTIVE_SCENE()->renderState().getCameraMgr().addNewCamera(
         light->getName(), light->shadowCamera());
+
     return true;
 }
 
@@ -136,7 +139,7 @@ bool LightManager::removeLight(I64 lightGUID) {
     /// exist somewhere!
     assert(!_lights.empty());
 
-    Light::LightMap::iterator it = _lights.find(lightGUID);
+    Light::LightList::const_iterator it = findLight(lightGUID);
 
     if (it == std::end(_lights)) {
         Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"),
@@ -156,8 +159,8 @@ void LightManager::idle() {
 }
 
 void LightManager::updateResolution(I32 newWidth, I32 newHeight) {
-    for (Light::LightMap::value_type& it : _lights) {
-        it.second->updateResolution(newWidth, newHeight);
+    for (Light* light : _lights) {
+        light->updateResolution(newWidth, newHeight);
     }
 
     _cachedResolution.set(newWidth, newHeight);
@@ -195,8 +198,8 @@ U8 LightManager::getShadowBindSlotOffset(ShadowSlotType type) {
 /// Update only if needed. Get projection and view matrices if they changed
 /// Also, search for the dominant light if any
 void LightManager::onCameraChange() {
-    for (Light::LightMap::value_type& it : _lights) {
-        it.second->onCameraChange();
+    for (Light* light : _lights) {
+        light->onCameraChange();
     }
 }
 
@@ -212,12 +215,11 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
 
     // Tell the engine that we are drawing to depth maps
     // set the current render stage to SHADOW
-    RenderStage previousRS =
-        GFX_DEVICE.setRenderStage(RenderStage::SHADOW);
+    RenderStage previousRS = GFX_DEVICE.setRenderStage(RenderStage::SHADOW);
     // generate shadowmaps for each light
-    for (Light::LightMap::value_type& light : _lights) {
-        setCurrentLight(light.second);
-        light.second->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
+    for (Light* light : _lights) {
+        setCurrentLight(light);
+        light->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
     }
 
     // Revert back to the previous stage
@@ -236,11 +238,10 @@ void LightManager::togglePreviewShadowMaps() {
         return;
     }
 
-    for (Light::LightMap::value_type& it : _lights) {
-        if (it.second->getShadowMapInfo()->getShadowMap()) {
-            it.second->getShadowMapInfo()
-                ->getShadowMap()
-                ->togglePreviewShadowMaps(_previewShadowMaps);
+    for (Light* light : _lights) {
+        if (light->getShadowMapInfo()->getShadowMap()) {
+            light->getShadowMapInfo()->getShadowMap()->togglePreviewShadowMaps(
+                _previewShadowMaps);
         }
     }
 }
@@ -248,12 +249,12 @@ void LightManager::togglePreviewShadowMaps() {
 void LightManager::previewShadowMaps(Light* light) {
 #ifdef _DEBUG
     // Stop if we have shadows disabled
-    if (!_shadowMapsEnabled || !_previewShadowMaps ||
+    if (!_shadowMapsEnabled || !_previewShadowMaps || _lights.empty() ||
         GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
         return;
     }
     if (!light) {
-        light = std::begin(_lights)->second;
+        light = _lights.front();
     }
     if (!light->castsShadows()) {
         return;
@@ -292,11 +293,11 @@ bool LightManager::shadowMappingEnabled() const {
     if (!_shadowMapsEnabled) {
         return false;
     }
-    for (const Light::LightMap::value_type& light : _lights) {
-        if (!light.second->castsShadows()) {
+    for (Light* const light : _lights) {
+        if (!light->castsShadows()) {
             continue;
         }
-        ShadowMapInfo* smi = light.second->getShadowMapInfo();
+        ShadowMapInfo* smi = light->getShadowMapInfo();
         // no shadow info;
         if (!smi) {
             continue;
@@ -315,61 +316,73 @@ bool LightManager::shadowMappingEnabled() const {
 }
 
 Light* LightManager::getLight(I64 lightGUID) {
-    Light::LightMap::const_iterator it =
-        std::find_if(std::begin(_lights), std::end(_lights),
-                     [&lightGUID](const Light::LightMap::value_type vt)
-                         -> bool { return vt.second->getGUID() == lightGUID; });
+    Light::LightList::const_iterator it = findLight(lightGUID);
     assert(it != std::end(_lights));
-    return it->second;
+    return *it;
 }
 
 void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
-    _lightProperties.clear();
-    _lightProperties.reserve(static_cast<vectorAlg::vecSize>(_lights.size()));
+    U32 physicalIndex = to_uint(Light::PropertyType::PROPERTY_TYPE_PHYSICAL);
+    U32 shadowIndex = to_uint(Light::PropertyType::PROPERTY_TYPE_SHADOW);
+    U32 visualIndex = to_uint(Light::PropertyType::PROPERTY_TYPE_VISUAL);
 
-    _lightShadowProperties.clear();
-    _lightShadowProperties.reserve(
-        static_cast<vectorAlg::vecSize>(_lights.size()));
+    bool physycalFlag = false;
+    bool shadowFlag = false;
 
-    for (Light::LightMap::value_type& lightIt : _lights) {
-        Light* light = lightIt.second;
-        if (light->_dirty[to_uint(
-                Light::PropertyType::PROPERTY_TYPE_PHYSICAL)]) {
-            LightProperties temp = light->getProperties();
+    bool viewMatrixDirty = _viewMatrixCache != viewMatrix;
+    if (viewMatrixDirty) {
+        _viewMatrixCache.set(viewMatrix);
+    }
+
+    U32 i = 0, j = 0;
+    U32 lightCount = std::min(static_cast<U32>(_lights.size()),
+                              Config::Lighting::MAX_LIGHTS_PER_SCENE);
+    U32 lightShadowCount =
+        std::min(static_cast<U32>(_lights.size()),
+                 Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
+
+    for (; i < lightCount; ++i) {
+        Light* light = _lights[i];
+
+        LightProperties& temp = _lightProperties[i];
+        temp.set(light->getProperties());
+        if (light->_dirty[physicalIndex] || viewMatrixDirty) {
             if (light->getLightType() == LightType::LIGHT_TYPE_DIRECTIONAL) {
                 temp._position.set(
-                    vec3<F32>(viewMatrix *
+                    vec3<F32>(_viewMatrixCache *
                               vec4<F32>(temp._position.xyz(), 0.0f)),
                     temp._position.w);
             } else if (light->getLightType() == LightType::LIGHT_TYPE_SPOT) {
                 temp._direction.set(
-                    vec3<F32>(viewMatrix *
+                    vec3<F32>(_viewMatrixCache *
                               vec4<F32>(temp._direction.xyz(), 0.0f)),
                     temp._direction.w);
             }
-            _lightProperties.push_back(temp);
-        } else {
-            _lightProperties.push_back(light->getProperties());
-        }
-        if (light->castsShadows()) {
-            _lightShadowProperties.push_back(light->getShadowProperties());
-            light->_dirty[to_uint(
-                Light::PropertyType::PROPERTY_TYPE_SHADOW)] = false;
+
+            light->_dirty[physicalIndex] = false;
+            physycalFlag = true;
         }
 
-        light->_dirty[to_uint(Light::PropertyType::PROPERTY_TYPE_VISUAL)] =
-            false;
-        light->_dirty[to_uint(
-            Light::PropertyType::PROPERTY_TYPE_PHYSICAL)] = false;
+        if (light->castsShadows() && j < lightShadowCount) {
+            light->_dirty[shadowIndex] = false;
+            LightShadowProperties& tempShadow = _lightShadowProperties[j];
+            tempShadow.set(light->getShadowProperties());
+            temp._options.z = j;
+            ++j;
+            shadowFlag = true;
+        }
+
+        light->_dirty[visualIndex] = false;
     }
 
-    if (!_lightProperties.empty()) {
+    if (physycalFlag) {
         _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->UpdateData(
-            0, _lightProperties.size(), _lightProperties.data());
+            0, lightCount, _lightProperties.data());
     }
-    if (!_lightShadowProperties.empty()) {
+
+    if (shadowFlag) {
         _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->UpdateData(
-            0, _lightShadowProperties.size(), _lightShadowProperties.data());
+            0, lightShadowCount, _lightShadowProperties.data());
     }
 }
 };

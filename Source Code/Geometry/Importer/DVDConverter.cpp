@@ -12,8 +12,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
+#include "Geometry/Animations/Headers/SceneAnimator.h"
 #include "Geometry/Animations/Headers/AnimationUtils.h"
-#include "Geometry/Animations/Headers/AnimationController.h"
 
 namespace Divide {
 
@@ -347,7 +347,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         // that scene
         static_cast<SkinnedSubMesh*>(tempSubMesh)
             ->getAnimator()
-            ->Init(_aiScenePointer, count);
+            ->init(_aiScenePointer, count);
     }
 
     if (source->mTextureCoords[0] != nullptr) {

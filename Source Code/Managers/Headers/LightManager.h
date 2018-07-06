@@ -64,7 +64,7 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     bool clear();
     void idle();
     void onCameraChange();
-    inline Light::LightMap& getLights() { return _lights; }
+    inline Light::LightList& getLights() { return _lights; }
     Light* getLight(I64 lightGUID);
 
     inline Light* getCurrentLight() const { return _currLight; }
@@ -112,6 +112,13 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     /// every frame start
     bool framePreRenderEnded(const FrameEvent& evt);
 
+    inline Light::LightList::const_iterator findLight(I64 GUID) const {
+        return std::find_if(std::begin(_lights), std::end(_lights),
+                            [&GUID](Light* const light) {
+                                return (light && light->getGUID() == GUID);
+                            });
+    }
+
   private:
     enum class ShaderBufferType : U32 {
         NORMAL = 0,
@@ -123,13 +130,14 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     ~LightManager();
 
   private:
-    Light::LightMap _lights;
+    Light::LightList _lights;
     bool _init;
     bool _previewShadowMaps;
     Light* _currLight;
     bool _shadowMapsEnabled;
     vec3<F32> _ambientLight;
     vec2<U16> _cachedResolution;
+    mat4<F32> _viewMatrixCache;
     U8 _currentShadowPass;  //<used by CSM. Resets to 0 for every light
 
     vectorImpl<LightProperties> _lightProperties;

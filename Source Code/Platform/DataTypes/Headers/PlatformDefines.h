@@ -85,6 +85,7 @@ typedef int64_t I64;
 typedef __int64 _I64;
 typedef float F32;
 typedef double D32;
+typedef void* bufferPtr;
 
 /*
 template<typename Enum>

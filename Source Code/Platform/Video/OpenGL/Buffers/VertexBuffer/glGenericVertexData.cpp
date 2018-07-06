@@ -142,7 +142,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     memset(_bufferPersistent, false, numBuffers * sizeof(bool));
     // Persistently mapped data (array of void* pointers)
     _bufferPersistentData =
-        (GLUtil::bufferPtr*)malloc(sizeof(GLUtil::bufferPtr) * numBuffers);
+        (bufferPtr*)malloc(sizeof(bufferPtr) * numBuffers);
     for (U8 i = 0; i < numBuffers; ++i) {
         _bufferPersistentData[i] = nullptr;
     }
@@ -215,11 +215,11 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
                           : GLUtil::glPrimitiveTypeTable[to_uint(
                                 command.primitiveType())];
 
-        GLUtil::bufferPtr offset =
-            (GLUtil::bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
+        bufferPtr offset =
+            (bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
         if (!useCmdBuffer) {
             GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-            offset = (GLUtil::bufferPtr)(&command.cmd());
+            offset = (bufferPtr)(&command.cmd());
         }
 
         if (_indexBuffer > 0) {
@@ -255,7 +255,7 @@ void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
             // Generate an "Index Buffer Object"
             GLUtil::createAndAllocBuffer(
                 static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), mask,
-                _indexBuffer, (GLUtil::bufferPtr)indices.data());
+                _indexBuffer, (bufferPtr)(indices.data()));
         }
         // Assert if the IB creation failed
         DIVIDE_ASSERT(_indexBuffer != 0, Locale::get("ERROR_IB_INIT"));
@@ -361,8 +361,8 @@ void glGenericVertexData::UpdateBuffer(U32 buffer,
         _lockManager->WaitForLockedRange(_startDestOffset[buffer], bufferSize);
         // Offset the data pointer by the required offset taking in account the
         // current data copy we are writing into
-        GLUtil::bufferPtr dst = (U8*)_bufferPersistentData[buffer] +
-                                _startDestOffset[buffer] + offset;
+        bufferPtr dst = (U8*)_bufferPersistentData[buffer] +
+                             _startDestOffset[buffer] + offset;
         // Update the data
         memcpy(dst, data, dataCurrentSize);
         // Lock the current buffer copy until uploading to GPU visible memory is

@@ -67,6 +67,14 @@ struct LightProperties {
     /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts
     /// shadows, zw - reserved;
     vec4<I32> _options;
+
+    inline void set(const LightProperties& other) {
+        _diffuse.set(other._diffuse);
+        _attenuation.set(other._attenuation);
+        _position.set(other._position);
+        _direction.set(other._direction);
+        _options.set(other._options);
+    }
 };
 
 struct LightShadowProperties {
@@ -76,6 +84,14 @@ struct LightShadowProperties {
     vec4<F32> _floatValues;
     /// light's position in world space
     vec4<F32> _lightPosition[4];
+
+    inline void set(const LightShadowProperties& other) {
+        _floatValues.set(other._floatValues);
+        for (U8 i = 0; i < 4; ++i) {
+            _lightVP[i].set(other._lightVP[i]);
+            _lightPosition[i].set(other._lightPosition[i]);
+        }
+    }
 };
 
 class Camera;
@@ -93,7 +109,7 @@ class Light : public SceneNode {
         COUNT
     };
 
-    typedef hashMapImpl<I64, Light*> LightMap;
+    typedef vectorImpl<Light*> LightList;
 
     /// Create a new light assigned to the specified slot with the specified
     /// range

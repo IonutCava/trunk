@@ -44,7 +44,7 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim) {
     Console::d_printfn(Locale::get("CREATE_ANIMATION_END"), _name.c_str());
 }
 
-I32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime) const {
+I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {
     D32 time = 0.0f;
     if (_duration > 0.0) {
         // get a [0.f ... 1.f) value by allowing the percent to wrap around 1
@@ -64,7 +64,7 @@ I32 AnimEvaluator::GetFrameIndexAt(const D32 elapsedTime) const {
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
-void AnimEvaluator::Evaluate(const D32 dt,
+void AnimEvaluator::evaluate(const D32 dt,
                              hashMapImpl<stringImpl, Bone*>& bones) {
     D32 pTime = dt * _ticksPerSecond;
 
@@ -73,7 +73,7 @@ void AnimEvaluator::Evaluate(const D32 dt,
         time = fmod(pTime, _duration);
     }
 
-    GetFrameIndexAt(pTime);
+    frameIndexAt(pTime);
     hashMapImpl<stringImpl, Bone*>::iterator bonenode;
     // calculate the transformations for each animation channel
     for (U32 a = 0; a < _channels.size(); a++) {

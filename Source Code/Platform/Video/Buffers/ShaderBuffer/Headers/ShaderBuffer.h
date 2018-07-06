@@ -40,8 +40,6 @@ namespace Divide {
 class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
    public:
-    typedef void* bufferPtr;
-
     ShaderBuffer(const stringImpl& bufferName, bool unbound,
                  bool persistentMapped)
         : GUIDWrapper(),

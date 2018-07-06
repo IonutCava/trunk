@@ -256,12 +256,6 @@
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp">
-      <Filter>Geometry\Animations</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationControllerFileIO.cpp">
-      <Filter>Geometry\Animations</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationEvaluator.cpp">
       <Filter>Geometry\Animations</Filter>
     </ClCompile>
@@ -512,6 +506,12 @@
     <ClCompile Include="..\..\Source Code\Physics\PXDevice.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimator.cpp">
+      <Filter>Geometry\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimatorFileIO.cpp">
+      <Filter>Geometry\Animations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -644,9 +644,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h">
       <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h">
-      <Filter>Geometry\Animations\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h">
       <Filter>Geometry\Animations\Headers</Filter>
@@ -891,6 +888,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathUtil.h">
       <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\SceneAnimator.h">
+      <Filter>Geometry\Animations\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

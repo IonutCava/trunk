@@ -5,7 +5,7 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 
-#include "Geometry/Animations/Headers/AnimationController.h"
+#include "Geometry/Animations/Headers/SceneAnimator.h"
 #include "Graphs/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
@@ -71,7 +71,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
         bb.reset();
 
         const vectorImpl<mat4<F32> >& transforms =
-            currentAnimation.GetTransformsConst(static_cast<U32>(i));
+            currentAnimation.transforms(static_cast<U32>(i));
 
         // loop through all vertex weights of all bones
         for (U32 j = partitionOffset; j < partitionCount; ++j) {

@@ -66,42 +66,73 @@ class AnimEvaluator {
 
     AnimEvaluator(const aiAnimation* pAnim);
 
-    void Evaluate(const D32 dt, hashMapImpl<stringImpl, Bone*>& bones);
-    void Save(std::ofstream& file);
-    void Load(std::ifstream& file);
-    I32 GetFrameIndexAt(const D32 elapsedTime) const;
+    void evaluate(const D32 dt, hashMapImpl<stringImpl, Bone*>& bones);
+    void save(std::ofstream& file);
+    void load(std::ifstream& file);
+    I32 frameIndexAt(const D32 elapsedTime) const;
 
-    inline U32 GetFrameCount() const { return (U32)_transforms.size(); }
+    inline U32 frameCount() const {
+        return static_cast<U32>(_transforms.size());
+    }
 
-    inline vectorImpl<mat4<F32>>& GetTransforms(const U32 frameIndex) {
-        assert(frameIndex < static_cast<I32>(_transforms.size()));
+    inline vectorImpl<vectorImpl<mat4<F32>>>& transforms() {
+        return _transforms;
+    }
+    
+    inline const vectorImpl<vectorImpl<mat4<F32>>>& transforms() const {
+        return _transforms;
+    }
+
+    inline vectorImpl<mat4<F32>>& transforms(const U32 frameIndex) {
+        assert(frameIndex < static_cast<U32>(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    inline vectorImpl<mat4<F32>>& GetTransforms(const D32 elapsedTime) {
-        return GetTransforms(static_cast<U32>(GetFrameIndexAt(elapsedTime)));
-    }
-
-    inline const vectorImpl<mat4<F32>>& GetTransformsConst(
-        const U32 frameIndex) const {
-        assert(frameIndex < static_cast<I32>(_transforms.size()));
+    inline const vectorImpl<mat4<F32>>& transforms(const U32 frameIndex) const {
+        assert(frameIndex < static_cast<U32>(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    inline const vectorImpl<mat4<F32>>& GetTransformsConst(
-        const D32 elapsedTime) const {
-        return GetTransformsConst(
-            static_cast<U32>(GetFrameIndexAt(elapsedTime)));
+    inline vectorImpl<mat4<F32>>& transforms(const D32 elapsedTime,
+                                             I32& resultingFrameIndex) {
+        resultingFrameIndex = frameIndexAt(elapsedTime);
+        return transforms(static_cast<U32>(resultingFrameIndex));
+    }
+
+    inline const vectorImpl<mat4<F32>>& transforms(const D32 elapsedTime, 
+                                                   I32& resultingFrameIndex) const {
+        resultingFrameIndex = frameIndexAt(elapsedTime);
+        return transforms(static_cast<U32>(resultingFrameIndex));
+    }
+
+    inline void playAnimationForward(bool state) {
+        _playAnimationForward = state;
+    }
+
+    inline bool playAnimationForward() const {
+        return _playAnimationForward;
+    }
+
+    inline void ticksPerSecond(D32 tickCount) {
+        _ticksPerSecond = tickCount;
+    }
+
+    inline D32 ticksPerSecond() const {
+        return _ticksPerSecond;
+    }
+
+    inline const stringImpl& name() const {
+        return _name;
+    }
+
+    inline D32 duration() const {
+        return _duration;
     }
 
    protected:
-    friend class SceneAnimator;
     stringImpl _name;
-
     /// Array to return transformations results inside.
     vectorImpl<vectorImpl<mat4<F32>>> _transforms;
-    vectorImpl<vectorImpl<mat4<F32>>> _quatTransforms;
-
     /// play forward == true, play backward == false
     bool _playAnimationForward;
     D32 _lastTime;

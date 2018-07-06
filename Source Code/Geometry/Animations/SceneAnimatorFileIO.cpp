@@ -1,12 +1,13 @@
-#include "Headers/AnimationController.h"
+#include "Headers/SceneAnimator.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
+#include <fstream>
 
 namespace Divide {
 
-void AnimEvaluator::Save(std::ofstream& file) {
+void AnimEvaluator::save(std::ofstream& file) {
     uint32_t nsize = static_cast<uint32_t>(_name.size());
     file.write(reinterpret_cast<char*>(&nsize),
                sizeof(uint32_t));      // the size of the animation name
@@ -65,7 +66,7 @@ void AnimEvaluator::Save(std::ofstream& file) {
     }
 }
 
-void AnimEvaluator::Load(std::ifstream& file) {
+void AnimEvaluator::load(std::ifstream& file) {
     uint32_t nsize = 0;
     file.read(reinterpret_cast<char*>(&nsize),
               sizeof(uint32_t));  // the size of the animation name
@@ -132,15 +133,16 @@ void AnimEvaluator::Load(std::ifstream& file) {
     _lastPositions.resize(_channels.size(), vec3<U32>());
 }
 
-void SceneAnimator::Save(std::ofstream& file) {
+void SceneAnimator::save(std::ofstream& file) {
     // first recursively save the skeleton
-    if (_skeleton) SaveSkeleton(file, _skeleton);
-
+    if (_skeleton) {
+        saveSkeleton(file, _skeleton);
+    }
     uint32_t nsize = static_cast<uint32_t>(_animations.size());
     file.write(reinterpret_cast<char*>(&nsize),
                sizeof(uint32_t));  // the number of animations
     for (uint32_t i(0); i < nsize; i++) {
-        _animations[i].Save(file);
+        _animations[i].save(file);
     }
 
     nsize = static_cast<uint32_t>(_bones.size());
@@ -155,22 +157,22 @@ void SceneAnimator::Save(std::ofstream& file) {
     }
 }
 
-void SceneAnimator::Load(std::ifstream& file) {
-    Release();  // make sure to clear this before writing new data
-    _skeleton = LoadSkeleton(file, nullptr);
+void SceneAnimator::load(std::ifstream& file) {
+    release();  // make sure to clear this before writing new data
+    _skeleton = loadSkeleton(file, nullptr);
     uint32_t nsize = 0;
     file.read(reinterpret_cast<char*>(&nsize),
               sizeof(uint32_t));  // the number of animations
     _animations.resize(nsize);
     Console::d_printfn(Locale::get("LOAD_ANIMATIONS_BEGIN"));
     for (uint32_t i(0); i < nsize; i++) {
-        _animations[i].Load(file);
+        _animations[i].load(file);
     }
     // get all the animation names so I can reference them by name and get the
     // correct id
     for (uint32_t i(0); i < _animations.size(); i++) {
         _animationNameToID.insert(hashMapImpl<stringImpl, uint32_t>::value_type(
-            _animations[i]._name, i));
+            _animations[i].name(), i));
     }
 
     char bname[250];
@@ -196,13 +198,13 @@ void SceneAnimator::Load(std::ifstream& file) {
          i++) {  // pre calculate the animations
         F32 dt = 0;
         mat4<F32> rotationmat;
-        for (F32 ticks = 0; ticks < _animations[i]._duration;
+        for (F32 ticks = 0; ticks < _animations[i].duration();
              ticks +=
-             _animations[i]._ticksPerSecond / ANIMATION_TICKS_PER_SECOND) {
+             _animations[i].ticksPerSecond() / ANIMATION_TICKS_PER_SECOND) {
             dt += timestep;
-            Calculate((I32)i, dt);
-            _animations[i]._transforms.push_back(vectorImpl<mat4<F32> >());
-            vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
+            calculate((I32)i, dt);
+            _animations[i].transforms().push_back(vectorImpl<mat4<F32>>());
+            vectorImpl<mat4<F32>>& trans = _animations[i].transforms().back();
             for (vectorAlg::vecSize a = 0; a < _transforms.size(); ++a) {
                 AnimUtils::TransformMatrix(
                     aiMatrix4x4(_bones[a]->_globalTransform *
@@ -215,7 +217,7 @@ void SceneAnimator::Load(std::ifstream& file) {
     Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
 }
 
-void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent) {
+void SceneAnimator::saveSkeleton(std::ofstream& file, Bone* parent) {
     uint32_t nsize = static_cast<uint32_t>(parent->_name.size());
     // the number of chars
     file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));
@@ -234,11 +236,11 @@ void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent) {
     // continue for all children
     for (vectorImpl<Bone*>::iterator it = std::begin(parent->_children);
          it != std::end(parent->_children); ++it) {
-        SaveSkeleton(file, *it);
+        saveSkeleton(file, *it);
     }
 }
 
-Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent) {
+Bone* SceneAnimator::loadSkeleton(std::ifstream& file, Bone* parent) {
     Bone* internalNode = MemoryManager_NEW Bone();  // create a node
     internalNode->_parent = parent;  // set the parent, in the case this is
                                      // theroot node, it will be null
@@ -258,7 +260,7 @@ Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent) {
               sizeof(internalNode->_originalLocalTransform));
     // a copy saved
     internalNode->_localTransform = internalNode->_originalLocalTransform;
-    CalculateBoneToWorldTransform(internalNode);
+    calculateBoneToWorldTransform(internalNode);
     // the number of children
     file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));
 
@@ -266,7 +268,7 @@ Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent) {
     // continue for all child nodes and assign the created internal nodes as our
     // children
     for (U32 a = 0; a < nsize && file; a++) {
-        internalNode->_children.push_back(LoadSkeleton(file, internalNode));
+        internalNode->_children.push_back(loadSkeleton(file, internalNode));
     }
     return internalNode;
 }

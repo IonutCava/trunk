@@ -24,7 +24,8 @@ Light::Light(const F32 range, const LightType& type)
       _impostorSGN(nullptr),
       _par(ParamHandler::getInstance()),
       _shadowMapInfo(nullptr),
-      _score(0.0f) {
+      _score(0.0f)
+{
     // All lights default to fully dynamic for now.
     setLightMode(LightMode::LIGHT_MODE_MOVABLE);
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
@@ -41,6 +42,7 @@ Light::Light(const F32 range, const LightType& type)
     _properties._position.w = 35.0f;
     _properties._options.x = getLightTypeValue();
     _properties._options.y = 0;
+    _properties._options.z = -1;
     _properties._direction.w = 0.0f;
     _properties._attenuation =
         vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f);  // constAtt, linearAtt, quadAtt

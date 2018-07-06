@@ -79,17 +79,16 @@ void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
 }
 
 bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
-    const Light::LightMap& lights = LightManager::getInstance().getLights();
+    const Light::LightList& lights = LightManager::getInstance().getLights();
 
     _omniLightList.clear();
     _omniLightList.reserve(static_cast<vectorAlg::vecSize>(lights.size()));
 
-    for (const Light::LightMap::value_type& it : lights) {
-        const Light& light = *it.second;
-        if (light.getLightType() == LightType::LIGHT_TYPE_POINT) {
+    for (Light* const light : lights) {
+        if (light->getLightType() == LightType::LIGHT_TYPE_POINT) {
             _omniLightList.push_back(LightGrid::makeLight(
-                light.getPosition(), light.getDiffuseColor(),
-                light.getRange()));
+                light->getPosition(), light->getDiffuseColor(),
+                light->getRange()));
         }
     }
 

@@ -33,10 +33,9 @@
     http://nolimitsdesigns.com/game-design/open-asset-import-library-animation-loader/
 */
 
-#ifndef ANIMATION_CONTROLLER_H_
-#define ANIMATION_CONTROLLER_H_
+#ifndef SCENE_ANIMATOR_H_
+#define SCENE_ANIMATOR_H_
 
-#include <fstream>
 #include "AnimationEvaluator.h"
 
 struct aiNode;
@@ -50,69 +49,80 @@ class SceneAnimator {
         LineMap;
     typedef hashMapImpl<I32 /*animationID*/, LineMap> LineCollection;
 
-    SceneAnimator() : _skeleton(0) {}
+    SceneAnimator() : _skeleton(0)
+    {
+    }
 
-    ~SceneAnimator() { Release(); }
+    ~SceneAnimator()
+    {
+        release();
+    }
 
     /// This must be called to fill the SceneAnimator with valid data
-    bool Init(const aiScene* pScene, U8 meshPointer);
+    bool init(const aiScene* pScene, U8 meshPointer);
     /// Frees all memory and initializes everything to a default state
-    void Release();
-    void Save(std::ofstream& file);
-    void Load(std::ifstream& file);
+    void release();
+    void save(std::ofstream& file);
+    void load(std::ifstream& file);
     /// Lets the caller know if there is a skeleton present
-    inline bool HasSkeleton() const { return !_bones.empty(); }
+    inline bool hasSkeleton() const { return !_bones.empty(); }
     /// The next two functions are good if you want to change the direction of
     /// the current animation.
     /// You could use a forward walking animation and reverse it to get a
     /// walking backwards
-    inline void PlayAnimationForward(I32 animationIndex) {
-        _animations[animationIndex]._playAnimationForward = true;
+    inline void playAnimationForward(I32 animationIndex) {
+        _animations[animationIndex].playAnimationForward(true);
     }
-    inline void PlayAnimationBackward(I32 animationIndex) {
-        _animations[animationIndex]._playAnimationForward = false;
+    inline void playAnimationBackward(I32 animationIndex) {
+        _animations[animationIndex].playAnimationForward(false);
     }
     /// This function will adjust the current animations speed by a percentage.
     /// So, passing 100, would do nothing, passing 50, would decrease the speed
     /// by half, and 150 increase it by 50%
-    inline void AdjustAnimationSpeedBy(I32 animationIndex, const D32 percent) {
-        _animations[animationIndex]._ticksPerSecond *= percent / 100.0f;
+    inline void adjustAnimationSpeedBy(I32 animationIndex, const D32 percent) {
+        AnimEvaluator& animation = _animations.at(animationIndex);
+        animation.ticksPerSecond(animation.ticksPerSecond() * (percent / 100.0));
     }
     /// This will set the animation speed
-    inline void AdjustAnimationSpeedTo(I32 animationIndex,
+    inline void adjustAnimationSpeedTo(I32 animationIndex,
                                        const D32 tickspersecond) {
-        _animations[animationIndex]._ticksPerSecond = tickspersecond;
+        _animations[animationIndex].ticksPerSecond(tickspersecond);
     }
     /// Get the animationspeed... in ticks per second
-    inline F32 GetAnimationSpeed(I32 animationIndex) const {
-        return _animations[animationIndex]._ticksPerSecond;
+    inline F32 animationSpeed(I32 animationIndex) const {
+        return _animations[animationIndex].ticksPerSecond();
     }
+
     /// Get the transforms needed to pass to the vertex shader.
     /// This will wrap the dt value passed, so it is safe to pass 50000000 as a
     /// valid number
-    inline vectorImpl<mat4<F32>>& GetTransforms(I32 animationIndex,
-                                                const D32 dt) {
-        return _animations[animationIndex].GetTransforms(dt);
-    }
-    inline vectorImpl<mat4<F32>>& GetTransformsByIndex(I32 animationIndex,
-                                                       U32 index) {
-        return _animations[animationIndex]._transforms[index];
+    inline const vectorImpl<mat4<F32>>& transforms(
+        I32 animationIndex, D32 dt, I32& resultingFrameIndex) const {
+        return _animations[animationIndex].transforms(dt, resultingFrameIndex);
     }
 
-    inline const AnimEvaluator& GetAnimationByIndex(I32 animationIndex) const {
+    inline const vectorImpl<mat4<F32>>& transforms(I32 animationIndex,
+                                                   U32 index) const {
+        return _animations[animationIndex].transforms(index);
+    }
+
+    inline const AnimEvaluator& animationByIndex(I32 animationIndex) const {
         return _animations[animationIndex];
     }
 
-    inline U32 GetFrameCount(I32 animationIndex) const {
-        return _animations[animationIndex].GetFrameCount();
+    inline U32 frameCount(I32 animationIndex) const {
+        return _animations[animationIndex].frameCount();
     }
-    inline const vectorImpl<AnimEvaluator>& GetAnimations() const {
+
+    inline const vectorImpl<AnimEvaluator>& animations() const {
         return _animations;
     }
-    inline const stringImpl& GetAnimationName(I32 animationIndex) const {
-        return _animations[animationIndex]._name;
+
+    inline const stringImpl& animationName(I32 animationIndex) const {
+        return _animations[animationIndex].name();
     }
-    inline bool GetAnimationID(const stringImpl& animationName, U32& ID) {
+
+    inline bool animationID(const stringImpl& animationName, U32& ID) {
         hashMapImpl<stringImpl, U32>::iterator itr =
             _animationNameToID.find(animationName);
         if (itr != std::end(_animationNameToID)) {
@@ -126,21 +136,23 @@ class SceneAnimator {
     /// Be careful with this to make sure and send the correct dt. If the dt is
     /// different from what the model is currently at,
     /// the transform will be off
-    inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt,
-                                             const stringImpl& bname) {
-        I32 bindex = GetBoneIndex(bname);
-        if (bindex == -1) return _cacheIdentity;
-        return _animations[animationIndex].GetTransforms(dt)[bindex];
+    inline const mat4<F32>& boneTransform(I32 animationIndex, const D32 dt,
+                                          const stringImpl& bname) {
+        I32 bindex = boneIndex(bname);
+        if (bindex == -1) {
+            return _cacheIdentity;
+        }
+        return _animations[animationIndex].transforms(dt).at(bindex);
     }
 
     /// Same as above, except takes the index
-    inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt,
-                                             U32 bindex) {
-        return _animations[animationIndex].GetTransforms(dt)[bindex];
+    inline const mat4<F32>& boneTransform(I32 animationIndex, const D32 dt,
+                                          U32 bindex) {
+        return _animations[animationIndex].transforms(dt)[bindex];
     }
     /// Get the bone's global transform
-    inline const mat4<F32>& GetBoneOffsetTransform(const stringImpl& bname) {
-        I32 bindex = GetBoneIndex(bname);
+    inline const mat4<F32>& boneOffsetTransform(const stringImpl& bname) {
+        I32 bindex = boneIndex(bname);
         if (bindex != -1) {
             AnimUtils::TransformMatrix(_bonesByName[bname]->_offsetMatrix,
                                        _cacheIdentity);
@@ -148,49 +160,48 @@ class SceneAnimator {
         return _cacheIdentity;
     }
 
-    /// A vector that holds each animation
-    vectorImpl<AnimEvaluator> _animations;
-    Bone* GetBoneByName(const stringImpl& name) const;
+    Bone* boneByName(const stringImpl& name) const;
     /// GetBoneIndex will return the index of the bone given its name.
     /// The index can be used to index directly into the vector returned from
     /// GetTransform
-    I32 GetBoneIndex(const stringImpl& bname) const;
-    const vectorImpl<Line>& getSkeletonLines(I32 animationIndex, const D32 dt);
+    I32 boneIndex(const stringImpl& bname) const;
+    const vectorImpl<Line>& skeletonLines(I32 animationIndex, const D32 dt);
 
-    size_t GetBoneCount() const { return _bones.size(); }
+    size_t boneCount() const { return _bones.size(); }
 
    private:
     /// I/O operations
-    void SaveSkeleton(std::ofstream& file, Bone* pNode);
-    Bone* LoadSkeleton(std::ifstream& file, Bone* pNode);
+    void saveSkeleton(std::ofstream& file, Bone* pNode);
+    Bone* loadSkeleton(std::ifstream& file, Bone* pNode);
 
-    void UpdateTransforms(Bone* pNode);
-    void Calculate(I32 animationIndex, const D32 pTime);
-    void CalcBoneMatrices();
+    void updateTransforms(Bone* pNode);
+    void calculate(I32 animationIndex, const D32 pTime);
+    void calcBoneMatrices();
     /// Calculates the global transformation matrix for the given internal node
-    void CalculateBoneToWorldTransform(Bone* pInternalNode);
-    void ExtractAnimations(const aiScene* pScene);
+    void calculateBoneToWorldTransform(Bone* pInternalNode);
+    void extractAnimations(const aiScene* pScene);
     /// Recursively creates an internal node structure matching the current
     /// scene and animation.
-    Bone* CreateBoneTree(aiNode* pNode, Bone* parent);
+    Bone* createBoneTree(aiNode* pNode, Bone* parent);
 
-    I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent,
+    I32 createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
                        vectorImpl<Line>& lines);
 
    private:
-    Bone* _skeleton; /** Root node of the internal scene structure */
-
-    hashMapImpl<stringImpl, Bone*>
-        _bonesByName; /** Name to node map to quickly find nodes by their name
-                         */
-    hashMapImpl<stringImpl,
-                U32> _bonesToIndex; /** Name to node map to quickly find nodes
-                                       by their name */
-    hashMapImpl<stringImpl, U32> _animationNameToID;  // find animations quickly
-
-    vectorImpl<Bone*> _bones;  // DO NOT DELETE THESE when the destructor
-                               // runs... THEY ARE JUST REFERENCES!!
-    vectorImpl<aiMatrix4x4> _transforms;  // temp array of transforms
+    /// Root node of the internal scene structure
+    Bone* _skeleton; 
+    /// A vector that holds each animation
+    vectorImpl<AnimEvaluator> _animations;
+    /// Name to node map to quickly find nodes by their name
+    hashMapImpl<stringImpl, Bone*> _bonesByName; 
+    /// Name to node map to quickly find nodes by their name
+    hashMapImpl<stringImpl, U32> _bonesToIndex; 
+    /// find animations quickly
+    hashMapImpl<stringImpl, U32> _animationNameToID;
+    // DO NOT DELETE THESE when the destructor runs... THEY ARE JUST REFERENCES!!
+    vectorImpl<Bone*> _bones;  
+    /// temp array of transforms
+    vectorImpl<aiMatrix4x4> _transforms;
 
     mat4<F32> _cacheIdentity;
     LineCollection _skeletonLines;
@@ -199,4 +210,4 @@ class SceneAnimator {
 
 };  // namespace Divide
 
-#endif
+#endif // SCENE_ANIMATOR_H_

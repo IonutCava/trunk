@@ -127,7 +127,7 @@ void DeferredShadingRenderer::processVisibleNodes(
     const GFXDevice::VisibleNodeList& visibleNodes,
     const GFXDevice::GPUBlock& gpuBlock) {
 
-    Light::LightMap& lights = LightManager::getInstance().getLights();
+    Light::LightList& lights = LightManager::getInstance().getLights();
     if (lights.size() != _cachedLightCount) {
         _cachedLightCount = (U16)lights.size();
         _lightTexture->Create(2, _cachedLightCount);

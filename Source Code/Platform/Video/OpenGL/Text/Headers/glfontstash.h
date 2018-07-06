@@ -93,13 +93,10 @@ static void glfons__renderDraw(void* userPtr,
     glNamedBufferData(bufferID,
                       2 * vertDataSize + sizeof(unsigned char) * 4 * nverts,
                       NULL, GL_STREAM_DRAW);
-    glNamedBufferSubData(bufferID, 0, vertDataSize,
-                         (const Divide::GLUtil::bufferPtr)verts);
-    glNamedBufferSubData(bufferID, vertDataSize, vertDataSize,
-                         (const Divide::GLUtil::bufferPtr)tcoords);
+    glNamedBufferSubData(bufferID, 0, vertDataSize, verts);
+    glNamedBufferSubData(bufferID, vertDataSize, vertDataSize, tcoords);
     glNamedBufferSubData(bufferID, 2 * vertDataSize,
-                         sizeof(unsigned char) * 4 * nverts,
-                         (const Divide::GLUtil::bufferPtr)colors);
+                         sizeof(unsigned char) * 4 * nverts, colors);
 
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     glEnableVertexAttribArray(0);

@@ -46,7 +46,7 @@ class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
    public:
     typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/>
-        frameIndexes;
+        FrameIndexes;
 
     AnimationComponent(SceneAnimator* animator,
                        SceneGraphNode& parentSGN);
@@ -77,7 +77,7 @@ class AnimationComponent : public SGNComponent {
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
 
-    inline const mat4<F32>& currentBoneTransform(const stringImpl& name) {
+    inline const mat4<F32>& currentBoneTransform(const stringImpl& name) const {
         return currentBoneTransform(_currentAnimIndex, name);
     }
 
@@ -86,7 +86,7 @@ class AnimationComponent : public SGNComponent {
     }
 
     const mat4<F32>& currentBoneTransform(U32 animationID,
-                                          const stringImpl& name);
+                                          const stringImpl& name) const ;
     const mat4<F32>& getBoneTransform(U32 animationID, const stringImpl& name);
 
     inline bool playAnimations() const { return _playAnimations; }
@@ -106,7 +106,7 @@ class AnimationComponent : public SGNComponent {
     /// Current animation timestamp for the current SGN
     D32 _currentTimeStamp;
     /// Last updated frame indexes for each animation
-    frameIndexes _lastFrameIndexes;
+    FrameIndexes _lastFrameIndexes;
     /// Does the mesh have a valid skeleton?
     bool _skeletonAvailable;
     /// Animation playback toggle

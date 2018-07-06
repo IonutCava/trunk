@@ -12,7 +12,7 @@ struct Light {
     vec4   _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
     vec4   _position;    //< xyz = Position is a direction for directional lights; w = spot cutoff
     vec4   _direction;   //< xyz = Used by spot lights, w = spotExponent
-    ivec4  _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, zw = reserved
+    ivec4  _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, z = shadow block index, w = reserved
 };
 
 layout(binding = BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
@@ -28,7 +28,7 @@ struct Shadow {
 
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
-    Shadow dvd_ShadowSource[MAX_LIGHTS_PER_SCENE];
+    Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 }; 
 
 uniform vec3 dvd_lightAmbient;

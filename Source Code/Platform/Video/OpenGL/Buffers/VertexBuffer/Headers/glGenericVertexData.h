@@ -114,7 +114,7 @@ class glGenericVertexData : public GenericVertexData {
     GLuint* _sizeFactor;
     size_t* _readOffset;
     size_t* _elementSize;
-    GLUtil::bufferPtr* _bufferPersistentData;
+    bufferPtr* _bufferPersistentData;
     GLuint* _prevResult;
     std::array<GLuint*, 2> _feedbackQueries;
     std::array<bool*, 2> _resultAvailable;
