@@ -5,7 +5,7 @@
 #include "boneTransforms.vert"
 #endif
 
-layout(std140) uniform dvd_MatrixBlock
+layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
@@ -41,30 +41,21 @@ in vec2 _texCoord;
 #if defined(USE_OPACITY)
 uniform float opacity = 1.0;
 #elif defined(USE_OPACITY_MAP)
-uniform sampler2D texOpacityMap;
+layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #elif defined(USE_OPACITY_DIFFUSE_MAP)
-uniform sampler2D texDiffuse0;
+layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
 #elif defined(USE_OPACITY_DIFFUSE)
 uniform mat4      material;
 #endif
 
-uniform vec2 dvd_zPlanes;
-
 out vec2 _colorOut;
 
 vec2 computeMoments(in float depth) {
-    vec2 moments;
-
-    moments.x = depth;
-
     // Compute partial derivatives of depth.  
     float dx = dFdx(depth);
     float dy = dFdy(depth);
-
     // Compute second moment over the pixel extents.  
-    //moments.y = Depth*Depth + 0.25*(dx*dx + dy*dy);
-    moments.y = depth * depth;
-    return moments;
+    return vec2(depth, depth*depth + 0.25*(dx*dx + dy*dy));
 }
 
 void main(){
@@ -81,7 +72,7 @@ void main(){
 #endif
 
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    float linearz = clamp(gl_FragCoord.z*gl_FragCoord.w, 0, 1);
+    float linearz = gl_FragCoord.z;
     //_colorOut = computeMoments(exp(DEPTH_EXP_WARP * linearz));
     _colorOut = computeMoments( linearz);
 }
@@ -100,8 +91,8 @@ in vec2 _texCoord;
 in vec4 _vertexW;
 
 uniform float opacity = 1.0;
-uniform sampler2D texOpacityMap;
-uniform sampler2D texDiffuse0;
+layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
+layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
 uniform mat4      material;
 
 out vec4 _colorOut;

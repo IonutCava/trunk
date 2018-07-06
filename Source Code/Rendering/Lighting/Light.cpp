@@ -183,10 +183,14 @@ void Light::setDirection(const vec3<F32>& newDirection){
         ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Togglable","LIGHT_DIRECTION");
         return;
     }
-    if(_type == LIGHT_TYPE_SPOT)
-        _properties._direction = vec4<F32>(newDirection,1.0f);
-    else
-        _properties._position = vec4<F32>(newDirection, _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f);
+    if (_type == LIGHT_TYPE_SPOT){
+        _properties._direction = vec4<F32>(newDirection, 1.0f);
+        _properties._direction.normalize();
+    }else{
+        _properties._position = vec4<F32>(newDirection, 1.0f);
+        _properties._position.normalize();
+        _properties._position.w = _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f;
+    }
 
     _dirty = true;
 

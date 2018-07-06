@@ -10,7 +10,7 @@ out vec4 vertexVP;
 uniform vec3 CameraRight_worldspace;
 uniform vec3 CameraUp_worldspace;
 
-layout(std140) uniform dvd_MatrixBlock
+layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
 {
    mat4 dvd_ProjectionMatrix;
    mat4 dvd_ViewMatrix;
@@ -58,7 +58,7 @@ in vec4 vertexVP;
 // Ouput data
 out vec4 color;
 
-uniform sampler2D texDiffuse0;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 uniform sampler2D depthBuffer;
 uniform vec2 size;
 

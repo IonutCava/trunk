@@ -179,7 +179,6 @@ void BloomPreRenderOperator::toneMapScreen()
     _tempHDRFB->Bind(0);
     // luminance FB
     _luminaFB[0]->Bind(1);
-    _luminaFB[0]->UpdateMipMaps(TextureDescriptor::Color0);
     GFX_DEVICE.drawPoints(1);
     _luminaFB[0]->Unbind(1);
 }

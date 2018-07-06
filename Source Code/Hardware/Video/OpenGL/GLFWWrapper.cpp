@@ -8,6 +8,7 @@
 #include "Managers/Headers/ShaderManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/OpenGL/glsw/Headers/glsw.h"
 #include "Shaders/Headers/glUniformBufferObject.h"
@@ -297,22 +298,19 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     //OpenGL is up and ready
     Divide::GLUtil::_contextAvailable = true;
 
-    _uniformBufferObjects.resize(UBO_PLACEHOLDER,nullptr);
+    _uniformBufferObjects.resize(3, nullptr);
     _uniformBufferObjects[Matrices_UBO] = New glUniformBufferObject();
-    _uniformBufferObjects[Matrices_UBO]->Create(Matrices_UBO, true,false);
+    _uniformBufferObjects[Matrices_UBO]->Create(true,false);
     _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(3 * 16 + 4, sizeof(GLfloat)); //View, Projection, ViewProjection and Viewport 3 x 16 + 4 float values and
-    _uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
-    _uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
+    _uniformBufferObjects[Matrices_UBO]->bindBufferBase(Divide::SHADER_BUFFER_CAM_MATRICES);
+    _uniformBufferObjects[Lights_UBO] = New glUniformBufferObject();
+    _uniformBufferObjects[Lights_UBO]->Create(true,false);
     _uniformBufferObjects[Lights_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+    _uniformBufferObjects[Lights_UBO]->bindBufferBase(Divide::SHADER_BUFFER_LIGHT_NORMAL);
     _uniformBufferObjects[Shadow_UBO] = New glUniformBufferObject();
-    _uniformBufferObjects[Shadow_UBO]->Create(Shadow_UBO, true, false);
-    _uniformBufferObjects[Shadow_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
-    
-/*
-    _uniformBufferObjects[Material_UBO]  = New glUniformBufferObject();
-    _uniformBufferObjects[Material_UBO]->Create(Material_UBO,true,false);
-    _uniformBufferObjects[Material_UBO]->ReserveBuffer(num materials here, sizeof(_mat->getShaderData()) );
-*/
+    _uniformBufferObjects[Shadow_UBO]->Create(true, false);
+    _uniformBufferObjects[Shadow_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
+    _uniformBufferObjects[Shadow_UBO]->bindBufferBase(Divide::SHADER_BUFFER_LIGHT_SHADOW);
 
     for(U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i)
         for(U8 j = 0; j < PERFORMANCE_COUNTERS; ++j)
@@ -392,8 +390,8 @@ void GL_API::closeRenderingApi(){
     for(glIMPrimitive*& priv : _glimInterfaces){
         SAFE_DELETE(priv);
     }
-    for(GLubyte i = 0; i < UBO_PLACEHOLDER; i++){
-        SAFE_DELETE(_uniformBufferObjects[i]);
+    for (glUniformBufferObject*& ubo : _uniformBufferObjects){
+        SAFE_DELETE(ubo);
     }
 
     _fonts.clear();
@@ -445,9 +443,19 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_SPLITS_PER_LIGHT " + Util::toString(Config::MAX_SPLITS_PER_LIGHT)).c_str());
     glswAddDirectiveToken("", std::string("const int MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::MAX_LIGHTS_PER_SCENE) + ";").c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(Divide::SHADER_BUFFER_LIGHT_NORMAL)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_CAM_MATRICES " + Util::toString(Divide::SHADER_BUFFER_CAM_MATRICES)).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.2;");
     glswAddDirectiveToken("","//__CUSTOM_DEFINES__");
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(Material::TEXTURE_UNIT0 + 0)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(Material::TEXTURE_UNIT0 + 1)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT2 " + Util::toString(Material::TEXTURE_UNIT0 + 2)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_NORMALMAP " + Util::toString(Material::TEXTURE_NORMALMAP)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(Material::TEXTURE_OPACITY)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(Material::TEXTURE_SPECULAR)).c_str());
+
     glswAddDirectiveToken("Fragment","//__CUSTOM_FRAGMENT_UNIFORMS__");
     glswAddDirectiveToken("Fragment", "const int DEPTH_EXP_WARP = 32;");
     glswAddDirectiveToken("Vertex","//__CUSTOM_VERTEX_UNIFORMS__");
@@ -461,12 +469,9 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BITANGENT_LOCATION) + ") in vec3  inBiTangentData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
-
     GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES ? kGlslTargetOpenGLES30 : kGlslTargetOpenGL);
-    if(glswState == 1 && GL_API::_GLSLOptContex != nullptr){
-        return true;
-    }
-    return false;
+
+    return glswState == 1 && GL_API::_GLSLOptContex != nullptr;
 }
 
 bool GL_API::deInitShaders(){

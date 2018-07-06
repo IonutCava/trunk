@@ -9,10 +9,10 @@ struct MaterialProperties {
 //Specular and opacity maps are available even for non-textured geometry
 #if defined(USE_OPACITY_MAP)
 //Opacity and specular maps
-uniform sampler2D texOpacityMap;
+layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #endif
 #if defined(USE_SPECULAR_MAP)
-uniform sampler2D texSpecularMap;
+layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #endif
 
 #include "phong_point_light.frag"

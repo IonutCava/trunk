@@ -51,6 +51,11 @@ DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
     friend class glSamplerObject;
     friend class glGenericVertexData;
 protected:
+    enum UBO_NAME {
+        Matrices_UBO = 0,
+        Lights_UBO   = 1,
+        Shadow_UBO   = 2,
+    };
 
     GL_API() : RenderAPIWrapper(),
                _loaderThread(nullptr),

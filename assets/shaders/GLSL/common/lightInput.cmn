@@ -10,7 +10,7 @@ struct Light {
     vec4  _specular;    ///< rgb = specular color, w = brightness
 };
 
-layout(std140) uniform dvd_LightBlock
+layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
 	Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
 };
@@ -25,7 +25,7 @@ struct Shadow {
     vec3  _lightPosition[4];
 };
 
-layout(std140) uniform dvd_ShadowBlock
+layout(binding = SHADER_BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     Shadow dvd_ShadowSource[MAX_LIGHTS_PER_SCENE];
 }; 

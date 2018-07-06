@@ -98,6 +98,7 @@ void Vegetation::initialize(Terrain* const terrain, SceneGraphNode* const terrai
 
     Kernel* kernel = Application::getInstance().getKernel();
     _generateVegetation.reset(kernel->AddTask(0, true, true, DELEGATE_BIND(&Vegetation::generateGrass, this), DELEGATE_BIND(&Vegetation::uploadGrassData, this)));
+    setState(RES_LOADED);
 }
 
 bool Vegetation::uploadGrassData(){

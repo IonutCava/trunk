@@ -33,7 +33,7 @@ void d3dRenderTarget::Unbind(U8 unit) const
 {
 }
 
-void d3dRenderTarget::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) const
+void d3dRenderTarget::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth)
 {
 }
 
@@ -43,9 +43,5 @@ bool d3dRenderTarget::checkStatus() const
 }
 
 void d3dRenderTarget::BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot, bool blitColor, bool blitDepth)
-{
-}
-
-void d3dRenderTarget::UpdateMipMaps(TextureDescriptor::AttachmentType slot) const
 {
 }

@@ -198,9 +198,6 @@ private:
     I32 _screenDimensionLoc;
     I32 _texDepthMapFromLightArrayLoc;
     I32 _texDepthMapFromLightCubeLoc;
-    I32 _texNormalMapLoc;
-    I32 _texOpacityMapLoc;
-    I32 _texSpecularLoc;
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
     U8  _prevLOD;

@@ -40,6 +40,12 @@ namespace Divide {
          VERTEX_BONE_WEIGHT_LOCATION = 6,
          VERTEX_BONE_INDICE_LOCATION = 7
     };
+
+    enum {
+        SHADER_BUFFER_LIGHT_NORMAL = 0,
+        SHADER_BUFFER_LIGHT_SHADOW = 1,
+        SHADER_BUFFER_CAM_MATRICES = 2,
+    };
 };
 
 ///Fixed pipeline functionality should be avoided. Both D3D and OGL should have these matrices

@@ -23,14 +23,6 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
     _tessellationEvaluationShader = nullptr;
     _computeShader = nullptr;
     _shaderProgramId = Divide::GLUtil::_invalidObjectID;
-    //3 buffers: Matrices, Materials and Lights
-    _UBOLocation.resize(UBO_PLACEHOLDER,-1);
-    _uniformBufferObjects.resize(UBO_PLACEHOLDER, nullptr);
-    GL_API& glApi = GL_API::getInstance();
-    _uniformBufferObjects[Shadow_UBO]    = glApi.getUBO(Shadow_UBO);
-    _uniformBufferObjects[Lights_UBO]    = glApi.getUBO(Lights_UBO);
-    _uniformBufferObjects[Matrices_UBO]  = glApi.getUBO(Matrices_UBO);
-    _uniformBufferObjects[Materials_UBO] = glApi.getUBO(Materials_UBO);
 
     _shaderStageTable[VERTEX_SHADER] = GL_VERTEX_SHADER;
     _shaderStageTable[FRAGMENT_SHADER] = GL_FRAGMENT_SHADER;
@@ -49,9 +41,6 @@ glShaderProgram::~glShaderProgram()
         }
         glDeleteProgram(_shaderProgramId);
     }
-
-    _UBOLocation.clear();
-    _uniformBufferObjects.clear();
 }
 
 void glShaderProgram::validateInternal()  {
@@ -163,28 +152,6 @@ void glShaderProgram::threadedLoad(const std::string& name){
         _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = _refreshComp = false;
         link();
     }
-    // Init UBOs
-    _UBOLocation[Matrices_UBO] = glGetUniformBlockIndex(_shaderProgramIDTemp, "dvd_MatrixBlock");
-    _UBOLocation[Materials_UBO] = glGetUniformBlockIndex(_shaderProgramIDTemp, "dvd_MaterialBlock");
-    _UBOLocation[Lights_UBO] = glGetUniformBlockIndex(_shaderProgramIDTemp, "dvd_LightBlock");
-    _UBOLocation[Shadow_UBO] = glGetUniformBlockIndex(_shaderProgramIDTemp, "dvd_ShadowBlock");
-    
-    if (_UBOLocation[Matrices_UBO] != GL_INVALID_INDEX){
-        _uniformBufferObjects[Matrices_UBO]->bindUniform(_shaderProgramIDTemp, _UBOLocation[Matrices_UBO]);
-        _uniformBufferObjects[Matrices_UBO]->bindBufferBase();
-    }
-    if (_UBOLocation[Materials_UBO] != GL_INVALID_INDEX){
-        _uniformBufferObjects[Materials_UBO]->bindUniform(_shaderProgramIDTemp, _UBOLocation[Materials_UBO]);
-        _uniformBufferObjects[Materials_UBO]->bindBufferBase();
-    }
-    if (_UBOLocation[Lights_UBO] != GL_INVALID_INDEX){
-        _uniformBufferObjects[Lights_UBO]->bindUniform(_shaderProgramIDTemp, _UBOLocation[Lights_UBO]);
-        _uniformBufferObjects[Lights_UBO]->bindBufferBase();
-    }
-    if (_UBOLocation[Shadow_UBO] != GL_INVALID_INDEX){
-        _uniformBufferObjects[Shadow_UBO]->bindUniform(_shaderProgramIDTemp, _UBOLocation[Shadow_UBO]);
-        _uniformBufferObjects[Shadow_UBO]->bindBufferBase();
-    }
 
     validate();
     _shaderProgramId = _shaderProgramIDTemp;
@@ -264,8 +231,8 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         //Use the specified shader path
         glswSetPath(std::string(getResourceLocation() + "GLSL/").c_str(), ".glsl");
         //Mirror initial shader defines to match line count
-        GLint lineCountOffset = 8;
-        GLint lineCountOffsetFrag = 1;
+        GLint lineCountOffset = 11;
+        GLint lineCountOffsetFrag = 9;
         GLint lineCountOffsetVert = 8;
         GLint lineCountOffsetGeom = 0;
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
@@ -473,7 +440,6 @@ bool glShaderProgram::bind() {
     assert(_shaderProgramId != Divide::GLUtil::_invalidObjectID);
 
     GL_API::setActiveProgram(this);
-    //_uniformBufferObjects[Lights_UBO]->printUniformBlockInfo(this->_shaderProgramId, _UBOLocation[Lights_UBO]);
     //send default uniforms to GPU for every shader
    return ShaderProgram::bind();
 }

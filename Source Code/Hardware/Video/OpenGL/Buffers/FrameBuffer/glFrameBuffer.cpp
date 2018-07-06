@@ -7,7 +7,6 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 bool glFrameBuffer::_viewportChanged = false;
-bool glFrameBuffer::_mipMapsDirty = false;
 GLint glFrameBuffer::_maxColorAttachments = -1;
 vec2<U16> glFrameBuffer::_prevViewportDim;
 
@@ -24,6 +23,7 @@ glFrameBuffer::glFrameBuffer(glFrameBuffer* resolveBuffer) : FrameBuffer(resolve
     memset(_textureId, 0, 5 * sizeof(GLuint));
     memset(_textureType, 0, 5 * sizeof(GLuint));
     memset(_mipMapEnabled, false, 5 * sizeof(bool));
+    memset(_mipMapsDirty, false, 5 * sizeof(bool));
 }
 
 glFrameBuffer::~glFrameBuffer()
@@ -136,12 +136,9 @@ void glFrameBuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
             
     //Generate mipmaps if needed (first call to glGenerateMipMap allocates all levels)
     if (_mipMapEnabled[slot]) {
+        I32 maxMipLevel = (GLint)floorf(log2f(fmaxf((F32)_width, (F32)_height)));
         glTexParameteri(textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel);
-        if (!texDescriptor._mipMaxLevel){
-            glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, (GLint)floorf(log2f(fmaxf(_width, _height))));
-        }else{
-            glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, texDescriptor._mipMaxLevel);
-        }
+        glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : maxMipLevel);
         glGenerateMipmap(textureType);
     }
         
@@ -333,7 +330,7 @@ void glFrameBuffer::BlitFrom(FrameBuffer* inputFB, TextureDescriptor::Attachment
             GL_API::registerDrawCall();
         }
         
-        _mipMapsDirty = true;
+        _mipMapsDirty[slot] = true;
     }
     if (blitDepth && _hasDepth)
         glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0, this->_width, this->_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
@@ -353,7 +350,7 @@ void glFrameBuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
     glSamplerObject::Unbind(unit);
 
     glBindTexture(_textureType[slot], _textureId[slot]);
-
+    UpdateMipMaps(slot);
     glTexture::textureBoundMap[unit] = std::make_pair(_textureId[slot], _textureType[slot]);
 }
 
@@ -390,7 +387,7 @@ void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
         glClear(_clearBufferMask);
         GL_API::registerDrawCall();
     }
-    if(!drawPolicy._depthOnly) _mipMapsDirty = true;
+    if (!drawPolicy._depthOnly) _mipMapsDirty[TextureDescriptor::Color0] = true;
 
     if (_resolveBuffer)
         _resolved = false;
@@ -404,7 +401,7 @@ void glFrameBuffer::End() {
     resolve();
 }
 
-void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) const {
+void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) {
     GLuint textureType = _textureType[slot];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if(textureType != GL_TEXTURE_2D_ARRAY && textureType != GL_TEXTURE_CUBE_MAP_ARRAY && textureType != GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
@@ -414,7 +411,10 @@ void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
     bool useColorLayer = (_hasColor && slot < TextureDescriptor::Depth);
 
     if (useDepthLayer && _isLayeredDepth)  glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _textureId[TextureDescriptor::Depth], 0, layer);
-    if (useColorLayer)  glDrawBuffer(_colorBuffers[layer]);
+    if (useColorLayer) {
+        glDrawBuffer(_colorBuffers[layer]);
+        _mipMapsDirty[slot] = true;
+    }
 
     if(_clearBuffersState){
         if (useDepthLayer){
@@ -430,12 +430,12 @@ void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
     }
 }
 
-void glFrameBuffer::UpdateMipMaps(TextureDescriptor::AttachmentType slot) const {
-    if(!_mipMapEnabled[slot] || !_bound || !_mipMapsDirty)
+void glFrameBuffer::UpdateMipMaps(TextureDescriptor::AttachmentType slot) {
+    if(!_mipMapEnabled[slot] || !_bound || !_mipMapsDirty[slot])
         return;
 
     glGenerateMipmap(_textureType[slot]);
-    _mipMapsDirty = false;
+    _mipMapsDirty[slot] = false;
 }
 
 bool glFrameBuffer::checkStatus() const {

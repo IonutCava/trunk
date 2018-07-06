@@ -64,39 +64,20 @@ void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
 
 ///Update OpenGL light state
 void GL_API::setLight(Light* const light, bool shadowPass){
-    static mat4<F32> tempViewMatrix;
     assert(light != nullptr);
     if (shadowPass){
-        const LightShadowProperties& crtShadow = light->getShadowProperties();
-        const GLsizei sizeOfBlock = sizeof(LightShadowProperties);
-        _uniformBufferObjects[Shadow_UBO]->ChangeSubData(light->getSlot() * sizeOfBlock, sizeOfBlock, (const GLvoid*)(&crtShadow));
-        return;
-    }
-
-    LightProperties crtLight = light->getProperties();
-    
-    F32 lightType = crtLight._position.w;
-    
-    getMatrix(VIEW_MATRIX, tempViewMatrix);
-
-    if (light->getType() == LIGHT_TYPE_DIRECTIONAL){
-        crtLight._position.normalize();
-        crtLight._position.set(tempViewMatrix * vec4<F32>(crtLight._position.xyz(), 0.0f));
-    }else if (light->getType() == LIGHT_TYPE_SPOT){
-        F32 spotExponent = crtLight._direction.w;
-        crtLight._direction.w = 0.0f;
-        crtLight._direction.set(tempViewMatrix * crtLight._direction);
-        crtLight._direction.normalize();
-        crtLight._direction.w = spotExponent;
+        _uniformBufferObjects[Shadow_UBO]->ChangeSubData(light->getSlot() * sizeof(LightShadowProperties), sizeof(LightShadowProperties), (GLvoid*)&light->getShadowProperties());
     }else{
-        crtLight._position.set(tempViewMatrix * vec4<F32>(crtLight._position.xyz(), 1.0f));
+        LightProperties temp = light->getProperties();
+        mat4<F32> viewMat;
+        getMatrix(VIEW_MATRIX, viewMat);
+        if (light->getLightType() == LIGHT_TYPE_DIRECTIONAL){
+            temp._position.set(vec3<F32>(viewMat * temp._position), temp._position.w);
+        }else if (light->getLightType() == LIGHT_TYPE_SPOT){
+            temp._direction.set(vec3<F32>(viewMat * temp._direction), temp._direction.w);
+        }
+        _uniformBufferObjects[Lights_UBO]->ChangeSubData(light->getSlot() * sizeof(LightProperties), sizeof(LightProperties), (GLvoid*)&temp);
     }
-    crtLight._position.w = lightType;
-   
-    const GLsizei sizeOfBlock = sizeof(LightProperties);
-    _uniformBufferObjects[Lights_UBO]->ChangeSubData(light->getSlot() * (sizeOfBlock), // offset
-                                                     sizeOfBlock,                      // size
-                                                     (const GLvoid*)(&crtLight));      // data
 }
 
 void GL_API::updateProjectionMatrix(){
@@ -319,9 +300,9 @@ void GL_API::setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 as
 
 #ifndef SHOULD_TOGGLE
     #define SHOULD_TOGGLE(state) (!oldBlock || oldBlock->getDescriptor().state != newDescriptor.state)
-    #define SHOULD_TOGGLE_2(state1, state2)  SHOULD_TOGGLE(state1) || SHOULD_TOGGLE(state2)
-    #define SHOULD_TOGGLE_3(state1, state2, state3) SHOULD_TOGGLE_2(state1, state2) || SHOULD_TOGGLE(state3)
-    #define SHOULD_TOGGLE_4(state1, state2, state3, state4) SHOULD_TOGGLE_3(state1, state2, state3) || SHOULD_TOGGLE(state4)
+    #define SHOULD_TOGGLE_2(state1, state2)  (!oldBlock ||SHOULD_TOGGLE(state1) || SHOULD_TOGGLE(state2))
+    #define SHOULD_TOGGLE_3(state1, state2, state3) (!oldBlock ||SHOULD_TOGGLE_2(state1, state2) || SHOULD_TOGGLE(state3))
+    #define SHOULD_TOGGLE_4(state1, state2, state3, state4) (!oldBlock || SHOULD_TOGGLE_3(state1, state2, state3) || SHOULD_TOGGLE(state4))
     #define TOGGLE_NO_CHECK(state, enumValue) newDescriptor.state ? glEnable(enumValue) : glDisable(enumValue)
     #define TOGGLE_WITH_CHECK(state, enumValue) if(SHOULD_TOGGLE(state)) TOGGLE_NO_CHECK(state, enumValue);
 #endif

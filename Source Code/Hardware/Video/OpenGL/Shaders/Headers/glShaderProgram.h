@@ -79,8 +79,6 @@ protected:
 private:
     typedef Unordered_map<std::string, GLint > ShaderVarMap;
     ShaderVarMap _shaderVars;
-    vectorImpl<GLint> _UBOLocation;
-    vectorImpl<glUniformBufferObject* > _uniformBufferObjects;
     boost::atomic_bool _validationQueued;
     GLenum _binaryFormat;
     bool   _loadedFromBinary;
@@ -98,9 +96,6 @@ protected:
     inline void validate() {_validationQueued = true;}
     void link();
 
-protected:
-    friend class glUniformBufferObject;
-    inline GLuint getUBOLocation(const UBO_NAME& ubo) {assert((GLuint)ubo < _UBOLocation.size()); return _UBOLocation[ubo];}
 };
 
 #endif

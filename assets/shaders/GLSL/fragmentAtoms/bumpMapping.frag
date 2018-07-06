@@ -1,5 +1,6 @@
 //Normal or BumpMap
-uniform sampler2D texNormalMap;
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
+
 uniform float parallax_factor = 1.0f;
 uniform float relief_factor = 1.0f;
 uniform int bumpMapLightId = 0;

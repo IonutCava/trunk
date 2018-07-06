@@ -27,14 +27,6 @@
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Utility/Headers/Vector.h"
 
-enum UBO_NAME {
-    Matrices_UBO  = 0,
-    Materials_UBO = 1,
-    Lights_UBO    = 2,
-    Shadow_UBO    = 3,
-    UBO_PLACEHOLDER = 4
-};
-
 ///Base class for shader uniform blocks
 class glUniformBufferObject : public GUIDWrapper {
 public:
@@ -45,22 +37,18 @@ public:
     ///if "dynamic" is true, the buffer will use either GL_STREAM_DRAW or GL_DYNAMIC_DRAW depending on the "stream" param
     ///default value will be a GL_DYNAMIC_DRAW, as most data will change once every few frames
     ///(lights might change per frame, so stream will be better in that case)
-    void Create(GLint bufferIndex, bool dynamic = true, bool stream = false);
+    void Create(bool dynamic = true, bool stream = false);
     ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with nullptr values
     virtual void ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const;
     virtual void ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data) const;
-    virtual bool bindUniform(GLuint shaderProgramHandle, GLuint uboLocation) const;
-    virtual bool bindBufferRange(GLintptr offset, GLsizeiptr size) const;
-    virtual bool bindBufferBase() const;
-    static GLuint getBindingIndice();
-    static void   unbind();
+    virtual bool bindBufferRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const;
+    virtual bool bindBufferBase(GLuint bindIndex) const;
+    static  void unbind();
 
     void printUniformBlockInfo(GLint prog, GLint block_index);
 
 protected:
-    static vectorImpl<GLuint> _bindingIndices;
     GLuint _UBOid;
     GLenum _usage;
-    GLuint _bindIndex;
 };
 #endif

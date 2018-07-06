@@ -3,28 +3,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "core.h"
 
-vectorImpl<GLuint> glUniformBufferObject::_bindingIndices;
-
-GLuint glUniformBufferObject::getBindingIndice() {
-    for(GLuint i = 0, size = (GLuint)_bindingIndices.size(); i < size; i++) {
-        if(_bindingIndices[i] != i) {
-            _bindingIndices[i] = i;
-            return i;
-        }
-    }
-    _bindingIndices.push_back((U32)_bindingIndices.size());
-    return (GLuint)_bindingIndices.size();
-}
-
-
-glUniformBufferObject::glUniformBufferObject() : GUIDWrapper(), _UBOid(0), _bindIndex(0)
+glUniformBufferObject::glUniformBufferObject() : GUIDWrapper(), _UBOid(0)
 {
-    _bindIndex = getBindingIndice();
-    static GLint maxUniformIndex = -1;
-    if(maxUniformIndex == -1){
-        glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformIndex);
-    }
-    CLAMP<GLuint>(_bindIndex, 0, maxUniformIndex);
 }
 
 glUniformBufferObject::~glUniformBufferObject()
@@ -105,7 +85,8 @@ void glUniformBufferObject::printUniformBlockInfo(GLint prog, GLint block_index)
         PRINT_FN("%s", (*detail).c_str());
 }
 
-void glUniformBufferObject::Create(GLint bufferIndex, bool dynamic, bool stream){
+void glUniformBufferObject::Create(bool dynamic, bool stream){
+    assert(_UBOid == 0);
     _usage = (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
     glGenBuffers(1, &_UBOid); // Generate the buffer
     assert(_UBOid != 0);
@@ -128,24 +109,14 @@ void glUniformBufferObject::unbind() {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-bool glUniformBufferObject::bindUniform(GLuint shaderProgramHandle, GLuint uboLocation) const {
-    if(uboLocation == GL_INVALID_INDEX) {
-        ERROR_FN(Locale::get("ERROR_UBO_INVALID_LOCATION"),shaderProgramHandle);
-        return false;
-    }
-
-    glUniformBlockBinding(shaderProgramHandle, uboLocation, _bindIndex);
+bool glUniformBufferObject::bindBufferRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const {
+    assert(_UBOid != 0);
+    glBindBufferRange(GL_UNIFORM_BUFFER, bindIndex, _UBOid, offset, size);
     return true;
 }
 
-bool glUniformBufferObject::bindBufferRange(GLintptr offset, GLsizeiptr size) const {
+bool glUniformBufferObject::bindBufferBase(GLuint bindIndex) const {
     assert(_UBOid != 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, _bindIndex, _UBOid, offset, size);
-    return true;
-}
-
-bool glUniformBufferObject::bindBufferBase() const {
-    assert(_UBOid != 0);
-    glBindBufferBase(GL_UNIFORM_BUFFER, _bindIndex, _UBOid);
+    glBindBufferBase(GL_UNIFORM_BUFFER, bindIndex, _UBOid);
     return true;
 }

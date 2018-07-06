@@ -169,7 +169,8 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     //Generate a shadow render state
     RenderStateBlockDescriptor terrainDescDepth;
     terrainDescDepth.setCullMode(CULL_MODE_CCW);
-    terrainDescDepth.setZBias(1.0f, 2.0f);
+    //terrainDescDepth.setZBias(1.0f, 2.0f);
+    terrainDescDepth.setColorWrites(true, true, false, false);
 
     terrain->_terrainRenderState           = GFX_DEVICE.getOrCreateStateBlock(terrainDesc);
     terrain->_terrainPrePassRenderState    = GFX_DEVICE.getOrCreateStateBlock(terrainDesc);

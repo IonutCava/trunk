@@ -48,9 +48,6 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _screenDimensionLoc  = -1;
     _texDepthMapFromLightArrayLoc = -1;
     _texDepthMapFromLightCubeLoc  = -1;
-    _texNormalMapLoc   = -1;
-    _texOpacityMapLoc  = -1;
-    _texSpecularLoc    = -1;
     _fogColorLoc       = -1;
     _fogDensityLoc     = -1;
     _prevLOD           = 250;
@@ -111,17 +108,6 @@ U8 ShaderProgram::update(const U64 deltaTime){
          //Reserve second for point shadows
         this->UniformTexture(_texDepthMapFromLightCubeLoc, shadowMapSlot + 1);
 
-        this->UniformTexture(_texNormalMapLoc,  Material::TEXTURE_NORMALMAP);
-        this->UniformTexture(_texOpacityMapLoc, Material::TEXTURE_OPACITY);
-        this->UniformTexture(_texSpecularLoc,   Material::TEXTURE_SPECULAR);
-
-        for(I32 i = Material::TEXTURE_UNIT0, j = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        {
-            char uniformSlot[32];
-            sprintf_s(uniformSlot, "texDiffuse%d", j++);
-            this->UniformTexture(uniformSlot, i);
-        }
-
         if(enableFog){
             this->Uniform(_fogColorLoc, vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
                                                   par.getParam<F32>("rendering.sceneState.fogColor.g"),
@@ -160,9 +146,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _screenDimensionLoc  = this->cachedLoc("screenDimension");
     _texDepthMapFromLightArrayLoc = this->cachedLoc("texDepthMapFromLightArray");
     _texDepthMapFromLightCubeLoc  = this->cachedLoc("texDepthMapFromLightCube");
-    _texNormalMapLoc   = this->cachedLoc("texNormalMap");
-    _texOpacityMapLoc  = this->cachedLoc("texOpacityMap");
-    _texSpecularLoc    = this->cachedLoc("texSpecular");
     _fogColorLoc       = this->cachedLoc("fogColor");
     _fogDensityLoc     = this->cachedLoc("fogDensity");
 

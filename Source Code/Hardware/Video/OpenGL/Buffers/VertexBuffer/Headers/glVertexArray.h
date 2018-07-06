@@ -68,6 +68,13 @@ protected:
     void checkStatus();
 
 protected:
+    typedef  struct {
+        GLuint  count;
+        GLuint  instanceCount;
+        GLuint  first;
+        GLuint  baseInstance;
+    } DrawArraysIndirectCommand;
+
     GLenum _formatInternal;
     GLenum _typeInternal;
     GLuint _IBid;

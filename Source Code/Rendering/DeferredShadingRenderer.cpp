@@ -191,11 +191,6 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
             GFX_DEVICE.renderInstance(_renderQuads[3]->renderInstance());
         }
         _deferredShader->bind();
-            _deferredShader->UniformTexture("albedoTexture",0);
-            _deferredShader->UniformTexture("positionTexture",1);
-            _deferredShader->UniformTexture("normalTexture",2);
-            _deferredShader->UniformTexture("blendTexture",3);
-            _deferredShader->UniformTexture("lightTexture",4);
             _deferredShader->Uniform("lightCount",(I32)_cachedLightCount);
 
             GFX_DEVICE.renderInstance(_renderQuads[ _debugView ? 4 : 0]->renderInstance());

@@ -49,7 +49,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 n
     depthMapSampler.setFilters(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR, TEXTURE_FILTER_LINEAR);
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(true);
-    depthMapSampler.setAnisotropy(0);
+    depthMapSampler.setAnisotropy(8);
     TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY_MS, RG, RG32F, FLOAT_32);
     depthMapDescriptor.setLayerCount(_numSplits);
     depthMapDescriptor.setSampler(depthMapSampler);
@@ -134,7 +134,6 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CB
     for (U8 i = 0; i < _numSplits; ++i){
         ApplyFrustumSplit(i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, true);
-        _shadowCamera->renderLookAt();
         _gfxDevice.render(sceneRenderFunction, renderState);
         LightManager::getInstance().registerShadowPass();
     }
@@ -214,11 +213,14 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
 
     _light->setVPMatrix(pass, lightViewProj * _bias);
     _light->setLightPos(pass, currentEye);
+    _shadowCamera->renderLookAt();
 }
 
 void CascadedShadowMaps::postRender(){
     if (_gfxDevice.shadowDetailLevel() == DETAIL_LOW)
         return;
+
+    //return;
 
     _gfxDevice.toggle2D(true);
 
@@ -255,7 +257,6 @@ void CascadedShadowMaps::togglePreviewShadowMaps(bool state){
 void CascadedShadowMaps::previewShadowMaps(){
     _previewDepthMapShader->bind();
     _depthMap->Bind();
-    _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
     for (U8 i = 0; i < _numSplits; ++i){
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform("zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));

@@ -36,7 +36,7 @@ void main() {
 in  vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 uniform vec2 size;
 uniform int kernelSize;
 uniform int layer;

@@ -129,5 +129,4 @@ void main(void)
     _colorOut = isUnderwater() ? NormalMappingUnderwater(shadow) : NormalMapping(shadow);
 
     FinalColor(_colorOut);
-
 }

@@ -112,7 +112,7 @@ void RenderStateBlockDescriptor::setStencil(bool enable, U32 stencilRef, Stencil
 
 void RenderStateBlockDescriptor::setDefaultValues(){
     _lockHash = true;
-    setZBias(0.0f, 2.0f);
+    setZBias(0.0f, 1.0f);
     setColorWrites(true, true, true, true);
     setBlend(false, BLEND_PROPERTY_ONE, BLEND_PROPERTY_ONE, BLEND_OPERATION_ADD);
     setZReadWrite(true, true);

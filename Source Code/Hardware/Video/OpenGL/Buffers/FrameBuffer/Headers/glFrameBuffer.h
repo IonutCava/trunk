@@ -34,7 +34,7 @@ public:
 
     bool Create(GLushort width, GLushort height);
     void Destroy();
-    void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true) const;
+    void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true);
     void AddDepthBuffer();
 
     void Begin(const FrameBufferTarget& drawPolicy);
@@ -45,12 +45,11 @@ public:
 
     void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
 
-    void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const;
-
 protected:
     void resolve();
     bool checkStatus() const;
     void InitAttachment(TextureDescriptor::AttachmentType type, const TextureDescriptor& texDescriptor);
+    void UpdateMipMaps(TextureDescriptor::AttachmentType slot);
 
 protected:
     GLuint _textureId[5];  ///<4 color attachments and 1 depth
@@ -58,6 +57,7 @@ protected:
     GLuint _clearBufferMask;
     GLuint _totalLayerCount;
     bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
+    bool   _mipMapsDirty[5];
     bool   _hasDepth;
     bool   _hasColor;
     bool   _resolved;
@@ -67,7 +67,6 @@ protected:
     vectorImpl<GLenum > _colorBuffers;
     bool _colorMaskChanged;
     bool _depthMaskChanged;
-    static bool _mipMapsDirty;
     static GLint _maxColorAttachments;
     glFrameBuffer* _resolveBuffer;
 };

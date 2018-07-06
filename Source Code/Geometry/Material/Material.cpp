@@ -50,7 +50,7 @@ Material::Material() : Resource("temp_material"),
    RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
    shadowDescriptor.setCullMode(CULL_MODE_CCW);
    /// set a polygon offset
-   shadowDescriptor.setZBias(1.0f, 2.0f);
+   //shadowDescriptor.setZBias(1.0f, 2.0f);
    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
    shadowDescriptor.setColorWrites(true, true, false, false);
    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));

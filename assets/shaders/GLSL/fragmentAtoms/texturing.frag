@@ -4,9 +4,9 @@
 //n -> add texDiffuse0 + texDiffuse1 + ... texDiffuse(n-1)
 uniform int textureCount;
 
-uniform sampler2D texDiffuse0;
-uniform sampler2D texDiffuse1;
-uniform sampler2D texDiffuse2;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
+layout(binding = TEXTURE_UNIT2) uniform sampler2D texDiffuse2;
 
 uniform int  textureOperation0;
 uniform int  textureOperation1;

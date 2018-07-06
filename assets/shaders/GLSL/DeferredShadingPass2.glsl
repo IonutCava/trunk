@@ -13,11 +13,12 @@ void main(void)
 
 -- Fragment
 
-uniform sampler2D albedoTexture;
-uniform sampler2D positionTexture;
-uniform sampler2D normalTexture;
-uniform sampler2D blendTexture;
-uniform sampler2D lightTexture;
+layout(binding = 0) uniform sampler2D albedoTexture;
+layout(binding = 1) uniform sampler2D positionTexture;
+layout(binding = 2) uniform sampler2D normalTexture;
+layout(binding = 3) uniform sampler2D blendTexture;
+layout(binding = 4) uniform sampler2D lightTexture;
+
 uniform int lightCount;
 
 in vec2 _texCoord;

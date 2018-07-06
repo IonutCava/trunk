@@ -21,7 +21,7 @@ void main(){
 out vec2 _texCoord;
 out vec3 _color;
 
-layout(std140) uniform dvd_MatrixBlock
+layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;

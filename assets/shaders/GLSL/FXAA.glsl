@@ -54,7 +54,7 @@ void main() {
 in  vec4 _posPos;
 out vec4 _colorOut;
 
-uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 uniform vec2 size;
 
 void main(){

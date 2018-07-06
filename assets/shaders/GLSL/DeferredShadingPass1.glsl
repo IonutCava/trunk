@@ -28,7 +28,7 @@ void main( void ){
 uniform mat3 dvd_NormalMatrix;
 uniform mat4 dvd_WorldViewMatrix;
 
-layout(std140) uniform dvd_MatrixBlock
+layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
@@ -85,7 +85,7 @@ out vec4 posOutput;     // layout(location = 1)
 out vec4 normOutput;    // layout(location = 2)
 out vec4 blendOutput;   // layout(location = 3)
 
-uniform sampler2D texDiffuse0;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main( void ){
    vec4 color = texture(texDiffuse0,_texCoord);
@@ -108,8 +108,8 @@ out vec4 posOutput;     // layout(location = 1)
 out vec4 normOutput;    // layout(location = 2)
 out vec4 blendOutput;   // layout(location = 3)
 
-uniform sampler2D  texDiffuse0;
-uniform sampler2D  texNormalMap;
+layout(binding = TEXTURE_UNIT0)     uniform sampler2D  texDiffuse0;
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2D  texNormalMap;
 
 void main( void ){
 

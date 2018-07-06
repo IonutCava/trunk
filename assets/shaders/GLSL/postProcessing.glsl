@@ -37,7 +37,7 @@ void main() {
 in  vec2 _texCoord;
 out vec4 _colorOut;
 
-uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 uniform sampler2D texVignette;
 uniform sampler2D texWaterNoiseNM;
 

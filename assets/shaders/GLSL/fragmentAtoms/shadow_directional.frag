@@ -1,6 +1,5 @@
 uniform float dvd_lightBleedBias = 0.0001;
 uniform float dvd_minShadowVariance = 0.00002;
-uniform float dvd_overDarkValue = 1.5;
 uniform float dvd_shadowMaxDist = 250.0;
 uniform float dvd_shadowFadeDist = 150.0;
 
@@ -13,14 +12,16 @@ float reduceLightBleeding(float pMax, float amount) {
     return linstep(amount, 1.0f, pMax);
 }
 
-float chebyshevUpperBound(vec2 moments, float t, float minVariance)
+float chebyshevUpperBound(vec2 moments, float compare, float minVariance)
 {
-    float p = (t <= moments.x) ? 1.0 : 0.0;
-    float variance = moments.y - (moments.x * moments.x);
-    variance = max(variance, minVariance);
-    float d = (t - moments.x) * dvd_overDarkValue;
-    float p_max = variance / (variance + d*d);
-    return reduceLightBleeding(max(p, p_max), dvd_lightBleedBias);
+    float p = step(compare, moments.x);
+    float variance = max(moments.y - (moments.x * moments.x), minVariance);
+    
+    float d = (compare - moments.x);
+
+    float pMax = linstep(dvd_lightBleedBias, 1.0, variance / (variance + d*d));
+
+    return min(max(p, pMax), 1.0);
 }
 
 void applyShadowDirectional(in int shadowIndex, inout float shadow) {
@@ -56,7 +57,7 @@ void applyShadowDirectional(in int shadowIndex, inout float shadow) {
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
     _shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
 
-    shadow_coord.w = shadow_coord.z * 0.5 + 0.5;
+    shadow_coord.w = shadow_coord.z;
     shadow_coord.z = _shadowTempInt;
     if (shadow_coord.w > 0.0){
         vec2 moments = texture(texDepthMapFromLightArray, shadow_coord.xyz).rg;

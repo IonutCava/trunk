@@ -343,6 +343,8 @@ public:
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec3<T>& v)    { this->x = v.x; this->y = v.y; this->z = v.z; this->w = 1.0;}
     /// set the 4 components of the vector using a smaller source vector
+    inline void set(const vec3<T>& v, T w) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = w; }
+    /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec2<T>& v)    { this->x = v.x; this->y = v.y; this->z = 0.0; this->w = 1.0;}
     /// set all the components back to 0
     inline void reset()                  { this->x = this->y = this->z = this->w = 0;}

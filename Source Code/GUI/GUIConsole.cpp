@@ -65,8 +65,6 @@ GUIConsole::~GUIConsole()
 
     _init = false;
 
-    _outputTempBuffer.clear();
-
     if (_consoleWindow)
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
 
@@ -77,6 +75,7 @@ GUIConsole::~GUIConsole()
     }
     _newItem.clear();
 
+    _outputTempBuffer.clear();
 }
 
 void GUIConsole::CreateCEGUIWindow(){

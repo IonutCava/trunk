@@ -79,8 +79,8 @@ class SceneRenderState;
 ///A light object placed in the scene at a certain position
 class Light : public SceneNode {
 public:
-    ///Create a new light assing to the specified slot with the specified range
-    /// @param slot = the slot the light is assinged to (as in OpenGL slot for example)
+    ///Create a new light assigned to the specified slot with the specified range
+    /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
     Light(const U8 slot,const F32 range,const LightType& type);
     virtual ~Light();
@@ -107,7 +107,7 @@ public:
     inline const LightShadowProperties& getShadowProperties() const {return _shadowProperties;}
     ///Get light diffuse color
     inline vec3<F32>  getDiffuseColor() const {return _properties._diffuse.rgb();}
-    ///Get light position for omni and spot or direction for a directional light (also accessible via the "getDirection" method of the "DirectionalLight" class
+    ///Get light position for omni and spot or direction for a directional light
     inline vec3<F32>  getPosition()     const {return _properties._position.xyz();}
            void       setPosition(const vec3<F32>& newPosition);
     ///Get direction for spot lights

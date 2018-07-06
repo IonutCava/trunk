@@ -48,8 +48,8 @@ public:
     virtual bool Create(U16 width, U16 height) = 0;
 
     virtual void Destroy() = 0;
-    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) const = 0; ///<Use by multilayered FB's
-    inline void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) const {  ///<Used by cubemap FB's    
+    virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) = 0; ///<Use by multilayered FB's
+    inline void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) {  ///<Used by cubemap FB's    
         DrawToLayer(slot, nFace, includeDepth);
     }
 
@@ -58,8 +58,6 @@ public:
 
     virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
     virtual void Unbind(U8 unit = 0) const;
-    // regenerates mip maps for the currently bound color attachment (must be called  between Bind() / Unbind() to take effect)
-    virtual void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const = 0;
     virtual void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false) = 0;
     //If true, array texture and/or cubemaps are bound to a single attachment and shader based layered rendering should be used
     virtual void toggleLayeredRendering(const bool state) {_layeredRendering = state;}
