@@ -54,6 +54,7 @@ class BoundingBox : public GUIDWrapper {
     bool containsSphere(const BoundingSphere& bSphere) const;
 
     bool collision(const BoundingBox& AABB2) const;
+    bool collision(const BoundingSphere& bSphere) const;
 
     bool compare(const BoundingBox& bb) const;
     bool operator==(const BoundingBox& B) const;

@@ -17,8 +17,7 @@ namespace {
 
 SceneGraph::SceneGraph() : FrameListener(),
                            _rootNode(MemoryManager_NEW SceneRoot()),
-                           _root(std::make_shared<SceneGraphNode>(*_rootNode, "ROOT")),
-                           _octree(nullptr)
+                           _root(std::make_shared<SceneGraphNode>(*_rootNode, "ROOT"))
 {
     REGISTER_FRAME_LISTENER(this, 1);
 
@@ -30,6 +29,9 @@ SceneGraph::SceneGraph() : FrameListener(),
         to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) |
         to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
     onNodeAdd(*_root);
+    vectorImpl<SceneGraphNode_wptr> objects;
+    objects.push_back(_root);
+    _octree = MemoryManager_NEW Octree(BoundingBox(vec3<F32>(-10000), vec3<F32>(10000)), objects);
 }
 
 SceneGraph::~SceneGraph()
@@ -106,6 +108,7 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _root->sceneUpdate(deltaTime, sceneState);
+    _octree->update(deltaTime);
 }
 
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits) {

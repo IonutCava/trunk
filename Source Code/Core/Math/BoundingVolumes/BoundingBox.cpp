@@ -91,6 +91,23 @@ bool BoundingBox::collision(const BoundingBox& AABB2) const {
     return x && y && z;
 }
 
+bool BoundingBox::collision(const BoundingSphere& bSphere) const {
+    const vec3<F32>& center = bSphere.getCenter();
+    const vec3<F32> min(getMin());
+    const vec3<F32> max(getMax());
+
+    F32 dmin = 0;
+    for (U8 i = 0; i < 3; ++i) {
+        if (center[i] < min[i]) {
+            dmin += std::pow(center[i] - min[i], 2);
+        } else if (center[i] > max[i]) {
+            dmin += std::pow(center[i] - max[i], 2);
+        }
+    }
+
+    return dmin <= std::pow(bSphere.getRadius(), 2);
+}
+
 /// Optimized method
 bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const {
     // ReadLock r_lock(_lock);

@@ -11,6 +11,7 @@ Octree::Octree() : _maxLifespan(8),
                    _hasChildren(false)
 {
     _region.set(VECTOR3_ZERO, VECTOR3_ZERO);
+    _activeNodes.fill(false);
 }
 
 Octree::Octree(const BoundingBox& rootAABB)
