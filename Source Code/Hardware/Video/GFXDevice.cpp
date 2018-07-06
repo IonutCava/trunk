@@ -214,7 +214,7 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
     //And save all camera transform matrices
     lockMatrices(PROJECTION_MATRIX,true,true);
     //set a 90 degree vertical FoV perspective projection
-    setPerspectiveProjection(90.0,1,Frustum::getInstance().getZPlanes());
+    setPerspectiveProjection(90.0f,1.0f,Frustum::getInstance().getZPlanes());
     //And set the current render stage to
     setRenderStage(renderStage);
     //For each of the environment's faces (TOP,DOWN,NORTH,SOUTH,EAST,WEST)

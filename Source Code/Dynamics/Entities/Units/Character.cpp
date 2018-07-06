@@ -151,7 +151,7 @@ D32 Character::getMaxAcceleration(){
 }
 
 vec3<F32> Character::getLookingDirection(){
-    return _node->getTransform()->getGlobalOrientation() * getRelativeLookingDirection();
+    return _node->getTransform()->getOrientation() * getRelativeLookingDirection();
 }
 
 void Character::setAgentControlled(bool agentControlled){

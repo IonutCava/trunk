@@ -236,7 +236,7 @@ bool LightManager::shadowMappingEnabled() const {
 
 struct scoreCmpFnc{
     bool operator()(Light* const a, Light* const b) const {
-        return (a)->getScore() < (b)->getScore();
+        return (a)->getScore() > (b)->getScore();
     }
 };
 
@@ -262,14 +262,15 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
         LightType lType = light->getLightType();
         if(lType != LIGHT_TYPE_DIRECTIONAL )  {
             // get the luminosity.
+			vec3<F32> test = light->getVProperty(LIGHT_PROPERTY_DIFFUSE);
+			F32 test2 = light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS);
+
             luminace = vec3<F32>(light->getVProperty(LIGHT_PROPERTY_DIFFUSE)).dot(lumDot);
             luminace *= light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS);
 
             F32 radiusSq = squared(light->getFProperty(LIGHT_PROPERTY_RANGE) + node->getBoundingSphere().getRadius());
             // get the distance to the light... score it 1 to 0 near to far.
-            distToLight = node->getBoundingBox().getCenter() - light->getPosition();
-            F32 distSq = radiusSq - distToLight.lengthSquared();
-
+			F32 distSq = node->getBoundingBox().getCenter().distanceSquared(light->getPosition());
             if ( distSq > 0.0f )
             {
                 dist = distSq /( 1000.0f * 1000.0f );

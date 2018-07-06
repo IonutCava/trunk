@@ -14,7 +14,7 @@ CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_CubeMa
 	_resolutionFactor = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");
 	CLAMP<F32>(_resolutionFactor,0.001f, 1.0f);
 	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FBO"), light->getId(), "Single Shadow Map");
-	TextureDescriptor depthMapDescriptor(TEXTURE_2D,
+	TextureDescriptor depthMapDescriptor(TEXTURE_CUBE_MAP,
 										 DEPTH_COMPONENT,
 										 DEPTH_COMPONENT,
 										 UNSIGNED_INT); ///Default filters, LINEAR is OK for this
@@ -46,7 +46,7 @@ void CubeShadowMap::resolution(U16 resolution, const SceneRenderState& renderSta
 		///Initialize the FBO's with a variable resolution
 		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _light->getId());
 		U16 shadowMapDimension = _maxResolution/_resolutionFactor;
-		_depthMap->Create(shadowMapDimension,shadowMapDimension,RGBA16F);
+		_depthMap->Create(shadowMapDimension,shadowMapDimension);
 	}
 	ShadowMap::resolution(resolution, renderState);
 }

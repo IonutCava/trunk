@@ -138,29 +138,8 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
         GLCheck(glBindTexture(_textureType, 0));
 
         GLenum attachment = (type == TextureDescriptor::Depth) ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0 + slot;
-
         //Attach to frame buffer
-        switch(_textureType){
-            case GL_TEXTURE_1D:
-                GLCheck(glFramebufferTexture1D(GL_FRAMEBUFFER, attachment, _textureType, _textureId[slot], 0));
-                break;
-            case GL_TEXTURE_2D_MULTISAMPLE:
-            case GL_TEXTURE_2D:
-            case GL_TEXTURE_CUBE_MAP: 
-                GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, _textureType, _textureId[slot], 0));
-                break;
-            case GL_TEXTURE_2D_ARRAY:
-                GLCheck(glFramebufferTexture(GL_FRAMEBUFFER, attachment, _textureId[slot], 0));
-                break;
-            case GL_TEXTURE_3D:
-            case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-            /*case GL_TEXTURE_CUBE_MAP_ARRAY:*/
-                GLCheck(glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, _textureType, _textureId[slot], 0, 0 ));
-                break;
-            case GL_TEXTURE_CUBE_MAP_ARRAY:
-                assert(false); ///not implemented yet
-                break;
-        };
+        GLCheck(glFramebufferTexture(GL_FRAMEBUFFER, attachment, _textureId[slot], 0 ));
     }
 }
 
@@ -294,7 +273,10 @@ void glFrameBufferObject::Begin(GLubyte nFace) const {
     GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
 
     if(_textureType == GL_TEXTURE_CUBE_MAP) {
-        GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[TextureDescriptor::Color0], 0));
+		if(_hasColor)
+			GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[TextureDescriptor::Color0], 0));
+		if(_hasDepth)
+			GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[TextureDescriptor::Depth], 0));
     }
 
     if(_clearColorState)     GL_API::clearColor( _clearColor );//< this is checked so it isn't called twice on the GPU

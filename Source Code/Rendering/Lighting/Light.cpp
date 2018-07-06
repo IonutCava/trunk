@@ -23,7 +23,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
                                                    _castsShadows(true),
                                                    _par(ParamHandler::getInstance()),
                                                    _shadowMapInfo(NULL),
-                                                   _score(0)
+                                                   _score(0.0f)
 {
     //All lights default to fully dynamic for now.
     setLightMode(LIGHT_MODE_MOVABLE);
@@ -31,10 +31,10 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     _properties._ambient = vec4<F32>(0.1f,0.1f,0.1f,1.0f);
     _properties._diffuse = DefaultColors::WHITE();
     _properties._specular = DefaultColors::WHITE();
-    _properties._spotExponent;
-    _properties._spotCutoff;
+    _properties._spotExponent = 0.0f;
+    _properties._spotCutoff = 45.0f;
     _properties._attenuation = vec4<F32>(1.0f, 0.1f, 0.0f, range); //constAtt, linearAtt, quadAtt, range
-    _properties._brightness;
+    _properties._brightness = 1.0f;
     _properties._padding = 1.0f;
     setShadowMappingCallback(SCENE_GRAPH_UPDATE(GET_ACTIVE_SCENEGRAPH()));
     setRange(1);//<Default range of 1
@@ -62,8 +62,18 @@ void Light::postLoad(SceneGraphNode* const sgn) {
 }
 
 void Light::updateState(){
-    if(!_dirty)
-        return;
+	assert(_lightSGN != NULL);
+	if(_type == LIGHT_TYPE_DIRECTIONAL) return;
+
+	if(_mode == LIGHT_MODE_MOVABLE) {
+		_properties._position.set(_lightSGN->getTransform()->getPosition());
+		_dirty = true;
+	}
+
+    if(!_dirty) return;
+
+	if(_mode != LIGHT_MODE_MOVABLE)
+		_lightSGN->getTransform()->setPosition(_properties._position);
 
     if(_drawImpostor){
         Sphere3D* lightDummy = NULL;
@@ -76,10 +86,10 @@ void Light::updateState(){
         }
 
         lightDummy = _impostor->getDummy();
-        _lightSGN->getTransform()->setPosition(_properties._position);
+
         lightDummy->getMaterial()->setDiffuse(getDiffuseColor());
         lightDummy->getMaterial()->setAmbient(getDiffuseColor());
-        _impostorSGN->getTransform()->setPosition(_properties._position);
+
         //Updating impostor range is expensive, so check if we need to
         F32 range = _properties._attenuation.w;
 
@@ -243,8 +253,12 @@ void Light::render(SceneGraphNode* const sgn){
     ///The isInView call should stop impostor rendering if needed
     if(!_impostor)
         return;
-
-    _impostor->render(_impostorSGN);
+	
+	vec3<F32> position, scale;
+	Quaternion<F32> quat;
+	mat4<F32> globalMat = _lightSGN->getTransform()->getGlobalMatrix();
+	Util::Mat4::decompose(globalMat.transpose(), scale, quat, position);
+    _impostor->render(_lightSGN);
 }
 
 void  Light::setRange(F32 range) {

@@ -186,13 +186,14 @@ namespace Util {
     inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
         return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
     }
-    namespace Mat4{
+
+    namespace Mat4 {
         // ----------------------------------------------------------------------------------------
-        template<class Type>
-        void decompose (const mat4<Type>& matrix, vec3<Type>& scale, Quaternion<Type>& rotation, vec3<Type>& position);
-        template<class Type>
-        void decomposeNoScaling(const mat4<Type>& matrix, Quaternion<Type>& rotation,	vec3<Type>& position);
-    }
-}
+        template<class T>
+        void decompose (const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position);
+        template<class T>
+        void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position);
+    };
+};
 
 #endif

@@ -42,7 +42,15 @@ public:
     ///Helper functions
     inline bool isDirty()         const {return _dirty;}
     inline bool isPhysicsDirty()  const {return _physicsDirty;}
-    inline bool isUniformScaled() const {ReadLock r_lock(_lock); return _scale.isUniform();}
+    inline bool isUniformScaled() const {
+		if(_hasParentTransform){
+			ReadLock r_lock(_parentLock);
+			return _scale.isUniform() && _parentTransform->isUniformScaled();
+		}
+
+		ReadLock r_lock(_lock);
+		return _scale.isUniform();
+	}
     ///Transformation helper functions. These just call the normal translate/rotate/scale functions
     inline void scale(const F32 scale)            {this->scale(vec3<F32>(scale,scale,scale)); }
     inline void scaleX(const F32 scale)           {this->scale(vec3<F32>(scale,_scale.y,_scale.z));}
@@ -58,35 +66,57 @@ public:
     inline void setPositionY(const F32 positionY) {this->setPosition(vec3<F32>(_translation.x,positionY,_translation.z));}
     inline void setPositionZ(const F32 positionZ) {this->setPosition(vec3<F32>(_translation.x,_translation.y,positionZ));}
     ///Transformation helper functions. These return the curent, local scale, position and orientation
-    inline const vec3<F32>&       getScale()       const {ReadLock r_lock(_lock); return _scale;}
-    inline const vec3<F32>&       getPosition()    const {ReadLock r_lock(_lock); return _translation;}
-    inline const Quaternion<F32>& getOrientation() const {ReadLock r_lock(_lock); return _orientation;}
+	inline const vec3<F32>&       getLocalScale()       const {ReadLock r_lock(_lock); return _scale; }
+	inline const vec3<F32>&       getLocalPosition()    const {ReadLock r_lock(_lock); return _translation; }
+	inline const Quaternion<F32>& getLocalOrientation() const {ReadLock r_lock(_lock); return _orientation; }
+
+    inline vec3<F32> getScale() const {
+		if(_hasParentTransform){
+            ReadLock r_lock(_parentLock);
+            return _parentTransform->getScale() * _scale;
+        }
+		ReadLock r_lock(_lock);
+		return _scale;
+	}
+
+    inline vec3<F32> getPosition() const {
+		if(_hasParentTransform){
+            ReadLock r_lock(_parentLock);
+            return _parentTransform->getPosition() + _translation;
+        }
+
+		ReadLock r_lock(_lock); 
+		return _translation;
+	}
+
+    inline Quaternion<F32> getOrientation() const {
+		 if(_hasParentTransform){
+            ReadLock r_lock(_parentLock);
+            return _parentTransform->getOrientation().inverse() * _orientation;
+        }
+		ReadLock r_lock(_parentLock);
+		return _orientation;
+	}
+
     ///Get the local transformation matrix
-    inline const mat4<F32>&  getMatrix() { this->applyTransforms(); ReadLock r_lock(_lock);	return _worldMatrix; }
+    inline const mat4<F32>&  getMatrix() { return this->applyTransforms(); }
     ///Get the absolute transformation matrix. The local matrix with the parent's transforms applied
-    inline mat4<F32>  getGlobalMatrix()  { this->applyTransforms(); ReadLock r_lock(_lock);	return _worldMatrix * this->getParentMatrix(); }
+    inline mat4<F32>  getGlobalMatrix()  { return this->getMatrix() * this->getParentMatrix(); }
     ///Get the parent's transformation matrix if it exists
     inline mat4<F32> getParentMatrix() const {
         if(_hasParentTransform){
             ReadLock r_lock(_parentLock);
             return _parentTransform->getGlobalMatrix();
         }
-        return mat4<F32>();
+        return mat4<F32>(); //identity
     }
-    ///The global orientation is composed of the local orientation modified by the parent's orientation if it exists
-    inline Quaternion<F32> getGlobalOrientation() const {
-        if(_hasParentTransform){
-            ReadLock r_lock(_parentLock);
-            return _parentTransform->_orientation.inverse() * _orientation;
-        }
-        return _orientation;
-    }
+
     ///Sets the transform to match a certain transformation matrix.
     ///Scale, orientation and translation are extracted from the specified matrix
     inline void setTransforms(const mat4<F32>& transform) {
         WriteLock w_lock(_lock);
         _worldMatrix = transform;
-        Util::Mat4::decompose<F32>(_worldMatrix, _scale, _orientation, _translation);
+        Util::Mat4::decompose(_worldMatrix, _scale, _orientation, _translation);
         this->clean();
     }
     ///Get the parent's global transformation
@@ -105,7 +135,7 @@ public:
     }
 
     ///Creates the local transformation matrix using the position, scale and position values
-    void applyTransforms();
+    const mat4<F32>& applyTransforms();
     ///Compares 2 transforms
     bool compare(const Transform* const t);
     ///Call this when the physics actor is updated

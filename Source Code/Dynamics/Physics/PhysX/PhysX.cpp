@@ -226,7 +226,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
 
     if(!tempActor->_actor) {
         const vec3<F32>& position = nodeTransform->getPosition();
-        const vec4<F32>& orientation = nodeTransform->getGlobalOrientation().asVec4();
+        const vec4<F32>& orientation = nodeTransform->getOrientation().asVec4();
 
         physx::PxTransform posePxTransform(PxVec3(position.x, position.y, position.z),
                                            PxQuat(orientation.x,orientation.y,orientation.z,orientation.w).getConjugate());

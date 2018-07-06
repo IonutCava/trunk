@@ -96,7 +96,7 @@ public:
     inline void addModel(FileData& model)              {_modelDataArray.push(model);}
     inline void addTerrain(TerrainDescriptor* ter)     {_terrainInfoArray.push_back(ter);}
            void addPatch(vectorImpl<FileData>& data);
-           void addLight(Light* const lightItem);
+           SceneGraphNode* addLight(Light* const lightItem, SceneGraphNode* const parentNode = NULL);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
         _sceneState.getRenderState()._cachedResolution = newResolution;

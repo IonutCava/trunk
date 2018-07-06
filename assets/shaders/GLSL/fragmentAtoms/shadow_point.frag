@@ -1,5 +1,6 @@
 
 void applyShadowPoint(in int shadowIndex, inout float shadow) {
+
 	///Limit maximum number of lights that cast shadows
 	if(!dvd_enableShadowMapping) return;
 	

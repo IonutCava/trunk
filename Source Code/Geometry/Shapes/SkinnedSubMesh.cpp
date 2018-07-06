@@ -28,6 +28,10 @@ void SkinnedSubMesh::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn,
     Object3D::sceneUpdate(deltaTime,sgn,sceneState);
 }
 
+mat4<F32> SkinnedSubMesh::getCurrentBoneTransform(const std::string& name){
+	return _animator->GetBoneTransform(_elapsedTime, name);
+}
+
 /// Create a mesh animator from assimp imported data
 bool SkinnedSubMesh::createAnimatorFromScene(const aiScene* scene,U8 subMeshPointer){
     assert(scene != NULL);

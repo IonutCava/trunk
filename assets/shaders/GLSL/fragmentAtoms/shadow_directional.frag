@@ -31,7 +31,7 @@ void applyShadowDirectional(in int shadowIndex, inout float shadow) {
         return;
             
     vec4 shadow_coord = _shadowCoord[shadowIndex];
-    float tOrtho[] = { worldHalfExtent / 11.0, worldHalfExtent / 5.0, worldHalfExtent };
+    float tOrtho[3] = float[3]( worldHalfExtent / 11.0, worldHalfExtent / 5.0, worldHalfExtent );
 
     int i = 0;   
     vec3 vPosInDM;

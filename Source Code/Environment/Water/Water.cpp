@@ -182,7 +182,7 @@ void WaterPlane::updateReflection(){
 }
 
 void WaterPlane::updatePlaneEquation(){
-    _absNormal = _planeSGN->getTransform()->getGlobalOrientation() * WORLD_Y_AXIS;
+    _absNormal = _planeSGN->getTransform()->getOrientation() * WORLD_Y_AXIS;
     _absNormal.normalize();
     _reflectionPlane.set(_absNormal,_waterLevel);
     _reflectionPlane.active(false);

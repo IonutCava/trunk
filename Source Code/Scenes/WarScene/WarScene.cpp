@@ -1,6 +1,8 @@
 #include "Headers/WarScene.h"
 #include "Headers/WarSceneAIActionList.h"
 
+#include "Core/Math/Headers/Transform.h"
+#include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/Camera/Headers/ThirdPersonCamera.h"
@@ -34,6 +36,14 @@ void WarScene::preRender(){
 
     LightManager::getInstance().getLight(0)->setDirection(_sunvector);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+
+	if(_lampLightNode && _bob && false){
+		mat4<F32> lamp = _bob->getCurrentBoneTransform("lamp");
+		vec3<F32> scale, position;
+		Quaternion<F32> rotation;
+		Util::Mat4::decompose(lamp.transpose(), scale, rotation, position);
+		_lampLightNode->getTransform()->setPosition(position);
+	}
 }
 
 void WarScene::processTasks(const D32 deltaTime){
@@ -99,6 +109,20 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
     _faction1 = New AICoordination(1);
     _faction2 = New AICoordination(2);
 
+	_bobNode = _sceneGraph->findNode("Soldier3");
+	SceneGraphNode* sgn = _bobNode->findNode("Soldier3_Bob.md5mesh-submesh-4");
+	_bob = NULL;
+	_lampLightNode = NULL;
+	if(sgn != NULL){
+		ResourceDescriptor tempLight("Light_lamp");
+		tempLight.setId(2);
+		tempLight.setEnumValue(LIGHT_TYPE_POINT);
+		light = CreateResource<Light>(tempLight);
+		light->setDrawImpostor(true);
+		light->setRange(10);
+		_bob = sgn->getNode<SkinnedSubMesh>();
+		_lampLightNode = addLight(light, sgn);
+	}
     //------------------------ The rest of the scene elements -----------------------------///
 //	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
 //	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);

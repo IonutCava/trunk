@@ -164,6 +164,13 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
     }
 }
 
+I32 SceneAnimator::GetBoneIndex(const std::string& bname) const {
+	Unordered_map<std::string, U32>::const_iterator found = _bonesToIndex.find(bname);
+	if(found != _bonesToIndex.end()) 
+		return found->second; 
+	else 
+		return -1;
+}
 /// ------------------------------------------------------------------------------------------------
 /// Calculates the global transformation matrix for the given internal node
 void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){

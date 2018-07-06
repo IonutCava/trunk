@@ -88,8 +88,8 @@ public:
     ///Light range controls the distance in which all contained objects are lit by it
     void setRange(const F32 range);
     ///Light score determines the importance of this light for the current node queries
-    inline I32  getScore()                const {return _score;}
-    inline void setScore(const I32 score)       {_score = score;}
+    inline F32  getScore()                const {return _score;}
+    inline void setScore(const F32 score)       {_score = score;}
     ///Set all light vector-properties
     virtual void setLightProperties(const LightPropertiesV& propName, const vec4<F32>& value);
     ///Set all light float-properties
@@ -112,7 +112,7 @@ public:
     inline vec3<F32>  getPosition() const {return _properties._position.rgb();}
            void       setPosition(const vec3<F32>& newPosition);
     ///Get direction for spot lights
-    inline vec3<F32>  getDirection()                              const {return _properties._direction.rgb();}
+    inline vec3<F32>  getDirection() const {return _properties._direction.rgb();}
            void       setDirection(const vec3<F32>& newDirection);
     ///Light effect range
     inline F32   getRange()   const {return _properties._attenuation.w;}
@@ -150,6 +150,7 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn);
     bool isInView(const bool distanceCheck,const BoundingBox& boundingBox, const BoundingSphere& sphere);
     void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+	virtual void updateTransform(SceneGraphNode* const sgn) {}
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn);
 
@@ -198,7 +199,7 @@ private:
     Impostor* _impostor; ///< Used for debug rendering -Ionut
     SceneGraphNode *_lightSGN, *_impostorSGN;
     boost::function0<void> _callback;
-    I32   _score;
+    F32   _score;
     bool  _dirty;
     bool  _enabled;
 
@@ -206,6 +207,7 @@ protected:
     mat4<F32> _lightProjectionMatrix;
     mat4<F32> _bias;
     vec3<F32> _lightPos;
+	vec3<F32> _lightPosInitial;
     vec2<F32> _zPlanes;
     vec3<F32> _eyePos;
     ShadowMapInfo* _shadowMapInfo;

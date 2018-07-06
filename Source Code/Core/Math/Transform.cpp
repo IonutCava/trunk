@@ -31,23 +31,24 @@ Transform::~Transform()
 {
 }
 
-void Transform::applyTransforms(){
-    if(!_dirty)
-        return;
+const mat4<F32>& Transform::applyTransforms(){
+    if(_dirty){
+		WriteLock w_lock(_lock);
+		if(_rebuildMatrix){
+			// Ordering - a la Ogre:
+			_worldMatrix.identity();
+			//    1. Scale
+			_worldMatrix.setScale(_scale);
+			//    2. Rotate
+			_worldMatrix *= _orientation.getMatrix();
+		}
+		//    3. Translate
+		_worldMatrix.translate(_translation);
 
-    WriteLock w_lock(_lock);
-    if(_rebuildMatrix){
-        // Ordering - a la Ogre:
-        _worldMatrix.identity();
-        //    1. Scale
-        _worldMatrix.setScale(_scale);
-        //    2. Rotate
-        _worldMatrix *= _orientation.getMatrix();
-    }
-    //    3. Translate
-    _worldMatrix.translate(_translation);
+		this->clean();
+	}
 
-    this->clean();
+	return _worldMatrix;
 }
 
 bool Transform::compare(const Transform* const t){

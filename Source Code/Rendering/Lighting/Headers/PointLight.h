@@ -25,6 +25,7 @@
 
 #include "Light.h"
 
+class SceneGraphNode;
 class PointLight : public Light{
 public:
 	PointLight(U8 slot,F32 range = 2);
@@ -32,6 +33,7 @@ public:
 	///These 2 functions are not needed as we generate a cubemap based only on position.
 	void setCameraToLightView(const vec3<F32>& eyePos) {}
 	void renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent = 1) {}
+	void updateTransform(SceneGraphNode* const sgn) {}
 };
 
 #endif

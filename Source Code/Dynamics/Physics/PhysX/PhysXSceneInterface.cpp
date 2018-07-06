@@ -115,7 +115,7 @@ void PhysXSceneInterface::updateActor(const PhysXActor& actor){
     if(actor._transform->isPhysicsDirty()){
 
         const vec3<F32>& position = actor._transform->getPosition();
-        const vec4<F32>& orientation = actor._transform->getGlobalOrientation().asVec4();
+        const vec4<F32>& orientation = actor._transform->getOrientation().asVec4();
 
         physx::PxTransform posePxTransform(PxVec3(position.x, position.y, position.z),
                                            PxQuat(orientation.x,orientation.y,orientation.z,orientation.w).getConjugate());

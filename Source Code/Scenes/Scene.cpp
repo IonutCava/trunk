@@ -190,9 +190,15 @@ bool Scene::loadGeometry(const FileData& data){
     return true;
 }
 
-void Scene::addLight(Light* const lightItem){
-    _sceneGraph->getRoot()->addNode(lightItem);
+SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const parentNode){
+	SceneGraphNode* returnNode = NULL;
+	if(parentNode)
+		returnNode = parentNode->addNode(lightItem);
+	else
+		returnNode = _sceneGraph->getRoot()->addNode(lightItem);
     LightManager::getInstance().addLight(lightItem);
+
+	return returnNode;
 }
 
 Camera* Scene::addDefaultCamera(){
