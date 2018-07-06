@@ -38,7 +38,8 @@ namespace Divide {
 /// Base class for shader constant buffers
 class d3dConstantBuffer : public ShaderBuffer {
    public:
-    d3dConstantBuffer(bool unbound, bool persistentMapped);
+    d3dConstantBuffer(const stringImpl& bufferName, bool unbound,
+                      bool persistentMapped);
     ~d3dConstantBuffer();
 
     /// Reserve primitiveCount * implementation specific primitive size of space

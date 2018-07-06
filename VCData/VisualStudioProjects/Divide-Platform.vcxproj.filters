@@ -214,6 +214,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ScopedStates.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glMemoryManager.h">
+      <Filter>Video\OpenGL\Buffers\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -374,6 +377,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Audio\SFXDevice.cpp">
       <Filter>Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glMemoryManager.cpp">
+      <Filter>Video\OpenGL\Buffers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

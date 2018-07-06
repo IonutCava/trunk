@@ -63,9 +63,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void beginFrame() override;
     void endFrame() override;
 
-    inline ShaderBuffer* newSB(const bool unbound = false,
-                               const bool persistentMapped = true) const override {
-        return MemoryManager_NEW d3dConstantBuffer(unbound, persistentMapped);
+    inline ShaderBuffer* newSB(
+        const stringImpl& bufferName, const bool unbound = false,
+        const bool persistentMapped = true) const override {
+        return MemoryManager_NEW d3dConstantBuffer(bufferName, unbound,
+                                                   persistentMapped);
     }
 
     inline IMPrimitive* newIMP() const override { return nullptr; }

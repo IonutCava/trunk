@@ -74,12 +74,6 @@ class glShaderProgram : public ShaderProgram {
     U32 GetSubroutineUniformLocation(ShaderType type,
                                      const stringImpl& name) const;
     U32 GetSubroutineUniformCount(ShaderType type) const;
-    /// Set an attribute value
-    void Attribute(GLint location, GLdouble value) const;
-    void Attribute(GLint location, GLfloat value) const;
-    void Attribute(GLint location, const vec2<GLfloat>& value) const;
-    void Attribute(GLint location, const vec3<GLfloat>& value) const;
-    void Attribute(GLint location, const vec4<GLfloat>& value) const;
     /// Set an uniform value
     void Uniform(GLint location, U32 value) const;
     void Uniform(GLint location, I32 value) const;
@@ -119,7 +113,7 @@ class glShaderProgram : public ShaderProgram {
     /// present, and it's not recommended (yet)
     void threadedLoad(const stringImpl& name);
     /// Cache uniform/attribute locations for shader programs
-    GLint cachedLoc(const stringImpl& name, const bool uniform = true);
+    GLint cachedLoc(const stringImpl& name);
     /// Basic OpenGL shader program validation (both in debug and in release)
     void validateInternal();
     /// Retrieve the program's validation log if we need it

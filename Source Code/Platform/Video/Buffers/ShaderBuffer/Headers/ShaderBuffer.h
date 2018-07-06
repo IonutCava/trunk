@@ -42,16 +42,16 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
    public:
     typedef void* bufferPtr;
 
-    ShaderBuffer(bool unbound, bool persistentMapped)
+    ShaderBuffer(const stringImpl& bufferName, bool unbound,
+                 bool persistentMapped)
         : GUIDWrapper(),
+          _bufferName(bufferName),
           _unbound(unbound),
           _primitiveSize(0),
           _primitiveCount(0),
           _bufferSize(0),
           _persistentMapped(persistentMapped &&
-                            !Config::Profile::DISABLE_PERSISTENT_BUFFER)
-    {
-    }
+                            !Config::Profile::DISABLE_PERSISTENT_BUFFER) {}
 
     virtual ~ShaderBuffer()
     {
@@ -89,6 +89,8 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
 
     const bool _unbound;
     const bool _persistentMapped;
+
+    stringImpl _bufferName;
 };
 
 };  // namespace Divide

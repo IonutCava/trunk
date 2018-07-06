@@ -64,22 +64,6 @@ class ShaderProgram : public HardwareResource {
     virtual void unbind(bool resetActiveProgram = true);
     virtual bool update(const U64 deltaTime);
     virtual bool unload() { return true; }
-    /// Attributes
-    inline void Attribute(const stringImpl& ext, D32 value) {
-        Attribute(cachedLoc(ext, false), value);
-    }
-    inline void Attribute(const stringImpl& ext, F32 value) {
-        Attribute(cachedLoc(ext, false), value);
-    }
-    inline void Attribute(const stringImpl& ext, const vec2<F32>& value) {
-        Attribute(cachedLoc(ext, false), value);
-    }
-    inline void Attribute(const stringImpl& ext, const vec3<F32>& value) {
-        Attribute(cachedLoc(ext, false), value);
-    }
-    inline void Attribute(const stringImpl& ext, const vec4<F32>& value) {
-        Attribute(cachedLoc(ext, false), value);
-    }
     /// Uniforms (update constant buffer for D3D. Use index as location in
     /// buffer)
     inline void Uniform(const stringImpl& ext, U32 value) {
@@ -158,12 +142,7 @@ class ShaderProgram : public HardwareResource {
     virtual U32 GetSubroutineUniformLocation(ShaderType type,
                                              const stringImpl& name) const = 0;
     virtual U32 GetSubroutineUniformCount(ShaderType type) const = 0;
-    /// Attribute+Uniform+UniformTexture implementation
-    virtual void Attribute(I32 location, D32 value) const = 0;
-    virtual void Attribute(I32 location, F32 value) const = 0;
-    virtual void Attribute(I32 location, const vec2<F32>& value) const = 0;
-    virtual void Attribute(I32 location, const vec3<F32>& value) const = 0;
-    virtual void Attribute(I32 location, const vec4<F32>& value) const = 0;
+    /// Uniform+UniformTexture implementation
     virtual void Uniform(I32 location, U32 value) const = 0;
     virtual void Uniform(I32 location, I32 value) const = 0;
     virtual void Uniform(I32 location, F32 value) const = 0;
@@ -281,8 +260,7 @@ class ShaderProgram : public HardwareResource {
    protected:
     ShaderProgram(const bool optimise = false);
 
-    virtual I32 cachedLoc(const stringImpl& name,
-                          const bool uniform = true) = 0;
+    virtual I32 cachedLoc(const stringImpl& name) = 0;
     template <typename T>
     friend class ImplResourceLoader;
     virtual bool generateHWResource(const stringImpl& name);

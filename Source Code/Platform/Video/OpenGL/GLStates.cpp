@@ -313,7 +313,7 @@ bool GL_API::setActiveTransformFeedback(GLuint ID) {
 }
 
 /// Single place to change buffer objects for every target available
-bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {
+bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
     // We map buffer targets from 0 to n in a static array
     GLint index = -1;
     // Select the appropriate index in the array based on the buffer target
@@ -349,7 +349,8 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {
     };
 
     // Prevent double bind
-    if (_activeBufferID[index] == ID) {
+    previousID = _activeBufferID[index];
+    if (previousID == ID) {
         return false;
     }
     // Remember the new binding for future reference
@@ -358,6 +359,11 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint ID) {
     glBindBuffer(target, ID);
 
     return true;
+}
+
+bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
+    GLuint temp = 0;
+    return setActiveBuffer(target, id, temp);
 }
 
 /// Change the currently active shader program. Passing null will unbind shaders

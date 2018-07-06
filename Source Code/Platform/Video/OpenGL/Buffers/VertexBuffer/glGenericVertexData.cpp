@@ -1,5 +1,6 @@
 #include "Headers/glGenericVertexData.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "Utility/Headers/Localization.h"
 
@@ -36,17 +37,9 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
 
 glGenericVertexData::~glGenericVertexData() {
     if (!_bufferObjects.empty()) {
-        // If we have persistently mapped buffers, we need to unmap them first
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
-            if (_bufferPersistent[i]) {
-                GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[i]);
-                glUnmapBuffer(GL_ARRAY_BUFFER);
-            }
+            GLUtil::freeBuffer(_bufferObjects[i], _bufferPersistentData[i]);
         }
-        // Make sure we don't have any of our buffers still bound
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
-        // Delete the buffer objects
-        glDeleteBuffers((GLsizei)_bufferObjects.size(), &_bufferObjects[0]);
     }
     // Make sure we don't have any of our VAOs bound
     GL_API::setActiveVAO(0);
@@ -154,7 +147,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     _bufferPersistent = MemoryManager_NEW bool[numBuffers];
     memset(_bufferPersistent, false, numBuffers * sizeof(bool));
     // Persistently mapped data (array of void* pointers)
-    _bufferPersistentData = (void**)malloc(sizeof(void*) * numBuffers);
+    _bufferPersistentData = (bufferPtr*)malloc(sizeof(bufferPtr) * numBuffers);
 }
 
 /// Called at the beginning of each frame to update the currently used queries
@@ -305,22 +298,16 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount,
     if (persistentMapped) {
         // If we requested a persistently mapped buffer, we use glBufferStorage
         // to pin it in memory
-        MapBufferUsageMask usageFlag = GL_MAP_WRITE_BIT | 
+        MapBufferUsageMask usageMask = GL_MAP_WRITE_BIT | 
                                        GL_MAP_PERSISTENT_BIT | 
                                        GL_MAP_COHERENT_BIT;
-        BufferAccessMask accessFlag = GL_MAP_WRITE_BIT | 
+        BufferAccessMask accessMask = GL_MAP_WRITE_BIT | 
                                       GL_MAP_PERSISTENT_BIT | 
                                       GL_MAP_COHERENT_BIT;
-        //glNamedBufferStorage(
-        gl45ext::glNamedBufferStorageEXT(
-                             currentBuffer, bufferSize * sizeFactor, NULL,
-                             usageFlag);
-        // Map the entire buffer range
-        _bufferPersistentData[buffer] =
-            //glMapNamedBufferRange(
-            gl45ext::glMapNamedBufferRangeEXT(
-                                  currentBuffer, 0, bufferSize * 3,
-                                  accessFlag);
+
+        _bufferPersistentData[buffer] = GLUtil::allocPersistentBuffer(
+            currentBuffer, bufferSize * sizeFactor, usageMask, accessMask);
+
         DIVIDE_ASSERT(data != nullptr,
                       "glGenericVertexData error: persistent mapping failed "
                       "when setting the current buffer!");

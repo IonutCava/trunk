@@ -2,8 +2,9 @@
 
 namespace Divide {
 
-d3dConstantBuffer::d3dConstantBuffer(bool unbound, bool persistentMapped)
-    : ShaderBuffer(unbound, persistentMapped) {}
+d3dConstantBuffer::d3dConstantBuffer(const stringImpl& bufferName, bool unbound,
+                                     bool persistentMapped)
+    : ShaderBuffer(bufferName, unbound, persistentMapped) {}
 
 d3dConstantBuffer::~d3dConstantBuffer() {}
 

@@ -10,27 +10,22 @@
 
 namespace Divide {
 
-glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped)
-    : ShaderBuffer(unbound, persistentMapped),
+glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
+                                 bool persistentMapped)
+    : ShaderBuffer(bufferName, unbound, persistentMapped),
       _mappedBuffer(nullptr),
       _UBOid(0),
       _lockManager(_persistentMapped
                        ? MemoryManager_NEW glBufferLockManager(true)
                        : nullptr),
 
-      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
-{
-}
+      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER) {}
 
 glUniformBuffer::~glUniformBuffer() 
 {
     if (_UBOid > 0) {
         DiscardAllData();
-        if (_persistentMapped) {
-            GL_API::setActiveBuffer(_target, _UBOid);
-            glUnmapBuffer(_target);
-        }
-        glDeleteBuffers(1, &_UBOid);
+        GLUtil::freeBuffer(_UBOid, _mappedBuffer);
     }
 }
 
@@ -41,38 +36,20 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
 
     ShaderBuffer::Create(primitiveCount, primitiveSize);
 
-    glGenBuffers(1, &_UBOid);
-    DIVIDE_ASSERT(_UBOid != 0,
-                  "glUniformBuffer::Create error: UBO creation failed");
-
     if (_persistentMapped) {
         MapBufferUsageMask usage = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
                                    GL_MAP_COHERENT_BIT;
-        BufferAccessMask mask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
-                                GL_MAP_COHERENT_BIT;
+        BufferAccessMask access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
+                                  GL_MAP_COHERENT_BIT;
 
-        //glNamedBufferStorage(_UBOid, _bufferSize, NULL, usage);
-        //_mappedBuffer = glMapNamedBufferRange(_UBOid, 0, _bufferSize, mask);
+        _mappedBuffer = GLUtil::allocPersistentBuffer(_bufferSize, usage, access, _UBOid);
 
-        STUBBED("Remove this hack when proper OpenGL4.5 support is available!")
-        if (!_mappedBuffer) {
-            gl45ext::glNamedBufferStorageEXT(_UBOid, _bufferSize, NULL, usage);
-            _mappedBuffer = gl45ext::glMapNamedBufferRangeEXT(_UBOid, 0, _bufferSize, mask);
-        }
-
-        if (!_mappedBuffer) {
-            GL_API::setActiveBuffer(_target, _UBOid);
-            glBufferStorage(_target, _bufferSize, NULL, usage);
-            _mappedBuffer = glMapBufferRange(_target, 0, _bufferSize, mask);
-        }
-        
         DIVIDE_ASSERT(_mappedBuffer != nullptr,
                         "glUniformBuffer::Create error: "
                         "Can't mapped persistent buffer!");
         
     } else {
-        //glNamedBufferData(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
-        gl45ext::glNamedBufferDataEXT(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
+        GLUtil::allocBuffer(_bufferSize, GL_DYNAMIC_DRAW, _UBOid);
     }
 }
 

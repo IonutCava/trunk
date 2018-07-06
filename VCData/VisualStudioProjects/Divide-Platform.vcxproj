@@ -77,6 +77,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ScopedStates.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Framebuffer\Headers\glFramebuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferLockManager.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glMemoryManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericVertexData.h" />
@@ -131,6 +132,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\IMPrimitive.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Framebuffer\glFramebuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glBufferLockManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glMemoryManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />

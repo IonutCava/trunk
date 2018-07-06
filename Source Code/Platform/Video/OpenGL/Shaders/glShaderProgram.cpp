@@ -541,7 +541,7 @@ bool glShaderProgram::isValid() const {
 /// queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for
 /// later use
-GLint glShaderProgram::cachedLoc(const stringImpl& name, const bool uniform) {
+GLint glShaderProgram::cachedLoc(const stringImpl& name) {
     // If the shader can't be used for rendering, just return an invalid address
     if (!isValid()) {
         return -1;
@@ -558,9 +558,7 @@ GLint glShaderProgram::cachedLoc(const stringImpl& name, const bool uniform) {
     }
 
     // Cache miss. Query OpenGL for the location
-    GLint location = uniform
-                         ? glGetUniformLocation(_shaderProgramID, name.c_str())
-                         : glGetAttribLocation(_shaderProgramID, name.c_str());
+    GLint location = glGetUniformLocation(_shaderProgramID, name.c_str());
 
     // Save it for later reference
     hashAlg::emplace(_shaderVars, name, location);
@@ -664,54 +662,6 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
 
     return glGetSubroutineIndex(_shaderProgramID, _shaderStageTable[type],
                                 name.c_str());
-}
-
-/// Set an attribute value
-void glShaderProgram::Attribute(I32 location, GLdouble value) const {
-    if (location == -1) {
-        return;
-    }
-
-    glVertexAttrib1d(location, value);
-}
-
-/// Set an attribute value
-void glShaderProgram::Attribute(I32 location, GLfloat value) const {
-    if (location == -1) {
-        return;
-    }
-
-    glVertexAttrib1f(location, value);
-}
-
-/// Set an attribute value
-void glShaderProgram::Attribute(I32 location,
-                                const vec2<GLfloat>& value) const {
-    if (location == -1) {
-        return;
-    }
-
-    glVertexAttrib2fv(location, value);
-}
-
-/// Set an attribute value
-void glShaderProgram::Attribute(I32 location,
-                                const vec3<GLfloat>& value) const {
-    if (location == -1) {
-        return;
-    }
-
-    glVertexAttrib3fv(location, value);
-}
-
-/// Set an attribute value
-void glShaderProgram::Attribute(I32 location,
-                                const vec4<GLfloat>& value) const {
-    if (location == -1) {
-        return;
-    }
-
-    glVertexAttrib4fv(location, value);
 }
 
 /// Set an uniform value

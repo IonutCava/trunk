@@ -55,7 +55,8 @@ enum ShaderBufferLocation {
     SHADER_BUFFER_LIGHT_NORMAL = 1,
     SHADER_BUFFER_LIGHT_SHADOW = 2,
     SHADER_BUFFER_NODE_INFO = 3,
-    SHADER_BUFFER_BONE_TRANSFORMS = 4
+    SHADER_BUFFER_BONE_TRANSFORMS = 4,
+    SHADER_BUFFER_UNIFORMS = 5
 };
 
 /// Fixed pipeline functionality should be avoided. Both D3D and OGL should have

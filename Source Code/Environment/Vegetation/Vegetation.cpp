@@ -48,7 +48,7 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _grassGPUBuffer[1] = GFX_DEVICE.newGVD(false);
     _treeGPUBuffer[0] = GFX_DEVICE.newGVD(false);
     _treeGPUBuffer[1] = GFX_DEVICE.newGVD(false);
-    _grassMatrices = GFX_DEVICE.newSB(true);
+    _grassMatrices = GFX_DEVICE.newSB("dvd_transformBlock", true);
 
     _cullDrawCommand = GenericDrawCommand(API_POINTS, 0, 1);
     _renderDrawCommand = GenericDrawCommand(TRIANGLE_STRIP, 0, 12 * 3);
@@ -272,7 +272,7 @@ void Vegetation::uploadGrassData() {
         sizeof(_grassMatricesTemp[0]));
         _grassMatrices->UpdateData(0, _grassMatricesTemp.size() *
         sizeof(_grassMatricesTemp[0]), &_grassMatricesTemp[0]);
-        _grassMatrices->bind(10);
+        _grassMatrices->bind();
         _grassMatricesTemp.clear();
         */
 

@@ -183,6 +183,9 @@ bool GL_API::initShaders() {
     glswAddDirectiveToken("",
                           ("#define SHADER_BUFFER_NODE_INFO " +
                            Util::toString(SHADER_BUFFER_NODE_INFO)).c_str());
+    glswAddDirectiveToken("",
+                          ("#define SHADER_BUFFER_UNIFORMS " +
+                           Util::toString(SHADER_BUFFER_UNIFORMS)).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
 
@@ -467,10 +470,11 @@ GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
 /// The OpenGL implementation creates either an 'Uniform Buffer Object' if
 /// unbound is false
 /// or a 'Shader Storage Block Object' otherwise
-ShaderBuffer* GL_API::newSB(const bool unbound,
+ShaderBuffer* GL_API::newSB(const stringImpl& bufferName, const bool unbound,
                             const bool persistentMapped) const {
     // The shader buffer can also be persistently mapped, if requested
-    return MemoryManager_NEW glUniformBuffer(unbound, persistentMapped);
+    return MemoryManager_NEW glUniformBuffer(bufferName, unbound,
+                                             persistentMapped);
 }
 
 /// Create and return a new texture array (optionally, flipped vertically). The

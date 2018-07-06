@@ -22,10 +22,10 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
                   "AnimationComponent error: Too many bones for current node! "
                   "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    _boneTransformBuffer[_writeBuffer] = GFX_DEVICE.newSB();
+    _boneTransformBuffer[_writeBuffer] = GFX_DEVICE.newSB("dvd_BoneTransforms");
     _boneTransformBuffer[_writeBuffer]->Create((U32)_animator->GetBoneCount(),
                                                sizeof(mat4<F32>));
-    _boneTransformBuffer[_readBuffer] = GFX_DEVICE.newSB();
+    _boneTransformBuffer[_readBuffer] = GFX_DEVICE.newSB("dvd_BoneTransforms");
     _boneTransformBuffer[_readBuffer]->Create((U32)_animator->GetBoneCount(),
                                               sizeof(mat4<F32>));
 }

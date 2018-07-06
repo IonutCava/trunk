@@ -189,7 +189,8 @@ class RenderAPIWrapper {
     virtual IMPrimitive* newIMP() const = 0;
     virtual Framebuffer* newFB(bool multisampled) const = 0;
     virtual VertexBuffer* newVB() const = 0;
-    virtual ShaderBuffer* newSB(const bool unbound = false,
+    virtual ShaderBuffer* newSB(const stringImpl& bufferName,
+                                const bool unbound = false,
                                 const bool persistentMapped = true) const = 0;
     virtual GenericVertexData* newGVD(
         const bool persistentMapped = false) const = 0;

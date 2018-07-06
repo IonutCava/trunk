@@ -42,6 +42,8 @@ class VertexDataInterface : public FrameListener,
                             public GUIDWrapper,
                             private NonCopyable {
    public:
+       typedef void* bufferPtr;
+
     VertexDataInterface() : FrameListener(), GUIDWrapper() {
         REGISTER_FRAME_LISTENER(this, 4);
     };

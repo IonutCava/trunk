@@ -64,12 +64,6 @@ class d3dShaderProgram : public ShaderProgram {
         return 0;
     }
     U32 GetSubroutineUniformCount(ShaderType type) const { return 0; }
-    // Attributes
-    void Attribute(I32 location, D32 value) const {}
-    void Attribute(I32 location, F32 value) const {}
-    void Attribute(I32 location, const vec2<F32>& value) const {}
-    void Attribute(I32 location, const vec3<F32>& value) const {}
-    void Attribute(I32 location, const vec4<F32>& value) const {}
     // Uniforms
     void Uniform(I32 location, U32 value) const {}
     void Uniform(I32 location, I32 value) const {}
@@ -96,7 +90,7 @@ class d3dShaderProgram : public ShaderProgram {
     void UniformTexture(I32 location, U16 slot) {}
 
    private:
-    I32 cachedLoc(const stringImpl& name, const bool uniform = true) {
+    I32 cachedLoc(const stringImpl& name) {
         return -1;
     }
     void flushLocCache() {}
