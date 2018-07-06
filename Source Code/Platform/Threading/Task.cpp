@@ -76,13 +76,13 @@ void Task::run() {
         U64 nowTime = Time::ElapsedMicroseconds(true);
         if (nowTime >= (lastCallTime + _tickInterval)) {
             _callback();
+            if (_numberOfTicks > 0) {
+                _numberOfTicks--;
+            }
             lastCallTime = nowTime;
         }
 
-        if (_numberOfTicks > 0) {
-            _numberOfTicks--;
-        }
-    }
+   }
 
     Console::d_printfn(Locale::get("TASK_DELETE_THREAD"), getGUID(), std::this_thread::get_id());
 

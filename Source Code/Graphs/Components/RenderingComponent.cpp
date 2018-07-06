@@ -140,6 +140,32 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
     return _parentSGN.getNode()->getDrawState(renderStage);
 }
 
+void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture) {
+    size_t inputHash = additionalTexture.getHash();
+    TextureDataContainer::const_iterator it;
+    it = std::find_if(std::begin(_textureDependencies), std::end(_textureDependencies),
+                      [&inputHash](const TextureData& textureData) { 
+                            return (textureData.getHash() == inputHash); 
+                      });
+
+    if (it == std::end(_textureDependencies)) {
+        _textureDependencies.push_back(additionalTexture);
+    }
+}
+
+void RenderingComponent::removeTextureDependency(const TextureData& additionalTexture) {
+    size_t inputHash = additionalTexture.getHash();
+    TextureDataContainer::iterator it;
+    it = std::find_if(std::begin(_textureDependencies), std::end(_textureDependencies),
+                      [&inputHash](const TextureData& textureData) { 
+                            return (textureData.getHash() == inputHash); 
+                      });
+
+    if (it != std::end(_textureDependencies)) {
+        _textureDependencies.erase(it);
+    }
+}
+
 bool RenderingComponent::onDraw(RenderStage currentStage) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)

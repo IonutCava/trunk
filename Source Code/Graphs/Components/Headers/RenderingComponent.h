@@ -105,6 +105,10 @@ class RenderingComponent : public SGNComponent {
 
     void unregisterShaderBuffer(ShaderBufferLocation slot);
 
+
+    void registerTextureDependency(const TextureData& additionalTexture);
+    void removeTextureDependency(const TextureData& additionalTexture);
+
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
@@ -149,7 +153,7 @@ class RenderingComponent : public SGNComponent {
     bool _isSubMesh;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
-
+    TextureDataContainer _textureDependencies;
     GFXDevice::RenderPackage _renderData;
     IMPrimitive* _boundingBoxPrimitive;
     IMPrimitive* _skeletonPrimitive;

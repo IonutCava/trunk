@@ -214,8 +214,6 @@ void ParticleEmitter::getDrawCommands(
 }
 
 void ParticleEmitter::uploadToGPU() {
-    static const size_t attribSize_float = 4 * sizeof(F32);
-    static const size_t attribSize_char = 4 * sizeof(U8);
     if (_uploaded || getAliveParticleCount() == 0) {
         return;
     }
@@ -245,8 +243,7 @@ void ParticleEmitter::uploadToGPU() {
 /// The onDraw call will emit particles
 bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              RenderStage currentStage) {
-    if (!_enabled || getAliveParticleCount() == 0) {
-        renderState().setDrawState(false);
+    if (!_enabled) {
         return false;
     }
     _particles->sort();
@@ -254,16 +251,20 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
 
 
     U32 particleCount = getAliveParticleCount();
+    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH);
+    Texture* depthTexture = depthBuffer->GetAttachment(TextureDescriptor::AttachmentType::Depth);
+    TextureData depthBufferData = depthTexture->getData();
+    depthBufferData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
+    sgn.getComponent<RenderingComponent>()->registerTextureDependency(depthBufferData);
 
-    /*if (particleCount > 0 && _enabled) {
-        _particleTexture->Bind(
-            to_uint(ShaderProgram::TextureUsage::UNIT0));
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-            ->Bind(to_uint(ShaderProgram::TextureUsage::UNIT1),
-                   TextureDescriptor::AttachmentType::Depth);
-        GFX_DEVICE.submitRenderCommand(
-            sgn.getComponent<RenderingComponent>()->getDrawCommands());
-    }*/
+    if (_particleTexture) {
+        TextureData particleTextureData = _particleTexture->getData();
+        particleTextureData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT0));
+        sgn.getComponent<RenderingComponent>()->registerTextureDependency(particleTextureData);
+    }
+ 
+   
+
     renderState().setDrawState(true);
     return true;
 }
@@ -271,9 +272,12 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
 /// Pre-process particles
 void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                                   SceneState& sceneState) {
-    if (!_enabled || getAliveParticleCount() == 0) {
+    if (!_enabled) {
         return;
     }
+
+    
+    renderState().setDrawState(getAliveParticleCount() != 0);
 
     PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos =

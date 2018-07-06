@@ -157,8 +157,8 @@ class NOINITVTABLE Scene : public Resource {
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
     SceneGraphNode_ptr addParticleEmitter(const stringImpl& name,
-                                             const ParticleData& data,
-                                             SceneGraphNode_ptr parentNode);
+                                          std::shared_ptr<ParticleData> data,
+                                          SceneGraphNode_ptr parentNode);
 
     TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() {

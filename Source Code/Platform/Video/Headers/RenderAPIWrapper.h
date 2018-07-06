@@ -294,6 +294,15 @@ class TextureData {
         handle = _textureHandle;
     }
 
+    // No need to cache this as it should already be pretty fast
+    inline size_t getHash() const {
+        size_t hash = 0;
+        Util::Hash_combine(hash, to_uint(_textureType));
+        Util::Hash_combine(hash, _samplerHash);
+        Util::Hash_combine(hash, _textureHandle);
+        return hash;
+    }
+
     TextureType _textureType;
     size_t _samplerHash;
 

@@ -3,8 +3,8 @@
 layout(location = 13) in vec4 particleNormalData;
 // Output data ; will be interpolated for each fragment.
 out vec2 texCoord;
-out uvec4 particleColor;
 out vec4 vertexVP;
+out flat uvec4 particleColor;
 
 // Values that stay constant for the whole mesh.
 uniform vec3 CameraRight_worldspace;
@@ -44,8 +44,8 @@ void main(){
 
 // Interpolated values from the vertex shaders
 in vec2 texCoord;
-in uvec4 particleColor;
 in vec4 vertexVP;
+in flat uvec4 particleColor;
 
 // Ouput data
 out vec4 color;

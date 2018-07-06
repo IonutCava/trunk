@@ -49,6 +49,7 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
     assert(_node != nullptr);
 
     setName(name);
+
     _instanceID = (_node->GetRef() - 1);
     Material* const materialTpl = _node->getMaterialTpl();
 

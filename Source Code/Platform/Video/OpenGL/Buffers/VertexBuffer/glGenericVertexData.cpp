@@ -430,10 +430,10 @@ void glGenericVertexData::SetAttributeInternal(
     }
     // Persistently mapped buffers are already bound when this function is
     // called
-    if (!_persistentMapped) {
+    //if (!_persistentMapped) {
         GL_API::setActiveBuffer(GL_ARRAY_BUFFER,
                                 _bufferObjects[descriptor.bufferIndex()]);
-    }
+    //}
     // Update the attribute data
     glVertexAttribPointer(
         descriptor.attribIndex(), descriptor.componentsPerElement(),

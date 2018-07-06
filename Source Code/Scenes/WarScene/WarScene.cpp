@@ -317,53 +317,49 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     AI::WarSceneAISceneImpl::registerScoreCallback([&](U8 teamID) {
         registerPoint(teamID);
     });
-    /*
+    
 #ifdef _DEBUG
     const U32 particleCount = 200;
 #else
     const U32 particleCount = 20000;
 #endif
-
     const F32 emitRate = particleCount / 4;
 
-    ParticleData particles(
-        particleCount,
-        to_uint(ParticleData::Properties::PROPERTIES_POS) |
-        to_uint(ParticleData::Properties::PROPERTIES_VEL) |
-        to_uint(ParticleData::Properties::PROPERTIES_ACC) | 
-        to_uint(ParticleData::Properties::PROPERTIES_COLOR) |
-        to_uint(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
+    std::shared_ptr<ParticleData> particles = 
+        std::make_shared<ParticleData>(particleCount,
+                                       to_uint(ParticleData::Properties::PROPERTIES_POS) |
+                                       to_uint(ParticleData::Properties::PROPERTIES_VEL) |
+                                       to_uint(ParticleData::Properties::PROPERTIES_ACC) | 
+                                       to_uint(ParticleData::Properties::PROPERTIES_COLOR) |
+                                       to_uint(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
 
-    std::shared_ptr<ParticleSource> particleSource =
-        std::make_shared<ParticleSource>(emitRate);
-    std::shared_ptr<ParticleBoxGenerator> boxGenerator =
-        std::make_shared<ParticleBoxGenerator>();
+    std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
+    std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
     particleSource->addGenerator(boxGenerator);
-    std::shared_ptr<ParticleColorGenerator> colGenerator =
-        std::make_shared<ParticleColorGenerator>();
+
+    std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
     particleSource->addGenerator(colGenerator);
-    std::shared_ptr<ParticleVelocityGenerator> velGenerator =
-        std::make_shared<ParticleVelocityGenerator>();
+
+    std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
     particleSource->addGenerator(velGenerator);
-    std::shared_ptr<ParticleTimeGenerator> timeGenerator =
-        std::make_shared<ParticleTimeGenerator>();
+
+    std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
     particleSource->addGenerator(timeGenerator);
 
-    SceneGraphNode_ptr testSGN =
-        addParticleEmitter("TESTPARTICLES", particles, _sceneGraph.getRoot());
-    ParticleEmitter* test = testSGN.getNode<ParticleEmitter>();
-    testSGN.getComponent<PhysicsComponent>()->translateY(5);
+    SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
+
+    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
+    testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     test->addSource(particleSource);
 
-    std::shared_ptr<ParticleEulerUpdater> eulerUpdater =
-        std::make_shared<ParticleEulerUpdater>();
+    std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
     eulerUpdater->_globalAcceleration.set(0.0f, -15.0f, 0.0f, 0.0f);
     test->addUpdater(eulerUpdater);
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
-    test->addUpdater(std::make_shared<ParticleFloorUpdater>());*/
+    test->addUpdater(std::make_shared<ParticleFloorUpdater>());
 
     state().generalVisibility(state().generalVisibility() * 2);
 
