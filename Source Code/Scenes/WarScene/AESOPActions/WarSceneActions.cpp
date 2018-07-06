@@ -1,7 +1,7 @@
 #include "Headers/WarSceneActions.h"
 
 #include "Core/Headers/Console.h"
-#include "Scenes/WarScene/Headers/WarSceneAISceneImpl.h"
+#include "Scenes/WarScene/Headers/WarSceneAIProcessor.h"
 
 namespace Divide {
 namespace AI {
@@ -17,12 +17,12 @@ WarSceneAction::~WarSceneAction()
 {
 }
 
-bool WarSceneAction::preAction(WarSceneAISceneImpl& parentScene) const {
-    return Attorney::WarAISceneWarAction::preAction(parentScene, _type, this);
+bool WarSceneAction::preAction(WarSceneAIProcessor& parentProcessor) const {
+    return Attorney::WarAISceneWarAction::preAction(parentProcessor, _type, this);
 }
 
-bool WarSceneAction::postAction(WarSceneAISceneImpl& parentScene) const {
-    return Attorney::WarAISceneWarAction::postAction(parentScene, _type, this);
+bool WarSceneAction::postAction(WarSceneAIProcessor& parentProcessor) const {
+    return Attorney::WarAISceneWarAction::postAction(parentProcessor, _type, this);
 }
 
 };  // namespace AI

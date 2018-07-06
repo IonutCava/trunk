@@ -33,7 +33,7 @@
 #define _WAR_SCENE_AI_ACTION_LIST_H_
 
 #include "AI/ActionInterface/Headers/AITeam.h"
-#include "AI/ActionInterface/Headers/AISceneImpl.h"
+#include "AI/ActionInterface/Headers/AIProcessor.h"
 #include "Scenes/WarScene/AESOPActions/Headers/WarSceneActions.h"
 #include <fstream>
 
@@ -178,7 +178,7 @@ namespace Attorney {
     class WarAISceneWarAction;
 };
 
-class WarSceneAISceneImpl : public AISceneImpl {
+class WarSceneAIProcessor : public AIProcessor {
     friend class Attorney::WarAISceneWarAction;
    public:
        typedef hashMapImpl<I64, AIEntity*> NodeToUnitMap;
@@ -189,8 +189,8 @@ class WarSceneAISceneImpl : public AISceneImpl {
            HEAVY = 2,
            COUNT
        };
-    WarSceneAISceneImpl(AIType type);
-    ~WarSceneAISceneImpl();
+    WarSceneAIProcessor(AIType type);
+    ~WarSceneAIProcessor();
 
     void registerGOAPPackage(const GOAPPackage& package);
 
@@ -267,7 +267,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
 };
 
 template <typename... T>
-void WarSceneAISceneImpl::PRINT(const char* format, T&&... args) const {
+void WarSceneAIProcessor::PRINT(const char* format, T&&... args) const {
     #if defined(PRINT_AI_TO_FILE)
     Console::d_printfn(_WarAIOutputStream, format, std::forward<T>(args)...);
     #endif
@@ -276,13 +276,13 @@ void WarSceneAISceneImpl::PRINT(const char* format, T&&... args) const {
 namespace Attorney {
 class WarAISceneWarAction {
    private:
-    static bool preAction(WarSceneAISceneImpl& aiScene, ActionType type,
+    static bool preAction(WarSceneAIProcessor& aiProcessor, ActionType type,
                           const Divide::AI::WarSceneAction* warAction) {
-        return aiScene.preAction(type, warAction);
+        return aiProcessor.preAction(type, warAction);
     }
-    static bool postAction(WarSceneAISceneImpl& aiScene, ActionType type,
+    static bool postAction(WarSceneAIProcessor& aiProcessor, ActionType type,
                            const Divide::AI::WarSceneAction* warAction) {
-        return aiScene.postAction(type, warAction);
+        return aiProcessor.postAction(type, warAction);
     }
 
     friend class Divide::AI::WarSceneAction;

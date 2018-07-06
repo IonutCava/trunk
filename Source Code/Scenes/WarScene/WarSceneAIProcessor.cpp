@@ -1,4 +1,4 @@
-#include "Headers/WarSceneAISceneImpl.h"
+#include "Headers/WarSceneAIProcessor.h"
 
 #include "Headers/WarScene.h"
 
@@ -20,12 +20,12 @@ static const D32 g_ATTACK_RADIUS_SQ = g_ATTACK_RADIUS * g_ATTACK_RADIUS;
 static const U32 g_myTeamContainer = 0;
 static const U32 g_enemyTeamContainer = 1;
 static const U32 g_flagContainer = 2;
-vec3<F32> WarSceneAISceneImpl::_initialFlagPositions[2];
-GlobalWorkingMemory WarSceneAISceneImpl::_globalWorkingMemory;
-DELEGATE_CBK_PARAM<U8> WarSceneAISceneImpl::_scoreCallback;
+vec3<F32> WarSceneAIProcessor::_initialFlagPositions[2];
+GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
+DELEGATE_CBK_PARAM<U8> WarSceneAIProcessor::_scoreCallback;
 
-WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
-    : AISceneImpl(),
+WarSceneAIProcessor::WarSceneAIProcessor(AIType type)
+    : AIProcessor(),
       _type(type),
       _tickCount(0),
       _visualSensorUpdateCounter(0),
@@ -38,7 +38,7 @@ WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
     _planStatus = "None";
 }
 
-WarSceneAISceneImpl::~WarSceneAISceneImpl()
+WarSceneAIProcessor::~WarSceneAIProcessor()
 {
     SceneGraphNode_ptr flag0(_globalWorkingMemory._flags[0].value().lock());
     SceneGraphNode_ptr flag1(_globalWorkingMemory._flags[1].value().lock());
@@ -57,7 +57,7 @@ WarSceneAISceneImpl::~WarSceneAISceneImpl()
 #endif
 }
 
-void WarSceneAISceneImpl::reset()
+void WarSceneAIProcessor::reset()
 {
     _globalWorkingMemory._flags[0].value(std::weak_ptr<SceneGraphNode>());
     _globalWorkingMemory._flags[1].value(std::weak_ptr<SceneGraphNode>());
@@ -67,7 +67,7 @@ void WarSceneAISceneImpl::reset()
     _globalWorkingMemory._flagsAtBase[1].value(true);
 }
 
-void WarSceneAISceneImpl::initInternal() {
+void WarSceneAIProcessor::initInternal() {
 #if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.open(
         Util::StringFormat("AILogs/%s_.txt", _entity->getName().c_str()),
@@ -78,7 +78,7 @@ void WarSceneAISceneImpl::initInternal() {
         dynamic_cast<VisualSensor*>(
             _entity->getSensor(SensorType::VISUAL_SENSOR));
     DIVIDE_ASSERT(_visualSensor != nullptr,
-                  "WarSceneAISceneImpl error: No visual sensor found for "
+                  "WarSceneAIProcessor error: No visual sensor found for "
                   "current AI entity!");
 
     AITeam* currentTeam = _entity->getTeam();
@@ -119,7 +119,7 @@ void WarSceneAISceneImpl::initInternal() {
     _globalWorkingMemory._teamAliveCount[g_enemyTeamContainer].value(static_cast<U8>(enemyMembers.size()));
 }
 
-bool WarSceneAISceneImpl::DIE() {
+bool WarSceneAIProcessor::DIE() {
     if (_entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) == 0) {
         return false;
     }
@@ -177,7 +177,7 @@ bool WarSceneAISceneImpl::DIE() {
     return true;
 }
 
-AIEntity* WarSceneAISceneImpl::getUnitForNode(U32 teamID, std::weak_ptr<SceneGraphNode> node) const {
+AIEntity* WarSceneAIProcessor::getUnitForNode(U32 teamID, std::weak_ptr<SceneGraphNode> node) const {
     SceneGraphNode_ptr sgnNode(node.lock());
     if (sgnNode) {
         NodeToUnitMap::const_iterator it =
@@ -190,7 +190,7 @@ AIEntity* WarSceneAISceneImpl::getUnitForNode(U32 teamID, std::weak_ptr<SceneGra
     return nullptr;
 }
 
-void WarSceneAISceneImpl::beginPlan(const GOAPGoal& currentGoal) {
+void WarSceneAIProcessor::beginPlan(const GOAPGoal& currentGoal) {
     const AITeam* const currentTeam = _entity->getTeam();
     U32 ownTeamID = currentTeam->getTeamID();
 
@@ -223,7 +223,7 @@ namespace {
     };
 };
 
-void WarSceneAISceneImpl::requestOrders() {
+void WarSceneAIProcessor::requestOrders() {
     const AITeam::OrderList& orders = _entity->getTeam()->requestOrders();
     std::array<U8, to_const_uint(WarSceneOrder::WarOrder::COUNT)> priority = { 0 };
 
@@ -329,7 +329,7 @@ void WarSceneAISceneImpl::requestOrders() {
     }
 }
 
-bool WarSceneAISceneImpl::preAction(ActionType type,
+bool WarSceneAIProcessor::preAction(ActionType type,
                                     const WarSceneAction* warAction) {
     const AITeam* const currentTeam = _entity->getTeam();
     DIVIDE_ASSERT(currentTeam != nullptr,
@@ -402,7 +402,7 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
     return true;
 }
 
-bool WarSceneAISceneImpl::postAction(ActionType type,
+bool WarSceneAIProcessor::postAction(ActionType type,
                                      const WarSceneAction* warAction) {
     const AITeam* const currentTeam = _entity->getTeam();
     
@@ -502,7 +502,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
     return advanceGoal();
 }
 
-bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep) {
+bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep) {
     const WarSceneAction& warAction = static_cast<const WarSceneAction&>(planStep);
     ActionType type = warAction.actionType();
     if (!_actionState[to_uint(type)]) {
@@ -583,7 +583,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
     return state;
 }
 
-void WarSceneAISceneImpl::processMessage(AIEntity& sender, AIMsg msg,
+void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
                                          const cdiggins::any& msg_content) {
     SceneGraphNode_ptr senderNode(sender.getUnitRef()->getBoundNode().lock());
     switch (msg) {
@@ -631,27 +631,27 @@ void WarSceneAISceneImpl::processMessage(AIEntity& sender, AIMsg msg,
     };
 }
 
-bool WarSceneAISceneImpl::atHomeBase() const {
+bool WarSceneAIProcessor::atHomeBase() const {
     return _entity->getPosition().distanceSquared(
                _initialFlagPositions[_entity->getTeam()->getTeamID()]) <=
            g_ATTACK_RADIUS_SQ;
 }
 
-bool WarSceneAISceneImpl::nearOwnFlag() const {
+bool WarSceneAIProcessor::nearOwnFlag() const {
     return _entity->getPosition().distanceSquared(
                _globalWorkingMemory
                    ._teamFlagPosition[_entity->getTeam()->getTeamID()]
                    .value()) <= g_ATTACK_RADIUS_SQ;
 }
 
-bool WarSceneAISceneImpl::nearEnemyFlag() const {
+bool WarSceneAIProcessor::nearEnemyFlag() const {
     return _entity->getPosition().distanceSquared(
                _globalWorkingMemory
                    ._teamFlagPosition[1 - _entity->getTeam()->getTeamID()]
                    .value()) <= g_ATTACK_RADIUS_SQ;
 }
 
-void WarSceneAISceneImpl::updatePositions() {
+void WarSceneAIProcessor::updatePositions() {
     _globalWorkingMemory._teamFlagPosition[0].value(
         _visualSensor->getNodePosition(
             g_flagContainer,
@@ -715,7 +715,7 @@ void WarSceneAISceneImpl::updatePositions() {
     }
 }
 
-bool WarSceneAISceneImpl::processInput(const U64 deltaTime) {
+bool WarSceneAIProcessor::processInput(const U64 deltaTime) {
     if (!_entity) {
         return true;
     }
@@ -733,7 +733,7 @@ bool WarSceneAISceneImpl::processInput(const U64 deltaTime) {
     return true;
 }
 
-bool WarSceneAISceneImpl::processData(const U64 deltaTime) {
+bool WarSceneAIProcessor::processData(const U64 deltaTime) {
     if (!_entity) {
         return true;
     }
@@ -792,7 +792,7 @@ bool WarSceneAISceneImpl::processData(const U64 deltaTime) {
     return true;
 }
 
-bool WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
+bool WarSceneAIProcessor::update(const U64 deltaTime, NPC* unitRef) {
     U8 visualSensorUpdateFreq = 10;
     _visualSensorUpdateCounter =
         (_visualSensorUpdateCounter + 1) % (visualSensorUpdateFreq + 1);
@@ -807,11 +807,11 @@ bool WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
     return true;
 }
 
-bool WarSceneAISceneImpl::performAction(const GOAPAction& planStep) {
+bool WarSceneAIProcessor::performAction(const GOAPAction& planStep) {
     return static_cast<const WarSceneAction&>(planStep).preAction(*this);
 }
 
-bool WarSceneAISceneImpl::performActionStep(
+bool WarSceneAIProcessor::performActionStep(
     GOAPAction::operationsIterator step) {
     GOAPFact crtFact = step->first;
     GOAPValue newVal = step->second;
@@ -826,16 +826,16 @@ bool WarSceneAISceneImpl::performActionStep(
     return true;
 }
 
-bool WarSceneAISceneImpl::printActionStats(const GOAPAction& planStep) const {
+bool WarSceneAIProcessor::printActionStats(const GOAPAction& planStep) const {
     PRINT("Action [ %s ]", planStep.name().c_str());
     return true;
 }
 
-void WarSceneAISceneImpl::printWorkingMemory() const {
+void WarSceneAIProcessor::printWorkingMemory() const {
     PRINT(toString().c_str());
 }
 
-stringImpl WarSceneAISceneImpl::toString() const {
+stringImpl WarSceneAIProcessor::toString() const {
     const AITeam* const currentTeam = _entity->getTeam();
     U32 ownTeamID = currentTeam->getTeamID();
     U32 enemyTeamID = 1 - ownTeamID;
@@ -910,7 +910,7 @@ stringImpl WarSceneAISceneImpl::toString() const {
     return ret;
 }
 
-void WarSceneAISceneImpl::registerGOAPPackage(const GOAPPackage& package) {
+void WarSceneAIProcessor::registerGOAPPackage(const GOAPPackage& package) {
     worldState() = package._worldState;
     registerGoalList(package._goalList);
     for (const WarSceneAction& action : package._actionSet) {

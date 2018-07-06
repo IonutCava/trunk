@@ -46,7 +46,7 @@ class SceneGraphNode;
 class NPC;
 namespace AI {
 class AITeam;
-class AISceneImpl;
+class AIProcessor;
 class Order;
 enum class AIMsg : U32;  //< scene dependent message list
 namespace Navigation {
@@ -77,7 +77,7 @@ class AIEntity : public GUIDWrapper {
     void unload();
 
     bool addSensor(SensorType type);
-    bool setAISceneImpl(AISceneImpl* AISceneImpl);
+    bool setAIProcessor(AIProcessor* processor);
 
     void sendMessage(AIEntity& receiver, AIMsg msg, const cdiggins::any& msg_content);
     void receiveMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
@@ -187,7 +187,7 @@ class AIEntity : public GUIDWrapper {
    private:
     stringImpl _name;
     AITeam* _teamPtr;
-    std::unique_ptr<AISceneImpl> _AISceneImpl;
+    std::unique_ptr<AIProcessor> _processor;
 
     mutable SharedLock _updateMutex;
     mutable SharedLock _managerQueryMutex;

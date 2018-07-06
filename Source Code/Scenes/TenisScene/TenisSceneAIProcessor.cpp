@@ -1,4 +1,4 @@
-#include "Headers/TenisSceneAISceneImpl.h"
+#include "Headers/TenisSceneAIProcessor.h"
 
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
@@ -11,8 +11,8 @@ namespace Divide {
 
 using namespace AI;
 
-TenisSceneAISceneImpl::TenisSceneAISceneImpl(std::weak_ptr<SceneGraphNode> target)
-    : AISceneImpl(),
+TenisSceneAIProcessor::TenisSceneAIProcessor(std::weak_ptr<SceneGraphNode> target)
+    : AIProcessor(),
       _target(target),
       _attackBall(false),
       _ballToTeam2(true),
@@ -21,7 +21,7 @@ TenisSceneAISceneImpl::TenisSceneAISceneImpl(std::weak_ptr<SceneGraphNode> targe
 {
 }
 
-void TenisSceneAISceneImpl::addEntityRef(AIEntity* entity) {
+void TenisSceneAIProcessor::addEntityRef(AIEntity* entity) {
     assert(entity != nullptr);
     _entity = entity;
     if (_entity->getUnitRef()) {
@@ -30,7 +30,7 @@ void TenisSceneAISceneImpl::addEntityRef(AIEntity* entity) {
 }
 
 // Process message from sender to receiver
-void TenisSceneAISceneImpl::processMessage(AIEntity& sender,
+void TenisSceneAIProcessor::processMessage(AIEntity& sender,
                                            AIMsg msg,
                                            const cdiggins::any& msg_content) {
     AITeam* currentTeam = nullptr;
@@ -77,7 +77,7 @@ void TenisSceneAISceneImpl::processMessage(AIEntity& sender,
     };
 }
 
-void TenisSceneAISceneImpl::updatePositions() {
+void TenisSceneAIProcessor::updatePositions() {
     _tickCount++;
     if (_tickCount == 96) {
         _prevBallPosition = _ballPosition;
@@ -95,7 +95,7 @@ void TenisSceneAISceneImpl::updatePositions() {
 }
 
 /// Collect all of the necessary information for this current update step
-bool TenisSceneAISceneImpl::processInput(const U64 deltaTime) {
+bool TenisSceneAIProcessor::processInput(const U64 deltaTime) {
     updatePositions();
     AITeam* currentTeam = _entity->getTeam();
     assert(currentTeam != nullptr);
@@ -112,7 +112,7 @@ bool TenisSceneAISceneImpl::processInput(const U64 deltaTime) {
     return true;
 }
 
-bool TenisSceneAISceneImpl::processData(const U64 deltaTime) {
+bool TenisSceneAIProcessor::processData(const U64 deltaTime) {
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
     typedef hashMapImpl<AIEntity*, F32> memberVariable;
@@ -129,7 +129,7 @@ bool TenisSceneAISceneImpl::processData(const U64 deltaTime) {
     return true;
 }
 
-bool TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
+bool TenisSceneAIProcessor::update(const U64 deltaTime, NPC* unitRef) {
     if (!unitRef) {
         return true;
     }
@@ -153,7 +153,7 @@ bool TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
     return true;
 }
 
-F32 TenisSceneAISceneImpl::distanceToBall(const vec3<F32>& entityPosition,
+F32 TenisSceneAIProcessor::distanceToBall(const vec3<F32>& entityPosition,
                                           const vec3<F32> ballPosition) {
     return entityPosition.distance(
         ballPosition);  // std::abs(ballPosition.x - entityPosition.x);

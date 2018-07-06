@@ -3,7 +3,7 @@
 #include "AI/PathFinding/Headers/DivideCrowd.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
-#include "AI/ActionInterface/Headers/AISceneImpl.h"
+#include "AI/ActionInterface/Headers/AIProcessor.h"
 
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -24,7 +24,7 @@ static const F32 DESTINATION_RADIUS_SQ_F = to_const_float(DESTINATION_RADIUS_SQ)
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)
     : GUIDWrapper(),
       _name(name),
-      _AISceneImpl(nullptr),
+      _processor(nullptr),
       _unitRef(nullptr),
       _teamPtr(nullptr),
       _detourCrowd(nullptr),
@@ -48,7 +48,7 @@ AIEntity::~AIEntity()
     _agentID = -1;
     _agent = nullptr;
 
-    setAISceneImpl(nullptr);
+    setAIProcessor(nullptr);
     MemoryManager::DELETE_HASHMAP(_sensorList);
 }
 
@@ -100,9 +100,9 @@ void AIEntity::receiveMessage(AIEntity& sender,
 void AIEntity::processMessage(AIEntity& sender,
                               AIMsg msg,
                               const cdiggins::any& msg_content) {
-    assert(_AISceneImpl);
+    assert(_processor);
     ReadLock r_lock(_updateMutex);
-    _AISceneImpl->processMessage(sender, msg, msg_content);
+    _processor->processMessage(sender, msg, msg_content);
 }
 
 Sensor* AIEntity::getSensor(SensorType type) {
@@ -138,19 +138,19 @@ bool AIEntity::addSensor(SensorType type) {
     return false;
 }
 
-bool AIEntity::setAISceneImpl(AISceneImpl* AISceneImpl) {
+bool AIEntity::setAIProcessor(AIProcessor* processor) {
     WriteLock w_lock(_updateMutex);
-    _AISceneImpl.reset(AISceneImpl);
-    if (AISceneImpl) {
-        _AISceneImpl->addEntityRef(this);
+    _processor.reset(processor);
+    if (_processor) {
+        _processor->addEntityRef(this);
     }
     return true;
 }
 
 bool AIEntity::processInput(const U64 deltaTime) {
-    if (_AISceneImpl) {
-        _AISceneImpl->init();
-        if (!_AISceneImpl->processInput(deltaTime)) {
+    if (_processor) {
+        _processor->init();
+        if (!_processor->processInput(deltaTime)) {
             return false;
         }
     }
@@ -159,8 +159,8 @@ bool AIEntity::processInput(const U64 deltaTime) {
 }
 
 bool AIEntity::processData(const U64 deltaTime) {
-    if (_AISceneImpl) {
-        if (!_AISceneImpl->processData(deltaTime)) {
+    if (_processor) {
+        if (!_processor->processData(deltaTime)) {
             return false;
         }
     }
@@ -169,8 +169,8 @@ bool AIEntity::processData(const U64 deltaTime) {
 }
 
 bool AIEntity::update(const U64 deltaTime) {
-    if (_AISceneImpl) {
-        _AISceneImpl->update(deltaTime, _unitRef);
+    if (_processor) {
+        _processor->update(deltaTime, _unitRef);
     }
     if (_unitRef) {
         _unitRef->update(deltaTime);
@@ -418,8 +418,8 @@ D32 AIEntity::getMaxAcceleration() {
 }
 
 stringImpl AIEntity::toString() const {
-    if (_AISceneImpl) {
-        return _AISceneImpl->toString();
+    if (_processor) {
+        return _processor->toString();
     }
 
     return "Error_" + getName();

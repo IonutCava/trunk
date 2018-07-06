@@ -1,5 +1,5 @@
 #include "Headers/TenisScene.h"
-#include "Headers/TenisSceneAISceneImpl.h"
+#include "Headers/TenisSceneAIProcessor.h"
 
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
@@ -324,14 +324,14 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     _aiPlayer3->addSensor(AI::SensorType::VISUAL_SENSOR);
     _aiPlayer4->addSensor(AI::SensorType::VISUAL_SENSOR);
 
-    _aiPlayer1->setAISceneImpl(
-        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer2->setAISceneImpl(
-        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer3->setAISceneImpl(
-        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
-    _aiPlayer4->setAISceneImpl(
-        MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));
+    _aiPlayer1->setAIProcessor(
+        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
+    _aiPlayer2->setAIProcessor(
+        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
+    _aiPlayer3->setAIProcessor(
+        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
+    _aiPlayer4->setAIProcessor(
+        MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN));
 
     _team1 = MemoryManager_NEW AI::AITeam(1);
     _team2 = MemoryManager_NEW AI::AITeam(2);

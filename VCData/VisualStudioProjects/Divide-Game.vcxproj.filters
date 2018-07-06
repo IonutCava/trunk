@@ -267,16 +267,10 @@
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp">
       <Filter>Scenes\WarScene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAISceneImpl.cpp">
-      <Filter>Scenes\WarScene</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp">
       <Filter>Scenes\WarScene\AESOPActions</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp">
-      <Filter>Scenes\TenisScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp">
       <Filter>Scenes\TenisScene</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp">
@@ -424,9 +418,6 @@
     <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AISceneImpl.cpp">
-      <Filter>AI\ActionInterface</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAI.cpp">
       <Filter>Scenes\WarScene</Filter>
     </ClCompile>
@@ -441,6 +432,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\CPPGoap\WorldState.cpp">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AIProcessor.cpp">
+      <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAIProcessor.cpp">
+      <Filter>Scenes\TenisScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIProcessor.cpp">
+      <Filter>Scenes\WarScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -504,16 +504,10 @@
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h">
       <Filter>Scenes\WarScene\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAISceneImpl.h">
-      <Filter>Scenes\WarScene\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h">
       <Filter>Scenes\WarScene\AESOPActions\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h">
-      <Filter>Scenes\TenisScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAISceneImpl.h">
       <Filter>Scenes\TenisScene\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\SceneList.h" />
@@ -560,9 +554,6 @@
       <Filter>AI\Sensors\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\GOAPInterface.h">
-      <Filter>AI\ActionInterface\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AISceneImpl.h">
       <Filter>AI\ActionInterface\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h">
@@ -673,5 +664,17 @@
     <ClInclude Include="..\..\Source Code\Libs\CPPGoap\WorldState.h">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AIProcessor.h">
+      <Filter>AI\ActionInterface\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAIProcessor.h">
+      <Filter>Scenes\TenisScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIProcessor.h">
+      <Filter>Scenes\WarScene\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

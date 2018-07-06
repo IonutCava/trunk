@@ -53,7 +53,6 @@ inline const char* GOAPValueName(GOAPValue val) {
 
 const char* GOAPFactName(GOAPFact fact);
 
-class AISceneImpl;
 class GOAPGoal : public goap::WorldState {
    public:
     GOAPGoal(const stringImpl& name, U32 ID);

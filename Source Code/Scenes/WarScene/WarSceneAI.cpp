@@ -1,5 +1,5 @@
 #include "Headers/WarScene.h"
-#include "Headers/WarSceneAISceneImpl.h"
+#include "Headers/WarSceneAIProcessor.h"
 
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Managers/Headers/AIManager.h"
@@ -22,9 +22,9 @@ void WarScene::registerPoint(U8 teamID) {
         _flag[i].lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
         flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
     }
-    AI::WarSceneAISceneImpl::reset();
-    AI::WarSceneAISceneImpl::incrementScore(teamID);
-    AI::WarSceneAISceneImpl::registerFlags(_flag[0].lock(), _flag[1].lock());
+    AI::WarSceneAIProcessor::reset();
+    AI::WarSceneAIProcessor::incrementScore(teamID);
+    AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {
@@ -141,7 +141,7 @@ bool WarScene::addUnits() {
     GOAPGoal protectFlagCarrier("Protect Flag Carrier", to_uint(WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
     protectFlagCarrier.setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
 
-    std::array<GOAPPackage,  to_const_uint(WarSceneAISceneImpl::AIType::COUNT)> goapPackages;
+    std::array<GOAPPackage,  to_const_uint(WarSceneAIProcessor::AIType::COUNT)> goapPackages;
     for (GOAPPackage& goapPackage : goapPackages) {
         goapPackage._worldState.setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
         goapPackage._worldState.setVariable(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(false));
@@ -159,8 +159,8 @@ bool WarScene::addUnits() {
         goapPackage._goalList.push_back(recoverOwnFlag);
     }
 
-    GOAPPackage& lightPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::LIGHT)];
-    GOAPPackage& heavyPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::HEAVY)];
+    GOAPPackage& lightPackage = goapPackages[to_uint(WarSceneAIProcessor::AIType::LIGHT)];
+    GOAPPackage& heavyPackage = goapPackages[to_uint(WarSceneAIProcessor::AIType::HEAVY)];
 
     heavyPackage._actionSet.push_back(approachEnemyFlag);
     heavyPackage._actionSet.push_back(captureEnemyFlag);
@@ -196,7 +196,7 @@ bool WarScene::addUnits() {
 
             F32 zFactor = 0.0f;
             I32 damage = 5;
-            AI::WarSceneAISceneImpl::AIType type;
+            AI::WarSceneAIProcessor::AIType type;
             if (IS_IN_RANGE_INCLUSIVE(i, 0, 4)) {
                 currentMesh = lightNodeMesh;
                 currentScale =
@@ -204,7 +204,7 @@ bool WarScene::addUnits() {
                 currentName = Util::StringFormat("Soldier_1_%d_%d", k, i);
                 speed = Metric::Base(Random(6.5f, 8.5f));
                 acc = Metric::Base(Random(4.0f, 8.0f));
-                type = AI::WarSceneAISceneImpl::AIType::LIGHT;
+                type = AI::WarSceneAIProcessor::AIType::LIGHT;
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
@@ -213,7 +213,7 @@ bool WarScene::addUnits() {
                 speed = Metric::Base(Random(8.5f, 10.5f));
                 acc = Metric::Base(Random(6.0f, 8.0f));
                 zFactor = 1.0f;
-                type = AI::WarSceneAISceneImpl::AIType::ANIMAL;
+                type = AI::WarSceneAIProcessor::AIType::ANIMAL;
                 damage = 10;
             } else {
                 currentMesh = heavyNodeMesh;
@@ -223,7 +223,7 @@ bool WarScene::addUnits() {
                 speed = Metric::Base(Random(4.5f, 6.5f));
                 acc = Metric::Base(Random(4.0f, 6.0f));
                 zFactor = 2.0f;
-                type = AI::WarSceneAISceneImpl::AIType::HEAVY;
+                type = AI::WarSceneAIProcessor::AIType::HEAVY;
                 damage = 15;
             }
 
@@ -260,12 +260,12 @@ bool WarScene::addUnits() {
                 : currentNode->getComponent<RenderingComponent>()
                       ->renderSkeleton(true);
 
-            AI::WarSceneAISceneImpl* brain =
-                MemoryManager_NEW AI::WarSceneAISceneImpl(type);
+            AI::WarSceneAIProcessor* brain =
+                MemoryManager_NEW AI::WarSceneAIProcessor(type);
 
             // GOAP
             brain->registerGOAPPackage(goapPackages[to_uint(type)]);
-            aiSoldier->setAISceneImpl(brain);
+            aiSoldier->setAIProcessor(brain);
             soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
             soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);

@@ -29,8 +29,8 @@
 
  */
 
-#ifndef _AI_SCENE_IMPLEMENTATION_H_
-#define _AI_SCENE_IMPLEMENTATION_H_
+#ifndef _AI_PROCESSOR_H_
+#define _AI_PROCESSOR_H_
 
 #include "GOAPInterface.h"
 #include "AI/Headers/AIEntity.h"
@@ -42,10 +42,10 @@ namespace AI {
 
 enum class AIMsg : U32;
 /// Provides a scene-level AI implementation
-class NOINITVTABLE AISceneImpl : private NonCopyable {
+class NOINITVTABLE AIProcessor : private NonCopyable {
    public:
-    AISceneImpl();
-    virtual ~AISceneImpl();
+    AIProcessor();
+    virtual ~AIProcessor();
     virtual void addEntityRef(AIEntity* entity);
 
     inline void worldState(const GOAPWorldState& state) { _worldState = state; }
@@ -247,4 +247,4 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
 };  // namespace AI
 };  // namespace Divide
 
-#endif
+#endif //_AI_PROCESSOR_H_

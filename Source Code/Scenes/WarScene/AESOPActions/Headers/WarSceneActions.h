@@ -77,7 +77,7 @@ inline const char* WarSceneFactName(GOAPFact fact) {
     return GOAPFactName(fact);
 };
 
-class WarSceneAISceneImpl;
+class WarSceneAIProcessor;
 class WarSceneAction : public GOAPAction {
    public:
     WarSceneAction(ActionType type, const stringImpl& name, F32 cost = 1.0f);
@@ -85,8 +85,8 @@ class WarSceneAction : public GOAPAction {
 
     inline ActionType actionType() const { return _type; }
 
-    bool preAction(WarSceneAISceneImpl& parentScene) const;
-    bool postAction(WarSceneAISceneImpl& parentScene) const;
+    bool preAction(WarSceneAIProcessor& parentProcessor) const;
+    bool postAction(WarSceneAIProcessor& parentProcessor) const;
     virtual bool checkImplDependentCondition() const { return true; }
 
    protected:

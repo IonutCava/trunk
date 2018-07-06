@@ -29,10 +29,10 @@
 
  */
 
-#ifndef _AI_TENIS_SCENE_AI_ACTION_LIST_H_
-#define _AI_TENIS_SCENE_AI_ACTION_LIST_H_
+#ifndef _AI_TENIS_SCENE_AI_PROCESSOR_H_
+#define _AI_TENIS_SCENE_AI_PROCESSOR_H_
 
-#include "AI/ActionInterface/Headers/AISceneImpl.h"
+#include "AI/ActionInterface/Headers/AIProcessor.h"
 
 namespace Divide {
 namespace AI {
@@ -44,9 +44,9 @@ enum class AIMsg : U32 {
     DONT_ATTACK_BALL = 3
 };
 
-class TenisSceneAISceneImpl : public AISceneImpl {
+class TenisSceneAIProcessor : public AIProcessor {
    public:
-    TenisSceneAISceneImpl(std::weak_ptr<SceneGraphNode> target);
+    TenisSceneAIProcessor(std::weak_ptr<SceneGraphNode> target);
     bool processData(const U64 deltaTime);
     bool processInput(const U64 deltaTime);
     bool update(const U64 deltaTime, NPC* unitRef = nullptr);
@@ -74,4 +74,4 @@ class TenisSceneAISceneImpl : public AISceneImpl {
 };  // namespace AI
 };  // namespace Divide
 
-#endif
+#endif //_AI_TENIS_SCENE_AI_PROCESSOR_H_

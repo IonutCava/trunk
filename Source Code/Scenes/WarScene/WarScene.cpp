@@ -1,5 +1,5 @@
 #include "Headers/WarScene.h"
-#include "Headers/WarSceneAISceneImpl.h"
+#include "Headers/WarSceneAIProcessor.h"
 
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -96,8 +96,8 @@ void WarScene::processGUI(const U64 deltaTime) {
         }
 
             _GUI->modifyText("scoreDisplay", "Score: A -  %d B - %d", 
-                AI::WarSceneAISceneImpl::getScore(0),
-                AI::WarSceneAISceneImpl::getScore(1));
+                AI::WarSceneAIProcessor::getScore(0),
+                AI::WarSceneAIProcessor::getScore(1));
         _guiTimers[1] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -312,9 +312,9 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         vec3<F32>(0.05f, 2.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
-    AI::WarSceneAISceneImpl::registerFlags(_flag[0], _flag[1]);
+    AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
-    AI::WarSceneAISceneImpl::registerScoreCallback([&](U8 teamID) {
+    AI::WarSceneAIProcessor::registerScoreCallback([&](U8 teamID) {
         registerPoint(teamID);
     });
     
