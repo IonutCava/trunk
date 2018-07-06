@@ -35,12 +35,12 @@ namespace Divide {
         matrixStack   _viewMatrix;
         matrixStack   _projectionMatrix;
         matrixStack   _textureMatrix;
+        matrixStack   _modelMatrix;
         viewportStack _viewport;
         glm::mat4     _MVPCachedMatrix;
         glm::mat4     _MVCachedMatrix;
         glm::mat4     _identityMatrix;
         glm::mat4     _biasMatrix;
-        glm::mat4     _modelMatrix;
         vector3Stack  _currentViewDirection;
 
         bool _MDirty = true;
@@ -55,6 +55,7 @@ namespace Divide {
             _projectionMatrix.push(_identityMatrix);
             _viewMatrix.push(_identityMatrix);
             _textureMatrix.push(_identityMatrix);
+            _modelMatrix.push(_identityMatrix);
             _viewport.push(vec4<U32>(0,0,0,0));
             _biasMatrix = glm::mat4(0.5, 0.0, 0.0, 0.0,
                                     0.0, 0.5, 0.0, 0.0,
@@ -136,18 +137,18 @@ namespace Divide {
             _matrixMode(VIEW_MATRIX);
         }
 
-        void _resetModelMatrix(bool force){
+        void _popModelMatrix(bool force){
             _resetModelMatrixFlag = !force;
 
             if(!force)
                 return;
 
-            _modelMatrix = _identityMatrix;
+            _modelMatrix.top() = _identityMatrix;
             _isUniformScaled = _MDirty = true;
         }
 
-        void _setModelMatrix(const mat4<GLfloat>& matrix, bool uniform){
-            _modelMatrix = glm::make_mat4(matrix.mat);
+        void _pushModelMatrix(const mat4<GLfloat>& matrix, bool uniform){
+            _modelMatrix.top() = glm::make_mat4(matrix.mat);
             _isUniformScaled = uniform;
             _resetModelMatrixFlag = false;
             _MDirty = true;
@@ -218,8 +219,8 @@ namespace Divide {
             switch(mode){
                 case MODEL_MATRIX:{ //check if we need to reset our model matrix
                     if(_resetModelMatrixFlag)
-                        _resetModelMatrix(true);
-                    matrixValue = glm::value_ptr(_modelMatrix);
+                        _popModelMatrix(true);
+                    matrixValue = glm::value_ptr(_modelMatrix.top());
                     }break;
                 case MV_MATRIX:{
                     _clean(); //refresh cache
@@ -256,12 +257,12 @@ namespace Divide {
 
          void _clean(){
             if(_resetModelMatrixFlag)
-                _resetModelMatrix(true);
+                _popModelMatrix(true);
 
             bool MVDirty = (_MDirty || _VDirty);
 
             if(MVDirty)
-                _MVCachedMatrix = _viewMatrix.top() * _modelMatrix;
+                _MVCachedMatrix = _viewMatrix.top() * _modelMatrix.top();
             if(_PDirty || MVDirty)
                 _MVPCachedMatrix = _projectionMatrix.top() * _MVCachedMatrix;
 

@@ -270,10 +270,10 @@ namespace Divide {
     extern matrixStack _projectionMatrix;
     ///Current texture matrix. Multiply and change manually if needed
     extern matrixStack _textureMatrix;
+    ///The current model matrices (entire stack is used for instance. Change per model or set to identity
+    extern matrixStack _modelMatrix;
     ///Current viewpoert stack
     extern viewportStack _viewport;
-    ///The current model matrix. Change per model or set to identity
-    extern glm::mat4   _modelMatrix;
     ///A bias matrix is useful for shadow calculations
     extern glm::mat4   _biasMatrix;
     ///A cache value for anaglyph eye offset
@@ -298,8 +298,9 @@ namespace Divide {
     void _popMatrix();
     void _loadIdentity();
     /*-----------------END: FIXED PIPELINE EMULATION -----------------------*/
-    void _setModelMatrix(const mat4<GLfloat>& matrix,bool uniform = true);//<Use uniform to avoid inverseTranspose for normals
-    void _resetModelMatrix(bool force = false);//<Use this to set the model matrix back to identity
+    void _pushModelMatrix(const mat4<GLfloat>& matrix,bool uniform = true);//<Use uniform to avoid inverseTranspose for normals
+    void _popModelMatrix(bool force = false);//<Use this to set the model matrix back to identity
+    void _queryMatrix(const MATRIX_MODE& mode,     vectorImpl<mat4<GLfloat> >& mat);
     void _queryMatrix(const MATRIX_MODE& mode,     mat4<GLfloat>& mat);
     void _queryMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat);
     void _queryMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat);
@@ -328,7 +329,7 @@ namespace Divide {
     ///Current texture matrix. Multiply and change manually if needed
     extern matrixStack _textureMatrix;
     ///The current model matrix. Change per model or set to identity
-    extern glm::mat4   _modelMatrix;
+    extern matrixStack _modelMatrix;
     ///A bias matrix is useful for shadow calculations
     extern glm::mat4   _biasMatrix;
     ///A cache value for anaglyph eye offset

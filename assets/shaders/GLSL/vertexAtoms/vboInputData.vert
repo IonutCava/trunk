@@ -38,7 +38,7 @@ in vec3  inBiTangentData;
 in vec4  inBoneWeightData;
 in ivec4 inBoneIndiceData;
 
-uniform mat4 dvd_ModelMatrix;
+uniform mat4 dvd_ModelMatrix;//[MAX_INSTANCES];
 uniform mat3 dvd_NormalMatrix;
 uniform mat4 dvd_ModelViewMatrix;
 uniform mat4 dvd_ModelViewMatrixInverse;

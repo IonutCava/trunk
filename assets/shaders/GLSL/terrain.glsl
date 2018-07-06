@@ -1,5 +1,5 @@
 -- Vertex.Depth
-uniform mat4 dvd_ModelMatrix;
+uniform mat4 dvd_ModelMatrix;//[MAX_INSTANCES];
 uniform mat4 dvd_ModelViewProjectionMatrix;
 
 in vec3  inVertexData;

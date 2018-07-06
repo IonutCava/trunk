@@ -163,7 +163,7 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
 }
 
 void GL_API::setupLineState(const OffsetMatrix& mat, RenderStateBlock* const drawState,const bool ortho){
-    Divide::GL::_setModelMatrix(mat.mat,false);
+    Divide::GL::_pushModelMatrix(mat.mat,false);
     SET_STATE_BLOCK(drawState,true);
 
     if(ortho){
@@ -175,10 +175,10 @@ void GL_API::setupLineState(const OffsetMatrix& mat, RenderStateBlock* const dra
 }
 
 void GL_API::releaseLineState(const bool ortho){
-    Divide::GL::_resetModelMatrix();
+    Divide::GL::_popModelMatrix();
     if(ortho){
         restoreViewport();
-        Divide::GL::_resetModelMatrix();
+        Divide::GL::_popModelMatrix();
         Divide::GL::_matrixMode(VIEW_MATRIX);
         Divide::GL::_popMatrix();
     }
@@ -319,7 +319,7 @@ void GL_API::renderInstance(RenderInstance* const instance){
     Transform* transform = instance->transform();
 
     if(transform){
-        Divide::GL::_setModelMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
+        Divide::GL::_pushModelMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
     }
 
     if(model->getType() == Object3D::TEXT_3D){
@@ -337,7 +337,7 @@ void GL_API::renderInstance(RenderInstance* const instance){
     VBO->Draw(model->getCurrentLOD());
 
     if(transform){
-        Divide::GL::_resetModelMatrix();
+        Divide::GL::_popModelMatrix();
     }
 }
 
@@ -345,7 +345,7 @@ void GL_API::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTra
     assert(vbo != NULL);
 
     if(vboTransform){
-         Divide::GL::_setModelMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
+         Divide::GL::_pushModelMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
          vbo->currentShader()->uploadModelMatrices();
     }
 
@@ -353,7 +353,7 @@ void GL_API::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTra
     vbo->DrawRange();
 
     if(vboTransform){
-        Divide::GL::_resetModelMatrix();
+        Divide::GL::_popModelMatrix();
     }
 }
 

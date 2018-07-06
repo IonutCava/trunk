@@ -452,10 +452,11 @@ bool GL_API::initShaders(){
     if(getGPUVendor() == GPU_VENDOR_AMD){
         glswAddDirectiveToken("","#define SKIP_HARDWARE_CLIPPING");
     }
-
+    std::string maxInstances("#define MAX_INSTANCES " + Util::toString(Config::MAX_INSTANCE_COUNT));
     std::string clipPlanes("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES));
     std::string lightCount("#define MAX_LIGHT_COUNT " + Util::toString(Config::MAX_LIGHTS_PER_SCENE_NODE));
     std::string shadowCount("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE));
+    glswAddDirectiveToken("", maxInstances.c_str());
     glswAddDirectiveToken("", clipPlanes.c_str());
     glswAddDirectiveToken("", lightCount.c_str());
     glswAddDirectiveToken("", shadowCount.c_str());

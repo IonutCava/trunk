@@ -86,6 +86,8 @@ void SceneGraphNode::setSelected(bool state) {
 ///After all bounding boxes and transforms have been updated,
 ///perform Frustum Culling on the entire scene.
 void SceneGraphNode::updateVisualInformation(){
+    //Check if sceneUpdate was called for this node first
+    if(!_currentSceneState)  return;
     //No point in updating visual information if the scene disabled object rendering
     //or rendering of their bounding boxes
     if(!_currentSceneState->getRenderState().drawObjects() && !_currentSceneState->getRenderState().drawBBox())

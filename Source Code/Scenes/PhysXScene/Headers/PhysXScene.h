@@ -49,7 +49,6 @@ private:
 
 private:
     vec3<F32> _sunvector;
-    boost::atomic<bool> _addingActors;
 };
 
 #endif

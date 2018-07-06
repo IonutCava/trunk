@@ -91,18 +91,21 @@ public:
     PhysXActor() : _actor(NULL),
                    _transform(NULL),
                    _isDynamic(false),
-                   _isInScene(false)
+                   _isInScene(false),
+                   _userData(0.0f)
     {
     }
 
 protected:
     friend class PhysX;
     friend class PhysXSceneInterface;
-    std::string          _actorName;
-    physx::PxRigidActor* _actor;
-    Transform*           _transform;
-    bool                 _isDynamic;
-    bool                 _isInScene;
+    physx::PxRigidActor*        _actor;
+    physx::PxGeometryType::Enum _type;
+    std::string                 _actorName;
+    Transform*                  _transform;
+    bool                        _isDynamic;
+    bool                        _isInScene;
+    F32                         _userData;
 
 };
 
@@ -140,6 +143,7 @@ public:
    void idle();
 
    void updateTimeStep(U8 timeStepFactor);
+   inline void updateTimeStep() { updateTimeStep(_timeStepFactor); }
 
    PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
@@ -165,6 +169,7 @@ private:
     physx::debugger::comm::PvdConnectionManager* _pvdConnection;
     boost::mutex _physxMutex;
     physx::PxReal _timeStep;
+    physx::PxReal _timeStepFactor;
     physx::PxReal _accumulator;
     static physx::PxDefaultAllocator              _gDefaultAllocatorCallback;
     static physx::PxDefaultErrorCallback          _gDefaultErrorCallback;

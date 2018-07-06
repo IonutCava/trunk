@@ -56,6 +56,7 @@ protected:
     virtual I8 initPhysics(U8 targetFrameRate) = 0;
     virtual bool exitPhysics() = 0;
     virtual void updateTimeStep(U8 timeStepFactor)  = 0;
+    virtual void updateTimeStep()  = 0;
     virtual void update(const D32 deltaTime) = 0;
     virtual void process(const D32 deltaTime) = 0;
     virtual void idle() = 0;

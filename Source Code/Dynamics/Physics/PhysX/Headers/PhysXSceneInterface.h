@@ -55,14 +55,13 @@ public:
 
 protected:
     void updateActor(const PhysXActor& actor);
-    void updateShape(physx::PxShape* const shape,Transform* const t);
+    void updateShape(physx::PxShape* const shape, const PhysXActor& actor);
     ///Adds the actor to the PhysX scene and the SceneGraph. Returns a pointer to the new SceneGraph node created;
     SceneGraphNode* addToScene(PhysXActor& actor);
 
 private:
     typedef vectorImpl<PhysXActor* >        RigidMap;
     typedef vectorImpl<physx::PxMaterial* > MaterialMap;
-    bool _addedPhysXPlane;
     physx::PxScene* _gScene;
     physx::PxDefaultCpuDispatcher*	_cpuDispatcher;
     MaterialMap _materials;

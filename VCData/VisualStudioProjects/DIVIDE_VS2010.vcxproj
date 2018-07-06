@@ -246,6 +246,7 @@
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Player.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Unit.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Vehicle.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\pxShapeScaling.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\pxSimpleShapes.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\PhysX.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\PhysXSceneInterface.cpp" />
@@ -400,6 +401,7 @@
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAsset.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsSceneInterface.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PXDevice.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Actors\Headers\pxShapeScaling.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysX.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysXSceneInterface.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h" />

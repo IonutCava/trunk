@@ -15,6 +15,8 @@
 
 REGISTER_SCENE(AITenisScene);
 
+static boost::atomic_bool s_gameStarted;
+
 void AITenisScene::preRender(){
     vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
     _sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -34,6 +36,14 @@ void AITenisScene::processTasks(const D32 deltaTime){
     }
     Scene::processTasks(deltaTime);
     checkCollisions();
+
+    if(s_gameStarted && !_gamePlaying && _scoreTeam1 < 10 && _scoreTeam2 < 10)
+        startGame();
+
+    if(_scoreTeam1 == 10 || _scoreTeam2 == 10){
+        s_gameStarted = false;
+        GUI::getInstance().modifyText("Message", "Team %d won!", _scoreTeam1 == 10 ? 1 : 2);
+    }
 }
 
 void AITenisScene::resetGame(){
@@ -45,15 +55,16 @@ void AITenisScene::resetGame(){
     _collisionNet = false;
     _collisionFloor = false;
     _gamePlaying = true;
-    _directionTeam1ToTeam2 = true;
     _upwardsDirection = true;
     _touchedTerrainTeam1 = false;
     _touchedTerrainTeam2 = false;
-    _lostTeam1 = false;
     _applySideImpulse = false;
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
-    _ballSGN->getTransform()->setPosition(vec3<F32>(3.0f, 0.2f ,7.0f));
+    _ballSGN->getTransform()->setPosition(vec3<F32>((random(0,10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
+    _directionTeam1ToTeam2 = !_lostTeam1;
+    _lostTeam1 = false;
+    s_gameStarted = true;
 }
 
 void AITenisScene::startGame(){
@@ -85,7 +96,9 @@ void AITenisScene::checkCollisions(){
 void AITenisScene::playGame(boost::any a, CallbackParam b){
     bool updated = false;
     std::string message;
-    if(!_gamePlaying) return;
+    if(!_gamePlaying){
+        return;
+    }
 
     UpgradableReadLock ur_lock(_gameLock);
     //Shortcut to the scene graph nodes containing our agents
@@ -157,7 +170,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
         }
 
         _sideImpulseFactor = (ballPosition.x - sideDrift);
-        _applySideImpulse = IS_ZERO(_sideImpulseFactor);
+        _applySideImpulse = !IS_ZERO(_sideImpulseFactor);
         if(_applySideImpulse) _sideImpulseFactor *= 0.025f;
 
         _directionTeam1ToTeam2 = collisionTeam1;
@@ -210,7 +223,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
         }
 
         GUI::getInstance().modifyText("Team1Score","Team 1 Score: %d",_scoreTeam1);
-        GUI::getInstance().modifyText("Team2Score","Team 1 Score: %d",_scoreTeam2);
+        GUI::getInstance().modifyText("Team2Score","Team 2 Score: %d",_scoreTeam2);
         GUI::getInstance().modifyText("Message",(char*)message.c_str());
         _gamePlaying = false;
     }
@@ -224,6 +237,7 @@ void AITenisScene::processInput(const D32 deltaTime){
 }
 
 bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr){
+    s_gameStarted = false;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
 
@@ -317,10 +331,10 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
         _player3 = New NPC(_aiPlayer3);
         _player4 = New NPC(_aiPlayer4);
 
-        _player1->setMovementSpeed(1.2f);
-        _player2->setMovementSpeed(1.25f);
-        _player3->setMovementSpeed(1.2f);
-        _player4->setMovementSpeed(1.25f);
+        _player1->setMovementSpeed(1.45f);
+        _player2->setMovementSpeed(1.5f);
+        _player3->setMovementSpeed(1.475f);
+        _player4->setMovementSpeed(1.45f);
     }
 
     if(state || continueOnErrors) Scene::initializeAI(continueOnErrors);

@@ -1,27 +1,29 @@
+#include "Headers/pxShapeScaling.h"
+
 #include "Core/Math/Headers/Transform.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Dynamics/Physics/PhysX/Headers/PhysXSceneInterface.h"
 
 using namespace physx;
 
-bool PhysX::createPlane(const vec3<F32>& position,U32 size){
+bool PhysX::createPlane(const vec3<F32>& position, U32 size){
     assert(_targetScene != NULL);
-    PxTransform pose = PxTransform(PxVec3(position.x,position.y,position.z),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
-    PxRigidStatic* plane = _gPhysicsSDK->createRigidStatic(pose);
+
+    PxRigidStatic* plane = PxCreatePlane(*_gPhysicsSDK,PxPlane(PxVec3(0,1,0),position.y),
+                                         *(static_cast<PhysXSceneInterface* >(_targetScene)->getMaterials()[1]));
+    /*plane->setGlobalPose(PxTransform(PxVec3(position.x,position.y,position.z), 
+                                     PxQuat(RADIANS(90), PxVec3(1,0,0))));*/
 
     if (!plane){
         ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_PLANE"));
         return false;
     }
-    PxShape* shape = plane->createShape(PxPlaneGeometry(),
-                                        *(static_cast<PhysXSceneInterface* >(_targetScene)->getMaterials()[1]));
-    if (!shape){
-        ERROR_FN(Locale::get("ERROR_PHYSX_CREATE_PLANE_SHAPE"));
-        return false;
-    }
+
     PhysXActor* actorWrapper = New PhysXActor();
+    actorWrapper->_type = PxGeometryType::ePLANE;
     actorWrapper->_actor = plane;
     actorWrapper->_isDynamic = false;
+    actorWrapper->_userData = (F32)size;
     static_cast<PhysXSceneInterface* >(_targetScene)->addRigidActor(actorWrapper);
     return true;
 }
@@ -46,8 +48,10 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size){
     }
 
     PhysXActor* actorWrapper = New PhysXActor();
+    actorWrapper->_type = PxGeometryType::eBOX;
     actorWrapper->_actor = actor;
     actorWrapper->_isDynamic = true;
+    actorWrapper->_userData = size * 2;
     static_cast<PhysXSceneInterface* >(_targetScene)->addRigidActor(actorWrapper);
     return true;
 }

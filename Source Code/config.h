@@ -34,42 +34,43 @@
 
 namespace Config
 {
-	/// How many textures to store per material. bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
-	const int MAX_TEXTURE_STORAGE = 6;
-	/// Application desired framerate for physics simulations
-	const int TARGET_FRAME_RATE = 60;
-	///	Application update rate
-	const int TICKS_PER_SECOND = 25;
-	/// Maximum frameskip
-	const int MAX_FRAMESKIP = 5;
-	/// Minimum triangle count for a mesh to apply depth rendering optimisations
-	const int DEPTH_VBO_MIN_TRIANGLES = 1000;
-	/// Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
-	const int DEPTH_VBO_MIN_BYTES = 4 * 1024 * 1024;
+    /// How many textures to store per material. bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
+    const int MAX_TEXTURE_STORAGE = 6;
+    /// Application desired framerate for physics simulations
+    const int TARGET_FRAME_RATE = 60;
+    ///	Application update rate
+    const int TICKS_PER_SECOND = 25;
+    /// Maximum frameskip
+    const int MAX_FRAMESKIP = 5;
+    /// Minimum triangle count for a mesh to apply depth rendering optimisations
+    const int DEPTH_VBO_MIN_TRIANGLES = 1000;
+    /// Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
+    const int DEPTH_VBO_MIN_BYTES = 4 * 1024 * 1024;
+    /// Maximum number of instances of a single mesh with a single draw call
+    const int MAX_INSTANCE_COUNT = 512;
+    /// How many clip planes should the shaders us
+    const int MAX_CLIP_PLANES = 6;
+    /// How many lights should affect a single node
+    const int MAX_LIGHTS_PER_SCENE_NODE = 4;
+    const int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
+    /// How many "units" away should a directional light source be from the camera's position
+    const int DIRECTIONAL_LIGHT_DISTANCE = 500;
+    /// Terrain LOD configuration
+    /// Camera distance to the terrain chunk is calculated as follows:
+    ///	vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();
+    const int TERRAIN_CHUNKS_LOD = 3; //< Number of LOD levels for the terrain
+    const int TERRAIN_CHUNK_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
+    const int TERRAIN_CHUNK_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
 
-	/// How many clip planes should the shaders us
-	const int MAX_CLIP_PLANES = 6;
-	/// How many lights should affect a single node
-	const int MAX_LIGHTS_PER_SCENE_NODE = 4;
-	const int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
-	/// How many "units" away should a directional light source be from the camera's position
-	const int DIRECTIONAL_LIGHT_DISTANCE = 500;
-	/// Terrain LOD configuration
-	/// Camera distance to the terrain chunk is calculated as follows:
-	///	vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();
-	const int TERRAIN_CHUNKS_LOD = 3; //< Number of LOD levels for the terrain
-	const int TERRAIN_CHUNK_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
-	const int TERRAIN_CHUNK_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
+    /// SceneNode LOD selection
+    /// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
+    const int SCENE_NODE_LOD = 3;
+    const int SCENE_NODE_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
+    const int SCENE_NODE_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
 
-	/// SceneNode LOD selection
-	/// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
-	const int SCENE_NODE_LOD = 3;
-	const int SCENE_NODE_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
-	const int SCENE_NODE_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
-
-	/// Edit the maximum number of concurrent threads that this application may start excluding tasks.
-	/// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
-	const int THREAD_LIMIT = 2;
+    /// Edit the maximum number of concurrent threads that this application may start excluding tasks.
+    /// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
+    const int THREAD_LIMIT = 2;
 }
 
 ///Direct 3D desired target version
@@ -96,11 +97,11 @@ namespace Config
 
 ///OS specific stuff
 #if defined( __WIN32__ ) || defined( _WIN32 )
-	#define OS_WINDOWS
+    #define OS_WINDOWS
 #elif defined( __APPLE_CC__ ) // Apple OS X could be supported in the future
-	#define OS_APPLE
+    #define OS_APPLE
 #else //Linux is the only other OS supported
-	#define OS_NIX
+    #define OS_NIX
 #endif
 
 //#define HAVE_POSIX_MEMALIGN

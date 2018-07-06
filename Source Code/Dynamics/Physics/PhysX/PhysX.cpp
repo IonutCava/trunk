@@ -33,7 +33,9 @@ PhysX::PhysX() : _gPhysicsSDK(NULL),
                  _profileZone(NULL),
                  _pvdConnection(NULL),
                  _targetScene(NULL),
-                 _accumulator(0.0f)
+                 _accumulator(0.0f),
+                 _timeStepFactor(0.0f),
+                 _timeStep(0.0f)
 {
 }
 
@@ -107,7 +109,8 @@ bool PhysX::exitPhysics() {
 
 inline void PhysX::updateTimeStep(U8 timeStepFactor) {
     CLAMP<U8>(timeStepFactor,1,timeStepFactor);
-    _timeStep = 1.0f / timeStepFactor;
+    _timeStepFactor = timeStepFactor;
+    _timeStep = 1.0f / _timeStepFactor;
     _timeStep *= ParamHandler::getInstance().getParam<F32>("simSpeed");
 }
 
@@ -234,6 +237,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
             tempActor->_actor = _gPhysicsSDK->createRigidDynamic(posePxTransform);
             tempActor->_isDynamic = true;
         }
+        tempActor->_type = PxGeometryType::eTRIANGLEMESH;
         targetScene->addRigidActor(tempActor, false);
         nodeTransform->cleanPhysics();
     }

@@ -5,6 +5,14 @@
 #include "Core/Headers/ParamHandler.h"
 REGISTER_SCENE(PhysXScene);
 
+enum PhysXStateEnum{
+    STATE_ADDING_ACTORS = 0,
+    STATE_IDLE = 2,
+    STATE_LOADING = 3
+};
+
+static boost::atomic<PhysXStateEnum > s_sceneState;
+
 //begin copy-paste
 void PhysXScene::preRender(){
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
@@ -29,6 +37,7 @@ void PhysXScene::processInput(const D32 deltaTime){
 }
 
 bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
+    s_sceneState = STATE_LOADING;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
     //Add a light
@@ -40,6 +49,7 @@ bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
     light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
     light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
     addDefaultSky();
+    s_sceneState = STATE_IDLE;
     return loadState;
 }
 
@@ -56,9 +66,10 @@ bool PhysXScene::loadResources(bool continueOnErrors){
                                 "Number of items in Render Bin: %d",0);
 
     _taskTimers.push_back(0.0); //Fps
-    renderState().getCamera().setRotation(25/*yaw*/,-75/*pitch*/);
+    renderState().getCamera().setFixedYawAxis(false);
+    renderState().getCamera().setRotation(-45/*yaw*/,10/*pitch*/);
     renderState().getCamera().setEye(vec3<F32>(0,30,-40));
-    _addingActors = false;
+    renderState().getCamera().setFixedYawAxis(true);
     ParamHandler::getInstance().setParam("rendering.enableFog",false);
     ParamHandler::getInstance().setParam("postProcessing.bloomFactor",0.1f);
     return true;
@@ -74,8 +85,11 @@ void PhysXScene::createStack(U32 size){
     F32 Spacing = 0.0001f;
     vec3<F32> Pos(0, 10 + CubeSize,0);
     F32 Offset = -stackSize * (CubeSize * 2.0f + Spacing) * 0.5f + 0;
-    while(_addingActors){}
-    _addingActors = true;
+
+    while(s_sceneState == STATE_ADDING_ACTORS);
+
+    s_sceneState = STATE_ADDING_ACTORS;
+
     while(stackSize){
         for(U16 i=0;i<stackSize;i++){
             Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
@@ -85,16 +99,18 @@ void PhysXScene::createStack(U32 size){
         Pos.y += (CubeSize * 2.0f + Spacing);
         stackSize--;
     }
-    _addingActors = false;
+
+    s_sceneState = STATE_IDLE;
 }
 
 void PhysXScene::createTower(U32 size){
-    while(_addingActors){}
-    _addingActors = true;
-    for(U8 i = 0 ; i < size; i++){
+    while(s_sceneState == STATE_ADDING_ACTORS);
+    s_sceneState = STATE_ADDING_ACTORS;
+
+    for(U8 i = 0 ; i < size; i++)
         PHYSICS_DEVICE.createBox(vec3<F32>(0,5.0f+5*i,0),0.5f);
-    }
-    _addingActors = false;
+    
+    s_sceneState = STATE_IDLE;
 }
 
 void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
@@ -117,9 +133,17 @@ void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_A:
         case OIS::KC_D:	state()._moveLR = 0; break;
         case OIS::KC_F1: _sceneGraph->print(); break;
-        case OIS::KC_1:
-            PHYSICS_DEVICE.createPlane(vec3<F32>(0,0,0),random(0.5f,2.0f));
-            break;
+        case OIS::KC_5:{
+            _paramHandler.setParam("simSpeed", IS_ZERO(_paramHandler.getParam<F32>("simSpeed")) ? 1.0f : 0.0f);
+            PHYSICS_DEVICE.updateTimeStep();
+            }break;
+        case OIS::KC_1:{
+            static bool hasGroundPlane = false;
+            if(!hasGroundPlane){
+                PHYSICS_DEVICE.createPlane(vec3<F32>(0,0,0),random(100.0f, 200.0f));
+                hasGroundPlane = true;
+            }
+            }break;
         case OIS::KC_2:
             PHYSICS_DEVICE.createBox(vec3<F32>(0,random(10,30),0),random(0.5f,2.0f));
             break;
