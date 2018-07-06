@@ -38,8 +38,8 @@ public:
 	void draw() const;
 	void setParams(const vec3<F32>& eyePos,const vec3<F32>& sunVect, bool invert, bool drawSun, bool drawSky) ;
 
-	void addToDrawExclusionMask(U8 stageMask);
-	void removeFromDrawExclusionMask(U8 stageMask);
+	void addToDrawExclusionMask(I32 stageMask);
+	void removeFromDrawExclusionMask(I32 stageMask);
 	///Draw states are used to test if the current object should be drawn depending on the current render pass
 	bool getDrawState(RENDER_STAGE currentStage) const;
 

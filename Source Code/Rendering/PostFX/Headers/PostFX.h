@@ -36,14 +36,12 @@ public:
 
 	/// Depth of Field
 	FrameBufferObject* _depthOfFieldFBO;
-	FrameBufferObject* _tempDepthOfFieldFBO;
 
 	/// Anaglyph
 	FrameBufferObject* _anaglyphFBO[2];
 
 	/// Bloom
 	FrameBufferObject* _bloomFBO;
-	FrameBufferObject* _tempBloomFBO;
 
 	///SSAO
 	FrameBufferObject* _SSAO_FBO;
@@ -68,10 +66,10 @@ public:
 	GFXDevice& _gfx;
 	///Update the current camera at every render loop
 	Camera*   _currentCamera;
+
 private:
 	void displaySceneWithoutAnaglyph(void);
 	void displaySceneWithAnaglyph(void);
-	void generateDepthOfFieldTexture();
 	~PostFX();
 	PostFX();
 

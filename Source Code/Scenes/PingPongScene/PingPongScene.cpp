@@ -205,7 +205,6 @@ void PingPongScene::processInput(){
 
 bool PingPongScene::load(const std::string& name){
 
-	setInitialData();
 	bool state = false;
 	///Add a light
 	Light* light = addDefaultLight();
@@ -236,7 +235,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 	///Buttons and text labels
 	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(_cachedResolution.width-120 ,
 															 _cachedResolution.height/1.1f),
-													    	 vec2<U16>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+													    	 vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 															 boost::bind(&PingPongScene::serveBall,this));
 
 	GUI::getInstance().addText("Score",vec3<F32>(_cachedResolution.width - 120, _cachedResolution.height/1.3f, 0),

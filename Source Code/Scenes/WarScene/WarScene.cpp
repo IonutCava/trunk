@@ -77,8 +77,6 @@ void WarScene::processInput(){
 
 bool WarScene::load(const std::string& name){
 
-	setInitialData();
-
 	bool state = false;
 	//Add a light
 	Light* light = addDefaultLight();
@@ -156,6 +154,14 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 		SAFE_DELETE(_army2NPCs[i]);
 	}
 	_army2NPCs.clear();
+	for(U8 i = 0; i < _army1.size(); i++){
+		AIManager::getInstance().destroyEntity(_army1[i]->getGUID());
+	}
+	_army1.clear();
+	for(U8 i = 0; i < _army2.size(); i++){
+		AIManager::getInstance().destroyEntity(_army2[i]->getGUID());
+	}
+	_army2.clear();
 	SAFE_DELETE(_faction1);
 	SAFE_DELETE(_faction2);
 	return true;
@@ -165,7 +171,7 @@ bool WarScene::loadResources(bool continueOnErrors){
 	
 	GUI::getInstance().addButton("Simulate", "Simulate", vec2<F32>(_cachedResolution.width-220 ,
 																   _cachedResolution.height/1.1f),
-													     vec2<U16>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+													     vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 														 boost::bind(&WarScene::startSimulation,this));
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
@@ -230,7 +236,7 @@ void WarScene::onKeyUp(const OIS::KeyEvent& key){
 
 }
 void WarScene::onMouseMove(const OIS::MouseEvent& key){
-	Scene::onMouseMove(key);
+
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			_angleLR = -0.15f;

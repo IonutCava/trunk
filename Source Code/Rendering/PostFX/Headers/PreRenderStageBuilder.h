@@ -21,6 +21,7 @@ public:
    PreRenderOperator* 	 addGenericOperator(ShaderProgram* const shader, Quad3D* const target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution);
    PreRenderOperator* 	 addSSAOOperator(ShaderProgram* const SSAOShader, Quad3D* const target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution);
    PreRenderOperator*    addBloomOperator(ShaderProgram* const bloomShader, Quad3D* const target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution);
+   PreRenderOperator*    addDOFOperator(ShaderProgram* const dofShader, Quad3D* const target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution);
    PreRenderOperator*    addDeferredShadingOperator(ShaderProgram* const deferredShader, Quad3D* const target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution);
 
    inline PreRenderStage*	getPreRenderBatch() { return _renderStage; };

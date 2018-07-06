@@ -308,12 +308,12 @@ void SceneNode::drawBoundingBox(SceneGraphNode* const sgn){
 	GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),boundingBoxTransformMatrix);
 }
 
-void SceneNode::removeFromDrawExclusionMask(U8 stageMask) {
+void SceneNode::removeFromDrawExclusionMask(I32 stageMask) {
 	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask &= ~stageMask;
 }
 
-void SceneNode::addToDrawExclusionMask(U8 stageMask) {
+void SceneNode::addToDrawExclusionMask(I32 stageMask) {
 	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask |= static_cast<RENDER_STAGE>(stageMask);
 }

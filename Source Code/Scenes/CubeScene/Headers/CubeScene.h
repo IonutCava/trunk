@@ -27,6 +27,7 @@ public:
 						   _renderQuad2(NULL),_renderQuad3(NULL),_renderQuad4(NULL),_showTextures(false){}
 	void render();
 	void preRender();
+	bool preLoad();
 	bool load(const std::string& name);
 	bool unload();
 	bool loadResources(bool continueOnErrors);

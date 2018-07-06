@@ -31,24 +31,26 @@ public:
 	void draw();
 	void close();
 	void addText(const std::string& id,const vec3<F32>& position, Font font,const vec3<F32>& color, char* format, ...);
-	void addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<U16>& dimensions,const vec3<F32>& color,ButtonCallback callback);
+	void addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback);
 	void addFlash(const std::string& id, std::string movie, const vec2<F32>& position, const vec2<F32>& extent);
 	void modifyText(const std::string& id, char* format, ...);
 	void toggleConsole();
 	void createConsole();
-	void onResize(U16 newWidth, U16 newHeight);
+	void onResize(const vec2<U16>& newResolution);
 	void clickCheck();
 	void clickReleaseCheck();
 	void checkItem(U16 x, U16 y);
 
 	inline GUIElement* const getItem(const std::string& id) {return _guiStack[id];}
 	inline GUIElement* getGuiElement(const std::string& id){return _guiStack[id];}
+	inline void cacheResolution(const vec2<U16>& resolution) {_cachedResolution = resolution;}
 
 private:
-	GUI();
+
 	~GUI();
 	void drawText();
 	void drawButtons();
+	vec2<U16> _cachedResolution;
 
 	guiMap _guiStack;
 	std::pair<unordered_map<std::string, GUIElement*>::iterator, bool > _resultGuiElement;

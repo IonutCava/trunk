@@ -219,8 +219,6 @@ void AITenisScene::processInput(){
 
 bool AITenisScene::load(const std::string& name){
 
-	setInitialData();
-
 	bool state = false;
 	//Add a light
 	Light* light = addDefaultLight();
@@ -294,7 +292,7 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
 		state = AIManager::getInstance().addEntity(_aiPlayer4);
 	}
 	if(state || continueOnErrors){
-		//----------------------- AI controlled units (NPC's) ---------------------//
+	//----------------------- AI controlled units (NPC's) ---------------------//
 		_player1 = New NPC(_aiPlayer1);
 		_player2 = New NPC(_aiPlayer2);
 		_player3 = New NPC(_aiPlayer3);
@@ -310,6 +308,10 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
 }
 
 bool AITenisScene::deinitializeAI(bool continueOnErrors){
+	AIManager::getInstance().destroyEntity(_aiPlayer1->getGUID());
+	AIManager::getInstance().destroyEntity(_aiPlayer2->getGUID());
+	AIManager::getInstance().destroyEntity(_aiPlayer3->getGUID());
+	AIManager::getInstance().destroyEntity(_aiPlayer4->getGUID());
 	SAFE_DELETE(_player1);
 	SAFE_DELETE(_player2);
 	SAFE_DELETE(_player3);
@@ -335,7 +337,7 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 
 	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(_cachedResolution.width-220,
 															 _cachedResolution.height/1.1f),
-													     vec2<U16>(100,25),
+													     vec2<F32>(100,25),
 														 vec3<F32>(0.65f,0.65f,0.65f),
 														 boost::bind(&AITenisScene::startGame,this));
 
@@ -412,7 +414,7 @@ void AITenisScene::onKeyUp(const OIS::KeyEvent& key){
 
 }
 void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
-	Scene::onMouseMove(key);
+
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			_angleLR = -0.15f;

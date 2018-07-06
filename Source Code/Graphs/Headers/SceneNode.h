@@ -53,8 +53,8 @@ public:
 	virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
 	inline  void setDrawState(bool state) {_drawState = state;}
 	virtual	bool getDrawState()  const {return _drawState;} 
-			void addToDrawExclusionMask(U8 stageMask);
-			void removeFromDrawExclusionMask(U8 stageMask);
+			void addToDrawExclusionMask(I32 stageMask);
+			void removeFromDrawExclusionMask(I32 stageMask);
 	/// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
 	virtual	bool getDrawState(RENDER_STAGE currentStage)  const;
 	/*//Rendering/Processing*/	

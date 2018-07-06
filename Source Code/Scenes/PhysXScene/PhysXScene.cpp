@@ -45,9 +45,8 @@ void PhysXScene::processInput(){
 
 bool PhysXScene::load(const std::string& name){
 
-	setInitialData();
 	bool state = false;
-	//Adaugam o lumina
+	///Add a light
 	vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
 	_sunVector = vec4<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y),0.0f );
 	Light* light = addDefaultLight();
@@ -55,7 +54,7 @@ bool PhysXScene::load(const std::string& name){
 	light->setLightProperties(LIGHT_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
 	light->setLightProperties(LIGHT_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
 	light->setLightProperties(LIGHT_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-	//Incarcam resursele scenei
+	///Load scene resources
 	state = loadResources(true);	
 	state = loadEvents(true);
 	return state;
@@ -186,7 +185,7 @@ void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
 
 
 void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
-	Scene::onMouseMove(key);
+
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			_angleLR = -0.15f;

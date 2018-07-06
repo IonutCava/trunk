@@ -22,12 +22,15 @@
 #include <boost/noncopyable.hpp>
 
 class GUI;
+class Event;
 class Camera;
 class PXDevice;
 class GFXDevice;
 class SFXDevice;
+class LightManager;
 class SceneManager;
 class CameraManager;
+
 ///Input
 namespace OIS {
 	class KeyEvent;
@@ -54,9 +57,9 @@ public:
 
 	static void MainLoopStatic();
 	static void Idle();
-	///Cache application data; 
-	///It's an ugly hack, but it reduces singleton dependencies and gives a slight speed boost
-	void refreshAppData();
+	///Update all engine components that depend on the current resolution
+	static void updateResolutionCallback(I32 w, I32 h);
+
 public: ///Input
 	///Key pressed
 	bool onKeyDown(const OIS::KeyEvent& key);
@@ -81,14 +84,26 @@ private:
    bool MainLoop();
 
 private:
+	///Access to the GPU
 	GFXDevice&		_GFX;
+	///Access to the audio device
 	SFXDevice&		_SFX;
+	///Access to the physics system
 	PXDevice&		_PFX;
+	///The graphical user interface
 	GUI&			_GUI;
+	///The SceneManager/ Scene Pool
 	SceneManager&	_sceneMgr;
+	///Pointer to the current camera
 	Camera*			_camera;
+	///Access to all of the input devices
 	InputInterface& _inputInterface;
-
+	///General light management and rendering (individual lights are handled by each scene)
+	///Unloading the lights is a scene level responsibility
+	LightManager&   _lightPool;
+	///_aiEvent is the thread handling the AIManager. It is started before each scene's "initializeAI" is called
+	///It is destroyed after each scene's "deinitializeAI" is called
+	std::tr1::shared_ptr<Event>  _aiEvent;
 	static bool   _keepAlive;
 	/// get elapsed time since kernel initialization
 	inline static D32 getCurrentTime() {return _currentTime;}
@@ -97,6 +112,7 @@ private:
    static D32    _currentTime;
    I32           _targetFrameRate;
    CameraManager* _cameraMgr;
+   bool           _loadAI;
 };
 
 #endif

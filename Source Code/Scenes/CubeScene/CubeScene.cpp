@@ -148,10 +148,13 @@ void CubeScene::processInput(){
 
 }
 
+bool CubeScene::preLoad(){
+	_GFX.setDeferredRendering(true);
+	return true;
+}
+
 bool CubeScene::load(const std::string& name){	
 
-	_GFX.setDeferredRendering(true);
-	setInitialData(); 
 	bool state = loadResources(true);	
 	if(state){
 		state = loadEvents(true);

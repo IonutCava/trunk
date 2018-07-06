@@ -5,11 +5,15 @@ void Object3D::render(SceneGraphNode* const sgn){
 	GFX_DEVICE.renderModel(sgn->getNode<Object3D>());
 }
 
-void Object3D::onDraw(){
+VertexBufferObject* const Object3D::getGeometryVBO() {
 	if(_refreshVBO){
 		_geometry->Refresh();
 		_refreshVBO = false;
 	}
+	return _geometry;
+}
+
+void Object3D::onDraw(){
 
 	SceneNode::onDraw();
 

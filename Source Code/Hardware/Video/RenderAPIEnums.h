@@ -29,11 +29,13 @@ enum RENDER_STAGE {
     REFLECTION_STAGE		   = toBit(3),
     SSAO_STAGE				   = toBit(4),
     BLOOM_STAGE                = toBit(5),
-    FINAL_STAGE				   = toBit(6),
-    DEPTH_STAGE				   = toBit(7),
-	ENVIRONMENT_MAPPING_STAGE  = toBit(8),
+	DOF_STAGE                  = toBit(6),
+	LIGHT_SHAFT_STAGE          = toBit(7),
+    FINAL_STAGE				   = toBit(8),
+    DEPTH_STAGE				   = toBit(9),
+	ENVIRONMENT_MAPPING_STAGE  = toBit(10),
 	//Place all stages above this
-	INVALID_STAGE		       = toBit(10)
+	INVALID_STAGE		       = toBit(11)
 };
 
 enum FBO_TYPE {

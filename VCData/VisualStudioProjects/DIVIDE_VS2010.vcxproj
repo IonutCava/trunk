@@ -223,6 +223,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp" />
@@ -379,6 +380,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Framerate.h" />

@@ -271,6 +271,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp"
 						>
 					</File>
@@ -279,6 +283,10 @@
 						>
 						<File
 							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h"
 							>
 						</File>
 						<File

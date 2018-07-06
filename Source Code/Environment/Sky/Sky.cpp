@@ -130,12 +130,12 @@ void Sky::drawSun() const {
 }
 
 
-void Sky::removeFromDrawExclusionMask(U8 stageMask) {
+void Sky::removeFromDrawExclusionMask(I32 stageMask) {
 	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask &= ~stageMask;
 }
 
-void Sky::addToDrawExclusionMask(U8 stageMask) {
+void Sky::addToDrawExclusionMask(I32 stageMask) {
 	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask |= static_cast<RENDER_STAGE>(stageMask);
 }

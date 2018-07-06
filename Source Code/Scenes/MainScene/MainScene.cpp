@@ -104,7 +104,6 @@ void MainScene::processEvents(F32 time){
 
 bool MainScene::load(const std::string& name){
 
-	setInitialData();
 	bool state = false;
 	 _mousePressed = false;
 	state = Scene::load(name);
@@ -115,7 +114,7 @@ bool MainScene::load(const std::string& name){
 	light->setLightProperties(LIGHT_DIFFUSE,_white);
 	light->setLightProperties(LIGHT_SPECULAR,_white);
 												
-	//Incarcam resursele scenei
+	///Load scene resources
 	state = loadResources(true);	
 	state = loadEvents(true);
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
@@ -304,7 +303,7 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
 }
 
 void MainScene::onMouseMove(const OIS::MouseEvent& key){
-	Scene::onMouseMove(key);
+
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			_angleLR = -0.15f;

@@ -92,10 +92,6 @@ void GLCheckError(const std::string& File, U32 Line,char* operation) {
 	}
 }
 
-void changeResolutionCallback(I32 w, I32 h){
-	GFX_DEVICE.changeResolution(w,h);
-}
-
 //Let's try and create a  valid OpenGL context.
 //Due to university requirements, backwards compatibility with OpenGL 2.0 had to be added
 I8 GL_API::initHardware(const vec2<U16>& resolution){
@@ -214,7 +210,7 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	//If we end the render loop, continue processing the engine code found after (glutMainLoop)
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	//Our Resize/Draw/Idle callback setup
-	glutReshapeFunc(changeResolutionCallback);
+	glutReshapeFunc(Kernel::updateResolutionCallback);
 	glutDisplayFunc(Kernel::MainLoopStatic);
 	glutIdleFunc(Kernel::Idle);
 	//That's it. Everything should be ready for draw calls

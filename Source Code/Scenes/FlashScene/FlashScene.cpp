@@ -33,7 +33,6 @@ void FlashScene::processEvents(F32 time){
 
 bool FlashScene::load(const std::string& name){
 
-	setInitialData();
 	bool state = false;
 	addDefaultLight();
 	state = loadResources(true);	

@@ -43,7 +43,7 @@ public:
 	inline void registerKernel(Kernel* const kernel){_kernel = kernel;}
 	inline I8   initHardware(const vec2<U16>& resolution){return _api.initHardware(resolution);}
 	inline void initDevice(U32 targetFPS){_api.initDevice(targetFPS);}
-	void changeResolution(U16 w, U16 h);
+	inline void changeResolution(U16 w, U16 h) {_api.changeResolution(w,h);}
 
 	inline void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false){_api.lookAt(eye,center,up,invertx,inverty);}
 	inline void idle() {_api.idle();}

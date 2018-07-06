@@ -21,7 +21,6 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_noise(NULL),
 	_screenBorder(NULL),
 	_bloomFBO(NULL),
-	_tempDepthOfFieldFBO(NULL),
 	_depthOfFieldFBO(NULL),
 	_depthFBO(NULL),
 	_screenFBO(NULL),
@@ -48,13 +47,14 @@ PostFX::~PostFX(){
 			SAFE_DELETE(_anaglyphFBO[0]);
 			SAFE_DELETE(_anaglyphFBO[1]);
 		}
-		if(_enableBloom){
-			SAFE_DELETE(_bloomFBO);
-			RemoveResource(_blurShader);
-		}
-		if(_enableDOF){
-			SAFE_DELETE(_depthOfFieldFBO);
-			SAFE_DELETE(_tempDepthOfFieldFBO);
+		
+		if(_enableDOF || _enableBloom){
+			if(_enableBloom){
+				SAFE_DELETE(_bloomFBO);
+			}
+			if(_enableDOF){
+				SAFE_DELETE(_depthOfFieldFBO);
+			}
 			if(_blurShader){
 				RemoveResource(_blurShader);
 			}
@@ -114,11 +114,15 @@ void PostFX::init(const vec2<U16>& resolution){
 
 		if(_enableDOF){
 			_depthOfFieldFBO = _gfx.newFBO();
-			_tempDepthOfFieldFBO = _gfx.newFBO();
 			if(!_blurShader){
+				///DOF uses the same blur shader as Bloom
 				_blurShader = CreateResource<ShaderProgram>(ResourceDescriptor("blur"));
 			}
+			PreRenderOperator* dofOp = PreRenderStageBuilder::getInstance().addDOFOperator(_blurShader, _renderQuad,_enableDOF, _depthOfFieldFBO,resolution);
+			dofOp->addInputFBO(_screenFBO);
+			dofOp->addInputFBO(_depthFBO);
 		}
+
 		if(_enableNoise){
 			ResourceDescriptor noiseTexture("noiseTexture");
 			ResourceDescriptor borderTexture("borderTexture");
@@ -157,17 +161,6 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 		_anaglyphFBO[0]->Create(FBO_2D_COLOR, width, height);
 		_anaglyphFBO[1]->Create(FBO_2D_COLOR, width, height);
 	}
-	if(_enableDOF){
-		_tempDepthOfFieldFBO->Create(FBO_2D_COLOR, width, height);
-		_depthOfFieldFBO->Create(FBO_2D_COLOR, width, height);
-	}
-	if(_enableSSAO){
-		_SSAO_FBO->Create(FBO_2D_COLOR, width, height);
-	}
-	if(_enableBloom){
-		_bloomFBO->Create(FBO_2D_COLOR, width/4, height/4);
-	}
-
 	PreRenderStage* renderBatch = PreRenderStageBuilder::getInstance().getPreRenderBatch();
 	renderBatch->reshape(width,height);
 }
@@ -213,22 +206,17 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 	_currentCamera->RenderLookAt();
 	ParamHandler& par = ParamHandler::getInstance();
 
-	bool underwater = par.getParam<bool>("underwater");
-
 	if(!_enableDOF){
 		_screenFBO->Begin();
 			SceneManager::getInstance().render(FINAL_STAGE);
 		_screenFBO->End();
 	}else{
 		_depthFBO->Begin();
-			SceneManager::getInstance().render(FINAL_STAGE);
+			SceneManager::getInstance().render(DEPTH_STAGE);
 		_depthFBO->End();
 		_screenFBO->Begin();
 			SceneManager::getInstance().render(FINAL_STAGE);
 		_screenFBO->End();
-	}
-	if(_enableDOF){
-		generateDepthOfFieldTexture();
 	}
 
 	PreRenderStage* renderBatch = PreRenderStageBuilder::getInstance().getPreRenderBatch();
@@ -248,15 +236,16 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		_postProcessingShader->Uniform("enable_vignette",_enableNoise);
 		_postProcessingShader->Uniform("enable_noise",_enableNoise);
 		_postProcessingShader->Uniform("enable_pdc",_enableDOF);
-		_postProcessingShader->Uniform("enable_underwater",underwater);	
+		_postProcessingShader->Uniform("enable_underwater",false);	
 
-		if(underwater){
+		if(par.getParam<bool>("underwater")){
 			if(_underwaterTexture){
 				_underwaterTexture->Bind(id);
 				_postProcessingShader->UniformTexture("texWaterNoiseNM", id++);
 			}
 			_postProcessingShader->Uniform("noise_tile", 0.05f);
 			_postProcessingShader->Uniform("noise_factor", 0.02f);
+			_postProcessingShader->Uniform("enable_underwater",true);	
 		}
 			
 		if(_enableBloom){
@@ -264,6 +253,7 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 			_postProcessingShader->UniformTexture("texBloom", id++);
 			_postProcessingShader->Uniform("bloom_factor", 0.3f);
 		}
+
 		if(_enableSSAO){
 			_SSAO_FBO->Bind(id);
 			_postProcessingShader->UniformTexture("texSSAO", id++);
@@ -294,7 +284,7 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 			_bloomFBO->Unbind(--id);
 		}
 
-		if(underwater && _underwaterTexture){
+		if(par.getParam<bool>("underwater") && _underwaterTexture){
 			_underwaterTexture->Unbind(--id);
 		}
 
@@ -303,13 +293,8 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		}else{
 			_depthOfFieldFBO->Unbind(--id);
 		}
-		
-	//_postProcessingShader->unbind();
-	
 }
-
-
-
+///Post-Processing in deffered renderer is disabled for now (needs a lot of work)
 void PostFX::render(Camera* const camera){
 	_currentCamera = camera;
 	bool deferred = GFX_DEVICE.getDeferredRendering();
@@ -346,51 +331,4 @@ void PostFX::idle(){
 				}
 		}
 	}
-}
-
-void PostFX::generateDepthOfFieldTexture(){
-
-	_tempDepthOfFieldFBO->Begin();
-	
-		_blurShader->bind();
-
-			_screenFBO->Bind(0);
-			_depthFBO->Bind(1);
-			_blurShader->Uniform("bHorizontal", false);
-			_blurShader->UniformTexture("texScreen", 0);
-			_blurShader->UniformTexture("texDepth",1);
-		
-			_gfx.toggle2D(true);
-			_gfx.renderModel(_renderQuad);
-			_gfx.toggle2D(false);
-				
-			_depthFBO->Unbind(1);
-			_screenFBO->Unbind(0);
-		
-		//_blurShader->unbind();
-				
-	
-	_tempDepthOfFieldFBO->End();
-
-	_depthOfFieldFBO->Begin();
-
-		_blurShader->bind();
-				
-			_tempDepthOfFieldFBO->Bind(0);
-			_depthFBO->Bind(1);
-
-			_blurShader->Uniform("bHorizontal", true);
-			_blurShader->UniformTexture("texScreen", 0);
-			_blurShader->UniformTexture("texDepth",1);
-					
-			_gfx.toggle2D(true);
-			_gfx.renderModel(_renderQuad);
-			_gfx.toggle2D(false);
-				
-			_depthFBO->Unbind(1);
-			_tempDepthOfFieldFBO->Unbind(0);
-				
-		//_blurShader->unbind();
-				
-	_depthOfFieldFBO->End();
 }

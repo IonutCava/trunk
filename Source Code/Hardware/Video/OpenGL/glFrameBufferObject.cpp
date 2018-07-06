@@ -145,7 +145,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_F
 			format = GL_LUMINANCE_ALPHA;
 			break;
 	};
-	PRINT_FN("Generating framebuffer of dimmensions [%d x %d]",width,height);
+	D_PRINT_FN("Generating framebuffer of dimmensions [%d x %d]",width,height);
 	Destroy();
 	_width = width;
 	_height = height;

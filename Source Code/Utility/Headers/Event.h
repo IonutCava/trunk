@@ -82,11 +82,11 @@ public:
 		  runOnce ? _numberOfTicks = 1 : _numberOfTicks = -1;
 		  if(startOnCreate) startEvent();
 	  }
-	~Event(){interruptEvent();}
+	~Event(){stopEvent();}
 	void updateTickInterval(F32 tickInterval){_tickInterval = tickInterval;}
 	void updateTickCounter(U32 numberOfTicks){_numberOfTicks = numberOfTicks;}
 	void startEvent();
-	void stopEvent(){if(_end == true) return; _end = true; _thisThread->join();}
+	void stopEvent();
 	void interruptEvent(){ _end = true; _thisThread->interrupt(); _thisThread->join();}
 
 private:
@@ -94,7 +94,7 @@ private:
 	F32 _tickInterval;
 	U32 _numberOfTicks;
 	std::tr1::shared_ptr<boost::thread> _thisThread;
-	Lock _mutex;
+	//Lock _mutex; ///< Do we need a lock for the end flag?
 	volatile bool _end;
 	boost::function0<void> _callback;
 
@@ -102,5 +102,7 @@ private:
 	void run();
 
 };
+
+typedef std::tr1::shared_ptr<Event> Event_ptr;
 
 #endif

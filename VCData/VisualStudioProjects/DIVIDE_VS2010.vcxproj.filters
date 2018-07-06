@@ -920,6 +920,9 @@
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1468,6 +1471,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h">
       <Filter>Hardware\Input\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

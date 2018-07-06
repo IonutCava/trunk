@@ -36,8 +36,6 @@ class TerrainDescriptor;
 class Scene : public Resource{
 
 public:
-	typedef std::tr1::shared_ptr<Event> Event_ptr;
-
 	Scene() :  Resource(),
 	  _GFX(GFX_DEVICE),
 	  _paramHandler(ParamHandler::getInstance()),
@@ -68,7 +66,8 @@ public:
 	virtual void render() = 0;
 	virtual void preRender() = 0;
 	virtual bool load(const std::string& name);
-	
+	virtual bool preLoad() {return true;}
+
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
@@ -87,32 +86,32 @@ public:
 	inline F32&  getWaterDepth()        {return _waterDepth;}
 
    
-   inline U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
-   inline std::vector<TerrainDescriptor*>& getTerrainInfoArray() {return TerrainInfoArray;}
-   inline ShaderProgram*                   getDeferredShaders() {return _deferredShader;}
+	inline U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
+	inline std::vector<TerrainDescriptor*>& getTerrainInfoArray() {return TerrainInfoArray;}
+	inline ShaderProgram*                   getDeferredShaders() {return _deferredShader;}
    
-   inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
-   inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
+	inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
+	inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
 
-   inline std::vector<Event_ptr>& getEvents() {return _events;}
+	inline std::vector<Event_ptr>& getEvents() {return _events;}
 
-   inline SceneGraph* getSceneGraph()	{return _sceneGraph;}
-   inline void   addEvent(Event_ptr eventItem) {_events.push_back(eventItem);}
+	inline SceneGraph* getSceneGraph()	{return _sceneGraph;}
+	inline void   addEvent(Event_ptr eventItem) {_events.push_back(eventItem);}
 
-   inline void addModel(FileData& model) {ModelDataArray.push_back(model);}
-   inline void addTerrain(TerrainDescriptor* ter) {TerrainInfoArray.push_back(ter);}
-   void addPatch(std::vector<FileData>& data);
-   void addLight(Light* const lightItem);
-   bool clean();
+	inline void addModel(FileData& model) {ModelDataArray.push_back(model);}
+	inline void addTerrain(TerrainDescriptor* ter) {TerrainInfoArray.push_back(ter);}
+	void addPatch(std::vector<FileData>& data);
+	void addLight(Light* const lightItem);
+	bool clean();
 
-   inline bool drawBBox() {return _drawBB;}
-   inline void drawBBox(bool visibility) {_drawBB = visibility;}
-   inline bool drawSkeletons() {return  _drawSkeletons;}
-   inline void drawSkeletons(bool visibility) {_drawSkeletons = visibility;}
-   inline bool drawObjects() {return _drawObjects;}
-   inline void drawObjects(bool visibility) {_drawObjects=visibility;}
+	inline bool drawBBox() {return _drawBB;}
+	inline void drawBBox(bool visibility) {_drawBB = visibility;}
+	inline bool drawSkeletons() {return  _drawSkeletons;}
+	inline void drawSkeletons(bool visibility) {_drawSkeletons = visibility;}
+	inline bool drawObjects() {return _drawObjects;}
+	inline void drawObjects(bool visibility) {_drawObjects=visibility;}
 
-   inline void cacheResolution(const vec2<U16>& newResolution) {_cachedResolution = newResolution;}
+	inline void cacheResolution(const vec2<U16>& newResolution) {_cachedResolution = newResolution;}
 
 protected:
 
@@ -162,8 +161,8 @@ protected:
 	virtual bool deinitializeAI(bool continueOnErrors) {return true;}
 	///Description in SceneManager
 	virtual bool loadResources(bool continueOnErrors)  {return true;}
-	virtual bool loadEvents(bool continueOnErrors);
-	virtual void setInitialData();
+	virtual bool loadEvents(bool continueOnErrors)     {return true;}
+	virtual void loadXMLAssets();
 	void clearEvents();
 	void clearObjects();
 	void clearLights();
@@ -178,7 +177,7 @@ public: //Input
 	virtual void OnJoystickMovePOV(const OIS::JoyStickEvent& key,I8 pov){}
 	virtual void OnJoystickButtonDown(const OIS::JoyStickEvent& key,I8 button){}
 	virtual void OnJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){}
-	virtual void onMouseMove(const OIS::MouseEvent& key);
+	virtual void onMouseMove(const OIS::MouseEvent& key){}
 	virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 	virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 };

@@ -49,15 +49,6 @@ void GFXDevice::closeRenderingApi(){
 	_stateBlockMap.clear();
 }
 
-void GFXDevice::changeResolution(U16 w, U16 h){
-
-	Application::getInstance().setResolutionWidth(w);
-    Application::getInstance().setResolutionHeight(h);
-	_api.changeResolution(w,h);
-	PostFX::getInstance().reshapeFBO(w, h);
-	GUI::getInstance().onResize((U16)w,(U16)h);
-}
-
 void GFXDevice::renderModel(Object3D* const model){
 	///All geometry is stored in VBO format
 	if(!model) return;

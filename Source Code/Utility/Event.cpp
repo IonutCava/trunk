@@ -4,6 +4,17 @@ void Event::startEvent(){
 	_thisThread =  std::tr1::shared_ptr<boost::thread>(New boost::thread(&Event::run,boost::ref(*this)));
 }
 
+void Event::stopEvent(){
+	if(_end == true) 
+		return;
+	_end = true;
+	if(_thisThread.get()){
+		if(_thisThread->joinable()){
+			_thisThread->join();
+		}
+	}
+}
+
 void Event::run(){
 	
 	assert(_numberOfTicks);
@@ -22,21 +33,13 @@ void Event::run(){
 
 		if(_numberOfTicks > 0) _numberOfTicks--;
 		if(_numberOfTicks == 0){
-			_mutex.lock();
 			_end = true;
-			_mutex.unlock();
 		}
-
-		_mutex.lock();
 		shouldEnd = _end;
-		_mutex.unlock();
-
-		
 	}
+
 	PRINT_FN("EventManager: Deleting thread: %d", boost::this_thread::get_id());
-	_mutex.lock();
 	_end = false;
-	_mutex.unlock();
 }
 
 

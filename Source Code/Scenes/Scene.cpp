@@ -4,7 +4,6 @@
 #include "GUI/Headers/GUI.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h" //Object selection
-#include "Managers/Headers/AIManager.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
@@ -64,7 +63,7 @@ void Scene::addPatch(std::vector<FileData>& data){
 }
 
 
-void Scene::setInitialData(){
+void Scene::loadXMLAssets(){
 	for(std::vector<FileData>::iterator it = ModelDataArray.begin(); it != ModelDataArray.end();){
 		//vegetation is loaded elsewhere
 		if((*it).type == VEGETATION){
@@ -196,18 +195,12 @@ bool Scene::load(const std::string& name){
 
 bool Scene::unload(){
 	clearEvents();
-	if(_aiEvent.get()){
-		_aiEvent.get()->stopEvent();
-		_aiEvent.reset();
-	}
 	SAFE_DELETE(_lightTexture);
 	SAFE_DELETE(_deferredBuffer);
 
 	if(_deferredShader != NULL){
 		RemoveResource(_deferredShader);
 	}
-	AIManager::getInstance().Destroy();
-	AIManager::getInstance().DestroyInstance();
 	clearObjects();
 	clearLights();
 	return true;
@@ -233,15 +226,6 @@ void Scene::clearLights(){
 void Scene::clearEvents(){
 	PRINT_FN("Stopping all events ...");
 	_events.clear();
-}
-
-void Scene::onMouseMove(const OIS::MouseEvent& key){
-	GUI::getInstance().checkItem(key.state.X.abs,key.state.Y.abs);
-}
-
-bool Scene::loadEvents(bool continueOnErrors){
-	_aiEvent.reset(New Event(3,false,false,boost::bind(&AIManager::tick,boost::ref(AIManager::getInstance()))));
-	return true;
 }
 
 void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){

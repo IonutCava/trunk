@@ -35,13 +35,12 @@ public:
 	void render(RENDER_STAGE stage);
 	inline void clean()                               { _scene->clean(); }
 	inline bool unload()                              { return _scene->unload(); }
-	inline bool load(const std::string& name)         { return _scene->load(name); }
+	inline bool preLoad()							  { return _scene->preLoad();}
+	inline bool load(const std::string& name)         { _scene->loadXMLAssets(); return _scene->load(name); }
 	///Create AI entities, teams, NPC's etc
-	inline bool initializeAI(bool continueOnErrors)   { bool state = _scene->initializeAI(continueOnErrors); 
-													    _scene->_aiEvent.get()->startEvent();
-														return state;
-	                                                  }
-	///Destroy all AI entities, teams, NPC's createa in "initializeAI" (AIEntities are deleted automatically by the AIManager
+	inline bool initializeAI(bool continueOnErrors)   { return _scene->initializeAI(continueOnErrors); }
+	///Destroy all AI entities, teams, NPC's createa in "initializeAI"
+	///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
 	inline bool deinitializeAI(bool continueOnErrors) { return _scene->deinitializeAI(continueOnErrors); }
 	/// Update animations, network data, sounds, triggers etc.
 	inline void updateCamera(Camera* const camera)  { _scene->updateCamera(camera); }

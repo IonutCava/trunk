@@ -106,7 +106,7 @@ public:
 	void setDimensions(const vec4<F32>& rect){
 		_geometry->getPosition()[0] = vec3<F32>(rect.x, rect.w, 0);
 		_geometry->getPosition()[1] = vec3<F32>(rect.z, rect.w, 0);
-		_geometry->getPosition()[2] = vec3<F32>(rect.x,rect.y,0);
+		_geometry->getPosition()[2] = vec3<F32>(rect.x, rect.y, 0);
 		_geometry->getPosition()[3] = vec3<F32>(rect.z, rect.y, 0);
 		_refreshVBO = true;
 	}

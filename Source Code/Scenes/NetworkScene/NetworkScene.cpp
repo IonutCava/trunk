@@ -74,10 +74,13 @@ void NetworkScene::checkPatches(){
 	ASIO::getInstance().sendPacket(p);
 }
 
+bool NetworkScene::preLoad(){
+	_GFX.changeResolution(640,384);
+	return true;
+}
+
 bool NetworkScene::load(const std::string& name){
 
-	setInitialData();
-	_GFX.changeResolution(640,384);
 	ASIO::getInstance().init(_paramHandler.getParam<std::string>("serverAddress"),std::string("443"));
 
 	bool state = loadResources(true);
@@ -148,16 +151,16 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 								"");
 
 	gui.addButton("getPing", "ping me", vec2<F32>(60 , _cachedResolution.height/1.1f),
-										vec2<U16>(100,25),vec3<F32>(0.6f,0.6f,0.6f),
+										vec2<F32>(100,25),vec3<F32>(0.6f,0.6f,0.6f),
 										boost::bind(&NetworkScene::test,this));
 	gui.addButton("disconnect", "disconnect", vec2<F32>(180 , _cachedResolution.height/1.1f),
-										vec2<U16>(100,25),vec3<F32>(0.5f,0.5f,0.5f),
+										vec2<F32>(100,25),vec3<F32>(0.5f,0.5f,0.5f),
 										boost::bind(&NetworkScene::disconnect,this));
 	gui.addButton("connect", "connect", vec2<F32>(300 , _cachedResolution.height/1.1f),
-										vec2<U16>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::connect,this));
 	gui.addButton("patch", "patch",     vec2<F32>(420 , _cachedResolution.height/1.1f),
-										vec2<U16>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::checkPatches,this));
 		
 

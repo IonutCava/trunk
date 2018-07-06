@@ -14,11 +14,13 @@ AITenisSceneAIActionList::AITenisSceneAIActionList(SceneGraphNode* target) : Act
 }
 
 void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
-	if(!entity) return;
+	assert(entity != NULL);
 	_entity = entity;
 	VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
 	if(visualSensor){
 		_initialPosition = visualSensor->getSpatialPosition();
+	}else{
+		PRINT_FN("HERE");
 	}
 }
 
@@ -110,6 +112,9 @@ void AITenisSceneAIActionList::processData(){
 }
 
 void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
+	if(!unitRef)
+		return;
+
 	if(!_node){
 		_node = node;
 	}

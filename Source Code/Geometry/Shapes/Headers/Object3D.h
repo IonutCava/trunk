@@ -64,7 +64,7 @@ public:
 	
 	virtual		void    render(SceneGraphNode* const sgn);
 
-	inline VertexBufferObject* const getGeometryVBO() {return _geometry;} ///<Please use IBO's ...
+	VertexBufferObject* const getGeometryVBO(); ///<Please use IBO's ...
 	inline vec2<U16>&          getIndiceLimits()      {return _indiceLimits; }
 	virtual void onDraw();
 

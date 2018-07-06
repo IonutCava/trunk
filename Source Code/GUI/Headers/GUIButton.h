@@ -26,7 +26,7 @@ class GUIButton : public GUIElement {
 typedef boost::function0<void> ButtonCallback;
 friend class GUI;
 public:
-	GUIButton(const std::string& id,std::string& text,const vec2<F32>& position,const vec2<U16>& dimensions,const vec3<F32>& color/*, Texture2D& image*/,ButtonCallback callback)  : GUIElement(),
+	GUIButton(const std::string& id,std::string& text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color/*, Texture2D& image*/,ButtonCallback callback)  : GUIElement(),
 		_text(text),
 		_dimensions(dimensions),
 		_color(color),
@@ -40,14 +40,14 @@ public:
 	}
 
 	std::string _text;
-	vec2<U16>	_dimensions;
+	vec2<F32>	_dimensions;
 	vec3<F32>	_color;
 	bool		_pressed;
 	bool		_highlight;
 	ButtonCallback _callbackFunction;	/* A pointer to a function to call if the button is pressed */
 	//Texture2D image;
 
-	void onResize(const vec2<U16>& newSize){
+	void onResize(const vec2<I32>& newSize){
 		if(_dimensions.x - newSize.x/_dimensions.x > 0.075f &&
 		   _dimensions.y - newSize.y/_dimensions.y > 0.05f){
 			_position.x -= newSize.x;

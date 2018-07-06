@@ -22,6 +22,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader,
 	_colorNoise = CreateResource<Texture>(colorNoiseTexture);
 	_normalsFBO = GFX_DEVICE.newFBO();
 	_normalsFBO->Create(FBO_2D_COLOR, width,height);
+	_outputFBO->Create(FBO_2D_COLOR, width, height);
 	_stage2Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
 
 }
@@ -36,6 +37,7 @@ void SSAOPreRenderOperator::reshape(I32 width, I32 height){
 	if(_normalsFBO){
 		_normalsFBO->Create(FBO_2D_COLOR, width,height);
 	}
+	_outputFBO->Create(FBO_2D_COLOR, width, height);
 }
 
 void SSAOPreRenderOperator::operation(){
@@ -48,8 +50,6 @@ void SSAOPreRenderOperator::operation(){
 		_stage1Shader->bind();
 
 				SceneManager::getInstance().render(SSAO_STAGE);
-
-		//_stage1Shader->unbind();
 
 	_normalsFBO->End();
 
@@ -72,6 +72,6 @@ void SSAOPreRenderOperator::operation(){
 
 			_colorNoise->Unbind(1);
 			_normalsFBO->Unbind(0);
-		//_stage2Shader->unbind();
+
 	_outputFBO->End();
 }

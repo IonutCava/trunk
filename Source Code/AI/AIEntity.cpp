@@ -14,12 +14,16 @@ AIEntity::AIEntity(const std::string& name) : _name(name),
 
 void AIEntity::sendMessage(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content){
 	CommunicationSensor* com = dynamic_cast<CommunicationSensor*>(getSensor(COMMUNICATION_SENSOR));
-	com->sendMessageToEntity(receiver, msg,msg_content);
+	if(com){
+		com->sendMessageToEntity(receiver, msg,msg_content);
+	}
 }
 
 void AIEntity::receiveMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content){
 	CommunicationSensor* com = dynamic_cast<CommunicationSensor*>(getSensor(COMMUNICATION_SENSOR));
-	com->receiveMessageFromEntity(sender, msg,msg_content);
+	if(com){
+		com->receiveMessageFromEntity(sender, msg,msg_content);
+	}
 }
 
 void AIEntity::processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content) {
@@ -38,6 +42,8 @@ bool AIEntity::addSensor(SENSOR_TYPE type, Sensor* sensor){
 	sensor->updatePosition(_node->getTransform()->getPosition());
 	if(_sensorList.find(type) != _sensorList.end()){
 		SAFE_UPDATE(_sensorList[type], sensor);
+	}else{
+		_sensorList.insert(std::make_pair(type,sensor));
 	}
 	return true;
 }

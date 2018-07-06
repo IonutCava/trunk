@@ -2,6 +2,7 @@
 #include "Headers/PreRenderStageBuilder.h"
 #include "CustomOperators/Headers/SSAOPreRenderOperator.h"
 #include "CustomOperators/Headers/BloomPreRenderOperator.h"
+#include "CustomOperators/Headers/DoFPreRenderOperator.h"
 
 PreRenderStageBuilder::PreRenderStageBuilder(){
 	_renderStage = New PreRenderStage();
@@ -20,6 +21,11 @@ PreRenderOperator*  PreRenderStageBuilder::addSSAOOperator(ShaderProgram* const 
 PreRenderOperator*  PreRenderStageBuilder::addBloomOperator(ShaderProgram* const bloomShader, Quad3D* target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution) {
 	BloomPreRenderOperator* bloom = New BloomPreRenderOperator(bloomShader,target,result,resolution);
 	return addToStage(bloom, state);
+}
+
+PreRenderOperator*  PreRenderStageBuilder::addDOFOperator(ShaderProgram* const dofShader, Quad3D* target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution) {
+	DoFPreRenderOperator* dof = New DoFPreRenderOperator(dofShader,target,result,resolution);
+	return addToStage(dof, state);
 }
 
 PreRenderOperator* PreRenderStageBuilder::addToStage(PreRenderOperator* op, bool& state){

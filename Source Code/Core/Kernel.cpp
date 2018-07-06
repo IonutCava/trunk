@@ -4,6 +4,8 @@
 #include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Managers/Headers/AIManager.h"
+#include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Managers/Headers/CameraManager.h"
@@ -18,7 +20,8 @@
 D32 Kernel::_currentTime = 0.0;
 bool Kernel::_keepAlive = true;
 
-Kernel::Kernel() :	_targetFrameRate(60),
+Kernel::Kernel() :	_loadAI(false),
+					_targetFrameRate(60),
 					_GFX(GFX_DEVICE),               ///Video
 				    _SFX(SFXDevice::getInstance()), ///Audio
 					_PFX(PHYSICS_DEVICE),           ///Physics
@@ -26,20 +29,22 @@ Kernel::Kernel() :	_targetFrameRate(60),
 				    _sceneMgr(SceneManager::getInstance()), ///Scene Manager 
 					_camera(New FreeFlyCamera()),			///Default camera
 					_cameraMgr(New CameraManager()),        ///Camera manager
+					_lightPool(LightManager::getInstance()),///Light pool
 					_inputInterface(InputInterface::getInstance())  ///Input interface
 {
 
 	 assert(_cameraMgr != NULL);
 	 ///If camera has been updated, set a callback to inform the current scene
 	 _cameraMgr->addCameraChangeListener(boost::bind(&SceneManager::updateCamera, ///update camera
-													 boost::ref(SceneManager::getInstance()),
+													 boost::ref(_sceneMgr),
 													 _cameraMgr->getActiveCamera()));
 	 _camera->setEye(vec3<F32>(0,50,0));
-	 _camera->addUpdateListener(boost::bind(&LightManager::update, ///< force all lights to update
-										    boost::ref(LightManager::getInstance()),
-											true));
+	 /// force all lights to update
+	 _camera->addUpdateListener(boost::bind(&LightManager::update, boost::ref(_lightPool), true));
 	 ///As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
 	 _cameraMgr->addNewCamera("defaultCamera",_camera);
+	 ///Create an AI thread, but start it only if needed
+	 _aiEvent.reset(New Event(3,false,false,boost::bind(&AIManager::tick, boost::ref(AIManager::getInstance()))));
 }
 
 Kernel::~Kernel(){
@@ -87,8 +92,6 @@ void Kernel::MainLoopStatic(){
 }
 
 bool Kernel::MainLoop(){
-	/// Cache resolution in case it changes in previous loop
-	refreshAppData();
 
 	_camera->RenderLookAt();	
 	_sceneMgr.updateCamera(_camera);
@@ -107,14 +110,15 @@ bool Kernel::MainLoop(){
 		return false;
 	}
 
-	LightManager::getInstance().generateShadowMaps(_camera->getEye());
+	_lightPool.generateShadowMaps(_camera->getEye());
 
 	PostFX::getInstance().render(_camera);
 
-	ShaderManager::getInstance().unbind();//unbind all shaders
+	///unbind all shaders
+	ShaderManager::getInstance().unbind();
 
 	///Preview depthmaps if needed
-	LightManager::getInstance().previewDepthMaps();
+	_lightPool.previewDepthMaps();
 
 	GUI::getInstance().draw();
 	_inputInterface.tick();
@@ -153,21 +157,27 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	///Load default material
 	XML::loadMaterialXML(par.getParam<std::string>("scriptLocation")+"/defaultMaterial");
 	PRINT_FN("Loading scene data ...");
-	_sceneMgr.updateCamera(_camera);
-	_sceneMgr.load(std::string(""));
-	PRINT_FN("Initial data loaded ...\nCreating AI entities ...");
-	_sceneMgr.initializeAI(true);
-	PRINT_FN("AI Entities created ...\n Adding default camera ...");
+	_sceneMgr.cacheResolution(resolution); ///< Inform scenes of startup resolution
+	_sceneMgr.updateCamera(_camera);       ///< Set up the starting camera
+ 	_sceneMgr.preLoad();                   ///< Perform any preload operations (that would affect loading, for exemaple enabling deffered mode)
+	_sceneMgr.load(std::string(""));       ///< Load the scene
+	PRINT_FN("Initial data loaded ...");
+	PRINT_FN("Creating AI entities ...");
+	///Start the AIManager thread
+	_loadAI = _sceneMgr.initializeAI(true);
+	PRINT_FN("AI Entities created ...");
+	PRINT_FN("Adding default camera ...");
 	PRINT_FN("Creating console gui element ...");
+	_GUI.cacheResolution(resolution);
 	_GUI.createConsole();
-
-	PRINT_FN("Entering main rendering loop ...");
-
-
 	return windowId;
 }
 
 void Kernel::beginLogicLoop(){
+	PRINT_FN("Entering main rendering loop ...");
+	if(_loadAI){
+		_aiEvent->startEvent();
+	}
 	//Target FPS is 60. So all movement is capped around that value
 	GFX_DEVICE.initDevice(_targetFrameRate);
 }
@@ -182,6 +192,13 @@ void Kernel::Shutdown(){
 	PostFX::getInstance().DestroyInstance();
 	PRINT_FN("Unloading scenes and shutting down the scene manager!");
 	_sceneMgr.deinitializeAI(true);
+	///Shut down AIManager thread
+	if(_aiEvent.get()){
+		_aiEvent->stopEvent();
+		_aiEvent.reset();
+	}
+	AIManager::getInstance().Destroy();
+	AIManager::getInstance().DestroyInstance();
 	_sceneMgr.DestroyInstance();
 	PRINT_FN("Emptying the resource cache ...");
 	ResourceCache::getInstance().DestroyInstance();
@@ -194,8 +211,18 @@ void Kernel::Shutdown(){
 	_GFX.DestroyInstance();
 }
 
-void Kernel::refreshAppData(){
-	_sceneMgr.cacheResolution(Application::getInstance().getResolution());
+void Kernel::updateResolutionCallback(I32 w, I32 h){
+	///Update rendering device
+	GFX_DEVICE.changeResolution(w,h);
+	Application::getInstance().setResolutionWidth(w);
+	Application::getInstance().setResolutionHeight(h);
+	///Update post-processing render targets and buffers
+	PostFX::getInstance().reshapeFBO(w, h);
+	vec2<U16> newResolution(w,h);
+	///Update the graphical user interface
+	GUI::getInstance().onResize(newResolution);
+	/// Cache resolution for faster access
+	SceneManager::getInstance().cacheResolution(newResolution);
 }
 
 ///--------------------------Input Management-------------------------------------///
@@ -224,6 +251,7 @@ bool Kernel::onMouseMove(const OIS::MouseEvent& arg) {
 	if(GUIConsole::getInstance().isConsoleOpen()){
 		GUIConsole::getInstance().onMouseMove(arg);
 	}else{
+		GUI::getInstance().checkItem(arg.state.X.abs,arg.state.Y.abs);
 		GET_ACTIVE_SCENE()->onMouseMove(arg);
 	}
 	return true;

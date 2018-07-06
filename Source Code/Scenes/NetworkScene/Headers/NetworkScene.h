@@ -27,6 +27,7 @@ public:
 	void render();
 	void preRender();
 
+	bool preLoad();
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	bool unload();

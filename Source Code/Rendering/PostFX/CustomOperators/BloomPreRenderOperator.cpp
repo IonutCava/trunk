@@ -1,11 +1,10 @@
 #include "Headers/BloomPreRenderOperator.h"
-#include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
-#include "Core/Resources/Headers/ResourceCache.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/ParamHandler.h" 
-#include "Hardware/Video/GFXDevice.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+#include "Hardware/Video/GFXDevice.h"
+#include "Core/Headers/ParamHandler.h" 
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
 BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader, 
 											   Quad3D* target, 
@@ -16,9 +15,9 @@ BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader,
 {
 	F32 width = _resolution.width;
 	F32 height = _resolution.height;
-	I32 w = width/4, h = height/4;
 	_tempBloomFBO = GFX_DEVICE.newFBO();
-	_tempBloomFBO->Create(FBO_2D_COLOR,w,h);
+	_tempBloomFBO->Create(FBO_2D_COLOR,width/4,height/4);
+	_outputFBO->Create(FBO_2D_COLOR, width, height);
 	_bright = CreateResource<ShaderProgram>(ResourceDescriptor("bright"));
 
 }
@@ -29,9 +28,12 @@ BloomPreRenderOperator::~BloomPreRenderOperator(){
 }
 
 void BloomPreRenderOperator::reshape(I32 width, I32 height){
+	I32 w = width/4;
+	I32 h = height/4;
 	if(_tempBloomFBO){
-		_tempBloomFBO->Create(FBO_2D_COLOR, width/4,height/4);
+		_tempBloomFBO->Create(FBO_2D_COLOR, w,h);
 	}
+	_outputFBO->Create(FBO_2D_COLOR, w, h);
 }
 
 void BloomPreRenderOperator::operation(){
@@ -58,7 +60,6 @@ void BloomPreRenderOperator::operation(){
 
 			_inputFBO[0]->Unbind(0);
 
-		//_bright->unbind();
 
 	_outputFBO->End();
 
@@ -76,9 +77,8 @@ void BloomPreRenderOperator::operation(){
 
 				gfx.renderModel(_renderQuad);
 
-			//_outputFBO->Unbind(0);
+			_outputFBO->Unbind(0);
 		
-		_blur->unbind();
 		
 	_tempBloomFBO->End();
 
@@ -97,7 +97,6 @@ void BloomPreRenderOperator::operation(){
 
 			_tempBloomFBO->Unbind(0);
 		
-		//_blur->unbind();
 		
 	_outputFBO->End();
 
