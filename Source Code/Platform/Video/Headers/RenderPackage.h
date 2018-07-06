@@ -42,11 +42,12 @@ class RenderPassManager;
 
 namespace Attorney {
     class RenderPackageRenderPassManager;
+    class RenderPackageRenderingComponent;
 };
 
 class RenderPackage {
     friend class Attorney::RenderPackageRenderPassManager;
-
+    friend class Attorney::RenderPackageRenderingComponent;
 public:
     enum class MinQuality : U8 {
         FULL = 0,
@@ -77,12 +78,6 @@ public:
 
     void clear();
     void set(const RenderPackage& other);
-
-    inline void isRenderable(bool state) { _isRenderable = state; }
-    inline bool isRenderable() const { return  _isRenderable; }
-
-    inline void isOcclusionCullable(bool state) { _isOcclusionCullable = state; }
-    inline bool isOcclusionCullable() const { return  _isOcclusionCullable; }
 
     inline void qualityRequirement(MinQuality state) { _qualityRequirement = state; }
     inline MinQuality qualityRequirement() const { return  _qualityRequirement; }
@@ -118,12 +113,11 @@ public:
     void setLoD(U8 LoDIntex);
 
 protected:
-    void updateDrawCommands(U32 cmdIndex, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut);
+    void setDataIndex(U32 dataIndex);
+    void updateDrawCommands(U32 startOffset);
     GFX::CommandBuffer& buildAndGetCommandBuffer(bool cacheMiss);
 
 private:
-    bool _isRenderable;
-    bool _isOcclusionCullable;
     bool _secondaryCommandPool;
     MinQuality _qualityRequirement;
 
@@ -150,11 +144,19 @@ namespace Attorney {
             return pkg.buildAndGetCommandBuffer(cacheMiss);
         }
 
-        static void updateDrawCommands(RenderPackage& pkg, U32 cmdIndex, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
-            pkg.updateDrawCommands(cmdIndex, drawCmdsInOut);
+        friend class Divide::RenderPassManager;
+    };
+
+    class RenderPackageRenderingComponent {
+        private:
+        static void updateDrawCommands(RenderPackage& pkg, U32 startOffset) {
+            pkg.updateDrawCommands(startOffset);
         }
 
-        friend class Divide::RenderPassManager;
+        static void setDataIndex(RenderPackage& pkg, U32 dataIndex) {
+            pkg.setDataIndex(dataIndex);
+        }
+        friend class Divide::RenderingComponent;
     };
 }; // namespace Attorney
 }; // namespace Divide

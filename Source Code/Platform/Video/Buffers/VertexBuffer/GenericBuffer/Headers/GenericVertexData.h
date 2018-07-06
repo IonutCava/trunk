@@ -102,7 +102,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
 
-    const char* _name;
+    stringImpl _name;
 };
 
 };  // namespace Divide

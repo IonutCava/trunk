@@ -1436,10 +1436,10 @@ void mat3<T>::orthoNormalize(void) {
 
 template<typename T>
 mat4<T>::mat4() noexcept
-    : mat4(1, 0, 0, 0,
-           0, 1, 0, 0,
-           0, 0, 1, 0,
-           0, 0, 0, 1)
+    : mat4({ 1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1, 0,
+             0, 0, 0, 1 })
 {
 }
 
@@ -1455,44 +1455,38 @@ mat4<T>::mat4(U value) noexcept
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(U m0, U m1, U m2, U m3,
-              U m4, U m5, U m6, U m7,
-              U m8, U m9, U m10, U m11,
-              U m12, U m13, U m14, U m15) noexcept
-    : mat{ static_cast<T>(m0),  static_cast<T>(m1),  static_cast<T>(m2),  static_cast<T>(m3),
-           static_cast<T>(m4),  static_cast<T>(m5),  static_cast<T>(m6),  static_cast<T>(m7),
-           static_cast<T>(m8),  static_cast<T>(m9),  static_cast<T>(m10), static_cast<T>(m11),
-           static_cast<T>(m12), static_cast<T>(m13), static_cast<T>(m14), static_cast<T>(m15) }
+mat4<T>::mat4(std::initializer_list<U> matrix) noexcept
+    : mat4(matrix.begin())
 {
 }
 
 template<typename T>
 template<typename U>
 mat4<T>::mat4(const U *values) noexcept
-    : mat4(values[0],  values[1],  values[2],  values[3],
-           values[4],  values[5],  values[6],  values[7],
-           values[8],  values[9],  values[10], values[11],
-           values[12], values[13], values[14], values[15])
+    : mat{ static_cast<T>(values[0]),  static_cast<T>(values[1]),  static_cast<T>(values[2]),  static_cast<T>(values[3]),
+           static_cast<T>(values[4]),  static_cast<T>(values[5]),  static_cast<T>(values[6]),  static_cast<T>(values[7]),
+           static_cast<T>(values[8]),  static_cast<T>(values[9]),  static_cast<T>(values[10]), static_cast<T>(values[11]),
+           static_cast<T>(values[12]), static_cast<T>(values[13]), static_cast<T>(values[14]), static_cast<T>(values[15]) }
 {
 }
 
 template<typename T>
 template<typename U>
 mat4<T>::mat4(const mat2<U> &B, bool zeroFill) noexcept
-    : mat4(B[0],              B[1],              static_cast<U>(0), static_cast<U>(0),
-           B[2],              B[3],              static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1))
+    : mat4({ B[0],              B[1],              static_cast<U>(0), static_cast<U>(0),
+             B[2],              B[3],              static_cast<U>(0), static_cast<U>(0),
+             static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1), static_cast<U>(0),
+             static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1) })
 {
 }
 
 template<typename T>
 template<typename U>
 mat4<T>::mat4(const mat3<U> &B, bool zeroFill) noexcept
-    : mat4(B[0],              B[1],              B[2],              static_cast<U>(0),
-           B[3],              B[4],              B[5],              static_cast<U>(0),
-           B[6],              B[7],              B[8],              static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1))
+    : mat4({ B[0],              B[1],              B[2],              static_cast<U>(0),
+             B[3],              B[4],              B[5],              static_cast<U>(0),
+             B[6],              B[7],              B[8],              static_cast<U>(0),
+             static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1) })
 {
 }
 
@@ -1512,20 +1506,20 @@ mat4<T>::mat4(const mat4<U> &B) noexcept
 template<typename T>
 template<typename U>
 mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept
-    : mat4(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
-           translation.x,     translation.y,     translation.z,     static_cast<U>(1))
+    : mat4({ scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+             static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
+             static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
+             translation.x,     translation.y,     translation.z,     static_cast<U>(1) })
 {
 }
 
 template<typename T>
 template<typename U>
 mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale, const mat3<U>& rotation) noexcept
-    : mat4(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(1))
+    : mat4({scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+            static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
+            static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
+            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(1)})
 {
     set(*this * mat4<U>(rotation, false));
     setTranslation(translation);
@@ -1541,10 +1535,10 @@ mat4<T>::mat4(const vec3<U> &translation) noexcept
 template<typename T>
 template<typename U>
 mat4<T>::mat4(U translationX, U translationY, U translationZ) noexcept
-    : mat4(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-           translationX,      translationY,      translationZ,      static_cast<U>(1))
+    : mat4({static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+            translationX,      translationY,      translationZ,      static_cast<U>(1)})
 {
 }
 
@@ -1855,26 +1849,8 @@ const T& mat4<T>::element(I8 row, I8 column) const {
 
 template<typename T>
 template<typename U>
-void mat4<T>::set(U m0, U m1, U m2, U m3, U m4, U m5, U m6, U m7, U m8, U m9, U m10, U m11, U m12, U m13, U m14, U m15) noexcept {
-    mat[0]  = static_cast<T>(m0);
-    mat[4]  = static_cast<T>(m4);
-    mat[8]  = static_cast<T>(m8);
-    mat[12] = static_cast<T>(m12);
-
-    mat[1]  = static_cast<T>(m1);
-    mat[5]  = static_cast<T>(m5);
-    mat[9]  = static_cast<T>(m9);
-    mat[13] = static_cast<T>(m13);
-
-    mat[2]  = static_cast<T>(m2);
-    mat[6]  = static_cast<T>(m6);
-    mat[10] = static_cast<T>(m10);
-    mat[14] = static_cast<T>(m14);
-
-    mat[3]  = static_cast<T>(m3);
-    mat[7]  = static_cast<T>(m7);
-    mat[11] = static_cast<T>(m11);
-    mat[15] = static_cast<T>(m15);
+void mat4<T>::set(std::initializer_list<U> matrix) {
+    set(matrix.begin());
 }
 
 template<typename T>
@@ -1883,33 +1859,29 @@ void mat4<T>::set(U const *matrix) {
     if (sizeof(T) == sizeof(U)) {
         memcpy(mat, matrix, sizeof(U) * 16);
     } else {
-        set(matrix[0],  matrix[1],  matrix[2],  matrix[3],
-            matrix[4],  matrix[5],  matrix[6],  matrix[7],
-            matrix[8],  matrix[9],  matrix[10], matrix[11],
-            matrix[12], matrix[13], matrix[14], matrix[15]);
+        for (U8 i = 0; i < 16; ++i) {
+            mat[i] = static_cast<T>(matrix[i]);
+        }
     }
 }
 
 template<typename T>
 template<typename U>
 void mat4<T>::set(const mat2<U> &matrix) {
-    const U zero = static_cast<U>(0);
+    memset(mat, 0, 16 * sizeof(T));
 
-    set(matrix[0], matrix[1], zero, zero,
-        matrix[2], matrix[3], zero, zero,
-        zero,      zero,      zero, zero,
-        zero,      zero,      zero, zero);
+    mat[0] = matrix[0];  mat[1] = matrix[1];
+    mat[4] = matrix[2];  mat[5] = matrix[3];
 }
 
 template<typename T>
 template<typename U>
 void mat4<T>::set(const mat3<U> &matrix) {
-    const U zero = static_cast<U>(0);
+    memset(mat, 0, 16 * sizeof(T));
 
-    set(matrix[0], matrix[1], matrix[2], zero,
-        matrix[3], matrix[4], matrix[5], zero,
-        matrix[6], matrix[7], matrix[8], zero,
-        zero,      zero,      zero,      zero);
+    mat[0] = matrix[0]; mat[1] = matrix[1]; mat[2]  = matrix[2];
+    mat[4] = matrix[3]; mat[5] = matrix[4]; mat[6]  = matrix[5];
+    mat[8] = matrix[6]; mat[9] = matrix[7]; mat[10] = matrix[8];
 }
 
 template<typename T>
@@ -1988,10 +1960,8 @@ void mat4<T>::zero() {
 
 template<typename T>
 void mat4<T>::identity() {
-    set(1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1);
+    memset(mat, 0, 16 * sizeof(T));
+    m[0][0] = m[1][1] = m[2][2] = m[3][3] = static_cast<T>(1);
 }
 
 template<typename T>
@@ -2059,10 +2029,10 @@ FORCE_INLINE void mat4<F32>::inverse() {
 
 template<typename T>
 void mat4<T>::transpose() {
-    set(mat[0], mat[4], mat[8],  mat[12],
-        mat[1], mat[5], mat[9],  mat[13],
-        mat[2], mat[6], mat[10], mat[14],
-        mat[3], mat[7], mat[11], mat[15]);
+    set({ mat[0], mat[4], mat[8],  mat[12],
+          mat[1], mat[5], mat[9],  mat[13],
+          mat[2], mat[6], mat[10], mat[14],
+          mat[3], mat[7], mat[11], mat[15] });
 }
 
 template<typename T>
@@ -2073,10 +2043,10 @@ void mat4<T>::inverseTranspose() {
 
 template<typename T>
 mat4<T> mat4<T>::transposeRotation() const {
-    set(mat[0],  mat[4],  mat[8],  mat[3],
-        mat[1],  mat[5],  mat[9],  mat[7],
-        mat[2],  mat[6],  mat[10], mat[11],
-        mat[12], mat[13], mat[14], mat[15]);
+    set({ mat[0],   mat[4],  mat[8], mat[3],
+          mat[1],   mat[5],  mat[9], mat[7],
+          mat[2],   mat[6], mat[10], mat[11],
+          mat[12], mat[13], mat[14], mat[15] });
 }
 
 template<typename T>
@@ -2105,18 +2075,18 @@ FORCE_INLINE void mat4<F32>::getInverse(mat4<F32> &ret) const {
 
 template<typename T>
 mat4<T> mat4<T>::getTranspose() const {
-    return mat4(mat[0], mat[4], mat[8],  mat[12],
-                mat[1], mat[5], mat[9],  mat[13],
-                mat[2], mat[6], mat[10], mat[14],
-                mat[3], mat[7], mat[11], mat[15]);
+    return mat4({mat[0], mat[4], mat[8],  mat[12],
+                 mat[1], mat[5], mat[9],  mat[13],
+                 mat[2], mat[6], mat[10], mat[14],
+                 mat[3], mat[7], mat[11], mat[15]});
 }
 
 template<typename T>
 void mat4<T>::getTranspose(mat4 &out) const {
-    out.set(mat[0], mat[4], mat[8],  mat[12],
-            mat[1], mat[5], mat[9],  mat[13],
-            mat[2], mat[6], mat[10], mat[14],
-            mat[3], mat[7], mat[11], mat[15]);
+    out.set({mat[0], mat[4], mat[8],  mat[12],
+             mat[1], mat[5], mat[9],  mat[13],
+             mat[2], mat[6], mat[10], mat[14],
+             mat[3], mat[7], mat[11], mat[15]});
 }
 
 template<typename T>
@@ -2349,10 +2319,10 @@ const mat4<T>& mat4<T>::reflect(const Plane<U> &plane) {
     U z = eq.z;
     U d = eq.w;
 
-    *this = mat4( -2 * x * x + 1,  -2 * y * x,      -2 * z * x,      zero,
-                  -2 * x * y,      -2 * y * y + 1,  -2 * z * y,      zero,
-                  -2 * x * z,      -2 * y * z,      -2 * z * z + 1,  zero,
-                  -2 * x * d,      -2 * y * d,      -2 * z * d,      one) * *this;
+    *this = mat4({ -2 * x * x + 1,  -2 * y * x,      -2 * z * x,      zero,
+                   -2 * x * y,      -2 * y * y + 1,  -2 * z * y,      zero,
+                   -2 * x * z,      -2 * y * z,      -2 * z * z + 1,  zero,
+                   -2 * x * d,      -2 * y * d,      -2 * z * d,      one }) * *this;
 
     return *this;
 }

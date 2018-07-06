@@ -138,11 +138,11 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProcessParams& state, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const {
+GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const {
     GFXDevice::NodeData dataOut;
 
-    RenderingComponent* const renderable = state._node->get<RenderingComponent>();
-    TransformComponent* const transform = state._node->get<TransformComponent>();
+    RenderingComponent* const renderable = node->get<RenderingComponent>();
+    TransformComponent* const transform = node->get<TransformComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -170,19 +170,19 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProce
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     if (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS)) {
-        AnimationComponent* const animComp = state._node->get<AnimationComponent>();
+        AnimationComponent* const animComp = node->get<AnimationComponent>();
         dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0);
     } else {
         dataOut._normalMatrixWV.element(0, 3) = 0.0f;
     }
-    dataOut._normalMatrixWV.setRow(3, state._node->get<BoundsComponent>()->getBoundingSphere().asVec4());
+    dataOut._normalMatrixWV.setRow(3, node->get<BoundsComponent>()->getBoundingSphere().asVec4());
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
 
     //set properties.w to -1 to skip occlusion culling for the node
-    dataOut._properties.w = state._isOcclusionCullable ? 1.0f : -1.0f;
+    dataOut._properties.w = isOcclusionCullable ? 1.0f : -1.0f;
 
     return dataOut;
 }
@@ -190,7 +190,6 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(const VisibleNodeProce
 void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut) {
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
-    U32 nodeCount = 0;
     RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
 
     const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
@@ -203,17 +202,10 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-
-            RenderPackage& pkg = renderable.getDrawPackage(stagePass);
-            if (pkg.isRenderable()) {
-                Attorney::RenderPackageRenderPassManager::updateDrawCommands(pkg, nodeCount, drawCommands);
-                VisibleNodeProcessParams processParams;
-                processParams._node = node;
-                processParams._isOcclusionCullable = pkg.isOcclusionCullable();
-                processParams._dataIndex = nodeCount;
-
-                nodeData.push_back(processVisibleNode(processParams, sceneRenderState, viewMatrix));
-                ++nodeCount;
+            Attorney::RenderingCompRenderPass::setDataIndex(renderable, to_U32(nodeData.size()));
+            if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stagePass._stage)) {
+                nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), sceneRenderState, viewMatrix));
+                Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stagePass._stage, drawCommands);
             }
         }
     }
@@ -221,12 +213,12 @@ void RenderPassManager::refreshNodeData(RenderStagePass stagePass, const PassPar
     RenderPass::BufferData& bufferData = getBufferData(stagePass._stage, params._pass);
     bufferData._lastCommandCount = to_U32(drawCommands.size());
 
-    assert(bufferData._lastCommandCount >= nodeCount);
+    assert(bufferData._lastCommandCount >= to_U32(nodeData.size()));
     // If the buffer update required is large enough, just replace the entire thing
-    if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
+    if (nodeData.size() > Config::MAX_VISIBLE_NODES / 2) {
         bufferData._renderData->writeData(nodeData.data());
     } else { // Otherwise, just update the needed range to save bandwidth
-        bufferData._renderData->writeData(0, nodeCount, nodeData.data());
+        bufferData._renderData->writeData(0, nodeData.size(), nodeData.data());
     }
 
     bufferData._cmdBuffer->writeData(drawCommands.data());
@@ -251,27 +243,10 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 {
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
-    U32 nodeCount = 0;
-    vectorEASTL<IndirectDrawCommand> drawCommands;
-    drawCommands.reserve(Config::MAX_VISIBLE_NODES);
-
     RenderQueue::SortedQueues sortedQueues = getQueue().getSortedQueues(stagePass._stage);
     for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
-            Attorney::RenderingCompRenderPass::prepareDrawPackage(
-                *node->get<RenderingComponent>(),
-                *params._camera,
-                sceneRenderState,
-                stagePass);
-
-            if (!refresh) {
-                RenderPackage& pkg = node->get<RenderingComponent>()->getDrawPackage(stagePass);
-                if (pkg.isRenderable()) {
-                    Attorney::RenderPackageRenderPassManager::updateDrawCommands(pkg, nodeCount, drawCommands);
-                }
-                ++nodeCount;
-            }
-
+            Attorney::RenderingCompRenderPass::prepareDrawPackage(*node->get<RenderingComponent>(), *params._camera, sceneRenderState, stagePass);
         }
     }
 

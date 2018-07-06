@@ -61,12 +61,6 @@ public:
         FrustumClipPlanes _clippingPlanes;
     };
 
-    struct VisibleNodeProcessParams {
-        bool _isOcclusionCullable = true;
-        U32 _dataIndex = 0;
-        SceneGraphNode* _node = nullptr;
-    };
-
 public:
     explicit RenderPassManager(Kernel& parent, GFXDevice& context);
     ~RenderPassManager();
@@ -99,7 +93,7 @@ private:
     void prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildDrawCommands(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void refreshNodeData(RenderStagePass stagePass, const PassParams& params, GFX::CommandBuffer& bufferInOut);
-    GFXDevice::NodeData processVisibleNode(const VisibleNodeProcessParams& state, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const;
+    GFXDevice::NodeData processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, const SceneRenderState& sceneRenderState, const mat4<F32>& viewMatrix) const;
 private: //TEMP
     friend class RenderBin;
     U32  renderQueueSize(RenderStagePass stagePass, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;

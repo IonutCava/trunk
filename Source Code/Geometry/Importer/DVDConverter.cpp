@@ -40,10 +40,6 @@ namespace Divide {
             internalNode->_parent = parent;
 
             internalNode->_localTransform = pNode->mTransformation;
-            if (!Config::USE_OPENGL_RENDERING) {
-                internalNode->_localTransform.Transpose();
-            }
-
             internalNode->_originalLocalTransform = internalNode->_localTransform;
             calculateBoneToWorldTransform(internalNode);
 
@@ -139,10 +135,6 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
         aiProcess_LimitBoneWeights | aiProcess_RemoveRedundantMaterials |
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
         aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;
-
-    if (!Config::USE_OPENGL_RENDERING) {
-        ppsteps |= aiProcess_ConvertToLeftHanded;
-    }
 
     const aiScene* aiScenePointer = importer.ReadFile(file.c_str(), ppsteps);
 

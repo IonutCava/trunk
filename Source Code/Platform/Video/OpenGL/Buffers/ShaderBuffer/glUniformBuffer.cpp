@@ -81,7 +81,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
     implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
-    implParams._name = _name;
+    implParams._name = _name.empty() ? nullptr : _name.c_str();
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 }
 

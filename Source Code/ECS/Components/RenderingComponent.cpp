@@ -41,6 +41,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
+    toggleRenderOption(RenderOptions::IS_OCCLUSION_CULLABLE, _parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
 
     const Object3D_ptr& node = parentSGN.getNode<Object3D>();
     Object3D::ObjectType type = node->getObjectType();
@@ -60,9 +61,10 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     }
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
-        std::unique_ptr<RenderPackage>& pkg = _renderPackages[to_base(RenderStagePass::pass(i))][to_base(RenderStagePass::stage(i))];
+        RenderPackagesPerPassType& packages = _renderPackages[to_base(RenderStagePass::stage(i))];
+        std::unique_ptr<RenderPackage>& pkg = packages[to_base(RenderStagePass::pass(i))];
+
         pkg = std::make_unique<RenderPackage>(true);
-        pkg->isOcclusionCullable(_parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
 
         STUBBED("ToDo: Use quality requirements for rendering packages! -Ionut");
         pkg->qualityRequirement(RenderPackage::MinQuality::FULL);
@@ -471,7 +473,6 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStagePass re
 
 void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass) {
     RenderPackage& pkg = getDrawPackage(renderStagePass);
-    pkg.isRenderable(false);
     if (canDraw(renderStagePass)) {
 
         if (_renderPackagesDirty) {
@@ -491,20 +492,51 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
             pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, renderGeometry);
             pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, renderWireframe);
+            pkg.setDrawOption(CmdRenderOptions::RENDER_INDIRECT, true);
             pkg.setLoD(_lodLevel);
-            pkg.isRenderable(pkg.drawCommandCount() > 0);
         }
     }
 }
 
+void RenderingComponent::updateDrawCommands(RenderStage stage, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
+    RenderPackagesPerPassType& packagesPerPass = _renderPackages[to_base(stage)];
+    for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
+        Attorney::RenderPackageRenderingComponent::updateDrawCommands(*pkg, to_U32(drawCmdsInOut.size()));
+    }
+
+    std::unique_ptr<RenderPackage>& pkg = _renderPackages[to_base(stage)].front();
+    for (I32 i = 0; i < pkg->drawCommandCount(); ++i) {
+        drawCmdsInOut.push_back(pkg->drawCommand(i, 0)._cmd);
+    }
+}
+
+void RenderingComponent::setDataIndex(U32 dataIndex) {
+    for (RenderPackagesPerPassType& packagesPerPassType : _renderPackages) {
+        for (std::unique_ptr<RenderPackage>& package : packagesPerPassType) {
+            Attorney::RenderPackageRenderingComponent::setDataIndex(*package, dataIndex);
+        }
+    }
+}
+
+bool RenderingComponent::hasDrawCommands(RenderStage stage) {
+    RenderPackagesPerPassType& packagesPerPass = _renderPackages[to_base(stage)];
+    for (std::unique_ptr<RenderPackage>& pkg : packagesPerPass) {
+        if (pkg->drawCommandCount() > 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) {
-    RenderPackage& ret = *_renderPackages[to_base(renderStagePass._passType)][to_base(renderStagePass._stage)].get();
+    RenderPackage& ret = *_renderPackages[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)].get();
     //ToDo: Some validation? -Ionut
     return ret;
 }
 
 const RenderPackage& RenderingComponent::getDrawPackage(RenderStagePass renderStagePass) const {
-    const RenderPackage& ret = *_renderPackages[to_base(renderStagePass._passType)][to_base(renderStagePass._stage)].get();
+    const RenderPackage& ret = *_renderPackages[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)].get();
     //ToDo: Some validation? -Ionut
     return ret;
 }

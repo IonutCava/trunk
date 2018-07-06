@@ -18,7 +18,7 @@ ShaderBuffer::ShaderBuffer(GFXDevice& context,
         _primitiveCount(descriptor._primitiveCount),
         _frequency(descriptor._updateFrequency),
         _unbound(descriptor._unbound),
-        _name(descriptor._name.c_str()),
+        _name(descriptor._name),
         _bufferSize(0),
         _maxSize(0)
 {

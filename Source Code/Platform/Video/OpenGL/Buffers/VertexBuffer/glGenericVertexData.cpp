@@ -186,7 +186,7 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
             _indexBufferUsage,
             _indexBuffer,
             indices.data,
-            _name != nullptr ? (_name + stringImpl("_index")).c_str() : _name);
+            _name.empty() ? nullptr : (_name + "_index").c_str());
     }
 
     GL_API::setActiveVAO(_vertexArray[to_base(GVDUsage::DRAW)]);
@@ -241,7 +241,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
     params._frequency = updateFrequency;
     params._ringSizeFactor = useRingBuffer ? queueLength() : 1;
     params._data = data;
-    params._name = _name;
+    params._name = _name.empty() ? nullptr : _name.c_str();
     glGenericBuffer* tempBuffer = MemoryManager_NEW glGenericBuffer(_context, params);
     _bufferObjects[buffer] = tempBuffer;
 

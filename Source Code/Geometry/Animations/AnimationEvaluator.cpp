@@ -97,6 +97,11 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
 
     animationData.shrink_to_fit();
 
+#if DEBUG_SKINNING
+    for (mat4<F32>& trans : animationData) {
+        trans.identity();
+    }
+#endif
 
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = frameCount();
@@ -105,7 +110,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._unbound = useUnboundBuffer;
     bufferDescriptor._initialData = animationData.data();
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-    bufferDescriptor._name = "BONE_BUFFER";
+    bufferDescriptor._name = Util::StringFormat("BONE_BUFFER_%d_BONES", boneCount);
 
     _boneTransformBuffer = context.newSB(bufferDescriptor);
 

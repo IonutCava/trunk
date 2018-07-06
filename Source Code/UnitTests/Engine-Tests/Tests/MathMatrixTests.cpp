@@ -103,7 +103,8 @@ TEST(matNUnionTests)
     // Random, unique values
     input1.set(-1, 0, 1, 2);
     input2.set(1, 2, 3, 4, 5, 6, 7, 8, 9);
-    input3.set(-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8);
+
+    input3.set({ -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8 });
     for (U8 i = 0; i < 16; ++i) {
         input4.mat[i] = 22.345f * (i + 1);
     }
@@ -150,10 +151,10 @@ TEST_CONST_MEMBER_FUNCTION(matN, getCol, NA)
     const mat3<I32> input2(1, 2, 3,
                            4, 5, 6,
                            7, 8, 9);
-    const mat4<F32> input3(1.0f, 2.0f, 3.0f, 4.0f,
-                           5.0f, 6.0f, 7.0f, 8.0f,
-                           9.0f, 10.0f, 11.0f, 12.0f,
-                           13.0f, 14.0f, 15.0f, 16.0f);
+    const mat4<F32> input3({1.0f, 2.0f, 3.0f, 4.0f,
+                            5.0f, 6.0f, 7.0f, 8.0f,
+                            9.0f, 10.0f, 11.0f, 12.0f,
+                            13.0f, 14.0f, 15.0f, 16.0f});
 
     const vec2<I32> result1A(4, 10);
     const vec2<I32> result1B(4, 8);
@@ -188,10 +189,10 @@ TEST_CONST_MEMBER_FUNCTION(matN, getRow, NA)
     const mat3<I32> input2(1, 2, 3,
                            4, 5, 6,
                            7, 8, 9);
-    const mat4<F32> input3(1.0f, 2.0f, 3.0f, 4.0f,
-                           5.0f, 6.0f, 7.0f, 8.0f,
-                           9.0f, 10.0f, 11.0f, 12.0f,
-                           13.0f, 14.0f, 15.0f, 16.0f);
+    const mat4<F32> input3({1.0f, 2.0f, 3.0f, 4.0f,
+                            5.0f, 6.0f, 7.0f, 8.0f,
+                            9.0f, 10.0f, 11.0f, 12.0f,
+                            13.0f, 14.0f, 15.0f, 16.0f});
 
 
     const vec2<I32> result1A(4, 4);
@@ -244,8 +245,8 @@ TEST_CONST_MEMBER_FUNCTION(matN, equalityOperator, NA)
     CHECK_TRUE(input2[0] != input2[1]);
     CHECK_FALSE(input2[0] == input2[1]);
 
-    input3[0].set(-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8);
-    input3[1].set(-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8);
+    input3[0].set({ -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8 });
+    input3[1].set({ -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8 });
     CHECK_TRUE(input3[0] == input3[1]);
     CHECK_FALSE(input3[0] != input3[1]);
     input3[1].m[1][3] = 22;
@@ -289,10 +290,10 @@ TEST_MEMBER_FUNCTION(matN, identity, NA)
     CHECK_EQUAL(result2, input2);
 
     mat4<F32> input3; input3.zero();
-    const mat4<F32> result3(1.0f, 0.0f, 0.0f, 0.0f,
-                            0.0f, 1.0f, 0.0f, 0.0f,
-                            0.0f, 0.0f, 1.0f, 0.0f,
-                            0.0f, 0.0f, 0.0f, 1.0f);
+    const mat4<F32> result3({1.0f, 0.0f, 0.0f, 0.0f,
+                             0.0f, 1.0f, 0.0f, 0.0f,
+                             0.0f, 0.0f, 1.0f, 0.0f,
+                             0.0f, 0.0f, 0.0f, 1.0f});
     CHECK_NOT_EQUAL(result3, input3);
     input3.identity();
     CHECK_EQUAL(result3, input3);
@@ -322,18 +323,18 @@ TEST_MEMBER_FUNCTION(matN, transpose, NA)
     CHECK_TRUE(input2 == result4);
 
 
-    mat4<F32> input3(1.0f, 2.0f, 3.0f, 4.0f,
-                     5.0f, 6.0f, 7.0f, 8.0f,
-                     9.0f, 10.0f, 11.0f, 12.0f,
-                     13.0f, 14.0f, 15.0f, 16.0f);
-    const mat4<F32> result5(1.0f, 5.0f, 9.0f, 13.0f,
-                            2.0f, 6.0f, 10.0f, 14.0f,
-                            3.0f, 7.0f, 11.0f, 15.0f,
-                            4.0f, 8.0f, 12.0f, 16.0f);
-    const mat4<F32> result6(1.0f, 2.0f, 3.0f, 4.0f,
-                            5.0f, 6.0f, 7.0f, 8.0f,
-                            9.0f, 10.0f, 11.0f, 12.0f,
-                            13.0f, 14.0f, 15.0f, 16.0f);
+    mat4<F32> input3({1.0f, 2.0f, 3.0f, 4.0f,
+                      5.0f, 6.0f, 7.0f, 8.0f,
+                      9.0f, 10.0f, 11.0f, 12.0f,
+                      13.0f, 14.0f, 15.0f, 16.0f});
+    const mat4<F32> result5({1.0f, 5.0f, 9.0f, 13.0f,
+                             2.0f, 6.0f, 10.0f, 14.0f,
+                             3.0f, 7.0f, 11.0f, 15.0f,
+                             4.0f, 8.0f, 12.0f, 16.0f});
+    const mat4<F32> result6({1.0f, 2.0f, 3.0f, 4.0f,
+                             5.0f, 6.0f, 7.0f, 8.0f,
+                             9.0f, 10.0f, 11.0f, 12.0f,
+                             13.0f, 14.0f, 15.0f, 16.0f});
     CHECK_TRUE(input3.getTranspose() == result5);
     CHECK_TRUE(input3 != result5);
     input3.transpose();
@@ -365,32 +366,32 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, scalar)
     CHECK_TRUE((input2 * (-0.5f)) == result2);
 
 
-    const mat4<I32> input3(1, 2, 3, 4,
-                           5, 6, 7, 8,
-                           9, 8, 7, 6,
-                           5, 4, 3, 2);
-    const mat4<I32> result3( 3,  6,  9, 12,
-                            15, 18, 21, 24,
-                            27, 24, 21, 18,
-                            15, 12,  9,  6);
+    const mat4<I32> input3({1, 2, 3, 4,
+                            5, 6, 7, 8,
+                            9, 8, 7, 6,
+                            5, 4, 3, 2});
+    const mat4<I32> result3({ 3,  6,  9, 12,
+                             15, 18, 21, 24,
+                             27, 24, 21, 18,
+                             15, 12,  9,  6});
 
     CHECK_FALSE(input3 == result3);
     CHECK_TRUE((input3 * 3) == result3);
 
-    const mat4<F32> input4(1.0f, 2.0f, 3.0f, 4.0f,
-                           5.0f, 6.0f, 7.0f, 8.0f,
-                           9.0f, 8.0f, 7.0f, 6.0f,
-                           5.0f, 4.0f, 3.0f, 2.0f);
+    const mat4<F32> input4({1.0f, 2.0f, 3.0f, 4.0f,
+                            5.0f, 6.0f, 7.0f, 8.0f,
+                            9.0f, 8.0f, 7.0f, 6.0f,
+                            5.0f, 4.0f, 3.0f, 2.0f});
 
-    const mat4<F32> result4A( 3.0f,  6.0f,  9.0f, 12.0f,
-                             15.0f, 18.0f, 21.0f, 24.0f,
-                             27.0f, 24.0f, 21.0f, 18.0f,
-                             15.0f, 12.0f,  9.0f,  6.0f);
+    const mat4<F32> result4A({ 3.0f,  6.0f,  9.0f, 12.0f,
+                              15.0f, 18.0f, 21.0f, 24.0f,
+                              27.0f, 24.0f, 21.0f, 18.0f,
+                              15.0f, 12.0f,  9.0f,  6.0f});
 
-    const mat4<F32> result4B( 0.5f,  1.0f, 1.5f,  2.0f,
-                              2.5f,  3.0f, 3.5f,  4.0f,
-                              4.5f,  4.0f, 3.5f,  3.0f,
-                              2.5f,  2.0f, 1.5f,  1.0f);
+    const mat4<F32> result4B({ 0.5f,  1.0f, 1.5f,  2.0f,
+                               2.5f,  3.0f, 3.5f,  4.0f,
+                               4.5f,  4.0f, 3.5f,  3.0f,
+                               2.5f,  2.0f, 1.5f,  1.0f });
 
     CHECK_FALSE(input4 == result4A);
 
@@ -402,20 +403,20 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, scalar)
 
 TEST_MEMBER_FUNCTION(mat4, addSubtractOperator, scalar)
 {
-    const mat4<F32> input(1.0f, 2.0f, 3.0f, 4.0f,
-                          5.0f, 6.0f, 7.0f, 8.0f,
-                          9.0f, 8.0f, 7.0f, 6.0f,
-                          5.0f, 4.0f, 3.0f, 2.0f);
+    const mat4<F32> input({1.0f, 2.0f, 3.0f, 4.0f,
+                           5.0f, 6.0f, 7.0f, 8.0f,
+                           9.0f, 8.0f, 7.0f, 6.0f,
+                           5.0f, 4.0f, 3.0f, 2.0f});
 
-    const mat4<F32> resultA(-2.0f, -1.0f, 0.0f,  1.0f,
-                             2.0f,  3.0f, 4.0f,  5.0f,
-                             6.0f,  5.0f, 4.0f,  3.0f,
-                             2.0f,  1.0f, 0.0f, -1.0f);
+    const mat4<F32> resultA({-2.0f, -1.0f, 0.0f,  1.0f,
+                              2.0f,  3.0f, 4.0f,  5.0f,
+                              6.0f,  5.0f, 4.0f,  3.0f,
+                              2.0f,  1.0f, 0.0f, -1.0f});
 
-    const mat4<F32> resultB( 4.0f,  5.0f,  6.0f,  7.0f,
-                             8.0f,  9.0f, 10.0f, 11.0f,
-                            12.0f, 11.0f, 10.0f,  9.0f,
-                             8.0f,  7.0f,  6.0f,  5.0f);
+    const mat4<F32> resultB({ 4.0f,  5.0f,  6.0f,  7.0f,
+                              8.0f,  9.0f, 10.0f, 11.0f,
+                             12.0f, 11.0f, 10.0f,  9.0f,
+                              8.0f,  7.0f,  6.0f,  5.0f });
 
     CHECK_TRUE((input - 3) == resultA);
     CHECK_TRUE((input + 3) == resultB);
@@ -435,18 +436,18 @@ TEST_MEMBER_FUNCTION(matN, divideOperator, scalar)
     CHECK_FALSE((input2 / 2) == (input2 * 2));
     CHECK_TRUE((input2 / 2) == (input2 * 0.5f));
 
-    const mat4<I32> input3(1, 2, 3, 4,
-                           5, 6, 7, 8,
-                           9, 8, 7, 6,
-                           5, 4, 3, 2);
+    const mat4<I32> input3({1, 2, 3, 4,
+                            5, 6, 7, 8,
+                            9, 8, 7, 6,
+                            5, 4, 3, 2});
     CHECK_FALSE((input3 / 2) == (input3 * 2));
 
     CHECK_TRUE((input3 / 2) == (input3 * 0.5f));
 
-    const mat4<F32> input4(1.0f, 2.0f, 3.0f, 4.0f,
-                           5.0f, 6.0f, 7.0f, 8.0f,
-                           9.0f, 8.0f, 7.0f, 6.0f,
-                           5.0f, 4.0f, 3.0f, 2.0f);
+    const mat4<F32> input4({1.0f, 2.0f, 3.0f, 4.0f,
+                            5.0f, 6.0f, 7.0f, 8.0f,
+                            9.0f, 8.0f, 7.0f, 6.0f,
+                            5.0f, 4.0f, 3.0f, 2.0f});
     CHECK_FALSE((input4 / 2) == (input4 * 2));
     CHECK_EQUAL((input4 / 2), (input4 * 0.5f));
 }
@@ -522,25 +523,25 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)
     mat4<I32> inputIdentity4x4;
     inputIdentity4x4.identity();
 
-    mat4<I32> input3A( 5,  2,  6, 8,
-                      23, 29, 11, 5,
-                      64,  0, 32, 8,
-                      -2,  5,  7, 1);
+    mat4<I32> input3A({ 5,  2,  6, 8,
+                       23, 29, 11, 5,
+                       64,  0, 32, 8,
+                       -2,  5,  7, 1 });
 
-    mat4<I32> input3B(24, 92, 112,  4,
-                       5,  0,  95,  2,
-                      43,  2,   9,  9,
-                       5,  7,  11, 67);
+    mat4<I32> input3B({24, 92, 112,  4,
+                        5,  0,  95,  2,
+                       43,  2,   9,  9,
+                        5,  7,  11, 67});
 
-    mat4<I32> result3A( 428,  528,  892,  614,
-                       1195, 2173, 5485,  584,
-                       2952, 6008, 7544, 1080,
-                        283, -163,  325,  132);
+    mat4<I32> result3A({ 428,  528,  892,  614,
+                        1195, 2173, 5485,  584,
+                        2952, 6008, 7544, 1080,
+                         283, -163,  325,  132 });
 
-    mat4<I32> result3B(9396, 2736, 4768, 1552,
-                       6101,   20, 3084,  802,
-                        819,  189,  631,  435,
-                        756,  548,  928,  230);
+    mat4<I32> result3B({9396, 2736, 4768, 1552,
+                        6101,   20, 3084,  802,
+                         819,  189,  631,  435,
+                         756,  548,  928,  230});
 
     CHECK_EQUAL(input3A * input3B, result3A);
     CHECK_NOT_EQUAL(input3B * input3A, result3A);
@@ -554,25 +555,25 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)
     mat4<F32> inputIdentity4x4f;
     inputIdentity4x4f.identity();
 
-    mat4<F32> input4A(24.300f, 92.000f,  1.200f, 4.300f,
-                       5.000f,  0.000f, 95.500f, 0.200f,
-                      43.000f,  2.110f,  9.000f, 9.200f,
-                       5.000f,  7.000f, 11.000f, 6.435f);
+    mat4<F32> input4A({24.300f, 92.000f,  1.200f, 4.300f,
+                        5.000f,  0.000f, 95.500f, 0.200f,
+                       43.000f,  2.110f,  9.000f, 9.200f,
+                        5.000f,  7.000f, 11.000f, 6.435f});
 
-    mat4<F32> input4B( 12.500f,  2.000f,  6.000f, 8.400f,
-                       23.000f, 29.340f, 11.000f, 5.120f,
-                      -64.500f, 22.000f,  3.200f, 8.000f,
-                       -2.000f,  5.000f,  7.000f, 1.000f);
+    mat4<F32> input4B({ 12.500f,  2.000f,  6.000f, 8.400f,
+                        23.000f, 29.340f, 11.000f, 5.120f,
+                       -64.500f, 22.000f,  3.200f, 8.000f,
+                        -2.000f,  5.000f,  7.000f, 1.000f });
 
-    mat4<F32> result4A( 2333.750f, 2795.780f, 1191.740f, 689.060f,
-                       -6097.650f, 2112.000f,  337.000f, 806.200f,
+    mat4<F32> result4A({ 2333.750f, 2795.780f, 1191.740f, 689.060f,
+                        -6097.650f, 2112.000f,  337.000f, 806.200f,
                          -12.870f,  391.907f,  374.410f, 453.203f,
-                        -498.869f,  489.554f,  187.243f, 172.275f);
+                         -498.869f,  489.554f,  187.243f, 172.275f });
 
-    mat4<F32> result4B(  613.750f,  1221.460f,   352.400f,  163.401f,
-                        1204.200f,  2175.050f,  2984.890f,  238.914f,
-                       -1279.750f, -5871.248f,  2140.400f, -192.032f,
-                         282.400f,  -162.230f,   549.100f,   63.235f);
+    mat4<F32> result4B({  613.750f,  1221.460f,   352.400f,  163.401f,
+                         1204.200f,  2175.050f,  2984.890f,  238.914f,
+                        -1279.750f, -5871.248f,  2140.400f, -192.032f,
+                          282.400f,  -162.230f,   549.100f,   63.235f});
 
     // Use compare instead of == as rounding errors bellow a certain threshold aren't as important with floating point matrices
     CHECK_TRUE(result4A.compare(input4A * input4B, 0.02f));
@@ -586,16 +587,16 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)
 
 TEST_MEMBER_FUNCTION(matN, construct, NA)
 {
-    const mat4<F32> input4A(24.300f, 92.000f,  1.200f, 4.300f,
-                             5.000f,  0.000f, 95.500f, 0.200f,
-                            43.000f,  2.110f,  9.000f, 9.200f,
-                             5.000f,  7.000f, 11.000f, 6.435f);
+    const mat4<F32> input4A({ 24.300f, 92.000f,  1.200f, 4.300f,
+                              5.000f,  0.000f, 95.500f, 0.200f,
+                             43.000f,  2.110f,  9.000f, 9.200f,
+                              5.000f,  7.000f, 11.000f, 6.435f });
 
     mat4<F32> resultA(&input4A.mat[0]);
-    mat4<F32> resultB(input4A.mat[0], input4A.mat[1], input4A.mat[2], input4A.mat[3],
-                      input4A.mat[4], input4A.mat[5], input4A.mat[6], input4A.mat[7],
-                      input4A.mat[8], input4A.mat[9], input4A.mat[10], input4A.mat[11],
-                      input4A.mat[12], input4A.mat[13], input4A.mat[14], input4A.mat[15]);
+    mat4<F32> resultB({input4A.mat[0], input4A.mat[1], input4A.mat[2], input4A.mat[3],
+                       input4A.mat[4], input4A.mat[5], input4A.mat[6], input4A.mat[7],
+                       input4A.mat[8], input4A.mat[9], input4A.mat[10], input4A.mat[11],
+                       input4A.mat[12], input4A.mat[13], input4A.mat[14], input4A.mat[15]});
 
     CHECK_EQUAL(input4A, resultA);
     CHECK_EQUAL(input4A, resultB);
@@ -629,28 +630,28 @@ TEST_MEMBER_FUNCTION(matN, inverse, NA)
     CHECK_EQUAL(zeroInput, zeroResult);
 
     //Floating point 4x4 inversion
-    mat4<F32> input1(1.0f, 1.0f, 0.0f, 0.0f,
-                     1.0f, 1.0f, 1.0f, 0.0f,
-                     0.0f, 1.0f, 1.0f, 0.0f,
-                     0.0f, 0.0f, 0.0f, 1.0f);
-    const mat4<F32> result1( 0.0f,  1.0f, -1.0f, 0.0f,
-                             1.0f, -1.0f,  1.0f, 0.0f,
-                            -1.0f,  1.0f,  0.0f, 0.0f,
-                             0.0f,  0.0f,  0.0f, 1.0f);
+    mat4<F32> input1({1.0f, 1.0f, 0.0f, 0.0f,
+                      1.0f, 1.0f, 1.0f, 0.0f,
+                      0.0f, 1.0f, 1.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f});
+    const mat4<F32> result1({ 0.0f,  1.0f, -1.0f, 0.0f,
+                              1.0f, -1.0f,  1.0f, 0.0f,
+                             -1.0f,  1.0f,  0.0f, 0.0f,
+                              0.0f,  0.0f,  0.0f, 1.0f});
 
     input1.inverse();
     CHECK_EQUAL(input1, result1);
 
 
     //Integer 4x4 inversion
-    mat4<I32> input2(1, 1, 0, 0,
-                     1, 1, 1, 0,
-                     0, 1, 1, 0,
-                     0, 0, 0, 1);
-    const mat4<I32> result2( 0,  1, -1, 0,
-                             1, -1,  1, 0,
-                            -1,  1,  0, 0,
-                             0,  0,  0, 1);
+    mat4<I32> input2({ 1, 1, 0, 0,
+                      1, 1, 1, 0,
+                      0, 1, 1, 0,
+                      0, 0, 0, 1 });
+    const mat4<I32> result2({ 0,  1, -1, 0,
+                              1, -1,  1, 0,
+                             -1,  1,  0, 0,
+                              0,  0,  0, 1 });
     input2.inverse();
     CHECK_EQUAL(input2, result2);
 }

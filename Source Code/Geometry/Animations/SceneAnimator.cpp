@@ -20,18 +20,10 @@ void calculateBoneToWorldTransform(Bone* child) {
     // This will climb the nodes up along through the parents concatenating all
     // the matrices to get the Object to World transform,
     // or in this case, the Bone To World transform
-    if (Config::USE_OPENGL_RENDERING) {
-        while (parent) {
-            child->_globalTransform =  parent->_localTransform * child->_globalTransform;
-            // get the parent of the bone we are working on
-            parent = parent->_parent;
-        }
-    } else {
-        while (parent) {
-            child->_globalTransform *= parent->_localTransform;
-            // get the parent of the bone we are working on
-            parent = parent->_parent;
-        }
+    while (parent) {
+        child->_globalTransform =  parent->_localTransform * child->_globalTransform;
+        // get the parent of the bone we are working on
+        parent = parent->_parent;
     }
 }
 
@@ -69,11 +61,12 @@ bool SceneAnimator::init(PlatformContext& context) {
     _transforms.resize(_skeletonDepthCache);
 
     D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
-    mat4<F32> rotationmat;
     vectorBest<mat4<F32> > vec;
     vec_size animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
+    mat4<F32> globalBoneTransform;
+    mat4<F32> boneOffsetMatrix;
     // pre-calculate the animations
     for (vec_size i(0); i < animationCount; ++i) {
         const std::shared_ptr<AnimEvaluator>& crtAnimation = _animations[i];
@@ -85,20 +78,11 @@ bool SceneAnimator::init(PlatformContext& context) {
             calculate((I32)i, dt);
             crtAnimation->transforms().push_back(vec);
             vectorBest<mat4<F32> >& trans = crtAnimation->transforms().back();
-            if (Config::USE_OPENGL_RENDERING) {
-                for (I32 a = 0; a < _skeletonDepthCache; ++a) {
-                    Bone* bone = _bones[a];
-                    AnimUtils::TransformMatrix(bone->_globalTransform * bone->_offsetMatrix, rotationmat);
-                    trans.push_back(rotationmat);
-                    bone->_boneID = a;
-                }
-            } else {
-                for (I32 a = 0; a < _skeletonDepthCache; ++a) {
-                    Bone* bone = _bones[a];
-                    AnimUtils::TransformMatrix(bone->_offsetMatrix * bone->_globalTransform, rotationmat);
-                    trans.push_back(rotationmat);
-                    bone->_boneID = a;
-                }
+            trans.resize(_skeletonDepthCache);
+            for (I32 a = 0; a < _skeletonDepthCache; ++a) {
+                Bone* bone = _bones[a];
+                AnimUtils::TransformMatrix(bone->_globalTransform * bone->_offsetMatrix, trans[a]);
+                bone->_boneID = a;
             }
         }
 

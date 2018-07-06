@@ -122,7 +122,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     const bool _unbound;
     const BufferUpdateFrequency _frequency;
 
-    const char* _name;
+    stringImpl _name;
 };
 
 

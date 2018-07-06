@@ -10,15 +10,15 @@ namespace AnimUtils {
 /// class, so the copy must be done manually
 void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out, bool rowMajor) {
     if (rowMajor) {
-        out.set(in.a1, in.a2, in.a3, in.a4,
-                in.b1, in.b2, in.b3, in.b4,
-                in.c1, in.c2, in.c3, in.c4,
-                in.d1, in.d2, in.d3, in.d4);
+        out.set({ in.a1, in.a2, in.a3, in.a4,
+                  in.b1, in.b2, in.b3, in.b4,
+                  in.c1, in.c2, in.c3, in.c4,
+                  in.d1, in.d2, in.d3, in.d4 });
     } else {
-        out.set(in.a1, in.b1, in.c1, in.d1,
-                in.a2, in.b2, in.c2, in.d2,
-                in.a3, in.b3, in.c3, in.d3,
-                in.a4, in.b4, in.c4, in.d4);
+        out.set({ in.a1, in.b1, in.c1, in.d1,
+                  in.a2, in.b2, in.c2, in.d2,
+                  in.a3, in.b3, in.c3, in.d3,
+                  in.a4, in.b4, in.c4, in.d4 });
     }
 }
 

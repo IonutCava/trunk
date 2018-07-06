@@ -110,7 +110,8 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
            RENDER_SKELETON = toBit(5),
            CAST_SHADOWS = toBit(6),
            RECEIVE_SHADOWS = toBit(7),
-           IS_VISIBLE = toBit(8)
+           IS_VISIBLE = toBit(8),
+           IS_OCCLUSION_CULLABLE = toBit(9)
        };
 
    public:
@@ -174,6 +175,9 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     void rebuildDrawCommands(RenderStagePass stagePass);
 
     void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass);
+    void updateDrawCommands(RenderStage stage, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut);
+    void setDataIndex(U32 dataIndex);
+    bool hasDrawCommands(RenderStage stage);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
@@ -197,7 +201,9 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _renderMask;
-    std::array<std::unique_ptr<RenderPackage>, to_base(RenderStage::COUNT)> _renderPackages[to_base(RenderPassType::COUNT)];
+
+    typedef std::array<std::unique_ptr<RenderPackage>, to_base(RenderPassType::COUNT)> RenderPackagesPerPassType;
+    std::array<RenderPackagesPerPassType, to_base(RenderStage::COUNT)> _renderPackages;
     
     bool _renderPackagesDirty;
     PushConstants _globalPushConstants;
@@ -267,6 +273,18 @@ class RenderingCompRenderPass {
                                        const SceneRenderState& sceneRenderState,
                                        RenderStagePass renderStagePass) {
             renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
+        }
+
+        static void updateDrawCommands(RenderingComponent& renderable, RenderStage stage, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
+            renderable.updateDrawCommands(stage, drawCmdsInOut);
+        }
+
+        static void setDataIndex(RenderingComponent& renderable, U32 dataIndex) {
+            renderable.setDataIndex(dataIndex);
+        }
+
+        static bool hasDrawCommands(RenderingComponent& renderable, RenderStage stage) {
+            return renderable.hasDrawCommands(stage);
         }
 
     friend class Divide::RenderPass;

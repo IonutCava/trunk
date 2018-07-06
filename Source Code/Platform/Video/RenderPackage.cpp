@@ -8,9 +8,7 @@
 namespace Divide {
 
 RenderPackage::RenderPackage(bool useSecondaryBuffers)
-    : _isRenderable(false),
-      _qualityRequirement(MinQuality::FULL),
-      _isOcclusionCullable(true),
+    : _qualityRequirement(MinQuality::FULL),
       _secondaryCommandPool(useSecondaryBuffers),
       _commands(nullptr),
       _dirtyFlags(to_base(CommandType::ALL))
@@ -29,7 +27,6 @@ void RenderPackage::clear() {
         _commands->clear();
     }
     _commandOrdering.clear();
-    _drawCommands.clear();
     _pipelines.clear();
     _clipPlanes.clear();
     _pushConstants.clear();
@@ -41,7 +38,6 @@ void RenderPackage::clear() {
 void RenderPackage::set(const RenderPackage& other) {
     _commandOrdering = other._commandOrdering;
 
-    _drawCommands = other._drawCommands;
     _pipelines = other._pipelines;
     _clipPlanes = other._clipPlanes;
     _pushConstants = other._pushConstants;
@@ -224,26 +220,32 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     }
 }
 
-
-void RenderPackage::updateDrawCommands(U32 cmdIndex, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut) {
+void RenderPackage::setDataIndex(U32 dataIndex) {
     bool dirty = false;
     for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
         GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
         for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
-            U32 newOffset = to_U32(drawCmdsInOut.size());
-            if (drawCmd._commandOffset != newOffset) {
-                drawCmd._commandOffset = newOffset;
+            if (drawCmd._cmd.baseInstance != dataIndex) {
+                drawCmd._cmd.baseInstance = dataIndex;
                 dirty = true;
             }
-            if (drawCmd._cmd.baseInstance != cmdIndex) {
-                drawCmd._cmd.baseInstance = cmdIndex;
-                dirty = true;
-            }
-            setOption(drawCmd, CmdRenderOptions::RENDER_INDIRECT, true);
+        }
+    }
+    if (dirty) {
+        SetBit(_dirtyFlags, CommandType::DRAW);
+    }
+}
 
-            for (U32 i = 0; i < drawCmd._drawCount; ++i) {
-                drawCmdsInOut.push_back(drawCmd._cmd);
+void RenderPackage::updateDrawCommands(U32 startOffset) {
+    bool dirty = false;
+    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
+        GFX::DrawCommand& cmd = _drawCommands[cmdIdx];
+        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+            if (drawCmd._commandOffset != startOffset) {
+                drawCmd._commandOffset = startOffset;
+                dirty = true;
             }
+            ++startOffset;
         }
     }
 
