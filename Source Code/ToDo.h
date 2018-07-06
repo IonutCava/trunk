@@ -33,12 +33,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DIVIDE_TO_DO_H_
 
 /*
+==================== Rework Material system ===========================================
+- Add Phong, Cell and PBR (metalness and specular systems) shading
+- Separate shader logic from material logic
+- Separate material logic from lighting logic
+
 ==================== Change scene system ===============================================
-Always load a default scene that will never be unloaded
-- Default scene will handle both  main menu and scene transition screen
--- Add a button for each DETECTED scene
+DONE: Always load a default scene that will never be unloaded
+DONE: - Default scene will handle both  main menu and scene transition screen
+DONE: -- Add a button for each DETECTED scene
 -- Create a list of needed assets for each scene. Flag common assets to avoid unloading when switching scenes
--- Never unload shaders from ShaderManager.
+DONE: -- Never unload shaders from ShaderManager. DONE
 -- Show animated Loading text when scene button is pressed. Hide scene buttons. Load scene in separate thread. Switch active scene on load finish
 -- Add quite scene dialog (Yes/No). Switch to default scene on Yes.
 Remove SceneManager. Default scene will handle loading/unloading/reloading of scenes
@@ -65,7 +70,7 @@ Per Scene
 Sync PhysicsComponent with PhysicsAsset similar to this: https://www.raywenderlich.com/53077/bullet-physics-tutorial-getting-started
 
 ==================== General engine bugs / missing features ===============================
-- Particles flicker
+DONE: - Particles flicker
 - Re-test and fix environment objects
 -- Test and fix terrain
 --- Apply detail via the HW tessellator
