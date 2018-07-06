@@ -211,6 +211,29 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     }
 }
 
+void RenderPackage::setDrawIDs(U32 cmdOffset, U32 cmdIndex) {
+    bool dirty = false;
+    for (I32 cmdIdx = 0; cmdIdx < drawCommandCount(); ++cmdIdx) {
+        GFX::DrawCommand& cmd = drawCommand(cmdIdx);
+        for (GenericDrawCommand& drawCmd : cmd._drawCommands) {
+            U32 newOffset = cmdOffset++;
+            if (drawCmd._commandOffset != newOffset) {
+                drawCmd._commandOffset = newOffset;
+                dirty = true;
+            }
+            if (drawCmd._cmd.baseInstance == cmdIndex) {
+                drawCmd._cmd.baseInstance = cmdIndex;
+                dirty = true;
+            }
+            setOption(drawCmd, CmdRenderOptions::RENDER_INDIRECT, true);
+        }
+    }
+
+    if (dirty) {
+        SetBit(_dirtyFlags, CommandType::DRAW);
+    }
+}
+
 const GFX::CommandBuffer& RenderPackage::commands() const {
     return *_commands;
 }

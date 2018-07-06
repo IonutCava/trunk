@@ -996,7 +996,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             makeTexturesResident(set->_textureData);
             for (const ShaderBufferBinding& shaderBufCmd : set->_shaderBuffers) {
                 if (shaderBufCmd._binding == ShaderBufferLocation::CMD_BUFFER) {
-                    registerCommandBuffer(*shaderBufCmd._buffer);
+                    registerCommandBuffer(static_cast<glUniformBuffer*>(shaderBufCmd._buffer)->bufferID());
                 } else {
                     shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
                                                     shaderBufCmd._range.x,
@@ -1074,9 +1074,8 @@ size_t GL_API::setStateBlock(size_t stateBlockHash) {
     return setStateBlockInternal(stateBlockHash);
 }
 
-void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
-    GLuint bufferID = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, bufferID);
+void GL_API::registerCommandBuffer(GLuint commandBuffer) const {
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, commandBuffer);
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

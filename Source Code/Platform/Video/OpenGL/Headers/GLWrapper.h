@@ -144,7 +144,7 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations
     /// given
     void clearStates();
-    void registerCommandBuffer(const ShaderBuffer& commandBuffer) const;
+    void registerCommandBuffer(GLuint commandBuffer) const;
 
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData, U8 binding);

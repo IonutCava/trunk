@@ -135,9 +135,9 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
     I32 keyA = to_U32(_renderBinStack[stageIndex].size() + 1);
     I32 keyB = keyA;
 
-    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
+    RenderingComponent* const rComp = sgn.get<RenderingComponent>();
 
-    const Material_ptr& nodeMaterial = renderable->getMaterialInstance();
+    const Material_ptr& nodeMaterial = rComp->getMaterialInstance();
     if (nodeMaterial) {
         nodeMaterial->getSortKeys(stagePass, keyA, keyB);
     }
@@ -146,7 +146,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStagePass stagePas
                                              keyA,
                                              keyB,
                                              sgn.get<BoundsComponent>()->getBoundingBox().nearestDistanceFromPointSquared(eyePos),
-                                             *renderable);
+                                             *rComp);
 }
 
 void RenderBin::populateRenderQueue(RenderStagePass stagePass, vectorEASTL<RenderPackage*>& queueInOut) const {

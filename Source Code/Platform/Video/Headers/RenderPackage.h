@@ -125,6 +125,7 @@ protected:
         return buildAndGetCommandBuffer(cacheMiss);
     }
 
+    void setDrawIDs(U32 cmdOffset, U32 cmdIndex);
     GFX::CommandBuffer& buildAndGetCommandBuffer(bool cacheMiss);
     GFX::DrawCommand& drawCommand(I32 cmdIdx);
     DescriptorSet_ptr& descriptorSet(I32 index);
@@ -169,6 +170,10 @@ namespace Attorney {
 
         static GFX::DrawCommand& drawCommand(RenderPackage& pkg, I32 cmdIdx) {
             return pkg.drawCommand(cmdIdx);
+        }
+
+        static void setDrawIDs(RenderPackage& pkg, U32 cmdOffset, U32 cmdIndex) {
+            pkg.setDrawIDs(cmdOffset, cmdIndex);
         }
 
         friend class Divide::RenderingComponent;

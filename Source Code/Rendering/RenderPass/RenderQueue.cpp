@@ -135,13 +135,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_
 }
 
 void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStagePass stage, const vec3<F32>& eyePos) {
-    static Material_ptr defaultMat;
-
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
-    RenderBin* rb = getBinForNode(sgn.getNode(),
-                                  renderingCmp
-                                    ? renderingCmp->getMaterialInstance()
-                                    : defaultMat);
+    RenderBin* rb = getBinForNode(sgn.getNode(), renderingCmp ? renderingCmp->getMaterialInstance() : nullptr);
     if (rb) {
         rb->addNodeToBin(sgn, stage, eyePos);
     }

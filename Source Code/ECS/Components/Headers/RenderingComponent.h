@@ -130,9 +130,6 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     bool renderOptionEnabled(RenderOptions option) const;
     bool renderOptionsEnabled(U32 mask) const;
 
-    inline U32 commandIndex(RenderStagePass stagePass) const { return _commandIndex[to_base(stagePass._stage)]; }
-    inline U32 commandOffset(RenderStagePass stagePass) const { return _commandOffset[to_base(stagePass._stage)]; }
-
     ShaderProgram_ptr getDrawShader(RenderStagePass renderStagePass);
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
@@ -178,12 +175,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
 
     void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass);
 
-    void setDrawIDs(RenderStagePass renderStagePass,
-                    U32 cmdOffset,
-                    U32 cmdIndex);
-
-    inline void commandIndex(RenderStagePass stagePass, U32 index) { _commandIndex[to_base(stagePass._stage)] = index; }
-    inline void commandOffset(RenderStagePass stagePass, U32 offset) { _commandOffset[to_base(stagePass._stage)] = offset; }
+    void setDrawIDs(RenderStagePass renderStagePass, U32 cmdOffset, U32 cmdIndex);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot

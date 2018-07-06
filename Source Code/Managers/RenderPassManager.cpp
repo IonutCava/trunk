@@ -231,7 +231,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
                         }
                     }
                 }
-                nodeCount++;
+                ++nodeCount;
             }
         }
     }
@@ -245,8 +245,7 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
         // If the buffer update required is large enough, just replace the entire thing
         if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
             bufferData._renderData->writeData(nodeData.data());
-        }
-        else {
+        } else {
             // Otherwise, just update the needed range to save bandwidth
             bufferData._renderData->writeData(0, nodeCount, nodeData.data());
         }
@@ -263,11 +262,8 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 }
 
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
-
-    SceneManager& sceneManager = parent().sceneManager();
-
-    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(sceneManager, stagePass, *params._camera)
-                                                                            : sceneManager.getVisibleNodesCache(params._stage);
+    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stagePass, *params._camera)
+                                                                            : parent().sceneManager().getVisibleNodesCache(params._stage);
 
     RenderQueue& queue = getQueue();
     queue.refresh(stagePass._stage);
