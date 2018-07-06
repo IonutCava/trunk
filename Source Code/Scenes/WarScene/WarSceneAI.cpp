@@ -82,6 +82,7 @@ void WarScene::checkGameCompletion() {
     }
 
     if (restartGame) {
+        _elapsedGameTime = 0;
         g_dataOutput << std::endl << std::endl << "RESTARTING GAME!. Reason: " << (timeReason ? "TIME" : "SCORE") << std::endl << std::endl;
         AI::WarSceneAIProcessor::resetScore(0);
         AI::WarSceneAIProcessor::resetScore(1);
@@ -115,7 +116,7 @@ void WarScene::registerPoint(U8 teamID, const stringImpl& unitName) {
 
         U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
         U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
-        g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][REGISTER POINT]: %s", elapsedTimeMinutes, elapsedTimeSeconds, unitName.c_str()) << std::endl;
+        g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][TEAM %s REGISTER POINT]: %s", elapsedTimeMinutes, elapsedTimeSeconds, (teamID == 0 ? "A" : "B"), unitName.c_str()) << std::endl;
         checkGameCompletion();
     }
 }
@@ -299,16 +300,16 @@ bool WarScene::addUnits() {
                 currentScale =
                     lightNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_1_%d_%d", k, i);
-                speed = Metric::Base(Random(6.5f, 8.5f));
-                acc = Metric::Base(Random(4.0f, 8.0f));
+                speed = Metric::Base(Random(6.5f, 9.5f));
+                acc = Metric::Base(Random(4.5f, 8.0f));
                 type = AI::WarSceneAIProcessor::AIType::LIGHT;
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
                     animalNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_2_%d_%d", k, i % 5);
-                speed = Metric::Base(Random(8.5f, 10.5f));
-                acc = Metric::Base(Random(6.0f, 8.0f));
+                speed = Metric::Base(Random(8.5f, 11.5f));
+                acc = Metric::Base(Random(6.0f, 9.0f));
                 zFactor = 1.0f;
                 type = AI::WarSceneAIProcessor::AIType::ANIMAL;
                 damage = 10;
@@ -317,8 +318,8 @@ bool WarScene::addUnits() {
                 currentScale =
                     heavyNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_3_%d_%d", k, i % 10);
-                speed = Metric::Base(Random(4.5f, 6.5f));
-                acc = Metric::Base(Random(4.0f, 6.0f));
+                speed = Metric::Base(Random(4.5f, 7.5f));
+                acc = Metric::Base(Random(4.0f, 6.5f));
                 zFactor = 2.0f;
                 type = AI::WarSceneAIProcessor::AIType::HEAVY;
                 damage = 15;
@@ -489,7 +490,7 @@ void WarScene::startSimulation() {
                     "Navigation mesh building in a background thread!");
             }
         }
-        _infoBox->show();
+        //_infoBox->show();
         _lastNavMeshBuildTime = currentTime;
         for (U8 i = 0; i < 2; ++i) {
             _faction[i]->clearOrders();

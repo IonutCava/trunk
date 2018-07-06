@@ -270,7 +270,7 @@ void AIEntity::updatePosition(const U64 deltaTime) {
         _distanceToTarget = _currentPosition.distanceSquared(_destination);
         F32 distanceDelta = std::abs(_previousDistanceToTarget - _distanceToTarget);
         // if we are walking but did not change distance in a while
-        if (distanceDelta < DESTINATION_RADIUS_SQ) {
+        /*if (distanceDelta < DESTINATION_RADIUS_SQ) {
             _moveWaitTimer += deltaTime;
 
             if (Time::MicrosecondsToSeconds<D32>(_moveWaitTimer) > 5) {
@@ -290,7 +290,7 @@ void AIEntity::updatePosition(const U64 deltaTime) {
             }
         } else {
             _moveWaitTimer = 0;
-        }
+        }*/
         _currentPosition.setV(getAgent()->npos);
         _currentVelocity.setV(getAgent()->nvel);
     }

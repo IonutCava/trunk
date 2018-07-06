@@ -157,7 +157,10 @@ void WarScene::processTasks(const U64 deltaTime) {
                             -cosf(g_sunAngle.y),
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
-        _sun->setDirection(sunVector);
+       _sun->setDirection(sunVector);
+       vec4<F32> sunColor = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
+
+       _sun->setDiffuseColor(sunColor);
         _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector,
             _sun->getDiffuseColor());
 
@@ -517,7 +520,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
     _GUI->addText("scoreDisplay",
         vec2<I32>(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec3<F32>(1.0f, 0.0f, 1.0f),  // Color
+        vec3<F32>(0.2f, 0.8f, 0.2f),  // Color
         "Score: A -  %d B - %d", 0, 0);  // Text and arguments
 
     _GUI->addText("entityState", vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,

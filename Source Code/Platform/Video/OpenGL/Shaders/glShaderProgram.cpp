@@ -320,7 +320,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 #if !defined(_DEBUG)
     // Load the program from the binary file, if available and allowed, to avoid
     // linking.
-    if (Config::USE_SHADER_BINARY && !refresh &&
+    if (Config::USE_SHADER_BINARY && !refresh && false &&
         GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);

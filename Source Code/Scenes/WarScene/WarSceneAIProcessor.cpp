@@ -544,7 +544,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
         case ActionType::CAPTURE_ENEMY_FLAG: {
             state = nearEnemyFlag();
             if (!state) {
-                _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value());
+                _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value(), true);
             }
         } break;
 
@@ -716,6 +716,7 @@ void WarSceneAIProcessor::updatePositions() {
             for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
                 _entity->sendMessage(*enemy.second, AIMsg::RETURNED_FLAG, teamID);
             }
+            _messageCallback(1, _entity->getName());
         }
     }
 
