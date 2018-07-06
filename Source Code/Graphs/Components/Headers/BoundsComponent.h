@@ -44,12 +44,12 @@ namespace Divide {
         inline bool lockBBTransforms() const { return _lockBBTransforms; }
         inline void lockBBTransforms(const bool state) { _lockBBTransforms = state; }
 
+
+        void onBoundsChange(const BoundingBox& nodeBounds);
+
     protected:
         friend class SceneGraph;
-        inline void onTransform(const mat4<F32>& worldMatrix) {
-            _worldMatrix.set(worldMatrix);
-            flagBoundingBoxDirty();
-        }
+        void onTransform(const mat4<F32>& worldMatrix);
 
     protected:
         friend class SceneGraphNode;
@@ -62,10 +62,6 @@ namespace Divide {
             _boundingBoxDirty = true;
         }
 
-        inline void onBoundsChange(const BoundingBox& nodeBounds) {
-            _refBoundingBox.set(nodeBounds);
-            flagBoundingBoxDirty();
-        }
 
     private:
         std::atomic<bool> _boundingBoxDirty;

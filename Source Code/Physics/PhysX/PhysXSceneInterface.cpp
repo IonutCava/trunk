@@ -192,6 +192,11 @@ PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorNa
 }
 
 void PhysXSceneInterface::addToScene(PhysXActor& actor) {
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
     SceneNode* sceneNode = nullptr;
 
@@ -253,7 +258,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
         if (sceneNode) {
             sceneNode->renderState().setDrawState(true);
             targetNode =
-                _parentScene->getSceneGraph().getRoot().addNode(*sceneNode, sgnName);
+                _parentScene->getSceneGraph().getRoot().addNode(*sceneNode, normalMask, sgnName);
             targetNode->get<RenderingComponent>()->castsShadows(
                 shadowState);
         }

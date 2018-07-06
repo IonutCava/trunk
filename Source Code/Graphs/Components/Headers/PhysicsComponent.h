@@ -59,6 +59,7 @@ class PhysicsComponent : public SGNComponent {
         TRANSLATION = 0,
         SCALE,
         ROTATION,
+        VIEW_OFFSET,
         COUNT
     };
 
@@ -72,13 +73,15 @@ class PhysicsComponent : public SGNComponent {
            inline bool hasSetFlags() const {
                 return getFlag(TransformType::SCALE) ||
                        getFlag(TransformType::ROTATION) ||
-                       getFlag(TransformType::TRANSLATION);
+                       getFlag(TransformType::TRANSLATION) ||
+                       getFlag(TransformType::VIEW_OFFSET);
            }
 
            inline bool hasSetAllFlags() const {
                return getFlag(TransformType::SCALE) &&
                       getFlag(TransformType::ROTATION) &&
-                      getFlag(TransformType::TRANSLATION);
+                      getFlag(TransformType::TRANSLATION) &&
+                      getFlag(TransformType::VIEW_OFFSET);
            }
 
            inline bool getFlag(TransformType type) const {
@@ -89,6 +92,7 @@ class PhysicsComponent : public SGNComponent {
                _transformFlags[to_const_uint(TransformType::SCALE)] = false;
                _transformFlags[to_const_uint(TransformType::ROTATION)] = false;
                _transformFlags[to_const_uint(TransformType::TRANSLATION)] = false;
+               _transformFlags[to_const_uint(TransformType::VIEW_OFFSET)] = false;
            }
 
            inline void setAllFlags() {
@@ -111,7 +115,10 @@ class PhysicsComponent : public SGNComponent {
                _transformFlags[to_const_uint(TransformType::ROTATION)] =
                        other.getFlag(TransformType::ROTATION);
                _transformFlags[to_const_uint(TransformType::TRANSLATION)] =
-                       other.getFlag(TransformType::TRANSLATION);
+                       getFlag(TransformType::VIEW_OFFSET);
+               _transformFlags[to_const_uint(TransformType::VIEW_OFFSET)] =
+                       getFlag(TransformType::VIEW_OFFSET);
+
            }
         private:
            std::array<AtomicWrapper<bool>, to_const_uint(TransformType::COUNT)> _transformFlags;

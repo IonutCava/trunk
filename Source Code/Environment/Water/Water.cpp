@@ -77,7 +77,12 @@ WaterPlane::~WaterPlane()
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
-    sgn.addNode(*_plane);
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
+    sgn.addNode(*_plane, normalMask);
 
     bool reflectorBuilt = Reflector::build();
     DIVIDE_ASSERT(reflectorBuilt, Locale::get(_ID("ERROR_REFLECTOR_INIT_FB")));
@@ -106,11 +111,10 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
 void WaterPlane::computeBoundingBox() {
     _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
     _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
-    _boundingBox.first.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
-                           vec3<F32>(_farPlane, _waterLevel, _farPlane));
-    _boundingBox.second = true;
-    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_1")), _boundingBox.first.getMax().y);
-    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_2")), _boundingBox.first.getMin().y);
+    _boundingBox.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
+                     vec3<F32>(_farPlane, _waterLevel, _farPlane));
+    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_1")), _boundingBox.getMax().y);
+    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_2")), _boundingBox.getMin().y);
     
     _dirty = true;
 }
@@ -135,9 +139,6 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     _cameraUnderWater =
         isPointUnderWater(sceneState.renderState().getCamera().getEye());
     if (_dirty) {
-        /*sgn.get<BoundsComponent>()
-            ->getBoundingSphere().fromBoundingBox(sgn.get<BoundsComponent>()
-                                                    ->getBoundingBoxConst());*/
         _dirty = false;
     }
     if (_paramsDirty) {

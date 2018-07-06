@@ -72,12 +72,16 @@ void PhysicsComponent::useDefaultTransform(const bool state) {
 
 void PhysicsComponent::ignoreView(const bool state, const I64 cameraGUID) {
     _ignoreViewSettings._cameraGUID = cameraGUID;
+    setTransformDirty(TransformType::VIEW_OFFSET);
 }
 
 void PhysicsComponent::setViewOffset(const vec3<F32>& posOffset, const mat4<F32>& rotationOffset) {
     _ignoreViewSettings._posOffset.set(posOffset);
     _ignoreViewSettings._transformOffset.set(rotationOffset);
+
     _dirty = _dirtyInterp = true;
+
+    setTransformDirty(TransformType::VIEW_OFFSET);
 }
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {

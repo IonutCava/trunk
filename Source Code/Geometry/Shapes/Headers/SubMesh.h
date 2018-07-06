@@ -111,8 +111,7 @@ class SubMeshMeshImporter {
     static void setGeometryLimits(SubMesh& submesh,
                                   const vec3<F32>& min,
                                   const vec3<F32>& max) {
-        submesh._boundingBox.first.set(min, max);
-        submesh._boundingBox.second = true;
+        submesh._boundingBox.set(min, max);
     }
 
     friend class Divide::MeshImporter;

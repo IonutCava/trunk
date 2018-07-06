@@ -16,7 +16,8 @@ namespace Divide {
 
 SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, 
                                SceneNode& node,
-                               const stringImpl& name)
+                               const stringImpl& name,
+                               U32 componentMask)
     : GUIDWrapper(),
       _sceneGraph(sceneGraph),
       _updateTimer(Time::ElapsedMilliseconds()),
@@ -24,7 +25,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _node(&node),
       _active(true),
       _visibilityLocked(false),
-      _spatialPartitionFlag(false),
       _isSelectable(false),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
       _usageContext(UsageContext::NODE_DYNAMIC)
@@ -32,28 +32,68 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     assert(_node != nullptr);
     _children.resize(INITIAL_CHILD_COUNT);
     _childCount = 0;
+
+    for (std::atomic_bool& flag : _updateFlags) {
+        flag = false;
+    }
+
     setName(name);
 
-    _components[to_const_uint(SGNComponent::ComponentType::PHYSICS)].reset(new PhysicsComponent(*this));
-    _components[to_const_uint(SGNComponent::ComponentType::NAVIGATION)].reset(new NavigationComponent(*this));
-    _components[to_const_uint(SGNComponent::ComponentType::BOUNDS)].reset(new BoundsComponent(*this));
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::ANIMATION))) {
+        setComponent(SGNComponent::ComponentType::ANIMATION, new AnimationComponent(*this));
+    }
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::INVERSE_KINEMATICS))) {
+        setComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS, new IKComponent(*this));
+    }
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RAGDOLL))) {
+        setComponent(SGNComponent::ComponentType::RAGDOLL, new RagdollComponent(*this));
+    }
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::NAVIGATION))) {
+        setComponent(SGNComponent::ComponentType::NAVIGATION, new NavigationComponent(*this));
+    }
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::PHYSICS))) {
+        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this));
 
-    Material* const materialTpl = _node->getMaterialTpl();
+        PhysicsComponent* pComp = get<PhysicsComponent>();
+        pComp->addTransformUpdateCbk(DELEGATE_BIND(&Attorney::SceneGraphSGN::onNodeTransform, std::ref(_sceneGraph), std::ref(*this)));
+        pComp->addTransformUpdateCbk(DELEGATE_BIND(&SceneGraphNode::onTransform, this));
+    }
 
-    _components[to_const_uint(SGNComponent::ComponentType::RENDERING)].reset(
-        new RenderingComponent(
-            materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
-                                    : nullptr,
-            *this));
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::BOUNDS))) {
+        setComponent(SGNComponent::ComponentType::BOUNDS, new BoundsComponent(*this));
+    }
+    
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RENDERING))) {
 
-    PhysicsComponent* pComp = get<PhysicsComponent>();
-    pComp->addTransformUpdateCbk(DELEGATE_BIND(
-            &Attorney::SceneGraphSGN::onNodeTransform,
-            std::ref(_sceneGraph),
-            std::ref(*this)));
-    pComp->addTransformUpdateCbk(DELEGATE_BIND(
-            &SceneGraphNode::onTransform,
-            this));
+        Material* const materialTpl = _node->getMaterialTpl();
+        Material* materialInst = nullptr;
+        if (materialTpl != nullptr) {
+            materialInst = materialTpl->clone("_instance_" + name);
+        }
+        setComponent(SGNComponent::ComponentType::RENDERING, new RenderingComponent(materialInst, *this));
+    }
+   
+}
+
+void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
+    I8 idx = getComponentIdx(type);
+    // We have a component registered for the specified slot
+    if (idx != -1) {
+        assert(_components[idx] != nullptr);
+        if (component != nullptr) {
+            // We want to replace the existing entry, so keep the same index
+            _components[idx].reset(component);
+        } else {
+            // We want to delete the existing entry, so destroy the index as well
+            _components.erase(std::cbegin(_components) + idx);
+            setComponentIdx(type, -1);
+        }
+    // We are adding a new component type
+    } else {
+        vectorAlg::emplace_back(_components, component);
+        setComponentIdx(type, to_byte(_components.size() - 1));
+    }
+    
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -104,11 +144,11 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
     // Set the parent pointer to the new parent
     _parent = parent.shared_from_this();
     // Add ourselves in the new parent's children map
-    parent.addNode(shared_from_this());
+    parent.registerNode(shared_from_this());
     // That's it. Parent Transforms will be updated in the next render pass;
 }
 
-SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
+SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
     // Time to add it to the children vector
     SceneGraphNode_ptr child = findChild(node->getName()).lock();
     if (child) {
@@ -129,7 +169,7 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
 
 /// Add a new SceneGraphNode to the current node's child list based on a
 /// SceneNode
-SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, const stringImpl& name) {
+SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, const stringImpl& name) {
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
@@ -137,7 +177,8 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, const stringImpl& na
         std::make_shared<SceneGraphNode>(_sceneGraph, 
                                          node,
                                          name.empty() ? node.getName()
-                                                      : name);
+                                                      : name,
+                                         componentMask);
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
@@ -180,14 +221,7 @@ void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
 }
 
 void SceneGraphNode::postLoad() {
-    SceneNode::BoundingBoxPair& pair = Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
-    if (pair.second) {
-        BoundsComponent* bComp = get<BoundsComponent>();
-        if (bComp) {
-            bComp->onBoundsChange(pair.first);
-        }
-        pair.second = false;
-    }
+
 }
 
 bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
@@ -406,25 +440,19 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _elapsedTime += deltaTime;
 
     // update all of the internal components (animation, physics, etc)
-    for (const std::unique_ptr<SGNComponent>& comp : _components) {
-        if (comp != nullptr) {
-            comp->update(deltaTime);
-        }
+    for (std::unique_ptr<SGNComponent>& component : _components) {
+        component->update(deltaTime);
     }
 
-    SceneNode::BoundingBoxPair& pair = Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
-    if (pair.second) {
-        BoundsComponent* bComp = get<BoundsComponent>();
-        if (bComp) {
-            bComp->onBoundsChange(pair.first);
-        }
-        pair.second = false;
-    }
-        
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
 }
 
 void SceneGraphNode::onTransform() {
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        getChild(i, childCount).onTransform();
+    }
+
     PhysicsComponent* pComp = get<PhysicsComponent>();
     BoundsComponent* bComp = get<BoundsComponent>();
     if (pComp != nullptr && bComp != nullptr) {
@@ -461,10 +489,6 @@ void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
 
     PhysicsComponent* pComp = get<PhysicsComponent>();
     if (pComp && pComp->ignoreView(cameraGUID)) {
-        U32 childCount2 = getChildCount();
-        for (U32 i = 0; i < childCount2; ++i) {
-            getChild(i, childCount2).get<BoundsComponent>()->flagBoundingBoxDirty();
-        }
         pComp->setViewOffset(posOffset, rotationOffset);
     }
     

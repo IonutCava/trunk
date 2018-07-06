@@ -34,8 +34,9 @@
 
 #include "SceneNode.h"
 #include "Utility/Headers/StateTracker.h"
-#include "Graphs/Components/Headers/SGNComponent.h"
+#include "Graphs/Components/Headers/IKComponent.h"
 #include "Graphs/Components/Headers/BoundsComponent.h"
+#include "Graphs/Components/Headers/RagdollComponent.h"
 #include "Graphs/Components/Headers/PhysicsComponent.h"
 #include "Graphs/Components/Headers/AnimationComponent.h"
 #include "Graphs/Components/Headers/NavigationComponent.h"
@@ -52,8 +53,8 @@ class SceneRoot : public SceneNode {
     {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_SPECIAL);
-        _boundingBox.first.set(VECTOR3_UNIT, -VECTOR3_UNIT);
-        _boundingBox.second = false;
+        _boundingBox.set(VECTOR3_UNIT, -VECTOR3_UNIT);
+
     }
 
     bool onRender(SceneGraphNode& sgn, RenderStage currentStage) {
@@ -110,6 +111,11 @@ class SceneGraphNode : public GUIDWrapper,
         SELECTION_COUNT
     };
 
+    enum class UpdateFlag : U32 {
+        SPATIAL_PARTITION = 0,
+        COUNT
+    };
+
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
     /*Node Management*/
@@ -127,8 +133,8 @@ class SceneGraphNode : public GUIDWrapper,
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode_ptr addNode(SceneNode& node, const stringImpl& name = "");
-    SceneGraphNode_ptr addNode(SceneGraphNode_ptr node);
+    SceneGraphNode_ptr addNode(SceneNode& node, U32 componentMask, const stringImpl& name = "");
+    SceneGraphNode_ptr registerNode(SceneGraphNode_ptr node);
     void removeNode(const stringImpl& nodeName, bool recursive = true);
     inline void removeNode(const SceneGraphNode& node, bool recursive = true) {
         removeNode(node.getName(), recursive);
@@ -183,11 +189,6 @@ class SceneGraphNode : public GUIDWrapper,
 
     inline U64 getElapsedTime() const { return _elapsedTime; }
 
-    inline void setComponent(SGNComponent::ComponentType type,
-                             SGNComponent* component) {
-        _components[to_uint(type)].reset(component);
-    }
-
     template <typename T>
     inline T* get() const {
         assert(false && "INVALID COMPONENT");
@@ -223,6 +224,14 @@ class SceneGraphNode : public GUIDWrapper,
         return _childCount;
     }
 
+    inline bool getFlag(UpdateFlag flag) const {
+        return _updateFlags[to_uint(flag)];
+    }
+
+    inline void clearUpdateFlag(UpdateFlag flag) {
+        _updateFlags[to_uint(flag)] = false;
+    }
+
     bool operator==(const SceneGraphNode_ptr other) const {
         return this->getGUID() == other->getGUID();
     }
@@ -241,7 +250,8 @@ class SceneGraphNode : public GUIDWrapper,
     friend class std::shared_ptr<SceneGraphNode> ;*/
     explicit SceneGraphNode(SceneGraph& sceneGraph,
                             SceneNode& node,
-                            const stringImpl& name);
+                            const stringImpl& name,
+                            U32 componentMask);
     ~SceneGraphNode();
 
     bool operator==(const SceneGraphNode& rhs) const {
@@ -274,19 +284,12 @@ class SceneGraphNode : public GUIDWrapper,
                         const vec3<F32>& posOffset,
                         const mat4<F32>& rotationOffset);
 
-    inline void setSpatialPartitionFlag() {
-        _spatialPartitionFlag = true;
+    inline void setUpdateFlag(UpdateFlag flag) {
+        _updateFlags[to_uint(flag)] = true;
     }
 
    protected:
     friend class Octree;
-    inline bool getSpatialPartitionFlag() const {
-        return _spatialPartitionFlag;
-    }
-    inline void clearSpatialPartitionFlag() {
-        _spatialPartitionFlag = false;
-    }
-
     void onCollision(SceneGraphNode_cwptr collider);
 
    private:
@@ -294,6 +297,31 @@ class SceneGraphNode : public GUIDWrapper,
     bool filterCollission(const SceneGraphNode& node);
     inline void setName(const stringImpl& name) { 
         _name = name;
+    }
+
+    void setComponent(SGNComponent::ComponentType type, SGNComponent* component);
+
+    inline I8 getComponentIdx(SGNComponent::ComponentType cmpType) const {
+        for (std::pair<I8, SGNComponent::ComponentType> entry : _componentIdx) {
+            if (cmpType == entry.second) {
+                return entry.first;
+            }
+        }
+        // should be easy to debug
+        return -1;
+    }
+
+    inline void setComponentIdx(SGNComponent::ComponentType cmpType, I8 newIdx) {
+        if (getComponentIdx(cmpType) == -1) {
+            _componentIdx.push_back(std::make_pair(newIdx, cmpType));
+        } else {
+            for (std::pair<U8, SGNComponent::ComponentType> entry : _componentIdx) {
+                if (cmpType == entry.second) {
+                    entry.first = newIdx;
+                    return;
+                }
+            }
+        }
     }
 
    private:
@@ -310,75 +338,57 @@ class SceneGraphNode : public GUIDWrapper,
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
     std::atomic<bool> _visibilityLocked;
-    std::atomic<bool> _spatialPartitionFlag;
+    std::array<std::atomic<bool>, to_const_uint(UpdateFlag::COUNT)> _updateFlags;
 
     bool _isSelectable;
     SelectionFlag _selectionFlag;
 
     UsageContext _usageContext;
-    std::array<std::unique_ptr<SGNComponent>, 
-               to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
     StateTracker<bool> _trackedBools;
 
     DELEGATE_CBK_PARAM<SceneGraphNode_cptr> _collisionCbk;
+
+    vectorImpl<std::unique_ptr<SGNComponent>> _components;
+    // keeping a separate index list should be faster than checking each component for its type
+    vectorImpl<std::pair<I8, SGNComponent::ComponentType>> _componentIdx;
 };
 
 template <>
 inline AnimationComponent* SceneGraphNode::get() const {
-	return static_cast<AnimationComponent*>(
-		_components[to_const_uint(SGNComponent::ComponentType::ANIMATION)].get());
+    I8 idx = getComponentIdx(SGNComponent::ComponentType::ANIMATION);
+	return idx == -1 ? nullptr : static_cast<AnimationComponent*>(_components[idx].get());
+}
+template <>
+inline IKComponent* SceneGraphNode::get() const {
+    I8 idx = getComponentIdx(SGNComponent::ComponentType::INVERSE_KINEMATICS);
+    return idx == -1 ? nullptr : static_cast<IKComponent*>(_components[idx].get());
+}
+template <>
+inline RagdollComponent* SceneGraphNode::get() const {
+    I8 idx = getComponentIdx(SGNComponent::ComponentType::RAGDOLL);
+    return idx == -1 ? nullptr : static_cast<RagdollComponent*>(_components[idx].get());
 }
 template <>
 inline BoundsComponent* SceneGraphNode::get() const {
-    return static_cast<BoundsComponent*>(
-        _components[to_const_uint(SGNComponent::ComponentType::BOUNDS)].get());
+    I8 idx = getComponentIdx(SGNComponent::ComponentType::BOUNDS);
+    return idx == -1 ? nullptr : static_cast<BoundsComponent*>(_components[idx].get());
 }
 template <>
 inline NavigationComponent* SceneGraphNode::get() const {
-	return static_cast<NavigationComponent*>(
-		_components[to_const_uint(SGNComponent::ComponentType::NAVIGATION)].get());
+    I8 idx = getComponentIdx(SGNComponent::ComponentType::NAVIGATION);
+    return idx == -1 ? nullptr : static_cast<NavigationComponent*>(_components[idx].get());
 }
 template <>
 inline PhysicsComponent* SceneGraphNode::get() const {
-	return static_cast<PhysicsComponent*>(
-		_components[to_const_uint(SGNComponent::ComponentType::PHYSICS)].get());
+    I8 idx = getComponentIdx(SGNComponent::ComponentType::PHYSICS);
+    return idx == -1 ? nullptr : static_cast<PhysicsComponent*>(_components[idx].get());
 }
 template <>
 inline RenderingComponent* SceneGraphNode::get() const {
-	return static_cast<RenderingComponent*>(
-		_components[to_const_uint(SGNComponent::ComponentType::RENDERING)].get());
+    I8 idx = getComponentIdx(SGNComponent::ComponentType::RENDERING);
+    return idx == -1 ? nullptr : static_cast<RenderingComponent*>(_components[idx].get());
 }
 
-template <typename T>
-inline T* get(const SceneGraphNode& node) {
-    assert(false && "INVALID COMPONENT");
-    return nullptr;
-}
-
-template <>
-inline AnimationComponent* get(const SceneGraphNode& node) {
-    return node.get<AnimationComponent>();
-}
-
-template <>
-inline BoundsComponent* get(const SceneGraphNode& node) {
-    return node.get<BoundsComponent>();
-}
-
-template <>
-inline NavigationComponent* get(const SceneGraphNode& node) {
-    return node.get<NavigationComponent>();
-}
-
-template <>
-inline PhysicsComponent* get(const SceneGraphNode& node) {
-    return node.get<PhysicsComponent>();
-}
-
-template <>
-inline RenderingComponent* get(const SceneGraphNode& node) {
-    return node.get<RenderingComponent>();
-}
 };  // namespace Divide
 #endif

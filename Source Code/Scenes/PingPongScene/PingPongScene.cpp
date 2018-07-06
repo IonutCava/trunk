@@ -294,6 +294,12 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors) {
+    static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                 to_const_uint(SGNComponent::ComponentType::RENDERING);
+    static const U32 normalMask = lightMask | 
+                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
+
     // Create a ball
     ResourceDescriptor minge("Ping Pong Ball");
     _ball = CreateResource<Sphere3D>(minge);
@@ -303,13 +309,13 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setShininess(36.8f);
     _ball->getMaterialTpl()->setSpecular(
         vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
-    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, "PingPongBallSGN");
+    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, normalMask, "PingPongBallSGN");
     _ballSGN.lock()->get<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
 
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     Light* light = CreateResource<Light>(tempLight);
-    _sceneGraph->getRoot()->addNode(*light);
+    _sceneGraph->getRoot()->addNode(*light, lightMask);
     light->setRange(30.0f);
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6, 2));

@@ -52,10 +52,15 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane));
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
+    SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane, normalMask));
     planeSGN->setActive(false);
     for (TerrainChunk* chunk : _terrainChunks) {
-        /*SceneGraphNode_ptr vegetation = sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
+        /*SceneGraphNode_ptr vegetation = sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
         vegetation->lockVisibility(true);*/
     }
     SceneNode::postLoad(sgn);
@@ -65,13 +70,13 @@ void Terrain::buildQuadtree() {
     reserveTriangleCount((_terrainDimensions.x - 1) *
                          (_terrainDimensions.y - 1) * 2);
     _terrainQuadtree.Build(
-        _boundingBox.first,
+        _boundingBox,
         vec2<U32>(_terrainDimensions.x, _terrainDimensions.y),
         _chunkSize, this);
 
     // The terrain's final bounding box is the QuadTree's root bounding box
-    _boundingBox.first = _terrainQuadtree.computeBoundingBox();
-    _boundingBox.second = true;
+    _boundingBox.set(_terrainQuadtree.computeBoundingBox());
+
 
     Material* mat = getMaterialTpl();
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
@@ -80,8 +85,8 @@ void Terrain::buildQuadtree() {
         ShaderProgram* const drawShader = mat->getShaderInfo(stage).getProgram();
 
         drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE().state().waterLevel());
-        drawShader->Uniform("bbox_min", _boundingBox.first.getMin());
-        drawShader->Uniform("bbox_extent", _boundingBox.first.getExtent());
+        drawShader->Uniform("bbox_min", _boundingBox.getMin());
+        drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
         U8 textureOffset = to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP) + 1;
@@ -172,8 +177,8 @@ void Terrain::postRender(SceneGraphNode& sgn) const {
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
-    x -= _boundingBox.first.getCenter().x;
-    z -= _boundingBox.first.getCenter().z;
+    x -= _boundingBox.getCenter().x;
+    z -= _boundingBox.getCenter().z;
     F32 xClamp = (0.5f * _terrainDimensions.x) + x;
     F32 zClamp = (0.5f * _terrainDimensions.y) - z;
     xClamp /= _terrainDimensions.x;
@@ -202,11 +207,11 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
            posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
 
     vec3<F32> pos(
-        _boundingBox.first.getMin().x +
-            x_clampf * (_boundingBox.first.getMax().x - _boundingBox.first.getMin().x),
+        _boundingBox.getMin().x +
+            x_clampf * (_boundingBox.getMax().x - _boundingBox.getMin().x),
         0.0f,
-        _boundingBox.first.getMin().z +
-            z_clampf * (_boundingBox.first.getMax().z - _boundingBox.first.getMin().z));
+        _boundingBox.getMin().z +
+            z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
 
 
     const VertexBuffer* const vb = getGeometryVB();

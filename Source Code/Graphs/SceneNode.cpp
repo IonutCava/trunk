@@ -17,11 +17,9 @@ SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
     : Resource(name),
       _materialTemplate(nullptr),
-      _sgnParentCount(0),
       _type(type),
       _LODcount(1)  ///<Defaults to 1 LOD level
 {
-    _boundingBox.second = true;
 }
 
 SceneNode::~SceneNode()
@@ -32,15 +30,25 @@ void SceneNode::sceneUpdate(const U64 deltaTime,
                             SceneGraphNode& sgn,
                             SceneState& sceneState)
 {
-    assert(_sgnParentCount != 0);
+    for (SceneGraphNode_wptr nodeWptr : _sgnParents) {
+        if (!nodeWptr.expired()) {
+            if (checkBoundingBox(*nodeWptr.lock())) {
+                sgn.get<BoundsComponent>()->onBoundsChange(_boundingBox);
+            }
+        }
+    }
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
-    if (_sgnParentCount > 0) {
+    if (!_sgnParents.empty()) {
         AddRef();
     }
-    _sgnParentCount++;
 
+    _sgnParents.push_back(sgn.shared_from_this());
+
+    checkBoundingBox(sgn);
+
+    sgn.get<BoundsComponent>()->onBoundsChange(_boundingBox);
     sgn.postLoad();
 }
 
@@ -48,6 +56,9 @@ bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }
 
+bool SceneNode::checkBoundingBox(const SceneGraphNode& sgn) {
+    return false;
+}
 
 Material* const SceneNode::getMaterialTpl() {
     // UpgradableReadLock ur_lock(_materialLock);

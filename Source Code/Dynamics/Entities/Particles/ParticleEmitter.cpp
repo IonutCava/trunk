@@ -287,12 +287,11 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
     _particleGPUBuffer->incQueue();
 
-    _boundingBox.first.reset();
+    _boundingBox.reset();
 
     for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
-        _boundingBox.first.add(_particles->_position[i]);
+        _boundingBox.add(_particles->_position[i]);
     }
-    _boundingBox.second = true;
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
@@ -314,17 +313,16 @@ void ParticleEmitter::computeBoundingBox() {
         }
         averageEmitRate /= _sources.size();
 
-        _boundingBox.first.reset();
+        _boundingBox.reset();
 
         U32 step = std::max(aliveCount, to_uint(averageEmitRate) / 4);
         for (U32 i = 0; i < aliveCount; i += step) {
-            _boundingBox.first.add(_particles->_position[i]);
+            _boundingBox.add(_particles->_position[i]);
         }
     } else {
-        _boundingBox.first.set(VECTOR3_ZERO, VECTOR3_ZERO);
+        _boundingBox.set(VECTOR3_ZERO, VECTOR3_ZERO);
     }
 
-    _boundingBox.second = true;
 }
 
 };

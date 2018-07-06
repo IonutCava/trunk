@@ -114,18 +114,16 @@ void Light::computeBoundingBox() {
         vec3<F32> directionalLightPosition =
             _positionAndRange.xyz() * 
             (to_const_float(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE) * -1.0f);
-        _boundingBox.first.set(directionalLightPosition - 10.0f,
-                               directionalLightPosition + 10.0f);
+        _boundingBox.set(directionalLightPosition - 10.0f,
+                         directionalLightPosition + 10.0f);
     } else {
-        _boundingBox.first.set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
-        _boundingBox.first.multiply(0.5f);
+        _boundingBox.set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
+        _boundingBox.multiply(0.5f);
     }
 
     if (_type == LightType::SPOT) {
-        _boundingBox.first.multiply(0.5f);
+        _boundingBox.multiply(0.5f);
     }
-
-    _boundingBox.second = true;
 }
 
 bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
@@ -134,10 +132,14 @@ bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     }
 
     if (!_impostor) {
+        static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                      to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                      to_const_uint(SGNComponent::ComponentType::RENDERING);
+
         _impostor = CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_positionAndRange.w);
         _impostor->renderState().setDrawState(true);
-        _impostorSGN = _lightSGN->addNode(*_impostor);
+        _impostorSGN = _lightSGN->addNode(*_impostor, normalMask);
         _impostorSGN.lock()->setActive(true);
     }
 

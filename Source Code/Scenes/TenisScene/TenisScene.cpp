@@ -274,11 +274,6 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
     _currentSky = addSky();
 
-    //    ResourceDescriptor tempLight1("Light omni");
-    //    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
-    //    light1 = CreateResource<Light>(tempLight1);
-    //    _sceneGraph->getRoot().addNode(*light1);
-
     // Position camera
     // renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
     // renderState().getCamera().setRotation(10/*yaw*/,-45/*pitch*/);
@@ -388,6 +383,11 @@ bool TenisScene::deinitializeAI(bool continueOnErrors) {
 }
 
 bool TenisScene::loadResources(bool continueOnErrors) {
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
+
     // Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(ballDescriptor);
@@ -396,7 +396,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, "TenisBallSGN");
+    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, normalMask, "TenisBallSGN");
     _ballSGN.lock()->get<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);

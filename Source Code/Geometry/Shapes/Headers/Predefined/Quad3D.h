@@ -162,9 +162,8 @@ class Quad3D : public Object3D {
 
     inline void computeBoundingBox() {
         // add some depth padding for collision and nav meshes
-        _boundingBox.first.setMax(getGeometryVB()->getPosition(1));
-        _boundingBox.first.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
-        _boundingBox.second = true;
+        _boundingBox.setMax(getGeometryVB()->getPosition(1));
+        _boundingBox.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
     }
 };
 

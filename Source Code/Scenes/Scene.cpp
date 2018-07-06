@@ -129,6 +129,11 @@ void Scene::loadXMLAssets(bool singleStep) {
 }
 
 bool Scene::loadModel(const FileData& data) {
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     ResourceDescriptor model(data.ModelName);
     model.setResourceLocation(data.ModelName);
     model.setFlag(true);
@@ -140,7 +145,7 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode_ptr meshNode =
-        _sceneGraph.getRoot().addNode(*thisObj, data.ItemName);
+        _sceneGraph.getRoot().addNode(*thisObj, normalMask, data.ItemName);
     meshNode->get<RenderingComponent>()->castsShadows(
         data.castsShadows);
     meshNode->get<RenderingComponent>()->receivesShadows(
@@ -168,6 +173,11 @@ bool Scene::loadModel(const FileData& data) {
 }
 
 bool Scene::loadGeometry(const FileData& data) {
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     Object3D* thisObj;
     ResourceDescriptor item(data.ItemName);
     item.setResourceLocation(data.ModelName);
@@ -215,7 +225,7 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().addNode(*thisObj);
+    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().addNode(*thisObj, normalMask);
     thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
@@ -245,6 +255,9 @@ bool Scene::loadGeometry(const FileData& data) {
 SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                                              std::shared_ptr<ParticleData> data,
                                              SceneGraphNode& parentNode) {
+    static const U32 particleMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                    to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                    to_const_uint(SGNComponent::ComponentType::RENDERING);
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -256,12 +269,16 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
 
     emitter->initData(data);
 
-    return parentNode.addNode(*emitter);
+    return parentNode.addNode(*emitter, particleMask);
 }
 
 
 SceneGraphNode_ptr Scene::addLight(LightType type,
                                 SceneGraphNode& parentNode) {
+    static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                 to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     const char* lightType = "";
     switch (type) {
         case LightType::DIRECTIONAL:
@@ -284,11 +301,16 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
     }
-    return parentNode.addNode(*light);
+    return parentNode.addNode(*light, lightMask);
 }
 
 void Scene::toggleFlashlight() {
+    static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                 to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     if (_flashLight.lock() == nullptr) {
+
         ResourceDescriptor tempLightDesc("MainFlashlight");
         tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
         Light* tempLight = CreateResource<Light>(tempLightDesc);
@@ -296,7 +318,7 @@ void Scene::toggleFlashlight() {
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColor(DefaultColors::WHITE());
-        _flashLight = _sceneGraph.getRoot().addNode(*tempLight);
+        _flashLight = _sceneGraph.getRoot().addNode(*tempLight, lightMask);
     }
 
     _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
@@ -309,12 +331,22 @@ SceneGraphNode_ptr Scene::addSky() {
 }
 
 SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
-     SceneGraphNode_ptr skyNode = _sceneGraph.getRoot().addNode(skyItem);
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
+     SceneGraphNode_ptr skyNode = _sceneGraph.getRoot().addNode(skyItem, normalMask);
      skyNode->lockVisibility(true);
      return skyNode;
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     STUBBED("ToDo: load skyboxes from XML")
     _GUI = guiInterface;
     _name = name;
@@ -329,7 +361,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode_ptr terrainTemp = root.addNode(*temp);
+            SceneGraphNode_ptr terrainTemp = root.addNode(*temp, normalMask);
             terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 

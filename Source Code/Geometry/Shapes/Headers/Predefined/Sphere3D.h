@@ -143,8 +143,7 @@ class Sphere3D : public Object3D {
 
         vb->create();
         vb->queueRefresh();
-        _boundingBox.first.set(vec3<F32>(-_radius), vec3<F32>(_radius));
-        _boundingBox.second = true;
+        _boundingBox.set(vec3<F32>(-_radius), vec3<F32>(_radius));
     }
 
    protected:

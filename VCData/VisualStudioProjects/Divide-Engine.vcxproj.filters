@@ -524,6 +524,12 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\BoundsComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\IKComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\RagdollComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -920,6 +926,12 @@
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\BoundsComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\IKComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RagdollComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>

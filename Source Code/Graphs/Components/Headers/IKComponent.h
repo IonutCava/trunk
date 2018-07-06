@@ -29,41 +29,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _NAVIGATION_COMPONENT_H_
-#define _NAVIGATION_COMPONENT_H_
+#ifndef _IK_COMPONENT_H_
+#define _IK_COMPONENT_H_
+
 
 #include "SGNComponent.h"
-#include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
-
-class SceneGraphNode;
-class NavigationComponent : public SGNComponent {
-   public:
-    enum class NavigationContext :U32 {
-        NODE_OBSTACLE = 0,
-        NODE_IGNORE
+    class IKComponent : public SGNComponent {
+        public:
+            IKComponent(SceneGraphNode& parentSGN);
     };
-
-    inline const NavigationContext& navigationContext() const {
-        return _navigationContext;
-    }
-
-    inline bool navMeshDetailOverride() const { return _overrideNavMeshDetail; }
-
-    void navigationContext(const NavigationContext& newContext);
-
-    void navigationDetailOverride(const bool detailOverride);
-
-   protected:
-    friend class SceneGraphNode;
-    NavigationComponent(SceneGraphNode& sgn);
-    ~NavigationComponent();
-
-   protected:
-    NavigationContext _navigationContext;
-    bool _overrideNavMeshDetail;
 };
 
-};  // namespace Divide
-#endif
+#endif //_IK_COMPONENT_H_

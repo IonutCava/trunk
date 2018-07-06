@@ -60,8 +60,7 @@ class Text3D : public Object3D {
         vec3<F32> min(-_width * 2, 0, -_width * 0.5f);
         vec3<F32> max(_width * 1.5f * _text.length() * 10,
                       _width * _text.length() * 1.5f, _width * 0.5f);
-        _boundingBox.first.set(min, max);
-        _boundingBox.second = true;
+        _boundingBox.set(min, max);
     }
 
    private:

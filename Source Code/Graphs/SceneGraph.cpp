@@ -20,8 +20,11 @@ SceneGraph::SceneGraph() : FrameListener(),
                            _octreeChanged(false),
                            _rootNode(MemoryManager_NEW SceneRoot())
 {
+    static const U32 rootMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                to_const_uint(SGNComponent::ComponentType::BOUNDS);
+
     REGISTER_FRAME_LISTENER(this, 1);
-    _root = std::make_shared<SceneGraphNode>(*this, *_rootNode, "ROOT");
+    _root = std::make_shared<SceneGraphNode>(*this, *_rootNode, "ROOT", rootMask);
     _root->get<BoundsComponent>()->lockBBTransforms(true);
     _rootNode->postLoad(*_root);
 
@@ -93,7 +96,7 @@ void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
 
 void SceneGraph::onNodeTransform(SceneGraphNode& node) {
     if (_loadComplete) {
-        node.setSpatialPartitionFlag();
+        node.setUpdateFlag(SceneGraphNode::UpdateFlag::SPATIAL_PARTITION);
     }
 }
 

@@ -45,8 +45,9 @@ class SceneAnimator;
 class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
    public:
-    AnimationComponent(SceneAnimator& animator, SceneGraphNode& parentSGN);
-    ~AnimationComponent();
+    inline void updateAnimator(std::shared_ptr<SceneAnimator> animator) {
+        _animator = animator;
+    }
 
     bool onRender(RenderStage currentStage);
 
@@ -69,6 +70,7 @@ class AnimationComponent : public SGNComponent {
     inline const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const {
         return transformsByIndex(_currentAnimIndex, index);
     }
+
     const vectorImpl<mat4<F32> >& transformsByIndex(U32 animationID,
                                                     U32 index) const;
 
@@ -94,10 +96,14 @@ class AnimationComponent : public SGNComponent {
     void incParentTimeStamp(const U64 timestamp);
 
     const vectorImpl<Line>& skeletonLines() const;
-    
+   protected:
+    friend class SceneGraphNode;
+    AnimationComponent(SceneGraphNode& parentSGN);
+    ~AnimationComponent();
+
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
-    SceneAnimator& _animator;
+    std::shared_ptr<SceneAnimator> _animator;
     /// Current animation index for the current SGN
     I32 _currentAnimIndex;
     /// Current animation timestamp for the current SGN

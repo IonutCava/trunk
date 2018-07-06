@@ -205,7 +205,7 @@ class TerrainLoader {
     }
     static void buildQuadtree(Terrain& terrain) { terrain.buildQuadtree(); }
     static BoundingBox& boundingBox(Terrain& terrain) {
-        return terrain._boundingBox.first;
+        return terrain._boundingBox;
     }
     static F32& farPlane(Terrain& terrain) { return terrain._farPlane; }
     static void plane(Terrain& terrain, Quad3D* plane) { terrain._plane = plane; }

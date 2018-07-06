@@ -83,19 +83,22 @@ bool Sky::load() {
     assert(_skyShader && _skyShaderPrePass);
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
-    _boundingBox.first.set(vec3<F32>(-_farPlane / 2), vec3<F32>(_farPlane / 2));
-    _boundingBox.second = true;
+    _boundingBox.set(vec3<F32>(-_farPlane / 2), vec3<F32>(_farPlane / 2));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
     return Resource::load();
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     if (_sky == nullptr) {
         load();
     }
 
     _sky->renderState().setDrawState(false);
-    sgn.addNode(*_sky)->get<PhysicsComponent>()->physicsGroup(
+    sgn.addNode(*_sky, normalMask)->get<PhysicsComponent>()->physicsGroup(
         PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();

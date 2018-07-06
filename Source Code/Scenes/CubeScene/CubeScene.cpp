@@ -92,6 +92,9 @@ bool CubeScene::load(const stringImpl& name, GUI* const gui) {
 
 bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
 
     for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < 10; col++) {
@@ -104,7 +107,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);
-            _lightNodes.push_back(_sceneGraph.getRoot().addNode(*light));
+            _lightNodes.push_back(_sceneGraph.getRoot().addNode(*light, normalMask));
         }
     }
 

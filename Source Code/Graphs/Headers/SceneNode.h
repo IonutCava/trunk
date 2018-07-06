@@ -74,8 +74,6 @@ namespace Attorney {
 class NOINITVTABLE SceneNode : public Resource {
     friend class Attorney::SceneNodeSceneGraph;
    public:
-    typedef std::pair<BoundingBox, bool> BoundingBoxPair;
-
     SceneNode(const SceneNodeType& type);
     SceneNode(const stringImpl& name, const SceneNodeType& type);
     virtual ~SceneNode();
@@ -112,24 +110,14 @@ class NOINITVTABLE SceneNode : public Resource {
     inline void decLODcount() { _LODcount--; }
     inline U8   getLODcount() const { return _LODcount; }
 
-    inline BoundingBoxPair& getBoundingBox() {
-        return _boundingBox;
-    }
-
-    inline const BoundingBoxPair& getBoundingBox() const {
-        return _boundingBox;
-    }
-
    protected:
-    virtual BoundingBoxPair& getBoundingBox(const SceneGraphNode& sgn) {
-        return getBoundingBox();
-    }
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
+    virtual bool checkBoundingBox(const SceneGraphNode& sgn);
 
    protected:
     /// The various states needed for rendering
@@ -137,10 +125,10 @@ class NOINITVTABLE SceneNode : public Resource {
     /// Maximum available LOD levels
     U8 _LODcount;
     /// The initial bounding box as it was at object's creation (i.e. no transforms applied)
-    BoundingBoxPair _boundingBox;
+    BoundingBox _boundingBox;
 
    private:
-    U32 _sgnParentCount;
+    vectorImpl<SceneGraphNode_wptr> _sgnParents;
     SceneNodeType _type;
     Material* _materialTemplate;
 };
@@ -157,10 +145,6 @@ class SceneNodeSceneGraph {
         node.sceneUpdate(deltaTime, sgn, sceneState);
     }
 
-    static SceneNode::BoundingBoxPair& getBoundingBox(SceneNode& node,
-                                                      const SceneGraphNode& sgn) {
-        return node.getBoundingBox(sgn);
-    }
     friend class Divide::SceneGraphNode;
 };
 };  // namespace Attorney

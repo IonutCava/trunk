@@ -201,10 +201,10 @@ namespace Import {
         D32 elapsed = 0.0;
         start = Time::ElapsedMilliseconds(true);
 
-        SceneAnimator* animator = nullptr;
+        std::shared_ptr<SceneAnimator> animator;
         if (dataIn._hasAnimations) {
             ByteBuffer tempBuffer;
-            animator = MemoryManager_NEW SceneAnimator();
+            animator.reset(MemoryManager_NEW SceneAnimator());
             if (tempBuffer.loadFromFile(dataIn._modelPath + "/" + 
                                         g_parsedAssetLocation + "/" +
                                         dataIn._modelName + "." +

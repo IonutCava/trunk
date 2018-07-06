@@ -42,12 +42,14 @@ class SceneGraphNode;
 class SGNComponent : private NonCopyable {
    public:
     enum class ComponentType : U32 {
-        ANIMATION = 0,
-        NAVIGATION = 1,
-        PHYSICS = 2,
-        RENDERING = 3,
-        BOUNDS = 4,
-        COUNT
+        ANIMATION = toBit(1),
+        INVERSE_KINEMATICS = toBit(2),
+        RAGDOLL = toBit(3),
+        NAVIGATION = toBit(4),
+        PHYSICS = toBit(5),
+        BOUNDS = toBit(6),
+        RENDERING = toBit(7),
+        COUNT = 7
     };
     
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);

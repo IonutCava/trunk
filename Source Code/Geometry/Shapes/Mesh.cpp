@@ -17,13 +17,11 @@ Mesh::Mesh(ObjectFlag flag)
 
 Mesh::~Mesh()
 {
-    MemoryManager::DELETE(_animator);
 }
 
 /// Mesh bounding box is built from all the SubMesh bounding boxes
 void Mesh::computeBoundingBox() {
-    _boundingBox.first.reset();
-    _boundingBox.second = true;
+    _boundingBox.reset();
 }
 
 void Mesh::addSubMesh(SubMesh* const subMesh) {
@@ -35,8 +33,19 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
+    static const U32 skinnedMask = normalMask | 
+                                   to_const_uint(SGNComponent::ComponentType::ANIMATION) |
+                                   to_const_uint(SGNComponent::ComponentType::INVERSE_KINEMATICS) |
+                                   to_const_uint(SGNComponent::ComponentType::RAGDOLL);
+
     for (SubMesh* submesh : _subMeshList) {
         sgn.addNode(*submesh,
+                    submesh->hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask,
                     Util::StringFormat("%s_%d",
                                         sgn.getName().c_str(),
                                         submesh->getID()));

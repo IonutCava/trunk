@@ -281,6 +281,11 @@ bool WarScene::addUnits() {
     vec3<F32> currentScale;
     stringImpl currentName;
 
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     SceneGraphNode& root = _sceneGraph.getRoot();
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < 15; ++i) {
@@ -321,8 +326,7 @@ bool WarScene::addUnits() {
                 damage = 15;
             }
 
-            SceneGraphNode_ptr currentNode =
-                root.addNode(*currentMesh, currentName);
+            SceneGraphNode_ptr currentNode = root.addNode(*currentMesh, normalMask, currentName);
             currentNode->setSelectable(true);
 
             PhysicsComponent* pComp =

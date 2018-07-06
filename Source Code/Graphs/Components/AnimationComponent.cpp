@@ -7,11 +7,8 @@
 
 namespace Divide {
 
-AnimationComponent::AnimationComponent(SceneAnimator& animator,
-                                       SceneGraphNode& parentSGN)
-
+AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::ANIMATION, parentSGN),
-      _animator(animator),
       _playAnimations(true),
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
@@ -32,7 +29,7 @@ void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
 void AnimationComponent::update(const U64 deltaTime) {
     SGNComponent::update(deltaTime);
 
-    if (_parentTimeStamp == _currentTimeStamp) {
+    if (!_animator || _parentTimeStamp == _currentTimeStamp) {
         return;
     }
 
@@ -41,7 +38,7 @@ void AnimationComponent::update(const U64 deltaTime) {
     // Update Animations
     if (_playAnimations) {
         _parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN);
-        _previousFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex,
+        _previousFrameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex,
             Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
@@ -69,10 +66,14 @@ void AnimationComponent::resetTimers() {
 
 /// Select an animation by name
 bool AnimationComponent::playAnimation(const stringImpl& name) {
+    if (!_animator) {
+        return false;
+    }
+
     U32 animIndex = 0;
     I32 oldIndex = _currentAnimIndex;
 
-    if (_animator.animationID(name, animIndex)) {
+    if (_animator->animationID(name, animIndex)) {
         _currentAnimIndex = animIndex;
     }
     if (_currentAnimIndex == -1) {
@@ -86,7 +87,11 @@ bool AnimationComponent::playAnimation(const stringImpl& name) {
 
 /// Select an animation by index
 bool AnimationComponent::playAnimation(I32 pAnimIndex) {
-    if (pAnimIndex >= to_int(_animator.animations().size())) {
+    if (!_animator) {
+        return false;
+    }
+
+    if (pAnimIndex >= to_int(_animator->animations().size())) {
         return false;  // no change, or the animations data is out of bounds
     }
     I32 oldIndex = _currentAnimIndex;
@@ -100,8 +105,12 @@ bool AnimationComponent::playAnimation(I32 pAnimIndex) {
 
 /// Select next available animation
 bool AnimationComponent::playNextAnimation() {
+    if (!_animator) {
+        return false;
+    }
+
     I32 oldIndex = _currentAnimIndex;
-    _currentAnimIndex = ++_currentAnimIndex % _animator.animations().size();
+    _currentAnimIndex = ++_currentAnimIndex % _animator->animations().size();
 
     resetTimers();
 
@@ -109,9 +118,13 @@ bool AnimationComponent::playNextAnimation() {
 }
 
 bool AnimationComponent::playPreviousAnimation() {
+    if (!_animator) {
+        return false;
+    }
+
     I32 oldIndex = _currentAnimIndex;
     if (_currentAnimIndex == 0) {
-        _currentAnimIndex = to_int(_animator.animations().size());
+        _currentAnimIndex = to_int(_animator->animations().size());
     }
     _currentAnimIndex = --_currentAnimIndex;
 
@@ -121,9 +134,11 @@ bool AnimationComponent::playPreviousAnimation() {
 }
 
 const vectorImpl<Line>& AnimationComponent::skeletonLines() const {
+    assert(_animator != nullptr);
+
     D32 animTimeStamp = Time::MicrosecondsToSeconds<D32>(_currentTimeStamp);
     // update possible animation
-    return  _animator.skeletonLines(_currentAnimIndex, animTimeStamp);
+    return  _animator->skeletonLines(_currentAnimIndex, animTimeStamp);
 }
 
 bool AnimationComponent::onRender(RenderStage currentStage) {
@@ -142,16 +157,17 @@ bool AnimationComponent::onRender(RenderStage currentStage) {
 }
 
 I32 AnimationComponent::frameCount(U32 animationID) const {
-    return _animator.frameCount(animationID);
+    return _animator != nullptr ? _animator->frameCount(animationID) : -1;
 }
 
 U32 AnimationComponent::boneCount() const {
-    return to_uint(_animator.boneCount());
+    return _animator != nullptr ? to_uint(_animator->boneCount()) : 0;
 }
 
-const vectorImpl<mat4<F32>>& AnimationComponent::transformsByIndex(
-    U32 animationID, U32 index) const {
-    return _animator.transforms(animationID, index);
+const vectorImpl<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
+    assert(_animator != nullptr);
+
+    return _animator->transforms(animationID, index);
 }
 
 const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
@@ -159,6 +175,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
                                                       const stringImpl& name) {
     Object3D* node = _parentSGN.getNode<Object3D>();
     assert(node != nullptr);
+    assert(_animator != nullptr);
 
     if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
         (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
@@ -166,21 +183,23 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
         return _parentSGN.get<PhysicsComponent>()->getWorldMatrix();
     }
 
-    I32 frameIndex = _animator.frameIndexForTimeStamp(animationID, timeStamp);
+    I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp);
 
     if (frameIndex == -1) {
         static mat4<F32> cacheIdentity;
         return cacheIdentity;
     }
 
-    return _animator.transforms(animationID, frameIndex).at(_animator.boneIndex(name));
+    return _animator->transforms(animationID, frameIndex).at(_animator->boneIndex(name));
 }
 
 Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {
-    return _animator.boneByName(bname);
+    return _animator != nullptr ? _animator->boneByName(bname) : nullptr;
 }
 
 AnimEvaluator& AnimationComponent::getAnimationByIndex(I32 animationID) const {
-    return _animator.animationByIndex(animationID);
+    assert(_animator != nullptr);
+
+    return _animator->animationByIndex(animationID);
 }
 };

@@ -322,9 +322,9 @@ void addTriangle(NavModelData* modelData,
 
 const vec3<F32> borderOffset(BORDER_PADDING);
 bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
-    if (sgn.get<NavigationComponent>()->navigationContext() !=
-            NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if
-                                                                    // specified
+    NavigationComponent* navComp = sgn.get<NavigationComponent>();
+    if (navComp && 
+        navComp->navigationContext() != NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if specified
         box.getHeight() > 0.05f)  // Skip small objects
     {
         SceneNode* sn = sgn.getNode();
@@ -362,16 +362,15 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         MeshDetailLevel level = MeshDetailLevel::MAXIMUM;
         VertexBuffer* geometry = nullptr;
         SamplePolyAreas areaType = SamplePolyAreas::SAMPLE_AREA_OBSTACLE;
-
         switch (nodeType) {
             case SceneNodeType::TYPE_WATER: {
-                if (!sgn.get<NavigationComponent>()->navMeshDetailOverride())
+                if (navComp && !navComp->navMeshDetailOverride())
                     level = MeshDetailLevel::BOUNDINGBOX;
                 areaType = SamplePolyAreas::SAMPLE_POLYAREA_WATER;
             } break;
             case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
-                if (!sgn.get<NavigationComponent>()->navMeshDetailOverride() &&
+                if (navComp && !navComp->navMeshDetailOverride() &&
                      sgn.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }

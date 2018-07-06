@@ -66,12 +66,12 @@ class Mesh : public Object3D {
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
-    void setAnimator(SceneAnimator* animator) {
+    void setAnimator(std::shared_ptr<SceneAnimator> animator) {
         assert(hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         _animator = animator;
     }
 
-    inline SceneAnimator* getAnimator() { 
+    inline std::shared_ptr<SceneAnimator> getAnimator() { 
         assert(hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         return _animator; 
     }
@@ -86,7 +86,7 @@ class Mesh : public Object3D {
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
     bool _visibleToNetwork;
     /// Animation player to animate the mesh if necessary
-    SceneAnimator* _animator;
+    std::shared_ptr<SceneAnimator> _animator;
     vectorImpl<SubMesh*> _subMeshList;
 };
 
