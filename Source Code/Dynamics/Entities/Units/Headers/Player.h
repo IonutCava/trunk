@@ -24,17 +24,20 @@
 #define _PLAYER_H_
 
 #include "Character.h"
+namespace Navigation {
+    class DivideDtCrowd;
+}
 /// User controlled Unit
 class Player : public Character {
 public:
-	Player(SceneGraphNode* const node);
-	~Player();
+    Player(SceneGraphNode* const node, Navigation::DivideDtCrowd* detourCrowd = NULL);
+    ~Player();
 
-	/// Do not allow or allow the user again to control this player
-	inline bool lockControlls(bool state) {_lockedControls = state;}
+    /// Do not allow or allow the user again to control this player
+    inline bool lockControlls(bool state) {_lockedControls = state;}
 
 private:
-	bool _lockedControls;
+    bool _lockedControls;
 };
 
 #endif

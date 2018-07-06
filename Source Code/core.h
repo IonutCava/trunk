@@ -71,15 +71,6 @@ inline U32 GETTIME() {
 	return getMsToSec(GETMSTIME());
 }
 
-template <class T>
-inline T squared(T n){
-	return n*n;
-}
-/// Clamps value n between min and max
-template <class T>
-inline void CLAMP(T& n, T min, T max){
-	n = ((n)<(min))?(min):(((n)>(max))?(max):(n));
-}
 //Helper method to emulate GLSL
 inline F32 fract(F32 floatValue){  return (F32)fmod(floatValue, 1.0f); }
 ///Packs a floating point value into the [0...255] range (thx sqrt[-1] of opengl.org forums)
@@ -106,9 +97,6 @@ inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b){
   g = (g * 2.0f) - 1.0f;
   b = (b * 2.0f) - 1.0f;
 }
-
-/// Converts an arbitrary positive integer value to a bitwise value used for masks
-#define toBit(X) (1 << (X))
 
 enum ErrorCodes {
 	NO_ERR = 0,

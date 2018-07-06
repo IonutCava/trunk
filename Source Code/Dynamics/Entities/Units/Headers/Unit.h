@@ -23,7 +23,8 @@
 #ifndef _UNIT_H_
 #define _UNIT_H_
 
-#include "core.h"
+#include "Core/Math/Headers/MathClasses.h"
+#include "Hardware/Platform/Headers/SharedMutex.h"
 
 class SceneGraphNode;
 ///Unit interface
@@ -68,7 +69,7 @@ public:
 	/// Get unit type
 	inline UnitType getUnitType()          {return _type;}
 
-private:
+protected:
 	/// Unit type
 	UnitType _type;
 	/// Movement speed (per second)

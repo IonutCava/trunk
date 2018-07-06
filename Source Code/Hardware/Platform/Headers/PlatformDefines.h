@@ -68,6 +68,9 @@
 #endif
 #ifndef _P_D_TYPES_ONLY_
 
+/// Converts an arbitrary positive integer value to a bitwise value used for masks
+#define toBit(X) (1 << (X))
+
 static const F32 TEST_EPSILON     = std::numeric_limits<F32>::epsilon();
 static const D32 TEST_EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 

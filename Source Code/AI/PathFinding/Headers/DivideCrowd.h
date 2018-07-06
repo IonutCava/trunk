@@ -60,7 +60,7 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 #include "DetourCrowd/Include/DetourCrowd.h"
-#include "NavMeshes/Headers/NavMesh.h"
+#include "../NavMeshes/Headers/NavMesh.h"
 #include <vector>
 
 
@@ -152,6 +152,8 @@ namespace Navigation {
         inline D32 getAgentRadius() const { return _recast->getConfigParams().getAgentRadius(); }
         /// The number of (active) agents in this crowd.
         inline I32 getNbAgents()    const { return _activeAgents; }
+        /// Get the navigation mesh associated with this crowd
+        inline const NavigationMesh& getNavMesh() {return *_recast;}
         /// The maximum number of agents that are allowed in this crowd.
         inline I32 getMaxNbAgents() const { return _crowd->getAgentCount(); }
         /// Get all (active) agents in this crowd.

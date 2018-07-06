@@ -214,7 +214,11 @@ inline T vec3<T>::distance(const vec3 &v) const {
                            ((v.y - this->y)*(v.y - this->y)) +
                            ((v.z - this->z)*(v.z - this->z)));
 }
-
+/// compute the vector's squared distance to another specified vector
+template<class T>
+inline T vec3<T>::distanceSquared(const vec3 &v) const {
+    return (*this - v).lengthSquared();
+}
 /// returns the angle in radians between '*this' and 'v'
 template<class T>
 inline T vec3<T>::angle(vec3 &v) const {

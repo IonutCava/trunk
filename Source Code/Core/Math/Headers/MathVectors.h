@@ -207,6 +207,8 @@ public:
     inline T    angle(vec3 &v) const;
     /// compute the vector's distance to another specified vector
     inline T    distance(const vec3 &v) const;
+    /// compute the vector's squared distance to another specified vector
+    inline T    distanceSquared(const vec3 &v) const;
     /// transform the vector to unit length
     inline T    normalize();
     /// project this vector on the line defined by the 2 points(A, B)

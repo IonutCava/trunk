@@ -64,6 +64,16 @@ inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * 
 inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
 inline bool bitCompare(U32 bitMask, U32 bit) {return ((bitMask & bit) == bit);}
 
+template <class T>
+inline T squared(T n){
+    return n*n;
+}
+/// Clamps value n between min and max
+template <class T>
+inline void CLAMP(T& n, T min, T max){
+    n = ((n)<(min))?(min):(((n)>(max))?(max):(n));
+}
+
 // bit manipulation
 #define ToBit(posn)      (1 << posn)
 #define BitSet(arg,posn) (arg |=  1 << posn)
