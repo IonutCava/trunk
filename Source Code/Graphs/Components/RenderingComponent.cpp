@@ -303,7 +303,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut) const 
                                                                                       ? 1.0f
                                                                                       : 0.0f,
                       receivesShadows() ? 1.0f : 0.0f,
-                      to_float(lodLevel()),
+                      to_float(_lodLevel),
                       0.0);
 }
 
@@ -434,20 +434,6 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
     }
 }
 
-U8 RenderingComponent::lodLevel() const {
-    
-    return (_lodLevel < (_parentSGN.getNode()->getLODcount() - 1)
-                ? _lodLevel
-                : (_parentSGN.getNode()->getLODcount() - 1));
-}
-
-void RenderingComponent::lodLevel(U8 LoD) {
-    
-    _lodLevel =
-        std::min(to_ubyte(_parentSGN.getNode()->getLODcount() - 1),
-                 std::max(LoD, to_ubyte(0)));
-}
-
 ShaderProgram* const RenderingComponent::getDrawShader(
     RenderStage renderStage) {
     return (getMaterialInstance()
@@ -492,12 +478,27 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                                   renderStage,
                                                   sceneRenderState,
                                                   pkg._drawCommands)) {
+            F32 cameraDistance = 
+                _parentSGN
+                    .getBoundingSphereConst()
+                    .getCenter()
+                    .distance(sceneRenderState
+                                .getCameraConst()
+                                .getEye());
+
+            U8 lodLevelTemp = cameraDistance > Config::SCENE_NODE_LOD0
+                                    ? cameraDistance > Config::SCENE_NODE_LOD1 ? 2 : 1
+                                    : 0;
+            _lodLevel =
+                std::min(to_ubyte(_parentSGN.getNode()->getLODcount() - 1),
+                    std::max(lodLevelTemp, to_ubyte(0)));
 
             U32 offset = commandOffset();
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
                 cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
                 cmd.commandOffset(offset++);
                 cmd.cmd().baseInstance = commandIndex();
+                cmd.LoD(_lodLevel);
             }
             pkg.isRenderable(!pkg._drawCommands.empty());
         }

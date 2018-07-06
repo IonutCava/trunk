@@ -4,10 +4,12 @@
 
 namespace Divide {
 
-SpotLight::SpotLight(F32 range) : Light(range, LightType::SPOT) {
+SpotLight::SpotLight(F32 range) : Light(range, LightType::SPOT)
+{
     setRange(2.0f);
     setSpotAngle(35.0f);
     setSpotCosOuterConeAngle(0.65); // 49.5 degrees
-    setSpotDirection(vec3<F32>(1.0f, 1.0f, 0.0f));
-};
+    _spotProperties.xyz(WORLD_Z_NEG_AXIS);
+}
+
 };

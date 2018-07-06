@@ -34,6 +34,8 @@ ForwardPlusRenderer::~ForwardPlusRenderer()
 }
 
 void ForwardPlusRenderer::preRender() {
+    Renderer::preRender();
+
     LightManager& lightMgr = LightManager::getInstance();
     lightMgr.uploadLightData(LightType::POINT, ShaderBufferLocation::LIGHT_CULL_POINT);
     lightMgr.uploadLightData(LightType::SPOT, ShaderBufferLocation::LIGHT_CULL_SPOT);
@@ -44,12 +46,34 @@ void ForwardPlusRenderer::preRender() {
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();
-    _lightCullComputeShader->Uniform("windowDimensions", vec2<I32>(_resolution.width, _resolution.height));
-    _lightCullComputeShader->Uniform("numLights", vec3<I32>(lightMgr.getActiveLightCount(LightType::POINT),
-                                                            lightMgr.getActiveLightCount(LightType::SPOT),
-                                                            _flag));
+
+    _lightCullComputeShader->Uniform("maxNumLightsPerTile", _flag);
     _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1);
     _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::SHADER_BUFFER);
+
+    if (false)  {
+        const U32 numTiles = getNumTilesX() * getNumTilesY();
+        const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
+
+        vectorImpl<U32> data;
+        data.resize(numTiles * maxNumLightsPerTile);
+        _perTileLightIndexBuffer->getData(0, data.size(), &data[0]);
+
+        U32 tileCount = 0;
+        Console::togglethreadID(false);
+        Console::toggleTimeStamps(false);
+        Console::printfn("\n ------------ START TILE %d -------------", tileCount);
+        U32 count = 0;
+        for (U32 c : data) {
+            Console::printf("%d ", c);
+            if (count++ % 50 == 0) {
+                Console::printfn("\n");
+            }
+        }
+        Console::printfn("\n -------------------- END TILE %d ---------------", tileCount++);
+        Console::toggleTimeStamps(true);
+        Console::togglethreadID(true);
+    }
 }
 
 void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,

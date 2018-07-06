@@ -102,8 +102,6 @@ class Light : public SceneNode {
     /// Get direction for spot lights
     inline vec3<F32> getSpotDirection() const { return _spotProperties.xyz(); }
 
-    void setSpotDirection(const vec3<F32>& newDirection);
-
     inline F32 getSpotAngle() const { return _spotProperties.w; }
 
     void setSpotAngle(F32 newAngle);
@@ -143,9 +141,9 @@ class Light : public SceneNode {
     bool computeBoundingBox(SceneGraphNode& sgn);
 
     bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn,
+                  const SceneGraphNode& sgn,
                   Frustum::FrustCollision& collisionType,
-                  const bool distanceCheck = true) override;
+                  const bool distanceCheck = true) const override;
 
     void sceneUpdate(const U64 deltaTime,
                      SceneGraphNode& sgn,
@@ -229,6 +227,7 @@ class Light : public SceneNode {
     LightType _type;
 
    private:
+    bool _rangeChanged;
     bool _drawImpostor;
     SceneGraphNode* _lightSGN;
     /// Used for debug rendering

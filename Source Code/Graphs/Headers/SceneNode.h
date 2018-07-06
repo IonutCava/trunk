@@ -94,9 +94,9 @@ class NOINITVTABLE SceneNode : public Resource {
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual bool isInView(const SceneRenderState& sceneRenderState,
-                          SceneGraphNode& sgn,
+                          const SceneGraphNode& sgn,
                           Frustum::FrustCollision& collisionType,
-                          const bool distanceCheck = true);
+                          const bool distanceCheck = true) const;
 
     /*//Rendering/Processing*/
 
@@ -164,7 +164,7 @@ class SceneNodeSceneGraph {
 
     static bool isInView(SceneNode& node,
                          const SceneRenderState& sceneRenderState,
-                         SceneGraphNode& sgn,
+                         const SceneGraphNode& sgn,
                          Frustum::FrustCollision& collisionType, 
                          const bool distanceCheck = true) {
         return node.isInView(sceneRenderState, sgn, collisionType, distanceCheck);

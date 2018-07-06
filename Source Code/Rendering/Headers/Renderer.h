@@ -50,7 +50,9 @@ class NOINITVTABLE Renderer {
 
     virtual ~Renderer() {}
 
-    virtual void preRender() = 0;
+    virtual void preRender() {
+        Attorney::GFXDeviceRenderer::uploadGPUBlock();
+    }
 
     virtual void render(const DELEGATE_CBK<>& renderCallback,
                         const SceneRenderState& sceneRenderState) = 0;

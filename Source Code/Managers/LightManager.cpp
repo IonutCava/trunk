@@ -23,6 +23,7 @@ LightManager::LightManager()
       _currentShadowCastingLight(nullptr)
 {
     _activeLightCount.fill(0);
+    _lightTypeState.fill(true);
     // shadowPassTimer is used to measure the CPU-duration of shadow map
     // generation step
     s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
@@ -290,14 +291,14 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
     U32 lightShadowPropertiesCount = 0;
     for(Light::LightList& lights : _lights) {
         for (Light* light : lights) {
-            if (!light->getEnabled()) {
+            LightType type = light->getLightType();
+            if (!light->getEnabled() || !_lightTypeState[to_uint(type)]) {
                 continue;
             }
 
             if (totalLightCount >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
-            LightType type = light->getLightType();
             U32 typeUint = to_uint(type);
 
             LightProperties& temp = _lightProperties[typeUint][_activeLightCount[typeUint]];

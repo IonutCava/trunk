@@ -1,18 +1,11 @@
 -- Compute
 
-uniform ivec2 windowDimensions;
-uniform ivec3 numLights;
-
-#define windowWidth windowDimensions.x
-#define windowHeight windowDimensions.y
+uniform uint maxNumLightsPerTile;
 
 #include "lightInput.cmn"
 
 #define NUM_THREADS_PER_TILE (FORWARD_PLUS_TILE_RES * FORWARD_PLUS_TILE_RES)
 #define FLT_MAX 3.402823466e+38F
-
-//#define windowWidth int(dvd_ViewPort.z)
-//#define windowHeight int(dvd_ViewPort.w)
 
 // shared = The value of such variables are shared between all invocations within a work group.
 shared uint ldsLightIdxCounter;
@@ -55,7 +48,7 @@ float GetSignedDistanceFromPlane(in vec4 p, in vec4 eqn)
 
 void CalculateMinMaxDepthInLds(uvec3 globalThreadIdx)
 {
-    float depth = -textureLod(HiZBuffer, vec2(globalThreadIdx.x, globalThreadIdx.y), 0).x;
+    float depth = textureLod(HiZBuffer, globalThreadIdx.xy, 0).x;
     uint z = floatBitsToUint(depth);
 
     if (depth != 0.f)
@@ -124,13 +117,11 @@ void main(void)
 
     barrier();
 
-    // FIXME: swapped min and max to prevent false culling near depth discontinuities.
-    //        AMD's ForwarPlus11 sample uses reverse depth test so maybe that's why this swap is needed. [2014-07-07]
-    minZ = uintBitsToFloat(ldsZMax);
-    maxZ = uintBitsToFloat(ldsZMin);
+    minZ = uintBitsToFloat(ldsZMin);
+    maxZ = uintBitsToFloat(ldsZMax);
 
     // loop over the point lights and do a sphere vs. frustum intersection test
-    uint numPointLights = uint(numLights.x);
+    uint numPointLights = dvd_lightCountPerType[1];
 
     for (uint i = 0; i < numPointLights; i += NUM_THREADS_PER_TILE)
     {
@@ -141,7 +132,7 @@ void main(void)
             vec4 center = dvd_PointLightSource[il]._positionWV;
             float r = center.w;
             // test if sphere is intersecting or inside frustum
-            //if (-center.z + minZ < r && center.z - maxZ < r)
+            if (center.z + minZ < r && center.z - maxZ < r)
             {
                 if ((GetSignedDistanceFromPlane(center, frustumEqn[0]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[1]) < r) &&
@@ -161,7 +152,7 @@ void main(void)
 
     // Spot lights.
     uint uNumPointLightsInThisTile = ldsLightIdxCounter;
-    uint numSpotLights = uint(numLights.y);
+    uint numSpotLights = dvd_lightCountPerType[2];
 
     for (uint i = 0; i < numSpotLights; i += NUM_THREADS_PER_TILE)
     {
@@ -170,10 +161,11 @@ void main(void)
         if (il < numSpotLights)
         {
             vec4 center = dvd_SpotLightSource[il]._positionWV;
-            float r = center.w * 5.0f; // FIXME: Multiply was added, but more clever culling should be done instead.
-
+            vec3 direction = dvd_SpotLightSource[il]._directionWV.xyz;
+            float r = center.w * 0.5;
+            center.xyz += direction * r;
             // test if sphere is intersecting or inside frustum
-            if (-center.z + minZ < r && center.z - maxZ < r)
+            if (center.z + minZ < r && center.z - maxZ < r)
             {
                 if ((GetSignedDistanceFromPlane(center, frustumEqn[0]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[1]) < r) &&
@@ -192,7 +184,6 @@ void main(void)
     barrier();
 
     {   // write back
-        int maxNumLightsPerTile = numLights.z;
         uint startOffset = maxNumLightsPerTile * tileIdxFlattened;
 
         for (uint i = localIdxFlattened; i < uNumPointLightsInThisTile; i += NUM_THREADS_PER_TILE)

@@ -68,7 +68,9 @@ class RenderPassCuller {
                          RenderStage currentStage,
                          SceneRenderState& sceneRenderState,
                          VisibleNodeList& nodes);
-
+    void addAllChildren(SceneGraphNode& currentNode,
+                        RenderStage currentStage,
+                        VisibleNodeList& nodes);
    protected:
     CullingFunction _cullingFunction;
     vectorImpl<std::future<void>> _cullingTasks;

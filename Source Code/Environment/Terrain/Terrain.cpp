@@ -20,9 +20,7 @@ Terrain::Terrain()
       _alphaTexturePresent(false),
       _plane(nullptr),
       _drawBBoxes(false),
-      _underwaterDiffuseScale(100.0f),
-      _terrainInView(false),
-      _planeInView(false)
+      _underwaterDiffuseScale(100.0f)
 {
     getGeometryVB()->useLargeIndices(true);  //<32bit indices
 
@@ -120,25 +118,6 @@ bool Terrain::computeBoundingBox(SceneGraphNode& sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-bool Terrain::isInView(const SceneRenderState& sceneRenderState,
-                       SceneGraphNode& sgn,
-                       Frustum::FrustCollision& collisionType,
-                       const bool distanceCheck) {
-    U32 temp = 0;
-    _terrainInView = SceneNode::isInView(sceneRenderState, sgn, collisionType, distanceCheck);
-    _planeInView = _terrainInView
-                       ? false
-                       : _plane->isInView(sceneRenderState,
-                                          sgn.getChild(0, temp),
-                                          collisionType,
-                                          distanceCheck);
-
-    bool visible = _terrainInView || _planeInView;
-    collisionType = visible ? Frustum::FrustCollision::FRUSTUM_IN
-                            : Frustum::FrustCollision::FRUSTUM_OUT;
-    return visible;
-}
-
 void Terrain::sceneUpdate(const U64 deltaTime,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
@@ -164,7 +143,7 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     cmd.sourceBuffer(getGeometryVB());
 
-    if (_terrainInView) {
+    
         vectorImpl<vec3<U32>> chunkData;
         chunkData.reserve(_terrainQuadtree.getChunkCount());
         _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);
@@ -179,12 +158,11 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
             cmd.LoD(to_byte(cmdData.z));
             drawCommandsOut.push_back(cmd);
         }
-    }
+    
 
     // draw infinite plane
     if ((GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY ||
-         GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS) &&
-        _planeInView) {
+         GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS)) {
 
         VertexBuffer* const vb = _plane->getGeometryVB();
         cmd.cmd().firstIndex = 0;

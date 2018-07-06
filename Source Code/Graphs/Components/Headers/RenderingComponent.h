@@ -84,9 +84,6 @@ class RenderingComponent : public SGNComponent {
     bool castsShadows() const;
     bool receivesShadows() const;
 
-    U8 lodLevel() const;
-    void lodLevel(U8 LoD);
-
     inline U32 drawOrder() const { return _drawOrder; }
 
     inline U32 commandIndex() const { return _commandIndex; }

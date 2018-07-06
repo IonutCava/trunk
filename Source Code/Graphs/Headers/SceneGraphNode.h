@@ -214,7 +214,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-    inline bool hasChildren() {
+    inline bool hasChildren() const {
         return getChildCount() > 0;
     }
 
@@ -225,7 +225,14 @@ class SceneGraphNode : public GUIDWrapper,
         return *_children.at(idx);
     }
 
-    inline U32 getChildCount() {
+    inline const SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) const {
+        assert(idx < _childCount);
+        updatedChildCount = getChildCount();
+        assert(_children.at(idx));
+        return *_children.at(idx);
+    }
+
+    inline U32 getChildCount() const {
         return _childCount;
     }
 
@@ -265,7 +272,7 @@ class SceneGraphNode : public GUIDWrapper,
     // Returns true if the node should be culled (is not visible for the current stage)
     bool cullNode(const SceneRenderState& sceneRenderState,
                   Frustum::FrustCollision& collisionType,
-                  RenderStage currentStage);
+                  RenderStage currentStage) const;
 
     void setVisibleState(bool state, RenderStage currentStage);
 

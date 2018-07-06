@@ -81,10 +81,7 @@ class ParticleData {
 
     inline U32 aliveCount() const { return _aliveCount; }
     inline U32 totalCount() const { return _totalCount; }
-
-    inline U8 lodLevel() const { return _lodLevel; }
-    inline void lodLevel(U8 lodLevel) { _lodLevel = lodLevel; }
-
+    
     /// Sort ALIVE particles only
     void sort();
 

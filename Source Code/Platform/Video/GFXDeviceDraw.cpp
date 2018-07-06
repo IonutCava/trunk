@@ -182,9 +182,18 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
-        mat4<F32> normalMatrix;
         // ... get the node's world matrix properly interpolated
-        dataOut._worldMatrix.set(transform->getWorldMatrix(_interpolationFactor, normalMatrix));
+        dataOut._worldMatrix.set(transform->getWorldMatrix(_interpolationFactor));
+        mat4<F32> normalMatrix(dataOut._worldMatrix);
+        if (!transform->isUniformScaled()) {
+            // Non-uniform scaling requires an inverseTranspose to negate
+            // scaling contribution but preserve rotation
+            normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+            normalMatrix.inverseTranspose();
+            normalMatrix.mat[15] = 0.0f;
+        }
+        normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
+
         // Calculate the normal matrix (world * view)
         Util::Mat4::Multiply(normalMatrix, _gpuBlock._data._ViewMatrix, dataOut._normalMatrixWV);
     }

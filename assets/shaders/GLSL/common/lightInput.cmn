@@ -49,9 +49,7 @@ layout(binding = BUFFER_LIGHT_CULL_SPOT, std430) coherent ACCESS buffer spotLigh
 {
     Light dvd_SpotLightSource[];
 };
-#else
-#define windowWidth int(dvd_ViewPort.z)
-#define windowHeight int(dvd_ViewPort.w)
+
 #endif
 
 #if defined(FRAG_SHADER)
@@ -68,6 +66,9 @@ layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowB
 };
 
 #endif 
+
+#define windowWidth int(dvd_ViewPort.z)
+#define windowHeight int(dvd_ViewPort.w)
 
 // calculate the number of tiles in the horizontal direction
 uint GetNumTilesX()

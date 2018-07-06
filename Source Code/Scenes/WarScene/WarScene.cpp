@@ -134,8 +134,8 @@ namespace {
     F32 phiLight = 0.0f;
     vec3<F32> initPosLight[16];
     vec3<F32> initPosLight2[80];
+    
     bool initPosSetLight = false;
-
     vec2<F32> rotatePoint(vec2<F32> center, F32 angle, vec2<F32> point) {
 
         return vec2<F32>(std::cos(angle) * (point.x - center.x) - std::sin(angle) * (point.y - center.y) + center.x,
@@ -227,8 +227,12 @@ void WarScene::processTasks(const U64 deltaTime) {
             vec2<F32> position(rotatePoint(vec2<F32>(0.0f), angle, initPosLight2[i].xz()));
             pComp->setPositionX(position.x);
             pComp->setPositionZ(position.y);
-            /*pComp->setPositionX(radius2[i] * std::cos(angle) + initPosLight[i].x);
-            pComp->setPositionZ(radius2[i] * std::sin(angle) + initPosLight[i].z);*/
+        }
+
+        for (U8 i = 0; i < 40; ++i) {
+            SceneGraphNode_ptr light = _lightNodes3[i].lock();
+            PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
+            pComp->rotateY(phiLight);
         }
         _taskTimers[3] = 0.0;
     }
@@ -427,6 +431,19 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
         }
+        {
+            ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
+            tempLight.setEnumValue(to_uint(LightType::SPOT));
+            Light* light = CreateResource<Light>(tempLight);
+            light->setDrawImpostor(true);
+            light->setRange(45.0f);
+            light->setCastShadows(false);
+            light->setDiffuseColor(DefaultColors::RANDOM());
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
+            lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
+            //lightSGN->getComponent<PhysicsComponent>()->rotateX(-40);
+            _lightNodes3.push_back(lightSGN);
+        }
     }
 
     SceneGraphNode_ptr flag;
@@ -486,7 +503,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     });
     
 #ifdef _DEBUG
-    const U32 particleCount = 1750;
+    const U32 particleCount = 4000;
 #else
     const U32 particleCount = 20000;
 #endif
@@ -579,8 +596,28 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     cbks.second = [](){DIVIDE_ASSERT(false, "Test Assert"); };
     _input->addKeyMapping(Input::KeyCode::KC_5, cbks);
 
-    cbks.second = [this]() {
-        _sun.lock()->getNode<Light>()->setEnabled(!_sun.lock()->getNode<Light>()->getEnabled());
+   
+    cbks.second = []() {
+        LightManager& lightMgr = LightManager::getInstance();
+        /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
+        bool dir = lightMgr.lightTypeEnabled(LightType::DIRECTIONAL);
+        bool point = lightMgr.lightTypeEnabled(LightType::POINT);
+        bool spot = lightMgr.lightTypeEnabled(LightType::SPOT);
+        if (dir && point && spot) {
+            lightMgr.toggleLightType(LightType::SPOT, false);
+        } else if (dir && point && !spot) {
+            lightMgr.toggleLightType(LightType::POINT, false);
+        } else if (dir && !point && !spot) {
+            lightMgr.toggleLightType(LightType::DIRECTIONAL, false);
+            lightMgr.toggleLightType(LightType::SPOT, true);
+        } else if (!dir && !point && spot) {
+            lightMgr.toggleLightType(LightType::POINT, true);
+        } else if (!dir && point && spot) {
+            lightMgr.toggleLightType(LightType::DIRECTIONAL, true);
+            lightMgr.toggleLightType(LightType::POINT, false);
+        } else {
+            lightMgr.toggleLightType(LightType::POINT, true);
+        }
     };
     _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
 

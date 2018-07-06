@@ -12,7 +12,8 @@ namespace Divide {
 PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
       _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
-      _physicsAsset(nullptr)
+      _physicsAsset(nullptr),
+      _dirty(true)
 {
     _transform = MemoryManager_NEW Transform();
     reset();
@@ -40,8 +41,8 @@ void PhysicsComponent::reset() {
     while (!_transformStack.empty()) {
         _transformStack.pop();
     }
-
     _transformUpdatedMask.setAllFlags();
+    _dirty = true;
 }
 
 void PhysicsComponent::useDefaultTransform(const bool state) {
@@ -87,6 +88,7 @@ void PhysicsComponent::setTransformDirty(TransformType type) {
     }
 
     _transformUpdatedMask.setFlag(type);
+    _dirty = true;
 }
 
 void PhysicsComponent::setPosition(const vec3<F32>& position) {
@@ -330,47 +332,37 @@ bool PhysicsComponent::popTransforms() {
     return false;
 }
 
-const mat4<F32>& PhysicsComponent::getWorldMatrix(bool& matrixRebuilt, 
-                                                  D32 interpolationFactor,
-                                                  mat4<F32>& normalMatrixOut,
-                                                  const bool local) {
-    getWorldMatrix(matrixRebuilt, interpolationFactor, local);
-    if (matrixRebuilt) {
-        _normalMatrix.set(_worldMatrix);
-        if (!isUniformScaled()) {
-            // Non-uniform scaling requires an inverseTranspose to negate
-            // scaling contribution but preserve rotation
-            _normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
-            _normalMatrix.inverseTranspose();
-            _normalMatrix.mat[15] = 0.0f;
-        }
-        _normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
-    }
-    normalMatrixOut.set(_normalMatrix);
-    return _worldMatrix;
-}
-
-const mat4<F32>& PhysicsComponent::getWorldMatrix(bool& matrixRebuilt, 
-                                                  D32 interpolationFactor,
-                                                  const bool local) {
+const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor, bool dirty) {
     if (_transform) {
         if (interpolationFactor < 0.975) {
             _worldMatrix.identity();
             _worldMatrix.setScale(getScale(interpolationFactor, true));
             _worldMatrix *= GetMatrix(getOrientation(interpolationFactor, true));
             _worldMatrix.setTranslation(getPosition(interpolationFactor, true));
-            matrixRebuilt = true;
         } else {
-            matrixRebuilt = _transform->getMatrix(_worldMatrix);
+            _transform->getMatrix(_worldMatrix);
         }
+    }
+
+
+    SceneGraphNode* grandParent = _parentSGN.getParent();
+    if (grandParent) {
+        _worldMatrix *= grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(interpolationFactor, dirty);
+    }
+
+    return _worldMatrix;
+}
+
+const mat4<F32>& PhysicsComponent::getWorldMatrix(const bool local, bool dirty) {
+    
+    if (_transform) {
+        _transform->getMatrix(_worldMatrix);
     }
 
     if (!local) {
         SceneGraphNode* grandParent = _parentSGN.getParent();
         if (grandParent) {
-            PhysicsComponent* pComp = grandParent->getComponent<PhysicsComponent>();
-            _worldMatrix *= pComp->getWorldMatrix(interpolationFactor, local);
-            matrixRebuilt = true;
+            _worldMatrix *= grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(local, dirty);
         }
     }
 
@@ -447,10 +439,8 @@ const Quaternion<F32>& PhysicsComponent::getOrientation(D32 interpolationFactor,
 
     SceneGraphNode* grandParent = _parentSGN.getParent();
     if (!local && grandParent) {
-        orientation.set(grandParent->getComponent<PhysicsComponent>()
-                            ->getOrientation(interpolationFactor, local)
-                            .inverse() *
-                        orientation);
+        orientation.set(orientation * grandParent->getComponent<PhysicsComponent>()
+                            ->getOrientation(interpolationFactor, local));
     }
 
     return orientation;

@@ -128,6 +128,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
 }
 
 void DeferredShadingRenderer::preRender() {
+    Renderer::preRender();
 
     Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
 

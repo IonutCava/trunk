@@ -634,7 +634,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     if (flashLight) {
         const Camera& cam = renderState().getCameraConst();
         flashLight->getComponent<PhysicsComponent>()->setPosition(cam.getEye());
-        flashLight->getNode<Light>()->setSpotDirection(cam.getViewDir());
+        flashLight->getComponent<PhysicsComponent>()->setRotation(cam.getEuler());
     }
 }
 

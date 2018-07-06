@@ -144,10 +144,9 @@ class Transform : public GUIDWrapper, private NonCopyable {
         rotate(Quaternion<F32>(euler.pitch, euler.yaw, euler.roll, inDegrees));
     }
 
-    /// Apply the specified Quaternion rotation starting from the current
-    /// orientation.
+    /// Apply the specified Quaternion rotation starting from the current orientation.
     void rotate(const Quaternion<F32>& quat) {
-        setRotation(this->_transformValues._orientation * quat);
+        setRotation(quat * this->_transformValues._orientation);
     }
 
     /// Perform a SLERP rotation towards the specified quaternion

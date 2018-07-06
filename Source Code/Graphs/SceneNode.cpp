@@ -40,9 +40,9 @@ bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
 }
 
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
-                         SceneGraphNode& sgn,
+                         const SceneGraphNode& sgn,
                          Frustum::FrustCollision& collisionType,
-                         bool distanceCheck) {
+                         bool distanceCheck) const {
     const BoundingBox& boundingBox = sgn.getBoundingBoxConst();
     const BoundingSphere& sphere = sgn.getBoundingSphereConst();
 
@@ -74,14 +74,6 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
                 }
             };
         }
-    }
-
-    RenderingComponent* rComp = sgn.getComponent<RenderingComponent>();
-    if (rComp) {
-        rComp->lodLevel(
-            (cameraDistance > Config::SCENE_NODE_LOD0)
-                ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1)
-                : 0);
     }
 
     return true;

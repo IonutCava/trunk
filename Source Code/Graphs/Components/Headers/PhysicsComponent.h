@@ -75,6 +75,12 @@ class PhysicsComponent : public SGNComponent {
                        getFlag(TransformType::TRANSLATION);
            }
 
+           inline bool hasSetAllFlags() const {
+               return getFlag(TransformType::SCALE) &&
+                      getFlag(TransformType::ROTATION) &&
+                      getFlag(TransformType::TRANSLATION);
+           }
+
            inline bool getFlag(TransformType type) const {
                return _transformFlags[to_uint(type)];
            }
@@ -124,36 +130,8 @@ class PhysicsComponent : public SGNComponent {
 
     void reset();
 
-    const mat4<F32>& getWorldMatrix(bool& matrixRebuilt,
-                                    D32 interpolationFactor,
-                                    const bool local = false);
-    const mat4<F32>& getWorldMatrix(bool& matrixRebuilt, 
-                                    D32 interpolationFactor,
-                                    mat4<F32>& normalMatrixOut,
-                                    const bool local = false);
-
-    inline const mat4<F32>& getWorldMatrix(D32 interpolationFactor,
-                                          const bool local = false) {
-        bool rebuilt = false;
-        return getWorldMatrix(rebuilt, interpolationFactor, local);
-    }
-
-    inline const mat4<F32>& getWorldMatrix(D32 interpolationFactor,
-                                           mat4<F32>& normalMatrixOut,
-                                           const bool local = false) {
-
-        bool rebuilt = false;
-        return getWorldMatrix(rebuilt, interpolationFactor, normalMatrixOut, local);
-    }
-
-    inline const mat4<F32>& getWorldMatrix(const bool local = false) {
-        bool rebuilt = false;
-        return getWorldMatrix(rebuilt, local);
-    }
-
-    inline const mat4<F32>& getWorldMatrix(bool& matrixRebuilt, const bool local = false) {
-        return getWorldMatrix(matrixRebuilt, 1.0, local);
-    }
+    const mat4<F32>& getWorldMatrix(const bool local = false, bool dirty = false);
+    const mat4<F32>& getWorldMatrix(D32 interpolationFactor, bool dirty = false);
 
     /// Component <-> Transform interface
     void setPosition(const vec3<F32>& position);
@@ -193,16 +171,11 @@ class PhysicsComponent : public SGNComponent {
     }
 
     /// Return the scale factor
-    const vec3<F32>& getScale(D32 interpolationFactor = 1.0,
-                              const bool local = false);
-
+    const vec3<F32>& getScale(D32 interpolationFactor = 1.0, const bool local = false);
     /// Return the position
-    const vec3<F32>& getPosition(D32 interpolationFactor = 1.0,
-                                 const bool local = false);
-
+    const vec3<F32>& getPosition(D32 interpolationFactor = 1.0, const bool local = false);
     /// Return the orientation quaternion
-    const Quaternion<F32>& getOrientation(D32 interpolationFactor = 1.0,
-                                          const bool local = false);
+    const Quaternion<F32>& getOrientation(D32 interpolationFactor = 1.0, const bool local = false);
 
     void pushTransforms();
     bool popTransforms();
@@ -226,6 +199,7 @@ class PhysicsComponent : public SGNComponent {
     void setTransformDirty(TransformType type);
 
    protected:
+    bool _dirty;
     PhysicsAsset* _physicsAsset;
     PhysicsGroup _physicsCollisionGroup;
     Transform* _transform;
@@ -236,7 +210,6 @@ class PhysicsComponent : public SGNComponent {
     TransformMask _transformUpdatedMask;
     /// Transform cache values
     mat4<F32> _worldMatrix;
-    mat4<F32> _normalMatrix;
 };
 
 namespace Attorney {

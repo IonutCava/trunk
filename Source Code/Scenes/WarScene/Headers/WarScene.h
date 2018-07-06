@@ -75,6 +75,7 @@ class WarScene : public Scene {
     GUIMessageBox* _infoBox;
     vectorImpl<SceneGraphNode_wptr> _lightNodes;
     vectorImpl<std::pair<SceneGraphNode_wptr, bool>> _lightNodes2;
+    vectorImpl<SceneGraphNode_wptr> _lightNodes3;
 
    private:  // Game
     U32  _timeLimitMinutes;

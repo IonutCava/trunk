@@ -75,6 +75,16 @@ DEFINE_SINGLETON(LightManager)
     bool addLight(Light& light);
     /// remove a light from the manager
     bool removeLight(I64 lightGUID, LightType type);
+    /// disable or enable a specific light type
+    inline void toggleLightType(LightType type) {
+        toggleLightType(type, !lightTypeEnabled(type));
+    }
+    inline void toggleLightType(LightType type, const bool state) {
+        _lightTypeState[to_uint(type)] = state;
+    }
+    inline bool lightTypeEnabled(LightType type) const {
+        return _lightTypeState[to_uint(type)];
+    }
     /// Retrieve the number of active lights in the scene;
     inline const U32 getActiveLightCount(LightType type) const { return _activeLightCount[to_uint(type)]; }
     inline Light* currentShadowCastingLight() const { return _currentShadowCastingLight; }
@@ -133,6 +143,7 @@ DEFINE_SINGLETON(LightManager)
     ~LightManager();
 
   private:
+    std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
     bool _init;
     bool _previewShadowMaps;

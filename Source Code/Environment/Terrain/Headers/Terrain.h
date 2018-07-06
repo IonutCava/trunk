@@ -138,11 +138,6 @@ class Terrain : public Object3D {
     void buildQuadtree();
     void postLoad(SceneGraphNode& sgn);
 
-    bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn,
-                  Frustum::FrustCollision& collisionType,
-                  const bool distanceCheck = true) override;
-
    protected:
     VegetationDetails _vegDetails;
 
@@ -154,8 +149,6 @@ class Terrain : public Object3D {
     F32 _farPlane;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
-    bool _terrainInView;
-    bool _planeInView;
     SceneGraphNode_wptr _vegetationGrassNode;
     BoundingBox _boundingBox;
     Quad3D* _plane;

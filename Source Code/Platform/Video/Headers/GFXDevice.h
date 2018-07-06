@@ -71,6 +71,7 @@ namespace Time {
 namespace Attorney {
     class GFXDeviceGUI;
     class GFXDeviceKernel;
+    class GFXDeviceRenderer;
     class GFXDeviceRenderStateBlock;
 };
 
@@ -79,6 +80,7 @@ namespace Attorney {
 DEFINE_SINGLETON(GFXDevice)
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
+    friend class Attorney::GFXDeviceRenderer;
     friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
     typedef hashMapImpl<U32, RenderStateBlock> RenderStateMap;
@@ -631,6 +633,13 @@ namespace Attorney {
         friend class Divide::Kernel;
     };
 
+    class GFXDeviceRenderer {
+        private:
+        static void uploadGPUBlock() {
+            GFXDevice::getInstance().uploadGPUBlock();
+        }
+        friend class Divide::Renderer;
+    };
 };  // namespace Attorney
 };  // namespace Divide
 

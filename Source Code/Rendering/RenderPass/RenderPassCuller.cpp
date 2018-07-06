@@ -80,10 +80,12 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
                                        VisibleNodeList& nodes)
 {
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
-
-    bool isVisible = currentNode.isActive() &&
-                     !_cullingFunction(currentNode) &&
-                     !currentNode.cullNode(sceneRenderState, collisionResult, currentStage);
+    bool shadowPass = currentStage == RenderStage::SHADOW;
+    bool isVisible = !(shadowPass && !currentNode.getComponent<RenderingComponent>()->castsShadows());
+    isVisible = isVisible &&
+                currentNode.isActive() &&
+                !_cullingFunction(currentNode) &&
+                !currentNode.cullNode(sceneRenderState, collisionResult, currentStage);
 
     currentNode.setVisibleState(isVisible, currentStage);
     
@@ -101,13 +103,20 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
                 }
             } else {
                 // All nodes are in view entirely
-                for (U32 i = 0; i < childCount; ++i) {
-                    nodes.push_back(currentNode.getChild(i, childCount).shared_from_this());
-                }
+               addAllChildren(currentNode, currentStage, nodes);
             }
         }
     }
+}
 
+void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, RenderStage currentStage, VisibleNodeList& nodes) {
+    U32 childCount = currentNode.getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        SceneGraphNode_ptr child = currentNode.getChild(i, childCount).shared_from_this();
+        child->setVisibleState(true, currentStage);
+        nodes.push_back(child);
+        addAllChildren(*child, currentStage, nodes);
+    }
 }
 
 };

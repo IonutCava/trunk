@@ -416,18 +416,14 @@ void SceneGraphNode::frameEnded() {
 
 bool SceneGraphNode::cullNode(const SceneRenderState& sceneRenderState,
                               Frustum::FrustCollision& collisionType,
-                              RenderStage currentStage) {
+                              RenderStage currentStage) const {
 
-    bool shadowPass = currentStage == RenderStage::SHADOW;
-    if (shadowPass && !getComponent<RenderingComponent>()->castsShadows()) {
-        collisionType = Frustum::FrustCollision::FRUSTUM_OUT;
-        return true;
-    }
+
 
     return !Attorney::SceneNodeSceneGraph::isInView(*getNode(),
                                                     sceneRenderState,
                                                     *this,
                                                     collisionType,
-                                                    !shadowPass);
+                                                    currentStage != RenderStage::SHADOW);
 }
 };

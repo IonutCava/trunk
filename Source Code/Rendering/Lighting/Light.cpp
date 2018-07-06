@@ -14,6 +14,7 @@ namespace Divide {
 Light::Light(const F32 range, const LightType& type)
     : SceneNode(SceneNodeType::TYPE_LIGHT),
       _type(type),
+      _rangeChanged(true),
       _drawImpostor(false),
       _impostor(nullptr),
       _lightSGN(nullptr),
@@ -89,13 +90,7 @@ void Light::setDiffuseColor(const vec3<U8>& newDiffuseColor) {
 
 void Light::setRange(F32 range) {
     _positionAndRange.w = range;
-}
-
-void Light::setSpotDirection(const vec3<F32>& newDirection) {
-    vec3<F32> newDirectionNormalized(newDirection);
-    newDirectionNormalized.normalize();
-    _spotProperties.xyz(newDirectionNormalized);
-    _spotPropertiesChanged = true;
+    _rangeChanged = true;
 }
 
 void Light::setSpotAngle(F32 newAngle) {
@@ -108,8 +103,10 @@ void Light::setSpotCosOuterConeAngle(F32 newCosAngle) {
 }
 
 void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
+    vec3<F32> dir(_lightSGN->getComponent<PhysicsComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
+    dir.normalize();
+    _spotProperties.xyz(dir);
     _positionAndRange.xyz(_lightSGN->getComponent<PhysicsComponent>()->getPosition());
-
     if (_type != LightType::DIRECTIONAL) {
         _lightSGN->updateBoundingBoxTransform(_lightSGN->getComponent<PhysicsComponent>()->getWorldMatrix());
         sgn.getBoundingBox().setComputed(false);
@@ -135,9 +132,9 @@ bool Light::computeBoundingBox(SceneGraphNode& sgn) {
 }
 
 bool Light::isInView(const SceneRenderState& sceneRenderState,
-                     SceneGraphNode& sgn,
+                     const SceneGraphNode& sgn,
                      Frustum::FrustCollision& collisionType,
-                     const bool distanceCheck) {
+                     const bool distanceCheck) const {
     collisionType = _drawImpostor ? Frustum::FrustCollision::FRUSTUM_IN
                                   : Frustum::FrustCollision::FRUSTUM_OUT;
     return _drawImpostor;
@@ -151,32 +148,43 @@ bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         _impostor->renderState().setDrawState(true);
         _impostorSGN = _lightSGN->addNode(*_impostor);
         _impostorSGN.lock()->setActive(true);
+
+        ImpostorSphere* impostor2 = CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor_2"));
+        impostor2->setRadius(_positionAndRange.w / 4);
+        impostor2->renderState().setDrawState(true);
+        SceneGraphNode_ptr impostorSGN = _impostorSGN.lock()->addNode(*impostor2);
+        impostorSGN->setActive(true);
+        Material* const impostorMaterialInst = impostorSGN->getComponent<RenderingComponent>()->getMaterialInstance();
+        impostorMaterialInst->setDiffuse(getDiffuseColor());
+        impostorSGN->getComponent<PhysicsComponent>()->translateZ(-15);
+        impostorSGN->getComponent<PhysicsComponent>()->translateY(10);
     }
 
     Material* const impostorMaterialInst = _impostorSGN.lock()->getComponent<RenderingComponent>()->getMaterialInstance();
     impostorMaterialInst->setDiffuse(getDiffuseColor());
 
-    // Updating impostor range is expensive, so check if we need to
-    if (!COMPARE(getRange(), _impostor->getRadius())) {
-        updateImpostor();
-    }
-    if (_type == LightType::SPOT && _spotPropertiesChanged) {
-        updateImpostor();
-        _spotPropertiesChanged = false;
-    }
+    updateImpostor();
+
     return true;
 }
 
 void Light::updateImpostor() {
-    if (_type == LightType::POINT) {
-        _impostor->setRadius(getRange());
-    } else if (_type == LightType::SPOT) {
-        // Spot light's bounding sphere extends from the middle of the light's range outwards,
-        // touching the light's position on one end and the cone at the other
-        // so we need to offest the impostor's position a bit
-        _impostor->setRadius(getRange() * 0.5f);
-        PhysicsComponent* pComp = _impostorSGN.lock()->getComponent<PhysicsComponent>();
-        pComp->setPosition(getSpotDirection() * (getRange() * 0.5f));
+    if (_type == LightType::DIRECTIONAL) {
+        return;
+    }
+    // Updating impostor range is expensive, so check if we need to
+    if (_rangeChanged) {
+        F32 range = getRange();
+        if (_type == LightType::SPOT) {
+            range *= 0.5f;
+            // Spot light's bounding sphere extends from the middle of the light's range outwards,
+            // touching the light's position on one end and the cone at the other
+            // so we need to offest the impostor's position a bit
+            PhysicsComponent* pComp = _impostorSGN.lock()->getComponent<PhysicsComponent>();
+            pComp->setPosition(getSpotDirection() * range);
+        }
+        _impostor->setRadius(range);
+        _rangeChanged = false;
     }
 }
 

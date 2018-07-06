@@ -83,9 +83,9 @@ class Vegetation : public SceneNode {
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
 
     inline bool isInView(const SceneRenderState& sceneRenderState,
-                         SceneGraphNode& sgn,
+                         const SceneGraphNode& sgn,
                          Frustum::FrustCollision& collisionType,
-                         const bool distanceCheck = true) override {
+                         const bool distanceCheck = true) const override {
         collisionType = Frustum::FrustCollision::FRUSTUM_IN;
         return true;
     }

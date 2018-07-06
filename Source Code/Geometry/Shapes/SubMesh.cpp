@@ -73,7 +73,6 @@ bool SubMesh::getDrawCommands(SceneGraphNode& sgn,
 
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
-    cmd.LoD(renderable->lodLevel());
     cmd.stateHash(renderable->getDrawStateHash(renderStage));
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     

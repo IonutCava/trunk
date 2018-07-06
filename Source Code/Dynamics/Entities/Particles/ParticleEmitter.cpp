@@ -309,7 +309,6 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     }
 
     const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
-    U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
 
     const vec3<F32>& pos = transform->getPosition();
     const Quaternion<F32>& rot = transform->getOrientation();
@@ -324,7 +323,6 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
         _particles->_position[i].w = 1.0f * _particles->_misc[i].z;
         _particles->_acceleration[i].set(0.0f);
-        _particles->lodLevel(lodLevel);
     }
 
     for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
