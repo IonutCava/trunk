@@ -146,7 +146,10 @@ class RenderingComponent : public SGNComponent {
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
-    bool updateReflection(const vec3<F32>& camPos, const vec2<F32>& camZPlanes);
+    bool updateReflection(U32 reflectionIndex, 
+                          const vec3<F32>& camPos,
+                          const vec2<F32>& camZPlanes);
+    bool clearReflection();
 
    protected:
     Material* _materialInstance;
@@ -179,12 +182,18 @@ namespace Attorney {
 class RenderingCompRenderPass {
     private:
         static bool updateReflection(RenderingComponent& renderable,
+                                     U32 reflectionIndex,
                                      const vec3<F32>& camPos,
                                      const vec2<F32>& camZPlanes)
         {
-            return renderable.updateReflection(camPos, camZPlanes);
+            return renderable.updateReflection(reflectionIndex, camPos, camZPlanes);
         }
 
+        static bool clearReflection(RenderingComponent& renderable)
+        {
+            return renderable.clearReflection();
+        }
+        
         friend class Divide::RenderPass;
 };
 

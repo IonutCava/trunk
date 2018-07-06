@@ -144,4 +144,38 @@ TaskHandle CreateTask(TaskPool& pool,
     return handle;
 }
 
+
+TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const std::atomic_bool&, U32, U32>& cbk,
+                        U32 count,
+                        U32 partitionSize,
+                        Task::TaskPriority priority,
+                        bool waitForResult)
+{
+    U32 crtPartitionSize = std::min(partitionSize, count);
+    U32 partitionCount = count / crtPartitionSize;
+    U32 remainder = count % crtPartitionSize;
+
+    TaskHandle updateTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
+    for (U32 i = 0; i < partitionCount; ++i) {
+        U32 start = i * crtPartitionSize;
+        U32 end = start + crtPartitionSize;
+        updateTask.addChildTask(CreateTask(DELEGATE_BIND(cbk,
+                                                         std::placeholders::_1,
+                                                         start,
+                                                         end))._task)->startTask(priority);
+    }
+    if (remainder > 0) {
+        updateTask.addChildTask(CreateTask(DELEGATE_BIND(cbk,
+                                                         std::placeholders::_1,
+                                                         count - remainder,
+                                                         count))._task)->startTask(priority);
+    }
+
+    updateTask.startTask(priority);
+    if (waitForResult) {
+        updateTask.wait();
+    }
+
+    return updateTask;
+}
 };

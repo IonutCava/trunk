@@ -50,6 +50,7 @@ bool TrackedObject::SubRef() {
 }
 
 void TrackedObject::REGISTER_TRACKED_DEPENDENCY(TrackedObject* const obj) {
+    assert(obj != nullptr);
     /// Some dependencies may be loaded later, so add null ones as well
     _dependencyList.push_back(obj);
 }

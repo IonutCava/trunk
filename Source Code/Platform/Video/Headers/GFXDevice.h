@@ -43,7 +43,6 @@
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 #include <stack>
-#include <future>
 
 namespace Divide {
 
@@ -399,6 +398,11 @@ DEFINE_SINGLETON(GFXDevice)
         return _renderTarget[to_uint(target)];
     }
     
+    inline RenderTarget& reflectionTarget(I32 index) {
+        assert(index < _reflectionTarget.size());
+        return _reflectionTarget[index];
+    }
+
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
 
     void shadowDetailLevel(RenderDetailLevel detailLevel) {
@@ -580,6 +584,7 @@ DEFINE_SINGLETON(GFXDevice)
     GPUState _state;
     /* Rendering buffers*/
     std::array<RenderTarget, to_const_uint(RenderTargetID::COUNT)> _renderTarget;
+    std::array<RenderTarget, Config::MAX_REFLECTIVE_NODES_IN_VIEW> _reflectionTarget;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;

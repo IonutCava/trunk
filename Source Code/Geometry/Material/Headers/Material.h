@@ -374,9 +374,7 @@ class Material : public Resource, public FrameListener {
 
     bool canDraw(RenderStage renderStage);
 
-    inline Framebuffer& reflectionTarget() {
-        return *_reflectionTarget.get();
-    }
+    void updateReflectionIndex(I32 index);
 
    protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -426,7 +424,8 @@ class Material : public Resource, public FrameListener {
 
     ShaderData _shaderData;
 
-    std::unique_ptr<Framebuffer> _reflectionTarget;
+    /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
+    I32 _reflectionIndex;
 
     static bool _shadersComputedThisFrame;
     static U32  _totalShaderComputeCountThisFrame;

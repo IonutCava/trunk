@@ -5,7 +5,11 @@
 #include "Graphs/Headers/SceneGraph.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 namespace {
+    static const U32 g_nodesPerCullingPartition = 4;
+
     template <typename T>
     constexpr T&&
         wrap_lval(typename std::remove_reference<T>::type &&obj) noexcept
@@ -20,8 +24,6 @@ namespace {
         return std::ref(obj);
     }
 };
-
-namespace Divide {
 
 RenderPassCuller::RenderPassCuller() {
     for (VisibleNodeList& cache : _visibleNodes) {
@@ -85,22 +87,18 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         _perThreadNodeList.resize(childCount);
         const Camera& camera = renderState.getCameraConst();
         F32 cullMaxDistance = sceneState.generalVisibility();
-        TaskHandle cullTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
-        for (U32 i = 0; i < childCount; ++i) {
-            const SceneGraphNode& child = root.getChild(i, childCount);
-            cullTask.addChildTask(CreateTask(DELEGATE_BIND(&RenderPassCuller::frustumCullNode,
-                                                        this,
-                                                        std::placeholders::_1,
-                                                        std::cref(child),
-                                                        std::cref(camera),
-                                                        stage,
-                                                        cullMaxDistance,
-                                                        i,
-                                                        true)
-                                  )._task)->startTask(Task::TaskPriority::MAX);
-        }
-        cullTask.startTask(Task::TaskPriority::MAX);
-        cullTask.wait();
+        parallel_for(DELEGATE_BIND(&RenderPassCuller::frumstumPartitionCuller,
+                                   this,
+                                   std::placeholders::_1,
+                                   std::placeholders::_2,
+                                   std::placeholders::_3,
+                                   std::ref(root),
+                                   std::cref(camera),
+                                   stage,
+                                   cullMaxDistance),
+                     childCount,
+                     g_nodesPerCullingPartition,
+                     Task::TaskPriority::MAX);
 
         for (VisibleNodeList& nodeList : _perThreadNodeList) {
             for (VisibleNode& ptr : nodeList) {
@@ -110,6 +108,19 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
     }
 }
 
+void RenderPassCuller::frumstumPartitionCuller(const std::atomic_bool& stopRequested,
+                                               U32 start,
+                                               U32 end,
+                                               SceneGraphNode& root,
+                                               const Camera& camera,
+                                               RenderStage stage,
+                                               F32 cullMaxDistance)
+{
+    U32 childCount = 0;
+    for (U32 i = start; i < end; ++i) {
+        frustumCullNode(stopRequested, root.getChild(i, childCount), camera, stage, cullMaxDistance, i, true);
+    }
+}
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
 void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,

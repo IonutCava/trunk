@@ -187,6 +187,27 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
     _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
 
+
+    // Reflection Targets
+    SamplerDescriptor reflectionSampler;
+    reflectionSampler.setFilters(TextureFilter::NEAREST);
+    reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.toggleMipMaps(false);
+    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
+                                            GFXImageFormat::RGBA16F,
+                                            GFXDataFormat::FLOAT_16);
+    environmentDescriptor.setSampler(reflectionSampler);
+
+    for (RenderTarget& target : _reflectionTarget) {
+        Framebuffer*& buffer = target._buffer;
+
+        buffer = newFB(false);
+        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+        buffer->useAutoDepthBuffer(true);
+        buffer->create(Config::REFLECTION_TARGET_RESOLUTION);
+        buffer->setClearColor(DefaultColors::WHITE());
+    }
+
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
@@ -293,7 +314,9 @@ void GFXDevice::closeRenderingAPI() {
     for (RenderTarget& renderTarget : _renderTarget) {
         MemoryManager::DELETE(renderTarget._buffer);
     }
-
+    for (RenderTarget& renderTarget : _reflectionTarget) {
+        MemoryManager::DELETE(renderTarget._buffer);
+    }
     // Close the shader manager
     ShaderManager::instance().destroy();
     // Close the rendering API

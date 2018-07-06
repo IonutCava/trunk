@@ -85,6 +85,10 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
     /// the entire FB is recreated with the new state.
     virtual bool create(U16 width, U16 height) = 0;
 
+    inline bool create(U16 widthAndHeight) {
+        return create(widthAndHeight, widthAndHeight);
+    }
+
     virtual void destroy() = 0;
 
     /// Use by multilayered FB's

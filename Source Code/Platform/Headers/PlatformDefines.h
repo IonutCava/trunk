@@ -294,16 +294,18 @@ template<typename Iterator>
 void for_each_interval(Iterator from, Iterator to, std::ptrdiff_t partition_size,
                        std::function<void(Iterator, Iterator)> operation) 
 {
-    Iterator partition_end = from;
-    while (partition_end != to) 
-    {
-        while (partition_end != to &&
-               std::distance(from, partition_end) < partition_size) 
+    if (partition_size > 0) {
+        Iterator partition_end = from;
+        while (partition_end != to) 
         {
-            ++partition_end;
+            while (partition_end != to &&
+                   std::distance(from, partition_end) < partition_size) 
+            {
+                ++partition_end;
+            }
+            operation(from, partition_end);
+            from = partition_end;
         }
-        operation(from, partition_end);
-        from = partition_end;
     }
 }
 /* See
@@ -669,6 +671,9 @@ using DELEGATE_CBK_PARAM = std::function < T(P param) > ;
 
 template <typename P1, typename P2, typename T = void>
 using DELEGATE_CBK_PARAM_2 = std::function < T(P1 param1, P2 param2) >;
+
+template <typename P1, typename P2, typename P3, typename T = void>
+using DELEGATE_CBK_PARAM_3 = std::function < T(P1 param1, P2 param2, P3 param3) >;
 
 U32 HARDWARE_THREAD_COUNT();
 

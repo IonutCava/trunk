@@ -33,7 +33,6 @@
 #define _RENDER_PASS_CULLER_H_
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
-#include <future>
 
 /// This class performs all the necessary visibility checks on the scene's
 /// scenegraph to decide what get's rendered and what not
@@ -73,6 +72,13 @@ class RenderPassCuller {
 
    protected:
 
+    void frumstumPartitionCuller(const std::atomic_bool& stopRequested,
+                                 U32 start,
+                                 U32 end,
+                                 SceneGraphNode& root,
+                                 const Camera& camera,
+                                 RenderStage stage,
+                                 F32 cullMaxDistance);
     // return true if the node is not currently visible
     void frustumCullNode(const std::atomic_bool& stopRequested,
                          const SceneGraphNode& node,

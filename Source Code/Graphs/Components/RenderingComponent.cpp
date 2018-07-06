@@ -589,7 +589,22 @@ void RenderingComponent::setActive(const bool state) {
     SGNComponent::setActive(state);
 }
 
-bool RenderingComponent::updateReflection(const vec3<F32>& camPos, const vec2<F32>& camZPlanes) {
+bool RenderingComponent::clearReflection() {
+    // If we lake a material, we don't use reflections
+    Material* mat = getMaterialInstance();
+    if (mat == nullptr) {
+        return false;
+    }
+    // If shininess is below a certain threshold, we don't have any reflections 
+    if (mat->getShaderData()._shininess < g_MaterialShininessThresholdForReflection) {
+        return false;
+    }
+
+    mat->updateReflectionIndex(-1);
+    return true;
+}
+
+bool RenderingComponent::updateReflection(U32 reflectionIndex, const vec3<F32>& camPos, const vec2<F32>& camZPlanes) {
     // Low lod entities don't need up to date reflections
     if (_lodLevel > 1) {
         return false;
@@ -604,7 +619,12 @@ bool RenderingComponent::updateReflection(const vec3<F32>& camPos, const vec2<F3
         return false;
     }
 
-    GFX_DEVICE.generateCubeMap(mat->reflectionTarget(),
+    mat->updateReflectionIndex(reflectionIndex);
+
+    GFXDevice::RenderTarget& reflectionTarget = GFX_DEVICE.reflectionTarget(reflectionIndex);
+    assert(reflectionTarget._buffer != nullptr);
+
+    GFX_DEVICE.generateCubeMap(*reflectionTarget._buffer,
                                0,
                                camPos,
                                vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),

@@ -20,8 +20,9 @@ namespace {
     static const U32 g_particleGeometryBuffer = 0;
     static const U32 g_particlePositionBuffer = 1;
     static const U32 g_particleColorBuffer = 2;
-
     static const bool g_usePersistentlyMappedBuffers = true;
+
+    static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
 
 ParticleEmitter::ParticleEmitter()
@@ -29,6 +30,7 @@ ParticleEmitter::ParticleEmitter()
       _drawImpostor(false),
       _particleStateBlockHash(0),
       _particleStateBlockHashDepth(0),
+      _lastUpdateTimer(0ULL),
       _enabled(false),
       _particleTexture(nullptr),
       _particleShader(nullptr),
@@ -273,73 +275,79 @@ void ParticleEmitter::postUpdate() {
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
-    if (_enabled) {
+    if (_lastUpdateTimer < g_updateInterval) {
+        _lastUpdateTimer += deltaTime;
+    } else {
+        _lastUpdateTimer = 0;
+
+        if (_enabled) {
         
-        WAIT_FOR_CONDITION_TIMEOUT(!_updating,
-                                   Time::MicrosecondsToMilliseconds<D32>(Config::SKIP_TICKS));
-        // timeout expired
-        if (_updating) {
-            return;
-        }
+            WAIT_FOR_CONDITION_TIMEOUT(!_updating,
+                                       Time::MicrosecondsToMilliseconds<D32>(Config::SKIP_TICKS));
+            // timeout expired
+            if (_updating) {
+                return;
+            }
 
-        _updating = true;
-        U32 aliveCount = getAliveParticleCount();
-        bool validCount = aliveCount > 0;
-        renderState().setDrawState(validCount);
+            _updating = true;
+            U32 aliveCount = getAliveParticleCount();
+            bool validCount = aliveCount > 0;
+            renderState().setDrawState(validCount);
 
-        PhysicsComponent* transform = sgn.get<PhysicsComponent>();
-        const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
+            PhysicsComponent* transform = sgn.get<PhysicsComponent>();
+            const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
 
-        const vec3<F32>& pos = transform->getPosition();
-        const Quaternion<F32>& rot = transform->getOrientation();
+            const vec3<F32>& pos = transform->getPosition();
+            const Quaternion<F32>& rot = transform->getOrientation();
 
-        F32 averageEmitRate = 0;
-        for (std::shared_ptr<ParticleSource>& source : _sources) {
-            source->updateTransform(pos, rot);
-            source->emit(deltaTime, _particles);
-            averageEmitRate += source->emitRate();
-        }
+            F32 averageEmitRate = 0;
+            for (std::shared_ptr<ParticleSource>& source : _sources) {
+                source->updateTransform(pos, rot);
+                source->emit(g_updateInterval, _particles);
+                averageEmitRate += source->emitRate();
+            }
 
-        averageEmitRate /= _sources.size();
+            averageEmitRate /= _sources.size();
 
-        U32 count = _particles->totalCount();
+            U32 count = _particles->totalCount();
 
-        for (U32 i = 0; i < count; ++i) {
-            _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
-            _particles->_position[i].w = _particles->_misc[i].z;
-            _particles->_acceleration[i].set(0.0f);
-        }
+            for (U32 i = 0; i < count; ++i) {
+                _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
+                _particles->_position[i].w = _particles->_misc[i].z;
+                _particles->_acceleration[i].set(0.0f);
+            }
 
-        ParticleData& data = *_particles;
-        for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
-            up->update(deltaTime, data);
-        }
+            ParticleData& data = *_particles;
+            for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
+                up->update(g_updateInterval, data);
+            }
 
-        // const vec3<F32>& origin = transform->getPosition();
-        // const Quaternion<F32>& orientation = transform->getOrientation();
+            // const vec3<F32>& origin = transform->getPosition();
+            // const Quaternion<F32>& orientation = transform->getOrientation();
        
-        CreateTask(
-            [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
-                // invalidateCache means that the existing particle data is no longer partially sorted
-                _particles->sort(true);
+            CreateTask(
+                [this, aliveCount, averageEmitRate](const std::atomic_bool& stopRequested) {
+                    // invalidateCache means that the existing particle data is no longer partially sorted
+                    _particles->sort(true);
 
-                _boundingBox.reset();
+                    _boundingBox.reset();
 
-                for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
-                    _boundingBox.add(_particles->_position[i]);
-                }
+                    for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
+                        _boundingBox.add(_particles->_position[i]);
+                    }
 
-                //if (g_usePersistentlyMappedBuffers) {
-                //    postUpdate();
-                //}
-            },
-            [this]()
-            {
-                //if (!g_usePersistentlyMappedBuffers) {
-                    postUpdate();
-                //}
-                _updating = false;
-            })._task->startTask(Task::TaskPriority::HIGH);
+                    //if (g_usePersistentlyMappedBuffers) {
+                    //    postUpdate();
+                    //}
+                },
+                [this]()
+                {
+                    //if (!g_usePersistentlyMappedBuffers) {
+                        postUpdate();
+                    //}
+                    _updating = false;
+                })._task->startTask(Task::TaskPriority::HIGH);
+        }
     }
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);

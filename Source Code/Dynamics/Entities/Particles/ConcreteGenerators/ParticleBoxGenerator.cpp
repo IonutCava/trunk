@@ -1,5 +1,4 @@
 #include "Headers/ParticleBoxGenerator.h"
-#include <future>
 
 namespace Divide {
 

@@ -74,6 +74,14 @@ const unsigned int MAX_BONE_COUNT_PER_NODE = 256;
 //(This includes debug primitives)
 const unsigned int MAX_VISIBLE_NODES = 1024;
 /// How many clip planes should the shaders us
+/// How many reflective objects are we allowed to display on screen at the same time
+#   if defined(_DEBUG)
+const unsigned int MAX_REFLECTIVE_NODES_IN_VIEW = 3;
+#   else
+const unsigned int  MAX_REFLECTIVE_NODES_IN_VIEW = 5;
+#   endif
+/// Reflection render target resolution
+const unsigned int REFLECTION_TARGET_RESOLUTION = 256;
 const unsigned int MAX_CLIP_PLANES = 6;
 /// Generic index value used to separate primitives within the same vertex
 /// buffer

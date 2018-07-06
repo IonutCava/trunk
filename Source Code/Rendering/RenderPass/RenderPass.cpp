@@ -21,13 +21,10 @@ namespace {
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
         U32 g_reflectionBudget = 0;
-#   if defined(_DEBUG)
-        U32 g_reflectionBudgetLimit = 3;
-#   else
-        U32 g_reflectionBudgetLimit = 5;
-#   endif
+
         inline bool isInBudget() {
-            return g_reflectionBudget < g_reflectionBudgetLimit;
+            return g_reflectionBudget < 
+                Config::MAX_REFLECTIVE_NODES_IN_VIEW;
         }
 
         inline void resetBudget() {
@@ -36,6 +33,9 @@ namespace {
 
         inline void updateBudget() {
             ++g_reflectionBudget;
+        }
+        inline U32 currentEntry() {
+            return g_reflectionBudget;
         }
     };
 };
@@ -102,14 +102,18 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
                 for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                    if (!ReflectionUtil::isInBudget()) {
-                        break;
-                    }
                     SceneGraphNode_cptr nodePtr = node.second.lock();
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
-                    PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
-                    Attorney::RenderingCompRenderPass::updateReflection(*rComp, pComp->getPosition(), zPlanes);
-                    ReflectionUtil::updateBudget();
+                    if (ReflectionUtil::isInBudget()) {
+                        PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
+                        Attorney::RenderingCompRenderPass::updateReflection(*rComp, 
+                                                                            ReflectionUtil::currentEntry(),
+                                                                            pComp->getPosition(),
+                                                                            zPlanes);
+                        ReflectionUtil::updateBudget();
+                    } else {
+                        Attorney::RenderingCompRenderPass::clearReflection(*rComp);
+                    }
                 }
 
             } break;

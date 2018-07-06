@@ -6,6 +6,10 @@
 
 namespace Divide {
 
+namespace {
+    static const U16 g_partitionSize = 128;
+};
+
 Texture::Texture(GFXDevice& context, TextureType type, bool asyncLoad)
     : GraphicsResource(context),
       Resource("temp_texture"),
@@ -150,26 +154,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
             }
         };
 
-        static const U16 partitionSize = 128;
-        U16 crtPartitionSize = std::min(partitionSize, width);
-        U16 partitionCount = width / crtPartitionSize;
-        U16 remainder = width % crtPartitionSize;
-
-        TaskHandle alphaTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
-        for (U16 i = 0; i < partitionCount; ++i) {
-            U16 start = i * crtPartitionSize;
-            U16 end = start + crtPartitionSize;
-            alphaTask.addChildTask(CreateTask(
-                DELEGATE_BIND(findAlpha, std::placeholders::_1, start, end)
-            )._task)->startTask(Task::TaskPriority::HIGH);
-        }
-        if (remainder > 0) {
-            alphaTask.addChildTask(CreateTask(
-                DELEGATE_BIND(findAlpha, std::placeholders::_1, width - remainder, width)
-            )._task)->startTask(Task::TaskPriority::HIGH);
-        }
-        alphaTask.startTask(Task::TaskPriority::HIGH);
-        alphaTask.wait();
+        parallel_for(findAlpha, width, g_partitionSize);
 
         _hasTransparency = abort;
     }

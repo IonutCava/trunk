@@ -34,8 +34,6 @@
 
 #include "RenderBin.h"
 
-#include <future>
-
 namespace Divide {
 
 class Material;

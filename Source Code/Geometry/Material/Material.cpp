@@ -17,7 +17,6 @@ namespace {
 #else
     const U32 g_MaxShadersComputedPerFrame = 3;
 #endif
-    const U32 g_ReflectionResolution = 256;
 };
 
 bool Material::_shadersComputedThisFrame = false;
@@ -36,25 +35,11 @@ Material::Material()
       _dumpToFile(true),
       _translucencyCheck(true),
       _highPriority(false),
+      _reflectionIndex(0),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE)
 {
     REGISTER_FRAME_LISTENER(this, 9999);
-
-    SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TextureFilter::NEAREST);
-    screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.toggleMipMaps(false);
-    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
-                                            GFXImageFormat::RGBA16F,
-                                            GFXDataFormat::FLOAT_16);
-    environmentDescriptor.setSampler(screenSampler);
-    STUBBED("ToDo: Have a single reflection render target, with an array texture, and assign a slot for each reflective material! -Ionut");
-    _reflectionTarget.reset(GFX_DEVICE.newFB(false));
-    _reflectionTarget->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _reflectionTarget->useAutoDepthBuffer(true);
-    _reflectionTarget->create(g_ReflectionResolution, g_ReflectionResolution);
-    _reflectionTarget->setClearColor(DefaultColors::WHITE());
 
     _textures.resize(to_const_uint(ShaderProgram::TextureUsage::COUNT), nullptr);
 
@@ -84,8 +69,6 @@ Material::Material()
     zPrePassDescriptor.setColorWrites(false, false, false, false);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 1);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 2);
-
-    setTexture(ShaderProgram::TextureUsage::REFLECTION, _reflectionTarget->getAttachment());
 }
 
 Material::~Material()
@@ -126,6 +109,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_operation = base._operation;
     cloneMat->_bumpMethod = base._bumpMethod;
     cloneMat->_parallaxFactor = base._parallaxFactor;
+    cloneMat->_reflectionIndex = base._reflectionIndex;
 
     cloneMat->_translucencySource.clear();
 
@@ -142,10 +126,13 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     }
 
     for (U8 i = 0; i < to_ubyte(base._textures.size()); ++i) {
-        Texture* const tex = base._textures[i];
-        if (tex) {
-            tex->AddRef();
-            cloneMat->setTexture(static_cast<ShaderProgram::TextureUsage>(i), tex);
+        ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
+        if (usage != ShaderProgram::TextureUsage::REFLECTION) {
+            Texture* const tex = base._textures[i];
+            if (tex) {
+                tex->AddRef();
+                cloneMat->setTexture(usage, tex);
+            }
         }
     }
     for (const std::pair<Texture*, U8>& tex : base._customTextures) {
@@ -218,7 +205,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     }
 
     if (!_translucencyCheck) {
-        _translucencyCheck =
+         _translucencyCheck =
             (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
              textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
     }
@@ -227,24 +214,28 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);
         RemoveResource(_textures[slot]);
     } else {
-        // if we add a new type of texture recompute shaders
-        computeShaders = true;
+        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION) {
+            // if we add a new type of texture recompute shaders
+            computeShaders = true;
+        }
     }
 
     _textures[slot] = texture;
 
     if (texture) {
-        REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
-        // Environment maps ARE NOT OWNED by the material directly, but by the FBO
-        if (slot == to_const_uint(ShaderProgram::TextureUsage::REFLECTION)) {
+        if (textureUsageSlot == ShaderProgram::TextureUsage::REFLECTION) {
             texture->AddRef();
         }
+        REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
     }
+    
+
 
     if (computeShaders) {
         recomputeShaders();
     }
-    _dirty = true;
+
+    _dirty = textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION;
 
     return true;
 }
@@ -332,6 +323,17 @@ bool Material::canDraw(RenderStage renderStage) {
     }
 
     return true;
+}
+
+void Material::updateReflectionIndex(I32 index) {
+    _reflectionIndex = index;
+    if (_reflectionIndex > -1) {
+        GFXDevice::RenderTarget& reflectionTarget = GFX_DEVICE.reflectionTarget(index);
+        assert(reflectionTarget._buffer != nullptr);
+        setTexture(ShaderProgram::TextureUsage::REFLECTION, reflectionTarget._buffer->getAttachment());
+    } else {
+        setTexture(ShaderProgram::TextureUsage::REFLECTION, nullptr);
+    }
 }
 
 /// If the current material doesn't have a shader associated with it, then add

@@ -3,6 +3,10 @@
 
 namespace Divide {
 
+namespace {
+    const U32 g_partitionSize = 256;
+};
+
 void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData& p) {
     F32 const dt = Time::MicrosecondsToSeconds<F32>(deltaTime);
     const vec4<F32> globalA(dt * _globalAcceleration, 0.0f);
@@ -28,27 +32,7 @@ void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData& p) {
         }
     };
 
-    static const U32 partitionSize = 256;
-    U32 crtPartitionSize = std::min(partitionSize, endID);
-    U32 partitionCount = endID / crtPartitionSize;
-    U32 remainder = endID % crtPartitionSize;
-    
-    TaskHandle updateTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
-    for (U32 i = 0; i < partitionCount; ++i) {
-        U32 start = i * crtPartitionSize;
-        U32 end = start + crtPartitionSize;
-        updateTask.addChildTask(CreateTask(DELEGATE_BIND(parseRange,
-                                                      std::placeholders::_1,
-                                                      start,
-                                                      end))._task)->startTask(Task::TaskPriority::HIGH);
-    }
-    if (remainder > 0) {
-        updateTask.addChildTask(CreateTask(DELEGATE_BIND(parseRange,
-                                                      std::placeholders::_1,
-                                                      endID - remainder,
-                                                      endID))._task)->startTask(Task::TaskPriority::HIGH);
-    }
-    updateTask.startTask(Task::TaskPriority::HIGH);
-    updateTask.wait();
+    parallel_for(parseRange, endID, g_partitionSize);
 }
+
 };
