@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _COMMAND_BUFFER_H_
 
 #include "GenericDrawCommand.h"
+#include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
@@ -42,6 +43,8 @@ namespace GFX {
 enum class CommandType : U8 {
     BEGIN_RENDER_PASS = 0,
     END_RENDER_PASS,
+    BEGIN_PIXEL_BUFFER,
+    END_PIXEL_BUFFER,
     BEGIN_RENDER_SUB_PASS,
     END_RENDER_SUB_PASS,
     SET_VIEWPORT,
@@ -116,6 +119,20 @@ struct EndRenderPassCommand : Command {
     }
 };
 
+struct BeginPixelBufferCommand : Command {
+    BeginPixelBufferCommand() : Command(CommandType::BEGIN_PIXEL_BUFFER)
+    {
+    }
+
+    PixelBuffer* _buffer = nullptr;
+    DELEGATE_CBK<void, bufferPtr> _command;
+};
+
+struct EndPixelBufferCommand : Command {
+    EndPixelBufferCommand() : Command(CommandType::END_PIXEL_BUFFER)
+    {
+    }
+};
 
 struct BeginRenderSubPassCommand : Command {
     BeginRenderSubPassCommand() : Command(CommandType::BEGIN_RENDER_SUB_PASS)
@@ -274,6 +291,8 @@ class CommandBuffer {
 
 void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd);
 void EndRenderPass(CommandBuffer& buffer, const EndRenderPassCommand& cmd);
+void BeginPixelBuffer(CommandBuffer& buffer, const BeginPixelBufferCommand& cmd);
+void EndPixelBuffer(CommandBuffer& buffer, const EndPixelBufferCommand& cmd);
 void BeginRenderSubPass(CommandBuffer& buffer, const BeginRenderSubPassCommand& cmd);
 void EndRenderSubPass(CommandBuffer& buffer, const EndRenderSubPassCommand& cmd);
 void BlitRenderTarget(CommandBuffer& buffer, const BlitRenderTargetCommand& cmd);

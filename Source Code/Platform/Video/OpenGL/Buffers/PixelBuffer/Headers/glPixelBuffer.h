@@ -35,8 +35,15 @@
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 
 namespace Divide {
+class GL_API;
+
+namespace Attorney {
+    class GLAPIPixelBuffer;
+};
 
 class glPixelBuffer : public PixelBuffer {
+    friend class Attorney::GLAPIPixelBuffer;
+
    public:
     explicit glPixelBuffer(GFXDevice& context, PBType type);
     ~glPixelBuffer();
@@ -46,12 +53,14 @@ class glPixelBuffer : public PixelBuffer {
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
                 GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) override;
 
-    bufferPtr begin() const  override;
-    void end() const  override;
-
     void bind(GLubyte unit = 0) const  override;
 
     void updatePixels(const GLfloat* const pixels, GLuint pixelCount)  override;
+
+   protected:
+    friend class GL_API;
+    bufferPtr begin() const;
+    void end() const;
 
    private:
     size_t sizeOf(GLenum dataType) const;
@@ -64,6 +73,18 @@ class glPixelBuffer : public PixelBuffer {
     GLenum _internalFormat;
 };
 
+namespace Attorney {
+    class GLAPIPixelBuffer {
+        private:
+        static bufferPtr begin(glPixelBuffer& buffer) {
+            return buffer.begin();
+        }
+        static void end(glPixelBuffer& buffer) {
+            buffer.end();
+        }
+        friend class Divide::GL_API;
+    };
+};  // namespace Attorney
 };  // namespace Divide
 
 #endif

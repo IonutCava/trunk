@@ -19,13 +19,6 @@ bool d3dPixelBuffer::create(U16 width, U16 height, U16 depth,
     return true;
 }
 
-bufferPtr d3dPixelBuffer::begin() const {
-    return 0;
-}
-
-void d3dPixelBuffer::end() const {
-}
-
 void d3dPixelBuffer::bind(U8 unit) const {
 }
 

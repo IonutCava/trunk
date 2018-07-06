@@ -43,6 +43,7 @@
 #include "Platform/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 #include "Platform/Video/OpenGL/Textures/Headers/glTexture.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Platform/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVAOPool.h"
 
 struct glslopt_ctx;
@@ -278,6 +279,7 @@ private:
     hashAlg::pair<stringImpl, I32> _fontCache;
     static Pipeline const* s_activePipeline;
     static glFramebuffer* s_activeRenderTarget;
+    static glPixelBuffer* s_activePixelBuffer;
     /// Current active vertex array object's handle
     static GLuint s_activeVAOID;
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer

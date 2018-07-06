@@ -148,23 +148,30 @@ void DeferredShadingRenderer::preRender(RenderTarget& target,
         _lightTexture->create(2, _cachedLightCount);
     }
 
-    U8 index = 0;
-    F32* pixels = (F32*)_lightTexture->begin();
-    for (U8 row = 0; row < 3; row++) {
-        for (U8 col = 0; col < lights.size() / 3; col++) {
-            U8 i = row * 10 + col;
-            // Light Position
-            pixels[index + 0] = lights[i]->getPosition().x;
-            pixels[index + 1] = lights[i]->getPosition().y;
-            pixels[index + 2] = lights[i]->getPosition().z;
-            // Light Colour
-            pixels[index + 3] = lights[i]->getDiffuseColour().r;
-            pixels[index + 4] = lights[i]->getDiffuseColour().g;
-            pixels[index + 5] = lights[i]->getDiffuseColour().b;
-            index += 6;
+    GFX::BeginPixelBufferCommand beginPixelBufferCmd;
+    beginPixelBufferCmd._buffer = _lightTexture;
+    beginPixelBufferCmd._command = [&lights](bufferPtr data) -> void {
+        U8 index = 0;
+        F32* pixels = (F32*)data;
+        for (U8 row = 0; row < 3; row++) {
+            for (U8 col = 0; col < lights.size() / 3; col++) {
+                U8 i = row * 10 + col;
+                // Light Position
+                pixels[index + 0] = lights[i]->getPosition().x;
+                pixels[index + 1] = lights[i]->getPosition().y;
+                pixels[index + 2] = lights[i]->getPosition().z;
+                // Light Colour
+                pixels[index + 3] = lights[i]->getDiffuseColour().r;
+                pixels[index + 4] = lights[i]->getDiffuseColour().g;
+                pixels[index + 5] = lights[i]->getDiffuseColour().b;
+                index += 6;
+            }
         }
-    }
-    _lightTexture->end();
+    };
+    GFX::BeginPixelBuffer(bufferInOut, beginPixelBufferCmd);
+
+    GFX::EndPixelBufferCommand endPixelBufferCmd;
+    GFX::EndPixelBuffer(bufferInOut, endPixelBufferCmd);
 }
 
 void DeferredShadingRenderer::render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,

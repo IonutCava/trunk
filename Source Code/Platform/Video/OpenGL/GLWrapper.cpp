@@ -9,7 +9,6 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
-#include "Platform/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
@@ -948,11 +947,26 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 GFX::BeginRenderPassCommand* crtCmd = static_cast<GFX::BeginRenderPassCommand*>(cmd.get());
                 glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd->_target));
-                rt.begin(crtCmd->_descriptor);
+                Attorney::GLAPIRenderTarget::begin(rt, crtCmd->_descriptor);
+                GL_API::s_activeRenderTarget = &rt;
             }break;
             case GFX::CommandType::END_RENDER_PASS: {
                 assert(GL_API::s_activeRenderTarget != nullptr);
-                GL_API::s_activeRenderTarget->end();
+                Attorney::GLAPIRenderTarget::end(*GL_API::s_activeRenderTarget);
+            }break;
+            case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
+                GFX::BeginPixelBufferCommand* crtCmd = static_cast<GFX::BeginPixelBufferCommand*>(cmd.get());
+                assert(crtCmd->_buffer != nullptr);
+                glPixelBuffer* buffer = static_cast<glPixelBuffer*>(crtCmd->_buffer);
+                bufferPtr data = Attorney::GLAPIPixelBuffer::begin(*buffer);
+                if (crtCmd->_command) {
+                    crtCmd->_command(data);
+                }
+                GL_API::s_activePixelBuffer = buffer;
+            }break;
+            case GFX::CommandType::END_PIXEL_BUFFER: {
+                assert(GL_API::s_activePixelBuffer != nullptr);
+                Attorney::GLAPIPixelBuffer::end(*GL_API::s_activePixelBuffer);
             }break;
             case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
                 assert(s_activeRenderTarget != nullptr);

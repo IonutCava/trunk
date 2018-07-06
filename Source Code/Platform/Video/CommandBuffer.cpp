@@ -11,6 +11,12 @@ void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd) {
 void EndRenderPass(CommandBuffer& buffer, const EndRenderPassCommand& cmd) {
     buffer.add(cmd);
 }
+void BeginPixelBuffer(CommandBuffer& buffer, const BeginPixelBufferCommand& cmd) {
+    buffer.add(cmd);
+}
+void EndPixelBuffer(CommandBuffer& buffer, const EndPixelBufferCommand& cmd) {
+    buffer.add(cmd);
+}
 void BeginRenderSubPass(CommandBuffer& buffer, const BeginRenderSubPassCommand& cmd) {
     buffer.add(cmd);
 }

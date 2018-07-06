@@ -64,9 +64,6 @@ class NOINITVTABLE PixelBuffer : public GraphicsResource, public GUIDWrapper {
         GFXImageFormat formatEnum = GFXImageFormat::RGBA,
         GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) = 0;
 
-    virtual bufferPtr begin() const = 0;
-    virtual void end() const = 0;
-
     virtual void bind(U8 unit = 0) const = 0;
 
     virtual void updatePixels(const F32* const pixels, U32 pixelCount) = 0;

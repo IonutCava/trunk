@@ -38,11 +38,17 @@
 
 namespace Divide {
 
+class GL_API;
+
+namespace Attorney {
+    class GLAPIRenderTarget;
+};
+
 class glFramebuffer : public RenderTarget,
                       public glObject {
 
     USE_CUSTOM_ALLOCATOR
-
+    friend class Attorney::GLAPIRenderTarget;
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
@@ -128,7 +134,6 @@ class glFramebuffer : public RenderTarget,
     void toggleAttachments(const RTDrawDescriptor& drawPolicy);
 
    protected:
-    friend class GL_API;
     void begin(const RTDrawDescriptor& drawPolicy);
     void end();
 
@@ -148,6 +153,18 @@ class glFramebuffer : public RenderTarget,
     hashMapImpl<GLenum, BindingState> _attachmentState;
 };
 
+namespace Attorney {
+    class GLAPIRenderTarget {
+        private:
+        static void begin(glFramebuffer& buffer, const RTDrawDescriptor& drawPolicy) {
+            buffer.begin(drawPolicy);
+        }
+        static void end(glFramebuffer& buffer) {
+            buffer.end();
+        }
+        friend class Divide::GL_API;
+    };
+};  // namespace Attorney
 };  // namespace Divide
 
 #endif
