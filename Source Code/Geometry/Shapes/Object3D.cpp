@@ -107,7 +107,7 @@ bool Object3D::onRender(const RenderStagePass& renderStagePass) {
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,
                                       const RenderStagePass& renderStagePass,
                                       RenderPackage& pkgInOut) {
-    if (pkgInOut._commands.getDrawCommands().empty()) {
+    if (pkgInOut.commands().getDrawCommands().empty()) {
         GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
         cmd.sourceBuffer(vb);
@@ -115,7 +115,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
-        GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
+        GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
     }
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);

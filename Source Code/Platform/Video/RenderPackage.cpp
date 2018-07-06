@@ -38,5 +38,11 @@ size_t RenderPackage::getSortKeyHash() const {
     return 0;
 }
 
+GFX::CommandBuffer& RenderPackage::commands() {
+    return _commands;
+}
 
+const GFX::CommandBuffer& RenderPackage::commands() const {
+    return _commands;
+}
 }; //namespace Divide

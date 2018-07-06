@@ -37,9 +37,9 @@
 #include "GFXState.h"
 #include "GFXRTPool.h"
 #include "GFXShaderData.h"
-#include "RenderPackage.h"
 #include "CommandBufferPool.h"
 #include "GenericCommandPool.h"
+#include "RenderPackageQueue.h"
 #include "Core/Math/Headers/Line.h"
 #include "Core/Math/Headers/MathMatrices.h"
 

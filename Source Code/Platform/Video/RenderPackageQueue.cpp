@@ -1,20 +1,15 @@
 #include "stdafx.h"
 
-#include "Headers/RenderPackage.h"
+#include "Headers/RenderPackageQueue.h"
 
 namespace Divide {
 
-RenderPackageQueue::RenderPackageQueue(GFXDevice& context, size_t queueSize)
+RenderPackageQueue::RenderPackageQueue(GFXDevice& context, size_t reserveSize)
     : _context(context),
       _locked(false),
       _currentCount(0),
-      _packages(queueSize, nullptr)
+      _packages(reserveSize, nullptr)
 {
-    std::generate(
-        std::begin(_packages),
-        std::end(_packages),
-        [&context]() { return std::make_shared<RenderPackage>(context, true); }
-    );
 }
 
 void RenderPackageQueue::clear() {
@@ -37,24 +32,40 @@ bool RenderPackageQueue::empty() const {
 }
 
 const RenderPackage& RenderPackageQueue::getPackage(U32 idx) const {
-    assert(idx < Config::MAX_VISIBLE_NODES);
+    assert(idx < _currentCount);
     return *_packages[idx];
 }
 
 RenderPackage& RenderPackageQueue::getPackage(U32 idx) {
-    assert(idx < Config::MAX_VISIBLE_NODES);
+    assert(idx < _currentCount);
     return *_packages[idx];
 }
 
 RenderPackage& RenderPackageQueue::back() {
+    assert(_currentCount > 0);
+
     return *_packages[std::max(to_I32(_currentCount) - 1, 0)];
 }
 
 bool RenderPackageQueue::push_back(const RenderPackage& package) {
     if (_currentCount <= Config::MAX_VISIBLE_NODES) {
-        _packages[_currentCount++]->set(package);
+        std::shared_ptr<RenderPackage>& pkg = _packages[_currentCount++];
+        if (!pkg) {
+            pkg = std::make_shared<RenderPackage>(_context, true);
+        }
+        pkg->set(package);
         return true;
     }
+    return false;
+}
+
+bool RenderPackageQueue::pop_back() {
+    if (!empty()) {
+        _packages.pop_back();
+        --_currentCount;
+        return true;
+    }
+
     return false;
 }
 

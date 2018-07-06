@@ -44,7 +44,6 @@ struct CommandEntry {
 };
 
 class CommandBuffer {
-    template<size_t N>
     friend class CommandBufferPool;
     template<class _Ty, size_t _Size>
     friend class std::array;

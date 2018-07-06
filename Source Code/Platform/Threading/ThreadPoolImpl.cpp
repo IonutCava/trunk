@@ -52,7 +52,7 @@ ThreadPoolC11::~ThreadPoolC11()
 }
 
 bool ThreadPoolC11::enqueue(const PoolTask& task) {
-    _pool.push([task](I32 id) { task._task(); });
+    _pool.push([task](size_t id) { task._task(); });
     return true;
 }
 

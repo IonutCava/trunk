@@ -38,7 +38,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
-template<size_t N>
 class CommandBufferPool {
  public:
     CommandBufferPool();
@@ -49,8 +48,8 @@ class CommandBufferPool {
 
  private:
     mutable SharedLock _mutex;
-    std::array<bool, N> _bufferPoolSlotState;
-    std::array<CommandBuffer, N> _bufferPool;
+    vectorImpl<bool> _bufferPoolSlotState;
+    vectorImpl<CommandBuffer> _bufferPool;
 };
 
 class ScopedCommandBuffer {
@@ -75,8 +74,8 @@ ScopedCommandBuffer allocateScopedCommandBuffer(bool useSecondaryBuffers = false
 CommandBuffer& allocateCommandBuffer(bool useSecondaryBuffers = false);
 void deallocateCommandBuffer(CommandBuffer& buffer, bool useSecondaryBuffers = false);
 
-static CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE> s_commandBufferPool;
-static CommandBufferPool<Config::COMMAND_BUFFER_POOL_SIZE * 2> s_secondaryCommandBufferPool;
+static CommandBufferPool s_commandBufferPool;
+static CommandBufferPool s_secondaryCommandBufferPool;
 
 }; //namespace GFX
 }; //namespace Divide

@@ -9,6 +9,8 @@
 #endif
 
 int main(int argc, char **argv) { 
+    Divide::U64 callCount = 0;
+
     // Create a new engine instance
     Divide::Engine engine;
     // Start the engine
@@ -16,10 +18,13 @@ int main(int argc, char **argv) {
         // Step the entire application
         while(engine.step())
         {
+            ++callCount;
         }
     }
     // Stop the engine
     engine.shutdown();
+
+    std::cout << "Divide engine shutdown after " << callCount << "." << std::endl;
 
     return engine.errorCode();
 }

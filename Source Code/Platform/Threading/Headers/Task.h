@@ -113,20 +113,22 @@ class Task : public GUIDWrapper, private NonCopyable {
         _jobIdentifier = jobIdentifier;
     }
 
-    void addChildTask(Task* task);
+    Task* addChildTask(Task* task);
 
     void wait();
 
    protected:
     void run();
     void runTaskWithDebugInfo();;
-
+    vectorAlg::vecSize childTaskCount() const;
+    void removeChildTask(const Task& child);
     PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
 
    private:
     mutable std::mutex _taskDoneMutex;
     std::condition_variable _taskDoneCV;
     std::atomic_bool _done;
+    std::atomic_bool _running;
 
     I64 _jobIdentifier;
 
@@ -139,8 +141,9 @@ class Task : public GUIDWrapper, private NonCopyable {
     U32 _poolIndex;
 
     Task* _parentTask;
-    std::atomic_short _childTaskCount;
-    std::array<Task*, MAX_CHILD_TASKS> _childTasks;
+    mutable SharedLock _childTaskMutex;
+    vectorImpl<Task*> _childTasks;
+    std::atomic<std::thread::id> _taskThread;
 };
 
 // A task object may be used for multiple jobs
@@ -157,10 +160,10 @@ struct TaskHandle {
         _task->startTask(prio, taskFlags);
     }
 
-    inline Task* addChildTask(Task* task) {
+    inline Task* addChildTask(const TaskHandle& taskHandle) {
+        Task* task = taskHandle._task;
         assert(_task != nullptr);
-        _task->addChildTask(task);
-        return task;
+        return _task->addChildTask(task);
     }
 
     inline void wait() {

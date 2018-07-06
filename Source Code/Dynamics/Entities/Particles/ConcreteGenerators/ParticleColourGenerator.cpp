@@ -30,7 +30,7 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
                 {
                     colour.set(Random(minStartCol, maxStartCol));
                 });
-            })._task)->startTask(Task::TaskPriority::HIGH);
+            }))->startTask(Task::TaskPriority::HIGH);
     });
 
     for_each_interval<iter_t_end>(std::begin(p._endColour) + startIndex,
@@ -44,7 +44,7 @@ void ParticleColourGenerator::generate(TaskHandle& packagedTasksParent,
                 {
                     colour.set(Random(minEndCol, maxEndCol));
                 });
-            })._task)->startTask(Task::TaskPriority::HIGH);
+            }))->startTask(Task::TaskPriority::HIGH);
     });
 }
 };

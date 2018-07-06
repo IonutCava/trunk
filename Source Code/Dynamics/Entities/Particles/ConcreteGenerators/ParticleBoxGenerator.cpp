@@ -26,7 +26,7 @@ void ParticleBoxGenerator::generate(TaskHandle& packagedTasksParent,
                 {
                     position.xyz(Random(min, max));
                 });
-            })._task)->startTask(Task::TaskPriority::HIGH);
+            }))->startTask(Task::TaskPriority::HIGH);
     });
 }
 

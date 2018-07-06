@@ -41,7 +41,7 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuff
     if (!renderQueue.empty()) {
         U32 queueSize = renderQueue.size();
         for (U32 idx = 0; idx < queueSize; ++idx) {
-            subPassCmd.add(renderQueue.getPackage(idx)._commands);
+            subPassCmd.add(renderQueue.getPackage(idx).commands());
         }
         renderQueue.clear();
     }
@@ -174,7 +174,7 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
 
                         processVisibleNode(*node, nodeCount, pkg.isOcclusionCullable());
 
-                        const vectorImpl<GenericDrawCommand*>& cmds = pkg._commands.getDrawCommands();
+                        const vectorImpl<GenericDrawCommand*>& cmds = pkg.commands().getDrawCommands();
                         for ( GenericDrawCommand* cmd : cmds) {
                             for (U32 i = 0; i < cmd->drawCount(); ++i) {
                                 _drawCommandsCache[cmdCount++].set(cmd->cmd());

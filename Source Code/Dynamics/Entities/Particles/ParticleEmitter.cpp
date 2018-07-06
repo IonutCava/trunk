@@ -211,9 +211,9 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
+    GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
 
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
     PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
 
     pipeDesc._stateHash = (_context.isDepthStage(renderStagePass) ? _particleStateBlockHashDepth
@@ -241,7 +241,7 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
         _buffersDirty[to_U32(renderStagePass.stage())] = false;
     }
 
-    GenericDrawCommand* cmd = pkgInOut._commands.getDrawCommands().front();
+    GenericDrawCommand* cmd = pkgInOut.commands().getDrawCommands().front();
     cmd->cmd().primCount = to_U32(_particles->_renderingPositions.size());
     cmd->sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
 

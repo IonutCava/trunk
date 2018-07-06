@@ -27,7 +27,7 @@ RenderBinItem::RenderBinItem(const RenderStagePass& currentStage,
 {
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    _stateHash = renderable.getDrawPackage(currentStage).getSortKeyHash();
+    _stateHash = Attorney::RenderingCompRenderBin::getSortKeyHash(renderable, currentStage);
 }
 
 /// Sorting opaque items is a 3 step process:

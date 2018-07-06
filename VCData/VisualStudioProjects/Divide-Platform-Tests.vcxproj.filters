@@ -39,5 +39,6 @@
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\ConversionTests.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx-test-engine.cpp" />
   </ItemGroup>
 </Project>

@@ -383,14 +383,14 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
     cmd.LoD(1);
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
+    GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
 
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
     PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
     pipeDesc._stateHash = _grassStateBlockHash;
     pipelines.front()->fromDescriptor(pipeDesc);
 
-    PushConstants& constants = *pkgInOut._commands.getPushConstants().front();
+    PushConstants& constants = *pkgInOut.commands().getPushConstants().front();
     constants.set("grassScale", PushConstantType::FLOAT, 1.0f);
     constants.set("positionOffsets", PushConstantType::VEC3, _grassBlades);
     constants.set("texCoordOffsets", PushConstantType::VEC2, _texCoord);
@@ -413,7 +413,7 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
     buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
     buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
-    GenericDrawCommand* cmd = pkgInOut._commands.getDrawCommands().front();
+    GenericDrawCommand* cmd = pkgInOut.commands().getDrawCommands().front();
     cmd->cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
     cmd->sourceBuffer(buffer);
 

@@ -43,7 +43,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
 
     Object3D_ptr node = parentSGN.getNode<Object3D>();
     Object3D::ObjectType type = node->getObjectType();
-    SceneNodeType nodeType = node->getType();
 
     bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
     bool nodeSkinned = parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
@@ -56,16 +55,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
                 _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
                 _materialInstance->setShaderDefines(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "USE_TRIANGLE_STRIP");
             }
-        }
-
-        std::generate(
-            std::begin(_renderData[pass]),
-            std::end(_renderData[pass]),
-            [&context]() { return std::make_unique<RenderPackage>(context, true); }
-        );
-
-        for (const std::unique_ptr<RenderPackage>& pkg : _renderData[pass]) {
-            pkg->isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
         }
     }
 
@@ -170,10 +159,27 @@ RenderingComponent::~RenderingComponent()
     }
 }
 
-void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
-    RenderPackage& pkg = renderData(stagePass);
+std::unique_ptr<RenderPackage>& RenderingComponent::renderData(const RenderStagePass& stagePass) {
+    std::unique_ptr<RenderPackage>& pkg = _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
+    if (!pkg) {
+        pkg = std::make_unique<RenderPackage>(_context, true);
 
-    pkg._commands.clear();
+        Object3D_ptr node = _parentSGN.getNode<Object3D>();
+        pkg->isOcclusionCullable(node->getType() != SceneNodeType::TYPE_SKY);
+    }
+    return pkg;
+}
+
+const std::unique_ptr<RenderPackage>& RenderingComponent::renderData(const RenderStagePass& stagePass) const {
+    const std::unique_ptr<RenderPackage>& pkg = _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
+    DIVIDE_ASSERT(pkg != nullptr, "RenderingComponent::renderData error: Attempt to reference a render package that wasn't created yet!");
+
+    return pkg;
+}
+
+void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
+    std::unique_ptr<RenderPackage>& pkg = renderData(stagePass);
+    pkg->commands().clear();
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = getMaterialStateHash(stagePass);
@@ -181,16 +187,16 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
 
     GFX::BindPipelineCommand pipelineCommand;
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(pkg._commands, pipelineCommand);
+    GFX::BindPipeline(pkg->commands(), pipelineCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _globalPushConstants;
-    GFX::SendPushConstants(pkg._commands, pushConstantsCommand);
+    GFX::SendPushConstants(pkg->commands(), pushConstantsCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
-    GFX::BindDescriptorSets(pkg._commands, bindDescriptorSetsCommand);
+    GFX::BindDescriptorSets(pkg->commands(), bindDescriptorSetsCommand);
 
-    _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
+    _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, *pkg);
 }
 
 void RenderingComponent::postLoad() {
@@ -257,8 +263,8 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
 bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
-    RenderPackage& pkg = renderData(renderStagePass);
-    DescriptorSet& set = *pkg._commands.getDescriptorSets().front();
+    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
+    DescriptorSet& set = *pkg->commands().getDescriptorSets().front();
     
     set._textureData.clear(false);
     const Material_ptr& mat = getMaterialInstance();
@@ -494,9 +500,9 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
     commandOffset(cmdOffset);
     commandIndex(cmdIndex);
 
-    RenderPackage& pkg = renderData(renderStagePass);
+    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
     
-    const vectorImpl<GenericDrawCommand*>& commands = pkg._commands.getDrawCommands();
+    const vectorImpl<GenericDrawCommand*>& commands = pkg->commands().getDrawCommands();
 
     for (GenericDrawCommand* cmd : commands) {
         cmd->commandOffset(cmdOffset++);
@@ -506,8 +512,8 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
 }
 
 void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
-    RenderPackage& pkg = renderData(renderStagePass);
-    pkg.isRenderable(false);
+    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
+    pkg->isRenderable(false);
     if (canDraw(renderStagePass)) {
 
         if (_renderPackagesDirty) {
@@ -517,7 +523,7 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
             _renderPackagesDirty = false;
         }
         if (_parentSGN.prepareDraw(sceneRenderState, renderStagePass)) {
-            _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg);
+            _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, *pkg);
 
             updateLoDLevel(*Camera::activeCamera(), renderStagePass);
 
@@ -527,7 +533,7 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
             bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
 
-            const vectorImpl<GenericDrawCommand*>& commands = pkg._commands.getDrawCommands();
+            const vectorImpl<GenericDrawCommand*>& commands = pkg->commands().getDrawCommands();
             for (GenericDrawCommand* cmd : commands) {
                 cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
                                   renderGeometry || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
@@ -538,7 +544,7 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
                 cmd->LoD(_lodLevel);
             }
             if (!commands.empty()) {
-                pkg.isRenderable(true);
+                pkg->isRenderable(true);
                 setDrawIDs(renderStagePass, commandOffset(), commandIndex());
             }
         }
@@ -546,9 +552,19 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
 }
 
 const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) const {
-    const RenderPackage& ret = renderData(renderStagePass);
+    const RenderPackage& ret = *renderData(renderStagePass).get();
     //ToDo: Some validation? -Ionut
     return ret;
+}
+
+
+size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass) const {
+    const std::unique_ptr<RenderPackage>& pkg = _renderData[to_U32(renderStagePass.pass())][to_U32(renderStagePass.stage())];
+    if (pkg) {
+        pkg->getSortKeyHash();
+    }
+
+    return 0;
 }
 
 bool RenderingComponent::clearReflection() {

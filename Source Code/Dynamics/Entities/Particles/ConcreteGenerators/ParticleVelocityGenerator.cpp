@@ -27,7 +27,7 @@ void ParticleVelocityGenerator::generate(TaskHandle& packagedTasksParent,
                 {
                     velocity.set(Random(min, max));
                 });
-            })._task)->startTask(Task::TaskPriority::HIGH);
+            }))->startTask(Task::TaskPriority::HIGH);
         });
 }
 };

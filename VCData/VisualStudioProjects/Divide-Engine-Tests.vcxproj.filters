@@ -13,6 +13,7 @@
     <ClCompile Include="..\..\Source Code\UnitTests\Platform-Tests\Tests\FileManagement.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\stdafx-test-platform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\UnitTests\Headers\Defines.h">

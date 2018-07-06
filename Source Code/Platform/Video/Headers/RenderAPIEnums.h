@@ -416,7 +416,7 @@ enum class GPUVendor : U32 {
     QUALCOMM,
     VIVANTE,
     ALPHAMOSAIC,
-    WEBGL, //Khronos?
+    WEBGL, //Khronos
     OTHER,
     COUNT
 };
@@ -432,6 +432,7 @@ enum class GPURenderer : U32 {
     VIDEOCORE,
     VIVANTE,
     WEBGL,
+    GDI, //Driver not working properly?
     COUNT
 };
 

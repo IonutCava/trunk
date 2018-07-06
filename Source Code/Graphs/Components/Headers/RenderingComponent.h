@@ -134,6 +134,8 @@ class RenderingComponent : public SGNComponent {
 
     const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
 
+    size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
+
     inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
 
     void registerShaderBuffer(ShaderBufferLocation slot,
@@ -198,13 +200,9 @@ class RenderingComponent : public SGNComponent {
 
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
-    inline RenderPackage& renderData(const RenderStagePass& stagePass) {
-        return *_renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())].get();
-    }
-
-    inline const RenderPackage& renderData(const RenderStagePass& stagePass) const {
-        return *_renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())].get();
-    }
+   protected:
+    std::unique_ptr<RenderPackage>& renderData(const RenderStagePass& stagePass);
+    const std::unique_ptr<RenderPackage>& renderData(const RenderStagePass& stagePass) const;
 
    protected:
     GFXDevice& _context;
@@ -310,7 +308,11 @@ class RenderingCompGFXDevice {
 class RenderingCompRenderBin {
    private:
     static const RenderPackage& getRenderData(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
-        return renderable.renderData(renderStagePass);
+        return renderable.getDrawPackage(renderStagePass);
+    }
+
+    static size_t getSortKeyHash(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
+        return renderable.getSortKeyHash(renderStagePass);
     }
 
     static void postRender(RenderingComponent& renderable,
@@ -321,6 +323,7 @@ class RenderingCompRenderBin {
     }
 
     friend class Divide::RenderBin;
+    friend struct Divide::RenderBinItem;
 };
 
 };  // namespace Attorney

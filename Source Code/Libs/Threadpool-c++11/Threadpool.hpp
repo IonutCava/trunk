@@ -1,7 +1,7 @@
-
 /*********************************************************
 *
 *  Copyright (C) 2014 by Vitaliy Vitsentiy
+*  https://github.com/vit-vit/CTPL
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,103 +15,136 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 *
+*
+*  October 2015, Jonathan Hadida:
+*   - rename, reformat and comment some functions
+*   - add a restart function
+*  	- fix a few unsafe spots, eg:
+*  		+ order of testing in setup_thread;
+*  		+ atomic guards on pushes;
+*  		+ make clear_queue private
+*
 *********************************************************/
 
 
-#ifndef __ctpl_thread_pool_H__
-#define __ctpl_thread_pool_H__
+#ifndef CTPL_H_INCLUDED
+#define CTPL_H_INCLUDED
 
+#include <functional>
 #include <thread>
 #include <atomic>
+#include <vector>
+#include <memory>
 #include <future>
 #include <mutex>
-#include <boost/lockfree/queue.hpp>
-
-#include "Core/TemplateLibraries/Headers/Vector.h"
-
-#ifndef _ctplThreadPoolLength_
-#define _ctplThreadPoolLength_  100
-#endif
+#include <queue>
 
 
 // thread pool to run user's functors with signature
-//      ret func(int id, other_params)
+//      ret func(size_t id, other_params)
 // where id is the index of the thread that runs the functor
 // ret is some return type
 
 
 namespace ctpl {
 
+    namespace detail {
+        template <typename T>
+        class Queue {
+            public:
+            bool push(T const & value) {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                m_queue.push(value);
+                return true;
+            }
+            // deletes the retrieved element, do not use for non integral types
+            bool pop(T & v) {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                if (m_queue.empty())
+                    return false;
+                v = m_queue.front();
+                m_queue.pop();
+                return true;
+            }
+            bool empty() {
+                std::unique_lock<std::mutex> lock(m_mutex);
+                return m_queue.empty();
+            }
+            private:
+            std::queue<T> m_queue;
+            std::mutex    m_mutex;
+        };
+    }
+
     class thread_pool {
 
-    public:
+        public:
 
         thread_pool();
-        thread_pool(int nThreads, int queueSize = _ctplThreadPoolLength_);
+        thread_pool(size_t nThreads);
 
         // the destructor waits for all the functions in the queue to be finished
         ~thread_pool();
 
         // get the number of running threads in the pool
-        int size();
+        inline size_t size() const { return m_threads.size(); }
 
         // number of idle threads
-        int n_idle();
-        std::thread & get_thread(int i);
+        inline size_t n_idle() const { return ma_n_idle; }
+
+        // get a specific thread
+        inline std::thread & get_thread(size_t i) { return *m_threads.at(i); }
+
+
+        // restart the pool
+        void restart();
 
         // change the number of threads in the pool
-        // should be called from one thread, otherwise be careful to not interleave, also with this->stop()
-        // nThreads must be >= 0
-        void resize(int nThreads);
-
-        // empty the queue
-        void clear_queue();
-
-        // pops a functional wraper to the original function
-        std::function<void(int)> pop();
-
+        // should be called from one thread, otherwise be careful to not interleave, also with this->interrupt()
+        void resize(size_t nThreads);
 
         // wait for all computing threads to finish and stop all threads
-        // may be called asyncronously to not pause the calling thread while waiting
-        // if isWait == true, all the functions in the queue are run, otherwise the queue is cleared without running the functions
-        void stop(bool isWait = false);
+        // may be called asynchronously to not pause the calling thread while waiting
+        // if kill == true, all the functions in the queue are run, otherwise the queue is cleared without running the functions
+        void interrupt(bool kill = false);
 
         template<typename F, typename... Rest>
-        auto push(F && f, Rest&&... rest) ->std::future<decltype(f(0, rest...))> {
-            auto pck = std::make_shared<std::packaged_task<decltype(f(0, rest...))(int)>>(
-                std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Rest>(rest)...)
-                );
+        auto push(F && f, Rest&&... rest) ->std::future<decltype(f(0, rest...))>
+        {
+            if (!ma_kill && !ma_interrupt)
+            {
+                auto pck = std::make_shared<std::packaged_task< decltype(f(0, rest...)) (size_t) >>(
+                    std::bind(std::forward<F>(f), std::placeholders::_1, std::forward<Rest>(rest)...)
+                    );
+                auto _f = new std::function<void(size_t id)>([pck](size_t id) { (*pck)(id); });
 
-            auto _f = new std::function<void(int id)>([pck](int id) {
-                (*pck)(id);
-            });
-            this->q.push(_f);
-
-            std::unique_lock<std::mutex> lock(this->mutex);
-            this->cv.notify_one();
-
-            return pck->get_future();
+                m_queue.push(_f);
+                std::unique_lock<std::mutex> lock(m_mutex);
+                m_cond.notify_one();
+                return pck->get_future();
+            } else return std::future<decltype(f(0, rest...))>();
         }
 
-        // run the user's function that excepts argument int - id of the running thread. returned value is templatized
-        // operator returns std::future, where the user can get the result and rethrow the catched exceptins
+        // run the user's function that accepts argument size_t - id of the running thread. returned value is templatized
+        // operator returns std::future, where the user can get the result and rethrow the catched exceptions
         template<typename F>
-        auto push(F && f) ->std::future<decltype(f(0))> {
-            auto pck = std::make_shared<std::packaged_task<decltype(f(0))(int)>>(std::forward<F>(f));
+        auto push(F && f) ->std::future<decltype(f(0))>
+        {
+            if (!ma_kill && !ma_interrupt)
+            {
+                auto pck = std::make_shared<std::packaged_task< decltype(f(0)) (size_t) >>(std::forward<F>(f));
+                auto _f = new std::function<void(size_t id)>([pck](size_t id) { (*pck)(id); });
 
-            auto _f = new std::function<void(int id)>([pck](int id) {
-                (*pck)(id);
-            });
-            this->q.push(_f);
-
-            std::unique_lock<std::mutex> lock(this->mutex);
-            this->cv.notify_one();
-
-            return pck->get_future();
+                m_queue.push(_f);
+                std::unique_lock<std::mutex> lock(m_mutex);
+                m_cond.notify_one();
+                return pck->get_future();
+            } else return std::future<decltype(f(0))>();
         }
 
+        void clear_queue();
 
-    private:
+        private:
 
         // deleted
         thread_pool(const thread_pool &);// = delete;
@@ -119,21 +152,30 @@ namespace ctpl {
         thread_pool & operator=(const thread_pool &);// = delete;
         thread_pool & operator=(thread_pool &&);// = delete;
 
-        void set_thread(int i);
+                                                // clear all tasks
 
+        // reset all flags
         void init();
 
-        vectorImpl<std::unique_ptr<std::thread>> threads;
-        vectorImpl<std::shared_ptr<std::atomic<bool>>> flags;
-        mutable boost::lockfree::queue<std::function<void(int id)> *> q;
-        std::atomic<bool> isDone;
-        std::atomic<bool> isStop;
-        std::atomic<int> nWaiting;  // how many threads are waiting
+        // each thread pops jobs from the queue until:
+        //  - the queue is empty, then it waits (idle)
+        //  - its abort flag is set (terminate without emptying the queue)
+        //  - a global interrupt is set, then only idle threads terminate
+        void setup_thread(size_t i);
 
-        std::mutex mutex;
-        std::condition_variable cv;
+        // ----------  =====  ----------
+
+        std::vector<std::unique_ptr<std::thread>>        m_threads;
+        std::vector<std::shared_ptr<std::atomic<bool>>>  m_abort;
+        detail::Queue<std::function<void(size_t id)> *>  m_queue;
+
+        std::atomic<bool>    ma_interrupt, ma_kill;
+        std::atomic<size_t>  ma_n_idle;
+        std::atomic<size_t>  m_nThreads;
+
+        std::mutex               m_mutex;
+        std::condition_variable  m_cond;
     };
-
 }
 
-#endif // __ctpl_thread_pool_H__
+#endif

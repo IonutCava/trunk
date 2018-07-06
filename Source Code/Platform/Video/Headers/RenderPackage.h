@@ -36,7 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class RenderPackageQueue;
 class RenderPackage {
 public:
     explicit RenderPackage(GFXDevice& context, bool useSecondaryBuffers);
@@ -53,40 +52,15 @@ public:
 
     size_t getSortKeyHash() const;
 
-    GFX::CommandBuffer& _commands;
+    GFX::CommandBuffer& commands();
+    const GFX::CommandBuffer& commands() const;
 
 private:
     GFXDevice& _context;
     bool _isRenderable;
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
-};
-
-class RenderPackageQueue {
-public:
-    RenderPackageQueue(GFXDevice& context, size_t queueSize);
-
-    void clear();
-    U32 size() const;
-    bool empty() const;
-    bool locked() const;
-
-    const RenderPackage& getPackage(U32 idx) const;
-
-protected:
-    friend class GFXDevice;
-    RenderPackage& getPackage(U32 idx);
-    RenderPackage& back();
-    bool push_back(const RenderPackage& package);
-    void lock();
-    void unlock();
-
-protected:
-    GFXDevice& _context;
-
-    bool _locked;
-    U32 _currentCount;
-    vectorImpl<std::shared_ptr<RenderPackage>> _packages;
+    GFX::CommandBuffer& _commands;
 };
 
 }; //namespace Divide

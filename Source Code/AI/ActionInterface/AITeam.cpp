@@ -89,7 +89,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTime) {
                                     if (!Attorney::AIEntityAITeam::update(*entity, deltaTime)) {
                                         //print error;
                                     }
-                                })._task)->startTask(Task::TaskPriority::HIGH);
+                                }))->startTask(Task::TaskPriority::HIGH);
     }
 
     updateTask.startTask(Task::TaskPriority::MAX);
@@ -109,7 +109,7 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTime) {
                                    if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTime)) {
                                        //print error;
                                    }
-                               })._task)->startTask(Task::TaskPriority::HIGH);
+                               }))->startTask(Task::TaskPriority::HIGH);
     }
 
     inputTask.startTask(Task::TaskPriority::MAX);
@@ -129,7 +129,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTime) {
                                   if (!Attorney::AIEntityAITeam::processData(*entity, deltaTime)) {
                                       //print error;
                                   }
-                              })._task)->startTask(Task::TaskPriority::HIGH);
+                              }))->startTask(Task::TaskPriority::HIGH);
     }
 
     dataTask.startTask(Task::TaskPriority::MAX);

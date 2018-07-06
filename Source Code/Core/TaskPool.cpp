@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/TaskPool.h"
+#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 
 namespace Divide {
@@ -32,10 +33,12 @@ bool TaskPool::init(U32 threadCount, TaskPoolType type, const stringImpl& worker
 
     _workerThreadCount = threadCount - 1;
 
+     STUBBED("ToDo: Boost prio pool stopped working with Boost libraries 1.65. Falling back to FIFO for now. Fix This! - Ionut");
+
     switch (type) {
         case TaskPoolType::PRIORITY_QUEUE:
-            _mainTaskPool = std::make_unique<ThreadPoolBoostPrio>(_workerThreadCount);
-            break;
+            //_mainTaskPool = std::make_unique<ThreadPoolBoostPrio>(_workerThreadCount);
+            //break;
         case TaskPoolType::FIFO_QUEUE:
             _mainTaskPool = std::make_unique<ThreadPoolBoostFifo>(_workerThreadCount);
             break;
@@ -226,13 +229,13 @@ TaskHandle parallel_for(TaskPool& pool,
             updateTask.addChildTask(CreateTask(pool,
                                                [&cbk, start, end](const Task& parentTask) {
                                                    cbk(parentTask, start, end);
-                                               })._task)->startTask(priority, taskFlags);
+                                               }))->startTask(priority, taskFlags);
         }
         if (remainder > 0) {
             updateTask.addChildTask(CreateTask(pool,
                                               [&cbk, count, remainder](const Task& parentTask) {
                                                   cbk(parentTask, count - remainder, count);
-                                              })._task)->startTask(priority, taskFlags);
+                                              }))->startTask(priority, taskFlags);
         }
     }
 

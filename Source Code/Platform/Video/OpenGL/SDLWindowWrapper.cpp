@@ -158,24 +158,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // Vsync is toggled on or off via the external config file
     SDL_GL_SetSwapInterval(config.runtime.enableVSync ? 1 : 0);
-        
-    // If we got here, let's figure out what capabilities we have available
-    // Maximum addressable texture image units in the fragment shader
-    s_maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
-    s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
-    s_vaoBufferData.init(s_maxAttribBindings);
-
-    assert(to_base(ShaderProgram::TextureUsage::COUNT) < to_U32(s_maxTextureUnits) &&
-           "GL Wrapper: insufficient number of texture image units available on current hardware!");
-
-    assert(to_base(AttribLocation::COUNT) < to_U32(s_maxAttribBindings) &&
-           "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
-
-    Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), s_maxTextureUnits);
-    
-    // Maximum number of colour attachments per framebuffer
-    s_maxFBOAttachments = GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS);
-    GL_API::s_blendProperties.resize(s_maxFBOAttachments);
 
     // Query GPU vendor to enable/disable vendor specific features
     GPUVendor vendor = GPUVendor::COUNT;
@@ -220,9 +202,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         } else if(strstr(gpuRendererStr, "VideoCore")) {
             renderer = GPURenderer::VIDEOCORE;
             vendor = GPUVendor::ALPHAMOSAIC;
-        } else if(strstr(gpuRendererStr, "WebKit") || strstr(gpuRendererStr, "Mozilla") || strstr(gpuRendererStr, "ANGLE")) {
+        } else if (strstr(gpuRendererStr, "WebKit") || strstr(gpuRendererStr, "Mozilla") || strstr(gpuRendererStr, "ANGLE")) {
             renderer = GPURenderer::WEBGL;
             vendor = GPUVendor::WEBGL;
+        } else if (strstr(gpuRendererStr, "GDI Generic")) {
+            renderer = GPURenderer::GDI;
         } else {
             renderer = GPURenderer::UNKNOWN;
         }
@@ -234,6 +218,28 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GFXDevice::setGPURenderer(renderer);
     GFXDevice::setGPUVendor(vendor);
     
+    // If we got here, let's figure out what capabilities we have available
+    // Maximum addressable texture image units in the fragment shader
+    s_maxTextureUnits = std::max(GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
+    s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
+    s_vaoBufferData.init(s_maxAttribBindings);
+
+    if (to_base(ShaderProgram::TextureUsage::COUNT) >= to_U32(s_maxTextureUnits)) {
+        Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
+        return ErrorCode::GFX_NOT_SUPPORTED;
+    }
+
+    if (to_base(AttribLocation::COUNT) >= to_U32(s_maxAttribBindings)) {
+        Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_ATTRIB_BINDS")));
+        return ErrorCode::GFX_NOT_SUPPORTED;
+    }
+
+    Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), s_maxTextureUnits);
+
+    // Maximum number of colour attachments per framebuffer
+    s_maxFBOAttachments = GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS);
+    GL_API::s_blendProperties.resize(s_maxFBOAttachments);
+
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel, to_U8(0), to_U8(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;

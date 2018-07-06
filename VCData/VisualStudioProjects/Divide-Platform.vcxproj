@@ -112,6 +112,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIWrapper.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderPackage.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderPackageQueue.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStagePass.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\TextureData.h" />

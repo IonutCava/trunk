@@ -8,6 +8,8 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Utility/Headers/Localization.h"
 
+#include "Platform/Headers/PlatformRuntime.h"
+
 namespace Divide {
 
 namespace {
@@ -22,10 +24,10 @@ Task::Task()
     _priority(TaskPriority::DONT_CARE)
 {
     _parentTask = nullptr;
-    _childTaskCount = 0;
     _done = true;
+    _running = false;
     _stopRequested = false;
-    _childTasks.fill(nullptr);
+    _childTasks.reserve(MAX_CHILD_TASKS);
 }
 
 Task::~Task()
@@ -40,23 +42,27 @@ void Task::reset() {
         wait();
     }
 
+    _running = false;
     _stopRequested = false;
     _callback = nullptr;
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;
-    _childTaskCount = 0;
-    //not needed
-    //_childTasks.fill(nullptr);
+    _taskThread = std::thread::id();
+    _childTasks.resize(0);
 }
 
-void Task::addChildTask(Task* task) {
+Task* Task::addChildTask(Task* task) {
     DIVIDE_ASSERT(!isRunning(),
                   "Task::addChildTask error: Can't add child tasks to running tasks!");
 
-    assert(_childTaskCount < MAX_CHILD_TASKS);
-    task->_parentTask = this;
-    _childTasks[_childTaskCount++] = task;
+    assert(childTaskCount() < MAX_CHILD_TASKS && task->_parentTask == nullptr);
+    task->_parentTask = this; 
+
+    WriteLock w_lock(_childTaskMutex);
+    _childTasks.push_back(task);
+
+    return _childTasks.back();
 }
 
 
@@ -75,11 +81,13 @@ PoolTask Task::getRunTask(TaskPriority priority, U32 taskFlags) {
 }
 
 void Task::startTask(TaskPriority priority, U32 taskFlags) {
+    if (isRunning()) {
+        return;
+    }
+
     if (g_DebugTaskStartStop) {
         SetBit(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO));
     }
-
-    assert(!isRunning());
 
     if (Config::USE_SINGLE_THREADED_TASK_POOLS) {
         if (priority != TaskPriority::REALTIME &&
@@ -95,7 +103,7 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
         priority != TaskPriority::REALTIME_WITH_CALLBACK &&
         _tp != nullptr && _tp->workerThreadCount() > 0)
     {
-        if (!_tp->threadPool().enqueue(getRunTask(priority, taskFlags))) {
+        while (!_tp->threadPool().enqueue(getRunTask(priority, taskFlags))) {
             Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         }
     } else {
@@ -104,17 +112,39 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
 }
 
 void Task::stopTask() {
+    {
+        WriteLock w_lock(_childTaskMutex);
+        for (Task* child : _childTasks) {
+            child->stopTask();
+        }
+    }
+
     if (Config::Build::IS_DEBUG_BUILD) {
         if (isRunning()) {
             Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
         }
     }
 
-    for (I8 i = 0; i < _childTaskCount; ++i) {
-        _childTasks[i]->stopTask();
-    }
-
     _stopRequested = true;
+}
+
+vectorAlg::vecSize Task::childTaskCount() const {
+    ReadLock r_lock(_childTaskMutex);
+    return _childTasks.size();
+}
+
+void Task::removeChildTask(const Task& child) {
+    I64 targetGUID = child.getGUID();
+
+    WriteLock w_lock(_childTaskMutex);
+    _childTasks.erase(
+        std::remove_if(std::begin(_childTasks),
+                       std::end(_childTasks),
+                       [&targetGUID](Task* const childTask) -> bool {
+                           return childTask->getGUID() == targetGUID;
+                       }),
+        std::end(_childTasks));
+
 }
 
 void Task::wait() {
@@ -126,21 +156,26 @@ void Task::wait() {
 }
 
 void Task::run() {
+    _running = true;
+
+    _taskThread = std::this_thread::get_id();
+
     //ToDo: Add better wait for children system. Just manually balance calls for now -Ionut
-    WAIT_FOR_CONDITION(_childTaskCount == 0);
+    WAIT_FOR_CONDITION(childTaskCount() == 0);
 
     if (_callback) {
         _callback(*this);
     }
 
     if (_parentTask != nullptr) {
-        _parentTask->_childTaskCount -= 1;
+        _parentTask->removeChildTask(*this);
     }
 
     _done = true;
     {
         std::unique_lock<std::mutex> lk(_taskDoneMutex);
         _taskDoneCV.notify_one();
+        _running = false;
     }
 
     // task finished. Everything else is bookkeeping

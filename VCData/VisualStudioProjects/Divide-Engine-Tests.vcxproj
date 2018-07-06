@@ -15,6 +15,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\stdafx-test-platform.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\Source Code\UnitTests\Platform-Tests\main.cpp" />
     <ClCompile Include="..\..\Source Code\UnitTests\Platform-Tests\Tests\FileManagement.cpp" />
   </ItemGroup>
@@ -104,7 +109,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(EngineLibraries)\;$(EngineLibraries)\test\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IS_UNIT_TEST; _SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -130,6 +135,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -162,7 +168,7 @@ $(OutDir)Test-Platform_d.exe nopause</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(EngineLibraries)\;$(EngineLibraries)\test\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IS_UNIT_TEST; _SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -180,6 +186,7 @@ $(OutDir)Test-Platform_d.exe nopause</Command>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <SDLCheck>false</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -209,7 +216,7 @@ $(OutDir)Test-Platform.exe nopause</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(EngineLibraries)\;$(EngineLibraries)\test\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IS_UNIT_TEST; _SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -227,6 +234,7 @@ $(OutDir)Test-Platform.exe nopause</Command>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <SDLCheck>false</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

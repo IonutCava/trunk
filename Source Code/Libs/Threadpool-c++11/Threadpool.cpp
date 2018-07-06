@@ -7,158 +7,136 @@
 #include <exception>
 
 namespace ctpl {
+    thread_pool::thread_pool() { this->init(); }
+    thread_pool::thread_pool(size_t nThreads) { this->init(); m_nThreads = nThreads; this->resize(nThreads); }
 
-thread_pool::thread_pool()
-    : q(_ctplThreadPoolLength_)
-{
-    this->init();
-}
+    // the destructor waits for all the functions in the queue to be finished
+    thread_pool::~thread_pool() { this->interrupt(false); }
 
-thread_pool::thread_pool(int nThreads, int queueSize)
-    : q(queueSize)
-{
-    this->init();
-    this->resize(nThreads);
-}
-
-// the destructor waits for all the functions in the queue to be finished
-thread_pool::~thread_pool()
-{
-    this->stop(true);
-}
-
-// get the number of running threads in the pool
-int thread_pool::size() {
-    return static_cast<int>(this->threads.size());
-}
-
-// number of idle threads
-int thread_pool::n_idle() {
-    return this->nWaiting;
-}
-
-std::thread & thread_pool::get_thread(int i) {
-    return *this->threads[i];
-}
-
-// change the number of threads in the pool
-// should be called from one thread, otherwise be careful to not interleave, also with this->stop()
-// nThreads must be >= 0
-void thread_pool::resize(int nThreads) {
-    if (!this->isStop && !this->isDone) {
-        int oldNThreads = static_cast<int>(this->threads.size());
-        if (oldNThreads <= nThreads) {  // if the number of threads is increased
-            this->threads.resize(nThreads);
-            this->flags.resize(nThreads);
-
-            for (int i = oldNThreads; i < nThreads; ++i) {
-                this->flags[i] = std::make_shared<std::atomic<bool>>(false);
-                this->set_thread(i);
-            }
-        }
-        else {  // the number of threads is decreased
-            for (int i = oldNThreads - 1; i >= nThreads; --i) {
-                *this->flags[i] = true;  // this thread will finish
-                this->threads[i]->detach();
-            }
-            {
-                // stop the detached threads that were waiting
-                std::unique_lock<std::mutex> lock(this->mutex);
-                this->cv.notify_all();
-            }
-            this->threads.resize(nThreads);  // safe to delete because the threads are detached
-            this->flags.resize(nThreads);  // safe to delete because the threads have copies of shared_ptr of the flags, not originals
-        }
-    }
-}
-
-// empty the queue
-void thread_pool::clear_queue() {
-    std::function<void(int id)> * _f;
-    while (this->q.pop(_f))
-        delete _f;  // empty the queue
-}
-
-// pops a functional wraper to the original function
-std::function<void(int)> thread_pool::pop() {
-    std::function<void(int id)> * _f = nullptr;
-    this->q.pop(_f);
-    std::unique_ptr<std::function<void(int id)>> func(_f);  // at return, delete the function even if an exception occurred
-
-    std::function<void(int)> f;
-    if (_f)
-        f = *_f;
-    return f;
-}
-
-
-// wait for all computing threads to finish and stop all threads
-// may be called asyncronously to not pause the calling thread while waiting
-// if isWait == true, all the functions in the queue are run, otherwise the queue is cleared without running the functions
-void thread_pool::stop(bool isWait) {
-    if (!isWait) {
-        if (this->isStop)
-            return;
-        this->isStop = true;
-        for (int i = 0, n = this->size(); i < n; ++i) {
-            *this->flags[i] = true;  // command the threads to stop
-        }
-        this->clear_queue();  // empty the queue
-    }
-    else {
-        if (this->isDone || this->isStop)
-            return;
-        this->isDone = true;  // give the waiting threads a command to finish
-    }
+    // restart the pool
+    void thread_pool::restart()
     {
-        std::unique_lock<std::mutex> lock(this->mutex);
-        this->cv.notify_all();  // stop all waiting threads
+        this->interrupt(false); // finish all existing tasks but prevent new ones
+        this->init(); // reset atomic flags
+        this->resize(m_nThreads);
     }
-    for (int i = 0; i < static_cast<int>(this->threads.size()); ++i) {  // wait for the computing threads to finish
-        if (this->threads[i]->joinable())
-            this->threads[i]->join();
-    }
-    // if there were no threads in the pool but some functors in the queue, the functors are not deleted by the threads
-    // therefore delete them here
-    this->clear_queue();
-    this->threads.clear();
-    this->flags.clear();
-}
 
-void thread_pool::set_thread(int i) {
-    std::shared_ptr<std::atomic<bool>> flag(this->flags[i]);  // a copy of the shared ptr to the flag
-    auto f = [this, i, flag/* a copy of the shared ptr to the flag */]() {
-        std::atomic<bool> & _flag = *flag;
-        std::function<void(int id)> * _f;
-        bool isPop = this->q.pop(_f);
-        while (true) {
-            while (isPop) {  // if there is anything in the queue
-                std::unique_ptr<std::function<void(int id)>> func(_f);  // at return, delete the function even if an exception occurred
-                (*_f)(i);
+    // change the number of threads in the pool
+    // should be called from one thread, otherwise be careful to not interleave, also with this->interrupt()
+    void thread_pool::resize(size_t nThreads)
+    {
+        if (!ma_kill && !ma_interrupt) {
 
-                if (_flag)
-                    return;  // the thread is wanted to stop, return even if the queue is not empty yet
-                else
-                    isPop = this->q.pop(_f);
+            size_t oldNThreads = m_threads.size();
+            if (oldNThreads <= nThreads) {  // if the number of threads is increased
+
+                m_threads.resize(nThreads);
+                m_abort.resize(nThreads);
+
+                for (size_t i = oldNThreads; i < nThreads; ++i)
+                {
+                    m_abort[i] = std::make_shared<std::atomic<bool>>(false);
+                    this->setup_thread(i);
+                }
+            } else {  // the number of threads is decreased
+
+                for (size_t i = oldNThreads - 1; i >= nThreads; --i)
+                {
+                    *m_abort[i] = true;  // this thread will finish
+                    m_threads[i]->detach();
+                }
+                {
+                    // stop the detached threads that were waiting
+                    std::unique_lock<std::mutex> lock(m_mutex);
+                    m_cond.notify_all();
+                }
+                m_threads.resize(nThreads); // safe to delete because the threads are detached
+                m_abort.resize(nThreads); // safe to delete because the threads have copies of shared_ptr of the flags, not originals
             }
-
-            // the queue is empty here, wait for the next command
-            std::unique_lock<std::mutex> lock(this->mutex);
-            ++this->nWaiting;
-            this->cv.wait(lock, [this, &_f, &isPop, &_flag]() { isPop = this->q.pop(_f); return isPop || this->isDone || _flag; });
-            --this->nWaiting;
-
-            if (!isPop)
-                return;  // if the queue is empty and this->isDone == true or *flag then return
         }
-    };
-    this->threads[i].reset(new std::thread(f));  // compiler may not support std::make_unique()
-}
+    }
 
-void thread_pool::init() {
-    this->nWaiting = 0;
-    this->isStop = false;
-    this->isDone = false;
-}
+    // wait for all computing threads to finish and stop all threads
+    // may be called asynchronously to not pause the calling thread while waiting
+    // if kill == true, all the functions in the queue are run, otherwise the queue is cleared without running the functions
+    void thread_pool::interrupt(bool kill)
+    {
+        if (kill) {
+            if (ma_kill) return;
+            ma_kill = true;
 
+            for (size_t i = 0, n = this->size(); i < n; ++i)
+                *m_abort[i] = true;  // command the threads to stop
+        } else {
+            if (ma_interrupt || ma_kill) return;
+            ma_interrupt = true;  // give the waiting threads a command to finish
+        }
+
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_cond.notify_all();  // stop all waiting threads
+        }
+        // wait for the computing threads to finish
+        for (size_t i = 0; i < m_threads.size(); ++i)
+        {
+            if (m_threads[i]->joinable())
+                m_threads[i]->join();
+        }
+
+        this->clear_queue();
+
+        m_threads.clear();
+        m_abort.clear();
+    }
+
+   
+    void thread_pool::clear_queue()
+    {
+        std::function<void(size_t id)> * _f = nullptr;
+        while (m_queue.pop(_f))
+            delete _f; // empty the queue
+    }
+
+    // reset all flags
+    void thread_pool::init() { ma_n_idle = 0; ma_kill = false; ma_interrupt = false; }
+
+    // each thread pops jobs from the queue until:
+    //  - the queue is empty, then it waits (idle)
+    //  - its abort flag is set (terminate without emptying the queue)
+    //  - a global interrupt is set, then only idle threads terminate
+    void thread_pool::setup_thread(size_t i)
+    {
+        // a copy of the shared ptr to the abort
+        std::shared_ptr<std::atomic<bool>> abort_ptr(m_abort[i]);
+
+        auto f = [this, i, abort_ptr]()
+        {
+            std::atomic<bool> & abort = *abort_ptr;
+            std::function<void(size_t id)> * _f = nullptr;
+            bool more_tasks = m_queue.pop(_f);
+
+            while (true)
+            {
+                while (more_tasks) // if there is anything in the queue
+                {
+                    // at return, delete the function even if an exception occurred
+                    std::unique_ptr<std::function<void(size_t id)>> func(_f);
+                    (*_f)(i);
+                    if (abort)
+                        return; // return even if the queue is not empty yet
+                    else
+                        more_tasks = m_queue.pop(_f);
+                }
+
+                // the queue is empty here, wait for the next command
+                std::unique_lock<std::mutex> lock(m_mutex);
+                ++ma_n_idle;
+                m_cond.wait(lock, [this, &_f, &more_tasks, &abort]() { more_tasks = m_queue.pop(_f); return abort || ma_interrupt || more_tasks; });
+                --ma_n_idle;
+                if (!more_tasks) return; // we stopped waiting either because of interruption or abort
+            }
+        };
+
+        m_threads[i].reset(new std::thread(f));
+    }
 }; //namespace ctpl

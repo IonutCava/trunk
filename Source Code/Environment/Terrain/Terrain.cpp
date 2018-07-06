@@ -118,7 +118,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     const vec3<F32>& bbExtent = _boundingBox.getExtent();
     TerrainTextureLayer* textureLayer = _terrainTextures;
 
-    PushConstants& pushConstants = *pkgInOut._commands.getPushConstants().front();
+    PushConstants& pushConstants = *pkgInOut.commands().getPushConstants().front();
 
     pushConstants.set("bbox_min", PushConstantType::VEC3, bbMin);
     pushConstants.set("bbox_extent", PushConstantType::VEC3, bbExtent);
@@ -130,7 +130,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     clipPlanesCommand._clippingPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
                                           Plane<F32>(WORLD_Y_AXIS, _waterHeight),
                                           false);
-    GFX::SetClipPlanes(pkgInOut._commands, clipPlanesCommand);
+    GFX::SetClipPlanes(pkgInOut.commands(), clipPlanesCommand);
 
     GenericDrawCommand cmd;
     cmd.primitiveType(PrimitiveType::PATCH);
@@ -141,7 +141,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     {
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
-        GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
+        GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
     }
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
 
@@ -153,7 +153,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         {
             GFX::BindPipelineCommand pipelineCommand;
             pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-            GFX::BindPipeline(pkgInOut._commands, pipelineCommand);
+            GFX::BindPipeline(pkgInOut.commands(), pipelineCommand);
         }
         //infinite plane
         GenericDrawCommand planeCmd;
@@ -166,7 +166,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
         {
             GFX::DrawCommand drawCommand;
             drawCommand._drawCommands.push_back(planeCmd);
-            GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
+            GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
         }
         //BoundingBoxes
         _terrainQuadtree.drawBBox(_context, pkgInOut);
@@ -181,9 +181,9 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  const RenderStagePass& renderStagePass,
                                  const SceneRenderState& sceneRenderState,
                                  RenderPackage& pkgInOut) {
-    pkgInOut._commands.getClipPlanes().front()->set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
-                                                    Plane<F32>(WORLD_Y_AXIS, _waterHeight),
-                                                    true);
+    pkgInOut.commands().getClipPlanes().front()->set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
+                                                     Plane<F32>(WORLD_Y_AXIS, _waterHeight),
+                                                     true);
 
     const U8 stageIndex = to_U8(renderStagePass.stage());
     bool& cameraUpdated = _cameraUpdated[stageIndex];
@@ -201,8 +201,8 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
         cameraUpdated = false;
     }
 
-    const vectorImpl<GenericDrawCommand*>& commands = pkgInOut._commands.getDrawCommands();
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+    const vectorImpl<GenericDrawCommand*>& commands = pkgInOut.commands().getDrawCommands();
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
 
     commands[0]->drawCount(tessellator.renderDepth());
 

@@ -159,10 +159,12 @@ void RenderQueue::sort() {
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             RenderingOrder::List sortOrder = getSortOrder(renderBin->getType());
-            sortTask.addChildTask(CreateTask(pool,
+            Task* child = sortTask.addChildTask(CreateTask(pool,
                 [renderBin, sortOrder](const Task& parentTask) {
                     renderBin->sort(sortOrder, parentTask);
-                })._task)->startTask(Task::TaskPriority::HIGH);
+                }));
+
+            child->startTask(Task::TaskPriority::HIGH);
         }
     }
     sortTask.startTask(Task::TaskPriority::MAX);

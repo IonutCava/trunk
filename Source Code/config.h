@@ -35,6 +35,7 @@
 namespace Divide {
 namespace Config {
 namespace Build {
+
 #if defined(_DEBUG)
     constexpr bool IS_SHIPPING_BUILD = false;
     constexpr bool IS_DEBUG_BUILD = true;

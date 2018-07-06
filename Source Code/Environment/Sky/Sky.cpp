@@ -119,9 +119,9 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
+    GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
 
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
+    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
     PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
     if (renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
         pipeDesc._stateHash = _skyboxRenderStateHashPrePass;
