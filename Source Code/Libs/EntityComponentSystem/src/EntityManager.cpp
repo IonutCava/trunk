@@ -41,28 +41,32 @@ namespace ECS
 		this->m_EntityHandleTable.ReleaseHandle(id);
 	}
 
+    void EntityManager::RemoveDestroyedEntity(EntityId id)
+    {
+        IEntity* entity = this->m_EntityHandleTable[id];
+
+        const EntityTypeId ETID = entity->GetStaticEntityTypeID();
+
+        // get appropriate entity container and destroy entity
+        auto it = this->m_EntityRegistry.find(ETID);
+        if (it != this->m_EntityRegistry.end())
+        {
+            // release entity's components
+            this->m_ComponentManagerInstance->RemoveAllComponents(id);
+
+            it->second->DestroyEntity(entity);
+        }
+
+        // free entity id
+        this->ReleaseEntityId(id);
+    }
+
 	void EntityManager::RemoveDestroyedEntities()
 	{
 		for (size_t i = 0; i < this->m_NumPendingDestroyedEntities; ++i)
 		{
 			EntityId entityId = this->m_PendingDestroyedEntities[i];
-
-			IEntity* entity = this->m_EntityHandleTable[entityId];
-
-			const EntityTypeId ETID = entity->GetStaticEntityTypeID();
-
-			// get appropriate entity container and destroy entity
-			auto it = this->m_EntityRegistry.find(ETID);
-			if (it != this->m_EntityRegistry.end())
-			{
-				// release entity's components
-				this->m_ComponentManagerInstance->RemoveAllComponents(entityId);
-
-				it->second->DestroyEntity(entity);
-			}
-
-			// free entity id
-			this->ReleaseEntityId(entityId);
+            RemoveDestroyedEntity(entityId);
 		}
 
 		this->m_NumPendingDestroyedEntities = 0;

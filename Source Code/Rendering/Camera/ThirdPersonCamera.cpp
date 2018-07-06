@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/ThirdPersonCamera.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Input/Headers/InputInterface.h"
 

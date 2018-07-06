@@ -419,7 +419,13 @@ void GFXDevice::closeRenderingAPI() {
     _api->closeRenderingAPI();
     _api.reset();
     if (!_graphicResources.empty()) {
+        stringImpl list = " [ ";
+        for (const std::pair<GraphicsResource::Type, I64>& res : _graphicResources) {
+            list += to_stringImpl(to_base(res.first)) + " _ " + to_stringImpl(res.second) + " ";
+        }
+        list += " ]";
         Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());
+        Console::errorfn(list.c_str());
     }
 
     if (Config::USE_ANT_TWEAK_BAR) {

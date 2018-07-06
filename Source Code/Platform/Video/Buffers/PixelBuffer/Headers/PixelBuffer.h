@@ -39,11 +39,10 @@
 
 namespace Divide {
 
-class NOINITVTABLE PixelBuffer : public GraphicsResource, public GUIDWrapper {
+class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
    public:
        PixelBuffer(GFXDevice& context, PBType type)
-         : GUIDWrapper(),
-           GraphicsResource(context, getGUID()),
+         : GraphicsResource(context, GraphicsResource::Type::PIXEL_BUFFER, getGUID()),
            _pbtype(type),
            _textureID(0),
            _width(0),

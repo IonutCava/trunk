@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _RIGID_BODY_COMPONENT_H_
 
 #include "SGNComponent.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Physics/Headers/PhysicsAsset.h"
 
 

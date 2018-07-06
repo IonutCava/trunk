@@ -5,13 +5,14 @@
 
 namespace Divide {
 
-GraphicsResource::GraphicsResource(GFXDevice& context, I64 GUID) : _context(context), _GUID(GUID)
+GraphicsResource::GraphicsResource(GFXDevice& context, Type type, I64 GUID)
+    : _context(context), _type(type), _GUID(GUID)
 {
-    Attorney::GFXDeviceGraphicsResource::onResourceCreate(_context, _GUID);
+    Attorney::GFXDeviceGraphicsResource::onResourceCreate(_context, _type, _GUID);
 }
 
 GraphicsResource::~GraphicsResource()
 {
-    Attorney::GFXDeviceGraphicsResource::onResourceDestroy(_context, _GUID);
+    Attorney::GFXDeviceGraphicsResource::onResourceDestroy(_context, _type, _GUID);
 }
 }; //namespace Divide

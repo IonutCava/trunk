@@ -4,8 +4,7 @@
 
 namespace Divide {
 PhysicsAsset::PhysicsAsset(RigidBodyComponent& parent)
-    : TransformInterface(),
-      _parentComponent(parent)
+    : _parentComponent(parent)
 {
 }
 

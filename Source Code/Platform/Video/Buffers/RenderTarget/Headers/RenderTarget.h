@@ -86,7 +86,7 @@ struct RenderTargetDescriptor {
     vec2<F32> _depthRange = vec2<F32>(0.0f, 1.0f);
 };
 
-class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
+class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
    public:
     enum class RenderTargetUsage : U32 {
         RT_READ_WRITE = 0,

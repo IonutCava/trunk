@@ -100,7 +100,6 @@ struct TerrainTextureLayer {
 };
 
 class Quadtree;
-class Transform;
 class VertexBuffer;
 class TerrainDescriptor;
 

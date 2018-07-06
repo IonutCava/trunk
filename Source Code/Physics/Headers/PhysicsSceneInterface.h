@@ -38,7 +38,6 @@
 
 namespace Divide {
 
-class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsSceneInterface : public SceneComponent,

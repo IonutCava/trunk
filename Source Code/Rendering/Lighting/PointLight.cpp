@@ -3,9 +3,6 @@
 #include "Headers/PointLight.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
-#include "Graphs/Headers/SceneGraphNode.h"
-#include "Core/Math/Headers/Transform.h"
-
 namespace Divide {
 
 PointLight::PointLight(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, F32 range, LightPool& parentPool)

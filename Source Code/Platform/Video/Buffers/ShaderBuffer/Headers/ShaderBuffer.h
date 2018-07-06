@@ -58,9 +58,10 @@ struct ShaderBufferDescriptor {
 };
 
 class ShaderProgram;
-class NOINITVTABLE ShaderBuffer : public GraphicsResource,
-                                  public RingBuffer,
-                                  public GUIDWrapper {
+class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
+                                  public GraphicsResource,
+                                  public RingBuffer
+{
     USE_CUSTOM_ALLOCATOR
    public:
     explicit ShaderBuffer(GFXDevice& context, const ShaderBufferDescriptor& params);

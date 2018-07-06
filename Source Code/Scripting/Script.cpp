@@ -101,7 +101,8 @@ void Script::bootstrap() {
     vectorImpl<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation,
                                          path + Paths::Scripts::g_scriptsAtomsLocation };
 
-    _script = std::make_unique<chaiscript::ChaiScript>(create_chaiscript_stdlib(), scriptpath, scriptpath);
+    _script = std::make_unique<chaiscript::ChaiScript>(scriptpath, scriptpath);
+    _script->add(create_chaiscript_stdlib());
     _script->add(create_chaiscript_stl_extra());
     _script->add(chaiscript::fun(&Script::handleOutput), "handle_output");
 }

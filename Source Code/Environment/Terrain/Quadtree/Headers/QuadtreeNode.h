@@ -53,7 +53,6 @@ enum class ChunkBit : U32 {
 
 class Terrain;
 class TerrainChunk;
-class Transform;
 class SceneState;
 class IMPrimitive;
 class VertexBuffer;

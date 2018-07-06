@@ -5,7 +5,6 @@
 
 #include "Core/Headers/PlatformContext.h"
 #include "Scenes/Headers/SceneState.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -101,6 +100,12 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
 /// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
+    // Bottom up
+    for (U32 i = 0; i < getChildCount(); ++i) {
+        DestroySceneGraphNode(_children[i]);
+    }
+    _children.clear();
+
     UnregisterAllEventCallbacks();
 
     if (getParent()) {
@@ -109,12 +114,7 @@ SceneGraphNode::~SceneGraphNode()
 
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), getName().c_str(), _node->getName().c_str());
 
-    for (U32 i = 0; i < getChildCount(); ++i) {
-        DestroySceneGraphNode(_children[i], false);
-    }
-    _children.clear();
-
-    ECS::ECS_Engine->GetComponentManager()->RemoveAllComponents(GetEntityID());
+    GetComponentManager()->RemoveAllComponents(GetEntityID());
 
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
 
@@ -138,7 +138,7 @@ void SceneGraphNode::OnTransformDirty(const TransformDirty* event) {
         ReadLock r_lock(_childLock);
         U32 childCount = getChildCountLocked();
         for (U32 i = 0; i < childCount; ++i) {
-            ECS::ECS_Engine->SendEvent<ParentTransformDirty>(_children[i]->GetEntityID(), event->type);
+            SendEvent<ParentTransformDirty>(_children[i]->GetEntityID(), event->type);
         }
     }
 }
@@ -149,7 +149,7 @@ void SceneGraphNode::OnTransformClean(const TransformClean* event) {
         ReadLock r_lock(_childLock);
         U32 childCount = getChildCountLocked();
         for (U32 i = 0; i < childCount; ++i) {
-            ECS::ECS_Engine->SendEvent<ParentTransformClean>(_children[i]->GetEntityID());
+            SendEvent<ParentTransformClean>(_children[i]->GetEntityID());
         }
     }
 }
@@ -287,7 +287,7 @@ bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
 }
 
 void SceneGraphNode::postLoad() {
-    ECS::ECS_Engine->SendEvent<EntityPostLoad>(GetEntityID());
+    SendEvent<EntityPostLoad>(GetEntityID());
 }
 
 bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
@@ -418,7 +418,7 @@ void SceneGraphNode::lockVisibility(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     if (_active != state) {
         _active = state;
-        ECS::ECS_Engine->SendEvent<EntityActiveStateChange>(GetEntityID(), _active);
+        SendEvent<EntityActiveStateChange>(GetEntityID(), _active);
 
         forEachChild([state](SceneGraphNode& child) {
             child.setActive(state);
@@ -485,9 +485,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
 bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
                                    const RenderStagePass& renderStagePass) {
     
-    RenderingComponent* rComp = ECS::ECS_Engine->GetComponentManager()->GetComponent<RenderingComponent>(GetEntityID());
+    RenderingComponent* rComp = get<RenderingComponent>();
     if (rComp != nullptr) {
-        AnimationComponent* aComp = ECS::ECS_Engine->GetComponentManager()->GetComponent<AnimationComponent>(GetEntityID());
+        AnimationComponent* aComp = get<AnimationComponent>();
         if (aComp) {
             std::pair<vec2<U32>, ShaderBuffer*> data = aComp->getAnimationData();
             if (data.second != nullptr) {

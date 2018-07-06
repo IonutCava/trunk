@@ -12,8 +12,6 @@ namespace Divide {
         _parentDirty(true),
         _prevInterpValue(0.0)
     {
-        _transformInterface = std::make_unique<Transform>();
-        
     }
 
     TransformComponent::~TransformComponent()
@@ -59,7 +57,7 @@ namespace Divide {
         }
 
         ReadLock r_lock(_lock);
-        _transformInterface->getValues(_prevTransformValues);
+        _transformInterface.getValues(_prevTransformValues);
     }
 
     void TransformComponent::ignoreView(const bool state, const I64 cameraGUID) {
@@ -84,7 +82,7 @@ namespace Divide {
     void TransformComponent::setPosition(const vec3<F32>& position) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setPosition(position);
+            _transformInterface.setPosition(position);
         }
 
         setTransformDirty(TransformType::TRANSLATION);
@@ -93,7 +91,7 @@ namespace Divide {
     void TransformComponent::setScale(const vec3<F32>& scale) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setScale(scale);
+            _transformInterface.setScale(scale);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -102,7 +100,7 @@ namespace Divide {
     void TransformComponent::setRotation(const Quaternion<F32>& quat) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setRotation(quat);
+            _transformInterface.setRotation(quat);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -111,7 +109,7 @@ namespace Divide {
     void TransformComponent::setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setRotation(axis, degrees);
+            _transformInterface.setRotation(axis, degrees);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -120,7 +118,7 @@ namespace Divide {
     void TransformComponent::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setRotation(pitch, yaw, roll);
+            _transformInterface.setRotation(pitch, yaw, roll);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -129,7 +127,7 @@ namespace Divide {
     void TransformComponent::translate(const vec3<F32>& axisFactors) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->translate(axisFactors);
+            _transformInterface.translate(axisFactors);
         }
 
         setTransformDirty(TransformType::TRANSLATION);
@@ -138,7 +136,7 @@ namespace Divide {
     void TransformComponent::scale(const vec3<F32>& axisFactors) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->scale(axisFactors);
+            _transformInterface.scale(axisFactors);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -147,7 +145,7 @@ namespace Divide {
     void TransformComponent::rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->rotate(axis, degrees);
+            _transformInterface.rotate(axis, degrees);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -156,7 +154,7 @@ namespace Divide {
     void TransformComponent::rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->rotate(pitch, yaw, roll);
+            _transformInterface.rotate(pitch, yaw, roll);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -165,7 +163,7 @@ namespace Divide {
     void TransformComponent::rotate(const Quaternion<F32>& quat) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->rotate(quat);
+            _transformInterface.rotate(quat);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -174,7 +172,7 @@ namespace Divide {
     void TransformComponent::rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->rotateSlerp(quat, deltaTime);
+            _transformInterface.rotateSlerp(quat, deltaTime);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -183,7 +181,7 @@ namespace Divide {
     void TransformComponent::setScaleX(const F32 ammount) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setScaleX(ammount);
+            _transformInterface.setScaleX(ammount);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -192,7 +190,7 @@ namespace Divide {
     void TransformComponent::setScaleY(const F32 ammount) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setScaleY(ammount);
+            _transformInterface.setScaleY(ammount);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -201,7 +199,7 @@ namespace Divide {
     void TransformComponent::setScaleZ(const F32 ammount) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setScaleZ(ammount);
+            _transformInterface.setScaleZ(ammount);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -210,7 +208,7 @@ namespace Divide {
     void TransformComponent::scaleX(const F32 scale) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->scaleX(scale);
+            _transformInterface.scaleX(scale);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -219,7 +217,7 @@ namespace Divide {
     void TransformComponent::scaleY(const F32 scale) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->scaleY(scale);
+            _transformInterface.scaleY(scale);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -228,7 +226,7 @@ namespace Divide {
     void TransformComponent::scaleZ(const F32 scale) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->scaleZ(scale);
+            _transformInterface.scaleZ(scale);
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -237,7 +235,7 @@ namespace Divide {
     void TransformComponent::rotateX(const Angle::DEGREES<F32> angle) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->rotateX(angle);
+            _transformInterface.rotateX(angle);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -246,7 +244,7 @@ namespace Divide {
     void TransformComponent::rotateY(const Angle::DEGREES<F32> angle) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->rotateY(angle);
+            _transformInterface.rotateY(angle);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -255,7 +253,7 @@ namespace Divide {
     void TransformComponent::rotateZ(const Angle::DEGREES<F32> angle) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->rotateZ(angle);
+            _transformInterface.rotateZ(angle);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -264,7 +262,7 @@ namespace Divide {
     void TransformComponent::setRotationX(const Angle::DEGREES<F32> angle) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setRotationX(angle);
+            _transformInterface.setRotationX(angle);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -273,7 +271,7 @@ namespace Divide {
     void TransformComponent::setRotationY(const Angle::DEGREES<F32> angle) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setRotationY(angle);
+            _transformInterface.setRotationY(angle);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -282,7 +280,7 @@ namespace Divide {
     void TransformComponent::setRotationZ(const Angle::DEGREES<F32> angle) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setRotationZ(angle);
+            _transformInterface.setRotationZ(angle);
         }
 
         setTransformDirty(TransformType::ROTATION);
@@ -291,7 +289,7 @@ namespace Divide {
     void TransformComponent::setPositionX(const F32 positionX) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setPositionX(positionX);
+            _transformInterface.setPositionX(positionX);
         }
 
         setTransformDirty(TransformType::TRANSLATION);
@@ -300,7 +298,7 @@ namespace Divide {
     void TransformComponent::setPositionY(const F32 positionY) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setPositionY(positionY);
+            _transformInterface.setPositionY(positionY);
         }
 
         setTransformDirty(TransformType::TRANSLATION);
@@ -309,7 +307,7 @@ namespace Divide {
     void TransformComponent::setPositionZ(const F32 positionZ) {
         {
             WriteLock w_lock(_lock);
-            _transformInterface->setPositionZ(positionZ);
+            _transformInterface.setPositionZ(positionZ);
         }
 
         setTransformDirty(TransformType::TRANSLATION);
@@ -319,7 +317,7 @@ namespace Divide {
         TransformValues temp;
         {
             ReadLock r_lock(_lock);
-            _transformInterface->getValues(temp);
+            _transformInterface.getValues(temp);
         }
 
         _transformStack.push(temp);
@@ -330,7 +328,7 @@ namespace Divide {
             _prevTransformValues = _transformStack.top();
             {
                 WriteLock w_lock(_lock);
-                static_cast<Transform*>(_transformInterface.get())->setValues(_prevTransformValues);
+                _transformInterface.setValues(_prevTransformValues);
             }
 
             _transformStack.pop();
@@ -346,12 +344,12 @@ namespace Divide {
 
     void TransformComponent::getValues(TransformValues& valuesOut) const {
         ReadLock r_lock(_lock);
-        _transformInterface->getValues(valuesOut);
+        _transformInterface.getValues(valuesOut);
     }
 
     const mat4<F32>& TransformComponent::getMatrix() {
         ReadLock r_lock(_lock);
-        return _transformInterface->getMatrix();
+        return _transformInterface.getMatrix();
     }
 
     const mat4<F32>& TransformComponent::getWorldMatrix(D64 interpolationFactor) {
@@ -505,19 +503,19 @@ namespace Divide {
     void TransformComponent::getScale(vec3<F32>& scaleOut) const {
         ReadLock r_lock(_lock);
 
-        _transformInterface->getScale(scaleOut);
+        _transformInterface.getScale(scaleOut);
     }
 
     void TransformComponent::getPosition(vec3<F32>& posOut) const {
         ReadLock r_lock(_lock);
 
-        _transformInterface->getPosition(posOut);
+        _transformInterface.getPosition(posOut);
     }
 
     void TransformComponent::getOrientation(Quaternion<F32>& quatOut) const {
         ReadLock r_lock(_lock);
 
-        _transformInterface->getOrientation(quatOut);
+        _transformInterface.getOrientation(quatOut);
     }
 
     bool TransformComponent::isUniformScaled() const {

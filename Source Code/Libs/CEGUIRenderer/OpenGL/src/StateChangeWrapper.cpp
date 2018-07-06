@@ -165,7 +165,8 @@ void OpenGL3StateChangeWrapper::reset()
     d_scissorParams.reset();
     d_bindBufferParams.reset();
 
-    if (d_defaultStateHashScissor == 0) {
+    if (d_defaultStateHashScissor == 0)
+    {
         Divide::RenderStateBlock defaultState;
         defaultState.setCullMode(Divide::CullMode::NONE);
         defaultState.setFillMode(Divide::FillMode::SOLID);

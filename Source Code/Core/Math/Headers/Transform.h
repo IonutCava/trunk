@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class Transform : public TransformInterface, public GUIDWrapper, private NonCopyable {
+class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
    public:
     Transform() noexcept;
     Transform(const Quaternion<F32>& orientation,

@@ -222,6 +222,12 @@ namespace ECS
 			return entityId;
 		}
 
+        void DestroyAndRemoveEntity(EntityId entityId)
+        {
+            IEntity* entity = this->m_EntityHandleTable[entityId];
+            const EntityTypeId ETID = entity->GetStaticEntityTypeID();
+            RemoveDestroyedEntity(entityId);
+        }
 
 		void DestroyEntity(EntityId entityId)
 		{
@@ -279,6 +285,9 @@ namespace ECS
 		{
 			return this->m_EntityHandleTable[index];
 		}
+
+        void RemoveDestroyedEntity(EntityId id);
+
 
 		///-------------------------------------------------------------------------------------------------
 		/// Fn:	void EntityManager::RemoveDestroyedEntities();

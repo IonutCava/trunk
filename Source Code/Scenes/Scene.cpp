@@ -8,7 +8,6 @@
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Core/Math/Headers/Transform.h"
 
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h"
@@ -787,7 +786,6 @@ bool Scene::unload() {
     }
 
     clearTasks();
-    _lightPool->clear();
     /// Destroy physics (:D)
     _pxScene->release();
     MemoryManager::DELETE(_pxScene);

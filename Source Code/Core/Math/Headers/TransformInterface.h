@@ -52,7 +52,7 @@ struct TransformValues {
     bool operator!=(const TransformValues& other) const;
 };
 
-class TransformInterface {
+class ITransform {
 public:
     /// Set the local X,Y and Z position
     virtual void setPosition(const vec3<F32>& position) = 0;

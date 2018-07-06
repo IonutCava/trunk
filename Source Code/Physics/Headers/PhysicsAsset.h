@@ -37,13 +37,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class RigidBodyComponent;
-class PhysicsAsset : public TransformInterface {
+class PhysicsAsset : public ITransform {
 public:
     explicit PhysicsAsset(RigidBodyComponent& parent);
     virtual ~PhysicsAsset();
     RigidBodyComponent& getParent() { return _parentComponent; }
-    
-
 
 protected:
     RigidBodyComponent & _parentComponent;

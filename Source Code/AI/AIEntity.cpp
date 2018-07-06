@@ -7,7 +7,6 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/ActionInterface/Headers/AIProcessor.h"
 
-#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "PathFinding/Waypoints/Headers/WaypointGraph.h"  ///< For waypoint movement
 #include "PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh movement

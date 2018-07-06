@@ -48,7 +48,6 @@
 
 namespace Divide {
 
-class Transform;
 class SceneGraph;
 class SceneState;
 struct TransformDirty;
@@ -133,20 +132,34 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     template<class... ARGS>
     static SceneGraphNode* CreateSceneGraphNode(ARGS&&... args) {
-        ECS::EntityId nodeID = ECS::ECS_Engine->GetEntityManager()->CreateEntity<SceneGraphNode>(std::forward<ARGS>(args)...);
-        return static_cast<SceneGraphNode*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(nodeID));
+        ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(std::forward<ARGS>(args)...);
+        return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));
     }
 
     static void DestroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true) {
         if (node) {
-            ECS::ECS_Engine->GetEntityManager()->DestroyEntity(node->GetEntityID());
             if (inPlace) {
-                ECS::ECS_Engine->GetEntityManager()->RemoveDestroyedEntities();
+                GetEntityManager()->DestroyAndRemoveEntity(node->GetEntityID());
+            } else {
+                GetEntityManager()->DestroyEntity(node->GetEntityID());
             }
             node = nullptr;
         }
     }
 
+    inline static ECS::EntityManager* GetEntityManager() {
+        return ECS::ECS_Engine->GetEntityManager();
+    }
+
+    inline static ECS::ComponentManager* GetComponentManager() {
+        return ECS::ECS_Engine->GetComponentManager();
+    }
+    
+    template<class E, class... ARGS>
+    static void SendEvent(ARGS&&... eventArgs)
+    {
+        ECS::ECS_Engine->SendEvent<E>(std::forward<ARGS>(eventArgs)...);
+    }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
     SceneGraphNode* addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
@@ -200,7 +213,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     template <typename T>
     inline T* get() const {
         // ToDo: Optimise this -Ionut
-        return ECS::ECS_Engine->GetComponentManager()->GetComponent<T>(GetEntityID());
+        return GetComponentManager()->GetComponent<T>(GetEntityID());
     }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }

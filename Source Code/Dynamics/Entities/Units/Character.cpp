@@ -2,7 +2,6 @@
 
 #include "Headers/Character.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {

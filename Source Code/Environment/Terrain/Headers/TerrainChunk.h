@@ -40,7 +40,6 @@ namespace Divide {
 
 class Mesh;
 class Terrain;
-class Transform;
 class Vegetation;
 class QuadtreeNode;
 class ShaderProgram;

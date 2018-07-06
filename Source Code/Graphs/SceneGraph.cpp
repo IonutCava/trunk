@@ -62,17 +62,8 @@ void SceneGraph::unload()
 {
     idle();
 
-    stringImpl childNameCpy;
-    for (U32 childCount = 0; childCount < _root->getChildCount(); ++childCount) {
-        SceneGraphNode& child = _root->getChild(childCount);
-        childNameCpy = child.getName();
-
-        if (!_root->removeNode(child)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_GRAPH_REMOVE_NODE"), childNameCpy.c_str()));
-        }
-    }
-
-    _root->processDeleteQueue();
+    SceneGraphNode::DestroySceneGraphNode(_root);
+    assert(_root == nullptr);
 }
 
 
@@ -138,7 +129,7 @@ void SceneGraph::idle()
 }
 
 bool SceneGraph::removeNodesByType(SceneNodeType nodeType) {
-    return getRoot().removeNodesByType(nodeType);
+    return _root != nullptr && getRoot().removeNodesByType(nodeType);
 }
 
 bool SceneGraph::removeNode(SceneGraphNode* node) {

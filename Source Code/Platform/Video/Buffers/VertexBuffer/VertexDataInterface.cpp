@@ -5,8 +5,7 @@
 namespace Divide {
 
 VertexDataInterface::VertexDataInterface(GFXDevice& context)
-  : GUIDWrapper(),
-    GraphicsResource(context, getGUID())
+  : GraphicsResource(context, GraphicsResource::Type::VERTEX_BUFFER, getGUID())
 {
 }
 

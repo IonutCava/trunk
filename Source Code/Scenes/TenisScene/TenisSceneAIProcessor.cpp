@@ -5,7 +5,6 @@
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
 
-#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 

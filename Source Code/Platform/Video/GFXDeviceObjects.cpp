@@ -36,7 +36,7 @@ namespace {
 };
 
 RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
-    UniqueLock lk(_gpuObjectArenaMutex);
+    bool locked = _gpuObjectArenaMutex.try_lock();
 
     RenderTarget* temp = nullptr;
     switch (_API_ID) {
@@ -58,11 +58,15 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
         _gpuObjectArena.DTOR(temp);
     }
 
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
+    }
+
     return temp;
 }
 
 IMPrimitive* GFXDevice::newIMP() const {
-    UniqueLock lk(_gpuObjectArenaMutex);
+    bool locked = _gpuObjectArenaMutex.try_lock();
 
     IMPrimitive* temp = nullptr;
     switch (_API_ID) {
@@ -81,11 +85,15 @@ IMPrimitive* GFXDevice::newIMP() const {
         _gpuObjectArena.DTOR(temp);
     }
 
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
+    }
+
     return temp;
 }
 
 VertexBuffer* GFXDevice::newVB() const {
-    UniqueLock lk(_gpuObjectArenaMutex);
+    bool locked = _gpuObjectArenaMutex.try_lock();
 
     VertexBuffer* temp = nullptr;
     switch (_API_ID) {
@@ -107,11 +115,15 @@ VertexBuffer* GFXDevice::newVB() const {
         _gpuObjectArena.DTOR(temp);
     }
 
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
+    }
+
     return temp;
 }
 
 PixelBuffer* GFXDevice::newPB(PBType type) const {
-    UniqueLock lk(_gpuObjectArenaMutex);
+    bool locked = _gpuObjectArenaMutex.try_lock();
 
     PixelBuffer* temp = nullptr;
     switch (_API_ID) {
@@ -133,11 +145,15 @@ PixelBuffer* GFXDevice::newPB(PBType type) const {
         _gpuObjectArena.DTOR(temp);
     }
 
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
+    }
+
     return temp;
 }
 
 GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength) const {
-    UniqueLock lk(_gpuObjectArenaMutex);
+    bool locked = _gpuObjectArenaMutex.try_lock();
 
     GenericVertexData* temp = nullptr;
     switch (_API_ID) {
@@ -159,6 +175,10 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength) const {
         _gpuObjectArena.DTOR(temp);
     }
 
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
+    }
+
     return temp;
 }
 
@@ -169,21 +189,32 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
                                bool isFlipped,
                                bool asyncLoad,
                                const TextureDescriptor& texDescriptor) const {
+    bool locked = _gpuObjectArenaMutex.try_lock();
+    
+
     // Texture is a resource! Do not use object arena!
     Texture* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new texture. The callee is responsible for it's deletion!
-            temp = MemoryManager_NEW glTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
+            temp = new (_gpuObjectArena) glTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
         } break;
         case RenderAPI::Direct3D: {
-            temp = MemoryManager_NEW d3dTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
+            temp = new (_gpuObjectArena) d3dTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
+
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
+    }
 
     return temp;
 }
@@ -204,6 +235,8 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
                                            const stringImpl& resourceName,
                                            const stringImpl& resourceLocation,
                                            bool asyncLoad) const {
+    bool locked = _gpuObjectArenaMutex.try_lock();
+
     // ShaderProgram is a resource! Do not use object arena!
     ShaderProgram* temp = nullptr;
     switch (_API_ID) {
@@ -211,21 +244,29 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
         case RenderAPI::OpenGLES: {
             /// Create and return a new shader program.
             /// The callee is responsible for it's deletion!
-            temp = MemoryManager_NEW glShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
+            temp = new (_gpuObjectArena) glShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
         } break;
         case RenderAPI::Direct3D: {
-            temp = MemoryManager_NEW d3dShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
+            temp = new (_gpuObjectArena) d3dShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
+    }
+
     return temp;
 }
 
 ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) const {
-    UniqueLock lk(_gpuObjectArenaMutex);
+    bool locked = _gpuObjectArenaMutex.try_lock();
 
     ShaderBuffer* temp = nullptr;
     switch (_API_ID) {
@@ -247,6 +288,10 @@ ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) const {
 
     if (temp != nullptr) {
         _gpuObjectArena.DTOR(temp);
+    }
+
+    if (locked) {
+        _gpuObjectArenaMutex.unlock();
     }
 
     return temp;

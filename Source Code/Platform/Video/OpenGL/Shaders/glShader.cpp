@@ -40,7 +40,7 @@ glShader::glShader(GFXDevice& context,
                    const ShaderType& type,
                    const bool optimise)
     : TrackedObject(),
-      GraphicsResource(context, getGUID()),
+      GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID()),
       glObject(glObjectType::TYPE_SHADER, context),
      _skipIncludes(false),
      _shader(std::numeric_limits<U32>::max()),

@@ -120,8 +120,8 @@ namespace Divide {
         mat4<F32> _transformOffset;
     };
 
-    class TransformComponent : public TransformInterface,
-                               public SGNComponent<TransformComponent>
+    class TransformComponent : public SGNComponent<TransformComponent>,
+                               public ITransform
     {
         public:
          TransformComponent(SceneGraphNode& parentSGN);
@@ -139,7 +139,7 @@ namespace Divide {
          void setPositionY(const F32 positionY) override;
          void setPositionZ(const F32 positionZ) override;
          void translate(const vec3<F32>& axisFactors) override;
-         using TransformInterface::setPosition;
+         using ITransform::setPosition;
 
          void setScale(const vec3<F32>& ammount) override;
          void setScaleX(const F32 ammount) override;
@@ -149,7 +149,7 @@ namespace Divide {
          void scaleX(const F32 ammount) override;
          void scaleY(const F32 ammount) override;
          void scaleZ(const F32 ammount) override;
-         using TransformInterface::setScale;
+         using ITransform::setScale;
 
          void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
          void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
@@ -157,7 +157,7 @@ namespace Divide {
          void setRotationX(const Angle::DEGREES<F32> angle) override;
          void setRotationY(const Angle::DEGREES<F32> angle) override;
          void setRotationZ(const Angle::DEGREES<F32> angle) override;
-         using TransformInterface::setRotation;
+         using ITransform::setRotation;
 
          void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
          void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
@@ -166,7 +166,7 @@ namespace Divide {
          void rotateX(const Angle::DEGREES<F32> angle) override;
          void rotateY(const Angle::DEGREES<F32> angle) override;
          void rotateZ(const Angle::DEGREES<F32> angle) override;
-         using TransformInterface::rotate;
+         using ITransform::rotate;
 
          inline void setTransform(const TransformValues& values) {
              setPosition(values._translation);
@@ -234,22 +234,22 @@ namespace Divide {
          void OnParentTransformClean(const ParentTransformClean* event);
 
       private:
-        std::unique_ptr<TransformInterface> _transformInterface;
         IgnoreViewSettings _ignoreViewSettings;
 
         typedef std::stack<TransformValues> TransformStack;
 
         TransformValues _prevTransformValues;
-        TransformStack _transformStack;
-        TransformMask  _transformUpdatedMask;
-
+        TransformStack  _transformStack;
+        TransformMask   _transformUpdatedMask;
+        Transform       _transformInterface;
         /// Transform cache values
         std::atomic_bool _dirty;
         std::atomic_bool _dirtyInterp;
         std::atomic_bool _parentDirty;
 
+        D64 _prevInterpValue;
+
         mat4<F32> _worldMatrix;
-        D64  _prevInterpValue;
         mat4<F32> _worldMatrixInterp;
 
         mutable SharedLock _lock;

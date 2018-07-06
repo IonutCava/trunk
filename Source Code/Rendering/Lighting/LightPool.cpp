@@ -59,7 +59,11 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
 
 LightPool::~LightPool()
 {
-    clear();
+    for (Light::LightList& lightList : _lights) {
+        if (!lightList.empty()) {
+            Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_LIGHT_LEAKED")));
+        }
+    }
 }
 
 void LightPool::init() {
@@ -113,14 +117,15 @@ bool LightPool::clear() {
         return true;
     }
 
-    _parentScene.sceneGraph().removeNodesByType(SceneNodeType::TYPE_LIGHT);
-    for (Light::LightList& lightList : _lights) {
-        lightList.clear();
+    if (_parentScene.sceneGraph().removeNodesByType(SceneNodeType::TYPE_LIGHT)) {
+        for (Light::LightList& lightList : _lights) {
+            lightList.clear();
+        }
+
+        return true;
     }
 
-    _init = false;
-    
-    return true;
+    return false;
 }
 
 bool LightPool::addLight(Light& light) {

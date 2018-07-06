@@ -8,9 +8,10 @@ namespace Divide {
     std::shared_ptr<chaiscript::Module> create_chaiscript_stl_extra()
     {
 
-        auto module = chaiscript::bootstrap::standard_library::list_type<std::list<chaiscript::Boxed_Value> >("List");
-        module->add(chaiscript::bootstrap::standard_library::vector_type<vectorImpl<uint16_t> >("u16vector"));
-        module->add(chaiscript::vector_conversion<vectorImpl<uint16_t>>());
+        auto module = std::make_shared<chaiscript::Module>();
+        chaiscript::bootstrap::standard_library::list_type<std::list<chaiscript::Boxed_Value> >("List", *module);
+        chaiscript::bootstrap::standard_library::vector_type<std::vector<uint16_t> >("u16vector", *module);
+        module->add(chaiscript::vector_conversion<std::vector<uint16_t>>());
         return module;
     }
 

@@ -54,7 +54,8 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
     _shaderStage.fill(nullptr);
 }
 
-glShaderProgram::~glShaderProgram() {
+glShaderProgram::~glShaderProgram()
+{
     if (_lockManager) {
         _lockManager->Wait(true);
         MemoryManager::DELETE(_lockManager);
@@ -576,7 +577,7 @@ I32 glShaderProgram::Binding(const char* name) {
 
 /// Bind the NULL shader which should have the same effect as using no shaders at all
 bool glShaderProgram::unbind() {
-    return static_cast<glShaderProgram*>(ShaderProgram::nullShader().get())->bind();
+    return GL_API::setActiveProgram(0u);
 }
 
 /// Bind this shader program

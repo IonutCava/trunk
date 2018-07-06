@@ -487,7 +487,7 @@ protected:
     RenderDetailLevel _renderDetailLevel;
     
     SharedLock _graphicsResourceMutex;
-    vectorImpl<I64> _graphicResources;
+    vectorImpl<std::pair<GraphicsResource::Type, I64>> _graphicResources;
 
     /// Current viewport stack
     Rect<I32> _viewport;
@@ -568,16 +568,23 @@ namespace Attorney {
 
     class GFXDeviceGraphicsResource {
        private:
-       static void onResourceCreate(GFXDevice& device, I64 GUID) {
+       static void onResourceCreate(GFXDevice& device, GraphicsResource::Type type, I64 GUID) {
            WriteLock w_lock(device._graphicsResourceMutex);
-           device._graphicResources.push_back(GUID);
+           device._graphicResources.emplace_back(type, GUID);
        }
-       static void onResourceDestroy(GFXDevice& device, I64 GUID) {
+
+       static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID) {
            WriteLock w_lock(device._graphicsResourceMutex);
-           vectorImpl<I64>::iterator it;
+           vectorImpl<std::pair<GraphicsResource::Type, I64>>::iterator it;
            it = std::find_if(std::begin(device._graphicResources),
                 std::end(device._graphicResources),
-                [&GUID](I64 crtGUID) -> bool { return GUID == crtGUID; });
+                [type, GUID](const std::pair<GraphicsResource::Type, I64> crtEntry) -> bool {
+                    if (crtEntry.second == GUID) {
+                        assert(crtEntry.first == type);
+                        return true;
+                    }
+                    return false;
+                });
            assert(it != std::cend(device._graphicResources));
            device._graphicResources.erase(it);
    

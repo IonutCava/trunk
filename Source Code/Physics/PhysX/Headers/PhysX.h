@@ -43,7 +43,6 @@
 
 namespace Divide {
 
-class Transform;
 class PhysX;
 class PhysXSceneInterface;
 

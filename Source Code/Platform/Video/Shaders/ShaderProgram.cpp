@@ -33,7 +33,7 @@ std::unique_ptr<FW::FileWatcher> ShaderProgram::s_shaderFileWatcher;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
-      GraphicsResource(context, getGUID()),
+      GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID()),
       _asyncLoad(asyncLoad),
       _shouldRecompile(false)
 {

@@ -22,8 +22,6 @@ Transform::Transform() noexcept
 
 Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation, const vec3<F32>& scale) noexcept
-    : TransformInterface(),
-      GUIDWrapper()
 {
     _dirty = true;
     _rebuildMatrix = true;

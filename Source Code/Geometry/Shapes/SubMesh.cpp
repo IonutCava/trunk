@@ -4,7 +4,6 @@
 #include "Headers/Mesh.h"
 
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Dynamics/Entities/Headers/Impostor.h"

@@ -11,9 +11,8 @@ size_t ShaderBuffer::_boundAlignmentRequirement = 0;
 size_t ShaderBuffer::_unboundAlignmentRequirement = 0;
 
 ShaderBuffer::ShaderBuffer(GFXDevice& context,
-                            const ShaderBufferDescriptor& descriptor)
-    : GUIDWrapper(),
-        GraphicsResource(context, getGUID()),
+                           const ShaderBufferDescriptor& descriptor)
+      : GraphicsResource(context, GraphicsResource::Type::SHADER_BUFFER, getGUID()),
         RingBuffer(descriptor._ringBufferLength),
         _primitiveSize(descriptor._primitiveSizeInBytes),
         _primitiveCount(descriptor._primitiveCount),

@@ -38,7 +38,6 @@
 namespace Divide {
 
 class Terrain;
-class Transform;
 class SceneState;
 class BoundingBox;
 class IMPrimitive;

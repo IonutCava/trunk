@@ -42,17 +42,16 @@ namespace Divide {
 /// Utility class that adds basic GUID management to objects
 class GUIDWrapper {
    public:
-    GUIDWrapper() : _GUID(_idGenerator++)
+    GUIDWrapper() : _GUID(generateGUID())
     {
     }
 
     virtual ~GUIDWrapper()
     {
-        _idGenerator--;
     }
 
     GUIDWrapper(const GUIDWrapper& old)
-        : _GUID(_idGenerator++)
+        : _GUID(generateGUID())
     {
         (void)old;
     }
@@ -66,7 +65,10 @@ class GUIDWrapper {
     const I64 _GUID;
 
    private:
-    static I64 _idGenerator;
+    static I64 generateGUID();
+
+    //ToDo: Remove this (rebuild some third party libs)
+    static int64_t _idGenerator;
 };
 
 };  // namespace Divide

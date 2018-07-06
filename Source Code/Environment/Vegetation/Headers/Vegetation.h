@@ -39,7 +39,6 @@
 
 namespace Divide {
 
-class Transform;
 class SceneState;
 class RenderTarget;
 class ShaderBuffer;

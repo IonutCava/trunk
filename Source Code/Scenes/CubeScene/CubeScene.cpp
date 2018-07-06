@@ -7,7 +7,6 @@
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 
 #include "Core/Time/Headers/ApplicationTimer.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Core/Headers/PlatformContext.h"
 
 namespace Divide {

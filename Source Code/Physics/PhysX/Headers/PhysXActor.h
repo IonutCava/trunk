@@ -50,7 +50,7 @@ public:
     void setPositionY(const F32 positionY) override;
     void setPositionZ(const F32 positionZ) override;
     void translate(const vec3<F32>& axisFactors) override;
-    using TransformInterface::setPosition;
+    using ITransform::setPosition;
 
     void setScale(const vec3<F32>& ammount) override;
     void setScaleX(const F32 ammount) override;
@@ -60,7 +60,7 @@ public:
     void scaleX(const F32 ammount) override;
     void scaleY(const F32 ammount) override;
     void scaleZ(const F32 ammount) override;
-    using TransformInterface::setScale;
+    using ITransform::setScale;
 
     void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
     void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
@@ -68,7 +68,7 @@ public:
     void setRotationX(const Angle::DEGREES<F32> angle) override;
     void setRotationY(const Angle::DEGREES<F32> angle) override;
     void setRotationZ(const Angle::DEGREES<F32> angle) override;
-    using TransformInterface::setRotation;
+    using ITransform::setRotation;
 
     void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
     void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
@@ -77,7 +77,7 @@ public:
     void rotateX(const Angle::DEGREES<F32> angle) override;
     void rotateY(const Angle::DEGREES<F32> angle) override;
     void rotateZ(const Angle::DEGREES<F32> angle) override;
-    using TransformInterface::rotate;
+    using ITransform::rotate;
 
     void getScale(vec3<F32>& scaleOut) const override;
     void getPosition(vec3<F32>& posOut) const override;
@@ -86,7 +86,6 @@ public:
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
     const mat4<F32>& getMatrix() override;
-
 
     void getValues(TransformValues& valuesOut) const override;
 

@@ -6,7 +6,6 @@
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"

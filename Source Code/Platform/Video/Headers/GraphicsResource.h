@@ -39,8 +39,20 @@ namespace Divide {
 
 class GFXDevice;
 class GraphicsResource : private NonCopyable {
+public:
+    enum class Type : U8 {
+        PIXEL_BUFFER,
+        RENDER_TARGET,
+        SHADER_BUFFER,
+        VERTEX_BUFFER,
+        SHADER,
+        SHADER_PROGRAM,
+        TEXTURE,
+        COUNT
+    };
+
 protected:
-    explicit GraphicsResource(GFXDevice& context, I64 GUID);
+    explicit GraphicsResource(GFXDevice& context, Type type, I64 GUID);
     virtual ~GraphicsResource();
 
 public:
@@ -51,7 +63,7 @@ protected:
 
 private:
     I64 _GUID;
-
+    Type _type;
 };
 
 }; //namespace Divide

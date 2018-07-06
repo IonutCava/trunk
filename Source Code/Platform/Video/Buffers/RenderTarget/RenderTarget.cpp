@@ -40,8 +40,7 @@ RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
 }
 
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
-    : GUIDWrapper(),
-      GraphicsResource(context, getGUID()),
+    : GraphicsResource(context, GraphicsResource::Type::RENDER_TARGET, getGUID()),
       _descriptor(descriptor)
 {
     if (Config::Profile::USE_2x2_TEXTURES) {
