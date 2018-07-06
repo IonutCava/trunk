@@ -200,15 +200,6 @@
     <Filter Include="shaders\GLSL">
       <UniqueIdentifier>{a91eda31-1458-42e6-9bf6-46dcd5390add}</UniqueIdentifier>
     </Filter>
-    <Filter Include="shaders\GLSL\high">
-      <UniqueIdentifier>{50925a37-f313-48be-9bd4-5791603d56fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\GLSL\medium">
-      <UniqueIdentifier>{715e0d69-012c-49bf-803e-1651d1281527}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\GLSL\low">
-      <UniqueIdentifier>{8d2b05be-1fed-476e-a12b-a917a7921fcc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="shaders\HLSL">
       <UniqueIdentifier>{f93561ec-0220-4f87-a273-dbf71e175fe0}</UniqueIdentifier>
     </Filter>
@@ -283,6 +274,12 @@
     </Filter>
     <Filter Include="Hardware\Video\OpenGL\glsw">
       <UniqueIdentifier>{2ffc7374-ca5b-44f6-adf7-2aefc209185c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\GLSL\fragmentAtoms">
+      <UniqueIdentifier>{7227fcef-ee04-4ec6-9e67-b2096ccb09eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\GLSL\vertexAtoms">
+      <UniqueIdentifier>{1d032943-932c-4c32-a112-6120f9f95590}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -895,149 +892,80 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\shaders\GLSL\high\anaglyph.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\anaglyph.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\blur.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\blur.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\bright.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\blur.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\bright.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\bright.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\grass.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\lighting.glsl.bak">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1_bump.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1_color.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\README">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass2.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\sky.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass2.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\SSAOPass1.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\lighting.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\SSAOPass2.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\lighting.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\terrain.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\OBJ.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\tree.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\OBJ.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\tree.glsl.bak">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\postProcessing.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\water.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\postProcessing.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\sky.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\sky.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\terrain_grass.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting_noTexture.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\terrain_grass.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\terrain_ground.frag">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\terrain_ground.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\high\terrain_tree.frag">
-      <Filter>shaders\GLSL\high</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\high\terrain_tree.vert">
-      <Filter>shaders\GLSL\high</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\high\water.frag">
-      <Filter>shaders\GLSL\high</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\high\water.vert">
-      <Filter>shaders\GLSL\high</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\anaglyph.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\anaglyph.vert">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\blur.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\blur.vert">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\bright.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\bright.vert">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1.vert">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1_bump.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1_color.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass2.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass2.vert">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\lighting.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\lighting.vert">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\sky.frag">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\low\sky.vert">
-      <Filter>shaders\GLSL\low</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass1.frag">
-      <Filter>shaders\GLSL\high</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass1.vert">
-      <Filter>shaders\GLSL\high</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass2.frag">
-      <Filter>shaders\GLSL\high</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass2.vert">
-      <Filter>shaders\GLSL\high</Filter>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
   </ItemGroup>
 </Project>

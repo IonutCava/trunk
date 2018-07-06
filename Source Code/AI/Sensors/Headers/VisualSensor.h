@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -27,14 +27,14 @@ class VisualSensor : public Sensor{
 public: 
 	VisualSensor() : Sensor(VISUAL_SENSOR) {}
 
-	U32  getNearbyEntityCount(U32 range)         {}  //number of smart units nearby     (only visible ones)
-	U32  getNearbyHostileEntityCount(U32 range)  {}  //lookup hostile entity count in range (only visible ones)
-	U32  getNearbyFriendlyEntityCount(U32 range) {}  //lookup friendly entity count in range (only visible ones)
+	U32  getNearbyEntityCount(U32 range)         {}  ///< number of smart units nearby     (only visible ones)
+	U32  getNearbyHostileEntityCount(U32 range)  {}  ///< lookup hostile entity count in range (only visible ones)
+	U32  getNearbyFriendlyEntityCount(U32 range) {}  ///< lookup friendly entity count in range (only visible ones)
 
 	U32   getDistanceToEntity(AIEntity* target)   {}
 	vec3  getPositionOfObject(SceneGraphNode* node);    
-	AIEntity* getNearestFriendlyEntity()         {}  //get closest visible friendly entity
-	AIEntity* getNearestHostileEntity()          {}  //get closest visible hostile entity
+	AIEntity* getNearestFriendlyEntity()         {}  ///< get closest visible friendly entity
+	AIEntity* getNearestHostileEntity()          {}  ///< get closest visible hostile entity
 
 };
 

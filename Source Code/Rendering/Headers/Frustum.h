@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -45,10 +45,10 @@ public:
 private:
 	vec3	_eyePos;
 	vec4	_frustumPlanes[6];	
-	mat4	_modelViewMatrix, _modelViewMatrixInv;	// Modelview Matrix and it's inverse
-	mat4	_projectionMatrix; 				        // Projection Matrix
-	mat4	_modelViewProjectionMatrix;			    // Modelview * Projection
-	mat4    _inverseModelViewProjectionMatrix;       // Projection * inverse(ModelView)
+	mat4	_modelViewMatrix, _modelViewMatrixInv;	///< Modelview Matrix and it's inverse
+	mat4	_projectionMatrix; 				        ///< Projection Matrix
+	mat4	_modelViewProjectionMatrix;			    ///< Modelview * Projection
+	mat4    _inverseModelViewProjectionMatrix;      ///< Projection * inverse(ModelView)
 
 END_SINGLETON
 

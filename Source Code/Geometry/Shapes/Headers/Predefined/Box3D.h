@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -73,9 +73,9 @@ public:
 	inline F32 getSize()    {return _size;}
 
 	inline void  setSize(F32 size) {
-		//Since the initial box is half of the full extent already (in the constructor)
-		//Each vertex is already multiplied by 0.5 so, just multiply by the new size
-		//IMPORTANT!! -be aware of this - Ionut
+		///Since the initial box is half of the full extent already (in the constructor)
+		///Each vertex is already multiplied by 0.5 so, just multiply by the new size
+		///IMPORTANT!! -be aware of this - Ionut
 		F32 halfExtent = size;
 
 		for(U8 i = 0; i < 8; i++){

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -27,18 +27,18 @@
 #ifndef _CONFIG_HEADER_
 #define _CONFIG_HEADER_
 
-//Edit the maximum number of concurrent threads that this application may start excluding events.
-//Default 5: Rendering + Update + A.I. + Networking + PhysX
+///Edit the maximum number of concurrent threads that this application may start excluding events.
+///Default 5: Rendering + Update + A.I. + Networking + PhysX
 #ifndef THREAD_LIMIT
 #define THREAD_LIMIT 5
 #endif //THREAD_LIMIT
 
-//Comment this out to show the debug console
+///Comment this out to show the debug console
 #ifndef HIDE_DEBUG_CONSOLE
 #define HIDE_DEBUG_CONSOLE
 #endif //HIDE_DEBUG_CONSOLE
 
-//Please enter the desired log file name
+///Please enter the desired log file name
 #ifndef OUTPUT_LOG_FILE
 #define OUTPUT_LOG_FILE "console.log"
 #endif //OUTPUT_LOG_FILE
@@ -47,12 +47,12 @@
 #define ERROR_LOG_FILE "errors.log"
 #endif //ERROR_LOG_FILE
 
-//Show log timestamps
+///Show log timestamps
 #ifndef SHOW_LOG_TIMESTAMPS
 #define SHOW_LOG_TIMESTAMPS
 #endif //SHOW_LOG_TIMESTAMPS
 
-//Reduce Build time on Windows Platform
+///Reduce Build time on Windows Platform
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN
 #endif //VC_EXTRALEAN
@@ -61,23 +61,23 @@
 #define WIN32_LEAN_AND_MEAN 1
 #endif //WIN32_LEAN_AND_MEAN
 
-//Use SSE functions for math calculations: usefull for release
+///Use SSE functions for math calculations: usefull for release
 #ifndef USE_MATH_SSE
 //#define USE_MATH_SSE
 #endif //USE_MATH_SSE
 
 
-//Use boost or std::tr1 unordered_map
-//0 = BOOST
-//1 = TR1
+///Use boost or std::tr1 unordered_map
+///0 = BOOST
+///1 = TR1
 #ifndef UNORDERED_MAP_IMP
 #define UNORDERED_MAP_IMP 0
 #endif //UNORDERED_MAP_IMP
 
-//Use boost or std for_each
+///Use boost or std for_each
 #ifndef FOR_EACH_IMPLEMENTATION
 #define FOR_EACH_IMPLEMENTATION BOOST
-//ToDo: Define a macro for this using lambda expressions. Not supported in VS2008 - Ionut
+///ToDo: Define a macro for this using lambda expressions. Not supported in VS2008 - Ionut
 //#define FOR_EACH_IMPLEMENTATION STD 
 #endif //FOR_EACH_IMPLEMENTATION
 

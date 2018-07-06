@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ protected :
 	~Singleton() {}
 
 private :
-	// singleton instance
+	/// singleton instance
 	static T* _instance;	
 
 	Singleton(Singleton&);

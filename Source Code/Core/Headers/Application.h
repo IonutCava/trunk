@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -49,8 +49,7 @@ public:
 
 	F32 moveFB,moveLR,angleUD,angleLR;
 
-	//rendering functions
-	void Initialize(); //Set up the rendering platform
+	void Initialize(); ///< Set up the rendering platform
 
 	static void DrawSceneStatic();
 	static void Idle();

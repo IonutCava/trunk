@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #endif
 
 #pragma warning(disable:4244)
-#pragma warning(disable:4996) //strcpy
+#pragma warning(disable:4996) ///< strcpy
  
 #define GETTIME()   Framerate::getInstance().getElapsedTime()/1000
 #define GETMSTIME() Framerate::getInstance().getElapsedTime()
@@ -75,7 +75,7 @@
 #include <unordered_map>
 #include <algorithm>
 #define unordered_map std::tr1::unordered_map
-//ToDo: fix these 3 to use std::for_each and lambda expressions
+///ToDo: fix these 3 to use std::for_each and lambda expressions
 #include <boost/foreach.hpp>
 #define for_each BOOST_FOREACH 
 #define reverse_for_each BOOST_REVERSE_FOREACH

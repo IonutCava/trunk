@@ -101,11 +101,12 @@ template<>
 Texture* ResourceManager::loadResource<Texture>(const ResourceDescriptor& descriptor){
 
 	Texture* ptr = dynamic_cast<Texture*>(loadResource(descriptor.getName()));
-	stringstream ss( descriptor.getResourceLocation() );
-	string it;
-	I8 i = 0;
-	while(std::getline(ss, it, ' ')) i++;
 	if(!ptr){
+		stringstream ss( descriptor.getResourceLocation() );
+		string it;
+		I8 i = 0;
+		while(std::getline(ss, it, ' ')) i++;
+
 		if(i == 6)
 			ptr = GFXDevice::getInstance().newTextureCubemap(descriptor.getFlag());
 		else if (i == 1)
@@ -134,7 +135,8 @@ ShaderProgram* ResourceManager::loadResource<ShaderProgram>(const ResourceDescri
 		ptr = GFXDevice::getInstance().newShaderProgram();
 
 		if(descriptor.getResourceLocation().compare("default") == 0)
-			ptr->setResourceLocation(par.getParam<string>("assetsLocation") + "/" + par.getParam<string>("shaderLocation"));
+			ptr->setResourceLocation(par.getParam<string>("assetsLocation") + "/" + 
+			                         par.getParam<string>("shaderLocation") + "/" );
 		else
 			ptr->setResourceLocation(descriptor.getResourceLocation());
 

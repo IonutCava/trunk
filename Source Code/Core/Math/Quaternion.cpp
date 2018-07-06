@@ -1,9 +1,9 @@
 #include "Headers/Quaternion.h"
 
 
-// normalising a quaternion works similar to a vector. This method will not do anything
-// if the quaternion is close enough to being unit-length. define TOLERANCE as something
-// small like 0.00001f to get accurate results
+//! normalising a quaternion works similar to a vector. This method will not do anything
+//! if the quaternion is close enough to being unit-length. define TOLERANCE as something
+//! small like 0.00001f to get accurate results
 void Quaternion::normalize(){
 	_dirty = true;
 	// Don't normalize if we don't have to
@@ -17,22 +17,23 @@ void Quaternion::normalize(){
 	}
 }
 
-// We need to get the inverse of a quaternion to properly apply a quaternion-rotation to a vector
-// The conjugate of a quaternion is the same as the inverse, as long as the quaternion is unit-length
+//! We need to get the inverse of a quaternion to properly apply a quaternion-rotation to a vector
+//! The conjugate of a quaternion is the same as the inverse, as long as the quaternion is unit-length
 Quaternion Quaternion::getConjugate() const{
 	return Quaternion(-_x, -_y, -_z, _w);
 }
 
-// Multiplying q1 with q2 applies the rotation q2 to q1
+//! Multiplying q1 with q2 applies the rotation q2 to q1
+//! the constructor takes its arguments as (x, y, z, w)
 Quaternion Quaternion::operator* (const Quaternion &rq) const{
-	// the constructor takes its arguments as (x, y, z, w)
+
 	return Quaternion(_w * rq._x + _x * rq._w + _y * rq._z - _z * rq._y,
 	                  _w * rq._y + _y * rq._w + _z * rq._x - _x * rq._z,
 	                  _w * rq._z + _z * rq._w + _x * rq._y - _y * rq._x,
 	                  _w * rq._w - _x * rq._x - _y * rq._y - _z * rq._z);
 }
 
-// Multiplying a quaternion q with a vector v applies the q-rotation to v
+//! Multiplying a quaternion q with a vector v applies the q-rotation to v
 vec3 Quaternion::operator* (const vec3 &vec) const{
 	vec3 vn(vec);
 	vn.normalize();
@@ -49,7 +50,7 @@ vec3 Quaternion::operator* (const vec3 &vec) const{
 	return (vec3(resQuat._x, resQuat._y, resQuat._z));
 }
 
-// Convert from Axis Angle
+//! Convert from Axis Angle
 void Quaternion::FromAxis(const vec3 &v, F32 angle){
 	_dirty = true;
 	F32 sinAngle;
@@ -67,12 +68,13 @@ void Quaternion::FromAxis(const vec3 &v, F32 angle){
 
 }
 
-// Convert from Euler Angles
+//! Convert from Euler Angles
+//! Basically we create 3 Quaternions, one for pitch, one for yaw, one for roll
+//! and multiply those together.
+//! the calculation below does the same, just shorter
 void Quaternion::FromEuler(F32 pitch, F32 yaw, F32 roll){
 	_dirty = true;
-	// Basically we create 3 Quaternions, one for pitch, one for yaw, one for roll
-	// and multiply those together.
-	// the calculation below does the same, just shorter
+	
  
 	F32 p = pitch * M_PIDIV180 / 2.0;
 	F32 y = yaw * M_PIDIV180 / 2.0;
@@ -92,7 +94,7 @@ void Quaternion::FromEuler(F32 pitch, F32 yaw, F32 roll){
 	normalize();
 }
 
-// Convert to Matrix
+//! Convert to Matrix
 mat4 const& Quaternion::getMatrix(){
 	if(_dirty) {
 		F32 x2 =  _x + _x;
@@ -118,7 +120,7 @@ mat4 const& Quaternion::getMatrix(){
 	return _mat;
 }
 
-// Convert to Axis/Angles
+//! Convert to Axis/Angles
 void Quaternion::getAxisAngle(vec3 *axis, F32 *angle,bool inDegrees){
 	F32 scale = Util::square_root(_x * _x + _y * _y + _z * _z);
 	axis->x = _x / scale;

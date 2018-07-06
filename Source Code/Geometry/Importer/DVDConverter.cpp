@@ -239,14 +239,14 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(path.find('/') == string::npos){
-			path = par.getParam<string>("defaultTextureLocation") + path;
+			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
 		}
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
 			Material::TextureUsage item;
 			if(count == 0) item = Material::TEXTURE_BASE;
 			else if(count == 1) item = Material::TEXTURE_SECOND;
 			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + path);
+			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			tempMaterial->setTexture(item,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif
@@ -261,13 +261,13 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		if(path.find('/') == string::npos){
-			path = par.getParam<string>("defaultTextureLocation") + path;
+			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
 		}
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  string::npos){
 
 			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + path);
+			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif
@@ -277,13 +277,13 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		if(path.find('/') == string::npos){
-			path = par.getParam<string>("defaultTextureLocation") + path;
+			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
 		}
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  string::npos){
 
 			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + path);
+			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			tempMaterial->setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif
@@ -294,14 +294,15 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(path.find('/') == string::npos){
-			path = par.getParam<string>("defaultTextureLocation") + path;
+			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
 		}
 		if(img_name.rfind('.') !=  string::npos){
 			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + path);
+			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			tempMaterial->setTexture(Material::TEXTURE_OPACITY,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 			tempMaterial->getRenderState().blendingEnabled() = true;
+			tempMaterial->setTwoSided(true);
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -310,11 +311,11 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(path.find('/') == string::npos){
-			path = par.getParam<string>("defaultTextureLocation") + path;
+			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
 		}
 		if(img_name.rfind('.') !=  string::npos){
 			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + path);
+			texture.setResourceLocation(path);
 			texture.setFlag(true);
 			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif

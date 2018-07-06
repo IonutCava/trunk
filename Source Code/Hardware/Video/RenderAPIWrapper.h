@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 #define _RENDER_API_H
 
 #include "Core/Math/Headers/MathClasses.h"
-//Simple frustum representation
+///Simple frustum representation
 struct frustum{
 
 	F32 neard;
@@ -129,7 +129,7 @@ class SceneGraphNode;
 class Transform;
 enum LIGHT_TYPE;
 enum SHADER_TYPE;
-//Renderer Programming Interface
+///Renderer Programming Interface
 class RenderAPIWrapper
 {
 
@@ -224,6 +224,7 @@ private:
 
 protected:
 	RenderState _defaultRenderState, _currentRenderState, _previousRenderState;
+	bool _ignoreStates;
 };
 
 #endif

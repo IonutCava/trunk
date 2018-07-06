@@ -3,6 +3,4 @@
 <config>config.xml</config>
 <scenes>Scenes</scenes>
 <assets>Assets</assets>
-<!--The folder where all the shaders are found. This folder will be considered a subfolder of the "assets" folder!!! -->
-<shaderFolder>shaders</shaderFolder>
 <server>192.168.3.3</server>

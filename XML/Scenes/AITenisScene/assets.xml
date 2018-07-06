@@ -4,6 +4,7 @@
 	<item>Player2</item>
 	<item>Player3</item>
 	<item>Player4</item>
+	<item>cylinder</item>
 	<!--<item>Sponza</item>-->
 </geometry>
 
@@ -68,5 +69,13 @@
 	<scale x="0.1" y="0.1" z="0.1" />
 	<position x="0" y="0" z="0" />
 	<orientation x="-90" y="0" z="0" />
+	<version>1.0</version>
+</Sponza>
+
+<cylinder>
+	<model>models/cylinder.obj</model>
+	<scale x="1" y="1" z="1" />
+	<position x="0" y="3" z="0" />
+	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 </Sponza>

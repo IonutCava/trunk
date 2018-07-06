@@ -49,46 +49,117 @@ void glShaderProgram::attachShader(Shader *shader){
    _compiled = false;
 }
 
+/// Creation of a new shader program.
+/// Pass in a shader token and use glsw to load the corresponding effects
 bool glShaderProgram::load(const string& name){
+	///Set the name and compilation state
 	_name = name;
 	_compiled = false;
+	///NULL shader means use shaderProgram(0)
 	if(name.compare("NULL") == 0){
 		glDeleteProgram(_shaderProgramId);
 		_shaderProgramId = 0;
 		_loaded = true;
 		return _loaded;
 	}
+	///If this program wasn't previously loaded (unload first to load again)
 	if(!_loaded){
+		///Init glsw library
 		glswInit();
-	    glswSetPath(getResourceLocation().c_str(), ".glsl");
-		std::vector<std::string> strs;
-		boost::split(strs, name, boost::is_any_of(","));
-		if(strs.size() == 1){
-			Shader* s = ShaderManager::getInstance().loadShader(name+".frag", getResourceLocation());
-			if(s){
-				attachShader(s);
-			}
-			s = ShaderManager::getInstance().loadShader(name+".vert", getResourceLocation());
-			if(s){
-				attachShader(s);
-			}
-			s = ShaderManager::getInstance().loadShader(name+".geom", getResourceLocation());
-			if(s){
-				attachShader(s);
-			}
-		}else{
-			for_each(std::string shader, strs){
-				Shader* s = ShaderManager::getInstance().loadShader(shader, getResourceLocation());
-				if(s){
-					attachShader(s);
-				}
-			}
+		///Use the specified shader path
+	    glswSetPath(string(getResourceLocation()+"GLSL/").c_str(), ".glsl");
+		glswAddDirectiveToken("", "/*“Copyright 2009-2012 DIVIDE-Studio”*/");
+		///Split the shader name to get the effect file name and the effect properties 
+		std::string shaderName = name.substr(0,name.find_first_of("."));
+		std::string shaderProperties;
+		size_t propPosition = name.find_first_of(".");
+		if(propPosition !=string::npos){
+			shaderProperties = "."+name.substr(propPosition+1);
 		}
 		
+		std::string vertexShader = shaderName+".Vertex"+shaderProperties;
+		std::string fragmentShader = shaderName+".Fragment"+shaderProperties;
+		std::string geometryShader = shaderName+".Geometry"+shaderProperties;
+		std::string tessellationShader = shaderName+".Tessellation"+shaderProperties;
+
+		///Load the Vertex Shader
+		///See if it already exists in a compiled state
+		Shader* s = ShaderManager::getInstance().findShader(vertexShader);
+		///If it doesn't
+		if(!s){
+			///Use glsw to read the vertex part of the effect
+			const char* vs = glswGetShader(vertexShader.c_str());
+			///If reading was succesfull
+			if(vs != NULL){
+				//Load our shader and save it in the manager in case a new Shader Program needs it
+				s = ShaderManager::getInstance().loadShader(vertexShader,vs,VERTEX_SHADER);
+			}else{
+				Console::getInstance().errorfn("ShaderProgram: %s",glswGetError());
+			}
+		}
+		///If the vertex shader loaded ok
+		if(s){
+			///attach it to the program
+			attachShader(s);
+			///same goes for every other shader type
+		}else{
+			Console::getInstance().errorfn("Could not load shader [ %s ]",vertexShader.c_str());
+		}
+		///Load the Fragment Shader
+		s = ShaderManager::getInstance().findShader(fragmentShader);
+		if(!s){
+			const char* fs = glswGetShader(fragmentShader.c_str());
+			if(fs != NULL){
+				s = ShaderManager::getInstance().loadShader(fragmentShader,fs,FRAGMENT_SHADER);
+			}else{
+				Console::getInstance().errorfn("ShaderProgram: %s",glswGetError());
+			}
+		}
+		if(s){
+			attachShader(s);
+		}else{
+			Console::getInstance().errorfn("Could not load shader [ %s ]",fragmentShader.c_str());
+		}
+		///Load the Geometry Shader
+		s = ShaderManager::getInstance().findShader(geometryShader);
+		if(!s){
+			const char* gs = glswGetShader(geometryShader.c_str());
+			if(gs != NULL){
+				s = ShaderManager::getInstance().loadShader(geometryShader,gs,GEOMETRY_SHADER);
+			}else{
+				///Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
+				Console::getInstance().d_errorfn("ShaderProgram: %s", glswGetError());
+			}
+		}
+		if(s){
+			attachShader(s);
+		}else{
+			Console::getInstance().d_errorfn("Could not load shader [ %s ]",geometryShader.c_str());
+		}
+
+		///Load the Tessellation Shader
+		s = ShaderManager::getInstance().findShader(tessellationShader);
+		if(!s){
+			const char* ts = glswGetShader(tessellationShader.c_str());
+			if(ts != NULL){
+				s = ShaderManager::getInstance().loadShader(tessellationShader,ts,TESSELATION_SHADER);
+			}else{
+				///Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
+				Console::getInstance().d_errorfn("ShaderProgram: %s", glswGetError());
+			}
+		}
+		if(s){
+			attachShader(s);
+		}else{
+			Console::getInstance().d_errorfn("Could not load shader [ %s ]",tessellationShader.c_str());
+		}
+
+		///Link and validate shaders into this program and update state
 		commit();
+		///Shut down glsw and clean memory
+		glswShutdown();
 		_loaded = true;
 	}
-	glswShutdown();
 	if(_loaded){
 		return ShaderProgram::load(name);
 	}
@@ -102,13 +173,19 @@ bool glShaderProgram::flushLocCache(){
 	return true;
 }
 
+///Cache uniform/attribute locations for shaderprograms
+///When we call this function, we check our name<->address map to see if we queried the location before
+///If we did not, ask the GPU to give us the variables address and save it for later use
 I32 glShaderProgram::cachedLoc(const std::string& name,bool uniform){
 	if(_shaderVars.find(name) != _shaderVars.end()){
 		return _shaderVars[name];
 	}
-	I32 location = 0;
-	uniform ? location = glGetUniformLocation(_shaderProgramId, name.c_str()) : location = glGetAttribLocation(_shaderProgramId, name.c_str());
-
+	I32 location = -1;
+	if(uniform){
+		location = glGetUniformLocation(_shaderProgramId, name.c_str()); 
+	}else {
+		location = glGetAttribLocation(_shaderProgramId, name.c_str());
+	}
 	_shaderVars.insert(std::make_pair(name,location));
 	return location;
 }
@@ -132,60 +209,101 @@ void glShaderProgram::unbind() {
 }
 
 void glShaderProgram::Attribute(const std::string& ext, D32 value){
-	glVertexAttrib1d(cachedLoc(ext,false),value);
+	I32 loc = cachedLoc(ext,false);
+	if(loc != -1){
+		glVertexAttrib1d(loc,value);
+	}
 }
 
 void glShaderProgram::Attribute(const std::string& ext, F32 value){
-	glVertexAttrib1f(cachedLoc(ext,false),value);
+	I32 loc = cachedLoc(ext,false);
+	if(loc != -1){
+		glVertexAttrib1f(loc,value);
+	}
 }
 
 void glShaderProgram::Attribute(const std::string& ext, const vec2& value){
-	glVertexAttrib2fv(cachedLoc(ext,false),value);
+	I32 loc = cachedLoc(ext,false);
+	if(loc != -1){
+		glVertexAttrib2fv(loc,value);
+	}
 }
 
 void glShaderProgram::Attribute(const std::string& ext, const vec3& value){
-	glVertexAttrib3fv(cachedLoc(ext,false),value);
+	I32 loc = cachedLoc(ext,false);
+	if(loc != -1){
+		glVertexAttrib3fv(loc,value);
+	}
 }
 
 void glShaderProgram::Attribute(const std::string& ext, const vec4& value){
-	glVertexAttrib4fv(cachedLoc(ext,false),value);
+	I32 loc = cachedLoc(ext,false);
+	if(loc != -1){
+		glVertexAttrib4fv(loc,value);
+	}
 }
 
 
 void glShaderProgram::Uniform(const string& ext, I32 value){
-	glUniform1i(cachedLoc(ext), value);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniform1i(cachedLoc(ext), value);
+	}
 }
 
 void glShaderProgram::Uniform(const string& ext, F32 value){
-	glUniform1f(cachedLoc(ext), value);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniform1f(loc, value);
+	}
 }
 
 void glShaderProgram::Uniform(const string& ext, const vec2& value){
-	glUniform2fv(cachedLoc(ext), 1, value);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniform2fv(loc, 1, value);
+	}
 }
 
 void glShaderProgram::Uniform(const string& ext, const vec3& value){
-	glUniform3fv(cachedLoc(ext), 1, value);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniform3fv(loc, 1, value);
+	}
 }
 
 void glShaderProgram::Uniform(const string& ext, const vec4& value){
-	glUniform4fv(cachedLoc(ext), 1, value);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniform4fv(loc, 1, value);
+	}
 }
 
 void glShaderProgram::Uniform(const std::string& ext, const mat3& value){
-
-	glUniformMatrix3fv(cachedLoc(ext), 1,false, value);
+I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniformMatrix3fv(loc, 1,false, value);
+	}
 }
 
 void glShaderProgram::Uniform(const std::string& ext, const mat4& value){
-	glUniformMatrix4fv(cachedLoc(ext), 1,false, value);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniformMatrix4fv(loc, 1,false, value);
+	}
 }
 
 void glShaderProgram::Uniform(const std::string& ext, const vector<mat4>& values){
-	glUniformMatrix4fv(cachedLoc(ext),values.size(),true, values[0]);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glUniformMatrix4fv(loc,values.size(),true, values[0]);
+	}
 }
 
 void glShaderProgram::UniformTexture(const string& ext, U16 slot){
-	glActiveTexture(GL_TEXTURE0+slot);
-	glUniform1i(cachedLoc(ext), slot);
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		glActiveTexture(GL_TEXTURE0+slot);
+		glUniform1i(loc, slot);
+	}
 }

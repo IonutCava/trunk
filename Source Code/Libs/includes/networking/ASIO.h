@@ -24,15 +24,15 @@ public:
 	void toggleDebugOutput(bool debugOutput){_debugOutput = debugOutput; c->toggleDebugOutput(_debugOutput);}
 
 private:
-	//Singleton class: Constructor/Destructor private
+	///Singleton class: Constructor/Destructor private
 	ASIO() {_connected = false; _debugOutput = true; c = NULL;}
 	~ASIO() {work.reset(); t->join(); c->stop(); io_service_.stop(); delete c; c = NULL;}
 
 	friend class client;
 	void close(){c->stop(); _connected = false;}
 
-	//Define this functions to implement various packet handling (a switch statement for example)
-	//switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case MSG_HEARTBEAT: break;}
+	///Define this functions to implement various packet handling (a switch statement for example)
+	///switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case MSG_HEARTBEAT: break;}
 	void handlePacket(WorldPacket& p);
 
 	void HandlePongOpCode(WorldPacket& p);

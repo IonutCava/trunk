@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -34,7 +34,7 @@ public:
 	virtual void eraseEntry(const std::string& name) {_resDB.erase(name);}
 
 	virtual void Destroy();
-	virtual ~Manager() {Destroy();} //Deleting any manager, will destroy it first
+	virtual ~Manager() {Destroy();} ///< Deleting any manager, will destroy it first
 };
 
 #endif

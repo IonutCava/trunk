@@ -32,17 +32,17 @@ void QuadtreeNode::Build(U8 depth,
 		return;
 	}
 
-	//Cream 4 "copii"
+	// Create 4 children
 	_children = New QuadtreeNode[4];
 
-	// Calculam Bounding Box-ul "copiilor"
+	// Compute children bounding boxes
 	vec3 center = _boundingBox.getCenter();
 	_children[CHILD_NW].setBoundingBox( BoundingBox(_boundingBox.getMin(), center) );
 	_children[CHILD_NE].setBoundingBox( BoundingBox(vec3(center.x, 0.0f, _boundingBox.getMin().z), vec3(_boundingBox.getMax().x, 0.0f, center.z)) );
 	_children[CHILD_SW].setBoundingBox( BoundingBox(vec3(_boundingBox.getMin().x, 0.0f, center.z), vec3(center.x, 0.0f, _boundingBox.getMax().z)) );
 	_children[CHILD_SE].setBoundingBox( BoundingBox(center, _boundingBox.getMax()) );
 
-	// Calculam pozitia copiilor
+	// Compute children positions
 	ivec2 tNewHMpos[4];
 	tNewHMpos[CHILD_NW] = pos + ivec2(0, 0);
 	tNewHMpos[CHILD_NE] = pos + ivec2(newsize.x, 0);
@@ -101,7 +101,7 @@ void QuadtreeNode::Destroy(){
 		_terrainChunk = NULL;
 	}
 }
-//ToDo: Change vegetation rendering and generation! -Ionut
+///ToDo: Change vegetation rendering and generation! -Ionut
 void QuadtreeNode::DrawGrass(){
 	if(!_children) {
 		assert(_terrainChunk);

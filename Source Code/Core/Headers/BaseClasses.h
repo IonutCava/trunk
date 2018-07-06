@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -41,8 +41,8 @@ public:
 	inline void setId(U32 id)					                          {_id = id;}
 
 private:
-	std::string _name;			   //Item name
-	std::string _resourceLocation; //Physical file location
+	std::string _name;			   ///< Item name
+	std::string _resourceLocation; ///< Physical file location
 	bool        _flag;
 	U32         _id;
 };
@@ -85,14 +85,14 @@ protected:
 protected:
 	bool		 _shouldDelete;
 	std::string	 _name;
-	std::string  _resourceLocation; //Physical file location
+	std::string  _resourceLocation; ///< Physical file location
 };
 
 enum GEOMETRY_TYPE
 {
-	VEGETATION,  //For special rendering subroutines
-	PRIMITIVE,   //Simple objects: Boxes, Spheres etc
-	GEOMETRY     //All other forms of geometry
+	VEGETATION,  ///< For special rendering subroutines
+	PRIMITIVE,   ///< Simple objects: Boxes, Spheres etc
+	GEOMETRY     ///< All other forms of geometry
 };
 
 class FileData
@@ -105,7 +105,7 @@ public:
 	vec3 orientation;
 	vec3 color;
 	GEOMETRY_TYPE type;
-	F32 data; //general purpose
+	F32 data; ///< general purpose
 	std::string data2;
 	F32 version;
 };
@@ -114,7 +114,7 @@ class TerrainInfo
 {
 public:
 	TerrainInfo(){position.set(0,0,0);}
-	//"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
+	///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
 	std::map<std::string,std::string> variables;
 	U32    grassDensity;
 	U16    treeDensity;

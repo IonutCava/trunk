@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -45,7 +45,7 @@ namespace Util {
 
 #if defined  USE_MATH_SSE		
 	static const __m128 one = _mm_set_ps1(1.0f);
-	//dot
+	///dot
 	__forceinline __m128 _mm_dot_ps(__m128 v1, __m128 v2){
 		__m128 mul0 = _mm_mul_ps(v1, v2);
 		__m128 swp0 = _mm_shuffle_ps(mul0, mul0, _MM_SHUFFLE(2, 3, 0, 1));
@@ -65,7 +65,7 @@ namespace Util {
 
 
 	namespace Mat4{
-		//multiply
+		///multiply
 		__forceinline void _mm_mul_ps(__m128 in1[4], __m128 in2[4], __m128 out[4])
 		{
 			{

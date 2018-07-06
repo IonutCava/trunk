@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ class TerrainChunk;
 class Terrain;
 class QuadtreeNode {
 public:
-	//fonction recursive de traitement des noeuds
+	///recursive node building function
 	void Build(U8 depth, ivec2 pos, ivec2 HMsize, U32 minHMSize);
 	bool computeBoundingBox(const std::vector<vec3>& vertices);
 	void Destroy();
@@ -55,11 +55,11 @@ public:
 	~QuadtreeNode() {Destroy();}
 
 private:
-	I8				_LOD;				// LOD level
-	F32			    _camDistance;		// Distance to camera
-	BoundingBox		_boundingBox;		// Node BoundingBox
-	QuadtreeNode*	_children;			// Node children
-	TerrainChunk*	_terrainChunk;		// Terrain Chunk contained in node
+	I8				_LOD;				//< LOD level
+	F32			    _camDistance;		//< Distance to camera
+	BoundingBox		_boundingBox;		//< Node BoundingBox
+	QuadtreeNode*	_children;			//< Node children
+	TerrainChunk*	_terrainChunk;		//< Terrain Chunk contained in node
 };
 
 #endif

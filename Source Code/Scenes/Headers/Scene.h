@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -61,7 +61,7 @@ public:
 	bool removeGeometry(SceneNode* node);
 
 	virtual bool unload();
-	virtual void createCopy(){} //tough one ...
+	virtual void createCopy(){} ///< tough one ...
 	virtual void removeCopy(){}
 	virtual void render() = 0;
 	virtual void preRender() = 0;
@@ -112,7 +112,7 @@ protected:
 	/*Name_Object_map GeometryArray;
 	Name_Object_map::iterator GeometryIterator;*/
 
-	//Datablocks for models,vegetation and terrains
+	///Datablocks for models,vegetation and terrains
 	std::vector<FileData> ModelDataArray, PendingDataArray;
 	std::vector<FileData> VegetationDataArray;
 	std::vector<TerrainDescriptor*> TerrainInfoArray;
@@ -125,7 +125,7 @@ protected:
 	vec4 _white, _black;
 	InputManagerInterface& _inputManager;
 
-	//Deferred rendering
+	///Deferred rendering
 	FrameBufferObject* _deferredBuffer;
 	PixelBufferObject* _lightTexture;
 	ShaderProgram*	   _deferredShader;

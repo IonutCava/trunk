@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -56,7 +56,6 @@ public:
   inline bool            isDirty() {return _dirty;}
   void setTexture(TextureUsage textureUsage, Texture2D* const texture);
   ShaderProgram* setShaderProgram(const std::string& shader);
-  ShaderProgram* setShaderProgram(const std::vector<std::string >& pixelShaders, const std::vector<std::string >& vertexShaders, const std::vector<std::string >& geometryShaders);
   void setTwoSided(bool state);
   bool isTwoSided() {return _twoSided;}
   RenderState& getRenderState() const {return *_state;}

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -32,14 +32,14 @@ class Sensor{
 public:
 	Sensor(SENSOR_TYPE type){_type = type;}
 	virtual void updatePosition(const vec3& newPosition) {_position = newPosition;}
-	vec3& getSpatialPosition()                    {return _position;}  //return the coordinates at which the sensor is found 
-												                      //(or the entity it's attached to)
+	/// return the coordinates at which the sensor is found (or the entity it's attached to)
+	vec3& getSpatialPosition()                    {return _position;}  
 	SENSOR_TYPE getSensorType() {return _type;}
 	
 protected:
 
 	vec3 _position;
-	vec2 _range; //min/max
+	vec2 _range; ///< min/max
 	SENSOR_TYPE _type;
 };
 

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -25,19 +25,19 @@
 
 typedef struct
  {
- 	U16  time;				//At what time index does this Keyframe apply
- 	F32  length;			//What length should the bone have at this frame
-	Quaternion orientation; //Bone orientation at current frame expressed as a quaternion
-	vec3 position;          //The bone's final position at this frame
+ 	U16  time;				///< At what time index does this Keyframe apply
+ 	F32  length;			///< What length should the bone have at this frame
+	Quaternion orientation; ///< Bone orientation at current frame expressed as a quaternion
+	vec3 position;          ///< The bone's final position at this frame
  } Keyframe;
 
 struct Bone
 {
 	I16 _id, _childCount;
-	mat4 _absMatrix, _relMatrix; //Transformation matrices for the current bone
+	mat4 _absMatrix, _relMatrix; ///< Transformation matrices for the current bone
 	F32 _length;
 	Bone *_parent, *_child[MAX_BONE_CHILD_COUNT]; 
-	Keyframe *_animation; //Animation for the current bone;
+	Keyframe *_animation; ///< Animation for the current bone;
 };
 
 Bone *boneAddChild(Bone *root, I16 id, const mat4& _absMatrix);

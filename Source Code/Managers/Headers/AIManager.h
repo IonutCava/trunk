@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -30,12 +30,12 @@ public:
 	void Destroy();
 
 private:
-	void processInput();  //sensors
-	void processData();   //think
-	void updateEntities();//react
+	void processInput();  ///< sensors
+	void processData();   ///< think
+	void updateEntities();///< react
 
 private:
-	//ToDo: Maybe create the "Unit" class and agregate it with AIEntity? -Ionut
+	///ToDo: Maybe create the "Unit" class and agregate it with AIEntity? -Ionut
 	AIEntityMap _aiEntities;
 	boost::mutex _updateMutex;
 

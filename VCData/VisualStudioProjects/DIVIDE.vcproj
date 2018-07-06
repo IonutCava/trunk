@@ -1219,237 +1219,101 @@
 			<Filter
 				Name="GLSL"
 				>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\anaglyph.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\blur.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\bright.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\DeferredShadingPass1.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\DeferredShadingPass2.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\grass.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\lighting.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\postProcessing.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\sky.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\SSAOPass1.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\SSAOPass2.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\terrain.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\tree.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\water.glsl"
+					>
+				</File>
 				<Filter
-					Name="high"
+					Name="vertexAtoms"
 					>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\anaglyph.frag"
+						RelativePath="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert"
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\anaglyph.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\blur.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\blur.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\bright.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\bright.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\DeferredShadingPass1.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\DeferredShadingPass1.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\DeferredShadingPass1_bump.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\DeferredShadingPass1_color.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\DeferredShadingPass2.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\DeferredShadingPass2.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\lighting.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\lighting_bump.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\lighting_noTexture.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\lighting_texture.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\OBJ.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\OBJ.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\objectViewer.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\objectViewer.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\postProcessing.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\postProcessing.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\shadow_filter_4tap_bil.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\shadow_filter_gaussian.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\sky.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\sky.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\SSAOPass1.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\SSAOPass1.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\SSAOPass2.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\SSAOPass2.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\terrain_grass.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\terrain_grass.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\terrain_ground.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\terrain_ground.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\terrain_tree.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\terrain_tree.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\water.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\water.vert"
+						RelativePath="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert"
 						>
 					</File>
 				</Filter>
 				<Filter
-					Name="medium"
-					>
-				</Filter>
-				<Filter
-					Name="low"
+					Name="fragmentAtoms"
 					>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\anaglyph.frag"
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag"
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\anaglyph.vert"
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag"
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\blur.frag"
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag"
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\blur.vert"
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting_noTexture.frag"
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\bright.frag"
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag"
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\bright.vert"
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag"
 						>
 					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\DeferredShadingPass1.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\DeferredShadingPass1.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\DeferredShadingPass1_bump.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\DeferredShadingPass1_color.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\DeferredShadingPass2.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\DeferredShadingPass2.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\lighting.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\lighting.vert"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\sky.frag"
-						>
-					</File>
-					<File
-						RelativePath="..\..\assets\shaders\GLSL\low\sky.vert"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="general"
-					>
 				</Filter>
 			</Filter>
 			<Filter

@@ -33,7 +33,7 @@
  ***************************************************************************
  */
 
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -58,14 +58,14 @@
 
 #define EPSILON				0.000001f
 #ifndef M_PI
-#define M_PI				3.141592653589793238462643383279f		// PI
+#define M_PI				3.141592653589793238462643383279f		///<  PI
 #endif
 
-#define M_PIDIV2			1.570796326794896619231321691639f		// PI / 2
-#define M_2PI				6.283185307179586476925286766559f		// 2 * PI
-#define M_PI2				9.869604401089358618834490999876f		// PI ^ 2
-#define M_PIDIV180			0.01745329251994329576923690768488f		// PI / 180
-#define M_180DIVPI			57.295779513082320876798154814105f		// 180 / PI
+#define M_PIDIV2			1.570796326794896619231321691639f		///<  PI / 2
+#define M_2PI				6.283185307179586476925286766559f		///<  2 * PI
+#define M_PI2				9.869604401089358618834490999876f		///<  PI ^ 2
+#define M_PIDIV180			0.01745329251994329576923690768488f		///<  PI / 180
+#define M_180DIVPI			57.295779513082320876798154814105f		///<  180 / PI
 
 #define DegToRad(a)	(a)*=M_PIDIV180
 #define RadToDeg(a)	(a)*=M_180DIVPI
@@ -92,11 +92,9 @@ class ivec2;
 class ivec3;
 class ivec4;
 
-/*****************************************************************************/
-/*                                                                           */
-/* vec2                                                                      */
-/*                                                                           */
-/*****************************************************************************/
+/********************************************//**                                                                
+/* vec2                                                                      
+/**********************************************/
 
 class vec2 {
 public:
@@ -146,21 +144,21 @@ public:
 	}
 	F32 dot(const vec2 &v) { return ((this->x*v.x) + (this->y*v.y)); } // Produit scalaire
 	bool compare(const vec2 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi); }
-	// retourne les coordonnée du point le plus proche de *this sur la droite passant par vA et vB
+	/// return the coordinates of the closest point from *this to the line determined by points vA and vB
 	vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB) { return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); }
-	// retourne les coordonnée du point le plus proche de *this sur le segment vA,vB
+	/// return the coordinates of the closest point from *this to the segment determined by points vA and vB
 	vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB) {
 		F32 factor = this->projectionOnLine(vA, vB);
 		if (factor <= 0.0f) return vA;
 		if (factor >= 1.0f) return vB;
 		return (((vB-vA) * factor) + vA);
 	}
-	// retourne le facteur de la projection de *this sur la droite passant par vA et vB
+	/// return the projection factor from *this to the line determined by points vA and vB
 	F32 projectionOnLine(const vec2 &vA, const vec2 &vB) {
 		vec2 v(vB - vA);
 		return v.dot(*this - vA) / v.dot(v);
 	}
-	// Fonction d'interpolation linéaire entre 2 vecteurs
+	/// linear interpolation between 2 vectors
 	vec2 lerp(vec2 &u, vec2 &v, F32 factor) { return ((u * (1 - factor)) + (v * factor)); }
 	vec2 lerp(vec2 &u, vec2 &v, vec2& factor) { return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x), (u.y * (1 - factor.y)) + (v.y * factor.y))); }
 	F32 angle(void) { return (F32)atan2(this->y,this->x); }
@@ -248,7 +246,7 @@ public:
 	F32 dot(const vec3 &v) { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); }
 	bool compare(const vec3 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi); }
 	F32 distance(const vec3 &_v) {return Util::square_root(((_v.x - this->x)*(_v.x - this->x)) + ((_v.y - this->y)*(_v.y - this->y)) + ((_v.z - this->z)*(_v.z - this->z)));}
-	//Returns the angle in radians between '*this' and 'v'
+	/// Returns the angle in radians between '*this' and 'v'
 	F32 angle(vec3 &v) { 
 		F32 angle = (F32)fabs(acos(this->dot(v)/(this->length()*v.length())));
 		if(angle < EPSILON) return 0;
@@ -320,18 +318,16 @@ inline vec2::vec2(const vec3 &_v) {
 	this->y = _v.y;
 }
 
-// This calculates a vector between 2 points and returns the result
+/// This calculates a vector between 2 points and returns the result
 inline vec3& Vector(const vec3 &vp1, const vec3 &vp2) {
 	vec3 *ret = new vec3(vp1.x - vp2.x, vp1.y - vp2.y, vp1.z - vp2.z);
 	return *ret;
 }
 
 
-/*****************************************************************************/
-/*                                                                           */
-/* vec4                                                                      */
-/*                                                                           */
-/*****************************************************************************/
+/********************//**
+/* vec4  
+/**********************/
 
 class vec4 {
 public:
@@ -402,11 +398,9 @@ inline vec2::vec2(const vec4 &_v) {
 	this->y = _v.y;
 }
 
-/*****************************************************************************/
-/*                                                                           */
-/* mat3                                                                      */
-/*                                                                           */
-/*****************************************************************************/
+/******************************//**
+/* mat3      
+/*********************************/
 
 class mat3 {
 public:
@@ -592,11 +586,9 @@ public:
 	F32 mat[9];
 };
 
-/*****************************************************************************/
-/*                                                                           */
-/* mat4                                                                      */
-/*                                                                           */
-/*****************************************************************************/
+/*************//**
+/* mat4 
+/***************/
 
 class mat4 {
 public:
@@ -704,7 +696,7 @@ public:
 		this->mat[3 + (index*4)] = value.w;
 	}
 
-	// premultiply the matrix by the given matrix
+	/// premultiply the matrix by the given matrix
 	void multmatrix(const mat4& m) {
 		F32 tmp[4];
 		for (I8 j=0; j<4; j++) {
@@ -925,11 +917,9 @@ inline mat3::mat3(const mat4 &m) {
 }
 
 
-/*****************************************************************************/
-/*                                                                           */
-/* ivec2                                                                     */
-/*                                                                           */
-/*****************************************************************************/
+/***********//**
+/* ivec2 
+/**************/
 
 class ivec2 {
 public:
@@ -973,11 +963,9 @@ public:
 	};
 };
 
-/*****************************************************************************/
-/*                                                                           */
-/* ivec3                                                                     */
-/*                                                                           */
-/*****************************************************************************/
+/***********//**
+/* ivec3 
+/*************/
 
 class ivec3 {
 public:
@@ -1024,10 +1012,8 @@ public:
 	};
 };
 
-/*****************************************************************************/
-/*                                                                           */
-/* ivec4                                                                     */
-/*                                                                           */
+/**************************************************************************//**
+/* ivec4
 /*****************************************************************************/
 
 class ivec4 {

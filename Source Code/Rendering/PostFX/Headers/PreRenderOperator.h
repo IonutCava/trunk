@@ -8,21 +8,21 @@ class Quad3D;
 class FrameBufferObject;
 class PreRenderOperator {
 public:
-	//The RENDER_STAGE is used to inform the GFXDevice of what we are currently doing to set up apropriate states
-	//The target is the full screen quad to which we want to apply our operation to generate the result
+	///The RENDER_STAGE is used to inform the GFXDevice of what we are currently doing to set up apropriate states
+	///The target is the full screen quad to which we want to apply our operation to generate the result
 	PreRenderOperator(RENDER_STAGE stage, Quad3D* target) : _stage(stage), _renderQuad(target) {};
 	virtual ~PreRenderOperator() {};
 
 	virtual void operation() = 0;
 	virtual void reshape(I32 width, I32 height) = 0;
-	//Reference to state
+	///Reference to state
 	void setEnabled(bool& state) {_enabled = state;}
 	bool getEnabled()           {return _enabled; }
 	
 	inline void addInputFBO(FrameBufferObject* input) {_inputFBO.push_back(input);}
 
 protected:
-	//Target to render to;
+	///Target to render to;
 	Quad3D*	_renderQuad;
 	bool _enabled;
 	std::vector<FrameBufferObject* > _inputFBO;

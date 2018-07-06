@@ -33,7 +33,11 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
 			assert(it.second);
 			Material* m = (it.second)->getNode()->getMaterial();
 			if(m){
-				m->setShaderProgram("terrain_tree.vert,lighting_texture.frag");
+				if(m->getTexture(Material::TEXTURE_BUMP)){
+					m->setShaderProgram("tree.Bump");
+				}else{
+					m->setShaderProgram("tree.Texture");
+				}
 			}
 		}
 		

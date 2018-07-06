@@ -36,14 +36,14 @@ bool PhysX::exitPhysics(){
 	return true;
 }
 
-//Process results
+///Process results
 void PhysX::process(){
 	if(_currentScene){
 		_currentScene->process(); 
 	}
 }
 
-//Update actors
+///Update actors
 void PhysX::update(){
 	if(_currentScene){
 		_currentScene->update();   

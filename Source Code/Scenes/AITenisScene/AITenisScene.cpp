@@ -17,7 +17,7 @@ using namespace std;
 void AITenisScene::render(){
 	Sky& sky = Sky::getInstance();
 
-	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,true);
+	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),_sunVector,false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();

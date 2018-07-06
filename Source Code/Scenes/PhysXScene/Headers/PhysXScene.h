@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 #define _PHYSX_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
-//For this scene, we will be using PhysX, so name members accordingly for more readable code
+///For this scene, we will be using PhysX, so name members accordingly for more readable code
 class PhysXImplementation;
 class PhysXScene : public Scene {
 

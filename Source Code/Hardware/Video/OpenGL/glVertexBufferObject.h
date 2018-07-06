@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -43,8 +43,8 @@ private:
 	void Disable_VBO();
 
 private:
-	bool _created; //VBO's can be auto-created as GL_STATIC_DRAW if Enable() is called before Create();
-				   //This helps with multi-threaded asset loading without creating separate GL contexts for each thread
+	bool _created; ///< VBO's can be auto-created as GL_STATIC_DRAW if Enable() is called before Create();
+				   ///< Tis helps with multi-threaded asset loading without creating separate GL contexts for each thread
 
 };
 

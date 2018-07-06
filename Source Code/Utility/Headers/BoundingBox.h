@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 #define BOUNDINGBOX_H_
 
 #include "Core/Math/Headers/Ray.h"
-//ToDo: -Add BoundingSphere -Ionut
+///ToDo: -Add BoundingSphere -Ionut
 class BoundingBox {
 public:
 	BoundingBox() {
@@ -56,7 +56,7 @@ public:
         return true;
 	}
 
-	// Optimized method
+	/// Optimized method
 	inline bool intersect(const Ray &r, F32 t0, F32 t1) const {
 		F32 t_min, t_max, ty_min, ty_max, tz_min, tz_max;
 		vec3 bounds[2];

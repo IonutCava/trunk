@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -78,8 +78,8 @@ public:
       _numberOfTicks(1),
 	  _callback(f),
 	  _end(false){
-		  //If runOnce is true, then we only run the event once (# of ticks is 1)
-		  //If runOnce is false, then we run the event until stopEvent() is called
+		  ///If runOnce is true, then we only run the event once (# of ticks is 1)
+		  ///If runOnce is false, then we run the event until stopEvent() is called
 		  runOnce ? _numberOfTicks = 1 : _numberOfTicks = -1;
 		  if(startOnCreate) startEvent();
 	  }

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -25,8 +25,8 @@ class PhysXImplementation : public PhysicsSceneInterface {
 public:
 	PhysXImplementation(Scene* currentScene);
 	~PhysXImplementation();
-	//This is a dummy class to show a demo implementation
-	//With a class like this you could override any of the idle/process/update and so forth subroutines for the physics interface;
+	///This is a dummy class to show a demo implementation
+	///With a class like this you could override any of the idle/process/update and so forth subroutines for the physics interface;
 };
 
 #endif

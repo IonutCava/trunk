@@ -69,39 +69,6 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture) {
 	_dirty = true;
 }
 
-ShaderProgram* Material::setShaderProgram(const std::vector<std::string >& pixelShaders, 
-								  		  const std::vector<std::string >& vertexShaders, 
-							 			  const std::vector<std::string >& geometryShaders){
-	std::string shaderString = "";
-	if(!pixelShaders.empty()){
-		shaderString+= pixelShaders[0];
-	}
-	if(!vertexShaders.empty()){
-		shaderString += "," + vertexShaders[0];
-	}
-	if(!geometryShaders.empty()){
-		shaderString+= "," + geometryShaders[0];
-	}
-	
-	_shaderRef = setShaderProgram(shaderString);
-
-	if(_shaderRef){
-		for(U8 i = 1; i < pixelShaders.size(); i++){
-			_shaderRef->attachShader(ShaderManager::getInstance().loadShader(pixelShaders[i]+".frag", _shaderRef->getResourceLocation()));
-		}
-		for(U8 i = 1; i < vertexShaders.size(); i++){
-			_shaderRef->attachShader(ShaderManager::getInstance().loadShader(vertexShaders[i]+".vert", _shaderRef->getResourceLocation()));
-		}
-		for(U8 i = 1; i < geometryShaders.size(); i++){
-			_shaderRef->attachShader(ShaderManager::getInstance().loadShader(geometryShaders[i]+".geom", _shaderRef->getResourceLocation()));
-		}
-		_shaderRef->commit();
-	}
-	_dirty = true;
-	_computedLightShaders = true;
-	return _shaderRef;
-}
-
 //Here we set the shader's name
 ShaderProgram* Material::setShaderProgram(const std::string& shader){
 	//if we already had a shader assigned ...
@@ -142,19 +109,19 @@ void Material::computeLightShaders(){
 		//if(GFXDevice::getInstance().getRenderStage() == DEFERRED_STAGE){
 		if(GFXDevice::getInstance().getDeferredRendering()){
 			if(_textures[TEXTURE_BASE]){
-				setShaderProgram("DeferredShadingPass1");
+				setShaderProgram("DeferredShadingPass1.Texture");
 			}else{
-				setShaderProgram("DeferredShadingPass1_color.frag,DeferredShadingPass1.vert");
+				setShaderProgram("DeferredShadingPass1.NoTexture");
 			}
 		}else{
 			if(_textures[TEXTURE_BASE]){
 				if(_textures[TEXTURE_BUMP]){
-					setShaderProgram("lighting_bump.frag,lighting.vert");
+					setShaderProgram("lighting.Bump");
 				}else{
-					setShaderProgram("lighting_texture.frag,lighting.vert");
+					setShaderProgram("lighting.Texture");
 				}
 			}else{
-				setShaderProgram("lighting_noTexture.frag,lighting.vert");
+				setShaderProgram("lighting.NoTexture");
 			}
 		}
 	}
@@ -177,6 +144,7 @@ void Material::dumpToXML(){
 
 void Material::setTwoSided(bool state) {
 	state ? _state->cullingEnabled() = false : _state->cullingEnabled() = true;
+	_twoSided = state;
 	_dirty = true;
 }
 
@@ -186,6 +154,7 @@ bool Material::isTranslucent(){
 		if(_textures[TEXTURE_BASE]->hasTransparency()) state = true;
 	}
 	if(!_state->cullingEnabled() && _state->blendingEnabled()) state = true;
+	if(_textures[TEXTURE_OPACITY]) state = true;
 	return state;
 }
 

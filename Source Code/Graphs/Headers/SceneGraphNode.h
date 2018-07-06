@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -35,8 +35,8 @@ public:
 	void createCopy(){}
 	void removeCopy(){}
 };
-//Each render state could be attributed to any number of SceneGraphNodes.
-//After sorting by shader, we start rendring each VisualNodePropertie's parents as long as they are visible
+///Each render state could be attributed to any number of SceneGraphNodes.
+///After sorting by shader, we start rendring each VisualNodePropertie's parents as long as they are visible
 class VisualNodeProperties{
 	RenderState& getRenderState() {return _s;}
 	void         addParent(SceneGraphNode* node) {_parents.push_back(node);}
@@ -62,8 +62,8 @@ template<class T>
 inline SceneNode*             getNode() {return _node;}
        SceneGraphNode*        addNode(SceneNode* const node,const std::string& name = "");
 	   void			          removeNode(SceneGraphNode* node);
-	   //Find a node in the graph based on the SceneGraphNode's name
-	   //If sceneNodeName = true, find a node in the graph based on the SceneNode's name
+	   ///Find a node in the graph based on the SceneGraphNode's name
+	   ///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
 	   SceneGraphNode*        findNode(const std::string& name, bool sceneNodeName = false);
 const  std::string&           getName(){return _name;}
 /*Node Management*/
@@ -109,8 +109,8 @@ private:
 	SceneGraphNode *_parent, *_grandParent;
 	bool _active, _wasActive,_noDefaultTransform,_inView, _sorted, _silentDispose;
 
-	//_initialBoundingBox is a copy of the initialy calculate BB for transformation
-	//it should be copied in every computeBoungingBox call;
+	///_initialBoundingBox is a copy of the initialy calculate BB for transformation
+	///it should be copied in every computeBoungingBox call;
 	BoundingBox _initialBoundingBox, _boundingBox; 
 	Transform*	_transform;
 	SceneGraph* _sceneGraph;

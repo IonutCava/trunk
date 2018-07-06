@@ -18,7 +18,6 @@ namespace XML
 		read_xml(file,pt);
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
-		par.setParam("shaderFolder",pt.get("shaderFolder","shaders"));
 		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
 		par.setParam("serverAddress",pt.get("server","127.0.0.1"));
 		loadConfig(par.getParam<string>("scriptLocation") + "/" + pt.get("config","config.xml"));
@@ -42,7 +41,8 @@ namespace XML
 		par.setParam("detailLevel",pt.get<U8>("rendering.detailLevel",HIGH));
 		par.setParam("enableShadows",pt.get("rendering.enableShadows", true));
 		par.setParam("shadowDetailLevel",pt.get<U8>("rendering.shadowDetailLevel",HIGH));
-		par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","../textures/"));
+		par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","textures/"));
+		par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));
 		I32 winWidth = pt.get("runtime.windowWidth",1024);
 		I32 winHeight = pt.get("runtime.windowHeight",768);
 		par.setParam("zNear",(F32)pt.get("runtime.zNear",0.1f));
@@ -305,23 +305,8 @@ namespace XML
 		if(boost::optional<ptree &> child = pt.get_child_optional("specularMap")){
 			mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML(pt.get("specularMap.file","none")));
 		}
-		if(boost::optional<ptree &> child = pt.get_child_optional("shader")){
-			std::vector<std::string > pix;
-			std::vector<std::string > vert;
-			std::vector<std::string > geom;
-			ptree::iterator it;
-			for (it = pt.get_child("shader").begin(); it != pt.get_child("shader").end(); ++it ){
-				std::string shaderType = it->first.data();
-				std::string shaderValue = it->second.data();
-				if(shaderType.compare("pixelShader") == 0){
-					pix.push_back(shaderValue);
-				}else if(shaderType.compare("vertexShader") == 0){
-					vert.push_back(shaderValue);
-				}else{
-					geom.push_back(shaderValue);
-				}
-			}
-			mat->setShaderProgram(pix,vert,geom);
+		if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
+			mat->setShaderProgram(pt.get("shaderProgram.effect","NULL"));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("renderState")){
 			RenderState& renderState = mat->getRenderState();
@@ -415,19 +400,7 @@ namespace XML
 		
 		ShaderProgram* s = mat->getShaderProgram();
 		if(s){
-			std::vector<Shader* >& fragShaders = s->getShaders(FRAGMENT_SHADER);
-			std::vector<Shader* >& vertShaders = s->getShaders(VERTEX_SHADER);
-			std::vector<Shader* >& geomShaders = s->getShaders(GEOMETRY_SHADER);
-			for_each(Shader* s, fragShaders){
-				pt.put("shader.pixelShader",s->getName());
-			}
-			for_each(Shader* s, vertShaders){
-				pt.put("shader.vertexShader",s->getName());
-			}
-			for_each(Shader* s, geomShaders){
-				pt.put("shader.geometryShader",s->getName());
-			}
-
+			pt.put("shaderProgram.effect",s->getName());
 		}
 		RenderState& state = mat->getRenderState();
 		pt.put("renderState.cullingEnabled", state.cullingEnabled());

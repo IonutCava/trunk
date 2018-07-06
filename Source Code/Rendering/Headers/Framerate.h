@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 #endif
 #include <windows.h>
 #elif defined( __APPLE_CC__ ) // Apple OS X
-//??
+///??
 #else //Linux
 #include <sys/time.h> 
 #endif

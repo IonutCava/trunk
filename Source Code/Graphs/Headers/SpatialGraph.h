@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ public:
 
 	~SceneGraph(){
 		_root->unload();
-		delete _root; //Should recursivelly call delete on the entire scene
+		delete _root; ///< Should recursivelly call delete on the entire scene
 		_root = NULL;
 	}
 
@@ -42,6 +42,6 @@ public:
 
 private:
 	SceneGraphNode* _root;
-	//SpatialHierarchyTree _spatialTree; //For HSR
+	//SpatialHierarchyTree _spatialTree; ///< For HSR
 };
 #endif

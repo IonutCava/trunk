@@ -65,12 +65,16 @@ void GFXDevice::setRenderStage(RENDER_STAGE stage){
 }
 
 void GFXDevice::setRenderState(RenderState& state,bool force) {
-	//Memorize the previous rendering state as the current state before changing
-	_previousRenderState = _currentRenderState;
+	if(!_ignoreStates){
+		//Memorize the previous rendering state as the current state before changing
+		_previousRenderState = _currentRenderState;
+	}
 	//Apply the new updates to the state
 	_api.setRenderState(state,force);
-	//Update the current state
-	_currentRenderState = state;
+	if(!_ignoreStates){
+		//Update the current state
+		_currentRenderState = state;
+	}
 }
 
 void GFXDevice::toggleWireframe(bool state){
@@ -126,6 +130,7 @@ void GFXDevice::processRenderQueue(){
 		//Call the rendering interface for the current SceneNode
 		//The stage exclusion mask should do the rest
 		sn->render(sgn); 
+
 		//Unbind current material properties
 		//ToDo: Optimize this!!!! -Ionut
 		switch(getRenderStage()){
@@ -140,16 +145,14 @@ void GFXDevice::processRenderQueue(){
 		releaseObjectState(t);
 		sn->postDraw();
 	}
-	//Unbind all depth maps 
 	if(getRenderStage() == FINAL_STAGE){ 
+		//Unbind all depth maps 
 		LightManager::getInstance().unbindDepthMaps();
-	}
-
-	_drawBBoxes = SceneManager::getInstance().getActiveScene()->drawBBox();
-	if(getRenderStage() == FINAL_STAGE){
 		//Unbind all shaders
 		ShaderManager::getInstance().unbind();
+
 		//Draw all BBoxes
+		_drawBBoxes = SceneManager::getInstance().getActiveScene()->drawBBox();
 		for(U16 i = 0; i < RenderQueue::getInstance().getRenderQueueStackSize(); i++){
 			//Get the current scene node
 			sgn = RenderQueue::getInstance().getItem(i)._node;

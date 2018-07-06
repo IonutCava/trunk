@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -25,12 +25,12 @@ class AudioSensor : public Sensor{
 public: 
 	AudioSensor() : Sensor(AUDIO_SENSOR) {}
 
-	U32  getNearbyEntityCount(U32 range)         {}  //number of smart units nearby     (only noisy ones)
-	U32  getNearbyHostileEntityCount(U32 range)  {}  //lookup hostile entity count in range (only noisy ones)
-	U32  getNearbyFriendlyEntityCount(U32 range) {}  //lookup friendly entity count in range (only noisy ones)
+	U32  getNearbyEntityCount(U32 range)         {}  ///< number of smart units nearby     (only noisy ones)
+	U32  getNearbyHostileEntityCount(U32 range)  {}  ///< lookup hostile entity count in range (only noisy ones)
+	U32  getNearbyFriendlyEntityCount(U32 range) {}  ///< lookup friendly entity count in range (only noisy ones)
 
-	AIEntity* getNearestFriendlyEntity()         {}  //get closest noisy friendly entity
-	AIEntity* getNearestHostileEntity()          {}  //get closest noisy hostile entity
+	AIEntity* getNearestFriendlyEntity()         {}  ///< get closest noisy friendly entity
+	AIEntity* getNearestHostileEntity()          {}  ///< get closest noisy hostile entity
 
 };
 

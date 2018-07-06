@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -22,17 +22,17 @@ class Texture;
 namespace XML
 {
 
-	//Parent Function
+	///Parent Function
 	void loadScripts(const std::string &file);
 
-	//Child Functions
+	///Child Functions
 	void loadConfig(const std::string& file);
 	void loadScene(const std::string& sceneName);
 	void loadGeometry(const std::string& file);
 	void loadTerrain(const std::string& file);
 	Material* loadMaterial(const std::string &file);
 	void dumpMaterial(Material* const mat);
-	//ToDo: ....... Add more
+	///ToDo: ....... Add more
 
 	Material* loadMaterialXML(const std::string &location);
 	Texture*  loadTextureXML(const std::string& textureName);

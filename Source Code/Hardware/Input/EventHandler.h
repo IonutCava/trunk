@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -40,15 +40,15 @@ class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,publi
 
     EventHandler(InputManagerInterface* pApp);
     void initialize(JoystickManager* pJoystickMgr, EffectManager* pEffectMgr);
-	//Keyboard
+	///Keyboard
 	bool keyPressed( const OIS::KeyEvent &arg );
 	bool keyReleased( const OIS::KeyEvent &arg );
-	//Joystick\Gamepad
+	///Joystick\Gamepad
 	bool buttonPressed( const OIS::JoyStickEvent &arg, I8 button );
 	bool buttonReleased( const OIS::JoyStickEvent &arg, I8 button );
 	bool axisMoved( const OIS::JoyStickEvent &arg, I8 axis );
 	bool povMoved( const OIS::JoyStickEvent &arg, I8 pov );
-	//Mouse
+	///Mouse
 	bool mouseMoved( const OIS::MouseEvent &arg );
 	bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 	bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );

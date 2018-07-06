@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -19,9 +19,9 @@
 #define _FRAME_LISTENER_H_
 #include "resource.h"
 
-//As you might of guessed it, it's the same system used in Ogre3D (http://www.ogre3d.org/docs/api/html/OgreFrameListener_8h_source.html)
-//I'm sorry for using it, but it's so simple to implement, I decided to use something that people already know and are comfortable with
-//-Ionut
+///As you might of guessed it, it's the same system used in Ogre3D (http://www.ogre3d.org/docs/api/html/OgreFrameListener_8h_source.html)
+///I'm sorry for using it, but it's so simple to implement, I decided to use something that people already know and are comfortable with
+///-Ionut
 struct FrameEvent{
   F32 _timeSinceLastEvent;
   F32 _timeSinceLastFrame;
@@ -32,8 +32,8 @@ public:
 	FrameListener(const std::string& name){_name = name;}
 
 	virtual ~FrameListener(){}
-	//Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
-	//Implement what you need without filling classes with dummy functions
+	///Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
+	///Implement what you need without filling classes with dummy functions
 	virtual bool frameStarted(const FrameEvent& evt) {return true;}
 	virtual bool frameRenderingQueued(const FrameEvent& evt) {return true;}
 	virtual bool frameEnded(const FrameEvent& evt) {return true;}

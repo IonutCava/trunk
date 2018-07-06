@@ -109,6 +109,7 @@ void SceneNode::clearMaterials(){
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	if(!_material/* || !sgn*/) return;
 	GFXDevice& gfx = GFXDevice::getInstance();
+	gfx.ignoreStateChanges(true);
 	gfx.setRenderState(_material->getRenderState());
 	gfx.setMaterial(_material);
 	ShaderProgram* s = _material->getShaderProgram();
@@ -210,6 +211,7 @@ void SceneNode::releaseMaterial(){
 	if(bumpTexture) bumpTexture->Unbind(2);
 	if(secondTexture) secondTexture->Unbind(1);
 	if(baseTexture) baseTexture->Unbind(0);
+	GFXDevice::getInstance().ignoreStateChanges(false);
 	//_material->getShaderProgram()->unbind();
 }
 

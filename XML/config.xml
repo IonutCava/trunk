@@ -36,4 +36,5 @@
 </rendering>
     
 <title>DIVIDE Framework</title>
-<defaultTextureLocation>../textures/</defaultTextureLocation>
+<defaultTextureLocation>textures</defaultTextureLocation>
+<defaultShadersLocation>shaders</defaultShadersLocation>

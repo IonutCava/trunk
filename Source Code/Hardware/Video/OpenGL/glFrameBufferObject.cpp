@@ -22,13 +22,15 @@ glFrameBufferObject::glFrameBufferObject() : FrameBufferObject() {
 }
 
 void glFrameBufferObject::Destroy() {
-	Unbind();
-	if(!_textureId.empty()){
+	if(_textureType != 0) Unbind();
+	if(!_textureId.empty() && _textureId[0] > 0){
 		GLCheck(glDeleteTextures(_textureId.size(), &_textureId[0]));
 	}
-	GLCheck(glDeleteFramebuffers(1, &_frameBufferHandle));
+	if(_frameBufferHandle > 0){
+		GLCheck(glDeleteFramebuffers(1, &_frameBufferHandle));
+	}
 
-	if(_useDepthBuffer){
+	if(_useDepthBuffer && _depthBufferHandle > 0){
 		GLCheck(glDeleteRenderbuffers(1, &_depthBufferHandle));
 	}
 
@@ -151,7 +153,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_F
 	_useFBO = true;
 	_useDepthBuffer = true;
 	_fboType = type;
-	_textureType = type == FBO_CUBE_COLOR? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+	_textureType = (type == FBO_CUBE_COLOR) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 	U32 textureId;
 
 	if(type == FBO_2D_DEFERRED) //3 textures in one render target

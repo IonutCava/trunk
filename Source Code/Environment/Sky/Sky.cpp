@@ -53,9 +53,21 @@ void Sky::draw() const{
 	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
 	_sky->onDraw();
 	_sun->onDraw();
+
+	GFXDevice::getInstance().ignoreStateChanges(true);
+	RenderState s = GFXDevice::getInstance().getActiveRenderState();
+	s.blendingEnabled() = false;
+	s.cullingEnabled() = false;
+	s.lightingEnabled() = false;
+	GFXDevice::getInstance().setRenderState(s);
+
+
 	if (_drawSky && _drawSun) drawSkyAndSun();
 	if (_drawSky && !_drawSun) drawSky();
 	if (!_drawSky && _drawSun) drawSun();
+
+
+	GFXDevice::getInstance().ignoreStateChanges(false);
 	//Do not process depth test results!
 	GFXDevice::getInstance().clearBuffers(GFXDevice::DEPTH_BUFFER);
 }
@@ -70,10 +82,6 @@ void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool d
 void Sky::drawSkyAndSun() const {
 	_skyNode->getTransform()->setPosition(_eyePos);
 	_skyNode->getTransform()->scaleY(_invert ? -1.0f : 1.0f);
-	GFXDevice::getInstance().ignoreStateChanges(true);
-
-	RenderState s(false,false,false,true);
-	GFXDevice::getInstance().setRenderState(s);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -87,17 +95,12 @@ void Sky::drawSkyAndSun() const {
 	
 	//_skyShader->unbind();
 	_skybox->Unbind(0);
-	GFXDevice::getInstance().ignoreStateChanges(false);
 	
 }
 
 void Sky::drawSky() const {
 	_skyNode->getTransform()->setPosition(_eyePos);
 	_skyNode->getTransform()->scaleY(_invert ? -1.0f : 1.0f);
-	GFXDevice::getInstance().ignoreStateChanges(true);
-
-	RenderState s(false,false,false,true);
-	GFXDevice::getInstance().setRenderState(s);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -112,8 +115,6 @@ void Sky::drawSky() const {
 	//_skyShader->unbind();
 	_skybox->Unbind(0);
 	
-	GFXDevice::getInstance().ignoreStateChanges(false);
-
 }
 
 void Sky::drawSun() const {
@@ -122,16 +123,12 @@ void Sky::drawSun() const {
 		_sun->getMaterial()->setDiffuse(l->getDiffuseColor());
 	}
 	_sunNode->getTransform()->setPosition(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
-	
-	GFXDevice::getInstance().ignoreStateChanges(true);
-	RenderState s(false,false,false,true);
-	GFXDevice::getInstance().setRenderState(s);
+
 
 	GFXDevice::getInstance().setObjectState(_sunNode->getTransform());
 	GFXDevice::getInstance().renderModel(_sun);
 	GFXDevice::getInstance().releaseObjectState(_sunNode->getTransform());
 
-	GFXDevice::getInstance().ignoreStateChanges(false);
 }
 
 

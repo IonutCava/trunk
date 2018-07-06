@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -36,14 +36,14 @@ public:
 	inline LightMap& getLights()      {return _lights;}
 	inline Light*    getLight(U32 id) {return _lights[id];}
 
-	//shadow mapping
+	///shadow mapping
 	void bindDepthMaps();
 	void unbindDepthMaps();
 	bool shadowMappingEnabled();
 	void generateShadowMaps();
-	//since every light has the exact same number of depth maps ...
+	///since every light has the exact same number of depth maps ...
 	I8 getDepthMapPerLightCount();
-	//shadow mapping
+	///shadow mapping
 	void previewDepthMaps();
 private:
 	LightManager();

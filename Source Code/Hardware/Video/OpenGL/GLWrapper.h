@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -103,8 +103,7 @@ private:
 
 	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph);
 private: //OpenGL specific:
-
-	
+	RenderState _stateCache;	
 	U8 _windowId;
 	bool _wireframeRendering;
 

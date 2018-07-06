@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -38,9 +38,9 @@ class Object3D;
 class Framerate;
 
 
-//Rough around the edges Adapter pattern
+///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
-friend class Frustum; //For matrix recovery operations
+friend class Frustum; ///< For matrix recovery operations
 public:
 	void setApi(RenderAPI api);
 	I8  getApi(){return _api.getId(); }
@@ -130,9 +130,9 @@ public:
 	void releaseObjectState(Transform* const transform){_api.releaseObjectState(transform); }
 	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph){return _api.applyCropMatrix(f,sceneGraph); }
 
-	//Generate a cubemap from the given position
-	//It renders the entire scene graph (with culling) as default
-	//use the callback param to override the draw function
+	///Generate a cubemap from the given position
+	///It renders the entire scene graph (with culling) as default
+	///use the callback param to override the draw function
 	void  generateCubeMap(FrameBufferObject& cubeMap, const vec3& pos, boost::function0<void> callback = 0);
 
 public:
@@ -148,12 +148,13 @@ private:
 
 private:
 	GFXDevice() :
-	   _api(GL_API::getInstance()) //Defaulting to OpenGL if no api has been defined
+	   _api(GL_API::getInstance()) ///<Defaulting to OpenGL if no api has been defined
 	   {
 		   _wireframeMode = false;
 		   _prevShaderId = 0;
 		   _prevTextureId = 0;
 		   _deferredRendering = false;
+		   _ignoreStates = false;
 	   }
 	RenderAPIWrapper& _api;
 	bool _wireframeMode;

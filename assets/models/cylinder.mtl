@@ -8,7 +8,7 @@ Ks 0.500000 0.500000 0.500000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd ../textures/diffuse.dds
-map_bump ../textures/normal.tga
+map_Kd diffuse.dds
+map_bump normal.tga
 
 

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -24,8 +24,8 @@
 //#define __gl_h_
 #include <gl/freeglut.h> 
 #ifdef _DEBUG
- //#define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__))
-#define GLCheck(Func) (Func)
+#define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__))
+//#define GLCheck(Func) (Func)
 #else
  #define GLCheck(Func) (Func)
 #endif

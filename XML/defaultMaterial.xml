@@ -39,6 +39,5 @@
 -->
 
 <shader>
-	<pixelShader>lighting_noTexture.frag</pixelShader>
-	<vertexShader>lighting.vert</vertexShader>
+  <effect>lighting.NoTexture</effect>
 </shader>

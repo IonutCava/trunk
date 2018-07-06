@@ -138,8 +138,6 @@ void GL_API::initHardware(){
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib); //How many attributes can we send to a vertex shader
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units); //Maximum number of texture units we can address in shaders
 	//Time to select our shaders.
-	//All shaders, for all detail levels are in stored in the "shaderFolder" subfolder in the assets folder
-	string shaderLocation = par.getParam<string>("shaderFolder")+"/";
 	//We do not support OpenGL version lower than 2.0;
 	if(major < 2){
 		Console::getInstance().errorfn("Your current hardware does not support the OpenGL 2.0 extension set!");
@@ -148,7 +146,7 @@ void GL_API::initHardware(){
 		exit(2);
 	}else if(major == 2){
 		//If we do start a 2.0 context, use only basic shaders
-		shaderLocation += "GLSL/low/";
+		par.setParam("shaderDetailToken",std::string("low"));
 	}else{
 		//OpenGL 3.1 introduced v140 for GLSL, so use a maximum of "medium" shaders
 		//some "high" shaders need v150
@@ -156,11 +154,11 @@ void GL_API::initHardware(){
 			//If settings are set to low, use "low" shaders
 			switch(par.getParam<U8>("detailLevel")){
 				case LOW:
-					shaderLocation += "GLSL/low/";
+					par.setParam("shaderDetailToken",std::string("low"));
 				break;
 				//cap at "medium" level
 				case MEDIUM:
-					shaderLocation += "GLSL/medium/";
+					par.setParam("shaderDetailToken",std::string("medium"));
 				break;
 
 			};
@@ -169,22 +167,19 @@ void GL_API::initHardware(){
 			//Same shader selection based on detail level as above
 			switch(par.getParam<U8>("detailLevel")){
 				case LOW:
-					shaderLocation += "GLSL/low/";
+					par.setParam("shaderDetailToken",std::string("low"));
 				break;
 				case MEDIUM:
-					shaderLocation += "GLSL/medium/";
+					par.setParam("shaderDetailToken",std::string("medium"));
 				break;
 				case HIGH:
-					shaderLocation += "GLSL/high/";
+					par.setParam("shaderDetailToken",std::string("high"));
 				break;
 			};
 		}
 		
 	}
-	//Update full shaderLocation variable to use for loading shaders via the ResourceManager
-	par.setParam("shaderLocation",shaderLocation);
 	//Print all of the OpenGL functionality info to the console
-	Console::getInstance().printfn("Setting default shader location to [ %s ]",shaderLocation.c_str());
 	Console::getInstance().printfn("Max GLSL fragment uniform components supported: %d",max_frag_uniform);
 	Console::getInstance().printfn("Max GLSL fragment varying floats supported: %d",max_varying_floats);
 	Console::getInstance().printfn("Max GLSL vertex uniform components supported: %d",max_vertex_uniform);
@@ -478,16 +473,16 @@ void GL_API::toggleDepthMapRendering(bool state) {
 
 void GL_API::setRenderState(RenderState& state,bool force){
 
-	if(_currentRenderState.blendingEnabled() != state.blendingEnabled() || force){
+	if(_currentRenderState.blendingEnabled() != state.blendingEnabled() || force || _ignoreStates){
 		state.blendingEnabled() ? GLCheck(glEnable(GL_BLEND)) : GLCheck(glDisable(GL_BLEND));
 	}
-	if(_currentRenderState.lightingEnabled() != state.lightingEnabled() || force){
+	if(_currentRenderState.lightingEnabled() != state.lightingEnabled() || force || _ignoreStates){
 		state.lightingEnabled() ? GLCheck(glEnable(GL_LIGHTING)) : GLCheck(glDisable(GL_LIGHTING));
 	}
-	if(_currentRenderState.cullingEnabled() != state.cullingEnabled() || force){
+	if(_currentRenderState.cullingEnabled() != state.cullingEnabled() || force || _ignoreStates){
 		state.cullingEnabled() ?  /*GLCheck(*/glEnable(GL_CULL_FACE)/*)*/ :	/*GLCheck(*/glDisable(GL_CULL_FACE)/*)*/;
 	}
-	if(_currentRenderState.texturesEnabled() != state.texturesEnabled() || force){
+	if(_currentRenderState.texturesEnabled() != state.texturesEnabled() || force || _ignoreStates){
 		state.texturesEnabled() ? GLCheck(glEnable(GL_TEXTURE_2D)) : GLCheck(glDisable(GL_TEXTURE_2D));
 	}
 }
@@ -498,6 +493,7 @@ void GL_API::ignoreStateChanges(bool state){
 	}else{
 		glPopAttrib();
 	}
+	_ignoreStates = state;
 }
 
 void GL_API::setObjectState(Transform* const transform){

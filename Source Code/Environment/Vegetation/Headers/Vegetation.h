@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -50,18 +50,19 @@ public:
 
 private:
 	//variables
-	bool _render, _success ;                      //Toggle vegetation rendering On/Off
+	bool _render; ///< Toggle vegetation rendering On/Off
+	bool _success ; 
 	SceneGraphNode* _terrain;
 	D32 _grassDensity, _treeDensity;
-	U16 _billboardCount;          //Vegetation cumulated density
+	U16 _billboardCount;          ///< Vegetation cumulated density
 	F32 _grassSize,_grassScale, _treeScale;
 	F32 _windX, _windZ, _windS, _time;
-	ImageTools::ImageData _map;  //Dispersion map for vegetation placement
+	ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
 	std::vector<Texture2D*>	_grassBillboards;
 	ShaderProgram*		    _grassShader;
 
-	bool generateTrees();			   //True = Everything OK, False = Error. Check _errorCode
-	bool generateGrass(U32 index);     //index = current grass type (billboard, vbo etc)
+	bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
+	bool generateGrass(U32 index);     ///< index = current grass type (billboard, vbo etc)
 
 	std::vector<VertexBufferObject*>	_grassVBO;
 };

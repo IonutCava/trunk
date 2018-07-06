@@ -5,8 +5,8 @@
 #include "Hardware/Video/GFXDevice.h"
 using namespace std;
 
-bool glTexture::load(const string& name)
-{
+bool glTexture::load(const string& name){
+	Console::getInstance().printfn("Loading Texture File [ %s ]",name.c_str());
 	Gen();
 	if(_handle == 0)	return false;
 
@@ -21,7 +21,7 @@ bool glTexture::load(const string& name)
 	}
 	else {
 		glTexParameterf(_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameterf(_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameterf(_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(_type, GL_GENERATE_MIPMAP, GL_TRUE);
 	}
 	if(_flipped) _img._flip = true;

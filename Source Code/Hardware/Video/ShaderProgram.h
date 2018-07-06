@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -33,13 +33,13 @@ public:
 
 	virtual void attachShader(Shader* shader) = 0;
 	std::vector<Shader* > getShaders(SHADER_TYPE type);
-	//Attributes
+	///Attributes
 	virtual void Attribute(const std::string& ext, D32 value) = 0;
 	virtual void Attribute(const std::string& ext, F32 value) = 0 ;
 	virtual void Attribute(const std::string& ext, const vec2& value) = 0;
 	virtual void Attribute(const std::string& ext, const vec3& value) = 0;
 	virtual void Attribute(const std::string& ext, const vec4& value) = 0;
-	//Uniforms
+	///Uniforms
 	virtual void Uniform(const std::string& ext, I32 value) = 0;
 	virtual void Uniform(const std::string& ext, F32 value) = 0 ;
 	virtual void Uniform(const std::string& ext, const vec2& value) = 0;
@@ -48,7 +48,7 @@ public:
 	virtual void Uniform(const std::string& ext, const mat3& value) = 0;
 	virtual void Uniform(const std::string& ext, const mat4& value) = 0;
 	virtual void Uniform(const std::string& ext, const std::vector<mat4>& values) = 0;
-	//Uniform Texture
+	///Uniform Texture
 	virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
 
 	virtual ~ShaderProgram();

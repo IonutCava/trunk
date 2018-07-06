@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -51,7 +51,7 @@ private:
 	void ComputeIndicesArray(I8 lod, U8 depth, ivec2 pos, ivec2 HMsize);
 
 private:
-	//ToDo: U16 doesn't work for terrain. Find out why. -Ionut
+	///ToDo: U16 doesn't work for terrain. Find out why. -Ionut
 	std::vector<U32> 	_indice[TERRAIN_CHUNKS_LOD];
 	U16					_indOffsetW[TERRAIN_CHUNKS_LOD];
 	U16  				_indOffsetH[TERRAIN_CHUNKS_LOD];

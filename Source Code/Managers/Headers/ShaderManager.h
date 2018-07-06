@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -21,14 +21,19 @@
 
 class Shader;
 class ShaderProgram;
+enum  SHADER_TYPE;
 DEFINE_SINGLETON(ShaderManager)
 public:
 	void removeShader(Shader* s);
-	Shader* loadShader(const std::string& name, const std::string& location);
+	Shader* findShader(const std::string& name);
+	Shader* loadShader(const std::string& name, const std::string& location, SHADER_TYPE type);
+	char*   shaderFileRead(const std::string &atomName, const std::string& location);
+	I8      shaderFileWrite(char *atomName, char *s);
 	bool    unbind();
 
 private:
 	unordered_map<std::string, Shader* > _shaders;
+	unordered_map<std::string, const char* > _atoms;
 	ShaderProgram* _nullShader;
 
 private:

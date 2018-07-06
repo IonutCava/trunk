@@ -1,5 +1,8 @@
 #include "glShader.h"
 #include "glResources.h"
+#include <boost/regex.hpp>
+#include "Managers/Headers/ShaderManager.h"
+#include "Core/Headers/ParamHandler.h"
 
 glShader::glShader(const std::string& name, SHADER_TYPE type) : Shader(name, type){
   switch (type) {
@@ -31,18 +34,18 @@ glShader::~glShader(){
 	glDeleteShader(_shader);
 }
 
-bool glShader::load(const std::string& name){
-	const char* shaderText = shaderFileRead(name);
-	if(shaderText == NULL){
-		Console::getInstance().errorfn("GLSL Manager: Shader [ %s ] not found!",name.c_str());
+bool glShader::load(const std::string& source){
+	if(source.empty()){
+		Console::getInstance().errorfn("GLSL Manager: Shader [ %s ] not found!",getName().c_str());
 		return false;
 	}
-	glShaderSource(_shader, 1, &shaderText, 0);
+	std::string parsedSource = preprocessIncludes(source,getName(),0);
+	ShaderManager::getInstance().shaderFileWrite((char*)(std::string("shaderCache/"+getName()).c_str()),(char*)parsedSource.c_str());
+	const char* c_str = parsedSource.c_str();
+	glShaderSource(_shader, 1, &c_str, 0);
 	glCompileShader(_shader);
 	_compiled = true;
 	validate();
-	delete shaderText;
-	shaderText = NULL;
 	return true;
 }
 
@@ -59,4 +62,56 @@ void glShader::validate() {
 	}else{
 		Console::getInstance().d_printfn("[GLSL Manager] Validating shader [ %s ]: %s", _name.c_str(),buffer);
 	}
+}
+
+std::string glShader::preprocessIncludes( const std::string& source, const std::string& filename, int level /*= 0 */ ){
+
+	if(level > 32){
+		Console::getInstance().errorfn("glShader: Header inclusion depth limit reached, might be caused by cyclic header inclusion");
+	}
+
+	using namespace std;
+
+	static const boost::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+	stringstream input;
+	stringstream output;
+	input << source;
+
+	size_t line_number = 1;
+	boost::smatch matches;
+
+	string line;
+	while(std::getline(input,line))	{
+
+		if (boost::regex_search(line, matches, re))	{
+
+			std::string include_file = matches[1];
+			std::string include_string;
+			std::string loc;
+			if(include_file.find("frag") != string::npos){
+				loc =  "fragmentAtoms";
+			}else if(include_file.find("vert") != string::npos){
+				loc =  "vertexAtoms";
+			}else if(include_file.find("geom") != string::npos){
+				loc =  "geometryAtoms";
+			}else if(include_file.find("tess") != string::npos){
+				loc =  "tessellationAtoms";
+			}
+			ParamHandler& par = ParamHandler::getInstance();
+			include_string = ShaderManager::getInstance().shaderFileRead(include_file,par.getParam<string>("assetsLocation") + "/" + par.getParam<string>("shaderLocation")+"/GLSL/"+loc);
+			if(include_string.empty()){
+				stringstream str;
+				str <<  getName() <<"(" << line_number << ") : fatal error: cannot open include file " << include_file;
+				Console::getInstance().errorfn("glShader: %s",str.str());
+			}
+			output << preprocessIncludes(include_string, include_file, level + 1) << endl;
+		}
+		else
+		{
+			//output << "#line "<< line_number << " \"" << filename << "\""  << endl;
+			output <<  line << endl;
+		}
+		++line_number;
+	}
+	return output.str();
 }

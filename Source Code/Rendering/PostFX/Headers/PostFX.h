@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -34,24 +34,24 @@ public:
 	FrameBufferObject* _screenFBO;
 	FrameBufferObject* _depthFBO;
 
-	// Depth of Field
+	/// Depth of Field
 	FrameBufferObject* _depthOfFieldFBO;
 	FrameBufferObject* _tempDepthOfFieldFBO;
 
-	// Anaglyph
+	/// Anaglyph
 	FrameBufferObject* _anaglyphFBO[2];
 
-	// Bloom
+	/// Bloom
 	FrameBufferObject* _bloomFBO;
 	FrameBufferObject* _tempBloomFBO;
 
-	//SSAO
+	///SSAO
 	FrameBufferObject* _SSAO_FBO;
 
-	// Screen Border
+	/// Screen Border
 	Texture2D*	_screenBorder;
 
-	// Noise
+	/// Noise
 	Texture2D*	_noise;
 	
 	F32 _randomNoiseCoefficient, _randomFlashCoefficient;

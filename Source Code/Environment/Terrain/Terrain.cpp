@@ -63,16 +63,16 @@ bool Terrain::unload(){
 void Terrain::terrainSetParameters(const vec3& pos,const vec2& scale){
 	_terrainHeightScaleFactor = scale.y;
 	terrainScaleFactor = scale.x;
-	//Terrain dimensions:
-	//    |----------------------|        /\						      /\
-	//    |          /\          |         |					         /  \
- 	//    |          |           |         |					    /\__/    \
-	//    |          |           | _terrainHeightScaleFactor  /\   /          \__/\___
-	//    |<-terrainScaleFactor->|         |				 |  --/                   \
-	//    |          |           |         |                /                          \
-	//    |          |           |         |              |-                            \
-	//    |          |           |         \/            /_______________________________\
-	//    |_________\/___________|
+	///Terrain dimensions:
+	///    |----------------------|        /\						      /\
+	///    |          /\          |         |					         /  \
+ 	///    |          |           |         |					    /\__/    \
+	///    |          |           | _terrainHeightScaleFactor  /\   /          \__/\___
+	///    |<-terrainScaleFactor->|         |				 |  --/                   \
+	///    |          |           |         |                /                          \
+	///    |          |           |         |              |-                            \
+	///    |          |           |         \/            /_______________________________\
+	///    |_________\/___________|
 
 	_boundingBox.set(vec3(-pos.x-300, pos.y, -pos.z-300),vec3( pos.x+300, pos.y+40, pos.z+300));
 	_boundingBox.Multiply(vec3(terrainScaleFactor,1,terrainScaleFactor));
@@ -234,7 +234,7 @@ bool Terrain::load(const string& name){
 		getMaterial()->setDiffuse(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		getMaterial()->setSpecular(vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		getMaterial()->setShininess(50.0f);
-		getMaterial()->setShaderProgram("terrain_ground");
+		getMaterial()->setShaderProgram("terrain");
 		Console::getInstance().printfn("Loading Terrain OK");
 	}else{
 		Console::getInstance().errorfn("Loading Terrain NOT OK");
@@ -291,7 +291,7 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 									terrain->getTreeScale(),
 									terrain->getVariable("grassMap"),
 									grass),
-				  "terrain_grass");
+				  "grass");
 	toggleVegetation(true);
 	 _veg->initialize(_grassShader,_name);
 }

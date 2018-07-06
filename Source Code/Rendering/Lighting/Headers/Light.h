@@ -1,4 +1,4 @@
-/*“Copyright 2009-2011 DIVIDE-Studio”*/
+/*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -53,14 +53,14 @@ public:
 	inline LIGHT_TYPE getLightType() {return _type;}
 	inline LightImpostor* getImpostor() {return _impostor;}
 	
-	//SceneNode concrete implementations
+	///SceneNode concrete implementations
 	void onDraw();
 	bool load(const std::string& name);
 	bool unload();
 	void postLoad(SceneGraphNode* const node);	
 	virtual void render(SceneGraphNode* const node);
 
-	//Shadow Mapping (all virtual in case we need to expand each light type. Might do ...:
+	///Shadow Mapping (all virtual in case we need to expand each light type. Might do ...:
 	inline std::vector<FrameBufferObject* >& getDepthMaps() {return _depthMaps;}
 	virtual void generateShadowMaps();
 	virtual void setCameraToSceneView();
@@ -73,7 +73,7 @@ public:
 	virtual void renderFromLightViewSpot(U8 depthPass);
 	virtual void renderFromLightViewDirectional(U8 depthPass);
 
-	//SceneNode test
+	///SceneNode test
 	bool isInView(bool distanceCheck,BoundingBox& boundingBox){return _drawImpostor;}
 
 protected:
@@ -86,15 +86,15 @@ private:
 	U32  _id;
 	F32  _radius;
 	bool _drawImpostor, _castsShadows;
-	LightImpostor* _impostor; //Used for debug rendering -Ionut
+	LightImpostor* _impostor; ///< Used for debug rendering -Ionut
 	SceneGraphNode *_lightSGN, *_impostorSGN;
 	boost::function0<void> _callback;
 
 private: //Shadow Mapping
-	//The 3 depth maps
+	///The 3 depth maps
 	std::vector<FrameBufferObject* > _depthMaps;
 	F32 _resolutionFactor;
-	//Temp variables used for caching data between function calls
+	///Temp variables used for caching data between function calls
 	vec3 _lightPos;
 	vec2 _zPlanes;
 	vec3 _eyePos;

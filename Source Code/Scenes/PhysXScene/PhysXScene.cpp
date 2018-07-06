@@ -15,6 +15,7 @@ void PhysXScene::render(){
 	sky.draw();
 
 	_sceneGraph->render();
+
 }
 //end copy-paste
 
