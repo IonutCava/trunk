@@ -102,7 +102,7 @@ void QuadtreeNode::Destroy(){
 		_terrainChunk = NULL;
 	}
 }
-//ToDo: Change vegetaion rendering and generation! -Ionut
+//ToDo: Change vegetation rendering and generation! -Ionut
 void QuadtreeNode::DrawGrass(){
 	if(!_children) {
 		assert(_terrainChunk);

@@ -54,30 +54,30 @@ void SceneNode::onDraw(){
 
 bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
 	Frustum& frust = Frustum::getInstance();
-	const vec3& eye_pos = CameraManager::getInstance().getActiveCamera()->getEye();
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
-	vec3& center = boundingBox.getCenter();
-	F32   halfExtent = boundingBox.getHalfExtent().length();
-	if(distanceCheck){
-		
-		vec3 vEyeToChunk = center - eye_pos;
+	vec3 center = boundingBox.getCenter();
+	F32 radius = (boundingBox.getMax()-center).length();	
+	F32 halfExtent = boundingBox.getHalfExtent().length();
 
+	if(distanceCheck){
+		vec3 vEyeToChunk = center - frust.getEyePos();
 		if((vEyeToChunk.length() + halfExtent) > activeScene->getGeneralVisibility()){
 			return false;
 		}
 	}
 
-	if(!boundingBox.ContainsPoint(eye_pos))
-	{
-		F32 radius = (boundingBox.getMax()-center).length();
-		switch(frust.ContainsSphere(center, radius)) {
-				case FRUSTUM_OUT: 	
-					return false;
-				
-				case FRUSTUM_INTERSECT:	
-					if(frust.ContainsBoundingBox(boundingBox) == FRUSTUM_OUT)
-						return false;
-			}
+	if(!boundingBox.ContainsPoint(frust.getEyePos())){
+		I8 resSphereInFrustum = frust.ContainsSphere(center, radius);
+		switch(resSphereInFrustum) {
+				case FRUSTUM_OUT: return false;
+				case FRUSTUM_INTERSECT:	{
+					I8 resBoxInFrustum = frust.ContainsBoundingBox(boundingBox);
+					switch(resBoxInFrustum) {
+						case FRUSTUM_OUT: return false;
+								 
+					}
+				}
+		}
 	}
 
 	return true;
@@ -107,7 +107,7 @@ void SceneNode::setMaterial(Material* m){
 		return;
 	}
 	_material = m;
-	_sortKey = (F32)m->getMaterilaId();
+	_sortKey = (F32)m->getMaterialId();
 }
 
 void SceneNode::clearMaterials(){
@@ -118,6 +118,7 @@ void SceneNode::prepareMaterial(){
 	GFXDevice& gfx = GFXDevice::getInstance();
 	if(!_material) return;
 	if(gfx.getDepthMapRendering()) return;
+	GFXDevice::getInstance().setRenderState(_material->getRenderState());
 
 	Shader* s = _material->getShader();
 	Transform* t = getSceneGraphNode()->getTransform();
@@ -184,6 +185,7 @@ void SceneNode::prepareMaterial(){
 void SceneNode::releaseMaterial(){
 	if(!_material) return;
 	if(GFXDevice::getInstance().getDepthMapRendering()) return;
+	GFXDevice::getInstance().restoreRenderState();
 	Texture2D* baseTexture = NULL;
 	Texture2D* bumpTexture = NULL;
 	Texture2D* secondTexture = NULL;

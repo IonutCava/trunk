@@ -42,7 +42,7 @@ void Vegetation::initialize(const string& grassShader,const string& terrainName)
 void Vegetation::draw(bool drawInReflection){
 	if(!_render || !_success) return;
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
-	
+	if(GFXDevice::getInstance().getDepthMapRendering()) return;
 	_windX = activeScene->getWindDirX();
 	_windZ = activeScene->getWindDirZ();
 	_windS = activeScene->getWindSpeed();
@@ -50,8 +50,7 @@ void Vegetation::draw(bool drawInReflection){
 
 	GFXDevice::getInstance().ignoreStateChanges(true);
 
-	RenderState old = GFXDevice::getInstance().getActiveRenderState();
-	RenderState s(old);
+	RenderState s = GFXDevice::getInstance().getActiveRenderState();
 	s.blendingEnabled() = true;
 	s.cullingEnabled() = false;
 	GFXDevice::getInstance().setRenderState(s);
@@ -73,7 +72,6 @@ void Vegetation::draw(bool drawInReflection){
 			_grassBillboards[index]->Unbind(0);
 		}
 	_grassShader->unbind();
-	GFXDevice::getInstance().setRenderState(old);
 	GFXDevice::getInstance().ignoreStateChanges(false);
 	
 }

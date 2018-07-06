@@ -7,6 +7,7 @@
 #include "Terrain/Water.h"
 #include "GUI/GUI.h"
 #include "Rendering/Frustum.h"
+#include "EngineGraphs/RenderQueue.h"
 using namespace std;
 
 bool MainScene::updateLights(){
@@ -38,6 +39,7 @@ void MainScene::preRender(){
 	
 	_GFX.setLightCameraMatrices(lightPos,eye_pos,true);
 	//SHADOW MAPPING
+	
 	_GFX.setDepthMapRendering(true);
 
 	for(U8 i=0; i<2; i++){
@@ -68,27 +70,33 @@ void MainScene::preRender(){
 			renderEnvironment(true,false);
 		_water->getReflectionFBO()->End();
 	}
-	//WATER REFLECTION
-	for(U8 i = 0; i < _visibleTerrains.size(); i++){
-		_visibleTerrains[i]->getMaterial()->setAmbient(_sunColor/1.5f);
-	}
 }
 
 void MainScene::render(){
 	renderEnvironment(false,false);
+	//renderEnvironment(true,false); //water reflection
 }
 
+bool _underwater = false;
 void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
 	_GFX.ignoreStateChanges(true);
+	
 	if(!depthMap){
 		Camera* cam = CameraManager::getInstance().getActiveCamera();
 		if(cam->getEye().y < getWaterLevel()){
 			waterReflection = false;
+			_underwater = true;
 			_paramHandler.setParam("underwater",true);
 		}
 		else{
+			_underwater = false;
 			_paramHandler.setParam("underwater",false);
 		}
+		for(U8 i = 0; i < _visibleTerrains.size(); i++){
+			_visibleTerrains[i]->setRenderingOptions(waterReflection);
+			_visibleTerrains[i]->getMaterial()->setAmbient(_sunColor/1.5f);
+		}
+
 		Sky &sky = Sky::getInstance();
 		sky.setParams(cam->getEye(),vec3(_sunVector),waterReflection,true,true);
 		sky.draw();
@@ -101,9 +109,6 @@ void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
 			
 		}
 		updateLights();
-	}
-	for(U8 i = 0; i < _visibleTerrains.size(); i++){
-		_visibleTerrains[i]->setRenderingOptions(waterReflection);
 	}
 	_waterGraphNode->setActive(!waterReflection && !depthMap);
 	_sceneGraph->render(); //render the rest of the stuff
@@ -145,6 +150,9 @@ void MainScene::processEvents(F32 time){
 
 	if (time - _eventTimers[1] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		
+		GUI::getInstance().modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _underwater ? "true" : "false", getWaterLevel());
+		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", RenderQueue::getInstance().getRenderQueueStackSize());
 		_eventTimers[1] += FpsDisplay;
 
 	}
@@ -154,6 +162,7 @@ void MainScene::processEvents(F32 time){
 		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
 		_eventTimers[2] += TimeDisplay;
 	}
+
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 }
 
@@ -179,6 +188,8 @@ bool MainScene::load(const string& name){
 					if(_waterHeight > tempMin) _waterHeight = tempMin;
 				}
 			}
+		}else{
+			Console::getInstance().errorfn("Could not find terrain [ %s ] in scene graph!", TerrainInfoArray[i]->getVariable("terrainName"));
 		}
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
@@ -252,6 +263,16 @@ bool MainScene::loadResources(bool continueOnErrors){
 								BITMAP_8_BY_13,
 								vec3(0.2f,0.8f,0.2f),
 								"Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",0.0f,0.0f,0.0f);
+	gui.addText("underwater",
+								vec3(60,90,0),
+								BITMAP_8_BY_13,
+								vec3(0.2f,0.8f,0.2f),
+								"Underwater [ %s ] | WaterLevel [%f] ]","false", 0);
+	gui.addText("RenderBinCount",
+								vec3(60,100,0),
+								BITMAP_8_BY_13,
+								vec3(0.6f,0.2f,0.2f),
+								"Number of items in Render Bin: %d",0);
 	_eventTimers.push_back(0.0f); //Sun
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time

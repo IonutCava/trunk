@@ -2,13 +2,13 @@
 <material>
 	<name>sponza.obj-submesh-7_material</name>
 	<ambient r="0" g="0" b="0" a="1"/>
-	<diffuse r="0.7451" g="0.7098" b="0.6745" a="1"/>
+	<diffuse r="0.6275" g="0.5725" b="0.5608" a="1"/>
 	<specular r="0" g="0" b="0" a="1"/>
 	<shininess v="50"/>
 	<emissive r="0" g="0" b="0"/>
 </material>
 <diffuseTexture1>
-	<file>Assets/models/../texturi/..\texturi\sp_luk.png</file>
+	<file>Assets/models/../texturi/..\texturi\KAMEN.png</file>
 	<MapU>CLAMP</MapU>
 	<MapV>CLAMP</MapV>
 	<minFilter>LINEAR</minFilter>
@@ -16,7 +16,7 @@
 	<mipFilter>true</mipFilter>
 </diffuseTexture1>
 <bumpMap>
-	<file>Assets/models/../texturi/..\texturi\sp_luk.png</file>
+	<file>Assets/models/../texturi/..\texturi\KAMEN.png</file>
 	<MapU>CLAMP</MapU>
 	<MapV>CLAMP</MapV>
 	<minFilter>LINEAR</minFilter>

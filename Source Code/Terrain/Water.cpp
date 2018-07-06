@@ -4,7 +4,7 @@
 #include "Managers/SceneManager.h"
 #include "Rendering/Application.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Video/OpenGL/glResources.h"
+#include "EngineGraphs/RenderQueue.h"
 using namespace std;
 
 WaterPlane::WaterPlane() : SceneNode(), _plane(NULL), _texture(NULL), _shader(NULL){
@@ -99,11 +99,17 @@ void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 tr
 	_shader->unbind();
 }
 void WaterPlane::prepareMaterial(){
+	GFXDevice::getInstance().ignoreStateChanges(true);
+	RenderState s = GFXDevice::getInstance().getActiveRenderState();
+	s.blendingEnabled() = true;
+	s.cullingEnabled() = false;
+	GFXDevice::getInstance().setRenderState(s);
 
 }
 
 void WaterPlane::releaseMaterial(){
-
+	GFXDevice::getInstance().ignoreStateChanges(false);	
+	//GFXDevice::getInstance().restoreRenderState();
 }
 
 void WaterPlane::render(SceneGraphNode* node){
@@ -112,7 +118,8 @@ void WaterPlane::render(SceneGraphNode* node){
 	BoundingBox& bb = node->getBoundingBox();
 
 	_planeTransform->setPosition(vec3(eyePos.x,bb.getMax().y,eyePos.z));
-	//bb.Transform(node->getInitialBoundingBox(),_planeTransform->getMatrix());
+	changeSortKey(RenderQueue::getInstance().getRenderQueueStackSize());
+
 
 	_reflectionFBO->Bind(0);
 	_texture->Bind(1);	
@@ -127,17 +134,7 @@ void WaterPlane::render(SceneGraphNode* node){
 		_shader->Uniform("water_bb_max",bb.getMax());
 		_shader->Uniform("lightProjectionMatrix",GFXDevice::getInstance().getLightProjectionMatrix());
 
-			GFXDevice::getInstance().ignoreStateChanges(true);
-			RenderState old = GFXDevice::getInstance().getActiveRenderState();
-			RenderState s(old);
-			s.blendingEnabled() = true;
-			s.cullingEnabled() = false;
-			GFXDevice::getInstance().setRenderState(s);
-
 				GFXDevice::getInstance().drawQuad3D(_planeSGN);
-
-			GFXDevice::getInstance().setRenderState(old);
-			GFXDevice::getInstance().ignoreStateChanges(false);	
 
 	_shader->unbind();
 	_texture->Unbind(1);

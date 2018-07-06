@@ -2,13 +2,13 @@
 <material>
 	<name>sponza.obj-submesh-9_material</name>
 	<ambient r="0" g="0" b="0" a="1"/>
-	<diffuse r="0.8275" g="0.8" b="0.7686" a="1"/>
+	<diffuse r="0.5294" g="0.498" b="0.4902" a="1"/>
 	<specular r="0" g="0" b="0" a="1"/>
 	<shininess v="50"/>
 	<emissive r="0" g="0" b="0"/>
 </material>
 <diffuseTexture1>
-	<file>Assets/models/../texturi/..\texturi\x01_st.png</file>
+	<file>Assets/models/../texturi/..\texturi\reljef.png</file>
 	<MapU>CLAMP</MapU>
 	<MapV>CLAMP</MapV>
 	<minFilter>LINEAR</minFilter>

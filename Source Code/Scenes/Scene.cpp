@@ -202,8 +202,10 @@ bool Scene::unload(){
 	clearEvents();
 	//_inputEvent.get()->stopEvent();
 	//_inputEvent.reset();
-	_aiEvent.get()->stopEvent();
-	_aiEvent.reset();
+	if(_aiEvent.get()){
+		_aiEvent.get()->stopEvent();
+		_aiEvent.reset();
+	}
 	_inputManager.terminate();
 	_inputManager.DestroyInstance();
 	if(_lightTexture != NULL){

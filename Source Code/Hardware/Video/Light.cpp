@@ -69,14 +69,11 @@ void Light::setLightProperties(const std::string& name, vec4 values){
 void Light::render(SceneGraphNode* node){
 	if(_drawImpostor){
 		GFXDevice& gfx = GFXDevice::getInstance();
-		gfx.ignoreStateChanges(true);
-		RenderState old = gfx.getActiveRenderState();
-		RenderState s(old);
+		RenderState s = gfx.getActiveRenderState();
 		s.lightingEnabled() = false;
 		gfx.setRenderState(s);
 		_light->render(node);
-		gfx.setRenderState(old);
-		gfx.ignoreStateChanges(false);
+		gfx.restoreRenderState();
 	}
 }
 

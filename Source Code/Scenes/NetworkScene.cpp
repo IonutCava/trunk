@@ -11,8 +11,6 @@ using namespace std;
 
 void NetworkScene::render()
 {
-	RenderState s(true,true,true,true);
-	_GFX.setRenderState(s);
 
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 

@@ -32,10 +32,9 @@ public:
 	virtual void Begin(U8 nFace=0) const = 0;	
 	virtual void End(U8 nFace=0) const = 0;		
 
-	virtual void Bind(U8 unit=0, U8 texture = 0) const = 0;		
-	virtual void Unbind(U8 unit=0) const = 0;	
+	virtual void Bind(U8 unit=0, U8 texture = 0) = 0;		
+	virtual void Unbind(U8 unit=0) = 0;	
 
-	inline std::vector<U32> getTextureHandle() const	{return _textureId;} 
 	inline U16 getWidth() const			{return _width;}
 	inline U16 getHeight() const		{return _height;}
 	virtual ~FrameBufferObject(){};
@@ -46,6 +45,7 @@ protected:
 protected:
 	bool		_useFBO;
 	bool		_useDepthBuffer;
+	bool        _bound;
 	std::vector<U32>   _textureId;
 	U16		    _width, _height;
 	U32		    _frameBufferHandle;

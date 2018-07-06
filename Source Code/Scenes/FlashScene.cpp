@@ -7,9 +7,6 @@ using namespace std;
 void FlashScene::render()
 {
 	
-	RenderState s(true,true,true,true);
-	_GFX.setRenderState(s);
-
 	_sceneGraph->render();
 }
 

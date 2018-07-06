@@ -34,8 +34,8 @@ class SceneGraph  {
 
 	SceneGraphNode* getRoot(){ return _root; }
 
-	SceneGraphNode* findNode(const std::string& name){
-		return _root->findNode(name);
+	SceneGraphNode* findNode(const std::string& name,bool sceneNodeName = false){
+		return _root->findNode(name,sceneNodeName);
 	}
 	
 	void render();

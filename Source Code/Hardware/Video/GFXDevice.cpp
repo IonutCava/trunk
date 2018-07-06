@@ -75,6 +75,15 @@ void GFXDevice::renderModel(SceneGraphNode* node){
 	};
 }
 
+void GFXDevice::setRenderState(RenderState& state,bool force) {
+	//Memorize the previous rendering state as the current state before changing
+	_previousRenderState = _currentRenderState;
+	//Apply the new updates to the state
+	_api.setRenderState(state,force);
+	//Update the current state
+	_currentRenderState = state;
+}
+
 void GFXDevice::toggleWireframe(bool state){
 	_wireframeMode = !_wireframeMode;
 	_api.toggleWireframe(_wireframeMode);
@@ -83,10 +92,10 @@ void GFXDevice::toggleWireframe(bool state){
 void GFXDevice::processRenderQueue(){
 	//Sort the render queue by the specified key
 	RenderQueue::getInstance().sort();
-
 	//Draw the entire queue;
 	SceneNode* sn = NULL;
 	SceneGraphNode* sgn = NULL;
+
 	for(U16 i = 0; i < RenderQueue::getInstance().getRenderQueueStackSize(); i++){
 		sgn = RenderQueue::getInstance().getItem(i)._node;
 		sn = sgn->getNode();

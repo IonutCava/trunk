@@ -38,7 +38,6 @@ public:
 
 	void Uniform(const std::string& ext, I32 value);
 	void Uniform(const std::string& ext, F32 value);
-	void Uniform(const std::string& ext, bool state);
 	void Uniform(const std::string& ext, const vec2& value);
 	void Uniform(const std::string& ext, const vec3& value);
 	void Uniform(const std::string& ext, const vec4& value);

@@ -256,5 +256,25 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		}//endif
 	}//endif
 
+	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
+	if(result == AI_SUCCESS){
+		string path = tName.data;
+		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		if(img_name.rfind('.') !=  string::npos){
+			string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+			ResourceDescriptor texture(img_name);
+			texture.setResourceLocation(pathName + "../texturi/"+img_name);
+			texture.setFlag(true);
+			tempMaterial->setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+		}//endif
+	}//endif
+	max = 1;
+	I32 two_sided = 0;
+	if((result == aiGetMaterialIntegerArray(source, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided){
+		tempMaterial->setTwoSided(true);
+	}else{
+		tempMaterial->setTwoSided(false);
+	}
+
 	return tempMaterial;
 }

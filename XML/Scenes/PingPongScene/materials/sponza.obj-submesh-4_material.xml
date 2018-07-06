@@ -2,27 +2,19 @@
 <material>
 	<name>sponza.obj-submesh-4_material</name>
 	<ambient r="0" g="0" b="0" a="1"/>
-	<diffuse r="0.7373" g="0.7098" b="0.6706" a="1"/>
+	<diffuse r="0.8" g="0.7843" b="0.749" a="1"/>
 	<specular r="0" g="0" b="0" a="1"/>
 	<shininess v="50"/>
 	<emissive r="0" g="0" b="0"/>
 </material>
 <diffuseTexture1>
-	<file>Assets/models/../texturi/..\texturi\01_STUB.png</file>
+	<file>Assets/models/../texturi/..\texturi\01_S_ba.png</file>
 	<MapU>CLAMP</MapU>
 	<MapV>CLAMP</MapV>
 	<minFilter>LINEAR</minFilter>
 	<magFilter>LINEAR</magFilter>
 	<mipFilter>true</mipFilter>
 </diffuseTexture1>
-<bumpMap>
-	<file>Assets/models/../texturi/..\texturi\01_STUB.png</file>
-	<MapU>CLAMP</MapU>
-	<MapV>CLAMP</MapV>
-	<minFilter>LINEAR</minFilter>
-	<magFilter>LINEAR</magFilter>
-	<mipFilter>true</mipFilter>
-</bumpMap>
 <shader>
 	<pixelShader>lighting.frag</pixelShader>
 	<vertexShader>lighting.vert</vertexShader>

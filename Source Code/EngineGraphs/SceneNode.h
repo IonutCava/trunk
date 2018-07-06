@@ -60,6 +60,7 @@ public:
 	inline  void    updateSceneGraphNode()   {_updateSceneGraphNode = true;}
 	virtual void    createCopy();
 	virtual void    removeCopy();
+	virtual void    changeSortKey(F32 key) {_sortKey = key;}
 private:
 	
 	Material*	_material;				   

@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
-				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

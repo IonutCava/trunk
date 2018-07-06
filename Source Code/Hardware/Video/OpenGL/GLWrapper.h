@@ -27,12 +27,9 @@
 #include "glPixelBufferObject.h"
 #include "glShader.h"
 #include "glTexture.h"
-#define CHECK_OPENGL_ERROR( cmd ) \
-	cmd; \
-	 { GLenum  error; \
-		 while ( (error = glGetError()) != GL_NO_ERROR) { \
-			 Console::getInstance().errorfn( "[%s:%d] '%s' failed with error %s", __FILE__, __LINE__, #cmd, gluErrorString(error) ); \
-		 }}
+
+
+void GLCheckError(const std::string& File, unsigned int Line);
 
 DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
 	typedef unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
@@ -97,7 +94,7 @@ private:
 
 	void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax);
 
-	void setRenderState(RenderState& state);
+	void setRenderState(RenderState& state,bool force = false);
 	void ignoreStateChanges(bool state);
 
 	void setDepthMapRendering(bool state);

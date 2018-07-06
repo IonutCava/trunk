@@ -134,22 +134,37 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* node,const std::string& name)
 	return sceneGraphNode;
 }
 
-SceneGraphNode* SceneGraphNode::findNode(const std::string& name){
-	if(_node->getName().compare(name) == 0){ //if the current node is what we are looking for, return it
-		return this;
-	}else{ //else, check the immediat children if they match
-		NodeChildren::iterator findResult = _children.find(name);
-		if(findResult != _children.end()){
-			return findResult->second;
-		}else{ //else, for each child, check it's children
-			for_each(NodeChildren::value_type it, _children){
-				SceneGraphNode* result = it.second->findNode(name);
-				if(result) return result;
+SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNodeName){
+	SceneGraphNode* returnValue = NULL;
+	 //make sure a name existes
+	if (!name.empty()){
+		//check if it is the name we are looking for
+		if(sceneNodeName){
+			if (_node->getName().compare(name) == 0){
+				// We got the node!
+				return this;
+			}
+		}else{
+			if (getName().compare(name) == 0){
+				// We got the node!
+				return this;
+			}
+		}
 
+		//check all children
+		for_each(NodeChildren::value_type& it, _children){
+			returnValue = it.second->findNode(name);
+				if(returnValue != NULL){
+					// if it is not NULL it is the node we are looking for
+					// so just pass it through
+					return returnValue;
 			}
 		}
 	}
-	return NULL; //finally ... return nothing
+	
+    // no children's name matches or there are no more childs
+    // so return NULL, indicating that the node was not found yet
+    return NULL;
 }
 
 void SceneGraphNode::updateTransformsAndBounds(){
@@ -192,7 +207,8 @@ void SceneGraphNode::updateVisualInformation(){
 		if(!_sceneGraph){
 			_sceneGraph = curentScene->getSceneGraph();
 		}
-		if(_node->isInView(true,_boundingBox)){
+		_inView = _node->isInView(true,getBoundingBox());
+		if(_inView){
 			_inView = (curentScene->drawObjects() && _node->getRenderState());
 		}
 

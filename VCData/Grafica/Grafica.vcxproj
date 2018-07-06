@@ -58,7 +58,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include;$(EngineLibraries)\physx\include\PhysXLoader;$(EngineLibraries)\physx\include\Physics;$(EngineLibraries)\physx\include\NxCharacter;$(EngineLibraries)\physx\include\Foundation;$(EngineLibraries)\physx\include\Cooking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>

@@ -24,5 +24,10 @@
 //#include <gl/gl3.h>
 //#define __gl_h_
 #include <gl/freeglut.h> 
+#ifdef _DEBUG
+ #define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__))
+#else
+ #define GLCheck(Func) (Func)
+#endif
 
 #endif

@@ -44,7 +44,6 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, cons
 					_atacaMingea = false;
 				}
 			}else{
-				Console::getInstance().printfn("Mingea spre echipa 1 si entitatea: %s" , _entity->getName().c_str());
 				if(_entity->getTeamID() == 1){
 					_atacaMingea = true;
 				}else{

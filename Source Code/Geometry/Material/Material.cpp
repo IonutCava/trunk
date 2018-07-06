@@ -13,7 +13,9 @@ Material::Material() : Resource(),
 					   _materialMatrix(_ambient,_diffuse,_specular,vec4(_shininess,_emissive.x,_emissive.y,_emissive.z)),
 					   _shader(NULL),
 					   _computedLightShaders(false),
-					   _dirty(false)
+					   _dirty(false),
+					   _twoSided(false),
+					   _state(New RenderState())
 {
    _textures[TEXTURE_BASE] = NULL;
    _textures[TEXTURE_BUMP] = NULL;
@@ -25,6 +27,7 @@ Material::Material() : Resource(),
 
 
 Material::~Material(){
+	delete _state;
 }
 
 void Material::removeCopy(){
@@ -118,4 +121,8 @@ bool Material::unload(){
 void Material::dumpToXML(){
 	XML::dumpMaterial(this);
 	_dirty = false;
+}
+
+void Material::setTwoSided(bool state) {
+	state ? _state->cullingEnabled() = false : _state->cullingEnabled() = true;
 }

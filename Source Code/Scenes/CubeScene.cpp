@@ -129,7 +129,7 @@ bool CubeScene::load(const string& name)
 {
 	bool state = false;
 	state = loadResources(true);	
-	return state;
+	return loadEvents(true);
 }
 
 bool CubeScene::loadResources(bool continueOnErrors)

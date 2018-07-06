@@ -95,9 +95,6 @@ public:
     inline bool wireframeRendering() {return _wireframeMode;}  
 	void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax){_api.Screenshot(filename,xmin,ymin,xmax,ymax);}
 
-    inline void setRenderState(RenderState& state) {_state = state; _api.setRenderState(state);}
-    inline void ignoreStateChanges(bool state) {_api.ignoreStateChanges(state);}
-
 	inline void setPrevShaderId(const U32& id) {_prevShaderId = id;}
 	inline const U32& getPrevShaderId() {return _prevShaderId;}
 
@@ -109,6 +106,18 @@ public:
 
 
 	void processRenderQueue();
+
+
+    void setRenderState(RenderState& state,bool force = false);
+	inline void restoreRenderState() {
+		_api.setRenderState(_previousRenderState);
+		
+	}
+
+    inline void ignoreStateChanges(bool state) {
+		_api.ignoreStateChanges(state);
+	}
+
 public:
 	enum BufferType
 	{

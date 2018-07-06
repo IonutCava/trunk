@@ -23,7 +23,7 @@
 class Shader;
 class Texture;
 typedef Texture Texture2D;
-
+class RenderState;
 class Material : public Resource{
 
 public:
@@ -46,7 +46,8 @@ public:
   inline bool            isDirty() {return _dirty;}
   void setTexture(TextureUsage textureUsage, Texture2D* texture);
   void setShader(const std::string& shader);
-
+  void setTwoSided(bool state);
+  RenderState& getRenderState() const {return *_state;}
   void setAmbient(const vec4& value) {_ambient = value; _materialMatrix.setCol(0,value);}
   void setDiffuse(const vec4& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
   void setSpecular(const vec4& value) {_specular = value; _materialMatrix.setCol(2,value);}
@@ -54,7 +55,7 @@ public:
   void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
 
   inline mat4& getMaterialMatrix() {return _materialMatrix;}
-  inline U8    getMaterilaId()     {return _matId;}
+  inline U8    getMaterialId()     {return _matId;}
   void computeLightShaders(); //Set shaders;
   void createCopy();
   void removeCopy();
@@ -72,6 +73,8 @@ private:
   bool _computedLightShaders;
   U8   _matId;
   bool _dirty;
+  bool _twoSided;
+  RenderState* _state;
 };
 
 #endif

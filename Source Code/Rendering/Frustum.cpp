@@ -48,7 +48,7 @@ I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const
 							vec3(max.x, max.y, max.z)};
 	I32 iTotalIn = 0;
 
-	for(I32 p=0; p<6; p++)
+	for(I8 p=0; p<6; p++)
 	{
 		I32 iInCount = 8;
 		I32 iPtIn = 1;

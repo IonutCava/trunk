@@ -33,6 +33,7 @@ public:
 private:
 	RenderQueue() {
 		_renderQueue.reserve(750);
+		_order = RenderingOrder::BACK_TO_FRONT;
 	}
 	boost::mutex _renderQueueMutex; 
 	RenderQueueStack _renderQueue;

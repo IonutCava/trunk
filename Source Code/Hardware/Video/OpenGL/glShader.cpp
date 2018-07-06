@@ -84,27 +84,22 @@ glShader::glShader(const char *vsFile, const char *fsFile)  : Shader(), _loaded(
     init(vsFile, fsFile);
 }
 
-bool glShader::loadFragOnly(const string& name)
-{
+bool glShader::loadFragOnly(const string& name){
 	init("none",name.c_str());
 	return true;
 }
 
-bool glShader::loadVertOnly(const string& name)
-{
+bool glShader::loadVertOnly(const string& name){
 	init(name.c_str(),"none");
 	return true;
 }
 
 bool glShader::load(const string& name){
 
-	if(!_loaded)
-	{
-		if(name.length() >= 6)
-		{
+	if(!_loaded){
+		if(name.length() >= 6){
 			size_t pos = name.find(",");
-			if(pos != string::npos)
-			{
+			if(pos != string::npos){
 				string shaderFile1 = name.substr(0, pos);
 				string shaderFile2 = name.substr(pos+1, name.length());
 				string extension1(shaderFile1.substr(shaderFile1.length()- 5, shaderFile1.length()));
@@ -114,18 +109,14 @@ bool glShader::load(const string& name){
 					init(shaderFile2,shaderFile1);
 					_fragName = shaderFile1;
 					_vertName = shaderFile2;
-				}
-				else if(extension1.compare(".vert") == 0 && extension2.compare(".frag") == 0){
+				}else if(extension1.compare(".vert") == 0 && extension2.compare(".frag") == 0){
 					init(shaderFile1,shaderFile2);
 					_fragName = shaderFile2;
 					_vertName = shaderFile1;
-				}
-				else{
+				}else{
 					Console::getInstance().errorfn("GLSL: could not load shaders: %s",name.c_str());
 				}
-			}
-			else
-			{
+			}else{
 				string extension(name.substr(name.length()- 5, name.length()));
 				if(extension.compare(".frag") == 0) {
 					_fragName = name;
@@ -147,9 +138,9 @@ bool glShader::load(const string& name){
 				}
 			
 			}
-		}
-		else
+		}else{
 			init(name+".vert",name+".frag");
+		}
 
 		_loaded = true;
 	}
@@ -171,12 +162,10 @@ void glShader::init(const string &vsFile, const string &fsFile) {
 	if(!useVert && useFrag)
 		Console::getInstance().printfn("GLSL Manager: Loading shaders %s.",fsFile.c_str());
 	_shaderId = glCreateProgram();
-	if(useVert)
-	{
+	if(useVert){
 		_shaderVP = glCreateShader(GL_VERTEX_SHADER);
 		const char* vsText = shaderFileRead(vsFile);
-		if(vsText == NULL)
-		{
+		if(vsText == NULL){
 			Console::getInstance().errorfn("GLSL Manager: Vertex shader [ %s ] not found!",vsFile.c_str());
 			return;
 		}
@@ -187,8 +176,7 @@ void glShader::init(const string &vsFile, const string &fsFile) {
 		delete vsText;
 		vsText = NULL;
 	}
-	if(useFrag)
-	{
+	if(useFrag)	{
 		_shaderFP = glCreateShader(GL_FRAGMENT_SHADER);
 		const char* fsText = shaderFileRead(fsFile);
 		if(fsText == NULL)
@@ -233,54 +221,40 @@ void glShader::unbind() {
 	_bound = false;
 }
 
-void glShader::UniformTexture(const string& ext, U16 slot)
-{
+void glShader::UniformTexture(const string& ext, U16 slot){
 	glActiveTexture(GL_TEXTURE0+slot);
 	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), slot);
 }
 
-void glShader::Uniform(const string& ext, I32 value)
-{
+void glShader::Uniform(const string& ext, I32 value){
 	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), value);
 }
 
-void glShader::Uniform(const string& ext, bool state)
-{
-	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), state ? 1 : 0);
-}
-
-void glShader::Uniform(const string& ext, F32 value)
-{
+void glShader::Uniform(const string& ext, F32 value){
 	glUniform1f(glGetUniformLocation(_shaderId, ext.c_str()), value);
 }
 
-void glShader::Uniform(const string& ext, const vec2& value)
-{
+void glShader::Uniform(const string& ext, const vec2& value){
 	glUniform2fv(glGetUniformLocation(_shaderId, ext.c_str()), 1, value);
 }
 
-void glShader::Uniform(const string& ext, const vec3& value)
-{
+void glShader::Uniform(const string& ext, const vec3& value){
 	glUniform3fv(glGetUniformLocation(_shaderId, ext.c_str()), 1, value);
 }
 
-void glShader::Uniform(const string& ext, const vec4& value)
-{
+void glShader::Uniform(const string& ext, const vec4& value){
 	glUniform4fv(glGetUniformLocation(_shaderId, ext.c_str()), 1, value);
 }
 
-void glShader::Uniform(const std::string& ext, const mat3& value)
-{
+void glShader::Uniform(const std::string& ext, const mat3& value){
 	glUniformMatrix3fv(glGetUniformLocation(_shaderId, ext.c_str()), 1,false, value);
 }
 
-void glShader::Uniform(const std::string& ext, const mat4& value)
-{
+void glShader::Uniform(const std::string& ext, const mat4& value){
 	glUniformMatrix4fv(glGetUniformLocation(_shaderId, ext.c_str()), 1,false, value);
 }
 
 //For old shaders (v1.0) -Ionut
-void glShader::Uniform(I32 location, const vec4& value)
-{
+void glShader::Uniform(I32 location, const vec4& value){
 	glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, location, value);
 }

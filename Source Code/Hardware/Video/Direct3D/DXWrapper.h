@@ -82,7 +82,7 @@ private:
 
 	void toggleWireframe(bool state);
 	void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax);
-	void setRenderState(RenderState& state){}
+	void setRenderState(RenderState& state,bool force = false){}
 	void ignoreStateChanges(bool state){}
 
 	void setDepthMapRendering(bool state){};

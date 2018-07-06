@@ -65,7 +65,7 @@ public:
 	void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
 	void initializeVegetation(TerrainDescriptor* terrain);
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
-	void setRenderingOptions(bool drawInReflection){_drawInReflection = drawInReflection;}
+	inline void setRenderingOptions(bool drawInReflection){_drawInReflection = drawInReflection;}
 	bool computeBoundingBox(SceneGraphNode* node);
 	bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
 private:

@@ -13,10 +13,10 @@
 </wind>
 
 <water>
-	<waterLevel>15</waterLevel>
+	<waterLevel>25</waterLevel>
 	<waterDepth>500</waterDepth>
 </water>
 
 <options>
-	<visibility>80</visibility>
+	<visibility>700</visibility>
 </options>

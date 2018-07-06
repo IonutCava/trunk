@@ -12,7 +12,7 @@
 #include "Sky.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Geometry/Predefined/Quad3D.h"
-
+#include "EngineGraphs/RenderQueue.h"
 #define COORD(x,y,w)	((y)*(w)+(x))
 
 Terrain::Terrain() : SceneNode(){
@@ -290,13 +290,13 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 }
 
 void Terrain::prepareMaterial(){
+
 }
 
 void Terrain::releaseMaterial(){
 }
 
 void Terrain::render(SceneGraphNode* node){
-	
 	if(!GFXDevice::getInstance().getDepthMapRendering()){
 
 		Shader* terrainShader = getMaterial()->getShader();
@@ -307,7 +307,7 @@ void Terrain::render(SceneGraphNode* node){
 		_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
 		_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
 		if(_alphaTexturePresent) _terrainTextures[5]->Bind(6); //AlphaMap: Alpha
-
+		changeSortKey(-1);
 		terrainShader->bind();
 
 			terrainShader->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());

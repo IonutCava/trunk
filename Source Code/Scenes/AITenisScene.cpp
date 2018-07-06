@@ -7,7 +7,7 @@
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Sphere3D.h"
 #include "AITenisSceneAIActionList.h"
-
+#include "EngineGraphs/RenderQueue.h"
 using namespace std;
 
 //begin copy-paste: randarea scenei
@@ -47,7 +47,7 @@ void AITenisScene::preRender(){
 	
 	_GFX.setLightCameraMatrices(lightPos,eye_pos,true);
 	//SHADOW MAPPING
-	_GFX.setDepthMapRendering(true);
+	/*_GFX.setDepthMapRendering(true);
 
 	for(U8 i=0; i<2; i++){
 		_GFX.setOrthoProjection(vec4(-tabOrtho[i], tabOrtho[i], -tabOrtho[i], tabOrtho[i]),zPlanes);
@@ -67,15 +67,15 @@ void AITenisScene::preRender(){
 	_GFX.restoreLightCameraMatrices(true);
 	
 	Frustum::getInstance().Extract(eye_pos);
-	
+	*/
 }
 //<<end copy-paste
 
 void AITenisScene::processEvents(F32 time){
 	F32 FpsDisplay = 0.3f;
-	if (time - _eventTimers[0] >= FpsDisplay)
-	{
+	if (time - _eventTimers[0] >= FpsDisplay){
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", RenderQueue::getInstance().getRenderQueueStackSize());
 		_eventTimers[0] += FpsDisplay;
 	}
 }
@@ -266,10 +266,10 @@ bool AITenisScene::load(const string& name){
 	//Incarcam resursele scenei
 	state = loadResources(true);	
 	
-	_depthMap[0] =_GFX.newFBO();
-	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
-	_depthMap[1] = _GFX.newFBO();
-	_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
+	//_depthMap[0] =_GFX.newFBO();
+	//_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
+	//_depthMap[1] = _GFX.newFBO();
+	//_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	//Pozitionam camera
 	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(45));
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
@@ -354,6 +354,11 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 							   BITMAP_8_BY_13,    //Font
 							   vec3(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
+	GUI::getInstance().addText("RenderBinCount",
+								vec3(60,70,0),
+								BITMAP_8_BY_13,
+								vec3(0.6f,0.2f,0.2f),
+								"Number of items in Render Bin: %d",0);
 
 	
 	_eventTimers.push_back(0.0f); //Fps

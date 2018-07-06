@@ -3,18 +3,10 @@
 	<name>gardulet.obj-submesh-0_material</name>
 	<ambient r="0" g="0" b="0" a="1"/>
 	<diffuse r="1" g="1" b="1" a="1"/>
-	<specular r="0" g="0" b="0" a="1"/>
+	<specular r="0.297" g="0.297" b="0.297" a="1"/>
 	<shininess v="50"/>
 	<emissive r="0" g="0" b="0"/>
 </material>
-<diffuseTexture1>
-	<file>Assets/models/../texturi/..\texturi\gard.tga</file>
-	<MapU>CLAMP</MapU>
-	<MapV>CLAMP</MapV>
-	<minFilter>LINEAR</minFilter>
-	<magFilter>LINEAR</magFilter>
-	<mipFilter>true</mipFilter>
-</diffuseTexture1>
 <shader>
 	<pixelShader>lighting.frag</pixelShader>
 	<vertexShader>lighting.vert</vertexShader>

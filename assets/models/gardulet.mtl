@@ -1,5 +1,5 @@
 # 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# File Created: 21.01.2011 16:25:04
+# File Created: 21.01.2012 16:06:49
 
 newmtl MatD3D26
 	Ns 0.0000
@@ -10,9 +10,11 @@ newmtl MatD3D26
 	illum 2
 	Ka 0.0000 0.0000 0.0000
 	Kd 1.0000 1.0000 1.0000
-	Ks 0.0000 0.0000 0.0000
+	Ks 0.2970 0.2970 0.2970
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\gard.png
+	map_Ka C:\Users\k1ngp1n\Desktop\Divide-Framework\assets\texturi\gard.png
+	map_Kd C:\Users\k1ngp1n\Desktop\Divide-Framework\assets\texturi\gard.png
+	map_d C:\Users\k1ngp1n\Desktop\Divide-Framework\assets\texturi\gard_alpha.png
 
 newmtl MatD3D27
 	Ns 0.0000
@@ -38,7 +40,7 @@ newmtl MatD3D28
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
 
-newmtl MatD3D29
+newmtl MatD3D30
 	Ns 0.0000
 	Ni 1.5000
 	d 1.0000
@@ -50,7 +52,7 @@ newmtl MatD3D29
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
 
-newmtl MatD3D30
+newmtl MatD3D29
 	Ns 0.0000
 	Ni 1.5000
 	d 1.0000

@@ -32,6 +32,11 @@ public:
 									   _lighting(enableLighting),
 		                               _textures(enableTextures),
 									   _enabled(true){}
+	RenderState() : _culling(true),
+					_blend(false),
+					_lighting(false),
+		            _textures(true),
+					_enabled(true){}
 
 	bool& cullingEnabled()  {return _culling;  }
 	bool& blendingEnabled() {return _blend;    }
@@ -109,7 +114,7 @@ class RenderAPIWrapper
 {
 
 protected:
-	RenderAPIWrapper() : _state(RenderState(true,true,true,true)) {}
+	RenderAPIWrapper() {}
 
 	friend class GFXDevice;
 	
@@ -188,15 +193,13 @@ protected:
 
 public: //RenderAPIWrapper global
 	
-	//void setRenderState(RenderState& state){_state = state; }
-	virtual void setRenderState(RenderState& state) = 0;
-	RenderState& getActiveRenderState() {return _state;}
+	virtual void setRenderState(RenderState& state,bool force = false) = 0;
+	RenderState& getActiveRenderState() {return _currentRenderState;}
 
 private:
 	RenderAPI _apiId;
 protected:
-	RenderState _state;
-
+	RenderState _defaultRenderState, _currentRenderState, _previousRenderState;
 };
 
 #endif

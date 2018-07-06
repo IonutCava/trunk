@@ -34,16 +34,13 @@ float ShadowMapping();
 vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParallax);
 vec4 ReliefMapping(vec2 uv);
 vec4 CausticsColor();
-float CausticsAlpha();
 bool isUnderWater();
 
 void main (void)
 {
 	// Discard the fragments that are underwater when drawing in reflection
-	if(water_reflection_rendering){
-		if(isUnderWater()){
-			discard;
-		}
+	if(water_reflection_rendering && isUnderWater()){
+		discard;
 	}
 	
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN;
@@ -51,19 +48,13 @@ void main (void)
 	gl_FragColor = NormalMapping(gl_TexCoord[0].st, vPixToEyeTBN, vPixToLightTBNcurrent, false);
 	
 	if(isUnderWater()) {
-		float alpha = CausticsAlpha();
+		float alpha = (water_height - vPosition.y) / (2*(water_height - bbox_min.y));
 		gl_FragColor = (1-alpha) * gl_FragColor + alpha * CausticsColor();
 	}
 }
 
-bool isUnderWater()
-{
-	return (vPosition.y < water_height);
-}
-
-float CausticsAlpha()
-{
-	return (water_height - vPosition.y) / (2*(water_height - bbox_min.y));
+bool isUnderWater(){
+	return vPosition.y < water_height;
 }
 
 vec4 CausticsColor()
@@ -95,8 +86,6 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 	vec3 normalTBN = texture2D(texNormalHeightMap, uv_detail).rgb * 2.0 - 1.0;
 	normalTBN = normalize(normalTBN);
 	
-//// ECLAIRAGE :
-	// Couleur diffuse
 	vec4 tBase[3];
 	vec4 alpha;
 	tBase[0] = texture2D(texDiffuse0, uv_diffuse);
@@ -108,7 +97,7 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 	vec4 DiffuseMap = texture2D(texDiffuseMap, uv);
 	
 	vec4 cBase;
-	// Calcul du la couleur :
+
 	if(vPosition.y < water_height)
 		cBase = tBase[0];
 	else {

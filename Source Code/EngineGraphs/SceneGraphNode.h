@@ -63,7 +63,9 @@ template<class T>
 inline SceneNode*             getNode() {return _node;}
        SceneGraphNode*        addNode(SceneNode* node,const std::string& name = "");
 	   void			          removeNode(SceneNode* node);
-	   SceneGraphNode*        findNode(const std::string& name);
+	   //Find a node in the graph based on the SceneGraphNode's name
+	   //If sceneNodeName = true, find a node in the graph based on the SceneNode's name
+	   SceneGraphNode*        findNode(const std::string& name, bool sceneNodeName = false);
 const  std::string&           getName(){return _name;}
 /*Node Management*/
 

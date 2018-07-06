@@ -8,8 +8,16 @@ struct RenderQueueKeyCompare{
 
 
 void RenderQueue::sort(){
-	if(_order == RenderingOrder::NONE) return;
-	std::sort( _renderQueue.begin(), _renderQueue.end(), RenderQueueKeyCompare() );
+	switch(_order){
+		case RenderingOrder::NONE:
+			return;
+		case RenderingOrder::BACK_TO_FRONT:
+		case RenderingOrder::FRONT_TO_BACK:
+		case RenderingOrder::BY_STATE:
+		default:
+			std::sort( _renderQueue.begin(), _renderQueue.end(), RenderQueueKeyCompare() );
+			break;
+	}
 }
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* node){

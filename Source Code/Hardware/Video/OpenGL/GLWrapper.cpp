@@ -1,5 +1,4 @@
 #include "glResources.h"
-
 #include "GLWrapper.h"
 #include "Rendering/Application.h"
 #include "Rendering/Frustum.h"
@@ -18,7 +17,77 @@
 using namespace std;
 
 #define USE_FREEGLUT
+void GLCheckError(const std::string& File, unsigned int Line)
+{
+    // Get the last error
+    GLenum ErrorCode = glGetError();
 
+    if (ErrorCode != GL_NO_ERROR)
+    {
+        std::string Error = "unknown error";
+        std::string Desc  = "no description";
+
+        // Decode the error code
+        switch (ErrorCode)
+        {
+            case GL_INVALID_ENUM :
+            {
+                Error = "GL_INVALID_ENUM";
+                Desc  = "an unacceptable value has been specified for an enumerated argument";
+                break;
+            }
+
+            case GL_INVALID_VALUE :
+            {
+                Error = "GL_INVALID_VALUE";
+                Desc  = "a numeric argument is out of range";
+                break;
+            }
+
+            case GL_INVALID_OPERATION :
+            {
+                Error = "GL_INVALID_OPERATION";
+                Desc  = "the specified operation is not allowed in the current state";
+                break;
+            }
+
+            case GL_STACK_OVERFLOW :
+            {
+                Error = "GL_STACK_OVERFLOW";
+                Desc  = "this command would cause a stack overflow";
+                break;
+            }
+
+            case GL_STACK_UNDERFLOW :
+            {
+                Error = "GL_STACK_UNDERFLOW";
+                Desc  = "this command would cause a stack underflow";
+                break;
+            }
+
+            case GL_OUT_OF_MEMORY :
+            {
+                Error = "GL_OUT_OF_MEMORY";
+                Desc  = "there is not enough memory left to execute the command";
+                break;
+            }
+
+            case GL_INVALID_FRAMEBUFFER_OPERATION_EXT :
+            {
+                Error = "GL_INVALID_FRAMEBUFFER_OPERATION_EXT";
+                Desc  = "the object bound to FRAMEBUFFER_BINDING_EXT is not \"framebuffer complete\"";
+                break;
+            }
+        }
+
+		
+		std::stringstream ss;
+        ss << File.substr(File.find_last_of("\\/") + 1) << " (" << Line << ") : "
+           << Error << ", " 
+		   << Desc;
+        Console::getInstance().errorfn("An internal OpenGL call failed: [ %s ]", ss.str().c_str());
+    }
+}
 void resizeWindowCallback(I32 w, I32 h){
 	GUI::getInstance().onResize(w,h);
 	GFXDevice::getInstance().resizeWindow(w,h);
@@ -70,8 +139,6 @@ void GL_API::initHardware(){
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL); 
 	glShadeModel(GL_SMOOTH);
-	RenderState s(true,false,false,true);
-	setRenderState(s);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
@@ -82,6 +149,11 @@ void GL_API::initHardware(){
 	glutReshapeFunc(resizeWindowCallback);
 	glutDisplayFunc(Application::getInstance().DrawSceneStatic);
 	glutIdleFunc(Application::getInstance().Idle);
+	_defaultRenderState.cullingEnabled() = true;
+	_defaultRenderState.blendingEnabled() = false;
+	_defaultRenderState.lightingEnabled() = false;
+	_defaultRenderState.texturesEnabled() = true;
+	GFXDevice::getInstance().setRenderState(_defaultRenderState,true);
 	Console::getInstance().printfn("OpenGL rendering system initialized!");
 /*
 	int (*SwapInterval)(int);
@@ -342,26 +414,35 @@ void GL_API::drawButton(Button* b)
 void GL_API::setDepthMapRendering(bool state) {
 	if(state){
 		//glCullFace(GL_FRONT);
-		if(_state.lightingEnabled()) glDisable(GL_LIGHTING);
-		if(!_state.cullingEnabled()) glEnable(GL_CULL_FACE);
+		if(_currentRenderState.lightingEnabled()) GLCheck(glDisable(GL_LIGHTING));
+		if(_currentRenderState.cullingEnabled()) GLCheck(glDisable(GL_CULL_FACE));
 	}else{
 		//glCullFace(GL_BACK);
-		if(_state.lightingEnabled()) glEnable(GL_LIGHTING);
-		if(!_state.cullingEnabled()) glDisable(GL_CULL_FACE);
+		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
+		if(_currentRenderState.cullingEnabled()) GLCheck(glEnable(GL_CULL_FACE));
 	}
 }
 
-void GL_API::setRenderState(RenderState& state){
-	state.blendingEnabled() ? glEnable(GL_BLEND)      : glDisable(GL_BLEND);
-	state.lightingEnabled() ? glEnable(GL_LIGHTING)   : glDisable(GL_LIGHTING);
-	state.cullingEnabled()  ? glEnable(GL_CULL_FACE)  : glDisable(GL_CULL_FACE);
-	state.texturesEnabled() ? glEnable(GL_TEXTURE_2D) : glDisable(GL_TEXTURE_2D);
+void GL_API::setRenderState(RenderState& state,bool force){
+
+	if(_currentRenderState.blendingEnabled() != state.blendingEnabled() || force){
+		state.blendingEnabled() ? GLCheck(glEnable(GL_BLEND)) : GLCheck(glDisable(GL_BLEND));
+	}
+	if(_currentRenderState.lightingEnabled() != state.lightingEnabled() || force){
+		state.lightingEnabled() ? GLCheck(glEnable(GL_LIGHTING)) : GLCheck(glDisable(GL_LIGHTING));
+	}
+	if(_currentRenderState.cullingEnabled() != state.cullingEnabled() || force){
+		state.cullingEnabled() ?  GLCheck(glEnable(GL_CULL_FACE)) :	GLCheck(glDisable(GL_CULL_FACE));
+	}
+	if(_currentRenderState.texturesEnabled() != state.texturesEnabled() || force){
+		state.texturesEnabled() ? GLCheck(glEnable(GL_TEXTURE_2D)) : GLCheck(glDisable(GL_TEXTURE_2D));
+	}
 }
 
 void GL_API::ignoreStateChanges(bool state){
 	if(state){
-		glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_COLOR_BUFFER_BIT);
-		//glPushAttrib(GL_ALL_ATTRIB_BITS);
+		//glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_COLOR_BUFFER_BIT);
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 	}else{
 		glPopAttrib();
 	}
@@ -497,9 +578,7 @@ void GL_API::drawText3D(SceneGraphNode* node){
 	setObjectState(node->getTransform());
 
 	glPushAttrib(GL_ENABLE_BIT);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
+	GLCheck(glEnable(GL_LINE_SMOOTH));
 	glLineWidth(model->getWidth());
 
 	glutStrokeString(model->getFont(), (const U8*)model->getText().c_str());
@@ -551,8 +630,8 @@ void GL_API::toggle2D(bool _2D){
 	{
 		F32 width = Application::getInstance().getWindowDimensions().width;
 		F32 height = Application::getInstance().getWindowDimensions().height;
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
+		/*GLCheck(*/glDisable(GL_DEPTH_TEST)/*)*/;
+		GLCheck(glDisable(GL_LIGHTING));
 		if(GFXDevice::getInstance().getDepthMapRendering()) glCullFace(GL_BACK);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
@@ -570,17 +649,17 @@ void GL_API::toggle2D(bool _2D){
 		glPopMatrix(); //2 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
-		if(_state.lightingEnabled()) glEnable(GL_LIGHTING);
+		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
 		if(GFXDevice::getInstance().getDepthMapRendering()) glCullFace(GL_FRONT);
-		glEnable(GL_DEPTH_TEST);
+		GLCheck(glEnable(GL_DEPTH_TEST));
 	}
 }
 
 
 void GL_API::setLight(U8 slot, unordered_map<string,vec4>& properties){
-	if(_state.lightingEnabled()){
-		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0+slot);
+	if(_currentRenderState.lightingEnabled()){
+		GLCheck(glEnable(GL_LIGHTING));
+		GLCheck(glEnable(GL_LIGHT0+slot));
 	}
 	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties["position"]);
 	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties["ambient"]);
@@ -588,14 +667,13 @@ void GL_API::setLight(U8 slot, unordered_map<string,vec4>& properties){
 	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, properties["specular"]);
 	
 	if( properties.size() == 5)	glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties["spotDirection"]);
-	if(!_state.lightingEnabled()) glDisable(GL_LIGHTING);
+	if(!_currentRenderState.lightingEnabled()) GLCheck(glDisable(GL_LIGHTING));
 }
 
-void GL_API::createLight(U8 slot)
-{
-	if(_state.lightingEnabled()){
-		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0+slot);
+void GL_API::createLight(U8 slot){
+	if(_currentRenderState.lightingEnabled()){
+		GLCheck(glEnable(GL_LIGHTING));
+		GLCheck(glEnable(GL_LIGHT0+slot));
 	}
 }
 
