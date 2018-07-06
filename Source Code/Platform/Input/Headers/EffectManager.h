@@ -51,7 +51,7 @@ class EffectManager {
     vectorImpl<VariableEffect*> _vecEffects;
 
     // Selected effect
-    I8 _nCurrEffectInd;
+    I32 _nCurrEffectInd;
 
     // Update frequency (Hz)
     U32 _nUpdateFreq;

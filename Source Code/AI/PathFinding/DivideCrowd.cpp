@@ -47,7 +47,7 @@ DivideDtCrowd::DivideDtCrowd(NavigationMesh* navMesh)
                                     *navMesh).getAgentRadius(),
                     nav);
         // Make polygons with 'disabled' flag invalid.
-        crowd->getEditableFilter(0)->setExcludeFlags(to_uint(SamplePolyFlags::SAMPLE_POLYFLAGS_DISABLED));
+        crowd->getEditableFilter(0)->setExcludeFlags(static_cast<U16>(SamplePolyFlags::SAMPLE_POLYFLAGS_DISABLED));
         // Create different avoidance settings presets. The crowd object can
         // store multiple,
         // identified by an index number.
@@ -117,8 +117,8 @@ I32 DivideDtCrowd::addAgent(const vec3<F32>& position, F32 maxSpeed,
     // Define parameters for agent in crowd
     dtCrowdAgentParams ap;
     memset(&ap, 0, sizeof(ap));
-    ap.radius = getAgentRadius();
-    ap.height = getAgentHeight();
+    ap.radius = to_float(getAgentRadius());
+    ap.height = to_float(getAgentHeight());
     ap.maxAcceleration = acceleration;
     ap.maxSpeed = maxSpeed;
     ap.collisionQueryRange = ap.radius * 12.0f;
@@ -180,10 +180,11 @@ void DivideDtCrowd::removeAgent(const I32 ID) {
 }
 
 vec3<F32> DivideDtCrowd::calcVel(const vec3<F32>& position,
-                                 const vec3<F32>& target, D32 speed) {
-    F32 res[3];
-    calcVel(res, &position.x, &target.x, speed);
-    return vec3<F32>(res);
+                                 const vec3<F32>& target,
+                                 D32 speed) {
+    vec3<F32> res;
+    calcVel(res._v, &position.x, &target.x, to_float(speed));
+    return res;
 }
 
 void DivideDtCrowd::calcVel(F32* velocity, const F32* position,

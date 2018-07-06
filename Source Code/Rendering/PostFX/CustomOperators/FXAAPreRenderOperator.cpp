@@ -33,7 +33,7 @@ FXAAPreRenderOperator::~FXAAPreRenderOperator() {
     MemoryManager::DELETE(_samplerCopy);
 }
 
-void FXAAPreRenderOperator::reshape(I32 width, I32 height) {
+void FXAAPreRenderOperator::reshape(U16 width, U16 height) {
     _samplerCopy->Create(width, height);
     _fxaa->Uniform("dvd_fxaaSpanMax", 8.0f);
     _fxaa->Uniform("dvd_fxaaReduceMul", 1.0f / 8.0f);

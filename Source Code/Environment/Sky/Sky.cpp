@@ -97,7 +97,7 @@ void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     if (_sky->onDraw(sgn, currentStage)) {
         sgn.getComponent<RenderingComponent>()->makeTextureResident(
-            *_skybox, to_uint(ShaderProgram::TextureUsage::UNIT0));
+            *_skybox, static_cast<U8>(ShaderProgram::TextureUsage::UNIT0));
         return true;
     }
     return false;

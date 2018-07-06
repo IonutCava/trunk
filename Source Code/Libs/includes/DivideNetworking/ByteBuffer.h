@@ -394,6 +394,8 @@ class ByteBuffer {
 
     template <typename Archive>
     void serialize(Archive &ar, const unsigned int version) {
+        ACKNOWLEDGE_UNUSED(version);
+
         ar & _rpos;
         ar & _wpos;
         ar & _storage;
@@ -422,7 +424,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, Networking::vector3 &v) {
 
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> const &v) {
-    b << (U32)v.size();
+    b << to_uint(v.size());
     for (const T& i  : v) {
         b << i;
     }
@@ -444,7 +446,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::vector<T> &v) {
 
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const &v) {
-    b << (U32)v.size();
+    b << to_uint(v.size());
     for (const T& i  : v) {
         b << i;
     }
@@ -466,7 +468,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v) {
 
 template <typename K, typename V>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m) {
-    b << (U32)m.size();
+    b << to_uint(m.size());
     for (std::map<K, V>::value_type i : m) {
         b << i.first;
         b << i.second;

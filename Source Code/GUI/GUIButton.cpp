@@ -1,6 +1,9 @@
 #include "Headers/GUIButton.h"
 
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
+#endif //CEGUI_STATIC
 
 namespace Divide {
 
@@ -20,9 +23,10 @@ GUIButton::GUIButton(const stringImpl& id, const stringImpl& text,
     _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(
         stringAlg::fromBase(guiScheme + "/Button"), stringAlg::fromBase(id));
     _btnWindow->setPosition(CEGUI::UVector2(
-        CEGUI::UDim(0, position.x), CEGUI::UDim(1, -1.0f * position.y)));
-    _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(0, dimensions.x),
-                                     CEGUI::UDim(0, dimensions.y)));
+        CEGUI::UDim(0.0f, to_float(position.x)), 
+        CEGUI::UDim(1.0f, -1.0f * position.y)));
+    _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(0.0f, to_float(dimensions.x)),
+                                     CEGUI::UDim(0.0f, to_float(dimensions.y))));
     _btnWindow->setText(text.c_str());
     _btnWindow->subscribeEvent(
         CEGUI::PushButton::EventClicked,
@@ -50,7 +54,7 @@ void GUIButton::setFont(const stringImpl& fontName,
     if (!fontName.empty()) {
         if (!CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {
             CEGUI::FontManager::getSingleton().createFreeTypeFont(
-                fontName.c_str(), size, true, fontFileName.c_str());
+                fontName.c_str(), to_float(size), true, fontFileName.c_str());
         }
 
         if (CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {

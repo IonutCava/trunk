@@ -41,7 +41,7 @@ class NOINITVTABLE PreRenderOperator {
     virtual ~PreRenderOperator() {}
 
     virtual void operation() = 0;
-    virtual void reshape(I32 width, I32 height) = 0;
+    virtual void reshape(U16 width, U16 height) = 0;
     /// Reference to state
     inline void enabled(bool state) { _enabled = state; }
     inline bool enabled() const { return _enabled; }

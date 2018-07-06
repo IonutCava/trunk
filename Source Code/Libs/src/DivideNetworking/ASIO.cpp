@@ -1,20 +1,6 @@
 #ifndef OPCODE_ENUM
 #define OPCODE_ENUM OPcodes
 #endif
-// There doesn't seem to be any other way to turn this off such that the
-// presence of
-// the user-defined operator,() below doesn't cause spurious warning all over
-// the place,
-// so unconditionally turn it off.
-#if defined(_MSC_VER)
-#pragma warning(push)
-// user defined binary operator ',' exists but no overload could convert all
-// operands, default built-in binary operator ',' used
-#pragma warning(disable : 4913)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#//pragma GCC diagnostic ignored "-Wall"
-#endif
 
 #include "OPCodesTpl.h"
 #include "ASIO.h"
@@ -97,9 +83,3 @@ void ASIO::toggleDebugOutput(const bool debugOutput) {
 }
 
 };  // namespace Divide
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif

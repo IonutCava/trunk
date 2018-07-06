@@ -85,13 +85,37 @@ class vec2 {
     vec2(T value) : vec2(value, value)
     {
     }
+    template <typename U> 
+    vec2(U value) : vec2(static_cast<T>(value),
+                         static_cast<T>(value))
+    {
+    }
+
     vec2(T _x, T _y) : x(_x), y(_y)
     {
     }
+
+    template <typename U>
+    vec2(U _x, U _y) : x(static_cast<T>(_x)),
+                       y(static_cast<T>(_y))
+    {
+    }
+
     vec2(const T *_v) : vec2(_v[0], _v[1])
     {
     }
+
+    template <typename U> 
+    vec2(const U *_v) : vec2(_v[0], _v[1])
+    {
+    }
+
     vec2(const vec2 &_v) : vec2(_v._v)
+    {
+    }
+
+    template <typename U> 
+    vec2(const vec2<U> &_v) : vec2(_v._v)
     {
     }
     vec2(const vec3<T> &_v) : vec2(_v.xy())
@@ -174,6 +198,11 @@ class vec2 {
     inline void set(T _x, T _y) {
         this->x = _x;
         this->y = _y;
+    }
+    template <typename U> 
+    inline void set(U _x, U _y) {
+        this->x = static_cast<T>(_x);
+        this->y = static_cast<T>(_y);
     }
     /// set the 2 components of the vector using a source vector
     inline void set(const vec2<T> v) { this->set(v.x, v.y); }
@@ -275,6 +304,14 @@ class vec3 {
     vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) 
     {
     }
+
+    template <typename U>
+    vec3(U _x, U _y, U _z) : x(static_cast<T>(_x)),
+                             y(static_cast<T>(_y)),
+                             z(static_cast<T>(_z))
+    {
+    }
+
     vec3(const T *v) : vec3(v[0], v[1], v[2])
     {
     }
@@ -387,6 +424,12 @@ class vec3 {
         this->x = _x;
         this->y = _y;
         this->z = _z;
+    }
+    template <typename U> 
+    inline void set(U _x, U _y, U _z) {
+        this->x = static_cast<T>(_x);
+        this->y = static_cast<T>(_y);
+        this->z = static_cast<T>(_z);
     }
     /// set the 3 components of the vector using a smaller source vector
     inline void set(const vec2<T> &v) { this->set(v.x, v.y, 0.0); }
@@ -510,13 +553,31 @@ class vec4 {
     vec4() : x(0), y(0), z(0), w(1)
     {
     }
+
     vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w)
+    {
+    }
+
+    template<typename U> 
+    vec4(U _x, U _y, U _z, U _w) : x(static_cast<T>(_x)),
+                                   y(static_cast<T>(_y)),
+                                   z(static_cast<T>(_z)),
+                                   w(static_cast<T>(_w))
     {
     }
     vec4(T value) : vec4(value, value, value, value)
     {
     }
+
+    template<typename U> 
+    vec4(U value) : vec4(value, value, value, value)
+    {
+    }
     vec4(const T *v) : vec4(v[0], v[1], v[2], v[3])
+    {
+    }
+    template<typename U> 
+    vec4(const U *v) : vec4(v[0], v[1], v[2], v[3])
     {
     }
     vec4(const vec2<T> &v) : vec4(v, 0)
@@ -710,6 +771,13 @@ class vec4 {
         this->y = _y;
         this->z = _z;
         this->w = _w;
+    }
+   template <typename U>
+    inline void set(U _x, U _y, U _z, U _w) {
+        this->x = static_cast<T>(_x);
+        this->y = static_cast<T>(_y);
+        this->z = static_cast<T>(_z);
+        this->w = static_cast<T>(_w);
     }
     /// set the 4 components of the vector using a source vector
     inline void set(const vec4 &v) { this->set(v.x, v.y, v.z, v.w); }

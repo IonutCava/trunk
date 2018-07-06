@@ -49,11 +49,11 @@
 //#define GL_VERSION_4_5
 
 #ifdef GL_VERSION_4_5
-#include <glbinding/gl/gl45.h>
+#include <glbinding/gl45/gl.h>
 using namespace gl45;
 namespace glext = gl45ext;
 #else
-#include <glbinding/gl/gl44.h>
+#include <glbinding/gl44/gl.h>
 using namespace gl44;
 namespace glext = gl44ext;
 #endif
@@ -62,15 +62,6 @@ namespace glext = gl44ext;
 
 #include <GL/glfw3.h>
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
-
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4505)  ///<unreferenced local function removal
-#pragma warning(disable : 4100)  ///<unreferenced formal parameter
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#//pragma GCC diagnostic ignored "-Wall"
-#endif
 
 namespace NS_GLIM {
     enum class GLIM_ENUM : int;
@@ -91,15 +82,6 @@ void glfw_error_callback(GLint error, const char* description);
 void APIENTRY 
 DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
               GLsizei length, const char* message, const void* userParam);
-/// Half float conversion from:
-/// http://www.opengl.org/discussion_boards/archive/index.php/t-154530.html [thx
-/// gking]
-/// Half-float to float
-static GLfloat htof(GLhalf val);
-/// Float to half-float
-static GLhalf ftoh(GLfloat val);
-/// Pack a float value in an unsigned int
-// static GLuint ftopacked(GLfloat val);
 /// Invalid object value. Used to compare handles and determine if they were
 /// properly created
 extern GLuint _invalidObjectID;
@@ -186,12 +168,6 @@ namespace DSAWrapper {
 };  // namespace DSAWrapper
 };  // namespace GLUtil
 };  // namespace Divide
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
 
 #endif
 

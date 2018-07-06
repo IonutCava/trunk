@@ -132,9 +132,9 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
     inline bool isMultisampled() const { return _multisampled; }
 
-    inline U16 getWidth() const { return _width; }
+    inline U16 getWidth()  const { return _width; }
     inline U16 getHeight() const { return _height; }
-    inline U8 getHandle() const { return _framebufferHandle; }
+    inline U32 getHandle() const { return _framebufferHandle; }
 
     inline vec2<U16> getResolution() const {
         return vec2<U16>(_width, _height);

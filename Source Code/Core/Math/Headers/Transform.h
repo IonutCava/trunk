@@ -156,7 +156,7 @@ class Transform : public GUIDWrapper, private NonCopyable {
         this->_rebuildMatrix = true;
 
         WriteLock w_lock(this->_lock);
-        this->_transformValues._orientation.slerp(quat, deltaTime);
+        this->_transformValues._orientation.slerp(quat, to_float(deltaTime));
         this->_transformValues._orientation.normalize();
     }
 

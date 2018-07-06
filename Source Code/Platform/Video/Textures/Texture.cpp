@@ -122,7 +122,8 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
                 // We process one column per thread
                 for (I32 j = 0; j < height; j++) {
                     // Check alpha value
-                    if (img.getColor(i, j).a < 250) {
+                    if (img.getColor(static_cast<U16>(i),
+                                     static_cast<U16>(j)).a < 250) {
                         // If the pixel is transparent, toggle translucency flag
 #                       pragma omp critical
                         {

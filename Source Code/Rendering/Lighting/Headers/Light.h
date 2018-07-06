@@ -255,7 +255,7 @@ class Light : public SceneNode {
     /// @param mode Togglable, Movable, Simple, Dominant (see LightMode enum)
     void setLightMode(const LightMode& mode);
     /// Called when the rendering resolution changes
-    void updateResolution(I32 newWidth, I32 newHeight);
+    void updateResolution(U16 newWidth, U16 newHeight);
     /// Get a ref to the shadow camera used by this light
     Camera* const shadowCamera() const { return _shadowCamera; }
 

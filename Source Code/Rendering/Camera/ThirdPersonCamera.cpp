@@ -16,10 +16,11 @@ void ThirdPersonCamera::onActivate() {
 bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
     static vec2<F32> mousePos;
     static const F32 rotationLimitRollLower =
-        M_PI * 0.30f - Angle::DegreesToRadians(1);
+        to_float(M_PI) * 0.30f - Angle::DegreesToRadians(1);
     static const F32 rotationLimitRollUpper =
-        M_PI * 0.175f - Angle::DegreesToRadians(1);
-    static const F32 rotationLimitYaw = M_PI - Angle::DegreesToRadians(1);
+        to_float(M_PI) * 0.175f - Angle::DegreesToRadians(1);
+    static const F32 rotationLimitYaw = 
+        to_float(M_PI) - Angle::DegreesToRadians(1);
 
     mousePos.set(arg.state.X.rel, arg.state.Y.rel);
 

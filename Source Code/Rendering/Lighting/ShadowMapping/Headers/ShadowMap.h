@@ -79,7 +79,7 @@ class NOINITVTABLE ShadowMap {
     virtual bool Bind(U8 offset);
     virtual void previewShadowMaps() = 0;
 
-    virtual void updateResolution(I32 newWidth, I32 newHeight) {}
+    virtual void updateResolution(U16 newWidth, U16 newHeight) {}
 
     virtual void onCameraUpdate(Camera& camera) {}
 
@@ -118,8 +118,8 @@ class ShadowMapInfo {
     inline U8 numLayers() const { return _numLayers; }
 
     inline void numLayers(U8 layerCount) {
-        _numLayers = std::min(std::abs((I32)layerCount),
-                              (I32)Config::Lighting::MAX_SPLITS_PER_LIGHT);
+        _numLayers = std::min(layerCount, 
+                              static_cast<U8>(Config::Lighting::MAX_SPLITS_PER_LIGHT));
     }
 
    private:

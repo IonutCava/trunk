@@ -91,7 +91,7 @@ class Object3D : public SceneNode {
     inline bool playAnimations() const { return _playAnimations; }
 
     inline void setGeometryPartitionID(size_t ID) {
-        _geometryPartitionID = (U32)ID;
+        _geometryPartitionID = static_cast<U16>(ID);
     }
 
     inline const vectorImpl<vec3<U32> >& getTriangles() const {
@@ -124,7 +124,7 @@ class Object3D : public SceneNode {
     bool _update;
     bool _playAnimations;
     U32 _geometryFlagMask;
-    U32 _geometryPartitionID;
+    U16 _geometryPartitionID;
     ObjectType _geometryType;
     /// 3 indices, pointing to position values, that form a triangle in the
     /// mesh.

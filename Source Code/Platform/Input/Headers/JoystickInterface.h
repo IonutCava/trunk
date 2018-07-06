@@ -49,7 +49,7 @@ class JoystickInterface {
     vectorImpl<OIS::JoyStick*> _vecJoys;
     vectorImpl<OIS::ForceFeedback*> _vecFFDev;
     // Selected joystick
-    I8 _nCurrJoyInd;
+    I32 _nCurrJoyInd;
     // Force feedback detected ?
     bool _bFFFound;
     // Selected joystick master gain.
@@ -159,7 +159,7 @@ class JoystickInterface {
             changeMasterGain(0.0);
         } else {
             _nCurrJoyInd += to_int(eWhich);
-            if (_nCurrJoyInd < -1 || _nCurrJoyInd >= (U8)_vecJoys.size())
+            if (_nCurrJoyInd < -1 || _nCurrJoyInd >= to_int(_vecJoys.size()))
                 _nCurrJoyInd = -1;
             if (_vecJoys.size() > 1 && _nCurrJoyInd >= 0) {
                 _dMasterGain = 0.5;  // Half the maximum.

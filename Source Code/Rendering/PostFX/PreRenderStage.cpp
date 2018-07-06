@@ -11,7 +11,7 @@ void PreRenderStage::execute() {
     }
 }
 
-void PreRenderStage::reshape(I32 width, I32 height) {
+void PreRenderStage::reshape(U16 width, U16 height) {
     for (PreRenderOperator* op : _operators) {
         op->reshape(width, height);
     }

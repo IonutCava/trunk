@@ -10,8 +10,8 @@ Unit::Unit(UnitType type, SceneGraphNode_ptr node)
     : FrameListener(),
       _type(type),
       _node(node),
-      _moveSpeed(Metric::Base(1)),
-      _acceleration(Metric::Base(1)),
+      _moveSpeed(Metric::Base(1.0f)),
+      _acceleration(Metric::Base(1.0f)),
       _moveTolerance(0.1f),
       _prevTime(0)
 {
@@ -52,9 +52,8 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     _prevTime = currentTime;
     // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
     // distance = timeDif * 0.001 * moveSpeed
-    F32 moveDistance = std::min(
-        static_cast<F32>(_moveSpeed * (Time::MillisecondsToSeconds(timeDif))),
-        0.0f);
+    F32 moveDistance = std::min(to_float(_moveSpeed * (Time::MillisecondsToSeconds(timeDif))),
+                                0.0f);
 
     bool returnValue = IS_TOLERANCE(moveDistance, Metric::Centi(1.0f));
 

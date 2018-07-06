@@ -57,7 +57,7 @@ DEFINE_SINGLETON(PostFX)
 
     void init(const vec2<U16>& resolution);
     void idle();
-    void updateResolution(I32 newWidth, I32 newHeight);
+    void updateResolution(U16 newWidth, U16 newHeight);
 
   private:
     bool _enableBloom;

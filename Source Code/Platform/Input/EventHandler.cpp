@@ -108,7 +108,7 @@ void periodVariableApplier(MapVariables &mapVars, OIS::Effect *pEffect) {
 
     OIS::PeriodicEffect *pPeriodForce =
         dynamic_cast<OIS::PeriodicEffect *>(pEffect->getForceEffect());
-    pPeriodForce->period = (U32)dPeriod;
+    pPeriodForce->period = to_uint(dPeriod);
 }
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {

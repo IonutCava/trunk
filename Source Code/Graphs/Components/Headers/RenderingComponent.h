@@ -100,7 +100,7 @@ class RenderingComponent : public SGNComponent {
     void makeTextureResident(const Texture& texture, U8 slot);
 
     void registerShaderBuffer(ShaderBufferLocation slot,
-                              vec2<ptrdiff_t> bindRange,
+                              vec2<U32> bindRange,
                               ShaderBuffer& shaderBuffer);
 
     void unregisterShaderBuffer(ShaderBufferLocation slot);

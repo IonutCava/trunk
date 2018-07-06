@@ -197,7 +197,10 @@ void Kernel::mainLoopApp() {
 
         Util::FlushFloatEvents();
     }
-    Util::RecordFloatEvent("kernel.mainLoopApp", s_appLoopTimer->get(), _currentTime);
+
+    Util::RecordFloatEvent("kernel.mainLoopApp",
+                           to_float(s_appLoopTimer->get()),
+                           _currentTime);
 #endif
 }
 
@@ -448,7 +451,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Application::getInstance().isFullScreen(
         !ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
     vec2<U16> resolution = _APP.getResolution();
-    F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
+    F32 aspectRatio = to_float(resolution.width) / 
+                      to_float(resolution.height);
     ErrorCode initError =
         _GFX.initRenderingAPI(vec2<U16>(400, 300), _argc, _argv);
     // If we could not initialize the graphics device, exit
@@ -577,13 +581,14 @@ void Kernel::shutdown() {
     Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
-void Kernel::updateResolutionCallback(I32 w, I32 h) {
-    Application& APP = Application::getInstance();
-    APP.setResolution(w, h);
-    // Update internal resolution tracking (used for joysticks and mouse)
-    Input::InputInterface::getInstance().updateResolution(w, h);
+void Kernel::updateResolutionCallback(U16 w, U16 h) {
     // Update the graphical user interface
     vec2<U16> newResolution(w, h);
+
+    Application& APP = Application::getInstance();
+    APP.setResolution(newResolution.width, newResolution.height);
+    // Update internal resolution tracking (used for joysticks and mouse)
+    Input::InputInterface::getInstance().updateResolution(newResolution.width, newResolution.height);
     GUI::getInstance().onResize(newResolution);
     // minimized
     _renderingPaused = (w == 0 || h == 0);

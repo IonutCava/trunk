@@ -51,11 +51,11 @@ I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {
         time = fmod(elapsedTime * _ticksPerSecond, _duration);
     }
 
-    F32 percent = time / _duration;
+    D32 percent = time / _duration;
 
     // this will invert the percent so the animation plays backwards
     if (!_playAnimationForward) {
-        percent = (percent - 1.0f) * -1.0f;
+        percent = (percent - 1.0) * -1.0;
     }
 
     return std::min(to_int(_transforms.size() * percent),

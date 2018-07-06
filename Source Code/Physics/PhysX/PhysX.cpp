@@ -38,8 +38,10 @@ PhysX::PhysX()
       _pvdConnection(nullptr),
       _targetScene(nullptr),
       _accumulator(0.0f),
-      _timeStepFactor(0.0f),
-      _timeStep(0.0f) {}
+      _timeStepFactor(0),
+      _timeStep(0.0f)
+{
+}
 
 ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
     Console::printfn(Locale::get("START_PHYSX_API"));
@@ -150,7 +152,7 @@ void PhysX::process(const U64 deltaTime) {
         }
 
         _accumulator -= _timeStep;
-        _targetScene->process(_timeStep);
+        _targetScene->process(Time::SecondsToMicroseconds(_timeStep));
     }
 }
 

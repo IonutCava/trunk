@@ -308,7 +308,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
-                                              vec2<ptrdiff_t> bindRange,
+                                              vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
     GFXDevice::ShaderBufferList::iterator it;
     it = std::find_if(
@@ -402,7 +402,7 @@ void RenderingComponent::inViewCallback() {
     _materialPropertyMatrix.setCol(
         0, vec4<F32>(_parentSGN.isSelected() ? 1.0f : 0.0f,
                      receivesShadows() ? 1.0f : 0.0f,
-                     static_cast<F32>(lodLevel()), 0.0f));
+                     to_float(lodLevel()), 0.0f));
 
     Material* mat = getMaterialInstance();
 
@@ -415,8 +415,8 @@ void RenderingComponent::inViewCallback() {
                 : false;
         _materialPropertyMatrix.setCol(
             1, vec4<F32>(
-                   isTranslucent ? 1.0f : 0.0f, (F32)mat->getTextureOperation(),
-                   (F32)mat->getTextureCount(), mat->getParallaxFactor()));
+                   isTranslucent ? 1.0f : 0.0f, to_float(mat->getTextureOperation()),
+                   to_float(mat->getTextureCount()), mat->getParallaxFactor()));
     }
 }
 

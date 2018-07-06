@@ -47,7 +47,7 @@ class DirectionalLight;
 /// This technique offers an implementation of the CSM method
 class CascadedShadowMaps : public ShadowMap {
    public:
-    CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 numSplits);
+    CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 numSplits);
     ~CascadedShadowMaps();
     void render(SceneRenderState& renderState,
                 const DELEGATE_CBK<>& sceneRenderFunction);
@@ -61,7 +61,7 @@ class CascadedShadowMaps : public ShadowMap {
     bool BindInternal(U8 offset);
     void CalculateSplitDepths(const Camera& cam);
     void ApplyFrustumSplit(U8 pass);
-    void updateResolution(I32 newWidth, I32 newHeight);
+    void updateResolution(U16 newWidth, U16 newHeight);
 
    protected:
     U8 _numSplits;

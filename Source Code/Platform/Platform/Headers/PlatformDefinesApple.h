@@ -35,6 +35,14 @@
 #define GLFW_EXPOSE_NATIVE_COCOA
 #define GLFW_EXPOSE_NATIVE_NSGL
 
+#ifndef NOINITVTABLE
+#define NOINITVTABLE
+#endif  //NOINITVTABLE
+
+#ifndef THREAD_LOCAL
+#define THREAD_LOCAL __thread
+#endif  //THREAD_LOCAL
+
 #include <Carbon/Carbon.h>
 void checkMacEvents();
 

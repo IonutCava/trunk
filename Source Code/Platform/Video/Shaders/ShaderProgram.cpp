@@ -48,8 +48,7 @@ bool ShaderProgram::update(const U64 deltaTime) {
 
     // Update internal timers
     _elapsedTime += deltaTime;
-    _elapsedTimeMS =
-        static_cast<F32>(Time::MicrosecondsToMilliseconds(_elapsedTime));
+    _elapsedTimeMS = Time::MicrosecondsToMilliseconds<F32>(_elapsedTime);
     // Skip programs that aren't fully loaded
     if (!isHWInitComplete()) {
         return false;

@@ -22,7 +22,13 @@
 #include "Text/Headers/fontstash.h"
 #include "Text/Headers/glfontstash.h"
 #endif
+
 #include <glsl/glsl_optimizer.h>
+
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
+#endif //CEGUI_STATIC
+
 #include <CEGUI/CEGUI.h>
 
 namespace Divide {
@@ -348,24 +354,24 @@ bool GL_API::initShaders() {
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_START " +
             std::to_string(
-                (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                    ShadowType::CUBEMAP)),
+                to_uint(LightManager::getInstance().getShadowBindSlotOffset(
+                    ShadowType::CUBEMAP))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_NORMAL_START " +
             std::to_string(
-                (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                    ShadowType::SINGLE)),
+                to_uint(LightManager::getInstance().getShadowBindSlotOffset(
+                    ShadowType::SINGLE))),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_ARRAY_START " +
             std::to_string(
-                (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                    ShadowType::LAYERED)),
+                to_uint(LightManager::getInstance().getShadowBindSlotOffset(
+                    ShadowType::LAYERED))),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::FRAGMENT,
@@ -537,15 +543,15 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
     // See FontStash documentation for the following block
     {
         fonsClearState(_fonsContext);
-        fonsSetSize(_fonsContext, textLabel._height);
+        fonsSetSize(_fonsContext, to_float(textLabel._height));
         fonsSetFont(_fonsContext, font);
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         fonsSetColor(_fonsContext, 
-                     textLabel._color.r * 255,
-                     textLabel._color.g * 255,
-                     textLabel._color.b * 255,
-                     textLabel._color.a * 255);
+                     static_cast<U8>(textLabel._color.r * 255),
+                     static_cast<U8>(textLabel._color.g * 255),
+                     static_cast<U8>(textLabel._color.b * 255),
+                     static_cast<U8>(textLabel._color.a * 255));
 
         if (textLabel._blurAmount > 0.01f) {
             fonsSetBlur(_fonsContext, textLabel._blurAmount);
@@ -564,14 +570,18 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
             lines = Util::Split(textLabel.text(), '\n');
             vectorAlg::vecSize lineCount = lines.size();
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
-                fonsDrawText(_fonsContext, position.x,
-                    cachedResolution.y - (position.y + (lh * (1 + i))),
-                    lines[i].c_str(), nullptr);
+                fonsDrawText(_fonsContext,
+                             to_float(position.x),
+                             to_float(cachedResolution.y - (position.y + (lh * (1 + i)))),
+                             lines[i].c_str(),
+                             nullptr);
             }
         } else {
-                fonsDrawText(_fonsContext, position.x,
-                    cachedResolution.y - (position.y + lh),
-                    textLabel.text().c_str(), nullptr);
+                fonsDrawText(_fonsContext,
+                             to_float(position.x),
+                             to_float(cachedResolution.y - (position.y + lh)),
+                             textLabel.text().c_str(),
+                             nullptr);
         }
     }
     // Register each label rendered as a draw call
@@ -607,7 +617,8 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
 
 bool GL_API::makeTextureResident(const TextureData& textureData) {
     return bindTexture(
-        textureData.getHandleLow(), textureData.getHandleHigh(),
+        static_cast<GLushort>(textureData.getHandleLow()),
+        textureData.getHandleHigh(),
         GLUtil::glTextureTypeTable[to_uint(textureData._textureType)],
         textureData._samplerHash);
 }

@@ -99,7 +99,7 @@ class Material : public Resource {
         vec4<F32> _specular; /* specular component*/
         vec4<F32> _emissive; /* emissive component*/
         F32 _shininess;      /* specular exponent */
-        I32 _textureCount;
+        U8  _textureCount;
 
         ShaderData()
             : _textureCount(0),

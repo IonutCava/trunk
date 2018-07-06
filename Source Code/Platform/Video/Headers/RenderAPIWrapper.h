@@ -267,7 +267,7 @@ class TextureData {
     }
 
     inline U32 getHandleHigh() const {
-        return (U32)(_textureHandle >> 32);
+        return to_uint(_textureHandle >> 32);
     }
 
     inline void getHandleHigh(U32& handle) const {
@@ -279,7 +279,7 @@ class TextureData {
     }
 
     inline U32 getHandleLow() const{
-        return (U32)_textureHandle;
+        return to_uint(_textureHandle);
     }
         
     inline void getHandleLow(U32& handle) const {

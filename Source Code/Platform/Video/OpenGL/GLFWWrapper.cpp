@@ -4,14 +4,17 @@
 #include "core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include <glim.h>
+
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
+#endif //CEGUI_STATIC
 
 #include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 
+#include <glim.h>
 #include <chrono>
 #include <thread>
-
-#include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 
 namespace Divide {
 
@@ -145,8 +148,8 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     // Attempt to position the window in the center of the screen. Useful for
     // the splash screen
     glfwSetWindowPos(GLUtil::_mainWindow,
-                     (return_struct->width - resolution.width) * 0.5f,
-                     (return_struct->height - resolution.height) * 0.5f);
+                     to_int((return_struct->width - resolution.width) * 0.5f),
+                     to_int((return_struct->height - resolution.height) * 0.5f));
 
     DIVIDE_ASSERT(glfwExtensionSupported("GL_EXT_direct_state_access") == 1,
         "GL_API::initRenderingAPI error: DSA is not supported!");
@@ -218,12 +221,12 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
                      samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason,
     // override user set MSAA levels
-    U8 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
+    I32 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
     if (samplerBuffers == 0 || sampleCount == 0) {
         msaaSamples = 0;
     }
-    GFX_DEVICE.gpuState().initAA(par.getParam<I32>("rendering.FXAAsamples", 0),
-                                 msaaSamples);
+    GFX_DEVICE.gpuState().initAA(static_cast<U8>(par.getParam<I32>("rendering.FXAAsamples", 0)),
+                                 static_cast<U8>(msaaSamples));
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get("GL_MAX_UNIFORM"),
@@ -319,7 +322,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         tempDisplayMode._resolution.set(temp.width, temp.height);
         tempDisplayMode._bitDepth.set(temp.redBits, temp.greenBits,
                                       temp.blueBits);
-        tempDisplayMode._refreshRate.push_back(temp.refreshRate);
+        tempDisplayMode._refreshRate.push_back(static_cast<U8>(temp.refreshRate));
         GFX_DEVICE.gpuState().registerDisplayMode(tempDisplayMode);
         tempDisplayMode._refreshRate.clear();
     }

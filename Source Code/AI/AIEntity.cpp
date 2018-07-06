@@ -18,6 +18,8 @@ using namespace AI;
 static const D32 DESTINATION_RADIUS = 2;
 static const D32 DESTINATION_RADIUS_SQ = DESTINATION_RADIUS *
                                          DESTINATION_RADIUS;
+static const F32 DESTINATION_RADIUS_F = to_const_float(DESTINATION_RADIUS);
+static const F32 DESTINATION_RADIUS_SQ_F = to_const_float(DESTINATION_RADIUS_SQ);
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)
     : GUIDWrapper(),
@@ -57,7 +59,7 @@ void AIEntity::load(const vec3<F32>& position) {
         _agentID = _detourCrowd->addAgent(position,
                                           _unitRef
                                               ? _unitRef->getMovementSpeed()
-                                              : (_detourCrowd->getAgentHeight() / 2) * 3.5f,
+                                              : to_float((_detourCrowd->getAgentHeight() / 2) * 3.5f),
                                            _unitRef
                                               ? _unitRef->getAcceleration()
                                               : 5.0f);
@@ -239,7 +241,7 @@ bool AIEntity::setPosition(const vec3<F32> position) {
     vec3<F32> result;
     bool isPointOnNavMesh = _detourCrowd->getNavMesh().getClosestPosition(position,
                                                                           vec3<F32>(5),
-                                                                          DESTINATION_RADIUS,
+                                                                          DESTINATION_RADIUS_F,
                                                                           result);
     assert(isPointOnNavMesh);
 
@@ -248,7 +250,7 @@ bool AIEntity::setPosition(const vec3<F32> position) {
     _agentID = _detourCrowd->addAgent(result,
                                       _unitRef
                                           ? _unitRef->getMovementSpeed()
-                                          : (_detourCrowd->getAgentHeight() / 2) * 3.5f,
+                                          : to_float((_detourCrowd->getAgentHeight() / 2) * 3.5f),
                                       _unitRef
                                           ? _unitRef->getAcceleration()
                                           : 5.0f);
@@ -279,7 +281,7 @@ void AIEntity::updatePosition(const U64 deltaTime) {
                     bool isPointOnNavMesh =
                         _detourCrowd->getNavMesh().getClosestPosition(_currentPosition,
                                                                       vec3<F32>(5),
-                                                                      DESTINATION_RADIUS,
+                                                                      DESTINATION_RADIUS_F,
                                                                       result);
                     assert(isPointOnNavMesh);
                     _unitRef->moveTo(result);
@@ -314,7 +316,7 @@ bool AIEntity::updateDestination(const vec3<F32>& destination,
     vec3<F32> result;
     bool isPointOnNavMesh =
         _detourCrowd->getNavMesh().getRandomPositionInCircle(destination,
-                                                             DESTINATION_RADIUS,
+                                                             DESTINATION_RADIUS_F,
                                                              vec3<F32>(5),
                                                              result,
                                                              10);
@@ -322,7 +324,7 @@ bool AIEntity::updateDestination(const vec3<F32>& destination,
         isPointOnNavMesh =
             _detourCrowd->getNavMesh().getClosestPosition(destination,
                                                           vec3<F32>(5),
-                                                          DESTINATION_RADIUS,
+                                                          DESTINATION_RADIUS_F,
                                                           result);
     }
 
@@ -354,7 +356,7 @@ bool AIEntity::destinationReached() {
     }
 
     return (_currentPosition.distanceSquared(getDestination()) <= DESTINATION_RADIUS_SQ) ||
-            _detourCrowd->destinationReached(getAgent(), DESTINATION_RADIUS);
+            _detourCrowd->destinationReached(getAgent(), DESTINATION_RADIUS_F);
 }
 
 void AIEntity::setDestination(const vec3<F32>& destination) {
@@ -371,7 +373,7 @@ void AIEntity::moveForward() {
                                ? Normalize(_unitRef->getLookingDirection())
                                : WORLD_Z_NEG_AXIS);
 
-    setVelocity(lookDirection * getMaxSpeed());
+    setVelocity(lookDirection * to_float(getMaxSpeed()));
 }
 
 void AIEntity::moveBackwards() {
@@ -379,7 +381,7 @@ void AIEntity::moveBackwards() {
                                ? Normalize(_unitRef->getLookingDirection())
                                : WORLD_Z_NEG_AXIS);
 
-    setVelocity(lookDirection * getMaxSpeed() * -1.0f);
+    setVelocity(lookDirection * to_float(getMaxSpeed()) * -1.0f);
 }
 
 void AIEntity::setVelocity(const vec3<F32>& velocity) {

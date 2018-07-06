@@ -92,9 +92,9 @@ std::weak_ptr<SceneGraphNode> VisualSensor::getClosestNode(U32 containerID) {
         if (unit) {
             const vec3<F32>& currentPosition = unit->getCurrentPosition();
             U64 currentNearest = positions.begin()->first;
-            U32 currentDistanceSq = std::numeric_limits<U32>::max();
+            F32 currentDistanceSq = std::numeric_limits<F32>::max();
             for (const NodePositions::value_type& entry : positions) {
-                U32 temp = currentPosition.distanceSquared(entry.second);
+                F32 temp = currentPosition.distanceSquared(entry.second);
                 if (temp < currentDistanceSq) {
                     currentDistanceSq = temp;
                     currentNearest = entry.first;

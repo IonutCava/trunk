@@ -32,7 +32,7 @@ void GFXDevice::previewDepthBuffer() {
     }
 
     _renderTarget[to_uint(RenderTarget::DEPTH)]->Bind(
-        to_uint(ShaderProgram::TextureUsage::UNIT0),
+        static_cast<U8>(ShaderProgram::TextureUsage::UNIT0),
         TextureDescriptor::AttachmentType::Depth);
 
     GFX::ScopedViewport viewport(Application::getInstance().getResolution().width - 256, 0,256, 256);

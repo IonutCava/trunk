@@ -40,7 +40,7 @@ namespace Divide {
 class Sphere3D : public Object3D {
    public:
     /// Change resolution to affect the spacing between vertices
-    Sphere3D(F32 radius, F32 resolution)
+    Sphere3D(F32 radius, U32 resolution)
         : Object3D(ObjectType::SPHERE_3D, ObjectFlag::OBJECT_FLAG_NONE),
           _radius(radius),
           _resolution(resolution)
@@ -59,13 +59,13 @@ class Sphere3D : public Object3D {
 
     virtual ~Sphere3D() {}
     inline F32 getRadius() { return _radius; }
-    inline F32 getResolution() { return _resolution; }
+    inline U32 getResolution() { return _resolution; }
     inline void setRadius(F32 radius) {
         _radius = radius;
         _dirty = true;
         getGeometryVB()->queueRefresh();
     }
-    inline void setResolution(F32 resolution) {
+    inline void setResolution(U32 resolution) {
         _resolution = resolution;
         _dirty = true;
         getGeometryVB()->queueRefresh();
@@ -101,10 +101,10 @@ class Sphere3D : public Object3D {
     // SuperBible stuff
     void createSphere(U32 slices, U32 stacks) {
         getGeometryVB()->Reset();
-        F32 drho = M_PI / (F32)stacks;
-        F32 dtheta = 2.0f * M_PI / (F32)slices;
-        F32 ds = 1.0f / (F32)slices;
-        F32 dt = 1.0f / (F32)stacks;
+        F32 drho = to_float(M_PI) / stacks;
+        F32 dtheta = 2.0f * to_float(M_PI) / slices;
+        F32 ds = 1.0f / slices;
+        F32 dt = 1.0f / stacks;
         F32 t = 1.0f;
         F32 s = 0.0f;
         U32 i, j;  // Looping variables
@@ -162,7 +162,8 @@ class Sphere3D : public Object3D {
     }
 
    protected:
-    F32 _radius, _resolution;
+    F32 _radius;
+    U32 _resolution;
     U32 _vertexCount;
     bool _dirty;
 };

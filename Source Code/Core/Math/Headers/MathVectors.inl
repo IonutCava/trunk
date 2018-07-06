@@ -166,6 +166,18 @@ inline bool vec2<T>::compare(const vec2 &v, F32 epsi = EPSILON_F32) const {
             FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi));
 }
 
+template <>
+inline bool vec2<I32>::compare(const vec2<I32> &v, F32 epsi) const {
+    ACKNOWLEDGE_UNUSED(epsi);
+    return this->x == v.x && this->y == v.y;
+}
+
+template <>
+inline bool vec2<U32>::compare(const vec2<U32> &v, F32 epsi) const {
+    ACKNOWLEDGE_UNUSED(epsi);
+    return this->x == v.x && this->y == v.y;
+}
+
 /// return the projection factor from *this to the line determined by points vA
 /// and vB
 template <typename T>
@@ -457,10 +469,30 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
 /// specified amount
 template <typename T>
 inline bool vec4<T>::compare(const vec4 &v, F32 epsi = EPSILON_F32) const {
-    return (FLOAT_COMPARE_TOLERANCE((F32) this->x, (F32)v.x, epsi) &&
-            FLOAT_COMPARE_TOLERANCE((F32) this->y, (F32)v.y, epsi) &&
-            FLOAT_COMPARE_TOLERANCE((F32) this->z, (F32)v.z, epsi) &&
-            FLOAT_COMPARE_TOLERANCE((F32) this->w, (F32)v.w, epsi));
+    return (FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+            FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi) &&
+            FLOAT_COMPARE_TOLERANCE(this->z, v.z, epsi) &&
+            FLOAT_COMPARE_TOLERANCE(this->w, v.w, epsi));
+}
+
+template <>
+inline bool vec4<I32>::compare(const vec4<I32> &v, F32 epsi) const {
+    ACKNOWLEDGE_UNUSED(epsi);
+
+    return this->x == v.x &&
+           this->y == v.y &&
+           this->z == v.z &&
+           this->w == v.w;
+}
+
+template <>
+inline bool vec4<U32>::compare(const vec4<U32> &v, F32 epsi) const {
+    ACKNOWLEDGE_UNUSED(epsi);
+
+    return this->x == v.x &&
+           this->y == v.y &&
+           this->z == v.z &&
+           this->w == v.w;
 }
 
 /// round all four values

@@ -48,7 +48,7 @@ class BloomPreRenderOperator : public PreRenderOperator {
     ~BloomPreRenderOperator();
 
     void operation();
-    void reshape(I32 width, I32 height);
+    void reshape(U16 width, U16 height);
 
    protected:
     // tone maps _inputFB[0] converting it from HDR to LDR

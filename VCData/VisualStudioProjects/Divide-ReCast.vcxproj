@@ -154,14 +154,14 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_DEBUG;_WIN32_WINNT=0x0601;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4127;4996</DisableSpecificWarnings>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OpenMPSupport>true</OpenMPSupport>
@@ -169,6 +169,11 @@
       <StringPooling>false</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -212,9 +217,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_WIN32_WINNT=0x0601;BOOST_EXCEPTION_DISABLE;_SECURE_SCL=0;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
-      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -271,10 +276,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_SECURE_SCL=0;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
-      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

@@ -28,7 +28,7 @@ void PhysX::createPlane(const vec3<F32>& position, U32 size) {
     actorWrapper->_type = PxGeometryType::ePLANE;
     actorWrapper->_actor = plane;
     actorWrapper->_isDynamic = false;
-    actorWrapper->_userData = (F32)size;
+    actorWrapper->_userData = to_float(size);
     static_cast<PhysXSceneInterface*>(_targetScene)
         ->addRigidActor(actorWrapper);
 }

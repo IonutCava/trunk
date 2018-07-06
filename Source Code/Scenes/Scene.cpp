@@ -594,23 +594,23 @@ bool Scene::updateCameraControls() {
         default:
         case Camera::CameraType::FREE_FLY: {
             if (state().angleLR() != SceneState::MoveDirection::NONE) {
-                cam.rotateYaw(to_int(state().angleLR()));
+                cam.rotateYaw(to_float(state().angleLR()));
                 state().cameraUpdated(true);
             }
             if (state().angleUD() != SceneState::MoveDirection::NONE) {
-                cam.rotatePitch(to_int(state().angleUD()));
+                cam.rotatePitch(to_float(state().angleUD()));
                 state().cameraUpdated(true);
             }
             if (state().roll() != SceneState::MoveDirection::NONE) {
-                cam.rotateRoll(to_int(state().roll()));
+                cam.rotateRoll(to_float(state().roll()));
                 state().cameraUpdated(true);
             }
             if (state().moveFB() != SceneState::MoveDirection::NONE) {
-                cam.moveForward(to_int(state().moveFB()));
+                cam.moveForward(to_float(state().moveFB()));
                 state().cameraUpdated(true);
             }
             if (state().moveLR() != SceneState::MoveDirection::NONE) {
-                cam.moveStrafe(to_int(state().moveLR()));
+                cam.moveStrafe(to_float(state().moveLR()));
                 state().cameraUpdated(true);
             }
         } break;
@@ -723,8 +723,8 @@ void Scene::resetSelection() {
 
 void Scene::findSelection() {
     vec2<I32> mousePos = _input->getMousePosition();
-    F32 mouseX = static_cast<F32>(mousePos.x);
-    F32 mouseY = static_cast<F32>(mousePos.y);
+    F32 mouseX = to_float(mousePos.x);
+    F32 mouseY = to_float(mousePos.y);
 
     mouseY = renderState().cachedResolution().height - mouseY - 1;
     vec3<F32> startRay = renderState().getCameraConst().unProject(

@@ -52,7 +52,7 @@ inline void BoundingSphere::add(const BoundingSphere& bSphere) {
         _radius = bSphere._radius;
     }
 
-    F32 nRadius = (_radius + dist + bSphere._radius) * 0.5;
+    F32 nRadius = (_radius + dist + bSphere._radius) * 0.5f;
     F32 ratio = (nRadius - _radius) / dist;
 
     _center += (bSphere._center - _center) * ratio;
@@ -86,13 +86,13 @@ inline void BoundingSphere::addRadius(const vec3<F32>& point) {
 
 inline void BoundingSphere::CreateFromPoints(vectorImpl<vec3<F32>>& points) {
     _radius = 0;
-    I32 numPoints = (I32)points.size();
+    F32 numPoints = to_float(points.size());
 
-    for (vec3<F32> p : points) {
+    for (const vec3<F32>& p : points) {
         _center += p / numPoints;
     }
 
-    for (vec3<F32> p : points) {
+    for (const vec3<F32>& p : points) {
         F32 distance = (p - _center).length();
 
         if (distance > _radius) {

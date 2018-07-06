@@ -45,7 +45,8 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
     I32 final_n, n = to_int(fmt_str.size()) * 2; 
     std::unique_ptr<char[]> formatted;
     va_list ap;
-    while(1) {
+    bool loop = true;
+    while(loop) {
         /// Wrap the plain char array into the unique_ptr
         formatted.reset(new char[n]); 
         strcpy(&formatted[0], fmt_str.c_str());
@@ -55,7 +56,7 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
         if (final_n < 0 || final_n >= n) {
             n += abs(final_n - n + 1);
         } else {
-            break;
+            loop = false;
         }
     }
     return stringImpl(formatted.get());
@@ -124,15 +125,15 @@ void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
         F32 yaw = degrees ? Angle::DegreesToRadians(inputRotation.yaw)
                           : inputRotation.yaw;
         if (yaw < -M_PI) {
-            yaw = fmod(yaw, M_PI * 2.0f);
+            yaw = fmod(yaw, to_float(M_PI) * 2.0f);
             if (yaw < -M_PI) {
-                yaw += static_cast<F32>(M_PI) * 2.0f;
+                yaw += to_float(M_PI) * 2.0f;
             }
             inputRotation.yaw = Angle::RadiansToDegrees(yaw);
         } else if (yaw > M_PI) {
-            yaw = fmod(yaw, M_PI * 2.0f);
+            yaw = fmod(yaw, to_float(M_PI) * 2.0f);
             if (yaw > M_PI) {
-                yaw -= static_cast<F32>(M_PI) * 2.0f;
+                yaw -= to_float(M_PI) * 2.0f;
             }
             inputRotation.yaw = degrees ? Angle::RadiansToDegrees(yaw) : yaw;
         }
@@ -141,15 +142,15 @@ void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
         F32 pitch = degrees ? Angle::DegreesToRadians(inputRotation.pitch)
                             : inputRotation.pitch;
         if (pitch < -M_PI) {
-            pitch = fmod(pitch, M_PI * 2.0f);
+            pitch = fmod(pitch, to_float(M_PI) * 2.0f);
             if (pitch < -M_PI) {
-                pitch += static_cast<F32>(M_PI) * 2.0f;
+                pitch += to_float(M_PI) * 2.0f;
             }
             inputRotation.pitch = Angle::RadiansToDegrees(pitch);
         } else if (pitch > M_PI) {
-            pitch = fmod(pitch, M_PI * 2.0f);
+            pitch = fmod(pitch, to_float(M_PI) * 2.0f);
             if (pitch > M_PI) {
-                pitch -= static_cast<F32>(M_PI) * 2.0f;
+                pitch -= to_float(M_PI) * 2.0f;
             }
             inputRotation.pitch =
                 degrees ? Angle::RadiansToDegrees(pitch) : pitch;
@@ -159,15 +160,15 @@ void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
         F32 roll = degrees ? Angle::DegreesToRadians(inputRotation.roll)
                            : inputRotation.roll;
         if (roll < -M_PI) {
-            roll = fmod(roll, M_PI * 2.0f);
+            roll = fmod(roll, to_float(M_PI) * 2.0f);
             if (roll < -M_PI) {
-                roll += static_cast<F32>(M_PI) * 2.0f;
+                roll += to_float(M_PI) * 2.0f;
             }
             inputRotation.roll = Angle::RadiansToDegrees(roll);
         } else if (roll > M_PI) {
-            roll = fmod(roll, M_PI * 2.0f);
+            roll = fmod(roll, to_float(M_PI) * 2.0f);
             if (roll > M_PI) {
-                roll -= static_cast<F32>(M_PI) * 2.0f;
+                roll -= to_float(M_PI) * 2.0f;
             }
             inputRotation.roll = degrees ? Angle::RadiansToDegrees(roll) : roll;
         }
@@ -211,8 +212,7 @@ void PlotFloatEvents(const stringImpl& eventName,
         if (eventName.compare(crtEvent._eventName) == 0) {
             vectorAlg::emplace_back(
                 targetGraph._coords,
-                static_cast<F32>(
-                    Time::MicrosecondsToMilliseconds(crtEvent._timeStamp)),
+                Time::MicrosecondsToMilliseconds<F32>(crtEvent._timeStamp),
                 crtEvent._eventValue);
         }
     }

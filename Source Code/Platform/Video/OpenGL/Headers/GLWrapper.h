@@ -192,9 +192,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// is used
     static void togglePrimitiveRestart(bool state);
     /// Set the currently active texture unit
-    static bool setActiveTextureUnit(GLuint unit);
+    static bool setActiveTextureUnit(GLushort unit);
     /// Set the currently active texture unit
-    static bool setActiveTextureUnit(GLuint unit, GLuint& previousUnit);
+    static bool setActiveTextureUnit(GLushort unit, GLuint& previousUnit);
     /// Switch the currently active vertex array object
     static bool setActiveVAO(GLuint ID);
     /// Switch the currently active vertex array object
@@ -236,20 +236,20 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Bind a texture specified by a GL handle and GL type to the specified
     /// unit
     /// using the sampler object defined by hash value
-    static bool bindTexture(GLuint unit, GLuint handle, GLenum target,
+    static bool bindTexture(GLushort unit, GLuint handle, GLenum target,
                             size_t samplerHash = 0);
     /// Bind multiple textures specified by an array of handles and an offset
     /// unit
-    static bool bindTextures(GLuint unitOffset, GLuint textureCount,
+    static bool bindTextures(GLushort unitOffset, GLuint textureCount,
                              GLuint* textureHandles, GLenum* targets,
                              GLuint* samplerHandles);
 
     /// Bind the sampler object described by the hash value to the specified
     /// unit
-    static bool bindSampler(GLuint unit, size_t samplerHash);
+    static bool bindSampler(GLushort unit, size_t samplerHash);
     /// Bind multiple samplers described by the array of hash values to the
     /// consecutive texture units starting from the specified offset
-    static bool bindSamplers(GLuint unitOffset, GLuint samplerCount,
+    static bool bindSamplers(GLushort unitOffset, GLuint samplerCount,
                              GLuint* samplerHandles);
     /// Return the OpenGL sampler object's handle for the given hash value
     static GLuint getSamplerHandle(size_t samplerHash);

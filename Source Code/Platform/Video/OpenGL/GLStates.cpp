@@ -170,13 +170,13 @@ void GL_API::updateClipPlanes() {
     }
 }
 
-bool GL_API::setActiveTextureUnit(GLuint unit) {
+bool GL_API::setActiveTextureUnit(GLushort unit) {
     GLuint temp = 0;
     return setActiveTextureUnit(unit, temp);
 }
 
 /// Set the currently active texture unit
-bool GL_API::setActiveTextureUnit(GLuint unit, GLuint& previousUnit) {
+bool GL_API::setActiveTextureUnit(GLushort unit, GLuint& previousUnit) {
     previousUnit = _activeTextureUnit;
     // Prevent double bind
     if (_activeTextureUnit == unit) {
@@ -184,26 +184,26 @@ bool GL_API::setActiveTextureUnit(GLuint unit, GLuint& previousUnit) {
     }
     // Update and remember internal state
     _activeTextureUnit = unit;
-    glActiveTexture(GL_TEXTURE0 + unit);
+    glActiveTexture(GL_TEXTURE0 + static_cast<GLuint>(unit));
 
     return true;
 }
 
-bool GL_API::bindSamplers(GLuint unitOffset,
+bool GL_API::bindSamplers(GLushort unitOffset,
                           GLuint samplerCount,
                           GLuint* samplerHandles) {
     if (samplerCount > 0 &&
         unitOffset + samplerCount <
             static_cast<GLuint>(GL_API::_maxTextureUnits)) {
-        GLuint offset = static_cast<GLuint>(GL_TEXTURE0) + unitOffset;
+        GLushort offset = static_cast<GLushort>(GL_TEXTURE0) + unitOffset;
         glBindSamplers(offset, samplerCount, samplerHandles);
 
         if (!samplerHandles) {
-            for (GLuint i = 0; i < samplerCount; ++i) {
+            for (GLushort i = 0; i < samplerCount; ++i) {
                 _samplerBoundMap.erase(_samplerBoundMap.find(offset + i));
             }
         } else {
-            for (GLuint i = 0; i < samplerCount; ++i) {
+            for (GLushort i = 0; i < samplerCount; ++i) {
                 _samplerBoundMap[offset + i] = samplerHandles[i];
             }
         }
@@ -215,7 +215,7 @@ bool GL_API::bindSamplers(GLuint unitOffset,
 }
 
 /// Bind the sampler object described by the hash value to the specified unit
-bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
+bool GL_API::bindSampler(GLushort unit, size_t samplerHash) {
 
     samplerBoundMapDef::iterator it = _samplerBoundMap.find(unit);
     if (it == std::end(_samplerBoundMap)) {
@@ -237,7 +237,7 @@ bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
     return true;
 }
 
-bool GL_API::bindTextures(GLuint unitOffset,
+bool GL_API::bindTextures(GLushort unitOffset,
                           GLuint textureCount,
                           GLuint* textureHandles,
                           GLenum* targets,
@@ -245,16 +245,16 @@ bool GL_API::bindTextures(GLuint unitOffset,
     if (textureCount > 0 &&
         unitOffset + textureCount <
             static_cast<GLuint>(GL_API::_maxTextureUnits)) {
-        GLuint offset = static_cast<GLuint>(GL_TEXTURE0) + unitOffset;
+        GLushort offset = static_cast<GLushort>(GL_TEXTURE0) + unitOffset;
         GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
         glBindTextures(offset, textureCount, textureHandles);
 
         if (!textureHandles) {
-            for (GLuint i = 0; i < textureCount; ++i) {
+            for (GLushort i = 0; i < textureCount; ++i) {
                 _textureBoundMap.erase(_textureBoundMap.find(offset + i));
             }
         } else {
-            for (GLuint i = 0; i < textureCount; ++i) {
+            for (GLushort i = 0; i < textureCount; ++i) {
                 std::pair<GLuint, GLenum>& currentMapping =
                     _textureBoundMap[offset + i];
                 currentMapping.first = textureHandles[i];
@@ -269,7 +269,7 @@ bool GL_API::bindTextures(GLuint unitOffset,
 
 // Bind a texture specified by a GL handle and GL type to the specified unit
 /// using the sampler object defined by hash value
-bool GL_API::bindTexture(GLuint unit,
+bool GL_API::bindTexture(GLushort unit,
                          GLuint handle,
                          GLenum target,
                          size_t samplerHash) {
@@ -511,7 +511,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     }
     // Check line width
     if (!oldBlock || !FLOAT_COMPARE(oldBlock->lineWidth(), newBlock.lineWidth())) {
-        glLineWidth(std::min(newBlock.lineWidth(), static_cast<F32>(_lineWidthLimit)));
+        glLineWidth(std::min(newBlock.lineWidth(), to_float(_lineWidthLimit)));
     }
     // Check separate blend functions
     if (!oldBlock ||

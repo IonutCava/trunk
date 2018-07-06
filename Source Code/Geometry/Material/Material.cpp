@@ -458,11 +458,11 @@ void Material::computeShaderInternal() {
 
 void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
-    U8 slotValue = to_uint(slot);
+    U32 slotValue = to_uint(slot);
     Texture* crtTexture = _textures[slotValue];
     if (crtTexture) {
         TextureData data = crtTexture->getData();
-        data.setHandleLow(to_uint(slotValue));
+        data.setHandleLow(slotValue);
         container.push_back(data);
     }
 }

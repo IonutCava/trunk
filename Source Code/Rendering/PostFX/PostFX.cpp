@@ -210,12 +210,13 @@ void PostFX::createOperators() {
     }
 }
 
-void PostFX::updateResolution(I32 width, I32 height) {
+void PostFX::updateResolution(U16 width, U16 height) {
     if (!_gfx || !_gfx->postProcessingEnabled()) {
         return;
     }
 
-    if (vec2<U16>(width, height) == _resolutionCache || width < 1 ||
+    if (vec2<U16>(width, height) == _resolutionCache ||
+        width < 1 ||
         height < 1) {
         return;
     }
@@ -236,11 +237,11 @@ void PostFX::displayScene() {
         drawShader = _anaglyphShader;
         _anaglyphShader->bind();
         _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->Bind(to_uint(
+            ->Bind(static_cast<U8>(
                 TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));  // right eye
                                                                    // buffer
         _gfx->getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
-            ->Bind(to_uint(
+            ->Bind(static_cast<U8>(
                 TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));  // left eye
                                                                   // buffer
     } else {
@@ -253,34 +254,34 @@ void PostFX::displayScene() {
         _gfx->getRenderTarget(
                   _depthPreview ? GFXDevice::RenderTarget::DEPTH
                                 : GFXDevice::RenderTarget::SCREEN)
-            ->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
+            ->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
                    _depthPreview ? TextureDescriptor::AttachmentType::Depth
                                  : TextureDescriptor::AttachmentType::Color0);
 #else
         _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+            ->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
 #endif
 
         if (_underwaterTexture) {
             _underwaterTexture->Bind(
-                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+                static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
         }
 
         if (_noise) {
-            _noise->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+            _noise->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
         }
 
         if (_screenBorder) {
             _screenBorder->Bind(
-                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+                static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
         }
 
         if (_bloomFB) {
-            _bloomFB->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
+            _bloomFB->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
         }
 
         if (_SSAO_FB) {
-            _SSAO_FB->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
+            _SSAO_FB->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
         }
     }
 
@@ -359,8 +360,8 @@ void PostFX::idle() {
 
         if (_timer > _tickInterval) {
             _timer = 0.0;
-            _randomNoiseCoefficient = (F32)Random(1000) * 0.001f;
-            _randomFlashCoefficient = (F32)Random(1000) * 0.001f;
+            _randomNoiseCoefficient = Random(1000) * 0.001f;
+            _randomFlashCoefficient = Random(1000) * 0.001f;
         }
 
         _postProcessingShader->Uniform("randomCoeffNoise",

@@ -69,8 +69,8 @@ void ApplicationTimer::update(U32 frameCount) {
     TimeValue currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
-    _speedfactor = static_cast<F32>((currentTicks - _frameDelay) / 
-                   (_ticksPerSecond / static_cast<F32>(_targetFrameRate)));
+    _speedfactor = to_float((currentTicks - _frameDelay) / 
+                   (_ticksPerSecond / to_float(_targetFrameRate)));
 
     CLAMP<F32>(_speedfactor, 0.0f, 1.0f);
 

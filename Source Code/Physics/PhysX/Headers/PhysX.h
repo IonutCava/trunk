@@ -39,15 +39,6 @@
 
 // PhysX includes
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning( \
-    disable : 4503)  //<decorated name length exceeded, name was truncated
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#endif
-
 #include < PxPhysicsAPI.h >
 #include < PxDefaultErrorCallback.h >
 #include < PxDefaultAllocator.h >
@@ -55,11 +46,6 @@
 #include < PxAllocatorCallback.h >
 // Connecting the SDK to Visual Debugger
 #include < pvd/PxVisualDebugger.h >
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
 // PhysX includes //
 
 // PhysX libraries
@@ -141,7 +127,9 @@ DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
     void idle();
 
     void updateTimeStep(U8 timeStepFactor);
-    inline void updateTimeStep() { updateTimeStep(_timeStepFactor); }
+    inline void updateTimeStep() {
+        updateTimeStep(_timeStepFactor);
+    }
 
     PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
@@ -169,7 +157,7 @@ DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
     physx::debugger::comm::PvdConnectionManager* _pvdConnection;
     boost::mutex _physxMutex;
     physx::PxReal _timeStep;
-    physx::PxReal _timeStepFactor;
+    physx::PxU8   _timeStepFactor;
     physx::PxReal _accumulator;
     static physx::PxDefaultAllocator _gDefaultAllocatorCallback;
     static physx::PxDefaultErrorCallback _gDefaultErrorCallback;

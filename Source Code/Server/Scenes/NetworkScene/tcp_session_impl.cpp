@@ -37,6 +37,8 @@ void tcp_session_impl::handlePacket(WorldPacket& p) {
     };
 }
 void tcp_session_impl::HandleHeartBeatOpCode(WorldPacket& p) {
+    ACKNOWLEDGE_UNUSED(p);
+
     WorldPacket r(OPCodesEx::MSG_HEARTBEAT);
     std::cout << "Sending  [ MSG_HEARTBEAT]" << std::endl;
     r << (I8)0;
@@ -77,7 +79,7 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p) {
         p >> version;
         data.name.push_back(name);
         data.modelName.push_back(modelname);
-        data.version.push_back(version);
+        data.version.push_back(to_float(version));
     }
     bool updated = Patch::getInstance().compareData(data);
 

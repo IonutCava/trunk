@@ -19,7 +19,7 @@
 namespace Divide {
 
 CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
-                                       F32 numSplits)
+                                       U8 numSplits)
     : ShadowMap(light, shadowCamera, ShadowType::LAYERED)
 {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
@@ -121,7 +121,7 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void CascadedShadowMaps::updateResolution(I32 newWidth, I32 newHeight) {
+void CascadedShadowMaps::updateResolution(U16 newWidth, U16 newHeight) {
     ShadowMap::updateResolution(newWidth, newHeight);
 }
 
@@ -172,7 +172,7 @@ void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam) {
     _splitDepths[_numSplits] = farPlane;
     for (I32 i = 1; i < (I32)_numSplits; ++i) {
         _splitDepths[i] = _splitLogFactor * nearPlane *
-                              (F32)std::pow(farPlane / nearPlane, i / N) +
+                              to_float(std::pow(farPlane / nearPlane, i / N)) +
                           (1.0f - _splitLogFactor) *
                               ((nearPlane + (i / N)) * (farPlane - nearPlane));
     }

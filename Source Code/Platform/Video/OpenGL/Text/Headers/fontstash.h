@@ -314,7 +314,7 @@ static struct FONSatlas* fons__allocAtlas(int w, int h, int nnodes)
     // Init root node.
     atlas->nodes[0].x = 0;
     atlas->nodes[0].y = 0;
-    atlas->nodes[0].width = w;
+    atlas->nodes[0].width = (short)(w);
     atlas->nnodes++;
 
     return atlas;
@@ -336,9 +336,9 @@ static int fons__atlasInsertNode(struct FONSatlas* atlas, int idx, int x, int y,
     }
     for (i = atlas->nnodes; i > idx; i--)
         atlas->nodes[i] = atlas->nodes[i-1];
-    atlas->nodes[idx].x = x;
-    atlas->nodes[idx].y = y;
-    atlas->nodes[idx].width = w;
+    atlas->nodes[idx].x = (short)(x);
+    atlas->nodes[idx].y = (short)(y);
+    atlas->nodes[idx].width = (short)(w);
     atlas->nnodes++;
 
     return 1;
@@ -365,8 +365,8 @@ static int fons__atlasAddSkylineLevel(struct FONSatlas* atlas, int idx, int x, i
     for (i = idx+1; i < atlas->nnodes; i++) {
         if (atlas->nodes[i].x < atlas->nodes[i-1].x + atlas->nodes[i-1].width) {
             int shrink = atlas->nodes[i-1].x + atlas->nodes[i-1].width - atlas->nodes[i].x;
-            atlas->nodes[i].x += shrink;
-            atlas->nodes[i].width -= shrink;
+            atlas->nodes[i].x += (short)(shrink);
+            atlas->nodes[i].width -= (short)(shrink);
             if (atlas->nodes[i].width <= 0) {
                 fons__atlasRemoveNode(atlas, i);
                 i--;
@@ -641,7 +641,7 @@ int fonsAddFontMem(struct FONScontext* stash, const char* name, unsigned char* d
     // Read in the font data.
     font->dataSize = dataSize;
     font->data = data;
-    font->freeData = freeData;
+    font->freeData = (unsigned char)(freeData);
 
     // Init stb_truetype
     stash->nscratch = 0;
@@ -797,13 +797,13 @@ static struct FONSglyph* fons__getGlyph(struct FONScontext* stash, struct FONSfo
     glyph->size = isize;
     glyph->blur = iblur;
     glyph->index = g;
-    glyph->x0 = gx;
-    glyph->y0 = gy;
-    glyph->x1 = glyph->x0+gw;
-    glyph->y1 = glyph->y0+gh;
+    glyph->x0 = (short)(gx);
+    glyph->y0 = (short)(gy);
+    glyph->x1 = (short)(glyph->x0+gw);
+    glyph->y1 = (short)(glyph->y0+gh);
     glyph->xadv = (short)(scale * advance * 10.0f);
-    glyph->xoff = x0 - pad;
-    glyph->yoff = y0 - pad;
+    glyph->xoff = (short)(x0 - pad);
+    glyph->yoff = (short)(y0 - pad);
     glyph->next = 0;
 
     // Insert char to hash lookup.
@@ -878,10 +878,10 @@ static void fons__getQuad(struct FONScontext* stash, struct FONSfont* font,
         rx = (int)(*x + xoff);
         ry = (int)(*y + yoff);
 
-        q->x0 = rx;
-        q->y0 = ry;
-        q->x1 = rx + x1 - x0;
-        q->y1 = ry + y1 - y0;
+        q->x0 = (float)(rx);
+        q->y0 = (float)(ry);
+        q->x1 = (float)(rx + x1 - x0);
+        q->y1 = (float)(ry + y1 - y0);
 
         q->s0 = x0 * stash->itw;
         q->t0 = y0 * stash->ith;
@@ -891,10 +891,10 @@ static void fons__getQuad(struct FONScontext* stash, struct FONSfont* font,
         rx = (int)(*x + xoff);
         ry = (int)(*y - yoff);
 
-        q->x0 = rx;
-        q->y0 = ry;
-        q->x1 = rx + x1 - x0;
-        q->y1 = ry - y1 + y0;
+        q->x0 = (float)(rx);
+        q->y0 = (float)(ry);
+        q->x1 = (float)(rx + x1 - x0);
+        q->y1 = (float)(ry - y1 + y0);
 
         q->s0 = x0 * stash->itw;
         q->t0 = y0 * stash->ith;

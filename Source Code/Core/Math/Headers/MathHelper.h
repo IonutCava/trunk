@@ -184,9 +184,9 @@ template <typename T>
 U64 Microseconds(T a);
 
 template <typename T>
-T MicrosecondsToSeconds(T a);
+T MicrosecondsToSeconds(U64 a);
 template <typename T>
-T MicrosecondsToMilliseconds(T a);
+T MicrosecondsToMilliseconds(U64 a);
 template <typename T>
 T MillisecondsToSeconds(T a);
 template <typename T>

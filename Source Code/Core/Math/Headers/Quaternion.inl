@@ -93,11 +93,11 @@ inline T Quaternion<T>::magnituteSq() const {
 template <typename T>
 inline bool Quaternion<T>::compare(const Quaternion<T>& rq,
                                    F32 tolerance = 1e-3f) const {
-    T angleRad = Angle::DegreesToRadians((T)std::acos((D32)dot(rq)));
+    T angleRad = Angle::DegreesToRadians((T)std::acos(to_double(dot(rq))));
     F32 toleranceRad = Angle::DegreesToRadians(tolerance);
 
     return (std::abs(angleRad) <= toleranceRad) ||
-           FLOAT_COMPARE_TOLERANCE(angleRad, static_cast<F32>(M_PI),
+           FLOAT_COMPARE_TOLERANCE(angleRad, to_float(M_PI),
                                    toleranceRad);
 }
 
@@ -233,10 +233,10 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
     }
 
     if (1.0 - cosomega > 1e-6) {
-        F32 omega = (F32)std::acos(cosomega);
-        F32 sinomega = (F32)std::sin(omega);
-        k0 = (F32)std::sin((1.0f - t) * omega) / sinomega;
-        k1 = (F32)std::sin(t * omega) / sinomega;
+        F32 omega = to_float(std::acos(cosomega));
+        F32 sinomega = to_float(std::sin(omega));
+        k0 = to_float(std::sin((1.0f - t) * omega) / sinomega);
+        k1 = to_float(std::sin(t * omega) / sinomega);
     } else {
         k0 = 1.0f - t;
         k1 = t;
@@ -303,7 +303,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 
     if (fTrace > 0.0) {
         // |w| > 1/2, may as well choose w > 1/2
-        fRoot = (T)std::sqrtf((F32)fTrace + 1.0f);  // 2w
+        fRoot = (T)std::sqrtf(to_float(fTrace) + 1.0f);  // 2w
         W(0.5f * fRoot);
         fRoot = 0.5f / fRoot;  // 1/(4w)
         X((rotationMatrix.m[2][1] - rotationMatrix.m[1][2]) * fRoot);
@@ -323,7 +323,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
         size_t k = s_iNext[j];
 
         fRoot = static_cast<T>(std::sqrtf(
-            static_cast<F32>(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] -
+                    to_float(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] -
                              rotationMatrix.m[k][k] + 1.0f)));
         T* apkQuat[3] = {&_elements.x, &_elements.y, &_elements.z};
         *apkQuat[i] = 0.5f * fRoot;
@@ -484,7 +484,7 @@ inline Quaternion<T> RotationFromVToU(
     } else if (d < (1e-6f - 1.0f)) {
         if (!fallbackAxis.compare(VECTOR3_ZERO)) {
             // rotate 180 degrees about the fallback axis
-            q.fromAxisAngle(fallbackAxis, Angle::DegreesToRadians(M_PI));
+            q.fromAxisAngle(fallbackAxis, Angle::DegreesToRadians(to_float(M_PI)));
         } else {
             // Generate an axis
             vec3<T> axis;
@@ -494,7 +494,7 @@ inline Quaternion<T> RotationFromVToU(
                 axis.cross(WORLD_Y_AXIS, v);
 
             axis.normalize();
-            q.fromAxisAngle(axis, Angle::DegreesToRadians(M_PI));
+            q.fromAxisAngle(axis, Angle::DegreesToRadians(to_float(M_PI)));
         }
     } else {
         F32 s = std::sqrtf((1 + d) * 2);

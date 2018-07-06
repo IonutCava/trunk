@@ -2,16 +2,6 @@
 #define OPCODE_ENUM OPcodes
 #endif
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-// user defined binary operator ',' exists but no overload could convert all
-// operands, default built-in binary operator ',' used
-#pragma warning(disable : 4913)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#//pragma GCC diagnostic ignored "-Wall"
-#endif
-
 #include "Client.h"
 #include "ASIO.h"
 #include "OPCodesTpl.h"
@@ -54,6 +44,8 @@ void Client::start_read() {
 
 void Client::handle_read_body(const boost::system::error_code& ec,
                               size_t bytes_transfered) {
+    ACKNOWLEDGE_UNUSED(bytes_transfered);
+
     if (_stopped) {
         return;
     }
@@ -71,6 +63,8 @@ void Client::handle_read_body(const boost::system::error_code& ec,
 
 void Client::handle_read_packet(const boost::system::error_code& ec,
                                 size_t bytes_transfered) {
+    ACKNOWLEDGE_UNUSED(bytes_transfered);
+        
     if (_stopped) {
         return;
     }
@@ -105,6 +99,8 @@ void Client::handle_read_packet(const boost::system::error_code& ec,
 
 void Client::handle_read_file(const boost::system::error_code& ec,
                               size_t bytes_transfered) {
+    ACKNOWLEDGE_UNUSED(ec);
+
     std::cout << __FUNCTION__ << "(" << bytes_transfered << ")"
               << ", in_avail=" << _requestBuf.in_avail()
               << ", size=" << _requestBuf.size()
@@ -282,8 +278,3 @@ void Client::handle_connect(const boost::system::error_code& ec,
 }
 
 };  // namespace Divide
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif

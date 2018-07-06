@@ -63,7 +63,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
         _hasDepth = true;
     }
 
-    U8 slot = to_uint(type);
+    I32 slot = to_int(type);
 
     TextureType currentType = texDescriptor._type;
 
@@ -130,7 +130,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
         texDescriptor._mipMinLevel,
         texDescriptor._mipMaxLevel > 0
             ? texDescriptor._mipMaxLevel
-            : 1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
+            : 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height)))));
 
     tex->loadData(
         isLayeredTexture
@@ -149,7 +149,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
         _isLayeredDepth = isLayeredTexture;
     } else {
         GLint offset = 0;
-        if (slot > to_uint(AttachmentType::Color0)) {
+        if (slot > to_int(AttachmentType::Color0)) {
             offset = _attOffset[slot - 1];
         }
         if (texDescriptor.isCubeTexture() && !_layeredRendering) {

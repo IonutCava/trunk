@@ -32,7 +32,7 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos,
                          Terrain* const terrain, U32& chunkCount) {
     _LOD = 0;
     _minHMSize = minHMSize;
-    U32 div = (U32)std::pow(2.0f, (F32)depth);
+    U32 div = to_uint(std::pow(2.0f, to_float(depth)));
     vec2<U32> nodesize = HMsize / (div);
     if (nodesize.x % 2 == 0) nodesize.x++;
     if (nodesize.y % 2 == 0) nodesize.y++;

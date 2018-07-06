@@ -307,7 +307,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
     BoundingBox importBB;
 
     VertexBuffer* vb = parentMesh->getGeometryVB();
-    U32 previousOffset = (U32)vb->getPosition().size();
+    U32 previousOffset = to_uint(vb->getPosition().size());
 
     vec3<F32> position, normal, tangent;
     P32 boneIndices;
@@ -343,7 +343,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         }
     }  // endfor
 
-    submeshBoneOffsetOut += source->mNumBones;
+    submeshBoneOffsetOut += static_cast<U8>(source->mNumBones);
     Attorney::SubMeshDVDConverter::setGeometryLimits(
         *tempSubMesh, importBB.getMin(), importBB.getMax());
 

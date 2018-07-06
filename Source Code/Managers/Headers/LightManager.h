@@ -61,7 +61,7 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     inline Light::LightList& getLights() { return _lights; }
     Light* getLight(I64 lightGUID);
 
-    void updateResolution(I32 newWidth, I32 newHeight);
+    void updateResolution(U16 newWidth, U16 newHeight);
 
     /// shadow mapping
     void bindDepthMaps();

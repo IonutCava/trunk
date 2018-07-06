@@ -251,8 +251,9 @@ NavModelData mergeModels(NavModelData& a,
                        a.getTriCount() * 3;  // i like pointing at faces
         memcpy(bFacePt, b.getTris(), bFaceSize * sizeof(I32));
 
-        for (U32 i = 0; i < (U32)bFaceSize; i++)
+        for (U32 i = 0; i < to_uint(bFaceSize); i++) {
             *(bFacePt + i) += a.getVertCount();
+        }
 
         if (mergedData._vertexCount > 0) {
             if (delOriginals) {
@@ -400,7 +401,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, std::weak_ptr<SceneGra
         }
 
         Console::d_printfn(Locale::get("NAV_MESH_CURRENT_NODE"),
-                           sn->getName().c_str(), (U32)level);
+                           sn->getName().c_str(), to_uint(level));
 
         U32 currentTriangleIndexOffset = outData.getVertCount();
 

@@ -119,7 +119,7 @@ class Terrain : public Object3D {
     vec3<F32> getNormal(F32 x_clampf, F32 z_clampf) const;
     vec3<F32> getTangent(F32 x_clampf, F32 z_clampf) const;
     const vec2<F32> getDimensions() {
-        return vec2<F32>((F32)_terrainDimensions.x, (F32)_terrainDimensions.y);
+        return vec2<F32>(_terrainDimensions.x, _terrainDimensions.y);
     }
 
     void terrainSmooth(F32 k);

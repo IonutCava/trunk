@@ -160,7 +160,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
             _textureID, textureTypeEnum, GL_TEXTURE_WRAP_R, to_int(GL_REPEAT));
     }
 
-    U16 mipLevels = std::floor(std::log2(std::max(_width, _height))) + 1;
+    U16 mipLevels = static_cast<U16>(std::floor(std::log2(std::max(_width, _height))) + 1);
     GL_API::setPixelPackUnpackAlignment();
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:

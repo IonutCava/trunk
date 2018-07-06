@@ -6,13 +6,13 @@ namespace Divide {
 
 template <>
 Box3D* ImplResourceLoader<Box3D>::operator()() {
-    F32 size = 1.0f;
+    D32 size = 1.0;
     if (!_descriptor.getPropertyListString().empty()) {
         size =
             atof(_descriptor.getPropertyListString().c_str());  //<should work
     }
 
-    Box3D* ptr = MemoryManager_NEW Box3D(size);
+    Box3D* ptr = MemoryManager_NEW Box3D(to_float(size));
 
     if (!load(ptr, _descriptor.getName())) {
         MemoryManager::DELETE(ptr);

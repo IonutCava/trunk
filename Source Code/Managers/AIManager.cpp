@@ -50,7 +50,7 @@ void AIManager::update() {
     _previousTime = _currentTime;
     _currentTime = Time::ElapsedMicroseconds(true);
     _deltaTime = _currentTime - _previousTime;
-    U64 deltaTimeMS = Time::MicrosecondsToMilliseconds(_deltaTime);
+
     if (_aiTeams.empty() || _pauseUpdate) {
         return;  // nothing to do
     }

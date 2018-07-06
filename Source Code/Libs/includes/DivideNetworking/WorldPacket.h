@@ -42,6 +42,8 @@ class WorldPacket : public ByteBuffer {
 
     template <typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
+        ACKNOWLEDGE_UNUSED(version);
+
         ar & boost::serialization::base_object<ByteBuffer>(*this);
         ar & m_opcode;
     }

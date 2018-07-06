@@ -142,7 +142,7 @@ struct FONScontext* glfonsCreate(int width, int height, int flags) {
     memset(&params, 0, sizeof(params));
     params.width = width;
     params.height = height;
-    params.flags = flags;
+    params.flags = static_cast<unsigned char>(flags);
     params.renderCreate = glfons__renderCreate;
     params.renderUpdate = glfons__renderUpdate;
     params.renderDraw = glfons__renderDraw;

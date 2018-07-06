@@ -21,15 +21,15 @@ void CubeScene::processTasks(const U64 deltaTime) {
         for (U8 row = 0; row < 3; row++)
             for (U8 col = 0; col < lights.size() / 3.0f; col++) {
                 F32 x = col * 150.0f - 5.0f +
-                        cos(Time::ElapsedMilliseconds() * (col - row + 2) *
+                        cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *
                             0.008f) *
                             200.0f;
-                F32 y = cos(Time::ElapsedSeconds() * (col - row + 2) * 0.01f) *
+                F32 y = cos(to_float(Time::ElapsedSeconds()) * (col - row + 2) * 0.01f) *
                             200.0f +
                         20;
                 ;
                 F32 z = row * 500.0f - 500.0f -
-                        cos(Time::ElapsedMilliseconds() * (col - row + 2) *
+                        cos(to_float(Time::ElapsedMilliseconds()) * (col - row + 2) *
                             0.009f) *
                             200.0f +
                         10;
@@ -98,7 +98,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
         for (U8 col = 0; col < 10; col++) {
             U8 lightID = static_cast<U8>(row * 10 + col);
             std::stringstream ss;
-            ss << (U32)lightID;
+            ss << to_uint(lightID);
             ResourceDescriptor tempLight(
                 stringAlg::toBase("Light Deferred " + ss.str()));
             tempLight.setEnumValue(to_uint(LightType::POINT));

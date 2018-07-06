@@ -1,6 +1,4 @@
-#include <stdarg.h>
 #include "Headers/GUI.h"
-#include <CEGUI/CEGUI.h>
 
 #include "Headers/GUIFlash.h"
 #include "Headers/GUIText.h"
@@ -16,6 +14,13 @@
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
+
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
+#include <CEGUI/CEGUI.h>
+#endif //CEGUI_STATIC
+
+#include <stdarg.h>
 
 namespace Divide {
 
@@ -84,7 +89,8 @@ void GUI::draw() const {
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
 
-    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
+    setCursorPosition(static_cast<U16>(mouseState.X.abs),
+                      static_cast<U16>(mouseState.Y.abs));
 }
 
 void GUI::update(const U64 deltaTime) {
@@ -179,7 +185,10 @@ bool GUI::init(const vec2<U16>& resolution) {
                                    std::numeric_limits<U32>::max() - 1);
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
-    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
+
+    setCursorPosition(static_cast<U16>(mouseState.X.abs),
+                      static_cast<U16>(mouseState.Y.abs));
+
     _defaultMsgBox = addMsgBox("AssertMsgBox", "Assertion failure",
                                "Assertion failed with message: ");
     _init = true;
@@ -238,8 +247,8 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     }
 
     GUIEvent event;
-    event.mousePoint.x = arg.state.X.abs;
-    event.mousePoint.y = arg.state.Y.abs;
+    event.mousePoint.x = to_float(arg.state.X.abs);
+    event.mousePoint.y = to_float(arg.state.Y.abs);
 
     for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->mouseMoved(event);

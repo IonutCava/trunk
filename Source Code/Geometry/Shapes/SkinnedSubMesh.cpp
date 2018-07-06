@@ -69,8 +69,8 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
-    U32 partitionCount =
-        parentVB->getPartitionCount(_geometryPartitionID) + partitionOffset;
+    U32 partitionCount = parentVB->getPartitionCount(_geometryPartitionID) +
+                         partitionOffset;
 
     const vectorImpl<vec3<F32> >& verts = parentVB->getPosition();
     const vectorImpl<P32 >& indices = parentVB->getBoneIndices();
@@ -142,7 +142,7 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
             sgn.setInitialBoundingBox(it4->second);
         }
 #else
-        sgn.setInitialBoundingBox(it3->second.find(animComp->frameIndex()));
+        sgn.setInitialBoundingBox(it3->second.find(animComp->frameIndex())->second);
 #endif
 
     }

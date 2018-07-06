@@ -84,7 +84,7 @@ class SceneAnimator {
         _animations[animationIndex].ticksPerSecond(tickspersecond);
     }
     /// Get the animationspeed... in ticks per second
-    inline F32 animationSpeed(I32 animationIndex) const {
+    inline D32 animationSpeed(I32 animationIndex) const {
         return _animations[animationIndex].ticksPerSecond();
     }
 

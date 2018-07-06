@@ -157,7 +157,7 @@ void saveTextureXML(const std::string &textureNode, Texture *texture,
     tree.put(textureNode + ".MapW", getWrapModeName(sampler.wrapW()));
     tree.put(textureNode + ".minFilter", getFilterName(sampler.minFilter()));
     tree.put(textureNode + ".magFilter", getFilterName(sampler.magFilter()));
-    tree.put(textureNode + ".anisotropy", (U32)sampler.anisotropyLevel());
+    tree.put(textureNode + ".anisotropy", to_uint(sampler.anisotropyLevel()));
 
     if (!operation.empty()) {
         tree.put(textureNode + ".operation", operation);
@@ -181,7 +181,7 @@ Texture *loadTextureXML(const std::string &textureNode,
     TextureFilter magFilterValue =
         getFilter(pt.get<std::string>(textureNode + ".magFilter",
                                       "LINEAR").c_str());
-    U32 anisotropy = pt.get(textureNode + ".anisotropy", 0);
+    U8 anisotropy = static_cast<U8>(pt.get(textureNode + ".anisotropy", 0U));
 
     SamplerDescriptor sampDesc;
     sampDesc.setWrapMode(wrapU, wrapV, wrapW);
@@ -351,7 +351,7 @@ void loadScene(const std::string &sceneName, SceneManager &sceneMgr) {
     scene->state().windSpeed(pt.get("wind.windSpeed", 1.0f));
 
     scene->state().waterLevel(pt.get("water.waterLevel", 0.0f));
-    scene->state().waterDepth(pt.get("water.waterDepth", -75));
+    scene->state().waterDepth(pt.get("water.waterDepth", -75.0f));
 
     if (boost::optional<ptree &> cameraPositionOverride =
             pt.get_child_optional("options.cameraStartPosition")) {
@@ -552,7 +552,7 @@ void loadTerrain(const std::string &file, Scene *const scene) {
                 pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
         }
 
-        ter->setTextureLayerCount(i);
+        ter->setTextureLayerCount(static_cast<U8>(i));
         ter->addVariable("grassMap",
                          assetLocation + stringAlg::toBase(pt.get<std::string>(
                                              name + ".vegetation.map")));

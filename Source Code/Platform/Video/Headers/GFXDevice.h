@@ -107,7 +107,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    struct ShaderBufferBinding {
        ShaderBufferLocation _slot;
        ShaderBuffer* _buffer;
-       vec2<ptrdiff_t> _range;
+       vec2<U32>    _range;
 
        ShaderBufferBinding() : _buffer(nullptr)
        {
@@ -115,14 +115,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
        ShaderBufferBinding(ShaderBufferLocation slot,
                            ShaderBuffer* buffer,
-                           const vec2<ptrdiff_t>& range)
+                           const vec2<U32>& range)
            : _slot(slot), _buffer(buffer), _range(range)
        {
        }
 
        void set(ShaderBufferLocation slot,
                 ShaderBuffer* buffer,
-                const vec2<ptrdiff_t>& range) {
+                const vec2<U32>& range) {
            _slot = slot;
            _buffer = buffer;
            _range.set(range);

@@ -32,8 +32,18 @@
 #ifndef _PLATFORM_DEFINES_UNIX_H_
 #define _PLATFORM_DEFINES_UNIX_H_
 
+//#pragma GCC diagnostic ignored "-Wall"
+
 #define GLFW_EXPOSE_NATIVE_X11
 #define GLFW_EXPOSE_NATIVE_GLX
+
+#ifndef NOINITVTABLE
+#define NOINITVTABLE
+#endif  //NOINITVTABLE
+
+#ifndef THREAD_LOCAL
+#define THREAD_LOCAL __thread
+#endif  //THREAD_LOCAL
 
 #include <X11/Xlib.h>
 void checkX11Events();

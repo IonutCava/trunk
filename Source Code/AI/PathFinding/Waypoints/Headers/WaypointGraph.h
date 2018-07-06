@@ -50,7 +50,7 @@ class WaypointGraph {
     void updateGraph();
     bool isLooping() { return _loop; }
     inline U32 getID() const { return _id; }
-    inline U32 getSize() { return (U32)_waypoints.size(); }
+    inline U32 getSize() { return to_uint(_waypoints.size()); }
 
    private:
     WaypointMap _waypoints;

@@ -226,6 +226,7 @@ class SceneState {
 
     inline void resetMovement() {
         _moveFB = _moveLR = _angleUD = _angleLR = _roll = MoveDirection::NONE;
+        _mouseXDelta = _mouseYDelta = 0;
     }
 
     inline FogDescriptor& fogDescriptor()   { return _fog; }
@@ -280,17 +281,17 @@ class SceneState {
     inline void roll(MoveDirection factor) { _roll = factor; }
     inline MoveDirection  roll()     const { return _roll; }
 
-    inline void mouseXDelta(F32 depth) { _mouseXDelta = depth; }
-    inline F32  mouseXDelta()    const { return _mouseXDelta; }
+    inline void mouseXDelta(I32 depth) { _mouseXDelta = depth; }
+    inline I32  mouseXDelta()    const { return _mouseXDelta; }
 
-    inline void mouseYDelta(F32 depth) { _mouseYDelta = depth; }
-    inline F32  mouseYDelta()    const { return _mouseYDelta; }
+    inline void mouseYDelta(I32 depth) { _mouseYDelta = depth; }
+    inline I32  mouseYDelta()    const { return _mouseYDelta; }
 
 protected:
     MusicPlaylist _backgroundMusic;
 
-    F32 _mouseXDelta;
-    F32 _mouseYDelta;
+    I32 _mouseXDelta;
+    I32 _mouseYDelta;
     MoveDirection _moveFB;   ///< forward-back move change detected
     MoveDirection _moveLR;   ///< left-right move change detected
     MoveDirection _angleUD;  ///< up-down angle change detected

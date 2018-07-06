@@ -76,7 +76,7 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
             if (commandString.compare(commandArgs) == 0) commandArgs.clear();
             // convert command to lower case
             for (stringImpl::size_type i = 0; i < command.length(); i++) {
-                command[i] = tolower(command[i]);
+                command[i] = static_cast<char>(tolower(command[i]));
             }
             if (_commandMap.find(command) != std::end(_commandMap)) {
                 // we have a valid command
@@ -226,7 +226,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
         .getKernel()
         .getCameraMgr()
         .getActiveCamera()
-        ->setHorizontalFoV(FoV);
+        ->setHorizontalFoV(to_float(FoV));
 }
 
 void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
@@ -239,7 +239,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     if (!Util::IsNumber(args2.c_str())) {
         Console::errorfn(Locale::get("CONSOLE_INVALID_NUMBER"));
     } else {
-        scale = (F32)atof(args2.c_str());
+        scale = to_float(atof(args2.c_str()));
     }
     std::string assetLocation(
         ParamHandler::getInstance().getParam<std::string>("assetsLocation") +

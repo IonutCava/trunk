@@ -242,7 +242,7 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
 /// Linking a shader program also sets up all pre-link properties for the shader
 /// (varying locations, attrib bindings, etc)
 void glShaderProgram::link() {
-#ifdef NDEBUG
+#if !defined(_DEBUG)
     // Loading from binary is optional, but it using it does require sending the
     // driver a hint to give us access to it later
     if (Config::USE_SHADER_BINARY) {
@@ -263,7 +263,7 @@ void glShaderProgram::link() {
         // This isn't as optimised as it should/could be, but it works
         vectorImpl<const char*> vars;
         for (U32 i = 0; i < _outputCount; ++i) {
-            vars.push_back(strdup(("outData" + std::to_string(i)).c_str()));
+            vars.push_back(_strdup(("outData" + std::to_string(i)).c_str()));
         }
         // Only separate attributes are supported for now. Interleaved not top
         // prio
@@ -328,7 +328,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
     }
 
-#ifdef NDEBUG
+#if !defined(_DEBUG)
     // Load the program from the binary file, if available and allowed, to avoid
     // linking.
     if (Config::USE_SHADER_BINARY && !refresh &&

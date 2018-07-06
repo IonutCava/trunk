@@ -75,7 +75,7 @@ bool ImageData::create(const stringImpl& filename) {
 
     _dimensions.set(ilGetInteger(IL_IMAGE_WIDTH),
                     ilGetInteger(IL_IMAGE_HEIGHT));
-    _bpp = ilGetInteger(IL_IMAGE_BPP);
+    _bpp = static_cast<U8>(ilGetInteger(IL_IMAGE_BPP));
     ILint format = ilGetInteger(IL_IMAGE_FORMAT);
 
     // we determine the target format and use a flag to determine if we should

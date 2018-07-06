@@ -149,7 +149,7 @@ void RenderBin::refresh() {
 }
 
 void RenderBin::addNodeToBin(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
-    I32 keyA = (U32)_renderBinStack.size() + 1;
+    I32 keyA = to_uint(_renderBinStack.size() + 1);
     I32 keyB = keyA;
 
     RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();

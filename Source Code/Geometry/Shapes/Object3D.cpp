@@ -27,7 +27,7 @@ Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
       _playAnimations(true),
       _geometryType(type),
       _geometryFlagMask(flagMask),
-      _geometryPartitionID(0)
+      _geometryPartitionID(0U)
 {
     _buffer =
         BitCompare(_geometryFlagMask, to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
@@ -117,7 +117,7 @@ void Object3D::computeNormals() {
     }
 
     getGeometryVB()->resizeNormalCount(
-        (U32)getGeometryVB()->getPosition().size());
+        to_uint(getGeometryVB()->getPosition().size()));
     // Now loop through each vertex vector, and average out all the normals
     // stored.
     vec3<F32> currentNormal;
@@ -126,7 +126,7 @@ void Object3D::computeNormals() {
         for (U32 j = 0; j < normal_buffer[i].size(); ++j) {
             currentNormal += normal_buffer[i][j];
         }
-        currentNormal /= normal_buffer[i].size();
+        currentNormal /= to_float(normal_buffer[i].size());
 
         getGeometryVB()->modifyNormalValue(i, currentNormal);
     }
@@ -211,7 +211,7 @@ bool Object3D::computeTriangleList(bool force) {
         U32 indiceStart = 2 + partitionOffset;
         U32 indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
-        _geometryTriangles.reserve(indiceCount * 0.5);
+        _geometryTriangles.reserve(indiceCount / 2);
         if (largeIndices) {
             const vectorImpl<U32>& indices = geometry->getIndices<U32>();
             for (U32 i = indiceStart; i < indiceEnd; i++) {

@@ -1,6 +1,10 @@
 #include "Headers/CEGUIInput.h"
 
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
+#endif //CEGUI_STATIC
+
 #include "GUI/Headers/GUI.h"
 
 namespace Divide {
@@ -34,8 +38,9 @@ bool CEGUIInput::onKeyUp(const Input::KeyEvent& key) {
 }
 
 bool CEGUIInput::mouseMoved(const Input::MouseEvent& arg) {
-    CEGUI_DEFAULT_CTX.injectMouseWheelChange(arg.state.Z.abs);
-    CEGUI_DEFAULT_CTX.injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
+    CEGUI_DEFAULT_CTX.injectMouseWheelChange(to_float(arg.state.Z.abs));
+    CEGUI_DEFAULT_CTX.injectMouseMove(to_float(arg.state.X.rel),
+                                      to_float(arg.state.Y.rel));
     return true;
 }
 

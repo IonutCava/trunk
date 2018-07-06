@@ -240,9 +240,9 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
     // Since the normal matrix is 3x3, we can use the extra row and column
     // to store additional data
     dataOut._matrix[1].element(3, 2, true) =
-        static_cast<F32>(LightManager::getInstance().getLights().size());
+        to_float(LightManager::getInstance().getLights().size());
     dataOut._matrix[1].element(3, 3, true) =
-        static_cast<F32>(animComp ? animComp->boneCount() : 0);
+        to_float(animComp ? animComp->boneCount() : 0);
 
     // Get the color matrix (diffuse, ambient, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._matrix[2]);
@@ -334,7 +334,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         }
         // If the rendering commands are batchable, increase the draw count for
         // the previous one
-        previousIDC.drawCount(prevCount + currentIDC.drawCount());
+        previousIDC.drawCount(static_cast<U16>(prevCount + currentIDC.drawCount()));
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);

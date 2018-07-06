@@ -88,7 +88,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// so this should keep it busy (old-GLUT heritage)
     static void idle();
     /// Update all engine components that depend on the current resolution
-    static void updateResolutionCallback(I32 w, I32 h);
+    static void updateResolutionCallback(U16 w, U16 h);
 
     GFXDevice& getGFXDevice() const { return _GFX; }
     SFXDevice& getSFXDevice() const { return _SFX; }

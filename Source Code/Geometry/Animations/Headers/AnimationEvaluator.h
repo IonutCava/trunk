@@ -99,10 +99,20 @@ class AnimEvaluator {
         return transforms(to_uint(resultingFrameIndex));
     }
 
+    inline vectorImpl<mat4<F32>>& transforms(const D32 elapsedTime) {
+        I32 resultingFrameIndex = 0;
+        return transforms(elapsedTime, resultingFrameIndex);
+    }
+
     inline const vectorImpl<mat4<F32>>& transforms(const D32 elapsedTime, 
                                                    I32& resultingFrameIndex) const {
         resultingFrameIndex = frameIndexAt(elapsedTime);
         return transforms(to_uint(resultingFrameIndex));
+    }
+
+    inline const vectorImpl<mat4<F32>>& transforms(const D32 elapsedTime) const {
+        I32 resultingFrameIndex = 0;
+        return transforms(elapsedTime, resultingFrameIndex);
     }
 
     inline void playAnimationForward(bool state) {

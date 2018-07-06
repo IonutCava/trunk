@@ -18,7 +18,7 @@ class PreRenderStage {
         return true;
     }
     void execute();
-    void reshape(I32 width, I32 height);
+    void reshape(U16 width, U16 height);
 
    private:
     vectorImpl<PreRenderOperator*> _operators;

@@ -77,7 +77,7 @@ ErrorCode InputInterface::init(Kernel& kernel) {
         JoystickData data;
         for (OIS::JoyStick* joystick : _pJoysticks) {
             data._max = joystick->MAX_AXIS - 4000;
-            data._deadZone = data._max * 0.1;
+            data._deadZone = data._max / 10;
 
             _pJoystickInterface->setJoystickData(static_cast<Joystick>(i++), data);
         }

@@ -353,17 +353,17 @@ bool TerrainLoader::loadThreadedResources(
 
                 vec3<F32> vertexData;
                 vertexData.x =
-                    bMin.x + ((F32)i) * (bMax.x - bMin.x) / (terrainWidth - 1);
+                    bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
                 vertexData.z =
-                    bMin.z + ((F32)j) * (bMax.z - bMin.z) / (terrainHeight - 1);
+                    bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
 
                 U32 idxIMG = TER_COORD<U32>(
-                    i < (I32)heightmapWidth ? i : i - 1,
-                    j < (I32)heightmapHeight ? j : j - 1, heightmapWidth);
+                    i < to_int(heightmapWidth) ? i : i - 1,
+                    j < to_int(heightmapHeight) ? j : j - 1, heightmapWidth);
 
                 vertexData.y =
                     minAltitude +
-                    altitudeRange * (F32)heightValues[idxIMG] / 65536.0f;
+                    altitudeRange * to_float(heightValues[idxIMG]) / 65536.0f;
                 vertexData.y *= yScaleFactor;
                 vertexData.y += yOffset;
 #pragma omp critical
@@ -378,17 +378,17 @@ bool TerrainLoader::loadThreadedResources(
                 vec3<F32> vertexData;
 
                 vertexData.x =
-                    bMin.x + ((F32)i) * (bMax.x - bMin.x) / (terrainWidth - 1);
+                    bMin.x + (to_float(i)) * (bMax.x - bMin.x) / (terrainWidth - 1);
                 vertexData.z =
-                    bMin.z + ((F32)j) * (bMax.z - bMin.z) / (terrainHeight - 1);
+                    bMin.z + (to_float(j)) * (bMax.z - bMin.z) / (terrainHeight - 1);
 
                 U32 idxIMG = TER_COORD<U32>(
-                    i < (I32)heightmapWidth ? i : i - 1,
-                    j < (I32)heightmapHeight ? j : j - 1, heightmapWidth);
+                    i < to_int(heightmapWidth) ? i : i - 1,
+                    j < to_int(heightmapHeight) ? j : j - 1, heightmapWidth);
 
-                F32 h = static_cast<F32>(heightValues[idxIMG * 3 + 0] +
-                                         heightValues[idxIMG * 3 + 1] +
-                                         heightValues[idxIMG * 3 + 2]) /
+                F32 h = to_float(heightValues[idxIMG * 3 + 0] +
+                                 heightValues[idxIMG * 3 + 1] +
+                                 heightValues[idxIMG * 3 + 2]) /
                         3.0f;
 
                 vertexData.y = minAltitude + altitudeRange * h / 255.0f;

@@ -1,4 +1,3 @@
-#include <CEGUI/CEGUI.h>
 #include "Headers/GUIEditor.h"
 
 #include "GUI/Headers/GUI.h"
@@ -8,6 +7,11 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
+
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
+#include <CEGUI/CEGUI.h>
+#endif //CEGUI_STATIC
 
 namespace Divide {
 

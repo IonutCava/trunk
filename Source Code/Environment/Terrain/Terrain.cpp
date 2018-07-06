@@ -94,10 +94,10 @@ void Terrain::buildQuadtree() {
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
         U8 textureOffset =
-            to_uint(ShaderProgram::TextureUsage::NORMALMAP) + 1;
+            static_cast<U8>(ShaderProgram::TextureUsage::NORMALMAP) + 1;
         U8 layerOffset = 0;
         stringImpl layerIndex;
-        for (U32 k = 0; k < _terrainTextures.size(); ++k) {
+        for (U8 k = 0; k < _terrainTextures.size(); ++k) {
             layerOffset = k * 3 + textureOffset;
             layerIndex = std::to_string(k);
             TerrainTextureLayer* textureLayer = _terrainTextures[k];

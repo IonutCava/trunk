@@ -407,18 +407,18 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     btn->setTooltip("Start a new game!");
 
     _GUI->addText(
-        "Team1Score", vec2<I32>(renderState().cachedResolution().width - 250,
-                                renderState().cachedResolution().height / 1.3f),
+        "Team1Score", vec2<I32>(to_int(renderState().cachedResolution().width - 250),
+                                to_int(renderState().cachedResolution().height / 1.3f)),
         Font::DIVIDE_DEFAULT, vec3<F32>(0, 0.8f, 0.8f), "Team 1 Score: %d", 0);
 
     _GUI->addText(
-        "Team2Score", vec2<I32>(renderState().cachedResolution().width - 250,
-                                renderState().cachedResolution().height / 1.5f),
+        "Team2Score", vec2<I32>(to_int(renderState().cachedResolution().width - 250),
+                                to_int(renderState().cachedResolution().height / 1.5f)),
         Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.8f, 0), "Team 2 Score: %d", 0);
 
     _GUI->addText("Message",
-                  vec2<I32>(renderState().cachedResolution().width - 250,
-                            renderState().cachedResolution().height / 1.7f),
+                  vec2<I32>(to_int(renderState().cachedResolution().width - 250),
+                            to_int(renderState().cachedResolution().height / 1.7f)),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0, 1, 0), "");
 
     _GUI->addText("fpsDisplay",  // Unique ID

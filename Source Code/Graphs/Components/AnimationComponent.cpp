@@ -144,7 +144,7 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     
     _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
         ShaderBufferLocation::BONE_TRANSFORMS,
-        vec2<ptrdiff_t>(_readOffset * _dataRange, _dataRange),
+        vec2<U32>(_readOffset * _dataRange, _dataRange),
         *_boneTransformBuffer);
 
     return true;

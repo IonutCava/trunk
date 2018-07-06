@@ -380,13 +380,13 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_DEBUG;_WIN32_WINNT=0x0601;NOMINMAX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>true</OpenMPSupport>
       <ShowIncludes>false</ShowIncludes>
@@ -397,6 +397,11 @@
       <StringPooling>false</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -442,8 +447,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_WIN32_WINNT=0x0601;_SECURE_SCL=0;NOMINMAX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <FloatingPointExceptions>false</FloatingPointExceptions>
@@ -504,8 +509,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\;$(EngineLibraries)\EASTL\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\Threadpool\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;_SECURE_SCL=0;NOMINMAX;CEGUI_STATIC</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>

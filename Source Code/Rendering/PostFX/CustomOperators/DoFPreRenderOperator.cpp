@@ -33,7 +33,7 @@ DoFPreRenderOperator::~DoFPreRenderOperator()
     MemoryManager::DELETE(_samplerCopy);
 }
 
-void DoFPreRenderOperator::reshape(I32 width, I32 height) {
+void DoFPreRenderOperator::reshape(U16 width, U16 height) {
     _samplerCopy->Create(width, height);
 }
 

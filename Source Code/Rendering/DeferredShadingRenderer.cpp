@@ -78,8 +78,8 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     ParamHandler& par = ParamHandler::getInstance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam("rendering.enableShadows", false);
-    F32 width = Application::getInstance().getResolution().width;
-    F32 height = Application::getInstance().getResolution().height;
+    U16 width = Application::getInstance().getResolution().width;
+    U16 height = Application::getInstance().getResolution().height;
 
     updateResolution(width, height);
 
@@ -231,24 +231,32 @@ void DeferredShadingRenderer::secondPass(
 void DeferredShadingRenderer::updateResolution(U16 width, U16 height) {
     _deferredBuffer->Create(width, height);
 
-    _renderQuads[0]->setDimensions(vec4<F32>(0, 0, width, height));
-    _renderQuads[1]->setDimensions(vec4<F32>(width / 2, 0, width, height / 2));
-    _renderQuads[2]->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, height, 0));
+    F32 widthF = to_float(width);
+    F32 heightF = to_float(height);
+
+    _renderQuads[0]->setDimensions(vec4<F32>(0.0f, 0.0f, widthF, heightF));
+
+    _renderQuads[1]->setDimensions(vec4<F32>(widthF / 2, 0.0f, widthF, heightF / 2));
+
+    _renderQuads[2]->setCorner(Quad3D::CornerLocation::TOP_LEFT,
+                               vec3<F32>(0.0f, heightF, 0.0f));
     _renderQuads[2]->setCorner(Quad3D::CornerLocation::TOP_RIGHT,
-                               vec3<F32>(width / 2, height, 0));
+                               vec3<F32>(widthF / 2, heightF, 0U));
     _renderQuads[2]->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
-                               vec3<F32>(0, height / 2, 0));
+                               vec3<F32>(0.0f, heightF / 2, 0.0f));
     _renderQuads[2]->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
-                               vec3<F32>(width / 2, height / 2, 0));
+                               vec3<F32>(widthF / 2, heightF / 2, 0U));
+
     _renderQuads[3]->setCorner(Quad3D::CornerLocation::TOP_LEFT,
-                               vec3<F32>(width / 2, height, 0));
-    _renderQuads[3]->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(width, height, 0));
+                               vec3<F32>(widthF / 2, heightF, 0.0f));
+    _renderQuads[3]->setCorner(Quad3D::CornerLocation::TOP_RIGHT,
+                               vec3<F32>(widthF, heightF, 0.0f));
     _renderQuads[3]->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
-                               vec3<F32>(width / 2, height / 2, 0));
+                               vec3<F32>(widthF / 2, heightF / 2, 0.0f));
     _renderQuads[3]->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
-                               vec3<F32>(width, height / 2, 0));
+                               vec3<F32>(widthF, heightF / 2, 0.0f));
     // Using a separate, smaller render quad for debug view because it's faster
     // than resizing a quad back and forth -Ionut
-    _renderQuads[4]->setDimensions(vec4<F32>(0, 0, width / 2, height / 2));
+    _renderQuads[4]->setDimensions(vec4<F32>(0.0f, 0.0f, widthF / 2, heightF / 2));
 }
 };

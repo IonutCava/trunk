@@ -54,7 +54,7 @@ void OrbitCamera::update(const U64 deltaTime) {
 
     if (/*trans->changedLastFrame() || */ _rotationDirty || true) {
         trans->getOrientation().getEuler(&newTargetOrientation);
-        newTargetOrientation.yaw = M_PI - newTargetOrientation.yaw;
+        newTargetOrientation.yaw = to_float(M_PI) - newTargetOrientation.yaw;
         newTargetOrientation += _cameraRotation;
         Util::Normalize(newTargetOrientation, false);
         _rotationDirty = false;

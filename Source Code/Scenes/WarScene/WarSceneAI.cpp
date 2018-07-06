@@ -239,16 +239,16 @@ bool WarScene::addUnits() {
             if (k == 0) {
                 zFactor *= -25;
                 zFactor -= 200;
-                pComp->translateX(Metric::Base(-25));
+                pComp->translateX(Metric::Base(-25.0f));
             } else {
                 zFactor *= 25;
                 zFactor += 200;
-                pComp->rotateY(Angle::Degrees(180));
-                pComp->translateX(Metric::Base(100));
-                pComp->translateX(Metric::Base(25));
+                pComp->rotateY(Angle::Degrees(180.0f));
+                pComp->translateX(Metric::Base(100.0f));
+                pComp->translateX(Metric::Base(25.0f));
             }
 
-            pComp->setPosition(vec3<F32>(Metric::Base(-125 + 25 * (i % 5)),
+            pComp->setPosition(vec3<F32>(Metric::Base(-125.0f + 25 * (i % 5)),
                                          Metric::Base(-0.01f),
                                          Metric::Base(zFactor)));
 
@@ -414,7 +414,7 @@ void WarScene::startSimulation() {
         stringImpl info(
             "Can't reload the navigation mesh this soon.\n Please wait \\[ ");
         info.append(
-            std::to_string(Time::MicrosecondsToSeconds(diffTime)).c_str());
+            std::to_string(Time::MicrosecondsToSeconds<I32>(diffTime)).c_str());
         info.append(" ] seconds more!");
 
         _infoBox->setMessage(info);

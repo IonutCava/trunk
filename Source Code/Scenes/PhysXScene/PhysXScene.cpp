@@ -57,7 +57,7 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     cbks.second = [this]() {
         if (!_hasGroundPlane) {
             PHYSICS_DEVICE.createPlane(vec3<F32>(0, 0, 0),
-                                       Random(100.0f, 200.0f));
+                                       Random(100, 200));
             _hasGroundPlane = true;
         }
     };
@@ -70,7 +70,7 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
         Kernel& kernel = Application::getInstance().getKernel();
         Task_ptr e(kernel.AddTask(
             0, 1,
-            DELEGATE_BIND(&PhysXScene::createTower, this, (U32)Random(5, 20))));
+            DELEGATE_BIND(&PhysXScene::createTower, this, to_uint(Random(5, 20)))));
         registerTask(e);
         e->startTask();
     };
@@ -79,7 +79,7 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
         Kernel& kernel = Application::getInstance().getKernel();
         Task_ptr e(kernel.AddTask(
             0, 1,
-            DELEGATE_BIND(&PhysXScene::createStack, this, (U32)Random(5, 10))));
+            DELEGATE_BIND(&PhysXScene::createStack, this, to_uint(Random(5, 10)))));
         registerTask(e);
         e->startTask();
     };
@@ -120,13 +120,13 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
 bool PhysXScene::unload() { return Scene::unload(); }
 
 void PhysXScene::createStack(U32 size) {
-    F32 stackSize = size;
+    U32 stackSize = size;
     F32 CubeSize = 1.0f;
     F32 Spacing = 0.0001f;
     vec3<F32> Pos(0, 10 + CubeSize, 0);
-    F32 Offset = -stackSize * (CubeSize * 2.0f + Spacing) * 0.5f + 0;
+    F32 Offset = -1 * stackSize * (CubeSize * 2.0f + Spacing) * 0.5f;
 
-    while (s_sceneState == PhysXState::STATE_ADDING_ACTORS);
+    WAIT_FOR_CONDITION(s_sceneState != PhysXState::STATE_ADDING_ACTORS);
 
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 

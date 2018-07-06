@@ -1,14 +1,6 @@
 #ifndef _OUTPUT_BUFFER_H_
 #define _OUTPUT_BUFFER_H_
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4512)  ///<Boost alignment shouts
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#//pragma GCC diagnostic ignored "-Wall"
-#endif
-
 #include "Headers/resource.h"
 
 //------------------------------------------------------------------------------
@@ -104,10 +96,5 @@ typedef scoped_basic_streambuf_assignment<char> scoped_streambuf_assignment;
 typedef scoped_basic_streambuf_assignment<wchar_t> scoped_wstreambuf_assignment;
 
 };  // namespace Divide
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
 
 #endif

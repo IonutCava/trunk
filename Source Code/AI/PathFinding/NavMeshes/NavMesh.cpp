@@ -89,6 +89,10 @@ void NavigationMesh::freeIntermediates(bool freeAll) {
 }
 
 namespace {
+inline I32 charToInt(const char* val) {
+    return Util::ConvertData<I32, const char*>(val);
+}
+
 inline F32 charToFloat(const char* val) {
     return Util::ConvertData<F32, const char*>(val);
 }
@@ -115,7 +119,7 @@ bool NavigationMesh::loadConfigFromFile() {
     _configParams.setCellHeight(
         charToFloat(ini.GetValue("Rasterization", "fCellHeight", "0.2")));
     _configParams.setTileSize(
-        charToFloat(ini.GetValue("Rasterization", "iTileSize", "48")));
+        charToInt(ini.GetValue("Rasterization", "iTileSize", "48")));
     // Load all key-value pairs for the "Agent" section
     _configParams.setAgentHeight(
         charToFloat(ini.GetValue("Agent", "fAgentHeight", "2.5")));
@@ -127,16 +131,16 @@ bool NavigationMesh::loadConfigFromFile() {
         charToFloat(ini.GetValue("Agent", "fAgentMaxSlope", "20")));
     // Load all key-value pairs for the "Region" section
     _configParams.setRegionMergeSize(
-        charToFloat(ini.GetValue("Region", "fMergeSize", "20")));
+        charToInt(ini.GetValue("Region", "fMergeSize", "20")));
     _configParams.setRegionMinSize(
-        charToFloat(ini.GetValue("Region", "fMinSize", "50")));
+        charToInt(ini.GetValue("Region", "fMinSize", "50")));
     // Load all key-value pairs for the "Polygonization" section
     _configParams.setEdgeMaxLen(
-        charToFloat(ini.GetValue("Polygonization", "fEdgeMaxLength", "12")));
+        charToInt(ini.GetValue("Polygonization", "fEdgeMaxLength", "12")));
     _configParams.setEdgeMaxError(
         charToFloat(ini.GetValue("Polygonization", "fEdgeMaxError", "1.3")));
     _configParams.setVertsPerPoly(
-        charToFloat(ini.GetValue("Polygonization", "iVertsPerPoly", "6")));
+        charToInt(ini.GetValue("Polygonization", "iVertsPerPoly", "6")));
     // Load all key-value pairs for the "DetailMesh" section
     _configParams.setDetailSampleDist(
         charToFloat(ini.GetValue("DetailMesh", "fDetailSampleDist", "6")));
@@ -349,9 +353,9 @@ bool NavigationMesh::generateMesh() {
 
     params.ch = cfg.ch;
     params.cs = cfg.cs;
-    params.walkableHeight = cfg.walkableHeight;
-    params.walkableRadius = cfg.walkableRadius;
-    params.walkableClimb = cfg.walkableClimb;
+    params.walkableHeight = to_float(cfg.walkableHeight);
+    params.walkableRadius = to_float(cfg.walkableRadius);
+    params.walkableClimb  = to_float(cfg.walkableClimb);
 
     params.tileX = 0;
     params.tileY = 0;
@@ -528,7 +532,7 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
     Console::printfn(
         "[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n",
         _polyMesh->nverts, _polyMesh->npolys,
-        (F32)ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f);
+        to_float(ctx->getAccumulatedTime(RC_TIMER_TOTAL) / 1000.0f));
 
     return true;
 }
@@ -556,7 +560,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
     }
 
     // Initialise all flags to something helpful.
-    for (U32 i = 0; i < (U32)_tempNavMesh->getMaxTiles(); ++i) {
+    for (U32 i = 0; i < to_uint(_tempNavMesh->getMaxTiles()); ++i) {
         const dtMeshTile* tile = ((const dtNavMesh*)_tempNavMesh)->getTile(i);
 
         if (!tile->header) {
@@ -565,7 +569,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
 
         const dtPolyRef base = _tempNavMesh->getPolyRefBase(tile);
 
-        for (U32 j = 0; j < (U32)tile->header->polyCount; ++j) {
+        for (U32 j = 0; j < to_uint(tile->header->polyCount); ++j) {
             const dtPolyRef ref = base | j;
             U16 f = 0;
             _tempNavMesh->getPolyFlags(ref, &f);
@@ -684,7 +688,7 @@ bool NavigationMesh::load(SceneGraphNode_ptr sgn) {
     }
 
     // Read tiles.
-    for (U32 i = 0; i < (U32)header.numTiles; ++i) {
+    for (U32 i = 0; i < to_uint(header.numTiles); ++i) {
         NavMeshTileHeader tileHeader;
         fread(&tileHeader, sizeof(tileHeader), 1, fp);
         if (!tileHeader.tileRef || !tileHeader.dataSize) {
@@ -737,7 +741,7 @@ bool NavigationMesh::save(SceneGraphNode_ptr sgn) {
     header.version = NAVMESHSET_VERSION;
     header.numTiles = 0;
 
-    for (U32 i = 0; i < (U32)_navMesh->getMaxTiles(); ++i) {
+    for (U32 i = 0; i < to_uint(_navMesh->getMaxTiles()); ++i) {
         const dtMeshTile* tile = ((const dtNavMesh*)_navMesh)->getTile(i);
 
         if (!tile || !tile->header || !tile->dataSize) {
@@ -750,7 +754,7 @@ bool NavigationMesh::save(SceneGraphNode_ptr sgn) {
     fwrite(&header, sizeof(NavMeshSetHeader), 1, fp);
 
     // Store tiles.
-    for (U32 i = 0; i < (U32)_navMesh->getMaxTiles(); ++i) {
+    for (U32 i = 0; i < to_uint(_navMesh->getMaxTiles()); ++i) {
         const dtMeshTile* tile = ((const dtNavMesh*)_navMesh)->getTile(i);
 
         if (!tile || !tile->header || !tile->dataSize) {

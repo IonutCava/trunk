@@ -125,12 +125,12 @@ bool WarSceneAISceneImpl::DIE() {
     }
      
     AITeam* const currentTeam = _entity->getTeam();
-    U8 ownTeamID = currentTeam->getTeamID();
-    U8 enemyTeamID = 1 - ownTeamID;
+    U32 ownTeamID = currentTeam->getTeamID();
+    U32 enemyTeamID = 1 - ownTeamID;
 
     _entity->getUnitRef()->setAttribute(to_uint(UnitAttributes::ALIVE_FLAG), 0);
     U8 teamCount = _globalWorkingMemory._teamAliveCount[ownTeamID].value();
-    _globalWorkingMemory._teamAliveCount[ownTeamID].value(std::max(teamCount - 1, 0));
+    _globalWorkingMemory._teamAliveCount[ownTeamID].value(static_cast<U8>(std::max(teamCount - 1, 0)));
 
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
     if (hadFlag == true) {
@@ -192,7 +192,7 @@ AIEntity* WarSceneAISceneImpl::getUnitForNode(U32 teamID, std::weak_ptr<SceneGra
 
 void WarSceneAISceneImpl::beginPlan(const GOAPGoal& currentGoal) {
     const AITeam* const currentTeam = _entity->getTeam();
-    U8 ownTeamID = currentTeam->getTeamID();
+    U32 ownTeamID = currentTeam->getTeamID();
 
     if (_localWorkingMemory._isFlagRetriever.value() == true) {
         _globalWorkingMemory._flagRetrieverCount[ownTeamID].value(
@@ -231,8 +231,8 @@ void WarSceneAISceneImpl::requestOrders() {
     printWorkingMemory();
 
     const AITeam* const currentTeam = _entity->getTeam();
-    U8 ownTeamID = currentTeam->getTeamID();
-    U8 enemyTeamID = 1 - ownTeamID;
+    U32 ownTeamID = currentTeam->getTeamID();
+    U32 enemyTeamID = 1 - ownTeamID;
 
     PriorityLevel prio;
 
@@ -298,7 +298,7 @@ void WarSceneAISceneImpl::requestOrders() {
                 }
             } break;
         }
-        priority[order->getID()] = to_uint(prio);
+        priority[order->getID()] = static_cast<U8>(prio);
     }
 
     for (GOAPGoal& goal : goalList()) {
@@ -335,8 +335,8 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
     DIVIDE_ASSERT(currentTeam != nullptr,
                   "WarScene error: INVALID TEAM FOR INPUT UPDATE");
 
-    U8 ownTeamID = currentTeam->getTeamID();
-    U8 enemyTeamID = 1 - ownTeamID;
+    U32 ownTeamID = currentTeam->getTeamID();
+    U32 enemyTeamID = 1 - ownTeamID;
     _actionState[to_uint(type)] = true;
 
     bool atHome = atHomeBase();
@@ -409,8 +409,8 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
     DIVIDE_ASSERT(currentTeam != nullptr,
                   "WarScene error: INVALID TEAM FOR INPUT UPDATE");
 
-    U8 ownTeamID = currentTeam->getTeamID();
-    U8 enemyTeamID = 1 - ownTeamID;
+    U32 ownTeamID = currentTeam->getTeamID();
+    U32 enemyTeamID = 1 - ownTeamID;
 
     bool atHome = atHomeBase();
     switch (type) {
@@ -437,7 +437,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                 _entity->sendMessage(*member.second, AIMsg::HAVE_SCORED, _entity);
             }
 
-            _scoreCallback(ownTeamID);
+            _scoreCallback(static_cast<U8>(ownTeamID));
         } break;
         case ActionType::CAPTURE_ENEMY_FLAG: {
             PRINT("Capture flag action over");
@@ -511,8 +511,8 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
 
     const AITeam* const currentTeam = _entity->getTeam();
    
-    U8 ownTeamID = currentTeam->getTeamID();
-    U8 enemyTeamID = 1 - ownTeamID;
+    U32 ownTeamID = currentTeam->getTeamID();
+    U32 enemyTeamID = 1 - ownTeamID;
 
     SceneGraphNode_ptr currentNode(_entity->getUnitRef()->getBoundNode().lock());
     SceneGraphNode_ptr enemyFlag(_globalWorkingMemory._flags[enemyTeamID].value().lock());
@@ -608,8 +608,8 @@ void WarSceneAISceneImpl::processMessage(AIEntity& sender, AIMsg msg,
         case AIMsg::HAVE_DIED: {
             bool hadFlag = msg_content.constant_cast<bool>();
             if (hadFlag) {
-                U8 senderTeamID = sender.getTeamID();
-                U8 ownTeamID = _entity->getTeamID();
+                U32 senderTeamID = sender.getTeamID();
+                U32 ownTeamID = _entity->getTeamID();
                 if (ownTeamID == senderTeamID) {
                     worldState().setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
                 } else{
@@ -674,7 +674,7 @@ void WarSceneAISceneImpl::updatePositions() {
     AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
 
     bool atHome = atHomeBase();
-    U8 teamID = currentTeam->getTeamID();
+    U32 teamID = currentTeam->getTeamID();
 
     // If the enemy dropped the flag and we are near it, return it to base
     if (!_localWorkingMemory._enemyHasFlag.value()) {
@@ -837,8 +837,8 @@ void WarSceneAISceneImpl::printWorkingMemory() const {
 
 stringImpl WarSceneAISceneImpl::toString() const {
     const AITeam* const currentTeam = _entity->getTeam();
-    U8 ownTeamID = currentTeam->getTeamID();
-    U8 enemyTeamID = 1 - ownTeamID;
+    U32 ownTeamID = currentTeam->getTeamID();
+    U32 enemyTeamID = 1 - ownTeamID;
 
     stringImpl ret(Util::StringFormat("Unit: [ %s ]\n", _entity->getName().c_str()));
     ret +="--------------- Working memory state BEGIN ----------------------------\n";

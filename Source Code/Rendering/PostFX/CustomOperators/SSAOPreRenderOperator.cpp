@@ -31,7 +31,7 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator()
     RemoveResource(_ssaoShader);
 }
 
-void SSAOPreRenderOperator::reshape(I32 width, I32 height) {
+void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     _outputFB->Create(width, height);
 }
 

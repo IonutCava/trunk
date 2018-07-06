@@ -102,12 +102,12 @@ class NavigationMeshConfig {
     /*****************
       * Region
      *****************/
-    inline void setRegionMinSize(F32 regionMinSize) {
+    inline void setRegionMinSize(I32 regionMinSize) {
         this->_regionMinSize = regionMinSize;
         eval();
     }
 
-    inline void setRegionMergeSize(F32 regionMergeSize) {
+    inline void setRegionMergeSize(I32 regionMergeSize) {
         this->_regionMergeSize = regionMergeSize;
         eval();
     }
@@ -115,7 +115,7 @@ class NavigationMeshConfig {
     /*****************
       * Polygonization
      *****************/
-    inline void setEdgeMaxLen(F32 edgeMaxLength) {
+    inline void setEdgeMaxLen(I32 edgeMaxLength) {
         this->_edgeMaxLen = edgeMaxLength;
         eval();
     }
@@ -188,10 +188,10 @@ class NavigationMeshConfig {
     inline F32 getAgentHeight() const { return _agentHeight; }
     inline F32 getAgentMaxClimb() const { return _agentMaxClimb; }
     inline F32 getAgentRadius() const { return _agentRadius; }
-    inline F32 getEdgeMaxLen() const { return _edgeMaxLen; }
+    inline I32 getEdgeMaxLen() const { return _edgeMaxLen; }
     inline F32 getEdgeMaxError() const { return _edgeMaxError; }
-    inline F32 getRegionMinSize() const { return _regionMinSize; }
-    inline F32 getRegionMergeSize() const { return _regionMergeSize; }
+    inline I32 getRegionMinSize() const { return _regionMinSize; }
+    inline I32 getRegionMergeSize() const { return _regionMergeSize; }
     inline I32 getVertsPerPoly() const { return _vertsPerPoly; }
     inline F32 getDetailSampleDist() const { return _detailSampleDist; }
     inline F32 getDetailSampleMaxError() const { return _detailSampleMaxError; }
@@ -347,7 +347,7 @@ class NavigationMeshConfig {
       * Serves at setting maxEdgeLen, the precision of maxEdgeLen is affected by
       *cellSize (cs).
       **/
-    F32 _edgeMaxLen;
+    I32 _edgeMaxLen;
 
     /**
       * The maximum distance a simplfied contour's border edges should deviate
@@ -379,7 +379,7 @@ class NavigationMeshConfig {
       *value
       * (the regions are square, thus area=size*size)
       **/
-    F32 _regionMinSize;
+    I32 _regionMinSize;
 
     /**
       * Any regions with a span count smaller than this value will, if possible,
@@ -389,7 +389,7 @@ class NavigationMeshConfig {
       *this value
       * (the regions are square, thus area=size*size)
       **/
-    F32 _regionMergeSize;
+    I32 _regionMergeSize;
 
     /**
       * The maximum number of vertices allowed for polygons generated during the

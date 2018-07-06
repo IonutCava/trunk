@@ -191,7 +191,7 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
         _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(false);
         _nCurrEffectInd += to_int(eWhich);
         if (_nCurrEffectInd < -1 ||
-            _nCurrEffectInd >= (I16)_vecPlayableEffectInd.size()) {
+            _nCurrEffectInd >= to_int(_vecPlayableEffectInd.size())) {
             _nCurrEffectInd = -1;
         }
     }

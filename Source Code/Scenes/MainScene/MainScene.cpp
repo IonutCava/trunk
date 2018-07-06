@@ -47,10 +47,10 @@ void MainScene::processInput(const U64 deltaTime) {
                 Terrain* ter = terrainNode.lock()->getNode<Terrain>();
                 assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x,
-                           ter->getDimensions().width * 0.5 * -1.0f,
+                           ter->getDimensions().width * 0.5f * -1.0f,
                            ter->getDimensions().width * 0.5f);
                 CLAMP<F32>(eyePosition.z,
-                           ter->getDimensions().height * 0.5 * -1.0f,
+                           ter->getDimensions().height * 0.5f * -1.0f,
                            ter->getDimensions().height * 0.5f);
 
                 terrainHeight =

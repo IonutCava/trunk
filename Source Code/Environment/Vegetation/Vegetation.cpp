@@ -123,7 +123,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",
                                   RenderStage::Z_PRE_PASS, true);
     vegMaterial->addCustomTexture(_grassBillboards,
-                                  to_uint(ShaderProgram::TextureUsage::UNIT0));
+                                  static_cast<U8>(ShaderProgram::TextureUsage::UNIT0));
     vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
@@ -239,7 +239,7 @@ void Vegetation::uploadGrassData() {
     for (U8 i = 0; i < 2; ++i) {
         GenericVertexData* buffer = _grassGPUBuffer[i];
 
-        buffer->Create(to_uint(BufferUsage::COUNT), 3);
+        buffer->Create(static_cast<U8>(BufferUsage::COUNT), 3);
         // position culled will be generated using transform feedback using
         // shader output 'posLocation'
         // writing to buffer "CulledPositionBuffer"
@@ -250,8 +250,8 @@ void Vegetation::uploadGrassData() {
         buffer->SetBuffer(to_uint(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
                           sizeof(vec4<F32>), 3, &_grassPositions[0], false,
                           false);
-        buffer->SetBuffer(to_uint(BufferUsage::UnculledSizeBuffer), _instanceCountGrass, sizeof(F32),
-                          3, &_grassScales[0], false, false);
+        buffer->SetBuffer(to_uint(BufferUsage::UnculledSizeBuffer), _instanceCountGrass,
+                          sizeof(F32), 3, &_grassScales[0], false, false);
         buffer->SetBuffer(to_uint(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,
                           sizeof(vec4<F32>), 3, NULL, true, false);
         buffer->SetBuffer(to_uint(BufferUsage::CulledSizeBuffer), _instanceCountGrass * 3,
@@ -389,7 +389,7 @@ void Vegetation::gpuCull() {
                                         _instanceCountGrass);
 
         _cullDrawCommand.primCount(_instanceCountGrass);
-        _cullDrawCommand.queryID(queryID);
+        _cullDrawCommand.queryID(static_cast<U8>(queryID));
         _cullDrawCommand.drawToBuffer(true);
         _cullDrawCommand.shaderProgram(_cullShader);
         _cullDrawCommand.sourceBuffer(buffer);
@@ -411,7 +411,7 @@ void Vegetation::getDrawCommands(SceneGraphNode& sgn,
     U32 queryID = getQueryID();
     // gpuCull();
 
-    I32 instanceCount = buffer->GetFeedbackPrimitiveCount(queryID);
+    U32 instanceCount = buffer->GetFeedbackPrimitiveCount(static_cast<U8>(queryID));
     if (instanceCount == 0) {
         return;
     }
@@ -454,7 +454,7 @@ void Vegetation::generateGrass() {
     const I32 currentCount = std::min((I32)_billboardCount, 4);
     const U16 mapWidth = _map.dimensions().width;
     const U16 mapHeight = _map.dimensions().height;
-    const U32 grassElements = _grassDensity * chunkSize.x * chunkSize.y;
+    const U32 grassElements = to_uint(_grassDensity * chunkSize.x * chunkSize.y);
 
     Console::printfn(Locale::get("CREATE_GRASS_BEGIN"), grassElements);
 
@@ -473,8 +473,8 @@ void Vegetation::generateGrass() {
                 }
                 F32 x = width + Random(densityFactor) + chunkPos.x;
                 F32 y = height + Random(densityFactor) + chunkPos.y;
-                CLAMP<F32>(x, 0.0f, (F32)mapWidth - 1.0f);
-                CLAMP<F32>(y, 0.0f, (F32)mapHeight - 1.0f);
+                CLAMP<F32>(x, 0.0f, to_float(mapWidth) - 1.0f);
+                CLAMP<F32>(y, 0.0f, to_float(mapHeight) - 1.0f);
                 F32 x_fac = x / _map.dimensions().width;
                 F32 y_fac = y / _map.dimensions().height;
 
@@ -500,7 +500,7 @@ void Vegetation::generateGrass() {
                     _grassMatricesTemp.push_back(matRot1 * matRot2 *
                     rotationFromVToU(WORLD_Y_AXIS, N).getMatrix());*/
 
-                    _grassPositions.push_back(vec4<F32>(P, index));
+                    _grassPositions.push_back(vec4<F32>(P, to_float(index)));
                     _grassScales.push_back(((map_color + 1) / 256.0f));
                     _instanceCountGrass++;
                 }

@@ -44,7 +44,9 @@
 #include <array>
 #include <memory>
 #include <bitset>
+#ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
+#endif //_USE_MATH_DEFINES
 #include <math.h>
 
 #if defined(_WIN32)
@@ -119,6 +121,16 @@ constexpr I32 to_const_int(const T value) {
     return static_cast<I32>(value);
 }
 
+template<typename T>
+constexpr F32 to_const_float(const T value) {
+    return static_cast<F32>(value);
+}
+
+template<typename T>
+constexpr D32 to_const_double(const T value) {
+    return static_cast<D32>(value);
+}
+
 template <typename T>
 U32 to_uint(const T value) {
     return static_cast<U32>(to_underlying_type(value));
@@ -127,6 +139,16 @@ U32 to_uint(const T value) {
 template <typename T>
 I32 to_int(const T value) {
     return static_cast<I32>(to_underlying_type(value));
+}
+
+template <typename T>
+F32 to_float(const T value) {
+    return static_cast<F32>(to_underlying_type(value));
+}
+
+template <typename T>
+D32 to_double(const T value) {
+    return static_cast<D32>(to_underlying_type(value));
 }
 
 struct SysInfo;
@@ -375,7 +397,7 @@ void operator delete[](void* ptr, size_t alignment, size_t alignmentOffset,
 Divide::I32 Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
                        va_list arguments);
 
-#if defined(NDEBUG)
+#if !defined(_DEBUG)
 #define MemoryManager_NEW new
 #else
 void* operator new(size_t size);
@@ -534,31 +556,5 @@ inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
 
 };  // namespace MemoryManager
 };  // namespace Divide
-
-#if defined(_MSC_VER)
-#define NOINITVTABLE __declspec(novtable)
-#pragma warning(disable : 4103)  //< Boost alignment shouts
-#pragma warning(disable : 4244)
-#pragma warning(disable : 4996)  //< strcpy
-#pragma warning(disable : 4201)  //< nameless struct
-#pragma warning(disable : 4100)  //< unreferenced formal param
-#pragma warning(disable : 4505)  //< unreferenced local function removal
-#pragma warning(disable : 4127)  //< Constant conditional expressions
-
-#define THREAD_LOCAL __declspec(thread)
-#elif defined(__GNUC__)
-#define THREAD_LOCAL __thread
-//#    pragma GCC diagnostic ignored "-Wall"
-#else
-#define NOINITVTABLE 
-#endif
-
-#ifdef max
-#undef max
-#endif
-
-#ifdef min
-#undef min
-#endif
 
 #endif

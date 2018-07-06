@@ -73,7 +73,11 @@ void tcp_session_tpl::start_read() {
 
 void tcp_session_tpl::handle_read_body(const boost::system::error_code& ec,
                                        size_t bytes_transfered) {
-    if (stopped()) return;
+    ACKNOWLEDGE_UNUSED(bytes_transfered);
+
+    if (stopped()) {
+        return;
+    }
 
     if (!ec) {
         _inputDeadline.expires_from_now(boost::posix_time::seconds(30));
@@ -89,7 +93,11 @@ void tcp_session_tpl::handle_read_body(const boost::system::error_code& ec,
 
 void tcp_session_tpl::handle_read_packet(const boost::system::error_code& ec,
                                          size_t bytes_transfered) {
-    if (stopped()) return;
+    ACKNOWLEDGE_UNUSED(bytes_transfered);
+
+    if (stopped()) {
+        return;
+    }
 
     if (!ec) {
         _inputBuffer.commit(_header);
@@ -141,6 +149,8 @@ void tcp_session_tpl::start_write() {
     }
 }
 void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
+    ACKNOWLEDGE_UNUSED(ec);
+
     boost::asio::streambuf request_;
     stringImpl filePath = _outputFileQueue.front();
     std::ifstream source_file;

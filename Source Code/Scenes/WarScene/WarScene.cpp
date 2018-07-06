@@ -276,7 +276,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
         pComp->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
         pComp->setPosition(
-            vec3<F32>(currentPos.first, -0.01f, currentPos.second));
+            vec3<F32>(to_float(currentPos.first), -0.01f, to_float(currentPos.second)));
     }
     SceneGraphNode_ptr baseFlagNode = cylinder[1];
     _flag[0] = _sceneGraph->getRoot()->addNode(*cylinderMeshNW, "Team1Flag");
@@ -418,7 +418,7 @@ void WarScene::toggleCamera() {
 bool WarScene::loadResources(bool continueOnErrors) {
     _GUI->addButton("Simulate", "Simulate",
                     vec2<I32>(renderState().cachedResolution().width - 220,
-                              renderState().cachedResolution().height / 1.1f),
+                              to_int(renderState().cachedResolution().height / 1.1f)),
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
                     DELEGATE_BIND(&WarScene::startSimulation, this));
 

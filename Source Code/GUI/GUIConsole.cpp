@@ -1,5 +1,3 @@
-#include <CEGUI/CEGUI.h>
-
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
@@ -7,25 +5,14 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4324)  //<structure was padded ...
-#pragma warning( \
-    disable : 4189)  //<local variable is initialized but not referenced
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#endif
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
+#include <CEGUI/CEGUI.h>
+#endif //CEGUI_STATIC
 
 #ifndef CEGUI_DEFAULT_CTX
 #define CEGUI_DEFAULT_CTX \
     CEGUI::System::getSingleton().getDefaultGUIContext()
-#endif
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
 #endif
 
 namespace Divide {

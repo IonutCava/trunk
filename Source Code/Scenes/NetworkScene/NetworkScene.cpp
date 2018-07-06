@@ -126,22 +126,22 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
 
     _GUI->addButton(
         "getPing", "ping me",
-        vec2<I32>(60, renderState().cachedResolution().height / 1.1f),
+        vec2<I32>(60, to_int(renderState().cachedResolution().height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.6f, 0.6f, 0.6f),
         DELEGATE_BIND(&NetworkScene::test, this));
     _GUI->addButton(
         "disconnect", "disconnect",
-        vec2<I32>(180, renderState().cachedResolution().height / 1.1f),
+        vec2<I32>(180, to_int(renderState().cachedResolution().height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.5f, 0.5f, 0.5f),
         DELEGATE_BIND(&NetworkScene::disconnect, this));
     _GUI->addButton(
         "connect", "connect",
-        vec2<I32>(300, renderState().cachedResolution().height / 1.1f),
+        vec2<I32>(300, to_int(renderState().cachedResolution().height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
         DELEGATE_BIND(&NetworkScene::connect, this));
     _GUI->addButton(
         "patch", "patch",
-        vec2<I32>(420, renderState().cachedResolution().height / 1.1f),
+        vec2<I32>(420, to_int(renderState().cachedResolution().height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
         DELEGATE_BIND(&NetworkScene::checkPatches, this));
 

@@ -805,7 +805,7 @@ class mat4 {
     }
 
     inline void zero() {
-        memset(this->mat, 0.0, sizeof(T) * 16);
+        memset(this->mat, 0, sizeof(T) * 16);
     }
 
     inline mat4 getInverseTranspose() const {

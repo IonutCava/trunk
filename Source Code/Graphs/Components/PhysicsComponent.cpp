@@ -358,7 +358,7 @@ const vec3<F32>& PhysicsComponent::getScale(D32 interpolationFactor,
     if (_transform) {
         if (interpolationFactor < 0.975 && false) {
             scale.set(Lerp(_prevTransformValues._scale, _transform->getScale(),
-                           static_cast<F32>(interpolationFactor)));
+                           to_float(interpolationFactor)));
         } else {
             scale.set(_transform->getScale());
         }
@@ -385,7 +385,7 @@ const vec3<F32>& PhysicsComponent::getPosition(D32 interpolationFactor,
         if (interpolationFactor < 0.975) {
             position.set(Lerp(_prevTransformValues._translation,
                               _transform->getPosition(),
-                              static_cast<F32>(interpolationFactor)));
+                              to_float(interpolationFactor)));
         } else {
             position.set(_transform->getPosition());
         }
@@ -411,7 +411,7 @@ const Quaternion<F32>& PhysicsComponent::getOrientation(D32 interpolationFactor,
         if (interpolationFactor < 0.975) {
             orientation.set(Slerp(_prevTransformValues._orientation,
                                   _transform->getOrientation(),
-                                  static_cast<F32>(interpolationFactor)));
+                                  to_float(interpolationFactor)));
         } else {
             orientation.set(_transform->getOrientation());
         }

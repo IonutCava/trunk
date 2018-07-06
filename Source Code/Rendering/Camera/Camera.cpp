@@ -67,7 +67,7 @@ void Camera::fromCamera(const Camera& camera) {
 }
 
 void Camera::update(const U64 deltaTime) {
-    F32 timeFactor = Time::MicrosecondsToSeconds<D32>(deltaTime);
+    F32 timeFactor = Time::MicrosecondsToSeconds<F32>(deltaTime);
     _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
     _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
     _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;

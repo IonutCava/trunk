@@ -246,7 +246,8 @@ void GFXDevice::toggleFullScreen(const bool state) {
 
     if (state) {
         const SysInfo& systemInfo = Application::getInstance().getSysInfo();
-        changeResolution(systemInfo._systemResolutionWidth, systemInfo._systemResolutionHeight);
+        changeResolution(static_cast<U16>(systemInfo._systemResolutionWidth),
+                         static_cast<U16>(systemInfo._systemResolutionHeight));
         setWindowPos(0, 0);
     } else {
         const vec2<U16>& prevResolution = Application::getInstance().getPreviousResolution();
@@ -404,8 +405,8 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
     // Only update frustum values if the interocular distance changed from the
     // previous request
     if (!FLOAT_COMPARE(_anaglyphIOD, camIOD)) {
-        static const D32 DTR = 0.0174532925;
-        static const D32 screenZ = 10.0;
+        static const F32 DTR = 0.0174532925f;
+        static const F32 screenZ = 10.0f;
 
         // Sets top of frustum based on FoV-Y and near clipping plane
         F32 top = zPlanes.x * std::tan(DTR * verticalFoV * 0.5f);
@@ -431,9 +432,12 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
     CameraFrustum& tempCam = rightFrustum ? _rightCam : _leftCam;
     // Update the GPU data buffer with the proper projection data based on the
     // eye camera's frustum
-    _gpuBlock._ProjectionMatrix.frustum(
-        tempCam.leftfrustum, tempCam.rightfrustum, tempCam.bottomfrustum,
-        tempCam.topfrustum, zPlanes.x, zPlanes.y);
+    _gpuBlock._ProjectionMatrix.frustum(to_float(tempCam.leftfrustum),
+                                        to_float(tempCam.rightfrustum),
+                                        to_float(tempCam.bottomfrustum),
+                                        to_float(tempCam.topfrustum),
+                                        zPlanes.x,
+                                        zPlanes.y);
     // Translate the matrix to cancel parallax
     _gpuBlock._ProjectionMatrix.translate(tempCam.modeltranslation, 0.0, 0.0);
 
@@ -584,11 +588,11 @@ void GFXDevice::ConstructHIZ() {
     _renderTarget[to_uint(RenderTarget::DEPTH)]->Begin(hizTarget);
     // Bind the depth texture to the first texture unit
     _renderTarget[to_uint(RenderTarget::DEPTH)]->Bind(
-        to_uint(ShaderProgram::TextureUsage::UNIT0),
+        static_cast<U8>(ShaderProgram::TextureUsage::UNIT0),
         TextureDescriptor::AttachmentType::Depth);
     // Calculate the number of mipmap levels we need to generate
-    U16 numLevels = 1 + (U16)floorf(log2f(fmaxf((F32)resolution.width,
-                                                (F32)resolution.height)));
+    U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(resolution.width),
+                                                   to_float(resolution.height)))));
     // Store the current width and height of each mip
     U16 currentWidth = resolution.width;
     U16 currentHeight = resolution.height;

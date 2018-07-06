@@ -171,13 +171,13 @@ void SceneAnimator::load(std::ifstream& file) {
     vectorImpl<const Bone*> bones;
     bones.reserve(_skeletonDepthCache);
     _skeleton->createBoneList(bones);
-
-    F32 timestep = 1.0f / (F32)ANIMATION_TICKS_PER_SECOND;  // 25.0f per second
+    // 25.0f per second
+    F32 timestep = 1.0f / to_float(ANIMATION_TICKS_PER_SECOND);
     for (vectorAlg::vecSize i(0); i < _animations.size();
          i++) {  // pre calculate the animations
         F32 dt = 0;
         mat4<F32> rotationmat;
-        for (F32 ticks = 0; ticks < _animations[i].duration();
+        for (D32 ticks = 0; ticks < _animations[i].duration();
              ticks +=
              _animations[i].ticksPerSecond() / ANIMATION_TICKS_PER_SECOND) {
             dt += timestep;

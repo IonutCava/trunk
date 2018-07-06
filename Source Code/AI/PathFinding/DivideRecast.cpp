@@ -159,7 +159,7 @@ I32 DivideRecast::getTarget(I32 pathSlot) {
 namespace {
     /// Random number generator implementation used by navmesh query methods.
     inline F32 frand() {
-        return rand() / static_cast<F32>(RAND_MAX);
+        return rand() / to_float(RAND_MAX);
     }
 }
 

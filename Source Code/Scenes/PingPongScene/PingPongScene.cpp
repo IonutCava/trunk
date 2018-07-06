@@ -228,10 +228,10 @@ void PingPongScene::processInput(const U64 deltaTime) {
     static F32 paddleMovementDivisor = 10;
     // Camera controls
     if (state().angleLR() != SceneState::MoveDirection::NONE) {
-        _paddleCam->rotateYaw(to_int(state().angleLR()));
+        _paddleCam->rotateYaw(to_float(state().angleLR()));
     }
     if (state().angleUD() != SceneState::MoveDirection::NONE) {
-        _paddleCam->rotatePitch(to_int(state().angleUD()));
+        _paddleCam->rotatePitch(to_float(state().angleUD()));
     }
 
     SceneGraphNode_ptr paddle(_sceneGraph->findNode("paddle").lock());
@@ -313,19 +313,19 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     */
     // Buttons and text labels
     _GUI->addButton("Serve", "Serve",
-                    vec2<I32>(renderState().cachedResolution().width - 120,
-                              renderState().cachedResolution().height / 1.1f),
+                    vec2<I32>(to_int(renderState().cachedResolution().width - 120),
+                              to_int(renderState().cachedResolution().height / 1.1f)),
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
                     DELEGATE_BIND(&PingPongScene::serveBall, this));
 
     _GUI->addText("Score",
-                  vec2<I32>(renderState().cachedResolution().width - 120,
-                            renderState().cachedResolution().height / 1.3f),
+                  vec2<I32>(to_int(renderState().cachedResolution().width - 120),
+                            to_int(renderState().cachedResolution().height / 1.3f)),
                   Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0), "Score: %d", 0);
 
     _GUI->addText("Message",
-                  vec2<I32>(renderState().cachedResolution().width - 120,
-                            renderState().cachedResolution().height / 1.5f),
+                  vec2<I32>(to_int(renderState().cachedResolution().width - 120),
+                            to_int(renderState().cachedResolution().height / 1.5f)),
                   Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0), "");
     _GUI->addText("insults",
                   vec2<I32>(renderState().cachedResolution().width / 4,

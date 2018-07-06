@@ -39,7 +39,7 @@ class TextLabel {
    public:
     TextLabel(const stringImpl& string, const stringImpl& font,
               const vec3<F32>& color, U32 textHeight = 16)
-        : _width(1.0f),
+        : _width(1),
           _font(font),
           _height(textHeight),
           _color(color),

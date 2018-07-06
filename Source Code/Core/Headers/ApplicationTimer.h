@@ -87,10 +87,10 @@ inline U64 ElapsedMicroseconds(bool forceUpdate = false) {
 }
 
 inline D32 ElapsedMilliseconds(bool forceUpdate = false) {
-    return MicrosecondsToMilliseconds(ElapsedMicroseconds(forceUpdate));
+    return MicrosecondsToMilliseconds<D32>(ElapsedMicroseconds(forceUpdate));
 }
 inline D32 ElapsedSeconds(bool forceUpdate = false) {
-    return MicrosecondsToSeconds(ElapsedMicroseconds(forceUpdate));
+    return MicrosecondsToSeconds<D32>(ElapsedMicroseconds(forceUpdate));
 }
 
 };  // namespace Time

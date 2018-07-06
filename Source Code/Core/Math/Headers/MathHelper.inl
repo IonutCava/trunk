@@ -46,7 +46,9 @@ inline I32 Random(I32 max) {
 
 template <typename T>
 inline T Random(T min, T max) {
-    return min + (max - min) * static_cast<T>(INV_RAND_MAX) * rand();
+    return min + (max - min) * 
+           static_cast<T>(INV_RAND_MAX) * 
+           static_cast<T>(rand());
 }
 
 /// Clamps value n between min and max
@@ -75,7 +77,7 @@ inline bool BitCompare<U32>(U32 bitMask, U32 bit) {
 
 // Helper method to emulate GLSL
 inline F32 FRACT(F32 floatValue) {
-    return static_cast<F32>(fmod(floatValue, 1.0f));
+    return to_float(fmod(floatValue, 1.0f));
 }
 
 //Helper method to go from a float to packed char
@@ -86,10 +88,10 @@ inline U8 FLOAT_TO_CHAR(F32 value) {
 
 // Pack 3 values into 1 float
 inline F32 PACK_FLOAT(U8 x, U8 y, U8 z) {
-    static const D32 offset = static_cast<D32>(1 << 24);
+    static const D32 offset = to_double(1 << 24);
 
     U32 packedColor = (x << 16) | (y << 8) | z;
-    return static_cast<F32>(static_cast<D32>(packedColor) / offset);
+    return to_float(to_double(packedColor) / offset);
 }
 
 // UnPack 3 values from 1 float
@@ -213,13 +215,13 @@ U64 Microseconds(T a) {
 }
 
 template <typename T>
-/*constexpr*/ T MicrosecondsToSeconds(T a) {
-    return Metric::Micro(a);
+/*constexpr*/ T MicrosecondsToSeconds(U64 a) {
+    return Metric::Micro(static_cast<T>(a));
 }
 
 template <typename T>
-/*constexpr*/ T MicrosecondsToMilliseconds(T a) {
-    return Metric::Milli(a);
+/*constexpr*/ T MicrosecondsToMilliseconds(U64 a) {
+    return Metric::Milli(static_cast<T>(a));
 }
 
 template <typename T>

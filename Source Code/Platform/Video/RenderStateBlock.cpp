@@ -174,9 +174,9 @@ void RenderStateBlock::clean() {
     size_t previousCache = _cachedHash;
 
     // Avoid small float rounding errors offsetting the general hash value
-    U32 zBias = floor((_zBias * 1000.0) + 0.5);
-    U32 zUnits = floor((_zUnits * 1000.0) + 0.5);
-    U32 lineWidth = floor((_lineWidth * 1000.0) + 0.5);
+    U32 zBias = to_uint(floor((_zBias * 1000.0) + 0.5));
+    U32 zUnits = to_uint(floor((_zUnits * 1000.0) + 0.5));
+    U32 lineWidth = to_uint(floor((_lineWidth * 1000.0) + 0.5));
 
     _cachedHash = 0;
     Util::Hash_combine(_cachedHash, _colorWrite.i);

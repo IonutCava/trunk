@@ -46,7 +46,7 @@ class FXAAPreRenderOperator : public PreRenderOperator {
     ~FXAAPreRenderOperator();
 
     void operation();
-    void reshape(I32 width, I32 height);
+    void reshape(U16 width, U16 height);
 
    private:
     bool _ready;
