@@ -211,7 +211,7 @@ DEFINE_SINGLETON(GFXDevice)
            vec4<F32> _ViewPort;
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
-           vec4<F32> _shadowProperties;
+           vec4<F32> _renderProperties;
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
         } _data;
 
@@ -298,6 +298,12 @@ DEFINE_SINGLETON(GFXDevice)
                          const vec2<F32>& zPlanes,
                          RenderStage renderStage);
 
+    void generateDualParaboloidMap(Framebuffer& targetBuffer,
+                                   const U32 arrayOffset,
+                                   const vec3<F32>& pos,
+                                   const vec2<F32>& zPlanes,
+                                   RenderStage renderStage);
+                                     
     void getMatrix(const MATRIX& mode, mat4<F32>& mat);
     /// Alternative to the normal version of getMatrix
     inline const mat4<F32>& getMatrix(const MATRIX& mode);
@@ -531,6 +537,7 @@ DEFINE_SINGLETON(GFXDevice)
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;
+    Camera* _dualParaboloidCamera;
 
     RenderAPIWrapper* _api;
     RenderStage _renderStage;

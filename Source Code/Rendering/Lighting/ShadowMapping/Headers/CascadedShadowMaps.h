@@ -55,7 +55,7 @@ class CascadedShadowMaps : public ShadowMap {
     void render(SceneRenderState& renderState);
     void postRender();
     /// Update depth maps
-    void previewShadowMaps();
+    void previewShadowMaps(U32 callIndex);
     void init(ShadowMapInfo* const smi);
 
    protected:

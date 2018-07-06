@@ -58,10 +58,14 @@ class SceneRoot : public SceneNode {
     bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         return true;
     }
+
     bool unload() { return true; }
-    bool load(const stringImpl& name) { return true; }
+    bool load(const stringImpl& name) {
+        return true; 
+    }
 
    protected:
+    friend class SceneGraph;
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
 };
 

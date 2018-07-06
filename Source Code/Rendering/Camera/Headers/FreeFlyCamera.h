@@ -38,7 +38,8 @@ namespace Divide {
 
 // A "god-mode" camera. It can move freely around the world
 class FreeFlyCamera : public Camera {
-   public:
+   protected:
+    friend class CameraManager;
     FreeFlyCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 };
 

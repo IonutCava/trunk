@@ -30,15 +30,17 @@ layout(triangle_strip, max_vertices = 3) out;
 
 void main()
 {
-    mat4 vp = _lightVP[gl_InvocationID];
-    for (int i = 0; i < gl_in.length(); ++i)
-    {
-        passVertex(i);
-        gl_Layer = gl_InvocationID + int(dvd_shadowArrayOffset);
-        gl_Position = vp * gl_in[i].gl_Position;
-        EmitVertex();
-    }
-    EndPrimitive();
+    if (gl_InvocationID < dvd_GSInvocationLimit) {
+        mat4 vp = _lightVP[gl_InvocationID];
+        for (int i = 0; i < gl_in.length(); ++i)
+        {
+            passVertex(i);
+            gl_Layer = gl_InvocationID + dvd_shadowArrayOffset;
+            gl_Position = vp * gl_in[i].gl_Position;
+            EmitVertex();
+        }
+        EndPrimitive();
+   }
 }
 
 -- Fragment
@@ -98,7 +100,6 @@ void main() {
     vec4 opacityMap = texture(texOpacityMap, VAR._texCoord);
     alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
-    if (alpha < ALPHA_DISCARD_THRESHOLD) discard;
 #endif
 
 

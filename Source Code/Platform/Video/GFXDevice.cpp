@@ -61,6 +61,10 @@ GFXDevice::GFXDevice()
     _lastNodeCount = 0;
     // Floats
     _interpolationFactor = 1.0;
+    // Cameras
+    _2DCamera = nullptr;
+    _cubeCamera = nullptr;
+    _dualParaboloidCamera = nullptr;
     // Booleans
     _2DRendering = false;
     _drawDebugAxis = false;
@@ -72,10 +76,6 @@ GFXDevice::GFXDevice()
     _shadowDetailLevel = RenderDetailLevel::HIGH;
     _GPUVendor = GPUVendor::COUNT;
     _API_ID = RenderAPI::COUNT;
-    // Utility cameras
-    _2DCamera = MemoryManager_NEW FreeFlyCamera();
-    _2DCamera->lockView(true);
-    _cubeCamera = MemoryManager_NEW FreeFlyCamera();
     // Clipping planes
     _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
     // Render targets
@@ -179,6 +179,58 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     }
     // Resolve our render target
     cubeMap.end();
+    // Return to our previous rendering stage
+    setRenderStage(prevRenderStage);
+    // Restore our previous camera
+    kernel.getCameraMgr().popActiveCamera();
+}
+
+void GFXDevice::generateDualParaboloidMap(Framebuffer& targetBuffer,
+                                          const U32 arrayOffset,
+                                          const vec3<F32>& pos,
+                                          const vec2<F32>& zPlanes,
+                                          RenderStage renderStage)
+{
+    Texture* colorAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    Texture* depthAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
+    // Color attachment takes precedent over depth attachment
+    bool hasColor = (colorAttachment != nullptr);
+    bool hasDepth = (depthAttachment != nullptr);
+    bool isValidFB = true;
+    if (hasColor) {
+        // We only need the color attachment
+        isValidFB = colorAttachment->getTextureType() == TextureType::TEXTURE_2D_ARRAY;
+    } else {
+        // We don't have a color attachment, so we require a cube map depth   // attachment
+        isValidFB = hasDepth && depthAttachment->getTextureType() == TextureType::TEXTURE_2D_ARRAY;
+    }
+    // Make sure we have a proper render target to draw to
+    if (!isValidFB) {
+        // Future formats must be added later (e.g. cube map arrays)
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_INVALID_FB_DP")));
+        return;
+    }
+    Kernel& kernel = Application::getInstance().getKernel();
+    // Set a 90 degree vertical FoV perspective projection
+    _dualParaboloidCamera->setProjection(1.0f, 180.0f, zPlanes);
+    // Set the cube camera as the currently active one
+    kernel.getCameraMgr().pushActiveCamera(_dualParaboloidCamera);
+    // Set the desired render stage, remembering the previous one
+    RenderStage prevRenderStage = setRenderStage(renderStage);
+    // Enable our render target
+    targetBuffer.begin(Framebuffer::defaultPolicy());
+        for (U8 i = 0; i < 2; ++i) {
+            targetBuffer.drawToLayer(hasColor ? TextureDescriptor::AttachmentType::Color0
+                                              : TextureDescriptor::AttachmentType::Depth,
+                                     i + arrayOffset);
+            // Point our camera to the correct face
+            _dualParaboloidCamera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) + pos, WORLD_Y_AXIS);
+            // And generated required matrices
+            _dualParaboloidCamera->renderLookAt();
+            // Pass our render function to the renderer
+            SceneManager::getInstance().renderVisibleNodes(renderStage, true, i);
+        }
+    targetBuffer.end();
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
     // Restore our previous camera

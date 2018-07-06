@@ -39,9 +39,11 @@ namespace Divide {
 /// A camera that always looks at a given target and orbits around it.
 /// It's position / direction can be changed by user input
 class ThirdPersonCamera : public OrbitCamera {
-   public:
+  protected:
+    friend class CameraManager;
     ThirdPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
-
+    
+  public:
     bool mouseMoved(const Input::MouseEvent& arg);
     void onActivate();
 };

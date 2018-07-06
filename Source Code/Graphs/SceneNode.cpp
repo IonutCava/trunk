@@ -17,7 +17,7 @@ SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
     : Resource(name),
       _materialTemplate(nullptr),
-      _hasSGNParent(false),
+      _sgnParentCount(0),
       _type(type),
       _LODcount(1)  ///<Defaults to 1 LOD level
 {
@@ -32,17 +32,11 @@ void SceneNode::sceneUpdate(const U64 deltaTime,
                             SceneGraphNode& sgn,
                             SceneState& sceneState)
 {
+    assert(_sgnParentCount != 0);
 }
 
 bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
-}
-
-bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
-                                RenderStage renderStage,
-                                const SceneRenderState& sceneRenderState,
-                                vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    return true;
 }
 
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
@@ -50,6 +44,8 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
                          Frustum::FrustCollision& collisionType,
                          bool distanceCheck) const
 {
+    assert(_sgnParentCount != 0);
+
     const BoundingBox& boundingBox = sgn.getBoundingBoxConst();
     const BoundingSphere& sphere = sgn.getBoundingSphereConst();
 
@@ -134,7 +130,14 @@ bool SceneNode::unload() {
     return true;
 }
 
-void SceneNode::postDrawBoundingBox(SceneGraphNode& sgn) const {
+bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
+                                RenderStage renderStage,
+                                const SceneRenderState& sceneRenderState,
+                                vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+    return true;
+}
+
+void SceneNode::postDraw(SceneGraphNode& sgn) const {
 }
 
 };

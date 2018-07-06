@@ -370,7 +370,10 @@ Texture* glFramebuffer::getAttachment(AttachmentType slot, bool flushStateOnRequ
 }
 
 void glFramebuffer::bind(U8 unit, AttachmentType slot, bool flushStateOnRequest) {
-    getAttachment(slot, flushStateOnRequest)->Bind(unit, flushStateOnRequest);
+    Texture* attachment = getAttachment(slot, flushStateOnRequest);
+    if (attachment != nullptr) {
+        attachment->Bind(unit, flushStateOnRequest);
+    }
 }
 
 void glFramebuffer::resetMipMaps(FramebufferTarget::BufferMask mask) {

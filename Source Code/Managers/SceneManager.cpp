@@ -80,7 +80,11 @@ bool SceneManager::load(const stringImpl& sceneName,
         return false;
     }
 
-    return Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
+    bool state = Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
+    if (state) {
+        state = LoadSave::loadScene(sceneName);
+    }
+    return state;
 }
 
 Scene* SceneManager::createScene(const stringImpl& name) {
@@ -183,8 +187,13 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
             Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::MESH);
         }
-
         return false;
+    };
+
+    auto shadowCullingFunction = [](SceneGraphNode_wptr node) -> bool {
+        SceneGraphNode_ptr sgnNode = node.lock();
+        return sgnNode->getNode()->getType() == SceneNodeType::TYPE_LIGHT ||
+               sgnNode->getNode()->getType() == SceneNodeType::TYPE_TRIGGER;
     };
 
     // If we are rendering a high node count, we might want to use async frustum culling
@@ -197,9 +206,17 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage);
 
     visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
-                                   std::end(visibleNodes),
-                                   meshCullingFunction),
+                                      std::end(visibleNodes),
+                                       meshCullingFunction),
                        std::end(visibleNodes));
+
+    if (stage == RenderStage::SHADOW) {
+        visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
+                                          std::end(visibleNodes),
+                                          shadowCullingFunction),
+                           std::end(visibleNodes));
+        
+    }
 
     return visibleNodes;
 }
@@ -362,4 +379,13 @@ bool SceneManager::joystickVector3DMoved(const Input::JoystickEvent& arg,
     }
     return _activeScene->input().joystickVector3DMoved(arg, index);
 }
+
+bool LoadSave::loadScene(const stringImpl& sceneName) {
+    return true;
+}
+
+bool LoadSave::saveScene(const stringImpl& sceneName) {
+    return true;
+}
+
 };

@@ -242,17 +242,19 @@ void CascadedShadowMaps::postRender() {
     getDepthMap()->end();
 }
 
-void CascadedShadowMaps::previewShadowMaps() {
+void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
+
+    const vec4<I32> viewport = getViewportForRow(rowIndex);
 
     U32 stateHash = GFX_DEVICE.getDefaultStateBlock(true);
     getDepthMap()->bind();
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i + _arrayOffset);
 
-        GFX::ScopedViewport viewport(256 * i, 1, 256, 256);
+        GFX::ScopedViewport sViewport(viewport.x * i, viewport.y, viewport.z, viewport.w);
         GFX_DEVICE.drawTriangle(stateHash, _previewDepthMapShader);
     }
 }

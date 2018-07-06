@@ -42,10 +42,11 @@ typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 /// A camera that always looks at a given target and orbits around it.
 /// It's position / direction can't be changed by user input
 class OrbitCamera : public Camera {
-   public:
+  protected:
+    friend class CameraManager;
     OrbitCamera(const CameraType& type = CameraType::ORBIT,
                 const vec3<F32>& eye = VECTOR3_ZERO);
-
+  public:
     void setTarget(SceneGraphNode_wptr sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));
 

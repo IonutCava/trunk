@@ -68,7 +68,7 @@ class NOINITVTABLE ShadowMap {
     }
 
     virtual void init(ShadowMapInfo* const smi) = 0;
-    virtual void previewShadowMaps() = 0;
+    virtual void previewShadowMaps(U32 rowIndex) = 0;
     
     virtual void onCameraUpdate(Camera& camera) {}
 
@@ -79,6 +79,8 @@ class NOINITVTABLE ShadowMap {
     static void commitDepthMapLayer(ShadowType shadowType, U32 layer);
     static bool freeDepthMapLayer(ShadowType shadowType, U32 layer);
     static void clearShadowMapBuffers();
+   protected:
+    vec4<I32> getViewportForRow(U32 rowIndex) const;
 
    protected:
     /// The depth maps. Using 1 array for each type: CSM, Cube and single

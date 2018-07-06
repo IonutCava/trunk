@@ -4,6 +4,10 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
+#include "Rendering/Camera/Headers/FirstPersonCamera.h"
+#include "Rendering/Camera/Headers/OrbitCamera.h"
+#include "Rendering/Camera/Headers/ScriptedCamera.h"
+#include "Rendering/Camera/Headers/ThirdPersonCamera.h"
 
 namespace Divide {
 
@@ -24,6 +28,34 @@ CameraManager::~CameraManager() {
     }
     MemoryManager::DELETE_HASHMAP(_cameraPool);
     _cameraPoolGUID.clear();
+}
+
+Camera* CameraManager::createCamera(const stringImpl& cameraName,
+                                    Camera::CameraType type) {
+    Camera* camera = nullptr;
+    switch (type) {
+    case Camera::CameraType::FIRST_PERSON:
+        camera = MemoryManager_NEW FirstPersonCamera();
+        break;
+    case Camera::CameraType::FREE_FLY:
+        camera = MemoryManager_NEW FreeFlyCamera();
+        break;
+    case Camera::CameraType::ORBIT:
+        camera = MemoryManager_NEW OrbitCamera();
+        break;
+    case Camera::CameraType::SCRIPTED:
+        camera = MemoryManager_NEW ScriptedCamera();
+        break;
+    case Camera::CameraType::THIRD_PERSON:
+        camera = MemoryManager_NEW ThirdPersonCamera();
+        break;
+    }
+
+    if (camera != nullptr) {
+        addNewCamera(cameraName, camera);
+    }
+
+    return camera;
 }
 
 void CameraManager::update(const U64 deltaTime) {

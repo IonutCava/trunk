@@ -368,7 +368,6 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, Rend
         GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[0], bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 
 
-        node->postDrawBoundingBox(_parentSGN);
         if (_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             renderBoundingSphere(true);
         } else {
@@ -433,6 +432,8 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, Rend
             _skeletonPrimitive->paused(true);
         }
     }
+
+    node->postDraw(_parentSGN);
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
@@ -463,8 +464,7 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
     }
 }
 
-ShaderProgram* const RenderingComponent::getDrawShader(
-    RenderStage renderStage) {
+ShaderProgram* const RenderingComponent::getDrawShader(RenderStage renderStage) {
     return (getMaterialInstance()
                 ? _materialInstance->getShaderInfo(renderStage).getProgram()
                 : nullptr);
@@ -486,11 +486,23 @@ U32 RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                    : _parentSGN.getNode()->renderState().getDepthStateBlock();
     }
 
-    return _materialInstance->getRenderStateBlock(
-        depthPass ? (shadowStage ? RenderStage::SHADOW
-                                 : RenderStage::Z_PRE_PASS)
-                  : (reflectionStage ? RenderStage::REFLECTION
-                                     : RenderStage::DISPLAY));
+    RenderStage blockStage = depthPass ? (shadowStage ? RenderStage::SHADOW
+                                                      : RenderStage::Z_PRE_PASS)
+                                       : (reflectionStage ? RenderStage::REFLECTION
+                                                          : RenderStage::DISPLAY);
+    I32 variant = 0;
+
+    if (shadowStage) {
+        LightType type = LightManager::getInstance().currentShadowCastingLight()->getLightType();
+        type == LightType::DIRECTIONAL
+               ? 0
+               : type == LightType::POINT 
+                       ? 1
+                       : 2;
+    }
+
+    return _materialInstance->getRenderStateBlock(blockStage, variant);
+    
 }
 
 

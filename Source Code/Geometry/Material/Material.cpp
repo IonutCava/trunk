@@ -43,10 +43,14 @@ Material::Material()
     RenderStateBlock shadowDescriptor(stateDescriptor);
     shadowDescriptor.setCullMode(CullMode::CCW);
     /// set a polygon offset
-     shadowDescriptor.setZBias(1.0f, 2.0f);
-    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
+    shadowDescriptor.setZBias(1.0f, 2.0f);
+    /// ignore half of the colors 
+    /// Some shadowing techniques require drawing to the a color buffer
     shadowDescriptor.setColorWrites(true, true, false, false);
-    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 0);
+    zPrePassDescriptor.setColorWrites(false, false, false, false);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 1);
+    setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 2);
 }
 
 Material::~Material()
@@ -78,7 +82,9 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     for (U8 i = 0; i < to_uint(RenderStage::COUNT); i++) {
         cloneMat->_shaderModifier[i] = base._shaderModifier[i];
         cloneMat->_shaderInfo[i] = _shaderInfo[i];
-        cloneMat->_defaultRenderStates[i] = _defaultRenderStates[i];
+        for (U8 j = 0; j < _defaultRenderStates[i].size(); ++j) {
+            cloneMat->_defaultRenderStates[i][j] = _defaultRenderStates[i][j];
+        }
     }
 
     for (const TranslucencySource& trans : base._translucencySource) {
@@ -133,8 +139,9 @@ void Material::update(const U64 deltaTime) {
     clean();
 }
 
-U32 Material::getRenderStateBlock(RenderStage currentStage) {
-    return _defaultRenderStates[to_uint(currentStage)];
+U32 Material::getRenderStateBlock(RenderStage currentStage, I32 variant) {
+    assert(variant >= 0 && variant < _defaultRenderStates[to_uint(currentStage)].size());
+    return _defaultRenderStates[to_uint(currentStage)][variant];
 }
 
 // base = base texture
@@ -199,10 +206,9 @@ void Material::setShaderProgram(const stringImpl& shader,
     setShaderProgramInternal(shader, renderStage, computeOnAdd);
 }
 
-void Material::setShaderProgramInternal(
-    const stringImpl& shader,
-    RenderStage renderStage,
-    const bool computeOnAdd) {
+void Material::setShaderProgramInternal(const stringImpl& shader,
+                                        RenderStage renderStage,
+                                        const bool computeOnAdd) {
 
     U32 stageIndex = to_uint(renderStage);
     ShaderInfo& info = _shaderInfo[stageIndex];
@@ -559,14 +565,16 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if (_doubleSided) {
-        for (U32 index = 0; index < to_uint(RenderStage::COUNT); index++) {
-            U32 hash = _defaultRenderStates[index];
-            RenderStateBlock descriptor(GFX_DEVICE.getRenderStateBlock(hash));
-            descriptor.setCullMode(CullMode::NONE);
-            if (!_translucencySource.empty()) {
-                descriptor.setBlend(true);
+        for (U32 index = 0; index < to_uint(RenderStage::COUNT); ++index) {
+            for (U8 variant = 0; variant < _defaultRenderStates[index].size(); ++variant) {
+                U32 hash = _defaultRenderStates[index][variant];
+                RenderStateBlock descriptor(GFX_DEVICE.getRenderStateBlock(hash));
+                descriptor.setCullMode(CullMode::NONE);
+                if (!_translucencySource.empty()) {
+                    descriptor.setBlend(true);
+                }
+                setRenderStateBlock(descriptor.getHash(), static_cast<RenderStage>(index), variant);
             }
-            setRenderStateBlock(descriptor.getHash(), static_cast<RenderStage>(index));
         }
     }
 

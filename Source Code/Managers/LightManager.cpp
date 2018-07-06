@@ -7,6 +7,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
@@ -21,7 +22,8 @@ LightManager::LightManager()
       _shadowMapsEnabled(true),
       _previewShadowMaps(false),
       _currentShadowCastingLight(nullptr),
-      _lightImpostorShader(nullptr)
+      _lightImpostorShader(nullptr),
+      _lightIconsTexture(nullptr)
 {
     _activeLightCount.fill(0);
     _lightTypeState.fill(true);
@@ -51,6 +53,9 @@ LightManager::~LightManager()
     Time::REMOVE_TIMER(s_shadowPassTimer);
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]);
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]);
+    RemoveResource(_lightImpostorShader);
+    RemoveResource(_lightIconsTexture);
+
     ShadowMap::clearShadowMaps();
 }
 
@@ -89,6 +94,20 @@ void LightManager::init() {
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
     lightImpostorShader.setThreadedLoading(false);
     _lightImpostorShader = CreateResource<ShaderProgram>(lightImpostorShader);
+
+    SamplerDescriptor iconSampler;
+    iconSampler.toggleMipMaps(false);
+    iconSampler.setAnisotropy(0);
+    iconSampler.setWrapMode(TextureWrap::REPEAT);
+    ResourceDescriptor iconImage("LightIconTexture");
+    iconImage.setThreadedLoading(false);
+    iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);
+    stringImpl iconImageLocation =
+        Util::StringFormat("%s/misc_images/lightIcons.png",
+            ParamHandler::getInstance().getParam<stringImpl>("assetsLocation").c_str());
+    iconImage.setResourceLocation(iconImageLocation);
+    iconImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
+    _lightIconsTexture = CreateResource<Texture>(iconImage);
 
     _init = true;
 }
@@ -129,9 +148,6 @@ bool LightManager::addLight(Light& light) {
     }
 
     vectorAlg::emplace_back(_lights[lightTypeIdx], &light);
-
-    GET_ACTIVE_SCENE().renderState().getCameraMgr().addNewCamera(
-        light.getName(), light.shadowCamera());
 
     return true;
 }
@@ -218,30 +234,22 @@ void LightManager::previewShadowMaps(Light* light) {
         return;
     }
 
-    // If no light is specified, get the first directional light
+    // If no light is specified show as many shadowmaps as possible
     if (!light) {
-        Light::LightList& dirLights = _lights[to_uint(LightType::DIRECTIONAL)];
-        if (!dirLights.empty()) {
-            light = dirLights.front();
-        }
-    }
-
-    // If no light is specified and there are no directional lights available,
-    // grab the first light we can find
-    if (!light) {
-        for (Light::LightList& lights : _lights) {
-            if (!lights.empty()) {
-                light = lights.front();
-                if (light->castsShadows()) {
-                    break;
-                }
+        U32 rowIndex = 0;
+        for (Light* shadowLight : _shadowCastingLights) {
+            if (shadowLight != nullptr &&
+                shadowLight->getShadowMapInfo()->getShadowMap() != nullptr)
+            {
+                shadowLight->getShadowMapInfo()->getShadowMap()->previewShadowMaps(rowIndex++);
             }
         }
+        return;
     }
 
     if (light && light->castsShadows()) {
         assert(light->getShadowMapInfo()->getShadowMap() != nullptr);
-        light->getShadowMapInfo()->getShadowMap()->previewShadowMaps();
+        light->getShadowMapInfo()->getShadowMap()->previewShadowMaps(0);
     }
 #endif
 }
@@ -350,12 +358,18 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
         offset = range;
     }
 
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bind(ShaderBufferLocation::LIGHT_NORMAL);
+    uploadLightData(LightType::COUNT, ShaderBufferLocation::LIGHT_NORMAL);
+    
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
 }
 
 void LightManager::uploadLightData(LightType lightsByType, ShaderBufferLocation location) {
+    if (lightsByType == LightType::COUNT) {
+        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bind(location);
+        return;
+    }
+
     U32 offset = 0;
     switch(lightsByType) {
         case LightType::DIRECTIONAL: 
@@ -379,8 +393,10 @@ void LightManager::drawLightImpostors() const {
     const U32 pointLightCount = _activeLightCount[to_uint(LightType::POINT)];
     const U32 spotLightCount = _activeLightCount[to_uint(LightType::SPOT)];
 
+    _lightIconsTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     GFX_DEVICE.drawPoints(directionalLightCount + pointLightCount + spotLightCount,
-                          GFX_DEVICE.getDefaultStateBlock(true), _lightImpostorShader);
+                          GFX_DEVICE.getDefaultStateBlock(),
+                          _lightImpostorShader);
 }
 
 };

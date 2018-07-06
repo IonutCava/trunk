@@ -49,8 +49,6 @@ class Camera : public Resource {
     };
 
    public:
-    Camera(const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
-    virtual ~Camera();
 
     void fromCamera(const Camera& camera);
 
@@ -356,6 +354,12 @@ class Camera : public Resource {
         updateViewMatrix();
         updateProjection();
     }
+
+   protected:
+    SET_DELETE_HASHMAP_FRIEND
+    friend class CameraManager;
+    Camera(const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
+    virtual ~Camera();
 
    protected:
     mat4<F32> _viewMatrix;

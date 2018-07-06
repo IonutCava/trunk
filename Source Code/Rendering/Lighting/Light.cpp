@@ -19,6 +19,7 @@ Light::Light(const F32 range, const LightType& type)
       _impostor(nullptr),
       _lightSGN(nullptr),
       _shadowMapInfo(nullptr),
+      _shadowCamera(nullptr),
       _castsShadows(false),
       _spotPropertiesChanged(false),
       _spotCosOuterConeAngle(0.0f)
@@ -28,11 +29,6 @@ Light::Light(const F32 range, const LightType& type)
         _shadowProperties._floatValues[i].set(-1.0f);
     }
     
-    _shadowCamera = MemoryManager_NEW FreeFlyCamera();
-    _shadowCamera->setMoveSpeedFactor(0.0f);
-    _shadowCamera->setTurnSpeedFactor(0.0f);
-    _shadowCamera->setFixedYawAxis(true);
-
     setDiffuseColor(DefaultColors::WHITE());
     setRange(1.0f);
 
@@ -47,6 +43,16 @@ Light::~Light()
 
 bool Light::load(const stringImpl& name) {
     setName(name);
+    _shadowCamera =
+        Application::getInstance()
+        .getKernel()
+        .getCameraMgr()
+        .createCamera(name + "_shadowCamera", Camera::CameraType::FREE_FLY);
+
+    _shadowCamera->setMoveSpeedFactor(0.0f);
+    _shadowCamera->setTurnSpeedFactor(0.0f);
+    _shadowCamera->setFixedYawAxis(true);
+
     return LightManager::getInstance().addLight(*this);
 }
 

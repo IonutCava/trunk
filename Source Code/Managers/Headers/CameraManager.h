@@ -49,6 +49,10 @@ class CameraManager : private NonCopyable, public FrameListener {
     CameraManager(Kernel* const kernelPtr);
     ~CameraManager();
 
+    // Camera manager handles the deletion of cameras!
+    Camera* createCamera(const stringImpl& cameraName,
+                         Camera::CameraType type);
+
     inline Camera& getActiveCamera() {
         assert(_camera);
         return *_camera;
@@ -60,8 +64,6 @@ class CameraManager : private NonCopyable, public FrameListener {
     }
 
     void update(const U64 deltaTime);
-
-    void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 
     void addCameraChangeListener(const DELEGATE_CBK_PARAM<Camera&>& f) {
         _changeCameralisteners.push_back(f);
@@ -101,6 +103,7 @@ class CameraManager : private NonCopyable, public FrameListener {
     bool frameStarted(const FrameEvent& evt);
     Camera* findCamera(ULL nameHash);
     void setActiveCamera(Camera* cam);
+    void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 
    private:
     bool _addNewListener;

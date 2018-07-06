@@ -111,7 +111,7 @@ class Terrain : public Object3D {
 
     bool unload();
 
-    void postDrawBoundingBox(SceneGraphNode& sgn) const;
+    void postDraw(SceneGraphNode& sgn) const override;
     inline void toggleBoundingBoxes() { _drawBBoxes = !_drawBBoxes; }
 
     vec3<F32> getPositionFromGlobal(F32 x, F32 z) const;

@@ -25,6 +25,12 @@ namespace {
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
+    // Utility cameras
+    CameraManager& cameraMgr = Application::getInstance().getKernel().getCameraMgr();
+    _2DCamera = cameraMgr.createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
+    _2DCamera->lockView(true);
+    _cubeCamera = cameraMgr.createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
+    _dualParaboloidCamera = cameraMgr.createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
 
     g_shaderBuffersPerStageCount.fill(1);
     g_shaderBuffersPerStageCount[to_uint(RenderStage::REFLECTION)] = 6;
@@ -207,12 +213,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->create(256, 256);
     _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->setClearColor(DefaultColors::DIVIDE_BLUE());
 
-    // We also add a couple of useful cameras used by this class. One for
-    // rendering in 2D and one for generating cube maps
-    Application::getInstance().getKernel().getCameraMgr().addNewCamera(
-        "2DRenderCamera", _2DCamera);
-    Application::getInstance().getKernel().getCameraMgr().addNewCamera(
-        "_gfxCubeCamera", _cubeCamera);
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
@@ -276,17 +276,19 @@ void GFXDevice::closeRenderingAPI() {
     _gfxDataBuffer->destroy();
 
     for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
-        RenderStageBuffer& cmdBuffers = _indirectCommandBuffers[i];
+        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            cmdBuffers[j]->destroy();
+            _indirectCommandBuffers[bufferIndex][j]->destroy();
         }
     }
+
     for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
-        RenderStageBuffer& nodeBuffers = _nodeBuffers[i];
+        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            nodeBuffers[j]->destroy();
+            _nodeBuffers[bufferIndex][j]->destroy();
         }
     }
+
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets

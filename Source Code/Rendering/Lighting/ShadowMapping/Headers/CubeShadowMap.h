@@ -43,8 +43,11 @@ class CubeShadowMap : public ShadowMap {
     void render(SceneRenderState& renderState);
 
     /// Update depth maps
-    void previewShadowMaps() {}
+    void previewShadowMaps(U32 rowIndex);
     void init(ShadowMapInfo* const smi);
+
+  private:
+    ShaderProgram* _previewDepthMapShader;
 };
 
 };  // namespace Divide

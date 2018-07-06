@@ -25,11 +25,12 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec4  dvd_ViewPort;
     vec4  dvd_ZPlanesCombined; //xy - current, zw - main scene 
     vec4  dvd_invScreenDimensions;
-    vec4  dvd_shadowProperties;
+    vec4  dvd_renderProperties;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
 
-#define dvd_shadowArrayOffset dvd_shadowProperties.x
+#define dvd_shadowArrayOffset int(dvd_renderProperties.x)
+#define dvd_GSInvocationLimit int(dvd_renderProperties.y)
 
 layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 {

@@ -117,9 +117,6 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
 /// Add a new SceneGraphNode to the current node's child list based on a
 /// SceneNode
 SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, const stringImpl& name) {
-    if (Attorney::SceneNodeSceneGraph::hasSGNParent(node)) {
-        node.AddRef();
-    }
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name

@@ -207,6 +207,7 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
                                 const vec3<F32>& target,
                                 const vec3<F32>& up) {
     _eye.set(eye);
+    _target.set(target);
     _zAxis.set(eye - target);
 
     _zAxis.normalize();

@@ -27,7 +27,7 @@ RenderBinItem::RenderBinItem(I32 sortKeyA,
     }
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    _stateHash = nodeMaterial->getRenderStateBlock(GFX_DEVICE.getRenderStage());
+    _stateHash = renderable.getDrawStateHash(GFX_DEVICE.getRenderStage());
 }
 
 /// Sorting opaque items is a 3 step process:

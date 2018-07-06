@@ -265,7 +265,7 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
     _currentSky = addSky();
     _freeFlyCam = &renderState().getCamera();
-    _paddleCam = MemoryManager_NEW FreeFlyCamera();
+    _paddleCam = renderState().getCameraMgr().createCamera("paddleCam", Camera::CameraType::FREE_FLY);
     _paddleCam->fromCamera(*_freeFlyCam);
     // Position the camera
     // renderState().getCamera().setPitch(-90);

@@ -236,6 +236,12 @@ class SceneManagerKernel {
 };
 };  // namespace Attorney
 
+class LoadSave {
+ public:
+    static bool loadScene(const stringImpl& sceneName);
+    static bool saveScene(const stringImpl& sceneName);
+};
+
 /// Return a pointer to the currently active scene
 inline Scene& GET_ACTIVE_SCENE() {
     return SceneManager::getInstance().getActiveScene();

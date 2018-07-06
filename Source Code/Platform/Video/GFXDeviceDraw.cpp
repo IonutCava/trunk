@@ -230,10 +230,14 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     if (currentStage == RenderStage::SHADOW) {
         Light* shadowLight = LightManager::getInstance().currentShadowCastingLight();
         assert(shadowLight != nullptr);
-        if (_gpuBlock._data._shadowProperties.x != shadowLight->getShadowProperties()._arrayOffset.x) {
-            _gpuBlock._data._shadowProperties.x = to_float(shadowLight->getShadowProperties()._arrayOffset.x);
+        if (_gpuBlock._data._renderProperties.x != shadowLight->getShadowProperties()._arrayOffset.x) {
+            _gpuBlock._data._renderProperties.x = to_float(shadowLight->getShadowProperties()._arrayOffset.x);
             _gpuBlock._updated = true;
         }
+        _gpuBlock._data._renderProperties.y = 
+            to_float(shadowLight->getLightType() == LightType::DIRECTIONAL
+                                                  ? shadowLight->getShadowMapInfo()->numLayers()
+                                                  : 1);
     }
 
     U32 nodeCount = 0;

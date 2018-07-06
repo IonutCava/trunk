@@ -692,17 +692,15 @@ bool WarScene::loadResources(bool continueOnErrors) {
 
     _infoBox = _GUI->addMsgBox("infoBox", "Info", "Blabla");
     // Add a first person camera
-    Camera* cam = MemoryManager_NEW FirstPersonCamera();
+    Camera* cam = renderState().getCameraMgr().createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
     cam->fromCamera(renderState().getCameraConst());
     cam->setMoveSpeedFactor(10.0f);
     cam->setTurnSpeedFactor(10.0f);
-    renderState().getCameraMgr().addNewCamera("fpsCamera", cam);
     // Add a third person camera
-    cam = MemoryManager_NEW ThirdPersonCamera();
+    cam = renderState().getCameraMgr().createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
     cam->fromCamera(renderState().getCameraConst());
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);
-    renderState().getCameraMgr().addNewCamera("tpsCamera", cam);
 
     _guiTimers.push_back(0.0);  // Fps
     _guiTimers.push_back(0.0);  // AI info

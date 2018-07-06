@@ -20,6 +20,8 @@ SceneGraph::SceneGraph() : FrameListener(),
                            _root(std::make_shared<SceneGraphNode>(*_rootNode, "ROOT"))
 {
     REGISTER_FRAME_LISTENER(this, 1);
+    _rootNode->postLoad(*_root);
+
     onNodeAdd(*_root);
     vectorImpl<SceneGraphNode_wptr> objects;
     objects.push_back(_root);

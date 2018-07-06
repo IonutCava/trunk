@@ -298,7 +298,7 @@ void Scene::toggleFlashlight() {
         Light* tempLight = CreateResource<Light>(tempLightDesc);
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
-        tempLight->setCastShadows(false);
+        tempLight->setCastShadows(true);
         tempLight->setDiffuseColor(DefaultColors::WHITE());
         _flashLight = _sceneGraph.getRoot().addNode(*tempLight);
     }

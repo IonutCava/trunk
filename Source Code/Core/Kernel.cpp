@@ -430,7 +430,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
-    _mainCamera = MemoryManager_NEW FreeFlyCamera();
+    _mainCamera = _cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY);
     _mainCamera->setProjection(aspectRatio,
                                par.getParam<F32>("rendering.verticalFOV"),
                                vec2<F32>(par.getParam<F32>("rendering.zNear"),
@@ -438,7 +438,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _mainCamera->setFixedYawAxis(true);
     // As soon as a camera is added to the camera manager, the manager is
     // responsible for cleaning it up
-    _cameraMgr->addNewCamera("defaultCamera", _mainCamera);
     _cameraMgr->pushActiveCamera(_mainCamera);
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);

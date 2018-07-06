@@ -39,7 +39,8 @@ namespace Divide {
 /// Scripted camera receives 3 lists, one with position information,
 /// one with target information and one with timing info
 class ScriptedCamera : public Camera {
-   public:
+  protected:
+    friend class CameraManager;
     ScriptedCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 };
 

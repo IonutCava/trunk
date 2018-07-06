@@ -16,7 +16,7 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
     : ShadowMap(light, shadowCamera, ShadowType::SINGLE) {
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(),
                      "Single Shadow Map");
-    ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth");
+    ResourceDescriptor shadowPreviewShader("fbPreview.Single.LinearDepth");
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
 
@@ -30,7 +30,7 @@ void SingleShadowMap::init(ShadowMapInfo* const smi) {
 
 
 void SingleShadowMap::render(SceneRenderState& renderState) {
-    _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getSpotDirection());
+    _shadowCamera->lookAt(_light->getPosition(), _light->getSpotDirection() + _light->getPosition());
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
 
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
@@ -42,9 +42,18 @@ void SingleShadowMap::render(SceneRenderState& renderState) {
     renderState.getCameraMgr().popActiveCamera();
 }
 
-void SingleShadowMap::previewShadowMaps() {
-    getDepthMap()->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+void SingleShadowMap::previewShadowMaps(U32 rowIndex) {
+    if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
+        return;
+    }
+
+    const vec4<I32> viewport = getViewportForRow(rowIndex);
+
+    getDepthMap()->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0), TextureDescriptor::AttachmentType::Depth);
     _previewDepthMapShader->Uniform("layer", _arrayOffset);
+
+    GFX::ScopedViewport sViewport(viewport);
     GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _previewDepthMapShader);
 }
+
 };

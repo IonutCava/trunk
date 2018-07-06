@@ -36,10 +36,6 @@ uint GetNumLightsInThisTile(uint nTileIndex)
 }
 
 vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
-    if (dvd_lodLevel > 2 && (texCoord.x + texCoord.y == 0)) {
-        discard;
-    }
-
     parseMaterial();
 
 #if defined(HAS_TRANSPARENCY)
@@ -50,9 +46,6 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
         vec4 opacityMap = texture(texOpacityMap, texCoord);
         float alpha = max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #   endif
-        if (dvd_useAlphaTest && alpha < ALPHA_DISCARD_THRESHOLD){
-            discard;
-        }
 #   else
         const float alpha = 1.0;
 #   endif

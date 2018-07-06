@@ -46,7 +46,7 @@ class SingleShadowMap : public ShadowMap {
 
     void render(SceneRenderState& renderState);
     void init(ShadowMapInfo* const smi);
-    void previewShadowMaps();
+    void previewShadowMaps(U32 rowIndex);
 
    private:
     ShaderProgram* _previewDepthMapShader;

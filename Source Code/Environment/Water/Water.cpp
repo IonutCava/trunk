@@ -160,13 +160,12 @@ bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
-    bool depthPass = GFX_DEVICE.isDepthStage();
-    RenderingComponent* const renderable =
-        sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader =
-        renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS : RenderStage::DISPLAY);
+        renderable->getDrawShader(GFX_DEVICE.isDepthStage() ? RenderStage::Z_PRE_PASS : RenderStage::DISPLAY);
+
     drawShader->Uniform("underwater", _cameraUnderWater);
 
     drawCommandsOut.resize(1);

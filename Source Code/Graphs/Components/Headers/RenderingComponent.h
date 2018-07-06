@@ -88,8 +88,7 @@ class RenderingComponent : public SGNComponent {
 
     inline U32 commandOffset() const { return _commandOffset; }
 
-    ShaderProgram* const getDrawShader(
-        RenderStage renderStage = RenderStage::DISPLAY);
+    ShaderProgram* const getDrawShader(RenderStage renderStage = RenderStage::DISPLAY);
 
     U32 getDrawStateHash(RenderStage renderStage);
 

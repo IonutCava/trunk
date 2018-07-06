@@ -90,10 +90,12 @@ class NOINITVTABLE SceneNode : public Resource {
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION
     virtual bool getDrawState(RenderStage currentStage);
+
     virtual bool getDrawCommands(SceneGraphNode& sgn,
                                  RenderStage renderStage,
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut);
+
     virtual bool isInView(const SceneRenderState& sceneRenderState,
                           const SceneGraphNode& sgn,
                           Frustum::FrustCollision& collisionType,
@@ -105,7 +107,7 @@ class NOINITVTABLE SceneNode : public Resource {
     virtual void setMaterialTpl(Material* const m);
     Material* const getMaterialTpl();
 
-    virtual void postDrawBoundingBox(SceneGraphNode& sgn) const;
+    virtual void postDraw(SceneGraphNode& sgn) const;
 
     inline void setType(const SceneNodeType& type) { _type = type; }
     inline const SceneNodeType& getType() const { return _type; }
@@ -135,10 +137,11 @@ class NOINITVTABLE SceneNode : public Resource {
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn) {
-        _hasSGNParent = true;
+        if (_sgnParentCount > 0) {
+            AddRef();
+        }
+        _sgnParentCount++;
     };
-
-    inline bool hasSGNParent() const { return _hasSGNParent; }
 
    protected:
     /// The various states needed for rendering
@@ -149,18 +152,14 @@ class NOINITVTABLE SceneNode : public Resource {
     BoundingBoxPair _boundingBox;
 
    private:
+    U32 _sgnParentCount;
     SceneNodeType _type;
-    bool _hasSGNParent;
     Material* _materialTemplate;
 };
 
 namespace Attorney {
 class SceneNodeSceneGraph {
    private:
-    static bool hasSGNParent(SceneNode& node) {
-        return node.hasSGNParent();
-    }
-
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }

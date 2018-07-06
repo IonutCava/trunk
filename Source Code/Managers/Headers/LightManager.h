@@ -100,7 +100,7 @@ DEFINE_SINGLETON(LightManager)
     bool shadowMappingEnabled() const;
 
     /// shadow mapping
-    void previewShadowMaps(Light* light = nullptr);
+    void previewShadowMaps(Light* light);
     void togglePreviewShadowMaps();
 
     void updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
@@ -150,6 +150,7 @@ DEFINE_SINGLETON(LightManager)
     bool _init;
     bool _previewShadowMaps;
     bool _shadowMapsEnabled;
+    Texture* _lightIconsTexture;
     Light* _currentShadowCastingLight;
     ShaderProgram* _lightImpostorShader;
     std::array<U32, to_const_uint(LightType::COUNT)> _activeLightCount;

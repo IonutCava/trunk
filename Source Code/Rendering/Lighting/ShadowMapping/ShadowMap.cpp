@@ -162,6 +162,11 @@ ShadowMap::~ShadowMap()
     freeDepthMapLayer(_shadowMapType, _arrayOffset);
 }
 
+
+vec4<I32> ShadowMap::getViewportForRow(U32 rowIndex) const {
+    return vec4<I32>(128, 4 + (128 * rowIndex), 128, 128);
+}
+
 ShadowMapInfo::ShadowMapInfo(Light* light)
     : _light(light),
       _shadowMap(nullptr)
