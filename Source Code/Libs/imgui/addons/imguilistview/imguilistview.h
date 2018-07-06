@@ -132,6 +132,13 @@ TODO: Header columns with type HT_CUSTOM have never been tested.
 #   define snprintf _snprintf
 #endif //(defined(_MSC_VER) && !defined(snprintf))
 
+// Enforce cdecl calling convention for functions called by the standard library, in case compilation settings changed the default to e.g. __vectorcall
+#ifdef _MSC_VER
+#define IMGUILV_CDECL __cdecl
+#else
+#define IMGUILV_CDECL
+#endif
+
 namespace ImGui {
 
 
@@ -632,7 +639,7 @@ public:
                 getArrayIndices()=_arrayIndices;
                 getAscendingOrder()=_ascendingOrder;
             }
-            template <typename T> inline static int Compare(const void* item0,const void* item1) {
+            template <typename T> inline static int IMGUILV_CDECL Compare(const void* item0,const void* item1) {
                 const ItemBase* it0 = *((const ItemBase**) item0);
                 const ItemBase* it1 = *((const ItemBase**) item1);
                 const int* pais = getArrayIndices();
@@ -654,7 +661,7 @@ public:
                 }
                 return 0;
             }
-            inline static int Compare_HT_BOOL(const void* item0,const void* item1) {
+            inline static int IMGUILV_CDECL Compare_HT_BOOL(const void* item0,const void* item1) {
                 const ItemBase* it0 = *((const ItemBase**) item0);
                 const ItemBase* it1 = *((const ItemBase**) item1);
                 const int* pais = getArrayIndices();
@@ -668,14 +675,14 @@ public:
                 }
                 return 0;
             }
-            inline static int Compare_HT_CUSTOM(const void* item0,const void* item1) {
+            inline static int IMGUILV_CDECL Compare_HT_CUSTOM(const void* item0,const void* item1) {
                 const ItemBase* it0 = *((const ItemBase**) item0);
                 const ItemBase* it1 = *((const ItemBase**) item1);
                 const char* v0 = it0->getCustomText(getColumn());
                 const char* v1 = it1->getCustomText(getColumn());
                 return getAscendingOrder() ? ((v0<v1)?-1:(v0>v1)?1:0) : ((v0>v1)?-1:(v0<v1)?1:0);
             }
-            inline static int Compare_HT_ICON(const void* item0,const void* item1) {
+            inline static int IMGUILV_CDECL Compare_HT_ICON(const void* item0,const void* item1) {
                 const ItemBase* it0 = *((const ItemBase**) item0);
                 const ItemBase* it1 = *((const ItemBase**) item1);
                 const CellData::IconData& v0 = *((const CellData::IconData*)(it0->getDataPtr(getColumn()))+0);

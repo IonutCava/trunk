@@ -47,6 +47,13 @@
 #   include <pwd.h>        // getenv ?
 #endif //#ifdef _WIN32
 
+// Enforce cdecl calling convention for functions called by the standard library, in case compilation settings changed the default to e.g. __vectorcall
+#ifdef _MSC_VER
+#define IMGUIFS_CDECL __cdecl
+#else
+#define IMGUIFS_CDECL
+#endif
+
 #ifdef IMGUIFS_NO_EXTRA_METHODS
 // We copy the code for FILENAME_MAX and PATH_MAX
 #   include <stdint.h>             // this is included by imgui.cpp, and the following headers might redefine incorrectly some types otherwise.
@@ -497,35 +504,35 @@ protected:
     static struct stat stat2;
     static SorterSignature sorter;
     // Possible problem: sorting is in ASCII with these methods
-    static int Alphasort(const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Alphasort(const struct dirent **e1,const struct dirent **e2)    {
         return strcasecmp((*e1)->d_name,(*e2)->d_name);
     }
-    static int Alphasortinverse (const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Alphasortinverse (const struct dirent **e1,const struct dirent **e2)    {
         return -strcasecmp((*e1)->d_name,(*e2)->d_name);
     }
     // Please note that calling stat(...) every time inside sorters is a suicide! And that I'm doing right that! (but I guess and hope that on many systems the calls get cached somewhere: otherwise it would take ages to sort)
-    static int Lastmodsort (const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Lastmodsort (const struct dirent **e1,const struct dirent **e2)    {
         if (stat((*e1)->d_name,&stat1)==-1) return -1;
         if (stat((*e2)->d_name,&stat2)==-1) return  1;
         return (stat1.st_mtime < stat2.st_mtime ? -1 : stat1.st_mtime > stat2.st_mtime ? 1 : 0);
     }
-    static int Lastmodsortinverse(const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Lastmodsortinverse(const struct dirent **e1,const struct dirent **e2)    {
         if (stat((*e1)->d_name,&stat1)==-1) return  1;
         if (stat((*e2)->d_name,&stat2)==-1) return -1;
         return (stat2.st_mtime < stat1.st_mtime ? -1 : stat2.st_mtime > stat1.st_mtime ? 1 : 0);
     }
-    static int Sizesort (const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Sizesort (const struct dirent **e1,const struct dirent **e2)    {
         if (stat((*e1)->d_name,&stat1)==-1) return -1;
         if (stat((*e2)->d_name,&stat2)==-1) return  1;
         return (stat1.st_size < stat2.st_size ? -1 : stat1.st_size > stat2.st_size ? 1 : 0);
     }
-    static int Sizesortinverse(const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Sizesortinverse(const struct dirent **e1,const struct dirent **e2)    {
         if (stat((*e1)->d_name,&stat1)==-1) return  1;
         if (stat((*e2)->d_name,&stat2)==-1) return -1;
         return (stat2.st_size < stat1.st_size ? -1 : stat2.st_size > stat1.st_size ? 1 : 0);
     }
     // Please note that calculating the file extension every time inside sorters is a suicide (well, much less than before...)!
-    static int Typesort(const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Typesort(const struct dirent **e1,const struct dirent **e2)    {
         static const int dot = (int) '.';
         const char * p1 = strrchr((const char*) (*e1)->d_name, dot );
         const char * p2 = strrchr((const char*) (*e2)->d_name, dot );
@@ -533,7 +540,7 @@ protected:
         else if (!p2)   return 1;
         return strcasecmp(p1,p2);
     }
-    static int Typesortinverse (const struct dirent **e1,const struct dirent **e2)    {
+    static int IMGUIFS_CDECL Typesortinverse (const struct dirent **e1,const struct dirent **e2)    {
         static const int dot = (int) '.';
         const char * p1 = strrchr((const char*) (*e1)->d_name, dot );
         const char * p2 = strrchr((const char*) (*e2)->d_name, dot );
@@ -901,33 +908,33 @@ struct UnZipFileImpl {
             if (sorter) qsort(&fileInfos[0],fileInfos.size(),sizeof(unz_file_info64_plus),sorter);
         }
         //void qsort( void *ptr, size_t count, size_t size,int (*comp)(const void *, const void *) );
-        inline static int Alphasort(const void* e1,const void* e2) {
+        inline static int IMGUIFS_CDECL Alphasort(const void* e1,const void* e2) {
             return strcasecmp(static_cast<const unz_file_info64_plus*>(e1)->name,static_cast<const unz_file_info64_plus*>(e2)->name);
         }
-        inline static int Alphasortinverse(const void* e1,const void* e2) {
+        inline static int IMGUIFS_CDECL Alphasortinverse(const void* e1,const void* e2) {
             return -strcasecmp(static_cast<const unz_file_info64_plus*>(e1)->name,static_cast<const unz_file_info64_plus*>(e2)->name);
         }
-        inline static int LastModsort(const void* e1,const void* e2) {  // or tmu_date ?
+        inline static int IMGUIFS_CDECL LastModsort(const void* e1,const void* e2) {  // or tmu_date ?
             const uLong& dosDate1 = static_cast<const unz_file_info64_plus*>(e1)->info.dosDate;
             const uLong& dosDate2 = static_cast<const unz_file_info64_plus*>(e2)->info.dosDate;
             return (dosDate1<dosDate2) ? -1 : (dosDate1>dosDate2) ? 1 : 0;
         }
-        inline static int LastModsortinverse(const void* e1,const void* e2) {
+        inline static int IMGUIFS_CDECL LastModsortinverse(const void* e1,const void* e2) {
             const uLong& dosDate1 = static_cast<const unz_file_info64_plus*>(e1)->info.dosDate;
             const uLong& dosDate2 = static_cast<const unz_file_info64_plus*>(e2)->info.dosDate;
             return (dosDate1<dosDate2) ? 1 : (dosDate1>dosDate2) ? -1 : 0;
         }
-        inline static int  Sizesort(const void* e1,const void* e2) {
+        inline static int IMGUIFS_CDECL Sizesort(const void* e1,const void* e2) {
             const ZPOS64_T& size1 = static_cast<const unz_file_info64_plus*>(e1)->info.uncompressed_size;
             const ZPOS64_T& size2 = static_cast<const unz_file_info64_plus*>(e2)->info.uncompressed_size;
             return (size1<size2) ? -1 : (size1>size2) ? 1 : 0;
         }
-        inline static int Sizesortinverse(const void* e1,const void* e2) {
+        inline static int IMGUIFS_CDECL Sizesortinverse(const void* e1,const void* e2) {
             const ZPOS64_T& size1 = static_cast<const unz_file_info64_plus*>(e1)->info.uncompressed_size;
             const ZPOS64_T& size2 = static_cast<const unz_file_info64_plus*>(e2)->info.uncompressed_size;
             return (size1<size2) ? 1 : (size1>size2) ? -1 : 0;
         }
-        inline static int Typesort(const void* e1,const void* e2) {
+        inline static int IMGUIFS_CDECL Typesort(const void* e1,const void* e2) {
             static const int dot = (int) '.';
             const char * p1 = strrchr((const char*) static_cast<const unz_file_info64_plus*>(e1)->name, dot );
             const char * p2 = strrchr((const char*) static_cast<const unz_file_info64_plus*>(e2)->name, dot );
@@ -935,7 +942,7 @@ struct UnZipFileImpl {
             else if (!p2)   return 1;
             return strcasecmp(p1,p2);
         }
-        inline static int Typesortinverse(const void* e1,const void* e2) {
+        inline static int IMGUIFS_CDECL Typesortinverse(const void* e1,const void* e2) {
             static const int dot = (int) '.';
             const char * p1 = strrchr((const char*) static_cast<const unz_file_info64_plus*>(e1)->name, dot );
             const char * p2 = strrchr((const char*) static_cast<const unz_file_info64_plus*>(e2)->name, dot );
@@ -2521,7 +2528,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
     // MAIN BROWSING FRAME:
     //-----------------------------------------------------------------------------
     {
-        ImGui::BeginChild("BrowsingFrame",ImVec2(0,(isSaveFileDialog || isSelectFolderDialog)?(ImGui::GetContentRegionAvail().y-1.2f*ImGui::GetTextLineHeightWithSpacing()-ImGui::GetStyle().WindowPadding.y):0));
+        if (ImGui::BeginChild("BrowsingFrame",ImVec2(0,(isSaveFileDialog || isSelectFolderDialog)?(ImGui::GetContentRegionAvail().y-1.2f*ImGui::GetTextLineHeightWithSpacing()-ImGui::GetStyle().WindowPadding.y):0)))  {
 
         I.calculateBrowsingDataTableSizes(ImGui::GetWindowSize());  // (Actually we could save this call every frame, but it's difficult to detect whn we need it)
 
@@ -2687,6 +2694,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
         }
         //-----------------------------------------------------------------------------
         ImGui::PopID();
+        }   // ImGui::BeginChild(...)
         ImGui::EndChild();
 
     }
@@ -2805,7 +2813,6 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
 const char* Dialog::chooseFileDialog(bool dialogTriggerButton,const char* directory,const char* fileFilterExtensionString,const char* windowTitle,const ImVec2& windowSize,const ImVec2& windowPos,const float windowAlpha) {
     if (dialogTriggerButton)    {internal->open = internal->rescan = internal->forceSetWindowPositionAndSize = true;internal->chosenPath[0]='\0';internal->userHasJustCancelledDialog = false;}
     if (dialogTriggerButton || (!internal->rescan && internal->open && strlen(getChosenPath())==0)) {
-	if (this->internal->open) ImGui::SetNextWindowFocus();  // Not too sure about this line (it seems to just keep the window on the top, but it does not prevent other windows to be used...)
         const char* cp = ChooseFileMainMethod(*this,directory,false,false,"",fileFilterExtensionString,windowTitle,windowSize,windowPos,windowAlpha);
         if (!internal->open) {  // AFAIK this should happen only when user clicks the close button (but not when he clicks cancel)
             internal->userHasJustCancelledDialog = true;
@@ -2821,7 +2828,6 @@ const char* Dialog::chooseFileDialog(bool dialogTriggerButton,const char* direct
 const char* Dialog::chooseFolderDialog(bool dialogTriggerButton,const char* directory,const char* windowTitle,const ImVec2& windowSize,const ImVec2& windowPos,const float windowAlpha)  {
     if (dialogTriggerButton) {internal->open = internal->rescan = internal->forceSetWindowPositionAndSize = true;internal->chosenPath[0]='\0';internal->userHasJustCancelledDialog = false;}
     if (dialogTriggerButton || (!internal->rescan && internal->open && strlen(getChosenPath())==0)) {
-	if (this->internal->open) ImGui::SetNextWindowFocus();  // Not too sure about this line (it seems to just keep the window on the top, but it does not prevent other windows to be used...)
         const char* cp = ChooseFileMainMethod(*this,directory,true,false,"","",windowTitle,windowSize,windowPos,windowAlpha);
         if (!internal->open) {
             internal->userHasJustCancelledDialog = true;
@@ -2837,7 +2843,6 @@ const char* Dialog::chooseFolderDialog(bool dialogTriggerButton,const char* dire
 const char* Dialog::saveFileDialog(bool dialogTriggerButton,const char* directory,const char* startingFileNameEntry,const char* fileFilterExtensionString,const char* windowTitle,const ImVec2& windowSize,const ImVec2& windowPos,const float windowAlpha)    {
     if (dialogTriggerButton) {internal->open = internal->rescan = internal->forceSetWindowPositionAndSize = true;internal->chosenPath[0]='\0';internal->userHasJustCancelledDialog = false;}
     if (dialogTriggerButton || (!internal->rescan && internal->open && strlen(getChosenPath())==0)) {
-	if (this->internal->open) ImGui::SetNextWindowFocus();  // Not too sure about this line (it seems to just keep the window on the top, but it does not prevent other windows to be used...)
         const char* cp = ChooseFileMainMethod(*this,directory,false,true,startingFileNameEntry,fileFilterExtensionString,windowTitle,windowSize,windowPos,windowAlpha);
         if (!internal->open) {
             internal->userHasJustCancelledDialog = true;

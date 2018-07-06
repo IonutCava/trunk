@@ -269,6 +269,7 @@ void ImImpl_GenerateOrUpdateTexture(ImTextureID& imtexid,int width,int height,in
     else glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, useMipmapsIfPossible ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    //glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
     GLenum luminanceAlphaEnum = 0x190A; // 0x190A -> GL_LUMINANCE_ALPHA [Note that we're FORCING this definition even if when it's not defined! What should we use for 2 channels?]
 #   ifdef GL_LUMINANCE_ALPHA
@@ -354,6 +355,19 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
     defaultFontConfig.OversampleH=defaultFontConfig.OversampleV=1;defaultFontConfig.PixelSnapH = true;
     defaultFontConfig.SizePixels = ImImpl_InitParams::DefaultFontSizeOverrideInPixels;
     const ImFontConfig* pDefaultFontConfig = ImImpl_InitParams::DefaultFontSizeOverrideInPixels==0.f ? NULL : &defaultFontConfig;
+
+#   ifndef IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON
+    // Software cursors won't work in any case
+    io.Fonts->Flags|=ImFontAtlasFlags_NoMouseCursors;       // Don't build software mouse cursors into the atlas
+#   else //IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON
+#       ifdef IMGUIBINDINGS_FONTATLAS_NOMOUSECURSORS
+        io.Fonts->Flags|=ImFontAtlasFlags_NoMouseCursors;   // Don't build software mouse cursors into the atlas
+#       endif //IMGUIBINDINGS_FONTATLAS_NOMOUSECURSORS
+#   endif //IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON
+
+#   ifdef IMGUIBINDINGS_FONTATLAS_NOPOWEROFTWOHEIGHT
+    io.Fonts->Flags|=ImFontAtlasFlags_NoPowerOfTwoHeight;   // Don't round the height to next power of two
+#   endif //IMGUIBINDINGS_FONTATLAS_NOPOWEROFTWOHEIGHT
 
     if (pOptionalInitParams)    {
         const ImImpl_InitParams& P = *pOptionalInitParams;
@@ -1643,6 +1657,7 @@ void ImImpl_NewFramePaused()    {
     // so that we can still process input using ImGui calls
 
     ImGuiContext& g = *GImGui;
+    IM_ASSERT(g.Initialized);
     g.Time += g.IO.DeltaTime;
 
     // Update keyboard input state

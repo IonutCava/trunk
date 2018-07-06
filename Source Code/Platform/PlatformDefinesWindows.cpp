@@ -32,7 +32,7 @@
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "glbindingd.lib")
 #pragma comment(lib, "OIS_static_d.lib")
-#pragma comment(lib, "assimp_d.lib")
+#pragma comment(lib, "assimp-vc140-mt_d.lib")
 #pragma comment(lib, "IL_d.lib")
 #pragma comment(lib, "libpng_d.lib")
 #pragma comment(lib, "jpeg_d.lib")
@@ -62,7 +62,6 @@
 #else  //_DEBUG
 #pragma comment(lib, "glbinding.lib")
 #pragma comment(lib, "OIS_static.lib")
-#pragma comment(lib, "assimp.lib")
 #pragma comment(lib, "IL.lib")
 #pragma comment(lib, "libpng.lib")
 #pragma comment(lib, "jpeg.lib")
@@ -75,6 +74,7 @@
 #pragma comment(lib, "FreeImage.lib")
 
 #if defined(_PROFILE)
+    #pragma comment(lib, "assimp-vc140-mt_p.lib")
     #pragma comment(lib, "PhysX3CookingCHECKED_x64.lib")
     #pragma comment(lib, "PhysX3CHECKED_x64.lib")
     #pragma comment(lib, "PhysX3CommonCHECKED_x64.lib")
@@ -89,6 +89,7 @@
     #pragma comment(lib, "CEGUILuaScriptModule-0_Static_p.lib")
     #pragma comment(lib, "CEGUITinyXMLParser_Static_p.lib")
 #else
+    #pragma comment(lib, "assimp-vc140-mt.lib")
     #pragma comment(lib, "PhysX3Cooking_x64.lib")
     #pragma comment(lib, "PhysX3_x64.lib")
     #pragma comment(lib, "PhysX3Common_x64.lib")

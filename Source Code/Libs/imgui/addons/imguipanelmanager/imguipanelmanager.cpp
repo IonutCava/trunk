@@ -108,8 +108,9 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
     // Automatically disable manual moving/resizing when NoInputs is set
     if (flags & ImGuiWindowFlags_NoInputs)
         flags |= ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
-    //if (flags & ImGuiWindowFlags_NavFlattened)
-    //    IM_ASSERT(flags & ImGuiWindowFlags_ChildWindow);
+
+    if (flags & ImGuiWindowFlags_NavFlattened)
+        IM_ASSERT(flags & ImGuiWindowFlags_ChildWindow);
 
     const int current_frame = g.FrameCount;
     const bool first_begin_of_the_frame = (window->LastFrameActive != current_frame);
@@ -149,6 +150,9 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         window->PopupId = popup_ref.PopupId;
     }
 
+    if (window_just_appearing_after_hidden_for_resize && !(flags & ImGuiWindowFlags_ChildWindow))
+        window->NavLastIds[0] = 0;
+
     // Process SetNextWindow***() calls
     bool window_pos_set_by_api = false;
     bool window_size_x_set_by_api = false, window_size_y_set_by_api = false;
@@ -180,6 +184,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
     {
         // Adjust passed "client size" to become a "window size"
         window->SizeContentsExplicit = g.NextWindowData.SizeVal;
+        if (window->SizeContentsExplicit.y != 0.0f)
         window->SizeContentsExplicit.y += window->TitleBarHeight() + window->MenuBarHeight();
         g.NextWindowData.ContentSizeCond = 0;
     }
@@ -195,7 +200,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
     if (g.NextWindowData.FocusCond)
     {
         SetWindowFocus();
-        g.NextWindowData.FocusCond = false;
+        g.NextWindowData.FocusCond = 0;
     }
     if (window->Appearing)
         SetWindowConditionAllowFlags(window, ImGuiCond_Appearing, false);
@@ -213,14 +218,13 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
 
         // Initialize
         window->ParentWindow = parent_window;
-        window->RootWindow = window->RootNonPopupWindow = window;
+        window->RootWindow = window->RootWindowForTitleBarHighlight = window->RootWindowForTabbing = window->RootWindowForNav = window;
         if (parent_window && (flags & ImGuiWindowFlags_ChildWindow) && !window_is_child_tooltip)
             window->RootWindow = parent_window->RootWindow;
         if (parent_window && !(flags & ImGuiWindowFlags_Modal) && (flags & (ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_Popup)))
-            window->RootNonPopupWindow = parent_window->RootNonPopupWindow;
-        //window->NavRootWindow = window;
-        //while (window->NavRootWindow->Flags & ImGuiWindowFlags_NavFlattened)
-        //    window->NavRootWindow = window->NavRootWindow->ParentWindow;
+            window->RootWindowForTitleBarHighlight = window->RootWindowForTabbing = parent_window->RootWindowForTitleBarHighlight; // Same value in master branch, will differ for docking
+        while (window->RootWindowForNav->Flags & ImGuiWindowFlags_NavFlattened)
+            window->RootWindowForNav = window->RootWindowForNav->ParentWindow;
 
         window->Active = true;
         window->BeginOrderWithinParent = 0;
@@ -234,11 +238,11 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         window->DrawList->Clear();
         window->DrawList->Flags = (g.Style.AntiAliasedLines ? ImDrawListFlags_AntiAliasedLines : 0) | (g.Style.AntiAliasedFill ? ImDrawListFlags_AntiAliasedFill : 0);
         window->DrawList->PushTextureID(g.Font->ContainerAtlas->TexID);
-        ImRect fullscreen_rect(GetViewportRect());
+        ImRect viewport_rect(GetViewportRect());
         if ((flags & ImGuiWindowFlags_ChildWindow) && !(flags & ImGuiWindowFlags_Popup) && !window_is_child_tooltip)
             PushClipRect(parent_window->ClipRect.Min, parent_window->ClipRect.Max, true);
         else
-            PushClipRect(fullscreen_rect.Min, fullscreen_rect.Max, true);
+            PushClipRect(viewport_rect.Min, viewport_rect.Max, true);
 
         /*if (window_just_activated_by_user)
         {
@@ -429,10 +433,22 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         // Position tooltip (always follows mouse)
         if ((flags & ImGuiWindowFlags_Tooltip) != 0 && !window_pos_set_by_api && !window_is_child_tooltip)
         {
+            /*
             float sc = g.Style.MouseCursorScale;
             ImVec2 ref_pos = g.IO.MousePos;
             //ImRect rect_to_avoid(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24, ref_pos.y + 24); // FIXME: Completely hard-coded. Store boxes in mouse cursor data? Scale? Center on cursor hit-point?
             ImRect rect_to_avoid(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24 * sc, ref_pos.y + 24 * sc); // FIXME: Hard-coded based on mouse cursor shape expectation. Exact dimension not very important.
+            window->PosFloat = FindBestWindowPosForPopup(ref_pos, window->Size, &window->AutoPosLastDirection, rect_to_avoid);
+            if (window->AutoPosLastDirection == ImGuiDir_None)
+                window->PosFloat = ref_pos + ImVec2(2,2); // If there's not enough room, for tooltip we prefer avoiding the cursor at all cost even if it means that part of the tooltip won't be visible.
+            */
+            float sc = g.Style.MouseCursorScale;
+            ImVec2 ref_pos = (!g.NavDisableHighlight && g.NavDisableMouseHover) ? NavCalcPreferredMousePos() : g.IO.MousePos;
+            ImRect rect_to_avoid;
+            if (!g.NavDisableHighlight && g.NavDisableMouseHover && !(g.IO.ConfigFlags & ImGuiConfigFlags_NavMoveMouse))
+                rect_to_avoid = ImRect(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 16, ref_pos.y + 8);
+            else
+                rect_to_avoid = ImRect(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24 * sc, ref_pos.y + 24 * sc); // FIXME: Hard-coded based on mouse cursor shape expectation. Exact dimension not very important.
             window->PosFloat = FindBestWindowPosForPopup(ref_pos, window->Size, &window->AutoPosLastDirection, rect_to_avoid);
             if (window->AutoPosLastDirection == ImGuiDir_None)
                 window->PosFloat = ref_pos + ImVec2(2,2); // If there's not enough room, for tooltip we prefer avoiding the cursor at all cost even if it means that part of the tooltip won't be visible.
@@ -448,7 +464,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
                 window->PosFloat = ImMin(window->PosFloat, g.IO.DisplaySize - padding);
             }
         }
-        window->Pos = ImVec2((float)(int)window->PosFloat.x, (float)(int)window->PosFloat.y);
+        window->Pos = ImFloor(window->PosFloat);
 
         // Default item width. Make it proportional to window size if window manually resizes
         if (window->Size.x > 0.0f && !(flags & ImGuiWindowFlags_Tooltip) && !(flags & ImGuiWindowFlags_AlwaysAutoResize))
@@ -474,17 +490,17 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
 
         // Draw modal window background (darkens what is behind them)
         if ((flags & ImGuiWindowFlags_Modal) != 0 && window == GetFrontMostModalRootWindow())
-            window->DrawList->AddRectFilled(fullscreen_rect.Min, fullscreen_rect.Max, GetColorU32(ImGuiCol_ModalWindowDarkening, g.ModalWindowDarkeningRatio));
+            window->DrawList->AddRectFilled(viewport_rect.Min, viewport_rect.Max, GetColorU32(ImGuiCol_ModalWindowDarkening, g.ModalWindowDarkeningRatio));
 
         // Draw window + handle manual resize
-        ImRect title_bar_rect = window->TitleBarRect();
-        const bool window_is_focused = want_focus || (g.NavWindow && window->RootNonPopupWindow == g.NavWindow->RootNonPopupWindow);
-        ImU32 title_bar_col = GetColorU32(window->Collapsed ? ImGuiCol_TitleBgCollapsed : window_is_focused ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBg);
+        const bool title_bar_is_highlight = want_focus || (g.NavWindow && window->RootWindowForTitleBarHighlight == g.NavWindow->RootWindowForTitleBarHighlight);
+        const ImRect title_bar_rect = window->TitleBarRect();
         if (window->Collapsed)
         {
             // Title bar only
             float backup_border_size = style.FrameBorderSize;
             g.Style.FrameBorderSize = window->WindowBorderSize;
+            ImU32 title_bar_col = GetColorU32((title_bar_is_highlight && !g.NavDisableHighlight) ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBgCollapsed);
             RenderFrame(title_bar_rect.Min, title_bar_rect.Max, title_bar_col, true, window_rounding);
             g.Style.FrameBorderSize = backup_border_size;
         }
@@ -584,6 +600,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
 
 
             // Title bar
+            ImU32 title_bar_col = GetColorU32(window->Collapsed ? ImGuiCol_TitleBgCollapsed : title_bar_is_highlight ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBg);
             if (!(flags & ImGuiWindowFlags_NoTitleBar)) {
                 //const bool window_is_focused = g.NavWindow && window->RootNonPopupWindow == g.NavWindow->RootNonPopupWindow;
 #               if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_DRAW_METHODS))
@@ -649,6 +666,26 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
                 window->DrawList->AddLine(title_bar_rect.GetBL() + ImVec2(style.WindowBorderSize, -1), title_bar_rect.GetBR() + ImVec2(-style.WindowBorderSize,-1), GetColorU32(ImGuiCol_Border), style.FrameBorderSize);
         }
 
+        // Draw navigation selection/windowing rectangle border
+        if (g.NavWindowingTarget == window)
+        {
+            /*ImRect bb = window->Rect();
+            bb.Expand(g.FontSize);
+            if (bb.Contains(viewport_rect))
+                bb.Expand(-g.FontSize - 2.0f);
+            window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha), g.Style.WindowRounding, ~0, 3.0f);*/
+
+            float rounding = ImMax(window->WindowRounding, g.Style.WindowRounding);
+            ImRect bb = window->Rect();
+            bb.Expand(g.FontSize);
+            if (bb.Contains(viewport_rect)) // If a window fits the entire viewport, adjust its highlight inward
+            {
+                bb.Expand(-g.FontSize - 1.0f);
+                rounding = window->WindowRounding;
+            }
+            window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha), rounding, ~0, 3.0f);
+        }
+
         // Store a backup of SizeFull which we will use next frame to decide if we need scrollbars.
         window->SizeFullAtLastBegin = window->SizeFull;
 
@@ -669,11 +706,16 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         window->DC.CursorMaxPos = window->DC.CursorStartPos;
         window->DC.CurrentLineHeight = window->DC.PrevLineHeight = 0.0f;
         window->DC.CurrentLineTextBaseOffset = window->DC.PrevLineTextBaseOffset = 0.0f;
+        window->DC.NavHideHighlightOneFrame = false;
+        window->DC.NavHasScroll = (GetScrollMaxY() > 0.0f);
+        window->DC.NavLayerActiveMask = window->DC.NavLayerActiveMaskNext;
+        window->DC.NavLayerActiveMaskNext = 0x00;
         window->DC.MenuBarAppending = false;
         window->DC.MenuBarOffsetX = ImMax(window->WindowPadding.x, style.ItemSpacing.x);
         window->DC.LogLinePosY = window->DC.CursorPos.y - 9999.0f;
         window->DC.ChildWindows.resize(0);
         window->DC.LayoutType = ImGuiLayoutType_Vertical;
+        window->DC.ParentLayoutType = parent_window ? parent_window->DC.LayoutType : ImGuiLayoutType_Vertical;
         window->DC.ItemFlags = ImGuiItemFlags_Default_;
         window->DC.ItemWidth = window->ItemWidthDefault;
         window->DC.TextWrapPos = -1.0f; // disabled
@@ -682,6 +724,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         window->DC.TextWrapPosStack.resize(0);
         window->DC.ColumnsSet = NULL;
         window->DC.TreeDepth = 0;
+        window->DC.TreeDepthMayJumpToParentOnPop = 0x00;
         window->DC.StateStorage = &window->StateStorage;
         window->DC.GroupStack.resize(0);
         window->MenuColumns.Update(3, style.ItemSpacing.x, window_just_activated_by_user);
@@ -698,12 +741,21 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
             window->AutoFitFramesY--;
 
         // Apply focus (we need to call FocusWindow() AFTER setting DC.CursorStartPos so our initial navigation reference rectangle can start around there)
-        if (want_focus)
+        if (want_focus) {
             FocusWindow(window);
+            NavInitWindow(window, false);
+        }
 
         // Title bar
         if (!(flags & ImGuiWindowFlags_NoTitleBar))
         {
+
+            // Close & collapse button are on layer 1 (same as menus) and don't default focus
+            const ImGuiItemFlags item_flags_backup = window->DC.ItemFlags;
+            window->DC.ItemFlags |= ImGuiItemFlags_NoNavDefaultFocus;
+            window->DC.NavLayerCurrent++;
+            window->DC.NavLayerCurrentMask <<= 1;
+
             if (p_opened != NULL)   {
                 //*p_opened = CloseWindowButton(p_opened);
                 const float pad = 2.0f;
@@ -715,6 +767,12 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
             if (p_undocked != NULL)
                 DockWindowButton(p_undocked,p_opened);
 
+            // Restore layer
+            window->DC.NavLayerCurrent--;
+            window->DC.NavLayerCurrentMask >>= 1;
+            window->DC.ItemFlags = item_flags_backup;
+
+            // Title text (FIXME: refactor text alignment facilities along with RenderText helpers)
             const ImVec2 text_size = CalcTextSize(name, NULL, true);
             if (!(flags & ImGuiWindowFlags_NoCollapse))
                 RenderTriangle(window->Pos + style.FramePadding, window->Collapsed ? ImGuiDir_Right : ImGuiDir_Down, 1.0f);
@@ -778,7 +836,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         window->WriteAccessed = false;
 
     window->BeginCount++;
-    g.NextWindowData.SizeConstraintCond = false;
+    g.NextWindowData.SizeConstraintCond = 0;
 
     // Child window can be out of sight and have "negative" clip windows.
     // Mark them as collapsed so commands are skipped earlier (we can't manually collapse because they have no title bar).

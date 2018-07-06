@@ -678,7 +678,7 @@ bool ImageZoomAndPan(ImTextureID user_texture_id, const ImVec2& size,float aspec
             zoomCenter.x-=io.MouseDelta.x/(imageSz.x*zoom);
             zoomCenter.y-=io.MouseDelta.y/(imageSz.y*zoom);
             rv = true;
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
         }
     }
 
@@ -6550,7 +6550,7 @@ struct StbImage {
                         zoomCenter.x-=io.MouseDelta.x/(imageSz.x*zoom);
                         zoomCenter.y-=io.MouseDelta.y/(imageSz.y*zoom);
                         rv = true;
-                        ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+                        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
                     }
                     isMousePanning = 2;
                 }

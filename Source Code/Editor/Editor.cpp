@@ -250,7 +250,7 @@ void Editor::update(const U64 deltaTimeUS) {
                 case ImGuiMouseCursor_TextInput:         // When hovering over InputText, etc.
                     _mainWindow->setCursorStyle(CursorStyle::TEXT_INPUT);
                     break;
-                case ImGuiMouseCursor_Move:              // Unused
+                case ImGuiMouseCursor_ResizeAll:         // Unused
                     _mainWindow->setCursorStyle(CursorStyle::HAND);
                     break;
                 case ImGuiMouseCursor_ResizeNS:          // Unused

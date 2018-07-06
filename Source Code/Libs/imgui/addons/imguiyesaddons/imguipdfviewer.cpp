@@ -37,6 +37,14 @@
 
 #include <cairo/cairo.h> // intellisense
 
+// Enforce cdecl calling convention for functions called by the standard library, in case compilation settings changed the default to e.g. __vectorcall
+#ifdef _MSC_VER
+#define IMGUIPDF_CDECL __cdecl
+#else
+#define IMGUIPDF_CDECL
+#endif
+
+
 namespace ImStl {
     template<typename T,typename U> struct Pair {
         T first;U second;
@@ -489,7 +497,7 @@ public:
     }
 
     // UserSelectionRectangles stuff-----------------------------------------------------------------------------------------
-    static int UserSelectionRectanglesComparer(const void* pa,const void* pb)   {
+    static int IMGUIPDF_CDECL UserSelectionRectanglesComparer(const void* pa,const void* pb)   {
         const ImStl::Pair<int,cairo_rectangle_t>& a = *((const ImStl::Pair<int,cairo_rectangle_t>*)pa);
         const ImStl::Pair<int,cairo_rectangle_t>& b = *((const ImStl::Pair<int,cairo_rectangle_t>*)pb);
         int apg = a.first;
@@ -929,7 +937,7 @@ bool PdfPagePanel::imageZoomAndPan(const ImVec2& size)
             zoomCenter.x-=io.MouseDelta.x/(zoomedImageSize.x*zoom);
             zoomCenter.y-=io.MouseDelta.y/(zoomedImageSize.y*zoom);
             rv = true;
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
         }
     }
     else if (isRMBclickedForContextMenu) {if (!(isHoveredRect=ImGui::IsItemHoveredRect())) isRMBclickedForContextMenu = false;}
@@ -1134,7 +1142,7 @@ bool PdfPagePanel::imageZoomAndPan(const ImVec2& size)
                 }                
             }
             if (isLinkUnderTheMouseValid) {
-                ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
                 if (linkUnderTheMouse!=-1 && !pageChanged)// && !isLMBClicked)
                 {
                     const cairo_rectangle_t& r = linkMapping[linkUnderTheMouse].first;

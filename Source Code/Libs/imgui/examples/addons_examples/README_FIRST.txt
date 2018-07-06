@@ -200,13 +200,19 @@ IMIMPL_BUILD_SDF				# builds Signed Distance Fonts for ImGui. To display them co
 						# (This happens because we use a single shader to display everything).
 						# Warning: I'm not sure this works with the imguifreetype addon (YES_IMGUIFREETYPE).
 
+The following definitions can be defined with any binding:
+
 IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON:	# Normally ImGui::GetIO()->Fonts->ClearInputData() and ImGui::GetIO()->Fonts->ClearTexData() are called as soon as possible to save some memory.
 						# However this prevents you from appending new fonts later (e.g. in InitGL() instead of in the main() method).
 						# And this also prevents you from using SOFTWARE CURSORS.
 						# If you want to use software cursors or to append fonts later, please define this definition.
 						# Possible future ImGui dynamic atlas support will require input data anyway, so this definition will be made enabled by default.
 						# The input data is cleaned up before the delation of the font texture if IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON is defined.
-						# This definition is available for the Direct3D binding as well.
+
+IMGUIBINDINGS_FONTATLAS_NOMOUSECURSORS		# Excludes SOFTWARE CURSORS from the font texture (it's implicit when IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON is NOT defined).
+
+IMGUIBINDINGS_FONTATLAS_NOPOWEROFTWOHEIGHT	# If you define it the font texture height is not bound to be a power of two.
+
 
 4 -> OPTIONALLY you can use other definitions at the project level:
 IMGUI_USE_ZLIB					# requires the library zlib. It currently enables loading ttf.gz fonts (from file or embedded in C++ code) through the ImImpl_Main(...) method (only if you use one of the "bindings" above), 

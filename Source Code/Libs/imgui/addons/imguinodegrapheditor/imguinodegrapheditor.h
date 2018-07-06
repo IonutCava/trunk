@@ -53,6 +53,12 @@
 -> FIXED: https://github.com/Flix01/imgui/issues/16
 */
 
+// Enforce cdecl calling convention for functions called by the standard library, in case compilation settings changed the default to e.g. __vectorcall
+#ifdef _MSC_VER
+#define IMGUINGE_CDECL __cdecl
+#else
+#define IMGUINGE_CDECL
+#endif
 
 namespace ImGui	{
 #   ifndef IMGUIHELPER_H_
@@ -768,7 +774,7 @@ class NodeGraphEditor
     // Refactored for cleaner exposure (without the misleading 'flag' argument)
     void selectNodePrivate(const Node* node, bool flag=true,bool findANewActiveNodeWhenNeeded=true);
     void selectAllNodesPrivate(bool flag=true,bool findANewActiveNodeWhenNeeded=true);
-    static int AvailableNodeInfoNameSorter(const void *s0, const void *s1) {
+    static int IMGUINGE_CDECL AvailableNodeInfoNameSorter(const void *s0, const void *s1) {
         const AvailableNodeInfo& ni0 = *((AvailableNodeInfo*) s0);
         const AvailableNodeInfo& ni1 = *((AvailableNodeInfo*) s1);
         return strcmp(ni0.name,ni1.name);

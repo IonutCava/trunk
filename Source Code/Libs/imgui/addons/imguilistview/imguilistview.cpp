@@ -10,6 +10,13 @@
 
 #include <stdlib.h> // qsort
 
+// Enforce cdecl calling convention for functions called by the standard library, in case compilation settings changed the default to e.g. __vectorcall
+#ifdef _MSC_VER
+#define IMGUILV_CDECL __cdecl
+#else
+#define IMGUILV_CDECL
+#endif
+
 namespace ImGui {
 
 bool ListViewBase::render(float listViewHeight, const ImVector<int> *pOptionalColumnReorderVector, int maxNumColumnToDisplay, float contentRegionWidthForHorizontalScrolling) const {

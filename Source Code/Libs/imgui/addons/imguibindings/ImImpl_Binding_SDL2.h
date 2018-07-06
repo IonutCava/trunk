@@ -10,7 +10,7 @@ static ImVec2 mousePosScale(1.0f, 1.0f);
 static const SDL_SystemCursor sdlCursorIds[ImGuiMouseCursor_Count_+1] = {
     SDL_SYSTEM_CURSOR_ARROW,
     SDL_SYSTEM_CURSOR_IBEAM,
-    SDL_SYSTEM_CURSOR_HAND,//SDL_SYSTEM_CURSOR_SIZEALL,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_Move,                  // Unused by ImGui
+    SDL_SYSTEM_CURSOR_HAND,//SDL_SYSTEM_CURSOR_SIZEALL,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_ResizeAll,                  // Unused by ImGui
     SDL_SYSTEM_CURSOR_SIZENS,       //ImGuiMouseCursor_ResizeNS,              // Unused by ImGui
     SDL_SYSTEM_CURSOR_SIZEWE,       //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
     SDL_SYSTEM_CURSOR_SIZENESW,     //ImGuiMouseCursor_ResizeNESW,
@@ -368,8 +368,8 @@ static void ImImplMainLoopFrame(void* pDone)	{
             if (io.WantMoveMouse)  {
                 // Set mouse position if requested by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
                 // SDL_WarpMouseInWindow() and SDL_WarpMouseGlobal()
-                SDL_WarpMouseGlobal((int)io.MousePos.x, (int)io.MousePos.y);
-                //SDL_WarpMouseInWindow(window,(int)io.MousePos.x, (int)io.MousePos.y);
+                //SDL_WarpMouseGlobal((int)io.MousePos.x, (int)io.MousePos.y);  // Wrong!
+                SDL_WarpMouseInWindow(window,(int)io.MousePos.x, (int)io.MousePos.y);
             }
             /*else    {
                 // Get mouse position in screen coordinates (set to -1,-1 if no mouse / on another screen, etc.)

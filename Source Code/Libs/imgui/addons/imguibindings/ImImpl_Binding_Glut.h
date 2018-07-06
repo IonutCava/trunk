@@ -224,7 +224,7 @@ static void GlutDrawGL()    {
                 static const int glutCursors[] = {
                     GLUT_CURSOR_INHERIT,
                     GLUT_CURSOR_TEXT,
-                    GLUT_CURSOR_CROSSHAIR,      //ImGuiMouseCursor_Move,                  // Unused by ImGui
+                    GLUT_CURSOR_CROSSHAIR,      //ImGuiMouseCursor_ResizeAll,                  // Unused by ImGui
                     GLUT_CURSOR_UP_DOWN,    //ImGuiMouseCursor_ResizeNS,              // Unused by ImGui
                     GLUT_CURSOR_LEFT_RIGHT, //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
                     GLUT_CURSOR_TOP_RIGHT_CORNER,//ImGuiMouseCursor_ResizeNESW,

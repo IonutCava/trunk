@@ -14,7 +14,7 @@ static ImVec2 mousePosScale(1.0f, 1.0f);
 static const LPCTSTR win32CursorIds[ImGuiMouseCursor_Count_+1] = {
     IDC_ARROW,
     IDC_IBEAM,
-    IDC_SIZEALL,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_Move,                  // Unused by ImGui
+    IDC_SIZEALL,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_ResizeAll,                  // Unused by ImGui
     IDC_SIZENS,       //ImGuiMouseCursor_ResizeNS,              // Unused by ImGui
     IDC_SIZEWE,       //ImGuiMouseCursor_ResizeEW,              // Unused by ImGui
     IDC_SIZENESW,     //ImGuiMouseCursor_ResizeNESW,

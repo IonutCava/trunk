@@ -533,6 +533,9 @@ if (!ImGui::LoadStyle("./myimgui.style",ImGui::GetStyle()))   {
     fprintf(stderr,"Warning: \"./myimgui.style\" not present.\n");
 }
 */
+// This is something that does not work properly with all the addons:
+//ImGui::GetIO().NavFlags |= ImGuiNavFlags_EnableKeyboard;
+
 
 if (!myImageTextureId) myImageTextureId = ImImpl_LoadTexture("./Tile8x8.png");
 if (!myImageTextureId2) myImageTextureId2 = ImImpl_LoadTexture("./myNumbersTexture.png");
@@ -988,6 +991,19 @@ void DrawDockedWindows(ImGui::PanelManagerWindowData& wd)    {
                 ImGui::SameLine();
                 if (ImGui::Checkbox("Show Main Menu",(bool*)gpShowMainMenuBar)) SetPanelManagerBoundsToIncludeMainMenuIfPresent();
             }
+            // Here we test the Nav feature (not serialized)
+            ImGui::Spacing();
+            unsigned int* pNavFlags = (unsigned int*) &ImGui::GetIO().ConfigFlags;
+            ImGui::AlignFirstTextHeightToWidgets();ImGui::TextUnformatted("ConfigFlags:");
+            ImGui::SameLine();ImGui::CheckboxFlags("NavEnableKeyboard",pNavFlags,ImGuiConfigFlags_NavEnableKeyboard);
+#           ifdef IMGUI_USE_GLFW_BINDING
+            ImGui::SameLine();ImGui::CheckboxFlags("NavEnableGamepad",pNavFlags,ImGuiConfigFlags_NavEnableGamepad);
+#           endif //IMGUI_USE_GLFW_BINDING
+            ImGui::SameLine();ImGui::CheckboxFlags("NavMoveMouse",pNavFlags,ImGuiConfigFlags_NavMoveMouse);
+            //ImGui::SameLine();ImGui::CheckboxFlags("NavNoCaptureKeyboard",pNavFlags,ImGuiConfigFlags_NavNoCaptureKeyboard);
+            if (ImGui::GetIO().ConfigFlags&ImGuiConfigFlags_NavEnableKeyboard) {ImGui::SameLine(0,30);ImGui::TextDisabled("%s","Keys: CTRL+TAB and CTRL+SHIFT+TAB, Space and Esc, Arrows");}
+
+
 	    // Here we test saving/loading the ImGui::PanelManager layout (= the sizes of the 4 docked windows and the buttons that are selected on the 4 toolbars)
 	    // Please note that the API should allow loading/saving different items into a single file and loading/saving from/to memory too, but we don't show it now.
 #           if (!defined(NO_IMGUIHELPER) && !defined(NO_IMGUIHELPER_SERIALIZATION))

@@ -410,6 +410,7 @@ void DrawGL()	// Mandatory
             ImGui::SameLine(0,10);
             if (ImGui::SmallButton("Reset##glClearColorReset")) clearColor = defaultClearColor;
         }
+
         ImGui::TreePop();
         }
 
@@ -894,6 +895,7 @@ void DrawGL()	// Mandatory
 #       ifndef NO_IMGUIVARIOUSCONTROLS_ANIMATEDIMAGE
         // One instance per image, but it can feed multiple widgets
         static ImGui::AnimatedImage gif(myImageTextureId2,64,64,9,3,3,30,true);
+        //static ImGui::AnimatedImage gif("extra/awesome.gif",true);
         ImGui::SameLine();
         gif.render();
         ImGui::SameLine();

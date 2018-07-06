@@ -2502,7 +2502,7 @@ void TabWindow::render()
             dd.drawDragButton(drawList,wp,mp);
             lastFrameNoDragTabLabelHasBeenDrawn = false;
             // -------------------------------------------------------------------
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
         }
 
         // Drop tab label onto another
@@ -3057,7 +3057,7 @@ bool TabLabels(int numTabs, const char** tabLabels, int& selectedIndex, const ch
             const TabLabelStyle& tabStyle = TabLabelStyleGetMergedWithAlphaForOverlayUsage();
             ImFont* fontOverride = (ImFont*) (draggingTabWasSelected ? TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_SELECTED]] : TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_NORMAL]]);
             ImGui::TabButton(tabLabels[pOptionalItemOrdering[draggingTabIndex]],draggingTabWasSelected,allowTabClosing ? &mustCloseTab : NULL,NULL,NULL,&tabStyle,fontOverride,&start,drawList,false,true);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
 
             if (TabWindow::DockPanelIconTextureID)	{
                 // Optional: draw prohibition sign when dragging too far (you can remove this if you want)
@@ -3501,7 +3501,7 @@ bool TabLabelsVertical(bool textIsRotatedCCW, int numTabs, const char** tabLabel
             const TabLabelStyle& tabStyle = TabLabelStyleGetMergedWithAlphaForOverlayUsage();
             ImFont* fontOverride = (ImFont*) (draggingTabWasSelected ? TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_SELECTED]] : TabLabelStyle::ImGuiFonts[tabStyle.fontStyles[TabLabelStyle::TAB_STATE_NORMAL]]);
             ImGui::TabButtonVertical(textIsRotatedCCW,tabLabels[pOptionalItemOrdering[draggingTabIndex]],draggingTabWasSelected,allowTabClosing ? &mustCloseTab : NULL,NULL,NULL,&tabStyle,fontOverride,&start,drawList,false,true,invertRounding);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
 
             if (TabWindow::DockPanelIconTextureID)	{
                 // Optional: draw prohibition sign when dragging too far (you can remove this if you want)

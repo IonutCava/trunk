@@ -8,7 +8,6 @@
 #include "imguivariouscontrols.h"
 
 #ifndef NO_IMGUIVARIOUSCONTROLS_ANIMATEDIMAGE
-#ifndef STBI_NO_GIF
 #ifndef IMGUI_USE_AUTO_BINDING
 #ifndef STBI_INCLUDE_STB_IMAGE_H
 #define STB_IMAGE_STATIC
@@ -16,16 +15,6 @@
 #include "../imguibindings/stb_image.h"
 #endif //STBI_INCLUDE_STB_IMAGE_H
 #endif //IMGUI_USE_AUTO_BINDING
-#ifdef __cplusplus
-extern "C" {
-#endif //__cplusplus
-struct gif_result : stbi__gif {
-    unsigned char *data;
-    struct gif_result *next;
-};
-#ifdef __cplusplus
-}
-#endif //__cplusplus
 //#define DEBUG_OUT_TEXTURE
 #ifdef DEBUG_OUT_TEXTURE
 #ifndef STBI_INCLUDE_STB_IMAGE_WRITE_H
@@ -34,7 +23,6 @@ struct gif_result : stbi__gif {
 #include "./addons/imguiyesaddons/imguiimageeditor_plugins/stb_image_write.h"
 #endif //DEBUG_OUT_TEXTURE
 #endif //STBI_INCLUDE_STB_IMAGE_WRITE_H
-#endif //STBI_NO_GIF
 #endif //NO_IMGUIVARIOUSCONTROLS_ANIMATEDIMAGE
 
 
@@ -338,7 +326,7 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
         ImRect bb(window->Pos, window->Pos + window->Size);
         bool hovered, held;
         /*bool pressed = */ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_NoKeyModifiers);///*false,*/ false);
-        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
         if (held)   {
             ImVec2 pos = g.IO.MousePos - window->Pos;
             sat = ImSaturate(pos.x / (float)quadSize);
@@ -386,7 +374,7 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
         const ImGuiID id = window->GetID("Tint");
         ImRect bb(window->Pos, window->Pos + window->Size);
         /*bool pressed = */ButtonBehavior(bb, id, &hovered, &held,ImGuiButtonFlags_NoKeyModifiers);// /*false,*/ false);
-        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+        if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
         if (held)
         {
 
@@ -850,12 +838,14 @@ bool ImageButtonWithText(ImTextureID texId,const char* label,const ImVec2& image
 }
 
 #ifndef NO_IMGUIVARIOUSCONTROLS_ANIMATEDIMAGE
+// Now this struct cannot be used without stb_image.h anymore, even if no gif support is required,
+// because it uses STBI_MALLOC and STBI_FREE
 struct AnimatedImageInternal {
     protected:
 
     int w,h,frames;
-    ImVector<unsigned char> buffer;
-    ImVector<float> delays;
+    unsigned char* buffer;                    // Allocated with STBI_MALLOC: thus stb_image.h is always required now
+    ImVector<float> delays;                   // Currently in cs (but now stb_image.h gives us ms)
     ImTextureID persistentTexId;              // This will be used when all frames can fit into a single texture (very good for performance and memory)
     int numFramesPerRowInPersistentTexture,numFramesPerColInPersistentTexture;
     bool hoverModeIfSupported;
@@ -871,10 +861,10 @@ struct AnimatedImageInternal {
 
     inline void updateTexture() const   {
         // fix updateTexture() to use persistentTexID when necessary
-        IM_ASSERT(AnimatedImage::GenerateOrUpdateTextureCb!=NULL);	// Please use ImGui::AnimatedGif::SetGenerateOrUpdateTextureCallback(...) before calling this method
+        IM_ASSERT(AnimatedImage::GenerateOrUpdateTextureCb!=NULL);	// Please use ImGui::AnimatedImage::SetGenerateOrUpdateTextureCallback(...) before calling this method
         if (frames<=0) return;
         else if (frames==1) {
-            if (!texId) AnimatedImage::GenerateOrUpdateTextureCb(texId,w,h,4,&buffer[0],false,false,false);
+            if (!texId) AnimatedImage::GenerateOrUpdateTextureCb(texId,w,h,4,buffer,false,false,false);
             return;
         }
 
@@ -925,179 +915,116 @@ struct AnimatedImageInternal {
 
     }
 
+#   ifndef IMGUIVARIOUSCONTROLS_NO_STDIO
+    struct ScopedFileContent {
+        stbi_uc* gif_buffer;
+        int gif_buffer_size;
+        static stbi_uc* GetFileContent(const char *filePath,int* size_out)   {
+            stbi_uc* f_data = NULL;FILE* f=NULL;long f_size=-1;size_t f_size_read=0;*size_out=0;
+            if (!filePath || (f = ImFileOpen(filePath, "rb")) == NULL) return NULL;
+            if (fseek(f, 0, SEEK_END) ||  (f_size = ftell(f)) == -1 || fseek(f, 0, SEEK_SET))  {fclose(f);return NULL;}
+            f_data = (stbi_uc*) STBI_MALLOC(f_size);
+            f_size_read = f_size>0 ? fread(f_data, 1, f_size, f) : 0;
+            fclose(f);
+            if (f_size_read == 0 || f_size_read!=(size_t)f_size)  {STBI_FREE(f_data);return NULL;}
+            *size_out=(int)f_size;
+            return f_data;
+        }
+        ScopedFileContent(const char* filePath) {gif_buffer=GetFileContent(filePath,&gif_buffer_size);}
+        ~ScopedFileContent() {if (gif_buffer) {STBI_FREE(gif_buffer);gif_buffer=NULL;} gif_buffer_size=0;}
+    };
+#   endif //IMGUIVARIOUSCONTROLS_NO_STDIO
+
     public:
-    AnimatedImageInternal()  {persistentTexIdIsNotOwned=false;texId=persistentTexId=NULL;clear();}
-    ~AnimatedImageInternal()  {texId=persistentTexId=NULL;clear();persistentTexIdIsNotOwned=false;}
+    AnimatedImageInternal()  {buffer=NULL;persistentTexIdIsNotOwned=false;texId=persistentTexId=NULL;clear();}
+    ~AnimatedImageInternal()  {clear();persistentTexIdIsNotOwned=false;}
 #	ifndef STBI_NO_GIF
-    AnimatedImageInternal(char const *filename,bool useHoverModeIfSupported=false)  {persistentTexIdIsNotOwned = false;texId=persistentTexId=NULL;load(filename,useHoverModeIfSupported);}
+#   ifndef IMGUIVARIOUSCONTROLS_NO_STDIO
+    AnimatedImageInternal(char const *filename,bool useHoverModeIfSupported=false)  {buffer=NULL;persistentTexIdIsNotOwned = false;texId=persistentTexId=NULL;load(filename,useHoverModeIfSupported);}
+#   endif //IMGUIVARIOUSCONTROLS_NO_STDIO
+    AnimatedImageInternal(const unsigned char* memory_gif,int memory_gif_size,bool useHoverModeIfSupported=false)  {buffer=NULL;persistentTexIdIsNotOwned = false;texId=persistentTexId=NULL;load_from_memory(memory_gif,memory_gif_size,useHoverModeIfSupported);}
 #	endif //STBI_NO_GIF
     AnimatedImageInternal(ImTextureID myTexId,int animationImageWidth,int animationImageHeight,int numFrames,int numFramesPerRowInTexture,int numFramesPerColumnInTexture,float delayDetweenFramesInCs,bool useHoverMode=false) {
-        persistentTexIdIsNotOwned = false;texId=persistentTexId=NULL;
+        buffer=NULL;persistentTexIdIsNotOwned = false;texId=persistentTexId=NULL;
         create(myTexId,animationImageWidth,animationImageHeight,numFrames,numFramesPerRowInTexture,numFramesPerColumnInTexture,delayDetweenFramesInCs,useHoverMode);
     }
     void clear() {
-        w=h=frames=lastFrameNum=0;delay=0.f;timer=-1.f;buffer.clear();delays.clear();
+        w=h=frames=lastFrameNum=0;delay=0.f;timer=-1.f;
+        if (buffer) {STBI_FREE(buffer);buffer=NULL;} delays.clear();
         numFramesPerRowInPersistentTexture = numFramesPerColInPersistentTexture = 0;
         uvFrame0.x=uvFrame0.y=0;uvFrame1.x=uvFrame1.y=1;
         lastImGuiFrameUpdate = -1;hoverModeIfSupported=isAtLeastOneWidgetInHoverMode = false;
-        if (texId || persistentTexId) IM_ASSERT(AnimatedImage::FreeTextureCb!=NULL);   // Please use ImGui::AnimatedGif::SetFreeTextureCallback(...)
+        if (texId || persistentTexId) IM_ASSERT(AnimatedImage::FreeTextureCb!=NULL);   // Please use ImGui::AnimatedImage::SetFreeTextureCallback(...)
         if (texId) {if (texId!=persistentTexId) AnimatedImage::FreeTextureCb(texId);texId=NULL;}
         if (persistentTexId)  {if (!persistentTexIdIsNotOwned) AnimatedImage::FreeTextureCb(persistentTexId);persistentTexId=NULL;}
     }
 #	ifndef STBI_NO_GIF
+#   ifndef IMGUIVARIOUSCONTROLS_NO_STDIO
     bool load(char const *filename,bool useHoverModeIfSupported=false)  {
-        ImGui::AnimatedImageInternal& ag = *this;
-
-        // Code based on:
-        // https://gist.github.com/urraka/685d9a6340b26b830d49
-
-        FILE *f;
-        stbi__context s;
-        ag.clear();
-        ag.persistentTexIdIsNotOwned = false;
-        bool ok = false;
-
-        //if (!(f = stbi__fopen(filename, "rb")))   // Here filename is ASCII on Windows
-        if (!(f = ImFileOpen(filename, "rb")))      // Here filename is UTF8 on Windows
-        {
-            stbi__errpuc("can't fopen", "Unable to open file");
-            return false;
+        ScopedFileContent fc(filename);
+        return (fc.gif_buffer && load_from_memory(fc.gif_buffer,fc.gif_buffer_size,useHoverModeIfSupported));
         }
+#   endif //ifndef IMGUIVARIOUSCONTROLS_NO_STDIO
+    bool load_from_memory(const unsigned char* gif_buffer,int gif_buffer_size,bool useHoverModeIfSupported=false)  {
+        clear();hoverModeIfSupported = false;
 
-        stbi__start_file(&s, f);
+        int c=0, *int_delays=NULL;
+        buffer = stbi_load_gif_from_memory(gif_buffer,gif_buffer_size,&int_delays,&w,&h,&frames,&c,4);
+        if (!buffer || frames<=0 || !int_delays) {clear();return false;}
+        //fprintf(stderr,"w=%d h=%d z=%d c=%d\n",w,h,frames,c);
 
-        if (stbi__gif_test(&s))
-        {
-            ok =true;
-            int c;
-            stbi__gif g;
-            gif_result head;
-            gif_result *prev = 0, *gr = &head;
-
-            memset(&g, 0, sizeof(g));
-            memset(&head, 0, sizeof(head));
-
-            ag.frames = 0;
-
-            // static void *stbi__load_gif_main(stbi__context *s, int **delays, int *x, int *y, int *z, int *comp, int req_comp)
-            // this function is designed to support animated gifs, although stb_image doesn't support it
-            // two back is the image from two frames ago, used for a very specific disposal format
-            // static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, int req_comp, stbi_uc *two_back)
-            while ((gr->data = stbi__gif_load_next(&s, &g, &c, 4)))
-            {
-		if (gr->data == (unsigned char*)&s)
-                {
-                    gr->data = 0;
-                    break;
+        // copy int_delays into delays
+        delays.resize(frames);
+        for (int i=0;i<frames;i++) {
+            delays[i] = ((float) int_delays[i])*0.1f;   // cs, whereas int_delays is ms
+            //fprintf(stderr,"int_delays[%d] = %d;\n",i,int_delays[i]);
                 }
-
-                if (prev) prev->next = gr;
-                gr->delay = g.delay;
-                prev = gr;
-                gr = (gif_result*) stbi__malloc(sizeof(gif_result));
-                memset(gr, 0, sizeof(gif_result));
-                ++ag.frames;
-            }
-
-	    STBI_FREE(g.out);
-            if (gr != &head)    {
-                STBI_FREE(gr);
-            }
-
-            if (ag.frames > 0)
-            {
-                ag.w = g.w;
-                ag.h = g.h;
-            }
-
-            if (ag.frames==1) {
-                ag.buffer.resize(ag.w*ag.h*4);
-                memcpy(&ag.buffer[0],head.data,ag.buffer.size());
-                STBI_FREE(head.data);
-            }
-
-
-            if (ag.frames > 1)
-            {
-                unsigned int size = 4 * g.w * g.h;
-                unsigned char *p = 0;
-                float *pd = 0;
-
-                ag.buffer.resize(ag.frames * size);//(size + 2));
-                ag.delays.resize(ag.frames);
-                gr = &head;
-                p = &ag.buffer[0];
-                pd = &ag.delays[0];
-
-                IM_ASSERT(sizeof(unsigned short)==2*sizeof(unsigned char));	// Not sure that this is necessary
-                unsigned short tmp = 0;
-                unsigned char* pTmp = (unsigned char*) &tmp;
-                while (gr)
-                {
-                    prev = gr;
-                    memcpy(p, gr->data, size);
-                    p += size;
-                    tmp = 0;
-                    // We should invert these two lines for big-endian machines:
-                    pTmp[0] = gr->delay & 0xFF;
-                    pTmp[1] = (gr->delay & 0xFF00) >> 8;
-                    *pd++ = (float) tmp;
-                    gr = gr->next;
-
-                    STBI_FREE(prev->data);
-                    if (prev != &head) STBI_FREE(prev);
-                }
+        STBI_FREE(int_delays);int_delays=NULL;
 
                 if (AnimatedImage::MaxPersistentTextureSize.x>0 && AnimatedImage::MaxPersistentTextureSize.y>0)	{
                     // code path that checks 'MaxPersistentTextureSize' and puts all into a single texture (rearranging the buffer)
                     ImVec2 textureSize = AnimatedImage::MaxPersistentTextureSize;
-                    int maxNumFramesPerRow = (int)textureSize.x/(int)ag.w;
-                    int maxNumFramesPerCol = (int)textureSize.y/(int)ag.h;
+            int maxNumFramesPerRow = (int)textureSize.x/(int) w;
+            int maxNumFramesPerCol = (int)textureSize.y/(int) h;
                     int maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
                     int cnt = 0;
                     ImVec2 lastValidTextureSize(0,0);
-                    while (maxNumFramesInATexture>=ag.frames)	{
+            while (maxNumFramesInATexture>=frames)	{
                         // Here we just halve the 'textureSize', so that, if it fits, we save further texture space
                         lastValidTextureSize = textureSize;
                         if (cnt%2==0) textureSize.y = textureSize.y/2;
                         else textureSize.x = textureSize.x/2;
-                        maxNumFramesPerRow = (int)textureSize.x/(int)ag.w;
-                        maxNumFramesPerCol = (int)textureSize.y/(int)ag.h;
+                maxNumFramesPerRow = (int)textureSize.x/(int)w;
+                maxNumFramesPerCol = (int)textureSize.y/(int)h;
                         maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
                         ++cnt;
                     }
                     if (cnt>0)  {
                         textureSize=lastValidTextureSize;
-                        maxNumFramesPerRow = (int)textureSize.x/(int)ag.w;
-                        maxNumFramesPerCol = (int)textureSize.y/(int)ag.h;
+                maxNumFramesPerRow = (int)textureSize.x/(int)w;
+                maxNumFramesPerCol = (int)textureSize.y/(int)h;
                         maxNumFramesInATexture = maxNumFramesPerRow * maxNumFramesPerCol;
                     }
-                    if (maxNumFramesInATexture>=ag.frames)	{
+
+            if (maxNumFramesInATexture>=frames)	{
                         numFramesPerRowInPersistentTexture = maxNumFramesPerRow;
                         numFramesPerColInPersistentTexture = maxNumFramesPerCol;
 
                         rearrangeBufferForPersistentTexture();
 
                         // generate persistentTexture,delete buffer
-                        IM_ASSERT(AnimatedImage::GenerateOrUpdateTextureCb!=NULL);	// Please use ImGui::AnimatedGif::SetGenerateOrUpdateTextureCallback(...) before calling this method
-                        AnimatedImage::GenerateOrUpdateTextureCb(persistentTexId,ag.w*maxNumFramesPerRow,ag.h*maxNumFramesPerCol,4,&buffer[0],false,false,false);
-                        buffer.clear();
+                IM_ASSERT(AnimatedImage::GenerateOrUpdateTextureCb!=NULL);	// Please use ImGui::AnimatedImage::SetGenerateOrUpdateTextureCallback(...) before calling this method
+                AnimatedImage::GenerateOrUpdateTextureCb(persistentTexId,w*maxNumFramesPerRow,h*maxNumFramesPerCol,4,buffer,false,false,false);
+                STBI_FREE(buffer);buffer=NULL;
 
                         hoverModeIfSupported = useHoverModeIfSupported;
                         //fprintf(stderr,"%d x %d (%d x %d)\n",numFramesPerRowInPersistentTexture,numFramesPerColInPersistentTexture,(int)textureSize.x,(int)textureSize.y);
 
+                if (hoverModeIfSupported) delays[0] = 0.f;  // Otherwise when we start hovering, we usually get an unwanted delay
                     }
                 }
-            }
-        }
-        else
-        {
-            ok = false;
-            // TODO: Here we could load other image formats...
-        }
 
-        fclose(f);
-        return ok;
+        return true;
     }
 #	endif //STBI_NO_GIF
     bool create(ImTextureID myTexId,int animationImageWidth,int animationImageHeight,int numFrames,int numFramesPerRowInTexture,int numFramesPerColumnInTexture,float delayDetweenFramesInCs,bool useHoverMode=false)   {
@@ -1263,10 +1190,11 @@ struct AnimatedImageInternal {
 
         const int strideSz = w*4;
         const int frameSz = strideSz*h;
-        ImVector<unsigned char> tmp;tmp.resize(newBufferSize);
+        unsigned char* tmp = (unsigned char*) STBI_MALLOC(newBufferSize);
+        IM_ASSERT(tmp);
 
-        unsigned char* pw=&tmp[0];
-        const unsigned char* pr=&buffer[0];
+        unsigned char*          pw = tmp;
+        const unsigned char*    pr = buffer;
 
         int frm=0,colSz=0;
         while (frm<frames)	{
@@ -1289,7 +1217,7 @@ struct AnimatedImageInternal {
         }
 
         //-----------------------------------------------------------------------
-        buffer.swap(tmp);
+        STBI_FREE(buffer);buffer=tmp;tmp=NULL;
 
 #       ifdef DEBUG_OUT_TEXTURE
         stbi_write_png("testOutputPng.png", w*numFramesPerRowInPersistentTexture,h*numFramesPerColInPersistentTexture, 4, &buffer[0], w*numFramesPerRowInPersistentTexture*4);
@@ -1319,9 +1247,15 @@ AnimatedImage::GenerateOrUpdateTextureDelegate AnimatedImage::GenerateOrUpdateTe
 ImVec2 AnimatedImage::MaxPersistentTextureSize(2048,2048);
 
 #ifndef STBI_NO_GIF
-AnimatedImage::AnimatedImage(const char *filename, bool useHoverModeIfSupported)    {
+#ifndef IMGUIVARIOUSCONTROLS_NO_STDIO
+AnimatedImage::AnimatedImage(const char *gif_filepath, bool useHoverModeIfSupported)    {
     ptr = (AnimatedImageInternal*) ImGui::MemAlloc(sizeof(AnimatedImageInternal));
-    IM_PLACEMENT_NEW(ptr) AnimatedImageInternal(filename,useHoverModeIfSupported);
+    IM_PLACEMENT_NEW(ptr) AnimatedImageInternal(gif_filepath,useHoverModeIfSupported);
+}
+#endif //IMGUIVARIOUSCONTROLS_NO_STDIO
+AnimatedImage::AnimatedImage(const unsigned char* gif_buffer,int gif_buffer_size,bool useHoverModeIfSupported)  {
+    ptr = (AnimatedImageInternal*) ImGui::MemAlloc(sizeof(AnimatedImageInternal));
+    IM_PLACEMENT_NEW(ptr) AnimatedImageInternal(gif_buffer,gif_buffer_size,useHoverModeIfSupported);
 }
 #endif //STBI_NO_GIF
 AnimatedImage::AnimatedImage(ImTextureID myTexId, int animationImageWidth, int animationImageHeight, int numFrames, int numFramesPerRowInTexture, int numFramesPerColumnInTexture, float delayBetweenFramesInCs, bool useHoverMode) {
@@ -1341,7 +1275,10 @@ void AnimatedImage::clear() {ptr->clear();}
 void AnimatedImage::render(ImVec2 size, const ImVec2 &uv0, const ImVec2 &uv1, const ImVec4 &tint_col, const ImVec4 &border_col) const   {ptr->render(size,uv0,uv1,tint_col,border_col);}
 bool AnimatedImage::renderAsButton(const char *label, ImVec2 size, const ImVec2 &uv0, const ImVec2 &uv1, int frame_padding, const ImVec4 &bg_col, const ImVec4 &tint_col)   {return ptr->renderAsButton(label,size,uv0,uv1,frame_padding,bg_col,tint_col);}
 #ifndef STBI_NO_GIF
-bool AnimatedImage::load(const char *filename, bool useHoverModeIfSupported)    {return ptr->load(filename,useHoverModeIfSupported);}
+#ifndef IMGUIVARIOUSCONTROLS_NO_STDIO
+bool AnimatedImage::load(const char *gif_filepath, bool useHoverModeIfSupported)    {return ptr->load(gif_filepath,useHoverModeIfSupported);}
+#endif //IMGUIVARIOUSCONTROLS_NO_STDIO
+bool AnimatedImage::load_from_memory(const unsigned char* gif_buffer,int gif_buffer_size,bool useHoverModeIfSupported)  {return ptr->load_from_memory(gif_buffer,gif_buffer_size,useHoverModeIfSupported);}
 #endif //STBI_NO_GIF
 bool AnimatedImage::create(ImTextureID myTexId, int animationImageWidth, int animationImageHeight, int numFrames, int numFramesPerRowInTexture, int numFramesPerColumnInTexture, float delayBetweenFramesInCs, bool useHoverMode)   {return ptr->create(myTexId,animationImageWidth,animationImageHeight,numFrames,numFramesPerRowInTexture,numFramesPerColumnInTexture,delayBetweenFramesInCs,useHoverMode);}
 int AnimatedImage::getWidth() const {return ptr->getWidth();}
@@ -1431,7 +1368,7 @@ bool ImageZoomAndPan(ImTextureID user_texture_id, const ImVec2& size,float aspec
             zoomCenter.x-=io.MouseDelta.x/(imageSz.x*zoom);
             zoomCenter.y-=io.MouseDelta.y/(imageSz.y*zoom);
             rv = true;
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
         }
     }
 
@@ -2569,6 +2506,14 @@ bool InputComboWithAutoCompletion(const char* label, int *current_item, size_t a
 
 // Tree view stuff starts here ==============================================================
 #include <stdlib.h> // qsort (Maybe we could add a define to exclude sorting...)
+
+// Enforce cdecl calling convention for functions called by the standard library, in case compilation settings changed the default to e.g. __vectorcall
+#ifdef _MSC_VER
+#define IMGUIVC_CDECL __cdecl
+#else
+#define IMGUIVC_CDECL
+#endif
+
 namespace ImGui {
 
 struct MyTreeViewHelperStruct {
@@ -2620,42 +2565,42 @@ struct MyTreeViewHelperStruct {
         if (event.state!=TreeViewNode::STATE_NONE) event.type = TreeViewNode::EVENT_STATE_CHANGED;
     }
     // Sorters
-    inline static int SorterByDisplayName(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByDisplayName(const void *pn1, const void *pn2)  {
         const char* s1 = (*((const TreeViewNode**)pn1))->data.displayName;
         const char* s2 = (*((const TreeViewNode**)pn2))->data.displayName;
         return strcmp(s1,s2);   // Hp) displayName can't be NULL
     }
-    inline static int SorterByDisplayNameReverseOrder(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByDisplayNameReverseOrder(const void *pn1, const void *pn2)  {
         const char* s2 = (*((const TreeViewNode**)pn1))->data.displayName;
         const char* s1 = (*((const TreeViewNode**)pn2))->data.displayName;
         return strcmp(s1,s2);   // Hp) displayName can't be NULL
     }
-    inline static int SorterByTooltip(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByTooltip(const void *pn1, const void *pn2)  {
         const char* s1 = (*((const TreeViewNode**)pn1))->data.tooltip;
         const char* s2 = (*((const TreeViewNode**)pn2))->data.tooltip;
         return (s1 && s2) ? (strcmp(s1,s2)) : (s1 ? -1 : (s2 ? 1 : -1));
     }
-    inline static int SorterByTooltipReverseOrder(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByTooltipReverseOrder(const void *pn1, const void *pn2)  {
         const char* s2 = (*((const TreeViewNode**)pn1))->data.tooltip;
         const char* s1 = (*((const TreeViewNode**)pn2))->data.tooltip;
         return (s1 && s2) ? (strcmp(s1,s2)) : (s1 ? -1 : (s2 ? 1 : -1));
     }
-    inline static int SorterByUserText(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByUserText(const void *pn1, const void *pn2)  {
         const char* s1 = (*((const TreeViewNode**)pn1))->data.userText;
         const char* s2 = (*((const TreeViewNode**)pn2))->data.userText;
         return (s1 && s2) ? (strcmp(s1,s2)) : (s1 ? -1 : (s2 ? 1 : -1));
     }
-    inline static int SorterByUserTextReverseOrder(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByUserTextReverseOrder(const void *pn1, const void *pn2)  {
         const char* s2 = (*((const TreeViewNode**)pn1))->data.userText;
         const char* s1 = (*((const TreeViewNode**)pn2))->data.userText;
         return (s1 && s2) ? (strcmp(s1,s2)) : (s1 ? -1 : (s2 ? 1 : -1));
     }
-    inline static int SorterByUserId(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByUserId(const void *pn1, const void *pn2)  {
         const TreeViewNode* n1 = *((const TreeViewNode**)pn1);
         const TreeViewNode* n2 = *((const TreeViewNode**)pn2);
         return n1->data.userId-n2->data.userId;
     }
-    inline static int SorterByUserIdReverseOrder(const void *pn1, const void *pn2)  {
+    inline static int IMGUIVC_CDECL SorterByUserIdReverseOrder(const void *pn1, const void *pn2)  {
         const TreeViewNode* n2 = *((const TreeViewNode**)pn1);
         const TreeViewNode* n1 = *((const TreeViewNode**)pn2);
         return n1->data.userId-n2->data.userId;
@@ -3424,7 +3369,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
         bool TreeView::Save(const char* filename,TreeView** pTreeViews,int numTreeviews)    {
             IM_ASSERT(pTreeViews && numTreeviews>0);
             ImGuiHelper::Serializer s(filename);
-            bool ok = s.isValid();
+            bool ok = true;
             for (int i=0;i<numTreeviews;i++)   {
                 IM_ASSERT(pTreeViews[i]);
                 ok|=pTreeViews[i]->save(s);
@@ -3458,7 +3403,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
                 pTreeViews[i]->clear();
             }
             ImGuiHelper::Deserializer d(filename);
-            const char* amount = 0; bool ok = d.isValid();
+            const char* amount = 0; bool ok = true;
             for (int i=0;i<numTreeviews;i++)   {
                 ok|=pTreeViews[i]->load(d,&amount);
             }
@@ -3635,7 +3580,7 @@ bool TimelineEvent(const char* str_id, float* values,bool keep_range_constant)
         if (values[0]<0) {values[1]-=values[0];values[0]=0;}
     }
 
-    if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_Move);
+    if (hovered) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
 
     ImGui::NextColumn();
     return changed;
