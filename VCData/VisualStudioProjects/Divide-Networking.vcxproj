@@ -117,7 +117,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <ExceptionHandling>Sync</ExceptionHandling>
       <CompileAs>CompileAsCpp</CompileAs>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>

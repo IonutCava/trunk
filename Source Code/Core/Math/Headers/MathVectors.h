@@ -128,6 +128,11 @@ class vec2 {
     {
     }
 
+    template<typename U>
+    vec2(U value) : vec2(value, value)
+    {
+    }
+
     vec2(T _x, T _y) : x(_x), y(_y)
     {
     }
@@ -137,7 +142,11 @@ class vec2 {
                        y(static_cast<T>(_y))
     {
     }
-
+    template <typename U, typename V>
+    vec2(U _x, V _y) : x(static_cast<T>(_x)),
+                       y(static_cast<T>(_y))
+    {
+    }
     vec2(const T *_v) : vec2(_v[0], _v[1])
     {
     }
@@ -153,6 +162,22 @@ class vec2 {
     vec2(const vec4<T> &_v) : vec2(_v.xy())
     {
     }
+
+    template<typename U>
+    vec2(const vec2<U> &v) : vec2(v.x, v.y)
+    {
+    }
+
+    template<typename U>
+    vec2(const vec3<U> &v) : vec2(v.x, v.y)
+    {
+    }
+
+    template<typename U>
+    vec2(const vec4<U> &v) : vec2(v.x, v.y)
+    {
+    }
+
     bool operator>(const vec2 &v) const { return x > v.x && y > v.y; }
     bool operator<(const vec2 &v) const { return x < v.x && y < v.y; }
     bool operator<=(const vec2 &v) const { return *this < v || *this == v; }
@@ -200,8 +225,8 @@ class vec2 {
         this->set(*this - v);
         return *this;
     }
-    T operator*(const vec2 &v) const {
-        return this->x * v.x + this->y * v.y;
+    vec2 operator*(const vec2 &v) const {
+        return vec2(this->x * v.x, this->y * v.y);
     }
     T &operator[](I32 i) { return this->_v[i]; }
     const T &operator[](I32 i) const { return this->_v[i]; }
@@ -334,6 +359,11 @@ class vec3 {
     vec3(T value) : vec3(value, value, value) 
     {
     }
+    template<typename U>
+    vec3(U value) : vec3(value, value, value)
+    {
+    }
+
     vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) 
     {
     }
@@ -344,7 +374,24 @@ class vec3 {
                              z(static_cast<T>(_z))
     {
     }
-
+    template <typename U, typename V>
+    vec3(U _x, U _y, V _z) : x(static_cast<T>(_x)),
+                             y(static_cast<T>(_y)),
+                             z(static_cast<T>(_z))
+    {
+    }
+    template <typename U, typename V>
+    vec3(U _x, V _y, V _z) : x(static_cast<T>(_x)),
+                             y(static_cast<T>(_y)),
+                             z(static_cast<T>(_z))
+    {
+    }
+    template <typename U, typename V, typename W>
+    vec3(U _x, V _y, W _z) : x(static_cast<T>(_x)),
+                             y(static_cast<T>(_y)),
+                             z(static_cast<T>(_z))
+    {
+    }
     vec3(const T *v) : vec3(v[0], v[1], v[2])
     {
     }
@@ -358,6 +405,21 @@ class vec3 {
     {
     }
     vec3(const vec4<T> &v) : vec3(v.x, v.y, v.z)
+    {
+    }
+
+    template<typename U>
+    vec3(const vec2<U> &v) : vec3(v.x, v.y, 0)
+    {
+    }
+
+    template<typename U>
+    vec3(const vec3<U> &v) : vec3(v.x, v.y, v.z)
+    {
+    }
+
+    template<typename U>
+    vec3(const vec4<U> &v) : vec3(v.x, v.y, v.z)
     {
     }
 
@@ -597,12 +659,24 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w)
     {
     }
+    template<typename U>
+    vec4(U _x, U _y, U _z, U _w) : x(static_cast<T>(_x)),
+                                   y(static_cast<T>(_y)),
+                                   z(static_cast<T>(_z)),
+                                   w(static_cast<T>(_w))
+    {
+    }
 
     vec4(simd_vector<T> reg) : _reg(reg)
     {
     }
 
     vec4(T value) : vec4(value, value, value, value)
+    {
+    }
+
+    template<typename U>
+    vec4(U value) : vec4(value, value, value, value)
     {
     }
 
@@ -631,6 +705,21 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     vec4(const vec4 &v) : vec4(v._v)
+    {
+    }
+
+    template<typename U>
+    vec4(const vec2<U> &v) : vec4(v.x, v.y, 0, 0)
+    {
+    }
+
+    template<typename U>
+    vec4(const vec3<U> &v) : vec4(v.x, v.y, v.z, 0)
+    {
+    }
+
+    template<typename U>
+    vec4(const vec4<U> &v) : vec4(v.x, v.y, v.z, v.w)
     {
     }
 

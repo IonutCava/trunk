@@ -7,7 +7,7 @@ namespace Divide {
 
 //TEST_FAILURE_INDENT(4);
 // We are using third party string libraries (STL, Boost, EASTL) that went through proper testing
-// This list of test only verifies utility functions
+// This list of tests only verifies utility functions
 
 TEST(TestReplaceInPlace)
 {

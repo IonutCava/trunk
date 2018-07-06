@@ -96,6 +96,15 @@ class Light : public SceneNode {
     }
 
     void setDiffuseColor(const vec3<U8>& newDiffuseColor);
+
+    inline void setDiffuseColor(const vec4<U8>& newDiffuseColor) {
+        setDiffuseColor(newDiffuseColor.rgb());
+    }
+
+    inline void setDiffuseColor(const vec4<F32>& newDiffuseColor) {
+        setDiffuseColor(newDiffuseColor.rgb());
+    }
+
     inline void setDiffuseColor(const vec3<F32>& newDiffuseColor) {
         setDiffuseColor(Util::ToByteColor(newDiffuseColor));
     }
