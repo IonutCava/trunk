@@ -4,17 +4,25 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Geometry/Animations/Headers/SceneAnimator.h"
 
 namespace Divide {
 
 Mesh::Mesh(ObjectFlag flag)
     : Object3D(ObjectType::MESH, flag),
-      _visibleToNetwork(true)
+      _visibleToNetwork(true),
+      _animator(nullptr)
 {
     setState(ResourceState::RES_LOADING);
+    if (bitCompare(getFlagMask(), to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
+        _animator = MemoryManager_NEW SceneAnimator();
+    }
 }
 
-Mesh::~Mesh() {}
+Mesh::~Mesh()
+{
+    MemoryManager::DELETE(_animator);
+}
 
 /// Mesh bounding box is built from all the SubMesh bounding boxes
 bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {

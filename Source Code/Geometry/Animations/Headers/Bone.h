@@ -53,11 +53,33 @@ class Bone {
     vectorImpl<Bone*> _children;
 
     // index in the current animation's channel array.
-    Bone(const stringImpl& name) : _name(name), _parent(0) {}
+    Bone(const stringImpl& name) : _name(name), _parent(0)
+    {
+    }
 
-    Bone() : Bone("") {}
+    Bone() : Bone("")
+    {
+    }
 
-    ~Bone() { MemoryManager::DELETE_VECTOR(_children); }
+    ~Bone()
+    {
+        MemoryManager::DELETE_VECTOR(_children);
+    }
+
+    inline Bone* find(const stringImpl& name) {
+        if (_name.compare(name) == 0) {
+            return this;
+        }
+
+        for (Bone* child : _children) {
+            Bone* childNode = child->find(name);
+            if (childNode != nullptr) {
+                return childNode;
+            }
+        }
+
+        return nullptr;
+    }
 };
 
 };  // namespace Divide

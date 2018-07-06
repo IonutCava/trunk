@@ -7,6 +7,17 @@
 
 namespace Divide {
 
+namespace {
+    Bone* boneByName(const stringImpl& name, const vectorImpl<Bone*>& bones) {
+        for (Bone* bone : bones) {
+            if (bone->_name.compare(name) == 0) {
+                return bone;
+            }
+        }
+        return nullptr;
+    }
+};
+
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation.
 AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim) {
@@ -65,7 +76,7 @@ I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
 void AnimEvaluator::evaluate(const D32 dt,
-                             hashMapImpl<stringImpl, Bone*>& bones) {
+                             vectorImpl<Bone*>& bones) {
     D32 pTime = dt * _ticksPerSecond;
 
     D32 time = 0.0f;
@@ -74,13 +85,12 @@ void AnimEvaluator::evaluate(const D32 dt,
     }
 
     frameIndexAt(pTime);
-    hashMapImpl<stringImpl, Bone*>::iterator bonenode;
     // calculate the transformations for each animation channel
     for (U32 a = 0; a < _channels.size(); a++) {
         const AnimationChannel* channel = &_channels[a];
-        bonenode = bones.find(channel->_name);
+        Bone* bonenode = boneByName(channel->_name, bones);
 
-        if (bonenode == std::end(bones)) {
+        if (bonenode == nullptr) {
             Console::d_errorfn(Locale::get("ERROR_BONE_FIND"),
                                channel->_name.c_str());
             continue;
@@ -173,7 +183,7 @@ void AnimEvaluator::evaluate(const D32 dt,
             mat.Transpose();
         }
 
-        bonenode->second->_localTransform = mat;
+        bonenode->_localTransform = mat;
     }
     _lastTime = time;
 }

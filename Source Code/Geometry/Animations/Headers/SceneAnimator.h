@@ -60,7 +60,7 @@ class SceneAnimator {
     }
 
     /// This must be called to fill the SceneAnimator with valid data
-    bool init(const aiScene* pScene, U8 meshPointer);
+    bool init(const aiScene* pScene);
     /// Frees all memory and initializes everything to a default state
     void release();
     void save(std::ofstream& file);
@@ -183,7 +183,7 @@ class SceneAnimator {
     void extractAnimations(const aiScene* pScene);
     /// Recursively creates an internal node structure matching the current
     /// scene and animation.
-    Bone* createBoneTree(aiNode* pNode, const aiMesh* mesh, Bone* parent);
+    Bone* createBoneTree(aiNode* pNode, Bone* parent);
 
     I32 createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
                        vectorImpl<Line>& lines);
@@ -193,10 +193,6 @@ class SceneAnimator {
     Bone* _skeleton; 
     /// A vector that holds each animation
     vectorImpl<AnimEvaluator> _animations;
-    /// Name to node map to quickly find nodes by their name
-    hashMapImpl<stringImpl, Bone*> _bonesByName; 
-    /// Name to node map to quickly find nodes by their name
-    hashMapImpl<stringImpl, U32> _bonesToIndex; 
     /// find animations quickly
     hashMapImpl<stringImpl, U32> _animationNameToID;
     // DO NOT DELETE THESE when the destructor runs... THEY ARE JUST REFERENCES!!

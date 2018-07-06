@@ -66,6 +66,8 @@ class Mesh : public Object3D {
 
     virtual void addSubMesh(SubMesh* const subMesh);
 
+    inline SceneAnimator* getAnimator() { return _animator; }
+
    protected:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
@@ -77,10 +79,9 @@ class Mesh : public Object3D {
 
    protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
-
     bool _visibleToNetwork;
-
-
+    /// Animation player to animate the mesh if necessary
+    SceneAnimator* _animator;
     SubMeshRefMap _subMeshRefMap;
     BoundingBox _maxBoundingBox;
 };

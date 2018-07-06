@@ -51,8 +51,6 @@ class SkinnedSubMesh : public SubMesh {
    public:
     void postLoad(SceneGraphNode& sgn);
 
-    inline SceneAnimator* getAnimator() { return _animator; }
-
    protected:
     bool updateAnimations(SceneGraphNode& sgn);
 
@@ -63,10 +61,9 @@ class SkinnedSubMesh : public SubMesh {
                                    AnimationComponent* const animComp);
 
    private:
+    SceneAnimator* _parentAnimatorPtr;
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;
-    /// Animation player to animate the mesh if necessary
-    SceneAnimator* _animator;
     /// This becomes true only while computing bbs for any animation
     std::atomic_bool _buildingBoundingBoxes;
     /// Build status of bounding boxes for each animation (true if BBs are available)

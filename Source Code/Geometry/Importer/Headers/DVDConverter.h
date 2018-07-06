@@ -89,7 +89,8 @@ DEFINE_SINGLETON(DVDConverter)
   private:
     DVDConverter();
     ~DVDConverter();
-    SubMesh* loadSubMeshGeometry(const aiMesh* source, Mesh* parentMesh, U16 count);
+    SubMesh* loadSubMeshGeometry(const aiMesh* source, Mesh* parentMesh,
+                                 U16 count, U8& submeshBoneOffsetOut);
     Material* loadSubMeshMaterial(bool skinned, const aiMaterial* source,
                                   const stringImpl& materialName);
 

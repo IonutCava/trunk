@@ -13,17 +13,25 @@ namespace Divide {
 const static bool USE_MUTITHREADED_LOADING = false;
 
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
-    : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED) {
-    _animator = MemoryManager_NEW SceneAnimator();
+    : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
+    _parentAnimatorPtr(nullptr)
+{
     _buildingBoundingBoxes = false;
 }
 
-SkinnedSubMesh::~SkinnedSubMesh() { MemoryManager::DELETE(_animator); }
+SkinnedSubMesh::~SkinnedSubMesh()
+{
+}
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
+    if (_parentAnimatorPtr == nullptr) {
+        _parentAnimatorPtr = _parentMesh->getAnimator();
+    }
+
     sgn.setComponent(SGNComponent::ComponentType::ANIMATION,
-                     MemoryManager_NEW AnimationComponent(_animator, sgn));
+                     MemoryManager_NEW AnimationComponent(_parentAnimatorPtr, sgn));
+
     SubMesh::postLoad(sgn);
 }
 

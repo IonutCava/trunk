@@ -37,7 +37,6 @@ ImageData::ImageData()
    : _flip(false),
     _alpha(false),
     _bpp(0),
-    _data(nullptr),
     _compressed(false)
 {
     _dimensions.set(0, 0);
@@ -45,7 +44,6 @@ ImageData::ImageData()
 
 ImageData::~ImageData()
 {
-    MemoryManager::DELETE_ARRAY(_data);
 }
 
 void ImageData::throwLoadError(const stringImpl& fileName) {
@@ -132,9 +130,8 @@ bool ImageData::create(const stringImpl& filename) {
     _imageSize = static_cast<size_t>(_dimensions.width *
                                      _dimensions.height *
                                      _bpp);
-
-    _data = MemoryManager_NEW U8[_imageSize];
-    memcpy(_data, ilGetData(), _imageSize);
+    ILubyte* data = ilGetData();
+    _data.assign(data, data + _imageSize);
 
     ilBindImage(0);
     ilDeleteImage(ilTexture);

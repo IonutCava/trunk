@@ -185,11 +185,7 @@ void SceneAnimator::load(std::ifstream& file) {
                   sizeof(uint32_t));  // the size of the bone name
         file.read(bname, nsize);      // the size of the bone name
         bname[nsize] = 0;
-        hashMapImpl<stringImpl, Bone*>::iterator found =
-            _bonesByName.find(bname);
-        Bone* tep = found->second;
-        _bonesToIndex[found->first] = i;
-        _bones[i] = tep;
+        _bones[i] = boneByName(bname);
     }
 
     _transforms.resize(_bones.size());
@@ -251,7 +247,6 @@ Bone* SceneAnimator::loadSkeleton(std::ifstream& file, Bone* parent) {
     file.read(temp, nsize);  // the name of the bone
     temp[nsize] = 0;
     internalNode->_name = temp;
-    _bonesByName[internalNode->_name] = internalNode;  // use the name as a key
     // the bone offsets
     file.read(reinterpret_cast<char*>(&internalNode->_offsetMatrix),
               sizeof(internalNode->_offsetMatrix));

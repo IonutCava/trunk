@@ -190,15 +190,19 @@ Mesh* DVDConverter::load(const stringImpl& file) {
     if (skinned) {
         vb->getBoneIndices().reserve(vertCount);
         vb->getBoneWeights().reserve(vertCount);
+        // create animator from current scene and current submesh pointer in
+        // that scene
+        tempMesh->getAnimator()->init(_aiScenePointer);
     }
 
+    U8 submeshBoneOffset = 0;
     for (U16 n = 0; n < _aiScenePointer->mNumMeshes; n++) {
         aiMesh* currentMesh = _aiScenePointer->mMeshes[n];
         // Skip points and lines ... for now -Ionut
         if (currentMesh->mNumVertices == 0) {
             continue;
         }
-        tempSubMesh = loadSubMeshGeometry(currentMesh, tempMesh, n);
+        tempSubMesh = loadSubMeshGeometry(currentMesh, tempMesh, n, submeshBoneOffset);
 
         if (tempSubMesh) {
             if (!tempSubMesh->getMaterialTpl()) {
@@ -232,7 +236,8 @@ Mesh* DVDConverter::load(const stringImpl& file) {
 /// will be skipped.
 SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
                                            Mesh* parentMesh,
-                                           U16 count) {
+                                           U16 count, 
+                                           U8& submeshBoneOffsetOut) {
     /// VERY IMPORTANT: default submesh, LOD0 should always be created first!!
     /// an assert is added in the LODn, where n >= 1, loading code to make sure
     /// the LOD0 submesh exists first
@@ -330,7 +335,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
             assert(weightsPerVertex[j].size() <= 4);
 
             for (U8 a = 0; a < weightsPerVertex[j].size(); a++) {
-                boneIndices[a] = weightsPerVertex[j][a]._boneID;
+                boneIndices[a] = weightsPerVertex[j][a]._boneID + submeshBoneOffsetOut;
                 boneWeights[a] = weightsPerVertex[j][a]._boneWeight;
             }
 
@@ -339,16 +344,9 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         }
     }  // endfor
 
+    submeshBoneOffsetOut += source->mNumBones;
     Attorney::SubMeshDVDConverter::setGeometryLimits(
         *tempSubMesh, importBB.getMin(), importBB.getMax());
-
-    if (_aiScenePointer->HasAnimations() && skinned) {
-        // create animator from current scene and current submesh pointer in
-        // that scene
-        static_cast<SkinnedSubMesh*>(tempSubMesh)
-            ->getAnimator()
-            ->init(_aiScenePointer, count);
-    }
 
     if (source->mTextureCoords[0] != nullptr) {
         vec2<F32> texCoord;

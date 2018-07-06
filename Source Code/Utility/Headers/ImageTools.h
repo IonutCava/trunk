@@ -50,7 +50,7 @@ class ImageData : private NonCopyable {
     inline void flip(bool state) { _flip = state; }
     inline bool flip() const { return _flip; }
     /// set and get the image's actual data
-    inline const U8* const data() const { return _data; }
+    inline const U8* const data() const { return _data.data(); }
     /// width * height * bpp
     inline const U32 imageSize() const { return _imageSize; }
     /// set and get the image's compression state
@@ -80,7 +80,8 @@ class ImageData : private NonCopyable {
 
    private:
     /// the image data as it was read from the file / memory
-    U8* _data;
+    //U8* _data;
+    vectorImpl<U8> _data;
     /// is the image stored as a regular image or in a compressed format? (eg.
     /// DXT1 / DXT3 / DXT5)
     bool _compressed;

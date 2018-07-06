@@ -66,7 +66,7 @@ class AnimEvaluator {
 
     AnimEvaluator(const aiAnimation* pAnim);
 
-    void evaluate(const D32 dt, hashMapImpl<stringImpl, Bone*>& bones);
+    void evaluate(const D32 dt, vectorImpl<Bone*>& bones);
     void save(std::ofstream& file);
     void load(std::ifstream& file);
     I32 frameIndexAt(const D32 elapsedTime) const;
