@@ -34,18 +34,6 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBl
 };
 
 #if defined(COMPUTE_SHADER)
-layout(binding = BUFFER_LIGHT_POINT_LIGHTS, std430) coherent ACCESS buffer pointLightBuffer
-{
-    vec4 pointLightBufferCenterAndRadius[MAX_POSSIBLE_LIGHTS];
-    vec4 pointLightColor[MAX_POSSIBLE_LIGHTS];
-};
-
-layout(binding = BUFFER_LIGHT_SPOT_LIGHTS, std430) coherent ACCESS buffer spotLightBuffer {
-    vec4 spotLightBufferCenterAndRadius[MAX_POSSIBLE_LIGHTS];
-    vec4 spotLightColor[MAX_POSSIBLE_LIGHTS];
-    vec4 spotLightParams;
-};
-
 layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLightIndexBuffer
 {
     uint perTileLightIndexBufferOut[];

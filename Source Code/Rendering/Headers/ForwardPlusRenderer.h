@@ -50,9 +50,6 @@ class ForwardPlusRenderer : public Renderer {
 
    private:
     ShaderProgram* _lightCullComputeShader;
-
-    std::shared_ptr<ShaderBuffer> _pointLightBuffer;
-    std::shared_ptr<ShaderBuffer> _spotLightBuffer;
     std::shared_ptr<ShaderBuffer> _perTileLightIndexBuffer;
 };
 

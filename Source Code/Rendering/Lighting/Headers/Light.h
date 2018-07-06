@@ -107,7 +107,11 @@ class Light : public SceneNode {
     inline F32 getSpotAngle() const { return _spotProperties.w; }
 
     void setSpotAngle(F32 newAngle);
-    
+
+    inline F32 getSpotCosOuterConeAngle() const { return _spotCosOuterConeAngle; }
+
+    void setSpotCosOuterConeAngle(F32 newCosAngle);
+
     /// Light state (on/off)
     inline bool getEnabled() const { return _enabled; }
 
@@ -204,8 +208,11 @@ class Light : public SceneNode {
 
     /// Get a ref to the shadow camera used by this light
     Camera* const shadowCamera() const { return _shadowCamera; }
-    
+    void updateImpostor();
    protected:
+    bool _spotPropertiesChanged;
+    /// Used to generate spot light penumbra using D3D's dual-cone method
+    F32 _spotCosOuterConeAngle;
     /// xyz - position/direction, w - range
     vec4<F32> _positionAndRange;
     /// xyz - direction, w - cone angle

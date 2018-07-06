@@ -42,7 +42,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     return best_depth;
 }
 
-vec4 ParallaxMapping(in uint bumpMapLightID, in vec2 uv){
+vec4 ParallaxMapping(in int bumpMapLightID, in vec2 uv){
     vec3 lightVecTBN = vec3(0.0);
     switch (dvd_LightSource[bumpMapLightID]._options.x){
         case LIGHT_DIRECTIONAL      : 

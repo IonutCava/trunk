@@ -131,7 +131,7 @@ void WarScene::processGUI(const U64 deltaTime) {
 
 namespace {
     F32 phiLight = 0.0f;
-    vec3<F32> initPosLight[9];
+    vec3<F32> initPosLight[16];
     bool initPosSetLight = false;
 };
 
@@ -182,7 +182,7 @@ void WarScene::processTasks(const U64 deltaTime) {
     }
 
     if (!initPosSetLight) {
-        for (U8 i = 0; i < 9; ++i) {
+        for (U8 i = 0; i < 16; ++i) {
             initPosLight[i].set(_lightNodes[i].lock()->getComponent<PhysicsComponent>()->getPosition());
         }
         initPosSetLight = true;
@@ -195,7 +195,7 @@ void WarScene::processTasks(const U64 deltaTime) {
             phiLight = 0.0f;
         }
         const F32 radius = 10;
-        for (U8 i = 0; i < 9; ++i) {
+        for (U8 i = 0; i < 16; ++i) {
             F32 angle = i % 2 == 0 ? phiLight : -phiLight;
             SceneGraphNode_ptr light = _lightNodes[i].lock();
             PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
@@ -490,19 +490,17 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     state().generalVisibility(state().generalVisibility() * 2);
 
 
-    for (U8 row = 0; row < 3; row++) {
-        for (U8 col = 0; col < 3; col++) {
+    for (U8 row = 0; row < 4; row++) {
+        for (U8 col = 0; col < 4; col++) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
             tempLight.setEnumValue(to_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
             light->setRange(20.0f);
             light->setCastShadows(false);
-            light->setDiffuseColor(col == row ? DefaultColors::GREEN()
-                                            : col > row ? DefaultColors::BLUE()
-                                                       : DefaultColors::RED());
+            light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot()->addNode(*light);
-            lightSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-115.0f + (115 * row), 15.0f, (-115.0f + (115 * col))));
+            lightSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }
     }

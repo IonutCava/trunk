@@ -132,7 +132,7 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
         case RenderStage::Z_PRE_PASS: {
             GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->end();
             GFX.constructHIZ();
-            LightManager::getInstance().updateAndUploadLightData(GFX.getMatrix(MATRIX_MODE::VIEW));
+            LightManager::getInstance().updateAndUploadLightData(GFX.getMatrix(MATRIX::VIEW));
             //SceneManager::getInstance().getRenderer().preRender();
         } break;
     };

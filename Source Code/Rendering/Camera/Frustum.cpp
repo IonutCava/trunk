@@ -69,7 +69,7 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(
 }
 
 void Frustum::Extract() {
-    GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW_PROJECTION, _viewProjectionMatrixCache);
+    GFX_DEVICE.getMatrix(MATRIX::VIEW_PROJECTION, _viewProjectionMatrixCache);
 
     Plane<F32>& rightPlane = _frustumPlanes[0];
     Plane<F32>& leftPlane = _frustumPlanes[1];
@@ -154,7 +154,7 @@ void Frustum::getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS) {
 
     const mat4<F32>& viewMatrix = _parentCamera.getViewMatrix();
     for (U8 i = 0; i < 8; ++i) {
-        cornersVS[i].set(viewMatrix.transform(_frustumPoints[i]));
+        cornersVS[i].set(viewMatrix.transformHomogeneous(_frustumPoints[i]));
     }
 }
 };

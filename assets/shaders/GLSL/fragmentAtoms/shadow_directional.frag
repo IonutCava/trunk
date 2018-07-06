@@ -25,8 +25,9 @@ bool inRange(const in float value){
     return value >= 0.0 && value <= 1.0;
 }
 
-float applyShadowDirectional(const in uint lightIndex, Shadow currentShadowSource) {
+float applyShadowDirectional(int shadowIndex) {
 
+    Shadow currentShadowSource  = dvd_ShadowSource[shadowIndex];
 #   if !defined(_DEBUG)
       int _shadowTempInt = -2;
 #   endif

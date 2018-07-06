@@ -47,6 +47,8 @@ struct SceneShaderData {
     vec4<F32> _windDetails;
     vec4<F32> _shadowingSettings;
     vec4<F32> _otherData;
+    vec4<U32> _lightCountPerType;
+    //U32       _lightCountPerType[to_const_uint(LightType::COUNT)];
 
     inline void fogDetails(F32 colorR, F32 colorG, F32 colorB, F32 density) {
         _fogDetails.set(colorR, colorG, colorB, density);
@@ -76,8 +78,8 @@ struct SceneShaderData {
         _otherData.z = state ? 1.0f : 0.0f;
     }
 
-    inline void lightCount(U32 lightCount) {
-        _otherData.w = to_float(lightCount);
+    inline void lightCount(LightType type, U32 lightCount) {
+        _lightCountPerType[to_uint(type)] = lightCount;
     }
 };
 

@@ -33,10 +33,12 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 
 layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 {
-    vec4  dvd_fogDetails;
-    vec4  dvd_windDetails;
-    vec4  dvd_shadowingSettings;
-    vec4  dvd_otherData;
+    vec4   dvd_fogDetails;
+    vec4   dvd_windDetails;
+    vec4   dvd_shadowingSettings;
+    vec4   dvd_otherData;
+    uvec4  dvd_lightCountPerType;
+    //uint  dvd_lightCountPerType[MAX_LIGHT_TYPES];
 };
 
 #define dvd_fogColor dvd_fogDetails.xyz
@@ -44,7 +46,6 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
 #define dvd_time int(dvd_otherData.x)
 #define dvd_showDebugInfo int(dvd_otherData.y)
 #define dvd_shadowsEnabled (int(dvd_otherData.z) == 1)
-#define dvd_lightCount int(dvd_otherData.w)
 
 
 #if defined(VERT_SHADER)

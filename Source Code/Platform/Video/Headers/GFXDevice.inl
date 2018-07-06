@@ -223,7 +223,7 @@ GFXDevice::resetClipPlanes() {
 }
 /// Alternative to the normal version of getMatrix
 inline const mat4<F32>& 
-GFXDevice::getMatrix(const MATRIX_MODE& mode) {
+GFXDevice::getMatrix(const MATRIX& mode) {
     getMatrix(mode, _mat4Cache);
     return _mat4Cache;
 }

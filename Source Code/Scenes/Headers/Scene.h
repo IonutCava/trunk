@@ -177,6 +177,7 @@ class NOINITVTABLE Scene : public Resource {
     SceneGraphNode_wptr _currentSelection;
     SceneGraphNode_wptr _currentHoverTarget;
     SceneGraphNode_wptr _currentSky;
+    SceneGraphNode_wptr _flashLight;
 
     /// Scene::load must be called by every scene. Add a load flag to make sure!
     bool _loadComplete;
@@ -199,6 +200,7 @@ class NOINITVTABLE Scene : public Resource {
    protected:
     void resetSelection();
     void findHoverTarget();
+    void toggleFlashlight();
 
     virtual bool frameStarted();
     virtual bool frameEnded();

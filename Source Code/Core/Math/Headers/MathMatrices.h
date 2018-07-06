@@ -538,9 +538,13 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     mat4(const mat3<T> &m) { this->set(m); }
 
+    inline vec3<T> transform(const vec3<T> &v, bool homogeneous) const {
+        return  homogeneous ? transformHomogeneous(v)
+                            : transformNonHomogeneous(v);
+    }
     /*Transforms the given 3-D vector by the matrix, projecting the result back
      * into <i>w</i> = 1. (OGRE reference)*/
-    inline vec3<T> transform(const vec3<T> &v) const {
+    inline vec3<T> transformHomogeneous(const vec3<T> &v) const {
         T fInvW = 1.0f / (this->m[0][3] * v.x + this->m[1][3] * v.y +
                           this->m[2][3] * v.z + this->m[3][3]);
 
@@ -555,24 +559,28 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                            fInvW);
     }
 
+    inline vec3<T> transformNonHomogeneous(const vec3<T> &v) const {
+        return *this * vec4<T>(v, (T)0);
+    }
+
     vec3<T> operator*(const vec3<T> &v) const {
-        return vec3<T>(this->mat[0] * v.x + this->mat[4] * v.y +
-                           this->mat[8] * v.z + this->mat[12],
-                       this->mat[1] * v.x + this->mat[5] * v.y +
-                           this->mat[9] * v.z + this->mat[13],
-                       this->mat[2] * v.x + this->mat[6] * v.y +
-                           this->mat[10] * v.z + this->mat[14]);
+        return vec3<T>(this->mat[0]  * v.x + this->mat[4] * v.y +
+                       this->mat[8]  * v.z + this->mat[12],
+                       this->mat[1]  * v.x + this->mat[5] * v.y +
+                       this->mat[9]  * v.z + this->mat[13],
+                       this->mat[2]  * v.x + this->mat[6] * v.y +
+                       this->mat[10] * v.z + this->mat[14]);
     }
 
     vec4<T> operator*(const vec4<T> &v) const {
-        return vec4<T>(this->mat[0] * v.x + this->mat[4] * v.y +
-                           this->mat[8] * v.z + this->mat[12] * v.w,
-                       this->mat[1] * v.x + this->mat[5] * v.y +
-                           this->mat[9] * v.z + this->mat[13] * v.w,
-                       this->mat[2] * v.x + this->mat[6] * v.y +
-                           this->mat[10] * v.z + this->mat[14] * v.w,
-                       this->mat[3] * v.x + this->mat[7] * v.y +
-                           this->mat[11] * v.z + this->mat[15] * v.w);
+        return vec4<T>(this->mat[0]  * v.x + this->mat[4]  * v.y +
+                       this->mat[8]  * v.z + this->mat[12] * v.w,
+                       this->mat[1]  * v.x + this->mat[5]  * v.y +
+                       this->mat[9]  * v.z + this->mat[13] * v.w,
+                       this->mat[2]  * v.x + this->mat[6]  * v.y +
+                       this->mat[10] * v.z + this->mat[14] * v.w,
+                       this->mat[3]  * v.x + this->mat[7]  * v.y +
+                       this->mat[11] * v.z + this->mat[15] * v.w);
     }
 
     mat4<T> operator*(T f) const {

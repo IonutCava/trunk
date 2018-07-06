@@ -197,14 +197,13 @@ void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
 bool GL_API::initShaders() {
     static const std::string shaderVaryings[] = { "flat uint dvd_drawID;",
                                                   "vec2 _texCoord;",
-                                                  "vec4 _vertex;",
                                                   "vec4 _vertexW;",
                                                   "vec4 _vertexWV;",
-                                                  "vec3 _normal;",
                                                   "vec3 _normalWV;",
                                                   "vec3 _tangentWV;",
                                                   "vec3 _bitangentWV;",
-                                                  "flat uint _lightCount;" };
+                                                  Util::StringFormat("flat uint _lightCount[%d];", to_const_uint(LightType::COUNT))
+                                                };
     // Initialize GLSW
     GLint glswState = glswInit();
 
@@ -321,6 +320,12 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define MAX_LIGHT_TYPES " +
+        std::to_string(to_uint(LightType::COUNT)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define BUFFER_GPU_BLOCK " +
         std::to_string(to_uint(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
@@ -341,18 +346,6 @@ bool GL_API::initShaders() {
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_SHADOW " +
         std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_POINT_LIGHTS " +
-        std::to_string(to_uint(ShaderBufferLocation::LIGHT_POINT_LIGHTS)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_SPOT_LIGHTS " +
-        std::to_string(to_uint(ShaderBufferLocation::LIGHT_SPOT_LIGHTS)),
         lineOffsets);
 
     appendToShaderHeader(

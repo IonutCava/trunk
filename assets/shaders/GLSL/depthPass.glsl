@@ -9,7 +9,7 @@ void main() {
     gl_Position = VAR._vertexW;
 #else
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
-    VAR._normal = dvd_Normal;
+    VAR._normalWV = dvd_NormalMatrixWV() * dvd_Normal;
 #endif
 }
 
@@ -110,7 +110,7 @@ void main() {
 #   if defined(COMPUTE_TBN)
         _colorOut = normalize(2.0 * texture(texNormalMap, VAR._texCoord).rgb - 1.0);
 #   else
-        _colorOut = normalize(dvd_NormalMatrixWV() * f_in._normal);
+        _colorOut = normalize(f_in._normalWV);
 #   endif
 #endif
 

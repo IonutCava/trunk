@@ -19,9 +19,9 @@ LightManager::LightManager()
     : _init(false),
       _shadowMapsEnabled(true),
       _previewShadowMaps(false),
-      _currentShadowCastingLight(nullptr),
-      _activeLightCount(0)
+      _currentShadowCastingLight(nullptr)
 {
+    _activeLightCount.fill(0);
     // shadowPassTimer is used to measure the CPU-duration of shadow map
     // generation step
     s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
@@ -287,7 +287,8 @@ Light* LightManager::getLight(I64 lightGUID, LightType type) {
 void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
     U32 lightShadowCount = std::min(to_uint(_lights.size()), Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
-    _activeLightCount = 0;
+    _activeLightCount.fill(0);
+    U32 totalLightCount = 0;
     U32 lightShadowPropertiesCount = 0;
     for(Light::LightList& lights : _lights) {
         for (Light* light : lights) {
@@ -295,15 +296,23 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
                 continue;
             }
 
-            if (_activeLightCount >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
+            if (totalLightCount >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
+            LightType type = light->getLightType();
+            LightProperties& temp = _lightProperties[totalLightCount];
+            temp._diffuse.set(light->getDiffuseColor(), light->getSpotCosOuterConeAngle());
+            // Non directional lights are positioned at specific point in space
+            // So we need W = 1 for a valid positional transform
+            // Directional lights use position for the light direction. 
+            // So we need W = 0 for an infinite distance.
+            temp._position.set(viewMatrix.transform(light->getPosition(), type != LightType::DIRECTIONAL),
+                               light->getRange());
+            // spot direction is not considered a point in space, so W = 0
+            temp._direction.set(viewMatrix.transformNonHomogeneous(light->getSpotDirection()),
+                                light->getSpotAngle());
 
-            LightProperties& temp = _lightProperties[_activeLightCount];
-            temp._diffuse.set(light->getDiffuseColor());
-            temp._position.set((viewMatrix * vec4<F32>(light->getPosition(), 0.0f)).xyz(), light->getRange());
-            temp._direction.set((viewMatrix * vec4<F32>(light->getSpotDirection(), 0.0f)).xyz(), light->getSpotAngle());
-            temp._options.x = to_uint(light->getLightType());
+            temp._options.x = to_uint(type);
             temp._options.y = light->castsShadows();
             if (light->castsShadows() && lightShadowPropertiesCount < lightShadowCount) {
 
@@ -311,19 +320,16 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
                 _lightShadowProperties[lightShadowPropertiesCount++] = light->getShadowProperties();
             }
 
-            _activeLightCount++;
+            totalLightCount++;
+            _activeLightCount[to_uint(type)]++;
         }
 
     }
 
-    if (_activeLightCount > 0) {
-        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->updateData(0, _activeLightCount, _lightProperties.data());
-        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bind(ShaderBufferLocation::LIGHT_NORMAL);
-    }
-
-    if (lightShadowPropertiesCount > 0) {
-        _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
-        _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
-    }
+    // Passing 0 elements is fine (early out in the buffer code)
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->updateData(0, totalLightCount, _lightProperties.data());
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bind(ShaderBufferLocation::LIGHT_NORMAL);
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
 }
 };

@@ -76,20 +76,12 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     cullShaderDesc.setThreadedLoading(false);
     _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
 
-    _pointLightBuffer.reset(GFX_DEVICE.newSB("dvd_pointLightBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
-    _pointLightBuffer->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(PointLightData));
-
-    _spotLightBuffer.reset(GFX_DEVICE.newSB("dvd_spotLightBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
-    _spotLightBuffer->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(SpotLightData));
-
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
     _perTileLightIndexBuffer.reset(GFX_DEVICE.newSB("dvd_perTileLightIndexBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
     _perTileLightIndexBuffer->create(4 * maxNumLightsPerTile * numTiles, sizeof(U32));
 
-    _pointLightBuffer->bind(ShaderBufferLocation::LIGHT_POINT_LIGHTS);
-    _spotLightBuffer->bind(ShaderBufferLocation::LIGHT_SPOT_LIGHTS);
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }
 
@@ -110,7 +102,6 @@ void ForwardPlusRenderer::preRender() {
         data.posAndCenter.set(light->getPosition(), light->getRange());
         data.color.set(light->getDiffuseColor(), 1.0f);
     }
-    _pointLightBuffer->setData(pointLightData.data());
 
     for (I32 i = 0; i < numActiveSpotLights; ++i) {
         SpotLightData& data = spotLightData[i];
@@ -123,10 +114,9 @@ void ForwardPlusRenderer::preRender() {
     GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
         ->getAttachment(TextureDescriptor::AttachmentType::Depth)
         ->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH));
-    _spotLightBuffer->setData(spotLightData.data());
 
     _lightCullComputeShader->bind();
-    _lightCullComputeShader->Uniform("invProjection", GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
+    _lightCullComputeShader->Uniform("invProjection", GFX_DEVICE.getMatrix(MATRIX::PROJECTION_INV));
     _lightCullComputeShader->Uniform("numLights", (((U32)numActiveSpotLights & 0xFFFFu) << 16) | ((U32)numActivePointLights & 0xFFFFu));
     _lightCullComputeShader->Uniform("maxNumLightsPerTile", (I32)getMaxNumLightsPerTile());
     _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1);

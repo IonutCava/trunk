@@ -12,7 +12,7 @@ DirectionalLight::DirectionalLight()
       _csmSplitLogFactor(0.95f),
       _csmNearClipOffset(100.0f)
 {
-    setRange(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE);
+    setRange(to_float(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE));
 }
 
 DirectionalLight::~DirectionalLight()

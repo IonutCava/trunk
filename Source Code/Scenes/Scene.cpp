@@ -289,6 +289,21 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     return parentNode->addNode(*light);
 }
 
+void Scene::toggleFlashlight() {
+    if (_flashLight.lock() == nullptr) {
+        ResourceDescriptor tempLightDesc("MainFlashlight");
+        tempLightDesc.setEnumValue(to_uint(LightType::SPOT));
+        Light* tempLight = CreateResource<Light>(tempLightDesc);
+        tempLight->setDrawImpostor(false);
+        tempLight->setRange(30.0f);
+        tempLight->setCastShadows(false);
+        tempLight->setDiffuseColor(DefaultColors::WHITE());
+        _flashLight = _sceneGraph->getRoot()->addNode(*tempLight);
+    }
+
+    _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
+}
+
 SceneGraphNode_ptr Scene::addSky() {
     Sky* skyItem = CreateResource<Sky>(ResourceDescriptor("Default Sky"));
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
@@ -498,6 +513,12 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
             GFX_DEVICE.toggleFullScreen();
         }
     };
+
+    cbks.second = [this]() {
+        toggleFlashlight();
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_L, cbks);
+
     _input->addKeyMapping(Input::KeyCode::KC_RETURN, cbks);
     _loadComplete = true;
     return _loadComplete;
@@ -607,6 +628,13 @@ void Scene::updateSceneState(const U64 deltaTime) {
                              state().waterLevel());
     _sceneGraph->sceneUpdate(deltaTime, _sceneState);
     findHoverTarget();
+    SceneGraphNode_ptr flashLight = _flashLight.lock();
+
+    if (flashLight) {
+        const Camera& cam = renderState().getCameraConst();
+        flashLight->getComponent<PhysicsComponent>()->setPosition(cam.getEye());
+        flashLight->getNode<Light>()->setSpotDirection(cam.getViewDir());
+    }
 }
 
 void Scene::deleteSelection() {

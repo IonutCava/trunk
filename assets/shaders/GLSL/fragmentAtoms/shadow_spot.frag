@@ -27,7 +27,9 @@ float filterFinalShadow(in sampler2DArrayShadow depthMap, in vec4 vPosInDM){
 #endif
 }
 
-float applyShadowSpot(const in uint lightIndex, Shadow currentShadowSource) {
+float applyShadowSpot(int shadowIndex) {
+    Shadow currentShadowSource = dvd_ShadowSource[shadowIndex];
+
     vec4 shadow_coord = currentShadowSource._lightVP[0] * VAR._vertexW;
     shadow_coord =  1.0 + shadow_coord * 0.5;
     shadow_coord.xy = shadow_coord.xy / shadow_coord.w;

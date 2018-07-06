@@ -16,6 +16,13 @@ int _shadowTempInt = -2;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
+float getShadowFactor(int lightIndex) {
+    switch (dvd_LightSource[lightIndex]._options.x) {
+        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(dvd_LightSource[lightIndex]._options.z);
+    //  case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(dvd_LightSource[lightIndex]._options.z);
+    //  case LIGHT_SPOT            : return applyShadowSpot(dvd_LightSource[lightIndex]._options.z); 
+    }
+}
 
 float shadow_loop(){
     if (!dvd_shadowsEnabled) {
@@ -23,23 +30,20 @@ float shadow_loop(){
     }
 
     float shadow = 1.0;
-    for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++) {
-        if (VAR._lightCount == i) {
-            break;
-        }
-        Shadow shadowSource = dvd_ShadowSource[dvd_LightSource[i]._options.z];
-        if (dvd_LightSource[i]._options.y == 1)
-            switch (dvd_LightSource[i]._options.x) {
-                case LIGHT_DIRECTIONAL:
-                    shadow *= applyShadowDirectional(i, shadowSource);
-                    break;
-                    // case LIGHT_OMNIDIRECTIONAL : shadow *= applyShadowPoint(i, shadowSource);
-                    // break;
-                    // case LIGHT_SPOT            : shadow *= applyShadowSpot(i, shadowSource); 
-                    // break;
+    int offset = 0;
+    int shadowLights = 0;
+    for (int i = 0; i < MAX_LIGHT_TYPES; ++i) {
+        for (int j = 0; j < int(VAR._lightCount[i]); ++j) {
+            int lightIndex = j + offset;
+            if (shadowLights < MAX_SHADOW_CASTING_LIGHTS && 
+                dvd_LightSource[lightIndex]._options.y == 1) {
+                shadow *= getShadowFactor(lightIndex);
+                shadowLights++;
             }
+        }
+        offset += int(VAR._lightCount[i]);
     }
 
-    return clamp(shadow, 0.2, 1.0);
+    return clamp(shadow, 0.05, 1.0);
 }
 #endif //_SHADOW_MAPPING_FRAG_

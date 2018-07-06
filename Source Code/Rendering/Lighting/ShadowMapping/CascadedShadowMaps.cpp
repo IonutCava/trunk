@@ -121,7 +121,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState) {
             _previousFrustumBB.add(node_ptr->getBoundingBoxConst());
         }
     }
-    _previousFrustumBB.transform(_shadowCamera->getViewMatrix());*/
+    _previousFrustumBB.transformHomogeneous(_shadowCamera->getViewMatrix());*/
 
     _shadowMatricesBuffer->setData(_shadowMatrices.data());
     _shadowMatricesBuffer->bind(ShaderBufferLocation::LIGHT_SHADOW);
@@ -176,7 +176,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
 
         for (U8 i = 0; i < 8; ++i) {
             _frustumCornersWS[i].set(
-                _viewInvMatrixCache.transform(_splitFrustumCornersVS[i]));
+                _viewInvMatrixCache.transformHomogeneous(_splitFrustumCornersVS[i]));
         }
 
         vec3<F32> frustumCentroid(0.0f);
@@ -197,7 +197,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
         const mat4<F32>& viewMatrix = _shadowCamera->lookAt(currentEye, frustumCentroid);
         // Determine the position of the frustum corners in light space
         for (U8 i = 0; i < 8; ++i) {
-            _frustumCornersLS[i].set(viewMatrix.transform(_frustumCornersWS[i]));
+            _frustumCornersLS[i].set(viewMatrix.transformHomogeneous(_frustumCornersWS[i]));
         }
 
         F32 frustumSphereRadius = BoundingSphere(_frustumCornersLS).getRadius();
@@ -209,7 +209,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
 
         // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
         F32 halfShadowMapSize = (getDepthMap()->getWidth())*0.5f;
-        vec3<F32> testPoint = _shadowMatrices[pass].transform(VECTOR3_ZERO) * halfShadowMapSize;
+        vec3<F32> testPoint = _shadowMatrices[pass].transformHomogeneous(VECTOR3_ZERO) * halfShadowMapSize;
         vec3<F32> testPointRounded(testPoint);
         testPointRounded.round();
         vec3<F32> rounding = (testPointRounded - testPoint) / halfShadowMapSize;

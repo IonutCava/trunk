@@ -53,18 +53,16 @@ enum class ShaderBufferLocation : U32 {
     GPU_COMMANDS = 1,
     LIGHT_NORMAL = 2,
     LIGHT_SHADOW = 3,
-    LIGHT_POINT_LIGHTS = 4,
-    LIGHT_SPOT_LIGHTS = 5,
-    LIGHT_INDICES = 6,
-    NODE_INFO = 7,
-    BONE_TRANSFORMS = 8,
-    SCENE_DATA = 9,
+    LIGHT_INDICES = 4,
+    NODE_INFO = 5,
+    BONE_TRANSFORMS = 6,
+    SCENE_DATA = 7,
     COUNT
 };
 
 /// Fixed pipeline functionality should be avoided. Both D3D and OGL should have
 /// these matrices
-enum class MATRIX_MODE : U32 {
+enum class MATRIX : U32 {
     VIEW = 0,
     VIEW_INV = 1,
     PROJECTION = 2,

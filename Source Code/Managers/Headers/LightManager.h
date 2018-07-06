@@ -44,7 +44,7 @@ DEFINE_SINGLETON(LightManager)
   protected:
       struct LightProperties {
           /// rgb = diffuse
-          ///  w = reserved;
+          /// w = cosOuterConeAngle;
           vec4<F32> _diffuse;
           /// light position (or direction for Directional lights)
           /// w = range
@@ -76,7 +76,7 @@ DEFINE_SINGLETON(LightManager)
     /// remove a light from the manager
     bool removeLight(I64 lightGUID, LightType type);
     /// Retrieve the number of active lights in the scene;
-    inline const U32 getActiveLightCount() const { return _activeLightCount; }
+    inline const U32 getActiveLightCount(LightType type) const { return _activeLightCount[to_uint(type)]; }
     inline Light* currentShadowCastingLight() const { return _currentShadowCastingLight; }
 
     bool clear();
@@ -137,7 +137,7 @@ DEFINE_SINGLETON(LightManager)
     bool _previewShadowMaps;
     bool _shadowMapsEnabled;
     Light* _currentShadowCastingLight;
-    U32 _activeLightCount;
+    std::array<U32, to_const_uint(LightType::COUNT)> _activeLightCount;
 
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>  _lightShaderBuffer;
     std::array<U8, to_const_uint(ShadowType::COUNT)> _shadowLocation;

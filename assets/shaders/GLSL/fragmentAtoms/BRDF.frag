@@ -51,9 +51,15 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
 #else
     vec3 lightColor = vec3(0.0);
     // Apply all lighting contributions
-    for (int i = 0; i < int(VAR._lightCount); ++i){
-        getBRDFFactors(i, normalWV, lightColor);
+    uint offset = 0;
+    for (uint i = 0; i < MAX_LIGHT_TYPES; ++i) {
+        uint lightCount = VAR._lightCount[i];
+        for (uint j = 0; j < lightCount; ++j){
+            getBRDFFactors(int(j + offset), normalWV, lightColor);
+        }
+        offset += lightCount;
     }
+
     vec3 color = mix(dvd_MatEmissive, lightColor, DIST_TO_ZERO(length(lightColor)));
 #endif
 

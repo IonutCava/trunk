@@ -314,22 +314,22 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it
-void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
+void GFXDevice::getMatrix(const MATRIX& mode, mat4<F32>& mat) {
     // The matrix names are self-explanatory
-    if (mode == MATRIX_MODE::VIEW_PROJECTION) {
+    if (mode == MATRIX::VIEW_PROJECTION) {
         mat.set(_gpuBlock._data._ViewProjectionMatrix);
-    } else if (mode == MATRIX_MODE::VIEW) {
+    } else if (mode == MATRIX::VIEW) {
         mat.set(_gpuBlock._data._ViewMatrix);
-    } else if (mode == MATRIX_MODE::PROJECTION) {
+    } else if (mode == MATRIX::PROJECTION) {
         mat.set(_gpuBlock._data._ProjectionMatrix);
-    } else if (mode == MATRIX_MODE::TEXTURE) {
+    } else if (mode == MATRIX::TEXTURE) {
         mat.identity();
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
-    } else if (mode == MATRIX_MODE::VIEW_INV) {
+    } else if (mode == MATRIX::VIEW_INV) {
         _gpuBlock._data._ViewMatrix.getInverse(mat);
-    } else if (mode == MATRIX_MODE::PROJECTION_INV) {
+    } else if (mode == MATRIX::PROJECTION_INV) {
         _gpuBlock._data._ProjectionMatrix.getInverse(mat);
-    } else if (mode == MATRIX_MODE::VIEW_PROJECTION_INV) {
+    } else if (mode == MATRIX::VIEW_PROJECTION_INV) {
         _gpuBlock._data._ViewProjectionMatrix.getInverse(mat);
     } else {
         DIVIDE_ASSERT(

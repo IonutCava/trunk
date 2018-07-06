@@ -134,8 +134,12 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     // Time, fog, etc
     _sceneData.elapsedTime(_elapsedTimeMS);
 
-    _sceneData.lightCount(lightMgr.getActiveLightCount());
-
+    _sceneData.lightCount(LightType::DIRECTIONAL, lightMgr.getActiveLightCount(LightType::DIRECTIONAL));
+    _sceneData.lightCount(LightType::POINT, lightMgr.getActiveLightCount(LightType::POINT));
+    _sceneData.lightCount(LightType::SPOT, lightMgr.getActiveLightCount(LightType::SPOT));
+    _sceneData._otherData.w = _sceneData._lightCountPerType[0] +
+                              _sceneData._lightCountPerType[1] +
+                              _sceneData._lightCountPerType[2];
     _sceneData.toggleShadowMapping(lightMgr.shadowMappingEnabled());
 
     _sceneData.fogDensity(par.getParam<bool>(_ID("rendering.enableFog"))

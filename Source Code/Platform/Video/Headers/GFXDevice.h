@@ -297,9 +297,9 @@ DEFINE_SINGLETON(GFXDevice)
                          const vec2<F32>& zPlanes,
                          RenderStage renderStage);
 
-    void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
+    void getMatrix(const MATRIX& mode, mat4<F32>& mat);
     /// Alternative to the normal version of getMatrix
-    inline const mat4<F32>& getMatrix(const MATRIX_MODE& mode);
+    inline const mat4<F32>& getMatrix(const MATRIX& mode);
     inline vec2<F32> getCurrentZPlanes() const;
     /// Register a function to be called in the 2D rendering fase of the GFX Flush
     /// routine. Use callOrder for sorting purposes

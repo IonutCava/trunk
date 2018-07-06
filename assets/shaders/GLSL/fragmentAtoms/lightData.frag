@@ -17,10 +17,11 @@ float getLightAttenuation(const in int lightIndex,
 
     if (lightType == LIGHT_SPOT) {
         vec4 dirIn = dvd_LightSource[lightIndex]._directionWV;
-        float clampedCosine = max(0.0, dot(normalize(-lightDirection), normalize(dirIn.xyz)));
-        att = mix(0.0, att * pow(clampedCosine, dirIn.w), clampedCosine < cos(dvd_LightSource[lightIndex]._positionWV.w * M_PIDIV180));
+        float cosOutterConeAngle = dvd_LightSource[lightIndex]._color.w;
+        float cosInnerMinusOuterAngle = dirIn.w - cosOutterConeAngle;
+        att *= clamp((dot(-normalize(lightDirection), normalize(dirIn.xyz)) - cosOutterConeAngle) /
+                     cosInnerMinusOuterAngle, 0.0, 1.0);
     }
-
     return att;
 }
 

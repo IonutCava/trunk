@@ -151,7 +151,7 @@ void main(void)
 
         if (il < numPointLights)
         {
-            vec4 center = pointLightBufferCenterAndRadius[int(il)];
+            vec4 center;// = pointLightBufferCenterAndRadius[int(il)];
             float r = center.w;
             center.xyz = (dvd_ViewMatrix * vec4(center.xyz, 1.0f)).xyz;
 
@@ -184,7 +184,7 @@ void main(void)
 
         if (il < numSpotLights)
         {
-            vec4 center = spotLightBufferCenterAndRadius[int(il)];
+            vec4 center;// = spotLightBufferCenterAndRadius[int(il)];
             float r = center.w * 5.0f; // FIXME: Multiply was added, but more clever culling should be done instead.
             center.xyz = (dvd_ViewMatrix * vec4(center.xyz, 1.0f)).xyz;
 
