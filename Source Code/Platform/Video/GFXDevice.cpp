@@ -557,6 +557,9 @@ void GFXDevice::onCameraUpdate(Camera& camera) {
         _axisGizmo->worldMatrix(
             mat4<F32>(-camera.getViewDir() * 2, VECTOR3_ZERO, camera.getUpDir()) *
             _gpuBlock._data._ViewMatrix.getInverse());
+        _axisGizmo->paused(false);
+    } else {
+        _axisGizmo->paused(true);
     }
 }
 

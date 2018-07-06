@@ -254,10 +254,8 @@ void Material::clean() {
 
 void Material::recomputeShaders() {
     for (ShaderInfo& info : _shaderInfo) {
-        if (info._shaderCompStage !=
-            ShaderInfo::ShaderCompilationStage::CUSTOM) {
-            info._shaderCompStage =
-                ShaderInfo::ShaderCompilationStage::REQUESTED;
+        if (info._shaderCompStage != ShaderInfo::ShaderCompilationStage::CUSTOM) {
+            info._shaderCompStage = ShaderInfo::ShaderCompilationStage::REQUESTED;
         }
     }
 }
@@ -265,8 +263,7 @@ void Material::recomputeShaders() {
 bool Material::canDraw(RenderStage renderStage) {
     for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
         ShaderInfo& info = _shaderInfo[i];
-        if (info._shaderCompStage != 
-            ShaderInfo::ShaderCompilationStage::COMPUTED) {
+        if (info._shaderCompStage !=  ShaderInfo::ShaderCompilationStage::COMPUTED) {
             computeShader(static_cast<RenderStage>(i), false);
             return false;
         }
@@ -469,17 +466,14 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 }
 
 void Material::getTextureData(TextureDataContainer& textureData) {
-    textureData.reserve(to_uint(ShaderProgram::TextureUsage::COUNT) +
-                        _customTextures.size());
+    textureData.reserve(to_uint(ShaderProgram::TextureUsage::COUNT) + _customTextures.size());
     getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
     getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
 
     if (!GFX_DEVICE.isDepthStage()) {
         getTextureData(ShaderProgram::TextureUsage::UNIT1, textureData);
-        getTextureData(ShaderProgram::TextureUsage::NORMALMAP,
-                       textureData);
-        getTextureData(ShaderProgram::TextureUsage::SPECULAR,
-                       textureData);
+        getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
+        getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
 
         for (std::pair<Texture*, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
@@ -536,11 +530,8 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
             size_t hash = _defaultRenderStates[index];
             RenderStateBlock descriptor(GFX_DEVICE.getRenderStateBlock(hash));
             descriptor.setCullMode(CullMode::NONE);
-            if (!_translucencySource.empty()) {
-                descriptor.setBlend(true);
-            }
-            setRenderStateBlock(descriptor.getHash(),
-                                static_cast<RenderStage>(index));
+            descriptor.setBlend(!_translucencySource.empty());
+            setRenderStateBlock(descriptor.getHash(), static_cast<RenderStage>(index));
         }
     }
 
@@ -573,12 +564,14 @@ bool Material::isTranslucent() {
             useAlphaTest = false;
         }
 
+        _translucencyCheck = false;
+
         // Disable culling for translucent items
         if (!_translucencySource.empty()) {
             setDoubleSided(true, useAlphaTest);
+        } else {
+            recomputeShaders();
         }
-        _translucencyCheck = false;
-        recomputeShaders();
     }
 
     return !_translucencySource.empty();

@@ -137,25 +137,6 @@ void RenderingComponent::update(const U64 deltaTime) {
     }
 }
 
-void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot, RenderStage currentStage) {
-    GFXDevice::RenderPackage& pkg = _renderData[to_uint(currentStage)];
-
-    TextureDataContainer::iterator it;
-    it = std::find_if(std::begin(pkg._textureData), std::end(pkg._textureData),
-                      [&slot](const TextureData& data)
-                          -> bool { return data.getHandleLow() == slot; });
-
-    
-    TextureData data = texture.getData();
-    data.setHandleLow(to_uint(slot));
-
-    if (it == std::end(pkg._textureData)) {
-        pkg._textureData.push_back(data);
-    } else {
-        *it = data;
-    }
-}
-
 bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
     Material* mat = getMaterialInstance();
@@ -218,7 +199,8 @@ void RenderingComponent::renderGeometry(const bool state) {
 
     U32 childCount = _parentSGN.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
-        RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+        RenderingComponent* const renderable = 
+            _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderGeometry(state);
         }
@@ -341,18 +323,27 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     SceneNode* const node = _parentSGN.getNode();
 
 #ifdef _DEBUG
-    if (sceneRenderState.gizmoState() ==
-        SceneRenderState::GizmoState::ALL_GIZMO) {
-        if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            if (_parentSGN.getNode<Object3D>()->getObjectType() ==
-                Object3D::ObjectType::SUBMESH) {
-                drawDebugAxis();
+    switch(sceneRenderState.gizmoState()){
+        case SceneRenderState::GizmoState::ALL_GIZMO: {
+            if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+                if (_parentSGN.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::SUBMESH) {
+                    drawDebugAxis();
+                }
             }
-        }
-    } else {
-        if (_parentSGN.getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+        } break;
+        case SceneRenderState::GizmoState::SELECTED_GIZMO: {
+            switch (_parentSGN.getSelectionFlag()) {
+                case SceneGraphNode::SelectionFlag::SELECTION_SELECTED : {
+                    drawDebugAxis();
+                } break;
+                default: {
+                    _axisGizmo->paused(true);
+                } break;
+            }
+        } break;
+        default: {
             _axisGizmo->paused(true);
-        }
+        } break;
     }
 #endif
 

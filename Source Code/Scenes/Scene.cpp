@@ -692,8 +692,7 @@ void Scene::debugDraw(RenderStage stage) {
     if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
         SceneGraphNode_ptr selection(_currentSelection.lock());
         if (selection != nullptr) {
-            selection->getComponent<RenderingComponent>()
-                ->drawDebugAxis();
+            selection->getComponent<RenderingComponent>()->drawDebugAxis();
         }
     }
 #endif

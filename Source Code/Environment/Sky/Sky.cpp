@@ -106,6 +106,11 @@ void Sky::postLoad(SceneGraphNode& sgn) {
         pkg._drawCommands.push_back(cmd);
     }
 
+    _skybox->flushTextureState();
+    TextureData skyTextureData = _skybox->getData();
+    skyTextureData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT0));
+    sgn.getComponent<RenderingComponent>()->registerTextureDependency(skyTextureData);
+
     SceneNode::postLoad(sgn);
 }
 
@@ -113,12 +118,7 @@ void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                       SceneState& sceneState) {}
 
 bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
-    if (_sky->onDraw(sgn, currentStage)) {
-        sgn.getComponent<RenderingComponent>()->makeTextureResident(
-            *_skybox, to_ubyte(ShaderProgram::TextureUsage::UNIT0), currentStage);
-        return true;
-    }
-    return false;
+    return _sky->onDraw(sgn, currentStage);
 }
 
 bool Sky::getDrawCommands(SceneGraphNode& sgn,

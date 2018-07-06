@@ -96,6 +96,16 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
     planeSGN.getBoundingBox().add(bb);
     Console::printfn(Locale::get("WATER_CREATE_DETAILS_1"), bb.getMax().y);
     Console::printfn(Locale::get("WATER_CREATE_DETAILS_2"), bb.getMin().y);
+
+    TextureDescriptor::AttachmentType att = TextureDescriptor::AttachmentType::Color0;
+    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    TextureData reflectionData = _reflectedTexture->getAttachment(att)->getData();
+    TextureData refractionData = _refractionTexture->getAttachment(att)->getData();
+    reflectionData.setHandleLow(1);
+    refractionData.setHandleLow(2);
+    renderable->registerTextureDependency(reflectionData);
+    renderable->registerTextureDependency(refractionData);
+
     _dirty = true;
     return SceneNode::computeBoundingBox(sgn);
 }
@@ -144,23 +154,7 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         updatePlaneEquation();
     }
 
-    if (!_plane->onDraw(currentStage)) {
-        return false;
-    }
-
-    if (!GFX_DEVICE.isDepthStage()) {
-        TextureDescriptor::AttachmentType att =
-            TextureDescriptor::AttachmentType::Color0;
-        RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
-        renderable->makeTextureResident(
-            *(_reflectedTexture->getAttachment(att)), 1, currentStage);
-        if (!_cameraUnderWater) {
-            renderable->makeTextureResident(
-                *(_refractionTexture->getAttachment(att)), 2, currentStage);
-        }
-    }
-
-    return true;
+    return _plane->onDraw(currentStage);
 }
 
 bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,

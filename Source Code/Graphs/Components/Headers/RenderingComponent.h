@@ -98,8 +98,6 @@ class RenderingComponent : public SGNComponent {
 
     inline Material* const getMaterialInstance() const { return _materialInstance; }
 
-    void makeTextureResident(const Texture& texture, U8 slot, RenderStage currentStage);
-
     void registerShaderBuffer(ShaderBufferLocation slot,
                               vec2<U32> bindRange,
                               ShaderBuffer& shaderBuffer);
