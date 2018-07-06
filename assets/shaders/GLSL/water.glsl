@@ -65,7 +65,7 @@ void main (void)
 	vec3 normal = normalize(normal0+normal1);
 	
 	vec2 uvReflection = vec2(gl_FragCoord.x/screenDimension.x, gl_FragCoord.y/screenDimension.y);
-	vec2 uvFinal = (_noiseFactor * normal) + uvReflection;
+	vec2 uvFinal = _noiseFactor * normal.rg + uvReflection;
 
 	
 	vec3 N = normalize(dvd_NormalMatrix * normal);

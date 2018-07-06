@@ -60,6 +60,10 @@ std::string glShaderProgram::getLog() const {
         std::vector<char> shaderProgramLog(length);
         GLCheck(glGetProgramInfoLog(_threadedLoadComplete ? _shaderProgramId : _shaderProgramIdTemp, length, NULL, &shaderProgramLog[0]));
         validationBuffer.append(&shaderProgramLog[0]);
+		if(validationBuffer.size() > Console::CONSOLE_OUTPUT_BUFFER_SIZE){
+			validationBuffer.resize(Console::CONSOLE_OUTPUT_BUFFER_SIZE - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10);
+			validationBuffer.append(" ... ");
+		}
     }
 
     return validationBuffer;

@@ -6,8 +6,6 @@
 #include <iomanip>
 #include <stdarg.h>
 
-#define CONSOLE_OUTPUT_BUFFER_SIZE 2048
-
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
 void Console::printCopyrightNotice() const {
     std::cout << "------------------------------------------------------------------------------" << std::endl;

@@ -5,10 +5,16 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/function.hpp>
 
+#ifndef I32
+#define I32 int
+#endif
+
 DEFINE_SINGLETON(Console)
 	typedef boost::function2<void, const char*, bool > consolePrintCallback;
 
 public:
+	static const I32 CONSOLE_OUTPUT_BUFFER_SIZE = 2048;
+
 	void printCopyrightNotice() const;
 	void printfn(const char* format, ...) const;
 	void printf(const char* format, ...) const;
