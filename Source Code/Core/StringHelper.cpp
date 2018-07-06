@@ -49,22 +49,6 @@ stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
     return input.substr(0, inputLength - count);
 }
 
-stringImpl StringFormat(const char *const format, ...) {
-    vectorFast<char> temp;
-    std::size_t length = 63;
-    std::va_list args;
-    while (temp.size() <= length) {
-        temp.resize(length + 1);
-        va_start(args, format);
-        const auto status = std::vsnprintf(temp.data(), temp.size(), format, args);
-        va_end(args);
-        assert(status >= 0 && "string formatting error");
-        length = static_cast<std::size_t>(status);
-    }
-
-    return stringImpl(temp.data(), length);
-}
-
 vector<stringImpl> Split(const stringImpl& input, char delimiter) {
     vector<stringImpl> elems;
     return Split(input, delimiter, elems);

@@ -76,7 +76,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <fstream>
 #include <cstdarg>
 #include <numeric>

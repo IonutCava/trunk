@@ -29,11 +29,28 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+/*#ifndef FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY
+#define FMT_EXCEPTIONS 0
+#endif
+#include "fmt/format.h"
+#include "fmt/printf.h"*/
+#include <cstdio>
+
 #ifndef _CORE_STRING_HELPER_INL_
 #define _CORE_STRING_HELPER_INL_
 
 namespace Divide {
 namespace Util {
+
+template <typename... Args>
+stringImpl StringFormat(const char *const format, Args&&... args) {
+    //return fmt::sprintf(format, std::forward<Args>(args)...);
+    int sz = snprintf(nullptr, 0, format, std::forward<Args>(args)...);
+    std::vector<char> buf(sz + 1 , '\0');
+    snprintf(&buf[0], buf.size(), format, std::forward<Args>(args)...);
+    return stringImpl(buf.data(), buf.size() - 1);
+}
 
 template<typename T>
 typename std::enable_if<std::is_same<T, vector<stringImpl>>::value ||

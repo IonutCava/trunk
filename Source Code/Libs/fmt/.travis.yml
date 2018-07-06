@@ -1,0 +1,67 @@
+language: cpp
+dist: trusty
+sudo: required # the doc target uses sudo to install dependencies
+
+os:
+  - linux
+  - osx
+
+env:
+  global:
+    - secure: |-
+        a1eovNn4uol9won7ghr67eD3/59oeESN+G9bWE+ecI1V6yRseG9whniGhIpC/YfMW/Qz5I
+        5sxSmFjaw9bxCISNwUIrL1O5x2AmRYTnFcXk4dFsUvlZg+WeF/aKyBYCNRM8C2ndbBmtAO
+        o1F2EwFbiso0EmtzhAPs19ujiVxkLn4=
+  matrix:
+    - BUILD=Doc
+    - BUILD=Debug STANDARD=14
+    - BUILD=Release STANDARD=14
+
+matrix:
+  exclude:
+    - os: osx
+      env: BUILD=Doc
+  include:
+    - language: android
+      android:
+      components:
+        - tools
+        - platform-tools
+        - android-21
+        - sys-img-armeabi-v7a-android-21
+      env:
+        - ANDROID=true
+      before_install:
+        - git submodule update --init --recursive
+        - sudo apt-get install wget unzip tree
+      install:
+        # Accept SDK Licenses + Install NDK
+        - yes | sdkmanager --update > /dev/null 2>&1
+        - sdkmanager ndk-bundle > /dev/null 2>&1
+        # Download Gradle 4.3.1 
+        - wget https://services.gradle.org/distributions/gradle-4.3.1-bin.zip
+        - mkdir -p gradle
+        - unzip -q -d ./gradle gradle-4.3.1-bin.zip
+        - export GRADLE=${TRAVIS_BUILD_DIR}/gradle/gradle-4.3.1/bin/gradle
+      before_script:
+        - bash $GRADLE --version
+        - cd ./support
+      script:
+        - bash $GRADLE clean assemble
+      after_success:
+        - cd ${TRAVIS_BUILD_DIR}
+        - tree ./libs
+
+# Install gcc-6 for extended constexpr support.
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-6
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-6; fi
+
+script:
+  - support/travis-build.py

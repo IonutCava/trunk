@@ -159,14 +159,16 @@ bool Scene::idle() {  // Called when application is idle
 
     _lightPool->idle();
 
-    WriteLock w_lock(_tasksMutex);
-    _tasks.erase(std::remove_if(std::begin(_tasks),
-                                std::end(_tasks),
-                                [](const TaskHandle& handle) -> bool { 
-                                    return !handle.taskRunning();
-                                }),
-                std::end(_tasks));
-
+    UpgradableReadLock ur_lock(_tasksMutex);
+    if (!_tasks.empty()) {
+        UpgradeToWriteLock w_lock(ur_lock);
+        _tasks.erase(std::remove_if(std::begin(_tasks),
+                                    std::end(_tasks),
+                                    [](const TaskHandle& handle) -> bool { 
+                                        return !handle.taskRunning();
+                                    }),
+                    std::end(_tasks));
+    }
     return true;
 }
 

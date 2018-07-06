@@ -45,7 +45,7 @@ void NetworkScene::processGUI(const U64 deltaTimeUS) {
 
     if (_guiTimersMS[1] >= TimeDisplay) {
         _GUI->modifyText(_ID("timeDisplay"),
-                         Util::StringFormat("Elapsed time: %5.0f", time));
+                         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
         _guiTimersMS[1] = 0.0;
     }
 

@@ -435,34 +435,19 @@ void SceneGraphNode::getOrderedNodeList(vector<SceneGraphNode*>& nodeList) {
     }
 }
 
-void SceneGraphNode::processDeleteQueue() {
-    forEachChild([](SceneGraphNode& child) {
-        child.processDeleteQueue();
-    });
-
+void SceneGraphNode::processDeleteQueue(vector<vec_size>& childList) {
     // See if we have any children to delete
-    UpgradableReadLock ur_lock(_childrenDeletionLock);
-    if (!_childrenPendingDeletion.empty()) {
+    if (!childList.empty()) {
         WriteLock w_lock(_childLock);
-        for (vec_size childIdx : _childrenPendingDeletion) {
+        for (vec_size childIdx : childList) {
             parentGraph().destroySceneGraphNode(_children[childIdx]);
         }
-        _children = erase_indices(_children, _childrenPendingDeletion);
-
-        UpgradeToWriteLock uw_lock(ur_lock);
-        _childrenPendingDeletion.clear();
-
+        _children = erase_indices(_children, childList);
     }
 }
 
 void SceneGraphNode::addToDeleteQueue(U32 idx) {
-    WriteLock w_lock(_childrenDeletionLock);
-    if (std::find(std::cbegin(_childrenPendingDeletion),
-                  std::cend(_childrenPendingDeletion),
-                  idx) == std::cend(_childrenPendingDeletion))
-    {
-        _childrenPendingDeletion.push_back(idx);
-    }
+    parentGraph().addToDeleteQueue(this, idx);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
@@ -475,18 +460,21 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     if (!_relationshipCache.isValid()) {
         _relationshipCache.rebuild();
     }
-    if (_lockToCamera != 0) {
-        TransformComponent* tComp = get<TransformComponent>();
-        if (tComp) {
-            Camera* cam = Camera::findCamera(_lockToCamera);
-            if (cam) {
-                cam->updateLookAt();
-                tComp->setOffset(true, cam->getWorldMatrix());
+
+    if (isActive()) {
+        if (_lockToCamera != 0) {
+            TransformComponent* tComp = get<TransformComponent>();
+            if (tComp) {
+                Camera* cam = Camera::findCamera(_lockToCamera);
+                if (cam) {
+                    cam->updateLookAt();
+                    tComp->setOffset(true, cam->getWorldMatrix());
+                }
             }
         }
-    }
 
-    Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTimeUS, *this, sceneState);
+        Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTimeUS, *this, sceneState);
+    }
 }
 
 bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,

@@ -105,6 +105,7 @@ class SceneGraph : private NonCopyable,
     SceneGraphNode* createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 
     void destroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true);
+    void addToDeleteQueue(SceneGraphNode* node, vec_size childIdx);
 
     // If this function returns true, the node was successfully removed (or queued for removal)
     bool removeNode(I64 guid);
@@ -155,6 +156,9 @@ class SceneGraph : private NonCopyable,
     vector<SceneGraphNode*> _orderedNodeList;
 
     std::array<vector<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
+
+    mutable SharedLock _pendingDeletionLock;
+    hashMap<SceneGraphNode*, vector<vec_size>> _pendingDeletion;
 
     mutable std::mutex _nodeCreateMutex;
 };

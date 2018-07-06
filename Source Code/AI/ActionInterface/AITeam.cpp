@@ -12,6 +12,10 @@
 namespace Divide {
 namespace AI {
 
+namespace {
+    const U16 g_entityThreadedThreashold = 16u;
+};
+
 AITeam::AITeam(U32 id, AIManager& parentManager)
      : GUIDWrapper(),
        _parentManager(parentManager),
@@ -80,40 +84,54 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
             return false;
         }
     }
+    U16 entityCount = to_U16(entities.size());
+    if (entityCount <= g_entityThreadedThreashold) {
+        for (AIEntity* entity : entities) {
+            if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
+                //print error;
+            }
+        }
+    } else {
+        auto updateIterFunction = [this, deltaTimeUS, &entities](const Task& parentTask, U32 start, U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                if (!Attorney::AIEntityAITeam::update(*entities[i], deltaTimeUS)) {
+                    //print error;
+                }
+            }
+        };
 
-    TaskHandle updateTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
-    for (AIEntity* entity : entities) {
-        CreateTask(parentPool,
-                   &updateTask,
-                   [entity, deltaTimeUS](const Task& parentTask)
-                   {
-                       if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
-                           //print error;
-                       }
-                   }).startTask();
+        parallel_for(parentPool,
+                     updateIterFunction,
+                     entityCount,
+                     g_entityThreadedThreashold);
     }
-
-    updateTask.startTask().wait();
-
     return true;
 }
 
 bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
-   vector<AIEntity*> entities = AITeam::getEntityList();
+    vector<AIEntity*> entities = AITeam::getEntityList();
 
-   TaskHandle inputTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
-    for (AIEntity* entity : entities) {
-        CreateTask(parentPool,
-                   &inputTask,
-                   [entity, deltaTimeUS](const Task& parentTask)
-                   {
-                       if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTimeUS)) {
-                           //print error;
-                       }
-                   }).startTask();
+    U16 entityCount = to_U16(entities.size());
+    if (entityCount <= g_entityThreadedThreashold) {
+        for (AIEntity* entity : entities) {
+            if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTimeUS)) {
+                //print error;
+            }
+        }
+    } else {
+        auto inputIterFunction = [this, deltaTimeUS, &entities](const Task& parentTask, U32 start, U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                if (!Attorney::AIEntityAITeam::processInput(*entities[i], deltaTimeUS)) {
+                    //print error;
+                }
+            }
+        };
+
+        parallel_for(parentPool,
+                    inputIterFunction,
+                    entityCount,
+                    g_entityThreadedThreashold);
     }
-
-    inputTask.startTask().wait();
 
     return true;
 }
@@ -121,19 +139,27 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
 bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
     vector<AIEntity*> entities = AITeam::getEntityList();
 
-    TaskHandle dataTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
-    for (AIEntity* entity : entities) {
-        CreateTask(parentPool,
-                   &dataTask,
-                   [entity, deltaTimeUS](const Task& parentTask)
-                   {
-                       if (!Attorney::AIEntityAITeam::processData(*entity, deltaTimeUS)) {
-                           //print error;
-                       }
-                   }).startTask();
-    }
+    U16 entityCount = to_U16(entities.size());
+    if (entityCount <= g_entityThreadedThreashold) {
+        for (AIEntity* entity : entities) {
+            if (!Attorney::AIEntityAITeam::processData(*entity, deltaTimeUS)) {
+                //print error;
+            }
+        }
+    } else {
+        auto dataIterFunction = [this, deltaTimeUS, &entities](const Task& parentTask, U32 start, U32 end) {
+            for (U32 i = start; i < end; ++i) {
+                if (!Attorney::AIEntityAITeam::processData(*entities[i], deltaTimeUS)) {
+                    //print error;
+                }
+            }
+        };
 
-    dataTask.startTask().wait();
+        parallel_for(parentPool,
+                     dataIterFunction,
+                     entityCount,
+                     g_entityThreadedThreashold);
+    }
 
     return true;
 }

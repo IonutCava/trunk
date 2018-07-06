@@ -82,7 +82,9 @@ namespace Divide {
 
         //format is passed by value to conform with the requirements of va_start.
         //ref: http://codereview.stackexchange.com/questions/115760/use-va-list-to-format-a-string
-        stringImpl StringFormat(const char *const format, ...);
+
+        template <typename... Args>
+        stringImpl StringFormat(const char *const format, Args&&... args);
 
         U32 LineCount(const stringImpl& str);
 

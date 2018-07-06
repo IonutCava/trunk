@@ -128,7 +128,7 @@ vector<T, A> convert(const vector<U, A>& data) {
 
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
 template<typename T, typename A>
-inline typename vector<T, A> erase_indices(const typename vector<T, A>& data, vector<vec_size>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+inline typename vector<T, A> erase_indices(const typename vector<T, A>& data, vector<vec_size>& indicesToDelete)
 {
     if (indicesToDelete.empty()) {
         return data;
@@ -137,7 +137,7 @@ inline typename vector<T, A> erase_indices(const typename vector<T, A>& data, ve
     vector<T, A> ret;
     ret.reserve(data.size() - indicesToDelete.size());
 
-    std::sort(std::begin(indicesToDelete), std::end(indicesToDelete));
+    std::sort(std::cbegin(indicesToDelete), std::cend(indicesToDelete));
 
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
     vector<T, A>::const_iterator itBlockBegin = std::cbegin(data);

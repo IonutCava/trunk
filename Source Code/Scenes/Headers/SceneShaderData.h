@@ -54,38 +54,47 @@ class SceneShaderData {
 
     inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) {
         _bufferData._fogDetails.set(colourR, colourG, colourB, density / 1000.0f);
+        _dirty = true;
     }
 
     inline void fogDensity(F32 density) {
         _bufferData._fogDetails.w = density;
+        _dirty = true;
     }
 
     inline void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) {
         _bufferData._shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
+        _dirty = true;
     }
 
     inline void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) {
         _bufferData._windDetails.set(directionX, directionY, directionZ, speed);
+        _dirty = true;
     }
 
     inline void elapsedTime(U32 timeMS) {
         _bufferData._otherData.x = to_F32(timeMS);
+        _dirty = true;
     }
 
     inline void enableDebugRender(bool state) {
         _bufferData._otherData.y = state ? 1.0f : 0.0f;
+        _dirty = true;
     }
 
     inline void toggleShadowMapping(bool state) {
         _bufferData._otherData.z = state ? 1.0f : 0.0f;
+        _dirty = true;
     }
 
     inline void setRendererFlag(U32 flag) {
         _bufferData._otherData.w = to_F32(flag);
+        _dirty = true;
     }
 
     inline void deltaTime(F32 deltaTimeSeconds) {
         _bufferData._otherData2.x = deltaTimeSeconds;
+        _dirty = true;
     }
 
     inline void lightCount(LightType type, U32 lightCount) {
@@ -95,18 +104,21 @@ class SceneShaderData {
     inline void detailLevel(RenderDetailLevel renderDetailLevel, RenderDetailLevel shadowDetailLevel) {
         _bufferData._otherData2.y = to_F32(renderDetailLevel);
         _bufferData._otherData2.z = to_F32(shadowDetailLevel);
+        _dirty = true;
     }
 
     inline void waterDetails(U8 index, const vec3<F32>& positionW, const vec3<F32>& dimensions) {
         ACKNOWLEDGE_UNUSED(index);
         _bufferData._waterPositionsW/*[index]*/.set(positionW);
         _bufferData._waterDetails/*[index]*/.set(dimensions);
+        _dirty = true;
     }
 
     void uploadToGPU();
 
   private:
       GFXDevice& _context;
+      bool _dirty;
       SceneShaderBufferData _bufferData;
       /// Generic scene data that doesn't change per shader
       ShaderBuffer* _sceneShaderData;

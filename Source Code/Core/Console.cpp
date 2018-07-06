@@ -6,7 +6,7 @@
 #include <iomanip>
 
 #ifndef USE_BLOCKING_QUEUE
-//#define USE_BLOCKING_QUEUE
+#define USE_BLOCKING_QUEUE
 #endif //USE_BLOCKING_QUEUE
 
 namespace Divide {
@@ -177,11 +177,13 @@ void Console::stop() {
     if (_running) {
         _enabled = false;
         _running = false;
+#if !defined(USE_BLOCKING_QUEUE)
         {
             UniqueLock lk(condMutex());
             entryAdded() = true;
             entryEnqueCV().notify_one();
         }
+#endif
         _printThread.join();
     }
 }

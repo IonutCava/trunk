@@ -7,7 +7,8 @@
 namespace Divide {
 SceneShaderData::SceneShaderData(GFXDevice& context)
     : _context(context),
-      _sceneShaderData(nullptr)
+      _sceneShaderData(nullptr),
+      _dirty(true)
 {
     ShaderBufferDescriptor bufferDescriptor;
     bufferDescriptor._primitiveCount = 1;
@@ -27,7 +28,10 @@ SceneShaderData::~SceneShaderData()
 }
 
 void SceneShaderData::uploadToGPU() {
-    _sceneShaderData->writeData(&_bufferData);
+    if (_dirty) {
+        _sceneShaderData->writeData(&_bufferData);
+        _dirty = false;
+    }
 }
 
 }; //namespace Divide

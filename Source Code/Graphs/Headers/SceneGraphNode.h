@@ -361,7 +361,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     void getOrderedNodeList(vector<SceneGraphNode*>& nodeList);
 
-    void processDeleteQueue();
+    void processDeleteQueue(vector<vec_size>& childList);
 
     bool save(ByteBuffer& outputBuffer) const;
     bool load(ByteBuffer& inputBuffer);
@@ -440,9 +440,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     StateTracker<bool> _trackedBools;
 
     SGNRelationshipCache _relationshipCache;
-
-    mutable SharedLock _childrenDeletionLock;
-    vector<vec_size> _childrenPendingDeletion;
 
     // ToDo: Remove this HORRIBLE hack -Ionut
     vector<EditorComponent*> _editorComponents;
