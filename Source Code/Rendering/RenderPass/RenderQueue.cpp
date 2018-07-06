@@ -90,8 +90,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
     return temp;
 }
 
-RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
-                                      const Material_ptr& matInstance) {
+RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_ptr& matInstance) {
     assert(node != nullptr);
     switch (node->getType()) {
         case SceneNodeType::TYPE_LIGHT: return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);

@@ -118,6 +118,7 @@ SceneGraphNode::~SceneGraphNode()
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
 
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
+        assert(_node.unique());
         _node.reset();
     }
 }

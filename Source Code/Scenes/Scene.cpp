@@ -1286,7 +1286,7 @@ void Scene::findHoverTarget(PlayerIndex idx) {
         I64 crtCandidate = std::get<0>(_sceneSelectionCandidates.front());
         SceneGraphNode* target = _sceneGraph->findNode(crtCandidate);
 
-        const std::shared_ptr<SceneNode>& node = target->getNode();
+        const SceneNode_ptr& node = target->getNode();
         if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
             if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::SUBMESH) {
                 crtCandidate = target->getParent()->getGUID();

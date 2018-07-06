@@ -375,13 +375,13 @@ bool WarScene::load(const stringImpl& name) {
     const Material_ptr& matInstance = cylinder[0]->getChild(0).get<RenderingComponent>()->getMaterialInstance();
     matInstance->setShininess(200);
 
-    std::shared_ptr<SceneNode> cylinderMeshNW = cylinder[1]->getNode();
-    std::shared_ptr<SceneNode> cylinderMeshNE = cylinder[2]->getNode();
-    std::shared_ptr<SceneNode> cylinderMeshSW = cylinder[3]->getNode();
-    std::shared_ptr<SceneNode> cylinderMeshSE = cylinder[4]->getNode();
+    SceneNode_ptr cylinderMeshNW = cylinder[1]->getNode();
+    SceneNode_ptr cylinderMeshNE = cylinder[2]->getNode();
+    SceneNode_ptr cylinderMeshSW = cylinder[3]->getNode();
+    SceneNode_ptr cylinderMeshSE = cylinder[4]->getNode();
 
     stringImpl currentName;
-    std::shared_ptr<SceneNode> currentMesh;
+    SceneNode_ptr currentMesh;
     SceneGraphNode* baseNode;
 
     SceneGraphNodeDescriptor sceneryNodeDescriptor;
@@ -489,7 +489,7 @@ bool WarScene::load(const stringImpl& name) {
     const Material_ptr& mat = flag->getChild(0).getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
     flag->setActive(false);
-    std::shared_ptr<SceneNode> flagNode = flag->getNode();
+    SceneNode_ptr flagNode = flag->getNode();
 
     sceneryNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     sceneryNodeDescriptor._node = flagNode;

@@ -265,13 +265,13 @@ bool WarScene::addUnits() {
     SceneGraphNode* animalNode(_sceneGraph->findNode("Soldier2"));
     SceneGraphNode* heavyNode(_sceneGraph->findNode("Soldier3"));
 
-    std::shared_ptr<SceneNode> lightNodeMesh = lightNode->getNode();
-    std::shared_ptr<SceneNode> animalNodeMesh = animalNode->getNode();
-    std::shared_ptr<SceneNode> heavyNodeMesh = heavyNode->getNode();
+    SceneNode_ptr lightNodeMesh = lightNode->getNode();
+    SceneNode_ptr animalNodeMesh = animalNode->getNode();
+    SceneNode_ptrheavyNodeMesh = heavyNode->getNode();
     assert(lightNodeMesh && animalNodeMesh && heavyNodeMesh);
 
     AIEntity* aiSoldier = nullptr;
-    std::shared_ptr<SceneNode> currentMesh;
+    SceneNode_ptr currentMesh;
 
     vec3<F32> currentScale;
     stringImpl currentName;

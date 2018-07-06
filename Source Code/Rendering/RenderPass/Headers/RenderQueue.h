@@ -40,6 +40,7 @@ class SceneNode;
 struct RenderSubPassCmd;
 
 FWD_DECLARE_MANAGED_CLASS(Material);
+FWD_DECLARE_MANAGED_CLASS(SceneNode);
 
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue {
@@ -75,8 +76,7 @@ class RenderQueue {
   private:
     RenderingOrder::List getSortOrder(RenderBinType rbType);
 
-    RenderBin* getBinForNode(const std::shared_ptr<SceneNode>& nodeType,
-                             const Material_ptr& matInstance);
+    RenderBin* getBinForNode(const SceneNode_ptr& nodeType, const Material_ptr& matInstance);
 
     RenderBin* getOrCreateBin(RenderBinType rbType);
 

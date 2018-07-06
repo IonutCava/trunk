@@ -43,11 +43,11 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
 
-    Object3D_ptr node = parentSGN.getNode<Object3D>();
+    const Object3D_ptr& node = parentSGN.getNode<Object3D>();
     Object3D::ObjectType type = node->getObjectType();
 
     bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
-    bool nodeSkinned = parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
+    bool nodeSkinned = node->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
     assert(!_materialInstance || (_materialInstance && !_materialInstance->name().empty()));
 
@@ -167,8 +167,7 @@ std::unique_ptr<RenderPackage>& RenderingComponent::renderData(const RenderStage
     if (!pkg) {
         pkg = std::make_unique<RenderPackage>(_context, true);
 
-        Object3D_ptr node = _parentSGN.getNode<Object3D>();
-        pkg->isOcclusionCullable(node->getType() != SceneNodeType::TYPE_SKY);
+        pkg->isOcclusionCullable(_parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
     }
     return pkg;
 }
