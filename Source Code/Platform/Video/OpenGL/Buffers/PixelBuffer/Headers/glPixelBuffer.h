@@ -46,7 +46,7 @@ class glPixelBuffer : public PixelBuffer {
     friend class Attorney::GLAPIPixelBuffer;
 
    public:
-    explicit glPixelBuffer(GFXDevice& context, PBType type);
+    explicit glPixelBuffer(GFXDevice& context, PBType type, const char* name = nullptr);
     ~glPixelBuffer();
 
     bool create(GLushort width, GLushort height, GLushort depth = 0,

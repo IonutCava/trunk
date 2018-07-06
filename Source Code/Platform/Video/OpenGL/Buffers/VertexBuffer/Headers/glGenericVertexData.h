@@ -81,7 +81,7 @@ class glGenericVertexData : public GenericVertexData {
     };
 
    public:
-    glGenericVertexData(GFXDevice& context, const U32 ringBufferLength);
+    glGenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name = nullptr);
     ~glGenericVertexData();
 
     void create(U8 numBuffers = 1, U8 numQueries = 1) override;

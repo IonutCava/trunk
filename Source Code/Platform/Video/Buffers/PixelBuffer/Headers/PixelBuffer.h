@@ -42,9 +42,10 @@ namespace Divide {
 
 class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
    public:
-       PixelBuffer(GFXDevice& context, PBType type)
+       PixelBuffer(GFXDevice& context, PBType type, const char* name = nullptr)
          : GraphicsResource(context, GraphicsResource::Type::PIXEL_BUFFER, getGUID()),
            _pbtype(type),
+           _name(name),
            _textureID(0),
            _width(0),
            _height(0),
@@ -82,6 +83,8 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
     U16 _width, _height, _depth;
     U32 _pixelBufferHandle;
     TextureType _textureType;
+
+    const char* _name;
 };
 
 };  // namespace Divide

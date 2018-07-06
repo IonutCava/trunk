@@ -40,7 +40,7 @@ namespace Divide {
 class d3dGenericVertexData : public GenericVertexData {
     USE_CUSTOM_ALLOCATOR
    public:
-    d3dGenericVertexData(GFXDevice& context, const U32 ringBufferLength);
+    d3dGenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name = nullptr);
 
     ~d3dGenericVertexData();
 

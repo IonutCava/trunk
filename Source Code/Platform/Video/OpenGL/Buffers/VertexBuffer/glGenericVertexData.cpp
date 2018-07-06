@@ -10,7 +10,7 @@ namespace Divide {
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glGenericVertexData, 0, 0)
 
-glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength)
+glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name)
     : GenericVertexData(context, ringBufferLength),
       _prevResult(nullptr)
 {
@@ -185,7 +185,8 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
             _indexBufferSize,
             _indexBufferUsage,
             _indexBuffer,
-            indices.data);
+            indices.data,
+            _name != nullptr ? (_name + stringImpl("_index")).c_str() : _name);
     } else {
         GLUtil::freeBuffer(_indexBuffer);
     }
@@ -239,7 +240,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
     params._frequency = updateFrequency;
     params._ringSizeFactor = useRingBuffer ? queueLength() : 1;
     params._data = data;
-
+    params._name = _name;
     glGenericBuffer* tempBuffer = MemoryManager_NEW glGenericBuffer(_context, params);
     _bufferObjects[buffer] = tempBuffer;
 

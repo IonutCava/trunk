@@ -313,8 +313,8 @@ public:  // Accessors and Mutators
 public:
     IMPrimitive*       newIMP() const;
     VertexBuffer*      newVB() const;
-    PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D) const;
-    GenericVertexData* newGVD(const U32 ringBufferLength) const;
+    PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D, const char* name = nullptr) const;
+    GenericVertexData* newGVD(const U32 ringBufferLength, const char* name = nullptr) const;
     Texture*           newTexture(size_t descriptorHash,
                                   const stringImpl& name,
                                   const stringImpl& resourceName,

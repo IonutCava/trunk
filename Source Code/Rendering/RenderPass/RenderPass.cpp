@@ -63,7 +63,7 @@ namespace {
     
 };
 
-RenderPass::BufferData::BufferData(GFXDevice& context)
+RenderPass::BufferData::BufferData(GFXDevice& context, I32 index)
   : _lastCommandCount(0)
 {
     ShaderBufferDescriptor bufferDescriptor;
@@ -72,12 +72,13 @@ RenderPass::BufferData::BufferData(GFXDevice& context)
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._unbound = true;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-
+    bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%d", index).c_str();
     // This do not need to be persistently mapped as, hopefully, they will only be update once per frame
     // Each pass should have its own set of buffers (shadows, reflection, etc)
     _renderData = context.newSB(bufferDescriptor);
 
     bufferDescriptor._primitiveSizeInBytes = sizeof(IndirectDrawCommand);
+    bufferDescriptor._name = Util::StringFormat("CMD_DATA_%d", index).c_str();
     _cmdBuffer = context.newSB(bufferDescriptor);
     _cmdBuffer->addAtomicCounter(3);
 }
@@ -111,7 +112,7 @@ RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferInde
         return *buffer;
     }
 
-    buffer = std::make_shared<BufferData>(_context);
+    buffer = std::make_shared<BufferData>(_context, bufferIndex);
     return *buffer;
 }
 

@@ -78,6 +78,8 @@ void LightPool::init() {
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.
     for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
+        bufferDescriptor._name = Util::StringFormat("LIGHT_BUFFER_%s", 
+                                                    TypeUtil::renderStageToString(static_cast<RenderStage>(i))).c_str();
         _lightShaderBuffer[i] = _context.newSB(bufferDescriptor);
     }
 
@@ -86,6 +88,7 @@ void LightPool::init() {
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
     bufferDescriptor._primitiveCount = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
     bufferDescriptor._primitiveSizeInBytes = sizeof(Light::ShadowProperties);
+    bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
     _shadowBuffer = _context.newSB(bufferDescriptor);
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");

@@ -39,7 +39,7 @@ namespace Divide {
 
 class d3dPixelBuffer : public PixelBuffer {
    public:
-    explicit d3dPixelBuffer(GFXDevice& context, PBType type);
+    explicit d3dPixelBuffer(GFXDevice& context, PBType type, const char* name = nullptr);
     ~d3dPixelBuffer();
 
     bool create(U16 width, U16 height, U16 depth = 0,

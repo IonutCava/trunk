@@ -92,6 +92,7 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
     _commandOrdering.push_back(entry);
 
     _drawCommands.push_back(cmd);
+    SetBit(_dirtyFlags, CommandType::DRAW);
 }
 
 const Pipeline* RenderPackage::pipeline(I32 index) const {
@@ -112,6 +113,7 @@ void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline)
     _commandOrdering.push_back(entry);
 
     _pipelines.push_back(pipeline);
+    SetBit(_dirtyFlags, CommandType::PIPELINE);
 }
 
 const FrustumClipPlanes& RenderPackage::clipPlanes(I32 index) const {
@@ -132,6 +134,7 @@ void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPl
     _commandOrdering.push_back(entry);
 
     _clipPlanes.push_back(clipPlanes);
+    SetBit(_dirtyFlags, CommandType::CLIP_PLANES);
 }
 
 const PushConstants& RenderPackage::pushConstants(I32 index) const {
@@ -152,6 +155,8 @@ void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand&
     _commandOrdering.push_back(entry);
 
     _pushConstants.push_back(pushConstants);
+
+    SetBit(_dirtyFlags, CommandType::PUSH_CONSTANTS);
 }
 
 const DescriptorSet_ptr& RenderPackage::descriptorSet(I32 index) const {
@@ -180,6 +185,7 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
     _commandOrdering.push_back(entry);
     assert(descriptorSets._set != nullptr);
     _descriptorSets.push_back(descriptorSets);
+    SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
 }
 
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
@@ -245,7 +251,7 @@ const GFX::CommandBuffer& RenderPackage::commands() const {
 GFX::CommandBuffer& RenderPackage::buildAndGetCommandBuffer(bool cacheMiss) {
     cacheMiss = false;
     //ToDo: Try to rebuild only the affected bits and pieces. That's why we have multiple dirty flags -Ionut
-    if (_commands == nullptr || _dirtyFlags != 0) {
+    if (true || _commands == nullptr || _dirtyFlags != 0) {
         cacheMiss = true;
 
         if (_commands == nullptr) {

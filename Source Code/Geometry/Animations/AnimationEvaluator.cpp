@@ -105,6 +105,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._unbound = useUnboundBuffer;
     bufferDescriptor._initialData = animationData.data();
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
+    bufferDescriptor._name = "BONE_BUFFER";
 
     _boneTransformBuffer = context.newSB(bufferDescriptor);
 

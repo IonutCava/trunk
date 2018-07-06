@@ -66,7 +66,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._unbound = true;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-
+    bufferDescriptor._name = "TERRAIN_RENDER_NODES";
     _shaderData = _context.newSB(bufferDescriptor);
     sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
                                                         vec2<U32>(0, Terrain::MAX_RENDER_NODES),

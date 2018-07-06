@@ -52,7 +52,7 @@ enum class RenderStage : U8;
 class RenderPass : private NonCopyable {
    public:
        struct BufferData {
-           BufferData(GFXDevice& context);
+           BufferData(GFXDevice& context, I32 index);
            ~BufferData();
 
            ShaderBuffer* _renderData;

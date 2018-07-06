@@ -17,7 +17,7 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     bufferDescriptor._unbound = false;
     bufferDescriptor._initialData = &_bufferData;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-
+    bufferDescriptor._name = "SCENE_SHADER_DATA";
     _sceneShaderData = _context.newSB(bufferDescriptor);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
     shadowingSettings(0.0000002f, 0.0002f, 200.0f, 350.0f);

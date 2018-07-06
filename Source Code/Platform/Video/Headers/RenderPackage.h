@@ -56,7 +56,7 @@ public:
         COUNT
     };
 
-private:
+public:
     enum class CommandType : U8 {
         NONE = 0,
         DRAW = toBit(1),
@@ -161,17 +161,13 @@ namespace Attorney {
             return pkg.descriptorSet(index);
         }
 
-        // Return true if the command buffer was reconstructed
-        static bool buildCommandBuffer(RenderPackage& pkg) {
-            bool cacheMiss = false;
-            pkg.buildAndGetCommandBuffer(cacheMiss);
-            return cacheMiss;
-        }
-
         static GFX::DrawCommand& drawCommand(RenderPackage& pkg, I32 cmdIdx) {
             return pkg.drawCommand(cmdIdx);
         }
 
+        static void setDirty(RenderPackage& pkg, RenderPackage::CommandType dirtyCmd) {
+            SetBit(pkg._dirtyFlags, to_U32(dirtyCmd));
+        }
 
         friend class Divide::RenderingComponent;
     };

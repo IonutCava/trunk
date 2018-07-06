@@ -281,6 +281,7 @@ void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     if (set->_shaderBuffers != _shaderBuffersCache) {
         set->_shaderBuffers = _shaderBuffersCache;
     }
+    Attorney::RenderPackageRenderingComponent::setDirty(*pkg, RenderPackage::CommandType::DESCRIPTOR_SETS);
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
@@ -513,6 +514,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
                     drawCmd._lodIndex = _lodLevel;
                 }
             }
+            Attorney::RenderPackageRenderingComponent::setDirty(*pkg, RenderPackage::CommandType::DRAW);
             pkg->isRenderable(pkg->drawCommandCount() > 0);
         }
     }

@@ -35,7 +35,7 @@ TiledForwardShadingRenderer::TiledForwardShadingRenderer(PlatformContext& contex
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._unbound = true;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-
+    bufferDescriptor._name = "PER_TILE_LIGHT_INDEX";
     _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }

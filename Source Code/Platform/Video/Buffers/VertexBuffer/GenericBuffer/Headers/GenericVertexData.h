@@ -58,7 +58,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
      };
 
    public:
-    GenericVertexData(GFXDevice& context, const U32 ringBufferLength);
+    GenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name = nullptr);
     virtual ~GenericVertexData();
 
     virtual void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) = 0;
@@ -101,6 +101,8 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     vector<std::pair<U32 /*buffer*/, U32/*bind point*/>> _feedbackBuffers;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
+
+    const char* _name;
 };
 
 };  // namespace Divide

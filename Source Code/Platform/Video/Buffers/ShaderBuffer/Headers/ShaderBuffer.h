@@ -56,6 +56,7 @@ struct ShaderBufferDescriptor {
     bool _unbound;
     BufferUpdateFrequency _updateFrequency;
     bufferPtr _initialData;
+    stringImpl _name;
 };
 
 class ShaderProgram;
@@ -120,6 +121,8 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
     const bool _unbound;
     const BufferUpdateFrequency _frequency;
+
+    const char* _name;
 };
 
 

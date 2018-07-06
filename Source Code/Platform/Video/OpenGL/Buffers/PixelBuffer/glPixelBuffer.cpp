@@ -33,7 +33,7 @@ size_t glPixelBuffer::sizeOf(GLenum dataType) const {
     return 0;
 }
 
-glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(context, type) {
+glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type, const char* name) : PixelBuffer(context, type, name) {
     _bufferSize = 0;
     _dataSizeBytes = 1;
 
@@ -183,7 +183,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
         GLUtil::freeBuffer(_pixelBufferHandle);
     }
 
-    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW, _pixelBufferHandle, NULL);
+    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW, _pixelBufferHandle, NULL, _name);
 
     return _pixelBufferHandle != 0 && _textureID != 0;
 }

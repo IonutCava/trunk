@@ -3,8 +3,8 @@
 #include "Headers/d3dPixelBuffer.h"
 
 namespace Divide {
-d3dPixelBuffer::d3dPixelBuffer(GFXDevice& context, PBType type)
-    : PixelBuffer(context, type)
+d3dPixelBuffer::d3dPixelBuffer(GFXDevice& context, PBType type, const char* name)
+    : PixelBuffer(context, type, name)
 {
 }
 

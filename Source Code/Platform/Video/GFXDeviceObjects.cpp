@@ -122,7 +122,7 @@ VertexBuffer* GFXDevice::newVB() const {
     return temp;
 }
 
-PixelBuffer* GFXDevice::newPB(PBType type) const {
+PixelBuffer* GFXDevice::newPB(PBType type, const char* name) const {
     bool locked = _gpuObjectArenaMutex.try_lock();
 
     PixelBuffer* temp = nullptr;
@@ -131,10 +131,10 @@ PixelBuffer* GFXDevice::newPB(PBType type) const {
         case RenderAPI::OpenGLES: {
             /// Create and return a new pixel buffer using the requested format.
             /// The callee is responsible for it's deletion!
-            temp = new (_gpuObjectArena) glPixelBuffer(refThis(this), type);
+            temp = new (_gpuObjectArena) glPixelBuffer(refThis(this), type, name);
         } break;
         case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dPixelBuffer(refThis(this), type);
+            temp = new (_gpuObjectArena) d3dPixelBuffer(refThis(this), type, name);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -152,7 +152,7 @@ PixelBuffer* GFXDevice::newPB(PBType type) const {
     return temp;
 }
 
-GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength) const {
+GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* name) const {
     bool locked = _gpuObjectArenaMutex.try_lock();
 
     GenericVertexData* temp = nullptr;
@@ -161,10 +161,10 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength) const {
         case RenderAPI::OpenGLES: {
             /// Create and return a new generic vertex data object
             /// The callee is responsible for it's deletion!
-            temp = new (_gpuObjectArena) glGenericVertexData(refThis(this), ringBufferLength);
+            temp = new (_gpuObjectArena) glGenericVertexData(refThis(this), ringBufferLength, name);
         } break;
         case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dGenericVertexData(refThis(this), ringBufferLength);
+            temp = new (_gpuObjectArena) d3dGenericVertexData(refThis(this), ringBufferLength, name);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
