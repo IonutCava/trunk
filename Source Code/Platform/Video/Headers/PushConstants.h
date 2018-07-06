@@ -32,7 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PUSH_CONSTANTS_H_
 #define _PUSH_CONSTANTS_H_
 
-#include "PushConstantPool.h"
+#include "PushConstant.h"
 
 namespace Divide {
 class PushConstants {
@@ -52,8 +52,7 @@ class PushConstants {
                     GFX::PushConstantType type,
                     const T& value,
                     bool flag = false) {
-        GFX::PushConstant*& constant = getCleared(_ID_RT(binding.c_str()));
-        constant = allocatePushConstant(binding, type, vectorImpl<T>{ value }, flag);
+        set(binding, type, vectorImpl<T>{value}, flag);
     }
 
     template<typename T>
@@ -61,8 +60,10 @@ class PushConstants {
                     GFX::PushConstantType type,
                     const vectorImpl<T>& values,
                     bool flag = false) {
-        GFX::PushConstant*& constant = getCleared(_ID_RT(binding.c_str()));
-        constant = allocatePushConstant(binding, type, values, flag);
+        auto ret = hashAlg::emplace(_data, _ID_RT(binding.c_str()), binding, type, values, flag);
+        if (!ret.second) {
+            ret.first->second.assign({ binding, type, values, flag });
+        }
     }
 
     template<typename T, size_t N>
@@ -71,27 +72,22 @@ class PushConstants {
                     const std::array<T, N>& values,
                     bool flag = false) {
 
-        GFX::PushConstant*& constant = getCleared(_ID_RT(binding.c_str()));
-        constant = allocatePushConstant(binding, type, values, flag);
+        auto ret = hashAlg::emplace(_data, _ID_RT(binding.c_str()), binding, type, values, flag);
+        if (!ret.second) {
+            ret.first->second.assign({ binding, type, values, flag });
+        }
     }
 
     void clear();
 
     inline bool empty() const { return _data.empty(); }
 
-    inline hashMapImpl<U64, GFX::PushConstant*>& data() { return _data; }
+    inline hashMapImpl<U64, GFX::PushConstant>& data() { return _data; }
 
-    inline const hashMapImpl<U64, GFX::PushConstant*>& data() const { return _data; }
+    inline const hashMapImpl<U64, GFX::PushConstant>& data() const { return _data; }
 
-    protected:
-    inline GFX::PushConstant*& getCleared(U64 nameHash) {
-        GFX::PushConstant*& constant = _data[nameHash];
-        GFX::deallocatePushConstant(constant);
-        return constant;
-    }
-
-    protected:
-    hashMapImpl<U64, GFX::PushConstant*> _data;
+  protected:
+    hashMapImpl<U64, GFX::PushConstant> _data;
 };
 
 }; //namespace Divide

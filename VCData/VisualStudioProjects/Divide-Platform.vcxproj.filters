@@ -389,9 +389,6 @@
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWatcherManager.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstantPool.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstant.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
@@ -694,9 +691,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\File\FileWatcherManager.cpp">
       <Filter>File</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\PushConstantPool.cpp">
-      <Filter>Video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\PushConstants.cpp">
       <Filter>Video</Filter>
@@ -1202,9 +1196,6 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\IMGUI.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
-    <None Include="..\..\Source Code\Platform\Video\Headers\PushConstantPool.inl">
-      <Filter>Video\Headers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

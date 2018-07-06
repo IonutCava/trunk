@@ -96,6 +96,7 @@ bool clearCache() {
             return false;
         }
     }
+    return true;
 }
 
 bool clearCache(CacheType type) {

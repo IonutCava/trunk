@@ -249,11 +249,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     U32 cmdCount = bufferData._lastCommandCount;
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
-    GFX::PushConstant constant;
-    constant._type = GFX::PushConstantType::UINT;
-    constant._binding = "dvd_numEntities";
-    constant._values = { cmdCount };
-    sendPushConstantsCmd._constants = PushConstants(constant);
+    sendPushConstantsCmd._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
     GFX::SendPushConstants(bufferInOut, sendPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd;

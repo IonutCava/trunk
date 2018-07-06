@@ -84,11 +84,32 @@ namespace GFX {
                      const vectorImpl<T>& values,
                      bool flag = false)
             : _binding(binding),
-            _type(type),
-            _values(std::cbegin(values), std::cend(values)),
-            _flag(flag),
-            _transpose(false)
+              _type(type),
+              _flag(flag),
+              _transpose(false)
         {
+            _buffer.resize(values.size() * (sizeof(T)));
+            if (!_buffer.empty()) {
+                std::memcpy(_buffer.data(), values.data(), _buffer.size());
+            }
+        }
+
+        template<>
+        PushConstant(const stringImplFast& binding,
+                     PushConstantType type,
+                     const vectorImpl<bool>& values,
+                     bool flag)
+            : _binding(binding),
+              _type(type),
+              _flag(flag),
+              _transpose(false)
+        {
+            _buffer.reserve(values.size());
+            if (!_buffer.empty()) {
+                std::transform(std::cbegin(values), std::cend(values),
+                               std::back_inserter(_buffer),
+                               [](bool e) {return to_byte(e ? 1 : 0);});
+            }
         }
 
         template<typename T, size_t N>
@@ -98,10 +119,31 @@ namespace GFX {
                      bool flag = false)
             : _binding(binding),
               _type(type),
-              _values(std::cbegin(values), std::cend(values)),
               _flag(flag),
               _transpose(false)
         {
+            _buffer.resize(values.size() * (sizeof(T)));
+            if (!_buffer.empty()) {
+                std::memcpy(_buffer.data(), values.data(), _buffer.size());
+            }
+        }
+
+        template<size_t N>
+        PushConstant(const stringImplFast& binding,
+                     PushConstantType type,
+                     const std::array<bool, N>& values,
+                     bool flag)
+            : _binding(binding),
+              _type(type),
+              _flag(flag),
+              _transpose(false)
+        {
+            _buffer.reserve(N);
+            if (!_buffer.empty()) {
+                std::transform(std::cbegin(values), std::cend(values),
+                               std::back_inserter(_buffer),
+                               [](bool e) {return to_byte(e ? 1 : 0);});
+            }
         }
 
         PushConstant(const PushConstant& other);
@@ -112,10 +154,25 @@ namespace GFX {
 
         void clear();
 
+
+        inline bool operator==(const PushConstant& rhs) const {
+            return _binding == rhs._binding &&
+                   _type == rhs._type &&
+                   _flag == rhs._flag &&
+                   _buffer == rhs._buffer;
+        }
+
+        inline bool operator!=(const PushConstant& rhs) const {
+            return _binding != rhs._binding ||
+                   _type != rhs._type ||
+                   _flag != rhs._flag ||
+                   _buffer != rhs._buffer;
+        }
+
         //I32              _binding = -1;
         stringImplFast   _binding;
         PushConstantType _type = PushConstantType::COUNT;
-        vectorImpl<AnyParam> _values;
+        vectorImpl<char> _buffer;
         union {
             bool _flag = false;
             bool _transpose;

@@ -101,8 +101,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Cache uniform/attribute locations for shader programs
     I32 Binding(const char* name) override;
 
-    inline void UploadPushConstant(const GFX::PushConstant& constant);
-    inline void UploadPushConstants(const PushConstants& constants);
+    void UploadPushConstant(const GFX::PushConstant& constant);
+    void UploadPushConstants(const PushConstants& constants);
 
    protected:
     glShaderProgramLoadInfo buildLoadInfo();
@@ -138,10 +138,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void reuploadUniforms();
 
     I32 cachedValueUpdate(const GFX::PushConstant& constant);
-
-    inline void Uniform(I32 binding, GFX::PushConstantType type, const vectorImpl<AnyParam>& values, bool flag) const;
-
-    inline bool comparePushConstants(const GFX::PushConstant& lhs, const GFX::PushConstant& rhs) const;
+    void Uniform(I32 binding, GFX::PushConstantType type, const vectorImpl<char>& values, bool flag) const;
 
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
@@ -153,6 +150,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static bool unbind();
     /// Returns true if the shader is currently active
     bool isBound() const;
+
+    template<typename T_out, size_t T_out_count, typename T_in>
+    const T_out* castData(const vectorImpl<char>& values) const;
+
    private:
 
     ShaderVarMap _shaderVarLocation;
