@@ -71,7 +71,7 @@ class WarScene : public Scene {
     bool addUnits();
     bool resetUnits();
     void checkGameCompletion();
-    void weaponCollision(SceneGraphNode_cptr collider);
+    void weaponCollision(const PhysicsComponent& collider);
     AI::AIEntity* findAI(SceneGraphNode_cptr node);
 
    private:

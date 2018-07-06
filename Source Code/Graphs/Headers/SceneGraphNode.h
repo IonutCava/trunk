@@ -146,10 +146,6 @@ class SceneGraphNode : public GUIDWrapper,
                    vectorImpl<I64>& selectionHits,
                    bool recursive = true) const;
 
-    inline void onCollisionCbk(const DELEGATE_CBK<void, SceneGraphNode_cptr>& cbk) {
-        _collisionCbk = cbk;
-    }
-
     /// Selection helper functions
     void setSelectionFlag(SelectionFlag flag);
     inline SelectionFlag getSelectionFlag() const { return _selectionFlag; }
@@ -212,7 +208,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     inline SceneGraphNode& getChild(U32 idx) {
         ReadLock r_lock(_childLock);
-        assert(idx <  getChildCount());
+        assert(idx <  getChildCountLocked());
         const SceneGraphNode_ptr& child = _children.at(idx);
         assert(child);
         return *child;
@@ -220,14 +216,19 @@ class SceneGraphNode : public GUIDWrapper,
 
     inline const SceneGraphNode& getChild(U32 idx) const {
         ReadLock r_lock(_childLock);
-        assert(idx <  getChildCount());
+        assert(idx <  getChildCountLocked());
         const SceneGraphNode_ptr& child = _children.at(idx);
         assert(child);
         return *child;
     }
 
     inline U32 getChildCount() const {
-        return _childCount;
+        ReadLock r_lock(_childLock);
+        return getChildCountLocked();
+    }
+
+    inline U32 getChildCountLocked() const {
+        return to_U32(_children.size());
     }
 
     inline bool getFlag(UpdateFlag flag) const {
@@ -310,25 +311,25 @@ class SceneGraphNode : public GUIDWrapper,
 
     void getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList);
 
-   protected:
-    friend class Octree;
-    void onCollision(SceneGraphNode_cwptr collider);
+    void processDeleteQueue();
 
    private:
+    void addToDeleteQueue(U32 idx);
+
     void onTransform();
-    bool filterCollission(const SceneGraphNode& node);
+
     inline void setName(const stringImpl& name) { 
         _name = name;
     }
 
-    void setComponent(SGNComponent::ComponentType type, SGNComponent* component);
+    void setComponent(SGNComponent::ComponentType type, SGNComponent*&& component);
 
     inline U32 getComponentIdx(SGNComponent::ComponentType type) const {
         return powerOfTwo(to_U32(type)) - 1;
     }
 
     inline SGNComponent* getComponent(SGNComponent::ComponentType type) const {
-        return _components[getComponentIdx(type)];
+        return _components[getComponentIdx(type)].get();
     }
    private:
     friend class SGNRelationshipCache;
@@ -342,13 +343,11 @@ class SceneGraphNode : public GUIDWrapper,
     SceneGraph& _sceneGraph;
 
     mutable I8 _frustPlaneCache;
-    D64 _updateTimer;
     U64 _elapsedTimeUS;
     stringImpl _name;
     SceneNode_ptr _node;
     SceneGraphNode_wptr _parent;
     vectorImpl<SceneGraphNode_ptr> _children;
-    std::atomic_uint _childCount;
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
     std::atomic<bool> _visibilityLocked;
@@ -361,10 +360,11 @@ class SceneGraphNode : public GUIDWrapper,
 
     StateTracker<bool> _trackedBools;
 
-    DELEGATE_CBK<void, SceneGraphNode_cptr> _collisionCbk;
-
-    std::array<SGNComponent*, to_base(SGNComponent::ComponentType::COUNT)> _components;
+    std::array<std::unique_ptr<SGNComponent>, to_base(SGNComponent::ComponentType::COUNT)> _components;
     SGNRelationshipCache _relationshipCache;
+
+    mutable SharedLock _childrenDeletionLock;
+    vectorImpl<vectorAlg::vecSize> _childrenPendingDeletion;
 };
 
 template <>

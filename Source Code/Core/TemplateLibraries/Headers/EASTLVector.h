@@ -39,11 +39,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace vectorAlg = eastl;
 
-template <typename Type>
-using vectorImplFast = vectorAlg::vector<Type, dvd_allocator<Type>>;
+template <typename Type, typename Allocator = vectorAlg::allocator<Type>>
+using vectorImpl = vectorAlg::vector<Type, Allocator>;
 
 template <typename Type>
-using vectorImpl = vectorAlg::vector<Type>;
+using vectorImplFast = vectorImpl<Type, dvd_allocator<Type>>;
 
 namespace eastl {
     typedef eastl_size_t vecSize;

@@ -196,7 +196,8 @@ void CommandBuffer::clean() {
 
     // Remove redundant pipeline changes
     vectorAlg::vecSize size = _data.size();
-    vectorImplFast<vectorAlg::vecSize> redundantEntries;
+
+    vectorImpl<vectorAlg::vecSize> redundantEntries;
     for (vectorAlg::vecSize i = 1; i < size; ++i) {
         if (_data[i - 1]->_type == _data[i]->_type && _data[i]->_type == CommandType::BIND_PIPELINE) {
             redundantEntries.push_back(i - 1);

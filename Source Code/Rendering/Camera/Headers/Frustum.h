@@ -79,6 +79,19 @@ class Frustum {
     FrustCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const;
     FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const;
 
+    inline FrustCollision ContainsPoint(const vec3<F32>& point) const {
+        I8 lastPlaneCache = -1;
+        return ContainsPoint(point, lastPlaneCache);
+    }
+    inline FrustCollision ContainsBoundingBox(const BoundingBox& bbox) const {
+        I8 lastPlaneCache = -1;
+        return ContainsBoundingBox(bbox, lastPlaneCache);
+    }
+    inline FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius) const {
+        I8 lastPlaneCache = -1;
+        return ContainsSphere(center, radius, lastPlaneCache);
+    }
+
     // Get the frustum corners in WorldSpace. cornerWS must be a vector with at
     // least 8 allocated slots
     void getCornersWorldSpace(vectorImpl<vec3<F32> >& cornersWS);

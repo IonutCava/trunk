@@ -25,7 +25,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     : GUIDWrapper(),
       _frustPlaneCache(-1),
       _sceneGraph(sceneGraph),
-      _updateTimer(Time::ElapsedMilliseconds()),
       _elapsedTimeUS(0ULL),
       _node(node),
       _active(true),
@@ -36,15 +35,13 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _relationshipCache(*this)
 {
     assert(_node != nullptr);
-    _children.resize(INITIAL_CHILD_COUNT);
-    _childCount = 0;
+    _children.reserve(INITIAL_CHILD_COUNT);
 
     for (std::atomic_bool& flag : _updateFlags) {
         flag = false;
     }
 
     setName(name);
-    _components.fill(nullptr);
 
     if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::ANIMATION))) {
         setComponent(SGNComponent::ComponentType::ANIMATION, new AnimationComponent(*this));
@@ -115,14 +112,9 @@ SceneGraphNode::~SceneGraphNode()
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
         _node.reset();
     }
-    
-
-    for (SGNComponent* component : _components) {
-        MemoryManager::DELETE(component);
-    }
 }
 
-void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
+void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent*&& component) {
     // We have a component registered for the specified slot
     if (getComponent(type) != nullptr) {
         if (component != nullptr) {
@@ -134,7 +126,7 @@ void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent
         // We are adding a new component type
     }
 
-    MemoryManager::SAFE_UPDATE(_components[getComponentIdx(type)], component);
+    _components[getComponentIdx(type)] = to_unique(std::move(component));
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -174,14 +166,9 @@ SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
     Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *node);
     
     WriteLock w_lock(_childLock);
-    if (_childCount == _children.size()) {
-        _children.push_back(node);
-    } else {
-        _children[_childCount] = node;
-    }
-    _childCount = _childCount + 1;
+    _children.push_back(node);
 
-    return node;
+    return _children.back();
 }
 
 /// Add a new SceneGraphNode to the current node's child list based on a SceneNode
@@ -232,25 +219,17 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
         }
     });
 
-    bool stopSearching = false;
-    UpgradableReadLock ur_lock(_childLock);
-    while (!stopSearching) {
-        stopSearching = true;
-        for (U32 i = 0; i < _childCount; ++i) {
-            if (_children[i]->getNode()->getType() == nodeType) {
-                UpgradeToWriteLock w_lock(ur_lock);
-                _children[i].reset();
-                _childCount = _childCount - 1;
-                std::swap(_children[_childCount], _children[i]);
-                stopSearching = false;
+    ReadLock r_lock(_childLock);
+    for (U32 i = 0; i < getChildCountLocked(); ++i) {
+        if (_children[i]->getNode()->getType() == nodeType) {
+            {
+                addToDeleteQueue(i);
                 ++removalCount;
-                break;
             }
         }
     }
 
     if (removalCount > 0) {
-        invalidateRelationshipCache();
         return true;
     }
 
@@ -258,21 +237,16 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
 }
 
 bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
-    // Beware. Removing a node, does no delete it!
-    // Call delete on the SceneGraphNode's pointer to do that
 
-    UpgradableReadLock ur_lock(_childLock);
-    
-    U32 childCount = getChildCount();
+    I64 targetGUID = node.getGUID();
+    ReadLock r_lock(_childLock);
+    U32 childCount = getChildCountLocked();
     for (U32 i = 0; i < childCount; ++i) {
-        if (_children[i]->getGUID() == node.getGUID()) {
+        if (_children[i]->getGUID() == targetGUID) {
             {
-                UpgradeToWriteLock w_lock(ur_lock);
-                _children[i].reset();
-                _childCount = _childCount - 1;
-                std::swap(_children[_childCount], _children[i]);
+                addToDeleteQueue(i);
             }
-            invalidateRelationshipCache();
+
             return true;
         }
     }
@@ -288,7 +262,7 @@ bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
 }
 
 void SceneGraphNode::postLoad() {
-    for (SGNComponent* component : _components) {
+    for (auto& component : _components) {
         if (component != nullptr) {
             component->postLoad();
         }
@@ -423,7 +397,7 @@ void SceneGraphNode::lockVisibility(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     if (_active != state) {
         _active = state;
-        for (SGNComponent* component : _components) {
+        for (auto& component : _components) {
             if (component != nullptr) {
                 component->setActive(state);
             }
@@ -451,6 +425,32 @@ void SceneGraphNode::sgnUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     Attorney::SceneNodeSceneGraph::sgnUpdate(*_node, deltaTimeUS, *this, sceneState);
 }
 
+void SceneGraphNode::processDeleteQueue() {
+    forEachChild([](SceneGraphNode& child) {
+        child.processDeleteQueue();
+    });
+
+    // See if we have any children to delete
+    UpgradableReadLock ur_lock(_childrenDeletionLock);
+    if (!_childrenPendingDeletion.empty()) {
+        WriteLock w_lock(_childLock);
+        _children = erase_indices(_children, _childrenPendingDeletion);
+
+        UpgradeToWriteLock uw_lock(ur_lock);
+        _childrenPendingDeletion.clear();
+    }
+}
+
+void SceneGraphNode::addToDeleteQueue(U32 idx) {
+    WriteLock w_lock(_childrenDeletionLock);
+    if (std::find(std::cbegin(_childrenPendingDeletion),
+                  std::cend(_childrenPendingDeletion),
+                  idx) == std::cend(_childrenPendingDeletion))
+    {
+        _childrenPendingDeletion.push_back(idx);
+    }
+}
+
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     assert(_node->getState() == ResourceState::RES_LOADED);
@@ -459,7 +459,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     _elapsedTimeUS += deltaTimeUS;
 
     // update all of the internal components (animation, physics, etc)
-    for (SGNComponent* component : _components) {
+    for (auto& component : _components) {
         if (component != nullptr) {
             component->update(deltaTimeUS);
          }
@@ -486,7 +486,7 @@ void SceneGraphNode::onTransform() {
 
 bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
                                    const RenderStagePass& renderStagePass) {
-    for (SGNComponent* component : _components) {
+    for (auto& component : _components) {
         if (component && !component->onRender(sceneRenderState, renderStagePass)) {
             return false;
         }
@@ -530,21 +530,6 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) {
     }
 }
 
-bool SceneGraphNode::filterCollission(const SceneGraphNode& node) {
-    // filter by mask, type, etc
-    return true;
-}
-
-void SceneGraphNode::onCollision(SceneGraphNode_cwptr collider) {
-    //handle collision
-    if (_collisionCbk) {
-        SceneGraphNode_cptr node = collider.lock();
-        if (node && filterCollission(*node)) {
-            assert(getGUID() != node->getGUID());
-            _collisionCbk(node);
-        }
-    }
-}
 
 bool SceneGraphNode::cullNode(const Camera& currentCamera,
                               F32 maxDistanceFromCamera,
@@ -602,27 +587,22 @@ void SceneGraphNode::invalidateRelationshipCache() {
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&>& callback) {
     ReadLock r_lock(_childLock);
-    //Using childCount instead of a range-based for loops means that we can skip child null check
-    //as childCount should always be updated to reflect the actual number of node children
-    U32 childCount = _childCount;
-    for (U32 i = 0; i < childCount; ++i) {
-        callback(*_children[i]);
+    for (auto& child : _children) {
+        callback(*child);
     }
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&>& callback) const {
     ReadLock r_lock(_childLock);
-    U32 childCount = _childCount;
-    for (U32 i = 0; i < childCount; ++i) {
-        callback(*_children[i]);
+    for (auto& child : _children) {
+        callback(*child);
     }
 }
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&>& callback) {
     ReadLock r_lock(_childLock);
-    U32 childCount = _childCount;
-    for (U32 i = 0; i < childCount; ++i) {
-        if (!callback(*_children[i])) {
+    for (auto& child : _children) {
+        if (!callback(*child)) {
             return false;
         }
     }
@@ -632,9 +612,8 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGra
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&>& callback) const {
     ReadLock r_lock(_childLock);
-    U32 childCount = _childCount;
-    for (U32 i = 0; i < childCount; ++i) {
-        if (!callback(*_children[i])) {
+    for (auto& child : _children) {
+        if (!callback(*child)) {
             return false;
         }
     }
@@ -644,8 +623,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const Sc
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&, I32>& callback, U32 start, U32 end) {
     ReadLock r_lock(_childLock);
-    U32 childCount = _childCount;
-    CLAMP<U32>(end, 0, childCount);
+    CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 
     for (U32 i = start; i < end; ++i) {
@@ -655,8 +633,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&, I32>
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
     ReadLock r_lock(_childLock);
-    U32 childCount = _childCount;
-    CLAMP<U32>(end, 0, childCount);
+    CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 
     for (U32 i = start; i < end; ++i) {
@@ -666,8 +643,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&, I32>& callback, U32 start, U32 end) {
     ReadLock r_lock(_childLock);
-    U32 childCount = _childCount;
-    CLAMP<U32>(end, 0, childCount);
+    CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 
     for (U32 i = start; i < end; ++i) {
@@ -681,8 +657,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGra
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
     ReadLock r_lock(_childLock);
-    U32 childCount = _childCount;
-    CLAMP<U32>(end, 0, childCount);
+    CLAMP<U32>(end, 0, getChildCountLocked());
     assert(start < end);
 
     for (U32 i = start; i < end; ++i) {

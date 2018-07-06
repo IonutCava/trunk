@@ -236,6 +236,12 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
 
     void ignoreView(const bool state, const I64 cameraGUID);
 
+    void onCollision(const PhysicsComponent& collider);
+
+    inline void onCollisionCbk(const DELEGATE_CBK<void, const PhysicsComponent&>& cbk) {
+        _collisionCbk = cbk;
+    }
+
    protected:
     friend class SceneGraphNode;
     PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context);
@@ -250,6 +256,8 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     void getScale(vec3<F32>& scaleOut) const override;
     void getPosition(vec3<F32>& posOut) const override;
     void getOrientation(Quaternion<F32>& quatOut) const override;
+
+    bool filterCollission(const PhysicsComponent& collider);
 
    private:
     void clean(bool interp);
@@ -271,6 +279,8 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     TransformMask  _transformUpdatedMask;
 
     vectorImpl<DELEGATE_CBK<void> > _transformCallbacks;
+
+    DELEGATE_CBK<void, const PhysicsComponent&> _collisionCbk;
 
     /// Transform cache values
     std::atomic_bool _dirty;

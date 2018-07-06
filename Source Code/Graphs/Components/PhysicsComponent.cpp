@@ -584,4 +584,20 @@ void PhysicsComponent::getOrientation(Quaternion<F32>& quatOut) const {
     _transformInterface->getOrientation(quatOut);
 }
 
+
+bool PhysicsComponent::filterCollission(const PhysicsComponent& collider) {
+    // filter by mask, type, etc
+    return true;
+}
+
+void PhysicsComponent::onCollision(const PhysicsComponent& collider) {
+    //handle collision
+    if (_collisionCbk) {
+        if (filterCollission(collider)) {
+            assert(getSGN().getGUID() != collider.getSGN().getGUID());
+            _collisionCbk(collider);
+        }
+    }
+}
+
 };

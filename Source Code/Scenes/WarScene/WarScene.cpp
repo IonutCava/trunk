@@ -513,12 +513,12 @@ bool WarScene::load(const stringImpl& name) {
 
     SceneGraphNode_ptr firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
-    firstPersonFlag->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
     flagPComp = firstPersonFlag->get<PhysicsComponent>();
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
+    flagPComp->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     flagRComp = firstPersonFlag->getChild(0).get<RenderingComponent>();
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN);
     flagRComp->getMaterialInstance()->setHighPriority(true);
@@ -768,10 +768,8 @@ void WarScene::postLoadMainThread() {
     Scene::postLoadMainThread();
 }
 
-void WarScene::weaponCollision(SceneGraphNode_cptr collider) {
-    if (collider) {
-        Console::d_printfn("Weapon touched [ %s ]", collider->getName().c_str());
-    }
+void WarScene::weaponCollision(const PhysicsComponent& collider) {
+    Console::d_printfn("Weapon touched [ %s ]", collider.getSGN().getName().c_str());
 }
 
 };

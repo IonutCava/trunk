@@ -80,22 +80,22 @@ vectorImpl<T> convert(const vectorImpl<U>& data) {
 }
 
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
-template<typename T>
-inline vectorImplFast<T> erase_indices(const vectorImplFast<T>& data, vectorImplFast<vectorAlg::vecSize>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+template<typename T, typename A>
+inline typename vectorImpl<T, A> erase_indices(const typename vectorImpl<T, A>& data, vectorImpl<vectorAlg::vecSize>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     if (indicesToDelete.empty()) {
         return data;
     }
 
-    vectorImplFast<T> ret;
+    vectorImpl<T, A> ret;
     ret.reserve(data.size() - indicesToDelete.size());
 
     std::sort(std::begin(indicesToDelete), std::end(indicesToDelete));
 
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
-    vectorImplFast<T>::const_iterator itBlockBegin = std::cbegin(data);
-    for (vectorImplFast<size_t>::const_iterator it = std::cbegin(indicesToDelete); it != std::cend(indicesToDelete); ++it)  {
-        vectorImplFast<T>::const_iterator itBlockEnd = std::cbegin(data) + *it;
+    vectorImpl<T, A>::const_iterator itBlockBegin = std::cbegin(data);
+    for (vectorImpl<vectorAlg::vecSize, A>::const_iterator it = std::cbegin(indicesToDelete); it != std::cend(indicesToDelete); ++it)  {
+        vectorImpl<T, A>::const_iterator itBlockEnd = std::cbegin(data) + *it;
         if (itBlockBegin != itBlockEnd) {
             std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
         }

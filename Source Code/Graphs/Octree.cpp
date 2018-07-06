@@ -680,8 +680,13 @@ void Octree::handleIntersection(const IntersectionRecord& intersection) const {
         if(obj1->isRelated(*obj2)) {
             return;
         }
-        obj1->onCollision(obj2);
-        obj2->onCollision(obj1);
+        PhysicsComponent* comp1 = obj1->get<PhysicsComponent>();
+        PhysicsComponent* comp2 = obj2->get<PhysicsComponent>();
+
+        if (comp1 && comp2) {
+            comp1->onCollision(*comp2);
+            comp2->onCollision(*comp1);
+        }
     }
 }
 

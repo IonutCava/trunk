@@ -193,6 +193,18 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 }
 #endif
 
+template<class T>
+std::unique_ptr<T> to_unique(T*&& t) {
+    auto* tmp = t;
+    t = 0;
+    return std::unique_ptr<T>(tmp);
+}
+
+template<class T>
+std::unique_ptr<T> to_unique(std::unique_ptr<T> t) {
+    return std::move(t);
+
+}
 #if !defined(CPP_14_SUPPORT)
 template <bool B, class T = void>
 using enable_if_t = typename enable_if<B, T>::type;

@@ -59,19 +59,24 @@ SceneGraph::~SceneGraph()
 void SceneGraph::unload()
 {
     idle();
-    U32 childCount = 0;
+
     stringImpl childNameCpy;
-    while((childCount = _root->getChildCount()) != 0) {
-        SceneGraphNode& child = _root->getChild(childCount - 1);
+    for (U32 childCount = 0; childCount < _root->getChildCount(); ++childCount) {
+        SceneGraphNode& child = _root->getChild(childCount);
         childNameCpy = child.getName();
 
         if (!_root->removeNode(child)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_GRAPH_REMOVE_NODE"), childNameCpy.c_str()));
         }
     }
+
+    _root->processDeleteQueue();
 }
 
+
 bool SceneGraph::frameStarted(const FrameEvent& evt) {
+    _root->processDeleteQueue();
+
     return true;
 }
 
@@ -130,40 +135,15 @@ void SceneGraph::onNodeTransform(SceneGraphNode& node) {
 
 void SceneGraph::idle()
 {
-    if (!_pendingRemovalNodes.empty()) {
-        for (SceneGraphNode_wptr node : _pendingRemovalNodes) {
-            removeNode(node, false);
-        }
-      
-        _pendingRemovalNodes.resize(0);
-    }
-
-    if (!_pendingRemovalNodeTypes.empty()) {
-        for (SceneNodeType type : _pendingRemovalNodeTypes) {
-            removeNodesByType(type, false);
-        }
-
-        _pendingRemovalNodeTypes.resize(0);
-    }
 }
 
-bool SceneGraph::removeNodesByType(SceneNodeType nodeType, bool deferrRemoval) {
-    if (deferrRemoval) {
-        _pendingRemovalNodeTypes.push_back(nodeType);
-        return true;
-    }
-     
+bool SceneGraph::removeNodesByType(SceneNodeType nodeType) {
     return getRoot().removeNodesByType(nodeType);
 }
 
-bool SceneGraph::removeNode(SceneGraphNode_wptr node, bool deferrRemoval) {
+bool SceneGraph::removeNode(SceneGraphNode_wptr node) {
     SceneGraphNode_ptr sgn = node.lock();
     if (sgn) {
-        if (deferrRemoval) {
-            _pendingRemovalNodes.push_back(node);
-            return true;
-        }
-
         SceneGraphNode_ptr parent = sgn->getParent().lock();
         if (parent) {
             if (!parent->removeNode(*sgn)) {

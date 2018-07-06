@@ -37,11 +37,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace vectorAlg = std;
 
-template <typename Type>
-using vectorImplFast = vectorAlg::vector<Type, dvd_allocator<Type>>;
+template <typename Type, typename Allocator = vectorAlg::allocator<Type>>
+using vectorImpl = vectorAlg::vector<Type, Allocator>;
 
 template <typename Type>
-using vectorImpl = vectorAlg::vector<Type>;
+using vectorImplFast = vectorImpl<Type, dvd_allocator<Type>>;
 
 #if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 template <typename Type>

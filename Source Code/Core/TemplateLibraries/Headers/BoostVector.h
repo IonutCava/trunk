@@ -37,11 +37,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace vectorAlg = boost;
 
-template<typename Type>
-using vectorImplFast = boost::container::vector<Type, dvd_allocator<Type>>;
+template <typename Type, typename Allocator = boost::new_allocator<Type>>
+using vectorImpl = boost::container::vector<Type, Allocator>;
 
 template <typename Type>
-using vectorImpl = boost::container::vector<Type>;
+using vectorImplFast = vectorImpl<Type, dvd_allocator<Type>>;
 
 namespace boost {
     typedef size_t vecSize;
