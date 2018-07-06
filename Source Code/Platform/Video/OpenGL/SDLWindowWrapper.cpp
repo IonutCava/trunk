@@ -431,14 +431,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Prepare immediate mode emulation rendering
     NS_GLIM::glim.SetVertexAttribLocation(to_uint(AttribLocation::VERTEX_POSITION));
     // We need a dummy VAO object for point rendering
-    GLUtil::DSAWrapper::dsaCreateVertexArrays(1, &_pointDummyVAO);
+    glCreateVertexArrays(1, &_pointDummyVAO);
     // Allocate a buffer for indirect draw used to store the query results
     // without a round-trip to the CPU
-    GLUtil::DSAWrapper::dsaCreateBuffers(1, &_indirectDrawBuffer);
-    GLUtil::DSAWrapper::dsaNamedBufferData(
-        _indirectDrawBuffer,
-        Config::MAX_VISIBLE_NODES * sizeof(IndirectDrawCommand), NULL,
-        GL_DYNAMIC_DRAW);
+    glCreateBuffers(1, &_indirectDrawBuffer);
+    glNamedBufferData(_indirectDrawBuffer,
+                      Config::MAX_VISIBLE_NODES * sizeof(IndirectDrawCommand),
+                      NULL,
+                      GL_DYNAMIC_DRAW);
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
 #ifdef _DEBUG

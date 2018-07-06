@@ -114,7 +114,7 @@ void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
         memcpy(reinterpret_cast<U8*>(_mappedBuffer) + offset, data, range);
         _lockManager->LockRange(offset, range);
     } else {
-        GLUtil::DSAWrapper::dsaNamedBufferSubData(_UBOid, offset, range, data);
+        glNamedBufferSubData(_UBOid, offset, range, data);
     }
 }
 

@@ -121,7 +121,7 @@ bool glVertexArray::Refresh() {
         Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"), vbSize,
                            4 * 1024 * 1024);
         // Allocate sufficient space in our buffer
-        GLUtil::DSAWrapper::dsaNamedBufferData(_VBid, vbSize, NULL, _usage);
+        glNamedBufferData(_VBid, vbSize, NULL, _usage);
         // Refresh all attributes
         _attribDirty.fill(true);
     }
@@ -167,9 +167,7 @@ bool glVertexArray::Refresh() {
             }
             // Add it to the VBO
             if (_attribDirty[attrib]) {
-                GLUtil::DSAWrapper::dsaNamedBufferSubData(
-                    _VBid, _VBoffset[attrib], nSize[attrib],
-                    dataBuffer[attrib]);
+                glNamedBufferSubData(_VBid, _VBoffset[attrib], nSize[attrib], dataBuffer[attrib]);
                 if (attrib == to_uint(VertexAttribute::ATTRIB_TANGENT)) {
                     _tangentSmall.clear();
                 }
@@ -185,7 +183,7 @@ bool glVertexArray::Refresh() {
                              ? static_cast<bufferPtr>(_hardwareIndicesL.data())
                              : static_cast<bufferPtr>(_hardwareIndicesS.data());
         // Update our IB
-        GLUtil::DSAWrapper::dsaNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
+        glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
     }
     // Set vertex attribute pointers
     Upload_VB_Attributes();
@@ -214,11 +212,11 @@ bool glVertexArray::CreateInternal() {
     // Enforce all update flags. Kind of useless, but it doesn't hurt
     _attribDirty.fill(true);
     // Generate a "Vertex Array Object"
-    GLUtil::DSAWrapper::dsaCreateVertexArrays(1, &_VAOid);
+    glCreateVertexArrays(1, &_VAOid);
     // Generate a new Vertex Buffer Object
-    GLUtil::DSAWrapper::dsaCreateBuffers(1, &_VBid);
+    glCreateBuffers(1, &_VBid);
     // Generate an "Index Buffer Object"
-    GLUtil::DSAWrapper::dsaCreateBuffers(1, &_IBid);
+    glCreateBuffers(1, &_IBid);
     // Validate buffer creation
     DIVIDE_ASSERT(_VAOid != 0, Locale::get("ERROR_VAO_INIT"));
     DIVIDE_ASSERT(_VBid != 0, Locale::get("ERROR_VB_INIT"));

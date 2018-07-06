@@ -217,7 +217,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
 
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
-                                false,
+                                nodes._locked,
                                 false);
 }
 

@@ -622,9 +622,10 @@ void GL_API::uploadDrawCommands(const DrawCommandList& drawCommands,
                                 U32 commandCount) const {
     if (commandCount > 0) {
         GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-        GLUtil::DSAWrapper::dsaNamedBufferSubData(
-            _indirectDrawBuffer, 0, commandCount * sizeof(IndirectDrawCommand),
-            (bufferPtr)drawCommands.data());
+        glNamedBufferSubData(_indirectDrawBuffer,
+                             0,
+                             commandCount * sizeof(IndirectDrawCommand),
+                             (bufferPtr)drawCommands.data());
     }
 }
 

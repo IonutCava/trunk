@@ -17,7 +17,7 @@ glTexture::glTexture(TextureType type)
     _allocatedStorage = false;
     _type = GLUtil::glTextureTypeTable[to_uint(type)];
     U32 tempHandle = 0;
-    GLUtil::DSAWrapper::dsaCreateTextures(_type, 1, &tempHandle);
+    glCreateTextures(_type, 1, &tempHandle);
     DIVIDE_ASSERT(tempHandle != 0,
                   "glTexture error: failed to generate new texture handle!");
     _textureData.setHandleHigh(tempHandle);
@@ -57,10 +57,8 @@ void glTexture::setMipMapRange(GLushort base, GLushort max) {
     _mipMinLevel = base;
     _mipMaxLevel = max;
 
-    GLUtil::DSAWrapper::dsaTextureParameter(_textureData.getHandleHigh(), _type,
-                                            GL_TEXTURE_BASE_LEVEL, base);
-    GLUtil::DSAWrapper::dsaTextureParameter(_textureData.getHandleHigh(), _type,
-                                            GL_TEXTURE_MAX_LEVEL, max);
+    glTextureParameteri(_textureData.getHandleHigh(), GL_TEXTURE_BASE_LEVEL, base);
+    glTextureParameteri(_textureData.getHandleHigh(), GL_TEXTURE_MAX_LEVEL, max);
 }
 
 void glTexture::resize(const U8* const ptr,
@@ -68,7 +66,7 @@ void glTexture::resize(const U8* const ptr,
                        const vec2<U16>& mipLevels) {
     // Immutable storage requires us to create a new texture object 
     U32 tempHandle = 0;
-    GLUtil::DSAWrapper::dsaCreateTextures(_type, 1, &tempHandle);
+    glCreateTextures(_type, 1, &tempHandle);
     DIVIDE_ASSERT(tempHandle != 0,
         "glTexture error: failed to generate new texture handle!");
 
@@ -84,8 +82,7 @@ void glTexture::resize(const U8* const ptr,
 
 void glTexture::updateMipMaps() {
     if (_mipMapsDirty && _samplerDescriptor.generateMipMaps()) {
-        GLUtil::DSAWrapper::dsaGenerateTextureMipmap(
-            _textureData.getHandleHigh(), _type);
+        glGenerateTextureMipmap(_textureData.getHandleHigh());
     }
     _mipMapsDirty = false;
 }

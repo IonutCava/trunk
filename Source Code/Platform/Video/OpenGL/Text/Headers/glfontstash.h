@@ -42,9 +42,9 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
         width > 0 && height > 0,
         "glfons__renderCreate error: invalid texture dimensions!");
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
-    Divide::GLUtil::DSAWrapper::dsaCreateTextures(GL_TEXTURE_2D, 1, &gl->tex);
-    Divide::GLUtil::DSAWrapper::dsaCreateVertexArrays(1, &gl->glfons_vaoID);
-    Divide::GLUtil::DSAWrapper::dsaCreateBuffers(1, &gl->glfons_vboID);
+    glCreateTextures(GL_TEXTURE_2D, 1, &gl->tex);
+    glCreateVertexArrays(1, &gl->glfons_vaoID);
+    glCreateBuffers(1, &gl->glfons_vboID);
 
     if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) {
         return 0;
@@ -52,13 +52,8 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     gl->width = width;
     gl->height = height;
 
-    Divide::GLUtil::DSAWrapper::dsaTextureStorage(
-        gl->tex, GL_TEXTURE_2D, 1, GL_R8, gl->width,
-        gl->height, -1);
-        
-    Divide::GLUtil::DSAWrapper::dsaTextureParameter(
-        gl->tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-        static_cast<GLint>(GL_LINEAR));
+    glTextureStorage2D(gl->tex, 1, GL_R8, gl->width, gl->height);
+    glTextureParameteri(gl->tex, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(GL_LINEAR));
 
     return 1;
 }
@@ -76,9 +71,7 @@ static void glfons__renderUpdate(void* userPtr,
 
     Divide::GL_API::setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
     glBindTexture(GL_TEXTURE_2D, gl->tex);
-    Divide::GLUtil::DSAWrapper::dsaTextureSubImage(
-        gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1], 0, w, h, -1, GL_RED,
-        GL_UNSIGNED_BYTE, (Divide::bufferPtr)data);
+    glTextureSubImage2D(gl->tex, 0, rect[0], rect[1], w, h, GL_RED, GL_UNSIGNED_BYTE, (Divide::bufferPtr)data);
 }
 
 static void glfons__renderDraw(void* userPtr,
@@ -92,16 +85,13 @@ static void glfons__renderDraw(void* userPtr,
     }
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
     GLuint bufferID = gl->glfons_vboID;
-    Divide::GLUtil::DSAWrapper::dsaNamedBufferData(
-        bufferID, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, NULL,
-        GL_STREAM_DRAW);
-    Divide::GLUtil::DSAWrapper::dsaNamedBufferSubData(bufferID, 0, vertDataSize,
-                                                      (Divide::bufferPtr)verts);
-    Divide::GLUtil::DSAWrapper::dsaNamedBufferSubData(
-        bufferID, vertDataSize, vertDataSize, (Divide::bufferPtr)tcoords);
-    Divide::GLUtil::DSAWrapper::dsaNamedBufferSubData(
-        bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts,
-        (Divide::bufferPtr)colors);
+    glNamedBufferData(bufferID,
+                      2 * vertDataSize + sizeof(unsigned char) * 4 * nverts,
+                      NULL,
+                      GL_STREAM_DRAW);
+    glNamedBufferSubData(bufferID, 0, vertDataSize, (Divide::bufferPtr)verts);
+    glNamedBufferSubData(bufferID, vertDataSize, vertDataSize, (Divide::bufferPtr)tcoords);
+    glNamedBufferSubData(bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, (Divide::bufferPtr)colors);
 
     glBindTexture(GL_TEXTURE_2D, gl->tex);
     Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);

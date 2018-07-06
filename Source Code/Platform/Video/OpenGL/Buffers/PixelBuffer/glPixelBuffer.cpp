@@ -65,26 +65,43 @@ void glPixelBuffer::Destroy() {
 
 void* glPixelBuffer::Begin() const {
     GL_API::setPixelPackUnpackAlignment();
-    GLUtil::DSAWrapper::dsaNamedBufferSubData(_pixelBufferHandle, 0,
-                                              _bufferSize, NULL);
+    glNamedBufferSubData(_pixelBufferHandle, 0, _bufferSize, NULL);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
 
     GLenum textureTypeEnum = static_cast<GLenum>(_textureType);
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-            GLUtil::DSAWrapper::dsaTextureSubImage(_textureID, textureTypeEnum,
-                                                   0, 0, 0, 0, _width, -1, -1,
-                                                   _format, _dataType, NULL);
+            glTextureSubImage1D(_textureID,
+                                0,
+                                0,
+                                _width,
+                                _format,
+                                _dataType,
+                                NULL);
             break;
         case PBType::PB_TEXTURE_2D:
-            GLUtil::DSAWrapper::dsaTextureSubImage(
-                _textureID, textureTypeEnum, 0, 0, 0, 0, _width, _height, -1,
-                _format, _dataType, NULL);
+            glTextureSubImage2D(_textureID,
+                                0,
+                                0,
+                                0,
+                                _width,
+                                _height,
+                                _format,
+                                _dataType,
+                                NULL);
             break;
         case PBType::PB_TEXTURE_3D:
-            GLUtil::DSAWrapper::dsaTextureSubImage(
-                _textureID, textureTypeEnum, 0, 0, 0, 0, _width, _height,
-                _depth, _format, _dataType, NULL);
+            glTextureSubImage3D(_textureID,
+                                0,
+                                0,
+                                0,
+                                0,
+                                _width,
+                                _height,
+                                _depth,
+                                _format,
+                                _dataType,
+                                NULL);
             break;
     };
 
@@ -141,46 +158,32 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     }
     _bufferSize *= _dataSizeBytes;
 
-    GLUtil::DSAWrapper::dsaCreateTextures(textureTypeEnum, 1, &_textureID);
-    GLUtil::DSAWrapper::dsaTextureParameter(_textureID, textureTypeEnum,
-                                            GL_GENERATE_MIPMAP, 0);
-    GLUtil::DSAWrapper::dsaTextureParameter(
-        _textureID, textureTypeEnum, GL_TEXTURE_MIN_FILTER, to_int(GL_NEAREST));
-    GLUtil::DSAWrapper::dsaTextureParameter(
-        _textureID, textureTypeEnum, GL_TEXTURE_MAG_FILTER, to_int(GL_NEAREST));
-    GLUtil::DSAWrapper::dsaTextureParameter(_textureID, textureTypeEnum,
-                                            GL_TEXTURE_BASE_LEVEL, 0);
-    GLUtil::DSAWrapper::dsaTextureParameter(_textureID, textureTypeEnum,
-                                            GL_TEXTURE_MAX_LEVEL, 1000);
-    GLUtil::DSAWrapper::dsaTextureParameter(
-        _textureID, textureTypeEnum, GL_TEXTURE_WRAP_S, to_int(GL_REPEAT));
+    glCreateTextures(textureTypeEnum, 1, &_textureID);
+    glTextureParameteri(_textureID, GL_GENERATE_MIPMAP, 0);
+    glTextureParameteri(_textureID, GL_TEXTURE_MIN_FILTER, to_int(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_MAG_FILTER, to_int(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_BASE_LEVEL, 0);
+    glTextureParameteri(_textureID, GL_TEXTURE_MAX_LEVEL, 1000);
+    glTextureParameteri(_textureID, GL_TEXTURE_WRAP_S, to_int(GL_REPEAT));
 
     if (_pbtype != PBType::PB_TEXTURE_1D) {
-        GLUtil::DSAWrapper::dsaTextureParameter(
-            _textureID, textureTypeEnum, GL_TEXTURE_WRAP_T, to_int(GL_REPEAT));
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_T, to_int(GL_REPEAT));
     }
     if (_pbtype == PBType::PB_TEXTURE_3D) {
-        GLUtil::DSAWrapper::dsaTextureParameter(
-            _textureID, textureTypeEnum, GL_TEXTURE_WRAP_R, to_int(GL_REPEAT));
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_R, to_int(GL_REPEAT));
     }
 
     U16 mipLevels = static_cast<U16>(std::floor(std::log2(std::max(_width, _height))) + 1);
     GL_API::setPixelPackUnpackAlignment();
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-            GLUtil::DSAWrapper::dsaTextureStorage(_textureID, textureTypeEnum,
-                                                  mipLevels, _internalFormat,
-                                                  _width, -1, -1);
+            glTextureStorage1D(_textureID, mipLevels, _internalFormat, _width);
             break;
         case PBType::PB_TEXTURE_2D:
-            GLUtil::DSAWrapper::dsaTextureStorage(_textureID, textureTypeEnum,
-                                                  mipLevels, _internalFormat,
-                                                  _width, _height, -1);
+            glTextureStorage2D(_textureID, mipLevels, _internalFormat, _width, _height);
             break;
         case PBType::PB_TEXTURE_3D:
-            GLUtil::DSAWrapper::dsaTextureStorage(_textureID, textureTypeEnum,
-                                                  mipLevels, _internalFormat,
-                                                  _width, _height, _depth);
+            glTextureStorage3D(_textureID, mipLevels, _internalFormat, _width, _height, _depth);
             break;
     };
 

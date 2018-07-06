@@ -9,7 +9,7 @@
 namespace Divide {
 
 glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
-    GLUtil::DSAWrapper::dsaCreateSamplers(1, &_samplerID);
+    glCreateSamplers(1, &_samplerID);
     glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());

@@ -11,9 +11,8 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
                                 BufferStorageMask storageMask,
                                 BufferAccessMask accessMask,
                                 const bufferPtr data) {
-    DSAWrapper::dsaNamedBufferStorage(bufferId, bufferSize, data, storageMask);
-    bufferPtr ptr =
-        DSAWrapper::dsaMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
+    glNamedBufferStorage(bufferId, bufferSize, data, storageMask);
+    bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
     assert(ptr != NULL);
     return ptr;
 }
@@ -23,7 +22,7 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
                                          BufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data) {
-    DSAWrapper::dsaCreateBuffers(1, &bufferIdOut);
+    glCreateBuffers(1, &bufferIdOut);
     DIVIDE_ASSERT(bufferIdOut != 0,
                   "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
@@ -35,15 +34,15 @@ void createAndAllocBuffer(GLsizeiptr bufferSize,
                           GLenum usageMask,
                           GLuint& bufferIdOut,
                           const bufferPtr data) {
-    DSAWrapper::dsaCreateBuffers(1, &bufferIdOut);
+    glCreateBuffers(1, &bufferIdOut);
     DIVIDE_ASSERT(bufferIdOut != 0, "GLUtil::allocBuffer error: buffer creation failed");
-    return DSAWrapper::dsaNamedBufferData(bufferIdOut, bufferSize, data, usageMask);
+    glNamedBufferData(bufferIdOut, bufferSize, data, usageMask);
 }
 
 void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
     if (bufferId > 0) {
         if (mappedPtr != nullptr) {
-            GLboolean result = DSAWrapper::dsaUnmapNamedBuffer(bufferId);
+            GLboolean result = glUnmapNamedBuffer(bufferId);
             assert(result != GL_FALSE);
             mappedPtr = nullptr;
         }
