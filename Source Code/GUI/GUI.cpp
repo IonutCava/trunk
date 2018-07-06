@@ -163,6 +163,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _console = MemoryManager_NEW GUIConsole(*this, context, cache);
 
     if (Config::Build::IS_DEBUG_BUILD) {
+        CEGUI::Logger::getSingleton().setLogFilename(Paths::g_logPath + "CEGUI.log", false);
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
     }
 

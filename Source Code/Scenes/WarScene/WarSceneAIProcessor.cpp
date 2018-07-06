@@ -91,9 +91,7 @@ void WarSceneAIProcessor::reset()
 
 void WarSceneAIProcessor::initInternal() {
 #if defined(PRINT_AI_TO_FILE)
-    _WarAIOutputStream.open(
-        Util::StringFormat("AILogs/%s_.txt", _entity->name().c_str()).c_str(),
-        std::ofstream::out | std::ofstream::trunc);
+    _WarAIOutputStream.open(Util::StringFormat((Paths::g_logPath + "AILogs/%s_.txt").c_str(), _entity->name().c_str()).c_str(), std::ofstream::out | std::ofstream::trunc);
 #endif
 
     _visualSensor =

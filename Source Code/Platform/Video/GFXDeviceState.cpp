@@ -33,8 +33,6 @@
 
 #include "RenderDoc-Manager/RenderDocManager.h"
 
-#include <AntTweakBar/include/AntTweakBar.h>
-
 namespace Divide {
 
 /// Create a display context using the selected API and create all of the needed
@@ -445,10 +443,6 @@ void GFXDevice::closeRenderingAPI() {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());
         Console::errorfn(list.c_str());
     }
-
-    if (Config::USE_ANT_TWEAK_BAR) {
-        TwTerminate();
-    }
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
@@ -491,15 +485,7 @@ void GFXDevice::endFrame() {
     
     // Activate the default render states
     _api->setStateBlock(_defaultStateBlockHash);
-
-    if (Config::USE_ANT_TWEAK_BAR) {
-        if (_parent.platformContext().config().gui.enableDebugVariableControls) {
-            TwDraw();
-        }
-    }
-
     _api->endFrame();
-
 
     if (Config::ENABLE_GPU_VALIDATION) {
         if (_renderDocManager) {

@@ -8,10 +8,9 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
+#include "Platform/File/Headers/FileManagement.h"
 
 #include "Utility/Headers/MemoryTracker.h"
-
-#include <thread>
 
 namespace Divide {
 
@@ -92,7 +91,7 @@ void Application::stop() {
                     to_I32(std::ceil(sizeLeaked / 1024.0f)));
             }
             std::ofstream memLog;
-            memLog.open(_memLogBuffer.c_str());
+            memLog.open((Paths::g_logPath + _memLogBuffer).c_str());
             memLog << allocLog;
             memLog.close();
         }

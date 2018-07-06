@@ -47,7 +47,7 @@
 <action id="40" name="shutdown"/>
 <action id="41" name="pov navigation"/>
 <action id="42" name="axis navigation"/>
-<action id="43" name="toggle AntTweakBar" />
+<action id="43" name="toggle Debug Variable Controls" />
 <action id="44" name="toggle editor" />
 <action id="45" name="toggle console" />
 </actions>

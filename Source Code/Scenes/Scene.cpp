@@ -689,7 +689,7 @@ U16 Scene::registerInputActions() {
         }
     };
 
-    auto toggleAntTweakBar = [this](InputParams param) {
+    auto toggleDebugVariableControls = [this](InputParams param) {
         _context.config().gui.enableDebugVariableControls =
             !_context.config().gui.enableDebugVariableControls;
     };
@@ -751,7 +751,7 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(actionID++, shutdown);
     actions.registerInputAction(actionID++, povNavigation);
     actions.registerInputAction(actionID++, axisNavigation);
-    actions.registerInputAction(actionID++, toggleAntTweakBar);
+    actions.registerInputAction(actionID++, toggleDebugVariableControls);
     actions.registerInputAction(actionID++, toggleEditor);
     actions.registerInputAction(actionID++, toggleConsole);
     

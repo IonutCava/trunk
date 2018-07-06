@@ -15,7 +15,6 @@
 #endif //HAVE_M_PI
 
 #include <SDL.h>
-#include <AntTweakBar/include/AntTweakBar.h>
 
 namespace Divide {
 

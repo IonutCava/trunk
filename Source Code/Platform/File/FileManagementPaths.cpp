@@ -7,6 +7,9 @@
 namespace Divide {
 
 namespace Paths {
+    //special case
+    stringImpl g_logPath = "logs/";
+
     stringImpl g_exePath;
     stringImpl g_assetsLocation;
     stringImpl g_shadersLocation;

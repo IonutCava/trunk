@@ -111,12 +111,6 @@ constexpr unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
 #   endif
 constexpr unsigned int MAX_REFLECTIVE_PROBES_PER_PASS = 6;
 
-/// Enable or disable the use of AntTweakBar
-#   if defined(_DEBUG)
-constexpr bool USE_ANT_TWEAK_BAR = true;
-#   else
-constexpr bool USE_ANT_TWEAK_BAR = false;
-#   endif
 /// Reflection render target resolution downscale: how many times lower shoudl the resolution of reflection/refraction
 /// targets be when compared to the main screen resolution. E.g.: 1920x1080 with a factor of 2: max(1920, 1080) / 2 = 960x960 render targets
 constexpr unsigned int REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR = 2;
@@ -283,10 +277,6 @@ constexpr bool ENABLE_GPU_VALIDATION = false;
 #ifndef ERROR_LOG_FILE
 #define ERROR_LOG_FILE "errors.log"
 #endif  // ERROR_LOG_FILE
-
-#ifndef SERVER_LOG_FILE
-#define SERVER_LOG_FILE "server.log"
-#endif  // SERVER_LOG_FILE
 
 /// Disable or enable custom, general purpose allocators in the code
 /// (used by containers, frequently created objects, etc)

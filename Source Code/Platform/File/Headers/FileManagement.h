@@ -49,6 +49,7 @@ struct SysInfo;
 class PlatformContext;
 namespace Paths {
     extern stringImpl g_exePath;
+    extern stringImpl g_logPath;
     extern stringImpl g_assetsLocation;
     extern stringImpl g_shadersLocation;
     extern stringImpl g_texturesLocation;

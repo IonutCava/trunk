@@ -7,6 +7,7 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Scripting/Headers/Script.h"
+#include "Platform/File/Headers/FileManagement.h"
 
 #include <iostream>
 #include "Core/Headers/TaskPool.h"
@@ -39,8 +40,8 @@ Engine::Engine()
       _app(std::make_unique<Application>())
 {
     std::set_new_handler(out_of_memory);
-    _outputStreams[0] = new StreamBuffer(OUTPUT_LOG_FILE);
-    _outputStreams[1] = new StreamBuffer(ERROR_LOG_FILE);
+    _outputStreams[0] = new StreamBuffer((Paths::g_logPath + OUTPUT_LOG_FILE).c_str());
+    _outputStreams[1] = new StreamBuffer((Paths::g_logPath + ERROR_LOG_FILE).c_str());
     std::cout.rdbuf(_outputStreams[0]->buffer().rdbuf());
     std::cerr.rdbuf(_outputStreams[1]->buffer().rdbuf());
 }

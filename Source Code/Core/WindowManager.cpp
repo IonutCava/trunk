@@ -10,9 +10,6 @@
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
-
-#include <AntTweakBar/include/AntTweakBar.h>
-
 namespace Divide {
 
 namespace {
@@ -212,15 +209,6 @@ void WindowManager::pollSDLEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        if (Config::USE_ANT_TWEAK_BAR) {
-            if (_context->config().gui.enableDebugVariableControls) {
-                // send event to AntTweakBar
-                if (TwEventSDL(&event, SDL_MAJOR_VERSION, SDL_MINOR_VERSION) != 0) {
-                    continue;
-                }
-            }
-        }
-
         if (event.type == SDL_WINDOWEVENT) {
             for (DisplayWindow* win : _windows) {
                 win->handleEvent(event);

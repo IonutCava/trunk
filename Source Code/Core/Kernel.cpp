@@ -33,8 +33,6 @@
 #include "Platform/File/Headers/FileWatcherManager.h"
 #include "Platform/Compute/Headers/OpenCLInterface.h"
 
-#include <AntTweakBar/include/AntTweakBar.h>
-
 namespace Divide {
 
 LoopTimingData::LoopTimingData() : _updateLoops(0),
@@ -773,11 +771,7 @@ void Kernel::onSizeChange(const SizeChangeParams& params) const {
     Attorney::GFXDeviceKernel::onSizeChange(_platformContext->gfx(), params);
     _platformContext->gui().onSizeChange(params);
 
-    if (params.isWindowResize) {
-        if (Config::USE_ANT_TWEAK_BAR) {
-            TwWindowSize(to_I32(params.width), to_I32(params.height));
-        }
-    } else {
+    if (!params.isWindowResize) {
         _sceneManager->onSizeChange(params);
     }
 
