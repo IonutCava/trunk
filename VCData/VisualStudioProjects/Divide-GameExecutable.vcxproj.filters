@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\ToDo.h" />
+  </ItemGroup>
 </Project>
