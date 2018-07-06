@@ -175,9 +175,11 @@
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Thread.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\Headers\FrameBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\PixelBufferObject\Headers\PixelBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBufferObject\Headers\GenericVertexData.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBufferObject\Headers\VertexBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dFrameBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBufferObject\Headers\d3dPixelBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers\d3dGenericVertexData.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers\d3dVertexBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dEnumTable.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dRenderStateBlock.h" />
@@ -196,6 +198,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers\glPixelBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glGenericVertexData.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h" />
@@ -243,6 +246,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\glPixelBufferObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glGenericVertexData.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp" />
@@ -350,6 +354,7 @@
     <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
       <FileType>Document</FileType>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\particles.glsl" />
     <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
       <FileType>Document</FileType>
     </None>

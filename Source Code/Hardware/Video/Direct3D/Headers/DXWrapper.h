@@ -28,6 +28,7 @@
 #include "core.h"
 #include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dFrameBufferObject.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBufferObject/Headers/d3dVertexBufferObject.h"
+#include "Hardware/Video/Direct3D/Buffers/VertexBufferObject/Headers/d3dGenericVertexData.h"
 #include "Hardware/Video/Direct3D/Buffers/PixelBufferObject/Headers/d3dPixelBufferObject.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShader.h"
@@ -57,8 +58,8 @@ private:
     void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll) {}
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
-    inline FrameBufferObject*  newFBO(const FBOType& type)  { return New d3dFrameBufferObject(type); }
-
+    inline FrameBufferObject*  newFBO(const FBOType& type)                          {return New d3dFrameBufferObject(type); }
+    inline GenericVertexData*  newGVD()                                             {return New d3dGenericVertexData(); }
     inline VertexBufferObject* newVBO(const PrimitiveType& type)                    {return New d3dVertexBufferObject(type);}
     inline PixelBufferObject*  newPBO(const PBOType& type)                          {return New d3dPixelBufferObject(type);}
     inline Texture2D*          newTexture2D(const bool flipped = false)             {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}

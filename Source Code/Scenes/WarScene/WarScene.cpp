@@ -1,7 +1,9 @@
 #include "Headers/WarScene.h"
 #include "Headers/WarSceneAIActionList.h"
 
+#include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/SkinnedMesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
@@ -205,6 +207,9 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     SceneGraphNode* cylinderSW = _sceneGraph->findNode("cylinderSW");
     SceneGraphNode* cylinderSE = _sceneGraph->findNode("cylinderSE");
 
+    SceneGraphNode::NodeChildren& children = cylinderNW->getChildren();
+    (*children.begin()).second->getSceneNode()->getMaterial()->setDoubleSided(true);
+
     assert(cylinderNW && cylinderNE && cylinderSW && cylinderSE);
     SceneNode* cylinderMeshNW = cylinderNW->getSceneNode();
     SceneNode* cylinderMeshNE = cylinderNE->getSceneNode();
@@ -277,6 +282,17 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         _lampTransformNode->getTransform()->setPosition(vec3<F32>(-75.0f, -45.0f, -5.0f));
     }*/
     //------------------------ The rest of the scene elements -----------------------------///
+
+
+    ParticleEmitterDescriptor particleSystem;
+    particleSystem._particleCount = 20000;
+    particleSystem._spread = 5.0f;
+
+    ParticleEmitter* test = addParticleEmitter("TESTPARTICLES", particleSystem);
+    SceneGraphNode* testSGN = _sceneGraph->getRoot()->addNode(test, "TESTPARTICLES");
+    testSGN->getTransform()->translateY(5);
+    test->setDrawImpostor(true);
+    test->enableEmitter(true);
     _sceneReady = true;
     return loadState;
 }
@@ -399,6 +415,10 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
     SAFE_DELETE(_faction1);
     SAFE_DELETE(_faction2);
     return Scene::deinitializeAI(continueOnErrors);
+}
+
+bool WarScene::unload(){
+    return Scene::unload();
 }
 
 bool WarScene::loadResources(bool continueOnErrors){

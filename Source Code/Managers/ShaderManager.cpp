@@ -13,6 +13,7 @@ ShaderManager::~ShaderManager()
 
 void ShaderManager::Destroy() {
     GFX_DEVICE.deInitShaders();
+    RemoveResource(_imShader);
     RemoveResource(_nullShader);
 }
 
@@ -21,6 +22,7 @@ bool ShaderManager::init(){
         ERROR_FN(Locale::get("WARNING_SHADER_MANAGER_DOUBLE_INIT"));
     }
     _init = GFX_DEVICE.initShaders();
+    _imShader = CreateResource<ShaderProgram>(ResourceDescriptor("ImmediateModeEmulation"));
     return _init;
 }
 

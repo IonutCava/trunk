@@ -61,10 +61,6 @@ Material::Material() : Resource(),
     _shaderRef[Z_PRE_PASS_STAGE] = NULL;
     _shaderRef[SHADOW_STAGE] = NULL;
 
-    //Create an immediate mode shader (one should exist already)
-    _imShader = CreateResource<ShaderProgram>(ResourceDescriptor("ImmediateModeEmulation"));
-    REGISTER_TRACKED_DEPENDENCY(_imShader);
-
     _computedShader[0] = false;
     _computedShader[1] = false;
     _computedShader[2] = false;
@@ -129,31 +125,30 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
     //if we already had a shader assigned ...
     if(!_shader[id].empty()){
         //and we are trying to assing the same one again, return.
+        shaderReference = FindResourceImpl<ShaderProgram>(_shader[id]);
         if(_shader[id].compare(shader) == 0){
-            shaderReference = FindResource<ShaderProgram>(_shader[id]);
             return shaderReference;
         }else{
             PRINT_FN(Locale::get("REPLACE_SHADER"),_shader[id].c_str(),shader.c_str());
+            RemoveResource(shaderReference);
         }
     }
 
     (!shader.empty()) ? _shader[id] = shader : _shader[id] = "NULL_SHADER";
 
-    shaderReference = FindResource<ShaderProgram>(_shader[id]);
-    if(!shaderReference){
-        ResourceDescriptor shaderDescriptor(_shader[id]);
-        std::stringstream ss;
-        if(!_shaderDefines[id].empty()){
-            for_each(std::string& shaderDefine, _shaderDefines[id]){
-                ss << shaderDefine;
-                ss << ",";
-            }
+    ResourceDescriptor shaderDescriptor(_shader[id]);
+    std::stringstream ss;
+    if(!_shaderDefines[id].empty()){
+        for_each(std::string& shaderDefine, _shaderDefines[id]){
+            ss << shaderDefine;
+            ss << ",";
         }
-        ss << "DEFINE_PLACEHOLDER";
-        shaderDescriptor.setPropertyList(ss.str());
-        shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
-        shaderReference = CreateResource<ShaderProgram>(shaderDescriptor);
     }
+    ss << "DEFINE_PLACEHOLDER";
+    shaderDescriptor.setPropertyList(ss.str());
+    shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
+    shaderReference = CreateResource<ShaderProgram>(shaderDescriptor);
+    
     _dirty = true;
     _computedShader[id] = true;
     _computedShaderTextures = true;
@@ -262,12 +257,8 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 }
 
 ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
-    ShaderProgram* shaderPr = _shaderRef[renderStage];
-
-    if(shaderPr == NULL)
-        shaderPr = _imShader;
-
-    return shaderPr;
+    ShaderProgram* shaderPtr = _shaderRef[renderStage];
+    return shaderPtr == NULL ? ShaderManager::getInstance().getDefaultShader() : shaderPtr;
 }
 
 void Material::setBumpMethod(U32 newBumpMethod,bool force){
@@ -321,8 +312,6 @@ bool Material::unload(){
             RemoveResource(_textures[i]);
         }
     }
-    UNREGISTER_TRACKED_DEPENDENCY(_imShader);
-    RemoveResource(_imShader);
     return true;
 }
 

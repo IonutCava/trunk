@@ -48,11 +48,14 @@ class TerrainDescriptor;
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
+#include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 //GUI
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIElement.h"
 
 ///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
+class ParticleEmitter;
+struct ParticleEmitterDescriptor;
 class PhysicsSceneInterface;
 class Scene : public Resource{
 protected:
@@ -116,6 +119,9 @@ public:
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
+    ParticleEmitter* addParticleEmitter(const std::string& name, const ParticleEmitterDescriptor& descriptor);
+    ParticleEmitter* getParticleEmitter(const std::string& name);
+
 protected:
     ///Global info
     GFXDevice&     _GFX;
@@ -147,6 +153,8 @@ protected:
     ///It is destroyed after each scene's "deinitializeAI" is called
     std::tr1::shared_ptr<Task>  _aiTask;
 
+    typedef Unordered_map<std::string, ParticleEmitter *> ParticleEmitterMap;
+    ParticleEmitterMap _particleEmitters;
 private:
     vectorImpl<Task_ptr> _tasks;
     ///Contains all game related info for the scene (wind speed, visibility ranges, etc)
@@ -224,9 +232,9 @@ protected: //Input
     vec2<F32> _previousMousePos;
     bool _mousePressed[8];
 #ifdef _DEBUG
-    std::vector<vec3<F32> > _pointsA[DEBUG_LINE_PLACEHOLDER];
-    std::vector<vec3<F32> > _pointsB[DEBUG_LINE_PLACEHOLDER];
-    std::vector<vec4<U8>  > _colors[DEBUG_LINE_PLACEHOLDER];
+    vectorImpl<vec3<F32> > _pointsA[DEBUG_LINE_PLACEHOLDER];
+    vectorImpl<vec3<F32> > _pointsB[DEBUG_LINE_PLACEHOLDER];
+    vectorImpl<vec4<U8>  > _colors[DEBUG_LINE_PLACEHOLDER];
 #endif
 };
 

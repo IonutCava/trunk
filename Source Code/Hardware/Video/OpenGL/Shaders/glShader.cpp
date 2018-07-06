@@ -73,7 +73,7 @@ void glShader::validate() {
     GLCheck(glGetShaderiv(_shader, GL_COMPILE_STATUS, &status));
     GLCheck(glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length));
     if(length <= 1) return;
-    std::vector<char> shaderLog(length);
+    vectorImpl<char> shaderLog(length);
     GLCheck(glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]));
     shaderLog.push_back('\n');
     if(status == GL_FALSE){

@@ -32,13 +32,12 @@ class RenderStateBlock;
 
 namespace Navigation {
    /// Convert a Rcast color integer to RGBA components.
-   inline void rcCol(U32 col, U8 &r, U8 &g, U8 &b, U8 &a)
-   {
-      r = col % 256; col /= 256;
-      g = col % 256; col /= 256;
-      b = col % 256; col /= 256;
-      a = col % 256;
-   }
+    inline void rcCol(U32 col, U8 &r, U8 &g, U8 &b, U8 &a) {
+        r = col % 256; col /= 256;
+        g = col % 256; col /= 256;
+        b = col % 256; col /= 256;
+        a = col % 256;
+    }
 
     class NavMeshDebugDraw : public duDebugDraw {
     public:
@@ -65,6 +64,7 @@ namespace Navigation {
 
          
           inline bool paused()             const {return _paused;}
+
     protected:
         void prepareMaterial();
         void releaseMaterial();

@@ -222,7 +222,7 @@ SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
 
         case PxGeometryType::ePLANE: {
             sgnName = "PlaneActor";
-            if(FindResource<Quad3D>(sgnName)) 
+            if(FindResourceImpl<Quad3D>(sgnName)) 
                 return GET_ACTIVE_SCENEGRAPH()->findNode(sgnName);
 
             ResourceDescriptor planeDescriptor(sgnName);

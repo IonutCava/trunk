@@ -74,7 +74,7 @@ std::string glShaderProgram::getLog() const {
 
     if(length > 1){
         validationBuffer = "\n -- ";
-        std::vector<char> shaderProgramLog(length);
+        vectorImpl<char> shaderProgramLog(length);
         GLCheck(glGetProgramInfoLog(_threadedLoadComplete ? _shaderProgramId : _shaderProgramIdTemp, length, NULL, &shaderProgramLog[0]));
         validationBuffer.append(&shaderProgramLog[0]);
         if(validationBuffer.size() > Console::CONSOLE_OUTPUT_BUFFER_SIZE){
@@ -189,14 +189,14 @@ void glShaderProgram::initUBO(){
 }
 
 void glShaderProgram::link(){
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_POSITION_LOCATION ,"inVertexData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_NORMAL_LOCATION   ,"inNormalData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_COLOR_LOCATION    ,"inColorData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TEXCOORD_LOCATION ,"inTexCoordData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_TANGENT_LOCATION  ,"inTangentData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BITANGENT_LOCATION,"inBiTangentData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BONE_WEIGHT_LOCATION,"inBoneWeightData"));
-    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::GL::VERTEX_BONE_INDICE_LOCATION,"inBoneIndiceData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_POSITION_LOCATION ,"inVertexData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_NORMAL_LOCATION   ,"inNormalData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_COLOR_LOCATION    ,"inColorData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_TEXCOORD_LOCATION ,"inTexCoordData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_TANGENT_LOCATION  ,"inTangentData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_BITANGENT_LOCATION,"inBiTangentData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_BONE_WEIGHT_LOCATION,"inBoneWeightData"));
+    GLCheck(glBindAttribLocation(_shaderProgramIdTemp,Divide::VERTEX_BONE_INDICE_LOCATION,"inBoneIndiceData"));
 
     GLint linkStatus = 0;
     if(GL_API::_shaderBinarySupported){

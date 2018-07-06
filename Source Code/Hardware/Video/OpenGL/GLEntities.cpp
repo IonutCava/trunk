@@ -5,6 +5,7 @@
 #include "Headers/glImmediateModeEmulation.h"
 
 #include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexArrayObject.h"
+#include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glGenericVertexData.h"
 #include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glFrameBufferObject.h"
 #include "Hardware/Video/OpenGL/Buffers/PixelBufferObject/Headers/glPixelBufferObject.h"
 
@@ -50,4 +51,8 @@ VertexBufferObject* GL_API::newVBO(const PrimitiveType& type) {
 
 PixelBufferObject* GL_API::newPBO(const PBOType& type) {
     return New glPixelBufferObject(type);
+}
+
+GenericVertexData* GL_API::newGVD() {
+    return New glGenericVertexData();
 }

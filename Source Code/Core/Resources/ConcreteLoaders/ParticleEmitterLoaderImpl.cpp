@@ -10,6 +10,9 @@ ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
     }else{
         ptr->getSceneNodeRenderState().useDefaultMaterial(false);
         ptr->setMaterial(NULL);
+        if(!ptr->initData()){
+            SAFE_DELETE(ptr);
+        }
     }
     return ptr;
 }

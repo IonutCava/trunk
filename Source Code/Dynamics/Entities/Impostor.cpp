@@ -8,8 +8,10 @@
 Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
     ResourceDescriptor materialDescriptor(name+"_impostor_material");
     materialDescriptor.setFlag(true); //No shader
+
     ResourceDescriptor impostorDesc(name+"_impostor");
     impostorDesc.setFlag(true); //No default material
+
     _dummy = CreateResource<Sphere3D>(impostorDesc);
     _dummy->setMaterial(CreateResource<Material>(materialDescriptor));
     if(GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD){

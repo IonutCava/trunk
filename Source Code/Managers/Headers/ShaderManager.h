@@ -70,7 +70,8 @@ public:
     I8      shaderFileWrite(char *atomName, const char *s);
     ///Bind the null shader
     bool    unbind();
-
+    ///Return a default shader if we try to render something with a material that is missing a valid shader
+    ShaderProgram* const getDefaultShader() const {return _imShader;}
 private:
     ///Shader cache
     ShaderMap        _shaderNameMap;
@@ -81,7 +82,10 @@ private:
     ///Shaders loaded from files are kept as atoms
     AtomMap          _atoms;
     ///Pointer to a shader that we will perform operations on
-    ShaderProgram*   _nullShader;
+    ShaderProgram* _nullShader;
+    ///Used to render geometry without valid materials.
+    ///Should emmulate the basic fixed pipeline functions (no lights, just color and texture)
+    ShaderProgram* _imShader;
     ///A simple check to see if the manager is ready to process commands
     bool             _init;
 

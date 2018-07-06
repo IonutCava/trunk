@@ -194,6 +194,27 @@ bool Scene::loadGeometry(const FileData& data){
     return true;
 }
 
+ParticleEmitter* Scene::getParticleEmitter(const std::string& name){
+    ParticleEmitterMap::const_iterator emitterIt = _particleEmitters.find(name);
+    if(emitterIt != _particleEmitters.end()){
+        return _particleEmitters[name];
+    }
+    return NULL;
+}
+
+ParticleEmitter* Scene::addParticleEmitter(const std::string& name, const ParticleEmitterDescriptor& descriptor){
+   ParticleEmitterMap::const_iterator emitterIt = _particleEmitters.find(name);
+   if(emitterIt != _particleEmitters.end()){
+       RemoveResource(_particleEmitters[name]);
+   }
+
+   ResourceDescriptor particleEmitter(name);
+   ParticleEmitter* temp = CreateResource<ParticleEmitter>(particleEmitter);    
+   _particleEmitters[name] = temp;
+   temp->setDescriptor(descriptor);
+   return temp;
+}
+
 SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const parentNode){
     SceneGraphNode* returnNode = NULL;
     if(parentNode)
@@ -337,7 +358,7 @@ bool Scene::loadPhysics(bool continueOnErrors){
 void Scene::clearPhysics(){
     if(_physicsInterface){
         _physicsInterface->exit();
-        delete _physicsInterface;
+        SAFE_DELETE(_physicsInterface);
     }
 }
 
@@ -356,7 +377,7 @@ bool Scene::deinitializeAI(bool continueOnErrors) {	///Shut down AIManager threa
 }
 
 void Scene::clearObjects(){
-    for(U8 i = 0; i < _terrainInfoArray.size(); i++){
+    for(U8 i = 0; i < _terrainInfoArray.size(); ++i){
         RemoveResource(_terrainInfoArray[i]);
     }
     _skiesSGN.clear(); //< Skies are cleared in the SceneGraph
@@ -366,6 +387,7 @@ void Scene::clearObjects(){
     _vegetationDataArray.clear();
     assert(_sceneGraph);
 
+    _particleEmitters.clear();
     SAFE_DELETE(_sceneGraph);
 }
 

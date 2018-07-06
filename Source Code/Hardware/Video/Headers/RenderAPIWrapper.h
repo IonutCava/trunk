@@ -84,6 +84,7 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 class PixelBufferObject;
+class GenericVertexData;
 class FrameBufferObject;
 class VertexBufferObject;
 
@@ -143,6 +144,7 @@ protected:
     virtual void setMousePosition(U16 x, U16 y) const = 0;
     virtual FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR) = 0;
     virtual VertexBufferObject* newVBO(const PrimitiveType& type = TRIANGLES) = 0;
+    virtual GenericVertexData*  newGVD() = 0;
     virtual PixelBufferObject*  newPBO(const PBOType& type = PBO_TEXTURE_2D) = 0;
     virtual Texture2D*          newTexture2D(const bool flipped = false) = 0;
     virtual TextureCubemap*     newTextureCubemap(const bool flipped = false) = 0;

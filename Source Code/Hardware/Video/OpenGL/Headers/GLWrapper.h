@@ -84,6 +84,7 @@ private:
     FrameBufferObject*  newFBO(const FBOType& type);
     VertexBufferObject* newVBO(const PrimitiveType& type);
     PixelBufferObject*  newPBO(const PBOType& type);
+    GenericVertexData*  newGVD();
 
     inline Texture2D*          newTexture2D(const bool flipped = false)                   {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
     inline TextureCubemap*     newTextureCubemap(const bool flipped = false)              {return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
@@ -165,6 +166,7 @@ public:
 
     static bool setActiveTextureUnit(GLuint unit,const bool force = false);
     static bool setActiveVAO(GLuint id,const bool force = false);
+    static bool setActiveVBO(GLuint id,const bool force = false);
     static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
            void updateProjectionMatrix();
            void updateViewMatrix();
@@ -225,6 +227,7 @@ private: //OpenGL specific:
     static glslopt_ctx* _GLSLOptContex;
     static glShaderProgram* _activeShaderProgram;
     static GLuint _activeVAOId;
+    static GLuint _activeVBOId;
     static GLuint _activeTextureUnit;
     static vec4<GLfloat> _prevClearColor;
     static bool _viewportForced;

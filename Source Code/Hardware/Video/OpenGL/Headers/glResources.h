@@ -231,18 +231,6 @@ template<class T> class vec4;
 
 namespace Divide {
     namespace GL {
-    ///State the various attribute locations to use in GLSL with VAO/VBO's
-    enum {
-         VERTEX_POSITION_LOCATION    = 0,
-         VERTEX_COLOR_LOCATION       = 1,
-         VERTEX_NORMAL_LOCATION      = 2,
-         VERTEX_TEXCOORD_LOCATION    = 3,
-         VERTEX_TANGENT_LOCATION     = 4,
-         VERTEX_BITANGENT_LOCATION   = 5,
-         VERTEX_BONE_WEIGHT_LOCATION = 6,
-         VERTEX_BONE_INDICE_LOCATION = 7
-    };
-
     /*----------- GLU overrides ------*/
     typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
     typedef std::stack<vec3<GLfloat>, vectorImpl<vec3<GLfloat> > > vector3Stack;

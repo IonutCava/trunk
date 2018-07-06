@@ -11,6 +11,7 @@ SceneManager::SceneManager() : FrameListener(),
                                _activeScene(NULL),
                                _renderPassCuller(NULL),
                                _renderPassManager(NULL),
+                               _defaultMaterial(NULL),
                                _init(false),
                                _previewDepthBuffer(false),
                                _frameCount(0)
@@ -34,7 +35,7 @@ SceneManager::~SceneManager(){
 bool SceneManager::init(GUI* const gui){
     //Load default material
     PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
-    XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial");
+    _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial");
 
     REGISTER_FRAME_LISTENER(&(this->getInstance()));
     _GUI = gui;
@@ -73,6 +74,7 @@ Scene* SceneManager::createScene(const std::string& name){
 
 bool SceneManager::unloadCurrentScene()  {  
     AIManager::getInstance().pauseUpdate(true); 
+    RemoveResource(_defaultMaterial);
     return _activeScene->unload();
 }
 

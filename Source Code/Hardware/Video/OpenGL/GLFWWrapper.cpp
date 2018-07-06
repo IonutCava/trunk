@@ -411,8 +411,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     //Create an immediate mode shader
     ShaderManager::getInstance().init();
-    ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
-    _imShader = CreateResource<ShaderProgram>(immediateModeShader);
+    _imShader = ShaderManager::getInstance().getDefaultShader();
 
     //_prevPointString = New FTPoint();
 
@@ -430,7 +429,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         ERROR_FN(Locale::get("ERROR_FONT_INIT"));
         return GLFW_WINDOW_INIT_ERROR;
     }
-    NS_GLIM::glim.SetVertexAttribLocation(Divide::GL::VERTEX_POSITION_LOCATION);
+    NS_GLIM::glim.SetVertexAttribLocation(Divide::VERTEX_POSITION_LOCATION);
     return 0;
 }
 
@@ -523,7 +522,6 @@ bool GL_API::initShaders(){
 }
 
 bool GL_API::deInitShaders(){
-    RemoveResource(_imShader);
     glslopt_cleanup(_GLSLOptContex);
     //Shut down glsw and clean memory
     return (glswShutdown() == 1);

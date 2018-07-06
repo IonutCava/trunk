@@ -69,7 +69,6 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
     _blurBuffer->AddAttachment(depthMapDescriptor, TextureDescriptor::Color0);
     _blurBuffer->toggleDepthBuffer(false);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
-    _blurBuffer->Create(GFX_DEVICE.getScreenBuffer(0)->getWidth(), GFX_DEVICE.getScreenBuffer(0)->getHeight(),_numSplits);
     _blurDepthMapShader->Uniform("size", vec2<F32>(GFX_DEVICE.getScreenBuffer(0)->getWidth(), GFX_DEVICE.getScreenBuffer(0)->getHeight()));
 }
 
@@ -100,7 +99,7 @@ void PSShadowMaps::resolution(U16 resolution, const SceneRenderState& sceneRende
         _depthMap->Create(shadowMapDimension,shadowMapDimension,_numSplits);
         _renderQuad->setDimensions(vec4<F32>(0,0,GFX_DEVICE.getScreenBuffer(0)->getWidth(), GFX_DEVICE.getScreenBuffer(0)->getHeight()));
     }
-
+    _blurBuffer->Create(GFX_DEVICE.getScreenBuffer(0)->getWidth(), GFX_DEVICE.getScreenBuffer(0)->getHeight(),_numSplits);
     ShadowMap::resolution(resolution,sceneRenderState);
 }
 

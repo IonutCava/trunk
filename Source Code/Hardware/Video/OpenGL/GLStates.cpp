@@ -14,6 +14,7 @@
 
 glShaderProgram* GL_API::_activeShaderProgram = NULL;
 GLuint GL_API::_activeVAOId = 0;
+GLuint GL_API::_activeVBOId = 0;
 GLuint GL_API::_activeTextureUnit = 0;
 vec4<GLfloat> GL_API::_prevClearColor = DefaultColors::DIVIDE_BLUE();
 
@@ -43,7 +44,7 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 
     if(!skipBuffers || forceAll){
         setActiveVAO(0,forceAll);
-        GLCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+        setActiveVBO(0,forceAll);
         GLCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
         glUniformBufferObject::unbind();
     }
@@ -263,6 +264,16 @@ bool GL_API::setActiveVAO(GLuint id,const bool force){
         
     _activeVAOId = id;
     GLCheck(glBindVertexArray(id));
+
+    return true;
+}
+
+bool GL_API::setActiveVBO(GLuint id,const bool force){
+    if(_activeVBOId == id && !force)
+        return false; //<prevent double bind
+        
+    _activeVBOId = id;
+    GLCheck(glBindBuffer(GL_ARRAY_BUFFER, id));
 
     return true;
 }

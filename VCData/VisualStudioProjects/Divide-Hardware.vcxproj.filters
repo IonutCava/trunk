@@ -411,6 +411,15 @@
     <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimInterface.h">
       <Filter>Video\OpenGL\glim\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glGenericVertexData.h">
+      <Filter>Video\OpenGL\Buffers\VertexBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers\d3dGenericVertexData.h">
+      <Filter>Video\Direct3D\Buffers\VertexBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBufferObject\Headers\GenericVertexData.h">
+      <Filter>Video\Buffers\VertexBufferObject\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp">
@@ -548,6 +557,9 @@
     <ClCompile Include="..\..\Source Code\Libs\src\GLIM\Stuff.cpp">
       <Filter>Video\OpenGL\glim</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glGenericVertexData.cpp">
+      <Filter>Video\OpenGL\Buffers\VertexBufferObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
@@ -660,6 +672,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\lightingDefaults.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\particles.glsl">
+      <Filter>shaders\GLSL</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -90,7 +90,7 @@ inline T* CreateResource(const ResourceDescriptor& descriptor){
 }
 
 template<class T>
-inline T* const FindResource(const std::string& name){
+inline T* const FindResourceImpl(const std::string& name){
     return static_cast<T*>(ResourceCache::getInstance().find(name));
 }
 

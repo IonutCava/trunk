@@ -20,7 +20,6 @@ bool Texture::LoadFile(U32 target, const std::string& name){
     img.flip(_flipped);
     // Save file contents in  the "img" object
     img.create(name);
-    _hasTransparency = img.alpha();
     // validate data
     if(!img.data()) {
         ERROR_FN(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
@@ -34,8 +33,20 @@ bool Texture::LoadFile(U32 target, const std::string& name){
     _width = img.dimensions().width;
     // Get height
     _height = img.dimensions().height;
+
     // Get bitdepth
     _bitDepth = img.bpp();
+
+    if(img.alpha()){
+        U32 imgSize = _bitDepth * _width * _height;
+        for(U32 i = 0; i < imgSize; i += _bitDepth){
+            if (img.data()[i + _bitDepth - 1] < 255){
+                _hasTransparency = true;
+                break;
+            }
+        }
+    }
+    
     GFXImageFormat texture_format = img.format();
     // Create a new API-dependent texture object
     loadData(target, img.data(), img.dimensions(), _bitDepth, texture_format);

@@ -16,7 +16,7 @@ namespace Navigation {
         //Generate a render state
         RenderStateBlockDescriptor navigationDebugDesc;
         navigationDebugDesc.setCullMode(CULL_MODE_NONE);
-		navigationDebugDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
+        navigationDebugDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
         _navMeshStateBlock = GFX_DEVICE.createStateBlock(navigationDebugDesc);
     }
 
@@ -25,7 +25,7 @@ namespace Navigation {
        SAFE_DELETE(_navMeshStateBlock);
        //Allow the primitive to be deleted
        if(_primitive)
-	       _primitive->_canZombify = true;
+           _primitive->_canZombify = true;
    }
 
    void NavMeshDebugDraw::paused(bool state) {
@@ -58,7 +58,7 @@ namespace Navigation {
                                       DELEGATE_BIND(&NavMeshDebugDraw::releaseMaterial,this));
       }
 
-	  assert(_primitive != NULL);
+      assert(_primitive != NULL);
 
       if(_dirty) _primitive->beginBatch();
    }
@@ -66,7 +66,7 @@ namespace Navigation {
    void NavMeshDebugDraw::endBatch(){
       if(_dirty) {
           if(_primitive)
-			  _primitive->endBatch();
+              _primitive->endBatch();
           _dirty = false;
       }
    }

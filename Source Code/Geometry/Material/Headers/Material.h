@@ -208,9 +208,6 @@ private:
     bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
     GeometryShaderType _gsInputType;        ///< Use triangles, lines or points as geometry shader input
     Unordered_map<RenderStage, ShaderProgram* > _shaderRef;
-    ///Used to render geometry without materials.
-    ///Should emmulate the basic fixed pipeline functions (no lights, just color and texture)
-    ShaderProgram* _imShader;
     ///Unordered maps have a lot of overhead, so use _shader[0] for final_stage, _shader[1] for z pre pass, _shader[2] for shadow stage, etc
     std::string _shader[3]; /*shader name*/
     bool        _shaderThreadedLoad;

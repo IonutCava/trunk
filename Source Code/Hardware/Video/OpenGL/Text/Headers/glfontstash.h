@@ -77,7 +77,7 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
      
     GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
-    glBindBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
+    GL_API::setActiveVBO(gl->glfons_vboID);
     glBufferData(GL_ARRAY_BUFFER, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, NULL, GL_STREAM_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0,                vertDataSize,                       verts);
     glBufferSubData(GL_ARRAY_BUFFER, vertDataSize,     vertDataSize,                       tcoords);
@@ -92,7 +92,7 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
 
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    GL_API::setActiveVBO(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 

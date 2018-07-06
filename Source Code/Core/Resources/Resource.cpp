@@ -5,7 +5,6 @@
 
 
 void Resource::refModifyCallback(bool increase){
-    PRINT_FN(" ---------------- Modified [%s] to ref count: [ %d ][ %s ]  ----------------  ", getName().c_str(), getRefCount(), increase ? "increment" : "decrement");
     TrackedObject::refModifyCallback(increase);
 }
 
@@ -18,8 +17,9 @@ namespace Divide {
     };
 };
 
-void* operator new(size_t t ,char* zFile, I32 nLine){
-#ifdef _DEBUG
+#ifndef NDEBUG
+
+void log_new(size_t t ,char* zFile, I32 nLine){
     if (t > Divide::Memory::maxAlloc)	{
         Divide::Memory::maxAlloc = t;
         Divide::Memory::zMaxFile = zFile;
@@ -31,21 +31,31 @@ void* operator new(size_t t ,char* zFile, I32 nLine){
             GETTIME(), t, zFile, nLine, Divide::Memory::maxAlloc, Divide::Memory::zMaxFile, Divide::Memory::nMaxLine);
 
     Application::getInstance().logMemoryOperation(true, Divide::Memory::outputLogBuffer, t);
-#endif
-
-    return malloc(t);
 }
 
-void operator delete(void * pxData ,char* zFile, I32 nLine){
-#ifdef _DEBUG
+
+void log_delete(size_t t,char* zFile, I32 nLine){
+
     sprintf(Divide::Memory::outputLogBuffer,
             "[ %9.2f ] : New deallocation [ %d ] in: \"%s\" at line: %d.\n\n",
-            GETTIME(), sizeof(pxData), zFile, nLine);
-    Application::getInstance().logMemoryOperation(false, Divide::Memory::outputLogBuffer, sizeof(pxData));
-#endif
-
-     free(pxData);
+            GETTIME(), t, zFile, nLine);
+    Application::getInstance().logMemoryOperation(false, Divide::Memory::outputLogBuffer, t);
 }
+
+void* operator new[]( size_t t,char* zFile, int nLine ){
+    log_new(t ,zFile, nLine);
+    return malloc (t);
+}
+void  operator delete[]( void *p,char* zFile, int nLine ){
+    free(p);
+}
+void* operator new(size_t t ,char* zFile, int nLine){
+    return malloc (t);
+}
+void  operator delete( void *p, char* zFile, int nLine){
+    free(p);
+}
+#endif
 
 void * malloc_simd(const size_t bytes) {
 #if defined(HAVE_ALIGNED_MALLOC)

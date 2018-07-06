@@ -26,53 +26,22 @@
 #include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
-/// Number of states per particle
-#define NUM_PARTICLE_STATES  4
 /// Descriptor used to build particles
 class ParticleDescriptor {
 public:
-   vec4<F32> _color[ NUM_PARTICLE_STATES ];
-   F32  _size[ NUM_PARTICLE_STATES ];
-   F32  _time[ NUM_PARTICLE_STATES ];
-
-   /// lifetime , in milliseconds of each particle
-   U32 _lifetime;
-   /// liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
-   I32 _lifetimeVariance;
-
-   /// Physics coefficients
-   F32   _drag;
-   F32   _wind;
-   F32   _gravity;
-
-   F32   _velocityFactor;
-   F32   _cAcceleration;
-
-   F32 _spinSpeed;
-   F32 _spinSpeedMin;
-   F32 _spinSpeedMax;
-   ///Default quad texture coordinates
-   vec2<F32>  _texCoords[4];
+    vec3<F32> pos, speed;
+    vec4<U8> rgba;
+    F32 size, angle, weight;
+    F32 life; // Remaining life of the particle. if < 0 : dead and unused.
+    F32 distanceToCamera;
+    bool operator<(ParticleDescriptor& that){
+        // Sort in reverse order : far particles drawn first.
+        return this->distanceToCamera > that.distanceToCamera;
+    }
 
 public:
-	ParticleDescriptor();
+    ParticleDescriptor();
    ~ParticleDescriptor();
-};
-
-/// The structure of each particle
-struct Particle {
-   vec3<F32> _position;
-   vec3<F32> _velocity;
-   vec3<F32> _acceleration;
-   vec3<F32> _orientation;
-   U32  _totalLifetime;
-   U32  _currentLifetime;
-   vec3<F32> _color;
-   F32  _size;
-   F32  _spinSpeed;
-   Particle *  _next;
-
-   bool build(ParticleDescriptor* const descriptor, const vec3<F32>& inheritedVelocity);
 };
 
 #endif

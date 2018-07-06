@@ -87,12 +87,33 @@ inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return (fabs(X/Y - 1) < TEST_EPSILON_
 inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE)  { return (fabs(X/Y - 1) < TOLERANCE); }
 inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (fabs(X/Y - 1) < TOLERANCE); }
 
-#define SAFE_DELETE(R)	           if(R){ delete R; R=NULL; }
-#define SAFE_DELETE_ARRAY(R)	   if(R){ delete [] R; R=NULL; }
-#define SAFE_DELETE_CHECK(R)       if(R){ delete R; R=NULL; return true;}else{return false;}
-#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ delete [] R; R=NULL; return true;}else{return false;}
-#define SAFE_DELETE_vector(R)      for(size_t r_iter(0); r_iter< R.size(); r_iter++){ delete R[r_iter]; }
-#define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ delete OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
+#if defined(NDEBUG)
+#   define New new
+#   define Del delete
+#else
+    void* operator new[]( size_t t,char* zFile, int nLine );
+    void* operator new(size_t t ,char* zFile, int nLine);
+    void  operator delete( void *p, char* zFile, int nLine);
+    void  operator delete[]( void *p,char* zFile, int nLine );
+
+#   define New new(__FILE__, __LINE__)
+#   define Del delete
+#endif
+void * malloc_simd(const size_t bytes);
+void free_simd(void * pxData);
+
+#ifdef _DEBUG
+void log_delete(size_t t,char* zFile, I32 nLine);
+#define LOG(X)                     log_delete(sizeof(X),__FILE__, __LINE__)
+#else
+#define LOG(X)
+#endif
+#define SAFE_DELETE(R)	           if(R){ LOG(R); Del R; R=NULL; }
+#define SAFE_DELETE_ARRAY(R)	   if(R){ LOG(R); Del [] R; R=NULL; }
+#define SAFE_DELETE_CHECK(R)       if(R){ LOG(R); Del R; R=NULL; return true;}else{return false;}
+#define SAFE_DELETE_ARRAY_CHECK(R) if(R){ LOG(R); Del [] R; R=NULL; return true;}else{return false;}
+#define SAFE_DELETE_vector(R)      for(size_t r_iter(0); r_iter< R.size(); r_iter++){ LOG(R); Del R[r_iter]; }
+#define SAFE_UPDATE(OLD,NEW)       if(OLD || NEW){ LOG(OLD); Del OLD; OLD=NEW;} ///OLD or NEW check is kinda' useless, but it's there for consistency
 
 #define DELEGATE_BIND boost::bind
 #define DELEGATE_REF  boost::ref

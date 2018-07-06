@@ -133,7 +133,7 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
                 //Add it to the appropriate bin if so ...
                 return getOrCreateBin(RenderBin::RBT_TRANSLUCENT);
             }
-            //... else add it to the general geoemtry bin
+            //... else add it to the general geometry bin
             return getOrCreateBin(RenderBin::RBT_MESH);
         }
     }

@@ -209,7 +209,7 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
 
     GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
         
-    std::vector<GLenum >buffers;
+    vectorImpl<GLenum >buffers;
 
     //For every attachement, be it a color or depth attachement ...
     for_each(TextureAttachements::value_type& it, _attachement){

@@ -26,24 +26,28 @@
 #include "core.h"
 #include "Particle.h"
 #include "Graphs/Headers/SceneNode.h"
+#include "Dynamics/Entities/Headers/Impostor.h"
 
 /// Basic definitions used by the particle emitter
 /// By default , every PE node is inert until you pass it a descriptor
 struct ParticleEmitterDescriptor {
-    U32 _emissionInterval;         ///< time in milliseconds between particle emission
-    U32 _emissionIntervalVariance; ///< time in milliseconds used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance, _emissionIntervalVariance))
+    U32 _particleCount;            ///< maximum number of particles for this emitter
+    I32 _emissionInterval;         ///< particles per second
+    I32 _emissionIntervalVariance; ///< particles per second used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance, _emissionIntervalVariance))
 
+    F32 _spread;
     F32 _velocity;				   ///< particle velocity on emission
     F32 _velocityVariance;		   ///< velocity variance (_velocity + rand(-_velocityVariance, _velocityVariance))
 
-    U32 _lifetime;                 ///< lifetime , in milliseconds of each particle
-    U32 _lifetimeVariance;          ///< liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
-
+    I32 _lifetime;                  ///< lifetime , in milliseconds of each particle
+    I32 _lifetimeVariance;          ///< liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
+    std::string _textureFileName;
     ParticleEmitterDescriptor();
 };
 
+class Texture;
 class Impostor;
-
+class GenericVertexData;
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
 class ParticleEmitter : public SceneNode {
 public:
@@ -55,34 +59,76 @@ public:
 
     /// Set the callback, the position and the radius of the trigger
     void setDescriptor(const ParticleEmitterDescriptor& descriptor);
+    
+    inline void setDrawImpostor(const bool state) {_drawImpostor = state;}
 
     /// preprocess particles here
-    void update(const U64 deltaTime);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
     ///Dummy function from SceneNode;
     void onDraw(const RenderStage& currentStage);
 
     ///SceneNode concrete implementations
+    bool initData();
     bool unload();
     void postLoad(SceneGraphNode* const sgn);
 
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn);
 
+    void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode* const sgn);
+
     ///SceneNode test
     bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {
-        return _drawImpostor;
+        if(_enabled && _impostor)
+            return _impostor->getDummy()->isInView(boundingBox, sphere, distanceCheck);
+
+        return false;
     }
 
+    const ParticleEmitterDescriptor& getDescriptor() const {return _descriptor;}
+
+protected:
+    void prepareDepthMaterial(SceneGraphNode* const sgn);
+    void releaseDepthMaterial();
+    void prepareMaterial(SceneGraphNode* const sgn);
+    void releaseMaterial();
+
+    I32 findUnusedParticle();
+    void sortParticles();
+    void uploadToGPU();
+
 private:
+    vectorImpl<ParticleDescriptor > _particles;
+    vectorImpl<F32 > _particlePositionData;
+    vectorImpl<U8 >  _particleColorData;
+
+    I32 _lastUsedParticle;
+    U32 _particlesCurrentCount;
     /// create particles
     bool _enabled;
+    bool _created;
+    bool _uploaded;
     /// draw the impostor?
     bool _drawImpostor;
+    bool _updateParticleEmitterBB;
     /// used for debug rendering / editor
     Impostor* _impostor;
     /// pointers to important scenegraph information
     SceneGraphNode *_particleEmitterSGN, *_impostorSGN;
+
+    GenericVertexData* _particleGPUBuffer;
+
+    RenderStateBlock* _particleStateBlock;
+
+    ShaderProgram* _particleShader;
+    ShaderProgram* _particleDepthShader;
+    Texture* _particleTexture;
+
+    ParticleEmitterDescriptor _descriptor;
+
+    static mat4<F32> _viewMatrixCache;
 };
 
 #endif

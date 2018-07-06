@@ -1,6 +1,7 @@
 invariant gl_Position;
 
 vec4  dvd_Vertex;
+vec4  dvd_Color;
 vec3  dvd_Normal;
 vec3  dvd_Tangent;
 vec3  dvd_BiTangent;
@@ -21,6 +22,7 @@ uniform int dvd_clip_plane_count;
 uniform int lodLevel = 0;
 
 in vec3  inVertexData;
+in vec4  inColorData;
 in vec3  inNormalData;
 in vec2  inTexCoordData;
 in vec3  inTangentData;
@@ -111,6 +113,7 @@ void computeData(){
     dvd_Normal     = inNormalData;
     dvd_Tangent    = inTangentData;
     dvd_BiTangent  = inBiTangentData;
+    dvd_Color      = inColorData;
 
     #if defined(USE_GPU_SKINNING)
     dvd_BoneWeight = inBoneWeightData;

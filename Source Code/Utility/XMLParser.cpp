@@ -628,7 +628,7 @@ namespace XML {
 
         std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());
 
-        if(FindResource<Material>(materialName)) skip = true;
+        if(FindResourceImpl<Material>(materialName)) skip = true;
         Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
         if(skip) return mat;
         ///Skip if the material was cooked by a different renderer

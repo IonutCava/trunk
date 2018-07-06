@@ -9,7 +9,7 @@ NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
 glIMPrimitive::glIMPrimitive() : IMPrimitive()
 {
     _imInterface = New NS_GLIM::GLIM_BATCH();
-    _imInterface->SetVertexAttribLocation(Divide::GL::VERTEX_POSITION_LOCATION);
+    _imInterface->SetVertexAttribLocation(Divide::VERTEX_POSITION_LOCATION);
     assert(_imInterface != NULL);
     glimPrimitiveType[API_POINTS] = NS_GLIM::GLIM_POINTS;
     glimPrimitiveType[LINES] = NS_GLIM::GLIM_LINES;

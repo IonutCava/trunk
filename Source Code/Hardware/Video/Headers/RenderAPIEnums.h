@@ -28,6 +28,20 @@
 #define toBit(X) (1 << (X))
 #endif
 
+namespace Divide {
+    ///State the various attribute locations to use in shaders with VAO/VBO's
+    enum {
+         VERTEX_POSITION_LOCATION    = 0,
+         VERTEX_COLOR_LOCATION       = 1,
+         VERTEX_NORMAL_LOCATION      = 2,
+         VERTEX_TEXCOORD_LOCATION    = 3,
+         VERTEX_TANGENT_LOCATION     = 4,
+         VERTEX_BITANGENT_LOCATION   = 5,
+         VERTEX_BONE_WEIGHT_LOCATION = 6,
+         VERTEX_BONE_INDICE_LOCATION = 7
+    };
+};
+
 ///Fixed pipeline functionality should be avoided. Both D3D and OGL should have these matrices
 enum MATRIX_MODE{
     VIEW_MATRIX = 0,

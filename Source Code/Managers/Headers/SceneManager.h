@@ -125,7 +125,8 @@ private:
     SceneMap _sceneMap;
     ///Scene_Name -Scene_Factory table
     Unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
-    
+    Material* _defaultMaterial;
+
 END_SINGLETON
 
 ///Return a pointer to the currently active scene

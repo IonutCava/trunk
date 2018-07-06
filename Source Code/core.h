@@ -26,19 +26,6 @@
 #ifdef HIDE_DEBUG_CONSOLE
     #pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
-
-#define NEW_PARAM (__FILE__, __LINE__)
-#define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
-#define NEW_DECL , char* zFile, int nLine
-
-void* operator new(size_t t ,char* zFile, int nLine);
-void operator delete(void * pxData ,char* zFile, int nLine);
-void * malloc_simd(const size_t bytes);
-void free_simd(void * pxData);
-
-#define New new NEW_PARAM
-#define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
-
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif

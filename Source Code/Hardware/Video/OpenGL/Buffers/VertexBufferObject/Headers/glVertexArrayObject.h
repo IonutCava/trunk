@@ -27,14 +27,14 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 ///Always bind a shader, even a dummy one when rendering geometry. No more fixed matrix API means no more VBOs or VAs
 ///One VAO contains: one VBO for data, one IBO for indices and uploads to the shader vertex attribs for:
-///- Vertex Data  bound to location Divide::GL::VERTEX_POSITION_LOCATION
-///- Colors       bound to location Divide::GL::VERTEX_COLOR_LOCATION
-///- Normals      bound to location Divide::GL::VERTEX_NORMAL_LOCATION
-///- TexCoords    bound to location Divide::GL::VERTEX_TEXCOORD_LOCATION
-///- Tangents     bound to location Divide::GL::VERTEX_TANGENT_LOCATION
-///- BiTangents   bound to location Divide::GL::VERTEX_BITANGENT_LOCATION
-///- Bone weights bound to location Divide::GL::VERTEX_BONE_WEIGHT_LOCATION
-///- Bone indices bound to location Divide::GL::VERTEX_BONE_INDICE_LOCATION
+///- Vertex Data  bound to location Divide::VERTEX_POSITION_LOCATION
+///- Colors       bound to location Divide::VERTEX_COLOR_LOCATION
+///- Normals      bound to location Divide::VERTEX_NORMAL_LOCATION
+///- TexCoords    bound to location Divide::VERTEX_TEXCOORD_LOCATION
+///- Tangents     bound to location Divide::VERTEX_TANGENT_LOCATION
+///- BiTangents   bound to location Divide::VERTEX_BITANGENT_LOCATION
+///- Bone weights bound to location Divide::VERTEX_BONE_WEIGHT_LOCATION
+///- Bone indices bound to location Divide::VERTEX_BONE_INDICE_LOCATION
 
 class glVertexArrayObject : public VertexBufferObject {
 public:

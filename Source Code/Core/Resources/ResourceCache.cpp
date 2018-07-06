@@ -37,6 +37,9 @@ Resource* ResourceCache::loadResource(const std::string& name){
 }
 
 void ResourceCache::Destroy(){
+    if(_resDB.empty())
+        return;
+
     for_each(ResourceMap::value_type& it, _resDB){
         if(remove(it.second, true)){
             SAFE_DELETE(it.second);

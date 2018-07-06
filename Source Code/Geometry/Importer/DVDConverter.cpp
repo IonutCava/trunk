@@ -156,7 +156,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
     if(temp.find(".LOD1") != std::string::npos ||
         temp.find(".LOD2") != std::string::npos/* ||
         temp.find(".LODn") != std::string::npos*/){ ///Add as many LOD levels as you please
-        tempSubMesh = FindResource<SubMesh>(_fileLocation.substr(0,_fileLocation.rfind(".LOD")));
+        tempSubMesh = FindResourceImpl<SubMesh>(_fileLocation.substr(0,_fileLocation.rfind(".LOD")));
         assert(tempSubMesh != NULL);
         tempSubMesh->incLODcount();
     }else{
@@ -283,7 +283,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
     // If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
     bool skip = false;
     ResourceDescriptor tempMaterialDescriptor(materialName);
-    if(FindResource<Material>(materialName)) skip = true;
+    if(FindResourceImpl<Material>(materialName)) skip = true;
     // If we found it in the Resource Cache, return a copy of it
     tempMaterial = CreateResource<Material>(tempMaterialDescriptor);
     if(skip) return tempMaterial;
