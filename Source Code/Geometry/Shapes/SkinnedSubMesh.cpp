@@ -22,6 +22,7 @@ SkinnedSubMesh::~SkinnedSubMesh()
         Task_ptr task = task_ptr.lock();
         if (task) {
             task->stopTask();
+            while (!task->isFinished());
         }
     }
     _bbBuildTasks.clear();

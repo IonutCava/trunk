@@ -200,22 +200,18 @@ bool GL_API::initShaders() {
     GLint glswState = glswInit();
 
     ShaderOffsetArray lineOffsets = {0};
-// Add our engine specific defines and various code pieces to every GLSL
-// shader
-// Add version as the first shader statement, followed by copyright notice
-    appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
+    // Add our engine specific defines and various code pieces to every GLSL
+    // shader
+    // Add version as the first shader statement, followed by copyright notice
+    appendToShaderHeader(ShaderType::COUNT, "#version 440 core", lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,
                          "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
                          "#extension GL_ARB_shader_draw_parameters : require",
                          lineOffsets);
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#extension GL_ARB_shader_storage_buffer_object : require",
-        lineOffsets);
 
-// Add current build environment information to the shaders
+    // Add current build environment information to the shaders
 #if defined(_DEBUG)
     appendToShaderHeader(ShaderType::COUNT, "#define _DEBUG", lineOffsets);
 #elif defined(_PROFILE)

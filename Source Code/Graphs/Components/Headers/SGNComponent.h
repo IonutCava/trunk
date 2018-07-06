@@ -65,10 +65,6 @@ class SGNComponent : private NonCopyable {
 
     inline ComponentType getType() const { return _type; }
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
-
-    virtual void setActive(const bool state) { 
-        _parentNodeActive = state;
-    }
     
    protected:
     /// The current instance using this component
@@ -78,7 +74,6 @@ class SGNComponent : private NonCopyable {
     ComponentType _type;
     U64 _elapsedTime;
     U64 _deltaTime;
-    bool _parentNodeActive;
 };
 
 };  // namespace Divide

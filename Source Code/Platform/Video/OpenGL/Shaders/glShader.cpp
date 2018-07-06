@@ -66,6 +66,7 @@ bool glShader::compile() {
     }
 
     glCompileShader(_shader);
+    validate();
 
     _compiled = true;
 
