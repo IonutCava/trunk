@@ -344,16 +344,14 @@ bool WarScene::load(const stringImpl& name) {
     cylinder[3] = _sceneGraph->findNode("cylinderSW").lock();
     cylinder[4] = _sceneGraph->findNode("cylinderSE").lock();
 
-    U32 temp = 0;
     for (U8 i = 0; i < 5; ++i) {
-        RenderingComponent* const renderable =
-            cylinder[i]->getChild(0, temp).get<RenderingComponent>();
+        RenderingComponent* const renderable = cylinder[i]->getChild(0).get<RenderingComponent>();
         renderable->getMaterialInstance()->setDoubleSided(true);
-        cylinder[i]->getChild(0, temp).getNode()->getMaterialTpl()->setDoubleSided(true);
+        cylinder[i]->getChild(0).getNode()->getMaterialTpl()->setDoubleSided(true);
     }
 
     // Make the center cylinder reflective
-    const Material_ptr& matInstance = cylinder[0]->getChild(0, temp).get<RenderingComponent>()->getMaterialInstance();
+    const Material_ptr& matInstance = cylinder[0]->getChild(0).get<RenderingComponent>()->getMaterialInstance();
     matInstance->setShininess(200);
 
     std::shared_ptr<SceneNode> cylinderMeshNW = cylinder[1]->getNode();
@@ -461,9 +459,9 @@ bool WarScene::load(const stringImpl& name) {
 
     SceneGraphNode_ptr flag;
     flag = _sceneGraph->findNode("flag").lock();
-    RenderingComponent* const renderable = flag->getChild(0, temp).get<RenderingComponent>();
+    RenderingComponent* const renderable = flag->getChild(0).get<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
-    const Material_ptr& mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
+    const Material_ptr& mat = flag->getChild(0).getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
     flag->setActive(false);
     std::shared_ptr<SceneNode> flagNode = flag->getNode();
@@ -475,7 +473,7 @@ bool WarScene::load(const stringImpl& name) {
     flag0->usageContext(flag->usageContext());
     PhysicsComponent* flagPComp = flag0->get<PhysicsComponent>();
     NavigationComponent* flagNComp = flag0->get<NavigationComponent>();
-    RenderingComponent* flagRComp = flag0->getChild(0, temp).get<RenderingComponent>();
+    RenderingComponent* flagRComp = flag0->getChild(0).get<RenderingComponent>();
 
     flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
@@ -491,7 +489,7 @@ bool WarScene::load(const stringImpl& name) {
 
     flagPComp = flag1->get<PhysicsComponent>();
     flagNComp = flag1->get<NavigationComponent>();
-    flagRComp = flag1->getChild(0, temp).get<RenderingComponent>();
+    flagRComp = flag1->getChild(0).get<RenderingComponent>();
 
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
     flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
@@ -509,7 +507,7 @@ bool WarScene::load(const stringImpl& name) {
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
-    flagRComp = firstPersonFlag->getChild(0, temp).get<RenderingComponent>();
+    flagRComp = firstPersonFlag->getChild(0).get<RenderingComponent>();
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN());
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;

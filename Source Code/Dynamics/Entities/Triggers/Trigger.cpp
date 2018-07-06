@@ -38,11 +38,10 @@ void Trigger::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
             sgn.addNode(_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
         }
         /// update dummy position if it is so
-        U32 temp = 0;
-        sgn.getChild(0, temp).get<PhysicsComponent>()->setPosition(_triggerPosition);
+        sgn.getChild(0).get<PhysicsComponent>()->setPosition(_triggerPosition);
         _triggerImpostor->setRadius(_radius);
         _triggerImpostor->renderState().setDrawState(true);
-        sgn.getChild(0, temp).setActive(true);
+        sgn.getChild(0).setActive(true);
     } else {
         if (_triggerImpostor) {
             _triggerImpostor->renderState().setDrawState(false);

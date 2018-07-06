@@ -123,10 +123,9 @@ void RenderPassCuller::frumstumPartitionCuller(const std::atomic_bool& stopReque
                                                RenderStage stage,
                                                F32 cullMaxDistance)
 {
-    U32 childCount = 0;
-    for (U32 i = start; i < end; ++i) {
-        frustumCullNode(stopRequested, root.getChild(i, childCount), camera, stage, cullMaxDistance, i, true);
-    }
+    root.forEachChild([this, &stopRequested, &camera, stage, cullMaxDistance](const SceneGraphNode& child, I32 i) {
+        frustumCullNode(stopRequested, child, camera, stage, cullMaxDistance, i, true);
+    }, start, end);
 }
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
@@ -161,16 +160,9 @@ void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
         vectorAlg::emplace_back(nodes, 0, currentNode.shared_from_this());
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
-            U32 childCount = currentNode.getChildCount();
-            for (U32 i = 0; i < childCount; ++i) {
-                frustumCullNode(stopRequested,
-                                currentNode.getChild(i, childCount),
-                                currentCamera,
-                                currentStage,
-                                cullMaxDistance,
-                                nodeListIndex,
-                                false);
-            }
+            currentNode.forEachChild([this, &stopRequested, &currentCamera, currentStage, cullMaxDistance, nodeListIndex](const SceneGraphNode& child) {
+                frustumCullNode(stopRequested, child, currentCamera, currentStage, cullMaxDistance, nodeListIndex, false);
+            });
         } else {
             // All nodes are in view entirely
             addAllChildren(currentNode, currentStage, nodes);
@@ -179,18 +171,14 @@ void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
 }
 
 void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderStage currentStage, VisibleNodeList& nodes) {
-    U32 childCount = currentNode.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        SceneGraphNode_cptr child = currentNode.getChild(i, childCount).shared_from_this();
-        if (!(currentStage == RenderStage::SHADOW &&
-              !currentNode.get<RenderingComponent>()->castsShadows())) {
-        
-            if (child->isActive() && !_cullingFunction[to_uint(currentStage)](*child)) {
-                vectorAlg::emplace_back(nodes, 0, child);
-                addAllChildren(*child, currentStage, nodes);
+    currentNode.forEachChild([this, &currentNode, currentStage, &nodes](const SceneGraphNode& child) {
+        if (!(currentStage == RenderStage::SHADOW &&   !currentNode.get<RenderingComponent>()->castsShadows())) {
+            if (child.isActive() && !_cullingFunction[to_uint(currentStage)](child)) {
+                vectorAlg::emplace_back(nodes, 0, child.shared_from_this());
+                addAllChildren(child, currentStage, nodes);
             }
         }
-    }
+    });
 }
 
 };

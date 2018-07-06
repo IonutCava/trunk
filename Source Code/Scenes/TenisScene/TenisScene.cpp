@@ -312,11 +312,10 @@ bool TenisScene::load(const stringImpl& name) {
     //------------------------ Load up game elements
     //-----------------------------///
     _net = _sceneGraph->findNode("Net");
-    //U32 childCount = _net->getChildCount();
-    //for (U32 i = 0; i < childCount; ++i) {
-    //    SceneGraphNode& child = _net->getChild(i);
+    //_net->forEachChild([](const SceneGraphNode& child) {
     //    child.setReceivesShadows(false);
-    //}
+    //});
+
     _floor = _sceneGraph->findNode("Floor");
     _floor.lock()->get<RenderingComponent>()->castsShadows(false);
 

@@ -96,7 +96,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
-    void drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) override;
+    void drawText(const vectorImpl<GUITextBatchEntry>& batch) override;
     bool draw(const GenericDrawCommand& cmd) override;
 
     /// Sets the current state block to the one passed as a param

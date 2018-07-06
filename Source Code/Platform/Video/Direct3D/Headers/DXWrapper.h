@@ -49,7 +49,7 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void beginFrame() override;
     void endFrame(bool swapBuffers) override;
 
-    void drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) override;
+    void drawText(const vectorImpl<GUITextBatchEntry>& batch) override;
     bool draw(const GenericDrawCommand& cmd);
 
     void flushCommandBuffer(const CommandBuffer& commandBuffer) override;

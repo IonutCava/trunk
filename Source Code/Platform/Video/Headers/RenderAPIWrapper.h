@@ -52,6 +52,8 @@ class GUIElement;
 class RenderStateBlock;
 class SceneRenderState;
 
+struct GUITextBatchEntry;
+
 enum class ErrorCode : I32;
 
 template <typename T>
@@ -93,8 +95,8 @@ class RingBuffer {
         RingBuffer(const RingBuffer& other)
             : _queueLength(other._queueLength)
         {
-            _queueReadIndex = other._queueReadIndex;
-            _queueWriteIndex = other._queueWriteIndex;
+            _queueReadIndex = other.queueReadIndex();
+            _queueWriteIndex = other.queueWriteIndex();
         }
 
         virtual ~RingBuffer()
@@ -102,23 +104,19 @@ class RingBuffer {
         }
 
         const inline U32 queueLength() const {
-            ReadLock r_lock(_lock);
             return _queueLength;
         }
 
         const inline U32 queueWriteIndex() const {
-            ReadLock r_lock(_lock);
             return _queueWriteIndex;
         }
 
         const inline U32 queueReadIndex() const {
-            ReadLock r_lock(_lock);
             return _queueReadIndex;
         }
 
         virtual void incQueue() { 
             if (queueLength() > 1) {
-                WriteLock w_lock(_lock);
                 _queueWriteIndex = (_queueWriteIndex + 1) % _queueLength;
                 _queueReadIndex  = (_queueReadIndex + 1) % _queueLength;
             }
@@ -126,7 +124,6 @@ class RingBuffer {
 
         inline void decQueue() {
             if (queueLength() > 1) {
-                WriteLock w_lock(_lock);
                 _queueWriteIndex = (_queueWriteIndex - 1) % _queueLength;
                 _queueReadIndex = (_queueReadIndex - 1) % _queueLength;
             }
@@ -134,9 +131,8 @@ class RingBuffer {
 
     private:
         const U32 _queueLength;
-        U32 _queueReadIndex;
-        U32 _queueWriteIndex;
-        mutable SharedLock _lock;
+        std::atomic_uint _queueReadIndex;
+        std::atomic_uint _queueWriteIndex;
 
 };
 
@@ -153,9 +149,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv) = 0;
     virtual void closeRenderingAPI() = 0;
 
-    virtual void drawText(const TextLabel& textLabel,
-                          const vec2<F32>& position,
-                          size_t stateHash) = 0;
+    virtual void drawText(const vectorImpl<GUITextBatchEntry>& batch) = 0;
 
     virtual void updateClipPlanes() = 0;
     virtual U64  getFrameDurationGPU() = 0;

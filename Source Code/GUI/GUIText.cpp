@@ -18,10 +18,16 @@ GUIText::GUIText(ULL guiID,
 
 void GUIText::draw() const {
     if (!text().empty()) {
-        Attorney::GFXDeviceGUI::drawText(*this,
-                                         getStateBlockHash(),
-                                         vec2<F32>(_position.width, _heightCache - _position.height));
+        static vectorImpl<GUITextBatchEntry> entry(1);
+        entry[0]._textLabel = this;
+        entry[0]._position.set(getPosition());
+        entry[0]._stateHash = getStateBlockHash();
+        Attorney::GFXDeviceGUI::drawText(entry);
     }
+}
+
+vec2<F32> GUIText::getPosition() const {
+    return vec2<F32>(_position.width, _heightCache - _position.height);
 }
 
 void GUIText::onChangeResolution(U16 w, U16 h) {

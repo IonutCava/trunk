@@ -374,11 +374,9 @@ DEFINE_SINGLETON(GFXDevice)
 
     void setBaseViewport(const vec4<I32>& viewport);
 
-    inline void drawText(const TextLabel& text,
-                         const vec2<F32>& position,
-                         size_t stateHash) {
+    inline void drawText(const vectorImpl<GUITextBatchEntry>& batch) {
         uploadGPUBlock();
-        _api->drawText(text, position, stateHash);
+        _api->drawText(batch);
     }
 
     void onChangeResolution(U16 w, U16 h);
@@ -516,10 +514,8 @@ END_SINGLETON
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(const TextLabel& text,
-                             size_t stateHash,
-                             const vec2<F32>& position) {
-            return GFXDevice::instance().drawText(text, position, stateHash);
+        static void drawText(const vectorImpl<GUITextBatchEntry>& batch) {
+            return GFXDevice::instance().drawText(batch);
         }
 
         friend class Divide::GUI;

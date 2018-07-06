@@ -62,15 +62,14 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     if (getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
         bool playAnimations = sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS) &&
                               _playAnimations;
-        U32 childCount = sgn.getChildCount();
-        for (U32 i = 0; i < childCount; ++i) {
-            AnimationComponent* comp = sgn.getChild(i, childCount).get<AnimationComponent>();
+        sgn.forEachChild([playAnimations, deltaTime](const SceneGraphNode& child) {
+            AnimationComponent* comp = child.get<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
             if (comp) {
                 comp->playAnimations(playAnimations && comp->playAnimations());
                 comp->incParentTimeStamp(deltaTime);
             }
-        }
+        });
     }
 
     Object3D::sceneUpdate(deltaTime, sgn, sceneState);

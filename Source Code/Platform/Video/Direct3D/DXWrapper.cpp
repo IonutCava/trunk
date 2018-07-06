@@ -32,7 +32,7 @@ void DX_API::endFrame(bool swapBuffers) {}
 
 void DX_API::updateClipPlanes() {}
 
-void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) {}
+void DX_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {}
 
 bool DX_API::draw(const GenericDrawCommand& cmd) { return false; }
 

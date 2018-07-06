@@ -58,7 +58,7 @@ void SceneGraph::unload()
     U32 childCount = 0;
     stringImpl childNameCpy;
     while((childCount = _root->getChildCount()) != 0) {
-        SceneGraphNode& child = _root->getChild(childCount - 1, childCount);
+        SceneGraphNode& child = _root->getChild(childCount - 1);
         childNameCpy = child.getName();
 
         if (!_root->removeNode(child)) {

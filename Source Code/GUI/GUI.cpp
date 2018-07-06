@@ -93,6 +93,8 @@ void GUI::onUnloadScene(Scene* scene) {
 }
 
 void GUI::draw() const {
+    static vectorImpl<GUITextBatchEntry> textBatch;
+
     if (!_init || !_activeScene) {
         return;
     }
@@ -104,12 +106,25 @@ void GUI::draw() const {
     _guiShader->bind();
 
     // global elements
+    textBatch.resize(0);
     for (const GUIMap::value_type& guiStackIterator : _guiElements) {
         GUIElement& element = *guiStackIterator.second.first;
         // Skip hidden elements
         if (element.isVisible()) {
-            element.draw();
+            // Cache text elements
+            if (element.getType() == GUIType::GUI_TEXT) {
+                GUIText& textElement = static_cast<GUIText&>(element);
+                if (!textElement.text().empty()) {
+                    textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
+                }
+            } else {
+                element.draw();
+            }
         }
+    }
+
+    if (!textBatch.empty()) {
+        Attorney::GFXDeviceGUI::drawText(textBatch);
     }
 
     ReadLock r_lock(_guiStackLock);

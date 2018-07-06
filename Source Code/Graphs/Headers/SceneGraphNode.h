@@ -193,23 +193,36 @@ class SceneGraphNode : public GUIDWrapper,
     bool isRelated(const SceneGraphNode& target) const;
     bool isChild(const SceneGraphNode& target, bool recursive) const;
 
+    void forEachChild(const DELEGATE_CBK_PARAM<SceneGraphNode&>& callback);
+    void forEachChild(const DELEGATE_CBK_PARAM<const SceneGraphNode&>& callback) const;
+
+    //Returns false if the loop was interrupted
+    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM<SceneGraphNode&, bool>& callback);
+    //Returns false if the loop was interrupted
+    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM<const SceneGraphNode&, bool>& callback) const;
+
+    void forEachChild(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32>& callback, U32 start, U32 end);
+    void forEachChild(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32>& callback, U32 start, U32 end) const;
+    //Returns false if the loop was interrupted
+    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32, bool>& callback, U32 start, U32 end);
+    //Returns false if the loop was interrupted
+    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32, bool>& callback, U32 start, U32 end) const;
+
     inline bool hasChildren() const {
         return getChildCount() > 0;
     }
 
-    inline SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) {
+    inline SceneGraphNode& getChild(U32 idx) {
         ReadLock r_lock(_childLock);
-        updatedChildCount = getChildCount();
-        assert(idx < updatedChildCount);
+        assert(idx <  getChildCount());
         const SceneGraphNode_ptr& child = _children.at(idx);
         assert(child);
         return *child;
     }
 
-    inline const SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) const {
+    inline const SceneGraphNode& getChild(U32 idx) const {
         ReadLock r_lock(_childLock);
-        updatedChildCount = getChildCount();
-        assert(idx < updatedChildCount);
+        assert(idx <  getChildCount());
         const SceneGraphNode_ptr& child = _children.at(idx);
         assert(child);
         return *child;

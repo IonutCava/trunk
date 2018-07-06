@@ -108,6 +108,7 @@ protected:
 
 protected:
     GUIMap _guiElements;
+
     vec2<U16> _resolutionCache;
 };
 

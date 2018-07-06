@@ -141,7 +141,6 @@ class glShaderProgram final : public ShaderProgram {
     bool loadFromBinary();
        
     bool recompileInternal() override;
-
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
     bool load() override;

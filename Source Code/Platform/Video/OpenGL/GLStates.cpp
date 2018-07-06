@@ -380,32 +380,32 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
     switch (target) {
         case GL_ARRAY_BUFFER: {
             index = 0;
-            }break;
+        }break;
         case GL_TEXTURE_BUFFER: {
             index = 1;
-            }break;
+        }break;
         case GL_UNIFORM_BUFFER: {
             index = 2;
-            }break;
+        }break;
         case GL_SHADER_STORAGE_BUFFER: {
             index = 3;
-            }break;
+        }break;
         case GL_ELEMENT_ARRAY_BUFFER: {
             index = 4;
-            }break;
+        }break;
         case GL_PIXEL_UNPACK_BUFFER: {
             index = 5;
-            }break;
+        }break;
         case GL_DRAW_INDIRECT_BUFFER: {
             index = 6;
-            }break;
-        default:
+        }break;
+        default: {
             // Make sure the target is available. Assert if it isn't as this
             // means that a non-supported feature is used somewhere
-            DIVIDE_ASSERT(
-                IS_IN_RANGE_INCLUSIVE(index, 0, 6),
-                "GLStates error: attempted to bind an invalid buffer target!");
+            DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(index, 0, 6),
+                          "GLStates error: attempted to bind an invalid buffer target!");
             return false;
+        }
     };
 
     // Prevent double bind

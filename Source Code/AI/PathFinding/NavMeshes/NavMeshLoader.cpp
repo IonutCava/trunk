@@ -465,15 +465,14 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
 // follow -Ionut
 next:
     ;
-    U32 childCount = sgn.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        SceneGraphNode& child = sgn.getChild(i, childCount);
-        if (!parse(child.get<BoundsComponent>()->getBoundingBox(), outData, child)) {
-            return false;
-        }
-    }
 
-    return true;
+    return !sgn.forEachChildInterruptible([&outData](SceneGraphNode& child) {
+                if (!parse(child.get<BoundsComponent>()->getBoundingBox(), outData, child)) {
+                    return false;
+                }
+                return true;
+            });
+
 }
 };
 };  // namespace Navigation

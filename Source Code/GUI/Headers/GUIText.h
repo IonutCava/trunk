@@ -36,6 +36,27 @@
 
 namespace Divide {
 
+struct GUITextBatchEntry {
+    GUITextBatchEntry()
+        : _textLabel(nullptr),
+          _stateHash(0)
+    {
+    }
+
+    GUITextBatchEntry(const TextLabel *textLabel,
+                      const vec2<F32>& position,
+                      size_t stateHash)
+        : _textLabel(textLabel),
+          _position(position),
+          _stateHash(stateHash)
+    {
+    }
+
+    const TextLabel *_textLabel = 0;
+    vec2<F32> _position;
+    size_t _stateHash;
+};
+
 class GUIText : public GUIElement, public TextLabel {
     friend class GUIInterface;
 
@@ -53,7 +74,7 @@ class GUIText : public GUIElement, public TextLabel {
     void onMouseUp(const GUIEvent& event);
     void onMouseDown(const GUIEvent& event);
     void onChangeResolution(U16 w, U16 h);
-
+    vec2<F32> getPosition() const;
 protected:
     inline void initialHeightCache(F32 height) { _heightCache = height; }
 

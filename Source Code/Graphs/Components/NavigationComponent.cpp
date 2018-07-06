@@ -15,18 +15,16 @@ NavigationComponent::~NavigationComponent() {}
 void NavigationComponent::navigationContext(const NavigationContext& newContext) {
     _navigationContext = newContext;
     
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        _parentSGN.getChild(i, childCount).get<NavigationComponent>()->navigationContext(_navigationContext);
-    }
+    _parentSGN.forEachChild([&newContext](const SceneGraphNode& child) {
+        child.get<NavigationComponent>()->navigationContext(newContext);
+    });
 }
 
 void NavigationComponent::navigationDetailOverride(const bool detailOverride) {
     _overrideNavMeshDetail = detailOverride;
-    
-    U32 childCount = _parentSGN.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        _parentSGN.getChild(i, childCount).get<NavigationComponent>()->navigationDetailOverride(detailOverride);
-    }
+
+    _parentSGN.forEachChild([&detailOverride](const SceneGraphNode& child) {
+        child.get<NavigationComponent>()->navigationDetailOverride(detailOverride);
+    });
 }
 };

@@ -32,10 +32,10 @@ void BoundsComponent::update(const U64 deltaTime) {
         }
 
         _boundingBox.set(_refBoundingBox);
-        U32 childCount = _parentSGN.getChildCount();
-        for (U32 i = 0; i < childCount; ++i) {
-            _boundingBox.add(_parentSGN.getChild(i, childCount).get<BoundsComponent>()->getBoundingBox());
-        }
+
+        _parentSGN.forEachChild([this](const SceneGraphNode& child) {
+            _boundingBox.add(child.get<BoundsComponent>()->getBoundingBox());
+        });
 
         if (!_lockBBTransforms) {
             _boundingBox.transform(_worldMatrix);

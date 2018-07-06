@@ -656,50 +656,49 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
 /// (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
-void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) {
+void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
     if (Config::ENABLE_GPU_VALIDATION) {
         constexpr char* groupLabel = "OpenGL render text start!";
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, groupLabel);
     }
 
-    // Retrieve the font from the font cache
-    I32 font = getFont(textLabel._font);
-    // The font may be invalid, so skip this text label
-    if (font == FONS_INVALID) {
-        return;
-    }
-
-    setStateBlock(stateHash);
-
-    // See FontStash documentation for the following block
+    fonsClearState(_fonsContext);
+    for (const GUITextBatchEntry& entry : batch)
     {
-        fonsClearState(_fonsContext);
+        const TextLabel& textLabel = *entry._textLabel;
+        // Retrieve the font from the font cache
+        I32 font = getFont(textLabel._font);
+        // The font may be invalid, so skip this text label
+        if (font != FONS_INVALID) {
+            setStateBlock(entry._stateHash);
 
-        F32 lh = 0;
-        fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
-        fonsSetBlur(_fonsContext, textLabel._blurAmount);
-        fonsSetBlur(_fonsContext, textLabel._spacing);
-        fonsSetAlign(_fonsContext, textLabel._alignFlag);
-        fonsSetSize(_fonsContext, to_float(textLabel._fontSize));
-        fonsSetFont(_fonsContext, font);
+            fonsSetFont(_fonsContext, font);
+            fonsSetBlur(_fonsContext, textLabel._blurAmount);
+            fonsSetBlur(_fonsContext, textLabel._spacing);
+            fonsSetAlign(_fonsContext, textLabel._alignFlag);
+            fonsSetSize(_fonsContext, to_float(textLabel._fontSize));
+            fonsSetColour(_fonsContext,
+                          textLabel._colour.r,
+                          textLabel._colour.g,
+                          textLabel._colour.b,
+                          textLabel._colour.a);
 
-        fonsSetColour(_fonsContext,
-                     textLabel._colour.r,
-                     textLabel._colour.g,
-                     textLabel._colour.b,
-                     textLabel._colour.a);
+            F32 lh = 0;
+            fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
 
-      
-        const vectorImpl<stringImpl>& text = textLabel.text();
-        vectorAlg::vecSize lineCount = text.size();
-        for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
-            fonsDrawText(_fonsContext,
-                         position.x,
-                         position.y - (lh * i),
-                         text[i].c_str(),
-                         nullptr);
-            // Register each label rendered as a draw call
-            _context.registerDrawCall();
+            const vectorImpl<stringImpl>& text = textLabel.text();
+            const vec2<F32>& position = entry._position;
+
+            vectorAlg::vecSize lineCount = text.size();
+            for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
+                fonsDrawText(_fonsContext,
+                             position.x,
+                             position.y - (lh * i),
+                             text[i].c_str(),
+                             nullptr);
+                // Register each label rendered as a draw call
+                _context.registerDrawCall();
+            }
         }
     }
 

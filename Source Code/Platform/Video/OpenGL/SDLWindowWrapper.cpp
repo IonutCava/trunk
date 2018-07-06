@@ -38,6 +38,7 @@ namespace {
         }
 
         bool init(U32 size, const DisplayWindow& window) {
+            WriteLock w_lock(_glContextLock);
             _contexts.resize(size, std::make_pair(nullptr, false));
             for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
                 ctx.first = SDL_GL_CreateContext(window.getRawWindow());
@@ -46,6 +47,7 @@ namespace {
         }
 
         bool destroy() {
+            WriteLock w_lock(_glContextLock);
             for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
                 SDL_GL_DeleteContext(ctx.first);
             }
@@ -54,8 +56,10 @@ namespace {
         }
 
         bool getAvailableContext(SDL_GLContext& ctx) {
+            UpgradableReadLock ur_lock(_glContextLock);
             for (std::pair<SDL_GLContext, bool>& ctxIt : _contexts) {
                 if (!ctxIt.second) {
+                    UpgradeToWriteLock w_lock(ur_lock);
                     ctx = ctxIt.first;
                     ctxIt.second = true;
                     return true;
@@ -66,6 +70,7 @@ namespace {
         }
 
     private:
+        SharedLock _glContextLock;
         vectorImpl<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
     } g_ContextPool;
 };
@@ -89,9 +94,6 @@ ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
 ErrorCode GL_API::destroyGLContext() {
     SDL_GL_DeleteContext(GLUtil::_glRenderContext);
     g_ContextPool.destroy();
-
-    WriteLock w_lock(GLUtil::_glContextLock);
-    GLUtil::_glSecondaryContexts.clear();
 
     return ErrorCode::NO_ERR;
 }
@@ -387,25 +389,15 @@ void GL_API::closeRenderingAPI() {
 }
 
 void GL_API::syncToThread(const std::thread::id& threadID) {
+    ACKNOWLEDGE_UNUSED(threadID);
     if (glbinding::getCurrentContext() == 0) {
-        std::hash<std::thread::id> hasher;
-        size_t threadHash = hasher(threadID);
-
-        SDL_GLContext ctx;
-        {
-            WriteLock w_lock(GLUtil::_glContextLock);
-            hashMapImpl<size_t, SDL_GLContext>::iterator it;
-            it = GLUtil::_glSecondaryContexts.find(threadHash);
-            assert(it == std::cend(GLUtil::_glSecondaryContexts));
-            // This also makes the context current
-            bool ctxFound = g_ContextPool.getAvailableContext(ctx);
-            assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
-            ACKNOWLEDGE_UNUSED(ctxFound);
-
-            hashAlg::emplace(GLUtil::_glSecondaryContexts, threadHash, ctx);
-        }
-
-        SDL_GL_MakeCurrent(Application::instance().windowManager().getActiveWindow().getRawWindow(), ctx);
+        // This also makes the context current
+        assert(GLUtil::_glSecondaryContext == nullptr && "GL_API::syncToThread: double init context for current thread!");
+        bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
+        assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
+        ACKNOWLEDGE_UNUSED(ctxFound);
+        SDL_GL_MakeCurrent(Application::instance().windowManager().getActiveWindow().getRawWindow(),
+                           GLUtil::_glSecondaryContext);
         glbinding::Binding::initialize(false);
         // Enable OpenGL debug callbacks for this context as well
         if (Config::ENABLE_GPU_VALIDATION) {
@@ -413,7 +405,7 @@ void GL_API::syncToThread(const std::thread::id& threadID) {
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             // Debug callback in a separate thread requires a flag to distinguish it
             // from the main thread's callbacks
-            glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, ctx);
+            glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
         }
     }
 }
