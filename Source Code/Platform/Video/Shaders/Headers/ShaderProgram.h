@@ -44,7 +44,7 @@ class Shader;
 class ShaderBuffer;
 struct GenericDrawCommand;
 
-class ShaderProgram : public HardwareResource {
+class NOINITVTABLE ShaderProgram : public HardwareResource {
    public:
     /// A list of built-in sampler slots. Use these if possible
     enum class TextureUsage : U32 {

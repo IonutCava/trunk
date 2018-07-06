@@ -319,7 +319,7 @@ class Material : public Resource {
         retMatrix.setCol(1, _shaderData._diffuse);
         retMatrix.setCol(2, _shaderData._specular);
         retMatrix.setCol(
-            3, vec4<F32>(_shaderData._emissive, _shaderData._shininess));
+            3, vec4<F32>(_shaderData._emissive.rgb(), _shaderData._shininess));
     }
 
     inline F32 getParallaxFactor() const { return _parallaxFactor; }

@@ -42,7 +42,7 @@ class ShaderProgram;
 /// Shader represents one of a program's rendering stages (vertex, geometry,
 /// fragment, etc)
 /// It can be used simultaneously in multiple programs/pipelines
-class Shader : public TrackedObject {
+class NOINITVTABLE Shader : public TrackedObject {
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for

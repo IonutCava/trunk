@@ -62,7 +62,7 @@ bool BoundingBox::Collision(const BoundingBox& AABB2) const {
 /// Optimized method
 bool BoundingBox::Intersect(const Ray& r, F32 t0, F32 t1) const {
     // ReadLock r_lock(_lock);
-    vec3<F32> bounds[] = {_min, _max};
+    const vec3<F32> bounds[] = {_min, _max};
 
     F32 t_min = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;
     F32 t_max = (bounds[1 - r.sign[0]].x - r.origin.x) * r.inv_direction.x;

@@ -76,7 +76,7 @@ namespace Attorney {
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2
 /// states:
 /// one for game information and one for rendering information
-class Scene : public Resource, public Input::InputAggregatorInterface {
+class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterface {
     friend class Attorney::SceneManager;
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;

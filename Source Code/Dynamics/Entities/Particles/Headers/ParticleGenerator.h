@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class ParticleGenerator {
+class NOINITVTABLE ParticleGenerator {
    public:
     ParticleGenerator() {}
     virtual ~ParticleGenerator() {}

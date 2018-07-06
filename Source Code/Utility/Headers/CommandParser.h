@@ -32,13 +32,12 @@
 #ifndef _COMMAND_PARSER_H_
 #define _COMMAND_PARSER_H_
 
-#include "HashMap.h"
-#include <functional>
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
 
 namespace Divide {
 
 /// A utility class used to process a string input
-class CommandParser {
+class NOINITVTABLE CommandParser {
    public:
     CommandParser();           //< Constructor
     virtual ~CommandParser();  //< Destructor

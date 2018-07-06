@@ -70,7 +70,7 @@ class PhysicsAsset {
     PhysicsComponent* _parentComponent;
 };
 
-class PhysicsAPIWrapper {
+class NOINITVTABLE PhysicsAPIWrapper {
    protected:
     friend class PXDevice;
     virtual ErrorCode initPhysicsAPI(U8 targetFrameRate) = 0;

@@ -42,7 +42,7 @@
 
 namespace Divide {
 
-class GenericVertexData : public VertexDataInterface {
+class NOINITVTABLE GenericVertexData : public VertexDataInterface {
    public:
     struct AttributeDescriptor {
         AttributeDescriptor()

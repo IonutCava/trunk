@@ -44,7 +44,7 @@ enum class RendererType : U32 {
 
 /// A n abstract renderer used to switch between different rendering techniques:
 /// ForwardPlus, Deferred Shading, etc
-class Renderer {
+class NOINITVTABLE Renderer {
    public:
     Renderer(RendererType type) : _type(type), _debugView(false) {}
 

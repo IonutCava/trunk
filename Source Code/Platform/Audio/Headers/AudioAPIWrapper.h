@@ -44,7 +44,7 @@ class AudioState {
 static const U32 MAX_SOUND_BUFFERS = 64;
 
 /// Audio Programming Interface
-class AudioAPIWrapper {
+class NOINITVTABLE AudioAPIWrapper {
    protected:
     friend class SFXDevice;
     virtual ErrorCode initAudioAPI() = 0;

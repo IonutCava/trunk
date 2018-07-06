@@ -44,8 +44,8 @@
 namespace Divide {
 namespace Util {
 
-struct GraphPlot {
-    const char* _plotName;
+struct NOINITVTABLE GraphPlot {
+    stringImpl _plotName;
     virtual bool empty() const = 0;
 };
 

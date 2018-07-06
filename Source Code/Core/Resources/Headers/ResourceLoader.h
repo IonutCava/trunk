@@ -38,7 +38,7 @@ namespace Divide {
 
 class Resource;
 class HardwareResource;
-class ResourceLoader : private NonCopyable {
+class NOINITVTABLE ResourceLoader : private NonCopyable {
    public:
     ResourceLoader(const ResourceDescriptor& descriptor)
         : _descriptor(descriptor) {}

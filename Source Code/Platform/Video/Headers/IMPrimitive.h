@@ -41,7 +41,7 @@ class Texture;
 class ShaderProgram;
 enum class PrimitiveType : U32;
 /// IMPrimitive replaces immediate mode calls to VB based rendering
-class IMPrimitive : public GUIDWrapper, private NonCopyable {
+class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
    public:
     inline void setRenderStates(const DELEGATE_CBK<>& setupStatesCallback,
                                 const DELEGATE_CBK<>& releaseStatesCallback) {

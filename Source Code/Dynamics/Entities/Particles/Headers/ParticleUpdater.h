@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class ParticleUpdater {
+class NOINITVTABLE ParticleUpdater {
    public:
     ParticleUpdater() {}
     virtual ~ParticleUpdater() {}

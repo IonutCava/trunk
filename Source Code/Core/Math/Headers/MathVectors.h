@@ -79,13 +79,27 @@ class Quaternion;
 template <typename T>
 class vec2 {
    public:
-    vec2() : x(0), y(0) {}
-    vec2(T value) : x(value), y(value) {}
-    vec2(T _x, T _y) : x(_x), y(_y) {}
-    vec2(const T *_v) : x(_v[0]), y(_v[1]) {}
-    vec2(const vec2 &_v) : x(_v.x), y(_v.y) {}
-    vec2(const vec3<T> &_v);
-    vec2(const vec4<T> &_v);
+    vec2() : vec2((T)0)
+    {
+    }
+    vec2(T value) : vec2(value, value)
+    {
+    }
+    vec2(T _x, T _y) : x(_x), y(_y)
+    {
+    }
+    vec2(const T *_v) : vec2(_v[0], _v[1])
+    {
+    }
+    vec2(const vec2 &_v) : vec2(_v._v)
+    {
+    }
+    vec2(const vec3<T> &_v) : vec2(_v.xy())
+    {
+    }
+    vec2(const vec4<T> &_v) : vec2(_v.xy())
+    {
+    }
 
     bool operator==(const vec2 &v) const { return this->compare(v); }
     bool operator!=(const vec2 &v) const { return !(*this == v); }
@@ -170,7 +184,7 @@ class vec2 {
     /// source vector
     inline void set(const vec4<T> &v) { this->set(v.x, v.y); }
     /// set the 2 components of the vector back to 0
-    inline void reset() { this->set(0, 0); }
+    inline void reset() { this->set(0); }
     /// return the vector's length
     inline T length() const {
         return std::sqrt(this->x * this->x + this->y * this->y);
@@ -246,13 +260,30 @@ inline vec2<T> normalize(vec2<T> &vector) {
 template <typename T>
 class vec3 {
    public:
-    vec3() : x(0), y(0), z(0) {}
-    vec3(T value) : x(value), y(value), z(value) {}
-    vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
-    vec3(const T *v) : x(v[0]), y(v[1]), z(v[2]) {}
-    vec3(const vec2<T> &v, T _z) : x(v.x), y(v.y), z(_z) {}
-    vec3(const vec3 &v) : x(v.x), y(v.y), z(v.z) {}
-    vec3(const vec4<T> &v);
+    vec3() : vec3((T)0)
+    {
+    }
+    vec3(T value) : vec3(value, value, value) 
+    {
+    }
+    vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) 
+    {
+    }
+    vec3(const T *v) : vec3(v[0], v[1], v[2])
+    {
+    }
+    vec3(const vec2<T> &v) : vec3(v, 0)
+    {
+    }
+    vec3(const vec2<T> &v, T _z) : vec3(v.x, v.y, _z)
+    {
+    }
+    vec3(const vec3 &v) : vec3(v._v)
+    {
+    }
+    vec3(const vec4<T> &v) : vec3(v.x, v.y, v.z)
+    {
+    }
 
     bool operator!=(const vec3 &v) const { return !(*this == v); }
     bool operator==(const vec3 &v) const { return this->compare(v); }
@@ -359,7 +390,7 @@ class vec3 {
     /// source vector
     inline void set(const vec4<T> &v) { this->set(v.x, v.y, v.z); }
     /// set all the components back to 0
-    inline void reset() { this->set(0, 0, 0); }
+    inline void reset() { this->set(0); }
     /// return the vector's length
     inline T length() const { return std::sqrt(lengthSquared()); }
     /// return true if length is zero
@@ -463,13 +494,36 @@ inline vec3<T> normalize(vec3<T> &vector) {
 template <typename T>
 class vec4 {
    public:
-    vec4() : x(0), y(0), z(0), w(1) {}
-    vec4(T value) : x(value), y(value), z(value), w(value) {}
-    vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
-    vec4(const T *v) : x(v[0]), y(v[1]), z(v[2]), w(v[3]) {}
-    vec4(const vec3<T> &v) : x(v.x), y(v.y), z(v.z), w(1) {}
-    vec4(const vec3<T> &v, T _w) : x(v.x), y(v.y), z(v.z), w(_w) {}
-    vec4(const vec4 &v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
+    vec4() : x(0), y(0), z(0), w(1)
+    {
+    }
+    vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w)
+    {
+    }
+    vec4(T value) : vec4(value, value, value, value)
+    {
+    }
+    vec4(const T *v) : vec4(v[0], v[1], v[2], v[3])
+    {
+    }
+    vec4(const vec2<T> &v) : vec4(v, 0)
+    {
+    }
+    vec4(const vec2<T> &v, T _z) : vec4(v, _z, 1)
+    {
+    }
+    vec4(const vec2<T> &v, T _z, T _w) : vec4(v.x, v.y, _z, _w)
+    {
+    }
+    vec4(const vec3<T> &v) : vec4(v, 1)
+    {
+    }
+    vec4(const vec3<T> &v, T _w) : vec4(v.x, v.y, v.z, _w)
+    {
+    }
+    vec4(const vec4 &v) : vec4(v._v)
+    {
+    }
 
     bool operator==(const vec4 &v) const { return this->compare(v); }
     bool operator!=(const vec4 &v) const { return !(*this == v); }
@@ -647,7 +701,7 @@ class vec4 {
     /// set the 4 components of the vector using a source vector
     inline void set(const vec4 &v) { this->set(v.x, v.y, v.z, v.w); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T> &v) { this->set(v.x, v.y, v.z, 1); }
+    inline void set(const vec3<T> &v) { this->set(v, 1); }
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec3<T> &v, T w) { this->set(v.x, v.y, v.z, w); }
     /// set the 4 components of the vector using a smaller source vector

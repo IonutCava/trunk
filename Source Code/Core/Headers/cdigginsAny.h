@@ -18,7 +18,13 @@ struct bad_any_cast {};
 
 struct empty_any {};
 
-struct base_any_policy {
+#if defined(_MSC_VER)
+#define NOINITVTABLE __declspec(novtable)
+#else
+#define NOINITVTABLE 
+#endif
+
+struct NOINITVTABLE base_any_policy {
     virtual void static_delete(void** x) = 0;
     virtual void copy_from_value(void const* src, void** dest) = 0;
     virtual void clone(void* const* src, void** dest) = 0;

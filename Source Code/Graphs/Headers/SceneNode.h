@@ -67,7 +67,7 @@ namespace Attorney {
     class SceneNodeGraph;
 };
 
-class SceneNode : public Resource {
+class NOINITVTABLE SceneNode : public Resource {
     friend class Attorney::SceneNodeGraph;
 
    public:

@@ -632,7 +632,7 @@ void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D,
     plot3D._plotName = plot2D._plotName;
     plot3D._coords.reserve(plot2D._coords.size());
     for (const vec2<F32>& coords : plot2D._coords) {
-        vectorAlg::emplace_back(plot3D._coords, coords.x, coords.y, 0.0f);
+        vectorAlg::emplace_back(plot3D._coords, coords, 0.0f);
     }
     plot3DGraph(plot3D, color);
 }
@@ -643,14 +643,17 @@ void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
     if (plot3D.empty()) {
         return;
     }
+    const vectorImpl<vec3<F32>>& coords = plot3D._coords;
 
+    vectorAlg::vecSize coordCount = coords.size();
     vectorImpl<Line> plotLines;
-    plotLines.reserve(plot3D._coords.size());
-    vectorAlg::vecSize coordCount = plot3D._coords.size();
-    for (vectorAlg::vecSize i = 0; i < coordCount - 1; ++i) {
-        const vec3<F32>& startCoord = plot3D._coords[i];
-        const vec3<F32>& endCoord = plot3D._coords[i + 1];
-        vectorAlg::emplace_back(plotLines, startCoord, endCoord, color);
+    plotLines.reserve(coordCount / 2);
+
+
+    for (vectorImpl<vec3<F32>>::const_iterator it = std::begin(coords);
+        it != std::end(coords);
+        ++it) {
+        vectorAlg::emplace_back(plotLines, *(it), *(it++), color);
     }
 
     drawLines(plotLines, mat4<F32>(), vec4<I32>(), false, false);

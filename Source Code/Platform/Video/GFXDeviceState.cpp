@@ -231,7 +231,7 @@ void GFXDevice::closeRenderingAPI() {
         case RenderAPI::Direct3D: {
             DX_API::destroyInstance();
         } break;
-        case RenderAPI::Mantle: {
+        case RenderAPI::Vulkan: {
         } break;
         case RenderAPI::None: {
         } break;
@@ -332,7 +332,7 @@ ErrorCode GFXDevice::createAPIInstance() {
             Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
             return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
-        case RenderAPI::Mantle: {
+        case RenderAPI::Vulkan: {
             Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
             return ErrorCode::GFX_NOT_SUPPORTED;
         } break;

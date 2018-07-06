@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class OcclusionQuery {
+class NOINITVTABLE OcclusionQuery {
    public:
     OcclusionQuery() {}
     virtual ~OcclusionQuery() {}

@@ -133,18 +133,6 @@ inline void vec2<T>::round() {
     set((T)std::roundf(this->x), (T)std::roundf(this->y));
 }
 
-template <typename T>
-inline vec2<T>::vec2(const vec3<T> &v) {
-    this->x = v.x;
-    this->y = v.y;
-}
-
-template <typename T>
-inline vec2<T>::vec2(const vec4<T> &v) {
-    this->x = v.x;
-    this->y = v.y;
-}
-
 /// export the vector's components in the first 2 positions of the specified
 /// array
 template <typename T>
@@ -372,13 +360,6 @@ inline void vec3<T>::get(T *v) const {
 template <typename T>
 inline vec3<T> vec3<T>::vector(const vec3 &vp1, const vec3 &vp2) const {
     return vec3(vp1.x - vp2.x, vp1.y - vp2.y, vp1.z - vp2.z);
-}
-
-template <typename T>
-inline vec3<T>::vec3(const vec4<T> &v) {
-    this->x = v.x;
-    this->y = v.y;
-    this->z = v.z;
 }
 
 /// return the closest point on the line defined by the 2 points (A, B) and this

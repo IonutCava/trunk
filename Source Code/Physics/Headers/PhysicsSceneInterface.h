@@ -40,7 +40,7 @@ class Scene;
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
-class PhysicsSceneInterface {
+class NOINITVTABLE PhysicsSceneInterface {
    public:
     PhysicsSceneInterface(Scene* parentScene) : _parentScene(parentScene) {}
 

@@ -64,7 +64,7 @@ struct KeyEvent {
     KeyEvent() : _key(static_cast<KeyCode>(0)), _pressed(false), _text(0) {}
 };
 
-class InputAggregatorInterface {
+class NOINITVTABLE InputAggregatorInterface {
    public:
     /// Keyboard
     virtual bool onKeyDown(const KeyEvent &arg) = 0;

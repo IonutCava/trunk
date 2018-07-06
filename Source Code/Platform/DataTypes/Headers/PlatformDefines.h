@@ -513,8 +513,9 @@ inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
 
 };  // namespace MemoryManager
 };  // namespace Divide
-#if defined(_MSC_VER)
 
+#if defined(_MSC_VER)
+#define NOINITVTABLE __declspec(novtable)
 #pragma warning(disable : 4103)  //< Boost alignment shouts
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4996)  //< strcpy
@@ -524,6 +525,8 @@ inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #elif defined(__GNUC__)
 //#    pragma GCC diagnostic ignored "-Wall"
+#else
+#define NOINITVTABLE 
 #endif
 
 #ifdef max

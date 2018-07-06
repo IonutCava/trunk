@@ -42,7 +42,7 @@ namespace AI {
 
 enum class AIMsg : U32;
 /// Provides a scene-level AI implementation
-class AISceneImpl : private NonCopyable {
+class NOINITVTABLE AISceneImpl : private NonCopyable {
    public:
     AISceneImpl() : _entity(nullptr), _activeGoal(nullptr), _currentStep(-1)
     {

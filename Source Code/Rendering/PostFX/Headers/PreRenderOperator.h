@@ -16,7 +16,7 @@ enum class RenderStage : U32;
 /// It's called a prerender operator because it operates on the buffer before
 /// "rendering" to the screen
 /// Technically, it's a post render operation
-class PreRenderOperator {
+class NOINITVTABLE PreRenderOperator {
    protected:
     enum class PostFXRenderStage : U32 {
         FXAA = toBit(1),

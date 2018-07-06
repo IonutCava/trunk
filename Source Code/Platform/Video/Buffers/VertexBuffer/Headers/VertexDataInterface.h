@@ -38,9 +38,9 @@
 
 namespace Divide {
 
-class VertexDataInterface : public FrameListener,
-                            public GUIDWrapper,
-                            private NonCopyable {
+class NOINITVTABLE VertexDataInterface : public FrameListener,
+                                         public GUIDWrapper,
+                                         private NonCopyable {
    public:
     VertexDataInterface() : FrameListener(), GUIDWrapper() {
         REGISTER_FRAME_LISTENER(this, 4);

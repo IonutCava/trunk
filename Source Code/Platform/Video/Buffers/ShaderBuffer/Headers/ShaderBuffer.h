@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class ShaderProgram;
-class ShaderBuffer : private NonCopyable, public GUIDWrapper {
+class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
    public:
     typedef void* bufferPtr;
 

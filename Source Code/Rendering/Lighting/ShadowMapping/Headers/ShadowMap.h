@@ -52,7 +52,7 @@ class ShadowMapInfo;
 class SceneRenderState;
 
 /// All the information needed for a single light's shadowmap
-class ShadowMap {
+class NOINITVTABLE ShadowMap {
    public:
     ShadowMap(Light* light, Camera* shadowCamera, ShadowType type);
     virtual ~ShadowMap();

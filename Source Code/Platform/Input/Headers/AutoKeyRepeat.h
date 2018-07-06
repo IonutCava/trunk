@@ -41,7 +41,7 @@ namespace Divide {
 namespace Input {
 /// A class that repeatedly calls "repeatKey" between "begin" and "end" calls at
 /// specified intervals
-class AutoRepeatKey {
+class NOINITVTABLE AutoRepeatKey {
    private:
     Input::KeyEvent _key;
 

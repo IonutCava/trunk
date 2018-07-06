@@ -49,7 +49,7 @@ class Quad3D;
 class Framebuffer;
 class ShaderProgram;
 /// Virtual interface for reflective surfaces
-class Reflector : public FrameListener {
+class NOINITVTABLE Reflector : public FrameListener {
    public:
     Reflector(ReflectorType type, const vec2<U16>& resolution);
     virtual ~Reflector();

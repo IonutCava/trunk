@@ -238,7 +238,7 @@ class RenderStateBlock;
 class RenderStateBlockDescriptor;
 
 /// Renderer Programming Interface
-class RenderAPIWrapper {
+class NOINITVTABLE RenderAPIWrapper {
    protected:
     friend class GFXDevice;
     /*Application display frame*/

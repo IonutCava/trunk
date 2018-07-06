@@ -44,7 +44,7 @@ enum class SensorType : U32 {
 };
 
 class AIEntity;
-class Sensor {
+class NOINITVTABLE Sensor {
    public:
     inline SensorType sensorType() const { return _type; }
     virtual void update(const U64 deltaTime) = 0;

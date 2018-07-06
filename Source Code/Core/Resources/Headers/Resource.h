@@ -61,7 +61,7 @@ enum class ResourceState : U32 {
     RES_LOADED = 3    //<The resource is loaded and available
 };
 
-class Resource : public TrackedObject {
+class NOINITVTABLE Resource : public TrackedObject {
     friend class ResourceCache;
     friend class ResourceLoader;
     template <typename X>

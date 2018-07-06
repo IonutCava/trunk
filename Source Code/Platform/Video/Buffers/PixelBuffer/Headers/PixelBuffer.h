@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-class PixelBuffer {
+class NOINITVTABLE PixelBuffer {
    public:
     virtual bool Create(
         U16 width, U16 height, U16 depth = 0,

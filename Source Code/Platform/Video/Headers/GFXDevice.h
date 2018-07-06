@@ -135,7 +135,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
        OpenGL,    ///< 4.x+
        OpenGLES,  ///< 3.x+
        Direct3D,  ///< 11.x+ (not supported yet)
-       Mantle,    ///< not supported yet
+       Vulkan,    ///< not supported yet
        None,      ///< not supported yet
        COUNT
    };

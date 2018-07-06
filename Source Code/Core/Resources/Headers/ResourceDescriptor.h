@@ -41,7 +41,7 @@ namespace Divide {
 
 /// Dummy class so that resource loaders can have fast access to extra
 /// information in a general format
-class PropertyDescriptor {
+class NOINITVTABLE PropertyDescriptor {
    public:
     enum class DescriptorType : U32 {
         DESCRIPTOR_TEXTURE = 0,

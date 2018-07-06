@@ -38,7 +38,7 @@
 namespace Divide {
 
 class Texture;
-class Framebuffer : private NonCopyable, public GUIDWrapper {
+class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
    public:
     struct FramebufferTarget {
         bool _depthOnly;

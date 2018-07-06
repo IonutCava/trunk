@@ -170,14 +170,13 @@ const vectorImpl<GlobalFloatEvent>& getFloatEvents() {
     return *vec;
 }
 
-void plotFloatEvents(const char* eventName,
+void plotFloatEvents(const stringImpl& eventName,
                      vectorImpl<GlobalFloatEvent> eventsCopy,
                      GraphPlot2D& targetGraph) {
     targetGraph._plotName = eventName;
     targetGraph._coords.clear();
     for (GlobalFloatEvent& crtEvent : eventsCopy) {
-        // direct pointer compare
-        if (eventName == crtEvent._eventName) {
+        if (eventName.compare(crtEvent._eventName) == 0) {
             vectorAlg::emplace_back(
                 targetGraph._coords,
                 static_cast<F32>(

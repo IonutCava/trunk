@@ -194,7 +194,7 @@ void recordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp);
 
 const vectorImpl<GlobalFloatEvent>& getFloatEvents();
 
-void plotFloatEvents(const char* eventName,
+void plotFloatEvents(const stringImpl& eventName,
                      vectorImpl<GlobalFloatEvent> eventsCopy,
                      GraphPlot2D& targetGraph);
 
