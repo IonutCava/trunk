@@ -114,38 +114,7 @@ SceneGraphNode::~SceneGraphNode()
     }
     _children.clear();
 
-
-    if (BitCompare(_componentMask, to_U32(ComponentType::ANIMATION))) {
-        RemoveComponent<AnimationComponent>();
-    }
-
-    if (BitCompare(_componentMask, to_U32(ComponentType::INVERSE_KINEMATICS))) {
-        RemoveComponent<IKComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::NETWORKING))) {
-        RemoveComponent<NetworkingComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::RAGDOLL))) {
-        RemoveComponent<RagdollComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::NAVIGATION))) {
-        RemoveComponent<NavigationComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::RIGID_BODY))) {
-        RemoveComponent<RigidBodyComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::TRANSFORM))) {
-        RemoveComponent<TransformComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::BOUNDS))) {
-        RemoveComponent<BoundsComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::UNIT))) {
-        RemoveComponent<UnitComponent>();
-    }
-    if (BitCompare(_componentMask, to_U32(ComponentType::RENDERING))) {
-         RemoveComponent<RenderingComponent>();
-    }
+    ECS::ECS_Engine->GetComponentManager()->RemoveAllComponents(GetEntityID());
 
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
 

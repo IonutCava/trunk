@@ -194,6 +194,8 @@ namespace ECS
 			const ComponentTypeId CTID = T::STATIC_COMPONENT_TYPE_ID;
 
 			const ComponentId componentId = this->m_EntityComponentMap[entityId.index][CTID];
+            assert(componentId != INVALID_COMPONENT_ID && "FATAL: Trying to remove a component which is not used by this entity!")
+                
 
 			IComponent* component = this->m_ComponentLUT[componentId];
 
