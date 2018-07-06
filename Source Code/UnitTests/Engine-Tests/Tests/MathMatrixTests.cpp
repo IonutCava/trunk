@@ -332,12 +332,6 @@ TEST_MEMBER_FUNCTION(matN, divideOperator, scalar)
                            5, 4, 3, 2);
     CHECK_FALSE((input3 / 2) == (input3 * 2));
 
-    mat4<I32> temp1 = input3 / 2;
-    mat4<I32> temp2 = input3 * 0.5f;
-    for (U8 i = 0; i < 16; ++i) {
-        std::cout << temp1[i] << " - " << temp2[i] << std::endl;
-    }
-
     CHECK_TRUE((input3 / 2) == (input3 * 0.5f));
 
     const mat4<F32> input4(1.0f, 2.0f, 3.0f, 4.0f,

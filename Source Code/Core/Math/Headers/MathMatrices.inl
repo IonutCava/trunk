@@ -54,8 +54,14 @@ mat2<T>::mat2(U m0, U m1,
 template<typename T>
 template<typename U>
 mat2<T>::mat2(const U *m)
-    : mat2(m[0], m[1]
+    : mat2(m[0], m[1],
            m[2], m[3])
+{
+}
+
+template<typename T>
+mat2<T>::mat2(const mat2 &m)
+    : mat2(m.mat)
 {
 }
 
@@ -80,6 +86,19 @@ mat2<T>::mat2(const mat4<U> &m)
     : mat2(m[0], m[1],
            m[4], m[5])
 {
+}
+
+template<typename T>
+mat2<T>& mat2<T>::operator=(const mat2& other) {
+    set(other);
+    return *this;
+}
+
+template<typename T>
+template<typename U>
+mat2<T>& mat2<T>::operator=(const mat2<U>& other) {
+    set(other);
+    return *this;
 }
 
 template<typename T>
@@ -207,6 +226,25 @@ template<typename T>
 template<typename U>
 mat2<T>& mat2<T>::operator-=(U f) {
     return *this = *this - f;
+}
+
+template<typename T>
+bool mat2<T>::operator==(const mat2 &B) const {
+    if (!COMPARE(m[0][0], B.m[0][0]) ||
+        !COMPARE(m[0][1], B.m[0][1])) {
+        return false;
+    }
+    if (!COMPARE(m[1][0], B.m[1][0]) ||
+        !COMPARE(m[1][1], B.m[1][1])) {
+        return false;
+    }
+
+    return true;
+}
+
+template<typename T>
+bool mat2<T>::operator!=(const mat2 &B) const {
+    return !(*this == B);
 }
 
 template<typename T>
@@ -432,6 +470,12 @@ mat3<T>::mat3(const mat2<U> &m)
 }
 
 template<typename T>
+mat3<T>::mat3(const mat3 &m)
+    : mat3(m.mat)
+{
+}
+
+template<typename T>
 template<typename U>
 mat3<T>::mat3(const mat3<U> &m)
     : mat3(m.mat)
@@ -445,6 +489,19 @@ mat3<T>::mat3(const mat4<U> &m)
            m[4], m[5], m[6],
            m[8], m[9], m[10])
 {
+}
+
+template<typename T>
+mat3<T>& mat3<T>::operator=(const mat3& other) {
+    this->set(other);
+    return *this;
+}
+
+template<typename T>
+template<typename U>
+mat3<T>& mat3<T>::operator=(const mat3<U>& other) {
+    this->set(other);
+    return *this;
 }
 
 template<typename T>
@@ -584,6 +641,31 @@ template<typename T>
 template<typename U>
 mat3<T>& mat3<T>::operator-=(U f) {
     return *this = *this - f;
+}
+
+template<typename T>
+bool mat3<T>::operator==(const mat3 &B) const {
+    if (!COMPARE(m[0][0], B.m[0][0]) ||
+        !COMPARE(m[0][1], B.m[0][1]) ||
+        !COMPARE(m[0][2], B.m[0][2])) {
+        return false;
+    }
+    if (!COMPARE(m[1][0], B.m[1][0]) ||
+        !COMPARE(m[1][1], B.m[1][1]) ||
+        !COMPARE(m[1][2], B.m[1][2])) {
+        return false;
+    }
+    if (!COMPARE(m[2][0], B.m[2][0]) ||
+        !COMPARE(m[2][1], B.m[2][1]) ||
+        !COMPARE(m[2][2], B.m[2][2])) {
+        return false;
+    }
+    return true;
+}
+
+template<typename T>
+bool mat3<T>::operator!=(const mat3 &B) const {
+    return !(*this == B);
 }
 
 template<typename T>

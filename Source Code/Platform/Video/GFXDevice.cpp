@@ -532,7 +532,7 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
                                    zPlanes.y);
 
     // Translate the matrix to cancel parallax
-    data._ProjectionMatrix.translate(tempCam.modeltranslation, 0.0, 0.0);
+    data._ProjectionMatrix.translate(tempCam.modeltranslation, 0.0f, 0.0f);
 
     data._ZPlanesCombined.xy(zPlanes);
 

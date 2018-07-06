@@ -1,14 +1,20 @@
+#include "Headers/Defines.h"
+#include "Core/Headers/Console.h"
+
 #include <iostream>
 
 int main(int argc, char **argv) {
-    int state = 0;
+
+    Divide::Console::toggle(false);
 
     std::cout << "Running Platform Unit Tests!" << std::endl;
-    if (true) {
-        std::cout << "No errors detected!" << std::endl;
-    } else {
+
+    int state = 0;
+    if (TEST_HAS_FAILED) {
         std::cout << "Errors detected!" << std::endl;
         state = -1;
+    } else {
+        std::cout << "No errors detected!" << std::endl;
     }
 
     if (argc == 1) {

@@ -208,7 +208,7 @@ void Vegetation::uploadGrassData() {
         mat3<F32> temp;
         for (U8 i = 0; i < 18; ++i) {
             temp.identity();
-            temp.rotate_y(angles[i]);
+            temp.fromYRotation(angles[i]);
             rotationMatrices.push_back(temp);
         }
     }
@@ -531,7 +531,7 @@ void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
                     //mat4<F32> matRot1;
                     //matRot1.scale(vec3<F32>(grassScale));
                     //mat4<F32> matRot2;
-                    //matRot2.rotate_y(Random(360.0f));
+                    //matRot2.fromYRotation(Random(360.0f));
                     //_grassMatricesTemp.push_back(matRot1 * matRot2 *
                     //rotationFromVToU(WORLD_Y_AXIS, N).getMatrix());
 

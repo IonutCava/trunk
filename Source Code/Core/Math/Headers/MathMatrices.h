@@ -130,12 +130,17 @@ public:
          U m2, U m3);
     template<typename U>
     mat2(const U *m);
+    mat2(const mat2 &m);
     template<typename U>
     mat2(const mat2<U> &m);
     template<typename U>
     mat2(const mat3<U> &m);
     template<typename U>
     mat2(const mat4<U> &m);
+
+    mat2 &operator=(const mat2& other);
+    template<typename U>
+    mat2 &operator=(const mat2<U>& other);
 
     template<typename U>
     vec2<T> operator*(const vec2<U> &v) const;
@@ -180,6 +185,8 @@ public:
     template<typename U>
     mat2 &operator-=(U f);
 
+    bool operator==(const mat2 &B) const;
+    bool operator!=(const mat2 &B) const;
     template<typename U>
     bool operator==(const mat2<U> &B) const;
     template<typename U>
@@ -241,7 +248,7 @@ template <typename T>
 class mat3 {
     // m0 m1 m2
     // m3 m4 m5
-    // m7 m7 m8
+    // m7 m8 m9
     static_assert(std::is_arithmetic<T>::value && 
                   !std::is_same<T, bool>::value,
                   "non-arithmetic matrix type");
@@ -255,10 +262,15 @@ class mat3 {
     mat3(const U *m);
     template<typename U>
     mat3(const mat2<U> &m);
+    mat3(const mat3 &m);
     template<typename U>
     mat3(const mat3<U> &m);
     template<typename U>
     mat3(const mat4<U> &m);
+
+    mat3 &operator=(const mat3& other);
+    template<typename U>
+    mat3 &operator=(const mat3<U>& other);
 
     template<typename U>
     vec2<U> operator*(const vec2<U> &v) const;
@@ -303,9 +315,11 @@ class mat3 {
     template<typename U>
     mat3 &operator-=(U f);
 
+    bool operator==(const mat3 &B) const;
+    bool operator!=(const mat3 &B) const;
+
     template<typename U>
     bool operator==(const mat3<U> &B) const;
-
     template<typename U>
     bool operator!=(const mat3<U> &B) const;
 
@@ -478,7 +492,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         : mat4(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
                static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
                static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-               translation.x,     translation.y,     translation.z,     static_cast<U>(1))
+               translationX,      translationY,      translationZ,      static_cast<U>(1))
     {
     }
 
@@ -886,7 +900,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     template<typename U>
-    inline void rotate(U x, U y, U z, U angle, bool inDegrees = true) {
+    inline void fromRotation(U x, U y, U z, U angle, bool inDegrees = true) {
         if (inDegrees) {
             angle = Angle::DegreesToRadians(angle);
         }
@@ -914,7 +928,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     template<typename U>
-    inline void rotate_x(U angle, bool inDegrees = true) {
+    inline void fromXRotation(U angle, bool inDegrees = true) {
         if (inDegrees) {
             angle = Angle::DegreesToRadians(angle);
         }
@@ -929,7 +943,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     template<typename U>
-    inline void rotate_y(U angle, bool inDegrees = true) {
+    inline void fromYRotation(U angle, bool inDegrees = true) {
         if (inDegrees) {
             angle = Angle::DegreesToRadians(angle);
         }
@@ -944,7 +958,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     template<typename U>
-    inline void rotate_z(U angle, bool inDegrees = true) {
+    inline void fromZRotation(U angle, bool inDegrees = true) {
         if (inDegrees) {
             angle = Angle::DegreesToRadians(angle);
         }
