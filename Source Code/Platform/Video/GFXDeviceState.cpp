@@ -165,13 +165,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Add the attachments to the render targets
     RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0, false);
-    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1, false);
-    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, 2, false);
+    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::ALBEDO), false);
+    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS), false);
+    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY), false);
     screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0, true);
-    screenTarget.setClearColour(RTAttachment::Type::Colour, 0, DefaultColours::DIVIDE_BLUE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, 2, DefaultColours::WHITE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS), DefaultColours::WHITE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY), DefaultColours::WHITE());
 
     TextureDescriptor depthCopyDescriptor(TextureType::TEXTURE_2D,
                                           GFXImageFormat::DEPTH_COMPONENT32F,

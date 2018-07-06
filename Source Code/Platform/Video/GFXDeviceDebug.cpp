@@ -69,7 +69,7 @@ void GFXDevice::previewDepthBuffer() {
         triangleCmd.shaderProgram(_renderTargetDraw);
         {        
             //Normals preview
-            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 1);
+            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS));
 
             GFX::ScopedViewport viewport(*this, screenWidth - 768, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);
@@ -78,7 +78,7 @@ void GFXDevice::previewDepthBuffer() {
         }
         {
             //Velocity preview
-            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 2);
+            screenRT.bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY));
 
             GFX::ScopedViewport viewport(*this, screenWidth - 1024, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);

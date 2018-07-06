@@ -46,17 +46,10 @@ class d3dRenderTarget : public RenderTarget {
 
     void drawToLayer(RTAttachment::Type type,
                      U8 index,
-                     U32 layer,
+                     U16 layer,
                      bool includeDepth = true) override;
-    void setMipLevel(U16 mipLevel,
-                     U16 mipMaxLevel,
-                     U16 writeLevel,
-                     RTAttachment::Type type,
-                     U8 index) override;
-    void setMipLevel(U16 writeLevel,
-                     RTAttachment::Type type,
-                     U8 index) override;
-    void resetMipLevel(RTAttachment::Type type, U8 index) override;
+    void setMipLevel(U16 writeLevel) override;
+
     void begin(const RTDrawDescriptor& drawPolicy) override;
     void end() override;
 
@@ -80,8 +73,6 @@ class d3dRenderTarget : public RenderTarget {
                   bool blitDepth = false) override;
 
     void clear(const RTDrawDescriptor& drawPolicy) const override;
-
-    void onAttachmentsChanged() override;
 
    protected:
     bool checkStatus() const;

@@ -100,12 +100,10 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual const RTAttachment& getPrevFrameAttachment(RTAttachment::Type type, U8 index) const;
 
     /// Use by multilayered FB's
-    virtual void drawToLayer(RTAttachment::Type type, U8 index, U32 layer, bool includeDepth = true) = 0;
-    // This call also limits the min and max mip levels of the attachment
-    virtual void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel, RTAttachment::Type type, U8 index) = 0;
+    virtual void drawToLayer(RTAttachment::Type type, U8 index, U16 layer, bool includeDepth = true) = 0;
     // This call sets the target mip level to write to
-    virtual void setMipLevel(U16 writeLevel, RTAttachment::Type type, U8 index) = 0;
-    virtual void resetMipLevel(RTAttachment::Type type, U8 index) = 0;
+    // If an attachment does not support the specified mip level, it will be DISABLED to avoid completeness errors
+    virtual void setMipLevel(U16 writeLevel) = 0;
     virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void end() = 0;
     virtual void bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest = true) = 0;
@@ -118,11 +116,8 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index, bool keepPreviousFrame);
     bool create(U16 widthAndHeight);
     /// Used by cubemap FB's
-    void drawToFace(RTAttachment::Type type, U8 index, U32 nFace, bool includeDepth = true);
-    void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel);
-    void setMipLevel(U16 writeLevel);
+    void drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth = true);
 
-    void resetMipLevel();
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData);
     // Set the colour the FB will clear to when drawing to it
     void setClearColour(RTAttachment::Type type, U8 index, const vec4<F32>& clearColour);
@@ -130,8 +125,6 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
 
     U16 getWidth()  const;
     U16 getHeight() const;
-
-    virtual void onAttachmentsChanged() = 0;
 
    protected:
     virtual bool checkStatus() const = 0;

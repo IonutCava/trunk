@@ -27,23 +27,10 @@ RTAttachmentPool::~RTAttachmentPool()
 }
 
 bool RTAttachmentPool::frameEnded(const FrameEvent& evt) {
-    static const bool useTextureCopyMethod = true;
-
-    bool change = false;
     for (const std::pair<RTAttachment::Type, U8> &entry : _attachmentHistoryIndex) {
         RTAttachment_ptr& crt = getInternal(_attachment, entry.first, entry.second);
         RTAttachment_ptr& prev = getInternal(_attachmentHistory, entry.first, entry.second);
-        if (useTextureCopyMethod) {
-            prev->asTexture()->copy(crt->asTexture());
-        } else {
-            change = true;
-        }
-    }
-
-    if (!useTextureCopyMethod) {
-        if (change) {
-            _parent.onAttachmentsChanged();
-        }
+        prev->asTexture()->copy(crt->asTexture());
     }
 
     return true;
@@ -135,12 +122,26 @@ const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index)
     return getInternal(_attachment, type, index);
 }
 
+void RTAttachmentPool::get(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const {
+    attachments.resize(0);
+    std::back_insert_iterator<std::vector<RTAttachment_ptr>> back_it(attachments);
+    auto const usedPredicate = [](const RTAttachment_ptr& ptr) { return ptr && ptr->used(); };
+    std::copy_if(std::begin(_attachment[to_uint(type)]), std::end(_attachment[to_uint(type)]), back_it, usedPredicate);
+}
+
 RTAttachment_ptr& RTAttachmentPool::getPrevFrame(RTAttachment::Type type, U8 index) {
     return getInternal(_attachmentHistory, type, index);
 }
 
 const RTAttachment_ptr& RTAttachmentPool::getPrevFrame(RTAttachment::Type type, U8 index) const {
     return getInternal(_attachmentHistory, type, index);
+}
+
+void RTAttachmentPool::getPrevFrame(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const {
+    attachments.resize(0);
+    std::back_insert_iterator<std::vector<RTAttachment_ptr>> back_it(attachments);
+    auto const usedPredicate = [](const RTAttachment_ptr& ptr) { return ptr && ptr->used(); };
+    std::copy_if(std::begin(_attachment[to_uint(type)]), std::end(_attachment[to_uint(type)]), back_it, usedPredicate);
 }
 
 bool RTAttachmentPool::keepPrevFrame(RTAttachment::Type type, U8 index) const {

@@ -18,7 +18,6 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 uniform bool useTexture;
 in  vec4 _colour;
 layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec2 _normalOut;
 
 void main(){
     if(!useTexture){
@@ -65,10 +64,10 @@ void main(void) {
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
 
-
 --Fragment.EnvironmentProbe
 
 #include "utility.frag"
+#include "velocityCalc.frag"
 
 uniform uint dvd_LayerIndex;
 layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
@@ -81,4 +80,5 @@ void main() {
     vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), VAR._normalWV);
     _colourOut = vec4(texture(texEnvironmentCube, vec4(reflectDirection, dvd_LayerIndex)).rgb, 1.0);
     _normalOut = packNormal(normalize(VAR._normalWV));
+    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

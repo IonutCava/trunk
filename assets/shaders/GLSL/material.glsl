@@ -38,6 +38,8 @@ layout(early_fragment_tests) in;
     #include "bumpMapping.frag"
 #endif
 
+#include "velocityCalc.frag"
+
 layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec2 _normalOut;
 layout(location = 2) out vec2 _velocityOut;
@@ -94,6 +96,7 @@ vec4 getFinalPixelColour() {
 void main (void){
     _colourOut = ToSRGB(applyFog(getFinalPixelColour()));
     _normalOut = packNormal(processedNormal);
+    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 
 #if defined(_DEBUG)
     if (dvd_NormalsOnly) {

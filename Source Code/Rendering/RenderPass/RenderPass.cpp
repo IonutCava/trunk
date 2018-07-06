@@ -143,7 +143,6 @@ void RenderPass::render(SceneRenderState& renderState) {
             const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;
-            params.velocityCalc = true;
             params.camera = Attorney::SceneManagerRenderPass::getDefaultCamera(_parent.parent().sceneManager());
 
             params.stage = _stageFlag;

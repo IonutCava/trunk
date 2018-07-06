@@ -9,10 +9,8 @@ RTAttachment::RTAttachment()
       _descriptor(TextureDescriptor()),
       _texture(nullptr),
       _changed(false),
-      _attDirty(false),
-      _enabled(false),
-      _toggledState(false),
-      _mipMapLevel(0, 1),
+      _mipWriteLevel(0),
+      _writeLayer(0),
       _binding(0)
 {
 }
@@ -46,28 +44,20 @@ bool RTAttachment::used() const {
     return _texture != nullptr;
 }
 
-bool RTAttachment::toggledState() const {
-    return _toggledState;
+void RTAttachment::mipWriteLevel(U16 level) {
+    _mipWriteLevel = level;
 }
 
-void RTAttachment::toggledState(const bool state) {
-    _toggledState = state;
+U16 RTAttachment::mipWriteLevel() const {
+    return _mipWriteLevel;
 }
 
-void RTAttachment::mipMapLevel(U16 min, U16 max) {
-    _mipMapLevel.set(min, max);
+void RTAttachment::writeLayer(U16 layer) {
+    _writeLayer = layer;
 }
 
-const vec2<U16>& RTAttachment::mipMapLevel() const {
-    return _mipMapLevel;
-}
-
-bool RTAttachment::enabled() const {
-    return _enabled;
-}
-
-void RTAttachment::enabled(const bool state) {
-    _enabled = state;
+U16 RTAttachment::writeLayer() const {
+    return _writeLayer;
 }
 
 bool RTAttachment::changed() const {
@@ -98,18 +88,6 @@ U32 RTAttachment::binding() const {
 
 void RTAttachment::binding(U32 binding) {
     _binding = binding;
-}
-
-bool RTAttachment::dirty() const {
-    return _attDirty;
-}
-
-void RTAttachment::flagDirty() {
-    _attDirty = true;
-}
-
-void RTAttachment::clean() {
-    _attDirty = false;
 }
 
 }; //namespace Divide

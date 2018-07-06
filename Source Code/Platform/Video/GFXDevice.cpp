@@ -63,7 +63,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _dualParaboloidCamera = nullptr;
     // Booleans
     _2DRendering = false;
-    _viewportUpdate = false;
     _isPrePassStage = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
@@ -105,7 +104,7 @@ GFXDevice::~GFXDevice()
 
 /// Generate a cube texture and store it in the provided RenderTarget
 void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
-                                const U32 arrayOffset,
+                                const U16 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 RenderStage renderStage,
@@ -180,7 +179,7 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
 }
 
 void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
-                                          const U32 arrayOffset,
+                                          const U16 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
                                           RenderStage renderStage,
@@ -314,8 +313,6 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
 
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);
-    _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
-    _gpuBlock._needsUpload = true;
     // Update the 2D camera so it matches our new rendering viewport
     _2DCamera->setProjection(vec4<F32>(0, to_float(w), 0, to_float(h)), vec2<F32>(-1, 1));
 }
@@ -453,29 +450,33 @@ bool GFXDevice::toggle2D(bool state) {
 }
 
 /// Update the rendering viewport
-void GFXDevice::setViewport(const vec4<I32>& viewport) {
+bool GFXDevice::setViewport(const vec4<I32>& viewport) {
+    bool updated = false;
     // Avoid redundant changes
-    _viewportUpdate = !viewport.compare(_viewport.top());
-
-    if (_viewportUpdate) {
-        // Push the new viewport
-        _viewport.push(viewport);
+    if (!viewport.compare(_viewport.top())) {
         // Activate the new viewport
         updateViewportInternal(viewport);
+        updated = true;
     }
+    // Push the new viewport onto the stack
+    _viewport.push(viewport);
+
+    return updated;
 }
 
 /// Restore the viewport to it's previous value
-void GFXDevice::restoreViewport() {
-    // If we didn't push a new viewport, there's nothing to pop
-    if (!_viewportUpdate) {
-        return;
-    }
+bool GFXDevice::restoreViewport() {
+    vec4<I32> crtViewport(_viewport.top());
     // Restore the viewport
     _viewport.pop();
-    // Activate the new top viewport
-    updateViewportInternal(_viewport.top());
-    _viewportUpdate = false;
+    const vec4<I32>& prevViewport = _viewport.top();
+    if (!crtViewport.compare(prevViewport)) {
+        // Activate the new top viewport
+        updateViewportInternal(prevViewport);
+        return true;
+    }
+
+    return false;
 }
 
 /// Set a new viewport clearing the previous stack first
@@ -487,8 +488,6 @@ void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
 
     // Set the new viewport
     updateViewportInternal(viewport);
-    // The forced viewport can't be popped
-    _viewportUpdate = false;
 }
 
 void GFXDevice::onCameraUpdate(const Camera& camera) {
@@ -573,7 +572,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
             // Update the viewport with the new resolution
             updateViewportInternal(0, 0, twidth, theight);
             // Bind next mip level for rendering but first restrict fetches only to previous level
-            screenTarget.setMipLevel(level, RTAttachment::Type::Depth, 0);
+            screenTarget.setMipLevel(level);
             _HIZConstructProgram->Uniform("depthLoD", level-1);
             _HIZConstructProgram->Uniform("isDepthEven", wasEven);
             // Dummy draw command as the full screen quad is generated completely in the vertex shader
@@ -590,7 +589,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
 
     updateViewportInternal(previousViewport);
     // Reset mipmap level range for the depth buffer
-    screenTarget.resetMipLevel(RTAttachment::Type::Depth, 0);
+    screenTarget.setMipLevel(0);
     // Unbind the render target
     screenTarget.end();
 }

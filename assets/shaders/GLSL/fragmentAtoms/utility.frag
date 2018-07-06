@@ -113,7 +113,6 @@ vec2 packNormal(vec3 normal)
     return vec2(normal.xy * 0.5 + 0.5);
 }
 
-
 float Gloss(vec3 bump)
 {
     float gloss = 1.0;
@@ -134,6 +133,10 @@ float Gloss(vec3 bump)
     }
     */
     return gloss;
+}
+
+vec2 getScreenPositionNormalised() {
+    return gl_FragCoord.xy * dvd_invScreenDimensions();
 }
 
 #endif //_LIGHTING_DEFAULTS_FRAG_

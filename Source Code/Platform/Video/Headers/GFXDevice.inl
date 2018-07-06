@@ -48,9 +48,9 @@ GFXDevice::renderingData() const {
     return _gpuBlock._data;
 }
 
-inline void
+inline bool
 GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
-    setViewport(vec4<I32>(x, y, width, height));
+    return setViewport(vec4<I32>(x, y, width, height));
 }
 
 inline bool 

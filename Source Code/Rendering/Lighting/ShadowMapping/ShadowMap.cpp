@@ -21,10 +21,9 @@ ShadowMap::ShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera, Sha
       _light(light),
       _shadowCamera(shadowCamera),
       _shadowMapType(type),
-      _arrayOffset(0),
+      _arrayOffset(findDepthMapLayer(_shadowMapType)),
       _par(ParamHandler::instance())
 {
-    _arrayOffset = findDepthMapLayer(_shadowMapType);
     commitDepthMapLayer(_shadowMapType, _arrayOffset);
 }
 

@@ -22,15 +22,10 @@ void d3dRenderTarget::bind(U8 unit, RTAttachment::Type type, U8 index, bool flus
 
 void d3dRenderTarget::drawToLayer(RTAttachment::Type type,
                                   U8 index,
-                                  U32 layer,
+                                  U16 layer,
                                   bool includeDepth) {}
 
-void d3dRenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel,
-                                  RTAttachment::Type type, U8 index) {}
-
-void d3dRenderTarget::setMipLevel(U16 writeLevel, RTAttachment::Type type, U8 index) {}
-
-void d3dRenderTarget::resetMipLevel(RTAttachment::Type type, U8 index) {}
+void d3dRenderTarget::setMipLevel(U16 writeLevel) {}
 
 bool d3dRenderTarget::checkStatus() const { return true; }
 
@@ -48,5 +43,4 @@ void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
 
 void d3dRenderTarget::clear(const RTDrawDescriptor& drawPolicy) const {}
 
-void d3dRenderTarget::onAttachmentsChanged() {}
 };

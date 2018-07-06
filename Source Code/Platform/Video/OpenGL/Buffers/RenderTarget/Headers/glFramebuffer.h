@@ -57,18 +57,11 @@ class glFramebuffer : public RenderTarget {
 
     void drawToLayer(RTAttachment::Type type,
                      U8 index,
-                     U32 layer,
+                     U16 layer,
                      bool includeDepth = true) override;
 
-    void setMipLevel(U16 mipMinLevel,
-                     U16 mipMaxLevel,
-                     U16 writeLevel,
-                     RTAttachment::Type type,
-                     U8 index) override;
-    void setMipLevel(U16 writeLevel,
-                     RTAttachment::Type type,
-                     U8 index) override;
-    void resetMipLevel(RTAttachment::Type type, U8 index) override;
+    void setMipLevel(U16 writeLevel) override;
+
     void begin(const RTDrawDescriptor& drawPolicy)  override;
     void end()  override;
 
@@ -91,54 +84,49 @@ class glFramebuffer : public RenderTarget {
                   bool blitColour = true,
                   bool blitDepth = false) override;
 
-    void onAttachmentsChanged() override;
+  protected:
+    enum class AttachmentState : U8 {
+        STATE_DISABLED = 0,
+        STATE_ENABLED,
+        STATE_LAYERED,
+        COUNT
+    };
 
-   protected:
     void resolve();
     void clear(const RTDrawDescriptor& drawPolicy) const override;
     bool checkStatus() const;
     void resetAttachments();
+    void prepareBuffers(const RTDrawDescriptor& drawPolicy);
 
     void initAttachment(RTAttachment::Type type, U8 index);
     void initAttachment(const RTAttachment_ptr& attachment, RTAttachment::Type type, U8 index, U8 copyCount);
 
     void updateDescriptor(RTAttachment::Type type, U8 index);
 
-    void resetMipMaps(const RTDrawDescriptor& drawPolicy);
+    void toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state);
 
-    void toggleAttachment(RTAttachment::Type type, U8 index, bool state);
+    bool hasDepth() const;
 
-    inline bool hasDepth() const {
-        U8 depthAttCount = _attachmentPool->attachmentCount(RTAttachment::Type::Depth);
-        for (U8 i = 0; i < depthAttCount; ++i) {
-            if (_attachmentPool->get(RTAttachment::Type::Depth, i)->used()) {
-                return true;
-            }
-        }
+    bool hasColour() const;
 
-        return false;
-    }
-
-    inline bool hasColour() const {
-        U8 colourAttCount = _attachmentPool->attachmentCount(RTAttachment::Type::Colour);
-        for (U8 i = 0; i < colourAttCount; ++i) {
-            if (_attachmentPool->get(RTAttachment::Type::Colour, i)->used()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    void setAttachmentState(GLenum binding, AttachmentState state);
+    AttachmentState getAttachmentState(GLenum binding) const;
 
    protected:
     bool _resolved;
     bool _isLayeredDepth;
     GLuint _framebufferHandle;
-    static bool _viewportChanged;
     static bool _bufferBound;
     static bool _zWriteEnabled;
     glFramebuffer* _resolveBuffer;
-    RTDrawMask _previousMask;
+    RTDrawDescriptor _previousPolicy;
+
+    bool _activeDepthBuffer;
+    vectorImpl<GLenum> _activeColourBuffers;
+
+    vectorImpl<RTAttachment_ptr> _activeAttachmentsCache;
+
+    hashMapImpl<GLenum, AttachmentState> _attachmentState;
 };
 
 };  // namespace Divide

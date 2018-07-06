@@ -49,7 +49,7 @@ uniform int dvd_qualityMultiplier;
 void main(void)
 {
 
-    vec2 rcpFrame =  dvd_invScreenDimensions.xy;
+    vec2 rcpFrame = dvd_invScreenDimensions();
     vec2 pos = gl_FragCoord.xy / dvd_ViewPort.zw;
 
     vec4 ConsolePosPos = vec4(0.0, 0.0, 0.0, 0.0);

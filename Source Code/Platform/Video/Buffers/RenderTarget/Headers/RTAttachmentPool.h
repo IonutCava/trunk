@@ -54,8 +54,14 @@ public:
     RTAttachment_ptr& get(RTAttachment::Type type, U8 index);
     const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
 
+    void get(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const;
+
     RTAttachment_ptr& getPrevFrame(RTAttachment::Type type, U8 index);
     const RTAttachment_ptr& getPrevFrame(RTAttachment::Type type, U8 index) const;
+
+    void getPrevFrame(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const;
+
+
     bool keepPrevFrame(RTAttachment::Type type, U8 index) const;
 
     U8 attachmentCount(RTAttachment::Type type) const;

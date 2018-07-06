@@ -111,6 +111,13 @@ protected:
     typedef std::stack<vec4<I32>> ViewportStack;
 
 public:
+    enum class ScreenTargets : U32 {
+        ALBEDO = 0,
+        NORMALS = 1,
+        VELOCITY = 2,
+        COUNT
+    };
+
     struct NodeData : private NonCopyable {
         mat4<F32> _worldMatrix;
         mat4<F32> _normalMatrixWV;
@@ -179,14 +186,14 @@ public:  // GPU interface
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
     void generateCubeMap(RenderTarget& cubeMap,
-        const U32 arrayOffset,
+        const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStage renderStage,
         U32 passIndex);
 
     void generateDualParaboloidMap(RenderTarget& targetBuffer,
-        const U32 arrayOffset,
+        const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStage renderStage,
@@ -201,9 +208,11 @@ public:  // GPU interface
     /// routine. Use callOrder for sorting purposes
     inline void add2DRenderFunction(const GUID_DELEGATE_CBK& callback, U32 callOrder);
     inline void remove2DRenderFunction(const GUID_DELEGATE_CBK& callback);
-    void restoreViewport();
-    void setViewport(const vec4<I32>& viewport);
-    inline void setViewport(I32 x, I32 y, I32 width, I32 height);
+    /// Returns true if the viewport was changed
+    bool restoreViewport();
+    /// Returns true if the viewport was changed
+    bool setViewport(const vec4<I32>& viewport);
+    inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
     /// Switch between fullscreen rendering
     void toggleFullScreen();
     void increaseResolution();
@@ -397,7 +406,6 @@ private:
     RenderTarget* _activeRenderTarget;
     RenderStage _renderStage;
     RenderStage _prevRenderStage;
-    bool _viewportUpdate;
     vectorImpl<Line> _axisLines;
     IMPrimitive     *_axisGizmo;
     vectorImpl<Line> _axisLinesTransformed;

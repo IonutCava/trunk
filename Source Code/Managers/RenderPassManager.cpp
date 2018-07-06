@@ -8,11 +8,6 @@
 
 namespace Divide {
 
-namespace {
-    const U32 g_VelocityCalcWorkGroupSize = 16;
-    const U32 g_VelocityMapBufferIndex = 2;
-};
-
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
       _context(context),
@@ -28,10 +23,6 @@ RenderPassManager::~RenderPassManager()
 bool RenderPassManager::init() {
     if (_renderQueue == nullptr) {
         _renderQueue = MemoryManager_NEW RenderQueue(_context);
-        ResourceDescriptor shader("velocityCalc");
-        shader.setThreadedLoading(false);
-        shader.setPropertyList(Util::StringFormat("WORK_GROUP_SIZE %d,", g_VelocityCalcWorkGroupSize));
-        _velocityCalcProgram = CreateResource<ShaderProgram>(parent().resourceCache(), shader);
         return true;
     }
 
@@ -168,6 +159,9 @@ void RenderPassManager::doCustomPass(PassParams& params) {
                                                               params.pass);
 
         if (params.target._usage != RenderTargetUsage::COUNT) {
+            RenderTarget& target = _context.renderTarget(params.target);
+            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+
             RenderPassCmd cmd;
             cmd._renderTarget = params.target;
             cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
@@ -180,35 +174,11 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             _context.flushCommandBuffer(commandBuffer);
             commandBuffer.resize(0);
 
-            RenderTarget& target = _context.renderTarget(params.target);
             _context.constructHIZ(target);
-
-            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
 
             if (params.occlusionCull) {
                 const RenderPass::BufferData& bufferData = getBufferData(params.stage, params.pass);
                 _context.occlusionCull(bufferData, depthBufferTexture);
-            }
-
-            if (params.velocityCalc) {
-                const RTAttachment& velocityAttachment = target.getAttachment(RTAttachment::Type::Colour, g_VelocityMapBufferIndex);
-                if (velocityAttachment.used()) {
-                    const Texture_ptr& velocityTexture = velocityAttachment.asTexture();
-                    const RTAttachment& prevDepthBuffer = target.getPrevFrameAttachment(RTAttachment::Type::Depth, 0);
-                    const Texture_ptr& prevDepthTexture = prevDepthBuffer.used() ? prevDepthBuffer.asTexture()
-                                                                                 : depthBufferTexture;
-                    // Bind the depth buffers
-                    depthBufferTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), 0);
-                    prevDepthTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV), 0);
-                    velocityTexture->bindLayer(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1), 0, 0, false, false, true);
-
-
-                    _velocityCalcProgram->bind();
-                    _velocityCalcProgram->DispatchCompute((velocityTexture->getWidth() + g_VelocityCalcWorkGroupSize - 1) / g_VelocityCalcWorkGroupSize,
-                                                          (velocityTexture->getHeight() + g_VelocityCalcWorkGroupSize - 1) / g_VelocityCalcWorkGroupSize,
-                                                          1);
-                    _velocityCalcProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::TEXTURE);
-                }
             }
         }
     }
@@ -230,11 +200,26 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             }
         }
 
+        if (params.stage == RenderStage::DISPLAY) {
+            // Bind the depth buffers
+            RenderTarget& target = _context.renderTarget(params.target);
+            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+            depthBufferTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), 0);
+
+            const RTAttachment& velocityAttachment = target.getAttachment(RTAttachment::Type::Colour,
+                                                                          to_const_ubyte(GFXDevice::ScreenTargets::VELOCITY));
+            if (velocityAttachment.used()) {
+                const RTAttachment& prevDepthBuffer = target.getPrevFrameAttachment(RTAttachment::Type::Depth, 0);
+                const Texture_ptr& prevDepthTexture = prevDepthBuffer.used() ? prevDepthBuffer.asTexture()
+                                                                             : depthBufferTexture;
+                prevDepthTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV), 0);
+            }
+        }
+
         RTDrawDescriptor& drawPolicy = params.drawPolicy ? *params.drawPolicy
                                                          : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
                                                                                        : RenderTarget::defaultPolicy());
         drawPolicy.drawMask().setEnabled(RTAttachment::Type::Depth,  0, drawToDepth);
-        drawPolicy.drawMask().setEnabled(RTAttachment::Type::Colour, g_VelocityMapBufferIndex, false);
 
         RenderPassCmd cmd;
         cmd._renderTarget = params.target;

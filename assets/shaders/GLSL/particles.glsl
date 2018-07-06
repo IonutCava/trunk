@@ -40,7 +40,7 @@ void main(){
 -- Fragment
 
 #include "utility.frag"
-
+#include "velocityCalc.frag"
 
 // Interpolated values from the vertex shaders
 in vec4 particleColour;
@@ -48,9 +48,9 @@ in vec4 particleColour;
 // Ouput data
 layout(location = 0) out vec4 colour;
 layout(location = 1) out vec2 normal;
+layout(location = 2) out vec2 velocity;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
 void main(){
    
@@ -64,4 +64,5 @@ void main(){
     float softness = pow(1.0 - min(1.0, 200.0 * d), 2.0);
     colour.a *= max(0.1, 1.0 - pow(softness, 2.0));
     normal = packNormal(vec3(0.0, 0.0, 1.0));
+    velocity = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

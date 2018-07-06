@@ -64,33 +64,6 @@ const RTAttachment& RenderTarget::getPrevFrameAttachment(RTAttachment::Type type
     return *_attachmentPool->getPrevFrame(type, index);
 }
 
-void RenderTarget::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
-    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
-        RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-        for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
-            setMipLevel(mipMinLevel, mipMaxLevel, writeLevel, type, j);
-        }
-    }
-}
-
-void RenderTarget::setMipLevel(U16 writeLevel) {
-    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
-        RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-        for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
-            setMipLevel(writeLevel, type, j);
-        }
-    }
-}
-
-void RenderTarget::resetMipLevel() {
-    for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
-        RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-        for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
-            resetMipLevel(type, j);
-        }
-    }
-}
-
 RTDrawDescriptor& RenderTarget::defaultPolicy() {
     return _policyDefault;
 }
@@ -112,7 +85,7 @@ bool RenderTarget::create(U16 widthAndHeight) {
 }
 
 /// Used by cubemap FB's
-void RenderTarget::drawToFace(RTAttachment::Type type, U8 index, U32 nFace, bool includeDepth) {
+void RenderTarget::drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth) {
     drawToLayer(type, index, nFace, includeDepth);
 }
 

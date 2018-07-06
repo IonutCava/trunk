@@ -339,7 +339,9 @@ bool GFXDevice::draw(const GenericDrawCommand& cmd) {
 
 
 void GFXDevice::flushDisplay() {
-    activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                              RTAttachment::Type::Colour,
+                              to_const_ubyte(ScreenTargets::ALBEDO));
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);

@@ -126,8 +126,12 @@ void SSAOPreRenderOperator::execute() {
     _ssaoGenerateShader->Uniform("invProjectionMatrix", PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
 
     _noiseTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); // noise texture
-    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);  // depth
-    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP), RTAttachment::Type::Colour, 1);  // normals
+    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
+                      RTAttachment::Type::Depth,
+                      0);  // depth
+    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
+                      RTAttachment::Type::Colour,
+                      to_const_ubyte(GFXDevice::ScreenTargets::NORMALS));  // normals
     
     _ssaoOutput._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_ssaoGenerateShader);

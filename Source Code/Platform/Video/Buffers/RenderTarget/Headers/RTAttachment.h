@@ -63,23 +63,16 @@ class RTAttachment {
         bool changed() const;
         void clearChanged();
 
-        bool toggledState() const;
-        void toggledState(const bool state);
-
-        bool enabled() const;
-        void enabled(const bool state);
-
-        bool dirty() const;
-        void flagDirty();
-        void clean();
-
         void fromDescriptor(const TextureDescriptor& descriptor);
 
         void clearColour(const vec4<F32>& clearColour);
         const vec4<F32>& clearColour() const;
 
-        void mipMapLevel(U16 min, U16 max);
-        const vec2<U16>& mipMapLevel() const;
+        void mipWriteLevel(U16 level);
+        U16  mipWriteLevel() const;
+
+        void writeLayer(U16 layer);
+        U16  writeLayer() const;
 
         const Texture_ptr& asTexture() const;
         void setTexture(const Texture_ptr& tex);
@@ -88,11 +81,10 @@ class RTAttachment {
         void binding(U32 binding);
 
     protected:
-        bool _attDirty;
-        bool _enabled;
-        bool _toggledState;
         bool _changed;
         U32  _binding;
+        U16  _mipWriteLevel;
+        U16  _writeLayer;
         Texture_ptr _texture;
         vec4<F32> _clearColour;
         vec2<U16> _mipMapLevel;

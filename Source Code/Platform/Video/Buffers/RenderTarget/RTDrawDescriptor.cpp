@@ -86,9 +86,9 @@ void RTDrawDescriptor::stateMask(U32 stateMask) {
             }
             return validMask;
         };
-
+        
         U32 parsedMask = validateMask();
-        DIVIDE_ASSERT(parsedMask != 0 && parsedMask == stateMask,
+        DIVIDE_ASSERT(parsedMask == stateMask,
                       "RTDrawDescriptor::stateMask error: Invalid state specified!");
         _stateMask = parsedMask;
     } else {

@@ -61,8 +61,12 @@ in vec4 geom_vertexWVP;
 #endif
 
 #include "nodeBufferedInput.cmn"
-#include "materialData.frag"
 
+#if defined(HAS_TRANSPARENCY)
+#include "materialData.frag"
+#endif
+
+#if defined(SHADOW_PASS)
 vec2 computeMoments(in float depth) {
     // Compute partial derivatives of depth.  
     float dx = dFdx(depth);
@@ -70,11 +74,14 @@ vec2 computeMoments(in float depth) {
     // Compute second moment over the pixel extents.  
     return vec2(depth, depth*depth + 0.25*(dx*dx + dy*dy));
 }
+#endif
 
 void main() {
+#if defined(HAS_TRANSPARENCY)
     if (getOpacity() < ALPHA_DISCARD_THRESHOLD) {
         discard;
     }
+#endif
 
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative

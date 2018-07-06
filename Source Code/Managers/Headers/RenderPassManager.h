@@ -53,7 +53,6 @@ public:
         RenderStage stage = RenderStage::COUNT;
         Camera* camera = nullptr;
         bool occlusionCull = false;
-        bool velocityCalc = false;
         bool doPrePass = true;
         U32 pass = 0;
     };
@@ -88,7 +87,6 @@ private:
 
 private:
     GFXDevice& _context;
-    ShaderProgram_ptr _velocityCalcProgram;
     // Some vector implementations are not move-awarem so use STL in this case
     vectorImpl<RenderPass*> _renderPasses;
     RenderQueue* _renderQueue;
