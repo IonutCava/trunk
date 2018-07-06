@@ -35,9 +35,7 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
 
     // Update Animations
     if (_playAnimations) {
-        _parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN);
-        _previousFrameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex,
-            Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
+        _previousFrameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex, Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
             _previousAnimationIndex = _currentAnimIndex;
@@ -81,7 +79,12 @@ bool AnimationComponent::playAnimation(const stringImpl& name) {
 
     resetTimers();
 
-    return oldIndex != _currentAnimIndex;
+    if (oldIndex != _currentAnimIndex) {
+        _parentSGN.getNode<Object3D>()->onAnimationChange(_parentSGN, _currentAnimIndex);
+        return true;
+    }
+
+    return false;
 }
 
 /// Select an animation by index

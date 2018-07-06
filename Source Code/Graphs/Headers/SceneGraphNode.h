@@ -53,10 +53,11 @@ namespace Divide {
 
 class SceneGraph;
 class SceneState;
-struct TransformDirty;
-
 class PropertyWindow;
+class BoundsComponent;
+class TransformComponent;
 
+struct TransformDirty;
 enum class PhysicsGroup : U32;
 
 // This is the scene root node. All scene node's are added to it as child nodes
@@ -100,6 +101,7 @@ TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneTransform);
 
 namespace Attorney {
     class SceneGraphNodeEditor;
+    class SceneGraphNodeComponent;
 };
 
 class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
@@ -110,6 +112,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     static const size_t INITIAL_CHILD_COUNT = 128;
 
     friend class Attorney::SceneGraphNodeEditor;
+    friend class Attorney::SceneGraphNodeComponent;
 
    public:
     /// Usage context affects lighting, navigation, physics, etc
@@ -156,6 +159,12 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void SendEvent(ARGS&&... eventArgs)
     {
         GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...);
+    }
+
+    template<class E, class... ARGS>
+    void SendAndDispatchEvent(ARGS&&... eventArgs)
+    {
+        GetECSEngine().SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...);
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
@@ -347,6 +356,11 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     bool save(ByteBuffer& outputBuffer) const;
     bool load(ByteBuffer& inputBuffer);
 
+   protected:
+    void setTransformDirty(U32 transformMask);
+    void setParentTransformDirty(U32 transformMask);
+    void onBoundsUpdated();
+
    private:
     void addToDeleteQueue(U32 idx);
 
@@ -355,7 +369,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     }
 
     void RegisterEventCallbacks();
-    void OnTransformDirty(const TransformDirty* event);
 
 
     template<class T, class ...P>
@@ -436,7 +449,22 @@ namespace Attorney {
         }
 
         friend class Divide::PropertyWindow;
-};
+    };
+
+    class SceneGraphNodeComponent {
+    private:
+        static void setTransformDirty(SceneGraphNode& node, U32 transformMask) {
+            node.setTransformDirty(transformMask);
+        }
+
+        static void onBoundsUpdated(SceneGraphNode& node) {
+            node.onBoundsUpdated();
+        }
+
+        friend class Divide::BoundsComponent;
+        friend class Divide::RenderingComponent;
+        friend class Divide::TransformComponent;
+    };
 };  // namespace Attorney
 
 

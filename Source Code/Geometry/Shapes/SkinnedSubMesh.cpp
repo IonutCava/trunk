@@ -10,13 +10,9 @@
 
 namespace Divide {
 
-namespace {
-    const bool MULTITHREADED_BOUNDING_BOX_CALCULATION = true;
-};
-
 SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
     : SubMesh(context, parentCache, descriptorHash, name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
-    _parentAnimatorPtr(nullptr)
+     _parentAnimatorPtr(nullptr)
 {
 }
 
@@ -29,42 +25,27 @@ void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
     if (_parentAnimatorPtr == nullptr) {
         _parentAnimatorPtr = _parentMesh->getAnimator();
         vectorAlg::vecSize animationCount = _parentAnimatorPtr->animations().size();
-        _boundingBoxesAvailable.resize(animationCount);
-        _boundingBoxesComputing.resize(animationCount);
+        _boundingBoxesState.resize(animationCount, { BoundingBoxState::COUNT });
         _boundingBoxes.resize(animationCount);
-        for (vectorAlg::vecSize idx = 0; idx < animationCount; ++idx) {
-            _boundingBoxes.at(idx).resize(_parentAnimatorPtr->frameCount(to_I32(idx)));
-        }
     }
 
-    
     sgn.get<AnimationComponent>()->updateAnimator(_parentAnimatorPtr);
-
     SubMesh::postLoad(sgn);
 }
 
 /// update possible animations
-void SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
-    assert(sgn.get<AnimationComponent>());
+void SkinnedSubMesh::onAnimationChange(SceneGraphNode& sgn, I32 newIndex) {
+    computeBBForAnimation(sgn, newIndex);
 
-    computeBoundingBoxForCurrentFrame(sgn);
-}
-
-void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
-    _boundingBoxesComputing.at(animationIndex) = false;
-    _boundingBoxesAvailable.at(animationIndex) = true;
+    Object3D::onAnimationChange(sgn, newIndex);
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
-                                               U32 animationIndex,
+                                               I32 animationIndex,
                                                AnimationComponent* const animComp) {
-
-    if (_boundingBoxesComputing.at(animationIndex) == true) {
+    if (animationIndex < 0) {
         return;
     }
-
-    _boundingBoxesComputing.at(animationIndex) = true;
-    _boundingBoxesAvailable.at(animationIndex) = false;
 
     const vectorImpl<vectorImplBest<mat4<F32>>>& currentAnimation =
         animComp->getAnimationByIndex(animationIndex).transforms();
@@ -73,14 +54,13 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = parentVB->getPartitionIndexCount(_geometryPartitionID);
 
-    U32 i = 0;
-    BoundingBoxPerFrame& currentBBs = _boundingBoxes.at(animationIndex);
-    for (BoundingBox& bb : currentBBs) {
+    WriteLock w_lock(_bbLock);
+    BoundingBox& currentBB = _boundingBoxes.at(animationIndex);
+    currentBB.reset();
+    for (const vectorImplBest<mat4<F32> >& transforms : currentAnimation) {
         if (parentTask.stopRequested()) {
             return;
         }
-        bb.reset();
-        const vectorImplBest<mat4<F32> >& transforms = currentAnimation[i++];
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
             if (parentTask.stopRequested()) {
@@ -92,56 +72,48 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
             const vec4<F32>& wgh = parentVB->getBoneWeights(idx);
             const vec3<F32>& curentVert = parentVB->getPosition(idx);
 
-            bb.add((wgh.x * (transforms[ind.b[0]] * curentVert)) +
-                   (wgh.y * (transforms[ind.b[1]] * curentVert)) +
-                   (wgh.z * (transforms[ind.b[2]] * curentVert)) +
-                   (wgh.w * (transforms[ind.b[3]] * curentVert)));
+            currentBB.add((wgh.x * (transforms[ind.b[0]] * curentVert)) +
+                          (wgh.y * (transforms[ind.b[1]] * curentVert)) +
+                          (wgh.z * (transforms[ind.b[2]] * curentVert)) +
+                          (wgh.w * (transforms[ind.b[3]] * curentVert)));
         }
     }
 }
 
-void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
-    AnimationComponent* animComp = sgn.get<AnimationComponent>();
-    // If animations are paused or unavailable, keep the current BB
-    if (!animComp->playAnimations()) {
+void SkinnedSubMesh::updateBB(I32 animIndex) {
+    ReadLock r_lock(_bbLock);
+    _boundingBox.set(_boundingBoxes[animIndex]);
+    setFlag(UpdateFlag::BOUNDS_CHANGED);
+}
+
+void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
+    // Attempt to get the map of BBs for the current animation
+    WriteLock w_lock(_bbStateLock);
+    BoundingBoxState& state = _boundingBoxesState[animIndex];
+
+    if (state != BoundingBoxState::COUNT) {
+        if (state == BoundingBoxState::Computed) {
+            updateBB(animIndex);
+        }
         return;
     }
-    // Attempt to get the map of BBs for the current animation
-    U32 animationIndex = animComp->animationIndex();
 
-    if (_boundingBoxesAvailable.at(animationIndex) == false) {
-        if (_boundingBoxesComputing.at(animationIndex) == false) {
-
-            auto bbBuildStart = [this, animationIndex, animComp](const Task& parentTask) {
-                buildBoundingBoxesForAnim(parentTask, animationIndex, animComp);
-            };
-
-            auto bbBuildComplete = [this, animationIndex]() {
-                buildBoundingBoxesForAnimCompleted(animationIndex);
-            };
-
-            CreateTask(_context.parent().platformContext(), 
-                       bbBuildStart, bbBuildComplete).startTask(MULTITHREADED_BOUNDING_BOX_CALCULATION ? Task::TaskPriority::DONT_CARE
-                                                                                                       : Task::TaskPriority::REALTIME_WITH_CALLBACK);
-        }
-    }
-}
-
-void SkinnedSubMesh::sceneUpdate(const U64 deltaTimeUS,
-                                 SceneGraphNode& sgn,
-                                 SceneState& sceneState) {
+    _boundingBoxesState[animIndex] = BoundingBoxState::Computing;
     AnimationComponent* animComp = sgn.get<AnimationComponent>();
+    auto bbBuildStart = [this, animIndex, animComp](const Task& parentTask) {
+        buildBoundingBoxesForAnim(parentTask, animIndex, animComp);
+    };
 
-    // If animations are paused or unavailable, keep the current BB
-    if (animComp->playAnimations()) {
-        // Attempt to get the map of BBs for the current animation
-        U32 animationIndex = animComp->animationIndex();
-        if (_boundingBoxesAvailable.at(animationIndex) == true) {
-            _boundingBox.set(_boundingBoxes.at(animationIndex).at(animComp->frameIndex()));
-            setFlag(UpdateFlag::BOUNDS_CHANGED);
+    auto bbBuildComplete = [this, animComp, animIndex]() {
+        WriteLock w_lock(_bbStateLock);
+        _boundingBoxesState[animIndex] = BoundingBoxState::Computed;
+        // We could've changed the animation while waiting for this task to end
+        if (animComp->animationIndex() == animIndex) {
+            updateBB(animIndex);
         }
-    }
-    SubMesh::sceneUpdate(deltaTimeUS, sgn, sceneState);
+    };
+
+    CreateTask(_context.parent().platformContext(), bbBuildStart, bbBuildComplete).startTask();
 }
 
 };

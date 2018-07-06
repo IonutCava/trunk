@@ -59,7 +59,9 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                                         sgn.name().c_str(),
                                         submesh->getID()));
     }
-    sgn.get<BoundsComponent>()->lockBBTransforms(true);
+
+    sgn.get<BoundsComponent>()->ignoreTransform(true);
+
     Object3D::postLoad(sgn);
 }
 

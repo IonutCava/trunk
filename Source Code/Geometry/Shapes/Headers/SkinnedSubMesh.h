@@ -38,39 +38,41 @@ namespace Divide {
 
 class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
-    typedef vectorImpl<BoundingBox> BoundingBoxPerFrame;
-    typedef vectorImpl<BoundingBoxPerFrame> BoundingBoxPerAnimation;
-    typedef vectorImpl<AtomicWrapper<bool>>  BoundingBoxPerAnimationStatus;
+    enum class BoundingBoxState : U8 {
+        Computing = 0,
+        Computed,
+        COUNT
+    };
+
+    typedef vectorImpl<BoundingBox> BoundingBoxPerAnimation;
+    typedef vectorImpl<BoundingBoxState>  BoundingBoxPerAnimationStatus;
 
    public:
     explicit SkinnedSubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~SkinnedSubMesh();
 
    public:
-    void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode& sgn) override;
 
    protected:
-    void updateAnimations(SceneGraphNode& sgn);
+    void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) override;
 
    private:
-    void sceneUpdate(const U64 deltaTimeUS,
-                     SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
-    void computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn);
-    void buildBoundingBoxesForAnimCompleted(U32 animationIndex);
+    void computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex);
     void buildBoundingBoxesForAnim(const Task& parentTask,
-                                   U32 animationIndex,
+                                   I32 animIndex,
                                    AnimationComponent* const animComp);
+
+    void updateBB(I32 animIndex);
 
    private:
     std::shared_ptr<SceneAnimator> _parentAnimatorPtr;
-    /// Build status of bounding boxes for each animation (true if BBs are available)
-    BoundingBoxPerAnimationStatus _boundingBoxesAvailable;
-    /// Build status of bounding boxes for each animation (true if BBs are being computed)
-    BoundingBoxPerAnimationStatus _boundingBoxesComputing;
-    /// BoundingBoxes for every frame
-    BoundingBoxPerFrame _bbsPerFrame;
-    /// store a map of bounding boxes for every animation at every frame
+    /// Build status of bounding boxes for each animation
+    mutable SharedLock _bbStateLock;
+    BoundingBoxPerAnimationStatus _boundingBoxesState;
+
+    /// store a map of bounding boxes for every animation. This should be large enough to fit all frames
+    mutable SharedLock _bbLock;
     BoundingBoxPerAnimation _boundingBoxes;
 };
 

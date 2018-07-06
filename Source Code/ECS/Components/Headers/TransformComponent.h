@@ -36,8 +36,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/Transform.h"
 
 namespace Divide {
-    struct ParentTransformDirty;
-
+    namespace Attorney {
+        class TransformComponentSGN;
+    };
+    
     enum class TransformType : U32 {
         NONE = 0,
         TRANSLATION = toBit(1),
@@ -62,6 +64,8 @@ namespace Divide {
     class TransformComponent : public SGNComponent<TransformComponent>,
                                public ITransform
     {
+        friend class Attorney::TransformComponentSGN;
+
         public:
          TransformComponent(SceneGraphNode& parentSGN);
          ~TransformComponent();
@@ -106,11 +110,7 @@ namespace Divide {
          void rotateZ(const Angle::DEGREES<F32> angle) override;
          using ITransform::rotate;
 
-         inline void setTransform(const TransformValues& values) {
-             setPosition(values._translation);
-             setRotation(values._orientation);
-             setScale(values._scale);
-         }
+         void setTransform(const TransformValues& values);
 
          bool isUniformScaled() const;
 
@@ -172,8 +172,7 @@ namespace Divide {
          void Update(const U64 deltaTimeUS) override;
          void PostUpdate(const U64 deltaTimeUS) override;
 
-         void RegisterEventCallbacks();
-         void OnParentTransformDirty(const ParentTransformDirty* event);
+         void onParentTransformDirty(U32 transformMask);
 
          const mat4<F32>& getMatrix() override;
          const mat4<F32>& updateWorldMatrix();
@@ -202,7 +201,16 @@ namespace Divide {
     };
 
 
-  
+    namespace Attorney {
+        class TransformComponentSGN {
+            static void onParentTransformDirty(TransformComponent& comp, U32 transformMask) {
+                comp.onParentTransformDirty(transformMask);
+            }
+
+            friend class Divide::SceneGraphNode;
+        };
+
+    }; //namespace Attorney
 
 };
 

@@ -166,6 +166,10 @@ namespace Divide {
                   return mgr.getSelectedCamera();
               }
 
+              static bool editorEnableGizmo(Divide::PanelManager& mgr);
+
+              static void editorEnableGizmo(Divide::PanelManager& mgr, bool state);
+
               friend class Divide::PropertyWindow;
               friend class Divide::PreferencesWindow;
               friend class Divide::SolutionExplorerWindow;

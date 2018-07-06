@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
 namespace Divide {
-    struct TransformDirty;
+    struct TransformUpdated;
     class BoundsComponent : public SGNComponent<BoundsComponent>{
     public:
         BoundsComponent(SceneGraphNode& sgn);
@@ -45,9 +45,9 @@ namespace Divide {
 
         inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
         inline const BoundingSphere& getBoundingSphere() const { return _boundingSphere; }
-        inline bool lockBBTransforms() const { return _lockBBTransforms; }
-        inline void lockBBTransforms(const bool state) { _lockBBTransforms = state; }
 
+        inline bool ignoreTransform() const { return _ignoreTransform; }
+        inline void ignoreTransform(bool state) { _ignoreTransform = state; }
 
         void onBoundsChange(const BoundingBox& nodeBounds);
 
@@ -57,15 +57,14 @@ namespace Divide {
                 
         void Update(const U64 deltaTimeUS) override;
 
-        inline void flagBoundingBoxDirty() { _boundingBoxDirty = true; }
-
-        void OnTransformDirty(const TransformDirty* event);
+        // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
+        void flagBoundingBoxDirty();
+        const BoundingBox& updateAndGetBoundingBox();
+        void onTransformUpdated(const TransformUpdated* event);
 
     private:
-        std::atomic<bool> _transformDirty;
+        std::atomic<bool> _ignoreTransform;
         std::atomic<bool> _boundingBoxDirty;
-        bool _lockBBTransforms;
-        mat4<F32> _worldMatrix;
         BoundingBox _boundingBox;
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;

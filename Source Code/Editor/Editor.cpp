@@ -63,6 +63,7 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _showDebugWindow(false),
       _showSampleWindow(false),
       _gizmosVisible(false),
+      _enableGizmo(false),
       _activeWindowGUID(0),
       _consoleCallbackIndex(0),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
@@ -313,7 +314,7 @@ bool Editor::renderGizmos(const U64 deltaTime) {
     ACKNOWLEDGE_UNUSED(deltaTime);
    
     TransformValues valuesOut;
-    if (!_selectedNodes.empty()) {
+    if (_enableGizmo && !_selectedNodes.empty()) {
         SceneGraphNode* sgn = _selectedNodes.front();
         if (sgn != nullptr) {
             TransformComponent* const transform = sgn->get<TransformComponent>();
@@ -337,11 +338,11 @@ bool Editor::renderGizmos(const U64 deltaTime) {
                                      NULL, 
                                      _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
 
-                //TransformValues values;  vec3<F32> euler;
-                //ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
-                //values._orientation.fromEuler(euler);
-                //transform->setTransform(values);
-                transform->setTransforms(matrix);
+                TransformValues values;  vec3<F32> euler;
+                ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
+                values._orientation.fromEuler(euler);
+                transform->setTransform(values);
+                //transform->setTransforms(matrix);
 
                 ImGui::Render();
                 renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID(), false);
@@ -437,12 +438,20 @@ void Editor::showSampleWindow(bool state) {
     _showSampleWindow = state;
 }
 
+void Editor::enableGizmo(bool state) {
+    _enableGizmo = state;
+}
+
 bool Editor::showDebugWindow() const {
     return _showDebugWindow;
 }
 
 bool Editor::showSampleWindow() const {
     return _showSampleWindow;
+}
+
+bool Editor::enableGizmo() const {
+    return _enableGizmo;
 }
 
 void Editor::setTransformSettings(const TransformSettings& settings) {
@@ -840,10 +849,6 @@ bool Editor::hasGizmoFocus() {
     ImGuiContext* crtContext = ImGui::GetCurrentContext();
     ImGui::SetCurrentContext(_imguiContext[to_base(Context::Gizmo)]);
     bool imguizmoState = ImGuizmo::IsUsing();
-    if (imguizmoState) {
-        int a;
-        a = 5;
-    }
     ImGui::SetCurrentContext(crtContext);
     return imguizmoState;
 }

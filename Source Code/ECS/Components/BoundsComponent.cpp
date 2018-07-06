@@ -2,21 +2,20 @@
 
 #include "Headers/BoundsComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "ECS/Events/Headers/BoundsEvents.h"
 #include "ECS/Events/Headers/TransformEvents.h"
 
 namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
     : SGNComponent(sgn, "BOUNDS"),
-     _transformDirty(true),
      _boundingBoxDirty(true),
-     _lockBBTransforms(false)
+     _ignoreTransform(false)
 {
-    RegisterEventCallback(&BoundsComponent::OnTransformDirty);
+    RegisterEventCallback(&BoundsComponent::onTransformUpdated);
     _editorComponent.registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
     _editorComponent.registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
     _editorComponent.registerField("BoundingSphere", &_boundingSphere, EditorComponentFieldType::BOUNDING_SPHERE, true);
-    _editorComponent.registerField("Lock BB Transform", &_lockBBTransforms, EditorComponentFieldType::PUSH_TYPE, true, GFX::PushConstantType::BOOL);
 }
 
 BoundsComponent::~BoundsComponent()
@@ -24,9 +23,21 @@ BoundsComponent::~BoundsComponent()
     UnregisterAllEventCallbacks();
 }
 
-void BoundsComponent::OnTransformDirty(const TransformDirty* event) {
+void BoundsComponent::flagBoundingBoxDirty() {
+    _boundingBoxDirty = true;
+    SceneGraphNode* parent = _parentSGN.getParent();
+    if (parent != nullptr) {
+        BoundsComponent* bounds = parent->get<BoundsComponent>();
+        // We stop if the parent sgn doesn't have a bounds component.
+        if (bounds != nullptr) {
+            bounds->flagBoundingBoxDirty();
+        }
+    }
+}
+
+void BoundsComponent::onTransformUpdated(const TransformUpdated* event) {
     if (GetOwner() == event->ownerID) {
-        _transformDirty = true;
+        flagBoundingBoxDirty();
     }
 }
 
@@ -35,36 +46,30 @@ void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
     flagBoundingBoxDirty();
 }
 
-void BoundsComponent::Update(const U64 deltaTimeUS) {
-    if (_transformDirty) {
-        
-        TransformComponent* tComp = _parentSGN.GetComponentManager()->GetComponent<TransformComponent>(GetOwner());
-        if (tComp) {
-            _worldMatrix.set(tComp->getWorldMatrix());
-            _boundingBoxDirty = true;
-        }
-        _transformDirty = false;
-    }
-
+const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     if (_boundingBoxDirty) {
-        SceneGraphNode* parent = _parentSGN.getParent();
-        if (parent) {
-            parent->get<BoundsComponent>()->flagBoundingBoxDirty();
-        }
-
         _boundingBox.set(_refBoundingBox);
 
         _parentSGN.forEachChild([this](const SceneGraphNode& child) {
-            _boundingBox.add(child.get<BoundsComponent>()->getBoundingBox());
+            _boundingBox.add(child.get<BoundsComponent>()->updateAndGetBoundingBox());
         });
 
-        if (!_lockBBTransforms) {
-            _boundingBox.transform(_worldMatrix);
+        if (!_ignoreTransform) {
+            TransformComponent* tComp = _parentSGN.get<TransformComponent>();
+            if (tComp) {
+                _boundingBox.transform(tComp->getWorldMatrix());
+            }
         }
 
         _boundingSphere.fromBoundingBox(_boundingBox);
+        _parentSGN.SendEvent<BoundsUpdated>(GetOwner());
         _boundingBoxDirty = false;
     }
+    return _boundingBox;
+}
+
+void BoundsComponent::Update(const U64 deltaTimeUS) {
+    updateAndGetBoundingBox();
 
     SGNComponent<BoundsComponent>::Update(deltaTimeUS);
 }

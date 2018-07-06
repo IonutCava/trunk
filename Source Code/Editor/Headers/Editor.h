@@ -185,9 +185,10 @@ class Editor : public PlatformContextComponent,
     void drawMenuBar();
     void showDebugWindow(bool state);
     void showSampleWindow(bool state);
+    void enableGizmo(bool state);
     bool showDebugWindow() const;
     bool showSampleWindow() const;
-
+    bool enableGizmo() const;
     void setTransformSettings(const TransformSettings& settings);
     const TransformSettings& getTransformSettings() const;
 
@@ -212,6 +213,7 @@ class Editor : public PlatformContextComponent,
     bool              _scenePreviewWasFocused;
     bool              _showDebugWindow;
     bool              _showSampleWindow;
+    bool              _enableGizmo;
     DisplayWindow*    _mainWindow;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
@@ -268,13 +270,19 @@ namespace Attorney {
         static void showSampleWindow(Editor& editor, bool state) {
             editor.showSampleWindow(state);
         }
+        static void enableGizmo(Editor& editor, bool state) {
+            return editor.enableGizmo(state);
+        }
         static bool showDebugWindow(Editor& editor) {
             return editor.showDebugWindow();
         }
         static bool showSampleWindow(Editor& editor) {
             return editor.showSampleWindow();
         }
-
+        static bool enableGizmo(Editor& editor) {
+            return editor.enableGizmo();
+        }
+        
         friend class Divide::MenuBar;
         friend class Divide::PanelManager;
     };

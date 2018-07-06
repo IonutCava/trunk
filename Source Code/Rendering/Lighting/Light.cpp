@@ -71,7 +71,6 @@ bool Light::unload() {
 
 void Light::postLoad(SceneGraphNode& sgn) {
     sgn.get<TransformComponent>()->setPosition(_positionAndRange.xyz());
-    sgn.get<BoundsComponent>()->lockBBTransforms(true);
     SceneNode::postLoad(sgn);
 }
 

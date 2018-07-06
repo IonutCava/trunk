@@ -223,7 +223,10 @@ void SceneManager::setActiveScene(Scene* const scene) {
 
     _scenePool->activeScene(*scene);
     Attorney::SceneManager::onSetActive(*scene);
-    LoadSave::loadScene(*scene);
+    if (!LoadSave::loadScene(*scene)) {
+        //corrupt save
+        deleteAllFiles(Paths::g_saveLocation.c_str(), "sav");
+    }
 
     ShadowMap::resetShadowMaps(_platformContext->gfx());
     _platformContext->gui().onChangeScene(scene);

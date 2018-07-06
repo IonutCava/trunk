@@ -983,4 +983,14 @@ namespace Divide {
     const TransformSettings& PanelManager::getTransformSettings() const {
         return Attorney::EditorPanelManager::getTransformSettings(context().editor());
     }
+
+
+
+    bool Attorney::PanelManagerDockedWindows::editorEnableGizmo(Divide::PanelManager& mgr) {
+        return Attorney::EditorPanelManager::enableGizmo(mgr.context().editor());
+    }
+
+    void Attorney::PanelManagerDockedWindows::editorEnableGizmo(Divide::PanelManager& mgr, bool state) {
+        Attorney::EditorPanelManager::enableGizmo(mgr.context().editor(), state);
+    }
 }; //namespace Divide

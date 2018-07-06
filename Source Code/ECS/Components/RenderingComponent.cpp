@@ -395,7 +395,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                 _boundingBoxPrimitive[1]->fromBox(
                                      bbGrandParent.getMin() - vec3<F32>(0.0025f),
                                      bbGrandParent.getMax() + vec3<F32>(0.0025f),
-                                     UColour(0, 128, 128, 255));
+                                     UColour(255, 0, 0, 255));
             }
         }
     }

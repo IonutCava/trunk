@@ -40,13 +40,8 @@ namespace Divide {
         
     }
 
-    void TransformComponent::RegisterEventCallbacks() {
-        RegisterEventCallback(&TransformComponent::OnParentTransformDirty);
-        SGNComponent<TransformComponent>::RegisterEventCallbacks();
-    }
-
-    void TransformComponent::OnParentTransformDirty(const ParentTransformDirty* event) {
-        if (GetOwner() == event->ownerID) {
+    void TransformComponent::onParentTransformDirty(U32 transformMask) {
+        if (transformMask != to_base(TransformType::NONE)) {
             _worldMatrixDirty = true;
         }
     }
@@ -70,10 +65,9 @@ namespace Divide {
     void TransformComponent::PreUpdate(const U64 deltaTimeUS) {
         // If we have dirty transforms, inform everybody
         UpgradableReadLock r_lock(_lock);
-        if (_transformUpdatedMask != to_base(TransformType::NONE) &&
-            _transformUpdatedMask != to_base(TransformType::VIEW_OFFSET))
+        if (_transformUpdatedMask != to_base(TransformType::NONE))
         {
-            _parentSGN.SendEvent<TransformDirty>(GetOwner(), _transformUpdatedMask);
+            Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, _transformUpdatedMask);
         }
 
         SGNComponent<TransformComponent>::PreUpdate(deltaTimeUS);
@@ -82,14 +76,16 @@ namespace Divide {
     void TransformComponent::Update(const U64 deltaTimeUS) {
         // Cleanup our dirty transforms
         UpgradableReadLock r_lock(_lock);
-        if (_transformUpdatedMask != to_base(TransformType::NONE) &&
-            _transformUpdatedMask != to_base(TransformType::VIEW_OFFSET))
+        if (_transformUpdatedMask != to_base(TransformType::NONE))
         {
             UpgradeToWriteLock w_lock(r_lock);
-            _transformInterface.getValues(_prevTransformValues);
+            if (AnyCompare(_transformUpdatedMask, to_base(TransformType::WORLD_TRANSFORMS))) {
+                _transformInterface.getValues(_prevTransformValues);
+            }
             _worldMatrixDirty = true;
             _transformUpdatedMask = to_base(TransformType::NONE);
         }
+
         SGNComponent<TransformComponent>::Update(deltaTimeUS);
     }
 
@@ -378,11 +374,17 @@ namespace Divide {
         }
         return false;
     }
-
+    
+    void TransformComponent::setTransform(const TransformValues& values) {
+        WriteLock r_lock(_lock);
+        _transformInterface.setValues(values);
+        setTransformDirty(TransformType::WORLD_TRANSFORMS);
+    }
 
     void TransformComponent::setTransforms(const mat4<F32>& transform) {
-        ReadLock r_lock(_lock);
+        WriteLock r_lock(_lock);
         _transformInterface.setTransforms(transform);
+        setTransformDirty(TransformType::WORLD_TRANSFORMS);
     }
 
     void TransformComponent::getValues(TransformValues& valuesOut) const {
@@ -403,11 +405,14 @@ namespace Divide {
             if (grandParentPtr) {
                 _worldMatrix *= grandParentPtr->get<TransformComponent>()->updateWorldMatrix();
             }
-            _worldMatrixDirty = false;
-        }
 
-        if (_ignoreViewSettings._cameraGUID != -1) {
-            _worldMatrix = _worldMatrix * _ignoreViewSettings._transformOffset;
+            if (_ignoreViewSettings._cameraGUID != -1) {
+                _worldMatrix = _worldMatrix * _ignoreViewSettings._transformOffset;
+            }
+
+            _worldMatrixDirty = false;
+
+            _parentSGN.SendEvent<TransformUpdated>(GetOwner());
         }
 
         return _worldMatrix;
@@ -571,7 +576,10 @@ namespace Divide {
     bool TransformComponent::load(ByteBuffer& inputBuffer) {
         I64 tempID = -1;
         inputBuffer >> tempID;
-        assert(tempID == uniqueID());
+        if (tempID != uniqueID()) {
+            // corrupt save
+            return false;
+        }
 
         bool hasChanged = false;
         inputBuffer >> hasChanged;

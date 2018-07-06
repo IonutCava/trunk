@@ -203,11 +203,8 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
         sgn.get<RenderingComponent>()->registerTextureDependency(_particleTexture->getData(),
                                                                  to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
-
+    sgn.get<BoundsComponent>()->ignoreTransform(true);
     setFlag(UpdateFlag::BOUNDS_CHANGED);
-
-    sgn.get<BoundsComponent>()->lockBBTransforms(true);
-
     SceneNode::postLoad(sgn);
 }
 

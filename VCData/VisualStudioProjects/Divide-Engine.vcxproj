@@ -520,6 +520,7 @@
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SGNComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\TransformComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\UnitComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Events\Headers\BoundsEvents.h" />
     <ClInclude Include="..\..\Source Code\ECS\Events\Headers\EntityEvents.h" />
     <ClInclude Include="..\..\Source Code\ECS\Events\Headers\TransformEvents.h" />
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\AnimationSystem.h" />

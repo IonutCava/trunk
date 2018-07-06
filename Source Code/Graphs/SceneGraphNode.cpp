@@ -16,6 +16,7 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include "ECS/Events/Headers/EntityEvents.h"
+#include "ECS/Events/Headers/BoundsEvents.h"
 #include "ECS/Events/Headers/TransformEvents.h"
 #include "ECS/Systems/Headers/ECSManager.h"
 
@@ -125,19 +126,30 @@ SceneGraphNode::~SceneGraphNode()
 
 void SceneGraphNode::RegisterEventCallbacks()
 {
-    RegisterEventCallback(&SceneGraphNode::OnTransformDirty);
+    
 }
 
-void SceneGraphNode::OnTransformDirty(const TransformDirty* event) {
-    // are we targeted by the event?
-    if (GetEntityID() == event->ownerID) {
-        Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
+void SceneGraphNode::onBoundsUpdated() {
+    SceneGraphNode* parent = getParent();
+    if (parent) {
+        parent->onBoundsUpdated();
+    }
+}
 
-        ReadLock r_lock(_childLock);
-        U32 childCount = getChildCountLocked();
-        for (U32 i = 0; i < childCount; ++i) {
-            SendEvent<ParentTransformDirty>(_children[i]->GetEntityID(), event->typeMask);
-        }
+void SceneGraphNode::setTransformDirty(U32 transformMask) {
+    Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
+
+    ReadLock r_lock(_childLock);
+    U32 childCount = getChildCountLocked();
+    for (U32 i = 0; i < childCount; ++i) {
+        _children[i]->setParentTransformDirty(transformMask);
+    }
+}
+
+void SceneGraphNode::setParentTransformDirty(U32 transformMask) {
+    TransformComponent* tComp = get<TransformComponent>();
+    if (tComp) {
+        Attorney::TransformComponentSGN::onParentTransformDirty(*tComp, transformMask);
     }
 }
 
@@ -401,7 +413,7 @@ void SceneGraphNode::lockVisibility(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     if (_active != state) {
         _active = state;
-        SendEvent<EntityActiveStateChange>(GetEntityID(), _active);
+        SendAndDispatchEvent<EntityActiveStateChange>(GetEntityID(), _active);
 
         forEachChild([state](SceneGraphNode& child) {
             child.setActive(state);

@@ -54,7 +54,7 @@ const mat4<F32>& Transform::getMatrix() {
 }
 
 void Transform::setTransforms(const mat4<F32>& transform) {
-    _dirty = true;
+    _rebuildMatrix = _dirty = true;
 
     Quaternion<F32>& rotation = _transformValues._orientation;
     vec3<F32>& position = _transformValues._translation;
@@ -88,9 +88,9 @@ void Transform::setTransforms(const mat4<F32>& transform) {
     }
 
     // build a 3x3 rotation matrix and generate the rotation quaternion from it
-    rotation = Quaternion<F32>(mat3<F32>(
-        vRows[0].x, vRows[1].x, vRows[2].x, vRows[0].y, vRows[1].y,
-        vRows[2].y, vRows[0].z, vRows[1].z, vRows[2].z));
+    rotation = Quaternion<F32>(mat3<F32>(vRows[0].x, vRows[1].x, vRows[2].x,
+                                         vRows[0].y, vRows[1].y, vRows[2].y,
+                                         vRows[0].z, vRows[1].z, vRows[2].z));
 }
 
 void Transform::identity() {

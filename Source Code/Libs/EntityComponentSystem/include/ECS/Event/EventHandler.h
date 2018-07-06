@@ -123,7 +123,18 @@ namespace ECS { namespace Event {
 				LogWarning("Event buffer is full! Cut off new incoming events !!!");
 			}
 		}
-	
+
+        template<class E, class... ARGS>
+        void SendAndDispatchEvent(ECSEngine* engine, ARGS&&... eventArgs)
+        {
+            void* pMem = this->m_EventMemoryAllocator->allocate(sizeof(E), alignof(E));
+            auto event = new (pMem)E(engine, std::forward<ARGS>(eventArgs)...);
+            auto it = this->m_EventDispatcherMap.find(event->GetEventTypeID());
+            if (it != this->m_EventDispatcherMap.end()) {
+                it->second->Dispatch(event);
+            }
+        }
+
 		// dispatches all stores events and clears buffer
 		void DispatchEvents()
 		{

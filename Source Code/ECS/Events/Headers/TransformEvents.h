@@ -36,23 +36,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    struct TransformDirty: public ECS::Event::Event<TransformDirty>
+    struct TransformUpdated: public ECS::Event::Event<TransformUpdated>
     {
         ECS::EntityId ownerID;
-        U32 typeMask;
 
-        TransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, U32 transformTypeMask) : Event(engine), ownerID(id), typeMask(transformTypeMask)
+        TransformUpdated(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
         {}
-    };
-
-    struct ParentTransformDirty : public ECS::Event::Event<ParentTransformDirty>
-    {
-        ECS::EntityId ownerID;
-        U32 typeMask;
-
-        ParentTransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, U32 transformTypeMask) : Event(engine), ownerID(id), typeMask(transformTypeMask)
-        {}
-    };
+    };;
 };
 
 #endif //_TRANSFORM_EVENTS_H_

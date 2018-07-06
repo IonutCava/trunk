@@ -375,50 +375,56 @@ namespace Divide {
      }
 
      void PropertyWindow::drawTransformSettings() {
-         TransformSettings settings = _parent.getTransformSettings();
-
          ImGui::Separator();
-         if (ImGui::RadioButton("Translate", settings.currentGizmoOperation == ImGuizmo::TRANSLATE)) {
-             settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
-         }
+         bool enableGizmo = Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent);
+         ImGui::Checkbox("Transform Gizmo", &enableGizmo);
+         Attorney::PanelManagerDockedWindows::editorEnableGizmo(_parent, enableGizmo);
 
-         ImGui::SameLine();
-         if (ImGui::RadioButton("Rotate", settings.currentGizmoOperation == ImGuizmo::ROTATE)) {
-             settings.currentGizmoOperation = ImGuizmo::ROTATE;
-         }
+         if (enableGizmo) {
+             TransformSettings settings = _parent.getTransformSettings();
 
-         ImGui::SameLine();
-         if (ImGui::RadioButton("Scale", settings.currentGizmoOperation == ImGuizmo::SCALE)) {
-             settings.currentGizmoOperation = ImGuizmo::SCALE;
-         }
-
-         if (settings.currentGizmoOperation != ImGuizmo::SCALE) {
-             if (ImGui::RadioButton("Local", settings.currentGizmoMode == ImGuizmo::LOCAL)) {
-                 settings.currentGizmoMode = ImGuizmo::LOCAL;
+             if (ImGui::RadioButton("Translate", settings.currentGizmoOperation == ImGuizmo::TRANSLATE)) {
+                 settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
              }
+
              ImGui::SameLine();
-             if (ImGui::RadioButton("World", settings.currentGizmoMode == ImGuizmo::WORLD)) {
-                 settings.currentGizmoMode = ImGuizmo::WORLD;
+             if (ImGui::RadioButton("Rotate", settings.currentGizmoOperation == ImGuizmo::ROTATE)) {
+                 settings.currentGizmoOperation = ImGuizmo::ROTATE;
              }
+
+             ImGui::SameLine();
+             if (ImGui::RadioButton("Scale", settings.currentGizmoOperation == ImGuizmo::SCALE)) {
+                 settings.currentGizmoOperation = ImGuizmo::SCALE;
+             }
+
+             if (settings.currentGizmoOperation != ImGuizmo::SCALE) {
+                 if (ImGui::RadioButton("Local", settings.currentGizmoMode == ImGuizmo::LOCAL)) {
+                     settings.currentGizmoMode = ImGuizmo::LOCAL;
+                 }
+                 ImGui::SameLine();
+                 if (ImGui::RadioButton("World", settings.currentGizmoMode == ImGuizmo::WORLD)) {
+                     settings.currentGizmoMode = ImGuizmo::WORLD;
+                 }
+             }
+
+             ImGui::Checkbox("", &settings.useSnap);
+             ImGui::SameLine();
+
+             switch (settings.currentGizmoOperation)
+             {
+                 case ImGuizmo::TRANSLATE:
+                     ImGui::InputFloat3("Position Snap", &settings.snap[0]);
+                     break;
+                 case ImGuizmo::ROTATE:
+                     ImGui::InputFloat("Angle Snap", &settings.snap[0]);
+                     break;
+                 case ImGuizmo::SCALE:
+                     ImGui::InputFloat("Scale Snap", &settings.snap[0]);
+                     break;
+             }
+             ImGui::Separator();
+
+             _parent.setTransformSettings(settings);
          }
-
-         ImGui::Checkbox("", &settings.useSnap);
-         ImGui::SameLine();
-
-         switch (settings.currentGizmoOperation)
-         {
-             case ImGuizmo::TRANSLATE:
-                 ImGui::InputFloat3("Position Snap", &settings.snap[0]);
-                 break;
-             case ImGuizmo::ROTATE:
-                 ImGui::InputFloat("Angle Snap", &settings.snap[0]);
-                 break;
-             case ImGuizmo::SCALE:
-                 ImGui::InputFloat("Scale Snap", &settings.snap[0]);
-                 break;
-         }
-         ImGui::Separator();
-
-         _parent.setTransformSettings(settings);
      }
 }; //namespace Divide
