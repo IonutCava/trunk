@@ -197,7 +197,8 @@ bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
 /// Bind a texture specified by a GL handle and GL type to the specified unit using the desired sampler object defined by hash value  
 bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false because this might be related to a bad algorithm
-    DIVIDE_ASSERT(unit < GFX_DEVICE.getMaxTextureSlots(), "GLStates error: invalid texture unit specified as a texture binding slot!");
+	DIVIDE_ASSERT(unit < static_cast<GLuint>(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16)),
+		          "GLStates error: invalid texture unit specified as a texture binding slot!");
     // Bind the sampler object first, as we may just require a sampler update instead of a full texture rebind
     GL_API::bindSampler(unit, samplerHash);
     // Prevent double bind only for the texture

@@ -41,7 +41,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     }
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror OpenGL functionality 1-to-1
-    if (getId() == OpenGLES) {
+    if (GFX_DEVICE.getApi() == OpenGLES) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -118,19 +118,22 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
-    GFX_DEVICE.setMaxTextureSlots(GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
+	par.setParam<I32>("rendering.maxTextureSlots", GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
     // Maximum number of color attachments per framebuffer
-    GFX_DEVICE.setMaxRenderTargetOutputs(GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
+	par.setParam<I32>("rendering.maxRenderTargetOutputs", GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
     stringImpl gpuVendorByte(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
     if (!gpuVendorByte.empty()) {
-             if(gpuVendorByte.compare(0,5,"Intel")  == 0) { setGPUVendor(GPU_VENDOR_INTEL);  }
-        else if(gpuVendorByte.compare(0,6,"NVIDIA") == 0) { setGPUVendor(GPU_VENDOR_NVIDIA); }
-        else if(gpuVendorByte.compare(0,3,"ATI")    == 0) { setGPUVendor(GPU_VENDOR_AMD);    }
-        else if(gpuVendorByte.compare(0,3,"AMD")    == 0) { setGPUVendor(GPU_VENDOR_AMD);    }
+        if(gpuVendorByte.compare(0,5,"Intel")  == 0) {
+			GFX_DEVICE.setGPUVendor(GPU_VENDOR_INTEL);  
+		} else if (gpuVendorByte.compare(0, 6, "NVIDIA") == 0) { 
+			GFX_DEVICE.setGPUVendor(GPU_VENDOR_NVIDIA); 
+		} else if (gpuVendorByte.compare(0, 3, "ATI") == 0 || gpuVendorByte.compare(0, 3, "AMD") == 0) {
+			GFX_DEVICE.setGPUVendor(GPU_VENDOR_AMD); 
+		}
     } else {
         gpuVendorByte = "Unknown GPU Vendor";
-        setGPUVendor(GPU_VENDOR_OTHER);
+        GFX_DEVICE.setGPUVendor(GPU_VENDOR_OTHER);
     }
 
     // Cap max anisotropic level to what the hardware supports
@@ -164,7 +167,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // How many attributes can we send to a vertex shader
     PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
-    PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), GFX_DEVICE.getMaxTextureSlots());
+	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), par.getParam<I32>("rendering.maxTextureSlots", 16));
     // Query shading language version support
     PRINT_FN(Locale::get("GL_GLSL_SUPPORT"), glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver

@@ -61,9 +61,11 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) co
 void Frustum::Extract(){
     _viewProjectionMatrixCache.set(GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX));
     
-    if (_viewProjectionMatrixCacheOld != _viewProjectionMatrixCache)
-        _viewProjectionMatrixCacheOld.set(_viewProjectionMatrixCache);
-    else return;
+	if (_viewProjectionMatrixCacheOld != _viewProjectionMatrixCache) {
+		_viewProjectionMatrixCacheOld.set(_viewProjectionMatrixCache);
+	} else {
+		return;
+	}
 
     Plane<F32>& rightPlane  = _frustumPlanes[0];
     Plane<F32>& leftPlane   = _frustumPlanes[1];

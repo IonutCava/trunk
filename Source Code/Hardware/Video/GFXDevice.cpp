@@ -50,7 +50,7 @@ namespace {
     F32  _anaglyphIOD = -0.01f;
 };
 
-GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
+GFXDevice::GFXDevice() : _api(nullptr),
                          _postFX(PostFX::getOrCreateInstance()),
                          _shaderManager(ShaderManager::getOrCreateInstance()),
                          _renderStage(INVALID_STAGE)
@@ -76,9 +76,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _FXAASamples = 0;
    _prevShaderId = 0;
    _prevTextureId = 0;
-   _maxTextureSlots = 0;
    _stateExclusionMask = 0;
-   _maxRenderTargetOutputs = 0;
    FRAME_COUNT = 0;
    FRAME_DRAW_CALLS = 0;
    FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
@@ -91,13 +89,14 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _drawDebugAxis = false;
    _enableAnaglyph = false;
    _viewportUpdate = false;
-   _previewDepthBuffer = false;
    _rasterizationEnabled = true;
    _enablePostProcessing = false;
    _loadingThreadAvailable = false;
    // Enumerated Types
    _shadowDetailLevel = DETAIL_HIGH;
    _generalDetailLevel = DETAIL_HIGH;
+   _GPUVendor = GPU_VENDOR_PLACEHOLDER;
+   _apiId = GFX_RENDER_API_PLACEHOLDER;
    // Utility cameras
    _2DCamera = New FreeFlyCamera();
    _2DCamera->lockView(true);
@@ -270,10 +269,11 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, con
         vec3<F32>(pos.x,		pos.y,		pos.z-1.0f)
     };
 
+	Kernel* const kernel = Application::getInstance().getKernel();
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the cube camera as the currently active one
-    _kernel->getCameraMgr().pushActiveCamera(_cubeCamera, false);
+	kernel->getCameraMgr().pushActiveCamera(_cubeCamera, false);
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
@@ -294,7 +294,7 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, con
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
     // Restore our previous camera
-    _kernel->getCameraMgr().popActiveCamera();
+	kernel->getCameraMgr().popActiveCamera();
 }
 
 /// Try to find the render state block that matches our specified descriptor. 
@@ -514,19 +514,19 @@ void GFXDevice::toggle2D(bool state) {
     static size_t previousStateBlockHash = 0;
     // Prevent double 2D toggle to the same state (e.g. in a loop)
     DIVIDE_ASSERT((state && !_2DRendering) || (!state && _2DRendering), "GFXDevice error: double toggle2D call with same value detected!");
-    
+	Kernel* const kernel = Application::getInstance().getKernel();
     _2DRendering = state;
     // If we need to enable 2D rendering
     if (state) { 
         // Activate the 2D render state block
         previousStateBlockHash = setStateBlock(_state2DRenderingHash);
         // Push the 2D camera
-        _kernel->getCameraMgr().pushActiveCamera(_2DCamera);
+		kernel->getCameraMgr().pushActiveCamera(_2DCamera);
         // Upload 2D camera matrices to the GPU
         _2DCamera->renderLookAt();
     } else { 
         // Reverting to 3D implies popping the 2D camera
-        _kernel->getCameraMgr().popActiveCamera();
+		kernel->getCameraMgr().popActiveCamera();
         // And restoring the previous state block
         setStateBlock(previousStateBlockHash);
     }

@@ -111,19 +111,21 @@ enum ErrorCode {
     NO_ERR = 0,
     MISSING_SCENE_DATA = -1,
     MISSING_SCENE_LOAD_CALL = -2,
-    GLFW_INIT_ERROR = -3,
-    GLFW_WINDOW_INIT_ERROR = -4,
-    GLEW_INIT_ERROR = -5,
-    GLEW_OLD_HARDWARE = -6,
-    DX_INIT_ERROR = -7,
-    DX_OLD_HARDWARE = -8,
-    SDL_AUDIO_INIT_ERROR = -9,
-    SDL_AUDIO_MIX_INIT_ERROR = -10,
-    FMOD_AUDIO_INIT_ERROR = -11,
-    OAL_INIT_ERROR = -12,
-    PHYSX_INIT_ERROR = -13,
-    PHYSX_EXTENSION_ERROR = -14,
-    NO_LANGUAGE_INI = -15
+	GFX_NOT_SUPPORTED = -3,
+	GFX_NON_SPECIFIED = -4,
+    GLFW_INIT_ERROR = -5,
+    GLFW_WINDOW_INIT_ERROR = -6,
+    GLEW_INIT_ERROR = -7,
+    GLEW_OLD_HARDWARE = -8,
+    DX_INIT_ERROR = -9,
+    DX_OLD_HARDWARE = -10,
+    SDL_AUDIO_INIT_ERROR = -11,
+    SDL_AUDIO_MIX_INIT_ERROR = -12,
+    FMOD_AUDIO_INIT_ERROR = -13,
+    OAL_INIT_ERROR = -14,
+    PHYSX_INIT_ERROR = -15,
+    PHYSX_EXTENSION_ERROR = -16,
+    NO_LANGUAGE_INI = -17
 };
 
 inline const char* getErrorCodeName(ErrorCode code) {
@@ -138,6 +140,12 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case MISSING_SCENE_LOAD_CALL : {
             return "The specified scene failed to load all of its data properly";
         };
+		case  GFX_NOT_SUPPORTED : {
+			return "The specified rendering API is not fully implemented and as such, it's not supported";
+		};
+		case GFX_NON_SPECIFIED: {
+			return "No rendering API specified before trying to initialize the GFX Device";
+		};
         case GLFW_INIT_ERROR : {
             return "GLFW system failed to initialize";
         };

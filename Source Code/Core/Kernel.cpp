@@ -54,10 +54,9 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 {
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
-    
-    //General light management and rendering (individual lights are handled by each scene)
-    //Unloading the lights is a scene level responsibility
-    LightManager::createInstance();
+	//General light management and rendering (individual lights are handled by each scene)
+	//Unloading the lights is a scene level responsibility
+	LightManager::createInstance();
     _cameraMgr = New CameraManager(this);               //Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
@@ -362,8 +361,8 @@ void Kernel::firstLoop() {
     GFX_DEVICE.setWindowPos(10, 60);
     par.setParam("freezeGUITime", false);
     par.setParam("freezeLoopTime", false);
-
-    GFX_DEVICE.changeResolution(Application::getInstance().getPreviousResolution());
+	const vec2<U16> prevRes = Application::getInstance().getPreviousResolution();
+    GFX_DEVICE.changeResolution(prevRes.width, prevRes.height);
 #if defined(_DEBUG) || defined(_PROFILE)
     ApplicationTimer::getInstance().benchmark(true);
 #endif
@@ -386,20 +385,15 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _GFX.setStateChangeExclusionMask(TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY | TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES);
     //Target FPS is usually 60. So all movement is capped around that value
     ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
-
     //Load info from XML files
     stringImpl startupScene(stringAlg::toBase(XML::loadScripts(stringAlg::fromBase(entryPoint))));
-
     //Create mem log file
 	const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
-
     PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
     vec2<U16> resolution = _APP.getResolution();
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
-    _GFX.registerKernel(this);
     ErrorCode initError = _GFX.initRenderingApi(vec2<U16>(400, 300), _argc, _argv);
-
     //If we could not initialize the graphics device, exit
     if(initError != NO_ERR) {
         return initError;

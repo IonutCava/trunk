@@ -130,7 +130,7 @@ bool GL_API::initShaders() {
     // This line gets replaced in every shader at load with the custom list of defines specified by the material
     glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
     // Add some nVidia specific pragma directives
-    if (getGPUVendor() == GPU_VENDOR_NVIDIA) {
+    if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
         glswAddDirectiveToken("","//#pragma optionNV(fastmath on)");
         glswAddDirectiveToken("","//#pragma optionNV(fastprecision on)");
         glswAddDirectiveToken("","//#pragma optionNV(inline all)");
@@ -151,7 +151,7 @@ bool GL_API::initShaders() {
     
     glswAddDirectiveToken("Fragment", "#define VARYING in"); 
     glswAddDirectiveToken("Fragment", ("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(SHADER_BUFFER_LIGHT_SHADOW)).c_str());
-    glswAddDirectiveToken("Fragment", ("#define MAX_TEXTURE_SLOTS " + Util::toString(GFX_DEVICE.getMaxTextureSlots())).c_str());
+	glswAddDirectiveToken("Fragment", ("#define MAX_TEXTURE_SLOTS " + Util::toString(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16))).c_str());
     glswAddDirectiveToken("Fragment", ("#define TEXTURE_UNIT0 " + Util::toString(ShaderProgram::TEXTURE_UNIT0)).c_str());
     glswAddDirectiveToken("Fragment", ("#define TEXTURE_UNIT1 " + Util::toString(ShaderProgram::TEXTURE_UNIT1)).c_str());
     glswAddDirectiveToken("Fragment", ("#define TEXTURE_NORMALMAP " + Util::toString(ShaderProgram::TEXTURE_NORMALMAP)).c_str());

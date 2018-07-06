@@ -25,40 +25,36 @@
 
 namespace Divide {
 
-inline void GFXDevice::setApi(const RenderAPI& api){
-    _api.setId(api);
-    switch (api)	{
-        default:
-        case OpenGLES:
-        case OpenGL:    _api = GL_API::getOrCreateInstance();	break;
-        case Direct3D:	_api = DX_API::getOrCreateInstance();	break;
-
-        case GFX_RENDER_API_PLACEHOLDER:
-        case None:	ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API")); setApi(OpenGL); break; 
-    };
-}
-
 /// Render specified function inside of a viewport of specified dimensions and position
 inline void GFXDevice::renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK<>& callback){
     setViewport(rect);
     callback();
     restoreViewport();
 }
-
 /// Compare the current render stage flag with the given mask
 inline bool GFXDevice::isCurrentRenderStage(U8 renderStageMask) {
     DIVIDE_ASSERT((renderStageMask & ~(INVALID_STAGE - 1)) == 0, "GFXDevice error: render stage query received an invalid bitmask!"); 
     return bitCompare(renderStageMask, _renderStage);
 }
-
+/// Change the width of rendered lines to the specified value
+inline void GFXDevice::setLineWidth(F32 width) { 
+	_previousLineWidth = _currentLineWidth;
+	_currentLineWidth = width; 
+	_api->setLineWidth(width); 
+}
+/// Restore the width of rendered lines to the previously set value
+inline void GFXDevice::restoreLineWidth() {
+	setLineWidth(_previousLineWidth); 
+}
 /// Toggle hardware rasterization on or off. 
 inline void GFXDevice::toggleRasterization(bool state) {
-    if (_rasterizationEnabled == state) return;
+	if (_rasterizationEnabled == state) {
+		return;
+	}
     _rasterizationEnabled = state;
 
-    _api.toggleRasterization(state);
+    _api->toggleRasterization(state);
 }
-
 /// Register a function to be called in the 2D rendering fase of the GFX Flush routine. Use callOrder for sorting purposes 
 inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder) {
 	_2dRenderQueue.push_back(std::make_pair(callOrder, callback));
@@ -69,7 +65,52 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 c
                     return a.first < b.first;
               });
 }
-
+/// Returns the visible nodes' buffer index for the given ID
+inline I32 GFXDevice::getDrawID(I64 drawIDIndex) const {
+	hashMapImpl<I64, I32>::const_iterator it = _sgnToDrawIDMap.find(drawIDIndex);
+	assert(it != _sgnToDrawIDMap.end());
+	return it->second;
+}
+///Sets the current render stage.
+///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
+inline RenderStage GFXDevice::setRenderStage(RenderStage stage) {
+	RenderStage prevRenderStage = _renderStage;
+	_renderStage = stage; 
+	return prevRenderStage; 
+}
+/// disable or enable a clip plane by index
+inline void GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
+	assert(index != ClipPlaneIndex_PLACEHOLDER);
+	if (state != _clippingPlanes[index].active()) {
+		_clippingPlanes[index].active(state);
+		_api->updateClipPlanes();
+	}
+}
+/// modify a single clip plane by index
+inline void GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) {
+	assert(index != ClipPlaneIndex_PLACEHOLDER);
+	_clippingPlanes[index] = p;
+	updateClipPlanes();
+}
+/// set a new list of clipping planes. The old one is discarded
+inline void GFXDevice::setClipPlanes(const PlaneList& clipPlanes)  {
+	if (clipPlanes != _clippingPlanes) {
+		_clippingPlanes = clipPlanes;
+		updateClipPlanes();
+		_api->updateClipPlanes();
+	}
+}
+/// clear all clipping planes
+inline void GFXDevice::resetClipPlanes() {
+	_clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
+	updateClipPlanes();
+	_api->updateClipPlanes();
+}
+/// Alternative to the normal version of getMatrix
+inline const mat4<F32>& GFXDevice::getMatrix(const MATRIX_MODE& mode)  { 
+	getMatrix(mode, _mat4Cache); 
+	return _mat4Cache; 
+}
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)
 

@@ -199,7 +199,7 @@ bool Scene::onKeyUp(const Input::KeyEvent& key){
 #		endif
 		case KeyCode::KC_F10: {
 			LightManager::getInstance().togglePreviewShadowMaps();
-			GFX_DEVICE.togglePreviewDepthBuffer();
+			ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer", !ParamHandler::getInstance().getParam<bool>("rendering.previewDepthBuffer", false));
 		} break;
         case KeyCode::KC_F7: {
             GFX_DEVICE.Screenshot("screenshot_");

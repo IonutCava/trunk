@@ -140,25 +140,21 @@ class RenderAPIWrapper {
 public: //RenderAPIWrapper global
 
 protected:
-    RenderAPIWrapper() : _apiId(GFX_RENDER_API_PLACEHOLDER),
-                         _GPUVendor(GPU_VENDOR_PLACEHOLDER)
+	friend class GFXDevice;
+
+    RenderAPIWrapper()
     {
     }
 
-    friend class GFXDevice;
-
-    inline void setId(const RenderAPI& apiId)            { _apiId = apiId; }
-    inline void setGPUVendor(const GPUVendor& gpuvendor) { _GPUVendor = gpuvendor; }
-
-    inline const RenderAPI& getId()        const { return _apiId;}
-    inline const GPUVendor& getGPUVendor() const { return _GPUVendor;}
+	virtual ~RenderAPIWrapper()
+	{
+	}
 
     /*Application display frame*/
     ///Clear buffers, set default states, etc
     virtual void beginFrame() = 0;
     ///Clear shaders, restore active texture units, etc
     virtual void endFrame() = 0;
-
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
@@ -184,12 +180,7 @@ protected:
     virtual void setLineWidth(F32 width) = 0;
     virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
-    /*Object viewing*/
     virtual void updateClipPlanes() = 0;
-    /*Object viewing*/
-
-    virtual ~RenderAPIWrapper(){};
-
     virtual U64 getFrameDurationGPU() = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const = 0;
 
@@ -200,10 +191,6 @@ protected:
     virtual void changeResolutionInternal(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void createLoaderThread() = 0;
-
-private:
-    RenderAPI        _apiId;
-    GPUVendor        _GPUVendor;
 };
 
 }; //namespace Divide

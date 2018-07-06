@@ -1,6 +1,7 @@
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/Application.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -11,7 +12,7 @@ void GFXDevice::previewDepthBuffer() {
     // As this is touched once per frame, we'll only enable it in debug builds
 #   ifdef _DEBUG
         // Early out if we didn't request the preview
-        if (!_previewDepthBuffer) {
+        if (!ParamHandler::getInstance().getParam<bool>("rendering.previewDepthBuffer", false)) {
             return;
         }
         // Lazy-load preview shader

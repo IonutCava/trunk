@@ -386,8 +386,8 @@ bool Material::isTranslucent() {
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     shaderInfoMap::const_iterator it = _shaderInfo.find(FINAL_STAGE);
 
-    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() : GFXDevice::SORT_NO_VALUE;
-    textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : GFXDevice::SORT_NO_VALUE;
+    shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() : -std::numeric_limits<I8>::max();
+	textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : -std::numeric_limits<I8>::max();
 }
 
 };

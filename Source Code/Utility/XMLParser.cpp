@@ -242,7 +242,7 @@ namespace XML {
         par.setParam("GUI.defaultScheme",pt.get("GUI.defaultGUIScheme","GWEN"));
         par.setParam("GUI.consoleLayout",pt.get("GUI.consoleLayoutFile","console.layout"));
         par.setParam("GUI.editorLayout",pt.get("GUI.editorLayoutFile","editor.layout"));
-        par.setParam("rendering.anisotropicFilteringLevel", std::max(pt.get<GLint>("rendering.anisotropicFilteringLevel", 1), 1));
+        par.setParam("rendering.anisotropicFilteringLevel", std::max(pt.get<I32>("rendering.anisotropicFilteringLevel", 1), 1));
         par.setParam("rendering.shadowDetailLevel",shadowDetailLevel);
         par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
         vec2<U16> resolution(pt.get("runtime.resolutionWidth",1024), pt.get("runtime.resolutionHeight",768));

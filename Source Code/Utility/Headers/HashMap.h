@@ -23,9 +23,7 @@
 #ifndef _HASH_MAP_H_
 #define _HASH_MAP_H_
 
-#ifndef _CONFIG_HEADER_
 #include "config.h"
-#endif
 
 #if defined(HASH_MAP_IMP) && HASH_MAP_IMP == 0
     #include <boost/Unordered_Map.hpp>
@@ -53,20 +51,22 @@
         inline void fastClear(hashMapImpl<K, V,HashFun>& map){
             map.clear();
         }
+#	ifndef BOOST_PAIR_FUNCS
+#	define BOOST_PAIR_FUNCS
+			template<typename K, typename V>
+			inline std::pair<K, V> makePair(const K& key, const V& val) {
+				return std::make_pair(key, val);
+			}
 
-        template<typename K, typename V>
-        inline std::pair<K, V> makePair(const K& key, const V& val) {
-            return std::make_pair(key, val);
-        }
-
-        template<typename K, typename V>
-        inline std::pair<K, V> makePairCpy(const K& key, V val) {
-            return std::make_pair(key, val);
-        }
-
+			template<typename K, typename V>
+			inline std::pair<K, V> makePairCpy(const K& key, V val) {
+				return std::make_pair(key, val);
+			}
+#	endif
     };
 
 #elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == 1
+
     #include <EASTL/hash_map.h>
 
     namespace hashAlg  = eastl;
@@ -92,18 +92,18 @@
         inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
             map.reset();
         }
-#ifndef EASTL_PAIR_FUNCS
-#define EASTL_PAIR_FUNCS
-        template<typename K, typename V>
-        inline eastl::pair<K, V> makePair(const K& key, const V& val) {
-            return eastl::make_pair_ref(key, val);
-        }
+#	ifndef EASTL_PAIR_FUNCS
+#	define EASTL_PAIR_FUNCS
+			template<typename K, typename V>
+			inline eastl::pair<K, V> makePair(const K& key, const V& val) {
+				return eastl::make_pair_ref(key, val);
+			}
    
-        template<typename K, typename V>
-        inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
-            return eastl::make_pair_ref(key, val);
-        }
-#endif
+			template<typename K, typename V>
+			inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
+				return eastl::make_pair_ref(key, val);
+			}
+#	endif
     };
 
 #else //defined(HASH_MAP_IMP) && HASH_MAP_IMP == 2
@@ -129,21 +129,20 @@
         inline void fastClear(hashMapImpl<K, V, HashFun>& map){
             map.clear();
         }
-#ifndef STD_PAIR_FUNCS
-#define STD_PAIR_FUNCS
-        template<typename K, typename V>
-        inline std::pair<K, V> makePair(const K& key, const V& val) {
-            return std::make_pair(key, val);
-        }
+#	ifndef STD_PAIR_FUNCS
+#	define STD_PAIR_FUNCS
+			template<typename K, typename V>
+			inline std::pair<K, V> makePair(const K& key, const V& val) {
+				return std::make_pair(key, val);
+			}
 
-        template<typename K, typename V>
-        inline std::pair<K, V> makePairCpy(const K& key, V val) {
-            return std::make_pair(key, val);
-        }
-#endif
+			template<typename K, typename V>
+			inline std::pair<K, V> makePairCpy(const K& key, V val) {
+				return std::make_pair(key, val);
+			}
+#	endif
     };
 
 #endif //defined(HASH_MAP_IMP)
-
-
+	
 #endif

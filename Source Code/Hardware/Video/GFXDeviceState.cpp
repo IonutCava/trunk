@@ -13,10 +13,12 @@ namespace Divide {
 
 /// Create a display context using the selected API and create all of the needed primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
-    // Initialize the rendering API
-    ErrorCode hardwareState = _api.initRenderingApi(resolution, argc, argv);
-    // Validate initialization
-    if (hardwareState != NO_ERR) {
+	ErrorCode hardwareState = createAPIInstance();
+	if (hardwareState == NO_ERR) {
+		// Initialize the rendering API
+		_api->initRenderingApi(resolution, argc, argv);
+	} else {
+		// Validate initialization
         return hardwareState;
     }
     // Initialize the shader manager
@@ -34,7 +36,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     _nodeBuffer = newSB(true);
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     // Resize our window to the target resolution (usually, the splash screen resolution)
-    changeResolution(resolution);
+    changeResolution(resolution.width, resolution.height);
     // Create general purpose render state blocks
     RenderStateBlockDescriptor defaultStateDescriptor;
     _defaultStateBlockHash = getOrCreateStateBlock(defaultStateDescriptor);
@@ -105,8 +107,9 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     /// If render targets ready, we initialize our post processing system    
     _postFX.init(resolution);
     /// We also add a couple of useful cameras used by this class. One for rendering in 2D and one for generating cube maps
-    _kernel->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
-    _kernel->getCameraMgr().addNewCamera("_gfxCubeCamera", _cubeCamera);
+	
+    Application::getInstance().getKernel()->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
+	Application::getInstance().getKernel()->getCameraMgr().addNewCamera("_gfxCubeCamera", _cubeCamera);
     /// Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZConstructProgram->UniformTexture("LastMip", 0);
@@ -136,7 +139,7 @@ void GFXDevice::closeRenderingApi() {
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
     SAFE_DELETE(_renderer);
     // Close the rendering API
-    _api.closeRenderingApi();
+    _api->closeRenderingApi();
     // Wait for the loading thread to terminate
     _loaderThread->join();
     // And delete it
@@ -162,6 +165,7 @@ void GFXDevice::closeRenderingApi() {
     SAFE_DELETE(_nodeBuffer);
     // Close the shader manager
     _shaderManager.destroy();
+	destroyAPIInstance();
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing
@@ -176,7 +180,7 @@ void GFXDevice::idle() {
 }
 
 void GFXDevice::beginFrame() {
-    _api.beginFrame();
+    _api->beginFrame();
     setStateBlock(_defaultStateBlockHash);
 }
 
@@ -211,7 +215,7 @@ void GFXDevice::endFrame() {
         FRAME_DRAW_CALLS = 0;
     }
 
-    _api.endFrame();  
+    _api->endFrame();  
 }
 
 Renderer* GFXDevice::getRenderer() const {
@@ -224,4 +228,50 @@ void GFXDevice::setRenderer(Renderer* const renderer) {
     SAFE_UPDATE(_renderer, renderer);
 }
 
+ErrorCode GFXDevice::createAPIInstance() {
+	DIVIDE_ASSERT(_api == nullptr, "GFXDevice error: initRenderingAPI called twice!");
+	switch (_apiId) {
+		case RenderAPI::OpenGL:
+		case RenderAPI::OpenGLES: {
+			_api = &GL_API::getOrCreateInstance();
+		} break;
+		case RenderAPI::Direct3D: {
+			_api = &DX_API::getOrCreateInstance();
+			ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+			return GFX_NOT_SUPPORTED;
+		} break;
+		case RenderAPI::Mantle: {
+			ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+			return GFX_NOT_SUPPORTED;
+		}break;
+		case RenderAPI::None: {
+			ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+			return GFX_NOT_SUPPORTED;
+		}break;
+		default: {
+			ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
+			return GFX_NON_SPECIFIED;
+		}break;
+	};
+
+	return NO_ERR;
+}
+
+void GFXDevice::destroyAPIInstance() {
+	switch (_apiId) {
+		case RenderAPI::OpenGL:
+		case RenderAPI::OpenGLES: {
+			GL_API::destroyInstance();
+		} break;
+		case RenderAPI::Direct3D: {
+			DX_API::destroyInstance();
+		} break;
+		case RenderAPI::Mantle: {
+		}break;
+		case RenderAPI::None: {
+		}break;
+		default: {
+		}break;
+	};
+}
 };

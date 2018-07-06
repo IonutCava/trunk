@@ -36,6 +36,8 @@ DEFINE_SINGLETON (ParamHandler)
 typedef hashMapImpl<stringImpl, cdiggins::any> ParamMap;
 /// A special map for string types (small perf. optimization for add/retrieve)
 typedef hashMapImpl<stringImpl, stringImpl >   ParamStringMap;
+/// A special map for boolean types (small perf. optimization for add/retrieve. Used a lot as option toggles)
+typedef hashMapImpl<stringImpl, bool >         ParamBoolMap;
 
 public:
 	inline void setDebugOutput(bool logState) {
@@ -60,7 +62,7 @@ public:
 		} 
 		
 		ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
-	    return defaultValue; //integrals will be 0, string will be empty, etc;
+	    return defaultValue; //integers will be 0, string will be empty, etc;
 	}
 
     template<typename T>
@@ -152,8 +154,51 @@ public:
 		return _paramsStr.find(param) != _paramsStr.end();
 	}
 
+	template<>
+	inline bool getParam(const stringImpl& name, bool defaultValue) const {
+		ReadLock r_lock(_mutex);
+		ParamBoolMap::const_iterator it = _paramBool.find(name);
+		if (it != _paramBool.end()) {
+			return it->second;
+		}
+
+		ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
+		return defaultValue;
+	}
+
+	template<>
+	void setParam(const stringImpl& name, const bool& value) {
+		WriteLock w_lock(_mutex);
+		ParamBoolMap::iterator it = _paramBool.find(name);
+		if (it == _paramBool.end()) {
+			DIVIDE_ASSERT(emplace(_paramBool, name, value).second, "ParamHandler error: can't add specified value to map!");
+		} else {
+			it->second = value;
+		}
+	}
+
+	template<>
+	inline void delParam<bool>(const stringImpl& name) {
+		if (isParam<stringImpl>(name)) {
+			WriteLock w_lock(_mutex);
+			_paramBool.erase(name);
+			if (_logState) {
+				PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+			}
+		} else {
+			ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+		}
+	}
+
+	template<>
+	inline bool isParam<bool>(const stringImpl& param) const {
+		ReadLock r_lock(_mutex);
+		return _paramBool.find(param) != _paramBool.end();
+	}
+
 private:
 	ParamMap _params;
+	ParamBoolMap _paramBool;
 	ParamStringMap _paramsStr;
 	mutable SharedLock _mutex;
 	std::atomic_bool _logState;

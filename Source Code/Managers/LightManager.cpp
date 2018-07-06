@@ -22,9 +22,9 @@ LightManager::LightManager() : FrameListener(),
     // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
     // SHADER_BUFFER_NORMAL holds general info about the currently active lights: position, color, etc.
-    _lightShaderBuffer[SHADER_BUFFER_NORMAL] = GFX_DEVICE.newSB();
+	_lightShaderBuffer[SHADER_BUFFER_NORMAL] = nullptr;
     // SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: ViewProjection Matrices, View Space Position, etc
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW] = GFX_DEVICE.newSB();
+	_lightShaderBuffer[SHADER_BUFFER_SHADOW] = nullptr;
     // We bind shadow maps to the last available texture slots that the hardware supports. Starting offsets for each texture type is stored here
     _cubeShadowLocation  = 255;
     _normShadowLocation  = 255;
@@ -41,13 +41,19 @@ LightManager::~LightManager()
 }
 
 void LightManager::init(){
-    if(_init)
-        return;
+	if (_init) {
+		return;
+	}
     STUBBED("Replace light map bind slots with bindless textures! Max texture units is currently used! -Ionut!");
 
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
 
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
+	// SHADER_BUFFER_NORMAL holds general info about the currently active lights: position, color, etc.
+	_lightShaderBuffer[SHADER_BUFFER_NORMAL] = GFX_DEVICE.newSB();
+	// SHADER_BUFFER_SHADOWS holds info about the currently active shadow casting lights: ViewProjection Matrices, View Space Position, etc
+	_lightShaderBuffer[SHADER_BUFFER_SHADOW] = GFX_DEVICE.newSB();
+
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(SHADER_BUFFER_LIGHT_NORMAL);
 
@@ -123,7 +129,7 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight){
 
 U8 LightManager::getShadowBindSlotOffset(ShadowSlotType type) {
     if (_cubeShadowLocation == _normShadowLocation && _normShadowLocation == _arrayShadowLocation && _arrayShadowLocation == 255) {
-        U32 maxTextureStorage = GFX_DEVICE.getMaxTextureSlots();
+		U32 maxTextureStorage = ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16);
         _cubeShadowLocation  = maxTextureStorage - (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 3);
         _normShadowLocation  = maxTextureStorage - (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 2);
         _arrayShadowLocation = maxTextureStorage - (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 1);
@@ -216,13 +222,7 @@ void LightManager::bindDepthMaps(){
 
         ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
         if(sm){
-#           if defined(_DEBUG)
-                U8 slot = getShadowBindSlotOffset(lightLocal->getLightType()) + i;
-                assert(slot < GFX_DEVICE.getMaxTextureSlots());
-                sm->Bind(slot);
-#           else
-                sm->Bind(getShadowBindSlotOffset(lightLocal->getLightType()) +  i);
-#           endif
+	        sm->Bind(getShadowBindSlotOffset(lightLocal->getLightType()) +  i);
         }
     }
 }

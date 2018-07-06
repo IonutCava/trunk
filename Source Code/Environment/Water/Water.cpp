@@ -156,7 +156,7 @@ void WaterPlane::updateRefraction(){
     _refractionRendering = true;
     // If we are above water, process the plane's reflection. If we are below, we render the scene normally
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(FINAL_STAGE);
-    GFX_DEVICE.enableClipPlane(_refractionPlaneID);
+	GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
     _cameraMgr.getActiveCamera()->renderLookAt();
     // bind the refractive texture
     _refractionTexture->Begin(Framebuffer::defaultPolicy());
@@ -164,7 +164,7 @@ void WaterPlane::updateRefraction(){
         _refractionCallback();
     _refractionTexture->End();
 
-    GFX_DEVICE.disableClipPlane(_refractionPlaneID);
+	GFX_DEVICE.toggleClipPlane(_refractionPlaneID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);
 
     _refractionRendering = false;
@@ -178,7 +178,7 @@ void WaterPlane::updateReflection(){
         _reflectionRendering = true;
     
         RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(_cameraUnderWater ? FINAL_STAGE : REFLECTION_STAGE);
-        GFX_DEVICE.enableClipPlane(_reflectionPlaneID);
+		GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
 
         _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt() : _cameraMgr.getActiveCamera()->renderLookAtReflected(getReflectionPlane());
 
@@ -186,7 +186,7 @@ void WaterPlane::updateReflection(){
             _renderCallback(); //< render to the reflective texture
         _reflectedTexture->End();
 
-        GFX_DEVICE.disableClipPlane(_reflectionPlaneID);
+		GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, false);
         GFX_DEVICE.setRenderStage(prevRenderStage);
     
         _reflectionRendering = false;

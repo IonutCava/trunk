@@ -55,7 +55,7 @@ void Task::run(){
     D_PRINT_FN(Locale::get("TASK_START_THREAD"), std::this_thread::get_id());
     while(true) {
 		U64 interval = _tickIntervalMS;
-        while (_paused || Application::getInstance().mainLoopPaused()) {
+		while ((_paused && !_end) || (Application::getInstance().mainLoopPaused() && !Application::getInstance().ShutdownRequested())) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(interval > 0 ? interval : 10));
         }
         if (_end || Application::getInstance().ShutdownRequested()) {

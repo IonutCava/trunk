@@ -23,9 +23,7 @@
 #ifndef STRING_H_
 #define STRING_H_
 
-//#ifndef _CONFIG_HEADER_
 #include "config.h"
-//#endif
 
 /// Although the string implementation replaces most of the string instances in the code,
 /// some are left as std::string for compatibility reasons (mainly with algorithms and external libraries) -Ionut
