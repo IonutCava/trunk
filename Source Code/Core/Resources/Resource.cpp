@@ -21,7 +21,7 @@ namespace Divide {
 
 void log_new(size_t t ,char* zFile, I32 nLine){
     if (t > Divide::Memory::maxAlloc)	{
-        Divide::Memory::maxAlloc = t;
+        Divide::Memory::maxAlloc = (U32)t;
         Divide::Memory::zMaxFile = zFile;
         Divide::Memory::nMaxLine = nLine;
     }

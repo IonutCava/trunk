@@ -85,7 +85,7 @@ public:
 
 	inline U32 getSize() const {
 		ReadLock r_lock(_mutex);
-		return _params.size();
+		return (U32)_params.size();
 	}
 
 	inline bool isParam(const std::string& param) const {

@@ -31,7 +31,7 @@ bool PhysX::createPlane(const vec3<F32>& position, U32 size){
 bool PhysX::createBox(const vec3<F32>& position, F32 size){
     assert(_targetScene != nullptr);
     PxReal density = 1.0f;
-    PxTransform transform(PxVec3(position.x,position.y,position.z), PxQuat::createIdentity());
+    PxTransform transform(PxVec3(position.x, position.y, position.z), PxQuat(PxIdentity));
     PxVec3 dimensions(size);
     PxBoxGeometry geometry(dimensions);
     PxRigidDynamic *actor = PxCreateDynamic(*_gPhysicsSDK,

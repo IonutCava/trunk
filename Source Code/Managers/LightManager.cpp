@@ -52,7 +52,7 @@ bool LightManager::addLight(Light* const light){
         return false;
     }
 
-    light->setSlot(_lights.size());
+    light->setSlot((U8)_lights.size());
     _lights.insert(std::make_pair(light->getId(),light));
     
     return true;
@@ -75,7 +75,7 @@ bool LightManager::removeLight(U32 lightId){
 }
 
 U32 LightManager::generateNewID(){
-    U32 tempId = _lights.size();
+    U32 tempId = (U32)_lights.size();
 
     while(!checkId(tempId))
         tempId++;
@@ -299,8 +299,8 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
               scoreCmpFnc());
 
     // create the light buffer for the specified node
-    I32 maxLights = _tempLightsPerNode.size();
-    CLAMP<I32>(maxLights, 0, Config::MAX_LIGHTS_PER_SCENE_NODE);
+    size_t maxLights = _tempLightsPerNode.size();
+    CLAMP<size_t>(maxLights, 0, Config::MAX_LIGHTS_PER_SCENE_NODE);
     for(U8 i = 0; i < maxLights; i++){
         _currLightsPerNode.push_back(_tempLightsPerNode[i]);
         _currLightTypes.push_back(_tempLightsPerNode[i]->getLightType());
@@ -308,5 +308,5 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
         _currShadowLights.push_back(_tempLightsPerNode[i]->castsShadows() ? 1 : 0);
     }
 
-    return maxLights;
+    return (U8)maxLights;
 }

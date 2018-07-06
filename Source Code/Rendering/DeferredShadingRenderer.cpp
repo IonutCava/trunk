@@ -147,7 +147,7 @@ void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const S
     SET_DEFAULT_STATE_BLOCK();
     LightManager::LightMap& lights = LightManager::getInstance().getLights();
     if(lights.size() != _cachedLightCount){
-        _cachedLightCount = lights.size();
+        _cachedLightCount = (U16)lights.size();
         _lightTexture->Create(2,_cachedLightCount);
     }
     U8 index = 0;

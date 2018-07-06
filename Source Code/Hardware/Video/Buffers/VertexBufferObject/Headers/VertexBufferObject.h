@@ -131,7 +131,7 @@ public:
     virtual bool queueRefresh() = 0;
 
     inline bool usesLargeIndices()  const { return _largeIndices;}
-    inline U32  getIndexCount()     const { return _largeIndices ? _hardwareIndicesL.size() : _hardwareIndicesS.size();}
+    inline U32  getIndexCount()     const { return (U32)(_largeIndices ? _hardwareIndicesL.size() : _hardwareIndicesS.size());}
     inline U32  getIndex(U32 index) const { return _largeIndices ? _hardwareIndicesL[index] : _hardwareIndicesS[index];}
 
     inline void addIndex(U32 index){

@@ -109,7 +109,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
                 break;
         };
         _renderBins.insert(std::make_pair(rbType,temp));
-        _renderBinId.insert(std::make_pair(_renderBins.size() - 1,  rbType));
+        _renderBinId.insert(std::make_pair((U16)(_renderBins.size() - 1),  rbType));
         _sortedRenderBins.push_back(temp);
         std::sort(_sortedRenderBins.begin(), _sortedRenderBins.end(), RenderBinCallOrder());
         _isSorted = false;

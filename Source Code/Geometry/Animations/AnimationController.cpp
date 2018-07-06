@@ -60,7 +60,7 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
                 std::string tes = found->second->_name;
                 found->second->_offsetMatrix =  bone->mOffsetMatrix;
                 _bones.push_back(found->second);
-                _bonesToIndex[found->first] = _bones.size()-1;
+                _bonesToIndex[found->first] = (U32)_bones.size()-1;
             }
         }
     }
@@ -70,7 +70,7 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
     mat4<F32> rotationmat;
     vectorImpl<mat4<F32> > vec;
     for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
-        SetAnimIndex(i);
+        SetAnimIndex((I32)i);
         D32 dt = 0;
         for(D32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
             dt +=timestep;

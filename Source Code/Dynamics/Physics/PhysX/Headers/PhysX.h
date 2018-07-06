@@ -66,16 +66,16 @@
 //PhysX libraries
 #ifdef _DEBUG
 #pragma comment(lib, "PhysXProfileSDKDEBUG.lib")
-#pragma comment(lib, "PhysX3CookingDEBUG_x86.lib")
-#pragma comment(lib, "PhysX3DEBUG_x86.lib")
-#pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
+#pragma comment(lib, "PhysX3CookingDEBUG_x64.lib")
+#pragma comment(lib, "PhysX3DEBUG_x64.lib")
+#pragma comment(lib, "PhysX3CommonDEBUG_x64.lib")
 #pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
 #pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib")
 #else
 #pragma comment(lib, "PhysXProfileSDKCHECKED.lib")
-#pragma comment(lib, "PhysX3CookingCHECKED_x86.lib")
-#pragma comment(lib, "PhysX3CHECKED_x86.lib")
-#pragma comment(lib, "PhysX3CommonCHECKED_x86.lib")
+#pragma comment(lib, "PhysX3CookingCHECKED_x64.lib")
+#pragma comment(lib, "PhysX3CHECKED_x64.lib")
+#pragma comment(lib, "PhysX3CommonCHECKED_x64.lib")
 #pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
 #pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
 #endif
@@ -124,15 +124,15 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback
 
 class SceneGraphNode;
 class PhysXSceneInterface;
-DEFINE_SINGLETON_EXT2( PhysX,PhysicsAPIWrapper,PVD::PvdConnectionHandler)
+DEFINE_SINGLETON_EXT2(PhysX, PhysicsAPIWrapper, physx::debugger::comm::PvdConnectionHandler)
 
 private:
     PhysX();
     ///////////////////////////////////////////////////////////////////////////////
     // Implements PvdConnectionFactoryHandler
-    virtual	void onPvdSendClassDescriptions(PVD::PvdConnection&) {}
-    virtual	void onPvdConnected(PVD::PvdConnection& inFactory)   {}
-    virtual	void onPvdDisconnected(PVD::PvdConnection& inFactory){}
+    virtual	void onPvdSendClassDescriptions(physx::debugger::comm::PvdConnection&) {}
+    virtual	void onPvdConnected(physx::debugger::comm::PvdConnection& inFactory)   {}
+    virtual	void onPvdDisconnected(physx::debugger::comm::PvdConnection& inFactory){}
 
 public:
 

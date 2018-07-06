@@ -6,14 +6,14 @@
 vectorImpl<GLuint> glUniformBufferObject::_bindingIndices;
 
 GLuint glUniformBufferObject::getBindingIndice() {
-    for(GLuint i = 0, size = _bindingIndices.size(); i < size; i++) {
+    for(GLuint i = 0, size = (GLuint)_bindingIndices.size(); i < size; i++) {
         if(_bindingIndices[i] != i) {
             _bindingIndices[i] = i;
             return i;
         }
     }
-    _bindingIndices.push_back(_bindingIndices.size());
-    return _bindingIndices.size();
+    _bindingIndices.push_back((U32)_bindingIndices.size());
+    return (GLuint)_bindingIndices.size();
 }
 
 glUniformBufferObject::glUniformBufferObject() : GUIDWrapper(), _UBOid(0), _bindIndex(0)

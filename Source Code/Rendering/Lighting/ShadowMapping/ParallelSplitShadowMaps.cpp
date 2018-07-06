@@ -228,7 +228,7 @@ void PSShadowMaps::previewShadowMaps(){
             GFX_DEVICE.renderInViewport(vec4<I32>(130 * i, 0, 128, 128),
                                         DELEGATE_BIND(&GFXDevice::renderInstance,
                                                     DELEGATE_REF(GFX_DEVICE),
-                                                    DELEGATE_REF(_renderQuad->renderInstance())));
+                                                    _renderQuad->renderInstance()));
         }
     GFX_DEVICE.toggle2D(false);
     _depthMap->Unbind();

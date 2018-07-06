@@ -61,7 +61,7 @@ public:
 	U32 GetFrameIndexAt(const D32 elapsedTime);
 
 	inline U32 GetFrameIndex() const {return _lastFrameIndex;}
-	inline U32 GetFrameCount() const {return _transforms.size();}
+	inline U32 GetFrameCount() const {return (U32)_transforms.size();}
 	inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime){ return _transforms[GetFrameIndexAt(elapsedTime)]; }
 
 protected:

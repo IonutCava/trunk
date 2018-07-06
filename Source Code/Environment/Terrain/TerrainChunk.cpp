@@ -73,9 +73,9 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
         vbo->addIndex(TERRAIN_STRIP_RESTART_INDEX);
     }
 
-    if(lod > 0) _lodIndOffset[lod] = _indice[lod-1].size() + _lodIndOffset[lod-1];
+    if(lod > 0) _lodIndOffset[lod] = (U32)(_indice[lod-1].size() + _lodIndOffset[lod-1]);
 
-    _lodIndCount[lod] = _indice[lod].size();
+    _lodIndCount[lod] = (U32)_indice[lod].size();
     assert(nIndice == _lodIndCount[lod]);
 }
 
@@ -93,7 +93,7 @@ void TerrainChunk::GenerateGrassIndexBuffer(U32 bilboardCount) {
             _grassData._grassVBO->addIndex(grassIndices[i]);
         }
         // save the number of indices for the current texture
-        _grassData._grassIndexSize[index] = grassIndices.size();
+        _grassData._grassIndexSize[index] = (U32)grassIndices.size();
         // clear the memory used by the original indices
         _grassData._grassIndices[index].clear();
         // calculate the needed index offset for the current billboard texture

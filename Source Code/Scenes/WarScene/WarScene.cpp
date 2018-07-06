@@ -167,7 +167,7 @@ void WarScene::updateSceneState(const U64 deltaTime){
     if(!AIManager::getInstance().getNavMesh(0))
         return;
 
-    U32 characterCount = _army1.size() + _army2.size();
+    U32 characterCount = (U32)(_army1.size() + _army2.size());
 
     _pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
     _pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);

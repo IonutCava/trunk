@@ -96,7 +96,7 @@ public:
     virtual void addNodeToBin(SceneGraphNode* const sgn);
     inline  const RenderBinItem& getItem(U16 index) const {assert(index < _renderBinStack.size());	return _renderBinStack[index]; }
 
-    inline U16 getBinSize()   const {return _renderBinStack.size();}
+    inline U16 getBinSize()   const {return (U16)_renderBinStack.size();}
     inline D32 getSortOrder() const {return _drawKey;}
 
     inline const RenderBinType&  getType() const {return _rbType;}

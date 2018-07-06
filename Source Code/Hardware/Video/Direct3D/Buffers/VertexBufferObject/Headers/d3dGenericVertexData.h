@@ -50,10 +50,10 @@ public:
     void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream)
     {
     }
-    void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, U32 currentSize, bool dynamic, bool steam)
+    void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool steam)
     {
     }
-    void SetAttribute(U32 index, U32 buffer, U32 divisor, U32 size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) 
+    void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) 
     {
     }
 };

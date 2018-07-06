@@ -219,7 +219,7 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
     }
 
     if(!buffers.empty())
-        GLCheck(glDrawBuffers(buffers.size(), &buffers[0]));
+        GLCheck(glDrawBuffers((GLsizei)buffers.size(), &buffers[0]));
 
     //If we either specify a depth texture or request a depth buffer ...
     if(_useDepthBuffer && !_hasDepth){

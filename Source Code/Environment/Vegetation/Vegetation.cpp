@@ -177,7 +177,7 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
                 chunkGrassData._grassVBO->getTexcoord().push_back(vec2<F32>(_texcoords[i%4].s, uv_offset_t + _texcoords[i%4].t));
             }
 
-            U32 idx = chunkGrassData._grassIndices[index].size();	
+            U32 idx = (U32)chunkGrassData._grassIndices[index].size();	
             U32 indexOffset = 0;
             for(U8 j = 0; j < 3; ++j) {
                 indexOffset = idx + (j * 4);
@@ -236,9 +236,7 @@ bool Vegetation::generateTrees(){
         assert(node);
         TerrainChunk* chunk = node->getChunk();
         assert(chunk);
-
-        U16 index = rand() % DA.size();
-        chunk->addTree(vec4<F32>(P, random(360.0f)),_treeScale,DA[index],_terrainSGN);
+        chunk->addTree(vec4<F32>(P, random(360.0f)), _treeScale, DA[(U16)(rand() % DA.size())], _terrainSGN);
     }
 
     positions.clear();

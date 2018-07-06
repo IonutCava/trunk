@@ -197,7 +197,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     if(GLEW_ARB_debug_output) {
         GLCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB));
         GLCheck(glDebugMessageCallbackARB(&Divide::GL::DebugCallback, (GLvoid*)(0)));
-        ///Disable shader compiler errors (shader class handles that)
+        //Disable shader compiler errors (shader class handles that)
         GLCheck(glDebugMessageControlARB(GL_DEBUG_SOURCE_SHADER_COMPILER_ARB,
                                          GL_DEBUG_TYPE_ERROR_ARB,
                                          GL_DONT_CARE,
@@ -514,7 +514,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Fragment","//__CUSTOM_FRAGMENT_UNIFORMS__");
     glswAddDirectiveToken("Vertex","//__CUSTOM_VERTEX_UNIFORMS__");
 
-    GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES);
+    GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES ? kGlslTargetOpenGLES30 : kGlslTargetOpenGL);
     if(glswState == 1 && GL_API::_GLSLOptContex != nullptr){
         return true;
     }
@@ -630,10 +630,10 @@ void GL_API::loadInContextInternal(){
     glfwMakeContextCurrent(Divide::GL::_loaderWindow);
 #ifdef GLEW_MX
     Divide::GL::initGlew();
-#   ifdef _DEBUG
+#   if defined(_DEBUG) || defined(_PROFILE)
     if(GLEW_ARB_debug_output) {
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-        glDebugMessageCallbackARB(&Divide::GL::DebugCallback, (GLvoid*)(1));
+        GLCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB));
+        GLCheck(glDebugMessageCallbackARB(&Divide::GL::DebugCallback, (GLvoid*)(1)));
     }
 #   endif
 #endif

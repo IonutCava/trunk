@@ -77,7 +77,7 @@ void Object3D::computeNormals() {
         normal_buffer[_geometry->getIndex(i+2)].push_back( normal );
     }
 
-    _geometry->resizeNormalCount(_geometry->getPosition().size());
+    _geometry->resizeNormalCount((U32)_geometry->getPosition().size());
     // Now loop through each vertex vector, and avarage out all the normals stored.
     vec3<F32> currentNormal;
     for(U32 i = 0; i < _geometry->getPosition().size(); ++i ){

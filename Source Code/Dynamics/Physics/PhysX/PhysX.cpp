@@ -82,9 +82,10 @@ I8 PhysX::initPhysics(U8 targetFrameRate) {
     }
     
     if(!_cooking){
-        PxCookingParams cookparams;
-        cookparams.targetPlatform = PxPlatform::ePC;
-        _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, cookparams);
+        PxCookingParams* cookparams = New PxCookingParams(PxTolerancesScale());
+        cookparams->targetPlatform = PxPlatform::ePC;
+        _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, *cookparams);
+        SAFE_DELETE(cookparams);
     }
 
     updateTimeStep(targetFrameRate);
@@ -188,13 +189,13 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
                 return false;
         }
 
-        PxToolkit::FileOutputStream stream(nodeName.c_str());
+        PxDefaultFileOutputStream stream(nodeName.c_str());
         if(!isSkinnedMesh) {
             PxTriangleMeshDesc meshDesc;
-            meshDesc.points.count     = nodeVBO->getPosition().size();
+            meshDesc.points.count     = (PxU32)nodeVBO->getPosition().size();
             meshDesc.points.stride    = sizeof(vec3<F32>);
             meshDesc.points.data      = &nodeVBO->getPosition()[0];
-            meshDesc.triangles.count  = nodeVBO->getTriangles().size();
+            meshDesc.triangles.count  = (PxU32)nodeVBO->getTriangles().size();
             meshDesc.triangles.stride = 3*sizeof(U32);
             meshDesc.triangles.data   = &nodeVBO->getTriangles()[0];
             //if(!nodeVBO->usesLargeIndices())
@@ -252,7 +253,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
 
     physx::PxGeometry* geometry = nullptr;
     if(!isSkinnedMesh){
-        PxToolkit::FileInputData stream(nodeName.c_str());
+        PxDefaultFileInputData stream(nodeName.c_str());
         physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
         if(!triangleMesh){
             ERROR_FN(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
@@ -262,7 +263,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
         const vec3<F32>& scale = nodeTransform->getScale();
         geometry = New PxTriangleMeshGeometry(triangleMesh, 
                                               PxMeshScale(PxVec3(scale.x,scale.y,scale.z),
-                                              PxQuat::createIdentity()));
+                                              PxQuat(PxIdentity)));
     }else{
        const BoundingBox& maxBB = node->getBoundingBox();
        geometry = New PxBoxGeometry(maxBB.getWidth(),maxBB.getHeight(),maxBB.getDepth());
@@ -275,155 +276,4 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     tempActor->_actor->createShape(*geometry, *material);
 
     return true;
-};
-
-namespace PxToolkit
-{
-
-///////////////////////////////////////////////////////////////////////////////
-
-    MemoryOutputStream::MemoryOutputStream() :
-        mData		(nullptr),
-        mSize		(0),
-        mCapacity	(0)
-    {
-    }
-
-    MemoryOutputStream::~MemoryOutputStream()
-    {
-        if(mData)
-            delete[] mData;
-    }
-
-    PxU32 MemoryOutputStream::write(const void* src, PxU32 size)
-    {
-        PxU32 expectedSize = mSize + size;
-        if(expectedSize > mCapacity)
-        {
-            mCapacity = expectedSize + 4096;
-
-            PxU8* newData = new PxU8[mCapacity];
-            PX_ASSERT(newData!=nullptr);
-
-            if(newData)
-            {
-                memcpy(newData, mData, mSize);
-                delete[] mData;
-            }
-            mData = newData;
-        }
-        memcpy(mData+mSize, src, size);
-        mSize += size;
-        return size;
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-
-    MemoryInputData::MemoryInputData(PxU8* data, PxU32 length) :
-        mSize	(length),
-        mData	(data),
-        mPos	(0)
-    {
-    }
-
-    PxU32 MemoryInputData::read(void* dest, PxU32 count)
-    {
-        PxU32 length = PxMin<PxU32>(count, mSize-mPos);
-        memcpy(dest, mData+mPos, length);
-        mPos += length;
-        return length;
-    }
-
-    PxU32 MemoryInputData::getLength() const
-    {
-        return mSize;
-    }
-
-    void MemoryInputData::seek(PxU32 offset)
-    {
-        mPos = PxMin<PxU32>(mSize, offset);
-    }
-
-    PxU32 MemoryInputData::tell() const
-    {
-        return mPos;
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-
-    FileOutputStream::FileOutputStream(const char* filename)
-    {
-        mFile = nullptr;
-        physx::Ps::fopen_s(&mFile, filename, "wb");
-    }
-
-    FileOutputStream::~FileOutputStream()
-    {
-        if(mFile)
-            fclose(mFile);
-    }
-
-    PxU32 FileOutputStream::write(const void* src, PxU32 count)
-    {
-        return mFile ? (PxU32)fwrite(src, 1, count, mFile) : 0;
-    }
-
-    bool FileOutputStream::isValid()
-    {
-        return mFile != nullptr;
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-
-    FileInputData::FileInputData(const char* filename)
-    {
-        mFile = nullptr;
-        Ps::fopen_s(&mFile, filename, "rb");
-
-        if(mFile)
-        {
-            fseek(mFile, 0, SEEK_END);
-            mLength = ftell(mFile);
-            fseek(mFile, 0, SEEK_SET);
-        }
-        else
-        {
-            mLength = 0;
-        }
-    }
-
-    FileInputData::~FileInputData()
-    {
-        if(mFile)
-            fclose(mFile);
-    }
-
-    PxU32 FileInputData::read(void* dest, PxU32 count)
-    {
-        PX_ASSERT(mFile);
-        const size_t size = fread(dest, 1, count, mFile);
-        PX_ASSERT(PxU32(size)==count);
-        return PxU32(size);
-    }
-
-    PxU32 FileInputData::getLength() const
-    {
-        return mLength;
-    }
-
-    void FileInputData::seek(PxU32 pos)
-    {
-        fseek(mFile, pos, SEEK_SET);
-    }
-
-    PxU32 FileInputData::tell() const
-    {
-        return ftell(mFile);
-    }
-
-    bool FileInputData::isValid() const
-    {
-        return mFile != nullptr;
-    }
-
 };

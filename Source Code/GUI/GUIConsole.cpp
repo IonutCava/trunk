@@ -136,7 +136,7 @@ bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs &e){
         if(keyEvent->scancode == CEGUI::Key::ArrowUp ){
             _inputHistoryIndex--;
             if(_inputHistoryIndex < 0)
-                _inputHistoryIndex = _inputHistory.size()-1;
+                _inputHistoryIndex = (I16)_inputHistory.size()-1;
             _editBox->setText(_inputHistory[_inputHistoryIndex]);
         }
         if(keyEvent->scancode == CEGUI::Key::ArrowDown){
@@ -163,7 +163,7 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
     if(_inputHistory.size() > _CEGUI_MAX_CONSOLE_ENTRIES)
         _inputHistory.pop_front();
 
-    _inputHistoryIndex = _inputHistory.size()-1;
+    _inputHistoryIndex = (I16)_inputHistory.size()-1;
     //reset the inputbuffer so we can handle console closing properly
     _inputBuffer.clear();
     return true;

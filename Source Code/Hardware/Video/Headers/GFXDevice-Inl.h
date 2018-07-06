@@ -32,7 +32,7 @@ inline I32 GFXDevice::addClipPlane(const Plane<F32>& p){
     }
     _clippingPlanes.push_back(p);
     _clippingPlanesDirty = true;
-    return (_clippingPlanes.size() - 1);
+    return (I32)(_clippingPlanes.size() - 1);
 }
 
 /// add a new clipping plane defined by it's equation's coefficients
@@ -72,7 +72,7 @@ inline bool GFXDevice::enableClipPlane(U32 index) {
 
 /// modify a single clip plane by index
 inline void GFXDevice::setClipPlane(U32 index, const Plane<F32>& p){
-    CLAMP<U32>(index, 0 ,_clippingPlanes.size());
+    CLAMP<U32>(index, 0 ,(U32)_clippingPlanes.size());
     _clippingPlanes[index] = p;
     _clippingPlanesDirty = true;
 }

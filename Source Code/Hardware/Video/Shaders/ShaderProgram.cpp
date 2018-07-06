@@ -136,7 +136,7 @@ void ShaderProgram::uploadNodeMatrices(){
     /*Get and upload clip plane data*/
     if(GFX_DEVICE.clippingPlanesDirty()){
         GFX_DEVICE.updateClipPlanes();
-        U32 planeCount = GFX_DEVICE.getClippingPlanes().size();
+        size_t planeCount = GFX_DEVICE.getClippingPlanes().size();
         this->Uniform("dvd_clip_plane_count", (I32)planeCount);
         if(planeCount == 0) return;
 

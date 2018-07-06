@@ -101,14 +101,14 @@ void SkinnedSubMesh::updateAnimations(const U64 deltaTime, SceneGraphNode* const
         pos3.set(wgh.z * (trans[ind.z] * pos));
         pos4.set(fwgh  * (trans[ind.w] * pos));
         finalPos = pos1 + pos2 + pos3 + pos4;
-        _geometry->modifyPositionValue(i, finalPos.xyz());
+        _geometry->modifyPositionValue((U32)i, finalPos.xyz());
 
         norm1.set(wgh.x * (trans[ind.x] * norm));
         norm2.set(wgh.y * (trans[ind.y] * norm));
         norm3.set(wgh.z * (trans[ind.z] * norm));
         norm4.set(fwgh  * (trans[ind.w] * norm));
         finalNorm = norm1 + norm2 + norm3 + norm4;
-        _geometry->modifyPositionValue(i, finalNorm.xyz());
+        _geometry->modifyPositionValue((U32)i, finalNorm.xyz());
     }
 
     _geometry->queueRefresh();

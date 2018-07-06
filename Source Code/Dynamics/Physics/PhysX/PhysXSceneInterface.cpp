@@ -141,7 +141,7 @@ void PhysXSceneInterface::updateShape(PxShape* const shape, const PhysXActor& ac
     if(!t || !shape)
         return;
 
-    PxTransform pT = PxShapeExt::getGlobalPose(*shape);
+    PxTransform pT = PxShapeExt::getGlobalPose(*shape, *actor._actor);
     PxQuat pQ = pT.q.getConjugate();
 
     if(actor._type == physx::PxGeometryType::ePLANE)

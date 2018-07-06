@@ -136,7 +136,7 @@ void SceneAnimator::Load(std::ifstream& file){
 	_transforms.resize( _bones.size());
 	F32 timestep = 1.0f/(F32)ANIMATION_TICKS_PER_SECOND;// 25.0f per second
 	for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
-		SetAnimIndex(i);
+		SetAnimIndex((I32)i);
 		F32 dt = 0;
 		mat4<F32> rotationmat;
 		for(F32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){

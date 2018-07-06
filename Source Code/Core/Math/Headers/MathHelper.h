@@ -166,7 +166,7 @@ namespace Util {
 
     inline vectorImpl<std::string> getPermutations(const std::string& inputString){
         vectorImpl<std::string> permutationContainer;
-        permute((char*)inputString.c_str(), 0, inputString.length()-1, permutationContainer);
+        permute((char*)inputString.c_str(), 0, (U32)inputString.length()-1, permutationContainer);
         return permutationContainer;
     }
 

@@ -95,7 +95,7 @@ void Reflector::previewReflection(){
         GFX_DEVICE.renderInViewport(vec4<I32>(128,128,256,256),
                                     DELEGATE_BIND(&GFXDevice::renderInstance,
                                                 DELEGATE_REF(GFX_DEVICE),
-                                                DELEGATE_REF(_renderQuad->renderInstance())));
+                                                _renderQuad->renderInstance()));
     GFX_DEVICE.toggle2D(false);
     _reflectedTexture->Unbind();
 }

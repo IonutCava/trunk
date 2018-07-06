@@ -135,7 +135,7 @@ void RenderBin::refresh(){
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn){
     SceneNode* sn = sgn->getSceneNode();
     P32 key;
-    key.i = _renderBinStack.size() + 1;
+    key.i = (U32)_renderBinStack.size() + 1;
     Material* nodeMaterial = sn->getMaterial();
     if(nodeMaterial){
         key = nodeMaterial->getMaterialId();

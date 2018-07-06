@@ -88,7 +88,7 @@ char* ShaderManager::shaderFileRead(const std::string &atomName, const std::stri
 
             if (count > 0) {
                 content = New char[count+1];
-                count = fread(content,sizeof(char),count,fp);
+                count = (I32)(fread(content,sizeof(char),count,fp));
                 content[count] = '\0';
             }
             fclose(fp);

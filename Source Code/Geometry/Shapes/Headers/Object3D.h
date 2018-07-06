@@ -55,7 +55,7 @@ public:
     inline  VertexBufferObject* const getGeometryVBO()  const {assert(_geometry != nullptr); return _geometry;}
     inline  ObjectType                getType()         const {return _geometryType;}
     inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
-    inline  RenderInstance*   const   renderInstance()  const {return _renderInstance;}
+    inline  RenderInstance*     const renderInstance()  const {return _renderInstance;}
     /// Called from SceneGraph "sceneUpdate"
     virtual void  sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
         SceneNode::sceneUpdate(deltaTime,sgn,sceneState);

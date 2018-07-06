@@ -39,7 +39,7 @@ public:
     void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max);
 
     void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream) {
-        CLAMP<U32>(buffer, 0, _bufferObjects.size());
+        CLAMP<U32>(buffer, 0, (U32)_bufferObjects.size());
         assert(!_dataWriteActive);
         _dataWriteActive = true;
         GL_API::setActiveVBO(_bufferObjects[buffer]);
@@ -49,7 +49,7 @@ public:
     }
 
     void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool stream) {
-        CLAMP<U32>(buffer, 0, _bufferObjects.size());
+        CLAMP<U32>(buffer, 0, (U32)_bufferObjects.size());
         assert(_bufferObjects[buffer] != 0);
         assert(!_dataWriteActive);
         _dataWriteActive = true;
@@ -65,7 +65,7 @@ public:
         GL_API::setActiveVAO(_currentVAO);
         GL_API::setActiveVBO(_bufferObjects[buffer]);
         GLCheck(glEnableVertexAttribArray(index));
-        GLCheck(glVertexAttribPointer(index, size, glDataFormat[type], normalized ? GL_TRUE : GL_FALSE, stride, (void*)offset));
+        GLCheck(glVertexAttribPointer(index, (GLint)size, glDataFormat[type], normalized ? GL_TRUE : GL_FALSE, stride, (void*)offset));
         GLCheck(glVertexAttribDivisor(index, divisor));
         _dataWriteActive = false;
     }

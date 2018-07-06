@@ -498,7 +498,7 @@ void GFXDevice::previewDepthBufferInternal(){
     renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-viewportSide,0,viewportSide,viewportSide),
                                 boost::bind(&GFXDevice::renderInstance,
                                             DELEGATE_REF(GFX_DEVICE),
-                                            DELEGATE_REF(_renderQuad->renderInstance())));
+                                            _renderQuad->renderInstance()));
     toggle2D(false);
     getDepthBuffer()->Unbind(0);
 

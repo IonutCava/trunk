@@ -85,7 +85,7 @@ public:
 
     /// Update animations, network data, sounds, triggers etc.
     virtual void updateSceneState(const U64 deltaTime);
-    inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return nullptr;} CLAMP<I32>(index,0,_skiesSGN.size() - 1); return _skiesSGN[index];}
+    inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return nullptr;} CLAMP<I32>(index,0,(I32)_skiesSGN.size() - 1); return _skiesSGN[index];}
     inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
     inline vectorImpl<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}
     inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}

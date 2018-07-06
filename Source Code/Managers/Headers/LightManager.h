@@ -67,7 +67,7 @@ public:
     inline void togglePreviewShadowMaps() {_previewShadowMaps = !_previewShadowMaps;}
 
     inline       F32                     getLigthOrthoHalfExtent()              const {return _worldHalfExtent;}
-    inline       U16                     getLightCountForCurrentNode()          const {return _currLightsPerNode.size();}
+    inline       U16                     getLightCountForCurrentNode()          const {return (U16)_currLightsPerNode.size();}
     inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
     inline const vectorImpl<I32>&        getLightTypesForCurrentNode()          const {return _currLightTypes;}
     inline const vectorImpl<I32>&        getLightIndicesForCurrentNode()        const {return _currLightIndices;}

@@ -43,7 +43,7 @@ public:
     SceneGraphNode* getItem(U16 renderBin, U16 index);
     RenderBin*      getBin(RenderBin::RenderBinType rbType);
 
-    inline U16        getRenderQueueBinSize()     { return _sortedRenderBins.size(); }
+    inline U16        getRenderQueueBinSize()     { return (U16)_sortedRenderBins.size(); }
     inline RenderBin* getBinSorted(U16 renderBin) { return _sortedRenderBins[renderBin]; }
     inline RenderBin* getBin(U16 renderBin)       { return getBin(_renderBinId[renderBin]); }
     inline bool       isSorted()                  { return _isSorted;}
