@@ -2,13 +2,19 @@
 
 namespace Divide {
 
+namespace {
+    /// Minimum cube size is 1x1x1
+    const I32 MIN_SIZE = 1;
+    const I32 MAX_LIFE_SPAN_LIMIT = 8;
+};
+
 bool Octree::_treeReady = false;
 bool Octree::_treeBuilt = false;
 vectorImpl<I64> Octree::_movedObjectsQueue;
 
 Octree::Octree(U32 nodeMask)
     : _nodeMask(nodeMask),
-      _maxLifespan(8),
+      _maxLifespan(MAX_LIFE_SPAN_LIMIT / 8),
       _curLife(-1)
 {
     _region.set(VECTOR3_ZERO, VECTOR3_ZERO);
@@ -457,15 +463,17 @@ void Octree::findEnclosingCube() {
     _region.translate(-offset);
 }
 
-void Octree::getAllRegions(vectorImpl<BoundingBox>& regionsOut) const {
+void Octree::getAllRegions(vectorImpl<BoundingBox>& regionsOut, bool skipInactive) const {
     for (U8 i = 0; i < 8; ++i) {
         if (_activeNodes[i]) {
             assert(_childNodes[i]);
-            _childNodes[i]->getAllRegions(regionsOut);
+            _childNodes[i]->getAllRegions(regionsOut, skipInactive);
         }
     }
     
-    vectorAlg::emplace_back(regionsOut, getRegion().getMin(), getRegion().getMax());
+    if (!skipInactive || (skipInactive && _curLife == -1)) {
+        vectorAlg::emplace_back(regionsOut, getRegion().getMin(), getRegion().getMax());
+    }
 }
 
 U8 Octree::activeNodes() const {

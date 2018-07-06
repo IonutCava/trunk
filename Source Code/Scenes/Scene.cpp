@@ -725,7 +725,7 @@ void Scene::debugDraw(RenderStage stage) {
         GFXDevice& gfx = GFX_DEVICE;
 
         _octreeBoundingBoxes.resize(0);
-        getSceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
+        getSceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes, true);
 
         size_t primitiveCount = _octreePrimitives.size();
         size_t regionCount = _octreeBoundingBoxes.size();

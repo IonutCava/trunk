@@ -37,10 +37,6 @@
 namespace Divide {
 // ref: http://www.gamedev.net/page/resources/_/technical/game-programming/introduction-to-octrees-r3529
 class Octree : public std::enable_shared_from_this<Octree> {
-    /// Minimum cube size is 1x1x1
-    static const I32 MIN_SIZE = 1;
-    static const I32 MAX_LIFE_SPAN_LIMIT = 32;
-
     public:
         Octree(U32 nodeMask);
         Octree(U32 nodeMask, const BoundingBox& rootAABB);
@@ -51,7 +47,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         void update(const U64 deltaTime);
         void addNode(SceneGraphNode_wptr node);
         void addNodes(const vectorImpl<SceneGraphNode_wptr>& nodes);
-        void getAllRegions(vectorImpl<BoundingBox>& regionsOut) const;
+        void getAllRegions(vectorImpl<BoundingBox>& regionsOut, bool skipInactive) const;
 
         inline const BoundingBox& getRegion() const {
             return _region;
