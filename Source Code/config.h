@@ -225,7 +225,12 @@ constexpr unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
 constexpr unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 };  // namespace Lighting
 
-
+namespace Networking {
+/// How often should the client send messages to the server
+constexpr unsigned int NETWORK_SEND_FREQUENCY_HZ = 20;
+/// How many times should we try to send an update to the server before giving up?
+constexpr unsigned int NETWORK_SEND_RETRY_COUNT = 3;
+};
 #ifndef GPU_VALIDATION_IN_RELEASE_BUILD
     //#define GPU_VALIDATION_IN_RELEASE_BUILD
 #endif

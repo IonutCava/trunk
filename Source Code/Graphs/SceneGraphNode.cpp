@@ -49,6 +49,10 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::INVERSE_KINEMATICS))) {
         setComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS, new IKComponent(*this));
     }
+    if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::NETWORKING))) {
+        LocalClient& client = _sceneGraph.parentScene().platformContext().client();
+        setComponent(SGNComponent::ComponentType::NETWORKING, new NetworkingComponent(*this, client));
+    }
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RAGDOLL))) {
         setComponent(SGNComponent::ComponentType::RAGDOLL, new RagdollComponent(*this));
     }
@@ -519,6 +523,17 @@ void SceneGraphNode::onCameraChange(const Camera& cam) {
     });
 
     Attorney::SceneNodeSceneGraph::onCameraChange(*this, *_node, cam);
+}
+
+void SceneGraphNode::onNetworkSend(U32 frameCount) {
+    forEachChild([frameCount](SceneGraphNode& child) {
+        child.onNetworkSend(frameCount);
+    });
+
+    NetworkingComponent* net = get<NetworkingComponent>();
+    if (net) {
+        net->onNetworkSend(frameCount);
+    }
 }
 
 bool SceneGraphNode::filterCollission(const SceneGraphNode& node) {

@@ -178,11 +178,30 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 }
 
 void SceneGraph::onCameraUpdate(const Camera& camera) {
-    _root->onCameraUpdate(camera.getGUID(), camera.getEye(), camera.getWorldMatrix());
+    static const U32 s_nodesPerThread = 64;
+
+    I64 guid = camera.getGUID();
+    const vec3<F32>& eye = camera.getEye(); 
+    const mat4<F32>& world = camera.getWorldMatrix();
+
+    U32 childCount = _root->getChildCount();
+    auto updateCamera = [this, &guid, &eye, &world](const Task& parentTask, U32 start, U32 end) {
+        auto perChildCull = [this, &guid, &eye, &world](SceneGraphNode& child, I32 i) {
+            child.onCameraUpdate(guid, eye, world);
+        };
+
+        _root->forEachChild(perChildCull, start, end);
+    };
+
+    parallel_for(updateCamera, childCount, s_nodesPerThread, Task::TaskPriority::MAX);
 }
 
 void SceneGraph::onCameraChange(const Camera& camera) {
     _root->onCameraChange(camera);
+}
+
+void SceneGraph::onNetworkSend(U32 frameCount) {
+    _root->onNetworkSend(frameCount);
 }
 
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {

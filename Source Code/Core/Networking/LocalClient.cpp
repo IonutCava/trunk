@@ -1,53 +1,51 @@
-#include "Headers/ASIOImpl.h"
+#include "Headers/LocalClient.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Resources/Headers/Resource.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
-#include "Managers/Headers/SceneManager.h"
 
-#include <boost/archive/text_iarchive.hpp>
 namespace Divide {
 
-ASIOImpl::ASIOImpl(Scene& parentScene) : ASIO(), _parentScene(parentScene)
+LocalClient::LocalClient(Kernel& parent) : ASIO(), KernelComponent(parent)
 {
 }
 
-ASIOImpl::~ASIOImpl()
+LocalClient::~LocalClient()
 {
 }
 
-void ASIOImpl::handlePacket(WorldPacket& p) {
+void LocalClient::handlePacket(WorldPacket& p) {
     switch (p.opcode()) {
-        case OPCodes::MSG_HEARTBEAT:
-            HandleHeartBeatOpCode(p);
-            break;
-        case OPCodesEx::SMSG_PONG:
-            HandlePongOpCode(p);
-            break;
-        case OPCodes::SMSG_DISCONNECT:
-            HandleDisconnectOpCode(p);
-            break;
-        case OPCodesEx::SMSG_GEOMETRY_APPEND:
-            HandleGeometryAppendOpCode(p);
-            break;
-        default:
-            ParamHandler::instance().setParam(
-                _ID("serverResponse"),
-                "Unknown OpCode: [ 0x" + to_stringImpl(p.opcode()) + " ]");
-            break;
+    case OPCodes::MSG_HEARTBEAT:
+        HandleHeartBeatOpCode(p);
+        break;
+    case OPCodesEx::SMSG_PONG:
+        HandlePongOpCode(p);
+        break;
+    case OPCodes::SMSG_DISCONNECT:
+        HandleDisconnectOpCode(p);
+        break;
+    case OPCodesEx::SMSG_GEOMETRY_APPEND:
+        HandleGeometryAppendOpCode(p);
+        break;
+    default:
+        ParamHandler::instance().setParam(_ID("serverResponse"),
+                                          "Unknown OpCode: [ 0x" + to_stringImpl(p.opcode()) + " ]");
+        break;
     };
 }
 
-void ASIOImpl::HandlePongOpCode(WorldPacket& p) {
+void LocalClient::HandlePongOpCode(WorldPacket& p) {
     F32 time = 0;
     p >> time;
     D64 result = Time::ElapsedMilliseconds() - time;
     ParamHandler::instance().setParam(
         _ID("serverResponse"), "Server says: Pinged with : " +
-                              to_stringImpl(floor(result + 0.5f)) +
-                              " ms latency");
+        to_stringImpl(floor(result + 0.5f)) +
+        " ms latency");
 }
 
-void ASIOImpl::HandleDisconnectOpCode(WorldPacket& p) {
+void LocalClient::HandleDisconnectOpCode(WorldPacket& p) {
     U8 code;
     p >> code;
     Console::printfn(Locale::get(_ID("ASIO_CLOSE")));
@@ -55,7 +53,7 @@ void ASIOImpl::HandleDisconnectOpCode(WorldPacket& p) {
     // else handleError(code);
 }
 
-void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p) {
+void LocalClient::HandleGeometryAppendOpCode(WorldPacket& p) {
     Console::printfn(Locale::get(_ID("ASIO_PAK_REC_GEOM_APPEND")));
     U8 size;
     p >> size;
@@ -84,10 +82,11 @@ void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p) {
         p >> d.version;
         patch.push_back(d);
     }
-    _parentScene.addPatch(patch);
+    //_parentScene.addPatch(patch);
 }
 
-void ASIOImpl::HandleHeartBeatOpCode(WorldPacket& p) {
+void LocalClient::HandleHeartBeatOpCode(WorldPacket& p) {
     /// nothing. Heartbeats keep us alive \:D/
 }
-};
+
+}; //namespace Divide

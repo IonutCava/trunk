@@ -40,6 +40,7 @@ class GUI;
 class GFXDevice;
 class SFXDevice;
 class PXDevice;
+class LocalClient;
 class XMLEntryData;
 class Configuration;
 
@@ -55,7 +56,8 @@ public:
                              std::unique_ptr<GUI> gui,
                              std::unique_ptr<Input::InputInterface> input,
                              std::unique_ptr<XMLEntryData> entryData,
-                             std::unique_ptr<Configuration> config);
+                             std::unique_ptr<Configuration> config,
+                             std::unique_ptr<LocalClient> client);
     ~PlatformContext();
 
     void idle();
@@ -81,6 +83,9 @@ public:
     inline Configuration& config() { return *_config; }
     inline const Configuration& config() const { return *_config; }
 
+    inline LocalClient& client() { return *_client; }
+    inline const LocalClient& client() const { return *_client; }
+
 private:
     /// Access to the GPU
     std::unique_ptr<GFXDevice> _gfx;
@@ -95,6 +100,8 @@ private:
     /// XML configuration data
     std::unique_ptr<XMLEntryData>  _entryData;
     std::unique_ptr<Configuration> _config;
+    /// Networking client
+    std::unique_ptr<LocalClient> _client;
 };
 }; //namespace Divide
 

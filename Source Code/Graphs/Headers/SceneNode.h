@@ -43,13 +43,16 @@ namespace Divide {
 class Scene;
 class Camera;
 class SceneState;
+class WorldPacket;
 class SceneRenderState;
+class NetworkingComponent;
 enum class RenderStage : U32;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 FWD_DECLARE_MANAGED_CLASS(Material);
 namespace Attorney {
     class SceneNodeSceneGraph;
+    class SceneNodeNetworkComponent;
 };
 
 enum class SceneNodeType : U32 {
@@ -69,6 +72,8 @@ enum class SceneNodeType : U32 {
 
 class NOINITVTABLE SceneNode : public Resource {
     friend class Attorney::SceneNodeSceneGraph;
+    friend class Attorney::SceneNodeNetworkComponent;
+
    public:
       enum class UpdateFlag : U32 {
         BOUNDS_CHANGED = 0,
@@ -169,6 +174,11 @@ class NOINITVTABLE SceneNode : public Resource {
                                 const mat4<F32>& rotationOffset);
     virtual void onCameraChange(SceneGraphNode& sgn,
                                 const Camera& cam);
+
+   protected:
+     virtual void onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const;
+     virtual void onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const;
+
    protected:
     ResourceCache& _parentCache;
     /// The various states needed for rendering
@@ -243,6 +253,20 @@ class SceneNodeSceneGraph {
 
     friend class Divide::SceneGraphNode;
 };
+
+class SceneNodeNetworkComponent {
+  private:
+    static void onNetworkSend(SceneGraphNode& sgn, SceneNode& node, WorldPacket& dataOut) {
+        node.onNetworkSend(sgn, dataOut);
+    }
+
+    static void onNetworkReceive(SceneGraphNode& sgn, SceneNode& node, WorldPacket& dataIn) {
+        node.onNetworkReceive(sgn, dataIn);
+    }
+
+    friend class Divide::NetworkingComponent;
+};
+
 };  // namespace Attorney
 };  // namespace Divide
 #endif

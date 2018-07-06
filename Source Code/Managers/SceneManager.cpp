@@ -807,4 +807,11 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     return false;
 }
 
+bool SceneManager::networkUpdate(U32 frameCount) {
+
+    getActiveScene().sceneGraph();
+
+    return true;
+}
+
 };

@@ -163,6 +163,9 @@ public:  /// Input
         Input::MouseButton button);
 
     bool switchScene(const stringImpl& name, bool unloadPrevious, bool threaded = true);
+// networking
+protected:
+    bool networkUpdate(U32 frameCount);
 
 protected:
     friend class ScenePool;
@@ -288,6 +291,10 @@ class SceneManagerKernel {
     
     static void currentPlayerPass(Divide::SceneManager& manager, U8 playerIndex) {
         manager.currentPlayerPass(playerIndex);
+    }
+
+    static bool networkUpdate(Divide::SceneManager& manager, U32 frameCount) {
+        return manager.networkUpdate(frameCount);
     }
 
     friend class Divide::Kernel;

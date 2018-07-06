@@ -257,6 +257,10 @@
     <ClCompile Include="..\..\Source Code\Core\Configuration.cpp" />
     <ClCompile Include="..\..\Source Code\Core\EngineTaskPool.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Networking\LocalClient.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Networking\Patch.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Networking\Server.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Networking\Session.cpp" />
     <ClCompile Include="..\..\Source Code\Core\PlatformContext.cpp" />
     <ClCompile Include="..\..\Source Code\Core\XMLEntryData.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimator.cpp" />
@@ -271,6 +275,7 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\BoundsComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\IKComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\Components\NetworkingComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\PhysicsComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\RagdollComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponent.cpp" />
@@ -353,6 +358,11 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\KernelComponent.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\XMLEntryData.h" />
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\LocalClient.h" />
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\OPCodesImpl.h" />
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Patch.h" />
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Server.h" />
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Session.h" />
     <ClInclude Include="..\..\Source Code\engineMain.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\SceneAnimator.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />
@@ -366,6 +376,7 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\BoundsComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\IKComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NavigationComponent.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NetworkingComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\PhysicsComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RagdollComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h" />

@@ -32,13 +32,13 @@ void ASIO::disconnect() {
     sendPacket(p);
 }
 
-void ASIO::init(const stringImpl& address, const stringImpl& port) {
+bool ASIO::init(const stringImpl& address, U16 port) {
     try {
         tcp::resolver res(io_service_);
         _localClient = new Client(this, io_service_, _debugOutput);
         _work.reset(new boost::asio::io_service::work(io_service_));
         _localClient->start(
-            res.resolve(tcp::resolver::query(address.c_str(), port.c_str())));
+            res.resolve(tcp::resolver::query(address.c_str(), to_stringImpl(port).c_str())));
         _thread = new std::thread([&] { io_service_.run(); });
         setThreadName(_thread, "ASIO_THREAD");
 
@@ -48,32 +48,43 @@ void ASIO::init(const stringImpl& address, const stringImpl& port) {
         if (_debugOutput) {
             std::cout << "ASIO Exception: " << e.what() << std::endl;
         }
+        _connected = false;
     }
+
+    return _connected;
 }
 
-void ASIO::connect(const stringImpl& address, const stringImpl& port) {
-    if (!_connected) {
-        init(address, port);
+bool ASIO::connect(const stringImpl& address, U16 port) {
+    if (_connected) {
+        close();
     }
+
+    return init(address, port);
 }
 
-bool ASIO::isConnected() const { return _connected; }
+bool ASIO::isConnected() const {
+    return _connected;
+}
 
 void ASIO::close() {
     _localClient->stop();
     _connected = false;
 }
 
-void ASIO::sendPacket(WorldPacket& p) const {
+bool ASIO::sendPacket(WorldPacket& p) const {
     if (!_connected) {
-        return;
+        return false;
     }
-    _localClient->sendPacket(p);
+    if (_localClient->sendPacket(p)) {
 
-    if (_debugOutput) {
-        std::cout << "ASIO: sent opcode [ 0x"
-                  << to_stringImpl(p.opcode()) << "]" << std::endl;
+        if (_debugOutput) {
+            std::cout << "ASIO: sent opcode [ 0x"
+                << to_stringImpl(p.opcode()) << "]" << std::endl;
+        }
+        return true;
     }
+
+    return false;
 }
 
 void ASIO::toggleDebugOutput(const bool debugOutput) {

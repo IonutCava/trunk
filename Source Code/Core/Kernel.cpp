@@ -15,6 +15,8 @@
 #include "Managers/Headers/RenderPassManager.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
+#include "Core/Networking/Headers/Server.h"
+#include "Core/Networking/Headers/LocalClient.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -66,7 +68,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         std::make_unique<GUI>(*this),                    // Graphical User Interface
         std::make_unique<Input::InputInterface>(*this),  // Input
         std::make_unique<XMLEntryData>(),                // Initial XML data
-        std::make_unique<Configuration>());              // XML based configuration
+        std::make_unique<Configuration>(),               // XML based configuration
+        std::make_unique<LocalClient>(*this));           // Network client
 
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
 
@@ -182,63 +185,63 @@ void Kernel::onLoop() {
         }
     }
 
-if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_PROFILING)
-{
     U32 frameCount = _platformContext->gfx().getFrameCount();
 
-    // Should be approximatelly 2 times a seconds
-    bool print = false;
-    if (Config::Build::IS_DEBUG_BUILD) {
-        print = frameCount % (Config::TARGET_FRAME_RATE / 4) == 0;
-    } else {
-        print = frameCount % (Config::TARGET_FRAME_RATE / 2) == 0;
-    }
-
-    if (print) {
-        stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData._updateLoops));
-
-        if (Config::Profile::BENCHMARK_PERFORMANCE) {
-            profileData.append("\n");
-            profileData.append(Time::ApplicationTimer::instance().benchmarkReport());
-            profileData.append("\n");
-            profileData.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]",
-                                                  Time::MicrosecondsToSeconds<F32>(_platformContext->gfx().getFrameDurationGPU()),
-                                                  _platformContext->gfx().getDrawCallCount()));
-        }
-        if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
-            profileData.append("\n");
-            profileData.append(Time::ProfileTimer::printAll());
+    if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_PROFILING)
+    {
+        // Should be approximatelly 2 times a seconds
+        bool print = false;
+        if (Config::Build::IS_DEBUG_BUILD) {
+            print = frameCount % (Config::TARGET_FRAME_RATE / 4) == 0;
+        } else {
+            print = frameCount % (Config::TARGET_FRAME_RATE / 2) == 0;
         }
 
-        Arena::Statistics stats = _platformContext->gfx().getObjectAllocStats();
-        F32 gpuAllocatedKB = stats.bytes_allocated_ / 1024.0f;
+        if (print) {
+            stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData._updateLoops));
 
-        profileData.append("\n");
-        profileData.append(Util::StringFormat("GPU Objects: %5.2f Kb (%5.2f Mb),\n"
-                                              "             %d allocs,\n"
-                                              "             %d blocks,\n"
-                                              "             %d destructors",
-                                              gpuAllocatedKB,
-                                              gpuAllocatedKB / 1024,
-                                              stats.num_of_allocs_,
-                                              stats.num_of_blocks_,
-                                              stats.num_of_dtros_));
-        // Should equate to approximately once every 10 seconds
-        if (frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
-            Console::printfn(profileData.c_str());
+            if (Config::Profile::BENCHMARK_PERFORMANCE) {
+                profileData.append("\n");
+                profileData.append(Time::ApplicationTimer::instance().benchmarkReport());
+                profileData.append("\n");
+                profileData.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]",
+                                                      Time::MicrosecondsToSeconds<F32>(_platformContext->gfx().getFrameDurationGPU()),
+                                                      _platformContext->gfx().getDrawCallCount()));
+            }
+            if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
+                profileData.append("\n");
+                profileData.append(Time::ProfileTimer::printAll());
+            }
+
+            Arena::Statistics stats = _platformContext->gfx().getObjectAllocStats();
+            F32 gpuAllocatedKB = stats.bytes_allocated_ / 1024.0f;
+
+            profileData.append("\n");
+            profileData.append(Util::StringFormat("GPU Objects: %5.2f Kb (%5.2f Mb),\n"
+                                                  "             %d allocs,\n"
+                                                  "             %d blocks,\n"
+                                                  "             %d destructors",
+                                                  gpuAllocatedKB,
+                                                  gpuAllocatedKB / 1024,
+                                                  stats.num_of_allocs_,
+                                                  stats.num_of_blocks_,
+                                                  stats.num_of_dtros_));
+            // Should equate to approximately once every 10 seconds
+            if (frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
+                Console::printfn(profileData.c_str());
+            }
+
+            _platformContext->gui().modifyText(_ID("ProfileData"), profileData);
         }
 
-        _platformContext->gui().modifyText(_ID("ProfileData"), profileData);
-    }
+        Util::RecordFloatEvent("kernel.mainLoopApp",
+                               to_float(_appLoopTimer.get()),
+                               _timingData._currentTime);
 
-    Util::RecordFloatEvent("kernel.mainLoopApp",
-                           to_float(_appLoopTimer.get()),
-                           _timingData._currentTime);
-
-    if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
-        Util::FlushFloatEvents();
+        if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
+            Util::FlushFloatEvents();
+        }
     }
-}
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
@@ -311,6 +314,19 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
 
         }  // while
     }
+
+    U32 frameCount = _platformContext->gfx().getFrameCount();
+
+    if (frameCount % (Config::TARGET_FRAME_RATE / Config::Networking::NETWORK_SEND_FREQUENCY_HZ) == 0) {
+        U32 retryCount = 0;
+        while (!Attorney::SceneManagerKernel::networkUpdate(*_sceneManager, frameCount)) {
+            if (retryCount > Config::Networking::NETWORK_SEND_RETRY_COUNT) {
+                break;
+            }
+        }
+    }
+
+
     D64 interpolationFactor = 1.0;
     if (Config::USE_FIXED_TIMESTEP && !_timingData._freezeLoopTime) {
         interpolationFactor = static_cast<D64>(_timingData._currentTime + deltaTime - _timingData._nextGameTick) / deltaTime;
@@ -577,6 +593,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Configuration& config = _platformContext->config();
     XML::loadFromXML(entryData, entryPoint.c_str());
     XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
+
+    Server::instance().init(((Divide::U16)443), "127.0.0.1", true);
+
+    if (!_platformContext->client().connect(entryData.serverAddress, 443)) {
+        _platformContext->client().connect("127.0.0.1", 443);
+    }
+
     Paths::updatePaths(*_platformContext);
 
     Locale::changeLanguage(config.language);

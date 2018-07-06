@@ -10,13 +10,17 @@
 
 namespace Divide {
 
-void Client::sendPacket(WorldPacket& p)
+bool Client::sendPacket(WorldPacket& p)
 {
     _packetQueue.push_back(p);
     _heartbeatTimer.expires_at(boost::posix_time::neg_infin);
+
+    return true;
 }
 
-void Client::receivePacket(WorldPacket& p) { _asioPointer->handlePacket(p); }
+void Client::receivePacket(WorldPacket& p) {
+    _asioPointer->handlePacket(p);
+}
 
 void Client::start(tcp::resolver::iterator endpoint_iter) {
     start_connect(endpoint_iter);

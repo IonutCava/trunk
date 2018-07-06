@@ -20,8 +20,11 @@ public:
     static const ValueType SMSG_SEND_FILE = 0x002;
     static const ValueType SMSG_DISCONNECT = 0x003;
     static const ValueType CMSG_REQUEST_DISCONNECT = 0x004;
+    static const ValueType CMSG_ENTITY_UPDATE = 0x005;
+    static const ValueType CMSG_PING = 0x006;
+    static const ValueType SMSG_PONG = 0x007;
 
-    static const ValueType FIRST_FREE_OPCODE = OPCodes::CMSG_REQUEST_DISCONNECT;
+    static const ValueType FIRST_FREE_OPCODE = OPCodes::SMSG_PONG;
  
     static constexpr ValueType OPCODE_ID(const ValueType index) {
         return OPCodes::FIRST_FREE_OPCODE + index;

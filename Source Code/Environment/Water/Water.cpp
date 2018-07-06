@@ -54,7 +54,9 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+
     _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,     vec3<F32>(-_sideLength, 0, -_sideLength));
     _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,    vec3<F32>( _sideLength, 0, -_sideLength));
     _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,  vec3<F32>(-_sideLength, 0,  _sideLength));

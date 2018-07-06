@@ -187,12 +187,6 @@
     <Filter Include="Scenes\NetworkScene\Headers">
       <UniqueIdentifier>{6a8c498b-eab7-402c-b18e-b2cc4135edb2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scenes\NetworkScene\Network">
-      <UniqueIdentifier>{c4e82d39-244b-4048-a5c1-243f94910d47}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes\NetworkScene\Network\Headers">
-      <UniqueIdentifier>{6f53d4f5-8e71-47a3-8015-445e25eb088c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\PingPongScene">
       <UniqueIdentifier>{7fc067e3-414e-4807-87f5-ff8c7a3da755}</UniqueIdentifier>
     </Filter>
@@ -447,9 +441,6 @@
     <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp">
       <Filter>Scenes\NetworkScene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\Network\ASIOImpl.cpp">
-      <Filter>Scenes\NetworkScene\Network</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp">
       <Filter>Scenes\PingPongScene</Filter>
     </ClCompile>
@@ -697,12 +688,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h">
       <Filter>Scenes\NetworkScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\ASIOImpl.h">
-      <Filter>Scenes\NetworkScene\Network\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\OPCodesImpl.h">
-      <Filter>Scenes\NetworkScene\Network\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h">
       <Filter>Scenes\PingPongScene\Headers</Filter>

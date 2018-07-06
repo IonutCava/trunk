@@ -166,7 +166,8 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
    /* STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
     SceneNode* sceneNode = nullptr;

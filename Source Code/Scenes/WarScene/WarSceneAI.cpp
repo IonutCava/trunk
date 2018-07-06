@@ -277,7 +277,8 @@ bool WarScene::addUnits() {
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::UNIT);
+                                  to_const_uint(SGNComponent::ComponentType::UNIT) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode& root = _sceneGraph->getRoot();
     for (I32 k = 0; k < 2; ++k) {

@@ -29,8 +29,8 @@
 
  */
 
-#ifndef _OPCODES_IMPL_H_
-#define _OPCODES_IMPL_H_
+#ifndef _NETWORKING_OPCODES_IMPL_H_
+#define _NETWORKING_OPCODES_IMPL_H_
 
 #include "Networking/Headers/OPCodesTpl.h"
 
@@ -41,9 +41,8 @@ public:
     static const ValueType CMSG_GEOMETRY_LIST = OPCODE_ID(1);
     static const ValueType SMSG_GEOMETRY_APPEND = OPCODE_ID(2);
     static const ValueType CMSG_REQUEST_GEOMETRY = OPCODE_ID(3);
-    static const ValueType CMSG_PING = OPCODE_ID(4);
-    static const ValueType SMSG_PONG = OPCODE_ID(5);
 };
+
 };  // namespace Divide
 
-#endif
+#endif //_NETWORKING_OPCODES_IMPL_H_

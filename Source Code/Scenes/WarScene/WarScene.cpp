@@ -327,7 +327,8 @@ bool WarScene::load(const stringImpl& name) {
                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
 
     static const U32 normalMask = lightMask |
-                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
+                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);

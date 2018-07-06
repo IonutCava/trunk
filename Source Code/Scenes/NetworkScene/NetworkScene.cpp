@@ -1,9 +1,9 @@
 #include "Headers/NetworkScene.h"
-#include "Network/Headers/ASIOImpl.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
+#include "Core/Networking/Headers/LocalClient.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -12,7 +12,6 @@ namespace Divide {
 NetworkScene::NetworkScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
     : Scene(context, cache, parent, name)
 {
-    _asio = std::make_unique<ASIOImpl>(*this);
 }
 
 NetworkScene::~NetworkScene()
@@ -70,11 +69,10 @@ void NetworkScene::checkPatches(I64 btnGUID) {
         p << (*_iter).ModelName;
         p << (*_iter).version;
     }*/
-    _asio->sendPacket(p);
+    _context.client().sendPacket(p);
 }
 
 bool NetworkScene::load(const stringImpl& name) {
-    _asio->init(_context.entryData().serverAddress.c_str(), "443");
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
 
@@ -89,19 +87,19 @@ bool NetworkScene::load(const stringImpl& name) {
 void NetworkScene::test(I64 btnGUID) {
     WorldPacket p(OPCodesEx::CMSG_PING);
     p << Time::ElapsedMilliseconds();
-    _asio->sendPacket(p);
+    _context.client().sendPacket(p);
 }
 
 void NetworkScene::connect(I64 btnGUID) {
     _GUI->modifyText(_ID("statusText"), "Connecting to server ...");
-    _asio->connect(_context.entryData().serverAddress.c_str(), "443");
+    _context.client().connect(_context.entryData().serverAddress.c_str(), 443);
 }
 
 void NetworkScene::disconnect(I64 btnGUID) {
-    if (!_asio->isConnected()) {
+    if (!_context.client().isConnected()) {
         _GUI->modifyText(_ID("statusText"), "Disconnecting to server ...");
     }
-    _asio->disconnect();
+    _context.client().disconnect();
 }
 
 bool NetworkScene::loadResources(bool continueOnErrors) {

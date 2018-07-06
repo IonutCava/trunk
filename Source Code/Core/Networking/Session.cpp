@@ -1,31 +1,20 @@
-#include "Headers/tcp_session_impl.h"
+#include "Headers/Session.h"
+#include "Headers/Server.h"
+#include "Headers/OPCodesImpl.h"
+#include "Headers/Patch.h"
 
-#include "Server/Headers/Server.h"
-#include "Server/Utility/Headers/Patch.h"
-
-#include "Scenes/NetworkScene/Network/Headers/OPCodesImpl.h"
-
+#include "Core/Resources/Headers/Resource.h"
 #include <iostream>
 
 namespace Divide {
 
-tcp_session_impl::tcp_session_impl(boost::asio::io_service& io_service,
-                                   channel& ch)
-    : tcp_session_tpl(io_service, ch) {}
+Session::Session(boost::asio::io_service& io_service, channel& ch)
+    : tcp_session_tpl(io_service, ch)
+{
+}
 
-void tcp_session_impl::handlePacket(WorldPacket& p) {
+void Session::handlePacket(WorldPacket& p) {
     switch (p.opcode()) {
-        case OPCodesEx::MSG_HEARTBEAT:
-            std::cout << "Received [ MSG_HEARTBEAT ]" << std::endl;
-            HandleHeartBeatOpCode(p);
-            break;
-        case OPCodesEx::CMSG_PING:
-            std::cout << "Received [ CMSG_PING ]" << std::endl;
-            HandlePingOpCode(p);
-            break;
-        case OPCodesEx::CMSG_REQUEST_DISCONNECT:
-            HandleDisconnectOpCode(p);
-            break;
         case OPCodesEx::CMSG_GEOMETRY_LIST:
             HandleGeometryListOpCode(p);
             break;
@@ -33,41 +22,12 @@ void tcp_session_impl::handlePacket(WorldPacket& p) {
             HandleRequestGeometry(p);
             break;
         default:
-            std::cout << "Received unknow OPCode [ 0x" << p.opcode() << " ]"
-                      << std::endl;
+            tcp_session_tpl::handlePacket(p);
             break;
     };
 }
-void tcp_session_impl::HandleHeartBeatOpCode(WorldPacket& p) {
-    ACKNOWLEDGE_UNUSED(p);
 
-    WorldPacket r(OPCodesEx::MSG_HEARTBEAT);
-    std::cout << "Sending  [ MSG_HEARTBEAT]" << std::endl;
-    r << (I8)0;
-    sendPacket(r);
-}
-
-void tcp_session_impl::HandlePingOpCode(WorldPacket& p) {
-    F32 time = 0;
-    p >> time;
-    std::cout << "Sending  [ SMSG_PONG ] with data: " << time << std::endl;
-    WorldPacket r(OPCodesEx::SMSG_PONG);
-    r << time;
-    sendPacket(r);
-}
-
-void tcp_session_impl::HandleDisconnectOpCode(WorldPacket& p) {
-    stringImpl client;
-    p >> client;
-    std::cout << "Received [ CMSG_REQUEST_DISCONNECT ] from: [ " << client
-              << " ]" << std::endl;
-    WorldPacket r(OPCodesEx::SMSG_DISCONNECT);
-    r << (U8)0;  // this will be the error code returned after safely saving
-                 // client
-    sendPacket(r);
-}
-
-void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p) {
+void Session::HandleGeometryListOpCode(WorldPacket& p) {
     PatchData data;
     p >> data.sceneName;
     p >> data.size;
@@ -103,7 +63,7 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p) {
             r << (*_iter).scale.x;
             r << (*_iter).scale.y;
             r << (*_iter).scale.z;
-            if ((*_iter).type == GeometryType::MESH) {
+            if ((*_iter).type == GeometryType::GEOMETRY) {
                 r << 0;
             } else if ((*_iter).type == GeometryType::VEGETATION) {
                 r << 1;
@@ -119,7 +79,7 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p) {
     }
 }
 
-void tcp_session_impl::HandleRequestGeometry(WorldPacket& p) {
+void Session::HandleRequestGeometry(WorldPacket& p) {
     stringImpl file;
     p >> file;
 

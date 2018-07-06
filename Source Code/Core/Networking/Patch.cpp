@@ -1,13 +1,16 @@
 #include "Headers/Patch.h"
-#include "Headers/XMLParser.h"
+#include "Utility/Headers/XMLParser.h"
+#include "Core/Resources/Headers/Resource.h"
 
 namespace Divide {
 
-void Patch::addGeometry(const FileData& data) { ModelData.push_back(data); }
+void Patch::addGeometry(const FileData& data) { 
+    ModelData.push_back(data);
+}
 
 bool Patch::compareData(const PatchData& data) {
     bool updated = true;
-    XML::loadScene(data.sceneName);
+    /*XML::loadScene(data.sceneName);
     for (vectorImpl<FileData>::iterator _iter = std::begin(ModelData);
          _iter != std::end(ModelData); _iter++) {
         for (U32 i = 0; i < data.size; i++) {
@@ -28,7 +31,7 @@ bool Patch::compareData(const PatchData& data) {
                 }
             }
         }
-    }
+    }*/
     // After the 2 for's ModelData and VegetationData contain all the geometry
     // that needs patching;
     return updated;

@@ -153,7 +153,8 @@ bool MainScene::load(const stringImpl& name) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
 
     /*ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setID(to_uint(renderState().getCameraConst().getZPlanes().y));

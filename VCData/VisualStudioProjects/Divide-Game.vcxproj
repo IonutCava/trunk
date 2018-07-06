@@ -83,7 +83,6 @@
     <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\MainScene\MainScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\Network\ASIOImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\ReflectionScene\ReflectionScene.cpp" />
@@ -180,8 +179,6 @@
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
     <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\ASIOImpl.h" />
-    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\OPCodesImpl.h" />
     <ClInclude Include="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\ReflectionScene\Headers\ReflectionScene.h" />

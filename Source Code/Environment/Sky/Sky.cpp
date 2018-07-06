@@ -77,7 +77,8 @@ bool Sky::load() {
 void Sky::postLoad(SceneGraphNode& sgn) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
 
     assert(_sky != nullptr);
 

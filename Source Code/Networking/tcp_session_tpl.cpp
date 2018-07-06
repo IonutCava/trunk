@@ -244,4 +244,59 @@ void udp_broadcaster::sendPacket(const WorldPacket& p) {
     socket_.send(buffers, 0, ignored_ec);
 }
 
+void tcp_session_tpl::handlePacket(WorldPacket& p) {
+    switch (p.opcode()) {
+        case OPCodes::MSG_HEARTBEAT:
+            std::cout << "Received [ MSG_HEARTBEAT ]" << std::endl;
+            HandleHeartBeatOpCode(p);
+            break;
+        case OPCodes::CMSG_PING:
+            std::cout << "Received [ CMSG_PING ]" << std::endl;
+            HandlePingOpCode(p);
+            break;
+        case OPCodes::CMSG_REQUEST_DISCONNECT:
+            HandleDisconnectOpCode(p);
+            break;
+        case OPCodes::CMSG_ENTITY_UPDATE:
+            HandleEntityUpdateOpCode(p);
+            break;
+        default:
+            DIVIDE_UNEXPECTED_CALL("Unknown network message!");
+            break;
+    }
+}
+
+void tcp_session_tpl::HandleHeartBeatOpCode(WorldPacket& p) {
+    ACKNOWLEDGE_UNUSED(p);
+
+    WorldPacket r(OPCodes::MSG_HEARTBEAT);
+    std::cout << "Sending  [ MSG_HEARTBEAT]" << std::endl;
+    r << (I8)0;
+    sendPacket(r);
+}
+
+void tcp_session_tpl::HandlePingOpCode(WorldPacket& p) {
+    F32 time = 0;
+    p >> time;
+    std::cout << "Sending  [ SMSG_PONG ] with data: " << time << std::endl;
+    WorldPacket r(OPCodes::SMSG_PONG);
+    r << time;
+    sendPacket(r);
+}
+
+void tcp_session_tpl::HandleDisconnectOpCode(WorldPacket& p) {
+    stringImpl client;
+    p >> client;
+    std::cout << "Received [ CMSG_REQUEST_DISCONNECT ] from: [ " << client << " ]" << std::endl;
+    WorldPacket r(OPCodes::SMSG_DISCONNECT);
+    r << (U8)0;  // this will be the error code returned after safely saving
+                 // client
+    sendPacket(r);
+}
+
+void tcp_session_tpl::HandleEntityUpdateOpCode(WorldPacket& p) {
+    std::cout << "Received [ CMSG_ENTITY_UPDATE ] !" << std::endl;
+    UpdateEntities(p);
+}
+
 };  // namespace Divide

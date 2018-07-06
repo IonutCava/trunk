@@ -40,9 +40,10 @@
 #include "Graphs/Components/Headers/BoundsComponent.h"
 #include "Graphs/Components/Headers/RagdollComponent.h"
 #include "Graphs/Components/Headers/PhysicsComponent.h"
+#include "Graphs/Components/Headers/RenderingComponent.h"
 #include "Graphs/Components/Headers/AnimationComponent.h"
 #include "Graphs/Components/Headers/NavigationComponent.h"
-#include "Graphs/Components/Headers/RenderingComponent.h"
+#include "Graphs/Components/Headers/NetworkingComponent.h"
 
 namespace Divide {
 class Transform;
@@ -74,6 +75,7 @@ class SceneRoot : public SceneNode {
     friend class SceneGraph;
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
 };
+
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneRoot);
 // Add as many SceneTransform nodes are needed as parent nodes for any scenenode
 // to create complex transforms in the scene
@@ -317,6 +319,8 @@ class SceneGraphNode : public GUIDWrapper,
 
     void onCameraChange(const Camera& cam);
 
+    void onNetworkSend(U32 frameCount);
+
     inline void setUpdateFlag(UpdateFlag flag) {
         _updateFlags[to_uint(flag)] = true;
     }
@@ -419,6 +423,11 @@ inline PhysicsComponent* SceneGraphNode::get() const {
 template <>
 inline RenderingComponent* SceneGraphNode::get() const {
     return static_cast<RenderingComponent*>(getComponent(SGNComponent::ComponentType::RENDERING));
+}
+
+template <>
+inline NetworkingComponent* SceneGraphNode::get() const {
+    return static_cast<NetworkingComponent*>(getComponent(SGNComponent::ComponentType::NETWORKING));
 }
 
 template <>

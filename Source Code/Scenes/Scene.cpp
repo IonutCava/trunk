@@ -194,7 +194,8 @@ bool Scene::loadModel(const FileData& data) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     ResourceDescriptor model(data.ModelName);
     model.setResourceLocation(data.ModelName);
@@ -235,7 +236,8 @@ bool Scene::loadGeometry(const FileData& data) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     std::shared_ptr<Object3D> thisObj;
     ResourceDescriptor item(data.ItemName);
@@ -311,7 +313,8 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                                              SceneGraphNode& parentNode) {
     static const U32 particleMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                     to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                    to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                    to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                    to_const_uint(SGNComponent::ComponentType::NETWORKING);
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -335,7 +338,8 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
                                    SceneGraphNode& parentNode) {
     static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                 to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                 to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     const char* lightType = "";
     switch (type) {
@@ -367,7 +371,8 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 void Scene::toggleFlashlight() {
     static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                 to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                 to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     if (_flashLight.lock() == nullptr) {
 
@@ -396,7 +401,8 @@ SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
         to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
         to_const_uint(SGNComponent::ComponentType::PHYSICS) |
         to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-        to_const_uint(SGNComponent::ComponentType::RENDERING);
+        to_const_uint(SGNComponent::ComponentType::RENDERING) |
+        to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(skyItem,
                                                                 normalMask,
@@ -645,7 +651,8 @@ bool Scene::load(const stringImpl& name) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     STUBBED("ToDo: load skyboxes from XML")
     _name = name;
@@ -779,7 +786,8 @@ void Scene::addPlayerInternal(bool queue) {
                                 to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                 to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                to_const_uint(SGNComponent::ComponentType::UNIT),
+                                to_const_uint(SGNComponent::ComponentType::UNIT) |
+                                to_const_uint(SGNComponent::ComponentType::NETWORKING),
                                 PhysicsGroup::GROUP_KINEMATIC,
                                 playerName);
         _parent.addPlayer(*this, playerSGN, queue);

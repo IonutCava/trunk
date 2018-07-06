@@ -1,11 +1,11 @@
 #ifndef _PATCH_H_
 #define _PATCH_H_
 
-#include "Core/Headers/Singleton.h"
-#include "Core/TemplateLibraries/Headers/Vector.h"
-#include "DataTypes.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
+
+struct FileData;
 
 struct PatchData {
     stringImpl sceneName;

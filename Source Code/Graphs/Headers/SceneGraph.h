@@ -90,6 +90,7 @@ class SceneGraph : private NonCopyable,
 
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
+    void onNetworkSend(U32 frameCount);
 
     void postLoad();
 

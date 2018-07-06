@@ -1,21 +1,11 @@
 #include "Headers/Server.h"
-
-// TODO: make this scene independent! -Ionut
-#include "Scenes/NetworkScene/Headers/tcp_session_impl.h"
-#include "Utility/Headers/MemoryTracker.h"
+#include "Headers/Session.h"
 
 #include <iostream>
 
 using namespace boost::asio;
 
 namespace Divide {
-
-bool MemoryManager::MemoryTracker::Ready = false;
-bool MemoryManager::MemoryTracker::LogAllAllocations = false;
-MemoryManager::MemoryTracker MemoryManager::AllocTracer;
-void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
-    ACKNOWLEDGE_UNUSED(failMessage);
-}
 
 Server::Server()
 {
@@ -37,8 +27,7 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
         acceptor_ = new tcp::acceptor(io_service_, listen_endpoint);
         subscriber_ptr bc(new udp_broadcaster(io_service_, broadcast_endpoint));
         _channel.join(bc);
-        tcp_session_ptr new_session(
-            new tcp_session_impl(io_service_, _channel));
+        tcp_session_ptr new_session(new Session(io_service_, _channel));
 
         acceptor_->async_accept(
             new_session->getSocket(),
@@ -51,14 +40,12 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
     }
 }
 
-void Server::handle_accept(tcp_session_ptr session,
-                           const boost::system::error_code& ec) {
+void Server::handle_accept(tcp_session_ptr session, const boost::system::error_code& ec) {
     if (!ec) {
         if (_debugOutput) std::cout << "New TCP session accepted" << std::endl;
         session->start();
 
-        tcp_session_ptr new_session(
-            new tcp_session_impl(io_service_, _channel));
+        tcp_session_ptr new_session(new Session(io_service_, _channel));
 
         acceptor_->async_accept(
             new_session->getSocket(),

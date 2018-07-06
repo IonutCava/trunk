@@ -315,8 +315,11 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+
     static const U32 normalMask = lightMask | 
-                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION);
+                                  to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+        
 
     // Create a ball
     ResourceDescriptor minge("Ping Pong Ball");

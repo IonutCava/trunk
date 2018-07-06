@@ -14,8 +14,7 @@ class WorldPacket : public ByteBuffer {
     {
     }
 
-    explicit WorldPacket(OPCodes::ValueType opcode, 
-                         size_t res = 200)
+    explicit WorldPacket(OPCodes::ValueType opcode, size_t res = 200)
         : ByteBuffer(res),
           m_opcode(opcode)
     {

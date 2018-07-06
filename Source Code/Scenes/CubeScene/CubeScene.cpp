@@ -84,7 +84,8 @@ bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING);
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < 10; col++) {

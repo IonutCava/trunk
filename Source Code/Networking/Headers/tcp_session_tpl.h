@@ -12,6 +12,9 @@
 namespace Divide {
 //----------------------------------------------------------------------
 
+//This is game specific but core functionality
+extern void UpdateEntities(WorldPacket& p);
+
 class subscriber {
    public:
     virtual ~subscriber() {}
@@ -82,7 +85,12 @@ class tcp_session_tpl : public subscriber,
     // statement for example)
     // switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case
     // MSG_HEARTBEAT: break;}
-    virtual void handlePacket(WorldPacket& p) = 0;
+    virtual void handlePacket(WorldPacket& p);
+
+    virtual void HandleHeartBeatOpCode(WorldPacket& p);
+    virtual void HandleDisconnectOpCode(WorldPacket& p);
+    virtual void HandlePingOpCode(WorldPacket& p);
+    virtual void HandleEntityUpdateOpCode(WorldPacket& p);
 
    private:
     size_t _header;

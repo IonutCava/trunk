@@ -131,6 +131,12 @@
     <Filter Include="Core\Headers">
       <UniqueIdentifier>{9d7c54fa-183d-4a1e-a5ed-c9a1dfbb7d16}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Networking">
+      <UniqueIdentifier>{924a56a3-13e2-4e1e-835f-8a44707b4d97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Networking\Headers">
+      <UniqueIdentifier>{f799813c-0e81-4aac-8938-798c0726bbc4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -403,6 +409,21 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\EngineTaskPool.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\NetworkingComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Networking\Server.cpp">
+      <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Networking\Session.cpp">
+      <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Networking\LocalClient.cpp">
+      <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Networking\Patch.cpp">
+      <Filter>Core\Networking</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -695,6 +716,24 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\EngineTaskPool.h">
       <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NetworkingComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\OPCodesImpl.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Server.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Session.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\LocalClient.h">
+      <Filter>Core\Networking\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Patch.h">
+      <Filter>Core\Networking\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

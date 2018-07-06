@@ -18,12 +18,12 @@ class Client;
 class ASIO {
    public:
     /// Send a packet to the target server
-    virtual void sendPacket(WorldPacket& p) const;
+    virtual bool sendPacket(WorldPacket& p) const;
     /// Init a connection to the target address:port
-    virtual void init(const stringImpl& address, const stringImpl& port);
+    virtual bool init(const stringImpl& address, U16 port);
     /// Connect to target address:port only if we have a new IP:PORT combo or
     /// our connection timed out
-    virtual void connect(const stringImpl& address, const stringImpl& port);
+    virtual bool connect(const stringImpl& address, U16 port);
     /// Disconnect from the server
     virtual void disconnect();
     /// Check connection state;

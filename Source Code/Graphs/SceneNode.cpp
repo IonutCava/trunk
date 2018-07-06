@@ -156,4 +156,14 @@ void SceneNode::onCameraChange(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(cam);
 }
 
+void SceneNode::onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(dataOut);
+}
+
+void SceneNode::onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(dataIn);
+}
+
 };
