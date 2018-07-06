@@ -60,9 +60,9 @@ void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     }
 
     if (_parentSGN.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-        U32 obj3DExclussionMask = Object3D::ObjectType::TEXT_3D |
-                                  Object3D::ObjectType::MESH |
-                                  Object3D::ObjectType::FLYWEIGHT;
+        U32 obj3DExclussionMask = enum_to_uint(Object3D::ObjectType::TEXT_3D) |
+                                  enum_to_uint(Object3D::ObjectType::MESH) |
+                                  enum_to_uint(Object3D::ObjectType::FLYWEIGHT);
         if (!bitCompare(obj3DExclussionMask,
                         enum_to_uint(
                             _parentSGN.getNode<Object3D>()->getObjectType()))) {

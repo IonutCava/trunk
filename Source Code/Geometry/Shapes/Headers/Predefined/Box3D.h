@@ -39,7 +39,7 @@ namespace Divide {
 
 class Box3D : public Object3D {
    public:
-    Box3D(F32 size) : Object3D(ObjectType::BOX_3D), _size(size) {
+    Box3D(F32 size) : Object3D(ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE), _size(size) {
         vec3<F32> vertices[] = {
             vec3<F32>(-1.0, -1.0, 1.0),  vec3<F32>(1.0, -1.0, 1.0),
             vec3<F32>(-1.0, 1.0, 1.0),   vec3<F32>(1.0, 1.0, 1.0),

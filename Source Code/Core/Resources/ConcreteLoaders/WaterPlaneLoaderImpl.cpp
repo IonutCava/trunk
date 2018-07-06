@@ -23,7 +23,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
     res->setState(RES_LOADING);
 
     SamplerDescriptor defaultSampler;
-    defaultSampler.setWrapMode(TEXTURE_REPEAT);
+    defaultSampler.setWrapMode(TextureWrap::TEXTURE_REPEAT);
     defaultSampler.toggleMipMaps(false);
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     ResourceDescriptor waterShader("water_" + name);
@@ -56,16 +56,16 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
     res->setMaterialTpl(waterMat);
 
     waterMat->dumpToFile(false);
-    waterMat->setShadingMode(Material::SHADING_BLINN_PHONG);
+    waterMat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TEXTURE_UNIT0, waterNM);
-    waterMat->setShaderProgram(waterShaderProgram->getName(), FINAL_STAGE,
+    waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::FINAL_STAGE,
                                true);
-    waterMat->setShaderProgram("depthPass.PrePass", Z_PRE_PASS_STAGE, true);
+    waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS_STAGE, true);
 
     RenderStateBlockDescriptor waterMatDesc(GFX_DEVICE.getStateBlockDescriptor(
-        waterMat->getRenderStateBlock(FINAL_STAGE)));
-    waterMatDesc.setCullMode(CULL_MODE_NONE);
-    waterMat->setRenderStateBlock(waterMatDesc, FINAL_STAGE);
+        waterMat->getRenderStateBlock(RenderStage::FINAL_STAGE)));
+    waterMatDesc.setCullMode(CullMode::CULL_MODE_NONE);
+    waterMat->setRenderStateBlock(waterMatDesc, RenderStage::FINAL_STAGE);
 
     return true;
 }

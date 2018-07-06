@@ -401,8 +401,8 @@ class Material : public Resource {
                                    //shader on texture change
     /// use this map to add more render states mapped to a specific state
     /// 3 render state's: Normal, reflection and shadow
-    typedef hashMapImpl<RenderStage, size_t /*renderStateBlockHash*/,
-                        hashAlg::hash<I32>> renderStateBlockMap;
+    typedef hashMapImpl<RenderStage, size_t /*renderStateBlockHash*/>
+        renderStateBlockMap;
     renderStateBlockMap _defaultRenderStates;
 
     /// use this map to add textures to the material

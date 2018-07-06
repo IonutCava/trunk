@@ -32,47 +32,55 @@ size_t GetMatchingFormat(const Assimp::Exporter& exporter,
 };
 
 DVDConverter::DVDConverter() : _ppsteps(0) {
-    aiTextureMapModeTable[aiTextureMapMode_Wrap] = TEXTURE_CLAMP;
-    aiTextureMapModeTable[aiTextureMapMode_Clamp] = TEXTURE_CLAMP_TO_EDGE;
-    aiTextureMapModeTable[aiTextureMapMode_Decal] = TEXTURE_DECAL;
-    aiTextureMapModeTable[aiTextureMapMode_Mirror] = TEXTURE_REPEAT;
+    aiTextureMapModeTable[aiTextureMapMode_Wrap] = TextureWrap::TEXTURE_CLAMP;
+    aiTextureMapModeTable[aiTextureMapMode_Clamp] =
+        TextureWrap::TEXTURE_CLAMP_TO_EDGE;
+    aiTextureMapModeTable[aiTextureMapMode_Decal] = TextureWrap::TEXTURE_DECAL;
+    aiTextureMapModeTable[aiTextureMapMode_Mirror] =
+        TextureWrap::TEXTURE_REPEAT;
     aiShadingModeInternalTable[aiShadingMode_Fresnel] =
-        Material::SHADING_COOK_TORRANCE;
+        Material::ShadingMode::SHADING_COOK_TORRANCE;
     aiShadingModeInternalTable[aiShadingMode_NoShading] =
-        Material::SHADING_FLAT;
+        Material::ShadingMode::SHADING_FLAT;
     aiShadingModeInternalTable[aiShadingMode_CookTorrance] =
-        Material::SHADING_COOK_TORRANCE;
+        Material::ShadingMode::SHADING_COOK_TORRANCE;
     aiShadingModeInternalTable[aiShadingMode_Minnaert] =
-        Material::SHADING_OREN_NAYAR;
+        Material::ShadingMode::SHADING_OREN_NAYAR;
     aiShadingModeInternalTable[aiShadingMode_OrenNayar] =
-        Material::SHADING_OREN_NAYAR;
-    aiShadingModeInternalTable[aiShadingMode_Toon] = Material::SHADING_TOON;
+        Material::ShadingMode::SHADING_OREN_NAYAR;
+    aiShadingModeInternalTable[aiShadingMode_Toon] =
+        Material::ShadingMode::SHADING_TOON;
     aiShadingModeInternalTable[aiShadingMode_Blinn] =
-        Material::SHADING_BLINN_PHONG;
-    aiShadingModeInternalTable[aiShadingMode_Phong] = Material::SHADING_PHONG;
+        Material::ShadingMode::SHADING_BLINN_PHONG;
+    aiShadingModeInternalTable[aiShadingMode_Phong] =
+        Material::ShadingMode::SHADING_PHONG;
     aiShadingModeInternalTable[aiShadingMode_Gouraud] =
-        Material::SHADING_BLINN_PHONG;
-    aiShadingModeInternalTable[aiShadingMode_Flat] = Material::SHADING_FLAT;
+        Material::ShadingMode::SHADING_BLINN_PHONG;
+    aiShadingModeInternalTable[aiShadingMode_Flat] =
+        Material::ShadingMode::SHADING_FLAT;
     aiTextureOperationTable[aiTextureOp_Multiply] =
-        Material::TextureOperation_Multiply;
-    aiTextureOperationTable[aiTextureOp_Add] = Material::TextureOperation_Add;
+        Material::TextureOperation::TextureOperation_Multiply;
+    aiTextureOperationTable[aiTextureOp_Add] =
+        Material::TextureOperation::TextureOperation_Add;
     aiTextureOperationTable[aiTextureOp_Subtract] =
-        Material::TextureOperation_Subtract;
+        Material::TextureOperation::TextureOperation_Subtract;
     aiTextureOperationTable[aiTextureOp_Divide] =
-        Material::TextureOperation_Divide;
+        Material::TextureOperation::TextureOperation_Divide;
     aiTextureOperationTable[aiTextureOp_SmoothAdd] =
-        Material::TextureOperation_SmoothAdd;
+        Material::TextureOperation::TextureOperation_SmoothAdd;
     aiTextureOperationTable[aiTextureOp_SignedAdd] =
-        Material::TextureOperation_SignedAdd;
+        Material::TextureOperation::TextureOperation_SignedAdd;
     aiTextureOperationTable[aiTextureOp_SignedAdd] =
-        Material::TextureOperation_SignedAdd;
+        Material::TextureOperation::TextureOperation_SignedAdd;
     aiTextureOperationTable[/*aiTextureOp_Replace*/ 7] =
-        Material::TextureOperation_Replace;
+        Material::TextureOperation::TextureOperation_Replace;
 
     importer = MemoryManager_NEW Assimp::Importer();
 }
 
-DVDConverter::~DVDConverter() { MemoryManager::DELETE(importer); }
+DVDConverter::~DVDConverter() {
+    MemoryManager::DELETE(importer);
+}
 
 bool DVDConverter::init() {
     if (_ppsteps != 0) {
@@ -102,7 +110,7 @@ bool DVDConverter::init() {
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
         aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;
 
-    if (GFX_DEVICE.getAPI() != GFXDevice::OpenGL && 
+    if (GFX_DEVICE.getAPI() != GFXDevice::OpenGL &&
         GFX_DEVICE.getAPI() != GFXDevice::OpenGLES) {
         _ppsteps |= aiProcess_ConvertToLeftHanded;
     }
@@ -155,9 +163,10 @@ Mesh* DVDConverter::load(const stringImpl& file) {
         return nullptr;
     }
     start = Time::ElapsedMilliseconds(true);
-    Mesh* tempMesh = MemoryManager_NEW Mesh(_aiScenePointer->HasAnimations()
-                                                ? Object3D::OBJECT_FLAG_SKINNED
-                                                : Object3D::OBJECT_FLAG_NONE);
+    Mesh* tempMesh =
+        MemoryManager_NEW Mesh(_aiScenePointer->HasAnimations()
+                                   ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
+                                   : Object3D::ObjectFlag::OBJECT_FLAG_NONE);
     tempMesh->setName(_modelName);
     tempMesh->setResourceLocation(_fileLocation);
 
@@ -222,7 +231,8 @@ Mesh* DVDConverter::load(const stringImpl& file) {
 /// instead, return nullptr and mesh and material creation for this instance
 /// will be skipped.
 SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
-                                           Mesh* parentMesh, U16 count) {
+                                           Mesh* parentMesh,
+                                           U16 count) {
     /// VERY IMPORTANT: default submesh, LOD0 should always be created first!!
     /// an assert is added in the LODn, where n >= 1, loading code to make sure
     /// the LOD0 submesh exists first
@@ -255,7 +265,8 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         submeshdesc.setFlag(true);
         submeshdesc.setID(count);
         if (skinned) {
-            submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
+            submeshdesc.setEnumValue(
+                enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
         tempSubMesh = CreateResource<SubMesh>(submeshdesc);
         if (!tempSubMesh) {
@@ -328,7 +339,8 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         }
     }  // endfor
 
-    SubMeshDVDConverterAttorney::setGeometryLimits(*tempSubMesh, importBB.getMin(), importBB.getMax());
+    SubMeshDVDConverterAttorney::setGeometryLimits(
+        *tempSubMesh, importBB.getMin(), importBB.getMax());
 
     if (_aiScenePointer->HasAnimations() && skinned) {
         // create animator from current scene and current submesh pointer in
@@ -345,7 +357,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
                          source->mTextureCoords[0][j].y);
             vb->addTexCoord(texCoord);
         }  // endfor
-    }  // endif
+    }      // endif
 
     U32 idxCount = 0;
     U32 currentIndice = 0;
@@ -398,7 +410,8 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
     // If we found it in the Resource Cache, return a copy of it
     ResourceDescriptor materialDesc(materialName);
     if (skinned) {
-        materialDesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
+        materialDesc.setEnumValue(
+            enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
     }
 
     tempMaterial = CreateResource<Material>(materialDesc);
@@ -471,7 +484,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
     tempMaterial->setOpacity(opacity);
 
     // default shading model
-    I32 shadingModel = Material::SHADING_PHONG;
+    I32 shadingModel = enum_to_int(Material::ShadingMode::SHADING_PHONG);
     // Load shading model
     aiGetMaterialInteger(source, AI_MATKEY_SHADING_MODEL, &shadingModel);
     tempMaterial->setShadingMode(aiShadingModeInternalTable[shadingModel]);
@@ -547,8 +560,10 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             tempMaterial->setTexture(
                 count == 1 ? ShaderProgram::TEXTURE_UNIT1
                            : ShaderProgram::TEXTURE_UNIT0,
-                textureRes, count == 0 ? Material::TextureOperation_Replace
-                                       : aiTextureOperationTable[op]);
+                textureRes,
+                count == 0
+                    ? Material::TextureOperation::TextureOperation_Replace
+                    : aiTextureOperationTable[op]);
         }  // endif
 
         tName.Clear();
@@ -590,9 +605,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
-            tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
+            tempMaterial->setBumpMethod(Material::BumpMethod::BUMP_NORMAL);
         }  // endif
-    }  // endif
+    }      // endif
 
     result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
@@ -622,9 +637,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
-            tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
+            tempMaterial->setBumpMethod(Material::BumpMethod::BUMP_NORMAL);
         }  // endif
-    }  // endif
+    }      // endif
     result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
@@ -708,7 +723,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             tempMaterial->setTexture(ShaderProgram::TEXTURE_SPECULAR,
                                      textureRes, aiTextureOperationTable[op]);
         }  // endif
-    }  // endif
+    }      // endif
 
     return tempMaterial;
 }

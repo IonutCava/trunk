@@ -11,22 +11,22 @@
 namespace Divide {
 
 Sky::Sky(const stringImpl& name)
-    : SceneNode(name, TYPE_SKY),
+    : SceneNode(name, SceneNodeType::TYPE_SKY),
       _sky(nullptr),
       _skyShader(nullptr),
       _skybox(nullptr),
       _exclusionMask(0) {
     // The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't
     // have real "depth"
-    _renderState.addToDrawExclusionMask(SHADOW_STAGE);
+    _renderState.addToDrawExclusionMask(RenderStage::SHADOW_STAGE);
 
     // Generate a render state
     RenderStateBlockDescriptor skyboxDesc;
-    skyboxDesc.setCullMode(CULL_MODE_CCW);
+    skyboxDesc.setCullMode(CullMode::CULL_MODE_CCW);
     // skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using
     // gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
     _skyboxRenderStateHash = GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
-    skyboxDesc.setCullMode(CULL_MODE_CW);
+    skyboxDesc.setCullMode(CullMode::CULL_MODE_CW);
     _skyboxRenderStateReflectedHash =
         GFX_DEVICE.getOrCreateStateBlock(skyboxDesc);
 }
@@ -48,14 +48,14 @@ bool Sky::load() {
     skyboxSampler.toggleMipMaps(false);
     skyboxSampler.toggleSRGBColorSpace(true);
     skyboxSampler.setAnisotropy(16);
-    skyboxSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    skyboxSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.setResourceLocation(
         location + "skybox_2.jpg," + location + "skybox_1.jpg," + location +
         "skybox_5.jpg," + location + "skybox_6.jpg," + location +
         "skybox_3.jpg," + location + "skybox_4.jpg");
-    skyboxTextures.setEnumValue(TEXTURE_CUBE_MAP);
+    skyboxTextures.setEnumValue(enum_to_uint(TextureType::TEXTURE_CUBE_MAP));
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
     skyboxTextures.setThreadedLoading(false);
     _skybox = CreateResource<Texture>(skyboxTextures);
@@ -100,7 +100,7 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd;
     cmd.renderWireframe(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
-    cmd.stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)
+    cmd.stateHash(GFX_DEVICE.isCurrentRenderStage(RenderStage::REFLECTION_STAGE)
                       ? _skyboxRenderStateReflectedHash
                       : _skyboxRenderStateHash);
     cmd.shaderProgram(_skyShader);

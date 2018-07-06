@@ -24,34 +24,34 @@ Material::Material()
       _useAlphaTest(false),
       _dumpToFile(true),
       _translucencyCheck(false),
-      _shadingMode(ShadingMode_PLACEHOLDER),
-      _bumpMethod(BUMP_NONE) {
+      _shadingMode(ShadingMode::ShadingMode_PLACEHOLDER),
+      _bumpMethod(BumpMethod::BUMP_NONE) {
     _textures.resize(ShaderProgram::TextureUsage_PLACEHOLDER, nullptr);
 
-    _operation = TextureOperation_Replace;
+    _operation = TextureOperation::TextureOperation_Replace;
 
     /// Normal state for final rendering
     RenderStateBlockDescriptor stateDescriptor;
     hashAlg::insert(
         _defaultRenderStates,
-        hashAlg::makePair(FINAL_STAGE,
+        hashAlg::makePair(RenderStage::FINAL_STAGE,
                           GFX_DEVICE.getOrCreateStateBlock(stateDescriptor)));
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlockDescriptor reflectorDescriptor(stateDescriptor);
     hashAlg::insert(_defaultRenderStates,
                     hashAlg::makePair(
-                        REFLECTION_STAGE,
+                        RenderStage::REFLECTION_STAGE,
                         GFX_DEVICE.getOrCreateStateBlock(reflectorDescriptor)));
     /// the z-pre-pass descriptor does not process colors
     RenderStateBlockDescriptor zPrePassDescriptor(stateDescriptor);
     zPrePassDescriptor.setColorWrites(false, false, false, false);
     hashAlg::insert(_defaultRenderStates,
                     hashAlg::makePair(
-                        Z_PRE_PASS_STAGE,
+                        RenderStage::Z_PRE_PASS_STAGE,
                         GFX_DEVICE.getOrCreateStateBlock(zPrePassDescriptor)));
     /// A descriptor used for rendering to depth map
     RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
-    shadowDescriptor.setCullMode(CULL_MODE_CCW);
+    shadowDescriptor.setCullMode(CullMode::CULL_MODE_CCW);
     /// set a polygon offset
     // shadowDescriptor.setZBias(1.0f, 2.0f);
     /// ignore colors - Some shadowing techniques require drawing to the a color
@@ -59,18 +59,15 @@ Material::Material()
     shadowDescriptor.setColorWrites(true, true, false, false);
     hashAlg::insert(
         _defaultRenderStates,
-        hashAlg::makePair(SHADOW_STAGE,
+        hashAlg::makePair(RenderStage::SHADOW_STAGE,
                           GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
-
-    assert(_defaultRenderStates[FINAL_STAGE] != 0);
-    assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != 0);
-    assert(_defaultRenderStates[SHADOW_STAGE] != 0);
-    assert(_defaultRenderStates[REFLECTION_STAGE] != 0);
 
     _computedShaderTextures = false;
 }
 
-Material::~Material() { _defaultRenderStates.clear(); }
+Material::~Material() {
+    _defaultRenderStates.clear();
+}
 
 Material* Material::clone(const stringImpl& nameSuffix) {
     DIVIDE_ASSERT(!nameSuffix.empty(),
@@ -133,7 +130,7 @@ size_t Material::getRenderStateBlock(RenderStage currentStage) {
     const renderStateBlockMap::const_iterator& it =
         _defaultRenderStates.find(currentStage);
     if (it == std::end(_defaultRenderStates)) {
-        return _defaultRenderStates[FINAL_STAGE];
+        return _defaultRenderStates[RenderStage::FINAL_STAGE];
     }
     return it->second;
 }
@@ -157,7 +154,8 @@ size_t Material::setRenderStateBlock(
 // second = second texture used for multitexturing
 // bump = bump map
 void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
-                          Texture* const texture, const TextureOperation& op) {
+                          Texture* const texture,
+                          const TextureOperation& op) {
     bool computeShaders = false;
 
     if (_textures[textureUsageSlot]) {
@@ -203,8 +201,10 @@ void Material::setShaderProgram(const stringImpl& shader,
 }
 
 void Material::setShaderProgramInternal(
-    const stringImpl& shader, const RenderStage& renderStage,
-    const bool computeOnAdd, const DELEGATE_CBK<>& shaderCompileCallback) {
+    const stringImpl& shader,
+    const RenderStage& renderStage,
+    const bool computeOnAdd,
+    const DELEGATE_CBK<>& shaderCompileCallback) {
     ShaderProgram* shaderReference = _shaderInfo[renderStage]._shaderRef;
     // if we already had a shader assigned ...
     if (!_shaderInfo[renderStage]._shader.empty()) {
@@ -241,7 +241,7 @@ void Material::setShaderProgramInternal(
         _shaderInfo[renderStage]._shaderRef =
             CreateResource<ShaderProgram>(shaderDescriptor);
         _shaderInfo[renderStage]._shaderCompStage =
-            ShaderInfo::SHADER_STAGE_COMPUTED;
+            ShaderInfo::ShaderCompilationStage::SHADER_STAGE_COMPUTED;
         REGISTER_TRACKED_DEPENDENCY(_shaderInfo[renderStage]._shaderRef);
         if (shaderCompileCallback) {
             shaderCompileCallback();
@@ -250,7 +250,7 @@ void Material::setShaderProgramInternal(
         _shaderComputeQueue.push(std::make_tuple(renderStage, shaderDescriptor,
                                                  shaderCompileCallback));
         _shaderInfo[renderStage]._shaderCompStage =
-            ShaderInfo::SHADER_STAGE_QUEUED;
+            ShaderInfo::ShaderCompilationStage::SHADER_STAGE_QUEUED;
     }
 }
 
@@ -265,7 +265,8 @@ void Material::clean() {
 void Material::recomputeShaders() {
     for (shaderInfoMap::value_type& it : _shaderInfo) {
         if (!it.second._isCustomShader) {
-            it.second._shaderCompStage = ShaderInfo::SHADER_STAGE_REQUESTED;
+            it.second._shaderCompStage =
+                ShaderInfo::ShaderCompilationStage::SHADER_STAGE_REQUESTED;
             computeShader(it.first, false, DELEGATE_CBK<>());
         }
     }
@@ -279,7 +280,7 @@ bool Material::computeShader(const RenderStage& renderStage,
                              const bool computeOnAdd,
                              const DELEGATE_CBK<>& shaderCompileCallback) {
     if (_shaderInfo[renderStage]._shaderCompStage ==
-        ShaderInfo::SHADER_STAGE_COMPUTED) {
+        ShaderInfo::ShaderCompilationStage::SHADER_STAGE_COMPUTED) {
         return true;
     }
 
@@ -291,13 +292,13 @@ bool Material::computeShader(const RenderStage& renderStage,
     }
 
     DIVIDE_ASSERT(
-        _shadingMode != ShadingMode_PLACEHOLDER,
+        _shadingMode != ShadingMode::ShadingMode_PLACEHOLDER,
         "Material computeShader error: Invalid shading mode specified!");
 
-    bool deferredPassShader =
-        GFX_DEVICE.getRenderer().getType() != RENDERER_FORWARD_PLUS;
-    bool depthPassShader =
-        renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
+    bool deferredPassShader = GFX_DEVICE.getRenderer().getType() !=
+                              RendererType::RENDERER_FORWARD_PLUS;
+    bool depthPassShader = renderStage == RenderStage::SHADOW_STAGE ||
+                           renderStage == RenderStage::Z_PRE_PASS_STAGE;
 
     // the base shader is either for a Deferred Renderer or a Forward  one ...
     stringImpl shader =
@@ -308,20 +309,20 @@ bool Material::computeShader(const RenderStage& renderStage,
         shader = "passThrough";
     }
     if (depthPassShader) {
-        renderStage == Z_PRE_PASS_STAGE ? shader += ".PrePass" : shader +=
+        renderStage == RenderStage::Z_PRE_PASS_STAGE ? shader += ".PrePass" : shader +=
                                                                  ".Shadow";
     }
     // What kind of effects do we need?
     if (_textures[ShaderProgram::TEXTURE_UNIT0]) {
         // Bump mapping?
         if (_textures[ShaderProgram::TEXTURE_NORMALMAP] &&
-            _bumpMethod != BUMP_NONE) {
+            _bumpMethod != BumpMethod::BUMP_NONE) {
             addShaderDefines(renderStage, "COMPUTE_TBN");
             shader += ".Bump";  // Normal Mapping
-            if (_bumpMethod == BUMP_PARALLAX) {
+            if (_bumpMethod == BumpMethod::BUMP_PARALLAX) {
                 shader += ".Parallax";
                 addShaderDefines(renderStage, "USE_PARALLAX_MAPPING");
-            } else if (_bumpMethod == BUMP_RELIEF) {
+            } else if (_bumpMethod == BumpMethod::BUMP_RELIEF) {
                 shader += ".Relief";
                 addShaderDefines(renderStage, "USE_RELIEF_MAPPING");
             }
@@ -341,15 +342,15 @@ bool Material::computeShader(const RenderStage& renderStage,
 
     if (isTranslucent()) {
         for (Material::TranslucencySource source : _translucencySource) {
-            if (source == TRANSLUCENT_DIFFUSE) {
+            if (source == TranslucencySource::TRANSLUCENT_DIFFUSE) {
                 shader += ".DiffuseAlpha";
                 addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE");
             }
-            if (source == TRANSLUCENT_OPACITY_MAP) {
+            if (source == TranslucencySource::TRANSLUCENT_OPACITY_MAP) {
                 shader += ".OpacityMap";
                 addShaderDefines(renderStage, "USE_OPACITY_MAP");
             }
-            if (source == TRANSLUCENT_DIFFUSE_MAP) {
+            if (source == TranslucencySource::TRANSLUCENT_DIFFUSE_MAP) {
                 shader += ".TextureAlpha";
                 addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE_MAP");
             }
@@ -363,32 +364,32 @@ bool Material::computeShader(const RenderStage& renderStage,
     if (_hardwareSkinning) {
         addShaderDefines(renderStage, "USE_GPU_SKINNING");
         shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only
-                               //property
+        // property
     }
 
     switch (_shadingMode) {
         default:
-        case SHADING_FLAT: {
+        case ShadingMode::SHADING_FLAT: {
             addShaderDefines(renderStage, "USE_SHADING_FLAT");
             shader += ".Flat";
         } break;
-        case SHADING_PHONG: {
+        case ShadingMode::SHADING_PHONG: {
             addShaderDefines(renderStage, "USE_SHADING_PHONG");
             shader += ".Phong";
         } break;
-        case SHADING_BLINN_PHONG: {
+        case ShadingMode::SHADING_BLINN_PHONG: {
             addShaderDefines(renderStage, "USE_SHADING_BLINN_PHONG");
             shader += ".BlinnPhong";
         } break;
-        case SHADING_TOON: {
+        case ShadingMode::SHADING_TOON: {
             addShaderDefines(renderStage, "USE_SHADING_TOON");
             shader += ".Toon";
         } break;
-        case SHADING_OREN_NAYAR: {
+        case ShadingMode::SHADING_OREN_NAYAR: {
             addShaderDefines(renderStage, "USE_SHADING_OREN_NAYAR");
             shader += ".OrenNayar";
         } break;
-        case SHADING_COOK_TORRANCE: {
+        case ShadingMode::SHADING_COOK_TORRANCE: {
             addShaderDefines(renderStage, "USE_SHADING_COOK_TORRANCE");
             shader += ".CookTorrance";
         } break;
@@ -421,7 +422,7 @@ void Material::computeShaderInternal() {
     _shaderInfo[renderStage]._shaderRef =
         CreateResource<ShaderProgram>(descriptor);
     _shaderInfo[renderStage]._shaderCompStage =
-        ShaderInfo::SHADER_STAGE_COMPUTED;
+        ShaderInfo::ShaderCompilationStage::SHADER_STAGE_COMPUTED;
     if (callback) {
         callback();
     }
@@ -471,7 +472,7 @@ ShaderProgram* const Material::ShaderInfo::getProgram() const {
 Material::ShaderInfo& Material::getShaderInfo(RenderStage renderStage) {
     shaderInfoMap::iterator it = _shaderInfo.find(renderStage);
 
-    return (it == std::end(_shaderInfo) ? _shaderInfo[FINAL_STAGE]
+    return (it == std::end(_shaderInfo) ? _shaderInfo[RenderStage::FINAL_STAGE]
                                         : it->second);
 }
 
@@ -511,7 +512,7 @@ void Material::setDoubleSided(bool state, const bool useAlphaTest) {
         for (renderStateBlockMap::value_type& it : _defaultRenderStates) {
             RenderStateBlockDescriptor descriptor(
                 GFX_DEVICE.getStateBlockDescriptor(it.second));
-            descriptor.setCullMode(CULL_MODE_NONE);
+            descriptor.setCullMode(CullMode::CULL_MODE_NONE);
             if (!_translucencySource.empty()) {
                 descriptor.setBlend(true);
             }
@@ -530,20 +531,20 @@ bool Material::isTranslucent() {
         // In order of importance (less to more)!
         // diffuse channel alpha
         if (_shaderData._diffuse.a < 0.95f) {
-            _translucencySource.push_back(TRANSLUCENT_DIFFUSE);
+            _translucencySource.push_back(TranslucencySource::TRANSLUCENT_DIFFUSE);
             useAlphaTest = (_shaderData._diffuse.a < 0.15f);
         }
 
         // base texture is translucent
         if (_textures[ShaderProgram::TEXTURE_UNIT0] &&
             _textures[ShaderProgram::TEXTURE_UNIT0]->hasTransparency()) {
-            _translucencySource.push_back(TRANSLUCENT_DIFFUSE_MAP);
+            _translucencySource.push_back(TranslucencySource::TRANSLUCENT_DIFFUSE_MAP);
             useAlphaTest = true;
         }
 
         // opacity map
         if (_textures[ShaderProgram::TEXTURE_OPACITY]) {
-            _translucencySource.push_back(TRANSLUCENT_OPACITY_MAP);
+            _translucencySource.push_back(TranslucencySource::TRANSLUCENT_OPACITY_MAP);
             useAlphaTest = false;
         }
 
@@ -559,7 +560,7 @@ bool Material::isTranslucent() {
 }
 
 void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
-    shaderInfoMap::const_iterator it = _shaderInfo.find(FINAL_STAGE);
+    shaderInfoMap::const_iterator it = _shaderInfo.find(RenderStage::FINAL_STAGE);
 
     shaderKey = (it != std::end(_shaderInfo) && it->second._shaderRef)
                     ? it->second._shaderRef->getID()

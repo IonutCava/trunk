@@ -4,13 +4,14 @@ namespace Divide {
 
 ResourceDescriptor::ResourceDescriptor(const stringImpl& name,
                                        const stringImpl& resourceLocation,
-                                       bool flag, U32 ID, U8 enumValue)
+                                       bool flag, U32 ID, U32 enumValue)
     : _propertyDescriptor(nullptr),
       _name(name),
       _resourceLocation(resourceLocation),
       _flag(flag),
       _ID(ID),
-      _enumValue(enumValue) {
+      _enumValue(enumValue)
+{
     _mask.i = 0;
     _threaded = true;
 }

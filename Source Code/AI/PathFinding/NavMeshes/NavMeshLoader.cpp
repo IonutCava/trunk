@@ -315,50 +315,59 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
         SceneNode* sn = sgn->getNode();
 
         SceneNodeType nodeType = sn->getType();
-        U32 ignoredNodeType = TYPE_ROOT | TYPE_LIGHT | TYPE_PARTICLE_EMITTER |
-                              TYPE_TRIGGER | TYPE_SKY | TYPE_VEGETATION_GRASS;
+        U32 ignoredNodeType = enum_to_uint(SceneNodeType::TYPE_ROOT) |
+                              enum_to_uint(SceneNodeType::TYPE_LIGHT) |
+                              enum_to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+                              enum_to_uint(SceneNodeType::TYPE_TRIGGER) | 
+                              enum_to_uint(SceneNodeType::TYPE_SKY) | 
+                              enum_to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 
         U32 allowedNodeType =
-            TYPE_WATER | TYPE_OBJECT3D | TYPE_VEGETATION_TREES;
+            enum_to_uint(SceneNodeType::TYPE_WATER) |
+            enum_to_uint(SceneNodeType::TYPE_OBJECT3D) |
+            enum_to_uint(SceneNodeType::TYPE_VEGETATION_TREES);
 
-        if (!bitCompare(allowedNodeType, nodeType)) {
-            if (!bitCompare(ignoredNodeType, nodeType)) {
+        if (!bitCompare(allowedNodeType, enum_to_uint(nodeType))) {
+            if (!bitCompare(ignoredNodeType, enum_to_uint(nodeType))) {
                 Console::printfn(Locale::get("WARN_NAV_UNSUPPORTED"),
                                  sn->getName().c_str());
                 goto next;
             }
         }
 
-        if (nodeType == TYPE_OBJECT3D) {
+        if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
             U32 ignored3DObjectType =
-                Object3D::MESH | Object3D::TEXT_3D | Object3D::FLYWEIGHT;
+                enum_to_uint(Object3D::ObjectType::MESH) |
+                enum_to_uint(Object3D::ObjectType::TEXT_3D) |
+                enum_to_uint(Object3D::ObjectType::FLYWEIGHT);
             if (bitCompare(ignored3DObjectType,
-                           dynamic_cast<Object3D*>(sn)->getObjectType())) {
+                           enum_to_uint(dynamic_cast<Object3D*>(sn)->getObjectType())))
+            {
                 goto next;
             }
         }
 
         MeshDetailLevel level = DETAIL_ABSOLUTE;
         VertexBuffer* geometry = nullptr;
-        SamplePolyAreas areType = SAMPLE_AREA_OBSTACLE;
+        SamplePolyAreas areaType = SAMPLE_AREA_OBSTACLE;
 
         switch (nodeType) {
-            case TYPE_WATER: {
+            case SceneNodeType::TYPE_WATER: {
                 if (!sgn->getComponent<NavigationComponent>()
                          ->navMeshDetailOverride())
                     level = DETAIL_BOUNDINGBOX;
-                areType = SAMPLE_POLYAREA_WATER;
+                areaType = SAMPLE_POLYAREA_WATER;
             } break;
-            case TYPE_OBJECT3D: {
+            case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
                 if (!sgn->getComponent<NavigationComponent>()
                          ->navMeshDetailOverride() &&
                     sgn->usageContext() == SceneGraphNode::NODE_STATIC) {
                     level = DETAIL_BOUNDINGBOX;
                 }
-                if (dynamic_cast<Object3D*>(sn)->getType() ==
-                    Object3D::TERRAIN) {
-                    areType = SAMPLE_POLYAREA_GROUND;
+                if (dynamic_cast<Object3D*>(sn)->getObjectType() ==
+                    Object3D::ObjectType::TERRAIN) {
+                    areaType = SAMPLE_POLYAREA_GROUND;
                 }
             } break;
             default: {
@@ -368,7 +377,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
         };
 
         // I should remove this hack - Ionut
-        if (nodeType == TYPE_WATER) {
+        if (nodeType == SceneNodeType::TYPE_WATER) {
             sgn = sgn->getChildren()["waterPlane"];
         }
 
@@ -378,7 +387,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
         U32 currentTriangleIndexOffset = outData.getVertCount();
 
         if (level == DETAIL_ABSOLUTE) {
-            if (nodeType == TYPE_OBJECT3D) {
+            if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
                 geometry = dynamic_cast<Object3D*>(sn)->getGeometryVB();
             } else /*nodeType == TYPE_WATER*/ {
                 geometry =
@@ -394,9 +403,9 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
             dynamic_cast<Object3D*>(sn)->computeTriangleList();
             const vectorImpl<vec3<U32> >& triangles =
                 dynamic_cast<Object3D*>(sn)->getTriangles();
-            if (nodeType != TYPE_OBJECT3D ||
-                (nodeType == TYPE_OBJECT3D &&
-                 dynamic_cast<Object3D*>(sn)->getType() != Object3D::TERRAIN)) {
+            if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
+                (nodeType == SceneNodeType::TYPE_OBJECT3D &&
+                 dynamic_cast<Object3D*>(sn)->getObjectType() != Object3D::ObjectType::TERRAIN)) {
                 mat4<F32> nodeTransform =
                     sgn->getComponent<PhysicsComponent>()->getWorldMatrix();
                 for (U32 i = 0; i < vertices.size(); ++i) {
@@ -414,7 +423,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 
             for (U32 i = 0; i < triangles.size(); ++i) {
                 addTriangle(&outData, triangles[i], currentTriangleIndexOffset,
-                            areType);
+                            areaType);
             }
         } else if (level == DETAIL_BOUNDINGBOX) {
             const vec3<F32>* vertices = box.getPoints();
@@ -430,7 +439,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                     addTriangle(&outData,
                                 vec3<U32>(cubeFaces[f][0], cubeFaces[f][v - 1],
                                           cubeFaces[f][v]),
-                                currentTriangleIndexOffset, areType);
+                                currentTriangleIndexOffset, areaType);
                 }
             }
         } else {

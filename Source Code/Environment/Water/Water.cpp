@@ -9,13 +9,13 @@
 namespace Divide {
 
 WaterPlane::WaterPlane()
-    : SceneNode(TYPE_WATER),
+    : SceneNode(SceneNodeType::TYPE_WATER),
       Reflector(TYPE_WATER_SURFACE, vec2<U16>(1024, 1024)),
       _plane(nullptr),
       _waterLevel(0),
       _waterDepth(0),
-      _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER),
-      _reflectionPlaneID(ClipPlaneIndex_PLACEHOLDER),
+      _refractionPlaneID(ClipPlaneIndex::ClipPlaneIndex_PLACEHOLDER),
+      _reflectionPlaneID(ClipPlaneIndex::ClipPlaneIndex_PLACEHOLDER),
       _reflectionRendering(false),
       _refractionRendering(false),
       _refractionTexture(nullptr),
@@ -53,15 +53,16 @@ WaterPlane::WaterPlane()
     _plane->renderState().setDrawState(false);
     // The water doesn't cast shadows, doesn't need ambient occlusion and
     // doesn't have real "depth"
-    renderState().addToDrawExclusionMask(SHADOW_STAGE);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW_STAGE);
     Console::printfn(Locale::get("REFRACTION_INIT_FB"), _resolution.x,
                      _resolution.y);
     SamplerDescriptor refractionSampler;
-    refractionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    refractionSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     refractionSampler.toggleMipMaps(false);
-
-    TextureDescriptor refractionDescriptor(
-        TEXTURE_2D, RGBA8, UNSIGNED_BYTE);  // Less precision for reflections
+    // Less precision for reflections
+    TextureDescriptor refractionDescriptor(TextureType::TEXTURE_2D,
+                                           GFXImageFormat::RGBA8,
+                                           GFXDataFormat::UNSIGNED_BYTE);  
     refractionDescriptor.setSampler(refractionSampler);
 
     _refractionTexture = GFX_DEVICE.newFB();
@@ -121,7 +122,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     if (_paramsDirty) {
         RenderingComponent* rComp = sgn.getComponent<RenderingComponent>();
         ShaderProgram* shader = rComp->getMaterialInstance()
-                                    ->getShaderInfo(FINAL_STAGE)
+                                    ->getShaderInfo(RenderStage::FINAL_STAGE)
                                     .getProgram();
         shader->Uniform("_waterShininess", _shininess);
         shader->Uniform("_noiseFactor", _noiseFactor);
@@ -149,18 +150,18 @@ void WaterPlane::getDrawCommands(
     SceneGraphNode& sgn, const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
+    bool depthPass = GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE);
     RenderingComponent* const renderable =
         sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader =
-        renderable->getDrawShader(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE);
+        renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS_STAGE : RenderStage::FINAL_STAGE);
     drawShader->Uniform("underwater", _cameraUnderWater);
-    GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
+    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 0);
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(
-        renderable->getMaterialInstance()->getRenderStateBlock(FINAL_STAGE));
+        renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::FINAL_STAGE));
     cmd.shaderProgram(drawShader);
     cmd.sourceBuffer(_plane->getGeometryVB());
     drawCommandsOut.push_back(cmd);
@@ -172,7 +173,7 @@ void WaterPlane::render(SceneGraphNode& sgn,
     if (!_plane->onDraw(currentRenderStage)) {
         return;
     }
-    if (!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
+    if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
         _reflectedTexture->Bind(1);
         if (!_cameraUnderWater) {
             _refractionTexture->Bind(2);
@@ -190,7 +191,7 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage) {
     }
 
     // Make sure we are not drawing our self unless this is desired
-    if ((currentStage == REFLECTION_STAGE || _reflectionRendering ||
+    if ((currentStage == RenderStage::REFLECTION_STAGE || _reflectionRendering ||
          _refractionRendering) &&
         !_updateSelf) {
         return false;
@@ -212,7 +213,7 @@ void WaterPlane::updateRefraction() {
     _refractionRendering = true;
     // If we are above water, process the plane's reflection. If we are below,
     // we render the scene normally
-    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(FINAL_STAGE);
+    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::FINAL_STAGE);
     GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
     _cameraMgr.getActiveCamera()->renderLookAt();
     // bind the refractive texture
@@ -236,7 +237,7 @@ void WaterPlane::updateReflection() {
         _reflectionRendering = true;
 
         RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(
-            _cameraUnderWater ? FINAL_STAGE : REFLECTION_STAGE);
+            _cameraUnderWater ? RenderStage::FINAL_STAGE : RenderStage::REFLECTION_STAGE);
         GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
 
         _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt()
@@ -264,8 +265,8 @@ void WaterPlane::updatePlaneEquation() {
     _reflectionPlane.active(false);
     _refractionPlane.set(refractionNormal, -_waterLevel);
     _refractionPlane.active(false);
-    _reflectionPlaneID = CLIP_PLANE_0;
-    _refractionPlaneID = CLIP_PLANE_1;
+    _reflectionPlaneID = ClipPlaneIndex::CLIP_PLANE_0;
+    _refractionPlaneID = ClipPlaneIndex::CLIP_PLANE_1;
 
     GFX_DEVICE.setClipPlane(_reflectionPlaneID, _reflectionPlane);
     GFX_DEVICE.setClipPlane(_refractionPlaneID, _refractionPlane);

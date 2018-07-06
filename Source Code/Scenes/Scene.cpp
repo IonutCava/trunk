@@ -203,7 +203,7 @@ bool Scene::loadGeometry(const FileData& data) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
         tempMaterial->setDiffuse(data.color);
-        tempMaterial->setShadingMode(Material::SHADING_BLINN_PHONG);
+        tempMaterial->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
     }
 
     thisObj->setMaterialTpl(tempMaterial);
@@ -255,7 +255,7 @@ SceneGraphNode& Scene::addLight(Light* const lightItem,
                                 SceneGraphNode& parentNode) {
     assert(lightItem != nullptr);
 
-    lightItem->setCastShadows(lightItem->getType() != LIGHT_TYPE_POINT);
+    lightItem->setCastShadows(lightItem->getLightType() != LIGHT_TYPE_POINT);
 
     return parentNode.addNode(lightItem);
 }
@@ -519,7 +519,7 @@ void Scene::debugDraw(const RenderStage& stage) {
         }
     }
 #endif
-    if (GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) {
+    if (GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE)) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes

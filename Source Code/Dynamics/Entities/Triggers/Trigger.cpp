@@ -9,7 +9,7 @@
 namespace Divide {
 
 Trigger::Trigger()
-    : SceneNode(TYPE_TRIGGER),
+    : SceneNode(SceneNodeType::TYPE_TRIGGER),
       _drawImpostor(false),
       _triggerImpostor(nullptr),
       _enabled(true) {}

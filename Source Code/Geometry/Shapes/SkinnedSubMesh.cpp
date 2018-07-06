@@ -13,7 +13,7 @@ namespace Divide {
 const static bool USE_MUTITHREADED_LOADING = false;
 
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
-    : SubMesh(name, Object3D::OBJECT_FLAG_SKINNED) {
+    : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED) {
     _animator = MemoryManager_NEW SceneAnimator();
     _buildingBoundingBoxes = false;
 }

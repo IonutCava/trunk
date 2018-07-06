@@ -267,7 +267,7 @@ bool NavigationMesh::buildProcess() {
 bool NavigationMesh::generateMesh() {
     assert(_sgn != nullptr);
 
-    stringImpl nodeName((_sgn->getNode()->getType() != TYPE_ROOT)
+    stringImpl nodeName((_sgn->getNode()->getType() != SceneNodeType::TYPE_ROOT)
                             ? "_node_[_" + _sgn->getName() + "_]"
                             : "_root_node");
 

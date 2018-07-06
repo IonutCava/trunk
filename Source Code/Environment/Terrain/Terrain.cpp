@@ -17,7 +17,7 @@
 namespace Divide {
 
 Terrain::Terrain()
-    : Object3D(TERRAIN),
+    : Object3D(ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
       _alphaTexturePresent(false),
       _plane(nullptr),
       _drawBBoxes(false),
@@ -27,17 +27,18 @@ Terrain::Terrain()
       _terrainDepthRenderStateHash(0),
       _terrainReflectionRenderStateHash(0),
       _terrainInView(false),
-      _planeInView(false) {
+      _planeInView(false)
+{
     getGeometryVB()->useLargeIndices(true);  //<32bit indices
 
     _albedoSampler = MemoryManager_NEW SamplerDescriptor();
-    _albedoSampler->setWrapMode(TEXTURE_REPEAT);
+    _albedoSampler->setWrapMode(TextureWrap::TEXTURE_REPEAT);
     _albedoSampler->setAnisotropy(8);
     _albedoSampler->toggleMipMaps(true);
     _albedoSampler->toggleSRGBColorSpace(true);
 
     _normalSampler = MemoryManager_NEW SamplerDescriptor();
-    _normalSampler->setWrapMode(TEXTURE_REPEAT);
+    _normalSampler->setWrapMode(TextureWrap::TEXTURE_REPEAT);
     _normalSampler->setAnisotropy(8);
     _normalSampler->toggleMipMaps(true);
 }
@@ -78,8 +79,8 @@ void Terrain::buildQuadtree() {
     for (U8 i = 0; i < 3; ++i) {
         ShaderProgram* const drawShader =
             mat->getShaderInfo(i == 0
-                                   ? FINAL_STAGE
-                                   : (i == 1 ? SHADOW_STAGE : Z_PRE_PASS_STAGE))
+                                   ? RenderStage::FINAL_STAGE
+                                   : (i == 1 ? RenderStage::SHADOW_STAGE : RenderStage::Z_PRE_PASS_STAGE))
                 .getProgram();
         drawShader->Uniform("dvd_waterHeight",
                             GET_ACTIVE_SCENE()->state().getWaterLevel());
@@ -152,12 +153,12 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     size_t drawStateHash = 0;
 
-    if (bitCompare(currentRenderStage, DEPTH_STAGE)) {
-        drawStateHash = bitCompare(currentRenderStage, Z_PRE_PASS_STAGE)
+    if (currentRenderStage == RenderStage::DEPTH_STAGE) {
+        drawStateHash = currentRenderStage == RenderStage::Z_PRE_PASS_STAGE
                             ? _terrainRenderStateHash
                             : _terrainDepthRenderStateHash;
     } else {
-        drawStateHash = bitCompare(currentRenderStage, REFLECTION_STAGE)
+        drawStateHash = currentRenderStage == RenderStage::REFLECTION_STAGE
                             ? _terrainReflectionRenderStateHash
                             : _terrainRenderStateHash;
     }
@@ -167,8 +168,8 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader = renderable->getDrawShader(
-        bitCompare(currentRenderStage, REFLECTION_STAGE) ? FINAL_STAGE
-                                                         : currentRenderStage);
+        currentRenderStage == RenderStage::REFLECTION_STAGE ? RenderStage::FINAL_STAGE
+                                                            : currentRenderStage);
 
     if (_terrainInView) {
         vectorImpl<GenericDrawCommand> tempCommands;
@@ -192,9 +193,10 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     }
 
     // draw infinite plane
-    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) &&
+    if (GFX_DEVICE.isCurrentRenderStage(enum_to_uint(RenderStage::FINAL_STAGE) |
+                                        enum_to_uint(RenderStage::Z_PRE_PASS_STAGE)) &&
         _planeInView) {
-        GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 1);
+        GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 1);
         cmd.renderWireframe(renderable->renderWireframe());
         cmd.stateHash(drawStateHash);
         cmd.shaderProgram(drawShader);

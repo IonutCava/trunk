@@ -20,7 +20,7 @@ NavMeshDebugDraw::NavMeshDebugDraw()
       _primitive(nullptr) {
     // Generate a render state
     RenderStateBlockDescriptor navigationDebugDesc;
-    navigationDebugDesc.setCullMode(CULL_MODE_NONE);
+    navigationDebugDesc.setCullMode(CullMode::CULL_MODE_NONE);
     navigationDebugDesc.setBlend(true);
     _navMeshStateBlockHash =
         GFX_DEVICE.getOrCreateStateBlock(navigationDebugDesc);
@@ -69,15 +69,15 @@ void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
     switch (prim) {
         default:
         case DU_DRAW_TRIS:
-            _primType = TRIANGLES;
+            _primType = PrimitiveType::TRIANGLES;
             break;
         case DU_DRAW_POINTS:
-            _primType = API_POINTS;
+            _primType = PrimitiveType::API_POINTS;
             break;
         case DU_DRAW_LINES:
-            _primType = LINES;
+            _primType = PrimitiveType::LINES;
             break;
-        case DU_DRAW_QUADS: /*_primType = QUADS;*/
+        case DU_DRAW_QUADS: /*_primType = PrimitiveType::QUADS;*/
             assert(prim == DU_DRAW_QUADS);
     }
 

@@ -41,7 +41,7 @@ class Sphere3D : public Object3D {
    public:
     /// Change resolution to affect the spacing between vertices
     Sphere3D(F32 radius, F32 resolution)
-        : Object3D(ObjectType::SPHERE_3D),
+        : Object3D(ObjectType::SPHERE_3D, ObjectFlag::OBJECT_FLAG_NONE),
           _radius(radius),
           _resolution(resolution)
     {

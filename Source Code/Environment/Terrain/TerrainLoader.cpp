@@ -17,7 +17,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         *terrain, terrainDescriptor->getVariablef("underwaterDiffuseScale"));
 
     SamplerDescriptor blendMapSampler;
-    blendMapSampler.setWrapMode(TEXTURE_CLAMP);
+    blendMapSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP);
     blendMapSampler.setAnisotropy(0);
     blendMapSampler.toggleMipMaps(false);
 
@@ -91,7 +91,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
 
         ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name +
                                            "_layer_" + layerOffsetStr);
-        textureTileMaps.setEnumValue(TEXTURE_2D_ARRAY);
+        textureTileMaps.setEnumValue(enum_to_uint(TextureType::TEXTURE_2D_ARRAY));
         textureTileMaps.setID(textureCountAlbedo);
         textureTileMaps.setResourceLocation(arrayLocation);
         textureTileMaps.setPropertyDescriptor(
@@ -142,7 +142,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
 
         ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name +
                                              "_layer_" + layerOffsetStr);
-        textureNormalMaps.setEnumValue(TEXTURE_2D_ARRAY);
+        textureNormalMaps.setEnumValue(enum_to_uint(TextureType::TEXTURE_2D_ARRAY));
         textureNormalMaps.setID(textureCountDetail);
         textureNormalMaps.setResourceLocation(arrayLocation);
         textureNormalMaps.setPropertyDescriptor(
@@ -162,7 +162,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         vec4<F32>(DefaultColors::WHITE().rgb() / 3, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
-    terrainMaterial->setShadingMode(Material::SHADING_BLINN_PHONG);
+    terrainMaterial->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
     terrainMaterial->addShaderDefines("COMPUTE_TBN");
     terrainMaterial->addShaderDefines("SKIP_TEXTURES");
     terrainMaterial->addShaderDefines(
@@ -170,11 +170,11 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         std::to_string(TerrainLoaderAttorney::textureLayerCount(*terrain)));
     terrainMaterial->addShaderDefines("CURRENT_TEXTURE_COUNT " +
                                       std::to_string(textureCount));
-    terrainMaterial->setShaderProgram("terrain", FINAL_STAGE, true);
-    terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", SHADOW_STAGE,
+    terrainMaterial->setShaderProgram("terrain", RenderStage::FINAL_STAGE, true);
+    terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW_STAGE,
                                       true);
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain",
-                                      Z_PRE_PASS_STAGE, true);
+                                      RenderStage::Z_PRE_PASS_STAGE, true);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(
@@ -210,12 +210,12 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
 
     // Generate a render state
     RenderStateBlockDescriptor terrainDesc;
-    terrainDesc.setCullMode(CULL_MODE_CW);
+    terrainDesc.setCullMode(CullMode::CULL_MODE_CW);
     RenderStateBlockDescriptor terrainDescRef;
-    terrainDescRef.setCullMode(CULL_MODE_CCW);
+    terrainDescRef.setCullMode(CullMode::CULL_MODE_CCW);
     // Generate a shadow render state
     RenderStateBlockDescriptor terrainDescDepth;
-    terrainDescDepth.setCullMode(CULL_MODE_CCW);
+    terrainDescDepth.setCullMode(CullMode::CULL_MODE_CCW);
     // terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainDescDepth.setColorWrites(true, true, false, false);
 
@@ -497,7 +497,7 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
     grassSampler.setAnisotropy(0);
     grassSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP);
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.setEnumValue(TEXTURE_2D_ARRAY);
+    textureDetailMaps.setEnumValue(enum_to_uint(TextureType::TEXTURE_2D_ARRAY));
     textureDetailMaps.setID(textureCount);
     textureDetailMaps.setResourceLocation(textureLocation);
     textureDetailMaps.setPropertyDescriptor(grassSampler);

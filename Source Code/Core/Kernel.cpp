@@ -275,11 +275,11 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
 }
 
 void Kernel::renderScene() {
-    RenderStage stage = (_GFX.getRenderer().getType() != RENDERER_FORWARD_PLUS)
-                            ? DEFERRED_STAGE
-                            : FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer().getType() != RendererType::RENDERER_FORWARD_PLUS)
+                            ? RenderStage::DEFERRED_STAGE
+                            : RenderStage::FINAL_STAGE;
     bool postProcessing =
-        (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
+        (stage != RenderStage::DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
     if (_GFX.anaglyphEnabled() && postProcessing) {
         renderSceneAnaglyph();
@@ -297,7 +297,7 @@ void Kernel::renderScene() {
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
-    _sceneMgr.render(Z_PRE_PASS_STAGE, *this);
+    _sceneMgr.render(RenderStage::Z_PRE_PASS_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
 
     _GFX.ConstructHIZ();
@@ -318,9 +318,9 @@ void Kernel::renderScene() {
 }
 
 void Kernel::renderSceneAnaglyph() {
-    RenderStage stage = (_GFX.getRenderer().getType() != RENDERER_FORWARD_PLUS)
-                            ? DEFERRED_STAGE
-                            : FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer().getType() != RendererType::RENDERER_FORWARD_PLUS)
+                            ? RenderStage::DEFERRED_STAGE
+                            : RenderStage::FINAL_STAGE;
 
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
@@ -335,7 +335,7 @@ void Kernel::renderSceneAnaglyph() {
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
+    SceneManager::getInstance().render(RenderStage::Z_PRE_PASS_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
     // first screen buffer
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
@@ -352,7 +352,7 @@ void Kernel::renderSceneAnaglyph() {
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
-    SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
+    SceneManager::getInstance().render(RenderStage::Z_PRE_PASS_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
     // second screen buffer
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)
@@ -447,8 +447,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Using OpenGL for rendering as default
     _GFX.setAPI(GFXDevice::OpenGL);
     _GFX.setStateChangeExclusionMask(
-        TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY |
-        TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES);
+        enum_to_uint(SceneNodeType::TYPE_LIGHT) | 
+        enum_to_uint(SceneNodeType::TYPE_TRIGGER) | 
+        enum_to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) | 
+        enum_to_uint(SceneNodeType::TYPE_SKY) |
+        enum_to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) | 
+        enum_to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
     // Target FPS is usually 60. So all movement is capped around that value
     Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     // Load info from XML files
@@ -480,7 +484,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _cameraMgr->pushActiveCamera(camera);
 
     // Load and render the splash screen
-    _GFX.setRenderStage(FINAL_STAGE);
+    _GFX.setRenderStage(RenderStage::FINAL_STAGE);
     _GFX.beginFrame();
     GUISplash("divideLogo.jpg", vec2<U16>(400, 300)).render();
     _GFX.endFrame();

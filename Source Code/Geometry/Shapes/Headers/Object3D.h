@@ -60,19 +60,13 @@ class Object3D : public SceneNode {
         OBJECT_FLAG_PLACEHOLDER = toBit(3)
     };
 
-    explicit Object3D(ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
-                      ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
+    explicit Object3D(ObjectType type, ObjectFlag flag);
 
-    explicit Object3D(ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
-                      U32 flagMask = enum_to_uint(ObjectFlag::OBJECT_FLAG_NONE));
+    explicit Object3D(ObjectType type, U32 flagMask);
 
-    explicit Object3D(const stringImpl& name,
-                      ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
-                      ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
+    explicit Object3D(const stringImpl& name, ObjectType type, ObjectFlag flag);
 
-    explicit Object3D(const stringImpl& name,
-                      ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
-                      U32 flagMask = enum_to_uint(ObjectFlag::OBJECT_FLAG_NONE));
+    explicit Object3D(const stringImpl& name, ObjectType type, U32 flagMask);
 
     virtual ~Object3D();
 

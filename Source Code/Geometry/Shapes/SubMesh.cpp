@@ -10,17 +10,23 @@
 namespace Divide {
 
 SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
-    : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
+    : Object3D(
+          name,
+          ObjectType::SUBMESH,
+          enum_to_uint(flag) | enum_to_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _visibleToNetwork(true),
       _render(true),
       _ID(0),
-      _parentMesh(nullptr) {
-    _drawCmd.primitiveType(TRIANGLES);
+      _parentMesh(nullptr)
+{
+    _drawCmd.primitiveType(PrimitiveType::TRIANGLES);
     _drawCmd.firstIndex(0);
     _drawCmd.indexCount(1);
 }
 
-SubMesh::~SubMesh() {}
+SubMesh::~SubMesh()
+{
+}
 
 void SubMesh::setParentMesh(Mesh* const parentMesh) {
     _parentMesh = parentMesh;
