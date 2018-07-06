@@ -83,15 +83,16 @@ public:
 
     inline VertexBufferObject* const getGeometryVBO() {return _groundVBO;}
     inline Quadtree&         getQuadtree()   const {return *_terrainQuadtree;}
-    inline Vegetation* const getVegetation() const {return _veg;}
-    inline void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;}
-    inline void toggleVegetation(bool state){ _veg->toggleRendering(state); }
     inline void toggleReflection(bool state){ _drawReflected = state;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
     inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
 
     void addTexture(TerrainTextureUsage channel, Texture2D* const texture);
     inline Texture2D* getTexture(TerrainTextureUsage channel) {return _terrainTextures[channel];}
+
+	Vegetation* const getVegetation() const;
+    void addVegetation(SceneGraphNode* const sgn, Vegetation* veg, std::string grassShader);
+    void toggleVegetation(bool state);
 
 protected:
     template<typename T>
@@ -118,7 +119,7 @@ private:
     bool _shadowMapped;
     bool _drawReflected;
     TerrainTextureMap       _terrainTextures;
-    Vegetation*             _veg;
+    SceneGraphNode*         _vegetationGrassNode;
     std::string             _grassShader;
     BoundingBox             _boundingBox;
     vec3<F32>               _eyePos;

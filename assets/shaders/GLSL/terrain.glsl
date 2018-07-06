@@ -118,9 +118,6 @@ vec4 NormalMapping(in vec2 uv,in vec3 pixelToLightTBN);
 vec4 NormalMappingUnderwater(in vec2 uv,in vec3 pixelToLightTBN);
 vec4 CausticsColor();
 
-///Global NDotL, basically
-float iDiffuse;
-
 #include "fog.frag"
 #include "shadowMapping.frag"
 
@@ -177,7 +174,7 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
         cBase = mix(cBase, tBase3, DiffuseMap.b);
 #endif
 
-    iDiffuse = max(dot(lightVecTBN.xyz, normalTBN), 0.0);	// diffuse intensity. NDotL
+    float iDiffuse = max(dot(lightVecTBN.xyz, normalTBN), 0.0);	// diffuse intensity. NDotL
 
     vec4 cAmbient = dvd_lightAmbient * material[0];
     vec4 cDiffuse = material[1] * iDiffuse;
@@ -218,7 +215,7 @@ vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
 
     vec4 cBase = texture(texBlend0, uv_diffuse);
 
-    iDiffuse = max(dot(lightVecTBN.xyz, normalTBN), 0.0);	// diffuse intensity. NDotL
+    float iDiffuse = max(dot(lightVecTBN.xyz, normalTBN), 0.0);	// diffuse intensity. NDotL
     float iSpecular = clamp(pow(max(dot(reflect(-lightVecTBN.xyz, normalTBN), viewVecTBN), 0.0), material[3].x ), 0.0, 1.0);
 
     vec4 cAmbient = dvd_lightAmbient * material[0];

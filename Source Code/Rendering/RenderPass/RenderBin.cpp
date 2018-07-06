@@ -91,8 +91,9 @@ RenderBin::RenderBin(const RenderBinType& rbType,const RenderingOrder::List& ren
     renderBinTypeToNameMap[RBT_SKY]         = "Sky Bin";
     renderBinTypeToNameMap[RBT_WATER]       = "Water Bin";
     renderBinTypeToNameMap[RBT_TERRAIN]     = "Terrain Bin";
-    renderBinTypeToNameMap[RBT_FOLIAGE]     = "Folliage Bin";
     renderBinTypeToNameMap[RBT_PARTICLES]   = "Particle Bin";
+	renderBinTypeToNameMap[RBT_VEGETATION_GRASS]   = "Grass Bin";
+	renderBinTypeToNameMap[RBT_VEGETATION_TREES]   = "Trees Bin";
     renderBinTypeToNameMap[RBT_DECALS]      = "Decals Bin";
     renderBinTypeToNameMap[RBT_SHADOWS]     = "Shadow Bin";
 }

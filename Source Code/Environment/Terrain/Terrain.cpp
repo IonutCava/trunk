@@ -27,7 +27,7 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _drawBBoxes(false),
     _shadowMapped(true),
     _drawReflected(false),
-    _veg(NULL),
+    _vegetationGrassNode(NULL),
     _planeTransform(NULL),
     _terrainTransform(NULL),
     _node(NULL),
@@ -61,8 +61,6 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
     }
     _stateRefreshIntervalBuffer += deltaTime;
 
-    _veg->sceneUpdate(deltaTime, sgn, sceneState);
-
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
@@ -93,11 +91,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
     _groundVBO->setShaderProgram(terrainShader);
     _plane->setCustomShader(terrainShader);
-    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
-        SET_STATE_BLOCK(_terrainReflectionRenderState);
-    }else{
-        SET_STATE_BLOCK(_terrainRenderState);
-    }
+
     const vectorImpl<I32>& indices = LightManager::getInstance().getLightIndicesForCurrentNode();
     const vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
     const vectorImpl<I32>& lightShadowCast = LightManager::getInstance().getShadowCastingLightsForCurrentNode();
@@ -119,6 +113,14 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     terrainShader->Uniform("dvd_lightType",types);
     terrainShader->Uniform("dvd_lightIndex", indices);
     terrainShader->Uniform("dvd_lightCastsShadows",lightShadowCast);
+
+	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
+        SET_STATE_BLOCK(_terrainReflectionRenderState);
+		terrainShader->Uniform("bbox_min", _boundingBox.getMax());
+    }else{
+        SET_STATE_BLOCK(_terrainRenderState);
+		terrainShader->Uniform("bbox_min", _boundingBox.getMin());
+    }
 }
 
 void Terrain::releaseMaterial(){
@@ -168,7 +170,6 @@ void Terrain::onDraw(const RenderStage& currentStage){
 }
 
 void Terrain::postDraw(const RenderStage& currentStage){
-    _veg->draw(currentStage,_terrainTransform);
 }
 
 void Terrain::drawInfinitePlain(){
@@ -185,6 +186,21 @@ void Terrain::drawInfinitePlain(){
 void Terrain::drawGround() const{
     assert(_groundVBO);
     _terrainQuadtree->DrawGround(_drawReflected);
+}
+
+Vegetation* const Terrain::getVegetation() const {
+	assert(_vegetationGrassNode != NULL);
+	return _vegetationGrassNode->getNode<Vegetation>();
+}
+
+void Terrain::addVegetation(SceneGraphNode* const sgn, Vegetation* veg, std::string grassShader){
+	_vegetationGrassNode = sgn->addNode(veg);
+	_grassShader = grassShader;
+}
+
+void Terrain::toggleVegetation(bool state){ 
+	assert(_vegetationGrassNode != NULL);
+	_vegetationGrassNode->getNode<Vegetation>()->toggleRendering(state);
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

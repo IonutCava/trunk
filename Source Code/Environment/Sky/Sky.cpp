@@ -17,18 +17,21 @@ Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
                                     _init(false),
                                     _exclusionMask(0)
 {
-    ///The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
+    //The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     addToDrawExclusionMask(DEPTH_STAGE);
 
-    ///Generate a render state
+    //Generate a render state
     RenderStateBlockDescriptor skyboxDesc;
     skyboxDesc.setCullMode(CULL_MODE_CCW);
     //skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
     _skyboxRenderState = GFX_DEVICE.createStateBlock(skyboxDesc);
+	skyboxDesc.setCullMode(CULL_MODE_CW);
+	_skyboxRenderStateReflected = GFX_DEVICE.createStateBlock(skyboxDesc);
 }
 
 Sky::~Sky(){
     SAFE_DELETE(_skyboxRenderState);
+	SAFE_DELETE(_skyboxRenderStateReflected);
     RemoveResource(_skyShader);
     RemoveResource(_skybox);
 }
@@ -62,10 +65,10 @@ bool Sky::load() {
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 
     assert(_skyShader);
+	_skyShader->UniformTexture("texSky", 0);
     _sky->setResolution(4);
     _sun->setResolution(16);
     _sun->setRadius(0.1f);
-    //_sky->getGeometryVBO()->setShaderProgram(_skyShader);
     setRenderingOptions(true,true);
     PRINT_FN(Locale::get("CREATE_SKY_RES_OK"));
     _init = true;
@@ -80,11 +83,14 @@ void Sky::postLoad(SceneGraphNode* const sgn){
     _sun->getSceneNodeRenderState().setDrawState(false);
     _sky->setCustomShader(_skyShader);
     _sun->setCustomShader(_skyShader);
-    //getSceneNodeRenderState().setDrawState(false);
 }
 
 void Sky::prepareMaterial(SceneGraphNode* const sgn) {
-    SET_STATE_BLOCK(_skyboxRenderState);
+	if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
+		SET_STATE_BLOCK(_skyboxRenderStateReflected);
+	}else{
+		SET_STATE_BLOCK(_skyboxRenderState);
+	}
 }
 
 void Sky::releaseMaterial(){
@@ -100,12 +106,10 @@ void Sky::render(SceneGraphNode* const sgn){
     vec3<F32> eyeTemp(Frustum::getInstance().getEyePos());
 
     sgn->getTransform()->setPosition(eyeTemp);
-    _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
 
     if (_drawSky){
         _skyShader->bind();
         _skybox->Bind(0);
-        _skyShader->UniformTexture("texSky", 0);
         _sky->renderInstance()->transform(sgn->getTransform());
 
         GFX_DEVICE.renderInstance(_sky->renderInstance());
@@ -113,6 +117,7 @@ void Sky::render(SceneGraphNode* const sgn){
         _skybox->Unbind(0);
     }
     if (!_drawSky && _drawSun) {
+		_sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
         Light* l = LightManager::getInstance().getLight(0);
         if(l){
             _sun->getMaterial()->setDiffuse(l->getDiffuseColor());

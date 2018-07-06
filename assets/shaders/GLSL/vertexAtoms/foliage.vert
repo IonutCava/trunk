@@ -14,10 +14,9 @@ void computeFoliageMovementTree(inout vec4 vertex) {
 	vertex.z += 0.05 *scale.y* amplituted * cos(timeTree + _vertexW.z) *windDirection.y; ///wd.y is actually wd.z in code
 }
 
-void computeFoliageMovementGrass(in vec3 normal, in vec3 normalWV, inout vec4 vertex) {
+void computeFoliageMovementGrass(in vec3 normal, inout vec4 vertex) {
 	if(normal.y > 0.0 ) {
 		float timeGrass = windSpeed * dvd_time * 0.001; //to seconds
-		normalWV = -normalWV;
 		float cosX = cos(vertex.x);
 		float sinX = sin(vertex.x);
 		float halfScale = 0.5*grassScale;

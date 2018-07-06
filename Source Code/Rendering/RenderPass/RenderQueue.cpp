@@ -82,8 +82,11 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
 				//Water does not count as translucency, because rendering is very specific
                 temp = New RenderBinDelegate(RenderBin::RBT_WATER,RenderingOrder::BACK_TO_FRONT, 6.0f);
                 break;
-            case RenderBin::RBT_FOLIAGE:
-                temp = New RenderBinDelegate(RenderBin::RBT_FOLIAGE,RenderingOrder::BACK_TO_FRONT, 7.0f);
+            case RenderBin::RBT_VEGETATION_GRASS:
+                temp = New RenderBinDelegate(RenderBin::RBT_VEGETATION_GRASS,RenderingOrder::BACK_TO_FRONT, 7.0f);
+                break;
+			case RenderBin::RBT_VEGETATION_TREES:
+                temp = New RenderBinDelegate(RenderBin::RBT_VEGETATION_TREES,RenderingOrder::BACK_TO_FRONT, 7.5f);
                 break;
             case RenderBin::RBT_PARTICLES:
                 temp = New RenderBinParticles(RenderBin::RBT_PARTICLES,RenderingOrder::BACK_TO_FRONT, 8.0f);
@@ -114,6 +117,8 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
         case TYPE_LIGHT            : return getOrCreateBin(RenderBin::RBT_IMPOSTOR);
         case TYPE_WATER            : return getOrCreateBin(RenderBin::RBT_WATER);
         case TYPE_PARTICLE_EMITTER : return getOrCreateBin(RenderBin::RBT_PARTICLES);
+		case TYPE_VEGETATION_GRASS : return getOrCreateBin(RenderBin::RBT_VEGETATION_GRASS);
+		case TYPE_VEGETATION_TREES : return getOrCreateBin(RenderBin::RBT_VEGETATION_TREES);
         case TYPE_SKY              : return getOrCreateBin(RenderBin::RBT_SKY);
         case TYPE_OBJECT3D         : { 
             //Check if the object has a material with translucency

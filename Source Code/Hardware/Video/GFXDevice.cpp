@@ -360,7 +360,7 @@ void GFXDevice::updateStates(bool force) {
 }
 
 bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){
-    U16 exclusionMask = TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY;
+    U16 exclusionMask = TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY | TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES;
     return (exclusionMask & currentType) == currentType ? true : false;
 }
 

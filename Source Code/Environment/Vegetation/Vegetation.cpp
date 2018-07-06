@@ -32,7 +32,7 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
     _terrain = terrain;
     _terrainSGN = terrainSGN;
 	U32 size = (U32) _grassDensity * _billboardCount * 12;
-    _grassVBO = GFX_DEVICE.newVBO(TRIANGLE_STRIP);
+    _grassVBO = GFX_DEVICE.newVBO(TRIANGLES);
     _grassVBO->useHWIndices(false);//<Use custom LOD indices;
     _grassVBO->useLargeIndices(true);
     _grassVBO->computeTriangles(false);
@@ -54,7 +54,7 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
 
     RenderStateBlockDescriptor transparent;
     transparent.setCullMode(CULL_MODE_CW);
-    transparent.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
+    //transparent.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
     _grassStateBlock = GFX_DEVICE.createStateBlock( transparent );
 
     _render = true;
@@ -79,22 +79,21 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
     _stateRefreshIntervalBuffer += deltaTime;
 }
 
-void Vegetation::draw(const RenderStage& currentStage, Transform* const parentTransform){
+void Vegetation::render(SceneGraphNode* const sgn){
     if(!_render || !_success) return;
     if(GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) return;
 
      SET_STATE_BLOCK(_grassStateBlock);
 
     _grassShader->bind();
+	_grassShader->UniformTexture("texDiffuse", 0);
 
-    _grassShader->uploadNodeMatrices();
-
-    for(U32 index = 0; index < _billboardCount; index++){
+	for(U32 index = 0; index < _billboardCount; index++){
         _grassBillboards[index]->Bind(0);
 
-        _terrain->getQuadtree().DrawGrass(index,parentTransform);
+		_terrain->getQuadtree().DrawGrass(index, NULL);
 
-        _grassBillboards[index]->Unbind(0);
+		_grassBillboards[index]->Unbind(0);
     }
 }
 
@@ -106,21 +105,20 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
     static const vec2<F32> pos240 = vec2<F32>(cosf(RADIANS(240.0f)), sinf(RADIANS(240.0f)));
 
     static const vec3<F32> tVertices[] = {
-		       /*--- TOP LEFT---*/                     /*--- TOP RIGHT---*/                       /*--- BOTTOM LEFT---*/             /*--- BOTTOM RIGHT---*/
-        vec3<F32>(-pos000.x, pos000.y, 0.0f),	vec3<F32>(pos000.x, pos000.y, 1.0f),	vec3<F32>(-pos000.x  -pos000.y, 1.0f),	vec3<F32>(pos000.x, -pos000.y, 0.0f),
-        vec3<F32>(-pos120.x, pos120.y, 0.0f),	vec3<F32>(pos120.x, pos120.y, 1.0f),	vec3<F32>(-pos120.x, -pos120.y, 1.0f),	vec3<F32>(pos120.x, -pos120.y, 0.0f),
-        vec3<F32>(-pos240.x, pos240.y, 0.0f),	vec3<F32>(pos240.x, pos240.y, 1.0f),	vec3<F32>(-pos240.x, -pos240.y, 1.0f),	vec3<F32>(pos240.x, -pos240.y, 0.0f)
+        vec3<F32>(-pos000.x, -pos000.y, 0.0f),	vec3<F32>(-pos000.x, -pos000.y, 1.0f),	vec3<F32>(pos000.x, pos000.y, 1.0f),	vec3<F32>(pos000.x, pos000.y, 0.0f),
+        vec3<F32>(-pos120.x, -pos120.y, 0.0f),	vec3<F32>(-pos120.x, -pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 1.0f),	vec3<F32>(pos120.x, pos120.y, 0.0f),
+        vec3<F32>(-pos240.x, -pos240.y, 0.0f),	vec3<F32>(-pos240.x, -pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 1.0f),	vec3<F32>(pos240.x, pos240.y, 0.0f)
     };
 
     static const vec2<F32> tTexcoords[] = {
-        vec2<F32>(0.0f, 0.49f), vec2<F32>(1.0f, 1.0f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.49f)
+        vec2<F32>(0.0f, 0.49f), vec2<F32>(0.0f, 0.01f), vec2<F32>(1.0f, 0.01f), vec2<F32>(1.0f, 0.49f)
     };
 
-	static const U32 indices[] = {2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3};
+	static const U32 indices[] = {2, 1, 0, 2, 0, 1, 2, 0, 3, 2, 3, 0};
 
     for(U8 index = 0; index < billboardCount; index++){
         mat3<F32> matRot;
-        vec2<F32> uv_offset(0,0);
+        F32 uv_offset_t = 0.0f;
         vec3<F32> data;
         vec3<F32> currentVertex;
         F32 grassScaleFactor = 256/_grassScale;
@@ -129,25 +127,18 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
             F32 x = random(1.0f);
             F32 y = random(1.0f);
 
+			uv_offset_t = random(2) == 0 ? 0.0f : 0.5f;
+            map_color = _map.getColor((U16)(x * _map.dimensions().width), (U16)(y * _map.dimensions().height)).g;
+
             const vec3<F32>& P = _terrain->getPosition(x, y);
 			const vec3<F32>& T = _terrain->getTangent(x, y);
             const vec3<F32>& B = _terrain->getBiTangent(x, y);
 			const vec3<F32>& N = _terrain->getNormal(x, y);
 
-            if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel() || N.y < 0.8f){
+            if(P.y < GET_ACTIVE_SCENE()->state().getWaterLevel() || N.y < 0.8f || map_color < 150){
                 k--;
                 continue;
             }
-
-            uv_offset.y = random(3)==0 ? 0.0f : 0.5f;
-            map_color = _map.getColor((U16)(x * _map.dimensions().width), (U16)(y * _map.dimensions().height)).g;
-
-            if(map_color < 150) {
-                k--;
-                continue;
-            }
-
-            _grassSize = (F32)(map_color+1) / grassScaleFactor;
 
             matRot.identity();
             matRot.rotate_z(random(360.0f));
@@ -160,7 +151,8 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
                  chunkGrassData._grassIndice.resize(_billboardCount);
                  chunkGrassData._grassVBO = _grassVBO;
             }
-	
+
+		    _grassSize = (F32)(map_color+1) / grassScaleFactor;	
 			for(U8 i=0; i < 12 ; ++i)	{ // 4 vertices per quad, 3 quads per grass element
 				data.set(matRot*(tVertices[i]*_grassSize));
 				currentVertex.set(P);
@@ -170,16 +162,19 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
 				
 				_grassVBO->addPosition(currentVertex);
 				_grassVBO->addNormal( tTexcoords[i%4].t < 0.2f ? N : -N );
-				_grassVBO->getTexcoord().push_back( uv_offset + tTexcoords[i%4] );
+				_grassVBO->getTexcoord().push_back(vec2<F32>(tTexcoords[i%4].s, uv_offset_t + tTexcoords[i%4].t));
 			}
 
 			_grassVBOBillboardIndice[index] = _grassVBO->getIndexCount();
-			U32 idx = (U32)_grassVBOBillboardIndice[index] + chunkGrassData._grassIndice[index].size();			
-			for(U8 j = 0; j < 3; ++j){
-				U32 indexOffset = idx + (j * 4);
-				for(U8 k = 0; k < 12; ++k){
-					_grassVBO->addIndex(indices[k] + indexOffset);
-					chunkGrassData._grassIndice[index].push_back(indices[k] + indexOffset);
+			U32 idx = (U32)_grassVBOBillboardIndice[index] + chunkGrassData._grassIndice[index].size();	
+
+			U32 indexOffset = 0; U32 currentIndex = 0;
+			for(U8 j = 0; j < 3; ++j) {
+				indexOffset = idx + (j * 4);
+				for(U8 l = 0; l < 12; ++l) {
+					currentIndex = indices[l] + indexOffset;
+					_grassVBO->addIndex(currentIndex);
+					chunkGrassData._grassIndice[index].push_back(currentIndex);
 				}
 			}
         }

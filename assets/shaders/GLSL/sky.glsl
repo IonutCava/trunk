@@ -2,7 +2,6 @@
 in vec3  inVertexData;
 
 uniform mat4 dvd_WorldViewProjectionMatrix;
-uniform mat4 dvd_WorldMatrix;
 
 layout(std140) uniform dvd_MatrixBlock
 {
@@ -16,7 +15,7 @@ out vec3 _vertex;
 void main(void){
     vec4 dvd_Vertex = vec4(inVertexData,1.0);
     _vertex = normalize(dvd_Vertex.xyz);
-    gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * dvd_Vertex;
+    gl_Position = dvd_WorldViewProjectionMatrix * dvd_Vertex;
 	gl_Position.z = gl_Position.w -0.00001; //fix to far plane.
 }
 

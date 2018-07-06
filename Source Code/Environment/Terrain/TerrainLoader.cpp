@@ -18,7 +18,6 @@ bool Terrain::unload(){
     SAFE_DELETE(_terrainRenderState);
     SAFE_DELETE(_terrainDepthRenderState);
     SAFE_DELETE(_terrainReflectionRenderState);
-    SAFE_DELETE(_veg);
 
     assert(!_terrainTextures.empty());
     for_each(TerrainTextureMap::value_type& it, _terrainTextures){
@@ -243,15 +242,15 @@ void Terrain::initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNo
     grass.push_back(CreateResource<Texture2D>(grassBillboard2));
     grass.push_back(CreateResource<Texture2D>(grassBillboard3));
     //grass.push_back(CreateResource<Texture2D>(grassBillboard4));
-    addVegetation(New Vegetation(3, terrain->getGrassDensity(),
+	Vegetation* veg = New Vegetation(3, terrain->getGrassDensity(),
                                     terrain->getGrassScale(),
                                     terrain->getTreeDensity(),
                                     terrain->getTreeScale(),
                                     terrain->getVariable("grassMap"),
-                                    grass),
-                  "grass");
+                                    grass);
+	addVegetation(terrainSGN, veg, "grass");
     toggleVegetation(true);
-     _veg->initialize(_grassShader,this,terrainSGN);
+    veg->initialize(_grassShader,this,terrainSGN);
 }
 
 void Terrain::addTexture(TerrainTextureUsage channel, Texture2D* const texture) {

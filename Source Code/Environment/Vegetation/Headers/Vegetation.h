@@ -24,6 +24,7 @@
 #define VEGETATION_H_
 
 #include "Utility/Headers/ImageTools.h"
+#include "Graphs/Headers/SceneNode.h"
 
 class Terrain;
 class Texture;
@@ -35,13 +36,16 @@ class RenderStateBlock;
 class FrameBufferObject;
 class VertexBufferObject;
 typedef Texture Texture2D;
+
+#define GRASS_STRIP_RESTART_INDEX std::numeric_limits<U32>::max() - 1
+
 enum RenderStage;
 ///Generates grass and trees on the terrain.
 ///Grass VBO's + all resources are stored locally in the class.
 ///Trees are added to the SceneGraph and handled by the scene.
-class Vegetation{
+class Vegetation : public SceneNode {
 public:
-    Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, vectorImpl<Texture2D*>& grassBillboards):
+    Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, vectorImpl<Texture2D*>& grassBillboards) : SceneNode(TYPE_VEGETATION_GRASS),
       _grassVBO(NULL),
       _billboardCount(billboardCount),
       _grassDensity(grassDensity),
@@ -61,11 +65,13 @@ public:
           _map.create(map);
       }
     ~Vegetation();
+	void postLoad(SceneGraphNode* const sgn) {}
     void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
-    void draw(const RenderStage& currentStage, Transform* const parentTransform);
+    void render(SceneGraphNode* const sgn);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+	inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
 
 private:
     bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode

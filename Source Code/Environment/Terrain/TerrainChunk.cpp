@@ -75,15 +75,15 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const 
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
     if(lod != 0) return;
     if(d > _grassData._grassVisibility) { //if we go beyond grass visibility limit ...
-        return; // ... do not draw grass
+        //return; // ... do not draw grass
     }
 
     if(!_grassData._grassIndice[geometryIndex].empty())	{
         F32 ratio = std::min((1.0f - (d / _grassData._grassVisibility)) * 2.0f, 1.0f);
 
-        U32 indices_count = (U32)( ratio * _grassData._grassIndice[geometryIndex].size() );
+        U32 indices_count = (U32)(/* ratio * */_grassData._grassIndice[geometryIndex].size() );
 
-        if(indices_count > 0 && false){
+        if(indices_count > 0){
             _grassData._grassVBO->setFirstElement(&(_grassData._grassIndice[geometryIndex].front()));
             _grassData._grassVBO->setRangeCount(indices_count);
             GFX_DEVICE.renderBuffer(_grassData._grassVBO, parentTransform);

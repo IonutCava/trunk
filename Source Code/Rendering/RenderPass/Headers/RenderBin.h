@@ -67,8 +67,9 @@ public:
         RBT_WATER,
         RBT_TERRAIN,
         RBT_IMPOSTOR,
-        RBT_FOLIAGE,
         RBT_PARTICLES,
+		RBT_VEGETATION_GRASS,
+		RBT_VEGETATION_TREES,
         RBT_DECALS,
         RBT_SHADOWS,
         RBT_PLACEHOLDER

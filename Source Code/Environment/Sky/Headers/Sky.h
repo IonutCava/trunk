@@ -69,6 +69,7 @@ private:
     SceneGraphNode    *_sunNode, *_skyGeom;
     U16				  _exclusionMask;
     RenderStateBlock* _skyboxRenderState;
+	RenderStateBlock* _skyboxRenderStateReflected;
 };
 
 #endif

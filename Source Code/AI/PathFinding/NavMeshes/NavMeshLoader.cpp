@@ -286,8 +286,8 @@ namespace Navigation {
             assert(sn != NULL);
 
             SceneNodeType nodeType = sn->getType();
-            U32 ignoredNodeType = TYPE_LIGHT | TYPE_ROOT | TYPE_PARTICLE_EMITTER | TYPE_TRIGGER | TYPE_SKY;
-            U32 allowedNodeType = TYPE_WATER | TYPE_TERRAIN | TYPE_OBJECT3D;
+            U32 ignoredNodeType = TYPE_LIGHT | TYPE_ROOT | TYPE_PARTICLE_EMITTER | TYPE_TRIGGER | TYPE_SKY | TYPE_VEGETATION_GRASS;
+            U32 allowedNodeType = TYPE_WATER | TYPE_TERRAIN | TYPE_OBJECT3D | TYPE_VEGETATION_TREES;
 
             if(!bitCompare(allowedNodeType, nodeType)){
                 if(!bitCompare(ignoredNodeType, nodeType)){
