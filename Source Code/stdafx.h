@@ -105,8 +105,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if !defined(CPP_17_SUPPORT)
 #include "Core/Headers/cdigginsAny.h"
+typedef cdiggins::any AnyParam;
 #else
 #include <any>
+typedef std::any AnyParam;
 #endif
 
 #include <simplefilewatcher/includes/FileWatcher.h>

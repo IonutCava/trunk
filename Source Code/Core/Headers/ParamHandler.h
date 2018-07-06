@@ -39,11 +39,8 @@
 namespace Divide {
 
 DEFINE_SINGLETON(ParamHandler)
-#if !defined(CPP_17_SUPPORT)
-    typedef hashMapImpl<U64, cdiggins::any> ParamMap;
-#else
-    typedef hashMapImpl<U64, std::any> ParamMap;
-#endif
+    typedef hashMapImpl<U64, AnyParam> ParamMap;
+
     /// A special map for string types (small perf. optimization for add/retrieve)
     typedef hashMapImpl<U64, stringImpl> ParamStringMap;
     /// A special map for boolean types (small perf. optimization for add/retrieve)

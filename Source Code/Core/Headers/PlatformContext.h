@@ -43,6 +43,7 @@ class PXDevice;
 class LocalClient;
 class XMLEntryData;
 class Configuration;
+class DebugInterface;
 
 namespace Input {
     class InputInterface;
@@ -57,7 +58,8 @@ public:
                              std::unique_ptr<Input::InputInterface> input,
                              std::unique_ptr<XMLEntryData> entryData,
                              std::unique_ptr<Configuration> config,
-                             std::unique_ptr<LocalClient> client);
+                             std::unique_ptr<LocalClient> client,
+                             std::unique_ptr<DebugInterface> debug);
     ~PlatformContext();
 
     void idle();
@@ -87,6 +89,9 @@ public:
     inline LocalClient& client() { return *_client; }
     inline const LocalClient& client() const { return *_client; }
 
+    inline DebugInterface& debug() { return *_debug; }
+    inline const DebugInterface& debug() const { return *_debug; }
+
 private:
     /// Access to the GPU
     std::unique_ptr<GFXDevice> _gfx;
@@ -103,6 +108,8 @@ private:
     std::unique_ptr<Configuration> _config;
     /// Networking client
     std::unique_ptr<LocalClient> _client;
+    /// Debugging interface: read only / editable variables
+    std::unique_ptr<DebugInterface> _debug;
 };
 }; //namespace Divide
 

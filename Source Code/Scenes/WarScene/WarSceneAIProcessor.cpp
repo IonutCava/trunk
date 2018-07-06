@@ -611,7 +611,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
 }
 
 void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
-                                         const cdiggins::any& msg_content) {
+                                         const AnyParam& msg_content) {
     SceneGraphNode_ptr senderNode(sender.getUnitRef()->getBoundNode().lock());
     switch (msg) {
         case AIMsg::RETURNED_FLAG:

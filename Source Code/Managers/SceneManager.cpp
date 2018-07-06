@@ -77,8 +77,15 @@ SceneManager::SceneManager(Kernel& parentKernel)
       _camUpdateListenerID(0),
       _camChangeListenerID(0)
 {
-    ADD_FILE_DEBUG_GROUP();
-    ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
+    I64 group = _parent.platformContext().debug().addDebugGroup("SceneManager", -1);
+
+    DebugInterface::DebugVarDescriptor elapsedTimeDescriptor;
+    elapsedTimeDescriptor._displayName = "Elapsed Time MS";
+    elapsedTimeDescriptor._debugGroup = group;
+    elapsedTimeDescriptor._type = CallbackParam::TYPE_LARGE_UNSIGNED_INTEGER;
+    elapsedTimeDescriptor._variable = &_elapsedTimeMS;
+
+    _parent.platformContext().debug().addDebugVar(elapsedTimeDescriptor);
 }
 
 SceneManager::~SceneManager()

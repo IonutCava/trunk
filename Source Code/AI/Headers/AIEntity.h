@@ -77,9 +77,9 @@ class AIEntity : public GUIDWrapper {
     bool addSensor(SensorType type);
     bool setAIProcessor(AIProcessor* processor);
 
-    void sendMessage(AIEntity& receiver, AIMsg msg, const cdiggins::any& msg_content);
-    void receiveMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
-    void processMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
+    void sendMessage(AIEntity& receiver, AIMsg msg, const AnyParam& msg_content);
+    void receiveMessage(AIEntity& sender, AIMsg msg, const AnyParam& msg_content);
+    void processMessage(AIEntity& sender, AIMsg msg, const AnyParam& msg_content);
 
     Sensor* getSensor(SensorType type);
 

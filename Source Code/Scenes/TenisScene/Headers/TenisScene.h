@@ -60,7 +60,7 @@ class TenisScene : public Scene {
    private:
     // ToDo: replace with Physics system collision detection
     void checkCollisions();
-    void playGame(const Task& parentTask, cdiggins::any a, CallbackParam b);
+    void playGame(const Task& parentTask, AnyParam a, CallbackParam b);
     void startGame(I64 btnGUID);
     void resetGame();
 

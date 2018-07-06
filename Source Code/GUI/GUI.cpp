@@ -159,48 +159,6 @@ void GUI::update(const U64 deltaTime) {
     }
 
     _guiEditor->update(deltaTime);
-
-    const DebugInterface& debugInterface = DebugInterface::instance();
-    U32 debugVarEntries = to_U32(debugInterface.debugVarCount());
-    if (_debugVarCacheCount != debugVarEntries) {
-
-        Attorney::DebugInterfaceGUI::lockVars(false);
-        Attorney::DebugInterfaceGUI::lockGroups(false);
-
-        const hashMapImpl<I64, DebugInterface::DebugGroup>& groups
-            = Attorney::DebugInterfaceGUI::getDebugGroups();
-
-        const hashMapImpl<I64, DebugInterface::DebugVar>& vars 
-            = Attorney::DebugInterfaceGUI::getDebugVariables();
-
-        // Add default group (GUID == -1) entries and root entries only.
-        // Child entries should be expanded on-click
-        // SLOOOOOOOOOOW - but it shouldn't change all that often
-        _debugDisplayEntries.reserve(groups.size() + 1);
-        for (hashMapImpl<I64, DebugInterface::DebugVar>::value_type it1 : vars) {
-            if (it1.second._group == -1) {
-                _debugDisplayEntries.push_back(std::make_pair(-1, it1.first));
-            } else {
-                for (hashMapImpl<I64, DebugInterface::DebugGroup>::value_type it2 : groups) {
-                    if (it1.second._group == it2.first && it2.second._parentGroup == -1) {
-                        _debugDisplayEntries.push_back(std::make_pair(it2.first, it1.first));
-                    }
-                }
-            }
-        }
-
-        _debugVarCacheCount = debugVarEntries;
-
-        for (std::pair<I64, I64>& entry : _debugDisplayEntries) {
-            ACKNOWLEDGE_UNUSED(entry);
-            //I64 groupID = entry.first;
-            //I64 varID = entry.second;
-            // Add a clickable text field for each
-        }
-
-        Attorney::DebugInterfaceGUI::unlockGroups();
-        Attorney::DebugInterfaceGUI::unlockVars();
-    }
 }
 
 bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution) {

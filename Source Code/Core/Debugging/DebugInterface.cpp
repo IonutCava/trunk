@@ -2,15 +2,79 @@
 
 #include "Headers/DebugInterface.h"
 
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
+#include <AntTweakBar/include/AntTweakBar.h>
+
 namespace Divide {
 
-DebugInterface::DebugVar::DebugVar()
+namespace {
+    vectorImpl<TwBar*> g_TweakWindows;
+    hashMapImpl<vectorAlg::vecSize, I64> g_barToGroupMap;
+    hashMapImpl<I64, DELEGATE_CBK<void, void*>> g_varToCallbackMap;
+
+    inline TwBar* getBar(I64 groupID) {
+        for (hashMapImpl<vectorAlg::vecSize, I64>::value_type& entry : g_barToGroupMap) {
+            if (entry.second == groupID) {
+                return g_TweakWindows[entry.first];
+            }
+        }
+
+        return nullptr;
+    }
+
+    inline TwType toTwType(CallbackParam type) {
+        switch (type) {
+            case CallbackParam::TYPE_SMALL_UNSIGNED_INTEGER: return TW_TYPE_UINT8;
+            case CallbackParam::TYPE_MEDIUM_UNSIGNED_INTEGER: return TW_TYPE_UINT16;
+            case CallbackParam::TYPE_UNSIGNED_INTEGER:
+            case CallbackParam::TYPE_LARGE_UNSIGNED_INTEGER: return TW_TYPE_UINT32;
+
+
+            case CallbackParam::TYPE_SMALL_INTEGER: return TW_TYPE_INT8;
+            case CallbackParam::TYPE_MEDIUM_INTEGER: return TW_TYPE_INT16;
+            case CallbackParam::TYPE_INTEGER:
+            case CallbackParam::TYPE_LARGE_INTEGER: return TW_TYPE_INT32;
+        };
+
+        return TW_TYPE_INT32;
+    }
+
+    void TW_CALL SetCB(const void *value, void *clientData) {
+        I64 variableGUID = *(I64*)&clientData;
+        auto result = g_varToCallbackMap.find(variableGUID);
+        if (result != std::cend(g_varToCallbackMap)) {
+            DELEGATE_CBK<void, void*>& cbk = result->second;
+            cbk(const_cast<void*>(value));
+        }
+    }
+
+    void TW_CALL GetCB(void *value, void *clientData) {
+        I64 variableGUID = *(I64*)&clientData;
+        auto result = g_varToCallbackMap.find(variableGUID);
+        if (result != std::cend(g_varToCallbackMap)) {
+            DELEGATE_CBK<void, void*>& cbk = result->second;
+            cbk(value);
+        }
+    }
+};
+
+DebugInterface::DebugInterface(Kernel& parent)
+    : KernelComponent(parent),
+      _dirty(false)
+{
+
+}
+
+DebugInterface::~DebugInterface()
+{
+
+}
+
+DebugInterface::DebugVar::DebugVar(const DebugVarDescriptor& descriptor)
     : GUIDWrapper(),
-     _varPointer(nullptr),
-     _locked(true),
-     _type(CallbackParam::TYPE_VOID),
-     _locationLine(0),
-     _group(-1)
+     _descriptor(descriptor)
 {
 }
 
@@ -20,77 +84,51 @@ DebugInterface::DebugGroup::DebugGroup()
 {
 }
 
-I64 DebugInterface::addDebugVar(const char* file, I32 line, void* variable, CallbackParam type, I64 debugGroup, bool locked) {
-    DebugVar temp;
-    temp._varPointer = variable;
-    temp._type = type;
-    temp._locked = locked;
-    temp._locationFile = file;
-    temp._locationLine = static_cast<U16>(line);
-    temp._group = debugGroup;
+void DebugInterface::idle() {
+    if (_parent.platformContext().config().gui.enableDebugVariableControls) {
+        if (_dirty) {
+            if (Config::USE_ANT_TWEAK_BAR) {
+                // Remove all bars
+                TwDeleteAllBars();
+                g_TweakWindows.resize(0);
+                g_barToGroupMap.clear();
+
+                // Create a new bar per group
+                for (hashMapImpl<I64, DebugGroup>::value_type& group : _debugGroups) {
+                    g_TweakWindows.push_back(TwNewBar(group.second._name.c_str()));
+                    hashAlg::emplace(g_barToGroupMap, g_TweakWindows.size() - 1, group.first);
+                }
+
+                g_varToCallbackMap.clear();
+                // Not the fastest, but meh ... debug stuff -Ionut
+                for (hashMapImpl<I64, DebugVar>::value_type& var : _debugVariables) {
+                    DebugVar& variable = var.second;
+                    DebugVarDescriptor& descriptor = variable._descriptor;
+
+                    TwBar* targetBar = getBar(descriptor._debugGroup);
+                    assert(targetBar != nullptr);
+                    if (!descriptor._cbk) {
+                        TwAddVarRO(targetBar, variable._descriptor._displayName.c_str(), toTwType(descriptor._type), descriptor._variable, "");
+                    } else {
+                        auto result = hashAlg::emplace(g_varToCallbackMap, variable.getGUID(), descriptor._cbk);
+                        TwAddVarCB(targetBar, descriptor._displayName.c_str(), toTwType(descriptor._type), SetCB, GetCB, &(result.first->second), "");
+                    }
+                }
+            }
+            _dirty = false;
+        }
+    }
+}
+
+I64 DebugInterface::addDebugVar(const DebugVarDescriptor& descriptor) {
+    DebugVar temp(descriptor);
 
     WriteLock lock(_varMutex);
     _debugVariables.insert(std::make_pair(temp.getGUID(), temp));
 
-    return temp.getGUID();
-}
+    _dirty = true;
 
-void DebugInterface::onDebugVarTrigger(I64 guid, bool invert) {
-    WriteLock lock(_varMutex);
-    hashMapImpl<I64, DebugVar>::iterator it = _debugVariables.find(guid);
-    if (it != std::end(_debugVariables)) {
-        DebugVar& var = it->second;
-        if (!var._locked) {
-            switch (var._type) {
-                case CallbackParam::TYPE_BOOL: {
-                    bool& variable = *reinterpret_cast<bool*>(var._varPointer);
-                    variable = !variable;
-                } break;
-                case CallbackParam::TYPE_SMALL_INTEGER: {
-                    I8& variable = *reinterpret_cast<I8*>(var._varPointer);
-                    variable = invert ? (variable - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_MEDIUM_INTEGER: {
-                    I16& variable = *reinterpret_cast<I16*>(var._varPointer);
-                    variable = invert ? (variable - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_INTEGER: {
-                    I32& variable = *reinterpret_cast<I32*>(var._varPointer);
-                    variable = invert ? (variable - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_LARGE_INTEGER: {
-                    I64& variable = *reinterpret_cast<I64*>(var._varPointer);
-                    variable = invert ? (variable - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_SMALL_UNSIGNED_INTEGER: {
-                    U8& variable = *reinterpret_cast<U8*>(var._varPointer);
-                    variable = invert ? (std::max(variable, (U8)1) - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_MEDIUM_UNSIGNED_INTEGER: {
-                    U16& variable = *reinterpret_cast<U16*>(var._varPointer);
-                    variable = invert ? (std::max(variable, (U16)1) - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_UNSIGNED_INTEGER: {
-                    U32& variable = *reinterpret_cast<U32*>(var._varPointer);
-                    variable = invert ? (std::max(variable, 1u) - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_LARGE_UNSIGNED_INTEGER: {
-                    U64& variable = *reinterpret_cast<U64*>(var._varPointer);
-                    variable = invert ? (std::max(variable, (U64)1) - 1) : (variable + 1);
-                } break;
-                case CallbackParam::TYPE_FLOAT: {
-                    F32& variable = *reinterpret_cast<F32*>(var._varPointer);
-                    variable = invert ? (variable - 1.0f) : (variable + 1.0f);
-                } break;
-                case CallbackParam::TYPE_DOUBLE: {
-                    D64& variable = *reinterpret_cast<D64*>(var._varPointer);
-                    variable = invert ? (variable - 1.0) : (variable + 1.0);
-                } break;
-                // unsupported
-                default: break;
-            };
-        }
-    }
+    return temp.getGUID();
 }
 
 I64 DebugInterface::addDebugGroup(const char* name, I64 parentGUID) {

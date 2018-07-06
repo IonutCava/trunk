@@ -34,7 +34,7 @@ void TenisSceneAIProcessor::addEntityRef(AIEntity* entity) {
 // Process message from sender to receiver
 void TenisSceneAIProcessor::processMessage(AIEntity& sender,
                                            AIMsg msg,
-                                           const cdiggins::any& msg_content) {
+                                           const AnyParam& msg_content) {
     AITeam* currentTeam = nullptr;
     switch (msg) {
         case AIMsg::REQUEST_DISTANCE_TO_TARGET:

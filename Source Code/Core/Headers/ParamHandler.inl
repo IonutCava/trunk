@@ -94,19 +94,10 @@ inline void ParamHandler::setParam(U64 nameID, const T& value) {
     WriteLock w_lock(_mutex);
     ParamMap::iterator it = _params.find(nameID);
     if (it == std::end(_params)) {
-        bool result = 
-#       if !defined(CPP_17_SUPPORT)
-            hashAlg::emplace(_params, nameID, cdiggins::any(value)).second;
-#       else
-            hashAlg::emplace(_params, nameID, value).second;
-#       endif
+        bool result = hashAlg::emplace(_params, nameID, AnyParam(value)).second;
         DIVIDE_ASSERT(result,"ParamHandler error: can't add specified value to map!");
     } else {
-#       if defined(CPP_17_SUPPORT)
-            it->second = cdiggins::any(value);
-#       else
-            it->second = value;
-#       endif
+            it->second = AnyParam(value);
     }
 }
 

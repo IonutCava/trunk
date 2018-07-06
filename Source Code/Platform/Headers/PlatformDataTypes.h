@@ -87,7 +87,8 @@ enum class CallbackParam : U32 {
     TYPE_DOUBLE,
     TYPE_CHAR,
     TYPE_BOOL,
-    TYPE_VOID
+    TYPE_VOID,
+    COUNT
 };
 
 template <typename From, typename To>

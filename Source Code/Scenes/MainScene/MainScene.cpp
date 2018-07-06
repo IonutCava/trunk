@@ -226,7 +226,7 @@ bool MainScene::unload() {
     return Scene::unload();
 }
 
-void MainScene::test(const Task& parentTask, cdiggins::any a, CallbackParam b) {
+void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
     if(!parentTask.stopRequested()) {
         static bool switchAB = false;
         vec3<F32> pos;

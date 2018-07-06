@@ -302,13 +302,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                              to_I32(renderResolution.height));
     setBaseViewport(vec4<I32>(0, 0, to_I32(renderResolution.width), to_I32(renderResolution.height)));
 
-    if (Config::USE_ANT_TWEAK_BAR) {
-        TwBar *myBar;
-        myBar = TwNewBar("NameOfMyTweakBar");
-        I32 myVar = 0;
-        TwAddVarRW(myBar, "NameOfMyVariable", TW_TYPE_INT32, &myVar, "");
-    }
-
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }

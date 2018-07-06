@@ -21,6 +21,7 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Networking/Headers/Server.h"
 #include "Core/Networking/Headers/LocalClient.h"
+#include "Core/Debugging/Headers/DebugInterface.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -73,7 +74,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         std::make_unique<Input::InputInterface>(*this),  // Input
         std::make_unique<XMLEntryData>(),                // Initial XML data
         std::make_unique<Configuration>(),               // XML based configuration
-        std::make_unique<LocalClient>(*this));           // Network client
+        std::make_unique<LocalClient>(*this),            // Network client
+        std::make_unique<DebugInterface>(*this));        // Debug Interface
 
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
 
