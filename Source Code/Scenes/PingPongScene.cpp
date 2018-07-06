@@ -10,7 +10,7 @@
 #include "Geometry/Predefined/Sphere3D.h"
 using namespace std;
 
-vec4 _lightPosition(0,3,2,1.0);
+vec4 _lightPosition(0,10,2,1.0);
 
 //begin copy-paste: randarea scenei
 void PingPongScene::render()

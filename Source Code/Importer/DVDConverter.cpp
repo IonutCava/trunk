@@ -186,34 +186,34 @@ Mesh* DVDConverter::load(const string& file)
 		else
 			tempMesh->getSubMeshes()[index]->getMaterial().shininess = 0.0f;
 
-		while(result == AI_SUCCESS)
-		{
-			result = mat->GetTexture(aiTextureType_DIFFUSE, tempMesh->getSubMeshes()[index]->getMaterial().textures.size(), &tName, &mapping, &uvInd, &blend, &op, mode);
+		U8 count = 0;
+		while(result == AI_SUCCESS){
+			result = mat->GetTexture(aiTextureType_DIFFUSE, count, &tName, &mapping, &uvInd, &blend, &op, mode);
 			if(result != AI_SUCCESS) break;
 			string path = tName.data;
 			string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-			if(!img_name.substr(img_name.find_first_of(".")).empty()) 
-			{
+			if(!img_name.substr(img_name.find_first_of(".")).empty()){
 				string pathName = file.substr( 0, file.rfind("/")+1 );
-				tempMesh->getSubMeshes()[index]->getMaterial().textures.push_back(ResourceManager::getInstance().LoadResource<Texture2D>(pathName + "../texturi/"  + img_name,true));
+				Material::TextureUsage item;
+				if(count == 0) item = Material::TEXTURE_BASE;
+				else if(count == 1) item = Material::TEXTURE_SECOND;
+				tempMesh->getSubMeshes()[index]->getMaterial().setTexture(item,ResourceManager::getInstance().LoadResource<Texture2D>(pathName + "../texturi/"  + img_name,true));
 			}
 			tName.Clear();
+			count++;
+			if(count == 2) break; //ToDo: Only 2 texture for now. Fix This! -Ionut;
 		}
 
-		if(!tempMesh->getSubMeshes()[index]->getMaterial().bumpMap)
-		{
-			result = mat->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
-			if(result == AI_SUCCESS)
-			{
-				string path = tName.data;
-				string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-				if(img_name.rfind('.') !=  string::npos)
-				{
+		result = mat->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
+		if(result == AI_SUCCESS){
+			string path = tName.data;
+			string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+			if(img_name.rfind('.') !=  string::npos){
 					string pathName = file.substr( 0, file.rfind("/")+1 );
-					tempMesh->getSubMeshes()[index]->getMaterial().bumpMap = ResourceManager::getInstance().LoadResource<Texture2D>(pathName + "../texturi/"  + img_name,true);
+					tempMesh->getSubMeshes()[index]->getMaterial().setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().LoadResource<Texture2D>(pathName + "../texturi/"  + img_name,true));
 				}
 			}
-		}
+		
 
 	}
 	tempMesh->setVisibility(true);

@@ -68,13 +68,11 @@ public:
 	void			setSelected(bool state)					        {_selected = state;}
 	void            setVisibility(bool state)				        {_render = state;}
 			inline std::vector<Object3D*>      getChildren()        {return _children;}                           
-	virtual inline std::vector<Shader*>&	   getShaders()			{return _shaders; }
 	
 	void    addChild(Object3D* object);
 	mat4&   getParentMatrix() {return _parentMatrix;}
 	void    setParentMatrix(const mat4& parentMatrix) {_parentMatrix = parentMatrix;}
 
-	virtual                          void    addShader(Shader* const s)   {_shaders.push_back(s);}
 	virtual							 void    computeBoundingBox()   = 0;
 	virtual							 void    onDraw();
 	virtual                          void    drawBBox();
@@ -91,7 +89,6 @@ protected:
 	BoundingBox			         _bb, _originalBB; //_originalBB is a copy of the initialy calculate BB for transformation
 												   //it should be copied in every computeBoungingBox call;
 	PrimitiveType				_geometryType;
-	std::vector<Shader* >		_shaders;
 	std::vector<Object3D* >     _children;
 	mat4	                    _parentMatrix;
 };

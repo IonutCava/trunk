@@ -18,11 +18,11 @@ void TerrainChunk::addTree(const vec3& pos,F32 rotation,F32 scale, const std::st
 	Mesh* t = ResourceManager::getInstance().LoadResource<Mesh>(tree.ModelName);
 	if(t)
 	{	
-		t->addShader(ResourceManager::getInstance().LoadResource<Shader>(tree_shader));
-		t->getShaders()[0]->bind();
-			t->getShaders()[0]->Uniform("enable_shadow_mapping", 0);
-			t->getShaders()[0]->Uniform("tile_factor", 1.0f);	
-		t->getShaders()[0]->unbind();
+		t->getMaterial().setShader(ResourceManager::getInstance().LoadResource<Shader>(tree_shader));
+		t->getMaterial().getShader()->bind();
+			t->getMaterial().getShader()->Uniform("enable_shadow_mapping", 0);
+			t->getMaterial().getShader()->Uniform("tile_factor", 1.0f);	
+		t->getMaterial().getShader()->unbind();
 		Object3DFlyWeight* tempTree = New Object3DFlyWeight(t);
 		Transform* tran = tempTree->getTransform();
 		tran->scale(scale * tree.scale);
@@ -99,7 +99,8 @@ void TerrainChunk::DrawTrees(U32 lod, F32 d)
 	Shader* treeShader;
 	for(U32 i=0; i <  _trees.size(); i++)
 	{
-		treeShader = _trees[i]->getObject()->getShaders()[0];
+		treeShader = _trees[i]->getObject()->getMaterial().getShader();
+		if(!treeShader) continue;
 		treeShader->bind();
 			treeShader->Uniform("time", time);
 			treeShader->Uniform("scale", _trees[i]->getTransform()->getScale().y);

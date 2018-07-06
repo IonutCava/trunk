@@ -42,10 +42,10 @@ void GFXDevice::resizeWindow(U16 w, U16 h)
 	_api.resizeWindow(w,h);
 }
 
-void GFXDevice::renderElements(tr1::unordered_map<string,Object3D*>& primitiveArray)
+void GFXDevice::renderElements(tr1::unordered_map<string,Object3D*>& geometryArray)
 {
 	tr1::unordered_map<string,Object3D*>::iterator _iter;
-	for(_iter = primitiveArray.begin();  _iter != primitiveArray.end();  _iter++){
+	for(_iter = geometryArray.begin();  _iter != geometryArray.end();  _iter++){
 		renderModel(_iter->second);
 	}
 }
@@ -53,9 +53,10 @@ void GFXDevice::renderElements(tr1::unordered_map<string,Object3D*>& primitiveAr
 void GFXDevice::renderElements(vector<Object3DFlyWeight*>& geometryArray)
 {
 	vector<Object3DFlyWeight*>::iterator _iter;
+	Mesh *temp = NULL;
 	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
 	{
-		Mesh *temp = dynamic_cast<Mesh*>((*_iter)->getObject());
+		temp = dynamic_cast<Mesh*>((*_iter)->getObject());
 		temp->getTransform()->setPosition((*_iter)->getTransform()->getPosition());
 		temp->getTransform()->scale((*_iter)->getTransform()->getScale());
 		temp->getTransform()->rotateQuaternion((*_iter)->getTransform()->getOrientation());

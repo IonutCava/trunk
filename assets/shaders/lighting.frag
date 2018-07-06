@@ -9,7 +9,8 @@ varying vec3 vLightDirMV;
 
 uniform sampler2D texDiffuse0;
 uniform sampler2D texDiffuse1;
-uniform sampler2D texNormalHeightMap;
+uniform sampler2D texBump;
+uniform vec4      color;
 
 uniform int textureCount;
 #define MODE_PHONG		0
@@ -82,7 +83,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB)
 	// search from front to back for first point inside the object
 	for(int i=0; i<num_steps_lin-1; i++){
 		depth += step;
-		float h = 1.0 - texture2D(texNormalHeightMap, A+AB*depth).a;
+		float h = 1.0 - texture2D(texBump, A+AB*depth).a;
 		
 		if (depth >= h) { // h est dans la heightmap
 			best_depth = depth; // store best depth
@@ -100,7 +101,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB)
 	// recherche par dichotomie
 	for(int i=0; i<num_steps_bin; i++)
 	{
-		float h = 1.0 - texture2D(texNormalHeightMap, A+AB*depth).a;
+		float h = 1.0 - texture2D(texBump, A+AB*depth).a;
 		
 		step /= 2.0;
 		if (depth >= h) {
@@ -160,12 +161,12 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 	vec2 vTexCoord = uv;
 	if(bParallax) {			
 		// Calculate offset, scale & biais
-		float height = texture2D(texNormalHeightMap, uv).a;
+		float height = texture2D(texBump, uv).a;
 		vTexCoord = uv + ((height-0.5)* parallax_factor * (vec2(viewVecTBN.x, -viewVecTBN.y)/viewVecTBN.z));
 	}
 	
 	// on trouve la normale pertubée dans l'espace TBN
-	vec3 normalTBN = normalize(texture2D(texNormalHeightMap, vTexCoord).xyz * 2.0 - 1.0);
+	vec3 normalTBN = normalize(texture2D(texBump, vTexCoord).xyz * 2.0 - 1.0);
 	
 //// ECLAIRAGE :
 	return Phong(vTexCoord, normalTBN, vPixToEyeTBN, vPixToLightTBN);
@@ -190,11 +191,11 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	
 	
 //// ECLAIRAGE :
-	vec4 base = vec4(1.0,1.0,1.0,1.0);
+	vec4 base = color;
 	if(textureCount > 0)
 	{
 		base = texture2D(texDiffuse0, uv);	// Couleur diffuse
-		if(textureCount != 1) base *= texture2D(texDiffuse1, uv);
+		if(textureCount == 2) base *= texture2D(texDiffuse1, uv);
 	}
 
 	float iDiffuse = max(dot(L, N), 0.0);	// Intensité diffuse

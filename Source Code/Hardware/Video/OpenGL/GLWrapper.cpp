@@ -352,6 +352,71 @@ void GL_API::setRenderState(RenderState& state)
 	state.texturesEnabled() ? glEnable(GL_TEXTURE_2D) : glDisable(GL_TEXTURE_2D);
 }
 
+//ToDo: Sort meshes by material!!!!! - Ionut
+//Maybe create custom materials and manually assign them to submeshes?
+//Bind once, draw all meshes affected by material, unbind?
+void GL_API::prepareMaterial(Material& mat, Shader* prevShader){
+	Shader* s = mat.getShader();
+	Texture2D* baseTexture = mat.getTexture(Material::TEXTURE_BASE);
+	Texture2D* bumpTexture = mat.getTexture(Material::TEXTURE_BUMP);
+	Texture2D* secondTexture = mat.getTexture(Material::TEXTURE_SECOND);
+	U8 count = 0;
+	if(baseTexture){
+		baseTexture->Bind(0);
+		count++;
+	}
+	if(bumpTexture)	bumpTexture->Bind(1);
+	
+	if(secondTexture){
+		secondTexture->Bind(2);
+		count++;
+	}
+
+	setMaterial(mat);
+	if(s) {
+		if(prevShader){ //If we specified a previous shader
+			if(s->getName().compare(prevShader->getName()) != 0) //Only bind/unbind if we have a new shader;
+				s->bind();
+		}else{
+			s->bind();
+		}
+
+		s->Uniform("color",mat.diffuse);
+		if(baseTexture)	s->UniformTexture("texDiffuse0",0);
+		if(!GFXDevice::getInstance().getDeferredShading()){
+			if(bumpTexture){
+				s->UniformTexture("texBump",1);
+				s->Uniform("mode", 1);
+			}else{
+				s->Uniform("mode", 0);
+			}
+			if(secondTexture) s->UniformTexture("texDiffuse1",2);
+			s->Uniform("textureCount",count);
+			s->Uniform("enable_shadow_mapping", 0);
+			s->Uniform("tile_factor", 1.0f);
+		}
+	}
+}
+
+void GL_API::releaseMaterial(Material& mat, Shader* prevShader){
+	Shader* s = mat.getShader();
+	Texture2D* baseTexture = mat.getTexture(Material::TEXTURE_BASE);
+	Texture2D* bumpTexture = mat.getTexture(Material::TEXTURE_BUMP);
+	Texture2D* secondTexture = mat.getTexture(Material::TEXTURE_SECOND);
+
+	if(s)
+		if(prevShader){ //If we specified a previous shader
+			if(s->getName().compare(prevShader->getName()) != 0) //Only bind/unbind if we have a new shader;
+				s->unbind();
+		}else{
+			s->unbind();
+		}
+
+	if(secondTexture) secondTexture->Unbind(2);
+	if(bumpTexture) bumpTexture->Unbind(1);
+	if(baseTexture) baseTexture->Unbind(0);
+
+}
 
 void GL_API::drawBox3D(vec3 min, vec3 max)
 {
@@ -383,139 +448,94 @@ void GL_API::drawBox3D(vec3 min, vec3 max)
 
 }
 
-void GL_API::drawBox3D(Box3D* const box)
+void GL_API::drawBox3D(Box3D* const model)
 {
-	box->onDraw();
+	model->onDraw();
+
 	pushMatrix();
 
-	Shader* s = NULL;
-	if(!box->getShaders().empty()){
-		if(box->getShaders()[0]) 
-			s = box->getShaders()[0];
+	glMultMatrixf(model->getTransform()->getMatrix());
+	glMultMatrixf(model->getParentMatrix());
 
-	glMultMatrixf(box->getTransform()->getMatrix());
-	glMultMatrixf(box->getParentMatrix());
-	setMaterial(box->getMaterial());
-	if(!box->getMaterial().textures.empty()) box->getMaterial().textures.front()->Bind(0);
+	prepareMaterial(model->getMaterial());
+
+	glutSolidCube(model->getSize());
+
+	releaseMaterial(model->getMaterial());
 	
-		if(s) {
-			s->bind();
-			s->Uniform("color",box->getMaterial().diffuse);
-			if(!box->getMaterial().textures.empty())
-				s->UniformTexture("texDiffuse",0);
-		}
-	}
-	glutSolidCube(box->getSize());
-	if(s) s->unbind();
-	if(!box->getMaterial().textures.empty()) box->getMaterial().textures.front()->Unbind(0);
+	popMatrix();
+
+}
+
+void GL_API::drawSphere3D(Sphere3D* const model)
+{
+	model->onDraw();
+	pushMatrix();
+	glMultMatrixf(model->getTransform()->getMatrix());
+	glMultMatrixf(model->getParentMatrix());
+
+	prepareMaterial(model->getMaterial());
+
+	glutSolidSphere(model->getSize(), model->getResolution(),model->getResolution());
+
+	releaseMaterial(model->getMaterial());
 
 	popMatrix();
 
 }
 
-void GL_API::drawSphere3D(Sphere3D* const sphere)
+void GL_API::drawQuad3D(Quad3D* const model)
 {
-	
-	sphere->onDraw();
-	pushMatrix();
-	glMultMatrixf(sphere->getTransform()->getMatrix());
-	glMultMatrixf(sphere->getParentMatrix());
-	Shader* s = NULL;
-	if(!sphere->getShaders().empty()){
-		if(sphere->getShaders()[0]) 
-			s = sphere->getShaders()[0];
+	model->onDraw();
 
-	setMaterial(sphere->getMaterial());
-	if(!sphere->getMaterial().textures.empty()) sphere->getMaterial().textures.front()->Bind(0);
-	if(s) {
-			s->bind();
-			s->Uniform("color",sphere->getMaterial().diffuse);
-			if(!sphere->getMaterial().textures.empty())
-				s->UniformTexture("texDiffuse",0);
-		}
-	}
-	glutSolidSphere(sphere->getSize(), sphere->getResolution(),sphere->getResolution());
-
-	if(s) s->unbind();
-	if(!sphere->getMaterial().textures.empty()) sphere->getMaterial().textures.front()->Unbind(0);
-	popMatrix();
-
-}
-
-void GL_API::drawQuad3D(Quad3D* const quad)
-{
-	quad->onDraw();
 	pushMatrix();
 
-	glMultMatrixf(quad->getTransform()->getMatrix());
-	glMultMatrixf(quad->getParentMatrix());
-	setMaterial(quad->getMaterial());
+	glMultMatrixf(model->getTransform()->getMatrix());
+	glMultMatrixf(model->getParentMatrix());
 
-	Shader* s = NULL;
-	if(!quad->getShaders().empty()){
-		if(quad->getShaders()[0]) 
-			s = quad->getShaders()[0];
-
-	if(!quad->getMaterial().textures.empty()) quad->getMaterial().textures.front()->Bind(0);
-	if(s){
-			s->bind();
-			s->Uniform("color",quad->getMaterial().diffuse);
-			if(!quad->getMaterial().textures.empty())
-				s->UniformTexture("texDiffuse",0);
-		}
-	}
+	prepareMaterial(model->getMaterial());
 
 	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
 								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
 		glNormal3f(0.0f, 1.0f, 0.0f);
 		glMultiTexCoord2f(GL_TEXTURE0, 0, 0);
-		glVertex3f(quad->getCorner(Quad3D::TOP_LEFT).x, quad->getCorner(Quad3D::TOP_LEFT).y, quad->getCorner(Quad3D::TOP_LEFT).z);
+		glVertex3f(model->getCorner(Quad3D::TOP_LEFT).x, model->getCorner(Quad3D::TOP_LEFT).y, model->getCorner(Quad3D::TOP_LEFT).z);
 		glMultiTexCoord2f(GL_TEXTURE0, 1, 0);
-		glVertex3f(quad->getCorner(Quad3D::TOP_RIGHT).x, quad->getCorner(Quad3D::TOP_RIGHT).y, quad->getCorner(Quad3D::TOP_RIGHT).z);
+		glVertex3f(model->getCorner(Quad3D::TOP_RIGHT).x, model->getCorner(Quad3D::TOP_RIGHT).y, model->getCorner(Quad3D::TOP_RIGHT).z);
 		glMultiTexCoord2f(GL_TEXTURE0, 0, 1);
-		glVertex3f(quad->getCorner(Quad3D::BOTTOM_LEFT).x, quad->getCorner(Quad3D::BOTTOM_LEFT).y, quad->getCorner(Quad3D::BOTTOM_LEFT).z);
+		glVertex3f(model->getCorner(Quad3D::BOTTOM_LEFT).x, model->getCorner(Quad3D::BOTTOM_LEFT).y, model->getCorner(Quad3D::BOTTOM_LEFT).z);
 		glMultiTexCoord2f(GL_TEXTURE0, 1, 1);
-		glVertex3f(quad->getCorner(Quad3D::BOTTOM_RIGHT).x, quad->getCorner(Quad3D::BOTTOM_RIGHT).y, quad->getCorner(Quad3D::BOTTOM_RIGHT).z);
+		glVertex3f(model->getCorner(Quad3D::BOTTOM_RIGHT).x, model->getCorner(Quad3D::BOTTOM_RIGHT).y, model->getCorner(Quad3D::BOTTOM_RIGHT).z);
 	glEnd();
 
-	if(s)	s->unbind();
-	if(!quad->getMaterial().textures.empty()) quad->getMaterial().textures.front()->Unbind(0);
+	releaseMaterial(model->getMaterial());
 	
 	popMatrix();
 
 }
 
-void GL_API::drawText3D(Text3D* const text)
+void GL_API::drawText3D(Text3D* const model)
 {
-	text->onDraw();
-	pushMatrix();
-	glMultMatrixf(text->getTransform()->getMatrix());
-	glMultMatrixf(text->getParentMatrix());
-	Shader* s = NULL;
-	if(!text->getShaders().empty()){
-		if(text->getShaders()[0]) 
-			s = text->getShaders()[0];
+	model->onDraw();
 
-	if(!text->getMaterial().textures.empty()) text->getMaterial().textures.front()->Bind(0);
-	if(s) {
-			s->bind();
-			s->Uniform("color",text->getMaterial().diffuse);
-			if(!text->getMaterial().textures.empty())
-				s->UniformTexture("texDiffuse",0);
-		}
-	}
+	pushMatrix();
+
+	glMultMatrixf(model->getTransform()->getMatrix());
+	glMultMatrixf(model->getParentMatrix());
+
+	prepareMaterial(model->getMaterial());
+
 	glPushAttrib(GL_ENABLE_BIT);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
-	glLineWidth(text->getWidth());
-	setMaterial(text->getMaterial());
-	glutStrokeString(text->getFont(), (const U8*)text->getText().c_str());
+	glLineWidth(model->getWidth());
+	setMaterial(model->getMaterial());
+	glutStrokeString(model->getFont(), (const U8*)model->getText().c_str());
 	glPopAttrib();
 
-	if(s) s->unbind();
+	releaseMaterial(model->getMaterial());
 
-	if(!text->getMaterial().textures.empty()) text->getMaterial().textures.front()->Unbind(0);
 	popMatrix();
 
 }
@@ -523,82 +543,28 @@ void GL_API::drawText3D(Text3D* const text)
 void GL_API::renderModel(Object3D* const model)
 {
 	Mesh* tempModel = dynamic_cast<Mesh*>(model);
-	SubMesh *s;
-	vector<SubMesh* >::iterator _subMeshIterator;
-	
 	pushMatrix();
 	//ToDo: Per submesh transforms!!!!!!!!!!!!!!!!!!! - Ionut
 	glMultMatrixf(tempModel->getTransform()->getMatrix());
 	glMultMatrixf(tempModel->getParentMatrix());
-	for(_subMeshIterator = tempModel->getSubMeshes().begin(); 
-		_subMeshIterator != tempModel->getSubMeshes().end(); 
-		++_subMeshIterator)	{
+	Shader* prevShader = NULL;
+	for(vector<SubMesh* >::iterator subMeshIterator = tempModel->getSubMeshes().begin(); 
+		subMeshIterator != tempModel->getSubMeshes().end(); 
+		++subMeshIterator)	{
 
-		s = (*_subMeshIterator);
+		SubMesh *s = (*subMeshIterator);
 
-		setMaterial(s->getMaterial());
-		
-		U8 count = s->getMaterial().textures.size();
-		U8 i = 0;
-		if(count)
-			for(U8 j = 0; j < count; j++,i++)
-				s->getMaterial().textures[j]->Bind(i);
-
-		
-		
-		if(s->getMaterial().bumpMap)
-			s->getMaterial().bumpMap->Bind(i++);
-				
-		U8 n = 0;
-		
-		if(!tempModel->getShaders().empty()){
-
-			Shader* shader = NULL;
-			//for(U8 n = 0; n < tempModel->getShaders().size(); n++)
-			if(tempModel->getShaders()[n]){
-				shader = tempModel->getShaders()[n];
-				shader->bind();
-				if(!GFXDevice::getInstance().getDeferredShading()){
-     				shader->Uniform("enable_shadow_mapping", 0);
-					shader->Uniform("tile_factor", 1.0f);
-					shader->Uniform("textureCount",count <= 2 ? count : 2);
-					shader->UniformTexture("texDiffuse0",0);
-					if(count > 1) shader->UniformTexture("texDiffuse1",1);
-					if(s->getMaterial().bumpMap){
-						shader->Uniform("mode", 1);
-						shader->UniformTexture("texNormalHeightMap",i);
-					}else{
-						shader->Uniform("mode", 0);
-					}
-				}else{
-					shader->Uniform("tDiffuse",0);
-				}
-			}
-		}
+		prepareMaterial(s->getMaterial(), prevShader);
 
 		s->getGeometryVBO()->Enable();
 			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
 		s->getGeometryVBO()->Disable();
 
-		if(!tempModel->getShaders().empty()){
-			//for(U8 n = 0; n < model->getShaders().size(); n++){
-				if(tempModel->getShaders()[n])
-					tempModel->getShaders()[n]->unbind();
-			//}
-		}
-
-		if(s->getMaterial().bumpMap)
-			s->getMaterial().bumpMap->Unbind(i);
-
-		if(count) 
-			for(U8 j = count-1; j > 0; j--) s->getMaterial().textures[j]->Unbind(i--);
-				
+		releaseMaterial(s->getMaterial(), prevShader);
+		prevShader = s->getMaterial().getShader();
+		
 	}
-
-
-	
 	popMatrix();
-
 }
 
 void GL_API::renderElements(Type t, U32 count, const void* first_element)

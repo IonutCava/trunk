@@ -6,8 +6,6 @@ Object3D::Object3D(const Object3D& old) : Resource(old),_material(old._material)
 										  _drawBB(old._drawBB),_render(old._render),_computedLightShaders(old._computedLightShaders)
 {
 	if(old._transform)	_transform = New Transform(*old._transform);
-	for(std::vector<Shader*>::const_iterator it = old._shaders.begin(); it != old._shaders.end(); it++)
-		_shaders.push_back(*it);
 }
 
 Object3D::~Object3D() {	
@@ -22,13 +20,15 @@ void Object3D::addChild(Object3D* object){
 
 void Object3D::onDraw(){
 	if(!_computedLightShaders){
-		Shader* s;
-		if(!_material.textures.empty())
-			s = ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1");
-		else
-			s = ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1_color.frag,DeferredShadingPass1.vert");
+		if(!GFXDevice::getInstance().getDeferredShading()){
+			getMaterial().setShader(ResourceManager::getInstance().LoadResource<Shader>("OBJ"));
+		}else{
+			if(_material.getTexture(Material::TEXTURE_BASE))
+				getMaterial().setShader(ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1"));
+			else
+				getMaterial().setShader(ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1_color.frag,DeferredShadingPass1.vert"));
+		}
 		
-		_shaders.push_back(s);
 		_computedLightShaders = true;
 	}
 	if(!_bb.isComputed()) computeBoundingBox();
@@ -70,10 +70,6 @@ bool Object3D::unload(){
 }
 
 void Object3D::clearMaterials(){
-	if(!getShaders().empty()){
-		for(U8 i = 0; i < getShaders().size(); i++)
-			ResourceManager::getInstance().remove(getShaders()[i]);
-		getShaders().clear();
-	}
+	_material.clear();
 	_computedLightShaders = true;
 }

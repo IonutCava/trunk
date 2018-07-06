@@ -56,7 +56,7 @@ void CubeScene::render()
 			_deferredShader->UniformTexture("lightCount",getLights().size());
 			_deferredShader->Uniform("cameraPosition",camPosition);
 
-				GFXDevice::getInstance().drawQuad3D(_renderQuad);
+			GFXDevice::getInstance().drawQuad3D(_renderQuad);
 
 		_lightTexture->Unbind(3);
 		_deferredBuffer->Unbind(2);

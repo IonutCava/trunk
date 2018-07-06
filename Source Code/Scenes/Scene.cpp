@@ -159,9 +159,7 @@ bool Scene::loadGeometry(const FileData& data)
 	return true;
 }
 
-
-bool Scene::addDefaultLight()
-{
+bool Scene::addDefaultLight(){
 	F32 oldSize = _lights.size();
 
 	Light_ptr l(new Light(oldSize));
@@ -172,8 +170,7 @@ bool Scene::addDefaultLight()
 
 }
 
-void Scene::addGeometry(Object3D* const object)
-{
+void Scene::addGeometry(Object3D* const object){
 	GeometryArray.insert(pair<string,Object3D*>(object->getName(),object));
 }
 
@@ -214,7 +211,6 @@ void Scene::clearObjects()
 		ResourceManager::getInstance().remove(GeometryIterator->second);
 	}
 	GeometryArray.clear(); 
-
 	ModelDataArray.clear();
 	VegetationDataArray.clear();
 	PendingDataArray.clear();

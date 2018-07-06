@@ -10,13 +10,9 @@ Mesh::Mesh(const Mesh& old) : Object3D(old),
 {
 	
 	vector<SubMesh* >::const_iterator it;
-	vector<Shader* >::const_iterator it2;
 	_subMeshes.reserve(old._subMeshes.size());
-	_shaders.reserve(old._shaders.size());
 	for(it = old._subMeshes.begin(); it != old._subMeshes.end(); ++it)
 		_subMeshes.push_back(*it);
-	for(it2 = old._shaders.begin(); it2 != old._shaders.end(); ++it2)
-		_shaders.push_back(*it2);
 }
 
 bool Mesh::load(const string& name)
@@ -42,13 +38,7 @@ bool Mesh::unload()
 	}
 	getSubMeshes().clear();
 
-	if(!getShaders().empty()){
-		for(U8 i = 0; i < getShaders().size(); i++)
-			ResourceManager::getInstance().remove(getShaders()[i]);
-			getShaders().clear();
-	}
-	
-	else return false;
+	if(!getSubMeshes().empty()) return false;
 	return true;
 }
 
@@ -72,15 +62,16 @@ bool Mesh::getVisibility()
 }
 void Mesh::computeLightShaders()
 {
-	if(_shaders.empty())
-	{
-		if(GFXDevice::getInstance().getDeferredShading())
-			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1"));
-		else
-		{
-			//vector<Light_ptr>& lights = SceneManager::getInstance().getActiveScene()->getLights();
-			//for(U8 i = 0; i < lights.size(); i++)
-			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("lighting"));
+	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end();_subMeshIterator++){
+		Material& m = (*_subMeshIterator)->getMaterial();
+		if(!m.getShader()){
+			if(GFXDevice::getInstance().getDeferredShading())
+				m.setShader(ResourceManager::getInstance().LoadResource<Shader>("DeferredShadingPass1"));
+			else{
+				//vector<Light_ptr>& lights = SceneManager::getInstance().getActiveScene()->getLights();
+				//for(U8 i = 0; i < lights.size(); i++)
+				m.setShader(ResourceManager::getInstance().LoadResource<Shader>("lighting"));
+			}
 		}
 	}
 	_computedLightShaders = true;

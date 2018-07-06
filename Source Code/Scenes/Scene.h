@@ -13,6 +13,7 @@
 
 typedef std::tr1::shared_ptr<Event> Event_ptr;
 typedef std::tr1::shared_ptr<Light> Light_ptr;
+typedef std::tr1::unordered_map<std::string, Object3D*> Name_Object_map;
 class Scene : public Resource
 {
 
@@ -76,8 +77,8 @@ protected:
 	GFXDevice& _GFX;
 	TerrainManager* _terMgr;
 
-	std::tr1::unordered_map<std::string, Object3D*> GeometryArray;
-	std::tr1::unordered_map<std::string, Object3D*>::iterator GeometryIterator;
+	Name_Object_map GeometryArray;
+	Name_Object_map::iterator GeometryIterator;
 
 	//Datablocks for models,vegetation and terrains
 	std::vector<FileData> ModelDataArray, PendingDataArray;

@@ -78,6 +78,8 @@ private: //OpenGL specific:
 
 	void pushMatrix();
 	void popMatrix();
+	void prepareMaterial(Material& mat,Shader* prevShader = NULL);
+	void releaseMaterial(Material& mat,Shader* prevShader = NULL);
 
 SINGLETON_END()
 

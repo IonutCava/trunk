@@ -109,36 +109,64 @@ void DX_API::drawText3D(Text3D* const text)
 
 void DX_API::renderModel(Object3D* const model)
 {
-	Mesh* tempModel = dynamic_cast<Mesh*>(model);	
+	Mesh* tempModel = dynamic_cast<Mesh*>(model);
 	SubMesh *s;
-	vector<SubMesh* >::iterator _subMeshIterator;
+	vector<SubMesh* >::iterator subMeshIterator;
 	
-	//translate(model->getPosition());
-	//rotate(model->getOrientation().x,vec3(1.0f,0.0f,0.0f));
-	//rotate(model->getOrientation().y,vec3(0.0f,1.0f,0.0f));
-	//rotate(model->getOrientation().z,vec3(0.0f,0.0f,1.0f));
-	//scale(model->getScale());
-	for(U8 n = 0; n < tempModel->getShaders().size(); n++)
-		tempModel->getShaders()[n]->bind();
-	
-	for(_subMeshIterator = tempModel->getSubMeshes().begin(); 
-		_subMeshIterator != tempModel->getSubMeshes().end(); 
-		_subMeshIterator++)
-	{
-		s = (*_subMeshIterator);
-		//s->getGeometryVBO()->Enable();
-		//s->getMaterial().texture->Bind(0);
-			for(U8 n = 0; n < model->getShaders().size(); n++)
-				tempModel->getShaders()[n]->UniformTexture("texDiffuse",0);
-	
-	//		glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
+	//pushMatrix();
+	//ToDo: Per submesh transforms!!!!!!!!!!!!!!!!!!! - Ionut
+	//glMultMatrixf(tempModel->getTransform()->getMatrix());
+	//glMultMatrixf(tempModel->getParentMatrix());
 
-		//s->getMaterial().texture->Unbind(0);
-		//s->getGeometryVBO()->Disable();
+	for(subMeshIterator = tempModel->getSubMeshes().begin(); 
+		subMeshIterator != tempModel->getSubMeshes().end(); 
+		++subMeshIterator)	{
+
+		s = (*subMeshIterator);
+
+		setMaterial(s->getMaterial());
+		
+		Shader* shader = model->getMaterial().getShader();
+		Texture2D* baseTexture = model->getMaterial().getTexture(Material::TEXTURE_BASE);
+		Texture2D* bumpTexture = model->getMaterial().getTexture(Material::TEXTURE_BUMP);
+		Texture2D* secondTexture = model->getMaterial().getTexture(Material::TEXTURE_SECOND);
+
+		if(baseTexture) baseTexture->Bind(0);
+		if(bumpTexture) bumpTexture->Bind(1);
+		if(secondTexture) secondTexture->Bind(2);
+
+		if(shader){
+			shader->bind();
+				if(!GFXDevice::getInstance().getDeferredShading()){
+     				shader->Uniform("enable_shadow_mapping", 0);
+					shader->Uniform("tile_factor", 1.0f);
+					shader->Uniform("textureCount",secondTexture != NULL ? 1 : 2);
+					shader->UniformTexture("texDiffuse0",0);
+					if(bumpTexture){
+						shader->Uniform("mode", 1);
+						shader->UniformTexture("texBump",1);
+					}else{
+						shader->Uniform("mode", 0);
+					}
+					if(secondTexture) shader->UniformTexture("texDiffuse1",2);
+
+				}else{
+					//ToDo: deffered rendering supports only one texture for now! -Ionut
+					shader->Uniform("texDiffuse0",0);
+				}
+		}
+
+		s->getGeometryVBO()->Enable();
+		//	glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
+		s->getGeometryVBO()->Disable();
+
+		if(shader) shader->unbind();
+		if(secondTexture) secondTexture->Unbind(2);
+		if(bumpTexture) bumpTexture->Unbind(1);
+		if(baseTexture) baseTexture->Unbind(0);
 		
 	}
-	for(U8 n = 0; n < tempModel->getShaders().size(); n++)
-		tempModel->getShaders()[n]->unbind();
+	//popMatrix();
 }
 
 void DX_API::renderElements(Type t, U32 count, const void* first_element)
