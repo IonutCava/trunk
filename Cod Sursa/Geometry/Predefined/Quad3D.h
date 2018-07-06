@@ -12,9 +12,7 @@ public:
 	~Quad3D(){};
 	bool load(const std::string &name) {return true;}
 	bool unload() {return true;}
-	void draw();
-private:
-	vec3 _tl,_tr,_bl,_br;
+	vec3 _tl,_tr,_bl,_br; //ToDo: hack. Add proper accessors - Ionut
 };
 
 

@@ -9,19 +9,17 @@
 Shader *s;
 void CubeScene::render()
 {
-	GFXDevice::getInstance().pushMatrix();
-	GFXDevice::getInstance().rotate(i,vec3(0.3f,0.6f,0));
-	_box->draw();
-	GFXDevice::getInstance().popMatrix();
-
-	_innerQuad->draw();
-	_outterQuad->draw();	
+	
+	GFXDevice::getInstance().drawBox3D(_box);
+	GFXDevice::getInstance().drawText3D(_text3D);
+	GFXDevice::getInstance().drawQuad3D(_innerQuad);
+	GFXDevice::getInstance().drawQuad3D(_outterQuad);	
 
 	if(PhysX::getInstance().getScene() != NULL)
 		PhysX::getInstance().RenderActors();
 	else
 		for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
-			(*ModelIterator)->Draw();
+			GFXDevice::getInstance().renderModel(*ModelIterator);
 
 	_terMgr->drawTerrains(true,false);
 }
@@ -49,6 +47,9 @@ void CubeScene::preRender()
 	_lights[0]->setLightProperties(string("diffuse"),vSunColor);
 	_lights[0]->setLightProperties(string("specular"),vSunColor);
 	_lights[0]->update();
+
+	_box->getOrientation() = vec3(0.3f*i, 0.6f*i,0);
+	_text3D->getOrientation() = vec3(0.6f*i,0.2f,0.4f*i);
 }
 
 void CubeScene::processInput()
@@ -91,16 +92,23 @@ bool CubeScene::loadResources(bool continueOnErrors)
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
     i = 0;
+	//A box
 	_box = new Box3D(40);
+	_box->getColor() = vec3(0.5f,0.1f,0.3f);
+
+	//Some text
+	_text3D = new Text3D("hello");
+	_text3D->getColor() = vec3(0.8f,0.4f,0.4f);
+	_text3D->getPosition() = vec3(-55.0f,73.0f,82.0f);
+	_text3D->getWidth() = 4.2f;
+
+	//2 Quads
 	_innerQuad = new Quad3D(vec3(1,1,0),vec3(10-1,0,0),vec3(0,20-1,0),vec3(10-1,20-1,0));
 	_outterQuad = new Quad3D(vec3(0,0,0),vec3(10,0,0),vec3(0,20,0),vec3(10,20,0));
-
-	
-	_box->getColor() = vec3(0.5f,0.1f,0.3f);
 	_innerQuad->getColor() = vec3(0.5f,0.2f,0.9f);
 	_outterQuad->getColor() = vec3(0.2f,0.1f,0.3f);
-
 	_innerQuad->getPosition() = vec3(-10.0f,-100.0f,-0.1f);
 	_outterQuad->getPosition() = vec3(-10.0f,-100.0f,0.0f);
+
 	return true;
 }

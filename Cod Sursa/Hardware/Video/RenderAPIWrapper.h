@@ -22,14 +22,17 @@ enum GraphicsAPI
 };
 
 //Forward declarations
-class Mesh;
+class DVDFile;
 class Text;
 class Shader;
 class Button;
 class SubMesh;
 class FrameBufferObject;
 class VertexBufferObject;
-
+class Box3D;
+class Sphere3D;
+class Quad3D;
+class Text3D;
 //Renderer Programming Interface
 class RenderAPI
 {
@@ -64,11 +67,7 @@ protected:
 	virtual void pushMatrix() = 0;
 	virtual void popMatrix() = 0;
 	virtual void enable_MODELVIEW() = 0;
-	virtual void enable_PROJECTION() = 0;
-	virtual void enable_TEXTURE(int slot) = 0;
 	virtual void loadIdentityMatrix() = 0;
-	virtual void loadOrtographicView() = 0;
-	virtual void loadModelView() = 0;
 	virtual void toggle2D3D(bool _3D) = 0;
 	/*State Matrix Manipulation*/
 
@@ -76,26 +75,19 @@ protected:
 	virtual void drawTextToScreen(Text*) = 0;
 	virtual void drawCharacterToScreen(void* ,char) = 0;
 	virtual void drawButton(Button*) = 0;
-	virtual void drawCube(F32 size) = 0;
-	virtual void drawSphere(F32 size,U32 resolution) = 0;
-	virtual void drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight) = 0;
+	virtual void drawBox3D(Box3D* const box) = 0;
+	virtual void drawSphere3D(Sphere3D* const sphere) = 0;
+	virtual void drawQuad3D(Quad3D* const quad) = 0;
+	virtual void drawText3D(Text3D* const text) = 0;
 	/*GUI Rendering*/
 
 	/*Mesh Rendering*/
-	virtual void renderMesh(const Mesh& mesh) = 0;
-	virtual void renderSubMesh(const SubMesh& subMesh) = 0;
+	virtual void renderModel(DVDFile* const model) = 0;
 	/*Mesh Rendering*/
 
 	/*Color Management*/
-	virtual void setColor(F32 r, F32 g, F32 b) = 0;
-	virtual void setColor(D32 r, D32 g, D32 b) = 0;
-	virtual void setColor(int r, int g, int b) = 0;
-	virtual void setColor(F32 r, F32 g, F32 b, F32 alpha) = 0;
-	virtual void setColor(D32 r, D32 g, D32 b, D32 alpha) = 0;
-	virtual void setColor(int r, int g, int b, int alpha) = 0;
-	virtual void setColor(F32 *v) = 0;
-	virtual void setColor(D32 *v) = 0;
-	virtual void setColor(int *v) = 0;
+	virtual void setColor(vec4& v) = 0;
+	virtual void setColor(vec3& v) = 0;
 	/*Color Management*/
 
 	virtual void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties) = 0;

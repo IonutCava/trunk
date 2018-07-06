@@ -3,6 +3,7 @@
 #include "Rendering/common.h"
 #include "Utility/Headers/Guardian.h"
 #include "GUI/GUI.h"
+#include "TextureManager/Texture2D.h"
 
 #define USE_FREEGLUT
 
@@ -113,17 +114,6 @@ void GL_API::popMatrix()
 void GL_API::enable_MODELVIEW()
 {
 	glMatrixMode( GL_MODELVIEW );
-}
-
-void GL_API::enable_PROJECTION()
-{
-	glMatrixMode( GL_PROJECTION );
-}
-
-void GL_API::enable_TEXTURE(int slot)
-{
-	glMatrixMode( GL_TEXTURE );
-	if(slot > 0) glActiveTexture(GL_TEXTURE0 + slot);
 }
 
 void GL_API::loadIdentityMatrix()
@@ -244,45 +234,71 @@ void GL_API::drawButton(Button* b)
 
 }
 
-void GL_API::drawCube(F32 size)
+void GL_API::drawBox3D(Box3D* const box)
 {
-	glutSolidCube(size);
+	pushMatrix();
+	translate(box->getPosition());
+	rotate(box->getOrientation().x,vec3(1.0f,0.0f,0.0f));
+	rotate(box->getOrientation().y,vec3(0.0f,1.0f,0.0f));
+	rotate(box->getOrientation().z,vec3(0.0f,0.0f,1.0f));
+	scale(box->getScale());
+	setColor(box->getColor());
+	glutSolidCube(box->getSize());
+	popMatrix();
 }
 
-void GL_API::drawSphere(F32 size, U32 resolution)
+void GL_API::drawSphere3D(Sphere3D* const sphere)
 {
-	glutSolidSphere(size,resolution,resolution);
+	pushMatrix();
+	translate(sphere->getPosition());
+	rotate(sphere->getOrientation().x,vec3(1.0f,0.0f,0.0f));
+	rotate(sphere->getOrientation().y,vec3(0.0f,1.0f,0.0f));
+	rotate(sphere->getOrientation().z,vec3(0.0f,0.0f,1.0f));
+	scale(sphere->getScale());
+	setColor(sphere->getColor());
+	glutSolidSphere(sphere->getSize(),sphere->getResolution(),sphere->getResolution());
+	popMatrix();
+	
 }
 
-void GL_API::drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight)
+void GL_API::drawQuad3D(Quad3D* const quad)
 {
+	pushMatrix();
+	translate(quad->getPosition());
+	rotate(quad->getOrientation().x,vec3(1.0f,0.0f,0.0f));
+	rotate(quad->getOrientation().y,vec3(0.0f,1.0f,0.0f));
+	rotate(quad->getOrientation().z,vec3(0.0f,0.0f,1.0f));
+	scale(quad->getScale());
+	setColor(quad->getColor());
 	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
 								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
 		glNormal3f(0.0f, 1.0f, 0.0f);
 		glTexCoord3f(1.0f, 0.0f, 0.0f);
-		glVertex3f(_topLeft.x, _topLeft.y, _topLeft.z);
-		glVertex3f(_topRight.x, _topRight.y, _topRight.z);
-		glVertex3f(_bottomLeft.x, _bottomLeft.y, _bottomLeft.z);
-		glVertex3f(_bottomRight.x, _bottomRight.y, _bottomRight.z);
+		glVertex3f(quad->_tl.x, quad->_tl.y, quad->_tl.z);
+		glVertex3f(quad->_tr.x, quad->_tr.y, quad->_tr.z);
+		glVertex3f(quad->_bl.x, quad->_bl.y, quad->_bl.z);
+		glVertex3f(quad->_br.x, quad->_br.y, quad->_br.z);
 	glEnd();
+	popMatrix();
 }
 
-void GL_API::loadOrtographicView()
+void GL_API::drawText3D(Text3D* const text)
 {
-	F32 width = Engine::getInstance().getWindowWidth();
-	F32 height = Engine::getInstance().getWindowHeight();
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D(0, width, height, 0);
-	glMatrixMode(GL_MODELVIEW);
-}
-
-void GL_API::loadModelView()
-{
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	pushMatrix();
+	translate(text->getPosition());
+	rotate(text->getOrientation().x,vec3(1.0f,0.0f,0.0f));
+	rotate(text->getOrientation().y,vec3(0.0f,1.0f,0.0f));
+	rotate(text->getOrientation().z,vec3(0.0f,0.0f,1.0f));
+	scale(text->getScale());
+	setColor(text->getColor());
+	glPushAttrib(GL_ENABLE_BIT);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glLineWidth(text->getWidth());
+	glutStrokeString(text->getFont(), (const unsigned char*)text->getText().c_str());
+	glPopAttrib();
+	popMatrix();
 }
 
 void GL_API::toggle2D3D(bool _3D)
@@ -313,67 +329,50 @@ void GL_API::toggle2D3D(bool _3D)
 	}
 }
 
-void GL_API::renderMesh(const Mesh& mesh)
+void GL_API::renderModel(DVDFile* const model)
 {
+	if(!model->isVisible()) return;
+	
+	SubMesh *s;
+	vector<SubMesh* >::iterator _subMeshIterator;
+	
+	pushMatrix();
+	translate(model->getPosition());
+	rotate(model->getOrientation().x,vec3(1.0f,0.0f,0.0f));
+	rotate(model->getOrientation().y,vec3(0.0f,1.0f,0.0f));
+	rotate(model->getOrientation().z,vec3(0.0f,0.0f,1.0f));
+	scale(model->getScale());
+	model->getShader()->bind();
+	
+	for(_subMeshIterator = model->getSubMeshes().begin(); 
+		_subMeshIterator != model->getSubMeshes().end(); 
+		_subMeshIterator++)
+	{
+		s = (*_subMeshIterator);
+		s->getGeometryVBO()->Enable();
+		s->getMaterial().texture->Bind(0);
+			model->getShader()->UniformTexture("texDiffuse",0);
+	
+			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
+
+		s->getMaterial().texture->Unbind(0);
+		s->getGeometryVBO()->Disable();
+		
+	}
+	model->getShader()->unbind();
+	popMatrix();
 }
 
-void GL_API::renderSubMesh(const SubMesh& subMesh)
+void GL_API::setColor(vec4& color)
 {
+	glColor4f(color.r,color.g,color.b,color.a);
 }
 
-void GL_API::setColor(F32 r, F32 g, F32 b)
+void GL_API::setColor(vec3& color)
 {
-	glColor3f(r,g,b);
+	glColor3f(color.r,color.g,color.b);
 }
 
-void GL_API::setColor(D32 r, D32 g, D32 b)
-{
-	glColor3d(r,g,b);
-}
-
-void GL_API::setColor(int r, int g, int b)
-{
-	glColor3i(r,g,b);
-}
-
-void GL_API::setColor(F32 r, F32 g, F32 b, F32 alpha)
-{
-	glColor4f(r,g,b,alpha);
-}
-
-void GL_API::setColor(D32 r, D32 g, D32 b, D32 alpha)
-{
-	glColor4d(r,g,b,alpha);
-}
-
-void GL_API::setColor(int r, int g, int b, int alpha)
-{
-	glColor4i(r,g,b,alpha);
-}
-
-void GL_API::setColor(F32 *v)
-{
-	int number_elements = sizeof( v ) / sizeof( v[0] );
-	if( number_elements == 3)	glColor3fv(v);
-	else if( number_elements == 4)	glColor4fv(v);
-	else glColor3i(0,0,0);
-}
-
-void GL_API::setColor(D32 *v)
-{
-	int number_elements = sizeof( v ) / sizeof( v[0] );
-	if( number_elements == 3)	glColor3dv(v);
-	else if( number_elements == 4)	glColor4dv(v);
-	else glColor3i(0,0,0);
-}
-
-void GL_API::setColor(int *v)
-{
-	int number_elements = sizeof( v ) / sizeof( v[0] );
-	if( number_elements == 3)	glColor3iv(v);
-	else if( number_elements == 4)	glColor4iv(v);
-	else glColor3i(0,0,0);
-}
 
 void GL_API::initDevice()
 {

@@ -752,15 +752,7 @@
 				Name="Predefined"
 				>
 				<File
-					RelativePath="..\Geometry\Predefined\Box3D.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\Geometry\Predefined\Box3D.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Geometry\Predefined\Quad3D.cpp"
 					>
 				</File>
 				<File
@@ -768,15 +760,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Geometry\Predefined\Sphere3D.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\Geometry\Predefined\Sphere3D.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Geometry\Predefined\Text3D.cpp"
 					>
 				</File>
 				<File

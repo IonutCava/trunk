@@ -70,7 +70,7 @@ void Sky::drawSkyAndSun() const
 
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_LIGHTING);
-		_sky->draw();
+		GFXDevice::getInstance().drawSphere3D(_sky);
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
@@ -99,7 +99,7 @@ void Sky::drawSky() const
 
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_LIGHTING);
-		_sky->draw();
+		GFXDevice::getInstance().drawSphere3D(_sky);
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
@@ -118,15 +118,13 @@ void Sky::drawSun() const
 	_sun->getPosition() = vec3(_eyePos.x,_eyePos.y,_eyePos.z);
 
 	GFXDevice::getInstance().enable_MODELVIEW();
-	GFXDevice::getInstance().pushMatrix();
-	GFXDevice::getInstance().translate(vec3(-_sunVect.x, -_sunVect.y, -_sunVect.z));
+	_sun->getPosition() = vec3(-_sunVect.x, -_sunVect.y, -_sunVect.z);
 	glPushAttrib(GL_ENABLE_BIT);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_TEXTURE_2D);
-		_sun->draw();
+		GFXDevice::getInstance().drawSphere3D(_sun);
 		glPopAttrib();
 	glClear(GL_DEPTH_BUFFER_BIT);
-	GFXDevice::getInstance().popMatrix();
 
 }
 

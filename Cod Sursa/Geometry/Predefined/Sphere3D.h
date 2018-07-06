@@ -9,7 +9,8 @@ public:
 	~Sphere3D(){};
 	bool load(const std::string &name) {return true;}
 	bool unload() {return true;}
-	void draw();
+	F32& getSize() {return _size;}
+	U32& getResolution() {return _resolution;}
 private:
 	F32 _size;
 	U32 _resolution;

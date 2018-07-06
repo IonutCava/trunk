@@ -124,12 +124,8 @@ void SceneManager::findSelection(int x, int y)
 	Ray r(origin,dir);
 
 	for(it = getModelArray().begin(); it != getModelArray().end(); it++)
-	{
-		if((*it)->getBoundingBox().intersect(r,0.1f,4500))
-		{
+		if((*it)->getBoundingBox().intersect(r,0.01f,45000.0f))	
 			(*it)->setSelected(true);
-			cout << "Selected: " << (*it)->getName() << endl;
-			break;
-		}
-	}
+		else 
+			(*it)->setSelected(false);
 }

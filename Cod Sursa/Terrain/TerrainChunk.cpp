@@ -91,7 +91,7 @@ int TerrainChunk::DrawObjects(GLuint lod)
 	assert(lod < TERRAIN_CHUNKS_LOD);
 
 	for(int i=0; i<(int)m_tObject.size(); i++)
-		m_tObject[i]->Draw();
+		GFXDevice::getInstance().renderModel(m_tObject[i]);
 
 	return (int)m_tObject.size();
 }
@@ -115,7 +115,7 @@ void TerrainChunk::DrawTrees(GLuint lod, F32 d)
 			m_tTrees[i].getShader()->Uniform("windSpeed", _windS);
 		m_tTrees[i].getShader()->unbind();
 		
-		m_tTrees[i].Draw();
+		GFXDevice::getInstance().renderModel(&m_tTrees[i]);
 		
 	}
 }

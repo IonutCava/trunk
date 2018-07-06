@@ -98,7 +98,7 @@ void MainScene::renderActors()
 		{
 			(*ModelIterator)->getBoundingBox().setVisibility(_drawBB);
 			(*ModelIterator)->setVisibility(_drawObjects);
-			(*ModelIterator)->Draw();
+			GFXDevice::getInstance().renderModel(*ModelIterator);
 		}
 }
 

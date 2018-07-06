@@ -8,11 +8,11 @@
 void NetworkScene::render()
 {
 
-	_box->draw();
+	GFXDevice::getInstance().drawBox3D(_box);
 	GUI &gui = GUI::getInstance();
 	gui.draw();
 	for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
-		(*ModelIterator)->Draw();
+		GFXDevice::getInstance().renderModel(*ModelIterator);
 }
 
 void NetworkScene::preRender()

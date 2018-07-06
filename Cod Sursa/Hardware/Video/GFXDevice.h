@@ -19,12 +19,6 @@ public:
 	Shader* newShader(const char *vsFile, const char *fsFile){return _api.newShader(vsFile,fsFile); }
 	Shader* newShader(){return _api.newShader(); }
 
-	/*typedef void (*callback)();
-	void glCommand(callback f){GL_API::getInstance().glCommand(f);}
-	void dxCommand(callback f){DX_API::getInstance().dxCommand(f);}
-	*/
-
-	
 	void translate(vec3& pos){_api.translate(pos);}
 	void rotate(F32 angle, vec3& weights){_api.rotate(angle,weights);}
 	void scale(vec3& scale){_api.scale(scale);}
@@ -45,32 +39,20 @@ public:
 	void pushMatrix(){_api.pushMatrix();}
 	void popMatrix(){_api.popMatrix();}
 	void enable_MODELVIEW(){_api.enable_MODELVIEW();}
-	void enable_PROJECTION(){_api.enable_PROJECTION();}
-	void enable_TEXTURE(int slot){_api.enable_TEXTURE(slot);}
 	void loadIdentityMatrix(){_api.loadIdentityMatrix();}
-	void loadOrtographicView(){_api.loadOrtographicView();}
-	void loadModelView(){_api.loadModelView();}
 	void toggle2D3D(bool _3D) {_api.toggle2D3D(_3D);}
 
 	void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
 	void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
 	void drawButton(Button* button){_api.drawButton(button);}
-	void drawCube(F32 size){_api.drawCube(size);}
-	void drawSphere(F32 size,U32 resolution){_api.drawSphere(size,resolution);}
-	void drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight){_api.drawQuad(_topLeft,_topRight,_bottomLeft,_bottomRight);}
+	void drawBox3D(Box3D* const box){_api.drawBox3D(box);}
+	void drawSphere3D(Sphere3D* const sphere){_api.drawSphere3D(sphere);}
+	void drawQuad3D(Quad3D* const quad){_api.drawQuad3D(quad);}
+	void drawText3D(Text3D* const text){_api.drawText3D(text);}
+	void renderModel(DVDFile* const model){_api.renderModel(model);}
 
-	void renderMesh(const Mesh& mesh){_api.renderMesh(mesh);}
-	void renderSubMesh(const SubMesh& subMesh){_api.renderSubMesh(subMesh);}
-
-	void setColor(F32 r, F32 g, F32 b){_api.setColor(r,g,b);}
-	void setColor(D32 r, D32 g, D32 b){_api.setColor(r,g,b);}
-	void setColor(int r, int g, int b){_api.setColor(r,g,b);}
-	void setColor(F32 r, F32 g, F32 b, F32 alpha){_api.setColor(r,g,b,alpha);}
-	void setColor(D32 r, D32 g, D32 b, D32 alpha){_api.setColor(r,g,b,alpha);}
-	void setColor(int r, int g, int b, int alpha){_api.setColor(r,g,b,alpha);}
-	void setColor(F32 *v){_api.setColor(v);}
-	void setColor(D32 *v){_api.setColor(v);}
-	void setColor(int *v){_api.setColor(v);}
+	void setColor(vec4& v){_api.setColor(v);}
+	void setColor(vec3& v){_api.setColor(v);}
 
 	void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties){_api.setLight(slot,properties);}
 	void createLight(U32 slot){_api.createLight(slot);}

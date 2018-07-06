@@ -4,41 +4,20 @@
 #include "Rendering/Frustum.h"
 #include "Managers/SceneManager.h"
 
-void Mesh::Draw()
+bool Mesh::isVisible()
 {
-	if(!_render /*|| !isInView()*/ || _subMeshes.empty()) return;
-	if(_selected) _bb.setVisibility(true); 
+	if(!_render || !isInView() || _subMeshes.empty())
+		return false;
+	_bb.setVisibility(_selected); 
 	DrawBBox();
+	return true;
 
-	SubMesh *s;
-	_shader->bind();
-	GFXDevice::getInstance().pushMatrix();
-
-	GFXDevice::getInstance().translate(getPosition());
-	GFXDevice::getInstance().rotate(getOrientation());
-	GFXDevice::getInstance().scale(getScale());
-
-	for(_subMeshIterator = _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
-	{
-		s = (*_subMeshIterator);
-		s->getGeometryVBO()->Enable();
-		s->getMaterial().texture->Bind(0);
-		_shader->UniformTexture("texDiffuse",0);
-	
-			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
-
-		s->getMaterial().texture->Unbind(0);
-		s->getGeometryVBO()->Disable();
-	}
-	GFXDevice::getInstance().popMatrix();
-	_shader->unbind();
 }
 
 void Mesh::DrawBBox()
 {
-	//if(!_render || !_bb.getVisibility()) return;
+	if(!_render || !_bb.getVisibility()) return;
 	if(!_bb.isComputed()) computeBoundingBox();
-
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( _bb.min.x, _bb.min.y, _bb.min.z );
 		glVertex3f( _bb.max.x, _bb.min.y, _bb.min.z );
@@ -69,9 +48,13 @@ bool Mesh::isInView()
 {
 	if(!_render) return false;
 	if(!_bb.isComputed()) computeBoundingBox();
+	//return true; 
 
 	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
-	if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
+
+	// Bellow code is still buggy. ToDo: FIX THIS!!!!!!!
+	//if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
+	// END BUGGY CODE :P
 
 	vec3 center = getBoundingBox().getCenter();
 	float radius = (getBoundingBox().max-center).length();

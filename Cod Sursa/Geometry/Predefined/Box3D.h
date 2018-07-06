@@ -9,7 +9,7 @@ public:
 	~Box3D(){};
 	bool load(const std::string &name) {return true;}
 	bool unload() {return true;}
-	void draw();
+	F32& getSize() {return _size;}
 private:
 	F32 _size;
 };

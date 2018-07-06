@@ -39,11 +39,11 @@ public:
 	void                setPosition(vec3 position);
 	void				setScale(vec3 scale);
 	void                setVisibility(bool state) {_render = state;}
-	void Draw();
-	bool isInView();
+	bool isVisible();
+	
 	
 protected:
-
+	bool isInView();
 	void computeBoundingBox();
 	void DrawBBox();
 

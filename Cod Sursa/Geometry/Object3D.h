@@ -35,7 +35,7 @@ public:
 	vec3&						getScale(){return _scale;}
 	vec3&						getColor(){return _color;}
 	string&						getName(){return _name;}
-	void                        setSelected(bool state) {_selected = state;}
+	void                        setSelected(bool state) {_selected = state;	if(_selected) cout << "Selected: " << getName() << endl;}
 
 protected:
 	vec3 _position, _orientation, _scale,_color;

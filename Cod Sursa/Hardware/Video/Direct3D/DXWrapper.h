@@ -2,7 +2,7 @@
 #define _WRAPPER_DX_H_
 
 #include "Utility/Headers/Singleton.h"
-#include "..\RenderAPIWrapper.h"
+#include "../RenderAPIWrapper.h"
 
 SINGLETON_BEGIN_EXT1(DX_API,RenderAPI)
 
@@ -29,32 +29,22 @@ private:
 	void pushMatrix();
 	void popMatrix();
 	void enable_MODELVIEW();
-	void enable_PROJECTION();
-	void enable_TEXTURE(int slot);
+
 	void loadIdentityMatrix();
-	void loadOrtographicView();
-	void loadModelView();
 	void toggle2D3D(bool _3D);
 
 	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
 	void drawButton(Button*);
-	void drawCube(F32 size);
-	void drawSphere(F32 size,U32 resolution);
-    void drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& _bottomRight);
+	void drawBox3D(Box3D* const box);
+	void drawSphere3D(Sphere3D* const sphere);
+	void drawQuad3D(Quad3D* const quad);
+	void drawText3D(Text3D* const text);
 
-	void renderMesh(const Mesh& mesh);
-	void renderSubMesh(const SubMesh& subMesh);
-
-	void setColor(F32 r, F32 g, F32 b);
-	void setColor(D32 r, D32 g, D32 b);
-	void setColor(int r, int g, int b);
-	void setColor(F32 r, F32 g, F32 b, F32 alpha);
-	void setColor(D32 r, D32 g, D32 b, D32 alpha);
-	void setColor(int r, int g, int b, int alpha);
-	void setColor(F32 *v);
-	void setColor(D32 *v);
-	void setColor(int *v);
+	void renderModel(DVDFile* const model);
+	
+	void setColor(vec4& color);
+	void setColor(vec3& color);
 
 	friend class GFXDevice;
 	typedef void (*callback)();

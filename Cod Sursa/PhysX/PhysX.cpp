@@ -440,10 +440,7 @@ void PhysX::DrawObjects(NxShape *obj)
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
     glMultMatrixf(&(orient[0]));
-	GFXDevice::getInstance().translate(((DVDFile*)obj->getActor().userData)->getPosition());
-	GFXDevice::getInstance().rotate(((DVDFile*)obj->getActor().userData)->getOrientation());
-	GFXDevice::getInstance().scale(((DVDFile*)obj->getActor().userData)->getScale());
-	((DVDFile*)obj->getActor().userData)->Draw();
+	GFXDevice::getInstance().renderModel((DVDFile*)obj->getActor().userData);
 	GFXDevice::getInstance().popMatrix();
 	delete orient;
 }

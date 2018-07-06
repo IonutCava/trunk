@@ -123,7 +123,7 @@ void PhysX::DrawBox(NxShape *box)
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	NxMat34 pose = box->getActor().getGlobalPose();
 	F32 *orient = new F32[16];
-	GFXDevice::getInstance().setColor(0.3f,0.3f,0.8f);
+	GFXDevice::getInstance().setColor(vec3(0.3f,0.3f,0.8f));
 	BoundingBox *cube = (BoundingBox*)box->getActor().userData;
 	/*if(!Frustum::getInstance().ContainsBoundingBox(*cube)) return;*/
 	GFXDevice::getInstance().pushMatrix();
@@ -140,7 +140,7 @@ void PhysX::DrawBox(NxShape *box)
 	glutSolidCube(/*cube->size**/2.0f);
 	//glDisable(GL_COLOR_MATERIAL);
 	GFXDevice::getInstance().popMatrix();
-	GFXDevice::getInstance().setColor(1.0f,1.0f,1.0f);
+	GFXDevice::getInstance().setColor(vec3(1.0f,1.0f,1.0f));
     glPopAttrib();	
 	delete orient;
 }

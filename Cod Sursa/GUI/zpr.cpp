@@ -65,16 +65,16 @@ void Reshape(int w,int h)
 
 	ratio = 1.0f * w / h;
 	// Reset the coordinate system before modifying
-	GFXDevice::getInstance().enable_PROJECTION();
-	GFXDevice::getInstance().loadIdentityMatrix();
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
 	
 	// Set the viewport to be the entire window
     glViewport(0, 0, w, h);
 
 	// Set the clipping volume
 	gluPerspective(60,ratio,_zNear,_zFar);
-	GFXDevice::getInstance().enable_MODELVIEW();
-	GFXDevice::getInstance().loadIdentityMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	gluLookAt(x, y, z, 
 		  	x + lx,y + ly,z + lz,
