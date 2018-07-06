@@ -33,11 +33,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EDITOR_SOLUTION_EXPLORER_H_
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
-class SolutionExplorerWindow : public DockedWindow {
+class SolutionExplorerWindow : public DockedWindow, public PlatformContextComponent {
     public:
-        SolutionExplorerWindow(PanelManager& parent);
+        SolutionExplorerWindow(PanelManager& parent, PlatformContext& context);
         ~SolutionExplorerWindow();
 
         void draw() override;

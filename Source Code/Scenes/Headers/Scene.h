@@ -121,7 +121,7 @@ class Scene : public Resource, public PlatformContextComponent {
     /// Update animations, network data, sounds, triggers etc.
     void updateSceneState(const U64 deltaTimeUS);
     /// Override this for Scene specific updates
-    virtual void updateSceneStateInternal(const U64 deltaTimeUS) {}
+    virtual void updateSceneStateInternal(const U64 deltaTimeUS) { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
     inline SceneState& state() { return *_sceneState; }
     inline const SceneState& state() const { return *_sceneState; }
     inline SceneRenderState& renderState() { return _sceneState->renderState(); }
@@ -193,7 +193,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool frameEnded();
     /// Description in SceneManager
     virtual bool loadResources(bool continueOnErrors);
-    virtual bool loadTasks(bool continueOnErrors) { return true; }
+    virtual bool loadTasks(bool continueOnErrors) { ACKNOWLEDGE_UNUSED(continueOnErrors); return true; }
     virtual bool loadPhysics(bool continueOnErrors);
     /// if singleStep is true, only the first model from the modelArray will be loaded.
     /// Useful for loading one model per frame
