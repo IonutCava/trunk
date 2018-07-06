@@ -83,15 +83,15 @@ void WarSceneAISceneImpl::initInternal() {
 }
 
 void WarSceneAISceneImpl::requestOrders() {
-    const vectorImpl<Order*>& orders = _entity->getTeam()->requestOrders();
+    const AITeam::OrderList& orders = _entity->getTeam()->requestOrders();
     std::array<U8, to_const_uint(WarSceneOrder::WarOrder::COUNT)> priority = { 0 };
 
     resetActiveGoals();
     printWorkingMemory();
 
-    for (Order* const order : orders) {
-        WarSceneOrder::WarOrder orderID = static_cast<WarSceneOrder::WarOrder>(
-            dynamic_cast<WarSceneOrder*>(order)->getID());
+    for (const AITeam::OrderPtr& order : orders) {
+        WarSceneOrder::WarOrder orderID =
+            static_cast<WarSceneOrder::WarOrder>(order->getID());
         U32 weight = 0;
         switch (orderID) {
             case WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG: {

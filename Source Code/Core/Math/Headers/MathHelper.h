@@ -168,6 +168,15 @@ T Pico(T a);
 };
 
 namespace Time {
+/// Return the passed param without any modification
+/// Used only for emphasis
+template <typename T>
+T Seconds(T a);
+template <typename T>
+T Milliseconds(T a);
+template <typename T>
+U64 Microseconds(T a);
+
 template <typename T>
 T MicrosecondsToSeconds(T a);
 template <typename T>

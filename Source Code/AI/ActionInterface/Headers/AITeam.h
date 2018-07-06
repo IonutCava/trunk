@@ -62,7 +62,8 @@ class AITeam : public GUIDWrapper {
     typedef hashMapImpl<AIEntity::PresetAgentRadius, CrowdPtr> AITeamCrowd;
     typedef hashMapImpl<AIEntity*, F32> MemberVariable;
     typedef hashMapImpl<I64, AIEntity*> TeamMap;
-
+    typedef std::shared_ptr<Order> OrderPtr;
+    typedef vectorImpl<OrderPtr> OrderList;
     AITeam(U32 id);
     ~AITeam();
 
@@ -97,24 +98,22 @@ class AITeam : public GUIDWrapper {
         WriteLock w_lock(_orderMutex);
         _orders.clear();
     }
-    inline void addOrder(Order* const order) {
-        assert(order != nullptr);
+    inline void addOrder(const OrderPtr& order) {
         WriteLock w_lock(_orderMutex);
-        if (findOrder(order) == std::end(_orders)) {
+        if (findOrder(order->getID()) == std::end(_orders)) {
             _orders.push_back(order);
         }
     }
 
-    inline void removeOrder(Order* const order) {
-        assert(order != nullptr);
+    inline void removeOrder(const Order& order) {
         WriteLock w_lock(_orderMutex);
-        vectorImpl<Order*>::iterator it = findOrder(order);
+        OrderList::iterator it = findOrder(order);
         if (it != std::end(_orders)) {
             _orders.erase(it);
         }
     }
 
-    const vectorImpl<Order*>& requestOrders() const { return _orders; }
+    const OrderList& requestOrders() const { return _orders; }
 
    protected:
     friend class AIManager;
@@ -128,13 +127,17 @@ class AITeam : public GUIDWrapper {
     void removeCrowd(AIEntity::PresetAgentRadius radius);
 
    protected:
-    inline vectorImpl<Order*>::iterator findOrder(Order* const order) {
-        assert(order != nullptr);
-        U32 orderID = order->getID();
-        return vectorAlg::find_if(std::begin(_orders), std::end(_orders),
-                                  [&orderID](Order* const order) -> bool {
-                                      return orderID == order->getID();
-                                  });
+    inline OrderList::iterator findOrder(const Order& order) {
+        return findOrder(order.getID());
+    }
+
+    inline OrderList::iterator findOrder(U32 orderID) {
+        return vectorAlg::find_if(
+            std::begin(_orders), 
+            std::end(_orders),
+            [&orderID](const OrderPtr& order) -> bool {
+                return orderID == order->getID();
+            });
     }
 
     inline vectorImpl<U32>::iterator AITeam::findEnemyTeamEntry(
@@ -158,7 +161,7 @@ class AITeam : public GUIDWrapper {
     mutable SharedLock _crowdMutex;
     mutable SharedLock _enemyTeamLock;
     vectorImpl<U32> _enemyTeams;
-    vectorImpl<Order*> _orders;
+    OrderList _orders;
 };
 
 };  // namespace AI

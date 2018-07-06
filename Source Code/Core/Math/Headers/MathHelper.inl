@@ -185,6 +185,21 @@ template <typename T>
 
 namespace Time {
 template <typename T>
+T Seconds(T a) {
+    return a;
+}
+
+template <typename T>
+T Milliseconds(T a) {
+    return a;
+}
+
+template <typename T>
+U64 Microseconds(T a) {
+    return static_cast<U64>(a);
+}
+
+template <typename T>
 /*constexpr*/ T MicrosecondsToSeconds(T a) {
     return Metric::Micro(a);
 }

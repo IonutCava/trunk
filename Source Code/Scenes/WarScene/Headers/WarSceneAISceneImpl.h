@@ -155,7 +155,8 @@ class WarSceneAISceneImpl : public AISceneImpl {
        enum class AIType {
            ANIMAL = 0,
            LIGHT = 1,
-           HEAVY = 2
+           HEAVY = 2,
+           COUNT
        };
     WarSceneAISceneImpl(AIType type);
     ~WarSceneAISceneImpl();

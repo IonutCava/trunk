@@ -109,6 +109,7 @@
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAI.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAISceneImpl.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -50,12 +50,10 @@ class WarScene : public Scene {
     WarScene();
     ~WarScene();
 
-    bool unload();
     bool load(const stringImpl& name, GUI* const gui);
     bool loadResources(bool continueOnErrors);
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);
-    void processInput(const U64 deltaTime);
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
     void updateSceneStateInternal(const U64 deltaTime);
@@ -63,10 +61,9 @@ class WarScene : public Scene {
    private:
     void startSimulation();
     void toggleCamera();
+
    private:
     I8 _score;
-    vec4<F32> _sunvector;
-    SceneGraphNode* _groundPlaceholder;
     DirectionalLight* _sun;
     GUIMessageBox* _infoBox;
 
@@ -78,17 +75,8 @@ class WarScene : public Scene {
     /// NPC's are the actual game entities
     vectorImpl<NPC*> _armyNPCs[2];
     SceneGraphNode* _flag[2];
-    /// Team's are factions for AIEntites so they can manage friend/foe
-    /// situations
+    /// Teams are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam* _faction[2];
-    vectorImpl<AI::WarSceneOrder*> _orders[2];
-
-    /// Testing stuff
-    SceneGraphNode* _bobNode;
-    SceneGraphNode* _bobNodeBody;
-    SceneGraphNode* _lampLightNode;
-    SceneGraphNode* _lampTransformNode;
-    SceneNode* _lampTransform;
 };
 
 };  // namespace Divide

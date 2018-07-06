@@ -138,6 +138,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                              Input::MouseButton button);
 
   protected:
+    void renderScene();
     void initPostLoadState();
     void onCameraUpdate(Camera& camera);
     void sortVisibleNodes(RenderPassCuller::VisibleNodeCache& nodes) const;

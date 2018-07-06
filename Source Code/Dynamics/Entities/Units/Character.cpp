@@ -24,6 +24,8 @@ Character::Character(CharacterType type, SceneGraphNode& node)
 Character::~Character() {}
 
 void Character::update(const U64 deltaTime) {
+    assert(_node != nullptr);
+
     if (_positionDirty) {
         _curPosition.lerp(_newPosition,
                           Time::MicrosecondsToSeconds<F32>(deltaTime));

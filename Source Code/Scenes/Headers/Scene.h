@@ -93,17 +93,19 @@ class NOINITVTABLE Scene : public Resource {
     virtual ~Scene();
 
     /**Begin scene logic loop*/
-    virtual void processInput(
-        const U64 deltaTime) = 0;  //<Get all input commands from the user
-    virtual void processTasks(
-        const U64 deltaTime);  //<Update the scene based on the inputs
+    /// Get all input commands from the user
+    virtual void processInput(const U64 deltaTime);
+    /// Update the scene based on the inputs
+    virtual void processTasks(const U64 deltaTime);
     virtual void processGUI(const U64 deltaTime);
-    virtual void preRender() {
-    }  //<Prepare the scene for rendering after the update
-    virtual void postRender();  //<Perform any post rendering operations
-    bool idle();  //<Scene is rendering, so add intensive tasks here to save CPU
-                  //cycles
-    void onLostFocus();  //<The application has lost focus
+    /// Prepare the scene for rendering after the update
+    virtual void preRender();
+    /// Perform any post rendering operations
+    virtual void postRender();
+    /// Scene is rendering, so add intensive tasks here to save CPU cycles
+    bool idle();  
+    /// The application has lost focus
+    void onLostFocus();  
     /**End scene logic loop*/
 
     /// Update animations, network data, sounds, triggers etc.
@@ -150,7 +152,7 @@ class NOINITVTABLE Scene : public Resource {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
-    /// call this function if you want to use a more complex rendering callback
+    /// Call this function if you want to use a more complex rendering callback
     /// other than "SceneGraph::render()"
     void renderCallback(const DELEGATE_CBK<>& renderCallback) {
         _renderCallback = renderCallback;

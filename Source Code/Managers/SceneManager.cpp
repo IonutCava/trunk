@@ -66,6 +66,10 @@ bool SceneManager::load(const stringImpl& sceneName,
         return false;
     }
     cacheResolution(resolution);
+
+    _activeScene->renderCallback(
+        DELEGATE_BIND(&SceneManager::renderScene, this));
+
     return Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
 }
 
@@ -178,12 +182,15 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
 void SceneManager::renderVisibleNodes(bool flushCache) {
     updateVisibleNodes(flushCache);
 
-    if (!_activeScene->renderCallback()) {
-        _renderPassManager->render(_activeScene->renderState(),
-                                    _activeScene->getSceneGraph());
-    } else {
-        _activeScene->renderCallback();
-    }
+    assert(_activeScene->renderCallback());
+
+    _activeScene->renderCallback();
+}
+
+void SceneManager::renderScene() {
+    _renderPassManager->render(
+        _activeScene->renderState(),
+        _activeScene->getSceneGraph());
 }
 
 void SceneManager::render(RenderStage stage, const Kernel& kernel) {

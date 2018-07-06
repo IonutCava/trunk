@@ -49,7 +49,10 @@ Light::Light(const F32 range, const LightType& type)
     _renderState.addToDrawExclusionMask(RenderStage::Z_PRE_PASS);
 }
 
-Light::~Light() { unload(); }
+Light::~Light()
+{
+    unload();
+}
 
 bool Light::load(const stringImpl& name) {
     setName(name);

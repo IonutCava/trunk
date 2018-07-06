@@ -204,13 +204,11 @@ void WaterPlane::updateRefraction() {
     if (_cameraUnderWater) {
         return;
     }
-    // Early out check for render callback
-    if (!_renderCallback) {
-        return;
-    }
+    // We need a rendering method to create refractions
+    assert(_renderCallback);
     _refractionRendering = true;
-    // If we are above water, process the plane's reflection. If we are below,
-    // we render the scene normally
+    // If we are above water, process the plane's refraction.
+    // If we are below, we render the scene normally
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::DISPLAY);
     GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
     _cameraMgr.getActiveCamera()->renderLookAt();
@@ -228,29 +226,29 @@ void WaterPlane::updateRefraction() {
 
 /// Update water reflections
 void WaterPlane::updateReflection() {
-    // Early out check for render callback
-    if (_renderCallback) {
-        // ToDo: this will cause problems later with multiple reflectors. Fix
-        // it! -Ionut
-        _reflectionRendering = true;
+    // We need a render callback to create reflections
+    assert(_renderCallback);
+    // ToDo: this will cause problems later with multiple reflectors.
+    // Fix it! -Ionut
+    _reflectionRendering = true;
 
-        RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(
-            _cameraUnderWater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
-        GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
+    RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(
+        _cameraUnderWater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
+    GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
 
-        _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt()
-                          : _cameraMgr.getActiveCamera()->renderLookAtReflected(
-                                getReflectionPlane());
+    _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt()
+                        : _cameraMgr.getActiveCamera()->renderLookAtReflected(
+                            getReflectionPlane());
 
-        _reflectedTexture->Begin(Framebuffer::defaultPolicy());
-        _renderCallback();  //< render to the reflective texture
-        _reflectedTexture->End();
+    _reflectedTexture->Begin(Framebuffer::defaultPolicy());
+    _renderCallback();  //< render to the reflective texture
+    _reflectedTexture->End();
 
-        GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, false);
-        GFX_DEVICE.setRenderStage(prevRenderStage);
+    GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, false);
+    GFX_DEVICE.setRenderStage(prevRenderStage);
 
-        _reflectionRendering = false;
-    }
+    _reflectionRendering = false;
+    
     updateRefraction();
 }
 

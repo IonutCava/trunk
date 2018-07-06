@@ -97,6 +97,9 @@ void Scene::onCameraUpdate(Camera& camera) {
     _sceneGraph.getRoot().onCameraUpdate(camera);
 }
 
+void Scene::preRender() {
+}
+
 void Scene::postRender() {
 #ifdef _DEBUG
     if (renderState().drawDebugLines()) {
@@ -630,6 +633,9 @@ void Scene::removeTask(I64 taskGUID) {
             return;
         }
     }
+}
+
+void Scene::processInput(const U64 deltaTime) {
 }
 
 void Scene::processGUI(const U64 deltaTime) {
