@@ -73,8 +73,9 @@ void AIEntity::unload() {
 
 void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg, const cdiggins::any& msg_content) {
     assert(receiver != nullptr);
-
-    receiver->receiveMessage(this, msg, msg_content);
+    if (getGUID() != receiver->getGUID()) {
+        receiver->receiveMessage(this, msg, msg_content);
+    }
 }
 
 void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) {

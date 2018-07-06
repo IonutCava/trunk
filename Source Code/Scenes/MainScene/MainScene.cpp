@@ -264,21 +264,11 @@ bool MainScene::onKeyUp(const Input::KeyEvent& key){
 }
 
 bool MainScene::mouseMoved(const Input::MouseEvent& key){
-    if(_mousePressed[Input::MouseButton::MB_Right]){
-        state()._angleLR = -state()._mouseXDelta;
-        state()._angleUD = -state()._mouseYDelta;
-    }
-
     return Scene::mouseMoved(key);
 }
 
 bool MainScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
-    bool keyState = Scene::mouseButtonReleased(key,button);
-    if(!_mousePressed[Input::MouseButton::MB_Right]){
-        state()._angleUD = 0;
-        state()._angleLR = 0;
-    }
-    return keyState;
+    return Scene::mouseButtonReleased(key,button);
 }
 
 };

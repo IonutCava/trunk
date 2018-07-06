@@ -83,13 +83,13 @@ SceneGraphNode::~SceneGraphNode(){
     FOR_EACH(NodeChildren::value_type it, _children){
         SAFE_DELETE(it.second);
     }
-    FOR_EACH(NodeComponents::value_type it, _components){
-        SAFE_DELETE(it.second);
+    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
+        SAFE_DELETE(_components[i]);
+        _components[i] = nullptr;
     }
     //and delete the transform bound to this node
     SAFE_DELETE(_prevTransformValues);
     _children.clear();
-    _components.clear();
 #ifdef _DEBUG
     _axisGizmo->_canZombify = true;
 #endif
@@ -162,9 +162,10 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
     assert(parent != nullptr);
     assert(parent->getGUID() != getGUID());
 
-    if(_parent){
-        if (_parent->getGUID() == parent->getGUID())
+    if(_parent) {
+        if (_parent->getGUID() == parent->getGUID()) {
             return;
+        }
         //Remove us from the old parent's children map
         NodeChildren::iterator it = _parent->getChildren().find(getName());
         _parent->getChildren().erase(it);

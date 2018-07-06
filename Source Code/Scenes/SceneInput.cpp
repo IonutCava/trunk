@@ -102,39 +102,7 @@ bool Scene::mouseMoved(const Input::MouseEvent& key){
 }
 
 using namespace Input;
-void Scene::defaultCameraKeys(KeyCode code, bool upState){
-    if (upState){
-        switch (code){
-            case KeyCode::KC_W: state()._moveFB = 0; break;
-            case KeyCode::KC_S: state()._moveFB = 0; break;
-            case KeyCode::KC_A: state()._moveLR = 0; break;
-            case KeyCode::KC_D:	state()._moveLR = 0; break;
-            case KeyCode::KC_Q: state()._roll = 0;   break;
-            case KeyCode::KC_E: state()._roll = 0;   break;
-            case KeyCode::KC_LEFT:  state()._angleLR = 0; break;
-            case KeyCode::KC_RIGHT: state()._angleLR = 0; break;
-            case KeyCode::KC_UP:    state()._angleUD = 0; break;
-            case KeyCode::KC_DOWN:  state()._angleUD = 0; break;
-        }
-    } else {
-        switch (code){
-            case KeyCode::KC_W: state()._moveFB =  1; break;
-            case KeyCode::KC_S: state()._moveFB = -1; break;
-            case KeyCode::KC_A: state()._moveLR = -1; break;
-            case KeyCode::KC_D: state()._moveLR =  1; break;
-            case KeyCode::KC_Q: state()._roll = -1;   break;
-            case KeyCode::KC_E: state()._roll =  1;   break;
-            case KeyCode::KC_LEFT:  state()._angleLR = -1; break;
-            case KeyCode::KC_RIGHT: state()._angleLR =  1; break;
-            case KeyCode::KC_UP:    state()._angleUD = -1; break;
-            case KeyCode::KC_DOWN:  state()._angleUD =  1; break;
-        }
-    }
-}
-
 bool Scene::onKeyDown(const Input::KeyEvent& key){
-    defaultCameraKeys(key._key, false);
-
     switch(key._key){
         default:             return false;
         case KeyCode::KC_END   : deleteSelection(); break;
@@ -160,8 +128,6 @@ bool Scene::onKeyDown(const Input::KeyEvent& key){
 }
 
 bool Scene::onKeyUp(const Input::KeyEvent& key){
-    defaultCameraKeys(key._key, true);
-
     switch( key._key ){
         case KeyCode::KC_P: 
             _paramHandler.setParam("freezeLoopTime", !_paramHandler.getParam("freezeLoopTime", false)); 

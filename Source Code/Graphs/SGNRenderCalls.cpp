@@ -109,9 +109,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         transform->setParentTransform(_parent ? _parent->getComponent<PhysicsComponent>()->getTransform() : nullptr);
     }
     // update all of the internal components (animation, physics, etc)
-    FOR_EACH(NodeComponents::value_type& it, _components) {
-        if (it.second) {
-            it.second->update(deltaTime);
+    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
+        if (_components[i]) {
+            _components[i]->update(deltaTime);
         }
     }
     if (getComponent<PhysicsComponent>()->transformUpdated()){
@@ -179,9 +179,9 @@ bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStag
             
     }
 
-    FOR_EACH(NodeComponents::value_type& it, _components) {
-        if (it.second) {
-            it.second->onDraw(renderStage);
+    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
+        if (_components[i]) {
+            _components[i]->onDraw(renderStage);
         }
     }
     //Call any pre-draw operations on the SceneNode (refresh VB, update materials, etc)

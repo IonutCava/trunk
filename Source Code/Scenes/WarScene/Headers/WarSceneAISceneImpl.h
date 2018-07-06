@@ -31,7 +31,8 @@ namespace Divide {
 
 namespace AI {
 enum AIMsg {
-    HAVE_FLAG = 0
+    HAVE_FLAG = 0,
+    ENEMY_HAS_FLAG = 1
 };
 
 enum FactType {
@@ -56,12 +57,12 @@ public:
         _belief = 0.0f;
     }
 
-    inline void value(const T& val) { _value = val; }
+    inline void value(const T& val) { _value = val; belief(1.0f); }
     inline void belief(F32 belief)  { _belief = belief; }
 
-    inline const T& value()  { return _value; }
-    inline FactType type()   { return _type; }
-    inline F32      belief() { return _belief; }
+    inline const T& value()  { belief(std::max(belief() - 0.01f, 0.0f)); return _value; }
+    inline FactType type()   const { return _type; }
+    inline F32      belief() const { return _belief; }
 
 protected:
     T   _value;
@@ -76,6 +77,7 @@ typedef WorkingMemoryFact<U8,   FACT_TYPE_COUNTER_SMALL>         SmallCounterFac
 typedef WorkingMemoryFact<U16,  FACT_TYPE_COUNTER_MEDIUM>        MediumCounterFact;
 typedef WorkingMemoryFact<U32,  FACT_TYPE_COUNTER_LARGE>         LargeCounterFact;
 typedef WorkingMemoryFact<bool, FACT_TYPE_TOGGLE_STATE>          ToggleStateFact;
+
 class WorkingMemory {
 public:
     WorkingMemory() 
@@ -87,6 +89,8 @@ public:
         _flagCarrierNear.value(false);
         _enemyFlagCarrierNear.value(false);
         _health.value(100);
+        _flagCarrier.value(nullptr);
+        _enemyFlagCarrier.value(nullptr);
         _currentTargetEntity.value(nullptr);  
         _staticDataUpdated = false;
     }
@@ -95,6 +99,8 @@ public:
     static SmallCounterFact _team1Count;
     static SmallCounterFact _team2Count;
     static SGNNodeFact      _flags[2];
+    static AINodeFact       _flagCarrier;
+    static AINodeFact       _enemyFlagCarrier;
            SmallCounterFact _health;
            SGNNodeFact      _currentTargetEntity;
            PositionFact     _currentTargetPosition;
@@ -138,9 +144,7 @@ public:
 
     static void registerFlags(SceneGraphNode* const flag1, SceneGraphNode* const flag2) {
         WorkingMemory::_flags[0].value(flag1);
-        WorkingMemory::_flags[0].belief(1.0f);
         WorkingMemory::_flags[1].value(flag2);
-        WorkingMemory::_flags[1].belief(1.0f);
     }
 
 protected:
@@ -161,7 +165,10 @@ private:
     U64  _deltaTime;
     U8   _orderRequestTryCount;
     U8   _visualSensorUpdateCounter;
+    VisualSensor* _visualSensor;
+    AudioSensor*  _audioSensor;
     WorkingMemory _workingMemory;
+    static vec3<F32> _initialFlagPositions[2];
 };
 
 }; //namespace AI

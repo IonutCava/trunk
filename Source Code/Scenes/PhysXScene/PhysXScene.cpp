@@ -143,26 +143,11 @@ bool PhysXScene::onKeyUp(const Input::KeyEvent& key){
 }
 
 bool PhysXScene::mouseMoved(const Input::MouseEvent& key){
-    if(_mousePressed[OIS::MB_Right]){
-        if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
-        else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
-        else			                                     state()._angleLR =  0;
-
-        if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
-        else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
-        else 			                                     state()._angleUD =  0;
-    }
-
     return Scene::mouseMoved(key);
 }
 
 bool PhysXScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
-    bool keyState = Scene::mouseButtonReleased(key,button);
-    if(!_mousePressed[Input::MouseButton::MB_Right]){
-        state()._angleUD = 0;
-        state()._angleLR = 0;
-    }
-    return keyState;
+    return Scene::mouseButtonReleased(key,button);;
 }
 
 };

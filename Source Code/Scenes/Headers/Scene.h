@@ -235,8 +235,6 @@ protected:
         return true;
     }
 
-    void defaultCameraKeys(Input::KeyCode code, bool upState);
-
 public: //Input
     virtual bool onKeyDown(const Input::KeyEvent& key);
     virtual bool onKeyUp(const Input::KeyEvent& key);

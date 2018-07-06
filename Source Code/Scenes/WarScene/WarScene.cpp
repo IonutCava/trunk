@@ -130,12 +130,11 @@ void WarScene::startSimulation() {
     U64 diffTime = currentTime - _lastNavMeshBuildTime;
     if (diffTime > getSecToUs(10)) {
         AI::Navigation::NavigationMesh* navMesh = AI::AIManager::getInstance().getNavMesh(_army[0][0]->getAgentRadiusCategory());
-        if (!navMesh) {
-            navMesh = New AI::Navigation::NavigationMesh();
-        } else {
+        if (navMesh) {
             previousMesh = true;
             AI::AIManager::getInstance().destroyNavMesh(_army[0][0]->getAgentRadiusCategory());
         }
+        navMesh = New AI::Navigation::NavigationMesh();
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
         if (!navMesh->load(nullptr)) {
@@ -392,6 +391,10 @@ bool WarScene::initializeAI(bool continueOnErrors){
     returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
     returnEnemyFlag.setEffect(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
 
+    AI::ProtectFlagCarrier protectFlag("ProtectFlag");
+    protectFlag.setPrecondition(AI::GOAPFact(AI::AtTargetNode), AI::GOAPValue(true));
+    protectFlag.setEffect(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+
     AI::GOAPGoal findFlag("Find enemy flag");
     findFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
     findFlag.setVariable(AI::GOAPFact(AI::AtTargetNode),  AI::GOAPValue(true));
@@ -408,6 +411,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
     protectFlagCarrier.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(false));
 
     AI::GOAPGoal retrieveFlag("Retrieve flag");
+    retrieveFlag.setVariable(AI::GOAPFact(AI::AtTargetNode),  AI::GOAPValue(true));
     retrieveFlag.setVariable(AI::GOAPFact(AI::HasTargetNode), AI::GOAPValue(true));
 
     for(U8 k = 0; k < 2; ++k) {
@@ -456,6 +460,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
             brain->registerAction(&approachEnemyFlag);
             brain->registerAction(&captureEnemyFlag);
             brain->registerAction(&returnEnemyFlag);
+            brain->registerAction(&protectFlag);
             brain->registerGoal(captureFlag);
             brain->registerGoal(returnFlag);
             brain->registerGoal(findFlag);
@@ -464,7 +469,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
             aiSoldier->addAISceneImpl(brain);
 
             soldier = New NPC(currentNode, aiSoldier);
-            soldier->setMovementSpeed(speed); 
+            soldier->setMovementSpeed(speed * 2); 
             _armyNPCs[k].push_back(soldier);
             _army[k].push_back(aiSoldier);
         }
@@ -617,11 +622,6 @@ bool WarScene::onKeyUp(const Input::KeyEvent& key){
 }
 
 bool WarScene::mouseMoved(const Input::MouseEvent& key){
-    if(_mousePressed[OIS::MB_Right]){
-        state()._angleLR = -state()._mouseXDelta;
-        state()._angleUD = -state()._mouseYDelta;
-    }
-
     return Scene::mouseMoved(key);
 }
 
@@ -630,12 +630,7 @@ bool WarScene::mouseButtonPressed(const Input::MouseEvent& key, Input::MouseButt
 }
 
 bool WarScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
-    bool keyState = Scene::mouseButtonReleased(key,button);
-    if(!_mousePressed[Input::MouseButton::MB_Right]){
-        state()._angleUD = 0;
-        state()._angleLR = 0;
-    }
-    return keyState;
+    return Scene::mouseButtonReleased(key,button);;
 }
 
 };

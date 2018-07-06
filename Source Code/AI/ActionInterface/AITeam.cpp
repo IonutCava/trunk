@@ -107,7 +107,7 @@ bool AITeam::removeTeamMember(AIEntity* entity) {
 }
 
 bool AITeam::addEnemyTeam(U32 enemyTeamID) {
-    if (findEnemyTeamEntry(enemyTeamID) != _enemyTeams.end()) {
+    if (findEnemyTeamEntry(enemyTeamID) == _enemyTeams.end()) {
         WriteLock w_lock(_updateMutex); 
         _enemyTeams.push_back(enemyTeamID);
         return true;

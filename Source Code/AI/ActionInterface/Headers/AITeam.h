@@ -75,7 +75,7 @@ public:
 
     inline void setTeamID(U32 value) { _teamID = value; }
     inline U32  getTeamID() const { return  _teamID; }
-    inline I32  getEnemyTeamID(U32 index) {
+    inline I32  getEnemyTeamID(U32 index) const {
         ReadLock r_lock(_enemyTeamLock);
         if (_enemyTeams.size() <= index) {
             return -1;

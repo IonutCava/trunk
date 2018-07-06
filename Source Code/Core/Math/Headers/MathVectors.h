@@ -80,21 +80,25 @@ public:
 
           bool operator==(const vec2 &v)   const { return this->compare(v); }
           bool operator!=(const vec2 &v)   const { return !(*this == v); }
-          vec2 &operator=(T _f)                  { this->x=_f; this->y=_f; return (*this); }
+          vec2 &operator=(T _f)                  { this->set(_f); return (*this); }
     const vec2 operator*(T _f)             const { return vec2(this->x * _f,this->y * _f); }
     const vec2 operator/(T _i)             const { return vec2(this->x / _i,this->y / _i); }
     const vec2 operator+(const vec2 &v)    const { return vec2(this->x + v.x,this->y + v.y); }
     const vec2 operator-()                 const { return vec2(-this->x,-this->y); }
     const vec2 operator-(const vec2 &v)    const { return vec2(this->x - v.x,this->y - v.y); }
-          vec2 &operator*=(T _f)                 { return *this = *this * _f; }
-          vec2 &operator/=(T _f)                 { return *this = *this / _f; }
-          vec2 &operator*=(const vec2 &v)        { return *this = *this * v;  }
-          vec2 &operator+=(const vec2 &_v)       { return *this = *this + _v; }
-          vec2 &operator-=(const vec2 &_v)       { return *this = *this - _v; }
+          vec2 &operator*=(T _f)                 { this->set(*this * _f); return *this; }
+          vec2 &operator/=(T _f)                 { this->set(*this / _f); return *this; }
+          vec2 &operator*=(const vec2 &v)        { this->set(*this * v);  return *this; }
+          vec2 &operator/=(const vec2 &v)        { this->set(*this / v);  return *this; }
+          vec2 &operator+=(const vec2 &_v)       { this->set(*this + _v); return *this; }
+          vec2 &operator-=(const vec2 &_v)       { this->set(*this - _v); return *this; }
           T     operator*(const vec2 &_v)  const { return this->x * _v.x + this->y * _v.y; }
           T     &operator[](I32 i)               { return this->_v[i]; }
     const T     &operator[](I32 i)         const { return this->_v[i]; }
-
+    const vec2  operator/(const vec2 &v)   const {
+         return vec2(IS_ZERO(v.x) ? this->x : this->x / v.x, 
+                     IS_ZERO(v.y) ? this->y : this->y / v.y); 
+    }
     operator T*()             { return this->_v; }
     operator const T*() const { return this->_v; }
     /// swap the components  of this vector with that of the specified one
@@ -102,19 +106,19 @@ public:
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec2 &iv)             { std::swap(this->x,iv.x);  std::swap(this->x,iv.x); }
      /// set the 2 components of the vector manually using a source pointer to a (large enough) array
-    inline void setV(const T* v)           { this->x = v[0]; this->y = v[1]; }
+    inline void setV(const T* v)           { this->set(v[0], v[1]); }
     /// set the 2 components of the vector manually
-    inline void set(T value)               { this->x = value; this->y = value;}
+    inline void set(T value)               { this->set(value, value);}
     /// set the 2 components of the vector manually
     inline void set(T _x,T _y)             { this->x = _x; this->y = _y; }
     /// set the 2 components of the vector using a source vector
-    inline void set(const vec2<T> v)       { this->x = v.x; this->y =v.y; }
+    inline void set(const vec2<T> v)       { this->set(v.x, v.y); }
      /// set the 2 components of the vector using the first 2 components of the source vector
-    inline void set(const vec3<T>& v)      { this->set(t.xy()); }
+    inline void set(const vec3<T>& v)      { this->set(v.x, v.y); }
      /// set the 2 components of the vector using the first 2 components of the source vector
-    inline void set(const vec4<T>& v)      { this->set(t.xy()); }
+    inline void set(const vec4<T>& v)      { this->set(v.x, v.y); }
     /// set the 2 components of the vector back to 0
-    inline void reset()                    { this->x = this->y = 0; }
+    inline void reset()                    { this->set(0, 0); }
     /// return the vector's length
     inline T    length()             const { return std::sqrt(this->x * this->x + this->y * this->y); }
     /// return the angle defined by the 2 components
@@ -179,21 +183,26 @@ public:
 
           bool  operator!=(const vec3 &v)  const { return !(*this == v); }
           bool  operator==(const vec3 &v)  const { return this->compare(v); }
-          vec3 &operator=(T _f)                  { this->x=_f; this->y=_f; this->z=_f; return (*this); }
+          vec3 &operator=(T _f)                  { this->set(_f); return (*this); }
     const vec3  operator*(T _f)            const { return vec3(this->x * _f,this->y * _f,this->z * _f); }
-    const vec3  operator/(T _f)            const { if(IS_ZERO(_f)) return *this;_f = 1.0f / _f; return (*this) * _f; }
-    const vec3  operator+(const vec3 &v)   const { return vec3(this->x + v.x,this->y + v.y,this->z + v.z); }
-    const vec3  operator-()                const { return vec3(-this->x,-this->y,-this->z); }
-    const vec3  operator-(const vec3 &v)   const { return vec3(this->x - v.x,this->y - v.y,this->z - v.z); }
-    const vec3  operator*(const vec3 &v)   const { return vec3(this->x * v.x,this->y * v.y,this->z * v.z);}
-          vec3 &operator*=(T _f)                 { return *this = *this * _f; }
-          vec3 &operator/=(T _f)                 { return *this = *this / _f; }
-          vec3 &operator*=(const vec3 &v)        { return *this = *this * v;  }
-          vec3 &operator+=(const vec3 &v)        { return *this = *this + v; }
-          vec3 &operator-=(const vec3 &v)        { return *this = *this - v; }
+    const vec3  operator/(T _f)            const { if(IS_ZERO(_f)) return *this; _f = 1.0f / _f; return (*this) * _f; }
+    const vec3  operator+(const vec3 &v)   const { return vec3(this->x + v.x, this->y + v.y, this->z + v.z); }
+    const vec3  operator-()                const { return vec3(-this->x, -this->y, -this->z); }
+    const vec3  operator-(const vec3 &v)   const { return vec3(this->x - v.x, this->y - v.y, this->z - v.z); }
+    const vec3  operator*(const vec3 &v)   const { return vec3(this->x * v.x, this->y * v.y, this->z * v.z);}
+          vec3 &operator*=(T _f)                 { this->set(*this * _f); return *this; }
+          vec3 &operator/=(T _f)                 { this->set(*this / _f); return *this; }
+          vec3 &operator*=(const vec3 &v)        { this->set(*this * v);  return *this; }
+          vec3 &operator/=(const vec3 &v)        { this->set(*this / v);  return *this; }
+          vec3 &operator+=(const vec3 &v)        { this->set(*this + v);  return *this; }
+          vec3 &operator-=(const vec3 &v)        { this->set(*this - v);  return *this; }
     //    T     operator*(const vec3 &v)   const { return this->x * v.x + this->y * v.y + this->z * v.z; }
           T    &operator[](const I32 i)          { return this->_v[i];}
-
+    const vec3  operator/(const vec3 &v)   const {
+         return vec3(IS_ZERO(v.x) ? this->x : this->x / v.x, 
+                     IS_ZERO(v.y) ? this->y : this->y / v.y,
+                     IS_ZERO(v.z) ? this->z : this->z / v.z); 
+    }
     operator T*()             { return this->_v; }
     operator const T*() const { return this->_v; }
 
@@ -206,19 +215,19 @@ public:
     inline vec2<T> yz() const { return this->gb();}
 
     /// set the 3 components of the vector manually using a source pointer to a (large enough) array
-    inline void setV(const T* v)        { this->x = v[0]; this->y = v[1]; this->z = v[2]; }
+    inline void setV(const T* v)        { this->set(v[0], v[1], v[2]); }
     /// set the 3 components of the vector manually
-    inline void set(T value)           { this->x = value; this->y = value; this->z = value;}
+    inline void set(T value)            { this->set(value, value, value); }
     /// set the 3 components of the vector manually
     inline void set(T _x, T _y, T _z)   { this->x = _x;  this->y = _y;  this->z = _z; }
     /// set the 3 components of the vector using a smaller source vector
-    inline void set(const vec2<T>& v)   { this->x = v.x; this->y = v.y; this->z = 0.0;}
+    inline void set(const vec2<T>& v)   { this->set(v.x, v.y, 0.0);}
     /// set the 3 components of the vector using a source vector
-    inline void set(const vec3<T>& v)   { this->x = v.x; this->y = v.y; this->z = v.z; }
+    inline void set(const vec3<T>& v)   { this->set(v.x, v.y,  v.z); }
     /// set the 3 components of the vector using the first 3 components of the source vector
-    inline void set(const vec4<T>& v)   { this->set(v.xyz()); }
+    inline void set(const vec4<T>& v)   { this->set(v.x, v.y, v.z); }
     /// set all the components back to 0
-    inline void reset()                 { this->x = this->y = this->z = 0; }
+    inline void reset()                 { this->set(0, 0, 0); }
     /// return the vector's length
     inline T    length()          const {return std::sqrt(lengthSquared()); }
     /// return true if length is zero
@@ -314,20 +323,25 @@ public:
 
           bool  operator==(const vec4 &v)   const { return this->compare(v); }
           bool  operator!=(const vec4 &v)   const { return !(*this == v); }
-          vec4 &operator=(T _f)                   { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this);}
+          vec4 &operator=(T _f)                   { this->set(_f);}
     const vec4  operator*(T _f)             const { return vec4(this->x * _f,this->y * _f,this->z * _f,this->w * _f); }
     const vec4  operator/(T _f)             const { if(IS_ZERO(_f)) return *this; _f = 1.0f / _f; return (*this) * _f; }
     const vec4  operator-()                 const { return vec4(-x,-y,-z,-w); }
     const vec4  operator+(const vec4 &v)    const { return vec4(this->x + v.x,this->y + v.y,this->z + v.z,this->w + v.w); }
     const vec4  operator-(const vec4 &v)    const { return vec4(this->x - v.x,this->y - v.y,this->z - v.z,this->w - v.w); }
-          vec4 &operator*=(T _f)                  { return *this = *this * _f; }
-          vec4 &operator/=(T _f)                  { return *this = *this / _f; }
-          vec4 &operator*=(const vec4 &v)         { return *this = *this * v; }
-          vec4 &operator+=(const vec4 &v)         { return *this = *this + v; }
-          vec4 &operator-=(const vec4 &v)         { return *this = *this - v; }
+          vec4 &operator*=(T _f)                  { this->set(*this * _f); return *this; }
+          vec4 &operator/=(T _f)                  { this->set(*this / _f); return *this; }
+          vec4 &operator*=(const vec4 &v)         { this->set(*this * v);  return *this; }
+          vec4 &operator+=(const vec4 &v)         { this->set(*this + v);  return *this; }
+          vec4 &operator-=(const vec4 &v)         { this->set(*this - v);  return *this; }
           T     operator*(const vec3<T> &v) const { return this->x * v.x + this->y * v.y + this->z * v.z + this->w; }
           T     operator*(const vec4<T> &v) const { return this->x * v.x + this->y * v.y + this->z * v.z + this->w * v.w; }
-
+    const vec4  operator/(const vec4 &v)   const {
+         return vec4(IS_ZERO(v.x) ? this->x : this->x / v.x, 
+                     IS_ZERO(v.y) ? this->y : this->y / v.y,
+                     IS_ZERO(v.z) ? this->z : this->z / v.z,
+                     IS_ZERO(v.w) ? this->w : this->w / v.w); 
+    }
     operator T*()             { return this->_v; }
     operator const T*() const { return this->_v; }
 
@@ -356,23 +370,23 @@ public:
     inline vec3<T> gba() const { return vec3<T>(this->g, this->b, this->a); }
     inline vec3<T> yzw() const { return this->gba(); }
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
-    inline void setV(const T* v)         { this->x = v[0]; this->y = v[1]; this->z = v[2]; if(v[3]) this->w = v[3]; else this->w = 1.0f; }
+    inline void setV(const T* v)         { this->set(v[0], v[1], v[2], v[3]); }
     /// set the 4 components of the vector manually
-    inline void set(T value)             { this->x = value; this->y = value; this->z = value; this->w = value; }
+    inline void set(T value)             { this->set(value, value, value, value); }
     /// set the 4 components of the vector manually
     inline void set(T _x,T _y,T _z,T _w) { this->x = _x;  this->y =_y;   this->z =_z;   this->w =_w;}
     /// set the 4 components of the vector using a source vector
-    inline void set(const vec4& v)       { this->x = v.x; this->y = v.y; this->z = v.z; this->w = v.w;}
+    inline void set(const vec4& v)       { this->set(v.x, v.y, v.z, v.w); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T>& v)    { this->x = v.x; this->y = v.y; this->z = v.z; this->w = 1.0;}
+    inline void set(const vec3<T>& v)    { this->set(v.x, v.y, v.z, 1) ;}
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T>& v, T w) { this->x = v.x; this->y = v.y; this->z = v.z; this->w = w; }
+    inline void set(const vec3<T>& v, T w) { this->set(v.x, v.y, v.z, w); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec2<T>& v)    { this->x = v.x; this->y = v.y; this->z = 0.0; this->w = 1.0;}
+    inline void set(const vec2<T>& v)    { this->set(v.x, v.y, 0.0, 1.0);}
     /// set the 4 components of the vector using smallers source vectors
-    inline void set(const vec2<T>& v1, const vec2<T>& v2)    { this->x = v1.x; this->y = v1.y; this->z = v2.x; this->w = v2.y; }
+    inline void set(const vec2<T>& v1, const vec2<T>& v2)    { this->set(v1.x, v1.y, v2.x, v2.y); }
     /// set all the components back to 0
-    inline void reset()                  { this->x = this->y = this->z = this->w = 0;}
+    inline void reset()                  { this->set(0, 0, 0, 0);}
     /// compare 2 vectors within the specified tolerance
     inline bool compare(const vec4 &v,F32 epsi = EPSILON_F32) const;
     /// swap the components  of this vector with that of the specified one

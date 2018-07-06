@@ -23,6 +23,7 @@ namespace AI {
     bool WarSceneAction::postAction() const {
         return _parentScene->postAction(_type, this);
     }
+
     ApproachFlag::ApproachFlag(std::string name, F32 cost) : WarSceneAction(ACTION_APPROACH_FLAG, name, cost)
     {
     }
@@ -35,5 +36,12 @@ namespace AI {
     {
     }
 
+    ProtectFlagCarrier::ProtectFlagCarrier(std::string name, F32 cost) : WarSceneAction(ACTION_PROTECT_FLAG_CARRIER, name, cost)
+    {
+    }
+
+    RecoverFlag::RecoverFlag(std::string name, F32 cost) : WarSceneAction(ACTION_RECOVER_FLAG, name, cost)
+    {
+    }
 }; //namespace AI
 }; //namespace Divide

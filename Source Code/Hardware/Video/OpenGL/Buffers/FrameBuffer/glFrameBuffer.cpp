@@ -107,8 +107,9 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
         sampler.toggleMipMaps(false);
     }
 
-    RemoveResource(_attachmentTexture[slot]);
-    
+    if (_attachmentTexture[slot]) {
+        RemoveResource(_attachmentTexture[slot]);
+    }
     std::string attachmentName("Framebuffer_Att_");
     attachmentName.append(getAttachmentName(type));
     attachmentName.append(Util::toString(getGUID()));
@@ -269,7 +270,9 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
 void glFramebuffer::Destroy() {
     
     for (U8 i = 0; i < TextureDescriptor::AttachmentType_PLACEHOLDER; ++i) {
-        RemoveResource(_attachmentTexture[i]);
+        if (_attachmentTexture[i]) {
+            RemoveResource(_attachmentTexture[i]);
+        }
     }
 
     if (_framebufferHandle > 0) {

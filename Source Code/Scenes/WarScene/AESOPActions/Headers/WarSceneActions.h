@@ -44,6 +44,7 @@ namespace Divide {
             case EnemyDead : return "Enemy Dead";
             case WaitingIdle : return "Waiting Idle";
             case AtTargetNode : return "At Target Node";
+            case HasTargetNode : return "Has Target Node";
         };
         return GOAPFactName(fact);
     };
@@ -51,7 +52,9 @@ namespace Divide {
     enum ActionType {
         ACTION_APPROACH_FLAG = 0,
         ACTION_CAPTURE_FLAG = 1,
-        ACTION_RETURN_FLAG = 2
+        ACTION_RETURN_FLAG = 2,
+        ACTION_PROTECT_FLAG_CARRIER = 3,
+        ACTION_RECOVER_FLAG = 4
     };
     
     class WarSceneAction : public GOAPAction {
@@ -100,7 +103,21 @@ namespace Divide {
             {
             }
     };
-
+    class ProtectFlagCarrier : public WarSceneAction {
+        public:
+            ProtectFlagCarrier(std::string name, F32 cost = 1.0f);
+            ProtectFlagCarrier(WarSceneAction const & other) : WarSceneAction(other)
+            {
+            }
+        
+    };
+    class RecoverFlag : public WarSceneAction {
+        public:
+            RecoverFlag(std::string name, F32 cost = 1.0f);
+            RecoverFlag(WarSceneAction const & other) : WarSceneAction(other)
+            {
+            }
+    };
     }; //namespace AI
 }; //namespace Divide
 

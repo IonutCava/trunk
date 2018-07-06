@@ -35,7 +35,8 @@ public:
     enum ComponentType {
         SGN_COMP_ANIMATION = 0,
         SGN_COMP_NAVIGATION = 1,
-        SGN_COMP_PHYSICS = 2
+        SGN_COMP_PHYSICS = 2,
+        ComponentType_PLACEHOLDER = 3
     };
 
     SGNComponent(ComponentType type, SceneGraphNode* const parentSGN);

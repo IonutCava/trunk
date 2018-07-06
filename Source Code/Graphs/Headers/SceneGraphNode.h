@@ -80,7 +80,6 @@ class IMPrimitive;
 class SceneGraphNode : public GUIDWrapper, private boost::noncopyable{
 public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
-    typedef Unordered_map<SGNComponent::ComponentType, SGNComponent* > NodeComponents;
 
      ///Usage context affects lighting, navigation, physics, etc
     enum UsageContext {
@@ -130,6 +129,15 @@ public:
     inline      SceneGraphNode*  getParent()      const {return _parent;}
     inline      NodeChildren&    getChildren()          {return _children;}
                 void             setParent(SceneGraphNode* const parent);
+
+    /// Alias for changing parent
+    inline void attachToNode(SceneGraphNode* const target) {
+        setParent(target);
+    }
+
+    inline void attachToRoot() {
+        setParent(getRoot());
+    }
     /*Parent <-> Children*/
 
     /*Bounding Box Management*/
@@ -193,13 +201,13 @@ public:
     inline void setComponent(SGNComponent::ComponentType type, SGNComponent* component) { SAFE_UPDATE(_components[type], component); }
 
     template<typename T>
-    inline T* getComponent() { assert(false && "INVALID COMPONENT"); return nullptr; }
+    inline T* getComponent() const { assert(false && "INVALID COMPONENT"); return nullptr; }
     template<>
-    inline AnimationComponent* getComponent()  { return static_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); }
+    inline AnimationComponent*  getComponent() const { return static_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); }
     template<>
-    inline NavigationComponent* getComponent() { return static_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); }
+    inline NavigationComponent* getComponent() const { return static_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); }
     template<>
-    inline PhysicsComponent* getComponent()    { return static_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
+    inline PhysicsComponent*    getComponent() const { return static_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
     
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
@@ -212,6 +220,14 @@ public:
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
+
+    inline bool compare(const SceneGraphNode* const other) const {
+        return *this == *other;
+    }
+
+    bool operator==(const SceneGraphNode &other) const { 
+        return this->getGUID() == other.getGUID(); 
+    }
 
 protected:
     friend class RenderPassCuller;
@@ -267,7 +283,7 @@ private:
     std::string _name;
 
     UsageContext _usageContext;
-    NodeComponents _components;
+    SGNComponent* _components[SGNComponent::ComponentType_PLACEHOLDER];
     vectorImpl<DELEGATE_CBK> _deletionCallbacks; 
     Unordered_map<RenderStage, bool> _drawReset;
 

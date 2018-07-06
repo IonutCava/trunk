@@ -44,7 +44,15 @@ public:
     void update(const U64 deltaTime);
     void followSceneGraphNode(U32 containerID, SceneGraphNode* const node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
-
+    F32  getDistanceToNodeSq(U32 containerID, U64 nodeGUID);
+    inline F32 getDistanceToNode(U32 containerID, U64 nodeGUID) {
+        F32 distanceSq = getDistanceToNodeSq(containerID, nodeGUID);
+        if (distanceSq < std::numeric_limits<F32>::max() - 1.0f) {
+            return std::sqrtf(distanceSq);
+        }
+        return distanceSq;
+    }
+    vec3<F32> getNodePosition(U32 containerID, U64 nodeGUID);
     SceneGraphNode* const getClosestNode(U32 containerID);
 
 protected:

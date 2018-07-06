@@ -138,6 +138,7 @@ void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     NavMeshMap::iterator it = _navMeshes.find(radius);
     DIVIDE_ASSERT(it != _navMeshes.end(), "AIManager error: Can't destroy NavMesh for specified radius (NavMesh not found)!");
     SAFE_DELETE(it->second);
+    _navMeshes.erase(it);
     w_lock.unlock();
     
     WriteLock w_lock2(_updateMutex);
