@@ -53,11 +53,13 @@ public:
 	///Another example would be the player model. It is not rendered when in First Person, but it should show up in reflections
 	inline void setRenderCallback(boost::function0<void> callback) {_renderCallback = callback;}
 
-	///This is inherited from FrameListener and is used to queue up reflection on every frame start
-	bool framePreRenderEnded(const FrameEvent& evt);
     void togglePreviewReflection() {_previewReflection = !_previewReflection;}
     ///Draw a small quad with our reflection buffer as a texture
     void previewReflection();
+
+protected:
+	///This is inherited from FrameListener and is used to queue upreflection on every frame start
+	bool framePreRenderEnded(const FrameEvent& evt);
 
 protected:
 

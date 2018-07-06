@@ -21,13 +21,18 @@ template<>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::string& name) {
     res->setState(RES_LOADING);
 
+	///Set water plane to be single-sided
+	P32 quadMask;
+	quadMask.i = 0;
+	quadMask.b.b0 = true;
+
 	ResourceDescriptor waterMaterial("waterMaterial");
 	ResourceDescriptor waterShader("water");
 	ResourceDescriptor waterPlane("waterPlane");
 	ResourceDescriptor waterTexture("waterTexture");
 	waterTexture.setResourceLocation(ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/misc_images/terrain_water_NM.jpg");
 	waterPlane.setFlag(true); //No default material
-
+	waterPlane.setBoolMask(quadMask);
 	Texture2D* waterNM = CreateResource<Texture2D>(waterTexture);
 	assert(waterNM != NULL);
 

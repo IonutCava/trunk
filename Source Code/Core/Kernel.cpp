@@ -178,11 +178,8 @@ bool Kernel::presentToScreen(){
 	// Inform listeners that we finished pre-rendering
 	FrameEvent evt;
 	_frameMgr.createEvent(FRAME_PRERENDER_END,evt);
-
 	if(!_frameMgr.framePreRenderEnded(evt)) return false;
 
-	// When the entire scene is ready for rendering, generate the shadowmaps
-	_lightPool.generateShadowMaps(_sceneMgr.getActiveScene()->renderState());
 	// Render the scene adding any post-processing effects that we have active
 	PostFX::getInstance().render(_camera);
 	

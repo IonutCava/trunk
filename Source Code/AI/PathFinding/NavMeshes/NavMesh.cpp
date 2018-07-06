@@ -156,6 +156,7 @@ namespace Navigation {
 		// I am trusting that this is atomic.
 		_navMesh = _tempNavMesh; 
 		dtFreeNavMesh(old);
+		_debugDrawInterface->setDirty(true);
 		_tempNavMesh = NULL;
 		_navigationMeshLock.unlock();
 
@@ -510,10 +511,15 @@ namespace Navigation {
 #pragma message("ToDo: Enable file support for navMeshes! - Ionut")
 	bool NavigationMesh::load(SceneGraphNode* const sgn){
 		if(!_fileName.length()) return false;
+		std::string file = _fileName;
 
-        std::string file = _fileName;
-        (sgn == NULL) ? file.append("root_node") : file.append("node_[_" + sgn->getName() + "_]");
+		if(sgn == NULL){
+			file.append("_root_node");
+		}else{
+			file.append("_node_[_" + sgn->getName() + "_]");
+		}
 
+		file.append(".nm");
 		// Parse objects from level into RC-compatible format
 		FILE* fp = fopen(file.c_str(), "rb");
 		if(!fp) return false;
@@ -532,10 +538,6 @@ namespace Navigation {
 			return false;
 		}
 
-#ifdef _DEBUG
-		fclose(fp);
-		return false;
-#else		
 		boost::mutex::scoped_lock(_navigationMeshLock);
 
 		if(_navMesh) dtFreeNavMesh(_navMesh);
@@ -573,7 +575,7 @@ namespace Navigation {
 		fclose(fp);
 
 		return true;
-#endif
+
 	}
 
 	bool NavigationMesh::save(){

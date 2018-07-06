@@ -35,6 +35,29 @@
 #include <sstream>
 #include "Utility/Headers/Vector.h"
 
+#define M_PIDIV2			1.570796326794896619231321691639f		//  PI / 2
+#define M_2PI				6.283185307179586476925286766559f		//  2 * PI
+#define M_PI2				9.869604401089358618834490999876f		//  PI ^ 2
+#define M_PIDIV180			0.01745329251994329576923690768488f		//  PI / 180
+#define M_180DIVPI			57.295779513082320876798154814105f		//  180 / PI
+
+#define DegToRad(a)	(a)*=M_PIDIV180
+#define RadToDeg(a)	(a)*=M_180DIVPI
+#define RADIANS(a)	((a)*M_PIDIV180)
+#define DEGREES(a)	((a)*M_180DIVPI)
+
+#define kilometre    *1000
+#define metre		 *1
+#define decimetre    *0.1f
+#define centimetre   *0.01f
+#define millimeter   *0.001f
+
+#define getMsToSec(a) a*0.001f
+#define getSecToMs(a) a*1000.0f
+
+#define MsToSec(a)   (a)*=0.001f
+#define SecToMs(a)   (a)*=1000.0f
+
 namespace Util {
 	template <typename T>
 	class mat4;
@@ -109,6 +132,13 @@ namespace Util {
 		return (a<b) ? a : b;
 	}
 
+	inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
+		return DEGREES(2.0f * atan(tan(RADIANS(xfov) * 0.5f) / aspect));
+	}
+
+	inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
+		return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
+	}
 	namespace Mat4{
 		// ----------------------------------------------------------------------------------------
 		template <typename T>

@@ -124,12 +124,15 @@ void GL_API::setLight(Light* const light){
 
 void GL_API::updateProjectionMatrix(){
 	if(!Divide::GL::_contextAvailable) return;
-	_uniformBufferObjects[Matrices_UBO]->ChangeSubData(0,sizeof(glm::mat4),glm::value_ptr(Divide::GL::_projectionMatrix.top()));
+	size_t mat4Size = 16 * sizeof(F32);
+	//Not using sizeof(glm::mat4) to make it easier to drop GLM if needed (not that I would) and use my own mat4 matrices for this
+	_uniformBufferObjects[Matrices_UBO]->ChangeSubData(0, mat4Size, glm::value_ptr(Divide::GL::_projectionMatrix.top()));
 }
 
 void GL_API::updateViewMatrix(){
 	if(!Divide::GL::_contextAvailable) return;
-	_uniformBufferObjects[Matrices_UBO]->ChangeSubData(sizeof(glm::mat4),sizeof(glm::mat4),glm::value_ptr(Divide::GL::_viewMatrix.top()));
+	size_t mat4Size = 16 * sizeof(F32);
+	_uniformBufferObjects[Matrices_UBO]->ChangeSubData(mat4Size, mat4Size, glm::value_ptr(Divide::GL::_viewMatrix.top()));
 }
 
 //Setting _LookAt here for camera's or shadow projection

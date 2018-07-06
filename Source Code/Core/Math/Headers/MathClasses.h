@@ -102,29 +102,6 @@
 #define M_PI				3.141592653589793238462643383279f		//  PI
 #endif
 
-#define M_PIDIV2			1.570796326794896619231321691639f		//  PI / 2
-#define M_2PI				6.283185307179586476925286766559f		//  2 * PI
-#define M_PI2				9.869604401089358618834490999876f		//  PI ^ 2
-#define M_PIDIV180			0.01745329251994329576923690768488f		//  PI / 180
-#define M_180DIVPI			57.295779513082320876798154814105f		//  180 / PI
-
-#define DegToRad(a)	(a)*=M_PIDIV180
-#define RadToDeg(a)	(a)*=M_180DIVPI
-#define RADIANS(a)	((a)*M_PIDIV180)
-#define DEGREES(a)	((a)*M_180DIVPI)
-
-#define kilometre    *1000
-#define metre		 *1
-#define decimetre    *0.1f
-#define centimetre   *0.01f
-#define millimeter   *0.001f
-
-#define getMsToSec(a) a*0.001f
-#define getSecToMs(a) a*1000.0f
-
-#define MsToSec(a)   (a)*=0.001f
-#define SecToMs(a)   (a)*=1000.0f
-
 #if defined(USE_MATH_SIMD) && defined(USE_SIMD_HEADER)
 	#include "MathSIMD.h"
 #else

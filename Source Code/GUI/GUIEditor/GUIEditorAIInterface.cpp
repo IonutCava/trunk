@@ -24,7 +24,7 @@ bool GUIEditorAIInterface::init(CEGUI::Window *parent) {
 }
 
 bool GUIEditorAIInterface::tick(U32 deltaMsTime){
-	bool state = false;
+	bool state = true;
 	if(_createNavMeshQueued){
 		AIManager::getInstance().toggleNavMeshDebugDraw(_debugDrawCheckbox->isSelected());
 		Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
@@ -33,13 +33,15 @@ bool GUIEditorAIInterface::tick(U32 deltaMsTime){
 
 		if(!loaded){ 
 			loaded = temp->build(NULL,false);
+			temp->save();
 		}
 
 		if(loaded){
-			temp->save();
 			state = AIManager::getInstance().addNavMesh(temp);
-			state = true;
 		}
+
+		state = loaded;
+
 		_createNavMeshQueued = false;
 	}
 	return state;

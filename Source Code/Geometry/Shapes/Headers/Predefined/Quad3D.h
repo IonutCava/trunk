@@ -29,7 +29,7 @@
 class ShaderProgram;
 class Quad3D : public Object3D {
 public:
-	Quad3D() :  Object3D(QUAD_3D,TRIANGLE_STRIP){
+	Quad3D(const bool doubleSided = true) :  Object3D(QUAD_3D,TRIANGLE_STRIP){
 		vec3<F32> vertices[] = {vec3<F32>(-1.0f,  1.0f, 0.0f),   //TOP LEFT
 						        vec3<F32>( 1.0f,  1.0f, 0.0f),   //TOP RIGHT
 						        vec3<F32>(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
@@ -56,8 +56,8 @@ public:
 			_geometry->addNormal(normals[i]);
 			_geometry->getTexcoord().push_back(texcoords[i]);
 		}
-
-		for(U8 i = 0; i < 12; i++){
+		U8 indiceCount = doubleSided ? 12 : 6;
+		for(U8 i = 0; i < indiceCount; i++){
 			//CCW draw order
 			_geometry->addIndex(indices[i]);
 			//  v0----v1

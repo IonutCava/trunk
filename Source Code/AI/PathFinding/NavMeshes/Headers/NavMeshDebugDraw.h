@@ -48,7 +48,7 @@ public:
 
       void depthMask(bool state);
       void texture(bool state);
-
+	  
       void overrideColor(U32 col);
       void cancelOverride();
 	  void beginBatch();
@@ -61,6 +61,9 @@ public:
       void vertex(const F32 x, const F32 y, const F32 z, U32 color, const F32 u, const F32 v);
       void end();
 
+	  inline void setDirty(const bool state)       {_dirty = state;}
+	  inline bool isDirty()                  const {return _dirty; }
+
 protected:
     void prepareMaterial();
     void releaseMaterial();
@@ -72,6 +75,7 @@ private:
     U32 _color;
     PrimitiveType _primType;
     bool _overrideColor;
+	bool _dirty;
 };
 };
 #endif

@@ -11,46 +11,12 @@
 typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize,VertexBufferObject* const groundVBO){
 	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++) ComputeIndicesArray(i, depth, pos, HMsize);
-    for(U32 i=0; i < _indice[0].size(); i++) {
-		if(_indice[0][i] == TERRAIN_STRIP_RESTART_INDEX) continue;
-		groundVBO->addIndex(_indice[0][i]);
+    for(U32 i=0; i < _indice[2].size(); i++) {
+		if(_indice[2][i] == TERRAIN_STRIP_RESTART_INDEX) continue;
+		groundVBO->addIndex(_indice[2][i]);
 	}
 
 	_grassData._grassVisibility = GET_ACTIVE_SCENE()->state()->getGrassVisibility();
-}
-
-void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree, SceneGraphNode* parentNode){
-	ResourceDescriptor model(tree.ItemName);
-	model.setResourceLocation(tree.ModelName);
-	model.setFlag(false);
-	Mesh* tempTree = CreateResource<Mesh>(model);
-	if(tempTree){
-		std::stringstream ss; ss << "_" << tempTree->getRefCount();
-		std::string treeName(tempTree->getName()+ss.str());
-		ss.clear();
-		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
-		PRINT_FN(Locale::get("TREE_ADDED"),treeNode->getName().c_str());
-		Transform* treeTransform = treeNode->getTransform();
- 		treeTransform->scale(scale * tree.scale);
-		treeTransform->rotateY(pos.w);
-		treeTransform->translate(vec3<F32>(pos));
-		for_each(SceneGraphNode::NodeChildren::value_type& it, treeNode->getChildren()){
-			assert(it.second);
-			Material* m = (it.second)->getNode<SceneNode>()->getMaterial();
-			if(m){
-				m->addShaderDefines("ADD_FOLIAGE, IS_TREE");
-				m->addShaderModifier("Tree");///<Just to create a different shader in the ResourceCahe
-			}
-		}
-        if(tree.staticUsage){
-            treeNode->setUsageContext(SceneGraphNode::NODE_STATIC);
-        }
-        if(tree.navigationUsage){
-            treeNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
-        }
-	}else{
-		ERROR_FN(Locale::get("ERROR_ADD_TREE"),tree.ModelName.c_str());
-	}
 }
 
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){
@@ -108,7 +74,7 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
     }
 
 	vbo->setFirstElement(&(_indice[lod][0]));
-	vbo->setRangeCount(_indOffsetW[lod] * _indOffsetH[lod]);
+	vbo->setRangeCount(_indice[lod].size());
 	GFX_DEVICE.renderBuffer(vbo);
 
 	return 1;
@@ -129,9 +95,44 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d,U32 geometryIndex, Transform* const 
         U32 indices_count = (U32)( ratio * _grassData._grassIndice[geometryIndex].size() );
 		indices_count -= indices_count%4;
 
-		if(indices_count > 0)
+		if(indices_count > 0){
 			_grassData._grassVBO->setFirstElement(&(_grassData._grassIndice[geometryIndex].front()));
 			_grassData._grassVBO->setRangeCount(indices_count);
             GFX_DEVICE.renderBuffer(_grassData._grassVBO,parentTransform);
+		}
+	}
+}
+
+void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree, SceneGraphNode* parentNode){
+	ResourceDescriptor model(tree.ItemName);
+	model.setResourceLocation(tree.ModelName);
+	model.setFlag(false);
+	Mesh* tempTree = CreateResource<Mesh>(model);
+	if(tempTree){
+		std::stringstream ss; ss << "_" << tempTree->getRefCount();
+		std::string treeName(tempTree->getName()+ss.str());
+		ss.clear();
+		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
+		PRINT_FN(Locale::get("TREE_ADDED"),treeNode->getName().c_str());
+		Transform* treeTransform = treeNode->getTransform();
+ 		treeTransform->scale(scale * tree.scale);
+		treeTransform->rotateY(pos.w);
+		treeTransform->translate(vec3<F32>(pos));
+		for_each(SceneGraphNode::NodeChildren::value_type& it, treeNode->getChildren()){
+			assert(it.second);
+			Material* m = (it.second)->getNode<SceneNode>()->getMaterial();
+			if(m){
+				m->addShaderDefines("ADD_FOLIAGE, IS_TREE");
+				m->addShaderModifier("Tree");///<Just to create a different shader in the ResourceCahe
+			}
+		}
+        if(tree.staticUsage){
+            treeNode->setUsageContext(SceneGraphNode::NODE_STATIC);
+        }
+        if(tree.navigationUsage){
+            treeNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+        }
+	}else{
+		ERROR_FN(Locale::get("ERROR_ADD_TREE"),tree.ModelName.c_str());
 	}
 }

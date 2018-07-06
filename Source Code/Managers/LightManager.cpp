@@ -1,4 +1,5 @@
 #include "Headers/LightManager.h"
+#include "Headers/SceneManager.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -7,7 +8,8 @@
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 
-LightManager::LightManager() : _previewShadowMaps(false),
+LightManager::LightManager() : FrameListener(),
+							   _previewShadowMaps(false),
 							   _dominantLight(NULL),
 							   _shadowMapsEnabled(true),
 							   _shadowArrayOffset(-1),
@@ -23,6 +25,7 @@ void LightManager::init(){
 	I32 baseOffset = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 	_shadowArrayOffset = baseOffset - 2;
 	_shadowCubeOffset = baseOffset - 1;
+	REGISTER_FRAME_LISTENER(&(this->getInstance()));
 }
 
 bool LightManager::clear(){
@@ -98,9 +101,11 @@ void LightManager::update(){
 	}
 }
 
-void LightManager::generateShadowMaps(SceneRenderState* renderState){
+///When pre-rendering is done, the Light Manager will generate the shadow maps
+/// Returning false in any of the FrameListener methods will exit the entire application!
+bool LightManager::framePreRenderEnded(const FrameEvent& evt){
+	if(!_shadowMapsEnabled) return true;
 	//Stop if we have shadows disabled
-	if(!_shadowMapsEnabled) return;
 	_lightProjectionMatricesCache.resize(MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
 	//Tell the engine that we are drawing to depth maps
 	//Remember the previous render stage type
@@ -109,15 +114,18 @@ void LightManager::generateShadowMaps(SceneRenderState* renderState){
 	GFX_DEVICE.setRenderStage(SHADOW_STAGE);
 	// if we have a dominant light, generate only it's shadows
 	if(_dominantLight){
-		_dominantLight->generateShadowMaps(renderState);
+		 // When the entire scene is ready for rendering, generate the shadowmaps
+		_dominantLight->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
 	}else{
 		//generate shadowmaps for each light
 		for_each(LightMap::value_type& light, _lights){
-			light.second->generateShadowMaps(renderState);
+			light.second->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
 		}
 	}
 	//Revert back to the previous stage
 	GFX_DEVICE.setRenderStage(prev);
+
+	return true;
 }
 
 void LightManager::previewShadowMaps(Light* light){
@@ -127,16 +135,15 @@ void LightManager::previewShadowMaps(Light* light){
 		if(_dominantLight){
 			localLight = _dominantLight;
 		}else{
-			if(localLight == NULL){
-				localLight = _lights[0];
-			}
+			if(localLight == NULL)	localLight = _lights[0];
 		}
 		if(!localLight->castsShadows()) return;
+
 		localLight->getShadowMapInfo()->getShadowMap()->previewShadowMaps();
 	}
 }
 
-vectorImpl<I32> LightManager::getDepthMapResolution() {
+vectorImpl<I32> LightManager::getDepthMapResolution() const{
 	vectorImpl<I32 > shadowMapResolution;
 	shadowMapResolution.reserve(MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
 	U8 counter = 0;
@@ -192,10 +199,10 @@ void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominan
 	lightLocal->getShadowMapInfo()->getShadowMap()->Unbind(offset);
 }
 
-bool LightManager::shadowMappingEnabled(){
+bool LightManager::shadowMappingEnabled() const {
 	if(!_shadowMapsEnabled) return false;
 
-	for_each(LightMap::value_type& light, _lights){
+	for_each(LightMap::value_type light, _lights){
 		if(!light.second->castsShadows()) continue;
 		ShadowMap* sm = light.second->getShadowMapInfo()->getShadowMap();
 		if(!sm) continue; ///<no shadow info;

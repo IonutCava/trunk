@@ -162,9 +162,7 @@ void Terrain::render(SceneGraphNode* const sgn){
 }
 
 void Terrain::drawBoundingBox(SceneGraphNode* const sgn){
-	if(_drawBBoxes){
-		_terrainQuadtree->DrawBBox();
-	}
+	if(_drawBBoxes)	_terrainQuadtree->DrawBBox();
 }
 
 void Terrain::onDraw(const RenderStage& currentStage){

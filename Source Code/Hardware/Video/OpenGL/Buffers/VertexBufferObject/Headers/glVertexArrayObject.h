@@ -71,6 +71,8 @@ protected:
 	GLuint _VAOid;
     GLuint _DepthVAOid;
 	GLuint _usage;
+	GLuint _indexDelimiterCache; ///<Used to avoid calling glPrimitiveRestartIndex if the index value requested is the same as last time
+	bool _primitiveRestartEnabled; ///<Used to toggle primitive restart on or off and avoid useless state changes
 	bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
 	bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that
  	vectorImpl<vec4<GLhalf> >  _normalsSmall;

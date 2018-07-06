@@ -412,7 +412,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 			assert(tempMaterial != NULL);
 			assert(textureRes != NULL);
 			//The first texture is always "Replace"
-			tempMaterial->setTexture(item,textureRes, Material::TextureOperation_Replace);
+			tempMaterial->setTexture(item,textureRes, count == 0 ? Material::TextureOperation_Replace : aiTextureOperationTable[op]);
 		}//endif
 
 		tName.Clear();

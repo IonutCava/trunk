@@ -37,6 +37,11 @@ public:
 	///Or the frame listenr manager will assing it an ID
 	FrameListener() {}
 	virtual ~FrameListener(){}
+	inline const std::string& getName() {return _listenerName;}
+
+protected:
+	friend class FrameListenerManager;
+	inline void  setName(const std::string& name) {_listenerName = name;}
 	///Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
 	///Implement what you need without filling classes with dummy functions
 	///frameStarted is calld at the beggining of a new frame
@@ -47,10 +52,7 @@ public:
 	virtual bool frameRenderingQueued(const FrameEvent& evt) {return true;}
 	///frameEnded is called after the buffers have been swapped
 	virtual bool frameEnded(const FrameEvent& evt) {return true;}
-	inline const std::string& getName() {return _listenerName;}
-protected:
-	friend class FrameListenerManager;
-	inline void  setName(const std::string& name) {_listenerName = name;}
+
 private:
 	///not _name so that it doesn't conflict with Resource base class
 	std::string _listenerName;

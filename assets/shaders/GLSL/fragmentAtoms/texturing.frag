@@ -23,7 +23,7 @@ void applyTexture(in sampler2D texUnit, in int type, in int index, in vec2 uv, i
 
     // Read from the texture
     vec4 tex = texture(texUnit,uv);
-   
+
     if (type == REPLACE){
         color = tex;
 

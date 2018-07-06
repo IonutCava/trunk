@@ -25,11 +25,12 @@
 
 #include "core.h"
 #include "Rendering/Lighting/Headers/Light.h"
+#include "Managers/Headers/FrameListenerManager.h"
 
 class SceneGraphNode;
 class SceneRenderState;
 
-DEFINE_SINGLETON(LightManager)
+DEFINE_SINGLETON_EXT1(LightManager,FrameListener)
 
 public:
 	void init();
@@ -56,14 +57,13 @@ public:
 	///shadow mapping
 	void bindDepthMaps(Light* light,U8 lightIndex, U8 offset = 8, bool overrideDominant = false);
 	void unbindDepthMaps(Light* light, U8 offset = 8, bool overrideDominant = false);
-	bool shadowMappingEnabled();
-	void generateShadowMaps(SceneRenderState* renderState);
+	bool shadowMappingEnabled() const;
 	inline void setDominantLight(Light* const light) {_dominantLight = light;}
 
 	///shadow mapping
 	void previewShadowMaps(Light* light = NULL);
 	inline void togglePreviewShadowMaps() {_previewShadowMaps = !_previewShadowMaps;}
-	vectorImpl<I32 > getDepthMapResolution();
+	vectorImpl<I32 > getDepthMapResolution() const;
 
 	inline       U16                     getLightCountForCurrentNode()          const {return _currLightsPerNode.size();}
 	inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
@@ -72,6 +72,10 @@ public:
 	inline const vectorImpl<I32>&        getShadowCastingLightsForCurrentNode() const {return _currShadowLights;}
 	bool checkId(U32 value);
 	void drawDepthMap(U8 light, U8 index);
+
+protected:
+	///This is inherited from FrameListener and is used to queue upreflection on every frame start
+	bool framePreRenderEnded(const FrameEvent& evt);
 
 private:
 	LightManager();

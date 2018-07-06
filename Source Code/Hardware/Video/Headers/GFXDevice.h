@@ -41,7 +41,7 @@ friend class Frustum; ///< For matrix recovery operations
 
 public:
 
-	void setApi(RenderAPI api);
+	void setApi(const RenderAPI& api);
 
 	inline RenderAPI        getApi()        {return _api.getId(); }
 	inline RenderAPIVersion getApiVersion() {return _api.getVersionId();}
@@ -57,29 +57,21 @@ public:
 	inline void exitRenderLoop(const bool killCommand = false) {_api.exitRenderLoop(killCommand);}
 	       void closeRenderingApi();
 
-	inline void lookAt(const vec3<F32>& eye,
-					   const vec3<F32>& center,
-					   const vec3<F32>& up = vec3<F32>(0,1,0),
-					   const bool invertx = false,
-					   const bool inverty = false)
-	{
-	   _api.lookAt(eye,center,up,invertx,inverty);
-	}
-
 	inline void beginFrame() {_api.beginFrame();}
 	inline void endFrame()   {_api.endFrame();  }
 	inline void idle()       {_api.idle();}
 	inline void flush()      {_api.flush();}
+	
+	inline Shader*             newShader(const std::string& name,
+		                                 const  ShaderType& type, 
+								         const bool optimise = false)                 {return _api.newShader(name,type,optimise); }
+	inline FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR)             {return _api.newFBO(type); }
+	inline VertexBufferObject* newVBO(const PrimitiveType& type = TRIANGLES)          {return _api.newVBO(type); }
+	inline PixelBufferObject*  newPBO(const PBOType& type = PBO_TEXTURE_2D)           {return _api.newPBO(type); }
+	inline Texture2D*          newTexture2D(const bool flipped = false)               {return _api.newTexture2D(flipped);}
+	inline TextureCubemap*     newTextureCubemap(const bool flipped = false)          {return _api.newTextureCubemap(flipped);}
+	inline ShaderProgram*      newShaderProgram(const bool optimise = false)          {return _api.newShaderProgram(optimise); }
 
-	inline FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR){return _api.newFBO(type); }
-	inline VertexBufferObject* newVBO(const PrimitiveType& type = TRIANGLES){return _api.newVBO(type); }
-	inline PixelBufferObject*  newPBO(const PBOType& type = PBO_TEXTURE_2D){return _api.newPBO(type); }
-
-	inline Texture2D*      newTexture2D(const bool flipped = false)                   {return _api.newTexture2D(flipped);}
-	inline TextureCubemap* newTextureCubemap(const bool flipped = false)              {return _api.newTextureCubemap(flipped);}
-	inline ShaderProgram*  newShaderProgram(const bool optimise = false)              {return _api.newShaderProgram(optimise); }
-
-	inline Shader*         newShader(const std::string& name,const  ShaderType& type,const bool optimise = false)  {return _api.newShader(name,type,optimise); }
     ///Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool            initShaders()                                        {return _api.initShaders();}
     inline bool            deInitShaders()                                      {return _api.deInitShaders();}
@@ -87,13 +79,18 @@ public:
 	void enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32 startDist, F32 endDist);
 
 	inline void toggle2D(bool _2D)  {_api.toggle2D(_2D);}
+	inline void lookAt(const vec3<F32>& eye,
+					   const vec3<F32>& center,
+					   const vec3<F32>& up = vec3<F32>(0,1,0),
+					   const bool invertx = false,
+					   const bool inverty = false)	{ _api.lookAt(eye,center,up,invertx,inverty); }
     ///Usually, after locking and releasing our matrices we want to revert to the View matrix to render geometry
     inline void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true)          {_api.lockMatrices(setCurrentMatrix,lockView,lockProjection);}
     inline void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true) {_api.releaseMatrices(setCurrentMatrix,releaseView,releaseProjection);}
-            ///sets an ortho projection, updating any listeners if needed
-            void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
-            ///sets a perspective projection, updating any listeners if needed
-	        void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes);
+	///sets an ortho projection, updating any listeners if needed
+    inline void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){_api.setOrthoProjection(rect,planes);}
+    ///sets a perspective projection, updating any listeners if needed
+	inline void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes) { _api.setPerspectiveProjection(FoV,aspectRatio,planes);}
 			///sets a new horizontal FoV
 			void setHorizontalFoV(I32 newFoV);
 	inline void renderInViewport(const vec4<I32>& rect, boost::function0<void> callback)  {_api.renderInViewport(rect,callback);}
@@ -103,14 +100,15 @@ public:
 
 	inline void drawDebugAxis(const bool state)       {_drawDebugAxis = state;}
     inline bool drawDebugAxis()                 const {return _drawDebugAxis;}
-	inline void debugDraw() {_api.debugDraw();}
-	void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
-	void drawLines(const vectorImpl<vec3<F32> >& pointsA,
-				   const vectorImpl<vec3<F32> >& pointsB,
-				   const vectorImpl<vec4<U8> >& colors, 
-				   const mat4<F32>& globalOffset,
-				   const bool orthoMode = false,
-				   const bool disableDepth = false);
+	inline void debugDraw()                           {_api.debugDraw();}
+
+	inline void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset) {_api.drawBox3D(min,max,globalOffset);}
+	inline void drawLines(const vectorImpl<vec3<F32> >& pointsA,
+				          const vectorImpl<vec3<F32> >& pointsB,
+				          const vectorImpl<vec4<U8> >& colors, 
+				          const mat4<F32>& globalOffset,
+				          const bool orthoMode = false,
+				          const bool disableDepth = false) {_api.drawLines(pointsA,pointsB,colors,globalOffset,orthoMode,disableDepth);}
     ///Usefull to perform pre-draw operations on the model if it's drawn outside the scenegraph
 	void renderInstance(RenderInstance* const instance);
 	void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
@@ -154,10 +152,10 @@ public:
     inline RenderStateBlock* setPreviousStateBlock(bool forceUpdate = false) {assert(_previousStateBlock != NULL);return setStateBlock(_previousStateBlock,forceUpdate);}
 	///Sets a standard state block
 	inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false) {assert(_defaultStateBlock != NULL);return setStateBlock(_defaultStateBlock,forceUpdate);}
-	///If a new state has been set, update the Graphics pipeline
-		   void updateStates(bool force = false);
 	///Update the graphics pipeline using the current rendering API with the state block passed
 	inline void updateStateInternal(RenderStateBlock* block, bool force = false) {_api.updateStateInternal(block,force);}
+	///If a new state has been set, update the Graphics pipeline
+		   void updateStates(bool force = false);
 	/*//Render State Management */
 
 	///Generate a cubemap from the given position
@@ -169,7 +167,7 @@ public:
 						  boost::function0<void> callback = 0);
 
 	inline bool loadInContext(const CurrentContext& context, boost::function0<void> callback) {return _api.loadInContext(context, callback);}
-	inline void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)     {_api.getMatrix(mode, mat);}
+	inline void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)       {_api.getMatrix(mode, mat);}
     inline void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat)   {_api.getMatrix(mode, mat);}
     inline void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat)   {_api.getMatrix(mode, mat);}
 
@@ -181,22 +179,13 @@ public:
 	Display* getDisplay() {return _api.getDisplay();}
 	GLXDrawable getDrawSurface() {return _api.getDrawSurface();}
 #endif
+
 private:
 
 	GFXDevice();
 
-	inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
-		return DEGREES(2.0f * atan(tan(RADIANS(xfov) * 0.5f) / aspect));
-	}
-
-	inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
-		return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
-	}
-
 	///Returns an API dependend stateblock based on the description
-	inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) {
-		return _api.newRenderStateBlock(descriptor);
-	}
+	inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) { return _api.newRenderStateBlock(descriptor); }
 
     inline void drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize) {_api.drawText(text,width,fontName,fontSize);}
 	inline void drawText(const std::string& text, const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize) {_api.drawText(text,width,position,fontName,fontSize);}
@@ -223,6 +212,7 @@ protected:
 	RenderStateBlock* _defaultStateBlock;
 	///Pointer to current kernel
 	Kernel* _kernel;
+
 END_SINGLETON
 
 #define GFX_DEVICE GFXDevice::getInstance()

@@ -345,7 +345,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	_uniformBufferObjects.resize(UBO_PLACEHOLDER,NULL);
 	_uniformBufferObjects[Matrices_UBO] = New glUniformBufferObject();
 	_uniformBufferObjects[Matrices_UBO]->Create(Matrices_UBO, true,true);
-	_uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2, sizeof(glm::mat4)); //View and Projection
+	_uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2 * 16, sizeof(F32)); //View and Projection 2 x 16 float values
 	_uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
 	_uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
 	_uniformBufferObjects[Lights_UBO]->ReserveBuffer(MAX_LIGHTS_PER_SCENE_NODE, sizeof(LightProperties)); //Usually less or equal to 4

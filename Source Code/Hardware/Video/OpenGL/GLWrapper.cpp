@@ -30,7 +30,7 @@
 namespace IMPrimitiveValidation{
 	inline bool zombieCountMatch(glIMPrimitive* const priv){
 		if(priv->_canZombify) return priv->zombieCounter() < GLIM_MAX_FRAMES_ZOMBIE_COUNT;
-		else  return true;
+		else return true;
 	}
 }
 
@@ -74,7 +74,7 @@ void GL_API::debugDraw(){
 	NS_GLIM::GLIM_BATCH::s_bForceWireframe = false;
 
 	for_each(glIMPrimitive* priv, _glimInterfaces){
-		if(!priv->_inUse) {
+		if(!priv->_inUse && priv->_canZombify) {
 			++priv->_zombieCounter;
 			continue;
 		}
@@ -109,8 +109,9 @@ void GL_API::debugDraw(){
 		if(!priv->_resetStates.empty()){
 			priv->_resetStates();
 		}
-	
-		priv->_inUse = false;
+		if(priv->_canZombify){
+			priv->_inUse = false;
+		}
 	}
 	_imShader->unbind();
 }

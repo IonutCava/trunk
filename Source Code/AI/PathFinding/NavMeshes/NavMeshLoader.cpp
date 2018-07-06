@@ -338,18 +338,22 @@ namespace Navigation {
 				assert(geometry != NULL);
 
 				const vectorImpl<vec3<F32> >& vertices  = geometry->getPosition();
-				const vectorImpl<vec3<U32> >& triangles = geometry->getTriangles();
-				mat4<F32> nodeTransform;
-				if(nodeType != TYPE_TERRAIN){
-					nodeTransform = sgn->getTransform()->getGlobalMatrix();
-				}
 				if(vertices.empty()) return false;
 
-				for (U32 i = 0; i < vertices.size(); ++i ){
-					//Apply the node's transform and add the vertex to the NavMesh
-					addVertex(&outData, nodeTransform * vertices[i]);
+				const vectorImpl<vec3<U32> >& triangles = geometry->getTriangles();
+				if(nodeType != TYPE_TERRAIN){
+					mat4<F32> nodeTransform = sgn->getTransform()->getGlobalMatrix();
+					for (U32 i = 0; i < vertices.size(); ++i ){
+						//Apply the node's transform and add the vertex to the NavMesh
+						addVertex(&outData, nodeTransform * vertices[i]);
+					}
+				}else{
+					for (U32 i = 0; i < vertices.size(); ++i ){
+						//Apply the node's transform and add the vertex to the NavMesh
+						addVertex(&outData, vertices[i]);
+					}
 				}
-
+				
  				for (U32 i = 0; i < triangles.size(); ++i){
 					addTriangle(&outData, triangles[i], currentTriangleIndexOffset, areType);
 				}

@@ -37,22 +37,17 @@ GFXDevice::GFXDevice() : _api(GL_API::getInstance()) ///<Defaulting to OpenGL if
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
 }
 
-void GFXDevice::setApi(RenderAPI api){
+void GFXDevice::setApi(const RenderAPI& api){
 	switch(api)	{
-	case OpenGL:
-	default:
-		_api = GL_API::getInstance();
-		break;
-	case Direct3D:
-		_api = DX_API::getInstance();
-		break;
-	case Software:
-	case None:
-	case GFX_RENDER_API_PLACEHOLDER: ///< Placeholder
-		///Ionut: OpenGL 4.0 and DX 11 in another life maybe :)
-		ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
-		break;
+		default:
+		case OpenGL:    _api = GL_API::getInstance();	break;
+		case Direct3D:	_api = DX_API::getInstance();	break;
+
+		case GFX_RENDER_API_PLACEHOLDER: ///< Placeholder - OpenGL 4.0 and DX 11 in another life maybe :) - Ionut
+		case Software:
+		case None:		{ ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API")); setApi(OpenGL); return; }
 	};
+
 	_api.setId(api);
 }
 
@@ -72,7 +67,7 @@ void GFXDevice::closeRenderer(){
 }
 
 void GFXDevice::renderInstance(RenderInstance* const instance){
-	///All geometry is stored in VBO format
+	//All geometry is stored in VBO format
 	assert(instance->object3D() != NULL);
 
 	if(instance->preDraw()){
@@ -91,19 +86,6 @@ void GFXDevice::renderBuffer(VertexBufferObject* const vbo,Transform* const vboT
 	if(_stateBlockDirty) updateStates();
 
 	_api.renderBuffer(vbo,vboTransform);
-}
-
-void GFXDevice::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset){
-	_api.drawBox3D(min,max,globalOffset);
-}
-
-void GFXDevice::drawLines(const vectorImpl<vec3<F32> >& pointsA,
-				          const vectorImpl<vec3<F32> >& pointsB,
-						  const vectorImpl<vec4<U8> >& colors, 
-						  const mat4<F32>& globalOffset,
-						  const bool orthoMode,
-						  const bool disableDepth){
-	_api.drawLines(pointsA,pointsB,colors,globalOffset,orthoMode,disableDepth);
 }
 
 void GFXDevice::renderGUIElement(GUIElement* const element,ShaderProgram* const guiShader){
@@ -221,14 +203,6 @@ RenderStateBlock* GFXDevice::setStateBlockByDesc( const RenderStateBlockDescript
    return SET_STATE_BLOCK( block );
 }
 
-void GFXDevice::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
-    _api.setOrthoProjection(rect,planes);
-}
-
-void GFXDevice::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes){
-    _api.setPerspectiveProjection(FoV,aspectRatio,planes);
-}
-
 void GFXDevice::updateStates(bool force) {
 	//Verify render states
 	if(force){
@@ -238,8 +212,8 @@ void GFXDevice::updateStates(bool force) {
 		_currentStateBlock = _newStateBlock;
 	}
 	if (_stateBlockDirty && !force) {
-      updateStateInternal(_newStateBlock);
-      _currentStateBlock = _newStateBlock;
+		updateStateInternal(_newStateBlock);
+		_currentStateBlock = _newStateBlock;
     }
     _stateBlockDirty = false;
 
@@ -253,7 +227,7 @@ bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){
 
 void GFXDevice::setHorizontalFoV(I32 newFoV){
 	F32 ratio  = ParamHandler::getInstance().getParam<F32>("runtime.aspectRatio");
-	ParamHandler::getInstance().setParam("runtime.verticalFOV", xfov_to_yfov((F32)newFoV,ratio));
+	ParamHandler::getInstance().setParam("runtime.verticalFOV", Util::xfov_to_yfov((F32)newFoV,ratio));
 	changeResolution(Application::getInstance().getResolution().width,Application::getInstance().getResolution().height);
 }
 

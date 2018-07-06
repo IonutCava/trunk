@@ -84,7 +84,7 @@ void DirectionalLight::setCameraToLightView(const vec3<F32>& eyePos){
 #pragma message("ToDo: Near and far planes. Should optimize later! -Ionut")
 void DirectionalLight::renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent){
 	_zPlanes = Frustum::getInstance().getZPlanes();
-	///Set the current projection depending on the current depth pass
+	//Set the current projection depending on the current depth pass
 	GFX_DEVICE.setOrthoProjection(vec4<F32>(-sceneHalfExtent,
 											 sceneHalfExtent,
 											-sceneHalfExtent,
