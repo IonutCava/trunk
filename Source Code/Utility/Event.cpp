@@ -16,12 +16,13 @@ void Event::run()
 			boost::this_thread::interruption_point();
 		}
 		catch(const boost::thread_interrupted&){break;}
-
-		boost::this_thread::sleep(boost::posix_time::milliseconds((boost::int64_t)_tickInterval));
+		if(_tickInterval > 0){
+			boost::this_thread::sleep(boost::posix_time::milliseconds((boost::int64_t)_tickInterval));
+		}
 		_callback();
 
 		if(_numberOfTicks > 0) _numberOfTicks--;
-		if(_numberOfTicks = 0){
+		if(_numberOfTicks == 0){
 			boost::mutex::scoped_lock l(_mutex);
 			_end = true;
 		}

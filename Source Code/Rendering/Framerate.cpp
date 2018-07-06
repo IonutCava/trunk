@@ -2,8 +2,13 @@
 #include <iostream>
 #include "Utility/Headers/Console.h"
 
-void Framerate::Init(F32 tfps)
-{
+F32 max(const F32& a, const F32& b){
+	return (a<b) ? b : a;
+}
+F32 min(const F32& a, const F32& b){
+	return (a<b) ? a : b;
+}
+void Framerate::Init(F32 tfps){
   _targetFps = tfps;
    
 #if defined( __WIN32__ ) || defined( _WIN32 )
@@ -18,8 +23,7 @@ void Framerate::Init(F32 tfps)
 
 }
 
-void Framerate::SetSpeedFactor()
-{
+void Framerate::SetSpeedFactor(){
 
 #if defined( __WIN32__ ) || defined( _WIN32 )
 	 QueryPerformanceCounter(&_currentticks);
@@ -42,21 +46,18 @@ void Framerate::SetSpeedFactor()
   /*if(false)*/ benchmark();
 }
 
-void Framerate::benchmark()
-{
+void Framerate::benchmark(){
 
 	_averageFps += _fps;
 
-	//Min/Max FPS
-	if(_count > 50)
-	{
-		if(_fps > _maxFps) _maxFps = _fps;
-		if(_fps < _minFps) _minFps = _fps;
+	//Min/Max FPS (after ~50 rendered frames)
+	if(_count > 50){
+		_maxFps = max(_maxFps, _fps);
+		_minFps = min(_minFps, _fps);
 	}
 	
 	//Average FPS
-	if(_count > 1000)
-	{
+	if(_count > 500){
 		_averageFps /= _count;
 		 Console::getInstance().printfn("Average FPS: %0.2f; Max FPS: %0.2f; Min FPS: %0.2f" , _averageFps,_maxFps,_minFps); 
 		_count = 0;

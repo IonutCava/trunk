@@ -9,6 +9,7 @@
 #include "Geometry/Predefined/Quad3D.h"
 #include "Geometry/Predefined/Text3D.h"
 #include "Rendering/PostFX/PostFX.h"
+#include "EngineGraphs/RenderQueue.h"
 
 using namespace std;
 
@@ -74,9 +75,35 @@ void GFXDevice::renderModel(SceneGraphNode* node){
 	};
 }
 
-void GFXDevice::toggleWireframe(bool state)
-{
+void GFXDevice::toggleWireframe(bool state){
 	_wireframeMode = !_wireframeMode;
 	_api.toggleWireframe(_wireframeMode);
 }
 
+void GFXDevice::processRenderQueue(){
+	//Sort the render queue by the specified key
+	RenderQueue::getInstance().sort();
+
+	//Draw the entire queue;
+	SceneNode* sn = NULL;
+	SceneGraphNode* sgn = NULL;
+	for(U16 i = 0; i < RenderQueue::getInstance().getRenderQueueStackSize(); i++){
+		sgn = RenderQueue::getInstance().getItem(i)._node;
+		sn = sgn->getNode();
+		sn->onDraw();
+		//draw bounding box if needed
+		if(!getDepthMapRendering()){
+			BoundingBox& bb = sn->getSceneGraphNode()->getBoundingBox();
+			if(bb.getVisibility() || SceneManager::getInstance().getActiveScene()->drawBBox()){
+				drawBox3D(bb.getMin(),bb.getMax());
+			}
+		}
+
+		//setup materials and render the node
+		//Avoid changing states by not unbind old material/shader/states and checking agains default
+		//As nodes are sorted, this should be very fast
+		sn->prepareMaterial();
+		sn->render(sgn); 
+		sn->releaseMaterial();
+	}
+}

@@ -5,6 +5,7 @@
 #include "Hardware/Video/Light.h"
 #include "Geometry/Object3D.h"
 #include "Managers/SceneManager.h"
+#include "RenderQueue.h"
 
 SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node), 
 												  _parent(NULL),
@@ -71,18 +72,38 @@ void SceneGraphNode::print(){
 	}
 		
 }
+void SceneGraphNode::setParent(SceneGraphNode* parent){
+	if(getParent()){
+		getParent()->removeNode(_node);
+	}
+	_parent = parent;
+}
+
+void SceneGraphNode::removeNode(SceneNode* node){
+	SceneGraphNode* tempNode = findNode(node->getName());
+	if(tempNode){
+		_children.erase(_children.find(tempNode->getName()));
+	}
+}
 
 SceneGraphNode* SceneGraphNode::addNode(SceneNode* node,const std::string& name){
+	if(node->getSceneGraphNode()){
+		SceneGraphNode* pSGN = node->getSceneGraphNode()->getParent();
+		if(pSGN){
+			pSGN->removeNode(node);
+		}
+	}
 	SceneGraphNode* sceneGraphNode = New SceneGraphNode(node);
 	SceneGraphNode* parentNode = this->getParent();
 	assert(sceneGraphNode);
+	
 	sceneGraphNode->setParent(this);
 	sceneGraphNode->setGrandParent(parentNode);
 
 	Transform* nodeTransform = sceneGraphNode->getTransform();
 
-	if(parentNode ){
-		if(parentNode->getParent()){//If we have a parent, and our parent isn't root ..
+	if(parentNode){
+		if(_grandParent){//If we have a parent, and our parent isn't root ..
 			Transform* parentTransform = parentNode->getTransform(); // ... get this parent's transform ...
 			if(nodeTransform && parentTransform){ // ... and as long as the parent has a transform ...
 				nodeTransform->setParentMatrix(parentTransform->getMatrix()); // ... store it as a parent matrix ...
@@ -126,78 +147,58 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name){
 
 void SceneGraphNode::updateTransformsAndBounds(){
 	//if(GETMSTIME() - _updateTimer  < 10) return; //update every ten milliseconds
-	//Update from bottom up, so that child BB's are added to parrent BoundingBox;
+
+	//Update from leafs to root:
 	foreach(NodeChildren::value_type &it, _children){
 		it.second->updateTransformsAndBounds();
 	}
-	//update/compute the bounding box
+
+	//Compute the BoundingBox if it isn't already
 	if(!_boundingBox.isComputed()){
+		//Mesh BB is composed of SubMesh BB's. Compute from leaf to root to ensure proper calculations
 		_node->computeBoundingBox(this);
 	}
-	//transform the bounding box
-	if(!_transform) return;	
-	_boundingBox.Transform(_initialBoundingBox,_transform->getMatrix());			
-	//for each of this node's children
-	foreach(NodeChildren::value_type &it, _children){
-		//set they'r parent matrix;
-		Transform* t = it.second->getTransform();
-		if(t){
+	Transform* transform = getTransform();
+	if(transform){
+		//Transform the bounding box if we have a new transform
+		//if(getTransform()->isDirty()){
+			_boundingBox.Transform(_initialBoundingBox,transform->getMatrix());
+		//}
+		if(getParent()){
 			//update parent matrix (cached)
-			t->setParentMatrix(_transform->getMatrix());
-			//add current bounding box to parent
-			//_boundingBox.Add(it.second->getBoundingBox());
-
+			transform->setParentMatrix(getParent()->getTransform()->getMatrix());
 		}
 	}
 	
-	
+	if(getParent()){
+		getParent()->getBoundingBox().Add(getBoundingBox());
+	}
 
 	//_updateTimer = GETMSTIME();
 }
 
 void SceneGraphNode::updateVisualInformation(){
+	//Bounding Boxes should be updated, so we can early cull now.
 	Scene* curentScene = SceneManager::getInstance().getActiveScene();
-	//Update from bottom up, so that child BB's are added to parrent BoundingBox;
-	foreach(NodeChildren::value_type &it, _children){
-		it.second->updateVisualInformation();
-	}
-	//if node isn't active, skip computations
-	if(!_active) {
-		_inView = false;
-		return;
-	}
 	//Hold a pointer to the scenegraph
 	if(!_sceneGraph){
 		_sceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
 	}
 
-	//chek if node is in view
-	if(_node->isInView(true,_boundingBox)){
-		_inView = (curentScene->drawObjects() && _active && _node->getRenderState());
-	}
-}
-
-void SceneGraphNode::render(){
-	Scene* curentScene = SceneManager::getInstance().getActiveScene();
-	// If node isn't visible, return
-	if(!_inView) return; 
-	//prerender the node (compute shaders for example
-	_node->onDraw();
-	
-	//draw bounding box if needed
-	if(!GFXDevice::getInstance().getDepthMapRendering()){
-		if(_boundingBox.getVisibility() || curentScene->drawBBox()){
-			GFXDevice::getInstance().drawBox3D(_boundingBox.getMin(),_boundingBox.getMax());
+	//if current node is active
+	if(_active) {
+		if(_node->isInView(true,_boundingBox)){
+			_inView = (curentScene->drawObjects() && _active && _node->getRenderState());
+		}
+		if(_inView){
+		//	continue;//ToDo: --Early cull here? -Ionut
+		//}else{
+			RenderQueue::getInstance().addNodeToQueue(this);
 		}
 	}
 
-	//setup materials and rener the node
-	_node->prepareMaterial();
-	_node->render(this); //render the current node only if it is visible. Render the children, regardless
-	_node->releaseMaterial();
-	//render all children
 	foreach(NodeChildren::value_type &it, _children){
-		it.second->render();
+		it.second->updateVisualInformation();
 	}
 }
 

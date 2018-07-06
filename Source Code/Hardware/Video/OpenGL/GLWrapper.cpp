@@ -357,6 +357,11 @@ void GL_API::ignoreStateChanges(bool state){
 }
 
 void GL_API::setObjectState(Transform* const transform){
+	if(_wireframeRendering)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	glPushMatrix();
 	if(transform){
 		glMultMatrixf(transform->getMatrix());
@@ -586,12 +591,8 @@ void GL_API::createLight(U8 slot)
 	}
 }
 
-void GL_API::toggleWireframe(bool state)
-{
-	if(state)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+void GL_API::toggleWireframe(bool state){
+	_wireframeRendering = state;
 }
 
 void GL_API::setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool directional){

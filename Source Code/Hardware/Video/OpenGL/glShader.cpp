@@ -223,7 +223,7 @@ U16 glShader::getId() {
 }
 
 void glShader::bind() {
-	if(_bound) return;
+	if(_bound) return; //prevent double bind
 	if(!_shaderId || GFXDevice::getInstance().wireframeRendering()) return;
 	glUseProgram(_shaderId);
 	_bound = true;

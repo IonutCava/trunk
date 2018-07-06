@@ -52,8 +52,8 @@ private:
 	Framerate() : 
 		_count(0),
 		_averageFps(0),
-		_maxFps(0),
-		_minFps(60),
+		_maxFps(1.175494351e-38F),
+		_minFps(3.402823466e+38F),
 		_targetFps(60) {}
   F32           _targetFps;
   F32           _fps;

@@ -116,6 +116,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\EngineGraphs\RenderQueue.cpp" />
     <ClCompile Include="..\..\Source Code\EngineGraphs\SceneGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\common.cpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\EngineGraphs\RenderQueue.h" />
     <ClInclude Include="..\..\Source Code\Rendering\common.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Framerate.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Frustum.h" />

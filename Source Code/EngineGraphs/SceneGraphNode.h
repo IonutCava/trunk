@@ -54,7 +54,6 @@ public:
 
 	~SceneGraphNode();
 	bool unload();
-	void render();
 	void print();
 	void updateTransformsAndBounds();
 	void updateVisualInformation();
@@ -63,6 +62,7 @@ template<class T>
        T*                     getNode();
 inline SceneNode*             getNode() {return _node;}
        SceneGraphNode*        addNode(SceneNode* node,const std::string& name = "");
+	   void			          removeNode(SceneNode* node);
 	   SceneGraphNode*        findNode(const std::string& name);
 const  std::string&           getName(){return _name;}
 /*Node Management*/
@@ -71,7 +71,7 @@ const  std::string&           getName(){return _name;}
 inline       SceneGraphNode*  getParent(){return _parent;}
 inline       SceneGraphNode*  getGrandParent(){return _grandParent;}
 inline       NodeChildren&    getChildren() {return _children;}
-inline       void             setParent(SceneGraphNode* parent) {_parent = parent;}
+	         void             setParent(SceneGraphNode* parent);
 inline       void             setGrandParent(SceneGraphNode* grandParent) {_grandParent = grandParent;}
 /*Parent <-> Children*/
 

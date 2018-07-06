@@ -331,6 +331,9 @@
     <ClCompile Include="..\..\Source Code\EngineGraphs\SceneGraph.cpp">
       <Filter>EngineGraphs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\EngineGraphs\RenderQueue.cpp">
+      <Filter>EngineGraphs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\common.h">
@@ -669,6 +672,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\MathHelper.h">
       <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\EngineGraphs\RenderQueue.h">
+      <Filter>EngineGraphs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

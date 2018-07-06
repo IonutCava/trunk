@@ -20,11 +20,11 @@
 #include "SceneGraphNode.h"
 
 class SceneGraph  {
-	typedef unordered_map<std::string/*Shader Name*/, std::vector<SceneGraphNode*>/*Objects bound to this shader*/> object_shader_map;
 	public:
 	
 	SceneGraph(){
 		_root = New SceneGraphNode(New SceneRoot);
+		_updateRunning = false;
 	}
 
 	~SceneGraph(){
@@ -40,11 +40,12 @@ class SceneGraph  {
 	}
 	
 	void render();
-	inline object_shader_map& getObjectShaderMap() {return _objectShaderMap;}
+	void update();
 	void print();
+	void startUpdateThread();
 private:
+	boost::mutex _rootAccessMutex; 
 	SceneGraphNode* _root;
-	 object_shader_map _objectShaderMap;
-	//SpatialHierarchyTree _spatialTree; //For HSR
+	bool _updateRunning;
 };
 #endif

@@ -295,43 +295,46 @@ void Terrain::releaseMaterial(){
 }
 
 void Terrain::render(SceneGraphNode* node){
+	
+	if(!GFXDevice::getInstance().getDepthMapRendering()){
+
+		Shader* terrainShader = getMaterial()->getShader();
+		_terrainDiffuseMap->Bind(0);
+		_terrainTextures[0]->Bind(1); //Normal Map
+		_terrainTextures[1]->Bind(2); //Water Caustics
+		_terrainTextures[2]->Bind(3); //AlphaMap: RED
+		_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
+		_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
+		if(_alphaTexturePresent) _terrainTextures[5]->Bind(6); //AlphaMap: Alpha
+
+		terrainShader->bind();
+
+			terrainShader->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
+			terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
+			terrainShader->Uniform("time", GETTIME());
+			terrainShader->Uniform("lightProjectionMatrix",GFXDevice::getInstance().getLightProjectionMatrix());
+			terrainShader->UniformTexture("texDiffuseMap", 0);
+			terrainShader->UniformTexture("texNormalHeightMap", 1);
+			terrainShader->UniformTexture("texWaterCaustics", 2);
+			terrainShader->UniformTexture("texDiffuse0", 3);
+			terrainShader->UniformTexture("texDiffuse1", 4);
+			terrainShader->UniformTexture("texDiffuse2", 5);
+			if(_alphaTexturePresent) terrainShader->UniformTexture("texDiffuse3",6);
+			drawGround();
+			drawInfinitePlain();
+
+		terrainShader->unbind();
+
+		if(_alphaTexturePresent) _terrainTextures[5]->Unbind(6);
+		_terrainTextures[4]->Unbind(5);
+		_terrainTextures[3]->Unbind(4);
+		_terrainTextures[2]->Unbind(3);
+		_terrainTextures[1]->Unbind(2);
+		_terrainTextures[0]->Unbind(1);
+		_terrainDiffuseMap->Unbind(0);
+	}
+
 	_veg->draw(_drawInReflection);
-
-	if(GFXDevice::getInstance().getDepthMapRendering()) return;
-	Shader* terrainShader = getMaterial()->getShader();
-	_terrainDiffuseMap->Bind(0);
-	_terrainTextures[0]->Bind(1); //Normal Map
-	_terrainTextures[1]->Bind(2); //Water Caustics
-	_terrainTextures[2]->Bind(3); //AlphaMap: RED
-	_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
-	_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
-	if(_alphaTexturePresent) _terrainTextures[5]->Bind(6); //AlphaMap: Alpha
-
-	terrainShader->bind();
-
-		terrainShader->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
-		terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
-		terrainShader->Uniform("time", GETTIME());
-		terrainShader->Uniform("lightProjectionMatrix",GFXDevice::getInstance().getLightProjectionMatrix());
-		terrainShader->UniformTexture("texDiffuseMap", 0);
-		terrainShader->UniformTexture("texNormalHeightMap", 1);
-		terrainShader->UniformTexture("texWaterCaustics", 2);
-		terrainShader->UniformTexture("texDiffuse0", 3);
-		terrainShader->UniformTexture("texDiffuse1", 4);
-		terrainShader->UniformTexture("texDiffuse2", 5);
-		if(_alphaTexturePresent) terrainShader->UniformTexture("texDiffuse3",6);
-		drawGround();
-		drawInfinitePlain();
-
-	terrainShader->unbind();
-
-	if(_alphaTexturePresent) _terrainTextures[5]->Unbind(6);
-	_terrainTextures[4]->Unbind(5);
-	_terrainTextures[3]->Unbind(4);
-	_terrainTextures[2]->Unbind(3);
-	_terrainTextures[1]->Unbind(2);
-	_terrainTextures[0]->Unbind(1);
-	_terrainDiffuseMap->Unbind(0);
 
 }
 

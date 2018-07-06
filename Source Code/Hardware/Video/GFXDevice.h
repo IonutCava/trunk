@@ -96,6 +96,17 @@ public:
     inline void setRenderState(RenderState& state) {_state = state; _api.setRenderState(state);}
     inline void ignoreStateChanges(bool state) {_api.ignoreStateChanges(state);}
 
+	inline void setPrevShaderId(const U32& id) {_prevShaderId = id;}
+	inline const U32& getPrevShaderId() {return _prevShaderId;}
+
+	inline void setPrevTextureId(const U32& id) {_prevTextureId = id;}
+	inline const U32& getPrevTextureId() {return _prevTextureId;}
+
+	inline void setPrevMaterialId(const U32& id) {_prevMaterialId = id;}
+	inline const U32& getPrevMaterialId() {return _prevMaterialId;}
+
+
+	void processRenderQueue();
 public:
 	enum BufferType
 	{
@@ -106,6 +117,7 @@ public:
 private:
 	inline void getModelViewMatrix(mat4& mvMat){_api.getModelViewMatrix(mvMat);}
 	inline void getProjectionMatrix(mat4& projMat){_api.getProjectionMatrix(projMat);}
+
 private:
 	GFXDevice() :
 	   _api(GL_API::getInstance()) //Defaulting to OpenGL if no api has been defined
@@ -113,11 +125,14 @@ private:
 		   _wireframeMode = false;
 		   _depthMapRendering = false;
 		   _deferredShading = false;
+		   _prevShaderId = 0;
+		   _prevTextureId = 0;
+		   _prevMaterialId = 0;
 	   }
 	RenderAPIWrapper& _api;
 	bool _wireframeMode,_deferredShading,_depthMapRendering;
 	mat4 _currentLightProjectionMatrix;
-
+    U32  _prevShaderId, _prevTextureId,_prevMaterialId;
 END_SINGLETON
 
 #endif

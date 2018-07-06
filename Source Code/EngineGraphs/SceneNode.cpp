@@ -81,8 +81,12 @@ void SceneNode::setMaterial(Material* m){
 	if(_material != NULL) {
 		RemoveResource(_material);
 	}
-	if(!m) return;
+	if(!m){
+		_sortKey = 0;
+		return;
+	}
 	_material = m;
+	_sortKey = (F32)m->getMaterilaId();
 }
 
 void SceneNode::clearMaterials(){

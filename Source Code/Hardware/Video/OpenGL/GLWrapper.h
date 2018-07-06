@@ -37,7 +37,7 @@
 DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
 	typedef unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
 private:
-	GL_API() : RenderAPIWrapper(), _windowId(0) {}
+	GL_API() : RenderAPIWrapper(), _windowId(0),_wireframeRendering(false) {}
 
 	void initHardware();
 	void closeRenderingApi();
@@ -106,6 +106,7 @@ private: //OpenGL specific:
 	void setObjectState(Transform* const transform);
 	void releaseObjectState();
 	U8 _windowId;
+	bool _wireframeRendering;
 
 END_SINGLETON
 

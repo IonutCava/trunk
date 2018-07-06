@@ -26,15 +26,18 @@
 
 class SceneNode : public Resource {
 	friend class SceneGraphNode;
+	friend class RenderQueue;
 public:
 	SceneNode() : Resource(),
 				 _material(NULL),
 				 _renderState(true),
-				_noDefaultMaterial(false){}
+				 _noDefaultMaterial(false),
+	             _sortKey(0){}
 	SceneNode(std::string name) : Resource(name),
 								  _material(NULL),
 								  _renderState(true),
-								  _noDefaultMaterial(false){}
+								  _noDefaultMaterial(false),
+								  _sortKey(0){}
 
 	virtual ~SceneNode() {}
 	/*Rendering/Processing*/
@@ -68,6 +71,7 @@ private:
 
 	bool		_renderState,_noDefaultMaterial;
 	bool        _selected;
+	F32         _sortKey;
 
 };
 

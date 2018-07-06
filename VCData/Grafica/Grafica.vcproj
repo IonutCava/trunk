@@ -1134,6 +1134,14 @@
 			Name="EngineGraphs"
 			>
 			<File
+				RelativePath="..\..\Source Code\EngineGraphs\RenderQueue.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\RenderQueue.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\EngineGraphs\SceneGraph.cpp"
 				>
 			</File>

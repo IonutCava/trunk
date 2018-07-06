@@ -194,19 +194,23 @@ public:
 
 	inline vec3  getMin()	     const	{return _min;}
 	inline vec3  getMax()		 const	{return _max;}
+	
+	void clean(){
+		_extent = (_max-_min);
+		_center = (_max+_min)/2.0f;
+		_dirty = false;
+	}
 
 	inline vec3  getCenter()  {
 		if(_dirty){
-			_center = (_max+_min)/2.0f;
-			_dirty = false;
+			clean();
 		}
 		return _center;
 	}
 
 	inline vec3  getExtent()  {
 		if(_dirty){
-			_extent = (_max-_min);
-			_dirty = false;
+			clean();
 		}
 		return _extent;
 	}

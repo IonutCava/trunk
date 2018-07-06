@@ -90,7 +90,7 @@ void Console::errorf(char* format, ...){
 }
 
 void Console::output(const std::string& output){
-	boost::mutex::scoped_lock  lock(io_mutex);
+	//boost::mutex::scoped_lock  lock(io_mutex);
 	if(_timestamps){
 		std::cout << "[ " << std::setprecision(4) << GETTIME() << " ] " << output;
 	}else{

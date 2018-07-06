@@ -1,6 +1,15 @@
 #include "SceneGraph.h"
+#include "RenderQueue.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Managers/SceneManager.h"
+#include "Utility/Headers/Event.h"
+
+void SceneGraph::update(){
+	RenderQueue::getInstance().refresh();
+	boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
+	_root->updateTransformsAndBounds();
+	_root->updateVisualInformation();
+}
 
 void SceneGraph::render(){
 	GFXDevice& gfx = GFXDevice::getInstance();
@@ -13,10 +22,10 @@ void SceneGraph::render(){
 		if(dm0)	dm0->Bind(7);
 		if(dm1)	dm1->Bind(8);
 	}		
-	_root->updateTransformsAndBounds();
-	_root->updateVisualInformation();
-
-	_root->render(); 
+	if(!_updateRunning){
+		startUpdateThread();
+	}
+	GFXDevice::getInstance().processRenderQueue();
 
 	if(!gfx.getDepthMapRendering()&& !gfx.getDeferredShading()){
 	 	if(dm0)	dm0->Unbind(8);
@@ -27,7 +36,13 @@ void SceneGraph::render(){
 void SceneGraph::print(){
 	Console::getInstance().printfn("SceneGraph: ");
 	Console::getInstance().toggleTimeStamps(false);
+	boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
 	_root->print();
 	Console::getInstance().toggleTimeStamps(true);
 }
 
+void SceneGraph::startUpdateThread(){
+	//New Event(1,true,false,boost::bind(&SceneGraph::update,this));
+	//_updateRunning = true;
+	update();
+}

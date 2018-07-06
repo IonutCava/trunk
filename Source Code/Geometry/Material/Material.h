@@ -54,7 +54,7 @@ public:
   void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
 
   inline mat4& getMaterialMatrix() {return _materialMatrix;}
-
+  inline U8    getMaterilaId()     {return _matId;}
   void computeLightShaders(); //Set shaders;
   void createCopy();
   void removeCopy();
@@ -70,6 +70,7 @@ private:
   textureMap _textures;
   Shader* _shader;
   bool _computedLightShaders;
+  U8   _matId;
   bool _dirty;
 };
 

@@ -18,6 +18,8 @@ Material::Material() : Resource(),
    _textures[TEXTURE_BASE] = NULL;
    _textures[TEXTURE_BUMP] = NULL;
    _textures[TEXTURE_SECOND] = NULL;
+   _matId = GFXDevice::getInstance().getPrevMaterialId() + 1;
+   GFXDevice::getInstance().setPrevMaterialId(_matId);
 }
 
 
