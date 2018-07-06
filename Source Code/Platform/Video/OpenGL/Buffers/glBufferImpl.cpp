@@ -44,12 +44,12 @@ GLuint glBufferImpl::bufferID() const {
 
 void glBufferImpl::create(BufferUpdateFrequency frequency, size_t size)
 {
-    DIVIDE_ASSERT(_handle == 0, "BufferImpl::Create error: Tried to double create current UBO");
+    assert(_handle == 0 && "BufferImpl::Create error: Tried to double create current UBO");
     _alignedSize = size;
 }
 
 bool glBufferImpl::bindRange(GLuint bindIndex, size_t offset, size_t range) {
-    DIVIDE_ASSERT(_handle != 0, "BufferImpl error: Tried to bind an uninitialized UBO");
+    assert(_handle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
     bool success = false;
     if (setIfDifferentBindRange(_handle, bindIndex, offset, range))
@@ -65,7 +65,8 @@ void glBufferImpl::lockRange(size_t offset, size_t range) {
 }
 
 glRegularBuffer::glRegularBuffer(GLenum target)
-    : glBufferImpl(target)
+    : glBufferImpl(target),
+      _usage(GL_NONE)
 {
 }
 
@@ -76,7 +77,7 @@ glRegularBuffer::~glRegularBuffer()
 void glRegularBuffer::create(BufferUpdateFrequency frequency, size_t size)
 {
     glBufferImpl::create(frequency, size);
-    GLenum usage =
+    _usage =
         _target == GL_TRANSFORM_FEEDBACK
                  ? frequency == BufferUpdateFrequency::ONCE
                               ? GL_STATIC_COPY
@@ -88,7 +89,7 @@ void glRegularBuffer::create(BufferUpdateFrequency frequency, size_t size)
                                : frequency == BufferUpdateFrequency::OCASSIONAL
                                             ? GL_DYNAMIC_DRAW
                                             : GL_STREAM_DRAW;
-    GLUtil::createAndAllocBuffer(size, usage, _handle);
+    GLUtil::createAndAllocBuffer(size, _usage, _handle);
 }
 
 void glRegularBuffer::destroy()
@@ -101,8 +102,14 @@ void glRegularBuffer::destroy()
 
 void glRegularBuffer::updateData(size_t offset, size_t range, const bufferPtr data)
 {
-    //glInvalidateBufferSubData(_UBOid, offset, range);
-    glNamedBufferSubData(_handle, offset, range, data);
+    if (offset == 0 && range == _alignedSize) {
+        glInvalidateBufferData(_handle);
+        glNamedBufferData(_handle, _alignedSize, data, _usage);
+    } else {
+        glInvalidateBufferSubData(_handle, offset, range);
+        glNamedBufferSubData(_handle, offset, range, data);
+    }
+    
 }
 
 glPersistentBuffer::glPersistentBuffer(GLenum target) 
@@ -120,13 +127,14 @@ glPersistentBuffer::~glPersistentBuffer()
 void glPersistentBuffer::create(BufferUpdateFrequency frequency, size_t size)
 {
     glBufferImpl::create(frequency, size);
+    
     _mappedBuffer =
         GLUtil::createAndAllocPersistentBuffer(size,
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
             _handle);
 
-    DIVIDE_ASSERT(_mappedBuffer != nullptr, "PersistentBuffer::Create error: Can't mapped persistent buffer!");
+    assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
 }
 
 void glPersistentBuffer::destroy()
@@ -139,8 +147,8 @@ void glPersistentBuffer::destroy()
 
 void glPersistentBuffer::updateData(size_t offset, size_t range, const bufferPtr data)
 {
-    DIVIDE_ASSERT(_mappedBuffer != nullptr, "PersistentBuffer::UpdateData error: was called for an unmapped buffer!");
     _lockManager->WaitForLockedRange(offset, range, true);
+    assert(_mappedBuffer != nullptr && "PersistentBuffer::UpdateData error: was called for an unmapped buffer!");
     memcpy((U8*)(_mappedBuffer)+offset, data, range);
 }
 

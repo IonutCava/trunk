@@ -407,8 +407,7 @@ bool Vegetation::getDrawCommands(SceneGraphNode& sgn,
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
     cmd.cmd().firstIndex = 0;
     cmd.cmd().indexCount = 12 * 3;
-    cmd.renderGeometry(renderable->renderGeometry());
-    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.renderMask(renderable->renderMask());
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_ubyte(queryID));
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     cmd.sourceBuffer(buffer);

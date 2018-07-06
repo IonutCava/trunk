@@ -151,8 +151,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     _maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
     _maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
 
-    DIVIDE_ASSERT(to_const_uint(AttribLocation::COUNT) < to_uint(_maxAttribBindings), 
-                  "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
+    assert(to_const_uint(AttribLocation::COUNT) < to_uint(_maxAttribBindings) &&
+           "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), _maxTextureUnits);
     
@@ -356,7 +356,8 @@ void GL_API::syncToThread(std::thread::id threadID) {
             assert(it == std::cend(GLUtil::_glSecondaryContexts));
             // This also makes the context current
             bool ctxFound = g_ContextPool.getAvailableContext(ctx);
-            DIVIDE_ASSERT(ctxFound, "GL_API::syncToThread: context not found for current thread!");
+            assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
+            ACKNOWLEDGE_UNUSED(ctxFound);
 
             hashAlg::emplace(GLUtil::_glSecondaryContexts, threadHash, ctx);
         }

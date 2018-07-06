@@ -84,7 +84,7 @@ void glUniformBuffer::getData(ptrdiff_t offsetElementCount,
         ptrdiff_t range = rangeElementCount * _primitiveSize;
         ptrdiff_t offset = offsetElementCount * _primitiveSize;
 
-        DIVIDE_ASSERT(offset + range <= (ptrdiff_t)_allignedBufferSize,
+        assert(offset + range <= (ptrdiff_t)_allignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 

@@ -71,8 +71,7 @@ glGenericVertexData::~glGenericVertexData() {
 /// vertex data container
 void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Prevent double create
-    DIVIDE_ASSERT(_bufferObjects.empty(),
-                  "glGenericVertexData error: create called with no buffers specified!");
+    assert(_bufferObjects.empty() && "glGenericVertexData error: create called with no buffers specified!");
     // Create two vertex array objects. One for rendering and one for transform feedback
     GLUtil::_vaoPool.allocate(to_const_uint(GVDUsage::COUNT), &_vertexArray[0]);
     // Transform feedback may not be used, but it simplifies the class interface a lot
@@ -112,9 +111,7 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
                                                   U32 elementCountOffset,
                                                   size_t elementCount) {
     // Only feedback buffers can be used with this method
-    DIVIDE_ASSERT(isFeedbackBuffer(buffer),
-                  "glGenericVertexData error: called bind buffer range for "
-                  "non-feedback buffer!");
+    assert(isFeedbackBuffer(buffer) && "glGenericVertexData error: called bind buffer range for non-feedback buffer!");
 
     GL_API::setActiveTransformFeedback(_transformFeedback);
 
@@ -170,8 +167,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, bool useCmdBuf
 
 void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream, const vectorImpl<U32>& indices) {
     if (indicesCount > 0) {
-        DIVIDE_ASSERT(_indexBuffer == 0,
-            "glGenericVertexData::SetIndexBuffer error: Tried to double create index buffer!");
+        assert(_indexBuffer == 0 && "glGenericVertexData::SetIndexBuffer error: Tried to double create index buffer!");
 
         _indexBufferUsage = dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
                                     : GL_STATIC_DRAW;
@@ -183,7 +179,7 @@ void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool s
                 indices.empty() ? NULL : (bufferPtr)indices.data());
         _indexBufferSize = indicesCount;
         // Assert if the IB creation failed
-        DIVIDE_ASSERT(_indexBuffer != 0, Locale::get(_ID("ERROR_IB_INIT")));
+        assert(_indexBuffer != 0 && Locale::get(_ID("ERROR_IB_INIT")));
     } else {
         GLUtil::freeBuffer(_indexBuffer);
     }
@@ -193,8 +189,7 @@ void glGenericVertexData::updateIndexBuffer(const vectorImpl<U32>& indices) {
     DIVIDE_ASSERT(!indices.empty() && _indexBufferSize >= to_uint(indices.size()),
         "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
 
-    DIVIDE_ASSERT(_indexBuffer != 0,
-        "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
+    assert(_indexBuffer != 0 && "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
 
     glNamedBufferData(_indexBuffer,
                       static_cast<GLsizeiptr>(_indexBufferSize * sizeof(GLuint)),
@@ -217,8 +212,8 @@ void glGenericVertexData::setBuffer(U32 buffer,
                                     bool stream,
                                     bool persistentMapped) {
     // Make sure the buffer exists
-    DIVIDE_ASSERT(buffer >= 0 && buffer < _bufferObjects.size(),
-                  "glGenericVertexData error: set buffer called for invalid buffer index!");
+    assert(buffer >= 0 && buffer < _bufferObjects.size() &&
+           "glGenericVertexData error: set buffer called for invalid buffer index!");
     // Make sure we allow persistent mapping
     if (persistentMapped) {
         persistentMapped = !Config::Profile::DISABLE_PERSISTENT_BUFFER;
@@ -295,8 +290,8 @@ void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescri
 
     // If the attribute wasn't activate until now, enable it
     if (!descriptor.wasSet()) {
-        DIVIDE_ASSERT(descriptor.attribIndex() < to_uint(GL_API::_maxAttribBindings),
-            "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
+        assert(descriptor.attribIndex() < to_uint(GL_API::_maxAttribBindings) &&
+               "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
         glEnableVertexArrayAttrib(activeVAO, descriptor.attribIndex());
         glVertexArrayAttribBinding(activeVAO, descriptor.attribIndex(), descriptor.bufferIndex());
@@ -333,9 +328,8 @@ void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescri
 /// Return the number of primitives written to a transform feedback buffer that
 /// used the specified query ID
 U32 glGenericVertexData::getFeedbackPrimitiveCount(U8 queryID) {
-    DIVIDE_ASSERT(queryID < _numQueries && !_bufferObjects.empty(),
-                  "glGenericVertexData error: Current object isn't ready for "
-                  "query processing!");
+    assert(queryID < _numQueries && !_bufferObjects.empty() &&
+           "glGenericVertexData error: Current object isn't ready for query processing!");
     // Double buffered queries return the results from the previous draw call to
     // avoid stalling the GPU pipeline
     U32 queryEntry = _doubleBufferedQuery ? _currentReadQuery : _currentWriteQuery;

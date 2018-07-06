@@ -592,19 +592,18 @@ void GFXDevice::onCameraUpdate(Camera& camera) {
 /// to the loading thread via a queue
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_PARAM<bool>& callback) {
     // Skip invalid callbacks
-    if (!callback) {
-        return false;
-    }
+    if (callback) {
+        if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
+            CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+        } else {
+            callback(false);
+        }
 
-    if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
-        CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH,
-                                              to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
-    } else {
-        callback(false);
+        // The callback is valid and has been processed
+        return true;
     }
-
-    // The callback is valid and has been processed
-    return true;
+    
+    return false;
 }
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)

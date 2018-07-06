@@ -120,8 +120,7 @@ bool Object3D::getDrawCommands(SceneGraphNode& sgn,
         RenderingComponent* const renderable = sgn.get<RenderingComponent>();
         VertexBuffer* const vb = getGeometryVB();
 
-        cmd.renderGeometry(renderable->renderGeometry());
-        cmd.renderWireframe(renderable->renderWireframe());
+        cmd.renderMask(renderable->renderMask());
         cmd.stateHash(renderable->getDrawStateHash(renderStage));
         cmd.shaderProgram(renderable->getDrawShader(renderStage));
         cmd.sourceBuffer(vb);

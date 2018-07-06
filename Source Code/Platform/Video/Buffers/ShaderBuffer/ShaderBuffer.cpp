@@ -33,11 +33,11 @@ namespace Divide {
         _primitiveSize = primitiveSize;
         _bufferSize = primitiveSize * primitiveCount;
         _sizeFactor = sizeFactor;
-        DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::Create error: Invalid buffer size!");
+        assert(_bufferSize > 0 && "ShaderBuffer::Create error: Invalid buffer size!");
     }
 
     void ShaderBuffer::setData(const bufferPtr data) {
-        DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::SetData error: Invalid buffer size!");
+        assert(_bufferSize > 0 && "ShaderBuffer::SetData error: Invalid buffer size!");
         updateData(0, _primitiveCount, data);
     }
 

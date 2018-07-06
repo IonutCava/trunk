@@ -59,8 +59,7 @@ bool SubMesh::getDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
 
-    cmd.renderGeometry(renderable->renderGeometry());
-    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.renderMask(renderable->renderMask());
     cmd.stateHash(renderable->getDrawStateHash(renderStage));
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     

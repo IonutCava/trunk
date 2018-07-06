@@ -32,15 +32,14 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     pl.insert(std::make_pair("XAutoRepeatOn", "true"));
 
     _pInputInterface = OIS::InputManager::createInputSystem(pl);
-    DIVIDE_ASSERT(_pInputInterface != nullptr,
-                  "InputInterface error: Could not create OIS Input Interface");
+    assert(_pInputInterface != nullptr && "InputInterface error: Could not create OIS Input Interface");
 
     Console::printfn(Locale::get(_ID("INPUT_CREATE_OK")),
                      _pInputInterface->inputSystemName().c_str());
 
     // Create the event handler.
     _pEventHdlr = MemoryManager_NEW EventHandler(this, kernel);
-    DIVIDE_ASSERT(_pEventHdlr != nullptr, "InputInterface error: EventHandler allocation failed!");
+    assert(_pEventHdlr != nullptr && "InputInterface error: EventHandler allocation failed!");
 
     if (_pInputInterface->getNumberOfDevices(OIS::OISKeyboard) > 0) {
         // Create a simple keyboard

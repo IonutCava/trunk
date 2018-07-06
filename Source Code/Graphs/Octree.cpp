@@ -550,11 +550,11 @@ void Octree::updateIntersectionCache(vectorImpl<SceneGraphNode_wptr>& parentObje
     //check all parent objects against all objects in our local node
     for(SceneGraphNode_wptr pObjPtr : parentObjects)
     {
-        SceneGraphNode_ptr pObj = pObjPtr.lock();
+        SceneGraphNode_ptr pObj(pObjPtr.lock());
         assert(pObj);
 
         for (SceneGraphNode_wptr objPtr : _objects) {
-            SceneGraphNode_ptr obj = objPtr.lock();
+            SceneGraphNode_ptr obj(objPtr.lock());
             assert(obj);
             //We let the two objects check for collision against each other. They can figure out how to do the coarse and granular checks.
             //all we're concerned about is whether or not a collision actually happened.

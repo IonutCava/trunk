@@ -20,8 +20,7 @@ SFXDevice::~SFXDevice()
 }
 
 ErrorCode SFXDevice::initAudioAPI() {
-    DIVIDE_ASSERT(_api == nullptr,
-                  "SFXDevice error: initAudioAPI called twice!");
+    assert(_api == nullptr && "SFXDevice error: initAudioAPI called twice!");
 
     switch (_API_ID) {
         case AudioAPI::FMOD: {
@@ -43,8 +42,7 @@ ErrorCode SFXDevice::initAudioAPI() {
 }
 
 void SFXDevice::closeAudioAPI() {
-    DIVIDE_ASSERT(_api != nullptr,
-                "SFXDevice error: closeAudioAPI called without init!");
+    assert(_api != nullptr && "SFXDevice error: closeAudioAPI called without init!");
 
     _api->closeAudioAPI();
 

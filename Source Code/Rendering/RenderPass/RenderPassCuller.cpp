@@ -108,10 +108,8 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
                      g_nodesPerCullingPartition,
                      Task::TaskPriority::MAX);
 
-        for (VisibleNodeList& nodeListEntry : nodeList) {
-            for (VisibleNode& ptr : nodeListEntry) {
-                nodeCache.push_back(ptr);
-            }
+        for (const VisibleNodeList& nodeListEntry : nodeList) {
+            nodeCache.insert(std::end(nodeCache), std::cbegin(nodeListEntry), std::cend(nodeListEntry));
         }
     }
 }

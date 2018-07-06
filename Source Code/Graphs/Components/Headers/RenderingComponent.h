@@ -82,6 +82,23 @@ class RenderingComponent : public SGNComponent {
     inline bool renderBoundingSphere() const { return _renderBoundingSphere; }
     inline bool renderSkeleton() const { return _renderSkeleton; }
 
+    inline U32 renderMask() const {
+        U32 mask = 0;
+        if (renderGeometry()) {
+            SetBit(mask, to_const_uint(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+        }
+        if (renderWireframe()) {
+            SetBit(mask, to_const_uint(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+        }
+        if (renderBoundingBox()) {
+            SetBit(mask, to_const_uint(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_AABB));
+        }
+        if (renderBoundingSphere()) {
+            SetBit(mask, to_const_uint(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_SPHERE));
+        }
+        return mask;
+    }
+
     void castsShadows(const bool state);
     void receivesShadows(const bool state);
 

@@ -132,8 +132,7 @@ bool Sky::getDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand& cmd = drawCommandsOut.front();
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
-    cmd.renderGeometry(renderable->renderGeometry());
-    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.renderMask(renderable->renderMask());
     cmd.stateHash(renderStage == RenderStage::REFLECTION
                               ? _skyboxRenderStateReflectedHash
                               : renderStage == RenderStage::Z_PRE_PASS

@@ -47,7 +47,7 @@ void Task::reset() {
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;
-    _childTasks.clear();
+    _childTasks.resize(0);
     _childTaskCount = 0;
 }
 

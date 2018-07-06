@@ -190,8 +190,7 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data) {
     glCreateBuffers(1, &bufferIdOut);
-    DIVIDE_ASSERT(bufferIdOut != 0,
-                  "GLUtil::allocPersistentBuffer error: buffer creation failed");
+    assert(bufferIdOut != 0 && "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
     return allocPersistentBuffer(bufferIdOut, bufferSize, storageMask, accessMask,
                                  data);
@@ -202,7 +201,7 @@ void createAndAllocBuffer(GLsizeiptr bufferSize,
                           GLuint& bufferIdOut,
                           const bufferPtr data) {
     glCreateBuffers(1, &bufferIdOut);
-    DIVIDE_ASSERT(bufferIdOut != 0, "GLUtil::allocBuffer error: buffer creation failed");
+    assert(bufferIdOut != 0 && "GLUtil::allocBuffer error: buffer creation failed");
     glNamedBufferData(bufferIdOut, bufferSize, data, usageMask);
 }
 
@@ -210,7 +209,8 @@ void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
     if (bufferId > 0) {
         if (mappedPtr != nullptr) {
             GLboolean result = glUnmapNamedBuffer(bufferId);
-            DIVIDE_ASSERT(result != GL_FALSE, "GLUtil::freeBuffer error: buffer unmaping failed");
+            assert(result != GL_FALSE && "GLUtil::freeBuffer error: buffer unmaping failed");
+            ACKNOWLEDGE_UNUSED(result);
             mappedPtr = nullptr;
         }
         glDeleteBuffers(1, &bufferId);

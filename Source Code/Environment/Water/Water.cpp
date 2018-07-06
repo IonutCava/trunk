@@ -146,8 +146,7 @@ bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.renderGeometry(renderable->renderGeometry());
-    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.renderMask(renderable->renderMask());
     cmd.stateHash(renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY));
     cmd.shaderProgram(drawShader);
     cmd.sourceBuffer(_plane->getGeometryVB());

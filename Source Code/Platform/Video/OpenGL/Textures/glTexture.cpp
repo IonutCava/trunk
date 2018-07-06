@@ -29,8 +29,7 @@ glTexture::glTexture(GFXDevice& context,
     U32 tempHandle = 0;
     glCreateTextures(_type, 1, &tempHandle);
     
-    DIVIDE_ASSERT(tempHandle != 0,
-                  "glTexture error: failed to generate new texture handle!");
+    assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
     _textureData.setHandleHigh(tempHandle);
 }
 
@@ -76,8 +75,7 @@ void glTexture::resize(const bufferPtr ptr,
     U32 tempHandle = 0;
     glCreateTextures(_type, 1, &tempHandle);
     
-    DIVIDE_ASSERT(tempHandle != 0,
-        "glTexture error: failed to generate new texture handle!");
+    assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
 
     U32 textureID = _textureData.getHandleHigh();
     if (textureID > 0) {
@@ -104,11 +102,9 @@ void glTexture::updateSampler() {
 }
 
 void glTexture::reserveStorage(const TextureLoadInfo& info) {
-    DIVIDE_ASSERT(
-        !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP &&
-          _width != _height),
-        "glTexture::reserverStorage error: width and height for "
-        "cube map texture do not match!");
+    assert(
+        !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
+        "glTexture::reserverStorage error: width and height for cube map texture do not match!");
 
     ParamHandler& par = ParamHandler::instance();
 
@@ -199,9 +195,9 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
         assert(_width > 0 && _height > 0);
     } else {
-        DIVIDE_ASSERT(
+        assert(
             _width == dimensions.width &&
-            _height == dimensions.height,
+            _height == dimensions.height &&
             "glTexture error: Invalid dimensions for texture array layer");
     }
 
@@ -212,7 +208,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
     loadDataUncompressed(info, data);
 
-    DIVIDE_ASSERT(_width > 0 && _height > 0,
+    assert(_width > 0 && _height > 0 &&
         "glTexture error: Invalid texture dimensions!");
 
 }
@@ -236,9 +232,9 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
         assert(_width > 0 && _height > 0);
     } else {
-        DIVIDE_ASSERT(
+        assert(
             _width == imageLayers[0]._dimensions.width && 
-            _height == imageLayers[0]._dimensions.height,
+            _height == imageLayers[0]._dimensions.height &&
             "glTexture error: Invalid dimensions for texture array layer");
     }
 
@@ -253,8 +249,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
         loadDataUncompressed(info, (bufferPtr)imageLayers[0]._data.data());
     }
 
-    DIVIDE_ASSERT(_width > 0 && _height > 0,
-                  "glTexture error: Invalid texture dimensions!");
+    assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");
 }
 
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,

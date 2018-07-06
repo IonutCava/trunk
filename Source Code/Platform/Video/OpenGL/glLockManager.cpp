@@ -38,9 +38,8 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
         U8 retryCount = 0;
         while (true) {
             GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, waitDuration);
-            DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED,
-                          "Not sure what to do here. Probably raise an "
-                          "exception or something.");
+            assert(waitRet != GL_WAIT_FAILED &&
+                   "Not sure what to do here. Probably raise an exception or something.");
             if (waitRet == GL_ALREADY_SIGNALED ||
                 waitRet == GL_CONDITION_SATISFIED) {
                 return;

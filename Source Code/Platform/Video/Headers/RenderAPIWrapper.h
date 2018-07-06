@@ -122,24 +122,24 @@ struct GenericDrawCommand {
     enum class RenderOptions : U32 {
         RENDER_GEOMETRY = toBit(1),
         RENDER_WIREFRAME = toBit(2),
-        RENDER_BOUNDS = toBit(3),
-        COUNT = 3
+        RENDER_BOUNDS_AABB = toBit(3),
+        RENDER_BOUNDS_SPHERE = toBit(4),
+        COUNT = 4
     };
 
    private:
-    // order is important to avoid padding for alignment reasons
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    U32 __padding__reserved__;               // 64 bytes
-    IndirectDrawCommand _cmd;                // 60 bytes
-    ShaderProgram* _shaderProgram;           // 40 bytes
-    VertexDataInterface* _sourceBuffer;      // 32 bytes
-    PrimitiveType _type;                     // 24 bytes
-    U64 _stateHash;                          // 20 bytes
-    U32 _commandOffset;                      // 12 bytes
-    U32 _renderOptions;                      // 8  bytes
-    U16 _drawCount;                          // 4  bytes
-    U8 _drawToBuffer;                        // 2  bytes
-    U8 _lodIndex;                            // 1  bytes
+    IndirectDrawCommand _cmd;           // 64 bytes
+    U64 _stateHash;                     // 44 bytes
+    ShaderProgram* _shaderProgram;      // 36 bytes
+    VertexDataInterface* _sourceBuffer; // 28 bytes
+    PrimitiveType _type;                // 20 bytes
+    U32 _commandOffset;                 // 16 bytes
+    U32 _renderOptions;                 // 12 bytes
+    U16 _drawCount;                     // 4  bytes
+    U8 _drawToBuffer;                   // 2  bytes
+    U8 _lodIndex;                       // 1  bytes
+
    public:
 
     inline void drawCount(U16 count) { 
@@ -158,19 +158,28 @@ struct GenericDrawCommand {
         _drawToBuffer = index;
     }
 
+    inline void renderMask(U32 mask) {
+        _renderOptions = mask;
+    }
+    
     inline void renderWireframe(bool state) {
         state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME))
               : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME));
     }
 
-    inline void renderBounds(bool state) {
-        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS))
-              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS));
-    }
-
     inline void renderGeometry(bool state) {
         state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY))
               : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
+    }
+
+    inline void renderBoundsAABB(bool state) {
+        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB))
+              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB));
+    }
+
+    inline void renderBoundsSphere(bool state) {
+        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE))
+              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE));
     }
 
     inline void shaderProgram(const ShaderProgram_ptr& program) {
@@ -198,11 +207,17 @@ struct GenericDrawCommand {
     inline bool renderWireframe() const {
         return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME));
     }
+
     inline bool renderGeometry() const {
         return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
     }
-    inline bool renderBounds() const {
-        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS));
+
+    inline bool renderBoundsAABB() const {
+        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB));
+    }
+
+    inline bool renderBoundsSphere() const {
+        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB));
     }
 
     inline const IndirectDrawCommand& cmd() const {
@@ -233,8 +248,7 @@ struct GenericDrawCommand {
     	  _type(type),
           _commandOffset(0),
           _shaderProgram(nullptr),
-          _sourceBuffer(nullptr),
-          __padding__reserved__(0)
+          _sourceBuffer(nullptr)
     {
         SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
         _cmd.indexCount = indexCount;
@@ -242,6 +256,7 @@ struct GenericDrawCommand {
         _cmd.primCount = primCount;
 
         static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
+        static_assert(sizeof(GenericDrawCommand) == 64, "Size of GenericDrawCommand is incorrect!");
     }
 
     inline void set(const GenericDrawCommand& base) {

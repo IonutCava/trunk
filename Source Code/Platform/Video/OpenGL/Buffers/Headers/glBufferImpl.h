@@ -62,6 +62,8 @@ public:
     void create(BufferUpdateFrequency frequency, size_t size) override;
     void destroy() override;
     void updateData(size_t offset, size_t range, const bufferPtr data) override;
+private:
+    GLenum _usage;
 };
 
 class glPersistentBuffer : public glBufferImpl {

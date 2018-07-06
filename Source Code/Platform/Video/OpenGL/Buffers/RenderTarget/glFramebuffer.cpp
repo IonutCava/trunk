@@ -66,8 +66,7 @@ void glFramebuffer::initAttachment(RTAttachment::Type type,
         return;
     }
 
-    DIVIDE_ASSERT(_width != 0 && _height != 0,
-                  "glFramebuffer error: Invalid frame buffer dimensions!");
+    assert(_width != 0 && _height != 0 && "glFramebuffer error: Invalid frame buffer dimensions!");
 
     if (_multisampled) {
         if (texDescriptor._type == TextureType::TEXTURE_2D) {
@@ -448,15 +447,10 @@ void glFramebuffer::resetMipMaps(const RTDrawDescriptor& drawPolicy) {
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     static vectorImpl<GLenum> colourBuffers;
 
-    DIVIDE_ASSERT(_framebufferHandle != 0,
-                  "glFramebuffer error: "
-                  "Tried to bind an invalid framebuffer!");
+    assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");
 
 #   if defined(ENABLE_GPU_VALIDATION)
-        DIVIDE_ASSERT(!glFramebuffer::_bufferBound,
-                      "glFramebuffer error: "
-                      "Begin() called without a call to the "
-                      "previous bound buffer's End()");
+    assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
 #   endif
 
     if (drawPolicy._changeViewport) {
@@ -497,9 +491,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
 void glFramebuffer::end() {
 #   if defined(ENABLE_GPU_VALIDATION)
-        DIVIDE_ASSERT(glFramebuffer::_bufferBound,
-                      "glFramebuffer error: "
-                      "End() called without a previous call to Begin()");
+    assert(glFramebuffer::_bufferBound && "glFramebuffer error: End() called without a previous call to Begin()");
 #   endif
 
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);

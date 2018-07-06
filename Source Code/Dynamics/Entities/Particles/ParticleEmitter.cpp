@@ -208,24 +208,6 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
                                       RenderStage renderStage,
                                       const SceneRenderState& sceneRenderState,
                                       vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-
-    const Camera& camera = sceneRenderState.getCameraConst();
-
-    vec3<F32> up(camera.getUpDir());
-    vec3<F32> right(camera.getRightDir());
-
-    if (_camUp != up) {
-        _camUp.set(up);
-        _particleShader->Uniform("CameraUp_worldspace", up);
-        _particleDepthShader->Uniform("CameraUp_worldspace", up);
-    }
-
-    if (_camRight != right) {
-        _camRight.set(right);
-        _particleShader->Uniform("CameraRight_worldspace", right);
-        _particleDepthShader->Uniform("CameraRight_worldspace", right);
-    }
-
     // start a separate thread?
     if (_needsUpdate) {
         U32 aliveCount = getAliveParticleCount();
@@ -236,11 +218,9 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
     }
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
-
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
 
-    cmd.renderGeometry(renderable->renderGeometry());
-    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.renderMask(renderable->renderMask());
     cmd.cmd().primCount = to_uint(_particles->_renderingPositions.size());
     cmd.stateHash(GFX_DEVICE.isDepthStage() ? _particleStateBlockHashDepth
                                             : _particleStateBlockHash);

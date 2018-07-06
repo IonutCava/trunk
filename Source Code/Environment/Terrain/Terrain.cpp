@@ -129,8 +129,7 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand cmd;
     cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.renderGeometry(renderable->renderGeometry());
-    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.renderMask(renderable->renderMask());
     cmd.stateHash(_terrainStateHash[to_uint(renderStage)]);
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     cmd.sourceBuffer(getGeometryVB());

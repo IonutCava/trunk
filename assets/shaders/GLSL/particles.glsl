@@ -4,15 +4,15 @@ layout(location = 13) in vec4 particleNormalData;
 // Output data will be interpolated for each fragment.
 out vec4 particleColour;
 
-uniform vec3 CameraRight_worldspace;
-uniform vec3 CameraUp_worldspace;
-
 void main()
 {
+    vec3 camRighW = dvd_ViewMatrix[0].xyz;
+    vec3 camUpW = dvd_ViewMatrix[1].xyz;
+
     float spriteSize = particleNormalData.w;
     vec3 vertexPositionW = particleNormalData.xyz + 
-                           (CameraRight_worldspace * inVertexData.x * spriteSize) +
-                           (CameraUp_worldspace * inVertexData.y * spriteSize);
+                           (camRighW * inVertexData.x * spriteSize) +
+                           (camUpW * inVertexData.y * spriteSize);
     // Output position of the vertex
     // Even though the variable ends with WV, we'll store WVP to skip adding a new varying variable
     VAR._vertexWV = dvd_ViewProjectionMatrix * vec4(vertexPositionW, 1.0f);

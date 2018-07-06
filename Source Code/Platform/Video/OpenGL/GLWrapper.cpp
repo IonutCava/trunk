@@ -93,7 +93,6 @@ void GL_API::beginFrame() {
 // Start a duration query in debug builds
 #if defined(ENABLE_GPU_VALIDATION)
     glBeginQuery(GL_TIME_ELAPSED, _hardwareQueries[g_performanceQueryFrameDurationIndex]->writeQuery().getID());
-    _hardwareQueries[g_performanceQueryFrameDurationIndex]->incQueue();
 #endif
     // Clear our buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
@@ -119,6 +118,7 @@ void GL_API::endFrame(bool swapBuffers) {
     // End the timing query started in beginFrame() in debug builds
 #if defined(ENABLE_GPU_VALIDATION)
     glEndQuery(GL_TIME_ELAPSED);
+    _hardwareQueries[g_performanceQueryFrameDurationIndex]->incQueue();
 #endif
 }
 

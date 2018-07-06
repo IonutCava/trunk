@@ -179,8 +179,8 @@ bool glVertexArray::refresh() {
     // Dynamic LOD elements (such as terrain) need dynamic indices
     // We can manually override index usage (again, used by the Terrain
     // rendering system)
-    DIVIDE_ASSERT(!_hardwareIndicesL.empty() || !_hardwareIndicesS.empty(),
-                  "glVertexArray::refresh error: Invalid index data on Refresh()!");
+    assert(!_hardwareIndicesL.empty() || !_hardwareIndicesS.empty() &&
+           "glVertexArray::refresh error: Invalid index data on Refresh()!");
 
     GLsizei nSizeIndices =
         (GLsizei)(usesLargeIndices() ? _hardwareIndicesL.size() * sizeof(U32)
@@ -219,7 +219,7 @@ bool glVertexArray::refresh() {
         if (_vaoCaches[i] == 0) {
             // Generate a "Vertex Array Object"
             _vaoCaches[i] = GLUtil::_vaoPool.allocate();
-            DIVIDE_ASSERT(_vaoCaches[i] != 0, Locale::get(_ID("ERROR_VAO_INIT")));
+            assert(_vaoCaches[i] != 0 && Locale::get(_ID("ERROR_VAO_INIT")));
             setVao(crtHash, _vaoCaches[i]);
             vaoCachesDirty[i] = true;
         }
@@ -251,7 +251,7 @@ bool glVertexArray::refresh() {
         }
         // Generate a new Vertex Buffer Object
         GLUtil::commitVBO(countRequirement,_usage, _VBHandle._id, _VBHandle._offset);
-        DIVIDE_ASSERT(_VBHandle._id != 0, Locale::get(_ID("ERROR_VB_INIT")));
+        assert(_VBHandle._id != 0 && Locale::get(_ID("ERROR_VB_INIT")));
     }
     // Refresh buffer data (if this is the first call to refresh, this will be true)
     if (sizeChanged) {
@@ -295,8 +295,7 @@ bool glVertexArray::refresh() {
 /// Refresh call
 bool glVertexArray::createInternal() {
     // Avoid double create calls
-    DIVIDE_ASSERT(_VBHandle._id == 0,
-                  "glVertexArray error: Attempted to double create a VB");
+    assert(_VBHandle._id == 0 && "glVertexArray error: Attempted to double create a VB");
     // Position data is a minim requirement
     if (_data.empty()) {
         Console::errorfn(Locale::get(_ID("ERROR_VB_POSITION")));
@@ -309,7 +308,7 @@ bool glVertexArray::createInternal() {
     glCreateBuffers(1, &_IBid);
     // Validate buffer creation
     // Assert if the IB creation failed
-    DIVIDE_ASSERT(_IBid != 0, Locale::get(_ID("ERROR_IB_INIT")));
+    assert(_IBid != 0 && Locale::get(_ID("ERROR_IB_INIT")));
     // Calling refresh updates all stored information and sends it to the GPU
     return queueRefresh();
 }

@@ -63,8 +63,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _imShaderTextureFlag = _imShader->getUniformLocation("useTexture");
     _imShaderWorldMatrix = _imShader->getUniformLocation("dvd_WorldMatrix");
 
-    DIVIDE_ASSERT(_imShader != nullptr,
-                  "GFXDevice error: No immediate mode emulation shader available!");
+    assert(_imShader != nullptr && "GFXDevice error: No immediate mode emulation shader available!");
     PostFX::createInstance();
     // Create a shader buffer to store the following info:
     // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
@@ -101,12 +100,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // The general purpose render state blocks are both mandatory and must
     // differ from each other at a state hash level
-    DIVIDE_ASSERT(_stateDepthOnlyRenderingHash != _state2DRenderingHash,
-                  "GFXDevice error: Invalid default state hash detected!");
-    DIVIDE_ASSERT(_state2DRenderingHash != _defaultStateNoDepthHash,
-                  "GFXDevice error: Invalid default state hash detected!");
-    DIVIDE_ASSERT(_defaultStateNoDepthHash != _defaultStateBlockHash,
-                  "GFXDevice error: Invalid default state hash detected!");
+    assert(_stateDepthOnlyRenderingHash != _state2DRenderingHash &&
+           "GFXDevice error: Invalid default state hash detected!");
+    assert(_state2DRenderingHash != _defaultStateNoDepthHash &&
+           "GFXDevice error: Invalid default state hash detected!");
+    assert(_defaultStateNoDepthHash != _defaultStateBlockHash &&
+           "GFXDevice error: Invalid default state hash detected!");
     // Activate the default render states
     _previousStateBlockHash = _stateBlockMap[0].getHash();
     setStateBlock(_defaultStateBlockHash);
@@ -226,8 +225,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingAPI() {
-    DIVIDE_ASSERT(_api != nullptr,
-                  "GFXDevice error: closeRenderingAPI called without init!");
+    assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
 
     _axisGizmo->_canZombify = true;
     // Destroy our post processing system
@@ -358,8 +356,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
 }
 
 ErrorCode GFXDevice::createAPIInstance() {
-    DIVIDE_ASSERT(_api == nullptr,
-                  "GFXDevice error: initRenderingAPI called twice!");
+    assert(_api == nullptr && "GFXDevice error: initRenderingAPI called twice!");
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {

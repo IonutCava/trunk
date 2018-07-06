@@ -126,7 +126,7 @@ glHardwareQuery& glHardwareQueryRing::writeQuery() {
 void glHardwareQueryRing::initQueries() {
     for (glHardwareQuery& query : _queries) {
        query.create();
-       DIVIDE_ASSERT(query.getID() != 0, "glHardwareQueryRing error: Invalid performance counter query ID!");
+       assert(query.getID() != 0 && "glHardwareQueryRing error: Invalid performance counter query ID!");
        // Initialize an initial time query as it solves certain issues with
        // consecutive queries later
        glBeginQuery(GL_TIME_ELAPSED, query.getID());

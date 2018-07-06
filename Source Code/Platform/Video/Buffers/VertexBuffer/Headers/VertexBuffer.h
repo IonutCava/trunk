@@ -83,9 +83,9 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                       bool useCmdBuffer = false) = 0;
 
     inline void useLargeIndices(bool state = true) {
-        DIVIDE_ASSERT(_hardwareIndicesL.empty() && _hardwareIndicesS.empty(),
-                      "VertexBuffer error: Index format type specified before "
-                      "buffer creation!");
+        assert(_hardwareIndicesL.empty() && _hardwareIndicesS.empty() &&
+               "VertexBuffer error: Index format type specified before "
+               "buffer creation!");
         _format = state ? GFXDataFormat::UNSIGNED_INT
                         : GFXDataFormat::UNSIGNED_SHORT;
     }
@@ -326,8 +326,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         if (_partitions.empty()) {
             return getIndexCount();
         }
-        DIVIDE_ASSERT(partitionID < _partitions.size(),
-                      "VertexBuffer error: Invalid partition offset!");
+        assert(partitionID < _partitions.size() && "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionID].second;
     }
 
@@ -335,8 +334,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         if (_partitions.empty()) {
             return 0;
         }
-        DIVIDE_ASSERT(partitionID < _partitions.size(),
-                      "VertexBuffer error: Invalid partition offset!");
+        assert(partitionID < _partitions.size() && "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionID].first;
     }
 

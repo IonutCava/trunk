@@ -330,7 +330,7 @@ SceneManager::getSortedCulledNodes(std::function<bool(const RenderPassCuller::Vi
 
     RenderPassCuller::VisibleNodeList waterNodes;
     _tempNodesCache.resize(0);
-    _tempNodesCache.insert(std::begin(_tempNodesCache), std::begin(nodeCache), std::end(nodeCache));
+    _tempNodesCache.insert(std::begin(_tempNodesCache), std::cbegin(nodeCache), std::cend(nodeCache));
 
     // Cull nodes that are not valid reflection targets
     _tempNodesCache.erase(std::remove_if(std::begin(_tempNodesCache),
