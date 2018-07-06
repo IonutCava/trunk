@@ -7,8 +7,8 @@
 
 AICoordination::AICoordination(U32 id) : _teamID(id){
     _team.clear();
-    _enemyTeam.clear();
-	AIManager::getInstance().registerTeam(this);
+    _enemyTeam = NULL;
+    AIManager::getInstance().registerTeam(this);
     // attach navmeshes here
     for(I32 i = 0; i < maxAgentRadiusCount; ++i){
         Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(i);
@@ -25,10 +25,10 @@ AICoordination::~AICoordination() {
 }
 
 void AICoordination::update(const U64 deltaTime){
-	for(I32 i = 0; i < maxAgentRadiusCount; ++i){
-		if(_teamCrowd[i])
-			_teamCrowd[i]->update(deltaTime);
-	}
+    for(I32 i = 0; i < maxAgentRadiusCount; ++i){
+        if(_teamCrowd[i])
+            _teamCrowd[i]->update(deltaTime);
+    }
 }
 
 #pragma message("ToDo: Use proper agent radius navmeshes! -Ionut")
@@ -41,9 +41,9 @@ void AICoordination::resetNavMeshes() {
             _teamCrowd[i]->setNavMesh(navMesh);
         }
     }
-	for_each(teamMap::value_type& aiEntity, _team){
-		aiEntity.second->resetCrowd(_teamCrowd[0]);
-	}
+    for_each(teamMap::value_type& aiEntity, _team){
+        aiEntity.second->resetCrowd(_teamCrowd[0]);
+    }
 }
 
 bool AICoordination::addTeamMember(AIEntity* entity) {
@@ -73,11 +73,9 @@ bool AICoordination::removeTeamMember(AIEntity* entity) {
     return true;
 }
 
-bool AICoordination::addEnemyTeam(teamMap& enemyTeam){
+bool AICoordination::addEnemyTeam(AICoordination* enemyTeam){
     WriteLock w_lock(_updateMutex);
-    if(!_enemyTeam.empty()){
-        _enemyTeam.clear();
-    }
+
     _enemyTeam = enemyTeam;
     return true;
 }

@@ -49,7 +49,11 @@ void AIEntity::load(const vec3<F32>& position) {
     setPosition(position);
 
     if(!isAgentLoaded() && _detourCrowd) {
-        _agentID = _detourCrowd->addAgent(position, (_detourCrowd->getAgentHeight()/2)*3.5f, 10.0f);
+        if(_unitRef){
+            _agentID = _detourCrowd->addAgent(position, _unitRef->getMovementSpeed(), 10.0f);
+        }else{
+            _agentID = _detourCrowd->addAgent(position, (_detourCrowd->getAgentHeight()/2)*3.5f, 10.0f);
+        }
         _agent = _detourCrowd->getAgent(_agentID);
         _destination = position;
     }
@@ -112,16 +116,16 @@ bool AIEntity::addActionProcessor(ActionList* actionProcessor){
     return true;
 }
 
-void AIEntity::processInput(){
+void AIEntity::processInput(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
     if(!_actionProcessor) return;
-    _actionProcessor->processInput();
+    _actionProcessor->processInput(deltaTime);
 }
 
-void AIEntity::processData(){
+void AIEntity::processData(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
     if(!_actionProcessor) return;
-    _actionProcessor->processData();
+    _actionProcessor->processData(deltaTime);
 }
 
 void AIEntity::update(const U64 deltaTime){
@@ -300,6 +304,13 @@ void AIEntity::moveForward(){
     lookDirection.normalize();
 
     setVelocity(lookDirection * getMaxSpeed());
+}
+
+void AIEntity::moveBackwards(){
+    vec3<F32> lookDirection = _unitRef != NULL ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
+    lookDirection.normalize();
+
+    setVelocity(lookDirection * getMaxSpeed() * -1.0f);
 }
 
 void AIEntity::setVelocity(const vec3<F32>& velocity){

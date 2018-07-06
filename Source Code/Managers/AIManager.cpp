@@ -41,21 +41,21 @@ U8 AIManager::update(){
     if(!_sceneCallback.empty())
         _sceneCallback();
 
-    processInput();  //sensors
-    processData();   //think
+    processInput(_deltaTime);  //sensors
+    processData(_deltaTime);   //think
     updateEntities(_deltaTime);//react
     return 0;
 }
 
-void AIManager::processInput(){  //sensors
+void AIManager::processInput(const U64 deltaTime){  //sensors
     for_each(AIEntityMap::value_type& entity, _aiEntities){
-        entity.second->processInput();
+        entity.second->processInput(deltaTime);
     }
 }
 
-void AIManager::processData(){   //think
+void AIManager::processData(const U64 deltaTime){   //think
     for_each(AIEntityMap::value_type& entity, _aiEntities){
-        entity.second->processData();
+        entity.second->processData(deltaTime);
     }
 }
 

@@ -35,8 +35,8 @@ enum AIMsg{
 class AITenisSceneAIActionList : public ActionList{
 public:
 	AITenisSceneAIActionList(SceneGraphNode* target);
-	void processData();
-	void processInput();
+	void processData(const U64 deltaTime);
+	void processInput(const U64 deltaTime);
 	void update(NPC* unitRef = NULL);
 	void addEntityRef(AIEntity* entity);
 	void processMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);

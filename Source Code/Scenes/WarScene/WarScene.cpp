@@ -161,47 +161,30 @@ void WarScene::updateSceneState(const U64 deltaTime){
         _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());
     }*/
     
+#ifdef _DEBUG
     if(!AIManager::getInstance().getNavMesh(0))
         return;
 
-    Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
-#ifdef _DEBUG
     U32 characterCount = _army1.size() + _army2.size();
+
     _pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
     _pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
     _colors[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec4<U8>(255,0,255,128));
-
     renderState().drawDebugLines(true);
-#endif
+
     U32 count = 0;
     for_each(AIEntity* character, _army1){
-#ifdef _DEBUG
         _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
-#endif
-        // If destination reached: Set new random destination
-        if (character->destinationReached()) {
-            character->updateDestination(navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army2[0]->getUnitRef()->getPosition());
-#ifdef _DEBUG
-            _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
-#endif
-        }
+        _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
         count++;
     }
     
     for_each(AIEntity* character, _army2){
-        // If destination reached: Set new random destination
-#ifdef _DEBUG
-        _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
-#endif		
-        if (character->destinationReached()) {
-            character->updateDestination( navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army1[0]->getUnitRef()->getPosition());
-#ifdef _DEBUG
-            _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
-#endif
-        }
+       _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
+       _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
         count++;
     }
-
+#endif
 }
 
 bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
@@ -215,10 +198,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     //Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90/*yaw*/,35/*pitch*/);
-    //Create 2 AI teams
-    _faction1 = New AICoordination(1);
-    _faction2 = New AICoordination(2);
-
+  
     // Add some obstacles
     SceneGraphNode* cylinderNW = _sceneGraph->findNode("cylinderNW");
     SceneGraphNode* cylinderNE = _sceneGraph->findNode("cylinderNE");
@@ -305,6 +285,15 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 
 bool WarScene::initializeAI(bool continueOnErrors){
     //----------------------------Artificial Intelligence------------------------------//
+    
+    //Create 2 AI teams
+    _faction1 = New AICoordination(1);
+    _faction2 = New AICoordination(2);
+
+    _faction1->addEnemyTeam(_faction2);
+    _faction2->addEnemyTeam(_faction1);
+
+
     SceneGraphNode* soldierNode1 = _sceneGraph->findNode("Soldier1");
     SceneGraphNode* soldierNode2 = _sceneGraph->findNode("Soldier2");
     SceneGraphNode* soldierNode3 = _sceneGraph->findNode("Soldier3");
@@ -321,7 +310,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SceneGraphNode* currentNode = NULL;
     for(U8 k = 0; k < 2; ++k) {
         for(U8 i = 0; i < 15; ++i){
-            F32 speed = 1.2f; // 1.2 m/s
+            F32 speed = 5.5f; // 5.5 m/s
             U8 zFactor = 0;
             if(i < 5){
                 currentMesh = soldierMesh1;
@@ -331,13 +320,13 @@ bool WarScene::initializeAI(bool continueOnErrors){
                 currentMesh = soldierMesh2;
                 currentScale = soldierNode2->getTransform()->getScale();
                 currentName = std::string("Soldier_2_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%5));
-                speed = 1.75f;
+                speed = 5.75f;
                 zFactor = 1;
             }else{
                 currentMesh = soldierMesh3;
                 currentScale = soldierNode3->getTransform()->getScale();
                 currentName = std::string("Soldier_3_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%10));
-                speed = 1.35f;
+                speed = 5.35f;
                 zFactor = 2;
             }
 
@@ -365,7 +354,6 @@ bool WarScene::initializeAI(bool continueOnErrors){
                 _army2NPCs.push_back(soldier);
                 _army2.push_back(aiSoldier);
             }
-      
         }
     }
 

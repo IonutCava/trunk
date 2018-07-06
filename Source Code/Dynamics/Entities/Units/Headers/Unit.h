@@ -57,9 +57,9 @@ public:
 	/// Get the units target coordinates in the world
 	inline const vec3<F32>& getTargetPosition()  const {return _currentTargetPosition;}
 	/// Set the units movement speed in metres per second (minimum is 0 = the unit does not move / is rooted)
-	inline void setMovementSpeed(F32 movementSpeed) {_moveSpeed = movementSpeed; CLAMP<F32>(_moveSpeed,0.0f,100.0f);}
+	virtual void setMovementSpeed(F32 movementSpeed) {_moveSpeed = movementSpeed; CLAMP<F32>(_moveSpeed,0.0f,100.0f);}
 	/// Get the units current movement speed
-	inline F32  getMovementSpeed()              const {return _moveSpeed;}
+	virtual F32  getMovementSpeed()              const {return _moveSpeed;}
 	/// Set destination tolerance
 	inline void setMovementTolerance(F32 movementTolerance) {_moveTolerance = Util::max(0.1f,movementTolerance);}
 	/// Get the units current movement tolerance

@@ -34,7 +34,9 @@ class NPC;
 
 struct dtCrowdAgent;
 namespace Navigation {
+    class DivideRecast;
     class DivideDtCrowd;
+    class NavigationMesh;
 }
 /// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
@@ -47,8 +49,8 @@ public:
     void load(const vec3<F32>& position);
     void unload();
 
-    void processInput();
-    void processData();
+    void processInput(const U64 deltaTime);
+    void processData(const U64 deltaTime);
     void update(const U64 deltaTime);
 
     bool addSensor(SensorType type, Sensor* sensor);
@@ -121,6 +123,8 @@ public:
     void setVelocity(const vec3<F32>& velocity);
     /// Manually control the character moving it forward.
     void moveForward();
+    /// Manually control the character moving it backwards.
+    void moveBackwards();
     /// Stop any movement this character is currently doing. This means losing the requested velocity or target destination.
     void stop();
     /// The current velocity (speed and direction) this character is traveling at.

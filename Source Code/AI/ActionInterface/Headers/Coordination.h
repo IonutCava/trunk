@@ -38,17 +38,18 @@ public:
     AICoordination(U32 id);
     ~AICoordination();
 
-	void update(const U64 deltaTime);
+    void update(const U64 deltaTime);
     bool addTeamMember(AIEntity* entity);
     bool removeTeamMember(AIEntity* entity);
-    bool addEnemyTeam(teamMap& enemyTeam);
+    bool addEnemyTeam(AICoordination* enemyTeam);
     void resetNavMeshes();
 
     inline void setTeamID(U32 value) { _teamID = value; }
 
-    inline U32      getTeamID() const {return _teamID;}
-    inline teamMap& getTeam()         {return _team;}
-    inline teamMap& getEnemyTeam()    {return _enemyTeam;}
+    inline U32      getTeamID() const {return  _teamID;}
+    inline teamMap& getTeam()         {return  _team;}
+
+    inline AICoordination& getEnemyTeam()    {return *_enemyTeam;}
 
     inline const Navigation::DivideDtCrowd& getCrowd(U16 radiusIndex = 0)    const {return *_teamCrowd[radiusIndex];}
     inline       Navigation::DivideDtCrowd* getCrowdPtr(U16 radiusIndex = 0) const {return _teamCrowd[radiusIndex];}
@@ -56,8 +57,8 @@ public:
    
 private:
     U32 _teamID;
-    teamMap _team;
-    teamMap _enemyTeam;
+    teamMap  _team;
+    AICoordination* _enemyTeam;
     Navigation::DivideDtCrowd* _teamCrowd[maxAgentRadiusCount];
     /// Container with data per team member. For example a map of distances
     memberVariable _memberVariable;

@@ -26,24 +26,29 @@
 #include "AI/ActionInterface/Headers/ActionList.h"
 
 enum AIMsg{
-	REQUEST_DISTANCE_TO_TARGET = 0,
-	RECEIVE_DISTANCE_TO_TARGET = 1,
+    REQUEST_DISTANCE_TO_TARGET = 0,
+    RECEIVE_DISTANCE_TO_TARGET = 1,
+    CHANGE_DESTINATION_POINT = 2
 };
 
 class WarSceneAIActionList : public ActionList{
 public:
-	WarSceneAIActionList();
-	void processData();
-	void processInput();
-	void update(NPC* unitRef = NULL);
-	void addEntityRef(AIEntity* entity);
-	void processMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
+    WarSceneAIActionList();
+    void processData(const U64 deltaTime);
+    void processInput(const U64 deltaTime);
+    void update(NPC* unitRef = NULL);
+    void addEntityRef(AIEntity* entity);
+    void processMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
 
 private:
-	void updatePositions();
+    void updatePositions();
 
 private:
-	U16 _tickCount;
+    U16       _tickCount;
+    I32       _indexInMap;
+    U64       _deltaTime;
+    AIEntity* _currentEnemyTarget;
+    Navigation::NavigationMesh* _navMesh;
 };
 
 #endif

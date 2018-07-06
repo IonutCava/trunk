@@ -65,8 +65,8 @@ protected:
     ~AIManager();
 
 private:
-    void processInput();  ///< sensors
-    void processData();   ///< think
+    void processInput(const U64 deltaTime);  ///< sensors
+    void processData(const U64 deltaTime);   ///< think
     void updateEntities(const U64 deltaTime);///< react
 
 private:

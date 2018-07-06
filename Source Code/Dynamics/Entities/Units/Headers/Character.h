@@ -99,7 +99,10 @@ public:
     /// The current position of this character
     virtual vec3<F32> getPosition() const; 
     /// The direction in which the character is currently looking.
-    virtual      vec3<F32>  getLookingDirection();
+    virtual vec3<F32> getLookingDirection();
+    /// Rotate the character to look at another character
+    virtual void lookAt(const vec3<F32>& targetPos);
+
     inline const vec3<F32>& getRelativeLookingDirection()                           const {return _lookingDirection;}
     inline const void       setRelativeLookingDirection(const vec3<F32>& direction)       {_lookingDirection = direction;}
 private:

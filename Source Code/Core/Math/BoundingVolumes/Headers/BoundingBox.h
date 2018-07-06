@@ -89,7 +89,7 @@ public:
                 point.y<=_max.y && point.z<=_max.z);
     }
 
-    inline bool  Collision(const BoundingBox& AABB2) {
+    inline bool  Collision(const BoundingBox& AABB2) const {
         //ReadLock r_lock(_lock);
 
         if(this->_max.x < AABB2._min.x) return false;

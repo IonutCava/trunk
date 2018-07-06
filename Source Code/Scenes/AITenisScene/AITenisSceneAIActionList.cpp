@@ -83,7 +83,7 @@ void AITenisSceneAIActionList::updatePositions(){
 }
 
 ///Collect all of the necessary information for this current update step
-void AITenisSceneAIActionList::processInput(){
+void AITenisSceneAIActionList::processInput(const U64 deltaTime){
     updatePositions();
     AICoordination* currentTeam = _entity->getTeam();
     assert(currentTeam != NULL);
@@ -96,7 +96,7 @@ void AITenisSceneAIActionList::processInput(){
     }
 }
 
-void AITenisSceneAIActionList::processData(){
+void AITenisSceneAIActionList::processData(const U64 deltaTime){
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
     typedef Unordered_map<AIEntity*, F32 > memberVariable;

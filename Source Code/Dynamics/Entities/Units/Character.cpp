@@ -67,3 +67,10 @@ vec3<F32> Character::getLookingDirection() {
     return getRelativeLookingDirection();
 }
 
+void Character::lookAt(const vec3<F32>& targetPos) {
+    if(!getBoundNode()) 
+        return;
+    _newVelocity = getBoundNode()->getTransform()->getPosition().direction(targetPos);
+    _velocityDirty = true;
+}
+

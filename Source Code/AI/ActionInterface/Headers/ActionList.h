@@ -31,8 +31,8 @@ class SceneGraphNode;
 class ActionList{
 public:
 	ActionList() : _entity(NULL){};
-	virtual void processData() = 0;
-	virtual void processInput() = 0;
+	virtual void processData(const U64 deltaTime) = 0;
+	virtual void processInput(const U64 deltaTime) = 0;
 	virtual void update(NPC* unitRef = NULL) = 0;
 	virtual void addEntityRef(AIEntity* entity) = 0;
 	virtual void processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content) = 0;
