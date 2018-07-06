@@ -94,11 +94,12 @@ RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
     assert(node != nullptr);
     switch (node->getType()) {
         case SceneNodeType::TYPE_LIGHT: return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
-        case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_PARTICLE_EMITTER: return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
         case SceneNodeType::TYPE_VEGETATION_GRASS: return getOrCreateBin(RenderBinType::RBT_TRANSPARENT);
         case SceneNodeType::TYPE_SKY: return getOrCreateBin(RenderBinType::RBT_SKY);
-        
+
+        // Water is also opaque as refraction and reflection are separate textures
+        case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_OBJECT3D: {
         case SceneNodeType::TYPE_VEGETATION_TREES:
             if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {

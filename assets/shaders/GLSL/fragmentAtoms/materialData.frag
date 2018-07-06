@@ -233,8 +233,7 @@ vec4 private_getAlbedo() {
     if (albedo.a < ALPHA_DISCARD_THRESHOLD) {
         discard;
     }
-#endi
-f
+#endif
     return albedo;
 }
 

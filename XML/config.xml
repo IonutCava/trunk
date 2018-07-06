@@ -36,7 +36,7 @@
     <SkipRendering>true</SkipRendering>
     <defaultGUIScheme>GWEN</defaultGUIScheme>
   </CEGUI>
-
+  <enableDebugVariableControls>false</enableDebugVariableControls>
   <consoleLayoutFile>console.layout</consoleLayoutFile>
   <editorLayoutFile>editor.layout</editorLayoutFile>
 </GUI>

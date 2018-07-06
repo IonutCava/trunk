@@ -79,6 +79,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(gui.cegui.extraStates);
         GET_PARAM(gui.cegui.skipRendering);
         GET_PARAM(gui.cegui.defaultGUIScheme);
+        GET_PARAM(gui.enableDebugVariableControls);
         GET_PARAM(gui.consoleLayoutFile);
         GET_PARAM(gui.editorLayoutFile);
         GET_PARAM(rendering.postAAType);
@@ -134,6 +135,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(gui.cegui.extraStates);
     PUT_PARAM(gui.cegui.skipRendering);
     PUT_PARAM(gui.cegui.defaultGUIScheme);
+    PUT_PARAM(gui.enableDebugVariableControls);
     PUT_PARAM(gui.consoleLayoutFile);
     PUT_PARAM(gui.editorLayoutFile);
     PUT_PARAM(rendering.postAAType);
