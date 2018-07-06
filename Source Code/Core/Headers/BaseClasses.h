@@ -46,9 +46,7 @@ private:
 	U32         _id;
 };
 
-class Resource;
-typedef unordered_map<std::string, Resource* > ResourceDependencyMap;
-class Resource{
+class Resource : private boost::noncopyable {
 	friend class Manager;
 public:
 	Resource() : _shouldDelete(false), _name("default"),_refCount(1){}
@@ -78,8 +76,6 @@ public:
 	U32   getRefCount(){return _refCount;}
 
 private:  // emphasize the following members are private
-      Resource( const Resource& );
-      const Resource& operator=( const Resource& );
 	  U32 _refCount;
 protected:
 	void incRefCount(){_refCount++;}

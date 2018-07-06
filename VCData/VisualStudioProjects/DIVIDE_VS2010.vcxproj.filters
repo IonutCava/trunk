@@ -36,15 +36,6 @@
     <Filter Include="GUI\Headers">
       <UniqueIdentifier>{1d65baba-d46e-479e-8527-be2c0aa3b390}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External Libraries">
-      <UniqueIdentifier>{5640f5c2-9229-4697-9b36-fd4f9876ab1b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External Libraries\OIS">
-      <UniqueIdentifier>{5846c4a4-b884-41f8-8920-f6a49ac8e0f3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="External Libraries\OIS\win32">
-      <UniqueIdentifier>{9f72b10e-e896-47af-91ef-a52df7076d82}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Environment">
       <UniqueIdentifier>{591888fb-99c8-4ece-a7b7-647a2d03e136}</UniqueIdentifier>
     </Filter>
@@ -270,6 +261,12 @@
     <Filter Include="Rendering\Lighting\Headers">
       <UniqueIdentifier>{969a9d1f-ed1f-4b47-a4a8-29ea236a5363}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\PostFX\CustomOperators">
+      <UniqueIdentifier>{c6db3ace-ce83-434b-882d-295eb8e9c3a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\PostFX\CustomOperators\Headers">
+      <UniqueIdentifier>{4fbdb892-cf43-46c2-9b6c-84ae8efd4eb3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -298,42 +295,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIFlash.cpp">
       <Filter>GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISEffect.cpp">
-      <Filter>External Libraries\OIS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISException.cpp">
-      <Filter>External Libraries\OIS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISForceFeedback.cpp">
-      <Filter>External Libraries\OIS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISInputManager.cpp">
-      <Filter>External Libraries\OIS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISJoyStick.cpp">
-      <Filter>External Libraries\OIS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISKeyboard.cpp">
-      <Filter>External Libraries\OIS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISObject.cpp">
-      <Filter>External Libraries\OIS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32ForceFeedback.cpp">
-      <Filter>External Libraries\OIS\win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32InputManager.cpp">
-      <Filter>External Libraries\OIS\win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32JoyStick.cpp">
-      <Filter>External Libraries\OIS\win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32KeyBoard.cpp">
-      <Filter>External Libraries\OIS\win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32Mouse.cpp">
-      <Filter>External Libraries\OIS\win32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp">
       <Filter>Environment\Terrain</Filter>
@@ -521,6 +482,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp">
       <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStage.cpp">
+      <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp">
+      <Filter>Rendering\PostFX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -833,6 +806,21 @@
     <ClInclude Include="..\..\Source Code\SceneList.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightImpostor.h">
       <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderOperator.h">
+      <Filter>Rendering\PostFX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStage.h">
+      <Filter>Rendering\PostFX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h">
+      <Filter>Rendering\PostFX\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

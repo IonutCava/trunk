@@ -75,7 +75,7 @@ void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
 		ySize2 = 1 << iyPow2;
     
 		if((w != xSize2) || (h != ySize2)) {
-			U8* rdata = new U8[xSize2*ySize2*d];
+			U8* rdata = New U8[xSize2*ySize2*d];
 			gluScaleImage(d==3?GL_RGB:GL_RGBA, w, h,GL_UNSIGNED_BYTE, ptr,
 									   xSize2, ySize2, GL_UNSIGNED_BYTE, rdata);
 			_img.Destroy();

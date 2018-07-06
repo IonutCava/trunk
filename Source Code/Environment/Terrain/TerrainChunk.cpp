@@ -32,7 +32,7 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
 			assert(it.second);
 			Material* m = (it.second)->getNode()->getMaterial();
 			if(m){
-				m->setShader("terrain_tree.vert,lighting.frag");
+				m->setShader("terrain_tree.vert,lighting_texture.frag");
 			}
 		}
 		

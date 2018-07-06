@@ -54,22 +54,32 @@ public:
   Texture2D*	 const   getTexture(TextureUsage textureUsage);
   Shader*        const   getShader();
   inline bool            isDirty() {return _dirty;}
-  void setTexture(TextureUsage textureUsage, Texture2D* texture);
+  void setTexture(TextureUsage textureUsage, Texture2D* const texture);
   void setShader(const std::string& shader);
   void setTwoSided(bool state);
+  bool isTwoSided() {return _twoSided;}
   RenderState& getRenderState() const {return *_state;}
-  void setAmbient(const vec4& value) {_ambient = value; _materialMatrix.setCol(0,value);}
-  void setDiffuse(const vec4& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
-  void setSpecular(const vec4& value) {_specular = value; _materialMatrix.setCol(2,value);}
-  void setEmissive(const vec3& value) {_emissive = value; _materialMatrix.setCol(3,vec4(_shininess,value.x,value.y,value.z));}
-  void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
 
-  inline mat4& getMaterialMatrix() {return _materialMatrix;}
-  inline I32   getMaterialId()     {return _matId;}
+  inline void setAmbient(const vec4& value) {_ambient = value; _materialMatrix.setCol(0,value);}
+  inline void setDiffuse(const vec4& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
+  inline void setSpecular(const vec4& value) {_specular = value; _materialMatrix.setCol(2,value);}
+  inline void setEmissive(const vec3& value) {_emissive = value; _materialMatrix.setCol(3,vec4(_shininess,value.x,value.y,value.z));}
+  inline void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
+  inline void setCastsShadows(bool state) {_castsShadows = state;}
+  inline void setReceivesShadows(bool state) {_receiveShadows = state;}
+
+  inline mat4& getMaterialMatrix()  {return _materialMatrix;}
+  inline I32   getMaterialId()      {return _matId;}
+  inline bool  getCastsShadows()    {return _castsShadows;}
+  inline bool  getReceivesShadows() {return _receiveShadows;}
+
+
+
   void computeLightShaders(); //Set shaders;
   void createCopy();
   void removeCopy();
   void dumpToXML();
+
 private:
   vec4 _diffuse;           /* diffuse component */
   vec4 _ambient;           /* ambient component */
@@ -84,6 +94,8 @@ private:
   I32  _matId;
   bool _dirty;
   bool _twoSided;
+  bool _castsShadows;
+  bool _receiveShadows;
   RenderState* _state;
 };
 

@@ -4,6 +4,7 @@
 #include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/AIManager.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Rendering/Headers/Frustum.h"
 #include "GUI/Headers/GUI.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
@@ -14,19 +15,16 @@ using namespace std;
 
 //begin copy-paste: randarea scenei
 void AITenisScene::render(){
-	_podea->setActive(true);
 	Sky& sky = Sky::getInstance();
 
 	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();
-	
 }
 //end copy-paste
 
 void AITenisScene::preRender(){
-	_podea->setActive(false);
 	vec2 _sunAngle = vec2(0.0f, RADIANS(45.0f));
 	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 						-cosf(_sunAngle.y),
@@ -231,8 +229,6 @@ bool AITenisScene::load(const string& name){
 	light->setLightProperties(string("ambient"),_white);
 	light->setLightProperties(string("diffuse"),_white);
 	light->setLightProperties(string("specular"),_white);
-	light->setShadowMappingCallback(boost::bind(&SceneGraph::render,          // draw scene function
-												 _sceneGraph));                        // current scene pointer
 												
 	//Incarcam resursele scenei
 	state = loadResources(true);	
@@ -286,6 +282,8 @@ bool AITenisScene::load(const string& name){
 	AIManager::getInstance().addEntity(_aiPlayer4);
 	_fileu = _sceneGraph->findNode("Fileu");
 	_podea = _sceneGraph->findNode("Podea");
+	_podea->getNode()->getMaterial()->setCastsShadows(false);
+
 	state = loadEvents(true);
 	return state;
 }
@@ -298,7 +296,7 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 	_minge = _resManager.loadResource<Sphere3D>(minge);
 	_mingeSGN = addGeometry(_minge);
 	_minge->setResolution(16);
-	_minge->setSize(0.3f);
+	_minge->setRadius(0.3f);
 	_mingeSGN->getTransform()->translate(vec3(3.0f, 0.2f ,7.0f));
 	_minge->getMaterial()->setDiffuse(vec4(0.4f,0.5f,0.5f,1.0f));
 	_minge->getMaterial()->setAmbient(vec4(0.5f,0.5f,0.5f,1.0f));

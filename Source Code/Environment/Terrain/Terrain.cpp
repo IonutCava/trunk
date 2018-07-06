@@ -259,6 +259,7 @@ void Terrain::postLoad(SceneGraphNode* const node){
 		s->Uniform("bbox_min", _boundingBox.getMin());
 		s->Uniform("bbox_max", _boundingBox.getMax());
 		s->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
+		s->Uniform("enable_shadow_mapping", ParamHandler::getInstance().getParam<bool>("enableShadows"));
 	s->unbind();
 	_node = node;
 	
@@ -304,7 +305,7 @@ void Terrain::releaseMaterial(){
 
 void Terrain::render(SceneGraphNode* const node){
 
-	if(!GFXDevice::getInstance().getDepthMapRendering()){
+	if(GFXDevice::getInstance().getRenderStage() != SHADOW_STAGE){
 
 		Shader* terrainShader = getMaterial()->getShader();
 		

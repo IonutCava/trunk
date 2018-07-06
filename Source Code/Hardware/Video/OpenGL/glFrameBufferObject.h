@@ -27,7 +27,7 @@ public:
 	glFrameBufferObject();
 	~glFrameBufferObject() {Destroy();}
 
-	bool Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_FORMAT_INTERNAL internalFormatEnum = RGBA8, TEXTURE_FORMAT formatEnum = BGRA);
+	bool Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_FORMAT_INTERNAL internalFormatEnum = RGBA8, TEXTURE_FORMAT formatEnum = RGBA);
 				
 	void Destroy();
 

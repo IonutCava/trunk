@@ -11,6 +11,7 @@ private:
 	~LightImpostor();
 
 	void render(SceneGraphNode* const lightNode);
+	inline void setRadius(F32 radius) {_dummy->setRadius(radius);}
 	inline Sphere3D* const getDummy() {return _dummy;}
 
 private:

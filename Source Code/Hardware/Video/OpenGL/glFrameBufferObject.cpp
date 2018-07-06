@@ -3,7 +3,7 @@
 #include "glFrameBufferObject.h"
 #include "Hardware/Video/GFXDevice.h"
 
-glFrameBufferObject::glFrameBufferObject() {
+glFrameBufferObject::glFrameBufferObject() : FrameBufferObject() {
 	if(!glewIsSupported("glBindFramebuffer")){
 		glBindFramebuffer = GLEW_GET_FUN(__glewBindFramebuffer);
 		glDeleteFramebuffers = GLEW_GET_FUN(__glewDeleteFramebuffers);
@@ -19,16 +19,6 @@ glFrameBufferObject::glFrameBufferObject() {
 		glRenderbufferStorage = GLEW_GET_FUN(__glewRenderbufferStorage);
 		glFramebufferRenderbuffer = GLEW_GET_FUN(__glewFramebufferRenderbuffer);
 	}
-
-	_frameBufferHandle=0;
-	_depthBufferHandle=0;
-	_diffuseBufferHandle=0;
-	_positionBufferHandle=0;
-	_normalBufferHandle=0;
-	_width = 0;
-	_height = 0;
-	_useFBO = true;
-	_bound = false;
 }
 
 void glFrameBufferObject::Destroy() {
@@ -58,8 +48,6 @@ void glFrameBufferObject::Begin(U8 nFace) const {
 	assert(nFace<6);
 	GLCheck(glPushAttrib(GL_VIEWPORT_BIT));
 	GLCheck(glViewport(0, 0, _width, _height));
-	GLCheck(glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ));
-	GLCheck(glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ));
 
 		if(_useFBO) {
 			GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
@@ -76,7 +64,8 @@ void glFrameBufferObject::Begin(U8 nFace) const {
 			GLCheck(glDrawBuffer(GL_BACK));
 			GLCheck(glReadBuffer(GL_BACK));
 		}
-	
+	GLCheck(glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ));
+	GLCheck(glClearColor( 0.0f, 0.0f, 0.0f, 1.0f ));
 }
 
 void glFrameBufferObject::End(U8 nFace) const {
@@ -174,14 +163,15 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_F
 		GLCheck(glGenRenderbuffers(1, &_normalBufferHandle));
 		GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
 
+		//R8G8B8A8, 32bit format for diffuse
 		GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _diffuseBufferHandle));
-		GLCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, width,  height));
+		GLCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width,  height));
 		GLCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER, _diffuseBufferHandle));
-
+		//R32G32B32, HDR 96bit format for position data
 		GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _positionBufferHandle));
 		GLCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB32F, width, height));
 		GLCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_RENDERBUFFER, _positionBufferHandle));
-
+		//R16G16B16, 48bit format for normals
 	    GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _normalBufferHandle));
 		GLCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB16F, width,height));
 		GLCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_RENDERBUFFER, _normalBufferHandle));

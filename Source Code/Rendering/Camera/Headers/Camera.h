@@ -58,6 +58,8 @@ public:
 	virtual bool unload() {return true;}
 	virtual void createCopy() {incRefCount();}
 	virtual void removeCopy() {decRefCount();}
+
+
 public:
 	void SaveCamera();
 	void RestoreCamera();
@@ -105,6 +107,19 @@ public:
 	void RenderLookAt(bool invertx = false, bool inverty=false, F32 planey=0.0f);
 
 	void RenderLookAtToCubeMap(const vec3& eye, U8 nFace);
+
+	inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
+		xfov = RADIANS(xfov);
+		F32 yfov = 2.0f * atan(tan(xfov * 0.5f) / aspect);
+		return DEGREES(yfov);
+	}
+
+	inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
+		yfov = RADIANS(yfov);
+		F32 xfov = 2.0f * atan(tan(yfov * 0.5f) * aspect);
+		return DEGREES(xfov);
+	}
+
 };
 #endif
 

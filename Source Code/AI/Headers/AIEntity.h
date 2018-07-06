@@ -41,10 +41,10 @@ public:
 	bool addEnemyTeam(AICoordination::teamMap& enemyTeam);
 	bool addActionProcessor(ActionList* actionProcessor);
 	Sensor* getSensor(SENSOR_TYPE type);
-	inline AICoordination::teamMap& getTeam() {return _coordination->getTeam();}
-	inline void                     setTeamID(U32 ID) {_coordination->setTeamID(ID);}
-	inline U32                      getTeamID()       {return _coordination->getTeamID();}
-	inline U32  getGUID() {return _GUID;}
+	inline AICoordination::teamMap& getTeam()  const {return _coordination->getTeam();}
+	inline void       setTeamID(U32 ID) {_coordination->setTeamID(ID);}
+	inline U32 const& getTeamID() const {return _coordination->getTeamID();}
+	inline U32 const& getGUID()   const {return _GUID;}
 
 	void sendMessage(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content);
 	void receiveMessage(AIEntity* sender, AI_MSG msg,const boost::any& msg_content);

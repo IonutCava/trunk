@@ -24,13 +24,17 @@ class Sphere3D;
 class Shader;
 class Texture;
 class SceneGraphNode;
+enum RENDER_STAGE;
 typedef Texture TextureCubemap;
 DEFINE_SINGLETON( Sky ) 
 
 public:
 	void draw() const;
 	void setParams(const vec3& eyePos,const vec3& sunVect, bool invert, bool drawSun, bool drawSky) ;
-	vec3 Sky::getSunVector(){	return _sunVect; }
+
+	void addToRenderExclusionMask(U8 stageMask);
+	void removeFromRenderExclusionMask(U8 stageMask);
+	bool getRenderState(RENDER_STAGE currentStage) const;
 
 private:
 	bool load();
@@ -42,7 +46,8 @@ private:
 	vec3			  _sunVect,	_eyePos;
 	Sphere3D          *_sky,*_sun;
 	SceneGraphNode    *_skyNode, *_sunNode;
-	
+	U8				  _exclusionMask;
+
 private:
 	Sky();
 	~Sky();

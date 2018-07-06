@@ -56,8 +56,8 @@ void Application::Initialize(){
 	_GFX.initHardware();
 	_SFX.initHardware();
 	_camera->setEye(vec3(0,50,0));
-	F32 fogColor[4] = {0.7f, 0.7f, 0.9f, 1.0}; 
-	_GFX.enableFog(0.3f,fogColor);
+	F32 fogColor[4] = {0.2f, 0.2f, 0.4f, 1.0}; 
+	_GFX.enableFog(0.01f,fogColor);
 	PostFX::getInstance().init();
 	PhysX::getInstance().initNx();
 }

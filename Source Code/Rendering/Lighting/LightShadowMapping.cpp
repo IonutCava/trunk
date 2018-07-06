@@ -14,6 +14,9 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 		return;
 	}
 	F32 resolutionFactor = 1;
+	//If this is the first initialization pass, first = true;
+	//If we changed the callback after initialization, first = false;
+	bool firstPass = false;
 	//The higher the shadow detail level, the bigger depth buffers we have
 	switch(ParamHandler::getInstance().getParam<U8>("shadowDetailLevel")){
 		case LOW: {
@@ -30,16 +33,23 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 			resolutionFactor = 1;
 		}break;
 	};
-	//Create the FBO's
-	Console::getInstance().printfn("Creating the Frame Buffer Objects for Shadow Mapping for Light [ %d ]", _id);
-	for(U8 i = 0; i < 3; i++){
-		_depthMaps.push_back(GFXDevice::getInstance().newFBO());
+	//If this is the first call, create depth maps;
+	if(_depthMaps.empty()){
+		//Create the FBO's
+		Console::getInstance().printfn("Creating the Frame Buffer Objects for Shadow Mapping for Light [ %d ]", _id);
+		for(U8 i = 0; i < 3; i++){
+			_depthMaps.push_back(GFXDevice::getInstance().newFBO());
+		}
+		firstPass = true;
 	}
-	//Initialize the FBO's with a variable resolution
-	Console::getInstance().printfn("Initializing the Frame Buffer Objects for Shadow Mapping for Light [ %d ]", _id);
-	_depthMaps[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048/resolutionFactor,2048/resolutionFactor);
-	_depthMaps[1]->Create(FrameBufferObject::FBO_2D_DEPTH,1024/resolutionFactor,1024/resolutionFactor);
-	_depthMaps[2]->Create(FrameBufferObject::FBO_2D_DEPTH,512/resolutionFactor,512/resolutionFactor);
+	if(_resolutionFactor != resolutionFactor || firstPass){
+		//Initialize the FBO's with a variable resolution
+		Console::getInstance().printfn("Initializing the Frame Buffer Objects for Shadow Mapping for Light [ %d ]", _id);
+		_depthMaps[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048/resolutionFactor,2048/resolutionFactor);
+		_depthMaps[1]->Create(FrameBufferObject::FBO_2D_DEPTH,1024/resolutionFactor,1024/resolutionFactor);
+		_depthMaps[2]->Create(FrameBufferObject::FBO_2D_DEPTH,512/resolutionFactor,512/resolutionFactor);
+		_resolutionFactor = resolutionFactor;
+	}
 
 	//Finally assign the callback
 	_callback = callback;
@@ -49,21 +59,17 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 //This function moves the camera to the light's view and set's it's frustum according to the current pass
 //The more depthmpas, the more transforms
 void Light::generateShadowMaps(){
-	ParamHandler& par = ParamHandler::getInstance();
-	//Stop if we have shadows disabled
-	if(!par.getParam<bool>("enableShadows")) return;
+	GFXDevice& gfx = GFXDevice::getInstance();
 	if(!_castsShadows) return;
 	//Stop if the callback is invalid
 	if(_callback.empty()) return;
 	//Get our eye view
 	_eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 	//For every depth map
-	//Tell the engine that we are drawing to depth maps
-	GFXDevice::getInstance().setDepthMapRendering(true);
 	//Lock our projection matrix so no changes will be permanent during the rest of the frame
-	GFXDevice::getInstance().lockProjection();
+	gfx.lockProjection();
 	//Lock our model view matrix so no camera transforms will be saved beyond this light's scope
-	GFXDevice::getInstance().lockModelView();
+	gfx.lockModelView();
 
 	//Set the camera to the light's view
 	setCameraToLightView();
@@ -74,7 +80,7 @@ void Light::generateShadowMaps(){
 		//bind the associated depth map
 		_depthMaps[i]->Begin();
 			//Clear the depth buffer
-			GFXDevice::getInstance().clearBuffers(GFXDevice::DEPTH_BUFFER);
+			//gfx.clearBuffers(GFXDevice::DEPTH_BUFFER);
 			//draw the scene
 			_callback();
 		//unbind the associated depth map
@@ -84,13 +90,11 @@ void Light::generateShadowMaps(){
 	//and restore to the proper camera view
 	setCameraToSceneView();
 	//Undo all modifications to the Projection Matrix
-	GFXDevice::getInstance().releaseProjection();
+	gfx.releaseProjection();
 	//Undo all modifications to the ModelView Matrix
-	GFXDevice::getInstance().releaseModelView();
+	gfx.releaseModelView();
 	//Restore our view frustum
 	Frustum::getInstance().Extract(_eyePos);
-	//Notify the engine that we are returning to normal rendering
-	GFXDevice::getInstance().setDepthMapRendering(false);
 }
 
 //Step I : Set our camera to appropriate position
@@ -186,7 +190,7 @@ void Light::renderFromLightViewSpot(U8 depthPass){
 void Light::renderFromLightViewDirectional(U8 depthPass){
 	ParamHandler& par = ParamHandler::getInstance();
 	//Some ortho values to create closer and closer light views
-	D32 lightOrtho[3] = {20.0, 100.0, 200.0};
+	D32 lightOrtho[3] = {2.0, 10.0, 50.0};
 	//ToDo: Near and far planes. Should optimize later! -Ionut
 	_zPlanes = vec2(par.getParam<F32>("zNear"),par.getParam<F32>("zFar"));
 	//Set the current projection depending on the current depth pass

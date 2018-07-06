@@ -92,7 +92,7 @@ private:
 	void setRenderState(RenderState& state,bool force = false);
 	void ignoreStateChanges(bool state);
 
-	void setDepthMapRendering(bool state);
+	void toggleDepthMapRendering(bool state);
 
 	void setObjectState(Transform* const transform);
 	void releaseObjectState(Transform* const transform);

@@ -80,7 +80,7 @@ bool glPixelBufferObject::Create(U16 width, U16 height)
 	GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NONE));
 	GLCheck(glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE));
 
-	F32 *pixels = new F32[size];
+	F32 *pixels = New F32[size];
 	memset(pixels, 0, size * sizeof(F32) );
 	GLCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0, GL_RGB, GL_FLOAT, pixels));
 	delete [] pixels;

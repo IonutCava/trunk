@@ -36,17 +36,18 @@ public:
 	Quaternion operator* (const Quaternion &rq) const;
 	vec3       operator* (const vec3 &vec) const;
 
-	void	   FromAxis(const vec3& v, F32 angle);
-	void       FromEuler(F32 pitch, F32 yaw, F32 roll);
-	void       FromEuler(const vec3& v) {FromEuler(v.x,v.y,v.z);}
-	mat4&      getMatrix();
-	void       getAxisAngle(vec3 *axis, F32 *angle,bool inDegrees);
-	bool       compare(Quaternion& q);
+	void	    FromAxis(const vec3& v, F32 angle);
+	void        FromEuler(F32 pitch, F32 yaw, F32 roll);
+	void        FromEuler(const vec3& v) {FromEuler(v.x,v.y,v.z);}
+	mat4 const& getMatrix();
+	void        getAxisAngle(vec3 *axis, F32 *angle,bool inDegrees);
+	bool        compare(Quaternion& q);
 
-	F32        getX() {return _x;}
-	F32        getY() {return _y;}
-	F32        getZ() {return _z;}
-	F32        getW() {return _w;}
+	F32 const& getX() const {return _x;}
+	F32 const& getY() const {return _y;}
+	F32 const& getZ() const {return _z;}
+	F32 const& getW() const {return _w;}
+
 private:
 	F32 _x,_y,_z,_w;
 	mat4 _mat;

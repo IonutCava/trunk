@@ -27,7 +27,7 @@ bool WaterPlane::load(const std::string& name){
 
 	_shader->bind();
 		_shader->Uniform("water_shininess",50.0f );
-		_shader->Uniform("noise_tile", 1.5f );
+		_shader->Uniform("noise_tile", 50.0f );
 		_shader->Uniform("noise_factor", 0.1f);
 	_shader->unbind();
 
@@ -49,6 +49,8 @@ void WaterPlane::postLoad(SceneGraphNode* const node){
 	_planeSGN = node->addNode(_plane);
 	_planeSGN->setActive(false);
 	_planeTransform = _planeSGN->getTransform();
+	//The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
+	addToRenderExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
 }
 
 bool WaterPlane::computeBoundingBox(SceneGraphNode* const node){
@@ -120,7 +122,7 @@ void WaterPlane::releaseMaterial(){
 }
 
 void WaterPlane::render(SceneGraphNode* const node){
-
+	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
 	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 	BoundingBox& bb = node->getBoundingBox();
 

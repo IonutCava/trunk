@@ -36,7 +36,7 @@ public:
 
 private:
 	/*Specific Scene Requirement*/
-	void renderEnvironment(bool waterReflection, bool depthMap);
+	void renderEnvironment(bool waterReflection);
 	bool updateLights();
 	void processInput();
 	void processEvents(F32 time);

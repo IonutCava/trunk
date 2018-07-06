@@ -47,14 +47,12 @@ public:
 
 	//SSAO
 	FrameBufferObject* _SSAO_FBO;
-	FrameBufferObject* _normalMapFBO;
 
 	// Screen Border
 	Texture2D*	_screenBorder;
 
 	// Noise
 	Texture2D*	_noise;
-	Texture2D*  _colorNoise;
 	
 	F32 _randomNoiseCoefficient, _randomFlashCoefficient;
 	F32 _timer, _tickInterval;
@@ -66,15 +64,12 @@ public:
 	Shader* _blurShader;
 	Shader* _bloomShader;
 	Shader* _SSAOShaderPass1;
-	Shader* _SSAOShaderPass2;
 	Texture2D* _underwaterTexture;
 	GFXDevice& _gfx;
 
 private:
 	void displaySceneWithoutAnaglyph(void);
 	void displaySceneWithAnaglyph(void);
-	void generateBloomTexture();
-	void generateSSAOFBO();
 	void generateDepthOfFieldTexture();
 	~PostFX();
 	PostFX();

@@ -1,3 +1,5 @@
+varying vec4 texCoord[2];
+
 // Texture to blur
 uniform sampler2D texScreen;
 
@@ -15,7 +17,7 @@ uniform int kernel_size;
 void main()
 {
 	vec2 pas = 1.0/size;
-	vec2 uv = gl_TexCoord[0].st;
+	vec2 uv = texCoord[0].st;
 	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 	float j = 0;
 	

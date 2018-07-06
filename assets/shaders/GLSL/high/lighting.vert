@@ -6,11 +6,8 @@ varying vec3 vVertexMV;
 varying vec3 vNormalMV;
 varying vec3 vPixToLightMV;
 varying vec3 vLightDirMV;
-varying float depth;
-
+varying vec4 texCoord[2];
 uniform int enable_shadow_mapping;
-uniform float zNear;
-uniform float zFar;
 
 uniform vec4 boneWeightValue;
 uniform vec4 boneWeightIndex;
@@ -38,7 +35,7 @@ void main(void){
 	//Compute the final vert position
 	gl_Position = gl_ModelViewProjectionMatrix * finalPosition;
 	//get texture coordinates
-	gl_TexCoord[0] = gl_MultiTexCoord0;
+	texCoord[0] = gl_MultiTexCoord0;
 	//create TBN vectors from VBO data
 	vec3 vTangent = gl_MultiTexCoord1.xyz;
 	vec3 n = normalize(gl_NormalMatrix * gl_Normal);
@@ -48,14 +45,16 @@ void main(void){
 	vec4 vLightPosMV = gl_LightSource[0].position;	
 	//Get the vertex's position in model's space
 	vVertexMV = vec3(gl_ModelViewMatrix * gl_Vertex);	
-	vNormalMV = n;
-	// minus because in OpenGL we are looking in the negative z-direction
-	// will map near..far to 0..1
-	depth = (-vVertexMV.z-zNear)/(zFar-zNear);
+	if(length(vTangent) > 0){
+		vNormalMV = b;
+	}else{
+		vNormalMV = n;
+	}
+
 	vec3 tmpVec;
 	
 	if(vLightPosMV.w == LIGHT_DIRECTIONAL)
-		tmpVec = -vLightPosMV.xyz;					
+		tmpVec = -vLightPosMV.xyz;	
 	else
 		tmpVec = vLightPosMV.xyz - vVertexMV.xyz;	
 
@@ -90,6 +89,6 @@ void main(void){
 		pos = modelViewInvMatrix * pos;
 		// position multiplied by the light matrix. 
 		//The vertex's position from the light's perspective
-		gl_TexCoord[1] = lightProjectionMatrix * pos;
+		texCoord[1] = lightProjectionMatrix * pos;
 	}
 }

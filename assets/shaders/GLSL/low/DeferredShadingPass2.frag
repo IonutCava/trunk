@@ -1,3 +1,5 @@
+varying vec4 texCoord[2];
+
 uniform sampler2D tImage0;
 uniform sampler2D tImage1;
 uniform sampler2D tImage2;
@@ -12,9 +14,9 @@ void main( void )
    vec3 light = vec3(0,0,0);
    vec3 lightDir = vec3(0,0,0);
    vec3 vHalfVector = vec3(0,0,0);
-   vec4 image0 = texture2D( tImage0, gl_TexCoord[0].xy );
-   vec4 position = texture2D( tImage1, gl_TexCoord[0].xy );
-   vec4 normal = texture2D( tImage2, gl_TexCoord[0].xy );
+   vec4 image0 = texture2D( tImage0, texCoord[0].xy );
+   vec4 position = texture2D( tImage1, texCoord[0].xy );
+   vec4 normal = texture2D( tImage2, texCoord[0].xy );
    vec3 eyeDir = normalize(cameraPosition-position.xyz);
 
    float lightIntensity = 0;

@@ -57,9 +57,9 @@
 <Podea>
 	<model>Quad3D</model>
 	<scale x="50" y="50" z="50" />
-	<position x="-25" y="-0.01" z="25" />
-	<orientation x="0" y="0" z="-90" />
-	<color r="0.1" g="0.1" b="0.1"/>
+	<position x="-25" y="0" z="-25" />
+	<orientation x="0" y="0" z="90" />
+	<color r="0.1" g="0.4" b="0.1"/>
 	<version>1.0</version>
 </Podea>
 

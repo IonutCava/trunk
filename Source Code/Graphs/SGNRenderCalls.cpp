@@ -68,8 +68,23 @@ void SceneGraphNode::updateVisualInformation(){
 		//If this node isn't render-disabled, check if it is visible
 		//Skip expensive frustum culling if we shouldn't draw the node in the first place
 		if(_node->getRenderState()){ 
-			//Perform visibility test on current node
-			_inView = _node->isInView(true,getBoundingBox());
+			switch(GFXDevice::getInstance().getRenderStage()){
+
+				default:
+				case FINAL_STAGE: {
+					//Perform visibility test on current node
+					_inView = _node->isInView(true,getBoundingBox());
+				} break; 
+
+				case SHADOW_STAGE: {
+					_inView = false;
+					if(_node->getMaterial()){
+						if(_node->getMaterial()->getCastsShadows()){
+							_inView = _node->isInView(true,getBoundingBox());
+						}
+					}
+				}break;
+			};
 		}else{
 			//If the current SceneGraphNode isn't visible, it's children aren't visible as well
 			_inView = false;
@@ -81,17 +96,10 @@ void SceneGraphNode::updateVisualInformation(){
 			RenderQueue::getInstance().addNodeToQueue(this);
 		}
 	}
+	//If we don't need to skip child testing
 	if(!_skipChildren){
 		for_each(NodeChildren::value_type& it, _children){
 			it.second->updateVisualInformation();
 		}
 	}
-
-	//	//If we don't need to skip child testing
-	//	
-	//		//Recursively update visual information for the current node's children
-	//		for_each(NodeChildren::value_type& it, _children){
-	//			it.second->updateVisualInformation();
-	//		}
-	//	}
 }

@@ -32,7 +32,7 @@
 	<enableNoise>false</enableNoise>
 	<enableDepthOfField>false</enableDepthOfField>
 	<enableBloom>true</enableBloom>
-	<enableSSAO>true</enableSSAO>
+	<enableSSAO>false</enableSSAO>
 </rendering>
     
 <title>DIVIDE Framework</title>

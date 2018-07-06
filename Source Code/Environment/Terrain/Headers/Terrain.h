@@ -55,9 +55,9 @@ public:
 	void  setLoaded(bool state) {_loaded = state;}
 	void  postLoad(SceneGraphNode* const node);	
 
-	Vegetation* getVegetation() const {return _veg;}
+	Vegetation* const getVegetation() const {return _veg;}
 
-	Quadtree& getQuadtree() {return *_terrainQuadtree;}
+	Quadtree& getQuadtree() const {return *_terrainQuadtree;}
 
 	void  terrainSmooth(F32 k);
 

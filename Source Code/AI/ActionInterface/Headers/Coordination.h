@@ -29,9 +29,10 @@ public:
 	bool addTeamMember(AIEntity* entity);
 	bool removeTeamMember(AIEntity* entity);
 	bool addEnemyTeam(teamMap& enemyTeam);
-	inline teamMap& getTeam() {return _team;}
-	inline U32 getTeamID() {return _teamID;}
 	void setTeamID(U32 value);
+
+	inline U32 const& getTeamID()    const {return _teamID;}
+	inline teamMap& getTeam()      {return _team;}
 	inline teamMap& getEnemyTeam() {return _enemyTeam;}
 
 private:

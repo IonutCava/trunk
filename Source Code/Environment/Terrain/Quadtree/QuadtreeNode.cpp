@@ -33,7 +33,7 @@ void QuadtreeNode::Build(U8 depth,
 	}
 
 	//Cream 4 "copii"
-	_children = new QuadtreeNode[4];
+	_children = New QuadtreeNode[4];
 
 	// Calculam Bounding Box-ul "copiilor"
 	vec3 center = _boundingBox.getCenter();

@@ -32,7 +32,7 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, cons
 			_membruDistanta[sender] = boost::any_cast<F32>(msg_content);
 			break;
 		case LOVESTE_MINGEA:
-			for_each(AICoordination::teamMap::value_type& member, _entity->getTeam()){
+			for_each(AICoordination::teamMap::value_type const& member, _entity->getTeam()){
 				if(_entity->getGUID() != member.second->getGUID()){
 					_entity->sendMessage(member.second, NU_LOVI_MINGEA, 0);
 				}

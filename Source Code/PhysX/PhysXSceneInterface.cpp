@@ -55,7 +55,7 @@ void PhysXSceneInterface::update(){
 
 void PhysXSceneInterface::updateActor(PxRigidActor* actor){
    PxU32 nShapes = actor->getNbShapes(); 
-   PxShape** shapes=new PxShape*[nShapes];
+   PxShape** shapes=New PxShape*[nShapes];
    actor->getShapes(shapes, nShapes);
    Transform* t = static_cast<Transform*>(actor->userData);
    while (nShapes--){ 
@@ -109,7 +109,7 @@ void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
 	if(!actor) return;
 	U32 nbActors = _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC | PxActorTypeSelectionFlag::eRIGID_STATIC);
 	std::stringstream ss;
-	PxShape** shapes=new PxShape*[actor->getNbShapes()];
+	PxShape** shapes=New PxShape*[actor->getNbShapes()];
 	actor->getShapes(shapes, actor->getNbShapes());   
 	//ToDo: Only 1 shape per actor for now. Fix This! -Ionut
 	Object3D* actorGeometry = NULL;

@@ -1,20 +1,18 @@
 #include "Headers/Light.h"
 #include "Headers/LightImpostor.h"
 
-#include "Hardware/Video/GFXDevice.h"
+//#include "Hardware/Video/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Managers/Headers/CameraManager.h"
-#include "Managers/Headers/ResourceManager.h"
-#include "Managers/Headers/LightManager.h"
-#include "Core/Headers/ParamHandler.h"
-#include "Rendering/Headers/Frustum.h"
-#include "Core/Headers/Application.h"
+#include "Managers/Headers/SceneManager.h"
+//#include "Managers/Headers/CameraManager.h"
+//#include "Rendering/Headers/Frustum.h"
+//#include "Core/Headers/Application.h"
 
 Light::Light(U8 slot, F32 radius) : SceneNode(),    _slot(slot), 
 													_radius(radius), _drawImpostor(false),
 													_lightSGN(NULL), _impostor(NULL),
 													_id(0),			 _impostorSGN(NULL),
-													_castsShadows(true)
+													_castsShadows(true),_resolutionFactor(1)
 {
 	vec4 _white(1.0f,1.0f,1.0f,1.0f);
 	vec2 angle = vec2(0.0f, RADIANS(45.0f));
@@ -34,6 +32,8 @@ Light::Light(U8 slot, F32 radius) : SceneNode(),    _slot(slot),
 	_lightProperties_f["constAtt"] = 1;
 	_lightProperties_f["linearAtt"] = 1;
 	_lightProperties_f["quadAtt"] = 1;
+	SceneGraph* sg = SceneManager::getInstance().getActiveScene()->getSceneGraph();
+	setShadowMappingCallback(boost::bind(&SceneGraph::render, sg));
 }
 
 Light::~Light(){
@@ -93,4 +93,9 @@ void Light::setLightProperties(const std::string& name, F32 value){
 void Light::render(SceneGraphNode* const node){
 	//The isInView call should stop impostor rendering if needed
 	_impostor->render(node);
+}
+
+void  Light::setRadius(F32 radius) {
+	_radius = radius;
+	_impostor->setRadius(radius);
 }

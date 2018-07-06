@@ -31,8 +31,8 @@ void glShader::validateProgram(U16 program) {
 	I32 status;
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
 // ToDo: Problem with AMD(ATI) cards. GLSL validation errors about multiple samplers to same uniform, but they still work. Fix that. -Ionut
-//	if (status == GL_FALSE)
-//		Console::getInstance().errorfn("GLSL Manager: Error validating shader [ %d ]", program);
+	if (status == GL_FALSE)
+		Console::getInstance().errorfn("GLSL Manager: Error validating shader [ %d ]", program);
 }
 
 
@@ -222,10 +222,26 @@ void glShader::unbind() {
 	_bound = false;
 }
 
-void glShader::UniformTexture(const string& ext, U16 slot){
-	glActiveTexture(GL_TEXTURE0+slot);
-	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), slot);
+void glShader::Attribute(const std::string& ext, D32 value){
+	glVertexAttrib1d(glGetAttribLocation(_shaderId, ext.c_str()),value);
 }
+
+void glShader::Attribute(const std::string& ext, F32 value){
+	glVertexAttrib1f(glGetAttribLocation(_shaderId, ext.c_str()),value);
+}
+
+void glShader::Attribute(const std::string& ext, const vec2& value){
+	glVertexAttrib2fv(glGetAttribLocation(_shaderId, ext.c_str()),value);
+}
+
+void glShader::Attribute(const std::string& ext, const vec3& value){
+	glVertexAttrib3fv(glGetAttribLocation(_shaderId, ext.c_str()),value);
+}
+
+void glShader::Attribute(const std::string& ext, const vec4& value){
+	glVertexAttrib4fv(glGetAttribLocation(_shaderId, ext.c_str()),value);
+}
+
 
 void glShader::Uniform(const string& ext, I32 value){
 	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), value);
@@ -258,6 +274,12 @@ void glShader::Uniform(const std::string& ext, const mat4& value){
 void glShader::Uniform(const std::string& ext, const vector<mat4>& values){
 	glUniformMatrix4fv(glGetUniformLocation(_shaderId, ext.c_str()),values.size(),true, values[0]);
 }
+
+void glShader::UniformTexture(const string& ext, U16 slot){
+	glActiveTexture(GL_TEXTURE0+slot);
+	glUniform1i(glGetUniformLocation(_shaderId, ext.c_str()), slot);
+}
+
 
 //For old shaders (v1.0) -Ionut
 void glShader::Uniform(I32 location, const vec4& value){

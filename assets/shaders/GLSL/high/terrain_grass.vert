@@ -1,3 +1,6 @@
+varying vec4 texCoord[2];
+varying vec3 vVertexMV;
+
 uniform float time;
 uniform float lod_metric;
 uniform float scale;
@@ -8,12 +11,12 @@ uniform float windSpeed;
 void main(void)
 {
 	
-	gl_TexCoord[0] = gl_MultiTexCoord0;
+	texCoord[0] = gl_MultiTexCoord0;
 	
 	vec4 vertex = gl_Vertex;
 	vec4 vertexMV = gl_ModelViewMatrix * gl_Vertex;
 	vec3 normalMV = gl_NormalMatrix * gl_Normal;
-	
+	vVertexMV = vertexMV.xyz;
 
 	if(gl_Normal.y < 0.0 ) {
 		normalMV = -normalMV;
@@ -28,7 +31,7 @@ void main(void)
 		
 	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 	
-	gl_TexCoord[1] = gl_TextureMatrix[0] * gl_Vertex;		
+	texCoord[1] = gl_TextureMatrix[0] * gl_Vertex;		
 }
 
 

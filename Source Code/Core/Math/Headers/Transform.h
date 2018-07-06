@@ -128,14 +128,15 @@ public:
 	void rotateX(F32 angle){this->rotate(vec3(1,0,0),angle);}
 	void rotateY(F32 angle){this->rotate(vec3(0,1,0),angle);}
 	void rotateZ(F32 angle){this->rotate(vec3(0,0,1),angle);}
-	
 
-	const mat4& getMatrix()            {this->applyTransforms(); return _worldMatrix;}
-	const mat4& getParentMatrix()      {return _parentMatrix;}
-	const mat4& getRotationMatrix()    {return _orientation.getMatrix();}
-	const vec3& getPosition()          {return _translation;}
-	const vec3& getScale()             {return _scale;}
-	const Quaternion& getOrientation() {return _orientation;}
+	mat4 const& getRotationMatrix() {return _orientation.getMatrix();}
+
+	mat4 const& getParentMatrix()   const {return _parentMatrix;}
+	vec3 const& getPosition()       const {return _translation;}
+	vec3 const& getScale()          const {return _scale;}
+
+	Quaternion const& getOrientation() const {return _orientation;}
+	mat4 const& getMatrix() {this->applyTransforms(); return _worldMatrix;}
 
 	void applyTransforms(){
 		if(isDirty()){

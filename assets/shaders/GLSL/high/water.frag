@@ -1,5 +1,5 @@
-uniform int win_width;
-uniform int win_height;
+uniform float screenWidth;
+uniform float screenHeight;
 uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;
@@ -12,6 +12,7 @@ varying vec3 vPixToLight;
 varying vec3 vPixToEye;	
 varying vec4 vPosition;
 varying vec4 vVertexFromLightView;
+varying vec4 texCoord[2];
 
 // SHADOW MAPPING //
 uniform int depthMapCount;
@@ -27,10 +28,10 @@ float Fresnel(vec3 incident, vec3 normal, float bias, float power);
 
 void main (void)
 {
-	vec2 uvNormal0 = gl_TexCoord[0].st*noise_tile;
+	vec2 uvNormal0 = texCoord[0].st*noise_tile;
 	uvNormal0.s += time*0.01;
 	uvNormal0.t += time*0.01;
-	vec2 uvNormal1 = gl_TexCoord[0].st*noise_tile;
+	vec2 uvNormal1 = texCoord[0].st*noise_tile;
 	uvNormal1.s -= time*0.01;
 	uvNormal1.t += time*0.01;
 		
@@ -38,7 +39,7 @@ void main (void)
 	vec3 normal1 = texture2D(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
 	vec3 normal = normalize(normal0+normal1);
 	
-	vec2 uvReflection = vec2(gl_FragCoord.x/win_width, gl_FragCoord.y/win_height);
+	vec2 uvReflection = vec2(gl_FragCoord.x/screenWidth, gl_FragCoord.y/screenHeight);
 	
 	vec2 uvFinal = uvReflection.xy + noise_factor*normal.xy;
 	gl_FragColor = texture2D(texWaterReflection, uvFinal);
@@ -85,9 +86,9 @@ float ShadowMapping()
 	float fShadow = 0.0;
 						
 	float tOrtho[3];
-	tOrtho[0] = 20.0;
-	tOrtho[1] = 100.0;
-	tOrtho[2] = 200.0;
+	tOrtho[0] = 2.0;
+	tOrtho[1] = 10.0;
+	tOrtho[2] = 50.0;
 
 	bool ok = false;
 	int id = 0;

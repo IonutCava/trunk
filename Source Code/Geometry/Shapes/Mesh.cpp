@@ -49,10 +49,3 @@ void Mesh::postLoad(SceneGraphNode* const node){
 	}
 	Object3D::postLoad(node);
 }
-
-bool Mesh::clean()
-{
-	if(_shouldDelete)
-		return SceneManager::getInstance().getActiveScene()->removeGeometry(this);
-	else return false;
-}

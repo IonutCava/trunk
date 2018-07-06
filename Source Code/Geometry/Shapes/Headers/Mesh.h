@@ -45,7 +45,6 @@ public:
 	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
 
 	bool load(const std::string& file);
-	bool clean();
 	void postLoad(SceneGraphNode* const node);
 	void render(SceneGraphNode* const node){};
 	void createCopy();

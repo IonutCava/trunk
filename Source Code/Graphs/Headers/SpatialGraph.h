@@ -23,7 +23,7 @@
 class SpatialGraph  {
 public:
 	SpatialGraph(){
-		_root = new SceneGraphNode(new SceneRoot);
+		_root = New SceneGraphNode(new SceneRoot);
 	}
 
 	~SceneGraph(){

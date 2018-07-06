@@ -24,6 +24,7 @@
 #include "Geometry/Material/Headers/Material.h"
 
 class Scene;
+enum  RENDER_STAGE;
 class SceneNode : public Resource {
 	friend class SceneGraphNode;
 	friend class RenderQueue;
@@ -35,7 +36,10 @@ public:
 	/*Rendering/Processing*/
 	virtual void render(SceneGraphNode* const node) = 0; //Sounds are played, geometry is displayed etc.
 			void setRenderState(bool state) {_renderState = state;}
-			bool getRenderState() {return _renderState;}
+			bool getRenderState()  const {return _renderState;} 
+			void addToRenderExclusionMask(U8 stageMask);
+			void removeFromRenderExclusionMask(U8 stageMask);
+			bool getRenderState(RENDER_STAGE currentStage)  const;
 	/*//Rendering/Processing*/	
 
 	virtual	bool			unload();
@@ -53,15 +57,20 @@ public:
 	
 
 	inline	void	setSelected(bool state)  {_selected = state;}
-	inline	bool    isSelected()			 {return _selected;}
+	inline	bool    isSelected()	const	 {return _selected;}
 	virtual void    createCopy();
 	virtual void    removeCopy();
 	virtual void    changeSortKey(I32 key) {_sortKey = key;}
+
+protected:
+	U8          _exclusionMask;
+
 private:
 	
 	Material*	_material;				   
 
-	bool		_renderState,_noDefaultMaterial;
+	bool		_renderState;
+	bool        _noDefaultMaterial;
 	bool        _selected;
 	I32         _sortKey;
 };

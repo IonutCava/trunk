@@ -118,7 +118,7 @@ bool Scene::loadGeometry(const FileData& data){
 
 	} else if(data.ModelName.compare("Sphere3D") == 0) {
 			thisObj = _resManager.loadResource<Sphere3D>(item);
-			dynamic_cast<Sphere3D*>(thisObj)->setSize(data.data);
+			dynamic_cast<Sphere3D*>(thisObj)->setRadius(data.data);
 
 	} else if(data.ModelName.compare("Quad3D") == 0)	{
 			vec3 scale = data.scale;
@@ -141,11 +141,11 @@ bool Scene::loadGeometry(const FileData& data){
 	if(!tempMaterial){
 		ResourceDescriptor materialDescriptor(data.ItemName+"_material");
 		tempMaterial = ResourceManager::getInstance().loadResource<Material>(materialDescriptor);
+		tempMaterial->setDiffuse(data.color);
+		tempMaterial->setAmbient(data.color);
 	}
 	
 	thisObj->setMaterial(tempMaterial);
-	thisObj->getMaterial()->setDiffuse(data.color);
-	thisObj->getMaterial()->setAmbient(data.color);
 	SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->addNode(thisObj);
 	thisObjSGN->getTransform()->scale(data.scale);
 	thisObjSGN->getTransform()->rotateEuler(data.orientation);

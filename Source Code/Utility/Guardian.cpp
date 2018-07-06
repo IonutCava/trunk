@@ -41,8 +41,8 @@ void Guardian::TerminateApplication(){
 	SceneManager::getInstance().DestroyInstance();
 	ResourceManager::getInstance().DestroyInstance();
 	Console::getInstance().printfn("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
-	GFXDevice::getInstance().closeRenderingApi();
 	GFXDevice::getInstance().DestroyInstance();
+	GFXDevice::getInstance().closeRenderingApi();
 	SFXDevice::getInstance().closeAudioApi();
 	SFXDevice::getInstance().DestroyInstance();
 	Console::getInstance().printfn("Application shutdown complete!");

@@ -3,8 +3,7 @@ varying vec3 vPixToEyeTBN;
 varying vec3 vVertexMV;
 varying vec3 vPixToLightMV;
 varying vec3 vLightDirMV;
-varying vec4 vVertexFromLightView;
-varying vec2 texCoord;
+varying vec4 texCoord[2];
 
 uniform int enable_shadow_mapping;
 
@@ -31,12 +30,12 @@ void main(void){
 	vec3 normalMV = gl_NormalMatrix * gl_Normal;
 	
 	vec4 vertexM = gl_TextureMatrix[0] * gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-		vertex.x += 0.01 * pow(vertex.y, 2.0)*cos(time*windSpeed) * cos(vertex.x) * sin(vertex.x) *windDirectionX;
-		vertex.z += 0.01 * pow(vertex.y, 2.0)*sin(time*windSpeed) * cos(vertex.x) * sin(vertex.x) *windDirectionZ;
+	vertex.x += 0.01 * cos(time*windSpeed) * cos(vertex.x) * sin(vertex.x) *windDirectionX;
+	vertex.z += 0.01 * sin(time*windSpeed) * cos(vertex.x) * sin(vertex.x) *windDirectionZ;
 
 	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 	
-	texCoord = gl_MultiTexCoord0.xy;
+	texCoord[0].st = gl_MultiTexCoord0.xy;
 	
 	vec3 vTangent = gl_MultiTexCoord0.xyz;
 	vec3 n = normalize(gl_NormalMatrix * gl_Normal);
@@ -84,6 +83,6 @@ void main(void){
 		// position multiplied by the inverse of the camera matrix
 		pos = modelViewInvMatrix * pos;
 		// position multiplied by the light matrix. The vertex's position from the light's perspective
-		vVertexFromLightView = lightProjectionMatrix * pos;
+		texCoord[1] = lightProjectionMatrix * pos;
 	}	
 }

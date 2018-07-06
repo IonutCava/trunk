@@ -41,7 +41,7 @@ U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t, U32& ilT
 				i += sscanf_s(head, "%d", &d);
 		}
 
-		img = new U8[(size_t)(w) * (size_t)(h) * 3];
+		img = New U8[(size_t)(w) * (size_t)(h) * 3];
 		if(img==NULL) {
 			fclose(f);
 			return 0; 
@@ -100,7 +100,7 @@ U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& il
    
     const U8* Pixels = ilGetData();
 
-	U8* img = new U8[(size_t)(w) * (size_t)(h) * (size_t)(d)];
+	U8* img = New U8[(size_t)(w) * (size_t)(h) * (size_t)(d)];
 	memcpy(img, Pixels, (size_t)(w) * (size_t)(h) * (size_t)(d));
 
     ilBindImage(0);

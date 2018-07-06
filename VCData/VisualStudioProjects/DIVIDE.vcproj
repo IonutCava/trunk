@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="true"
 				AdditionalOptions="/Y3"
-				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-Networking.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib freeglut_static.lib"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib freeglut_static.lib OIS_static.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
 				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib\Debug&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
@@ -146,7 +146,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-Networking.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib freeglut_static.lib"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib freeglut_static.lib OIS_static.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
 				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib\Release&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
 				IgnoreAllDefaultLibraries="false"
@@ -235,6 +235,14 @@
 					RelativePath="..\..\Source Code\Rendering\PostFX\PostFX.cpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp"
+					>
+				</File>
 				<Filter
 					Name="Headers"
 					>
@@ -242,6 +250,42 @@
 						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h"
 						>
 					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderOperator.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStage.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="CustomOperators"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter
@@ -341,66 +385,6 @@
 					RelativePath="..\..\Source Code\GUI\Headers\GUIFlash.h"
 					>
 				</File>
-			</Filter>
-		</Filter>
-		<Filter
-			Name="External Libraries"
-			>
-			<Filter
-				Name="OIS"
-				>
-				<File
-					RelativePath="..\..\Source Code\Libs\src\MultiModalInput\OISEffect.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Libs\src\MultiModalInput\OISException.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Libs\src\MultiModalInput\OISForceFeedback.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Libs\src\MultiModalInput\OISInputManager.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Libs\src\MultiModalInput\OISJoyStick.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Libs\src\MultiModalInput\OISKeyboard.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Libs\src\MultiModalInput\OISObject.cpp"
-					>
-				</File>
-				<Filter
-					Name="win32"
-					>
-					<File
-						RelativePath="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32ForceFeedback.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32InputManager.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32JoyStick.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32KeyBoard.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32Mouse.cpp"
-						>
-					</File>
-				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1189,11 +1173,19 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\lighting.frag"
+						RelativePath="..\..\assets\shaders\GLSL\high\lighting.vert"
 						>
 					</File>
 					<File
-						RelativePath="..\..\assets\shaders\GLSL\high\lighting.vert"
+						RelativePath="..\..\assets\shaders\GLSL\high\lighting_bump.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\high\lighting_noTexture.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\high\lighting_texture.frag"
 						>
 					</File>
 					<File
@@ -1340,6 +1332,10 @@
 						RelativePath="..\..\assets\shaders\GLSL\low\sky.vert"
 						>
 					</File>
+				</Filter>
+				<Filter
+					Name="general"
+					>
 				</Filter>
 			</Filter>
 			<Filter

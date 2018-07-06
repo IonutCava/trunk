@@ -20,26 +20,26 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 
-class Sphere3D : public Object3D
-{
+class Sphere3D : public Object3D{
+
 public:
-	//Size is radius
-	Sphere3D(F32 size, F32 resolution) : Object3D(SPHERE_3D),
-										_size(size),
+
+	Sphere3D(F32 radius, F32 resolution) : Object3D(SPHERE_3D),
+										_radius(radius),
 										_resolution(resolution){
-											_dirty = true;
+										_dirty = true;
 										}
 	
 	bool load(const std::string &name) {_name = name; return true;}
 
-	inline F32	  getSize()    {return _size;}
+	inline F32	  getRadius()    {return _radius;}
 	inline F32    getResolution() {return _resolution;}
-	inline void   setSize(F32 size) {_size = size; _dirty = true; _refreshVBO = true;}
+	inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; _refreshVBO = true;}
 	inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; _refreshVBO = true;}
 
 	virtual bool computeBoundingBox(SceneGraphNode* const node){
 		if(node->getBoundingBox().isComputed()) return true;
-		node->getBoundingBox().set(vec3(- _size,- _size,- _size), vec3( _size, _size, _size));
+		node->getBoundingBox().set(vec3(- _radius,- _radius,- _radius), vec3( _radius, _radius, _radius));
 		return SceneNode::computeBoundingBox(node);
 	}
 
@@ -59,7 +59,6 @@ private:
 
 		I32 rings = _resolution;
 		I32 sectors = _resolution;
-		F32 radius = _size;
 		
 	    F32 const R = 1./(F32)(rings-1);
         F32 const S = 1./(F32)(sectors-1);
@@ -77,7 +76,7 @@ private:
                 F32 const z = sin(2*M_PI * s * S) * sin( M_PI * r * R );
 
 				_geometry->getTexcoord().push_back(vec2(s*S,r*R));
-                _geometry->getPosition().push_back(vec3(x * radius,y * radius, z * radius));
+                _geometry->getPosition().push_back(vec3(x * _radius,y * _radius, z * _radius));
 				_geometry->getNormal().push_back(vec3(x,y,z));
 			}
 		}
@@ -96,7 +95,7 @@ private:
 	
 
 protected:
-	F32 _size, _resolution;
+	F32 _radius, _resolution;
 	U32 _vertexCount;
 	bool _dirty;
 	

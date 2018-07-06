@@ -29,48 +29,46 @@ void MainScene::preRender(){
 
 	if(_water != NULL){
 		_water->getReflectionFBO()->Begin();
-			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-			renderEnvironment(true,false);
+			renderEnvironment(true);
 		_water->getReflectionFBO()->End();
 	}
 }
 
 void MainScene::render(){
 	_waterGraphNode->setActive(true);
-	renderEnvironment(false,false);
+	renderEnvironment(false);
 }
 
 bool _underwater = false;
-void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
+void MainScene::renderEnvironment(bool waterReflection){
 	_GFX.ignoreStateChanges(true);
-	if(!depthMap){
-		Camera* cam = CameraManager::getInstance().getActiveCamera();
-		if(cam->getEye().y < getWaterLevel()){
-			waterReflection = false;
-			_underwater = true;
-			_paramHandler.setParam("underwater",true);
-		}
-		else{
-			_underwater = false;
-			_paramHandler.setParam("underwater",false);
-		}
-		for(U8 i = 0; i < _visibleTerrains.size(); i++){
-			_visibleTerrains[i]->setRenderingOptions(waterReflection);
-			_visibleTerrains[i]->getMaterial()->setAmbient(_sunColor/1.5f);
-		}
 
-		Sky &sky = Sky::getInstance();
-		sky.setParams(cam->getEye(),vec3(_sunVector),waterReflection,true,true);
-		sky.draw();
-
-		if(waterReflection){
-			RenderState s = _GFX.getActiveRenderState();
-			s.cullingEnabled() = false;
-			_GFX.setRenderState(s);
-			cam->RenderLookAt(true,true,getWaterLevel());
-			
-		}
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
+	if(cam->getEye().y < getWaterLevel()){
+		waterReflection = false;
+		_underwater = true;
+		_paramHandler.setParam("underwater",true);
 	}
+	else{
+		_underwater = false;
+		_paramHandler.setParam("underwater",false);
+	}
+	for(U8 i = 0; i < _visibleTerrains.size(); i++){
+		_visibleTerrains[i]->setRenderingOptions(waterReflection);
+		_visibleTerrains[i]->getMaterial()->setAmbient(_sunColor/1.5f);
+	}
+
+	Sky::getInstance().setParams(cam->getEye(),vec3(_sunVector),waterReflection,true,true);
+	Sky::getInstance().draw();
+
+	if(waterReflection){
+		_GFX.setRenderStage(REFLECTION_STAGE);
+		RenderState s = _GFX.getActiveRenderState();
+		s.cullingEnabled() = false;
+		_GFX.setRenderState(s);
+		cam->RenderLookAt(true,true,getWaterLevel());
+	}
+
 	_sceneGraph->render(); //render the rest of the stuff
 	_GFX.ignoreStateChanges(false);
 }
@@ -132,10 +130,6 @@ bool MainScene::load(const string& name){
 	if(getWaterLevel() == RAND_MAX) computeWaterHeight = true;
 	Light* light = addDefaultLight();
 	light->setLightProperties(string("ambient"),_white);
-	light->setShadowMappingCallback(boost::bind(&MainScene::renderEnvironment,// draw scene function
-												 this,                        // current scene pointer
-												 false,                       // not water reflection 
-												 true));					  // depth map pass
 	
 	state = loadResources(true);	
 	state = loadEvents(true);
@@ -158,7 +152,7 @@ bool MainScene::load(const string& name){
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
 	_water = _resManager.loadResource<WaterPlane>(infiniteWater);
-	_water->setParams(50.0f,10,0.1f,0.5f);
+	_water->setParams(50.0f,50,0.2f,0.5f);
 	_waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
 	_waterGraphNode->useDefaultTransform(false);
 	_waterGraphNode->setTransform(NULL);

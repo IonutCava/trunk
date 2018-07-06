@@ -224,7 +224,7 @@ bool PingPongScene::load(const string& name){
 	//Adaugam o lumina
 	Light* light = addDefaultLight();
 	light->setRadius(0.1f);
-	light->toggleImpostor(false);
+	light->setDrawImpostor(false);
 	light->setLightType(LIGHT_SPOT);
 	//Incarcam resursele scenei
 	state = loadResources(true);	
@@ -245,7 +245,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 	_minge = _resManager.loadResource<Sphere3D>(minge);
 	_mingeSGN = addGeometry(_minge);
 	_minge->setResolution(16);
-	_minge->setSize(0.1f);
+	_minge->setRadius(0.1f);
 	_mingeSGN->getTransform()->translate(vec3(0, 2 ,2));
 	_minge->getMaterial()->setDiffuse(vec4(0.4f,0.4f,0.4f,1.0f));
 	_minge->getMaterial()->setAmbient(vec4(0.25f,0.25f,0.25f,1.0f));

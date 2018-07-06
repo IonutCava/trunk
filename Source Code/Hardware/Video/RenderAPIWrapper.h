@@ -188,7 +188,7 @@ protected:
 	virtual void setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type) = 0;
 	/*Light Management*/
 
-	virtual void setDepthMapRendering(bool state) = 0;
+	virtual void toggleDepthMapRendering(bool state) = 0;
 	virtual void Screenshot(char *filename, const vec4& rect) = 0;
 	virtual void ignoreStateChanges(bool state) = 0;
 	virtual void toggleWireframe(bool state) = 0;

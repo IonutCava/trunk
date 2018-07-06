@@ -38,12 +38,12 @@ void Vegetation::initialize(const string& grassShader,const string& terrainName)
 
 void Vegetation::draw(bool drawInReflection){
 	if(!_render || !_success) return;
+	if(GFXDevice::getInstance().getRenderStage() == SHADOW_STAGE) return;
+
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
-	if(GFXDevice::getInstance().getDepthMapRendering()) return;
 	_windX = activeScene->getWindDirX();
 	_windZ = activeScene->getWindDirZ();
 	_windS = activeScene->getWindSpeed();
-	_time = GETTIME();
 
 	GFXDevice::getInstance().ignoreStateChanges(true);
 
@@ -53,11 +53,10 @@ void Vegetation::draw(bool drawInReflection){
 	GFXDevice::getInstance().setRenderState(s);
 
 	_grassShader->bind();
-		_grassShader->Uniform("time", _time);
 		_grassShader->Uniform("windDirectionX",_windX);
 		_grassShader->Uniform("windDirectionZ",_windZ);
 		_grassShader->Uniform("windSpeed", _windS);
-	
+		_grassShader->Uniform("enable_shadow_mapping", ParamHandler::getInstance().getParam<bool>("enableShadows"));
 		for(U16 index = 0; index < _billboardCount; index++){
 			_grassBillboards[index]->Bind(0);
 				_grassShader->UniformTexture("texDiffuse", 0);

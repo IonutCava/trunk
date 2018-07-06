@@ -1,8 +1,9 @@
+varying vec4 texCoord[2];
 
 void main(void)
 {
 
-	gl_TexCoord[0] = gl_MultiTexCoord0;
+	texCoord[0] = gl_MultiTexCoord0;
 	vec4 vertex = gl_Vertex;
 	vec4 vertexMV = gl_ModelViewMatrix * gl_Vertex;
 	vec3 normalMV = normalize(gl_NormalMatrix * gl_Normal);

@@ -72,7 +72,7 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Debug;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -100,7 +100,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;OIS_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Release;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -120,24 +120,14 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightImpostor.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
     <ClCompile Include="..\..\Source Code\PhysX\PhysX.cpp" />
     <ClCompile Include="..\..\Source Code\PhysX\PhysXSceneInterface.cpp" />
     <ClCompile Include="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIFlash.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISEffect.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISException.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISForceFeedback.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISInputManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISJoyStick.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISKeyboard.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32ForceFeedback.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32InputManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32JoyStick.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32KeyBoard.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32Mouse.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainChunk.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\Quadtree.cpp" />
@@ -145,6 +135,8 @@
     <ClCompile Include="..\..\Source Code\Environment\Sky\Sky.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Water\Water.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Vegetation\Vegetation.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStage.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Event.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Guardian.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
@@ -205,6 +197,8 @@
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightImpostor.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Framerate.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Frustum.h" />
@@ -220,6 +214,9 @@
     <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sky.h" />
     <ClInclude Include="..\..\Source Code\Environment\Water\Headers\Water.h" />
     <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderOperator.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStage.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\BoundingBox.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Event.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Guardian.h" />

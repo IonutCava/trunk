@@ -25,35 +25,47 @@ class Quad3D : public Object3D
 {
 public:
 	Quad3D() :  Object3D(QUAD_3D){
-			   vec3 normal(0,1,0);
-			   vec3 tangent(1,0,0);
-			   //TOP LEFT
-			   _geometry->getPosition().push_back(vec3(-1,1,0));
-			   _geometry->getNormal().push_back(normal);
-			   _geometry->getTangent().push_back(tangent);
-			   _geometry->getTexcoord().push_back(vec2(0,0));
-			   //TOP RIGHT
-			   _geometry->getPosition().push_back(vec3(1,1,0));
-			   _geometry->getNormal().push_back(normal);
-			   _geometry->getTangent().push_back(tangent);
-			   _geometry->getTexcoord().push_back(vec2(1,0));
-				//BOTTOM LEFT
-			   _geometry->getPosition().push_back(vec3(-1,-1,0));
-			   _geometry->getNormal().push_back(normal);
-			   _geometry->getTangent().push_back(tangent);
-			   _geometry->getTexcoord().push_back(vec2(0,1));
-			   //BOTTOM RIGHT
-			   _geometry->getPosition().push_back(vec3(1,-1,0));
-			   _geometry->getNormal().push_back(normal);
-			   _geometry->getTangent().push_back(tangent);
-			   _geometry->getTexcoord().push_back(vec2(1,1));
 
-			   _indices.push_back(0);
-			   _indices.push_back(1);
-			   _indices.push_back(3);
-			   _indices.push_back(2);
-			   _refreshVBO = true;
-			   //computeTangents();
+		vec3 vertices[] = {vec3(-1.0f,  1.0f, 0.0f),   //TOP LEFT
+						   vec3( 1.0f,  1.0f, 0.0f),   //TOP RIGHT
+						   vec3(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
+						   vec3( 1.0f, -1.0f, 0.0f)};  //BOTTOM RIGHT
+
+		vec3 normals[] = {vec3(0.0f, 1.0f, 0.0f), 
+						  vec3(0.0f, 1.0f, 0.0f), 
+						  vec3(0.0f, 1.0f, 0.0f),
+						  vec3(0.0f, 1.0f, 0.0f)};
+
+		vec3 tangents[] = {vec3(1.0f, 0.0f, 0.0f), 
+						   vec3(1.0f, 0.0f, 0.0f), 
+				           vec3(1.0f, 0.0f, 0.0f),
+				           vec3(1.0f, 0.0f, 0.0f)};
+
+		vec2 texcoords[] = {vec2(0,0),
+							vec2(1,0),
+							vec2(0,1),
+							vec2(1,1)};
+
+		_geometry->getPosition().reserve(4);
+		_geometry->getNormal().reserve(4);
+		_geometry->getTangent().reserve(4);
+		_geometry->getTexcoord().reserve(4);
+		_indices.reserve(4);
+
+		for(U8 i = 0;  i < 4; i++){
+			_geometry->getPosition().push_back(vertices[i]);
+			_geometry->getNormal().push_back(normals[i]);
+			_geometry->getTangent().push_back(tangents[i]);
+			_geometry->getTexcoord().push_back(texcoords[i]);
+		}
+
+	   //CW draw order
+	   _indices.push_back(2); //  v1----v2
+	   _indices.push_back(0); //   |    |
+	   _indices.push_back(1); //   |    |
+	   _indices.push_back(3); //  v0----v3
+	   _refreshVBO = true;
+	   //computeTangents();
 	}
 
 	bool load(const std::string &name) {
@@ -91,6 +103,16 @@ public:
 		}
 		_refreshVBO = true;
 		//computeTangents();
+	}
+
+	//rect.xy = Top Left; rect.zw = Bottom right
+	//Remember to invert for 2D mode
+	void setDimensions(const vec4& rect){
+		_geometry->getPosition()[0] = vec3(rect.x, rect.w, 0);
+		_geometry->getPosition()[1] = vec3(rect.z, rect.w, 0);
+		_geometry->getPosition()[2] = vec3(rect.x,rect.y,0);
+		_geometry->getPosition()[3] = vec3(rect.z, rect.y, 0);
+		_refreshVBO = true;
 	}
 
 	virtual bool computeBoundingBox(SceneGraphNode* const node) {

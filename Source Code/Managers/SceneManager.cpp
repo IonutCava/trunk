@@ -161,3 +161,8 @@ void SceneManager::findSelection(U32 x, U32 y){
 		}
 	}*/
 }
+
+void SceneManager::render(RENDER_STAGE stage) {
+	GFXDevice::getInstance().setRenderStage(stage);
+	_scene->render();
+}

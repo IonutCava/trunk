@@ -15,7 +15,7 @@ void CameraManager::setActiveCamera(const std::string& name)
 			_camera = dynamic_cast<Camera*>(_resDB[name]); 
 		else _camera = dynamic_cast<Camera*>(_resDB.begin()->second);
 	}else{
-		_camera = new FreeFlyCamera();
+		_camera = New FreeFlyCamera();
 		assert(_camera != NULL);
 		add(name, _camera);
 	}

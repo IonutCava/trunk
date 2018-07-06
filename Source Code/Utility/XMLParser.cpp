@@ -289,6 +289,7 @@ namespace XML
 			                  pt.get<F32>("material.emissive.<xmlattr>.g",1.f),
 							  pt.get<F32>("material.emissive.<xmlattr>.b",1.f)));
 		mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v",50.f));
+		mat->setTwoSided(pt.get<bool>("material.twoSided",false));
 		if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){
 			mat->setTexture(Material::TEXTURE_BASE,loadTextureXML(pt.get("diffuseTexture1.file","none")));
 		}
@@ -324,7 +325,10 @@ namespace XML
 			renderState.lightingEnabled() =  pt.get<bool>("renderState.lightingEnabled",true);
 			renderState.texturesEnabled() = pt.get<bool>("renderState.texturesEnabled",true);
 		}
-	
+		if(boost::optional<ptree &> child = pt.get_child_optional("shadows")){
+			mat->setCastsShadows(pt.get<bool>("shadows.castsShadows", true));
+			mat->setReceivesShadows(pt.get<bool>("shadows.receiveShadows", true));
+		}
 		return mat;
 
 	}
@@ -357,6 +361,7 @@ namespace XML
 		pt.put("material.emissive.<xmlattr>.r",mat->getMaterialMatrix().getCol(3).y);
 		pt.put("material.emissive.<xmlattr>.g",mat->getMaterialMatrix().getCol(3).z);
 		pt.put("material.emissive.<xmlattr>.b",mat->getMaterialMatrix().getCol(3).w);
+		pt.put("material.twoSided", mat->isTwoSided());
 		Texture* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
 		if(baseTexture){
 			pt.put("diffuseTexture1.file",baseTexture->getResourceLocation());
@@ -413,6 +418,9 @@ namespace XML
 		pt.put("renderState.blendingEnabled", state.blendingEnabled());
 		pt.put("renderState.lightingEnabled", state.lightingEnabled());
 		pt.put("renderState.texturesEnabled", state.texturesEnabled());
+
+		pt.put("shadows.castsShadows", mat->getCastsShadows());
+		pt.put("shadows.receiveShadows", mat->getReceivesShadows());
 		boost::property_tree::xml_writer_settings<char> settings('\t', 1);
 		FILE * xml = fopen(fileLocation.c_str(), "w");
 		write_xml(fileLocation, pt,std::locale(),settings);

@@ -8,7 +8,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 using namespace std;
 
-Sky::Sky() : _skyShader(NULL), _skybox(NULL), _init(false){}
+Sky::Sky() : _skyShader(NULL), _skybox(NULL), _init(false), _exclusionMask(0){}
 
 Sky::~Sky(){
 	RemoveResource(_skyShader);
@@ -28,7 +28,7 @@ bool Sky::load() {
 	sun.setFlag(true);
 	_sun = ResourceManager::getInstance().loadResource<Sphere3D>(sun);
 	_sun->setResolution(16);
-	_sun->setSize(0.1f);
+	_sun->setRadius(0.1f);
 	_sunNode = SceneManager::getInstance().getActiveScene()->getSceneGraph()->getRoot()->addNode(_sun);
 	_sun->setRenderState(false);
 	ResourceDescriptor skyboxTextures("SkyboxTextures");
@@ -41,17 +41,22 @@ bool Sky::load() {
 	_skyShader = ResourceManager::getInstance().loadResource<Shader>(skyShaderDescriptor);
 	assert(_skyShader);
 	Console::getInstance().printfn("Generated sky cubemap and sun OK!");
+	//The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
+	addToRenderExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
 	_init = true;
 	return true;
 }
 
 void Sky::draw() const{
 	if(!_init) return;
+	//If we shouldn't draw in the current render stage, return
+	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
 	_sky->onDraw();
 	_sun->onDraw();
 	if (_drawSky && _drawSun) drawSkyAndSun();
 	if (_drawSky && !_drawSun) drawSky();
 	if (!_drawSky && _drawSun) drawSun();
+	//Do not process depth test results!
 	GFXDevice::getInstance().clearBuffers(GFXDevice::DEPTH_BUFFER);
 }
 
@@ -68,7 +73,7 @@ void Sky::drawSkyAndSun() const {
 	GFXDevice::getInstance().ignoreStateChanges(true);
 
 	RenderState s(false,false,false,true);
-	GFXDevice::getInstance().setRenderState(s,true);
+	GFXDevice::getInstance().setRenderState(s);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -92,7 +97,7 @@ void Sky::drawSky() const {
 	GFXDevice::getInstance().ignoreStateChanges(true);
 
 	RenderState s(false,false,false,true);
-	GFXDevice::getInstance().setRenderState(s,true);
+	GFXDevice::getInstance().setRenderState(s);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -130,3 +135,16 @@ void Sky::drawSun() const {
 }
 
 
+void Sky::removeFromRenderExclusionMask(U8 stageMask) {
+	assert(stageMask & ~(INVALID_STAGE-1) == 0);
+	_exclusionMask &= ~stageMask;
+}
+
+void Sky::addToRenderExclusionMask(U8 stageMask) {
+	assert(stageMask & ~(INVALID_STAGE-1) == 0);
+	_exclusionMask |= static_cast<RENDER_STAGE>(stageMask);
+}
+
+bool Sky::getRenderState(RENDER_STAGE currentStage)  const{
+	return (_exclusionMask & currentStage) == currentStage ? false : true;
+}

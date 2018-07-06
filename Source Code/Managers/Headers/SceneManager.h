@@ -28,7 +28,7 @@ public:
 	inline void setActiveScene(Scene* scene) {if(_scene) delete _scene; _scene = scene;}
 
 	/*Base Scene Operations*/
-	inline void render() {_scene->render();}
+	void render(RENDER_STAGE stage);
 	inline void preRender() {_scene->preRender();}
 	inline bool load(const std::string& name) {_scene->setInitialData(); return _scene->load(name);}
 	inline bool unload() {return _scene->unload();}

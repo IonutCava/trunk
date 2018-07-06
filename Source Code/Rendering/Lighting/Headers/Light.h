@@ -34,31 +34,33 @@ class Light : public SceneNode {
 public:
 	Light(U8 slot, F32 radius = 0.5f); 
 	~Light();
-	void onDraw();
+	
+	void setRadius(F32 radius);
 	void setLightProperties(const std::string& name, const vec4& value);
 	void setLightProperties(const std::string& name, F32 value);
 	void setShadowMappingCallback(boost::function0<void> callback);
-
-	inline void  setId(U32 id) {_id = id;}
+	
+	inline U32   getId() {return _id;}
 	inline vec4& getDiffuseColor() {return _lightProperties_v["diffuse"];}
 	inline vec4& getPosition() {return  _lightProperties_v["position"];}
 	inline F32   getRadius()   {return _radius;}
-	inline void  setRadius(F32 radius) {_radius = radius;}
-	inline U32   getId() {return _id;}
+
+	inline void  setId(U32 id) {_id = id;}
 	inline void  setCastShadows(bool state) {_castsShadows = state;}
 	inline void  setLightType(LIGHT_TYPE type) {_type = type;}
+	inline void  setDrawImpostor(bool state) {_drawImpostor = state;}
+
 	inline LIGHT_TYPE getLightType() {return _type;}
-
 	inline LightImpostor* getImpostor() {return _impostor;}
-	inline void toggleImpostor(bool state) {_drawImpostor = state;}
-
-	virtual void render(SceneGraphNode* const node);
+	
+	//SceneNode concrete implementations
+	void onDraw();
 	bool load(const std::string& name);
 	bool unload();
 	void postLoad(SceneGraphNode* const node);	
+	virtual void render(SceneGraphNode* const node);
 
-
-//Shadow Mapping (all virtual in case we need to expand each light type. Might do ...:
+	//Shadow Mapping (all virtual in case we need to expand each light type. Might do ...:
 	inline std::vector<FrameBufferObject* >& getDepthMaps() {return _depthMaps;}
 	virtual void generateShadowMaps();
 	virtual void setCameraToSceneView();
@@ -91,6 +93,7 @@ private:
 private: //Shadow Mapping
 	//The 3 depth maps
 	std::vector<FrameBufferObject* > _depthMaps;
+	F32 _resolutionFactor;
 	//Temp variables used for caching data between function calls
 	vec3 _lightPos;
 	vec2 _zPlanes;

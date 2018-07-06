@@ -21,6 +21,18 @@
 #include "OpenGL\GLWrapper.h"
 #include "Direct3D\DXWrapper.h"
 
+enum RENDER_STAGE {
+    DEFERRED_STAGE   = 0x2,
+    SHADOW_STAGE     = 0x4,
+    REFLECTION_STAGE = 0x8,
+    SSAO_STAGE       = 0x10,
+    BLOOM_STAGE      = 0x20,
+    FINAL_STAGE      = 0x40,
+    DEPTH_STAGE      = 0x80,
+	//Place all stages above this
+	INVALID_STAGE    = 0x400
+};
+
 class Object3D;
 class Framerate;
 
@@ -81,13 +93,12 @@ public:
 	inline void setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type){_api.setLight(slot,properties_v,properties_f,type);}
 
 	void toggleWireframe(bool state = false);
-    void setDepthMapRendering(bool state) {_api.setDepthMapRendering(state);_depthMapRendering = state;}
-    inline bool getDepthMapRendering() {return _depthMapRendering;}
+	inline void toggleDepthMapRendering(bool state) {_api.toggleDepthMapRendering(state);}
+	void setRenderStage(RENDER_STAGE stage);
+	inline RENDER_STAGE getRenderStage(){return _renderStage;}
 
-    inline void setDeferredShading(bool state) {_deferredShading = state;}
-    inline bool getDeferredShading() {return _deferredShading;}
-    inline void setSSAOShading(bool state) {_ssaoShading = state;}
-    inline bool getSSAOShading() {return _ssaoShading;}
+	inline void         setDeferredRendering(bool state) {_deferredRendering = state;} 
+	inline bool         getDeferredRendering() {return _deferredRendering;}
 
     inline bool wireframeRendering() {return _wireframeMode;}  
 	inline void Screenshot(char *filename, const vec4& rect){_api.Screenshot(filename,rect);}
@@ -133,15 +144,15 @@ private:
 	   _api(GL_API::getInstance()) //Defaulting to OpenGL if no api has been defined
 	   {
 		   _wireframeMode = false;
-		   _depthMapRendering = false;
-		   _deferredShading = false;
-		   _ssaoShading = false;
 		   _prevShaderId = 0;
 		   _prevTextureId = 0;
 		   _prevMaterialId = 0;
+		   _deferredRendering = false;
 	   }
 	RenderAPIWrapper& _api;
-	bool _wireframeMode,_deferredShading,_depthMapRendering,_ssaoShading;
+	bool _wireframeMode;
+	bool _deferredRendering;
+	RENDER_STAGE _renderStage;
 	mat4 _currentLightProjectionMatrix;
     U32  _prevShaderId, _prevTextureId;
 	I32  _prevMaterialId;

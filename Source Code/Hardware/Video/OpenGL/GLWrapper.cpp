@@ -321,15 +321,12 @@ void GL_API::swapBuffers(){
 }
 
 void GL_API::enableFog(F32 density, F32* color){
-
-	return; //Fog ... disabled. Really buggy - Ionut
 	glFogi (GL_FOG_MODE, GL_EXP2); 
 	glFogfv(GL_FOG_COLOR, color); 
 	glFogf (GL_FOG_DENSITY, density); 
 	glHint (GL_FOG_HINT, GL_NICEST); 
-	glFogf (GL_FOG_START,  6700.0f);
-	glFogf (GL_FOG_END,    7000.0f);
-	glEnable(GL_FOG);
+	glFogf (GL_FOG_START,  3100.0f);
+	glFogf (GL_FOG_END,    8000.0f);
 }
 
 void GL_API::drawTextToScreen(Text* text){
@@ -441,7 +438,7 @@ void GL_API::drawButton(Button* b){
 		 *	If the cursor is currently over the button we offset the text string and draw a shadow
 		 */
 		if(!t){/* delete t;*/
-			t = New Text(string("1"),b->_text,vec2(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3(0,0,0));
+			t = new Text(string("1"),b->_text,vec2(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3(0,0,0));
 		}
 		t->_text = b->_text;
 		if(b->_highlight){
@@ -460,7 +457,7 @@ void GL_API::drawButton(Button* b){
 	t = NULL;
 }
 
-void GL_API::setDepthMapRendering(bool state) {
+void GL_API::toggleDepthMapRendering(bool state) {
 	if(state){
 		GLCheck(glCullFace(GL_FRONT));
 		glShadeModel(GL_FLAT);
@@ -492,7 +489,6 @@ void GL_API::setRenderState(RenderState& state,bool force){
 
 void GL_API::ignoreStateChanges(bool state){
 	if(state){
-		//glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_COLOR_BUFFER_BIT);
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 	}else{
 		glPopAttrib();
@@ -674,7 +670,7 @@ void GL_API::setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,uno
 		glLightf(GL_LIGHT0+slot, GL_QUADRATIC_ATTENUATION,properties_f["quadAtt"]);
 	}
 
-	if(!_currentRenderState.lightingEnabled() || GFXDevice::getInstance().getDeferredShading()){
+	if(!_currentRenderState.lightingEnabled() || GFXDevice::getInstance().getDeferredRendering()){
 		GLCheck(glDisable(GL_LIGHTING));
 	}
 }
@@ -739,7 +735,7 @@ void GL_API::Screenshot(char *filename, const vec4& rect){
 	U16 h = rect.w - rect.y; //maxY - minY
 
 	// allocate memory for the pixels
-	U8 *imageData = new U8[w * h * 4];
+	U8 *imageData = New U8[w * h * 4];
 	// read the pixels from the frame buffer
 	glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
 	//save to file

@@ -1,3 +1,4 @@
+varying vec4 texCoord[2];
 uniform sampler2D texDiffuse0;
 uniform sampler2D texDiffuse1;
 uniform int textureCount;
@@ -10,13 +11,13 @@ void main (void)
 	vec4 cDiffuse = gl_LightSource[0].diffuse * material[1] * gl_Color;	
 	
 	if(textureCount > 0){
-		vec4 base = texture2D(texDiffuse0, gl_TexCoord[0].st);
+		vec4 base = texture2D(texDiffuse0, texCoord[0].st);
 		if(base.a < 0.4) discard;
 		cAmbient *= base;
 		cDiffuse *= base;
 	}
 	if(textureCount > 1){
-		vec4 base = texture2D(texDiffuse1, gl_TexCoord[0].st);
+		vec4 base = texture2D(texDiffuse1, texCoord[0].st);
 		cAmbient *= base;
 		cDiffuse *= base;
 	}

@@ -53,8 +53,8 @@ public:
 	static void DrawSceneStatic();
 	static void Idle();
 
-	inline I8   getMainWindowId(){return mainWindowId;}
-	inline void setMainWindowId(U8 id){mainWindowId = id;}
+	inline I8 const&  getMainWindowId() {return mainWindowId;}
+	inline void setMainWindowId(U8 id)  {mainWindowId = id;}
 
 private:
 	void DrawScene();

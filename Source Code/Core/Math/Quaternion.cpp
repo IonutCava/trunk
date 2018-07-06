@@ -93,7 +93,7 @@ void Quaternion::FromEuler(F32 pitch, F32 yaw, F32 roll){
 }
 
 // Convert to Matrix
-mat4& Quaternion::getMatrix(){
+mat4 const& Quaternion::getMatrix(){
 	if(_dirty) {
 		F32 x2 =  _x + _x;
 		F32 y2 = _y + _y;

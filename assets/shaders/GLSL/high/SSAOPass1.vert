@@ -4,13 +4,19 @@ varying float depth;
 uniform float zNear;
 uniform float zFar;
 
+float LinearDepth(in float inDepth);
+
 void main(void){
 	gl_Position = ftransform();
-
 	normals = normalize(gl_NormalMatrix * gl_Normal);
-	// this will transform the vertex into eyespace
-	vec4 viewPos = gl_ModelViewMatrix * gl_Vertex; 
-	// minus because in OpenGL we are looking in the negative z-direction
-	// will map near..far to 0..1
-	depth = (-viewPos.z-zNear)/(zFar-zNear);
+	vec4 vToEye = gl_ModelViewMatrix * gl_Vertex;	
+	depth = LinearDepth(vToEye.z);
+}
+
+float LinearDepth(in float inDepth){
+	float dif = zFar - zNear;
+	float A = -(zFar + zNear) / dif;
+	float B = -2*zFar*zNear / dif;
+	float C = -(A*inDepth + B) / inDepth; // C in [-1, 1]
+	return 0.5 * C + 0.5; // in [0, 1]
 }
