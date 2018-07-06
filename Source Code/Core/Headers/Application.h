@@ -76,7 +76,7 @@ DEFINE_SINGLETON(Application)
     /// Startup and shutdown
     ErrorCode initialize(const stringImpl& entryPoint, I32 argc, char** argv);
     void run();
-    void onLoop();
+    bool onLoop();
 
     inline void RequestShutdown();
     inline void CancelShutdown();

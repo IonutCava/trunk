@@ -250,7 +250,7 @@ DEFINE_SINGLETON(GFXDevice)
 
     void idle();
     void beginFrame();
-    void endFrame();
+    void endFrame(bool swapBuffers);
 
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D
     /// (Perspective) rendering

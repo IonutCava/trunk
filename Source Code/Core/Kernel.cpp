@@ -137,10 +137,9 @@ void Kernel::idle() {
     }
 }
 
-void Kernel::mainLoopApp() {
+void Kernel::onLoop() {
     if (!_timingData._keepAlive) {
         // exiting the rendering loop will return us to the last control point
-        // (i.e. Kernel::runLogicLoop)
         Application::getInstance().mainLoopActive(false);
         return;
     }
@@ -191,7 +190,7 @@ void Kernel::mainLoopApp() {
         _timingData._keepAlive = frameMgr.frameEvent(evt) && 
                                  _timingData._keepAlive;
     }
-    GFX_DEVICE.endFrame();
+    GFX_DEVICE.endFrame(APP.mainLoopActive());
 
     // Launch the FRAME_ENDED event (buffers have been swapped)
     frameMgr.createEvent(_timingData._currentTime,
@@ -223,8 +222,6 @@ void Kernel::mainLoopApp() {
                            to_float(s_appLoopTimer->get()),
                            _timingData._currentTime);
 #endif
-
-    APP.onLoop();
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt) {
@@ -353,8 +350,16 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
 
     return true;
 }
+// The first loops compiles all the visible data, so do not render the first couple of frames
+void Kernel::warmup() {
+    static const U8 warmupLoopCount = 3;
 
-void Kernel::firstLoop() {
+    Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
+    _timingData._nextGameTick = Time::ElapsedMicroseconds();
+    // lock the scene
+    GET_ACTIVE_SCENE().state().runningState(true);
+    _timingData._keepAlive = true;
+
     ParamHandler& par = ParamHandler::getInstance();
     bool shadowMappingEnabled = par.getParam<bool>(_ID("rendering.enableShadows"));
     // Skip two frames, one without and one with shadows, so all resources can
@@ -363,12 +368,17 @@ void Kernel::firstLoop() {
     par.setParam(_ID("freezeGUITime"), true);
     par.setParam(_ID("freezeLoopTime"), true);
     par.setParam(_ID("rendering.enableShadows"), false);
-    mainLoopApp();
+
+    onLoop();
     if (shadowMappingEnabled) {
         par.setParam(_ID("rendering.enableShadows"), true);
-        mainLoopApp();
+        onLoop();
     }
-    mainLoopApp();
+
+    for (U8 i = 0; i < std::max(warmupLoopCount - 3, 0); ++i) {
+        onLoop();
+    }
+
     par.setParam(_ID("freezeGUITime"), false);
     par.setParam(_ID("freezeLoopTime"), false);
 #if defined(_DEBUG) || defined(_PROFILE)
@@ -462,14 +472,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _cameraMgr->pushActiveCamera(_mainCamera);
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
+
     winManager.getActiveWindow().type(WindowType::SPLASH);
     // Load and render the splash screen
     _GFX.beginFrame();
     GUISplash("divideLogo.jpg", initRes[to_const_uint(WindowType::SPLASH)]).render();
-    _GFX.endFrame();
-    _APP.onLoop();
-    // Change window from splash screen to target type set on init()
-    winManager.getActiveWindow().previousType();
+    _GFX.endFrame(true);
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
     initError = _SFX.initAudioAPI();
@@ -516,25 +524,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
 
     return initError;
-}
-
-void Kernel::runLogicLoop() {
-    Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
-    _timingData._nextGameTick = Time::ElapsedMicroseconds();
-    // lock the scene
-    GET_ACTIVE_SCENE().state().runningState(true);
-    // The first loops compiles all the visible data, so do not render the first
-    // couple of frames
-    firstLoop();
-
-    _timingData._keepAlive = true;
-    _APP.mainLoopActive(true);
-    Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
-    while (_APP.mainLoopActive()) {
-        mainLoopApp();
-    }
-
-    shutdown();
 }
 
 void Kernel::shutdown() {

@@ -109,14 +109,16 @@ void GL_API::beginFrame() {
 }
 
 /// Finish rendering the current frame
-void GL_API::endFrame() {
+void GL_API::endFrame(bool swapBuffers) {
     DisplayWindow& win = Application::getInstance()
                          .getWindowManager()
                          .getActiveWindow();
     // Revert back to the default OpenGL states
     clearStates();
     // Swap buffers
-    SDL_GL_SwapWindow(win.getRawWindow());
+    if (swapBuffers) {
+        SDL_GL_SwapWindow(win.getRawWindow());
+    }
 
     // End the timing query started in beginFrame() in debug builds
 #ifdef _DEBUG

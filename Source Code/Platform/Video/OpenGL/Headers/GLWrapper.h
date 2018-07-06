@@ -118,7 +118,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Prepare the GPU for rendering a frame
     void beginFrame() override;
     /// Finish rendering the current frame
-    void endFrame() override;
+    void endFrame(bool swapBuffers) override;
     /// Create and return a new IM emulation primitive. The callee is responsible
     /// for it's deletion!
     IMPrimitive* newIMP(GFXDevice& context) const override;

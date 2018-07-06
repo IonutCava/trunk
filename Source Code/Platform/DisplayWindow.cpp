@@ -158,7 +158,7 @@ void DisplayWindow::update() {
     }
 
     if (_queuedType != WindowType::COUNT) {
-        handleChangeWindowType(_queuedType);
+        //handleChangeWindowType(_queuedType);
         _queuedType = WindowType::COUNT;
     }
 }

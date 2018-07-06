@@ -112,7 +112,7 @@ void Task::run() {
 
     Console::d_printfn(Locale::get(_ID("TASK_DELETE_THREAD")), getGUID(), std::this_thread::get_id());
 
-    if (_onCompletionCbk) {
+    if (_onCompletionCbk && !app.ShutdownRequested()) {
         _onCompletionCbk(getGUID());
     }
 

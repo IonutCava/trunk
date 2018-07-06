@@ -458,7 +458,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     /// Clear buffers, set default states, etc
     virtual void beginFrame() = 0;
     /// Clear shaders, restore active texture units, etc
-    virtual void endFrame() = 0;
+    virtual void endFrame(bool swapBuffers) = 0;
     virtual IMPrimitive* newIMP(GFXDevice& context) const = 0;
     virtual Framebuffer* newFB(GFXDevice& context, bool multisampled) const = 0;
     virtual VertexBuffer* newVB(GFXDevice& context) const = 0;

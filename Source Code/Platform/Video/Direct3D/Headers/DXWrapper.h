@@ -58,7 +58,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     bool makeTexturesResident(const TextureDataContainer& textureData) override;
     bool makeTextureResident(const TextureData& textureData) override;
     void beginFrame() override;
-    void endFrame() override;
+    void endFrame(bool swapBuffers) override;
 
     inline ShaderBuffer* newSB(GFXDevice& context,
                                const stringImpl& bufferName,

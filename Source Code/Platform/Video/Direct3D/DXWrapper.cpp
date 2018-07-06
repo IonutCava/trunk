@@ -36,7 +36,7 @@ bool DX_API::makeTextureResident(const TextureData& textureData) {
 
 void DX_API::beginFrame() {}
 
-void DX_API::endFrame() {}
+void DX_API::endFrame(bool swapBuffers) {}
 
 void DX_API::toggleDepthWrites(bool state) {}
 void DX_API::toggleRasterization(bool state) {}

@@ -73,7 +73,7 @@ struct LoopTimingData {
 };
 
 namespace Attorney {
-    class KernelScene;
+    class KernelApplication;
 };
     
 /// The kernel is the main interface to our engine components:
@@ -83,33 +83,27 @@ namespace Attorney {
 ///-scene manager
 ///-etc
 class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
-    friend class Attorney::KernelScene;
+    friend class Attorney::KernelApplication;
 
    public:
     Kernel(I32 argc, char** argv, Application& parentApp);
     ~Kernel();
 
-    ErrorCode initialize(const stringImpl& entryPoint);
-
-    void runLogicLoop();
     /// Our main application rendering loop.
     /// Call input requests, physics calculations, pre-rendering,
     /// rendering,post-rendering etc
-    static void mainLoopApp();
+    static void onLoop();
     /// Called after a swap-buffer call and before a clear-buffer call.
     /// In a GPU-bound application, the CPU will wait on the GPU to finish
     /// processing the frame
     /// so this should keep it busy (old-GLUT heritage)
     static void idle();
-    /// Update all engine components that depend on the current screen size
-    void onChangeWindowSize(U16 w, U16 h);
     GFXDevice& getGFXDevice() const { return _GFX; }
     SFXDevice& getSFXDevice() const { return _SFX; }
     PXDevice& getPXDevice() const { return _PFX; }
     
     CameraManager& getCameraMgr() { return *_cameraMgr; }
 
-    bool setCursorPosition(I32 x, I32 y) const;
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
     /// Key released
@@ -148,11 +142,15 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
         const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 
    private:
-    static void firstLoop();
+    ErrorCode initialize(const stringImpl& entryPoint);
+    void warmup();
     void shutdown();
     bool mainLoopScene(FrameEvent& evt);
     bool presentToScreen(FrameEvent& evt);
     void threadPoolCompleted(I64 onExitTaskID);
+    bool setCursorPosition(I32 x, I32 y) const;
+    /// Update all engine components that depend on the current screen size
+    void onChangeWindowSize(U16 w, U16 h);
 
    private:
     Application& _APP;
@@ -184,6 +182,37 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     I32 _argc;
     char** _argv;
 };
+
+namespace Attorney {
+    class KernelApplication {
+        static ErrorCode initialize(Kernel& kernel, const stringImpl& entryPoint) {
+            return kernel.initialize(entryPoint);
+        }
+
+        static void shutdown(Kernel& kernel) {
+            kernel.shutdown();
+        }
+
+        static bool setCursorPosition(Kernel& kernel, I32 x, I32 y) {
+            kernel.setCursorPosition(x, y);
+        }
+
+        static void onChangeWindowSize(Kernel& kernel, U16 w, U16 h) {
+            kernel.onChangeWindowSize(w, h);
+        }
+
+        static void warmup(Kernel& kernel) {
+            kernel.warmup();
+        }
+
+        static void onLoop(Kernel& kernel) {
+            kernel.onLoop();
+        }
+
+        friend class Divide::Application;
+    };
+};
+
 };  // namespace Divide
 
 #endif  //_CORE_KERNEL_H_

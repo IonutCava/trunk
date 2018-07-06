@@ -24,8 +24,8 @@ Application::Application() : _kernel(nullptr)
     MemoryManager::MemoryTracker::Ready = false; //< faster way of disabling memory tracking
 #endif
     _requestShutdown = false;
-    _mainLoopActive = false;
     _mainLoopPaused = false;
+    _mainLoopActive = false;
     _threadID = std::this_thread::get_id();
     _errorCode = ErrorCode::NO_ERR;
     ParamHandler::createInstance();
@@ -84,7 +84,7 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char**
     assert(_kernel.get() != nullptr);
 
     // and load it via an XML file config
-    ErrorCode err = _kernel->initialize(entryPoint);
+    ErrorCode err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
     if (err != ErrorCode::NO_ERR) {
         _kernel.reset(nullptr);
     }
@@ -93,20 +93,35 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char**
 }
 
 void Application::run() {
-    _kernel->runLogicLoop();
+    Kernel& kernel = *_kernel;
+    //Make sure we are displaying a splash screen
+    _windowManager.getActiveWindow().type(WindowType::SPLASH);
+    Attorney::KernelApplication::warmup(kernel);
+    //Restore to normal window
+    _windowManager.getActiveWindow().previousType();
+
+    Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
+
+    mainLoopActive(true);
+    while(onLoop()) {
+        Attorney::KernelApplication::onLoop(kernel);
+    }
+
+    Attorney::KernelApplication::shutdown(kernel);
 }
 
-void Application::onLoop() {
+bool Application::onLoop() {
     _windowManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
+    return mainLoopActive();
 }
 
 void Application::setCursorPosition(I32 x, I32 y) const {
     _windowManager.setCursorPosition(x, y);
-    _kernel->setCursorPosition(x, y);
+    Attorney::KernelApplication::setCursorPosition(*_kernel, x, y);
 }
 
 void Application::onChangeWindowSize(U16 w, U16 h) const {
-    _kernel->onChangeWindowSize(w, h);
+    Attorney::KernelApplication::onChangeWindowSize(*_kernel, w, h);
 }
 
 }; //namespace Divide

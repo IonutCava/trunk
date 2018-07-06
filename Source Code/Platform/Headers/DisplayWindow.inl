@@ -114,6 +114,7 @@ namespace Divide {
     inline void DisplayWindow::type(WindowType type) {
         if (type != _type) {
             _queuedType = type;
+            handleChangeWindowType(_queuedType);
         }
     }
 

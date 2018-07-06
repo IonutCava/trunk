@@ -25,13 +25,6 @@ namespace {
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
-    // Utility cameras
-    CameraManager& cameraMgr = Application::getInstance().getKernel().getCameraMgr();
-    _2DCamera = cameraMgr.createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
-    _2DCamera->lockView(true);
-    _cubeCamera = cameraMgr.createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
-    _dualParaboloidCamera = cameraMgr.createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
-
     g_shaderBuffersPerStageCount.fill(1);
     g_shaderBuffersPerStageCount[to_const_uint(RenderStage::REFLECTION)] = 6;
     g_shaderBuffersPerStageCount[to_const_uint(RenderStage::SHADOW)] = 6;
@@ -69,7 +62,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         }
     }
 
-    WindowManager& winManager = Application::getInstance().getWindowManager();
     // Initialize the shader manager
     ShaderManager::getInstance().init();
     // Create an immediate mode shader used for general purpose rendering (e.g.
@@ -110,8 +102,17 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         }
     }
 
+    WindowManager& winManager = Application::getInstance().getWindowManager();
     const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     setBaseViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
+
+    // Utility cameras
+    CameraManager& cameraMgr = Application::getInstance().getKernel().getCameraMgr();
+    _2DCamera = cameraMgr.createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
+    _2DCamera->setProjection(vec4<F32>(0.0f, to_float(resolution.width), 0.0f, to_float(resolution.height)), vec2<F32>(-1, 1));
+    _2DCamera->lockView(true);
+    _cubeCamera = cameraMgr.createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
+    _dualParaboloidCamera = cameraMgr.createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
 
     // Create general purpose render state blocks
     RenderStateBlock defaultState;
@@ -343,7 +344,7 @@ void GFXDevice::beginFrame() {
     setStateBlock(_defaultStateBlockHash);
 }
 
-void GFXDevice::endFrame() {
+void GFXDevice::endFrame(bool swapBuffers) {
     // Max number of frames before an unused primitive is recycled
     // (default: 180 - 3 seconds at 60 fps)
     static const I32 IN_MAX_FRAMES_RECYCLE_COUNT = 180;
@@ -352,55 +353,53 @@ void GFXDevice::endFrame() {
         IN_MAX_FRAMES_RECYCLE_COUNT *
         IN_MAX_FRAMES_RECYCLE_COUNT;
 
+    // Render all 2D debug info and call API specific flush function
     if (Application::getInstance().mainLoopActive()) {
-        // Render all 2D debug info and call API specific flush function
-        {
-            GFX::Scoped2DRendering scoped2D(true);
-            for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction :
-                _2dRenderQueue) {
-                callbackFunction.second();
-            }
+        GFX::Scoped2DRendering scoped2D(true);
+        for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction : _2dRenderQueue) {
+            callbackFunction.second();
         }
-
-        // Remove dead primitives in 4 steps
-        // 1) Partition the vector in 2 parts: valid objects first, zombie
-        // objects second
-        vectorImpl<IMPrimitive*>::iterator zombie = std::partition(
-            std::begin(_imInterfaces), std::end(_imInterfaces),
-            [](IMPrimitive* const priv) {
-            return priv->zombieCounter() < IM_MAX_FRAMES_ZOMBIE_COUNT;
-        });
-        // 2) For every zombie object, free the memory it's using
-        for (vectorImpl<IMPrimitive*>::iterator i = zombie;
-             i != std::end(_imInterfaces); ++i) {
-            MemoryManager::DELETE(*i);
-        }
-        // 3) Remove all the zombie objects once the memory is freed
-        _imInterfaces.erase(zombie, std::end(_imInterfaces));
-        // 4) Increment the zombie counter (if allowed) for the remaining primitives
-        std::for_each(
-            std::begin(_imInterfaces), std::end(_imInterfaces),
-            [](IMPrimitive* primitive) -> void {
-            if (primitive->_canZombify && primitive->inUse()) {
-                // The zombie counter should always be reset on draw!
-                primitive->zombieCounter(primitive->zombieCounter() + 1);
-                // If the primitive wasn't used in a while, it may not be in use
-                // so we should recycle it.
-                if (primitive->zombieCounter() > IN_MAX_FRAMES_RECYCLE_COUNT) {
-                    primitive->inUse(false);
-                }
-            }
-        });
-
-        FRAME_COUNT++;
-        FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-        FRAME_DRAW_CALLS = 0;
     }
+
+    // Remove dead primitives in 4 steps
+    // 1) Partition the vector in 2 parts: valid objects first, zombie
+    // objects second
+    vectorImpl<IMPrimitive*>::iterator zombie = std::partition(
+        std::begin(_imInterfaces), std::end(_imInterfaces),
+        [](IMPrimitive* const priv) {
+        return priv->zombieCounter() < IM_MAX_FRAMES_ZOMBIE_COUNT;
+    });
+    // 2) For every zombie object, free the memory it's using
+    for (vectorImpl<IMPrimitive*>::iterator i = zombie;
+            i != std::end(_imInterfaces); ++i) {
+        MemoryManager::DELETE(*i);
+    }
+    // 3) Remove all the zombie objects once the memory is freed
+    _imInterfaces.erase(zombie, std::end(_imInterfaces));
+    // 4) Increment the zombie counter (if allowed) for the remaining primitives
+    std::for_each(
+        std::begin(_imInterfaces), std::end(_imInterfaces),
+        [](IMPrimitive* primitive) -> void {
+        if (primitive->_canZombify && primitive->inUse()) {
+            // The zombie counter should always be reset on draw!
+            primitive->zombieCounter(primitive->zombieCounter() + 1);
+            // If the primitive wasn't used in a while, it may not be in use
+            // so we should recycle it.
+            if (primitive->zombieCounter() > IN_MAX_FRAMES_RECYCLE_COUNT) {
+                primitive->inUse(false);
+            }
+        }
+    });
+
+    FRAME_COUNT++;
+    FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
+    FRAME_DRAW_CALLS = 0;
+    
     // Activate the default render states
     setStateBlock(_defaultStateBlockHash);
     // Unbind shaders
     ShaderManager::getInstance().unbind();
-    _api->endFrame();
+    _api->endFrame(swapBuffers);
 }
 
 ErrorCode GFXDevice::createAPIInstance() {
