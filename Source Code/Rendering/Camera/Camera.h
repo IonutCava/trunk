@@ -22,6 +22,7 @@
 #include "Utility/Headers/BaseClasses.h"
 
 class vec3;
+
 class Camera : public Resource
 {
 
@@ -45,7 +46,7 @@ protected:
 
 public:
 	Camera();
-	virtual ~Camera() {unload();}
+	virtual ~Camera() {}
 	inline TYPE  getType()				const	{return eType;}
 	inline const vec3& getEye()			const	{return vEye;}
 	inline const vec3& getCenter()		const	{return vCenter;}

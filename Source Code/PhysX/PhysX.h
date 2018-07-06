@@ -21,22 +21,26 @@
 #include "resource.h"
 
 //PhysX includes
-#include <pxphysicsapi.h>
-#include <pxdefaulterrorcallback.h>
-#include <pxdefaultallocator.h>
+#include < PxPhysicsAPI.h> 
+#include < PxExtensionsAPI.h>
+#include < PxDefaultErrorCallback.h>
+#include < PxDefaultAllocator.h>
+#include < PxDefaultSimulationFilterShader.h>
+#include < PxDefaultCpuDispatcher.h>
+#include < PxShapeExt.h>
+#include < PxMat33Legacy.h> 
+#include < PxSimpleFactory.h>
 //PhysX includes //
-
 
 //PhysX libraries
 #pragma comment(lib, "PhysX3_x86.lib")
-#pragma comment(lib, "Foundation")
+#pragma comment(lib, "PxTask.lib")
+#pragma comment(lib, "Foundation.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
+#pragma comment(lib, "GeomUtils.lib") 
 //PhysX libraries //
 
-static physx::PxPhysics* gPhysicsSDK = NULL;
-static physx::PxDefaultErrorCallback gDefaultErrorCallback;
-static physx::PxDefaultAllocator gDefaultAllocatorCallback;
-
+class PhysXSceneInterface;
 DEFINE_SINGLETON( PhysX )
 
 private:
@@ -45,9 +49,27 @@ private:
 
 public:
 	
-   bool InitNx();  
-   void ExitNx(); 
+   bool initNx();  
+   bool exitNx(); 
+   void update();
+   void process();
    void idle();
+
+//Default Shapes:
+   bool createPlane(PhysXSceneInterface* targetScene, vec3& position = vec3(0,0,0), F32 size = -1);
+   bool createBox(PhysXSceneInterface* targetScene, vec3& position = vec3(0,0,0), F32 size = 1);
+
+   void registerActiveScene(PhysXSceneInterface* activeScene) {_currentScene = activeScene;}
+   physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
+   const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}
+
+private:
+	PhysXSceneInterface* _currentScene;
+	physx::PxPhysics* _gPhysicsSDK ;
+	physx::PxDefaultErrorCallback _gDefaultErrorCallback;
+	physx::PxDefaultAllocator _gDefaultAllocatorCallback;
+	physx::PxSimulationFilterShader _gDefaultFilterShader;
+	boost::mutex _physxMutex;
 
 END_SINGLETON
 

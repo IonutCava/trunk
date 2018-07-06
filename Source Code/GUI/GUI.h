@@ -102,6 +102,7 @@ public:
      void onMouseMove(const GuiEvent &event);
      void onMouseUp(const GuiEvent &event);
      void onMouseDown(const GuiEvent &event);
+	 void onResize(const vec2& newSize){}
 /*   void onRightMouseUp(const GuiEvent &event);
      void onRightMouseDown(const GuiEvent &event);
      bool onKeyUp(const GuiEvent &event);

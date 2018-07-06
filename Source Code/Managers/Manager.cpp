@@ -1,8 +1,8 @@
 #include "Manager.h"
 using namespace std;
 
-
-void Manager::add(const string& name, Resource* res){
+void Manager::add(const std::string& name, Resource* const res){
+	boost::lock_guard<boost::mutex> lock(_managerMutex);
 	std::pair<ResourceMap::iterator, bool > result = _resDB.insert(make_pair(name,res));
 	if(!result.second){
 		remove((result.first)->second);
@@ -12,51 +12,49 @@ void Manager::add(const string& name, Resource* res){
 }
 
 void Manager::Destroy(){
-	for_each(ResourceMap::value_type iter, _resDB){
-		if(iter.second){
-			iter.second->unload();
-			delete iter.second;
-			iter.second = NULL;
-		}
+	ResourceMap::iterator& it = _resDB.begin();
+	for_each(ResourceMap::value_type& it, _resDB){
+		remove(it.second, true);
 	}
 	_resDB.clear();
 }
 
-Resource* Manager::find(const string& name){
+Resource* const Manager::find(const string& name){
+
 	ResourceMap::iterator resDBiter = _resDB.find(name);
-	if(resDBiter != _resDB.end())
+	if(resDBiter != _resDB.end()){
 		return resDBiter->second;
-	else
-		return NULL;
+	}
+	return NULL;
 }
 
-bool Manager::remove(Resource* res, bool force){
-	if(!res){
+bool Manager::remove(Resource* const resource,bool force){
+	if(!resource){
 		Console::getInstance().errorfn("ResourceManager: Trying to remove NULL resource!");
-		return false;
+		return true; //delete pointer
 	}
-	string name(res->getName());
+	string name(resource->getName());
 	if(name.empty()){
 		Console::getInstance().errorfn("ResourceManager: Trying to remove resource with invalid name!");
-		return false;
+		return true; //delete pointer
 	}
-	if(_resDB.find(name) != _resDB.end()){
-		if(res->getRefCount() > 1 && !force) {
-			res->removeCopy();
-			Console::getInstance().printfn("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),res->getRefCount());
-			return false;
+
+	if(find(name)){
+		if(resource->getRefCount() > 1 && !force) {
+			resource->removeCopy();
+			Console::getInstance().printfn("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),resource->getRefCount());
+			return false; //do not delete pointer
 		}else{
 			Console::getInstance().printfn("Removing resource: [ %s ].",name.c_str());
-			if(res->unload()){
-				_resDB.erase(name);
+			if(resource->unload()){
 				return true;
 			}else{
 				Console::getInstance().errorfn("Resource [ %s ] not unloaded succesfully!", name.c_str());
-				return false;
+				return force;
 			}
 		}
 	}
-
+	
 	Console::getInstance().errorfn("ResourceManager: resource [ %s ] not found in database!",name.c_str());
-	return false;
+	return force;
 }

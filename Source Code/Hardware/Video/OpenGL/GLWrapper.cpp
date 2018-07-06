@@ -432,7 +432,7 @@ void GL_API::setRenderState(RenderState& state,bool force){
 		state.lightingEnabled() ? GLCheck(glEnable(GL_LIGHTING)) : GLCheck(glDisable(GL_LIGHTING));
 	}
 	if(_currentRenderState.cullingEnabled() != state.cullingEnabled() || force){
-		state.cullingEnabled() ?  GLCheck(glEnable(GL_CULL_FACE)) :	GLCheck(glDisable(GL_CULL_FACE));
+		state.cullingEnabled() ?  /*GLCheck(*/glEnable(GL_CULL_FACE)/*)*/ :	/*GLCheck(*/glDisable(GL_CULL_FACE)/*)*/;
 	}
 	if(_currentRenderState.texturesEnabled() != state.texturesEnabled() || force){
 		state.texturesEnabled() ? GLCheck(glEnable(GL_TEXTURE_2D)) : GLCheck(glDisable(GL_TEXTURE_2D));
@@ -624,15 +624,22 @@ void GL_API::renderElements(Type t, Format f, U32 count, const void* first_eleme
 	glDrawElements(t, count, format, first_element );
 }
 
-void GL_API::toggle2D(bool _2D){
+bool _depthTestWasEnabled = false;
+void GL_API::toggle2D(bool state){
 	
-	if(_2D)
-	{
+	if(state){
 		F32 width = Application::getInstance().getWindowDimensions().width;
 		F32 height = Application::getInstance().getWindowDimensions().height;
-		/*GLCheck(*/glDisable(GL_DEPTH_TEST)/*)*/;
+		if(glIsEnabled(GL_DEPTH_TEST) == GL_TRUE){
+			_depthTestWasEnabled = true;
+			GLCheck(glDisable(GL_DEPTH_TEST));
+		}else{
+			_depthTestWasEnabled = false;
+		}
 		GLCheck(glDisable(GL_LIGHTING));
-		if(GFXDevice::getInstance().getDepthMapRendering()) glCullFace(GL_BACK);
+		if(GFXDevice::getInstance().getDepthMapRendering()){
+			GLCheck(glCullFace(GL_BACK));
+		}
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
@@ -642,16 +649,19 @@ void GL_API::toggle2D(bool _2D){
 		glPushMatrix(); //2
 		glLoadIdentity();
 
+	}else{
 
-	}
-	else
-	{
 		glPopMatrix(); //2 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
 		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
-		if(GFXDevice::getInstance().getDepthMapRendering()) glCullFace(GL_FRONT);
-		GLCheck(glEnable(GL_DEPTH_TEST));
+		if(GFXDevice::getInstance().getDepthMapRendering()){
+			GLCheck(glCullFace(GL_FRONT));
+		}
+		if(glIsEnabled(GL_DEPTH_TEST) == GL_FALSE && _depthTestWasEnabled){
+				//GLCheck(glEnable(GL_DEPTH_TEST));
+			glEnable(GL_DEPTH_TEST);
+		}
 	}
 }
 

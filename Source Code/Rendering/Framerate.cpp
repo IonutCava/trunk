@@ -24,7 +24,7 @@ void Framerate::Init(F32 tfps){
 }
 
 void Framerate::SetSpeedFactor(){
-
+	boost::mutex::scoped_lock lock(_speedLockMutex); 
 #if defined( __WIN32__ ) || defined( _WIN32 )
 	 QueryPerformanceCounter(&_currentticks);
 #elif defined( __APPLE_CC__ ) // Apple OS X

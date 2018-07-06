@@ -2,9 +2,9 @@
 	<name>defaultMaterial</name>
 	<diffuse r="0.6" g="0.6" b="0.6" a="1"/>
 	<ambient r="0.6" g="0.6" b="0.6" a="1"/>
-	<specular r="1" g="1" b="1" a="1"/>
+	<specular r="0" g="0" b="0" a="0"/>
 	<emissive r="0" g="0" b="0"/>
-	<shininess v="50"/>
+	<shininess v="10"/>
 </material>
 
 <!--
@@ -39,6 +39,6 @@
 -->
 
 <shader>
-	<pixelShader>none</pixelShader>
-	<vertexShader>none</vertexShader>
+	<pixelShader>lighting.frag</pixelShader>
+	<vertexShader>lighting.vert</vertexShader>
 </shader>

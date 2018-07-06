@@ -355,6 +355,15 @@
     <ClCompile Include="..\..\Source Code\Scenes\AITenisSceneAIActionList.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\PhysX\PhysXSceneInterface.cpp">
+      <Filter>PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXImplementation.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXScene.cpp">
+      <Filter>Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Framerate.h">
@@ -713,6 +722,15 @@
       <Filter>AI\Sensors</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\AITenisSceneAIActionList.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\PhysX\PhysXSceneInterface.h">
+      <Filter>PhysX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXImplementation.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXScene.h">
       <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>

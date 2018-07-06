@@ -57,7 +57,7 @@ T* ResourceManager::loadResource(const ResourceDescriptor& descriptor){
 
 		if(!ptr->load(descriptor.getName())) return NULL;
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 
 	return ptr;
@@ -75,8 +75,7 @@ Terrain* ResourceManager::loadResource<Terrain>(const ResourceDescriptor& descri
 
 		if(!ptr->load(descriptor.getName())) return NULL;
 
-		ptr->setName(descriptor.getName());
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 
 	return ptr;
@@ -92,11 +91,10 @@ WaterPlane* ResourceManager::loadResource<WaterPlane>(const ResourceDescriptor& 
 		ptr = New WaterPlane();
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
-		ptr->setName(descriptor.getName());
 		ptr->useDefaultMaterial(false);
 		ptr->setMaterial(NULL);
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 
 	return ptr;
@@ -110,7 +108,6 @@ Texture* ResourceManager::loadResource<Texture>(const ResourceDescriptor& descri
 	string it;
 	I8 i = 0;
 	while(std::getline(ss, it, ' ')) i++;
-
 	if(!ptr){
 		if(i == 6)
 			ptr = GFXDevice::getInstance().newTextureCubemap(descriptor.getFlag());
@@ -126,9 +123,7 @@ Texture* ResourceManager::loadResource<Texture>(const ResourceDescriptor& descri
 			return NULL;
 		}
 
-		ptr->setName(descriptor.getName());
-
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -148,9 +143,8 @@ Shader* ResourceManager::loadResource<Shader>(const ResourceDescriptor& descript
 
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
-		ptr->setName(descriptor.getName());
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 
 	return ptr;
@@ -168,9 +162,8 @@ Material* ResourceManager::loadResource<Material>(const ResourceDescriptor& desc
 		if(descriptor.getFlag()) {
 			ptr->setShader("");
 		}
-		ptr->setName(descriptor.getName());
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -188,10 +181,9 @@ Mesh* ResourceManager::loadResource<Mesh>(const ResourceDescriptor& descriptor){
 			ptr->useDefaultMaterial(false);
 			ptr->setMaterial(NULL);
 		}
-		ptr->setName(descriptor.getName());
 		ptr->setResourceLocation(descriptor.getResourceLocation());
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -207,9 +199,8 @@ SubMesh* ResourceManager::loadResource<SubMesh>(const ResourceDescriptor& descri
 			ptr->useDefaultMaterial(false);
 			ptr->setMaterial(NULL);
 		}
-		ptr->setName(descriptor.getName());
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -227,7 +218,7 @@ Light* ResourceManager::loadResource<Light>(const ResourceDescriptor& descriptor
 		if(!ptr->load(descriptor.getName())) return NULL;
 		ptr->useDefaultMaterial(false);
 		ptr->setMaterial(NULL);
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -246,7 +237,7 @@ AudioDescriptor* ResourceManager::loadResource<AudioDescriptor>(const ResourceDe
 
 		ptr->isLooping() = descriptor.getFlag();
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -263,7 +254,7 @@ TerrainDescriptor* ResourceManager::loadResource<TerrainDescriptor>(const Resour
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
 
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -279,14 +270,13 @@ Box3D* ResourceManager::loadResource<Box3D>(const ResourceDescriptor& descriptor
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
 
-		ptr->setName(descriptor.getName());
 
 		if(descriptor.getFlag()){
 			ptr->useDefaultMaterial(false);
 			ptr->setMaterial(NULL);
 		}
 		
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -303,14 +293,13 @@ Sphere3D* ResourceManager::loadResource<Sphere3D>(const ResourceDescriptor& desc
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
 
-		ptr->setName(descriptor.getName());
 
 		if(descriptor.getFlag()){
 			ptr->useDefaultMaterial(false);
 			ptr->setMaterial(NULL);
 		}
 		
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -327,14 +316,13 @@ Text3D* ResourceManager::loadResource<Text3D>(const ResourceDescriptor& descript
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
 		
-		ptr->setName(descriptor.getName());
 
 		if(descriptor.getFlag()){
 			ptr->useDefaultMaterial(false);
 			ptr->setMaterial(NULL);
 		}
 		
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 	return ptr;
 }
@@ -350,151 +338,32 @@ Quad3D* ResourceManager::loadResource<Quad3D>(const ResourceDescriptor& descript
 		if(!ptr) return NULL;
 		if(!ptr->load(descriptor.getName())) return NULL;
 
-		ptr->setName(descriptor.getName());
-
 		if(descriptor.getFlag()){
 			ptr->useDefaultMaterial(false);
 			ptr->setMaterial(NULL);
 		}
-
-		_resDB.insert(make_pair(descriptor.getName(),ptr));
+		add(descriptor.getName(),ptr);
 	}
 
 	return ptr;
 }
 
-Resource* ResourceManager::loadResource(const string& name)
-{
+void ResourceManager::add(const std::string& name,Resource* const res){
+	boost::lock_guard<boost::mutex> lock(_creationMutex);
+	res->setName(name);
+	_resDB.insert(make_pair(name,res));
+}
+
+Resource* ResourceManager::loadResource(const string& name){
+	boost::lock_guard<boost::mutex> lock(_creationMutex);
+	Resource* value = NULL;
 	if(_resDB.find(name) != _resDB.end()){
-		_resDB[name]->createCopy(); 
-		Console::getInstance().printf("ResourceManager: returning resource [ %s ]. Ref count: %d\n",name.c_str(),_resDB[name]->getRefCount());
-		return _resDB[name];
+		value = _resDB[name];
+		value->createCopy(); 
+		Console::getInstance().printf("ResourceManager: returning resource [ %s ]. Ref count: %d\n",name.c_str(),value->getRefCount());
 	}else{
 		Console::getInstance().printf("ResourceManager: loading resource [ %s ]\n",name.c_str());
-		return NULL;
 	}
+	return value;
 }
 
-template <typename T>
-void ResourceManager::removeResource(T*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(SceneNode*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(Shader*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(Texture*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(Object3D*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(Sphere3D*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(Quad3D*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(Box3D*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(Text3D*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-template <>
-void ResourceManager::removeResource(Mesh*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(SubMesh*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-template <>
-void ResourceManager::removeResource(Material*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(AudioDescriptor*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}
-
-template <>
-void ResourceManager::removeResource(TerrainDescriptor*& res,bool force){
-	if(Manager::remove(res,force)){
-		delete res;	
-		res = NULL;
-		assert(!res);
-	}
-}

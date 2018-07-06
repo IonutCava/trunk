@@ -28,7 +28,9 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 
 PostFX::~PostFX(){
 	ParamHandler& par = ParamHandler::getInstance();
-	RemoveResource(_underwaterTexture);
+	if(_underwaterTexture){
+		RemoveResource(_underwaterTexture);
+	}
 	if(_screenFBO){
 		delete _screenFBO;
 		_screenFBO = NULL;
@@ -143,7 +145,7 @@ void PostFX::init(){
 	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
 	ResourceDescriptor textureWaterCaustics("Underwater Caustics");
 	textureWaterCaustics.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
-	_underwaterTexture = ResourceManager::getInstance().loadResource<Texture>(textureWaterCaustics);
+	_underwaterTexture = ResourceManager::getInstance().loadResource<Texture2D>(textureWaterCaustics);
 	_timer = 0;
 	_tickInterval = 1.0f/24.0f;
 	_randomNoiseCoefficient = 0;
@@ -269,8 +271,10 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		_postProcessingShader->Uniform("enable_underwater",underwater);	
 
 		if(underwater){
-			_underwaterTexture->Bind(id);
-			_postProcessingShader->UniformTexture("texWaterNoiseNM", id++);
+			if(_underwaterTexture){
+				_underwaterTexture->Bind(id);
+				_postProcessingShader->UniformTexture("texWaterNoiseNM", id++);
+			}
 			_postProcessingShader->Uniform("screnWidth", Application::getInstance().getWindowDimensions().width);
 			_postProcessingShader->Uniform("screnHeight", Application::getInstance().getWindowDimensions().height);
 			_postProcessingShader->Uniform("noise_tile", 0.05f);
@@ -307,7 +311,7 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 			_bloomFBO->Unbind(--id);
 		}
 
-		if(underwater){
+		if(underwater && _underwaterTexture){
 			_underwaterTexture->Unbind(--id);
 		}
 

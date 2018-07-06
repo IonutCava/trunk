@@ -12,7 +12,7 @@ bool Mesh::load(const string& name){
 void Mesh::removeCopy(){
 	SceneNode::removeCopy();
 	//Removing a SceneGraphNode removes it's children. For a mesh, the children are the SubMeshes
-	//for_each(std::vector<std::string  >::value_type it, _subMeshes){
+	//for_each(std::string& it, _subMeshes){
 	//	Resource* s = ResourceManager::getInstance().find(it);
 	//	if(s) s->removeCopy();
 	//}
@@ -20,7 +20,7 @@ void Mesh::removeCopy(){
 
 void Mesh::createCopy(){
 	SceneNode::createCopy();
-	for_each(std::vector<std::string  >::value_type it, _subMeshes){
+	for_each(std::string& it, _subMeshes){
 		Resource* s = ResourceManager::getInstance().find(it);
 		if(s) s->createCopy();
 	}
@@ -30,7 +30,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode* node){
 	BoundingBox& bb = node->getBoundingBox();
 	if(bb.isComputed()) return true;
 	bb.set(vec3(100000.0f, 100000.0f, 100000.0f),vec3(-100000.0f, -100000.0f, -100000.0f));
-	for_each(childrenNodes::value_type it, node->getChildren()){
+	for_each(childrenNodes::value_type& it, node->getChildren()){
 		it.second->getBoundingBox().Transform(it.second->getInitialBoundingBox(), it.second->getTransform()->getMatrix());
 		bb.Add(it.second->getBoundingBox());
 	}
@@ -38,7 +38,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode* node){
 }
 
 void Mesh::postLoad(SceneGraphNode* node){
-	for_each(std::vector<std::string  >::value_type it, _subMeshes){
+	for_each(std::string& it, _subMeshes){
 		ResourceDescriptor subMesh(it);
 		SubMesh* s = dynamic_cast<SubMesh*>(ResourceManager::getInstance().find(it));
 		if(!s) continue;

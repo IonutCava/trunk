@@ -26,7 +26,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 
 SceneGraphNode::~SceneGraphNode(){
 	//Then delete them
-	for_each(NodeChildren::value_type it, _children){
+	for_each(NodeChildren::value_type& it, _children){
 		delete it.second;
 		it.second = NULL;
 	}
@@ -38,7 +38,7 @@ SceneGraphNode::~SceneGraphNode(){
 }
 
 bool SceneGraphNode::unload(){
-	for_each(NodeChildren::value_type it, _children){
+	for_each(NodeChildren::value_type& it, _children){
 		it.second->unload();
 	}
 	if(!_silentDispose && getParent() && _node){
@@ -69,7 +69,7 @@ void SceneGraphNode::print(){
 		}
 	}
 	Console::getInstance().printfn("%s (Resource: %s, Material: %s (Shader: %s) )", getName().c_str(),getNode()->getName().c_str(),material.c_str(),shader.c_str());
-	for_each(NodeChildren::value_type it, _children){
+	for_each(NodeChildren::value_type& it, _children){
 		for(U8 j = 0; j < i; j++){
 			Console::getInstance().printf("-");
 		}
@@ -170,7 +170,7 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 void SceneGraphNode::updateTransformsAndBounds(){
 	//if(GETMSTIME() - _updateTimer  < 10) return; //update every ten milliseconds
 	//Update from leafs to root:
-	for_each(NodeChildren::value_type &it, _children){
+	for_each(NodeChildren::value_type& it, _children){
 		it.second->updateTransformsAndBounds();
 	}
 	if(!getParent()) return; // don't update root;
@@ -219,7 +219,7 @@ void SceneGraphNode::updateVisualInformation(){
 		}
 	}
 
-	for_each(NodeChildren::value_type &it, _children){
+	for_each(NodeChildren::value_type& it, _children){
 		it.second->updateVisualInformation();
 	}
 }

@@ -15,14 +15,11 @@ void Guardian::LoadApplication(const string& entryPoint){
 	Framerate::getInstance().Init(60);
 	Console::getInstance().printCopyrightNotice();
 	Console::getInstance().printfn("Starting the application!");
+	//Initialize application window and hardware devices
 	XML::loadScripts(entryPoint); //ToDo: This should be moved in each scene constructor! - Ionut Cava
-	
+	app.Initialize();
 	LoadSettings(); //ToDo: This should be moved up so that it is the first instruction Guardian executes! - Ionut Cava
 	Console::getInstance().printfn("Initializing the rendering engine");
-	
-	//Initialize application window and hardware devices
-	app.Initialize();
-
 	SceneManager::getInstance().load(string(""));
 	Console::getInstance().printfn("Initial data loaded ... ");
 	Console::getInstance().printfn("Entering main rendering loop ...");
@@ -42,16 +39,13 @@ void Guardian::ReloadEngine(){
 }
 
 void Guardian::TerminateApplication(){
-	//if(_closing) return;
-	//_closing = true;
+
 	Console::getInstance().printfn("Closing application!");
 	PostFX::getInstance().DestroyInstance();
-
+	PhysX::getInstance().exitNx();
 	SceneManager::getInstance().DestroyInstance();
 	ResourceManager::getInstance().DestroyInstance();
-
 	Console::getInstance().printfn("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
-	PhysX::getInstance().ExitNx();
 	GFXDevice::getInstance().closeRenderingApi();
 	GFXDevice::getInstance().DestroyInstance();
 	SFXDevice::getInstance().closeAudioApi();
@@ -65,7 +59,7 @@ void Guardian::LoadSettings()
     
 	string mem = par.getParam<string>("memFile");
 	string log = par.getParam<string>("logFile");
-
+	XML::loadMaterialXML(par.getParam<string>("scriptLocation")+"/defaultMaterial");
 	if(mem.compare("none") != 0) myfile.open(mem.c_str());
 	else myfile.open("mem.log");
 

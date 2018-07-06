@@ -25,18 +25,26 @@ class Texture;
 typedef Texture Texture2D;
 typedef Texture TextureCubemap;
 
+template<class T>void RemoveResource(T*& resource, bool force = false){
+	if(ResourceManager::getInstance().remove(resource,force)){
+		ResourceManager::getInstance().eraseEntry(resource->getName());
+		delete resource;
+		resource = NULL;
+	}
+}
+
 DEFINE_SINGLETON_EXT1( ResourceManager,Manager )
 
 public:
 	template<class T>
 	T* loadResource(const ResourceDescriptor& descriptor);
-	template<class T>
-	void removeResource(T*& res,bool force = false);
+	virtual void add(const std::string& name, Resource* const resource);
 
 protected:
 	Resource* loadResource(const std::string& name);
-
+	boost::mutex _creationMutex;
 	~ResourceManager();
+
 END_SINGLETON
 
 #endif

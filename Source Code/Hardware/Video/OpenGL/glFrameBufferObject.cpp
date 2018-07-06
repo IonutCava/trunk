@@ -5,19 +5,19 @@
 
 glFrameBufferObject::glFrameBufferObject() {
 	if(!glewIsSupported("glBindFramebuffer")){
-		glBindFramebuffer = GLEW_GET_FUN(__glewBindFramebufferEXT);
-		glDeleteFramebuffers = GLEW_GET_FUN(__glewDeleteFramebuffersEXT);
-		glFramebufferTexture2D = GLEW_GET_FUN(__glewFramebufferTexture2DEXT);
-		glGenFramebuffers   = GLEW_GET_FUN(__glewGenFramebuffersEXT);
-		glCheckFramebufferStatus = GLEW_GET_FUN(__glewCheckFramebufferStatusEXT);
+		glBindFramebuffer = GLEW_GET_FUN(__glewBindFramebuffer);
+		glDeleteFramebuffers = GLEW_GET_FUN(__glewDeleteFramebuffers);
+		glFramebufferTexture2D = GLEW_GET_FUN(__glewFramebufferTexture2D);
+		glGenFramebuffers   = GLEW_GET_FUN(__glewGenFramebuffers);
+		glCheckFramebufferStatus = GLEW_GET_FUN(__glewCheckFramebufferStatus);
 	}
 
 	if(!glewIsSupported("glBindRenderbuffer")) {
-		glDeleteRenderbuffers = GLEW_GET_FUN(__glewDeleteRenderbuffersEXT);
-		glGenRenderbuffers = GLEW_GET_FUN(__glewGenRenderbuffersEXT);
-		glBindRenderbuffer = GLEW_GET_FUN(__glewBindRenderbufferEXT);
-		glRenderbufferStorage = GLEW_GET_FUN(__glewRenderbufferStorageEXT);
-		glFramebufferRenderbuffer = GLEW_GET_FUN(__glewFramebufferRenderbufferEXT);
+		glDeleteRenderbuffers = GLEW_GET_FUN(__glewDeleteRenderbuffers);
+		glGenRenderbuffers = GLEW_GET_FUN(__glewGenRenderbuffers);
+		glBindRenderbuffer = GLEW_GET_FUN(__glewBindRenderbuffer);
+		glRenderbufferStorage = GLEW_GET_FUN(__glewRenderbufferStorage);
+		glFramebufferRenderbuffer = GLEW_GET_FUN(__glewFramebufferRenderbuffer);
 	}
 
 	_frameBufferHandle=0;
@@ -82,7 +82,8 @@ void glFrameBufferObject::Begin(U8 nFace) const {
 void glFrameBufferObject::End(U8 nFace) const {
 	assert(nFace<6);
 	if(_useFBO) {
-		GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+		//GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	else {
         GLCheck(glBindTexture(_textureType, _textureId[0]));
@@ -91,7 +92,7 @@ void glFrameBufferObject::End(U8 nFace) const {
 
         GLCheck(glPopAttrib());	//Color and Pixel Mode bits
 	}
-	GLCheck(glPopAttrib());//Viewport Bit
+	/*GLCheck(*/glPopAttrib()/*)*/;//Viewport Bit
 }
 
 void glFrameBufferObject::Bind(U8 unit, U8 texture) {
@@ -104,7 +105,7 @@ void glFrameBufferObject::Bind(U8 unit, U8 texture) {
 
 void glFrameBufferObject::Unbind(U8 unit) {
 	//if(!_bound) return; //If it's already bound on any slot, including this one
-	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
+	/*GLCheck(*/glActiveTexture(GL_TEXTURE0 + unit)/*)*/;
 	GLCheck(glBindTexture(_textureType, 0 ));
 	GLCheck(glDisable(_textureType));
 	_bound = false;

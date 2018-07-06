@@ -29,8 +29,7 @@ typedef unordered_map<std::string, boost::any> ParamMap;
 public:
 
 	template <class T>	
-	T getParam(const std::string& name)
-	{
+	T getParam(const std::string& name){
 		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
@@ -40,9 +39,8 @@ public:
 	}
 
 	template<>
-	F32 getParam<F32>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	F32 getParam<F32>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
 		if(it != _params.end()){
 			try	{
@@ -56,14 +54,12 @@ public:
 				}
 				
 			}
-		}
-		else return 0;
+		}else return 0;
 	}
 
 	template<>
-	D32 getParam<D32>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	D32 getParam<D32>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
 		if(it != _params.end())	{
 			try{
@@ -75,17 +71,14 @@ public:
 					return 0;
 				}
 			}
-		}
-		else return 0;
+		}else return 0;
 	}
 
 	template<>
-	U8 getParam<U8>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	U8 getParam<U8>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<U8>(it->second);
@@ -95,17 +88,14 @@ public:
 				Console::getInstance().printfn("ParamHandler: error casting [ %s ] to U8",name.c_str());
 				return 0;
 			}
-		}
-		else return 0;
+		}else return 0;
 	}
 
 	template<>
-	U16 getParam<U16>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	U16 getParam<U16>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<U16>(it->second);
@@ -115,17 +105,14 @@ public:
 				Console::getInstance().printfn("ParamHandler: error casting [ %s ] to U16",name.c_str());
 				return 0;
 			}
-		}
-		else return 0;
+		}else return 0;
 	}
 
 	template<>
-	U32 getParam<U32>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	U32 getParam<U32>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<U32>(it->second);
@@ -135,17 +122,14 @@ public:
 				Console::getInstance().printfn("ParamHandler: error casting [ %s ] to U32",name.c_str());
 				return 0;
 			}
-		}
-		else return 0;
+		}else return 0;
 	}
 
 		template<>
-	I8 getParam<I8>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	I8 getParam<I8>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<I8>(it->second);
@@ -154,17 +138,14 @@ public:
 			{
 				return 0;
 			}
-		}
-		else return 0;
+		}else return 0;
 	}
 
 	template<>
-	I16 getParam<I16>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	I16 getParam<I16>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<I16>(it->second);
@@ -173,17 +154,14 @@ public:
 			{
 				return 0;
 			}
-		}
-		else return 0;
+		}	else return 0;
 	}
 
 	template<>
-	I32 getParam<I32>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	I32 getParam<I32>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<I32>(it->second);
@@ -192,17 +170,14 @@ public:
 			{
 				return 0;
 			}
-		}
-		else return 0;
+		}else return 0;
 	}
 
 	template<>
-	bool getParam<bool>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	bool getParam<bool>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<bool>(it->second);
@@ -211,17 +186,14 @@ public:
 			{
 				return false;
 			}
-		}
-		else return false;
+		}else return false;
 	}
 
 	template<>
-	const char* getParam<const char*>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	const char* getParam<const char*>(const std::string& name){
+		boost::mutex::scoped_lock  lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<const char*>(it->second);
@@ -235,12 +207,11 @@ public:
 	}
 
 	template<>
-	std::string getParam<std::string>(const std::string& name)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	std::string getParam<std::string>(const std::string& name){
+		_mutex.lock();
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
+		_mutex.unlock();
+		if(it != _params.end())	{
 			try
 			{
 				return any_cast<std::string>(it->second);
@@ -249,21 +220,19 @@ public:
 			{
 				return "ParamHandler: Error! not found";
 			}
-		}
-		else return "ParamHandler: Error! not found";
+		}else return "ParamHandler: Error! not found";
 	}
 
-	void setParam(const std::string& name, const boost::any& value)
-	{
-		boost::mutex::scoped_lock  lock(mutex_);
+	void setParam(const std::string& name, const boost::any& value){
+		_mutex.lock();
 		std::pair<ParamMap::iterator, bool> result = _params.insert(make_pair(name,value));
 		if(!result.second) (result.first)->second = value;
 		if (_logState) printOutput(name,value,result.second);
+		_mutex.unlock();
 
 	}
 
-	void delParam(const std::string& name)
-	{
+	void delParam(const std::string& name){
 		_params.erase(name); 
 		if(_logState) Console::getInstance().printfn("ParamHandler: Removed saved parameter [ %s ]", name.c_str());
 	} 
@@ -293,7 +262,7 @@ private:
 private:
 	bool _logState;
 	ParamMap _params;
-	boost::mutex mutex_;
+	boost::mutex _mutex;
  
 END_SINGLETON
 

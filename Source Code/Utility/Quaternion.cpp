@@ -96,20 +96,39 @@ void Quaternion::FromEuler(F32 pitch, F32 yaw, F32 roll){
 mat4& Quaternion::getMatrix(){
 	if(_dirty) {
 		delete _mat;
-		F32 x2 = _x * _x;
-		F32 y2 = _y * _y;
-		F32 z2 = _z * _z;
-		F32 xy = _x * _y;
-		F32 xz = _x * _z;
-		F32 yz = _y * _z;
-		F32 wx = _w * _x;
-		F32 wy = _w * _y;
-		F32 wz = _w * _z;
+		
+		//F32 x2 = _x * _x;
+		F32 x2 =  _x + _x;
+		//F32 y2 = _y * _y;
+		F32 y2 = _y + _y;
+		//F32 z2 = _z * _z;
+		F32 z2 = _z + _z;
 
-		_mat = New mat4( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
-					2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
-					2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f,
-					0.0f, 0.0f, 0.0f, 1.0f);
+		//F32 xy = _x * _y;
+		//F32 xz = _x * _z;
+		//F32 yz = _y * _z;
+		F32 xx = _x * x2;
+		F32 xy = _x * y2;
+		F32 xz = _x * z2;
+		F32 yy = _y * y2;
+		F32 yz = _y * z2;
+		F32 zz = _z * z2;
+		F32 wx = _w * x2;
+		F32 wy = _w * y2;	
+		F32 wz = _w * z2;
+		//F32 wx = _w * _x;
+		//F32 wy = _w * _y;
+		//F32 wz = _w * _z;
+
+		/*_mat = New mat4( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz),        2.0f * (xz + wy),        0.0f,
+		    			   2.0f * (xy + wz),        1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx),        0.0f,
+		  				   2.0f * (xz - wy),        2.0f * (yz + wx),        1.0f - 2.0f * (x2 + y2), 0.0f,
+						   0.0f,                    0.0f,                    0.0f,                    1.0f);
+		*/
+		_mat = New mat4(1.0f-(yy + zz),  xy + wz,        xz - wy,        0.0f,
+		    			xy - wz,         1.0f-(xx + zz), yz + wx,        0.0f,
+		  				xz + wy,         yz - wx,        1.0f-(xx + yy), 0.0f,
+						0.0f,            0.0f,           0.0f,           1.0f);
 		_dirty = false;
 	}
 	return *_mat;

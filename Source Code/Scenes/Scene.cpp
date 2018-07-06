@@ -290,7 +290,6 @@ void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button)
 
 	switch(button){
 		case OIS::MB_Left:{
-			//SceneManager::getInstance().findSelection(key.state.X.rel,key.state.Y.rel);
 			GUI::getInstance().clickReleaseCheck();
 		}break;
 

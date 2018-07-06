@@ -21,10 +21,10 @@
 #include "resource.h"
 #include "Utility/Headers/Singleton.h"
 
-class Camera;
 class SceneManager;
 class GUI;
 class Terrain;
+class Camera;
 class GFXDevice;
 class SFXDevice;
 

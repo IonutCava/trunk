@@ -32,7 +32,7 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, cons
 			_membruDistanta[sender] = boost::any_cast<F32>(msg_content);
 			break;
 		case LOVESTE_MINGEA:
-			for_each(AICoordination::teamMap::value_type member, _entity->getTeam()){
+			for_each(AICoordination::teamMap::value_type& member, _entity->getTeam()){
 				if(_entity->getGUID() != member.second->getGUID()){
 					_entity->sendMessage(member.second, NU_LOVI_MINGEA, 0);
 				}
@@ -83,7 +83,7 @@ void AITenisSceneAIActionList::processInput(){
 	updatePositions();
 	AICoordination::teamMap& team = _entity->getTeam();
 	_membruDistanta.clear();
-	for_each(AICoordination::teamMap::value_type member, team){
+	for_each(AICoordination::teamMap::value_type& member, team){
 		//Cerem tuturor coechipierilor sa ne transmita pozitia lor actuala
 		//Pentru fiecare membru din echipa, ii trimitem un request sa ne returneze pozitia
 		if(_entity->getGUID() != member.second->getGUID()){
@@ -95,7 +95,7 @@ void AITenisSceneAIActionList::processInput(){
 void AITenisSceneAIActionList::processData(){
 	AIEntity* celMaiApropiat = _entity;
 	F32 distanta = _pozitieEntitate.distance(_pozitieMinge);
-	for_each(membruDistantaMap::value_type pereche, _membruDistanta){
+	for_each(membruDistantaMap::value_type& pereche, _membruDistanta){
 		if(pereche.second < distanta){
 			distanta = pereche.second;
 			celMaiApropiat = pereche.first;

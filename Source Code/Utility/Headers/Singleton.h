@@ -24,17 +24,18 @@ class Singleton{
 
 public :
 	inline static T& getInstance() {
-		_singletonMutex.lock();
-		if (!_instance){
-			_instance = new T;
+		
+		if (!_instance)   {
+			boost::lock_guard<boost::mutex> lock(_singletonMutex);
+			if (!_instance){ //double-checked lock
+				_instance = new T;
+			}
 		}
-		_singletonMutex.unlock();
-
 		return *_instance;
 	}
 
 	inline static void DestroyInstance() {
-		boost::mutex::scoped_lock l(_singletonMutex);
+		boost::lock_guard<boost::mutex> lock(_singletonMutex);
 		if(_instance){
 			delete _instance;
 			_instance = NULL;

@@ -26,7 +26,7 @@ namespace XML
 			     par.getParam<string>("scenesLocation") + "/Scenes.xml",pt);
 		activeScene = pt.get("MainScene",activeScene);
 		loadScene(activeScene); 
-		loadMaterialXML(par.getParam<string>("scriptLocation")+"/defaultMaterial");
+		
 	}
 
 	void loadConfig(const string& file){

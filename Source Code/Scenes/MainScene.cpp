@@ -350,6 +350,7 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
 }
 
 void MainScene::onMouseMove(const OIS::MouseEvent& key){
+	Scene::onMouseMove(key);
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
 			Application::getInstance().angleLR = -0.15f;
@@ -371,11 +372,13 @@ void MainScene::onMouseMove(const OIS::MouseEvent& key){
 }
 
 void MainScene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+	Scene::onMouseClickDown(key,button);
 	if(button == 0) 
 		_mousePressed = true;
 }
 
 void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+	Scene::onMouseClickUp(key,button);
 	if(button == 0)	{
 		_mousePressed = false;
 		Application::getInstance().angleUD = 0;

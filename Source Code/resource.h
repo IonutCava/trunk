@@ -92,5 +92,5 @@ void operator delete(void * pxData ,char* zFile, int nLine);
 
 #define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
-#define RemoveResource(res) ResourceManager::getInstance().removeResource(res);
+
 #endif

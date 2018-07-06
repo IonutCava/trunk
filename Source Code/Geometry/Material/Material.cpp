@@ -36,7 +36,7 @@ void Material::removeCopy(){
 		_shader->removeCopy();
 		Console::getInstance().printfn("Shader [ %s ] new ref count: %d",_shader->getName().c_str(),_shader->getRefCount());
 	}
-	for_each(textureMap::value_type iter , _textures){
+	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
 			iter.second->removeCopy();
 		}
@@ -50,7 +50,7 @@ void Material::createCopy(){
 		Console::getInstance().printfn("Shader [ %s ] new ref count: %d",_shader->getName().c_str(),_shader->getRefCount());
 	}
 
-	for_each(textureMap::value_type iter , _textures){
+	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
 			iter.second->createCopy();
 		}
@@ -100,7 +100,9 @@ void Material::computeLightShaders(){
 			setShader("lighting");
 		}
 	}
-	dumpToXML();
+	if(getName().compare("defaultMaterial") != 0){
+		dumpToXML();
+	}
 	_computedLightShaders = true;
 }
 
@@ -109,7 +111,7 @@ bool Material::unload(){
 		RemoveResource(_shader);
 	}
 	
-	for_each(textureMap::value_type iter , _textures){
+	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
 			RemoveResource(iter.second);
 		}

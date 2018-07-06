@@ -91,7 +91,6 @@ protected:
 	std::string  _resourceLocation; //Physical file location
 };
 
-
 enum GEOMETRY_TYPE
 {
 	VEGETATION,  //For special rendering subroutines

@@ -9,7 +9,7 @@ using namespace std;
 void GUI::onResize(F32 newWidth, F32 newHeight)
 {
 	vec2 difDimensions = Application::getInstance().getWindowDimensions() - vec2(newWidth,newHeight);
-	for_each(guiMap::value_type guiStackIterator,_guiStack){
+	for_each(guiMap::value_type& guiStackIterator,_guiStack){
 		guiStackIterator.second->onResize(difDimensions);
 	}
 }
@@ -20,7 +20,7 @@ void GUI::draw(){
 	gfx.toggle2D(true);
 	
     //------------------------------------------------------------------------
-		for_each(guiMap::value_type guiStackIterator,_guiStack){
+		for_each(guiMap::value_type& guiStackIterator,_guiStack){
 			GuiElement* guiElement = guiStackIterator.second;
 			switch(guiElement->getGuiType())
 			{
@@ -59,7 +59,7 @@ void GUI::checkItem(U16 x, U16 y)
 	GuiEvent event;
 	event.mousePoint.x = x;
 	event.mousePoint.y = y;
-	for_each(guiMap::value_type guiStackIterator,_guiStack){
+	for_each(guiMap::value_type& guiStackIterator,_guiStack){
 		GuiElement* gui = guiStackIterator.second;
 		switch(gui->getGuiType())
 		{
@@ -89,7 +89,7 @@ void GUI::clickCheck()
 {
 	GuiEvent event;
 	event.mouseClickCount = 0;
-	for_each(guiMap::value_type guiStackIterator,_guiStack){
+	for_each(guiMap::value_type& guiStackIterator,_guiStack){
 		GuiElement* gui = guiStackIterator.second;
 		switch(gui->getGuiType())
 		{
@@ -118,7 +118,7 @@ void GUI::clickReleaseCheck()
 {
 	GuiEvent event;
 	event.mouseClickCount = 1;
-	for_each(guiMap::value_type guiStackIterator,_guiStack){
+	for_each(guiMap::value_type& guiStackIterator,_guiStack){
 		GuiElement* gui = guiStackIterator.second;
 		switch(gui->getGuiType())
 		{

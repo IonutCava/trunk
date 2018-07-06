@@ -146,6 +146,7 @@ protected:
 	F32			       _grassVisibility,_treeVisibility,_generalVisibility,
 				 	   _windSpeed,_windDirX, _windDirZ, _waterHeight, _waterDepth;
 	FrameBufferObject *_depthMap[2];
+	
 private: 
 	std::vector<Event_ptr> _events;
 	std::vector<Light*> _lights;

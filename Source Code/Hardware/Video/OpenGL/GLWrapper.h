@@ -62,7 +62,7 @@ private:
 	void swapBuffers();
 	void enableFog(F32 density, F32* color);
 
-	void toggle2D(bool _2D);
+	void toggle2D(bool state);
 	void setOrthoProjection(const vec4& rect, const vec2& planes);
 
 	void drawTextToScreen(Text*);

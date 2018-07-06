@@ -41,6 +41,7 @@ Application::Application() :
 
 void Application::DrawSceneStatic(){
 	GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+	PhysX::getInstance().process();
 	Application::getInstance().DrawScene();
 	Framerate::getInstance().SetSpeedFactor();
 	GFXDevice::getInstance().swapBuffers();
@@ -51,7 +52,7 @@ void Application::DrawScene(){
 	for_each(Light* light, _scene.getLights()){
 		light->onDraw();
 	}
-
+	PhysX::getInstance().update();
 	_scene.preRender();
 	PostFX::getInstance().render();
 	GUI::getInstance().draw();
@@ -68,5 +69,5 @@ void Application::Initialize(){
 	F32 fogColor[4] = {0.7f, 0.7f, 0.9f, 1.0}; 
 	_GFX.enableFog(0.3f,fogColor);
 	PostFX::getInstance().init();
-	PhysX::getInstance().InitNx();
+	PhysX::getInstance().initNx();
 }

@@ -19,26 +19,26 @@ bool AIManager::addEntity(AIEntity* entity){
 }
 
 void AIManager::processInput(){  //sensors
-	for_each(AIEntityMap::value_type entity, _aiEntities){
+	for_each(AIEntityMap::value_type& entity, _aiEntities){
 		entity.second->processInput();
 	}
 }
 
 void AIManager::processData(){   //think
-	for_each(AIEntityMap::value_type entity, _aiEntities){
+	for_each(AIEntityMap::value_type& entity, _aiEntities){
 		entity.second->processData();
 	}
 }
 
 void AIManager::updateEntities(){//react
-	for_each(AIEntityMap::value_type entity, _aiEntities){
+	for_each(AIEntityMap::value_type& entity, _aiEntities){
 		entity.second->update();
 	}
 }
 
 void AIManager::Destroy(){
 	_updateMutex.lock();
-	for_each(AIEntityMap::value_type entity, _aiEntities){
+	for_each(AIEntityMap::value_type& entity, _aiEntities){
 		delete entity.second;
 	}
 	_aiEntities.clear();

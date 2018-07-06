@@ -57,7 +57,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\foundation;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include\PxTask;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\foundation;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -76,7 +76,7 @@
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;  LIBCPMT.lib</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
       <Profile>true</Profile>
@@ -90,7 +90,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\foundation;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include\PxTask;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\foundation;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -105,7 +105,7 @@
       <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>LIBCMTD.lib; LIBCMT.lib</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib; LIBCPMT.lib</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -124,6 +124,7 @@
     <ClCompile Include="..\..\Source Code\EngineGraphs\SceneGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp" />
+    <ClCompile Include="..\..\Source Code\PhysX\PhysXSceneInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
@@ -136,6 +137,8 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\AITenisScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\AITenisSceneAIActionList.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXImplementation.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXScene.cpp" />
     <ClCompile Include="..\..\Source Code\Vegetation\Vegetation.cpp" />
     <ClCompile Include="..\..\Source Code\Terrain\Quadtree.cpp" />
     <ClCompile Include="..\..\Source Code\Terrain\QuadtreeNode.cpp" />
@@ -204,6 +207,7 @@
     <ClInclude Include="..\..\Source Code\AI\Sensors\VisualSensor.h" />
     <ClInclude Include="..\..\Source Code\EngineGraphs\RenderQueue.h" />
     <ClInclude Include="..\..\Source Code\Managers\AIManager.h" />
+    <ClInclude Include="..\..\Source Code\PhysX\PhysXSceneInterface.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Application.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Framerate.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Frustum.h" />
@@ -219,6 +223,8 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\PostFX.h" />
     <ClInclude Include="..\..\Source Code\Scenes\AITenisScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\AITenisSceneAIActionList.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXImplementation.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXScene.h" />
     <ClInclude Include="..\..\Source Code\Vegetation\Vegetation.h" />
     <ClInclude Include="..\..\Source Code\Terrain\Quadtree.h" />
     <ClInclude Include="..\..\Source Code\Terrain\QuadtreeNode.h" />

@@ -24,4 +24,5 @@
 #include "Scenes/PingPongScene.h"
 #include "Scenes/FlashScene.h"
 #include "Scenes/AITenisScene.h"
+#include "Scenes/PhysXScene.h"
 #endif

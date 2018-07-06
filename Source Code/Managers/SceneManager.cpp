@@ -33,6 +33,9 @@ Scene* SceneManager::loadScene(const string& name){
 	}else if(name.compare("AITenisScene") == 0){
 		scene = New AITenisScene();
 		_resDB.insert(make_pair("AITenisScene", scene));
+	}else if(name.compare("PhysXScene") == 0){
+		scene = New PhysXScene();
+		_resDB.insert(make_pair("PhysXScene", scene));
 	}else{
 		scene = NULL;
 	}

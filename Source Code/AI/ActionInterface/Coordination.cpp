@@ -2,12 +2,16 @@
 #include "AI/AIEntity.h"
 
 bool AICoordination::addTeamMember(AIEntity* entity) {
-	boost::mutex::scoped_lock l(_updateMutex);
-	if(!entity) return false;
+	_updateMutex.lock();
+	if(!entity){
+		_updateMutex.unlock();
+		return false;
+	}
 	if(_team.find(entity->getGUID()) != _team.end()){
 		delete _team[entity->getGUID()];
 	}
 	_team[entity->getGUID()] = entity;
+	_updateMutex.unlock();
 	return true;
 }
 

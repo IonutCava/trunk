@@ -25,13 +25,14 @@ class Manager{
 protected:
 	typedef unordered_map<std::string, Resource*> ResourceMap;
 	ResourceMap _resDB;
-	ResourceMap::iterator _resDBiter;
+	boost::mutex _managerMutex;
 
 public: 
-	void add(const std::string& name, Resource* res);
-	Resource* find(const std::string& name);
-	//If we crash here due to an invalid name, the problem lies with the resource, not the manager
-	virtual bool remove(Resource* res,bool force = false);
+	virtual void add(const std::string& name, Resource* const res);
+	virtual bool remove(Resource* const resource,bool force = false);
+	Resource* const find(const std::string& name);
+	virtual void eraseEntry(const std::string& name) {_resDB.erase(name);}
+
 	virtual void Destroy();
 	virtual ~Manager() {Destroy();} //Deleting any manager, will destroy it first
 };
