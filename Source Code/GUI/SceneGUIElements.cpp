@@ -30,8 +30,8 @@ void SceneGUIElements::draw(GFXDevice& context) {
     static vectorImpl<GUITextBatchEntry> textBatch;
     textBatch.resize(0);
 
-    for (U8 i = 0; i < to_const_U32(GUIType::COUNT); ++i) {
-        if (i != to_const_U32(GUIType::GUI_TEXT)) {
+    for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
+        if (i != to_base(GUIType::GUI_TEXT)) {
             for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
                 GUIElement& element = *guiStackIterator.second.first;
                 // Skip hidden elements
@@ -42,7 +42,7 @@ void SceneGUIElements::draw(GFXDevice& context) {
         }
     }
 
-    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_const_U32(GUIType::GUI_TEXT)]) {
+    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (!textElement.text().empty()) {
             textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
@@ -55,7 +55,7 @@ void SceneGUIElements::draw(GFXDevice& context) {
 }
 
 void SceneGUIElements::onEnable() {
-    for (U8 i = 0; i < to_const_U32(GUIType::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
             guiStackIterator.second.first->setVisible(guiStackIterator.second.second);
         }
@@ -63,7 +63,7 @@ void SceneGUIElements::onEnable() {
 }
 
 void SceneGUIElements::onDisable() {
-    for (U8 i = 0; i < to_const_U32(GUIType::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
         for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
             guiStackIterator.second.first->setVisible(false);
         }

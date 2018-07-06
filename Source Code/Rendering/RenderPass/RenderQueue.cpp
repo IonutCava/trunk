@@ -15,7 +15,7 @@ RenderQueue::RenderQueue(GFXDevice& context)
     : _context(context)
 {
     _renderBins.fill(nullptr);
-    _activeBins.reserve(to_const_U32(RenderBinType::COUNT));
+    _activeBins.reserve(to_base(RenderBinType::COUNT));
 }
 
 RenderQueue::~RenderQueue()

@@ -37,7 +37,7 @@ enum class FilterSpace : U32 {
     COUNT
 };
 
-typedef std::array<U8 /*request count*/, to_const_U32(FilterType::FILTER_COUNT)> FilterStack;
+typedef std::array<U8 /*request count*/, to_base(FilterType::FILTER_COUNT)> FilterStack;
 
 class PreRenderBatch;
 /// It's called a prerender operator because it operates on the buffer before

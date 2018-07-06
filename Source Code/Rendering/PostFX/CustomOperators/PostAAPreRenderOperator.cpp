@@ -58,7 +58,7 @@ void PostAAPreRenderOperator::execute() {
     RenderTarget& ldrTarget = _parent.outputRT();
 
     _samplerCopy._rt->blitFrom(&ldrTarget);
-    _samplerCopy._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
 
     // Apply FXAA/SMAA to the specified render target
     ldrTarget.begin(RenderTarget::defaultPolicy());

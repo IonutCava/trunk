@@ -123,10 +123,10 @@ TaskHandle TaskPool::getTaskHandle(I64 taskGUID) {
 }
 
 Task& TaskPool::getAvailableTask() {
-    const U32 poolSize = to_const_U32(_tasksPool.size());
+    const size_t poolSize = to_base(_tasksPool.size());
 
-    U32 taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
-    U32 failCount = 0;
+    size_t taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
+    size_t failCount = 0;
 
     {
         std::unique_lock<std::mutex> lk(_taskStateLock);

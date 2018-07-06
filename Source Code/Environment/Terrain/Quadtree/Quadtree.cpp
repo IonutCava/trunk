@@ -29,11 +29,11 @@ void Quadtree::getChunkBufferData(RenderStage stage,
                                   const SceneRenderState& sceneRenderState, 
                                   vectorImpl<vec3<U32>>& chunkBufferData) const {
     assert(_root);
-    U32 options = to_const_U32(ChunkBit::CHUNK_BIT_TESTCHILDREN);
+    U32 options = to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN);
     if (stage == RenderStage::REFLECTION) {
-        options |= to_const_U32(ChunkBit::CHUNK_BIT_WATERREFLECTION);
+        options |= to_base(ChunkBit::CHUNK_BIT_WATERREFLECTION);
     } else if (stage == RenderStage::SHADOW) {
-        options |= to_const_U32(ChunkBit::CHUNK_BIT_SHADOWMAP);
+        options |= to_base(ChunkBit::CHUNK_BIT_SHADOWMAP);
     }
 
     _root->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);

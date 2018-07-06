@@ -18,7 +18,7 @@ namespace {
     size_t g_validationBufferMaxSize = 4096 * 16;
 };
 
-std::array<U32, to_const_U32(ShaderType::COUNT)> glShaderProgram::_lineOffset;
+std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
 glShaderProgram::glShaderProgram(GFXDevice& context,
@@ -457,7 +457,7 @@ void glShaderProgram::reloadShaders(bool reparseShaderSource) {
     glswSetPath(info._resourcePath.c_str(), ".glsl");
 
     // For every stage
-    for (U32 i = 0; i < to_const_U32(ShaderType::COUNT); ++i) {
+    for (U32 i = 0; i < to_base(ShaderType::COUNT); ++i) {
         // Brute force conversion to an enum
         ShaderType type = static_cast<ShaderType>(i);
         stringImpl shaderCompileName(info._programName +

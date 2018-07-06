@@ -41,11 +41,11 @@ bool Terrain::unload() {
 }
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode_ptr planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
     planeSGN->setActive(false);
@@ -76,8 +76,8 @@ void Terrain::buildQuadtree() {
     const vec3<F32>& bbMin = _boundingBox.getMin();
     const vec3<F32>& bbExtent = _boundingBox.getExtent();
 
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
             RenderStage stage = static_cast<RenderStage>(i);
 
             const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass(stage, static_cast<RenderPassType>(pass))).getProgram();
@@ -86,7 +86,7 @@ void Terrain::buildQuadtree() {
             drawShader->Uniform("bbox_extent", bbExtent);
             drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-            U8 textureOffset = to_const_U8(ShaderProgram::TextureUsage::COUNT);
+            U8 textureOffset = to_U8(ShaderProgram::TextureUsage::COUNT);
             U8 layerOffset = 0;
             stringImpl layerIndex;
             for (U8 k = 0; k < _terrainTextures.size(); ++k) {

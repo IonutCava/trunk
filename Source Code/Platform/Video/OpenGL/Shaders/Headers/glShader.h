@@ -100,7 +100,7 @@ class glShader : public GraphicsResource, public TrackedObject {
     vectorImpl<stringImpl> _usedAtoms;
 
     //extra entry for "common" location
-    static stringImpl shaderAtomLocationPrefix[to_const_U32(ShaderType::COUNT) + 1];
+    static stringImpl shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
     
    private:
     /// Shader cache

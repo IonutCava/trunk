@@ -214,8 +214,8 @@ private:
     Material_ptr _defaultMaterial;
     RenderPassCuller::VisibleNodeList _tempNodesCache;
 
-    typedef std::array<Time::ProfileTimer*, to_const_U32(RenderStage::COUNT)> CullTimersPerPass;
-    std::array<CullTimersPerPass, to_const_U32(RenderPassType::COUNT)> _sceneGraphCullTimers;
+    typedef std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> CullTimersPerPass;
+    std::array<CullTimersPerPass, to_base(RenderPassType::COUNT)> _sceneGraphCullTimers;
     PlayerList _players;
 
     std::queue<std::pair<Scene*, SceneGraphNode_ptr>>  _playerAddQueue;

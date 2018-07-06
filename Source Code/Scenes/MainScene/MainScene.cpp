@@ -140,11 +140,11 @@ bool MainScene::load(const stringImpl& name) {
     _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NAVIGATION);
 
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setID(to_U32(_baseCamera->getZPlanes().y));

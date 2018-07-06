@@ -7,7 +7,7 @@ namespace {
 
     const size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
 
-    typedef std::array<vec3<size_t>, to_const_U32(ShaderBufferLocation::COUNT)> BindConfig;
+    typedef std::array<vec3<size_t>, to_base(ShaderBufferLocation::COUNT)> BindConfig;
     BindConfig g_currentBindConfig;
 
     bool setIfDifferentBindRange(U32 UBOid,

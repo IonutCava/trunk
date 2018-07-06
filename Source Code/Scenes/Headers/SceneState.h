@@ -306,7 +306,7 @@ class SceneState : public SceneComponent {
 
 protected:
 
-    std::array<MusicPlaylist, to_const_U32(MusicType::COUNT)> _music;
+    std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
     hashMapImpl<U8, SceneStatePerPlayer> _playerState;
 
     bool _saveLoadDisabled;
@@ -329,9 +329,9 @@ class SceneRenderStateScene {
     static void playAnimations(SceneRenderState& sceneRenderState,
                                bool playAnimations) {
         if (playAnimations) {
-            SetBit(sceneRenderState._stateMask, to_const_U32(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+            SetBit(sceneRenderState._stateMask, to_base(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
         } else {
-            ClearBit(sceneRenderState._stateMask, to_const_U32(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+            ClearBit(sceneRenderState._stateMask, to_base(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
         }
     }
     friend class Divide::Scene;

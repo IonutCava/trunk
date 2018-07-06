@@ -56,7 +56,7 @@ public:
               occlusionCull(false),
               doPrePass(true),
               pass(0),
-              clippingPlanes(to_const_U32(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
+              clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
         {
         }
 

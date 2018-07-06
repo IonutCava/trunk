@@ -40,7 +40,7 @@ namespace Divide {
 class GFXRTPool {
 protected:
     typedef vectorImpl<RenderTarget*> TargetsPerUsage;
-    typedef std::array<TargetsPerUsage, to_const_U32(RenderTargetUsage::COUNT)> RenderTargets;
+    typedef std::array<TargetsPerUsage, to_base(RenderTargetUsage::COUNT)> RenderTargets;
 
 protected:
     friend class GFXDevice;

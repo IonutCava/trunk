@@ -123,7 +123,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
 
         _scenePool = MemoryManager_NEW ScenePool(*this);
 
-        for (U8 i = 0; i < to_const_U8(RenderPassType::COUNT); ++i) {
+        for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
             _sceneGraphCullTimers[i][to_U32(RenderStage::DISPLAY)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Display [pass: %d]", i).c_str());
             _sceneGraphCullTimers[i][to_U32(RenderStage::REFLECTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Reflection [pass: %d]", i).c_str());
             _sceneGraphCullTimers[i][to_U32(RenderStage::REFRACTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Refraction [pass: %d]", i).c_str());
@@ -284,7 +284,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
             
         })._task->startTask(threaded ? Task::TaskPriority::HIGH
                                      : Task::TaskPriority::REALTIME_WITH_CALLBACK,
-                            to_const_U32(Task::TaskFlags::SYNC_WITH_GPU));
+                            to_base(Task::TaskFlags::SYNC_WITH_GPU));
 
     _sceneSwitchTarget.reset();
 

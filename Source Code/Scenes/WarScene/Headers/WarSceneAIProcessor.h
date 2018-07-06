@@ -264,7 +264,7 @@ class WarSceneAIProcessor : public AIProcessor {
     /// Keep this in memory at this level
     vectorImpl<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
-    std::array<bool, to_const_U32(ActionType::COUNT)> _actionState;
+    std::array<bool, to_base(ActionType::COUNT)> _actionState;
     static DELEGATE_CBK<void, U8, const stringImpl&> _scoreCallback;
     static DELEGATE_CBK<void, U8, const stringImpl&> _messageCallback;
     static GlobalWorkingMemory _globalWorkingMemory;

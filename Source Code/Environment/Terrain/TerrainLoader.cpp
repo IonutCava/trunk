@@ -59,7 +59,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         textureBlendMap.setResourceLocation(terrainMapLocation);
         textureBlendMap.setResourceName(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
         textureBlendMap.setPropertyDescriptor(blendMapSampler);
-        textureBlendMap.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
+        textureBlendMap.setEnumValue(to_base(TextureType::TEXTURE_2D));
         textureLayer->setBlendMap(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
 
         arrayLocation.clear();
@@ -109,7 +109,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
 
         ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name +
                                            "_layer_" + layerOffsetStr);
-        textureTileMaps.setEnumValue(to_const_U32(TextureType::TEXTURE_2D_ARRAY));
+        textureTileMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
         textureTileMaps.setID(textureCountAlbedo);
         textureTileMaps.setResourceLocation(terrainMapLocation);
         textureTileMaps.setResourceName(arrayLocation);
@@ -160,7 +160,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
 
         ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name +
                                              "_layer_" + layerOffsetStr);
-        textureNormalMaps.setEnumValue(to_const_U32(TextureType::TEXTURE_2D_ARRAY));
+        textureNormalMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
         textureNormalMaps.setID(textureCountDetail);
         textureNormalMaps.setResourceLocation(terrainMapLocation);
         textureNormalMaps.setResourceName(arrayLocation);
@@ -193,21 +193,21 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     textureWaterCaustics.setResourceLocation(terrainMapLocation);
     textureWaterCaustics.setResourceName(terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(albedoSampler);
-    textureWaterCaustics.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
+    textureWaterCaustics.setEnumValue(to_base(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
     underwaterAlbedoTexture.setResourceLocation(terrainMapLocation);
     underwaterAlbedoTexture.setResourceName(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
     underwaterAlbedoTexture.setPropertyDescriptor(albedoSampler);
-    underwaterAlbedoTexture.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
+    underwaterAlbedoTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
     underwaterDetailTexture.setResourceLocation(terrainMapLocation);
     underwaterDetailTexture.setResourceName(terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(albedoSampler);
-    underwaterDetailTexture.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
+    underwaterDetailTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
     terrainMaterial->setShaderLoadThreaded(false);
@@ -329,7 +329,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
         groundVB->resizeVertexCount(terrainWidth * terrainHeight);
         // scale and translate all height by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
         if (terrainDescriptor->is16Bit()) {
-            constexpr F32 fMax = to_const_F32(std::numeric_limits<U16>::max() + 1);
+            const F32 fMax = to_F32(std::numeric_limits<U16>::max() + 1);
             
             #pragma omp parallel for
             for (I32 j = 0; j < terrainHeight; j++) {
@@ -350,7 +350,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 }
             }
         } else {
-            constexpr F32 byteMax = to_const_F32(std::numeric_limits<U8>::max() + 1);
+            const F32 byteMax = to_F32(std::numeric_limits<U8>::max() + 1);
 
             #pragma omp parallel for
             for (I32 j = 0; j < terrainHeight; j++) {
@@ -513,7 +513,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassSampler.setAnisotropy(0);
     grassSampler.setWrapMode(TextureWrap::CLAMP);
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.setEnumValue(to_const_U32(TextureType::TEXTURE_2D_ARRAY));
+    textureDetailMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
     textureDetailMaps.setID(textureCount);
     textureDetailMaps.setResourceLocation(terrainDescriptor->getVariable("grassMapLocation"));
     textureDetailMaps.setResourceName(textureName);

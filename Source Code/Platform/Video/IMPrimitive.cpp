@@ -33,7 +33,7 @@ void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const vec4
     // Create the object
     beginBatch(true, 16, 1);
     // Set it's colour
-    attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(colour));
+    attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(colour));
     // Draw the bottom loop
     begin(PrimitiveType::LINE_LOOP);
     vertex(min.x, min.y, min.z);
@@ -77,7 +77,7 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     paused(false);
     // Create the object
     beginBatch(true, stacks * ((slices + 1) * 2), 1);
-    attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(colour));
+    attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(colour));
     begin(PrimitiveType::LINE_LOOP);
     for (i = 0; i < stacks; i++) {
         F32 rho = i * drho;
@@ -161,7 +161,7 @@ void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
         // Create the object containing all of the lines
         beginBatch(true, to_U32(lines.size()) * 2 * 14, 1);
         Util::ToFloatColour(lines[0]._colourStart, tempFloatColour);
-        attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), tempFloatColour);
+        attribute4f(to_base(AttribLocation::VERTEX_COLOR), tempFloatColour);
         // Set the mode to line rendering
         //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
         begin(PrimitiveType::LINES);
@@ -169,7 +169,7 @@ void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
         // Add every line in the list to the batch
         for (const Line& line : lines) {
             Util::ToFloatColour(line._colourStart, tempFloatColour);
-            attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), tempFloatColour);
+            attribute4f(to_base(AttribLocation::VERTEX_COLOR), tempFloatColour);
             /*for (U16 idx : indices) {
             tempVertex.set(line._startPoint * vertices[idx]);
             tempVertex *= line._widthStart;
@@ -179,7 +179,7 @@ void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
             vertex(line._startPoint);
 
             Util::ToFloatColour(line._colourEnd, tempFloatColour);
-            attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), tempFloatColour);
+            attribute4f(to_base(AttribLocation::VERTEX_COLOR), tempFloatColour);
             /*for (U16 idx : indices) {
             tempVertex.set(line._endPoint * vertices[idx]);
             tempVertex *= line._widthEnd;

@@ -158,10 +158,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     s_maxAttribBindings = GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS);
     s_vaoBufferData.init(s_maxAttribBindings);
 
-    assert(to_const_U32(ShaderProgram::TextureUsage::COUNT) < to_U32(s_maxTextureUnits) &&
+    assert(to_base(ShaderProgram::TextureUsage::COUNT) < to_U32(s_maxTextureUnits) &&
            "GL Wrapper: insufficient number of texture image units available on current hardware!");
 
-    assert(to_const_U32(AttribLocation::COUNT) < to_U32(s_maxAttribBindings) &&
+    assert(to_base(AttribLocation::COUNT) < to_U32(s_maxAttribBindings) &&
            "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), s_maxTextureUnits);
@@ -321,7 +321,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     }
 
     // Prepare immediate mode emulation rendering
-    NS_GLIM::glim.SetVertexAttribLocation(to_const_U32(AttribLocation::VERTEX_POSITION));
+    NS_GLIM::glim.SetVertexAttribLocation(to_base(AttribLocation::VERTEX_POSITION));
     // Initialize our VAO pool
     GLUtil::_vaoPool.init(g_maxVAOS);
     // Initialize shader buffers

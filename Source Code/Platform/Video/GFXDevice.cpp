@@ -121,7 +121,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     _GPURenderer = GPURenderer::COUNT;
     _API_ID = RenderAPI::COUNT;
     // Clipping planes
-    _clippingPlanes.resize(to_const_U32(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0));
+    _clippingPlanes.resize(to_base(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0));
     // To allow calls to "setBaseViewport"
     _viewport.push(vec4<I32>(-1));
 
@@ -142,13 +142,13 @@ GFXDevice::GFXDevice(Kernel& parent)
     VertexBuffer::setAttribMasks(flags);
 
     // Don't (currently) need these for shadow passes
-    flags[to_const_U32(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
-    flags[to_const_U32(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
-    for (U8 stage = 0; stage < to_const_U8(RenderStage::COUNT); ++stage) {
+    flags[to_base(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
+    flags[to_base(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
+    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::DEPTH_PASS), flags);
     }
-    flags[to_const_U32(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+    flags[to_base(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), flags);
     }
 }
@@ -448,7 +448,7 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
 /// Update the internal GPU data buffer with the clip plane values
 void GFXDevice::updateClipPlanes() {
     GFXShaderData::GPUData& data = _gpuBlock._data;
-    for (U8 i = 0; i < to_const_U8(Frustum::FrustPlane::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
         data._clipPlanes[i].set(_clippingPlanes[i].getEquation());
     }
     _gpuBlock._needsUpload = true;
@@ -582,7 +582,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
     // Skip invalid callbacks
     if (callback) {
         if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
-            CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH, to_const_U32(Task::TaskFlags::SYNC_WITH_GPU));
+            CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH, to_base(Task::TaskFlags::SYNC_WITH_GPU));
         } else {
             if (Application::isMainThread()) {
                 callback(mainTask);
@@ -645,7 +645,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         return;
     }
 
-    depth->bind(to_const_U8(ShaderProgram::TextureUsage::DEPTH));
+    depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
     screenTarget.begin(depthOnlyTarget);
     // We skip the first level as that's our full resolution image
     

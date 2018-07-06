@@ -264,7 +264,7 @@ void SceneGraphNode::postLoad() {
 
 bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
     if (ignoreRoot) {
-        ClearBit(typeMask, to_const_U32(SceneNodeType::TYPE_ROOT));
+        ClearBit(typeMask, to_base(SceneNodeType::TYPE_ROOT));
     }
     SceneGraphNode_ptr parent = getParent().lock();
     while (parent != nullptr) {

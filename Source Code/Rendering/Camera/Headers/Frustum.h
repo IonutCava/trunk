@@ -102,8 +102,8 @@ class Frustum {
     bool _pointsDirty;
 
     mat4<F32> _viewProjectionMatrixCache;
-    std::array<Plane<F32>, to_const_U32(FrustPlane::COUNT)> _frustumPlanes;
-    std::array<vec3<F32>, to_const_U32(FrustPoints::COUNT)> _frustumPoints;
+    std::array<Plane<F32>, to_base(FrustPlane::COUNT)>  _frustumPlanes;
+    std::array<vec3<F32>,  to_base(FrustPoints::COUNT)> _frustumPoints;
 };
 
 };  // namespace Divide

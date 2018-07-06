@@ -40,7 +40,7 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache,
 {
     _tempBB.set(-VECTOR3_UNIT, VECTOR3_UNIT);
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_U32(RenderStage::COUNT); ++j) {
+        for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
             _particleGPUBuffers[i][j] = _context.newGVD(g_particleBufferSizeFactor);
         }
     }
@@ -65,7 +65,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     const vectorImpl<U32>& indices = particleData->particleGeometryIndices();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_U32(RenderStage::COUNT); ++j) {
+        for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
             buffer.create(3);
@@ -80,7 +80,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                 buffer.setIndexBuffer(to_U32(indices.size()), false, false, indices);
             }
 
-            AttributeDescriptor& desc = buffer.attribDescriptor(to_const_U32(AttribLocation::VERTEX_POSITION));
+            AttributeDescriptor& desc = buffer.attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
             desc.set(g_particleGeometryBuffer, 0, 3, false, 0, GFXDataFormat::FLOAT_32);
         }
     }
@@ -114,12 +114,12 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
 bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
     static const U32 positionAttribLocation = 13;
-    static const U32 colourAttribLocation = to_const_U32(AttribLocation::VERTEX_COLOR);
+    static const U32 colourAttribLocation = to_base(AttribLocation::VERTEX_COLOR);
 
     U32 particleCount = _particles->totalCount();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_U32(RenderStage::COUNT); ++j) {
+        for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
             buffer.setBuffer(g_particlePositionBuffer,
@@ -155,7 +155,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
         ResourceDescriptor texture(_particles->_textureFileName);
 
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-        texture.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
+        texture.setEnumValue(to_base(TextureType::TEXTURE_2D));
         _particleTexture = CreateResource<Texture>(_parentCache, texture);
     }
 
@@ -176,7 +176,7 @@ bool ParticleEmitter::unload() {
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
 if (_particleTexture && _particleTexture->flushTextureState()) {
         TextureData particleTextureData = _particleTexture->getData();
-        particleTextureData.setHandleLow(to_const_U32(ShaderProgram::TextureUsage::UNIT0));
+        particleTextureData.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT0));
         sgn.get<RenderingComponent>()->registerTextureDependency(particleTextureData);
     }
 

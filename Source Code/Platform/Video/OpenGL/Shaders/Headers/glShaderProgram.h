@@ -207,8 +207,8 @@ class glShaderProgram final : public ShaderProgram {
     bool _validated;
     bool _loadedFromBinary;
     GLuint _shaderProgramIDTemp;
-    static std::array<U32, to_const_U32(ShaderType::COUNT)> _lineOffset;
-    std::array<glShader*, to_const_U32(ShaderType::COUNT)> _shaderStage;
+    static std::array<U32, to_base(ShaderType::COUNT)> _lineOffset;
+    std::array<glShader*, to_base(ShaderType::COUNT)> _shaderStage;
 
     glLockManager* _lockManager;
 };

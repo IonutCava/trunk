@@ -283,7 +283,7 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     }
 
     const std::string label("joystickButtons.joystick");
-    for (U32 i = 0 ; i < to_const_U32(Input::Joystick::COUNT); ++i) {
+    for (U32 i = 0 ; i < to_base(Input::Joystick::COUNT); ++i) {
         Input::Joystick joystick = static_cast<Input::Joystick>(i);
         
         for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), empty_ptree()))
@@ -851,8 +851,8 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
             loadTextureXML(cache, "specularMap", pt.get("specularMap.file", "none").c_str(), pt));
     }
 
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
             RenderStage stage = static_cast<RenderStage>(i);
             RenderPassType passType = static_cast<RenderPassType>(pass);
 
@@ -937,8 +937,8 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
         saveTextureXML("specularMap", texture, pt);
     }
 
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
             RenderStage stage = static_cast<RenderStage>(i);
             RenderPassType passType = static_cast<RenderPassType>(pass);
 

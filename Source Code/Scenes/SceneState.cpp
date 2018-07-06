@@ -17,7 +17,7 @@ FogDescriptor::FogDescriptor()
 
 SceneRenderState::SceneRenderState(Scene& parentScene)
     : SceneComponent(parentScene),
-      _stateMask(to_const_U32(RenderOptions::PLAY_ANIMATIONS)),
+      _stateMask(to_base(RenderOptions::PLAY_ANIMATIONS)),
       _playerPass(0),
       _grassVisibility(1.0f),
       _treeVisibility(1.0f),
@@ -31,7 +31,7 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
 void SceneRenderState::toggleAxisLines() {
     static U32 selection = 0;
     Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_AXIS_GIZMO")));
-    selection = (selection + 1) % to_const_U32(GizmoState::COUNT);
+    selection = (selection + 1) % to_base(GizmoState::COUNT);
     switch (selection) {
     case 0:
         gizmoState(GizmoState::SELECTED_GIZMO);
@@ -52,7 +52,7 @@ void SceneRenderState::renderMask(U32 mask) {
     if (Config::Build::IS_DEBUG_BUILD) {
         auto validateMask = [mask]() -> U32 {
             U32 validMask = 0;
-            for (U32 stateIt = 1; stateIt <= to_const_U32(RenderOptions::COUNT); ++stateIt) {
+            for (U32 stateIt = 1; stateIt <= to_base(RenderOptions::COUNT); ++stateIt) {
                 U32 bitState = toBit(stateIt);
 
                 if (BitCompare(mask, bitState)) {

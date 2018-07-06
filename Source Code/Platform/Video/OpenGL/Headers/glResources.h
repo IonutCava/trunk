@@ -164,21 +164,21 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();
 
-extern std::array<GLenum, to_const_U32(BlendProperty::COUNT)> glBlendTable;
-extern std::array<GLenum, to_const_U32(BlendOperation::COUNT)> glBlendOpTable;
-extern std::array<GLenum, to_const_U32(ComparisonFunction::COUNT)> glCompareFuncTable;
-extern std::array<GLenum, to_const_U32(StencilOperation::COUNT)> glStencilOpTable;
-extern std::array<GLenum, to_const_U32(CullMode::COUNT)> glCullModeTable;
-extern std::array<GLenum, to_const_U32(FillMode::COUNT)> glFillModeTable;
-extern std::array<GLenum, to_const_U32(TextureType::COUNT)> glTextureTypeTable;
-extern std::array<GLenum, to_const_U32(GFXImageFormat::COUNT)> glImageFormatTable;
-extern std::array<GLenum, to_const_U32(PrimitiveType::COUNT)> glPrimitiveTypeTable;
-extern std::array<GLenum, to_const_U32(GFXDataFormat::COUNT)> glDataFormat;
-extern std::array<GLenum, to_const_U32(TextureWrap::COUNT)> glWrapTable;
-extern std::array<GLenum, to_const_U32(TextureFilter::COUNT)> glTextureFilterTable;
-extern std::array<NS_GLIM::GLIM_ENUM, to_const_U32(PrimitiveType::COUNT)> glimPrimitiveType;
-extern std::array<GLenum, to_const_U32(ShaderType::COUNT)> glShaderStageTable;
-extern std::array<stringImpl, to_const_U32(ShaderType::COUNT)> glShaderStageNameTable;
+extern std::array<GLenum, to_base(BlendProperty::COUNT)> glBlendTable;
+extern std::array<GLenum, to_base(BlendOperation::COUNT)> glBlendOpTable;
+extern std::array<GLenum, to_base(ComparisonFunction::COUNT)> glCompareFuncTable;
+extern std::array<GLenum, to_base(StencilOperation::COUNT)> glStencilOpTable;
+extern std::array<GLenum, to_base(CullMode::COUNT)> glCullModeTable;
+extern std::array<GLenum, to_base(FillMode::COUNT)> glFillModeTable;
+extern std::array<GLenum, to_base(TextureType::COUNT)> glTextureTypeTable;
+extern std::array<GLenum, to_base(GFXImageFormat::COUNT)> glImageFormatTable;
+extern std::array<GLenum, to_base(PrimitiveType::COUNT)> glPrimitiveTypeTable;
+extern std::array<GLenum, to_base(GFXDataFormat::COUNT)> glDataFormat;
+extern std::array<GLenum, to_base(TextureWrap::COUNT)> glWrapTable;
+extern std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
+extern std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
+extern std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
+extern std::array<stringImpl, to_base(ShaderType::COUNT)> glShaderStageNameTable;
 };  // namespace GLUtil
 };  // namespace Divide
 

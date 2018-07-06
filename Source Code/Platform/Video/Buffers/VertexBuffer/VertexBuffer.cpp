@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-std::array<VertexBuffer::AttribFlags, to_const_U32(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage[to_const_U32(RenderPassType::COUNT)];
+std::array<VertexBuffer::AttribFlags, to_base(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage[to_base(RenderPassType::COUNT)];
 
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),
@@ -32,7 +32,7 @@ bool VertexBuffer::createInternal() {
 
 
 void VertexBuffer::setAttribMasks(const AttribFlags& flagMask) {
-    for (U8 i = 0; i < to_const_U32(RenderPassType::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
         for (AttribFlags& flags : _attribMaskPerStage[i]) {
             flags = flagMask;
         }

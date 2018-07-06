@@ -96,7 +96,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
     private:
         I64 _GUID;
-        std::array<bool, to_const_U32(UpdateFlag::COUNT)> _updateFlags;
+        std::array<bool, to_base(UpdateFlag::COUNT)> _updateFlags;
     };
 
    public:

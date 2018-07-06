@@ -30,10 +30,10 @@ void Trigger::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                           SceneState& sceneState) {
     if (_drawImpostor) {
         if (!_triggerImpostor) {
-            static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                          to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                          to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                          to_const_U32(SGNComponent::ComponentType::NETWORKING);
+            static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                          to_base(SGNComponent::ComponentType::BOUNDS) |
+                                          to_base(SGNComponent::ComponentType::RENDERING) |
+                                          to_base(SGNComponent::ComponentType::NETWORKING);
 
             ResourceDescriptor impostorDesc(_name + "_impostor");
             _triggerImpostor = CreateResource<ImpostorSphere>(_parentCache, impostorDesc);

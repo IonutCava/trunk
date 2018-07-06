@@ -351,7 +351,7 @@ class SceneGraphNode : public GUIDWrapper,
     mutable SharedLock _childLock;
     std::atomic<bool> _active;
     std::atomic<bool> _visibilityLocked;
-    std::array<std::atomic<bool>, to_const_U32(UpdateFlag::COUNT)> _updateFlags;
+    std::array<std::atomic<bool>, to_base(UpdateFlag::COUNT)> _updateFlags;
 
     bool _isSelectable;
     SelectionFlag _selectionFlag;
@@ -362,7 +362,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     DELEGATE_CBK<void, SceneGraphNode_cptr> _collisionCbk;
 
-    std::array<SGNComponent*, to_const_U32(SGNComponent::ComponentType::COUNT)> _components;
+    std::array<SGNComponent*, to_base(SGNComponent::ComponentType::COUNT)> _components;
     SGNRelationshipCache _relationshipCache;
 };
 

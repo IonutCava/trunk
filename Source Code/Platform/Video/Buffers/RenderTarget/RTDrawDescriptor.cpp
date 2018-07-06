@@ -78,7 +78,7 @@ void RTDrawDescriptor::stateMask(U32 stateMask) {
     if (Config::Build::IS_DEBUG_BUILD) {
         auto validateMask = [stateMask]() -> U32 {
             U32 validMask = 0;
-            for (U32 stateIt = 1; stateIt <= to_const_U32(State::COUNT); ++stateIt) {
+            for (U32 stateIt = 1; stateIt <= to_base(State::COUNT); ++stateIt) {
                 U32 bitState = toBit(stateIt);
                 if (BitCompare(stateMask, bitState)) {
                     SetBit(validMask, bitState);

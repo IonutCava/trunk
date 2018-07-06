@@ -171,13 +171,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Add the attachments to the render targets
     RenderTarget& screenTarget = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_const_U8(ScreenTargets::ALBEDO));
-    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_const_U8(ScreenTargets::NORMALS));
-    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_const_U8(ScreenTargets::VELOCITY));
+    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::ALBEDO));
+    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::NORMALS));
+    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, to_U8(ScreenTargets::VELOCITY));
     screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::NORMALS), DefaultColours::WHITE());
-    screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_U8(ScreenTargets::VELOCITY), DefaultColours::WHITE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::NORMALS), DefaultColours::WHITE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::VELOCITY), DefaultColours::WHITE());
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;

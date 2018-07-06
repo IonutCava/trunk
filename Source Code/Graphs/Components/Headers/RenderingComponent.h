@@ -123,16 +123,16 @@ class RenderingComponent : public SGNComponent {
     inline U32 renderMask() const {
         U32 mask = 0;
         if (renderGeometry()) {
-            SetBit(mask, to_const_U32(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
         }
         if (renderWireframe()) {
-            SetBit(mask, to_const_U32(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
         }
         if (renderBoundingBox()) {
-            SetBit(mask, to_const_U32(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_AABB));
+            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_AABB));
         }
         if (renderBoundingSphere()) {
-            SetBit(mask, to_const_U32(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_SPHERE));
+            SetBit(mask, to_base(GenericDrawCommand::RenderOptions::RENDER_BOUNDS_SPHERE));
         }
         return mask;
     }
@@ -225,7 +225,7 @@ class RenderingComponent : public SGNComponent {
    protected:
     GFXDevice& _context;
     Material_ptr _materialInstance;
-    std::array<ShaderProgram_ptr, to_const_U32(RenderStage::COUNT)> _customShaders[to_const_U32(RenderPassType::COUNT)];
+    std::array<ShaderProgram_ptr, to_base(RenderStage::COUNT)> _customShaders[to_base(RenderPassType::COUNT)];
 
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
@@ -242,7 +242,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderSkeleton;
     bool _isVisible;
     TextureDataContainer _textureDependencies;
-    std::array<RenderPackage, to_const_U32(RenderStage::COUNT)> _renderData[to_const_U32(RenderPassType::COUNT)];
+    std::array<RenderPackage, to_base(RenderStage::COUNT)> _renderData[to_base(RenderPassType::COUNT)];
     
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
@@ -312,15 +312,15 @@ class RenderingCompSceneNode {
         static void setCustomShader(RenderingComponent& renderable,
                                     RenderStage renderStage,
                                     const ShaderProgram_ptr& shaderProgram) {
-            for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+            for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
                 renderable._customShaders[pass][to_U32(renderStage)] = shaderProgram;
             }
         }
 
         static void setCustomShader(RenderingComponent& renderable,
                                     const ShaderProgram_ptr& shaderProgram) {
-            for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-                for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
+            for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+                for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
                     renderable._customShaders[pass][i] = shaderProgram;
                 }
             }

@@ -44,7 +44,7 @@ class SceneShaderData {
         vec4<F32> _otherData;
         vec4<F32> _otherData2;
         vec4<U32> _lightCountPerType;
-        //U32     _lightCountPerType[to_const_U32(LightType::COUNT)];
+        //U32     _lightCountPerType[to_base(LightType::COUNT)];
     };
 
   public:

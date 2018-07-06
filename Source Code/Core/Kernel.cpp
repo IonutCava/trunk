@@ -620,8 +620,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Fulscreen is automatically calculated
     ResolutionByType initRes;
-    initRes[to_const_U32(WindowType::WINDOW)].set(config.runtime.resolution.w, config.runtime.resolution.h);
-    initRes[to_const_U32(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
+    initRes[to_base(WindowType::WINDOW)].set(config.runtime.resolution.w, config.runtime.resolution.h);
+    initRes[to_base(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
 
     bool startFullScreen = !config.runtime.windowedMode;
     WindowManager& winManager = _APP.windowManager();
@@ -667,7 +667,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     winManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
     // Load and render the splash screen
     _platformContext->gfx().beginFrame();
-    GUISplash(*_resCache, "divideLogo.jpg", initRes[to_const_U32(WindowType::SPLASH)]).render(_platformContext->gfx());
+    GUISplash(*_resCache, "divideLogo.jpg", initRes[to_base(WindowType::SPLASH)]).render(_platformContext->gfx());
     _platformContext->gfx().endFrame(true);
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));

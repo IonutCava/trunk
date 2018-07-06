@@ -358,11 +358,11 @@ bool TenisScene::deinitializeAI(bool continueOnErrors) {
 }
 
 bool TenisScene::loadResources(bool continueOnErrors) {
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     // Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");

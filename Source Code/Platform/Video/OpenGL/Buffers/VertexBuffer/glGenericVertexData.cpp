@@ -19,8 +19,8 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
     _currentReadQuery = 0;
     _transformFeedback = 0;
     _currentWriteQuery = 0;
-    _vertexArray[to_const_U32(GVDUsage::DRAW)] = 0;
-    _vertexArray[to_const_U32(GVDUsage::FDBCK)] = 0;
+    _vertexArray[to_base(GVDUsage::DRAW)] = 0;
+    _vertexArray[to_base(GVDUsage::FDBCK)] = 0;
     _feedbackQueries.fill(nullptr);
     _resultAvailable.fill(nullptr);
 }
@@ -36,12 +36,12 @@ glGenericVertexData::~glGenericVertexData()
     // Make sure we don't have any of our VAOs bound
     GL_API::setActiveVAO(0);
     // Delete the rendering VAO
-    if (_vertexArray[to_const_U32(GVDUsage::DRAW)] > 0) {
-        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_U32(GVDUsage::DRAW)]);
+    if (_vertexArray[to_base(GVDUsage::DRAW)] > 0) {
+        GLUtil::_vaoPool.deallocate(_vertexArray[to_base(GVDUsage::DRAW)]);
     }
     // Delete the transform feedback VAO
-    if (_vertexArray[to_const_U32(GVDUsage::FDBCK)] > 0) {
-        GLUtil::_vaoPool.deallocate(_vertexArray[to_const_U32(GVDUsage::FDBCK)]);
+    if (_vertexArray[to_base(GVDUsage::FDBCK)] > 0) {
+        GLUtil::_vaoPool.deallocate(_vertexArray[to_base(GVDUsage::FDBCK)]);
     }
     // Make sure we don't have the indirect draw buffer bound
     // Make sure we don't have our transform feedback object bound
@@ -70,7 +70,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Prevent double create
     assert(_bufferObjects.empty() && "glGenericVertexData error: create called with no buffers specified!");
     // Create two vertex array objects. One for rendering and one for transform feedback
-    GLUtil::_vaoPool.allocate(to_const_U32(GVDUsage::COUNT), &_vertexArray[0]);
+    GLUtil::_vaoPool.allocate(to_base(GVDUsage::COUNT), &_vertexArray[0]);
     // Transform feedback may not be used, but it simplifies the class interface a lot
     // Create a transform feedback object
     glGenTransformFeedbacks(1, &_transformFeedback);
@@ -128,8 +128,8 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (drawBufferID > 0 && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we requested
-    GLuint activeVAO = _vertexArray[feedbackActive ? to_const_U32(GVDUsage::FDBCK)
-                                                   : to_const_U32(GVDUsage::DRAW)];
+    GLuint activeVAO = _vertexArray[feedbackActive ? to_base(GVDUsage::FDBCK)
+                                                   : to_base(GVDUsage::DRAW)];
     // Update buffer bindings
     setBufferBindings(activeVAO);
     // Update vertex attributes if needed (e.g. if offsets changed)

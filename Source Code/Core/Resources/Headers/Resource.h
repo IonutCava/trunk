@@ -139,7 +139,7 @@ protected:
     size_t _descriptorHash;
     stringImpl   _resourceLocation;  ///< Physical file location
     stringImpl   _resourceName;      ///< Physical file name
-    std::array<DELEGATE_CBK<void, Resource_wptr>, to_const_U32(ResourceState::COUNT)> _loadingCallbacks;
+    std::array<DELEGATE_CBK<void, Resource_wptr>, to_base(ResourceState::COUNT)> _loadingCallbacks;
     mutable SharedLock _callbackLock;
 };
 

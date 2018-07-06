@@ -46,8 +46,8 @@ enum class WindowType : U32 {
     COUNT
 };
 
-typedef std::array<vec2<I32>, to_const_U32(WindowType::COUNT)> PositionByType;
-typedef std::array<vec2<U16>, to_const_U32(WindowType::COUNT)> ResolutionByType;
+typedef std::array<vec2<I32>, to_base(WindowType::COUNT)> PositionByType;
+typedef std::array<vec2<U16>, to_base(WindowType::COUNT)> ResolutionByType;
 
 class WindowManager;
 enum class ErrorCode : I32;

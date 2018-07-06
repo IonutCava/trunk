@@ -39,7 +39,7 @@ namespace Divide {
 class RenderTarget;
 class RTAttachmentPool {
 public:
-    typedef std::array<vectorImpl<RTAttachment_ptr>, to_const_U32(RTAttachment::Type::COUNT)> AttachmentPool;
+    typedef std::array<vectorImpl<RTAttachment_ptr>, to_base(RTAttachment::Type::COUNT)> AttachmentPool;
 
 public:
     explicit RTAttachmentPool(RenderTarget& parent, U8 colourAttCount);
@@ -66,7 +66,7 @@ private:
 
 private:
     AttachmentPool _attachment;
-    std::array < U8, to_const_U32(RTAttachment::Type::COUNT)> _attachmentCount;
+    std::array < U8, to_base(RTAttachment::Type::COUNT)> _attachmentCount;
 
     bool _isFrameListener;
 

@@ -47,7 +47,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
 
     assert(!_materialInstance || (_materialInstance && !_materialInstance->getName().empty()));
 
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         if (_materialInstance) {
             if (!isSubMesh) {
                 _materialInstance->addShaderModifier(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), "TriangleStrip");
@@ -115,12 +115,12 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         _axisGizmo->paused(true);
         // Create the object containing all of the lines
         _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);
-        _axisGizmo->attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
+        _axisGizmo->attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
         // Set the mode to line rendering
         _axisGizmo->begin(PrimitiveType::LINES);
         // Add every line in the list to the batch
         for (const Line& line : _axisLines) {
-            _axisGizmo->attribute4f(to_const_U32(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
+            _axisGizmo->attribute4f(to_base(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
             _axisGizmo->vertex(line._startPoint);
             _axisGizmo->vertex(line._endPoint);
         }
@@ -148,8 +148,8 @@ RenderingComponent::~RenderingComponent()
 }
 
 void RenderingComponent::postLoad() {
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
             RenderStagePass stagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass));
 
             RenderPackage& pkg = renderData(stagePass);
@@ -493,7 +493,7 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               ShaderBuffer& shaderBuffer) {
 
     ShaderBufferList::iterator it;
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         for (RenderPackage& pkg : _renderData[pass]) {
             ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
             it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
@@ -510,7 +510,7 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         for (RenderPackage& pkg : _renderData[pass]) {
             pkg._shaderBuffers.erase(
                 std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),

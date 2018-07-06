@@ -181,11 +181,11 @@ void Scene::addPatch(vectorImpl<FileData>& data) {
 void Scene::loadXMLAssets(bool singleStep) {
     constexpr bool terrainThreadedLoading = true;
 
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     while (!_modelDataArray.empty()) {
         const FileData& it = _modelDataArray.top();
@@ -243,11 +243,11 @@ void Scene::loadXMLAssets(bool singleStep) {
 Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
     constexpr bool modelThreadedLoading = true;
 
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
@@ -267,7 +267,7 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
         if (addToSceneGraph) {
             SceneGraphNode_ptr meshNode =
                 _sceneGraph->getRoot().addNode(thisObj,
-                                               data.isUnit ? normalMask | to_const_U32(SGNComponent::ComponentType::UNIT) : normalMask,
+                                               data.isUnit ? normalMask | to_base(SGNComponent::ComponentType::UNIT) : normalMask,
                                                data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
                                                                                       : PhysicsGroup::GROUP_DYNAMIC
                                                                  : PhysicsGroup::GROUP_IGNORE,
@@ -295,11 +295,11 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
 }
 
 Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
@@ -379,10 +379,10 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
 SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                                              std::shared_ptr<ParticleData> data,
                                              SceneGraphNode& parentNode) {
-    static const U32 particleMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                    to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                    to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                    to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 particleMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                    to_base(SGNComponent::ComponentType::BOUNDS) |
+                                    to_base(SGNComponent::ComponentType::RENDERING) |
+                                    to_base(SGNComponent::ComponentType::NETWORKING);
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -404,10 +404,10 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
 
 SceneGraphNode_ptr Scene::addLight(LightType type,
                                    SceneGraphNode& parentNode) {
-    static const U32 lightMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                 to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                 to_base(SGNComponent::ComponentType::BOUNDS) |
+                                 to_base(SGNComponent::ComponentType::RENDERING) |
+                                 to_base(SGNComponent::ComponentType::NETWORKING);
 
     const char* lightType = "";
     switch (type) {
@@ -437,15 +437,15 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 }
 
 void Scene::toggleFlashlight(U8 playerIndex) {
-    static const U32 lightMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                 to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                 to_base(SGNComponent::ComponentType::BOUNDS) |
+                                 to_base(SGNComponent::ComponentType::RENDERING) |
+                                 to_base(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode_ptr& flashLight = _flashLight[playerIndex];
     if (!flashLight) {
         ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", playerIndex));
-        tempLightDesc.setEnumValue(to_const_U32(LightType::SPOT));
+        tempLightDesc.setEnumValue(to_base(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool);
         std::shared_ptr<Light> tempLight = CreateResource<Light>(_resCache, tempLightDesc);
         tempLight->setDrawImpostor(false);
@@ -472,11 +472,11 @@ SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
 
     static const U32 normalMask = 
-        to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-        to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-        to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-        to_const_U32(SGNComponent::ComponentType::RENDERING) |
-        to_const_U32(SGNComponent::ComponentType::NETWORKING);
+        to_base(SGNComponent::ComponentType::NAVIGATION) |
+        to_base(SGNComponent::ComponentType::PHYSICS) |
+        to_base(SGNComponent::ComponentType::BOUNDS) |
+        to_base(SGNComponent::ComponentType::RENDERING) |
+        to_base(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(skyItem,
                                                                 normalMask,
@@ -809,7 +809,7 @@ void Scene::onSetActive() {
     _context.sfx().stopMusic();
     _context.sfx().dumpPlaylists();
 
-    for (U32 i = 0; i < to_const_U32(MusicType::COUNT); ++i) {
+    for (U32 i = 0; i < to_base(MusicType::COUNT); ++i) {
         const SceneState::MusicPlaylist& playlist = state().music(static_cast<MusicType>(i));
         if (!playlist.empty()) {
             for (const SceneState::MusicPlaylist::value_type& song : playlist) {
@@ -840,11 +840,11 @@ void Scene::addPlayerInternal(bool queue) {
     if (!playerSGN) {
         SceneGraphNode& root = _sceneGraph->getRoot();
         playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents)),
-                                to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                to_const_U32(SGNComponent::ComponentType::UNIT) |
-                                to_const_U32(SGNComponent::ComponentType::NETWORKING),
+                                to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                to_base(SGNComponent::ComponentType::PHYSICS) |
+                                to_base(SGNComponent::ComponentType::BOUNDS) |
+                                to_base(SGNComponent::ComponentType::UNIT) |
+                                to_base(SGNComponent::ComponentType::NETWORKING),
                                 PhysicsGroup::GROUP_KINEMATIC,
                                 playerName);
         _parent.addPlayer(*this, playerSGN, queue);

@@ -74,7 +74,7 @@ DEFINE_SINGLETON(FrameListenerManager)
    private:
     mutable SharedLock _listenerLock;
     vectorImpl<FrameListener*> _listeners;
-    std::array<EventTimeMap, to_const_U32(FrameEventType::FRAME_EVENT_ENDED) + 1> _eventTimers;
+    std::array<EventTimeMap, to_base(FrameEventType::FRAME_EVENT_ENDED) + 1> _eventTimers;
 
 END_SINGLETON
 

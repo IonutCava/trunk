@@ -10,7 +10,7 @@ SceneNodeRenderState::SceneNodeRenderState()
     _noDefaultMaterial(false),
     _depthStateBlockHash(0),
     _shadowStateBlockHash(0),
-    _exclusionMask(to_const_U32(RenderPassType::COUNT), 0u)
+    _exclusionMask(to_base(RenderPassType::COUNT), 0u)
 {
 }
 
@@ -54,13 +54,13 @@ void SceneNodeRenderState::removeFromDrawExclusionMask(const RenderStagePass& cu
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStage currentStage) {
-    for (U8 pass = 0; pass < to_const_U32(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         addToDrawExclusionMask(RenderStagePass(currentStage, static_cast<RenderPassType>(pass)));
     }
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage currentStage) {
-    for (U8 pass = 0; pass < to_const_U32(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         removeFromDrawExclusionMask(RenderStagePass(currentStage, static_cast<RenderPassType>(pass)));
     }
 }

@@ -76,24 +76,24 @@ void Task::runTaskWithGPUSyncAndDebugInfo() {
 }
 
 PoolTask Task::getRunTask(TaskPriority priority, U32 taskFlags) {
-    if (BitCompare(taskFlags, to_const_U32(TaskFlags::PRINT_DEBUG_INFO))) {
-        if (BitCompare(taskFlags, to_const_U32(TaskFlags::SYNC_WITH_GPU))) {
-            return PoolTask(to_const_U32(priority), [this]() { runTaskWithGPUSyncAndDebugInfo(); });
+    if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
+        if (BitCompare(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU))) {
+            return PoolTask(to_base(priority), [this]() { runTaskWithGPUSyncAndDebugInfo(); });
         } else {
-            return PoolTask(to_const_U32(priority), [this]() { runTaskWithDebugInfo(); });
+            return PoolTask(to_base(priority), [this]() { runTaskWithDebugInfo(); });
         }
     } else {
-        if (BitCompare(taskFlags, to_const_U32(TaskFlags::SYNC_WITH_GPU))) {
-            return PoolTask(to_const_U32(priority), [this]() { runTaskWithGPUSync(); });
+        if (BitCompare(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU))) {
+            return PoolTask(to_base(priority), [this]() { runTaskWithGPUSync(); });
         }
     }
 
-    return PoolTask(to_const_U32(priority), [this]() { run(); });
+    return PoolTask(to_base(priority), [this]() { run(); });
 }
 
 void Task::startTask(TaskPriority priority, U32 taskFlags) {
     if (g_DebugTaskStartStop) {
-        SetBit(taskFlags, to_const_U32(TaskFlags::PRINT_DEBUG_INFO));
+        SetBit(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO));
     }
 
     assert(!isRunning());
@@ -106,9 +106,9 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
     }
 
     if (!Config::USE_GPU_THREADED_LOADING) {
-        if (BitCompare(taskFlags, to_const_U32(TaskFlags::SYNC_WITH_GPU))) {
+        if (BitCompare(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU))) {
             priority = TaskPriority::REALTIME_WITH_CALLBACK;
-            ClearBit(taskFlags, to_const_U32(TaskFlags::SYNC_WITH_GPU));
+            ClearBit(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU));
         }
     }
 

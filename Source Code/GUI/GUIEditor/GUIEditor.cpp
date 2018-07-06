@@ -29,7 +29,7 @@ GUIEditor::GUIEditor(PlatformContext& context, ResourceCache& cache)
     _deleteSelectionButton = nullptr;
 
     U32 transFieldCount =
-        to_const_U32(TransformFields::COUNT);
+        to_base(TransformFields::COUNT);
 
     _toggleButtons.fill(0);
 
@@ -135,11 +135,11 @@ void GUIEditor::TrackSelection() {
                       ControlFields::CONTROL_FIELD_Z) = localScale.z;
 
         for (U32 i = 0;
-             i < to_const_U32(TransformFields::COUNT);
+             i < to_base(TransformFields::COUNT);
              ++i) {
             // Skip granularity
             for (U32 j = 0;
-                 j < to_const_U32(ControlFields::COUNT) - 1;
+                 j < to_base(ControlFields::COUNT) - 1;
                  ++j) {
                 _valuesField[i][j]->setText(
                     CEGUI::PropertyHelper<F32>::toString(_currentValues[i][j]));
@@ -174,11 +174,11 @@ void GUIEditor::UpdateControls() {
 
     if (!hasValidTransform) {
         for (U32 i = 0;
-             i < to_const_U32(TransformFields::COUNT);
+             i < to_base(TransformFields::COUNT);
              ++i) {
             // Skip granularity
             for (U32 j = 0;
-                 j < to_const_U32(ControlFields::COUNT) - 1;
+                 j < to_base(ControlFields::COUNT) - 1;
                  ++j) {
                 _valuesField[i][j]->setText("N/A");
                 _valuesField[i][j]->setEnabled(false);
@@ -198,11 +198,11 @@ void GUIEditor::UpdateControls() {
         toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->setSelected(false);
     } else {
         for (U32 i = 0;
-             i < to_const_U32(TransformFields::COUNT);
+             i < to_base(TransformFields::COUNT);
              ++i) {
             // Skip granularity
             for (U32 j = 0;
-                 j < to_const_U32(ControlFields::COUNT) - 1;
+                 j < to_base(ControlFields::COUNT) - 1;
                  ++j) {
                 _valuesField[i][j]->setText(
                     CEGUI::PropertyHelper<F32>::toString(_currentValues[i][j]));

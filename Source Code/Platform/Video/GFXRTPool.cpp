@@ -13,7 +13,7 @@ GFXRTPool::GFXRTPool(GFXDevice& parent)
     : _parent(parent)
 {
     _renderTargets[to_U32(RenderTargetUsage::SCREEN)].resize(1, nullptr);
-    _renderTargets[to_U32(RenderTargetUsage::SHADOW)].resize(to_const_U32(ShadowType::COUNT), nullptr);
+    _renderTargets[to_U32(RenderTargetUsage::SHADOW)].resize(to_base(ShadowType::COUNT), nullptr);
     _renderTargets[to_U32(RenderTargetUsage::REFLECTION_PLANAR)].resize(Config::MAX_REFLECTIVE_NODES_IN_VIEW, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::REFRACTION_PLANAR)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);
 
@@ -31,7 +31,7 @@ GFXRTPool::~GFXRTPool()
 
 void GFXRTPool::clear() {
     // Delete all of our rendering targets
-    for (U8 i = 0; i < to_const_U8(RenderTargetUsage::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RenderTargetUsage::COUNT); ++i) {
         for (U32 j = 0; j < to_U32(_renderTargets[i].size()); ++j) {
             set(RenderTargetID(static_cast<RenderTargetUsage>(i), j), nullptr);
         }

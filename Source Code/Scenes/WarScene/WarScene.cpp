@@ -322,13 +322,13 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
 }
 
 bool WarScene::load(const stringImpl& name) {
-    static const U32 lightMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                 to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                 to_const_U32(SGNComponent::ComponentType::RENDERING);
+    static const U32 lightMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                 to_base(SGNComponent::ComponentType::BOUNDS) |
+                                 to_base(SGNComponent::ComponentType::RENDERING);
 
     static const U32 normalMask = lightMask |
-                                  to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+                                  to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
@@ -422,7 +422,7 @@ bool WarScene::load(const stringImpl& name) {
 
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
-            tempLight.setEnumValue(to_const_U32(LightType::POINT));
+            tempLight.setEnumValue(to_base(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
@@ -436,7 +436,7 @@ bool WarScene::load(const stringImpl& name) {
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
-            tempLight.setEnumValue(to_const_U32(LightType::POINT));
+            tempLight.setEnumValue(to_base(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
@@ -449,7 +449,7 @@ bool WarScene::load(const stringImpl& name) {
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
-            tempLight.setEnumValue(to_const_U32(LightType::SPOT));
+            tempLight.setEnumValue(to_base(LightType::SPOT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);
@@ -535,11 +535,11 @@ bool WarScene::load(const stringImpl& name) {
 
     std::shared_ptr<ParticleData> particles = 
         std::make_shared<ParticleData>(particleCount,
-                                       to_const_U32(ParticleData::Properties::PROPERTIES_POS) |
-                                       to_const_U32(ParticleData::Properties::PROPERTIES_VEL) |
-                                       to_const_U32(ParticleData::Properties::PROPERTIES_ACC) |
-                                       to_const_U32(ParticleData::Properties::PROPERTIES_COLOR) |
-                                       to_const_U32(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
+                                       to_base(ParticleData::Properties::PROPERTIES_POS) |
+                                       to_base(ParticleData::Properties::PROPERTIES_VEL) |
+                                       to_base(ParticleData::Properties::PROPERTIES_ACC) |
+                                       to_base(ParticleData::Properties::PROPERTIES_COLOR) |
+                                       to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
     particles->_textureFileName = "particle.DDS";
 
     std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
@@ -589,7 +589,7 @@ bool WarScene::load(const stringImpl& name) {
     for (U8 row = 0; row < 4; row++) {
         for (U8 col = 0; col < 4; col++) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
-            tempLight.setEnumValue(to_const_U32(LightType::POINT));
+            tempLight.setEnumValue(to_base(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);
             light->setDrawImpostor(false);

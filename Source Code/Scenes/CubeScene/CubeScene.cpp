@@ -82,10 +82,10 @@ bool CubeScene::load(const stringImpl& name) {
 
 bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < 10; col++) {
@@ -93,7 +93,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             stringstreamImpl ss;
             ss << to_U32(lightID);
             ResourceDescriptor tempLight("Light Deferred " + ss.str());
-            tempLight.setEnumValue(to_const_U32(LightType::POINT));
+            tempLight.setEnumValue(to_base(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
 
             std::shared_ptr<Light> light = CreateResource<Light>(_resCache, tempLight);

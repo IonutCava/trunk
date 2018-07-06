@@ -125,7 +125,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
     assert(ilGetInteger(IL_IMAGE_TYPE) == IL_UNSIGNED_BYTE);
 
     I32 dxtc = ilGetInteger(IL_DXTC_DATA_FORMAT);
-    _bpp = to_const_U8(ilGetInteger(IL_IMAGE_BPP));
+    _bpp = to_U8(ilGetInteger(IL_IMAGE_BPP));
 
     if (ilGetInteger(IL_IMAGE_CUBEFLAGS) > 0) {
         _compressedTextureType = TextureType::TEXTURE_CUBE_MAP;

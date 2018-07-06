@@ -58,9 +58,9 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t de
         ShaderProgram_ptr shader = std::dynamic_pointer_cast<ShaderProgram>(res.lock());
 
         shader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
-        _instanceRoutineIdx[to_const_U32(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "PassThrough");
-        _instanceRoutineIdx[to_const_U32(CullType::INSTANCE_CLOUD_REDUCTION)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "InstanceCloudReduction");
-        _instanceRoutineIdx[to_const_U32(CullType::HI_Z_CULL)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "HiZOcclusionCull");
+        _instanceRoutineIdx[to_base(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "PassThrough");
+        _instanceRoutineIdx[to_base(CullType::INSTANCE_CLOUD_REDUCTION)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "InstanceCloudReduction");
+        _instanceRoutineIdx[to_base(CullType::HI_Z_CULL)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "HiZOcclusionCull");
     };
 
     ResourceDescriptor instanceCullShader("instanceCull");
@@ -205,8 +205,8 @@ void Vegetation::uploadGrassData() {
     }
 
     const Material_ptr& mat = getMaterialTpl();
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
             const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass))).getProgram();
 
             drawShader->Uniform("positionOffsets", grassBlades);
@@ -219,39 +219,39 @@ void Vegetation::uploadGrassData() {
     for (U8 i = 0; i < 2; ++i) {
         GenericVertexData* buffer = _grassGPUBuffer[i];
 
-        buffer->create(to_const_U8(BufferUsage::COUNT), 3);
+        buffer->create(to_U8(BufferUsage::COUNT), 3);
         // position culled will be generated using transform feedback using
         // shader output 'posLocation'
         // writing to buffer "CulledPositionBuffer"
-        buffer->setFeedbackBuffer(to_const_U32(BufferUsage::CulledPositionBuffer), 0);
-        buffer->setFeedbackBuffer(to_const_U32(BufferUsage::CulledSizeBuffer), 1);
-        buffer->setFeedbackBuffer(to_const_U32(BufferUsage::CulledInstanceBuffer), 2);
+        buffer->setFeedbackBuffer(to_base(BufferUsage::CulledPositionBuffer), 0);
+        buffer->setFeedbackBuffer(to_base(BufferUsage::CulledSizeBuffer), 1);
+        buffer->setFeedbackBuffer(to_base(BufferUsage::CulledInstanceBuffer), 2);
 
-        buffer->setBuffer(to_const_U32(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
+        buffer->setBuffer(to_base(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
                           sizeof(vec4<F32>), true, &_grassPositions[0], false, false);
-        buffer->setBuffer(to_const_U32(BufferUsage::UnculledSizeBuffer), _instanceCountGrass,
+        buffer->setBuffer(to_base(BufferUsage::UnculledSizeBuffer), _instanceCountGrass,
                           sizeof(F32), true, &_grassScales[0], false, false);
-        buffer->setBuffer(to_const_U32(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,
+        buffer->setBuffer(to_base(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,
                           sizeof(vec4<F32>), true, NULL, true, false);
-        buffer->setBuffer(to_const_U32(BufferUsage::CulledSizeBuffer), _instanceCountGrass * 3,
+        buffer->setBuffer(to_base(BufferUsage::CulledSizeBuffer), _instanceCountGrass * 3,
                           sizeof(F32), true, NULL, true, false);
-        buffer->setBuffer(to_const_U32(BufferUsage::CulledInstanceBuffer), _instanceCountGrass * 3,
+        buffer->setBuffer(to_base(BufferUsage::CulledInstanceBuffer), _instanceCountGrass * 3,
                           sizeof(I32), true, NULL, true, false);
 
         buffer->attribDescriptor(posLocation)
-            .set(to_const_U32(BufferUsage::CulledPositionBuffer), instanceDiv, 4, false, 0, 
+            .set(to_base(BufferUsage::CulledPositionBuffer), instanceDiv, 4, false, 0, 
                              GFXDataFormat::FLOAT_32);
         buffer->attribDescriptor(scaleLocation)
-            .set(to_const_U32(BufferUsage::CulledSizeBuffer), instanceDiv, 1, false, 0,
+            .set(to_base(BufferUsage::CulledSizeBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::FLOAT_32);
         buffer->attribDescriptor(instLocation)
-            .set(to_const_U32(BufferUsage::CulledInstanceBuffer), instanceDiv, 1, false, 0,
+            .set(to_base(BufferUsage::CulledInstanceBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::SIGNED_INT);
         buffer->fdbkAttribDescriptor(posLocation)
-            .set(to_const_U32(BufferUsage::UnculledPositionBuffer), instanceDiv, 4, false, 0,
+            .set(to_base(BufferUsage::UnculledPositionBuffer), instanceDiv, 4, false, 0,
                  GFXDataFormat::FLOAT_32);
         buffer->fdbkAttribDescriptor(scaleLocation)
-            .set(to_const_U32(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0,
+            .set(to_base(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::FLOAT_32);
 
         buffer->toggleDoubleBufferedQueries(false);
@@ -341,16 +341,16 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         //_cullShader->SetSubroutine(VERTEX,
         //_instanceRoutineIdx[HI_Z_CULL]);
         _cullShader->Uniform("cullType",
-                             /*queryID*/ to_const_U32(CullType::INSTANCE_CLOUD_REDUCTION));
+                             /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
 
         _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).bind(0, RTAttachment::Type::Depth, 0);
-        buffer->bindFeedbackBufferRange(to_const_U32(BufferUsage::CulledPositionBuffer),
+        buffer->bindFeedbackBufferRange(to_base(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
-        buffer->bindFeedbackBufferRange(to_const_U32(BufferUsage::CulledSizeBuffer),
+        buffer->bindFeedbackBufferRange(to_base(BufferUsage::CulledSizeBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
-        buffer->bindFeedbackBufferRange(to_const_U32(BufferUsage::CulledInstanceBuffer),
+        buffer->bindFeedbackBufferRange(to_base(BufferUsage::CulledInstanceBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
 

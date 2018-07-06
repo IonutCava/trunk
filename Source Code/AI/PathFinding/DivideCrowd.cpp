@@ -47,7 +47,7 @@ DivideDtCrowd::DivideDtCrowd(NavigationMesh* navMesh)
                                     *navMesh).getAgentRadius(),
                     nav);
         // Make polygons with 'disabled' flag invalid.
-        crowd->getEditableFilter(0)->setExcludeFlags(to_const_U16(SamplePolyFlags::SAMPLE_POLYFLAGS_DISABLED));
+        crowd->getEditableFilter(0)->setExcludeFlags(to_U16(SamplePolyFlags::SAMPLE_POLYFLAGS_DISABLED));
         // Create different avoidance settings presets. The crowd object can
         // store multiple,
         // identified by an index number.

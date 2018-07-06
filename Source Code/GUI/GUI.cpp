@@ -105,8 +105,8 @@ void GUI::draw(GFXDevice& context) const {
     // global elements
     textBatch.resize(0);
 
-    for (U8 i = 0; i < to_const_U32(GUIType::COUNT); ++i) {
-        if (i != to_const_U32(GUIType::GUI_TEXT)) {
+    for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
+        if (i != to_base(GUIType::GUI_TEXT)) {
             for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
                 GUIElement& element = *guiStackIterator.second.first;
                 // Skip hidden elements
@@ -118,7 +118,7 @@ void GUI::draw(GFXDevice& context) const {
     }
 
     //cache text elements
-    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_const_U32(GUIType::GUI_TEXT)]) {
+    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (!textElement.text().empty()) {
             textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
@@ -299,7 +299,7 @@ void GUI::destroy() {
         {
             WriteLock w_lock(_guiStackLock);
             assert(_guiStack.empty());
-            for (U8 i = 0; i < to_const_U32(GUIType::COUNT); ++i) {
+            for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
                 for (GUIMap::value_type& it : _guiElements[i]) {
                     MemoryManager::DELETE(it.second.first);
                 }

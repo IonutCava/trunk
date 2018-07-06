@@ -109,7 +109,7 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     I32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), to_I32(Joystick::COUNT));
 
     if (numJoysticks > 0) {
-        U32 entryNum = to_const_U32(Joystick::JOYSTICK_1);
+        U32 entryNum = to_base(Joystick::JOYSTICK_1);
 
         for (I32 i = 0; i < numJoysticks; ++i) {
             OIS::JoyStick* joystick = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject(OIS::OISJoyStick, true));

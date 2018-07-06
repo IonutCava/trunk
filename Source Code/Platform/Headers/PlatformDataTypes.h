@@ -103,92 +103,53 @@ constexpr U32 operator"" _u32 ( Enum value )
 return static_cast<U32>(value);
 }*/
 
-template <typename Type, typename = void>
-constexpr auto to_underlying_type(const Type value) -> Type {
+template <typename Type, typename = typename std::enable_if<std::is_integral<Type>::value>::type>
+constexpr auto to_base(const Type value) -> Type {
     return value;
 }
 
-template <typename Type, typename std::enable_if<std::is_enum<Type>::value>::type>
-constexpr auto to_underlying_type(const Type value) -> typename std::underlying_type<Type>::type {
+template <typename Type, typename = typename std::enable_if<std::is_enum<Type>::value>::type>
+constexpr auto to_base(const Type value) -> typename std::underlying_type<Type>::type {
     return static_cast<typename std::underlying_type<Type>::type>(value);
-}
-
-template<typename T>
-constexpr U8 to_const_U8(const T value) {
-    return static_cast<U8>(value);
-}
-
-template<typename T>
-constexpr U16 to_const_U16(const T value) {
-    return static_cast<U16>(value);
-}
-
-template<typename T>
-constexpr U32 to_const_U32(const T value) {
-    return static_cast<U32>(value);
-}
-
-template<typename T>
-constexpr I8 to_const_I8(const T value) {
-    return static_cast<I8>(value);
-}
-
-template<typename T>
-constexpr I16 to_const_I16(const T value) {
-    return static_cast<I16>(value);
-}
-template<typename T>
-constexpr I32 to_const_I32(const T value) {
-    return static_cast<I32>(value);
-}
-
-template<typename T>
-constexpr F32 to_const_F32(const T value) {
-    return static_cast<F32>(value);
-}
-
-template<typename T>
-constexpr D64 to_const_D64(const T value) {
-    return static_cast<D64>(value);
 }
 
 template <typename T>
 U32 to_U32(const T value) {
-    return static_cast<U32>(to_underlying_type(value));
+    return static_cast<U32>(value);
 }
 
 template <typename T>
 U16 to_U16(const T value) {
-    return static_cast<U16>(to_underlying_type(value));
+    return static_cast<U16>(value);
 }
 
 template <typename T>
 U8 to_U8(const T value) {
-    return static_cast<U8>(to_underlying_type(value));
+    return static_cast<U8>(value);
 }
 
 template <typename T>
 I32 to_I32(const T value) {
-    return static_cast<I32>(to_underlying_type(value));
+    return static_cast<I32>(value);
 }
 
 template <typename T>
 I16 to_I16(const T value) {
-    return static_cast<I16>(to_underlying_type(value));
+    return static_cast<I16>(value);
 }
 
 template <typename T>
 I8 to_I8(const T value) {
-    return static_cast<I8>(to_underlying_type(value));
+    return static_cast<I8>(value);
 }
 template <typename T>
 F32 to_F32(const T value) {
-    return static_cast<F32>(to_underlying_type(value));
+    return static_cast<F32>(value);
 }
 
 template <typename T>
 D64 to_D64(const T value) {
-    return static_cast<D64>(to_underlying_type(value));
+    return static_cast<D64>(value);
 }
 
 //ref: http://codereview.stackexchange.com/questions/51235/udp-network-server-client-for-gaming-using-boost-asio

@@ -17,8 +17,8 @@ using namespace AI;
 static const D64 DESTINATION_RADIUS = 2;
 static const D64 DESTINATION_RADIUS_SQ = DESTINATION_RADIUS *
                                          DESTINATION_RADIUS;
-static const F32 DESTINATION_RADIUS_F = to_const_F32(DESTINATION_RADIUS);
-static const F32 DESTINATION_RADIUS_SQ_F = to_const_F32(DESTINATION_RADIUS_SQ);
+static const F32 DESTINATION_RADIUS_F = to_F32(DESTINATION_RADIUS);
+static const F32 DESTINATION_RADIUS_SQ_F = to_F32(DESTINATION_RADIUS_SQ);
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)
     : GUIDWrapper(),

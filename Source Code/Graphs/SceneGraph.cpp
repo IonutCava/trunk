@@ -8,12 +8,12 @@
 namespace Divide {
 
 namespace {
-    U32 ignoredNodeType = to_const_U32(SceneNodeType::TYPE_ROOT) |
-                          to_const_U32(SceneNodeType::TYPE_LIGHT) |
-                          to_const_U32(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-                          to_const_U32(SceneNodeType::TYPE_TRIGGER) |
-                          to_const_U32(SceneNodeType::TYPE_SKY) |
-                          to_const_U32(SceneNodeType::TYPE_VEGETATION_GRASS);
+    U32 ignoredNodeType = to_base(SceneNodeType::TYPE_ROOT) |
+                          to_base(SceneNodeType::TYPE_LIGHT) |
+                          to_base(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+                          to_base(SceneNodeType::TYPE_TRIGGER) |
+                          to_base(SceneNodeType::TYPE_SKY) |
+                          to_base(SceneNodeType::TYPE_VEGETATION_GRASS);
 };
 
 SceneGraph::SceneGraph(Scene& parentScene)
@@ -23,8 +23,8 @@ SceneGraph::SceneGraph(Scene& parentScene)
      _octreeChanged(false),
      _rootNode(new SceneRoot(parentScene.resourceCache(), 1234))
 {
-    static const U32 rootMask = to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                to_const_U32(SGNComponent::ComponentType::BOUNDS);
+    static const U32 rootMask = to_base(SGNComponent::ComponentType::PHYSICS) |
+                                to_base(SGNComponent::ComponentType::BOUNDS);
 
     REGISTER_FRAME_LISTENER(this, 1);
     _root = std::make_shared<SceneGraphNode>(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
@@ -33,10 +33,10 @@ SceneGraph::SceneGraph(Scene& parentScene)
     onNodeAdd(*_root);
     _allNodes.push_back(_root);
 
-    U32 octreeNodeMask = to_const_U32(SceneNodeType::TYPE_ROOT) |
-                         to_const_U32(SceneNodeType::TYPE_LIGHT) |
-                         to_const_U32(SceneNodeType::TYPE_SKY) |
-                         to_const_U32(SceneNodeType::TYPE_VEGETATION_GRASS);
+    U32 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
+                         to_base(SceneNodeType::TYPE_LIGHT) |
+                         to_base(SceneNodeType::TYPE_SKY) |
+                         to_base(SceneNodeType::TYPE_VEGETATION_GRASS);
 
     _octree.reset(new Octree(octreeNodeMask));
     _octreeUpdating = false;
@@ -205,7 +205,7 @@ void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneG
 
     /*if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
-        U32 filter = to_const_U32(SceneNodeType::TYPE_OBJECT3D);
+        U32 filter = to_base(SceneNodeType::TYPE_OBJECT3D);
         SceneGraphNode_ptr collision = _octree->nearestIntersection(ray, start, end, filter)._intersectedObject1.lock();
         if (collision) {
             Console::d_printfn("Octree ray cast [ %s ]", collision->getName().c_str());

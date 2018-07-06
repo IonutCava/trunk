@@ -173,7 +173,7 @@ void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
     const PlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
     // For every clip plane that we support (usually 6)
-    for (U32 i = 0; i < to_const_U32(Frustum::FrustPlane::COUNT); ++i) {
+    for (U32 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
         // Check its state
         const bool& clipPlaneActive = list[i].active();
         // And compare it with OpenGL's current state
@@ -309,8 +309,8 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
     // Prevent double bind
     if (s_activeFBID[to_U32(usage)] == ID) {
         if (usage == RenderTarget::RenderTargetUsage::RT_READ_WRITE) {
-            if (s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] == ID &&
-                s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] == ID) {
+            if (s_activeFBID[to_base(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] == ID &&
+                s_activeFBID[to_base(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] == ID) {
                 return false;
             }
         } else {
@@ -325,8 +325,8 @@ bool GL_API::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuin
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] = ID;
-            s_activeFBID[to_const_U32(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] = ID;
+            s_activeFBID[to_base(RenderTarget::RenderTargetUsage::RT_READ_ONLY)] = ID;
+            s_activeFBID[to_base(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY)] = ID;
         } break;
         case RenderTarget::RenderTargetUsage::RT_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);

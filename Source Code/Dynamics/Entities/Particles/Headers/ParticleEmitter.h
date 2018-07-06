@@ -110,10 +110,10 @@ class ParticleEmitter : public SceneNode {
     /// draw the impostor?
     bool _drawImpostor;
 
-    typedef std::array<GenericVertexData*, to_const_U32(RenderStage::COUNT)> BuffersPerStage;
+    typedef std::array<GenericVertexData*, to_base(RenderStage::COUNT)> BuffersPerStage;
     typedef std::array<BuffersPerStage, s_MaxPlayerBuffers> BuffersPerPlayer;
     BuffersPerPlayer _particleGPUBuffers;
-    std::array<bool, to_const_U32(RenderStage::COUNT)> _buffersDirty;
+    std::array<bool, to_base(RenderStage::COUNT)> _buffersDirty;
 
     size_t _particleStateBlockHash;
     size_t _particleStateBlockHashDepth;

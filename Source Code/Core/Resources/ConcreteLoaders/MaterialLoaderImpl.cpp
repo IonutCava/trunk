@@ -19,7 +19,7 @@ CachedResource_ptr ImplResourceLoader<Material>::operator()() {
         }
 
         ptr->setHardwareSkinning(_descriptor.getEnumValue() == 
-                                    to_const_U32(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+                                    to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
     }
 
     return ptr;

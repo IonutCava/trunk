@@ -249,7 +249,7 @@ namespace Import {
             submeshdesc.setFlag(true);
             submeshdesc.setID(subMeshData._index);
             if (subMeshData._boneCount > 0) {
-                submeshdesc.setEnumValue(to_const_U32(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+                submeshdesc.setEnumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
             }
 
             tempSubMesh = CreateResource<SubMesh>(cache, submeshdesc);
@@ -303,7 +303,7 @@ namespace Import {
         // If we found it in the Resource Cache, return a copy of it
         ResourceDescriptor materialDesc(importData._name);
         if (skinned) {
-            materialDesc.setEnumValue(to_const_U32(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+            materialDesc.setEnumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
 
         // If it's not defined in an XML File, see if it was previously loaded by
@@ -321,7 +321,7 @@ namespace Import {
         tempMaterial->setDoubleSided(importData._doubleSided);
 
         SamplerDescriptor textureSampler;
-        for (U32 i = 0; i < to_const_U32(ShaderProgram::TextureUsage::COUNT); ++i) {
+        for (U32 i = 0; i < to_base(ShaderProgram::TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
             if (!tex._textureName.empty()) {
                 textureSampler.toggleSRGBColourSpace(tex._srgbSpace);
@@ -331,7 +331,7 @@ namespace Import {
                 texture.setResourceName(tex._textureName);
                 texture.setResourceLocation(tex._texturePath);
                 texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-                texture.setEnumValue(to_const_U32(TextureType::TEXTURE_2D));
+                texture.setEnumValue(to_base(TextureType::TEXTURE_2D));
                 Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
                 assert(textureRes != nullptr);
 
@@ -341,7 +341,7 @@ namespace Import {
 
         // If we don't have a valid opacity map, try to find out whether the diffuse texture has any non-opaque pixels.
         // If we find a few, use it as opacity texture
-        if (!importData._ignoreAlpha && importData._textures[to_const_U32(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
+        if (!importData._ignoreAlpha && importData._textures[to_base(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
             Texture_ptr diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
             if (diffuse && diffuse->hasTransparency()) {
                 Texture_ptr textureRes = CreateResource<Texture>(cache, ResourceDescriptor(diffuse->getName()));

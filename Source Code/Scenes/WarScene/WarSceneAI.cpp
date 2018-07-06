@@ -207,26 +207,26 @@ bool WarScene::addUnits() {
     attackAction.setPrecondition(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(false));
     attackAction.setEffect(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(true));
 
-    GOAPGoal recoverOwnFlag("Recover flag", to_const_U32(WarSceneOrder::WarOrder::RECOVER_FLAG));
+    GOAPGoal recoverOwnFlag("Recover flag", to_base(WarSceneOrder::WarOrder::RECOVER_FLAG));
     recoverOwnFlag.setVariable(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(false));
     
-    GOAPGoal captureFlag("Capture enemy flag", to_const_U32(WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG));
+    GOAPGoal captureFlag("Capture enemy flag", to_base(WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG));
     captureFlag.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(true));
     captureFlag.setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
 
-    GOAPGoal scoreFlag("Score", to_const_U32(WarSceneOrder::WarOrder::SCORE_ENEMY_FLAG));
+    GOAPGoal scoreFlag("Score", to_base(WarSceneOrder::WarOrder::SCORE_ENEMY_FLAG));
     scoreFlag.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
 
-    GOAPGoal idle("Idle", to_const_U32(WarSceneOrder::WarOrder::IDLE));
+    GOAPGoal idle("Idle", to_base(WarSceneOrder::WarOrder::IDLE));
     idle.setVariable(GOAPFact(Fact::IDLING), GOAPValue(true));
 
-    GOAPGoal killEnemy("Kill", to_const_U32(WarSceneOrder::WarOrder::KILL_ENEMY));
+    GOAPGoal killEnemy("Kill", to_base(WarSceneOrder::WarOrder::KILL_ENEMY));
     killEnemy.setVariable(GOAPFact(Fact::ENEMY_DEAD), AI::GOAPValue(true));
 
-    GOAPGoal protectFlagCarrier("Protect Flag Carrier", to_const_U32(WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
+    GOAPGoal protectFlagCarrier("Protect Flag Carrier", to_base(WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
     protectFlagCarrier.setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
 
-    std::array<GOAPPackage,  to_const_U32(WarSceneAIProcessor::AIType::COUNT)> goapPackages;
+    std::array<GOAPPackage,  to_base(WarSceneAIProcessor::AIType::COUNT)> goapPackages;
     for (GOAPPackage& goapPackage : goapPackages) {
         goapPackage._worldState.setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
         goapPackage._worldState.setVariable(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(false));
@@ -244,8 +244,8 @@ bool WarScene::addUnits() {
         goapPackage._goalList.push_back(recoverOwnFlag);
     }
 
-    GOAPPackage& lightPackage = goapPackages[to_const_U32(WarSceneAIProcessor::AIType::LIGHT)];
-    GOAPPackage& heavyPackage = goapPackages[to_const_U32(WarSceneAIProcessor::AIType::HEAVY)];
+    GOAPPackage& lightPackage = goapPackages[to_base(WarSceneAIProcessor::AIType::LIGHT)];
+    GOAPPackage& heavyPackage = goapPackages[to_base(WarSceneAIProcessor::AIType::HEAVY)];
 
     heavyPackage._actionSet.push_back(approachEnemyFlag);
     heavyPackage._actionSet.push_back(captureEnemyFlag);
@@ -273,12 +273,12 @@ bool WarScene::addUnits() {
     vec3<F32> currentScale;
     stringImpl currentName;
 
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::UNIT) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::UNIT) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     SceneGraphNode& root = _sceneGraph->getRoot();
     for (I32 k = 0; k < 2; ++k) {
@@ -355,9 +355,9 @@ bool WarScene::addUnits() {
             brain->registerGOAPPackage(goapPackages[to_U32(type)]);
             aiSoldier->setAIProcessor(brain);
             std::shared_ptr<NPC> soldier = std::make_shared<NPC>(aiSoldier);
-            soldier->setAttribute(to_const_U32(AI::UnitAttributes::HEALTH_POINTS), 100);
-            soldier->setAttribute(to_const_U32(AI::UnitAttributes::DAMAGE), damage);
-            soldier->setAttribute(to_const_U32(AI::UnitAttributes::ALIVE_FLAG), 1);
+            soldier->setAttribute(to_base(AI::UnitAttributes::HEALTH_POINTS), 100);
+            soldier->setAttribute(to_base(AI::UnitAttributes::DAMAGE), damage);
+            soldier->setAttribute(to_base(AI::UnitAttributes::ALIVE_FLAG), 1);
             soldier->setMovementSpeed(speed);
             soldier->setAcceleration(acc);
             currentNode->get<UnitComponent>()->setUnit(soldier);

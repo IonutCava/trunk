@@ -188,7 +188,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, Attachm
 }
 
 bool glFramebuffer::create(U16 width, U16 height) {
-    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
         RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
         for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
             updateDescriptor(type, j);
@@ -196,7 +196,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
     }
     
     if (_resolveBuffer) {
-        for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
+        for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
             RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
             for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
                 const RTAttachment_ptr& att = _attachmentPool->get(type, j);
@@ -235,7 +235,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
 
     // For every attachment, be it a colour or depth attachment ...
     I32 attachmentCountTotal = 0;
-    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
         for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachment::Type>(i)); ++j) {
             initAttachment(static_cast<RTAttachment::Type>(i), j);
             assert(GL_API::s_maxFBOAttachments > ++attachmentCountTotal);
@@ -422,7 +422,7 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy) {
 
 void glFramebuffer::resetAttachments() {
     // Reset attachments if they changed (e.g. after layered rendering);
-    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
         _attachmentPool->get(static_cast<RTAttachment::Type>(i), _activeAttachmentsCache);
         for (const RTAttachment_ptr& attachment : _activeAttachmentsCache) {
             attachment->writeLayer(0);
@@ -538,7 +538,7 @@ void glFramebuffer::drawToLayer(RTAttachment::Type type,
 void glFramebuffer::setMipLevel(U16 writeLevel) {
     // This is needed because certain drivers need all attachments to use the same mip level
     // This is also VERY SLOW so it might be worth optimising it per-driver version / IHV
-    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
         _attachmentPool->get(static_cast<RTAttachment::Type>(i), _activeAttachmentsCache);
         for (const RTAttachment_ptr& attachment : _activeAttachmentsCache) {
             const Texture_ptr& texture = attachment->asTexture();

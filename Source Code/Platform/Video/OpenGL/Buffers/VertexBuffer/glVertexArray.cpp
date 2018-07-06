@@ -137,7 +137,7 @@ glVertexArray::glVertexArray(GFXDevice& context)
     _effectiveEntrySize = -1;
     _IBid = 0;
 
-    for (U8 i = 0; i < to_const_U32(RenderPassType::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
         _vaoCaches[i].fill(0);
         _vaoHashes[i].fill(0);
     }
@@ -155,7 +155,7 @@ void glVertexArray::reset() {
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
-    for (U8 i = 0; i < to_const_U32(RenderPassType::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
         _vaoHashes[i].fill(0);
     }
     _useAttribute.fill(false);
@@ -165,37 +165,37 @@ void glVertexArray::reset() {
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
 std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
-    bool useColour    = _useAttribute[to_const_U32(VertexAttribute::ATTRIB_COLOR)];
-    bool useNormals   = _useAttribute[to_const_U32(VertexAttribute::ATTRIB_NORMAL)];
-    bool useTangents  = _useAttribute[to_const_U32(VertexAttribute::ATTRIB_TANGENT)];
-    bool useTexcoords = _useAttribute[to_const_U32(VertexAttribute::ATTRIB_TEXCOORD)];
-    bool useBoneData  = _useAttribute[to_const_U32(VertexAttribute::ATTRIB_BONE_INDICE)];
+    bool useColour    = _useAttribute[to_base(VertexAttribute::ATTRIB_COLOR)];
+    bool useNormals   = _useAttribute[to_base(VertexAttribute::ATTRIB_NORMAL)];
+    bool useTangents  = _useAttribute[to_base(VertexAttribute::ATTRIB_TANGENT)];
+    bool useTexcoords = _useAttribute[to_base(VertexAttribute::ATTRIB_TEXCOORD)];
+    bool useBoneData  = _useAttribute[to_base(VertexAttribute::ATTRIB_BONE_INDICE)];
 
     size_t prevOffset = sizeof(vec3<F32>);
     if (useNormals) {
-        _attributeOffset[to_const_U32(VertexAttribute::ATTRIB_NORMAL)] = to_U32(prevOffset);
+        _attributeOffset[to_base(VertexAttribute::ATTRIB_NORMAL)] = to_U32(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useTangents) {
-        _attributeOffset[to_const_U32(VertexAttribute::ATTRIB_TANGENT)] = to_U32(prevOffset);
+        _attributeOffset[to_base(VertexAttribute::ATTRIB_TANGENT)] = to_U32(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useColour) {
-        _attributeOffset[to_const_U32(VertexAttribute::ATTRIB_COLOR)] = to_U32(prevOffset);
+        _attributeOffset[to_base(VertexAttribute::ATTRIB_COLOR)] = to_U32(prevOffset);
         prevOffset += sizeof(vec4<U8>);
     }
 
     if (useTexcoords) {
-        _attributeOffset[to_const_U32(VertexAttribute::ATTRIB_TEXCOORD)] = to_U32(prevOffset);
+        _attributeOffset[to_base(VertexAttribute::ATTRIB_TEXCOORD)] = to_U32(prevOffset);
         prevOffset += sizeof(vec2<F32>);
     }
 
     if (useBoneData) {
-        _attributeOffset[to_const_U32(VertexAttribute::ATTRIB_BONE_WEIGHT)] = to_U32(prevOffset);
+        _attributeOffset[to_base(VertexAttribute::ATTRIB_BONE_WEIGHT)] = to_U32(prevOffset);
         prevOffset += sizeof(U32);
-        _attributeOffset[to_const_U32(VertexAttribute::ATTRIB_BONE_INDICE)] = to_U32(prevOffset);
+        _attributeOffset[to_base(VertexAttribute::ATTRIB_BONE_INDICE)] = to_U32(prevOffset);
         prevOffset += sizeof(U32);
     }
 
@@ -250,7 +250,7 @@ bool glVertexArray::refresh() {
     _refreshQueued = indicesChanged;
 
     /// Can only add attributes for now. No removal support. -Ionut
-    for (U8 i = 0; i < to_const_U32(VertexAttribute::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(VertexAttribute::COUNT); ++i) {
         _useAttribute[i] = _useAttribute[i] || _attribDirty[i];
         if (!_refreshQueued) {
            if (_attribDirty[i]) {
@@ -262,15 +262,15 @@ bool glVertexArray::refresh() {
 
 
     Console::printfn("VAO HASHES: ");
-    std::array<bool, to_const_U32(RenderStage::COUNT)> vaoCachesDirty[to_const_U32(RenderPassType::COUNT)];
-    std::array<AttribFlags, to_const_U32(RenderStage::COUNT)> attributesPerStage;
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+    std::array<bool, to_base(RenderStage::COUNT)> vaoCachesDirty[to_base(RenderPassType::COUNT)];
+    std::array<AttribFlags, to_base(RenderStage::COUNT)> attributesPerStage;
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         vaoCachesDirty[pass].fill(false);
-        for (U8 i = 0; i < to_const_U8(RenderStage::COUNT); ++i) {
+        for (U8 i = 0; i < to_base(RenderStage::COUNT); ++i) {
             const AttribFlags& stageMask = _attribMaskPerStage[pass][i];
 
             AttribFlags& stageUsage = attributesPerStage[i];
-            for (U8 j = 0; j < to_const_U8(VertexAttribute::COUNT); ++j) {
+            for (U8 j = 0; j < to_base(VertexAttribute::COUNT); ++j) {
                 stageUsage[j] = _useAttribute[j] && stageMask[j];
             }
             size_t crtHash = std::hash<AttribFlags>()(stageUsage);
@@ -338,8 +338,8 @@ bool glVertexArray::refresh() {
     }
 
     vectorImpl<GLuint> vaos;
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-        for (U8 i = 0; i < to_const_U8(RenderStage::COUNT); ++i) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+        for (U8 i = 0; i < to_base(RenderStage::COUNT); ++i) {
             if (vaoCachesDirty[pass][i]) {
                 GLuint crtVao = _vaoCaches[pass][i];
                 if (std::find_if(std::cbegin(vaos),
@@ -359,7 +359,7 @@ bool glVertexArray::refresh() {
         uploadVBAttributes(vaos[i]);
     }
 
-    for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
+    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         vaoCachesDirty[pass].fill(false);
     }
     
@@ -440,13 +440,13 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 void glVertexArray::uploadVBAttributes(GLuint VAO) {
     // Bind the current VAO to save our attributes
     GL_API::setActiveVAO(VAO);
-    static const U32 positionLoc = to_const_U32(AttribLocation::VERTEX_POSITION);
-    static const U32 colourLoc = to_const_U32(AttribLocation::VERTEX_COLOR);
-    static const U32 normalLoc = to_const_U32(AttribLocation::VERTEX_NORMAL);
-    static const U32 texCoordLoc = to_const_U32(AttribLocation::VERTEX_TEXCOORD);
-    static const U32 tangentLoc = to_const_U32(AttribLocation::VERTEX_TANGENT);
-    static const U32 boneWeightLoc = to_const_U32(AttribLocation::VERTEX_BONE_WEIGHT);
-    static const U32 boneIndiceLoc = to_const_U32(AttribLocation::VERTEX_BONE_INDICE);
+    static const U32 positionLoc = to_base(AttribLocation::VERTEX_POSITION);
+    static const U32 colourLoc = to_base(AttribLocation::VERTEX_COLOR);
+    static const U32 normalLoc = to_base(AttribLocation::VERTEX_NORMAL);
+    static const U32 texCoordLoc = to_base(AttribLocation::VERTEX_TEXCOORD);
+    static const U32 tangentLoc = to_base(AttribLocation::VERTEX_TANGENT);
+    static const U32 boneWeightLoc = to_base(AttribLocation::VERTEX_BONE_WEIGHT);
+    static const U32 boneIndiceLoc = to_base(AttribLocation::VERTEX_BONE_INDICE);
     
     glEnableVertexAttribArray(positionLoc);
     glVertexAttribFormat(positionLoc, 3, GL_FLOAT, GL_FALSE, _attributeOffset[positionLoc]);

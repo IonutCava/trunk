@@ -227,13 +227,13 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                 NodeData& dataOut = processVisibleNode(*nodeRef, nodeCount);
                 if (isDepthStage()) {
                     for (TextureData& data : pkg._textureData.textures()) {
-                        if (data.getHandleLow() == to_const_U32(ShaderProgram::TextureUsage::UNIT0)) {
+                        if (data.getHandleLow() == to_base(ShaderProgram::TextureUsage::UNIT0)) {
                             textureHandle = data.getHandleHigh();
                             if ((!(lastUnit0Handle == 0 || textureHandle == lastUnit0Handle) &&
                                   (lastUnit1Handle == 0 || textureHandle == lastUnit1Handle))                              
                                 || (lastUsedSlot == 0 && lastUnit0Handle != 0))
                             {
-                                data.setHandleLow(to_const_U32(ShaderProgram::TextureUsage::UNIT1));
+                                data.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT1));
                                     // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
                                     dataOut._properties.w = 1;
                                     lastUnit1Handle = textureHandle;
@@ -300,7 +300,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Te
     bufferData._cmdBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
     bufferData._cmdBuffer->bindAtomicCounter();
 
-    depthBuffer->bind(to_const_U8(ShaderProgram::TextureUsage::DEPTH));
+    depthBuffer->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
     U32 cmdCount = bufferData._lastCommandCount;
 
     _HIZCullProgram->bind();
@@ -364,9 +364,9 @@ bool GFXDevice::draw(const GenericDrawCommand& cmd) {
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     RenderTarget& screen = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screen.bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0),
+    screen.bind(to_U8(ShaderProgram::TextureUsage::UNIT0),
                 RTAttachment::Type::Colour,
-                to_const_U8(ScreenTargets::ALBEDO));
+                to_U8(ScreenTargets::ALBEDO));
 
 
     GFX::ScopedViewport targetArea(*this, targetViewport);

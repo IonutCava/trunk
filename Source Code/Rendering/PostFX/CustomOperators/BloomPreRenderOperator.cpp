@@ -75,7 +75,7 @@ void BloomPreRenderOperator::execute() {
     RenderTarget* screen = &_parent.inputRT();
 
      // Step 1: generate bloom
-    screen->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //screen
+    screen->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //screen
 
     // render all of the "bright spots"
     _bloomOutput._rt->begin(RenderTarget::defaultPolicy());
@@ -87,7 +87,7 @@ void BloomPreRenderOperator::execute() {
     _blur->bind();
     // Blur horizontally
     _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
-    _bloomOutput._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    _bloomOutput._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
     _bloomBlurBuffer[0]._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_blur);
         _context.draw(triangleCmd);
@@ -95,7 +95,7 @@ void BloomPreRenderOperator::execute() {
 
     // Blur vertically (recycle the render target. We have a copy)
     _blur->SetSubroutine(ShaderType::FRAGMENT, _vertBlur);
-    _bloomBlurBuffer[0]._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
+    _bloomBlurBuffer[0]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0);
     _bloomBlurBuffer[1]._rt->begin(RenderTarget::defaultPolicy());
         triangleCmd.shaderProgram(_blur);
         _context.draw(triangleCmd);
@@ -103,8 +103,8 @@ void BloomPreRenderOperator::execute() {
         
     // Step 3: apply bloom
     _bloomBlurBuffer[0]._rt->blitFrom(screen);
-    _bloomBlurBuffer[0]._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //Screen
-    _bloomBlurBuffer[1]._rt->bind(to_const_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0); //Bloom
+    _bloomBlurBuffer[0]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachment::Type::Colour, 0); //Screen
+    _bloomBlurBuffer[1]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachment::Type::Colour, 0); //Bloom
     screen->begin(_screenOnlyDraw);
         triangleCmd.shaderProgram(_bloomApply);
         _context.draw(triangleCmd);

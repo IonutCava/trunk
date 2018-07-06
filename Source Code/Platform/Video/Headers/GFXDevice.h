@@ -513,8 +513,8 @@ protected:
 
     DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES> _matricesData;
-    std::array<U32, to_const_U32(RenderStage::COUNT) - 1> _lastCommandCount;
-    std::array<U32, to_const_U32(RenderStage::COUNT) - 1> _lastNodeCount;
+    std::array<U32, to_base(RenderStage::COUNT) - 1> _lastCommandCount;
+    std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
     vectorImpl<DebugView_ptr> _debugViews;
 

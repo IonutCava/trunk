@@ -119,7 +119,7 @@ GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
 /// clear all clipping planes
 inline void 
 GFXDevice::resetClipPlanes() {
-    _clippingPlanes.resize(to_const_U32(ClipPlaneIndex::COUNT), Plane<F32>(0, 0, 0, 0));
+    _clippingPlanes.resize(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0, 0, 0, 0));
     updateClipPlanes();
 }
 /// Alternative to the normal version of getMatrix

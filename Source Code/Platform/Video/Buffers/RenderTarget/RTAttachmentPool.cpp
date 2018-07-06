@@ -8,9 +8,9 @@ RTAttachmentPool::RTAttachmentPool(RenderTarget& parent, U8 colourAttCount)
     : _parent(parent)
 {
     _attachmentCount.fill(0);
-    _attachment[to_const_U32(RTAttachment::Type::Colour)].resize(colourAttCount, nullptr);
-    _attachment[to_const_U32(RTAttachment::Type::Depth)].resize(1, nullptr);
-    _attachment[to_const_U32(RTAttachment::Type::Stencil)].resize(1, nullptr);
+    _attachment[to_base(RTAttachment::Type::Colour)].resize(colourAttCount, nullptr);
+    _attachment[to_base(RTAttachment::Type::Depth)].resize(1, nullptr);
+    _attachment[to_base(RTAttachment::Type::Stencil)].resize(1, nullptr);
 }
 
 RTAttachmentPool::~RTAttachmentPool()
@@ -18,7 +18,7 @@ RTAttachmentPool::~RTAttachmentPool()
 }
 
 void RTAttachmentPool::copy(const RTAttachmentPool& other) {
-    for (U8 i = 0; i < to_const_U8(RTAttachment::Type::COUNT); ++i) {
+    for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
         for (U8 j = 0; j < other._attachment[i].size(); ++j) {
             const RTAttachment_ptr& att = other._attachment[i][j];
             if (att != nullptr) {
@@ -52,17 +52,17 @@ RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, RTAttachme
         case RTAttachment::Type::Colour:
         {
             assert(index < to_U8(_attachment[to_U32(type)].size()));
-            return pool[to_const_U32(RTAttachment::Type::Colour)][index];
+            return pool[to_base(RTAttachment::Type::Colour)][index];
         }
         case RTAttachment::Type::Depth:
         {
             assert(index == 0);
-            return pool[to_const_U32(RTAttachment::Type::Depth)].front();
+            return pool[to_base(RTAttachment::Type::Depth)].front();
         }
         case RTAttachment::Type::Stencil:
         {
             assert(index == 0);
-            return pool[to_const_U32(RTAttachment::Type::Stencil)].front();
+            return pool[to_base(RTAttachment::Type::Stencil)].front();
         }
     }
 
@@ -75,17 +75,17 @@ const RTAttachment_ptr& RTAttachmentPool::getInternal(const AttachmentPool& pool
         case RTAttachment::Type::Colour:
         {
             assert(index < to_U8(_attachment[to_U32(type)].size()));
-            return pool[to_const_U32(RTAttachment::Type::Colour)][index];
+            return pool[to_base(RTAttachment::Type::Colour)][index];
         }
         case RTAttachment::Type::Depth:
         {
             assert(index == 0);
-            return pool[to_const_U32(RTAttachment::Type::Depth)].front();
+            return pool[to_base(RTAttachment::Type::Depth)].front();
         }
         case RTAttachment::Type::Stencil:
         {
             assert(index == 0);
-            return pool[to_const_U32(RTAttachment::Type::Stencil)].front();
+            return pool[to_base(RTAttachment::Type::Stencil)].front();
         }
     }
 

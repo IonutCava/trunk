@@ -76,9 +76,9 @@ RenderBin::RenderBin(GFXDevice& context,
     _renderBinStack.reserve(125);
 
     if(_rbType != +RenderBinType::RBT_OPAQUE &&  _rbType != +RenderBinType::RBT_TERRAIN)  {
-        SetBit(_binPropertyMask, to_const_U32(RenderBitProperty::TRANSLUCENT));
+        SetBit(_binPropertyMask, to_base(RenderBitProperty::TRANSLUCENT));
     } else {
-        ClearBit(_binPropertyMask, to_const_U32(RenderBitProperty::TRANSLUCENT));
+        ClearBit(_binPropertyMask, to_base(RenderBitProperty::TRANSLUCENT));
     }
 }
 

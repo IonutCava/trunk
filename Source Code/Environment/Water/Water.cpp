@@ -47,11 +47,11 @@ WaterPlane::~WaterPlane()
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_const_U32(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_U32(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_U32(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_base(SGNComponent::ComponentType::PHYSICS) |
+                                  to_base(SGNComponent::ComponentType::BOUNDS) |
+                                  to_base(SGNComponent::ComponentType::RENDERING) |
+                                  to_base(SGNComponent::ComponentType::NETWORKING);
 
     _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,     vec3<F32>(-_sideLength, 0, -_sideLength));
     _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,    vec3<F32>( _sideLength, 0, -_sideLength));
@@ -101,8 +101,8 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile,
 void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,  SceneState& sceneState) {
     if (_paramsDirty) {
         RenderingComponent* rComp = sgn.get<RenderingComponent>();
-        for (U8 pass = 0; pass < to_const_U8(RenderPassType::COUNT); ++pass) {
-            for (U32 i = 0; i < to_const_U32(RenderStage::COUNT); ++i) {
+        for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
+            for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
                 const ShaderProgram_ptr& shader = rComp->getMaterialInstance()->getShaderInfo(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass))).getProgram();
                 shader->Uniform("_waterShininess", _shininess);
                 shader->Uniform("_noiseFactor", _noiseFactor);

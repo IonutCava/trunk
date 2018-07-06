@@ -42,9 +42,9 @@ ErrorCode WindowManager::init(PlatformContext& context,
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
 
-    initialResolutions[to_const_U32(WindowType::FULLSCREEN)].set(to_U16(displayMode.w),
+    initialResolutions[to_base(WindowType::FULLSCREEN)].set(to_U16(displayMode.w),
                                                                   to_U16(displayMode.h));
-    initialResolutions[to_const_U32(WindowType::FULLSCREEN_WINDOWED)].set(to_U16(displayMode.w),
+    initialResolutions[to_base(WindowType::FULLSCREEN_WINDOWED)].set(to_U16(displayMode.w),
                                                                            to_U16(displayMode.h));
 
     ErrorCode err = initWindow(0,

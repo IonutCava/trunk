@@ -15,7 +15,7 @@ SubMesh::SubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descript
                descriptorHash,
                name,
                ObjectType::SUBMESH,
-               to_U32(flag) | to_const_U32(ObjectFlag::OBJECT_FLAG_NO_VB)),
+               to_U32(flag) | to_base(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _visibleToNetwork(true),
       _render(true),
       _ID(0),

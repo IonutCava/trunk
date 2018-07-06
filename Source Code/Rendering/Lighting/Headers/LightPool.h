@@ -162,14 +162,14 @@ class LightPool : public SceneComponent {
     vectorImpl<TaskHandle> _lightUpdateTask;
 
     bool _buffersUpdated;
-    std::array<bool, to_const_U32(LightType::COUNT)> _lightTypeState;
-    std::array<Light::LightList, to_const_U32(LightType::COUNT)> _lights;
+    std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
+    std::array<Light::LightList, to_base(LightType::COUNT)> _lights;
     bool _init;
     Texture_ptr _lightIconsTexture;
     ShaderProgram_ptr _lightImpostorShader;
-    std::array<U32, to_const_U32(LightType::COUNT)> _activeLightCount;
+    std::array<U32, to_base(LightType::COUNT)> _activeLightCount;
 
-    std::array<ShaderBuffer*, to_const_U32(ShaderBufferType::COUNT)>  _lightShaderBuffer;
+    std::array<ShaderBuffer*, to_base(ShaderBufferType::COUNT)>  _lightShaderBuffer;
 
     typedef vectorImpl<LightProperties> LightPropertiesVec;
     typedef vectorImpl<Light::ShadowProperties> LightShadowProperties;
@@ -184,7 +184,7 @@ class LightPool : public SceneComponent {
 
     static bool _previewShadowMaps;
     static Light* _currentShadowCastingLight;
-    static std::array<U8, to_const_U32(ShadowType::COUNT)> _shadowLocation;
+    static std::array<U8, to_base(ShadowType::COUNT)> _shadowLocation;
 };
 
 };  // namespace Divide

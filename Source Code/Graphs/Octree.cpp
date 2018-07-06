@@ -480,7 +480,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U
         SceneGraphNode_ptr obj = objPtr.lock();
         assert(obj);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_const_U32(obj->getNode<>()->getType()))) {
+        if (BitCompare(typeFilterMask, to_base(obj->getNode<>()->getType()))) {
             continue;
         }
 
@@ -520,7 +520,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
         SceneGraphNode_ptr obj = objPtr.lock();
         assert(obj);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_const_U32(obj->getNode<>()->getType()))) {
+        if (BitCompare(typeFilterMask, to_base(obj->getNode<>()->getType()))) {
             continue;
         }
 

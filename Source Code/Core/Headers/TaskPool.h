@@ -76,7 +76,7 @@ class TaskPool {
 
     mutable std::mutex _taskStateLock;
 
-    std::atomic<U32> _allocatedJobs;
+    std::atomic<size_t> _allocatedJobs;
 
     U32 _workerThreadCount;
 };

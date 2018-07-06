@@ -57,7 +57,7 @@ class JoystickInterface {
     // Selected joystick auto-center mode.
     bool _bAutoCenter;
     // Per joystick data
-    std::array<JoystickData, to_const_U32(Joystick::COUNT)> _joystickData;
+    std::array<JoystickData, to_base(Joystick::COUNT)> _joystickData;
 
     public:
     JoystickInterface(OIS::InputManager* pInputInterface,

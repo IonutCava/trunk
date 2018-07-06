@@ -95,16 +95,16 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
            }
 
            inline void clearAllFlags() {
-               _transformFlags[to_const_U32(TransformType::SCALE)] = false;
-               _transformFlags[to_const_U32(TransformType::ROTATION)] = false;
-               _transformFlags[to_const_U32(TransformType::TRANSLATION)] = false;
-               _transformFlags[to_const_U32(TransformType::VIEW_OFFSET)] = false;
+               _transformFlags[to_base(TransformType::SCALE)] = false;
+               _transformFlags[to_base(TransformType::ROTATION)] = false;
+               _transformFlags[to_base(TransformType::TRANSLATION)] = false;
+               _transformFlags[to_base(TransformType::VIEW_OFFSET)] = false;
            }
 
            inline void setAllFlags() {
-               _transformFlags[to_const_U32(TransformType::SCALE)] = true;
-               _transformFlags[to_const_U32(TransformType::ROTATION)] = true;
-               _transformFlags[to_const_U32(TransformType::TRANSLATION)] = true;
+               _transformFlags[to_base(TransformType::SCALE)] = true;
+               _transformFlags[to_base(TransformType::ROTATION)] = true;
+               _transformFlags[to_base(TransformType::TRANSLATION)] = true;
            }
 
            inline bool clearFlag(TransformType type) {
@@ -116,14 +116,14 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
            }
 
            inline void setFlags(const TransformMask& other) {
-               _transformFlags[to_const_U32(TransformType::SCALE)] = other.getFlag(TransformType::SCALE);
-               _transformFlags[to_const_U32(TransformType::ROTATION)] = other.getFlag(TransformType::ROTATION);
-               _transformFlags[to_const_U32(TransformType::TRANSLATION)] = other.getFlag(TransformType::TRANSLATION);
-               _transformFlags[to_const_U32(TransformType::VIEW_OFFSET)] = other.getFlag(TransformType::VIEW_OFFSET);
+               _transformFlags[to_base(TransformType::SCALE)] = other.getFlag(TransformType::SCALE);
+               _transformFlags[to_base(TransformType::ROTATION)] = other.getFlag(TransformType::ROTATION);
+               _transformFlags[to_base(TransformType::TRANSLATION)] = other.getFlag(TransformType::TRANSLATION);
+               _transformFlags[to_base(TransformType::VIEW_OFFSET)] = other.getFlag(TransformType::VIEW_OFFSET);
 
            }
         private:
-           std::array<std::atomic_bool, to_const_U32(TransformType::COUNT)> _transformFlags;
+           std::array<std::atomic_bool, to_base(TransformType::COUNT)> _transformFlags;
     };
 
     struct IgnoreViewSettings {
