@@ -632,4 +632,9 @@ namespace Navigation {
 
         return true;
     }
+
+    vec3<F32> NavigationMesh::getRandomPosition() const {
+        return Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*this);
+    }
+
 };

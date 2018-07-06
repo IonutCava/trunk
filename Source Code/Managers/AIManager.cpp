@@ -1,7 +1,9 @@
 #include "Headers/AIManager.h"
-#include "AI/PathFinding/Headers/DivideRecast.h"
 
-AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _updateNavMeshes(false), _deltaTime(0ULL), _currentTime(0ULL), _previousTime(0ULL)
+#include "AI/PathFinding/Headers/DivideRecast.h"
+#include "AI/PathFinding/Headers/DivideCrowd.h"
+
+AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _deltaTime(0ULL), _currentTime(0ULL), _previousTime(0ULL)
 {
     Navigation::DivideRecast::createInstance();
 }
@@ -12,18 +14,31 @@ AIManager::~AIManager()
 }
 
 ///Clear up any remaining AIEntities
-void AIManager::Destroy(){
-    WriteLock w_lock(_updateMutex);
-    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
-        SAFE_DELETE(entity.second);
+void AIManager::Destroy() {
+    {
+        WriteLock w_lock(_updateMutex);
+        FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
+            SAFE_DELETE(entity.second);
+        }
+        _aiEntities.clear();
     }
-    _aiEntities.clear();
-    for(Navigation::NavigationMesh*& navMesh : _navMeshes){
-         SAFE_DELETE(navMesh);
-    }
-    _navMeshes.clear();
+    {
+        WriteLock w_lock(_navMeshMutex);
+        FOR_EACH(AITeamCrowdList::value_type& it, _aiTeamCrowds) {
+            FOR_EACH(AITeamCrowd::value_type& it2, it.second) {
+                SAFE_DELETE(it2.second);
+            }
+            it.second.clear();
+        }
+        _aiTeamCrowds.clear();
 
-    Navigation::DivideRecast::destroyInstance();
+        FOR_EACH(NavMeshMap::value_type& it, _navMeshes){
+             SAFE_DELETE(it.second);
+        }
+        _navMeshes.clear();
+
+        Navigation::DivideRecast::destroyInstance();
+    }
 }
 
 U8 AIManager::update(){
@@ -60,29 +75,28 @@ void AIManager::processData(const U64 deltaTime){   //think
 }
 
 void AIManager::updateEntities(const U64 deltaTime){//react
-    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
-        entity.second->update(deltaTime);
+    // Crowds
+    FOR_EACH(AITeamCrowdList::value_type& it, _aiTeamCrowds) {
+        FOR_EACH(AITeamCrowd::value_type& it2, it.second) {
+            it2.second->update(deltaTime);
+        }
     }
-    
+    // Teams
     FOR_EACH(AITeamMap::value_type& team, _aiTeams){
         team.second->update(deltaTime);
     }
-
-    if(_updateNavMeshes){
-        ReadLock w_lock(_navMeshMutex);
-        FOR_EACH(AITeamMap::value_type& team, _aiTeams){
-            team.second->resetNavMeshes();
-        }
-        _updateNavMeshes = false;
+    // Entities
+    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
+        entity.second->update(deltaTime);
     }
 }
 
 bool AIManager::addEntity(AIEntity* entity){
     WriteLock w_lock(_updateMutex);
-    if(_aiEntities.find(entity->_GUID) != _aiEntities.end()){
-        SAFE_UPDATE(_aiEntities[entity->_GUID], entity);
+    if(_aiEntities.find(entity->getGUID()) != _aiEntities.end()){
+        SAFE_UPDATE(_aiEntities[entity->getGUID()], entity);
     }else{
-        _aiEntities.insert(std::make_pair(entity->_GUID,entity));
+        _aiEntities.insert(std::make_pair(entity->getGUID(),entity));
     }
 
     return true;
@@ -94,47 +108,58 @@ void AIManager::destroyEntity(U32 guid){
     _aiEntities.erase(guid);
 }
 
-/// Example nav mesh code:
-/*
-    PRINT_FN("Selecting 2 random points on the current navmesh and finding a path between them: ");
-    CONSOLE_TIMESTAMP_OFF();
-    vec3<F32> temp1 = Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh);
-    vec3<F32> temp2 = Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh);
-    PRINT_FN("Random point A [X: %5.2f | Y: %5.2f | Z:%5.2f]", temp1.x, temp1.y, temp1.z);
-    PRINT_FN("Random point B [X: %5.2f | Y: %5.2f | Z:%5.2f]", temp2.x, temp2.y, temp2.z);
-    Navigation::PathErrorCode err = Navigation::DivideRecast::getInstance().FindPath(*navMesh, temp1,temp2,0,1);
-    if(err == Navigation::PATH_ERROR_NONE){
-        U8 spaceCtr = 0;
-        vectorImpl<vec3<F32> > path = Navigation::DivideRecast::getInstance().getPath(0);
-        for(vectorImpl<vec3<F32> >::const_iterator it = path.begin(); it != path.end(); ++it, ++spaceCtr){
-            const vec3<F32>& currentNode = *it;
-            for(U8 j = 0; j < spaceCtr; ++j)
-                PRINT_F(" ");
-            PRINT_FN("Node %d : [X: %5.2f | Y: %5.2f | Z:%5.2f]",spaceCtr, currentNode.x, currentNode.y, currentNode.z);
-        }
-    }
-    CONSOLE_TIMESTAMP_ON();
-*/
-bool AIManager::addNavMesh(Navigation::NavigationMesh* const navMesh){
-    navMesh->debugDraw(_navMeshDebugDraw);
+bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh) {
     WriteLock w_lock(_navMeshMutex);
-    _navMeshes.push_back(navMesh);
-    _updateNavMeshes = true;
+    NavMeshMap::iterator it = _navMeshes.find(radius);
+    DIVIDE_ASSERT(it == _navMeshes.end(), "AIManager error: Nnv mesh for specified dimensions already exists. Remove it first!");
+    DIVIDE_ASSERT(navMesh != nullptr, "AIManager error: Invalid navmesh specified!");
+    navMesh->debugDraw(_navMeshDebugDraw);
+    _navMeshes.insert(std::make_pair(radius, navMesh));
+    FOR_EACH(AITeamCrowdList::value_type& it, _aiTeamCrowds) {
+        AITeamCrowd::iterator it2 = it.second.find(radius);
+        DIVIDE_ASSERT(it2 == it.second.end(), "AIManager error: DTCrowd already existed for new navmesh!");
+        it.second.insert(std::make_pair(radius, New Navigation::DivideDtCrowd(navMesh)));
+    }
+    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
+        entity.second->resetCrowd();
+    }
+
     return true;
 }
 
-void AIManager::destroyNavMesh(Navigation::NavigationMesh* const navMesh){
+void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
     WriteLock w_lock(_navMeshMutex);
-    for(vectorImpl<Navigation::NavigationMesh* >::iterator it =  _navMeshes.begin();
-                                                           it != _navMeshes.end();
-                                                         ++it){
-        if((*it)->getGUID() == navMesh->getGUID()){
-            SAFE_DELETE((*it));
-            _navMeshes.erase(it);
-            return;
+    NavMeshMap::iterator it = _navMeshes.find(radius);
+    if (it != _navMeshes.end()) {
+        FOR_EACH(AITeamCrowdList::value_type& it, _aiTeamCrowds) {
+            AITeamCrowd::iterator it2 = it.second.find(radius);
+            if (it2 != it.second.end()) {
+                SAFE_DELETE(it2->second);
+                it.second.erase(it2);
+            }
+        }
+        FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
+            entity.second->resetCrowd();
         }
     }
-    _updateNavMeshes = true;
+}
+
+void AIManager::registerTeam(AITeam* const team) {
+    U32 teamID = team->getTeamID();
+    DIVIDE_ASSERT(_aiTeams.find(teamID) == _aiTeams.end(), "AIManager error: attempt to double register an AI team!");
+    _aiTeams.insert(std::make_pair(teamID, team));
+    _aiTeamCrowds.insert(std::make_pair(teamID, AITeamCrowd()));
+}
+
+void AIManager::unregisterTeam(AITeam* const team) {
+    U32 teamID = team->getTeamID();
+    AITeamCrowdList::iterator it = _aiTeamCrowds.find(teamID);
+    DIVIDE_ASSERT(it != _aiTeamCrowds.end(), "AIManager error: Unregister team failed. Team not found!");
+    FOR_EACH(AITeamCrowd::value_type& it2, it->second) {
+        SAFE_DELETE(it2.second);
+    }
+    it->second.clear();
+    _aiTeamCrowds.erase(it);
 }
 
 void AIManager::toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool state) {
@@ -144,18 +169,19 @@ void AIManager::toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool
 
 void AIManager::toggleNavMeshDebugDraw(bool state) {
     WriteLock w_lock(_navMeshMutex);
-    for(Navigation::NavigationMesh* navMesh : _navMeshes){
-        navMesh->debugDraw(state);
+    FOR_EACH(NavMeshMap::value_type& it, _navMeshes){
+        it.second->debugDraw(state);
     }
+
     _navMeshDebugDraw = state;
 }
 
-void AIManager::debugDraw(bool forceAll){
-    ReadLock r_lock(_navMeshMutex);
-    for(Navigation::NavigationMesh* navMesh : _navMeshes){
-        navMesh->update(_deltaTime);
-        if(forceAll || navMesh->debugDraw()){
-            navMesh->render();
+void AIManager::debugDraw(bool forceAll) {
+    WriteLock w_lock(_navMeshMutex);
+    FOR_EACH(NavMeshMap::value_type& it, _navMeshes){
+        it.second->update(_deltaTime);
+        if(forceAll || it.second->debugDraw()){
+            it.second->render();
         }
     }
 }

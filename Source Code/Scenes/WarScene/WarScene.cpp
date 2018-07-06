@@ -15,7 +15,6 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/AIManager.h"
-#include "AI/PathFinding/Headers/DivideRecast.h"
 
 REGISTER_SCENE(WarScene);
 
@@ -88,9 +87,9 @@ void WarScene::processTasks(const U64 deltaTime){
 
 static boost::atomic_bool navMeshStarted;
 
-void navMeshCreationCompleteCallback(Navigation::NavigationMesh* navMesh){
+void navMeshCreationCompleteCallback(AIEntity::PresetAgentRadius radius,  Navigation::NavigationMesh* navMesh){
     navMesh->save();
-    AIManager::getInstance().addNavMesh(navMesh);
+    AIManager::getInstance().addNavMesh(radius, navMesh);
     //AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 }
 
@@ -102,16 +101,16 @@ void WarScene::startSimulation(){
     resetSimulation();
 
     if (!navMeshStarted) {
-        Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
+        Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory());
         if (!navMesh) {
             navMesh = New Navigation::NavigationMesh();
         }
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
         if (!navMesh->load(nullptr)) {
-            navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
+            navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, _army1[0]->getAgentRadiusCategory(), navMesh));
         } else {
-            AIManager::getInstance().addNavMesh(navMesh);
+            AIManager::getInstance().addNavMesh(_army1[0]->getAgentRadiusCategory(), navMesh);
 #       ifdef _DEBUG
                 AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 #       endif
@@ -150,7 +149,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     }*/
     
 #ifdef _DEBUG
-    if (!AIManager::getInstance().getNavMesh(0)) {
+    if (!AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory())) {
         return;
     }
 
@@ -293,12 +292,12 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 bool WarScene::initializeAI(bool continueOnErrors){
     //----------------------------Artificial Intelligence------------------------------//
     
-    //Create 2 AI teams
+    // Create 2 AI teams
     _faction1 = New AITeam(1);
     _faction2 = New AITeam(2);
-
-    _faction1->addEnemyTeam(_faction2);
-    _faction2->addEnemyTeam(_faction1);
+    // Make the teams fight eachother
+    _faction1->addEnemyTeam(_faction2->getTeamID());
+    _faction2->addEnemyTeam(_faction1->getTeamID());
 
 
     SceneGraphNode* soldierNode1 = _sceneGraph->findNode("Soldier1");

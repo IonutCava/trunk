@@ -37,14 +37,19 @@ struct dtCrowdAgent;
 namespace Navigation {
     class DivideRecast;
     class DivideDtCrowd;
-    class NavigationMesh;
 };
 
 /// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
-    friend class AIManager;
-
 public:
+    enum PresetAgentRadius {
+        AGENT_RADIUS_SMALL = 0,
+        AGENT_RADIUS_MEDIUM = 1,//< normal human
+        AGENT_RADIUS_LARGE = 2,
+        AGENT_RADIUS_EXTRA_LARGE = 3,
+        AgentRadius_PLACEHOLDER = 4
+    };
+
     AIEntity(const vec3<F32>& currentPosition, const std::string& name);
     ~AIEntity();
 
@@ -59,12 +64,17 @@ public:
     void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
     Sensor* getSensor(SensorType type);
 
-    inline AITeam* getTeam() {return _coordination; }
-    inline U32  getTeamID() const    {if(_coordination != nullptr) { return _coordination->getTeamID();} return 0; }
+    inline AITeam* getTeam()   const { return _teamPtr; }
+    inline I32     getTeamID() const { 
+        if (_teamPtr != nullptr) {
+            return _teamPtr->getTeamID();
+        } 
+        return -1; 
+    }
 
     inline void updateGOAPPlan() { _updateGOAPPlan  = true; }
     ///Set a team for this Entity. If the entity belonged to a different team, remove it from that team first
-    void setTeam(AITeam* const coordination);
+    void setTeam(AITeam* const teamPtr);
     ///Add a friend to our team
     bool addFriend(AIEntity* const friendEntity);
 
@@ -79,12 +89,14 @@ public:
     /// The agent that steers this character within the crowd
     inline const dtCrowdAgent* getAgent() const { return _agent; }
     inline bool  isAgentLoaded() const { return _agentID >= 0; }
-     /// Set the crowd object
-    void resetCrowd(Navigation::DivideDtCrowd* const crowd = nullptr);
+    /// Update the crowding system
+    void resetCrowd();
     /// The height of the agent for this character.
     D32 getAgentHeight() const;
     /// The radius of the agent for this character.
     D32 getAgentRadius() const;
+    /// The radius category of this character
+    inline PresetAgentRadius getAgentRadiusCategory() const { return _agentRadiusCategory; }
     /**
       * Update the destination for this agent.
       * If updatePreviousPath is set to true the previous path will be reused instead
@@ -152,7 +164,7 @@ protected:
 
 private:
     std::string           _name;
-    AITeam*               _coordination;
+    AITeam*               _teamPtr;
     AISceneImpl*          _AISceneImpl;
     GOAPContext           _goapContext;
     Aesop::Planner        _goapPlanner;
@@ -170,6 +182,7 @@ private:
     Navigation::DivideDtCrowd* _detourCrowd;
     /// The agent controlling this character.
     const dtCrowdAgent* _agent;
+    PresetAgentRadius   _agentRadiusCategory;
     /**
       * The current destination set for this agent.
       * Take care in properly setting this variable, as it is only updated properly when

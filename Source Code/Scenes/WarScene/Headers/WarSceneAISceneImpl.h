@@ -48,7 +48,6 @@ private:
     I32       _indexInMap;
     U64       _deltaTime;
     AIEntity* _currentEnemyTarget;
-    Navigation::NavigationMesh* _navMesh;
 };
 
 #endif

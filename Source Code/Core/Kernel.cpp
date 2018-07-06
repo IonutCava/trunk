@@ -30,7 +30,8 @@ bool Kernel::_freezeLoopTime = false;
 bool Kernel::_freezeGUITime = false;
 ProfileTimer* s_appLoopTimer = nullptr;
 
-boost::lockfree::queue<U64, boost::lockfree::capacity<Config::THREAD_LIMIT + 1> >  Kernel::_callbackBuffer;
+SharedLock Kernel::_threadedCallbackLock;
+vectorImpl<U64> Kernel::_threadedCallbackBuffer;
 Unordered_map<U64, DELEGATE_CBK > Kernel::_threadedCallbackFunctions;
 
 #if defined(USE_FIXED_TIMESTEP)
@@ -76,9 +77,8 @@ Kernel::~Kernel()
 }
 
 void Kernel::threadPoolCompleted(U64 onExitTaskID) {
-    while (!_callbackBuffer.push(onExitTaskID)) {
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
-    }
+    WriteLock w_lock(_threadedCallbackLock);
+    _threadedCallbackBuffer.push_back(onExitTaskID);
 }
 
 void Kernel::idle(){
@@ -103,14 +103,14 @@ void Kernel::idle(){
         Locale::changeLanguage(pendingLanguage);
     }
 
-    if (!_callbackBuffer.empty()) {
-        U64 onExitTaskID;
-        if (_callbackBuffer.pop(onExitTaskID)) {
-            DELEGATE_CBK& cbk = _threadedCallbackFunctions[onExitTaskID];
-            if (!cbk.empty()) {
-                cbk();
-            }
+    UpgradableReadLock ur_lock(_threadedCallbackLock);
+    if (!_threadedCallbackBuffer.empty()) {
+        UpgradeToWriteLock uw_lock(ur_lock);
+        const DELEGATE_CBK& cbk = _threadedCallbackFunctions[_threadedCallbackBuffer.back()];
+        if (!cbk.empty()) {
+            cbk();
         }
+        _threadedCallbackBuffer.pop_back();
     }
 }
 
@@ -177,13 +177,13 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     //Process physics
     _PFX.process(_freezeLoopTime ? 0ULL : _currentTimeDelta);
 
-    _loops = 0;
+    U8 loops = 0;
 
 #if !defined(USE_FIXED_TIMESTEP)
     U64 deltaTime = _currentTimeDelta;
 #else
     U64 deltaTime = SKIP_TICKS;
-    while (_currentTime > _nextGameTick && _loops < Config::MAX_FRAMESKIP) {    
+    while (_currentTime > _nextGameTick && loops < Config::MAX_FRAMESKIP) {    
 #endif
 
         if (!_freezeGUITime) {
@@ -198,10 +198,10 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
         }
 
         _nextGameTick += deltaTime;
-        _loops++;
+        loops++;
 
 #if defined(USE_FIXED_TIMESTEP)
-        if (_loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
+        if (loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
             _nextGameTick = _currentTime;
         }
     } // while

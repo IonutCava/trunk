@@ -25,24 +25,33 @@
 
 #include "AI/Headers/AIEntity.h"
 #include "AI/Headers/GOAPContext.h"
+#include "Core/Headers/cdigginsAny.h"
+#include <boost/noncopyable.hpp>
 
 enum AIMsg;
-#include "Core/Headers/cdigginsAny.h"
-
+class Texture;
 /// Provides a scene-level AI implementation
-class AISceneImpl{
+class AISceneImpl : private boost::noncopyable {
 public:
     AISceneImpl(const GOAPContext& context) : _entity(nullptr),
                                               _context(context)
     {
     }
+
+    virtual ~AISceneImpl() 
+    {
+    }
+
 	virtual void processData(const U64 deltaTime) = 0;
 	virtual void processInput(const U64 deltaTime) = 0;
 	virtual void update(NPC* unitRef = nullptr) = 0;
 	virtual void addEntityRef(AIEntity* entity) = 0;
 	virtual void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) = 0;
 
-    const GOAPContext& getGOAPContext() const {return _context;}
+    inline const GOAPContext& getGOAPContext() const {
+        return _context;
+    }
+
 protected:
 	AIEntity*  _entity;
     GOAPContext _context;

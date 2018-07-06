@@ -176,7 +176,7 @@ bool GUIEditor::update(const U64 deltaTime) {
   	if (_createNavMeshQueued) {
         state = false;
         // Check if we already have a NavMesh created
-        Navigation::NavigationMesh* temp = AIManager::getInstance().getNavMesh(0);
+        Navigation::NavigationMesh* temp = AIManager::getInstance().getNavMesh(AIEntity::AGENT_RADIUS_SMALL);
         // Check debug rendering status
 		AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
         // Create a new NavMesh if we don't currently have one
@@ -195,7 +195,7 @@ bool GUIEditor::update(const U64 deltaTime) {
 		}
         // If we loaded/built the NavMesh correctly, add it to the AIManager
 		if (loaded) {
-			state = AIManager::getInstance().addNavMesh(temp);
+			state = AIManager::getInstance().addNavMesh(AIEntity::AGENT_RADIUS_SMALL, temp);
 		}
 
 		_createNavMeshQueued = false;

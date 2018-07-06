@@ -118,6 +118,8 @@ namespace Navigation {
 
         inline const dtNavMeshQuery& getNavQuery() const {return *_navQuery;}
 
+        vec3<F32> getRandomPosition() const;
+
         NavigationMesh();
         ~NavigationMesh();
 

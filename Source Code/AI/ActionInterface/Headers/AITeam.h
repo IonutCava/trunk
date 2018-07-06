@@ -28,10 +28,12 @@
 namespace Navigation{
     class DivideDtCrowd;
 };
+
 class AIEntity;
 class AITeam {
    const static int maxAgentRadiusCount = 3;
 public:
+
     typedef Unordered_map<I64, AIEntity*> teamMap;
     typedef Unordered_map<AIEntity*, F32 > memberVariable;
 
@@ -41,28 +43,37 @@ public:
     void update(const U64 deltaTime);
     bool addTeamMember(AIEntity* entity);
     bool removeTeamMember(AIEntity* entity);
-    bool addEnemyTeam(AITeam* enemyTeam);
-    void resetNavMeshes();
+    bool addEnemyTeam(U32 enemyTeamID);
+    bool removeEnemyTeam(U32 enemyTeamID);
 
     inline void setTeamID(U32 value) { _teamID = value; }
 
     inline U32      getTeamID() const {return  _teamID;}
-    inline teamMap& getTeam()         {return  _team;}
+    inline const teamMap& getTeamMembers()  const {
+        return _team;
+    }
 
-    inline AITeam& getEnemyTeam()    {return *_enemyTeam;}
-
-    inline const Navigation::DivideDtCrowd& getCrowd(U16 radiusIndex = 0)    const {return *_teamCrowd[radiusIndex];}
-    inline       Navigation::DivideDtCrowd* getCrowdPtr(U16 radiusIndex = 0) const {return _teamCrowd[radiusIndex];}
-    inline memberVariable&  getMemberVariable()    {return _memberVariable;}
+    inline I32 getEnemyTeamID(U32 index) {
+        ReadLock r_lock(_enemyTeamLock);
+        if (_enemyTeams.size() <= index) {
+            return -1;
+        }
+        return _enemyTeams[index];
+    }
+    inline memberVariable& getMemberVariable() { return _memberVariable; }
    
+private:
+    I32 findEnemyTeamIndex(U32 enemyTeamID);
+
 private:
     U32 _teamID;
     teamMap  _team;
-    AITeam* _enemyTeam;
-    Navigation::DivideDtCrowd* _teamCrowd[maxAgentRadiusCount];
     /// Container with data per team member. For example a map of distances
     memberVariable _memberVariable;
     mutable SharedLock _updateMutex;
+
+    mutable SharedLock _enemyTeamLock;
+    vectorImpl<U32 >   _enemyTeams;
 };
 
 #endif

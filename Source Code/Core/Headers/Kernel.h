@@ -29,7 +29,6 @@
 #include "Hardware/Input/Headers/InputAggregatorInterface.h"
 
 #include <boost/noncopyable.hpp>
-#include <boost/lockfree/queue.hpp>
 
 class GUI;
 class Scene;
@@ -163,9 +162,10 @@ private:
    static U64 _previousTime;
    static D32 _nextGameTick;
 
+   static SharedLock _threadedCallbackLock;
+   static vectorImpl<U64 >  _threadedCallbackBuffer;
    static Unordered_map<U64, DELEGATE_CBK > _threadedCallbackFunctions;
-   static boost::lockfree::queue<U64, boost::lockfree::capacity<Config::THREAD_LIMIT + 1> >  _callbackBuffer;
-   U8 _loops;
+
    //Command line arguments
    I32    _argc;
    char **_argv;
