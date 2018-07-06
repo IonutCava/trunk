@@ -8,14 +8,6 @@ uniform int       texDiffuse0Op;
 uniform sampler2D texDiffuse1;
 uniform int       texDiffuse1Op;
 
-#if defined(USE_OPACITY_MAP)
-//Opacity and specular maps
-uniform sampler2D opacityMap;
-#endif
-#if defined(USE_SPECULAR_MAP)
-uniform sampler2D specularMap;
-#endif
-
 const int REPLACE    = 0;
 const int MODULATE   = 1;
 const int DECAL      = 2;

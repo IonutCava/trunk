@@ -304,6 +304,7 @@ void Kernel::Shutdown(){
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){
 	if(!_applicationReady) return;
+	ShaderManager::getInstance().refresh();
 	Application& app = Application::getInstance();
     //minimized
     if(w == 0 || h == 0){

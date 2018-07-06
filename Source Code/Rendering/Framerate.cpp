@@ -53,22 +53,25 @@ void Framerate::benchmarkInternal(){
 	static U32 count = 0;
 	static F32 maxFps = std::numeric_limits<F32>::min();
 	static F32 minFps = std::numeric_limits<F32>::max();
-	static F32 averageFps = 60.0f;
+	static F32 averageFps = 0.0f;
+	static bool resetAverage = false;
 
 	F32 fps = _fps;
+	//Average FPS
+	averageFps += fps;
 
-	//Min/Max FPS (after ~50 rendered frames)
-	if(count > 50){
+	//Min/Max FPS (after every target second)
+	if(count > _targetFrameRate){
 		maxFps = Util::max(maxFps, fps);
 		minFps = Util::min(minFps, fps);
 	}
-	
-	//Average FPS
-	averageFps += fps;
-	if(count > 500){
+	//Every 10 seconds (targeted)
+	if(count > _targetFrameRate * 10){
 		averageFps /= count;
-		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), averageFps,maxFps, minFps, 1000.0f / averageFps);
+		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), averageFps, maxFps, minFps, 1000.0f / averageFps);
 		count = 0;
+		if(resetAverage) averageFps = 0.0f;
+		resetAverage = !resetAverage;
 	}
 	++count;
 }

@@ -16,6 +16,7 @@ void main(void){
 
 uniform vec3 bbox_min;
 uniform vec3 bbox_max;
+out vec4 _vertexM;
 
 #include "lightingDefaults.vert"
 
@@ -24,7 +25,8 @@ void main(void){
 	computeData();
 	vec3 vPositionNormalized = (dvd_Vertex.xyz - bbox_min.xyz) / (bbox_max.xyz - bbox_min.xyz);
 	_texCoord = vPositionNormalized.xz;
-
+	_vertexM = dvd_ModelMatrix * dvd_Vertex;
+	_vertexMV = dvd_ViewMatrix * _vertexM;
 	computeLightVectors();
 	
 	if(dvd_enableShadowMapping) {
@@ -61,19 +63,20 @@ void main (void)
 
 //based on: http://yannick.gerometta.free.fr/base.php?id=glsldemo
 in vec3 _lightDirection[MAX_LIGHT_COUNT];
-in vec3 _viewDirection[MAX_LIGHT_COUNT];
+in vec3 _viewDirection;
 
 in vec2 _texCoord;
 in vec3 _normalMV;
 in vec4  _vertexM;
+in vec4  _vertexMV;
 out vec4 _colorOut;
 
 uniform sampler2D texDiffuseMap;
 uniform sampler2D texNormalHeightMap;
-uniform sampler2D texDiffuse0;
-uniform sampler2D texDiffuse1;
-uniform sampler2D texDiffuse2;
-uniform sampler2D texDiffuse3;
+uniform sampler2D texBlend0;
+uniform sampler2D texBlend1;
+uniform sampler2D texBlend2;
+uniform sampler2D texBlend3;
 uniform sampler2D texWaterCaustics;
 
 uniform int   dvd_lightType[MAX_LIGHT_COUNT];
@@ -94,7 +97,7 @@ uniform vec4 dvd_lightAmbient;
 #define LIGHT_OMNIDIRECTIONAL	1
 #define LIGHT_SPOT				2
 
-vec4 NormalMapping(vec2 uv, vec3 pixelToEyeTBN, vec3 pixelToLightTBN, bool underwater);
+vec4 NormalMapping(vec2 uv, vec3 pixelToLightTBN, bool underwater);
 vec4 CausticsColor();
 
 ///Global NDotL, basically
@@ -115,7 +118,7 @@ void main (void)
 		discard;
 	}
 	
-	vec4 color = NormalMapping(_texCoord, _viewDirection[0], _lightDirection[0], underwater);
+	vec4 color = NormalMapping(_texCoord, _lightDirection[0], underwater);
 	
 	if(underwater) {
 		float alpha = (water_height - _vertexM.y) / (2*(water_height - bbox_min.y));
@@ -142,10 +145,10 @@ vec4 CausticsColor()
 	return (color0 + color1) /2;	
 }
 
-vec4 NormalMapping(vec2 uv, vec3 pixelToEyeTBN, vec3 pixelToLightTBN, bool underwater)
+vec4 NormalMapping(vec2 uv, vec3 pixelToLightTBN, bool underwater)
 {	
 	vec3 lightVecTBN = normalize(pixelToLightTBN);
-	vec3 viewVecTBN = normalize(pixelToEyeTBN);
+	vec3 viewVecTBN = normalize(_viewDirection);
     //float z = 1.0 - (zDepth) / zPlanes.y;
 	vec2 uv_detail = uv * detail_scale;
 	vec2 uv_diffuse = uv * diffuse_scale;
@@ -156,10 +159,10 @@ vec4 NormalMapping(vec2 uv, vec3 pixelToEyeTBN, vec3 pixelToLightTBN, bool under
 
 	vec4 tBase[4];
 
-	tBase[0] = texture(texDiffuse0, uv_diffuse);
-	tBase[1] = texture(texDiffuse1, uv_diffuse);	
-	tBase[2] = texture(texDiffuse2, uv_diffuse);
-	tBase[3] = texture(texDiffuse3, uv_diffuse);
+	tBase[0] = texture(texBlend0, uv_diffuse);
+	tBase[1] = texture(texBlend1, uv_diffuse);	
+	tBase[2] = texture(texBlend2, uv_diffuse);
+	tBase[3] = texture(texBlend3, uv_diffuse);
 	
 	vec4 DiffuseMap = texture(texDiffuseMap, uv);
 	
@@ -178,7 +181,7 @@ vec4 NormalMapping(vec2 uv, vec3 pixelToEyeTBN, vec3 pixelToLightTBN, bool under
 	// SHADOW MAPS
 	float distance_max = 200.0;
 	float shadow = 1.0;
-	float distance = length(pixelToEyeTBN);
+	float distance = length(_viewDirection);
 
 	if(distance < distance_max) {
 		applyShadowDirectional(iDiffuse, 0, shadow);

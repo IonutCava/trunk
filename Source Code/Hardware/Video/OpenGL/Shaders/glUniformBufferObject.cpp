@@ -35,6 +35,13 @@ void glUniformBufferObject::Create(GLint bufferIndex, bool dynamic, bool stream)
 	GLCheck(glGenBuffers(1, &_UBOid)); // Generate the buffer
 }
 
+void glUniformBufferObject::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize){
+	assert(_UBOid != 0);
+	GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, _UBOid));
+	GLCheck(glBufferData(GL_UNIFORM_BUFFER, primitiveSize * primitiveCount, NULL, _usage));
+	GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+}
+
 void glUniformBufferObject::ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data){
 	GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, _UBOid));
 	GLCheck(glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data));

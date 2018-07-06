@@ -27,13 +27,14 @@
 ///This class contains all the variables that define each scene's "unique"-ness:
 ///background music, wind information, visibility settings, camera movement,
 ///BB and Skeleton visibility, fog info, etc
-	///Fog information (fog is so game specific, that it belongs in SceneState not SceneRenderState
+
+///Fog information (fog is so game specific, that it belongs in SceneState not SceneRenderState
 struct FogDescriptor{
     FogMode _fogMode;
     F32 _fogDensity;
     F32 _fogStartDist;
     F32 _fogEndDist;
-    vec4<F32> _fogColor;
+    vec3<F32> _fogColor;
 };
 
 class SceneState{
@@ -45,7 +46,7 @@ public:
 	  _angleLR(0.0f),
 	  _isRunning(false)
 	{
-		_fog._fogColor = vec4<F32>(0.2f, 0.2f, 0.2f, 1.0f);
+		_fog._fogColor = vec3<F32>(0.2f, 0.2f, 0.2f);
 		_fog._fogDensity = 0.01f;
         _fog._fogMode = FOG_EXP2;
         _fog._fogStartDist = 10;

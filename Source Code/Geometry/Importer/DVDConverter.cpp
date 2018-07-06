@@ -284,26 +284,26 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 
 /// Load the material for the current SubMesh
 Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName) {
-	/// See if the material already exists in a cooked state (XML file)
+	// See if the material already exists in a cooked state (XML file)
 	Material* tempMaterial = XML::loadMaterial(materialName);
 	if(tempMaterial) return tempMaterial;
-	/// If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
+	// If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
 	bool skip = false;
 	ResourceDescriptor tempMaterialDescriptor(materialName);
 	if(FindResource(materialName)) skip = true;
-	/// If we found it in the Resource Cache, return a copy of it
+	// If we found it in the Resource Cache, return a copy of it
 	tempMaterial = CreateResource<Material>(tempMaterialDescriptor);
 	if(skip) return tempMaterial;
 
 	ParamHandler& par = ParamHandler::getInstance();
 
-	/// Compare load results with the standard succes value
+	// Compare load results with the standard succes value
 	aiReturn result = AI_SUCCESS;
 
-	/// default diffuse color
+	// default diffuse color
 	vec4<F32> tempColorVec4(0.8f, 0.8f, 0.8f,1.0f);
 
-	/// Load diffuse color
+	// Load diffuse color
 	aiColor4D diffuse;
 	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_DIFFUSE, &diffuse)){
 		tempColorVec4.set(diffuse.r,diffuse.g,diffuse.b,diffuse.a);
@@ -313,10 +313,10 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 
 	tempMaterial->setDiffuse(tempColorVec4);
 
-	/// default ambient color
+	// default ambient color
 	tempColorVec4.set(0.2f, 0.2f, 0.2f, 1.0f);
 
-	/// Load ambient color
+	// Load ambient color
 	aiColor4D ambient;
 	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_AMBIENT,&ambient)){
 		tempColorVec4.set(ambient.r,ambient.g,ambient.b,ambient.a);
@@ -325,7 +325,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	}
 	tempMaterial->setAmbient(tempColorVec4);
 
-	/// default specular color
+	// default specular color
 	tempColorVec4.set(1.0f,1.0f,1.0f,1.0f);
 
 	// Load specular color
@@ -337,39 +337,39 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	}
 	tempMaterial->setSpecular(tempColorVec4);
 
-	/// default emissive color
+	// default emissive color
 	tempColorVec4.set(0.0f, 0.0f, 0.0f, 1.0f);
 
-	/// Load emissive color
+	// Load emissive color
 	aiColor4D emissive;
 	if(AI_SUCCESS == aiGetMaterialColor(source,AI_MATKEY_COLOR_EMISSIVE,&emissive)){
 		tempColorVec4.set(emissive.r,emissive.g,emissive.b,emissive.a);
 	}
 	tempMaterial->setEmissive(tempColorVec4);
 
-	/// default opacity value
+	// default opacity value
 	F32 opacity = 1.0f;
-	/// Load material opacity value
+	// Load material opacity value
 	aiGetMaterialFloat(source,AI_MATKEY_OPACITY,&opacity);
 	tempMaterial->setOpacity(opacity);
 
-	/// default shading model
+	// default shading model
 	I32 shadingModel = Material::SHADING_PHONG;
-	/// Load shading model
+	// Load shading model
 	aiGetMaterialInteger(source,AI_MATKEY_SHADING_MODEL,&shadingModel);
 	tempMaterial->setShadingMode(aiShadingModeInternalTable[shadingModel]);
 
-	/// Default shininess values
+	// Default shininess values
 	F32 shininess = 15, strength = 1;
-	/// Load shininess
+	// Load shininess
 	aiGetMaterialFloat(source,AI_MATKEY_SHININESS, &shininess);
-	/// Load shininess strength
+	// Load shininess strength
 	aiGetMaterialFloat( source, AI_MATKEY_SHININESS_STRENGTH, &strength);
 	F32 finalValue = shininess * strength;
 	CLAMP<F32>(finalValue,0.0f,127.5f);
 	tempMaterial->setShininess(finalValue);
 
-	/// check if material is two sided
+	// check if material is two sided
 	I32 two_sided = 0;
 	aiGetMaterialInteger(source, AI_MATKEY_TWOSIDED, &two_sided);
 	tempMaterial->setDoubleSided(two_sided != 0);
@@ -382,9 +382,9 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	aiTextureMapMode mode[3] = {aiTextureMapMode_Clamp,aiTextureMapMode_Clamp,aiTextureMapMode_Clamp};
 
 	U8 count = 0;
-	/// While we still have diffuse textures
+	// While we still have diffuse textures
 	while(result == AI_SUCCESS){
-		/// Load each one
+		// Load each one
 		result = source->GetTexture(aiTextureType_DIFFUSE, count,
 									&tName,
 									&mapping,
@@ -393,20 +393,20 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 									&op,
 									mode);
 		if(result != AI_SUCCESS) break;
-		/// get full path
+		// get full path
 		std::string path = tName.data;
-		/// get only image name
+		// get only image name
 		std::string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		/// try to find a path name
+		// try to find a path name
 		std::string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-		/// look in default texture folder
+		// look in default texture folder
 		path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
-		/// if we have a name and an extension
+		// if we have a name and an extension
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
-			/// Is this the base texture or the secondary?
+			// Is this the base texture or the secondary?
 			Material::TextureUsage item = Material::TEXTURE_BASE;
 			if(count == 1) item = Material::TEXTURE_SECOND;
-			/// Load the texture resource
+			// Load the texture resource
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
@@ -416,7 +416,8 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 									   aiTextureMapModeTable[mode[2]]);
 			assert(tempMaterial != NULL);
 			assert(textureRes != NULL);
-			tempMaterial->setTexture(item,textureRes,aiTextureOperationTable[op]);
+			//The first texture is always "Replace"
+			tempMaterial->setTexture(item,textureRes, Material::TextureOperation_Replace);
 		}//endif
 
 		tName.Clear();

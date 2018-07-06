@@ -56,6 +56,7 @@ bool Sky::load() {
 	_sun = CreateResource<Sphere3D>(sun);
 	_skybox =  CreateResource<TextureCubemap>(skyboxTextures);
 	_skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
+	_skyShader->setMatrixMask(false,false,false,true);
 	assert(_skyShader);
 	_sky->setResolution(4);
 	_sun->setResolution(16);

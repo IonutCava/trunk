@@ -66,7 +66,8 @@ public:
 
 	//calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
            void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false);
-
+	//calling refresh will force an update on default shader uniforms
+		   void refresh() {_dirty = true;}
 
 	inline void addShaderDefine(const std::string& define) {_definesList.push_back(define);}
            void removeShaderDefine(const std::string& define);
@@ -113,6 +114,7 @@ protected:
     bool _refreshTess;
     bool _optimise;
 	bool _dirty;
+	bool _wasBound;
 	boost::atomic_bool _bound;
 	boost::atomic_bool _compiled;
 	U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something

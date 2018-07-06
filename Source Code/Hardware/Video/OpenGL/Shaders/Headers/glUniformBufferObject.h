@@ -41,7 +41,7 @@ public:
     ///(lights might change per frame, so stream will be better in that case)
 	void Create(GLint bufferIndex, bool dynamic = true, bool stream = false);
 	///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with NULL values
-	virtual void ReserveBuffer(GLuint primitiveCount) = 0;
+	virtual void ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize);
 	virtual void ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data);
 	virtual bool bindUniform(GLuint shaderProgramHandle, GLuint uboLocation);
 	virtual bool bindBufferRange(GLintptr offset, GLsizeiptr size);

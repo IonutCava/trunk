@@ -151,7 +151,6 @@ protected:
 	virtual void exitRenderLoop(const bool killCommand = false) = 0;
 	virtual void closeRenderingApi() = 0;
 	virtual void initDevice(U32 targetFrameRate) = 0;
-	virtual void enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist) = 0;
 
 	/*State Matrix Manipulation*/
 	virtual void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes) = 0;

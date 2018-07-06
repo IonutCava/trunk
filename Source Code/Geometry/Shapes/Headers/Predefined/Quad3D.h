@@ -30,15 +30,10 @@ public:
 						        vec3<F32>(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
 						        vec3<F32>( 1.0f, -1.0f, 0.0f)};  //BOTTOM RIGHT
 
-		vec3<F32> normals[] = {vec3<F32>(0, 0, 1),
-						       vec3<F32>(0, 0, 1),
-						       vec3<F32>(0, 0, 1),
-						       vec3<F32>(0, 0, 1)};
-
-		vec3<F32> tangents[] = {vec3<F32>(0.0f, 1.0f, 0.0f),
-						        vec3<F32>(0.0f, 1.0f, 0.0f),
-				                vec3<F32>(0.0f, 1.0f, 0.0f),
-				                vec3<F32>(0.0f, 1.0f, 0.0f)};
+		vec3<F32> normals[] = {vec3<F32>(0, 0, -1),
+						       vec3<F32>(0, 0, -1),
+						       vec3<F32>(0, 0, -1),
+						       vec3<F32>(0, 0, -1)};
 
 		vec2<F32> texcoords[] = {vec2<F32>(0,1),
 							     vec2<F32>(1,1),
@@ -54,7 +49,6 @@ public:
 		for(U8 i = 0;  i < 4; i++){
 			_geometry->addPosition(vertices[i]);
 			_geometry->addNormal(normals[i]);
-			_geometry->addTangent(tangents[i]);
 			_geometry->getTexcoord().push_back(texcoords[i]);
 		}
 
@@ -67,9 +61,12 @@ public:
 			//  v2----v3
 		}
 
+	   computeTangents();
+
   	   _geometry->setIndiceLimits(vec2<U32>(0,3));
 	   _geometry->queueRefresh();
-	   //computeTangents();
+
+
 	}
 
 	enum CornerLocation{

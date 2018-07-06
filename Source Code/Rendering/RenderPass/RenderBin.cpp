@@ -151,7 +151,6 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 
 	bool isDepthPass = bitCompare(DEPTH_STAGE, currentRenderStage);
     bool isLightValidStage = bitCompare(lightValidStages, currentRenderStage);
-
 	for(U16 j = 0; j < getBinSize(); j++){
 		//Get the current scene node and validate it
 		sgn = getItem(j)._node; assert(sgn);
@@ -189,7 +188,6 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 			//We need to apply different materials for each stage
  			isDepthPass ?  sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn);
 		    //Call render and the stage exclusion mask should do the rest
-			
 			sn->render(sgn);
 
 			//Unbind current material properties

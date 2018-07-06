@@ -102,16 +102,16 @@ void Object3D::computeTangents(){
 	vec2<F32> deltaUV1, deltaUV2;
 	vec3<F32> tangent, bitangent;
 
-	for ( U32 i=0; i< _geometry->getPosition().size(); i+=3){
- 		// Shortcuts for vertices
-		const vec3<F32>&  v0 = _geometry->getPosition(i+0);
-		const vec3<F32>&  v1 = _geometry->getPosition(i+1);
-		const vec3<F32>&  v2 = _geometry->getPosition(i+2);
+	for( U32 i = 0; i < _geometry->getIndexCount(); i += 3 ) {
+		// get the three vertices that make the faces
+		const vec3<F32>& v0 = _geometry->getPosition(_geometry->getIndex(i+0));
+		const vec3<F32>& v1 = _geometry->getPosition(_geometry->getIndex(i+1));
+		const vec3<F32>& v2 = _geometry->getPosition(_geometry->getIndex(i+2));
 
 		// Shortcuts for UVs
-		const vec2<F32> & uv0 = uvs[i+0];
-		const vec2<F32> & uv1 = uvs[i+1];
-		const vec2<F32> & uv2 = uvs[i+2];
+		const vec2<F32> & uv0 = uvs[_geometry->getIndex(i+0)];
+		const vec2<F32> & uv1 = uvs[_geometry->getIndex(i+1)];
+		const vec2<F32> & uv2 = uvs[_geometry->getIndex(i+2)];
 
 		// Edges of the triangle : postion delta
 		deltaPos1.set(v1-v0);

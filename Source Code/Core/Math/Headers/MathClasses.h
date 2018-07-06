@@ -156,46 +156,45 @@ public:
 	vec2(const vec3<T> &_v);
 	vec2(const vec4<T> &_v);
 
-	I32 operator==(const vec2 &_v) { return (FLOAT_COMPARE(this->x,_v.x) && FLOAT_COMPARE(this->y, _v.y)); }
-	I32 operator!=(const vec2 &_v) { return !(*this == _v); }
+	      I32  operator==(const vec2 &v)         { return (FLOAT_COMPARE(this->x,v.x) && FLOAT_COMPARE(this->y, v.y)); }
+	      I32  operator!=(const vec2 &v)         { return !(*this == _v); }
+   	      vec2 &operator=(T _f)                  { this->x=_f; this->y=_f; return (*this); }
+	const vec2 operator*(T _f)             const { return vec2(this->x * _f,this->y * _f); }
+	const vec2 operator/(T _i)             const { return vec2(this->x / _i,this->y / _i); }
+	const vec2 operator+(const vec2 &v)    const { return vec2(this->x + v.x,this->y + v.y); }
+	const vec2 operator-()                 const { return vec2(-this->x,-this->y); }
+	const vec2 operator-(const vec2 &v)    const { return vec2(this->x - v.x,this->y - v.y); }
+	  	  vec2 &operator*=(T _f)                 { return *this = *this * _f; }
+	      vec2 &operator/=(T _f)                 { return *this = *this / _f; }
+	      vec2 &operator+=(const vec2 &_v)       { return *this = *this + _v; }
+	      vec2 &operator-=(const vec2 &_v)       { return *this = *this - _v; }
+    	  T     operator*(const vec2 &_v)  const { return this->x * _v.x + this->y * _v.y; }
+	      T     &operator[](I32 i)               { return this->_v[i]; }
+    const T     &operator[](I32 i)         const { return this->_v[i]; }
 
-	vec2 &operator=(T _f)                      { this->x=_f; this->y=_f; return (*this); }
-	const vec2 operator*(T _f)           const { return vec2(this->x * _f,this->y * _f); }
-	const vec2 operator/(T _i)           const { return vec2(this->x / _i,this->y / _i); }
-	const vec2 operator+(const vec2 &_v) const { return vec2(this->x + _v.x,this->y + _v.y); }
-	const vec2 operator-()               const { return vec2(-this->x,-this->y); }
-	const vec2 operator-(const vec2 &_v) const { return vec2(this->x - _v.x,this->y - _v.y); }
-
-	vec2 &operator*=(T _f) { return *this = *this * _f; }
-	vec2 &operator/=(T _f) { return *this = *this / _f; }
-	vec2 &operator+=(const vec2 &_v) { return *this = *this + _v; }
-	vec2 &operator-=(const vec2 &_v) { return *this = *this - _v; }
-
-	T operator*(const vec2 &_v) const { return this->x * _v.x + this->y * _v.y; }
-
-	operator T*()             { return this->v; }
-	operator const T*() const { return this->v; }
-//	T &operator[](I32 _i) { return this->v[_i]; }
-//	const T &operator[](I32 _i) const { return this->v[_i]; }
+	operator T*()             { return this->_v; }
+	operator const T*() const { return this->_v; }
+	
 
 	inline void set(T _x,T _y)          { this->x = _x; this->y = _y; }
 	inline void set(const vec2& source) { this->x = source.x; this->y = source.y; }
 	inline void reset()                 { this->x = this->y = 0; }
 
 	inline T normalize() {
-		T inv,l = this->length();
+		T l = this->length();
 		if(l < EPSILON) return 0;
-		inv = 1.0f / l;
+		T inv = 1.0f / l;
 		this->x *= inv;
 		this->y *= inv;
 		return l;
 	}
+
 	inline T length()           const { return square_root_tpl(this->x * this->x + this->y * this->y); }
 	inline T dot(const vec2 &v) const { return ((this->x*v.x) + (this->y*v.y)); } //dot product
 
 	inline bool compare(const vec2 &_v,F32 epsi=EPSILON) const { 
 		return (FLOAT_COMPARE_TOLERANCE(this->x,_v.x,epsi) && 
-				FLOAT_COMPARE_TOLERANCE(this->y, _v.y, epsi)); 
+				FLOAT_COMPARE_TOLERANCE(this->y,_v.y,epsi)); 
 	}
 
 	/// return the coordinates of the closest point from *this to the line determined by points vA and vB
@@ -214,6 +213,7 @@ public:
 	}
 	/// linear interpolation between 2 vectors
 	inline vec2 lerp(vec2 &u, vec2 &v, T factor)     const { return ((u * (1 - factor)) + (v * factor)); }
+	/// linear interpolation between 2 vectors based on separate x and y factors
 	inline vec2 lerp(vec2 &u, vec2 &v, vec2& factor) const { 
 		return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x), 
 					 (u.y * (1 - factor.y)) + (v.y * factor.y))); 
@@ -222,15 +222,22 @@ public:
 	inline T angle()              const { return (T)atan2(this->y,this->x); }
 	inline T angle(const vec2 &v) const { return (T)atan2(v.y-this->y,v.x-this->x); }
 
-	inline void swap(vec2 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; }
 	inline void swap(vec2 *iv) { this->swap(*iv); }
+	inline void swap(vec2 &iv) { 
+		T tmp=this->x;
+        this->x=iv.x;
+        iv.x=tmp; 
+        tmp=this->y;
+        this->y=iv.y;
+        iv.y=tmp; 
+    }
 
 	union {
 		struct {T x,y;};
 		struct {T s,t;};
 		struct {T width,height;};
 		struct {T min,max;};
-		T v[2];
+		T _v[2];
 	};
 };
 
@@ -244,51 +251,44 @@ class vec3 {
 public:
 	vec3() : x(0), y(0), z(0) { }
 	vec3(T _x,T _y,T _z) : x(_x), y(_y), z(_z) { }
-	vec3(const T *_v) : x(_v[0]), y(_v[1]), z(_v[2]) { }
-	vec3(const vec2<T> &_v,T _z) : x(_v.x), y(_v.y), z(_z) { }
-	vec3(const vec3 &_v) : x(_v.x), y(_v.y), z(_v.z) { }
-	vec3(const vec4<T> &_v);
+	vec3(const T *v) : x(v[0]), y(v[1]), z(v[2]) { }
+	vec3(const vec2<T> &v,T _z) : x(v.x), y(v.y), z(_z) { }
+	vec3(const vec3 &v) : x(v.x), y(v.y), z(v.z) { }
+	vec3(const vec4<T> &v);
 
-	I32 operator!=(const vec3 &_v) { return !(*this == _v); }
-
-	I32 operator==(const vec3 &_v) { 
-		return FLOAT_COMPARE(this->x,_v.x) && 
-		       FLOAT_COMPARE(this->y,_v.y) && 
-			   FLOAT_COMPARE(this->z, _v.z); 
+	I32 operator!=(const vec3 &v) { return !(*this == v); }
+	I32 operator==(const vec3 &v) { 
+		return FLOAT_COMPARE(this->x,v.x) && 
+		       FLOAT_COMPARE(this->y,v.y) && 
+			   FLOAT_COMPARE(this->z,v.z); 
 	}
 
-	inline bool compare(const vec3 &_v,F32 epsi=EPSILON) {
-		return FLOAT_COMPARE_TOLERANCE(this->x,_v.x,epsi) && 
-		 	   FLOAT_COMPARE_TOLERANCE(this->y,_v.y,epsi) && 
-			   FLOAT_COMPARE_TOLERANCE(this->z,_v.z,epsi); 
+	inline bool compare(const vec3 &v,F32 epsi=EPSILON) {
+		return FLOAT_COMPARE_TOLERANCE(this->x,v.x,epsi) && 
+		 	   FLOAT_COMPARE_TOLERANCE(this->y,v.y,epsi) && 
+			   FLOAT_COMPARE_TOLERANCE(this->z,v.z,epsi); 
 	}
 
-	vec3 &operator=(T _f) { this->x=_f; this->y=_f; this->z=_f; return (*this); }
-	const vec3 operator*(T _f) const { return vec3(this->x * _f,this->y * _f,this->z * _f); }
-	const vec3 operator/(T _f) const {
-		if(IS_ZERO(_f)) return *this;
-		_f = 1.0f / _f;
-		return (*this) * _f;
-	}
+		  vec3 &operator=(T _f)                  { this->x=_f; this->y=_f; this->z=_f; return (*this); }
+	const vec3  operator*(T _f)            const { return vec3(this->x * _f,this->y * _f,this->z * _f); }
+	const vec3  operator/(T _f)            const { if(IS_ZERO(_f)) return *this;_f = 1.0f / _f; return (*this) * _f; }
+    const vec3  operator+(const vec3 &v)   const { return vec3(this->x + v.x,this->y + v.y,this->z + v.z); }
+	const vec3  operator-()                const { return vec3(-this->x,-this->y,-this->z); }
+	const vec3  operator-(const vec3 &v)   const { return vec3(this->x - v.x,this->y - v.y,this->z - v.z); }
+    const vec3  operator*(const vec3 &v)   const { return vec3(this->x * v.x,this->y * v.y,this->z * v.z);}
+	      vec3 &operator*=(T _f)                 { return *this = *this * _f; }
+      	  vec3 &operator/=(T _f)                 { return *this = *this / _f; }
+	      vec3 &operator+=(const vec3 &v)        { return *this = *this + v; }
+	      vec3 &operator-=(const vec3 &v)        { return *this = *this - v; }
+//	      T     operator*(const vec3 &v)   const { return this->x * v.x + this->y * v.y + this->z * v.z; }
+		  T    &operator[](const I32 i)          { return this->_v[i];}
 
-	const vec3 operator+(const vec3 &_v) const { return vec3(this->x + _v.x,this->y + _v.y,this->z + _v.z); }
-	const vec3 operator-() const { return vec3(-this->x,-this->y,-this->z); }
-	const vec3 operator-(const vec3 &_v) const { return vec3(this->x - _v.x,this->y - _v.y,this->z - _v.z); }
-    const vec3 operator*(const vec3 &_v) const { return vec3(this->x * _v.x,this->y * _v.y,this->z * _v.z);}
-	vec3 &operator*=(T _f) { return *this = *this * _f; }
-	vec3 &operator/=(T _f) { return *this = *this / _f; }
-	vec3 &operator+=(const vec3 &_v) { return *this = *this + _v; }
-	vec3 &operator-=(const vec3 &_v) { return *this = *this - _v; }
+	operator T*()             { return this->_v; }
+	operator const T*() const { return this->_v; }
 
-	//T operator*(const vec3 &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z; }
-
-	T operator*(const vec4<T> &_v) const;
-	//T operator[](const I32 i) {switch(i){case 0: return this->x; case 1: return this->y; case 2: return this->z;};}
-	operator T*() { return this->v; }
-	operator const T*() const { return this->v; }
-    inline vec2<T> rg() const {return vec2<T>(this->r,this->g);}
-    inline vec2<T> xy() const {return this->rg();}
-    inline bool isUniform() const { return IS_ZERO(this->x - this->y) && IS_ZERO(this->y - this->z);}
+    inline vec2<T> rg()        const { return vec2<T>(this->r,this->g);}
+    inline vec2<T> xy()        const { return this->rg();}
+    inline bool    isUniform() const { return IS_ZERO(this->x - this->y) && IS_ZERO(this->y - this->z);}
 
 	inline void set(T _x, T _y, T _z)   { this->x = _x; this->y = _y; this->z = _z; }
 	inline void set(const vec3& source) { this->x = source.x; this->y = source.y; this->z = source.z; }
@@ -298,9 +298,9 @@ public:
 	inline T lengthSquared() const {return this->x * this->x + this->y * this->y + this->z * this->z; }
 
 	inline T normalize() {
-		T inv,l = this->length();
+		T l = this->length();
 		if(l < EPSILON) return 0;
-		inv = 1.0f / l;
+		T inv = 1.0f / l;
 		this->x *= inv;
 		this->y *= inv;
 		this->z *= inv;
@@ -321,12 +321,11 @@ public:
 		this->x = x;
 	}
 
-	inline T dot(const vec3 &v) const { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); }
-
-	inline T distance(const vec3 &_v) const {
-		return square_root_tpl(((_v.x - this->x)*(_v.x - this->x)) + 
-			                   ((_v.y - this->y)*(_v.y - this->y)) + 
-							   ((_v.z - this->z)*(_v.z - this->z)));
+	inline T dot(const vec3 &v)      const { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); }
+	inline T distance(const vec3 &v) const {
+		return square_root_tpl(((v.x - this->x)*(v.x - this->x)) + 
+			                   ((v.y - this->y)*(v.y - this->y)) + 
+							   ((v.z - this->z)*(v.z - this->z)));
 	}
 
 	/// Returns the angle in radians between '*this' and 'v'
@@ -337,9 +336,9 @@ public:
 	}
 
 	inline vec3 direction(const vec3& u) const {
-		vec3 v(u.x - this->x, u.y - this->y, u.z-this->z);
-		v.normalize();
-		return v;
+		vec3 vector(u.x - this->x, u.y - this->y, u.z-this->z);
+		vector.normalize();
+		return vector;
 	}
 
 	inline vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB) const { 
@@ -354,8 +353,8 @@ public:
 	}
 
 	inline T projectionOnLine(const vec3 &vA, const vec3 &vB) const {
-		vec3 v(vB - vA);
-		return v.dot(*this - vA) / v.dot(v);
+		vec3 vector(vB - vA);
+		return vector.dot(*this - vA) / vector.dot(vector);
 	}
 
 	inline vec3 lerp(vec3 &u, vec3 &v, T factor) const { return ((u * (1 - factor)) + (v * factor)); }
@@ -386,22 +385,21 @@ public:
 		struct {T r,g,b;};
 		struct {T pitch,yaw,roll;};
 		struct {T width,height,depth;};
-		T v[3];
+		T _v[3];
 	};
 
 	inline void swap(vec3 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; tmp=z; z=iv.z; iv.z=tmp; }
 	inline void swap(vec3 *iv) { this->swap(*iv); }
 
-	inline void  get(T * v) const {
-		v[0] = (T)this->x;
-		v[1] = (T)this->y;
-		v[2] = (T)this->z;
+	inline void get(T * v) const {
+		v[0] = (T)this->_v[0];
+		v[1] = (T)this->_v[1];
+		v[2] = (T)this->_v[2];
 	}
 };
 
 template<class T>
-inline vec3<T> operator*(T fl, const vec3<T>& v)	{ return vec3<T>(v.x*fl, v.y*fl, v.z*fl);}
-
+inline vec3<T> operator*(T fl, const vec3<T>& v) { return vec3<T>(v.x*fl, v.y*fl, v.z*fl);}
 template<class T>
 inline T Dot(const vec3<T>& a, const vec3<T>& b) { return(a.x*b.x+a.y*b.y+a.z*b.z); }
 template<class T>
@@ -409,9 +407,9 @@ inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
 	return vec3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 }
 template<class T>
-inline vec2<T>::vec2(const vec3<T> &_v) {
-	this->x = _v.x;
-	this->y = _v.y;
+inline vec2<T>::vec2(const vec3<T> &v) {
+	this->x = v.x;
+	this->y = v.y;
 }
 
 /// This calculates a vector between 2 points and returns the result
@@ -422,10 +420,10 @@ inline vec3<T>& vector(const vec3<T> &vp1, const vec3<T> &vp2) {
 }
 
 template<class T>
-inline vec3<T>::vec3(const vec4<T> &_v) {
-	this->x = _v.x;
-	this->y = _v.y;
-	this->z = _v.z;
+inline vec3<T>::vec3(const vec4<T> &v) {
+	this->x = v.x;
+	this->y = v.y;
+	this->z = v.z;
 }
 
 /********************//**
@@ -435,41 +433,36 @@ inline vec3<T>::vec3(const vec4<T> &_v) {
 template <class T>
 class vec4 {
 public:
-	vec4() : x(0), y(0), z(0), w(1) { }
-	vec4(T _x,T _y,T _z,T _w) : x(_x), y(_y), z(_z), w(_w) { }
-	vec4(const T *_v) : x(_v[0]), y(_v[1]), z(_v[2]), w(_v[3]) { }
-	vec4(const vec3<T> &_v) : x(_v.x), y(_v.y), z(_v.z), w(1) { }
-	vec4(const vec3<T> &_v,T _w) : x(_v.x), y(_v.y), z(_v.z), w(_w) { }
-	vec4(const vec4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w) { }
+	vec4() : x(0), y(0), z(0), w(1)                             { }
+	vec4(T _x,T _y,T _z,T _w) : x(_x), y(_y), z(_z), w(_w)      { }
+	vec4(const T *v) : x(v[0]), y(v[1]), z(v[2]), w(v[3])       { }
+	vec4(const vec3<T> &v) : x(v.x), y(v.y), z(v.z), w(1)       { }
+	vec4(const vec3<T> &v,T _w) : x(v.x), y(v.y), z(v.z), w(_w) { }
+	vec4(const vec4 &v) : x(v.x), y(v.y), z(v.z), w(v.w)        { }
 
 	///should be comparable with the FLOAT_COMPARE case
-	I32 operator==(const vec4 &_v) { return IS_ZERO(this->x - _v.x) && IS_ZERO(this->y - _v.y) &&
-                                            IS_ZERO(this->z - _v.z) && IS_ZERO(this->w - _v.w); }
-	I32 operator!=(const vec4 &_v) { return !(*this == _v); }
+	I32 operator==(const vec4 &v) { return IS_ZERO(this->x - v.x) && IS_ZERO(this->y - v.y) &&
+                                           IS_ZERO(this->z - v.z) && IS_ZERO(this->w - v.w); }
+	I32 operator!=(const vec4 &v) { return !(*this == v); }
 
-	vec4 &operator=(T _f) { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this);}
-	const vec4 operator*(T _f) const { return vec4(this->x * _f,this->y * _f,this->z * _f,this->w * _f); }
-	const vec4 operator/(T _f) const {
-		if(IS_ZERO(_f)) return *this;
-		_f = 1.0f / _f;
-		return (*this) * _f;
-	}
-	const vec4 operator+(const vec4 &_v) const { return vec4(this->x + _v.x,this->y + _v.y,this->z + _v.z,this->w + _v.w); }
-	const vec4 operator-() const { return vec4(-x,-y,-z,-w); }
-	const vec4 operator-(const vec4 &_v) const { return vec4(this->x - _v.x,this->y - _v.y,this->z - _v.z,this->w - _v.w); }
+	      vec4 &operator=(T _f)                   { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this);}
+	const vec4  operator*(T _f)             const { return vec4(this->x * _f,this->y * _f,this->z * _f,this->w * _f); }
+	const vec4  operator/(T _f)             const { if(IS_ZERO(_f)) return *this; _f = 1.0f / _f; return (*this) * _f; }
+	const vec4  operator-()                 const { return vec4(-x,-y,-z,-w); }
+	const vec4  operator+(const vec4 &v)    const { return vec4(this->x + v.x,this->y + v.y,this->z + v.z,this->w + v.w); }
+	const vec4  operator-(const vec4 &v)    const { return vec4(this->x - v.x,this->y - v.y,this->z - v.z,this->w - v.w); }
+	 	  vec4 &operator*=(T _f)                  { return *this = *this * _f; }
+	      vec4 &operator/=(T _f)                  { return *this = *this / _f; }
+	      vec4 &operator+=(const vec4 &v)         { return *this = *this + v; }
+	      vec4 &operator-=(const vec4 &v)         { return *this = *this - v; }
+  	      T     operator*(const vec3<T> &v) const { return this->x * v.x + this->y * v.y + this->z * v.z + this->w; }
+	      T     operator*(const vec4<T> &v) const { return this->x * v.x + this->y * v.y + this->z * v.z + this->w * v.w; }
 
-	vec4 &operator*=(T _f)           { return *this = *this * _f; }
-	vec4 &operator/=(T _f)           { return *this = *this / _f; }
-	vec4 &operator+=(const vec4 &_v) { return *this = *this + _v; }
-	vec4 &operator-=(const vec4 &_v) { return *this = *this - _v; }
-
-	T operator*(const vec3<T> &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w; }
-	T operator*(const vec4<T> &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w * _v.w; }
-
-	operator T*() { return this->v; }
-	operator const T*() const { return this->v; }
-//	T &operator[](I32 _i) { return this->v[_i]; }
-//	const T &operator[](I32 _i) const { return this->v[_i]; }
+	operator T*()             { return this->_v; }
+	operator const T*() const { return this->_v; }
+	
+   	      T &operator[](I32 i)        { return this->_v[i]; }
+	const T &operator[](I32 _i) const { return this->_v[_i]; }
 
     inline vec2<T> rg()  const {return vec2<T>(this->r,this->g);}
     inline vec2<T> xy()  const {return this->rg();}
@@ -478,37 +471,48 @@ public:
 
 	inline void set(T _x,T _y,T _z,T _w) { this->x = _x;       this->y =_y;        this->z =_z;        this->w =_w;}
 	inline void set(const vec4& source)  { this->x = source.x; this->y = source.y; this->z = source.z; this->w = source.w;}
+    inline void reset()                  { this->x = this->y = this->z = this->w = 0;}
 
-	inline void reset() { this->x = this->y = this->z = this->w = 0;}
-
-	inline bool compare(const vec4 &_v,F32 epsi=EPSILON) { 
-		return (FLOAT_COMPARE_TOLERANCE(this->x, _v.x, epsi) && 
-				FLOAT_COMPARE_TOLERANCE(this->y, _v.y, epsi) && 
-				FLOAT_COMPARE_TOLERANCE(this->z, _v.z, epsi) && 
-				FLOAT_COMPARE_TOLERANCE(this->w, _v.w, epsi)); }
+	inline bool compare(const vec4 &v,F32 epsi=EPSILON) { 
+		return (FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) && 
+				FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi) && 
+				FLOAT_COMPARE_TOLERANCE(this->z, v.z, epsi) && 
+				FLOAT_COMPARE_TOLERANCE(this->w, v.w, epsi)); }
 
 	inline vec4 lerp(const vec4 &u, const vec4 &v, T factor) const { return ((u * (1 - factor)) + (v * factor)); }
 
-	inline void swap(vec4 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; tmp=z; z=iv.z; iv.z=tmp; tmp=w; w=iv.w; iv.w=tmp;}
 	inline void swap(vec4 *iv) { this->swap(*iv); }
-
+	inline void swap(vec4 &iv) {
+		T tmp=this->x; 
+		this->x=iv.x; 
+        iv.x=tmp;
+        tmp=this->y; 
+		this->y=iv.y; 
+		iv.y=tmp; 
+		tmp=this->z;
+		this->z=iv.z; 
+		iv.z=tmp;
+		tmp=this->w; 
+		this->w=iv.w;
+		 iv.w=tmp;
+	}
+	
 	union {
 		struct {T x,y,z,w;};
 		struct {T s,t,p,q;};
 		struct {T r,g,b,a;};
 		struct {T fov,ratio,znear,zfar;};
 		struct {T width,height,depth,key;};
-		T v[4];
+		T _v[4];
 	};
 };
 
 template<class T>
-inline vec4<T> operator*(T fl, const vec4<T>& v)	{ return vec4<T>(v.x*fl, v.y*fl, v.z*fl,  v.w*fl);}
-
+inline vec4<T> operator*(T fl, const vec4<T>& v) { return vec4<T>(v.x*fl, v.y*fl, v.z*fl,  v.w*fl);}
 template<class T>
-inline vec2<T>::vec2(const vec4<T> &_v) {
-	this->x = _v.x;
-	this->y = _v.y;
+inline vec2<T>::vec2(const vec4<T> &v) {
+	this->x = v.x;
+	this->y = v.y;
 }
 
 /******************************//**
@@ -587,18 +591,26 @@ public:
 
 	bool operator == (mat3& B){
         for (I32 i = 0; i < 9; i++){
-            if (!FLOAT_COMPARE(m[i],B[i])) return false;
+            if (!FLOAT_COMPARE(this->m[i],B[i])) return false;
         }
         return true;
     }
 
     bool operator != (mat3& B){ return !(*this == B);}
 
-	operator T*()             { return mat; }
-	operator const T*() const { return mat; }
+	operator T*()             { return this->mat; }
+	operator const T*() const { return this->mat; }
 
-	T &operator[](I8 i)             { return mat[i]; }
-	const T operator[](I32 i) const { return mat[i]; }
+	T &operator[](I8 i)             { return this->mat[i]; }
+	const T operator[](I32 i) const { return this->mat[i]; }
+
+	inline void set(T m0, T m1, T m2,
+					T m3, T m4, T m5,
+					T m6, T m7, T m8) {
+		this->mat[0] = m0; this->mat[3] = m3; this->mat[6] = m6;
+		this->mat[1] = m1; this->mat[4] = m4; this->mat[7] = m7;
+		this->mat[2] = m2; this->mat[5] = m5; this->mat[8] = m8;
+	}
 
 	inline mat3 transpose() const {
 		return mat3(mat[0], mat[3], mat[6],
@@ -617,7 +629,7 @@ public:
 
 	inline mat3 inverse() const {
 		T idet = 1.0f / det();
-		return mat3((mat[4] * mat[8] - mat[7] * mat[5]) * idet,
+		return mat3( (mat[4] * mat[8] - mat[7] * mat[5]) * idet,
 					-(mat[1] * mat[8] - mat[7] * mat[2]) * idet,
 					 (mat[1] * mat[5] - mat[4] * mat[2]) * idet,
 					-(mat[3] * mat[8] - mat[6] * mat[5]) * idet,
@@ -746,10 +758,10 @@ class mat4 {
 public:
 	mat4()/* : mat(NULL)*/{
 		allocateMem();
-		this->mat[0] = 1.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
-		this->mat[1] = 0.0; this->mat[5] = 1.0; this->mat[9]  = 0.0; this->mat[13] = 0.0;
-		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = 0.0;
-		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
+		mat[0] = 1.0; mat[4] = 0.0; mat[8]  = 0.0; mat[12] = 0.0;
+		mat[1] = 0.0; mat[5] = 1.0; mat[9]  = 0.0; mat[13] = 0.0;
+		mat[2] = 0.0; mat[6] = 0.0; mat[10] = 1.0; mat[14] = 0.0;
+		mat[3] = 0.0; mat[7] = 0.0; mat[11] = 0.0; mat[15] = 1.0;
 	}
 
 	mat4(T m0, T m1, T m2, T m3,
@@ -757,18 +769,18 @@ public:
 		 T m8, T m9, T m10,T m11,
 		 T m12,T m13,T m14,T m15)/* : mat(NULL)*/{
 		allocateMem();
-		this->mat[0] = m0; this->mat[4] = m4; this->mat[8]  = m8;  this->mat[12] = m12;
-		this->mat[1] = m1; this->mat[5] = m5; this->mat[9]  = m9;  this->mat[13] = m13;
-		this->mat[2] = m2; this->mat[6] = m6; this->mat[10] = m10; this->mat[14] = m14;
-		this->mat[3] = m3; this->mat[7] = m7; this->mat[11] = m11; this->mat[15] = m15;
+		mat[0] = m0; mat[4] = m4; mat[8]  = m8;  mat[12] = m12;
+		mat[1] = m1; mat[5] = m5; mat[9]  = m9;  mat[13] = m13;
+		mat[2] = m2; mat[6] = m6; mat[10] = m10; mat[14] = m14;
+		mat[3] = m3; mat[7] = m7; mat[11] = m11; mat[15] = m15;
 	}
 
 	mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4)/* : mat(NULL)*/{
 		allocateMem();
-		this->mat[0] = col1.x; this->mat[4] = col2.x; this->mat[8]  = col3.x; this->mat[12] = col4.x;
-		this->mat[1] = col1.y; this->mat[5] = col2.y; this->mat[9]  = col3.y; this->mat[13] = col4.y;
-		this->mat[2] = col1.z; this->mat[6] = col2.z; this->mat[10] = col3.z; this->mat[14] = col4.z;
-		this->mat[3] = col1.w; this->mat[7] = col2.w; this->mat[11] = col3.w; this->mat[15] = col4.w;
+		mat[0] = col1.x; mat[4] = col2.x; mat[8]  = col3.x; mat[12] = col4.x;
+		mat[1] = col1.y; mat[5] = col2.y; mat[9]  = col3.y; mat[13] = col4.y;
+		mat[2] = col1.z; mat[6] = col2.z; mat[10] = col3.z; mat[14] = col4.z;
+		mat[3] = col1.w; mat[7] = col2.w; mat[11] = col3.w; mat[15] = col4.w;
 	}
 
 	mat4(const vec3<T> &v)/* : mat(NULL)*/{
@@ -793,26 +805,26 @@ public:
 
 	mat4(const mat3<T> &m)/* : mat(NULL)*/{
 		allocateMem();
-		this->mat[0] = m[0]; this->mat[4] = m[3]; this->mat[8]  = m[6]; this->mat[12] = 0.0;
-		this->mat[1] = m[1]; this->mat[5] = m[4]; this->mat[9]  = m[7]; this->mat[13] = 0.0;
-		this->mat[2] = m[2]; this->mat[6] = m[5]; this->mat[10] = m[8]; this->mat[14] = 0.0;
-		this->mat[3] = 0.0;  this->mat[7] = 0.0;  this->mat[11] = 0.0;  this->mat[15] = 1.0;
+		mat[0] = m[0]; mat[4] = m[3]; mat[8]  = m[6]; mat[12] = 0.0;
+		mat[1] = m[1]; mat[5] = m[4]; mat[9]  = m[7]; mat[13] = 0.0;
+		mat[2] = m[2]; mat[6] = m[5]; mat[10] = m[8]; mat[14] = 0.0;
+		mat[3] = 0.0;  mat[7] = 0.0;  mat[11] = 0.0;  mat[15] = 1.0;
 	}
 
 	mat4(const T *m)/* : mat(NULL)*/{
 		allocateMem();
-		this->mat[0] = m[0]; this->mat[4] = m[4]; this->mat[8]  = m[8];  this->mat[12] = m[12];
-		this->mat[1] = m[1]; this->mat[5] = m[5]; this->mat[9]  = m[9];  this->mat[13] = m[13];
-		this->mat[2] = m[2]; this->mat[6] = m[6]; this->mat[10] = m[10]; this->mat[14] = m[14];
-		this->mat[3] = m[3]; this->mat[7] = m[7]; this->mat[11] = m[11]; this->mat[15] = m[15];
+		mat[0] = m[0]; mat[4] = m[4]; mat[8]  = m[8];  mat[12] = m[12];
+		mat[1] = m[1]; mat[5] = m[5]; mat[9]  = m[9];  mat[13] = m[13];
+		mat[2] = m[2]; mat[6] = m[6]; mat[10] = m[10]; mat[14] = m[14];
+		mat[3] = m[3]; mat[7] = m[7]; mat[11] = m[11]; mat[15] = m[15];
 	}
 
 	mat4(const mat4 &m)/* : mat(NULL)*/{
 		allocateMem();
-		this->mat[0] = m[0]; this->mat[4] = m[4]; this->mat[8]  = m[8];  this->mat[12] = m[12];
-		this->mat[1] = m[1]; this->mat[5] = m[5]; this->mat[9]  = m[9];  this->mat[13] = m[13];
-		this->mat[2] = m[2]; this->mat[6] = m[6]; this->mat[10] = m[10]; this->mat[14] = m[14];
-		this->mat[3] = m[3]; this->mat[7] = m[7]; this->mat[11] = m[11]; this->mat[15] = m[15];
+		mat[0] = m[0]; mat[4] = m[4]; mat[8]  = m[8];  mat[12] = m[12];
+		mat[1] = m[1]; mat[5] = m[5]; mat[9]  = m[9];  mat[13] = m[13];
+		mat[2] = m[2]; mat[6] = m[6]; mat[10] = m[10]; mat[14] = m[14];
+		mat[3] = m[3]; mat[7] = m[7]; mat[11] = m[11]; mat[15] = m[15];
 	}
 
 	vec3<T> operator*(const vec3<T> &v) const {
@@ -843,12 +855,22 @@ public:
 
     bool operator == (mat4& B){
         for (I32 i = 0; i < 16; i++){
-            if (!FLOAT_COMPARE(mat[i],B[i])) return false;
+            if (!FLOAT_COMPARE(this->mat[i],B[i])) return false;
         }
         return true;
     }
 
     bool operator != (mat4& B){ return !(*this == B);}
+
+	inline void set(T m0, T m1, T m2, T m3,
+			        T m4, T m5, T m6, T m7,
+			        T m8, T m9, T m10,T m11,
+			        T m12,T m13,T m14,T m15){
+		this->mat[0] = m0; this->mat[4] = m4; this->mat[8]  = m8;  this->mat[12] = m12;
+		this->mat[1] = m1; this->mat[5] = m5; this->mat[9]  = m9;  this->mat[13] = m13;
+		this->mat[2] = m2; this->mat[6] = m6; this->mat[10] = m10; this->mat[14] = m14;
+		this->mat[3] = m3; this->mat[7] = m7; this->mat[11] = m11; this->mat[15] = m15;
+	}
 
 	inline vec4<T> getCol(I32 index) const {
 		return vec4<T>(this->mat[0 + (index*4)],
@@ -873,32 +895,31 @@ public:
 	}
 
 	/// premultiply the matrix by the given matrix
-	void multmatrix(const mat4& m) {
+	void multmatrix(const mat4& matrix) {
 		T tmp[4];
 		for (I8 j=0; j<4; j++) {
-			tmp[0] = mat[j];
-			tmp[1] = mat[4+j];
-			tmp[2] = mat[8+j];
-			tmp[3] = mat[12+j];
+			tmp[0] = this->mat[j];
+			tmp[1] = this->mat[4+j];
+			tmp[2] = this->mat[8+j];
+			tmp[3] = this->mat[12+j];
 			for (I8 i=0; i<4; i++) {
-				mat[4*i+j] = m[4*i]*tmp[0] + m[4*i+1]*tmp[1] +
-				m[4*i+2]*tmp[2] + m[4*i+3]*tmp[3];
+				this->mat[4*i+j] = matrix[4*i]*tmp[0] + matrix[4*i+1]*tmp[1] + matrix[4*i+2]*tmp[2] + matrix[4*i+3]*tmp[3];
 			}
 		}
 	}
 
-	mat4 operator+(const mat4 &m) const {
-		return mat4(this->mat[0]  + m[0],  this->mat[1]  + m[1],  this->mat[2]  + m[2],  this->mat[3]  + m[3],
-					this->mat[4]  + m[4],  this->mat[5]  + m[5],  this->mat[6]  + m[6],  this->mat[7]  + m[7],
-					this->mat[8]  + m[8],  this->mat[9]  + m[9],  this->mat[10] + m[10], this->mat[11] + m[11],
-					this->mat[12] + m[12], this->mat[13] + m[13], this->mat[14] + m[14], this->mat[15] + m[15]);
+	mat4 operator+(const mat4 &matrix) const {
+		return mat4(this->mat[0]  + matrix[0],  this->mat[1]  + matrix[1],  this->mat[2]  + matrix[2],  this->mat[3]  + matrix[3],
+					this->mat[4]  + matrix[4],  this->mat[5]  + matrix[5],  this->mat[6]  + matrix[6],  this->mat[7]  + matrix[7],
+					this->mat[8]  + matrix[8],  this->mat[9]  + matrix[9],  this->mat[10] + matrix[10], this->mat[11] + matrix[11],
+					this->mat[12] + matrix[12], this->mat[13] + matrix[13], this->mat[14] + matrix[14], this->mat[15] + matrix[15]);
 	}
 
-	mat4 operator-(const mat4 &m) const {
-		return mat4(this->mat[0]  - m[0],  this->mat[1]  - m[1],  this->mat[2]  - m[2],  this->mat[3]  - m[3],
-					this->mat[4]  - m[4],  this->mat[5]  - m[5],  this->mat[6]  - m[6],  this->mat[7]  - m[7],
-					this->mat[8]  - m[8],  this->mat[9]  - m[9],  this->mat[10] - m[10], this->mat[11] - m[11],
-					this->mat[12] - m[12], this->mat[13] - m[13], this->mat[14] - m[14], this->mat[15] - m[15]);
+	mat4 operator-(const mat4 &matrix) const {
+		return mat4(this->mat[0]  - matrix[0],  this->mat[1]  - matrix[1],  this->mat[2]  - matrix[2],  this->mat[3]  - matrix[3],
+					this->mat[4]  - matrix[4],  this->mat[5]  - matrix[5],  this->mat[6]  - matrix[6],  this->mat[7]  - matrix[7],
+					this->mat[8]  - matrix[8],  this->mat[9]  - matrix[9],  this->mat[10] - matrix[10], this->mat[11] - matrix[11],
+					this->mat[12] - matrix[12], this->mat[13] - matrix[13], this->mat[14] - matrix[14], this->mat[15] - matrix[15]);
 	}
 
 	inline T &element(I8 row, I8 column, bool rowMajor = false)	{
@@ -911,10 +932,10 @@ public:
 		return (rowMajor ? this->mat[column+row*4] : this->mat[row+column*4]);
 	}
 
-	mat4 &operator*=(T f)           { return *this = *this * f; }
-	mat4 &operator*=(const mat4 &m) { return *this = *this * m; }
-	mat4 &operator+=(const mat4 &m) { return *this = *this + m; }
-	mat4 &operator-=(const mat4 &m) { return *this = *this - m; }
+	mat4 &operator*=(T f)                { return *this = *this * f; }
+	mat4 &operator*=(const mat4 &matrix) { return *this = *this * matrix; }
+	mat4 &operator+=(const mat4 &matrix) { return *this = *this + matrix; }
+	mat4 &operator-=(const mat4 &matrix) { return *this = *this - matrix; }
 
 	operator T*()             { return this->mat; }
 	operator const T*() const { return this->mat; }
@@ -923,10 +944,10 @@ public:
 	const T &operator[](I32 i) const { return this->mat[i]; }
 
 	inline mat4 rotation(void) const {
-		return mat4(this->mat[0], this->mat[1], this->mat[2], 0,
-					this->mat[4], this->mat[5], this->mat[6], 0,
-					this->mat[8], this->mat[9], this->mat[10],0,
-					0, 0, 0, 1);
+		return mat4(this->mat[0], this->mat[1], this->mat[2],  0,
+					this->mat[4], this->mat[5], this->mat[6],  0,
+					this->mat[8], this->mat[9], this->mat[10], 0,
+					0,            0,            0,             1);
 	}
 
 	inline void transpose(mat4& out) const {
@@ -954,8 +975,8 @@ public:
 	inline void inverse(mat4& ret) const { Mat4::Inverse(this->mat,ret.mat); }
 
 	inline void zero() {
-		this->mat[0] = 0.0; this->mat[4] = 0.0; this->mat[8] = 0.0; this->mat[12] = 0.0;
-		this->mat[1] = 0.0; this->mat[5] = 0.0; this->mat[9] = 0.0; this->mat[13] = 0.0;
+		this->mat[0] = 0.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
+		this->mat[1] = 0.0; this->mat[5] = 0.0; this->mat[9]  = 0.0; this->mat[13] = 0.0;
 		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 0.0; this->mat[14] = 0.0;
 		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 0.0;
 	}
@@ -982,9 +1003,9 @@ public:
 		T xs = v.x * s;
 		T ys = v.y * s;
 		T zs = v.z * s;
-		mat[0] = (1 - c) * xx + c;  mat[4] = (1 - c) * xy - zs; mat[8]  = (1 - c) * zx + ys;
-		mat[1] = (1 - c) * xy + zs; mat[5] = (1 - c) * yy + c;  mat[9]  = (1 - c) * yz - xs;
-		mat[2] = (1 - c) * zx - ys; mat[6] = (1 - c) * yz + xs; mat[10] = (1 - c) * zz + c;
+		this->mat[0] = (1 - c) * xx + c;  this->mat[4] = (1 - c) * xy - zs; this->mat[8]  = (1 - c) * zx + ys;
+		this->mat[1] = (1 - c) * xy + zs; this->mat[5] = (1 - c) * yy + c;  this->mat[9]  = (1 - c) * yz - xs;
+		this->mat[2] = (1 - c) * zx - ys; this->mat[6] = (1 - c) * yz + xs; this->mat[10] = (1 - c) * zz + c;
 	}
 
 	inline void rotate(T x,T y,T z,T angle) {
@@ -995,30 +1016,30 @@ public:
 		DegToRad(angle);
 		T c = (T)cos(angle);
 		T s = (T)sin(angle);
-		mat[5] =  c;  mat[9]  = -s;
-		mat[6] =  s;  mat[10] =  c;
+		this->mat[5] =  c;  this->mat[9]  = -s;
+		this->mat[6] =  s;  this->mat[10] =  c;
 	}
 
 	inline void rotate_y(T angle) {
 		DegToRad(angle);
 		T c = (T)cos(angle);
 		T s = (T)sin(angle);
-		mat[0] =  c; mat[8]  =  s;
-		mat[2] = -s; mat[10] =  c;
+		this->mat[0] =  c; this->mat[8]  =  s;
+		this->mat[2] = -s; this->mat[10] =  c;
 	}
 
 	inline void rotate_z(T angle) {
 		DegToRad(angle);
 		T c = (T)cos(angle);
 		T s = (T)sin(angle);
-		mat[0] =  c;  mat[4] = -s;
-		mat[1] =  s;  mat[5] =  c;
+		this->mat[0] =  c;  this->mat[4] = -s;
+		this->mat[1] =  s;  this->mat[5] =  c;
 	}
 
 	inline void scale(const vec3<T> &v) {
-		mat[0] = v.x;
-	    mat[5] = v.y;
-		mat[10] = v.z;
+		this->mat[0] = v.x;
+	    this->mat[5] = v.y;
+		this->mat[10] = v.z;
 	}
 
 	inline void scale(T x,T y,T z) {
@@ -1083,23 +1104,23 @@ public:
 	}
 
     inline void extractMat3(mat3<T>& matrix3) const {
-        matrix3.m[0][0] = m[0][0];
-        matrix3.m[0][1] = m[0][1];
-        matrix3.m[0][2] = m[0][2];
-        matrix3.m[1][0] = m[1][0];
-        matrix3.m[1][1] = m[1][1];
-        matrix3.m[1][2] = m[1][2];
-        matrix3.m[2][0] = m[2][0];
-        matrix3.m[2][1] = m[2][1];
-        matrix3.m[2][2] = m[2][2];
+        matrix3.m[0][0] = this->m[0][0];
+        matrix3.m[0][1] = this->m[0][1];
+        matrix3.m[0][2] = this->m[0][2];
+        matrix3.m[1][0] = this->m[1][0];
+        matrix3.m[1][1] = this->m[1][1];
+        matrix3.m[1][2] = this->m[1][2];
+        matrix3.m[2][0] = this->m[2][0];
+        matrix3.m[2][1] = this->m[2][1];
+        matrix3.m[2][2] = this->m[2][2];
     }
 
     inline void swap(mat4& B){
         for(U8 i = 0; i < 4; i++){
-		    std::swap(m[i][0], B.m[i][0]);
-		    std::swap(m[i][1], B.m[i][1]);
-		    std::swap(m[i][2], B.m[i][2]);
-            std::swap(m[i][3], B.m[i][3]);
+		    std::swap(this->m[i][0], B.m[i][0]);
+		    std::swap(this->m[i][1], B.m[i][1]);
+		    std::swap(this->m[i][2], B.m[i][2]);
+            std::swap(this->m[i][3], B.m[i][3]);
         }
 	}
 
@@ -1128,10 +1149,10 @@ public:
 };
 
 template<class T>
-inline mat3<T>::mat3(const mat4<T> &m) {
-	this->mat[0] = m[0]; this->mat[3] = m[4]; this->mat[6] = m[8];
-	this->mat[1] = m[1]; this->mat[4] = m[5]; this->mat[7] = m[9];
-	this->mat[2] = m[2]; this->mat[5] = m[6]; this->mat[8] = m[10];
+inline mat3<T>::mat3(const mat4<T> &matrix) {
+	this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
+	this->mat[1] = matrix[1]; this->mat[4] = matrix[5]; this->mat[7] = matrix[9];
+	this->mat[2] = matrix[2]; this->mat[5] = matrix[6]; this->mat[8] = matrix[10];
 }
 
 /// Converts a point from world coordinates to projection coordinates

@@ -26,6 +26,7 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
    TOGGLE_WITH_CHECK(_zEnable, GL_DEPTH_TEST);
    TOGGLE_WITH_CHECK(_stencilEnable, GL_STENCIL_TEST);
    TOGGLE_WITH_CHECK(_vertexColorEnable, GL_COLOR_MATERIAL);
+   TOGGLE_WITH_CHECK(_cullMode, GL_CULL_FACE);
 
    if(SHOULD_TOGGLE(_blendSrc) || SHOULD_TOGGLE(_blendDest)){
       GLCheck(glBlendFunc(glBlendTable[_descriptor._blendSrc], glBlendTable[_descriptor._blendDest]));
@@ -46,7 +47,6 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
    }
 
    if(SHOULD_TOGGLE(_cullMode)) {
-      TOGGLE_NO_CHECK(_cullMode, GL_CULL_FACE);
       GLCheck(glCullFace(glCullModeTable[_descriptor._cullMode]));
    }
 

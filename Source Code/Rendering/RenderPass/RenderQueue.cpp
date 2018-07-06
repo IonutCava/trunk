@@ -71,16 +71,16 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
 				temp = New RenderBinDelegate(RenderBin::RBT_SKY,RenderingOrder::NONE,0.01);
 				break;
 			case RenderBin::RBT_MESH :
-				temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::FRONT_TO_BACK,0.1);
+				temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::BY_STATE,0.1);
 				break;
             case RenderBin::RBT_IMPOSTOR:
-                temp = New RenderBinDelegate(RenderBin::RBT_IMPOSTOR,RenderingOrder::NONE,0.95);
+                temp = New RenderBinDelegate(RenderBin::RBT_IMPOSTOR,RenderingOrder::FRONT_TO_BACK,0.95);
                 break;
 			case RenderBin::RBT_TERRAIN:
-				temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::NONE,0.2);
+				temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::FRONT_TO_BACK,0.2);
 				break;
 			case RenderBin::RBT_DELEGATE:
-				temp = New RenderBinDelegate(RenderBin::RBT_DELEGATE,RenderingOrder::NONE,0.3);
+				temp = New RenderBinDelegate(RenderBin::RBT_DELEGATE,RenderingOrder::FRONT_TO_BACK,0.3);
 				break;
 			case RenderBin::RBT_SHADOWS:
 				temp = New RenderBinDelegate(RenderBin::RBT_SHADOWS,RenderingOrder::NONE,0.4);

@@ -138,8 +138,7 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <OpenMPSupport>false</OpenMPSupport>
       <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
@@ -305,9 +304,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\gluOverrides.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glLightUniformBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glMaterialUniformBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glMatrixUniformBufferObject.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp" />
@@ -516,9 +512,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glRenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glLightUniformBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glMaterialUniformBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glMatrixUniformBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glUniformBufferObject.h" />
@@ -645,7 +638,6 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag" />
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting_noTexture.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag" />

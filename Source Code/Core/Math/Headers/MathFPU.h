@@ -32,11 +32,24 @@
 
 namespace Mat4{
 	inline void Multiply(const F32 *a, const F32 *b, F32 *r){
+
+	    U32 row, column, row_offset;
+	    for (row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4){
+	        for (column = 0; column < 4; ++column){
+	            r[row_offset + column] =
+	                (a[row_offset + 0] * b[column + 0]) +
+	                (a[row_offset + 1] * b[column + 4]) +
+	                (a[row_offset + 2] * b[column + 8]) +
+	                (a[row_offset + 3] * b[column + 12]);
+			}
+		}
+	 /*
 		for (I32 i=0; i<16; i+=4){
 			for (I32 j=0; j<4; j++){
 				r[i+j] = b[i]*a[j] + b[i+1]*a[j+4] + b[i+2]*a[j+8] + b[i+3]*a[j+12];
 			}
 		}
+		*/
 	}
 	__forceinline F32 det(const F32* mat) {
 		return ((mat[0] * mat[5] * mat[10]) +

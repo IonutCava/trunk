@@ -6,12 +6,11 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/ShaderManager.h"
+#include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/OpenGL/glsw/Headers/glsw.h"
-#include "Shaders/Headers/glLightUniformBufferObject.h"
-#include "Shaders/Headers/glMatrixUniformBufferObject.h"
-#include "Shaders/Headers/glMaterialUniformBufferObject.h"
+#include "Shaders/Headers/glUniformBufferObject.h"
 #include <glsl/glsl_optimizer.h>
 #include <gtc/type_ptr.hpp>
 
@@ -322,13 +321,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	}
 	//Correct texcoord generation during rasterization despite Perspective changes
 	GLCheck(glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST));
-	//Fog detail
-	switch(par.getParam<U8>("rendering.fogDetailLevel", 2)){
-		case 0: glHint (GL_FOG_HINT, GL_FASTEST); break;
-		case 1: glHint (GL_FOG_HINT, GL_DONT_CARE); break;
-		default:
-		case 2: glHint (GL_FOG_HINT, GL_NICEST); break;
-	}
+
 	//MipMap detail
 	switch(par.getParam<U8>("rendering.mipMapDetailLevel", 2)){
 		case 0: glHint (GL_GENERATE_MIPMAP_HINT, GL_FASTEST); break;
@@ -350,14 +343,17 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 	Divide::GL::_contextAvailable = true;
 
 	_uniformBufferObjects.resize(UBO_PLACEHOLDER,NULL);
-	_uniformBufferObjects[Matrices_UBO] = New glMatrixUniformBufferObject();
+	_uniformBufferObjects[Matrices_UBO] = New glUniformBufferObject();
 	_uniformBufferObjects[Matrices_UBO]->Create(Matrices_UBO, true,true);
-	_uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2); //View and Projection
-	_uniformBufferObjects[Lights_UBO]  = New glLightUniformBufferObject();
+	_uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2, sizeof(glm::mat4)); //View and Projection
+	_uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
 	_uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
-	_uniformBufferObjects[Lights_UBO]->ReserveBuffer(MAX_LIGHTS_PER_SCENE_NODE); //Usually less or equal to 4
+	_uniformBufferObjects[Lights_UBO]->ReserveBuffer(MAX_LIGHTS_PER_SCENE_NODE, sizeof(LightProperties)); //Usually less or equal to 4
+
 /*
-	_uniformBufferObjects[MATERIAL_UBO]  = New glMaterialUniformBufferObject();
+	_uniformBufferObjects[Material_UBO]  = New glUniformBufferObject();
+	_uniformBufferObjects[Material_UBO]->Create(Material_UBO,true,false);
+	_uniformBufferObjects[Material_UBO]->ReserveBuffer(num materials here, sizeof(_mat->getShaderData()) );
 */
 	//That's it. Everything should be ready for draw calls
 	PRINT_FN(Locale::get("START_OGL_API_OK"));

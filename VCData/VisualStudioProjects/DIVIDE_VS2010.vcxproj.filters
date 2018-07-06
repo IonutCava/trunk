@@ -1106,15 +1106,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObjectInterleaved.cpp">
       <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glLightUniformBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glMaterialUniformBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glMatrixUniformBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Shaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp">
       <Filter>Hardware\Platform</Filter>
     </ClCompile>
@@ -1781,15 +1772,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObjectInterleaved.h">
       <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glLightUniformBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glMaterialUniformBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glMatrixUniformBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Task.h">
       <Filter>Hardware\Platform\Headers</Filter>
     </ClInclude>
@@ -1913,9 +1895,6 @@
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
-      <Filter>shaders\GLSL\fragmentAtoms</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting_noTexture.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag">

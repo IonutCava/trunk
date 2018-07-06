@@ -16,7 +16,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
 													_useVertex(true),
 													_compiled(false),
 													_bound(false),
-													_dirty(true)
+													_dirty(true),
+													_wasBound(false)
     {
 		_shaderProgramId = _invalidShaderProgramId;
 		_refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
@@ -38,10 +39,8 @@ ShaderProgram::~ShaderProgram(){
 }
 
 U8 ShaderProgram::tick(const U32 deltaTime){
-
-	this->Uniform("zPlanes",  Frustum::getInstance().getZPlanes());
-    this->Uniform("enableFog",ParamHandler::getInstance().getParam<bool>("rendering.enableFog"));
-	this->Uniform("screenDimension", Application::getInstance().getResolution());
+	ParamHandler& par = ParamHandler::getInstance();
+    this->Uniform("enableFog",par.getParam<bool>("rendering.enableFog"));
 	this->Uniform("dvd_lightAmbient", LightManager::getInstance().getAmbientLight());
 
 	if(_dirty){
@@ -53,6 +52,9 @@ U8 ShaderProgram::tick(const U32 deltaTime){
 			ss << shadowMaps << i;
 			this->UniformTexture(ss.str(),10+i); //Shadow Maps always bound from 8 and above
 		}
+
+		this->Uniform("zPlanes",  Frustum::getInstance().getZPlanes());
+		this->Uniform("screenDimension", Application::getInstance().getResolution());
 		this->UniformTexture("texDepthMapFromLightArray",_maxCombinedTextureUnits - 2); //Reserve first for directional shadows
 		this->UniformTexture("texDepthMapFromLightCube", _maxCombinedTextureUnits - 1); //Reserve second for point shadows
 		this->UniformTexture("texSpecular",Material::SPECULAR_TEXTURE_UNIT);
@@ -60,6 +62,15 @@ U8 ShaderProgram::tick(const U32 deltaTime){
 		this->UniformTexture("texBump",Material::BUMP_TEXTURE_UNIT);
 		this->UniformTexture("texDiffuse1",Material::SECOND_TEXTURE_UNIT);
 		this->UniformTexture("texDiffuse0", Material::FIRST_TEXTURE_UNIT);
+
+		this->Uniform("fogColor",  vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
+										 	 par.getParam<F32>("rendering.sceneState.fogColor.g"),
+											 par.getParam<F32>("rendering.sceneState.fogColor.b")));
+		this->Uniform("fogDensity",par.getParam<F32>("rendering.sceneState.fogDensity"));
+		this->Uniform("fogStart",  par.getParam<F32>("rendering.sceneState.fogStart"));
+		this->Uniform("fogEnd",    par.getParam<F32>("rendering.sceneState.fogEnd"));
+		this->Uniform("fogMode",   par.getParam<FogMode>("rendering.sceneState.fogMode"));
+		this->Uniform("fogDetailLevel", par.getParam<U8>("rendering.fogDetailLevel", 2));
 		_dirty = false;
 	}
 
@@ -89,7 +100,7 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 
 void ShaderProgram::bind(){
 	_bound = true;
-
+	_wasBound = true;
 	if(_shaderProgramId == 0) return;
 
 	//Apply global shader values valid throughout current render call:
@@ -98,25 +109,26 @@ void ShaderProgram::bind(){
 }
 
 void ShaderProgram::uploadModelMatrices(){
+	GFXDevice& GFX = GFX_DEVICE;
 	/*Get matrix data*/
     if(_matrixMask.b.b0){
         mat3<F32> norMat;
-        GFX_DEVICE.getMatrix(NORMAL_MATRIX,norMat);
+        GFX.getMatrix(NORMAL_MATRIX,norMat);
         this->Uniform("dvd_NormalMatrix",norMat);
     }
     if(_matrixMask.b.b1){
         mat4<F32> modMat;
-        GFX_DEVICE.getMatrix(MODEL_MATRIX,modMat);
+        GFX.getMatrix(MODEL_MATRIX,modMat);
         this->Uniform("dvd_ModelMatrix",modMat);
     }
     if(_matrixMask.b.b2){
         mat4<F32> mvMat;
-        GFX_DEVICE.getMatrix(MV_MATRIX,mvMat);
+        GFX.getMatrix(MV_MATRIX,mvMat);
         this->Uniform("dvd_ModelViewMatrix",mvMat);
     }
     if(_matrixMask.b.b3){
         mat4<F32> mvpMat;
-        GFX_DEVICE.getMatrix(MVP_MATRIX,mvpMat);
+        GFX.getMatrix(MVP_MATRIX,mvpMat);
         this->Uniform("dvd_ModelViewProjectionMatrix",mvpMat);
     }
 }
@@ -148,8 +160,8 @@ void ShaderProgram::recompile(const bool vertex,
                               const bool tessellation)
 {
     _compiled = false;
-    bool wasBound = _bound;
-    if(wasBound) unbind();
+    _wasBound = _bound;
+    if(_wasBound) unbind();
     //update refresh tags
     _refreshVert = vertex;
     _refreshFrag = fragment;
@@ -159,5 +171,5 @@ void ShaderProgram::recompile(const bool vertex,
     generateHWResource(getName());
     //clear refresh tags
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
-    if(wasBound) bind();
+    if(_wasBound) bind();
 }

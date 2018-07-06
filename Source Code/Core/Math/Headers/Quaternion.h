@@ -30,7 +30,7 @@ template<class T>
 class Quaternion
 {
 public:
-	Quaternion(T x, T y, T z, T w) : _x(x), _y(y), _z(z), _w(w),_dirty(true) {}
+	Quaternion(T x, T y, T z, T w) : _x(x), _y(y), _z(z), _w(w),_dirty(true){}
 	Quaternion() : _x(0), _y(0), _z(0), _w(0),_dirty(true) {}
 	Quaternion(const mat3<T>& rotationMatrix) : _dirty(true){FromMatrix(rotationMatrix);}
 	//! normalising a quaternion works similar to a vector. This method will not do anything
@@ -101,10 +101,10 @@ public:
 	//! the calculation below does the same, just shorter
 	void  FromEuler(T pitch, T yaw, T roll) {
 		_dirty = true;
-
- 		T p = pitch * M_PIDIV180 / 2.0;
-		T y = yaw * M_PIDIV180 / 2.0;
-		T r = roll * M_PIDIV180 / 2.0;
+		T M_PIDIV180_2 = M_PIDIV180 / 2.0;
+ 		T p = pitch * M_PIDIV180_2;
+		T y = yaw   * M_PIDIV180_2;
+		T r = roll  * M_PIDIV180_2;
 
 		T sinp = sin(p);
 		T siny = sin(y);
@@ -158,27 +158,26 @@ public:
 	//! Convert to Matrix
 	const mat4<T>& getMatrix(){
 		if(_dirty) {
-			T x2 =  _x + _x;
-			T y2 = _y + _y;
-			T z2 = _z + _z;
-
-			T xx = _x * x2;
-			T xy = _x * y2;
-			T xz = _x * z2;
-			T yy = _y * y2;
-			T yz = _y * z2;
-			T zz = _z * z2;
-			T wx = _w * x2;
-			T wy = _w * y2;
-			T wz = _w * z2;
-
-			_mat = mat4<T>(1.0f-(yy + zz),  xy + wz,        xz - wy,        0.0f,
-		    			   xy - wz,         1.0f-(xx + zz), yz + wx,        0.0f,
-		  				   xz + wy,         yz - wx,        1.0f-(xx + yy), 0.0f,
-						   0.0f,            0.0f,           0.0f,           1.0f);
+			T xx      = _x * _x;
+			T xy      = _x * _y;
+			T xz      = _x * _z;
+			T xw      = _x * _w;
+		    T yy      = _y * _y;
+			T yz      = _y * _z;
+			T yw      = _y * _w;
+			T zz      = _z * _z;
+			T zw      = _z * _w;
+			_mat.mat[0]  = 1 - 2 * ( yy + zz );
+			_mat.mat[1]  =     2 * ( xy - zw );
+			_mat.mat[2]  =     2 * ( xz + yw );
+			_mat.mat[4]  =     2 * ( xy + zw );
+			_mat.mat[5]  = 1 - 2 * ( xx + zz );
+			_mat.mat[6]  =     2 * ( yz - xw );
+			_mat.mat[8]  =     2 * ( xz - yw );
+			_mat.mat[9]  =     2 * ( yz + xw );
+			_mat.mat[10] = 1 - 2 * ( xx + yy );
 			_dirty = false;
 		}
-
 		return _mat;
 	}
 

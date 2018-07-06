@@ -1,16 +1,16 @@
 
 
 void phong_pointLight(in int light, 
-					  in vec4 specularIn, 
 					  in float iSpecular,
 					  in float NdotL,
-					  inout vec4 ambient,
-					  inout vec4 diffuse,
-					  inout vec4 specular)
+					  in vec4 specularIn,
+					  inout MaterialProperties materialProp)
 {
 
 	//add the lighting contributions
-	ambient += material[0] * gl_LightSource[light].ambient * _attenuation[light];
-	diffuse += material[1] * gl_LightSource[light].diffuse * NdotL * _attenuation[light];
-	specular += specularIn * gl_LightSource[light].specular * iSpecular * _attenuation[light];
+	materialProp.ambient += gl_LightSource[light].ambient * material[0] * _attenuation[light];
+	if(NdotL > 0.0){
+		materialProp.diffuse  += gl_LightSource[light].diffuse  * material[1] * NdotL * _attenuation[light];
+		materialProp.specular += gl_LightSource[light].specular * specularIn  * iSpecular * _attenuation[light];
+	}
 }

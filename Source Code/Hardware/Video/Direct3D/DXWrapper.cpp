@@ -63,10 +63,6 @@ void DX_API::getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat)
 {
 }
 
-void DX_API::enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist)
-{
-}
-
 void DX_API::toggle2D(bool _2D)
 {
 }

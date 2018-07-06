@@ -53,6 +53,11 @@ U8 ShaderManager::idle(){
 	return 1;
 }
 
+void ShaderManager::refresh(){
+	for_each(ShaderProgramMap::value_type& it, _shaderPrograms){
+        it.second->refresh();
+    }
+}
 
 char* ShaderManager::shaderFileRead(const std::string &atomName, const std::string& location){
 	AtomMap::iterator it = _atoms.find(atomName);

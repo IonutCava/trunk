@@ -45,6 +45,8 @@ public:
 	U8      tick(const U32 deltaTime);
 	///Called once per frame after a swap buffer request
 	U8      idle();
+	///Calling refresh will mark all shader programs as dirty
+	void    refresh();
 	///Remove a shader from the cache
 	void    removeShader(Shader* s);
 	///Find a shader in a cache

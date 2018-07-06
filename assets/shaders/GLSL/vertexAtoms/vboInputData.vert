@@ -42,7 +42,7 @@ layout(std140) uniform dvd_MatrixBlock
 
 //layout(std140) uniform dvd_LightBlock
 //{
-//	Light dvd_Light[MAX_LIGHT_COUNT];
+//	Light _LightSources[MAX_LIGHT_COUNT];
 //};
 
 void computeData(){

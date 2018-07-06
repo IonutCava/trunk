@@ -350,6 +350,8 @@ void PostFX::idle(){
 
     bool recompileShader = false;
 
+	if(!_postProcessingShader){_enablePostProcessing = false;}
+
 	if(_enablePostProcessing){
 		_enableAnaglyph = par.getParam<bool>("postProcessing.enable3D");
         _enableNoise = par.getParam<bool>("postProcessing.enableNoise");

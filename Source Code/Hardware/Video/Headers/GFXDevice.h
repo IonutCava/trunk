@@ -79,7 +79,7 @@ public:
     inline bool            initShaders()                                        {return _api.initShaders();}
     inline bool            deInitShaders()                                      {return _api.deInitShaders();}
 
-	inline void enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist){_api.enableFog(mode, density,color,startDist,endDist);}
+	void enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32 startDist, F32 endDist);
 
 	inline void toggle2D(bool _2D)  {_api.toggle2D(_2D);}
     ///Usually, after locking and releasing our matrices we want to revert to the View matrix to render geometry

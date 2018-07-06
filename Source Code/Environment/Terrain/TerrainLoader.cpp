@@ -217,10 +217,10 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 	s->UniformTexture("texDiffuseMap", 0);
 	s->UniformTexture("texNormalHeightMap", 1);
 	s->UniformTexture("texWaterCaustics", 2);
-	s->UniformTexture("texDiffuse0", 3);
-	s->UniformTexture("texDiffuse1", 4);
-	s->UniformTexture("texDiffuse2", 5);
-	if(_alphaTexturePresent) s->UniformTexture("texDiffuse3",6);
+	s->UniformTexture("texBlend0", 3);
+	s->UniformTexture("texBlend1", 4);
+	s->UniformTexture("texBlend2", 5);
+	if(_alphaTexturePresent) s->UniformTexture("texBlend3",6);
 
 	_groundVBO->setShaderProgram(s);
 }

@@ -150,44 +150,46 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
 	ShaderProgram* s = _material->getShaderProgram();
 	Scene* activeScene = GET_ACTIVE_SCENE();
+	LightManager& lightMgr = LightManager::getInstance();
 
 	Texture2D* baseTexture = _material->getTexture(Material::TEXTURE_BASE);
 	Texture2D* bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);
 	Texture2D* secondTexture = _material->getTexture(Material::TEXTURE_SECOND);
 	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
 	Texture2D* specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
-	if(baseTexture)   baseTexture->Bind(Material::FIRST_TEXTURE_UNIT);
-	if(secondTexture) secondTexture->Bind(Material::SECOND_TEXTURE_UNIT);
+
+	s->bind();
+
+	if(baseTexture) {
+		baseTexture->Bind(Material::FIRST_TEXTURE_UNIT);
+		s->Uniform("texDiffuse0Op", (I32)_material->getTextureOperation(Material::TEXTURE_BASE));
+	}
+	if(secondTexture){
+		secondTexture->Bind(Material::SECOND_TEXTURE_UNIT);
+		s->Uniform("texDiffuse1Op", (I32)_material->getTextureOperation(Material::TEXTURE_SECOND));
+	}
+
 	if(bumpTexture)   bumpTexture->Bind(Material::BUMP_TEXTURE_UNIT);
 	if(opacityMap) 	  opacityMap->Bind(Material::OPACITY_TEXTURE_UNIT);
 	if(specularMap)   specularMap->Bind(Material::SPECULAR_TEXTURE_UNIT);
     
-	s->bind();
-
-	if(baseTexture)   s->Uniform("texDiffuse0Op", (I32)_material->getTextureOperation(Material::TEXTURE_BASE));
-	if(secondTexture) s->Uniform("texDiffuse1Op", (I32)_material->getTextureOperation(Material::TEXTURE_SECOND));
-		
 	s->Uniform("material",_material->getMaterialMatrix());
 	s->Uniform("opacity", _material->getOpacityValue());
 	s->Uniform("textureCount",_material->getTextureCount());
-	if(LightManager::getInstance().shadowMappingEnabled()){
+
+	if(lightMgr.shadowMappingEnabled()){
+        s->Uniform("worldHalfExtent", activeScene->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f);
+		s->Uniform("dvd_lightProjectionMatrices",lightMgr.getLightProjectionMatricesCache());
 		s->Uniform("dvd_enableShadowMapping",_material->getReceivesShadows());
 	}else{
 		s->Uniform("dvd_enableShadowMapping",false);
 	}
-	
-	if(LightManager::getInstance().shadowMappingEnabled()){
-        s->Uniform("worldHalfExtent", GET_ACTIVE_SCENE()->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f);
-		s->Uniform("dvd_lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
-	}
 
-    const vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
-    const vectorImpl<I32>& enabled = LightManager::getInstance().getLightsEnabledForCurrentNode();
-	const vectorImpl<I32>& lightShadowCast = LightManager::getInstance().getShadowCastingLightsForCurrentNode();
-	s->Uniform("dvd_lightCount", LightManager::getInstance().getLightCountForCurrentNode());
-	s->Uniform("dvd_lightType",types);
-    s->Uniform("dvd_lightEnabled",enabled);
-	s->Uniform("dvd_lightCastsShadows",lightShadowCast);
+	s->Uniform("dvd_lightType",        lightMgr.getLightTypesForCurrentNode());
+	s->Uniform("dvd_lightCount",       lightMgr.getLightCountForCurrentNode());
+    s->Uniform("dvd_lightEnabled",     lightMgr.getLightsEnabledForCurrentNode());
+	s->Uniform("dvd_lightCastsShadows",lightMgr.getShadowCastingLightsForCurrentNode());
+
 	s->Uniform("windDirection",vec2<F32>(activeScene->state()->getWindDirX(),activeScene->state()->getWindDirZ()));
 	s->Uniform("windSpeed", activeScene->state()->getWindSpeed());
 

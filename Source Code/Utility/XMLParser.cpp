@@ -108,12 +108,13 @@ namespace XML {
 		}
 		par.setParam("mesh.playAnimations",pt.get("mesh.playAnimations",true));
 
-        par.setParam("rendering.fogStartDistance", pt.get("rendering.fogStartDistance",300.0f));
-        par.setParam("rendering.fogEndDistance", pt.get("rendering.fogEndDistance",800.0f));
-        par.setParam("rendering.fogDensity", pt.get("rendering.fogDensity",0.01f));
-        par.setParam("rendering.fogColor", vec4<F32>(pt.get<F32>("rendering.fogColor.<xmlattr>.r"),
-													       pt.get<F32>("rendering.fogColor.<xmlattr>.g"),
-													       pt.get<F32>("rendering.fogColor.<xmlattr>.b"),1.0f));
+		//global fog values
+        par.setParam("rendering.sceneState.fogStart",   pt.get("rendering.fogStartDistance",300.0f));
+        par.setParam("rendering.sceneState.fogEnd",     pt.get("rendering.fogEndDistance",800.0f));
+        par.setParam("rendering.sceneState.fogDensity", pt.get("rendering.fogDensity",0.01f));
+		par.setParam("rendering.sceneState.fogColor.r", pt.get<F32>("rendering.fogColor.<xmlattr>.r", 0.2f));
+		par.setParam("rendering.sceneState.fogColor.g", pt.get<F32>("rendering.fogColor.<xmlattr>.g", 0.2f));
+		par.setParam("rendering.sceneState.fogColor.b",	pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
 	}
 
 	void loadScene(const std::string& sceneName, SceneManager& sceneMgr) {
@@ -151,22 +152,35 @@ namespace XML {
 		scene->state()->getWaterLevel() = pt.get("water.waterLevel",0.0f);
 		scene->state()->getWaterDepth() = pt.get("water.waterDepth",-75);
 		if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")){
-			par.setParam("options.cameraStartPosition",vec3<F32>(pt.get("options.cameraStartPosition.<xmlattr>.x",0.0f),
-															     pt.get("options.cameraStartPosition.<xmlattr>.y",0.0f),
-																 pt.get("options.cameraStartPosition.<xmlattr>.z",0.0f)));
-			par.setParam("options.cameraStartOrientation",vec2<F32>(pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",0.0f),
-  																    pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",0.0f)));
+			par.setParam("options.cameraStartPosition.x", pt.get("options.cameraStartPosition.<xmlattr>.x",0.0f));
+			par.setParam("options.cameraStartPosition.y", pt.get("options.cameraStartPosition.<xmlattr>.y",0.0f));
+			par.setParam("options.cameraStartPosition.z", pt.get("options.cameraStartPosition.<xmlattr>.z",0.0f));
+			par.setParam("options.cameraStartOrientation.xOffsetDegrees",pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",0.0f));
+  			par.setParam("options.cameraStartOrientation.yOffsetDegrees",pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",0.0f));
 			par.setParam("options.cameraStartPositionOverride",true);
 		}else{
 			par.setParam("options.cameraStartPositionOverride",false);
 		}
+		
+		if(boost::optional<ptree &> fog = pt.get_child_optional("fog")){
+			par.setParam("rendering.sceneState.fogStart",   pt.get("fog.fogStartDistance",300.0f));
+			par.setParam("rendering.sceneState.fogEnd",     pt.get("fog.fogEndDistance",800.0f));
+			par.setParam("rendering.sceneState.fogDensity", pt.get("fog.fogDensity",0.01f));
+			par.setParam("rendering.sceneState.fogColor.r", pt.get<F32>("fog.fogColor.<xmlattr>.r", 0.2f));
+			par.setParam("rendering.sceneState.fogColor.g", pt.get<F32>("fog.fogColor.<xmlattr>.g", 0.2f));
+			par.setParam("rendering.sceneState.fogColor.b",	pt.get<F32>("fog.fogColor.<xmlattr>.b", 0.2f));
+		}
+
+		scene->state()->getFogDesc()._fogStartDist = par.getParam<F32>("rendering.sceneState.fogStart");
+		scene->state()->getFogDesc()._fogEndDist   = par.getParam<F32>("rendering.sceneState.fogEnd");
+		scene->state()->getFogDesc()._fogDensity   = par.getParam<F32>("rendering.sceneState.fogDensity");
+		scene->state()->getFogDesc()._fogColor.set(par.getParam<F32>("rendering.sceneState.fogColor.r"),
+											       par.getParam<F32>("rendering.sceneState.fogColor.g"),
+												   par.getParam<F32>("rendering.sceneState.fogColor.b"));
+
 		loadTerrain(sceneLocation + "/" + pt.get("terrain","terrain.xml"),scene);
 		loadGeometry(sceneLocation + "/" + pt.get("assets","assets.xml"),scene);
 
-        scene->state()->getFogDesc()._fogStartDist = par.getParam<F32>("rendering.fogStartDistance");
-        scene->state()->getFogDesc()._fogEndDist = par.getParam<F32>("rendering.fogEndDistance");
-        scene->state()->getFogDesc()._fogDensity = par.getParam<F32>("rendering.fogDensity");
-        scene->state()->getFogDesc()._fogColor = par.getParam<vec4<F32> >("rendering.fogColor");
 	}
 
 	void loadTerrain(const std::string &file, Scene* const scene) {

@@ -97,8 +97,6 @@ private:
            bool                initShaders();
            bool                deInitShaders();
 
-	void enableFog(FogMode mode, GLfloat density, GLfloat* color, GLfloat startDist, GLfloat endDist);
-
 	void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true);
 	void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true);
 

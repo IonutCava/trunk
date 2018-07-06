@@ -120,7 +120,7 @@ void PhysXSceneInterface::updateShape(PxShape* const shape, Transform* const t){
 	PxTransform pT = PxShapeExt::getGlobalPose(*shape);
 	if(shape->getGeometryType() == PxGeometryType::ePLANE){
 		t->scale(shape->getActor().getObjectSize());
-		t->rotate(vec3<F32>(1,0,0),90);
+		t->rotate(vec3<F32>(1,0,0),-90);
 	}else{
 		t->rotateQuaternion(Quaternion<F32>(pT.q.x,pT.q.y,pT.q.z,pT.q.w));
 	}
@@ -144,16 +144,15 @@ void PhysXSceneInterface::addRigidStaticActor(physx::PxRigidStatic* const actor)
 
 void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* const actor) {
     WriteLock w_lock(_queueLock);
-   _sceneRigidDynamicQueue.push_back(actor);
-   w_lock.unlock();
-   _rigidDynamicCount++;
+    _sceneRigidDynamicQueue.push_back(actor);
+    w_lock.unlock();
+    _rigidDynamicCount++;
 }
 
 #pragma message("ToDo: Only 1 shape per actor for now. Fix This! -Ionut")
 SceneGraphNode* PhysXSceneInterface::addToScene(PxRigidActor* const actor){
-    if(!actor){
-         return NULL;
-    }
+    if(!actor) return NULL;
+    
     SceneNode* sceneNode = NULL;
     SceneGraphNode* tempNode = NULL;
 

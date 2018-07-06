@@ -244,8 +244,11 @@ bool Scene::load(const std::string& name){
 	}
 	///Camera position is overriden in the scene's XML configuration file
 	if(ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride")){
-		renderState()->getCamera()->setEye(_paramHandler.getParam<vec3<F32> >("options.cameraStartPosition"));
-		vec2<F32> camOrientation = _paramHandler.getParam<vec2<F32> >("options.cameraStartOrientation");
+		renderState()->getCamera()->setEye(vec3<F32>(_paramHandler.getParam<F32>("options.cameraStartPosition.x"),
+													 _paramHandler.getParam<F32>("options.cameraStartPosition.y"),
+													 _paramHandler.getParam<F32>("options.cameraStartPosition.z")));
+		vec2<F32> camOrientation(_paramHandler.getParam<F32>("options.cameraStartOrientation.xOffsetDegrees"),
+								 _paramHandler.getParam<F32>("options.cameraStartOrientation.yOffsetDegrees"));
 		renderState()->getCamera()->setAngleX(RADIANS(camOrientation.x));
 		renderState()->getCamera()->setAngleY(RADIANS(camOrientation.y));
 	}else{
@@ -334,10 +337,10 @@ static F32 speedFactor = 0.25f;
 void Scene::onKeyDown(const OIS::KeyEvent& key){
 	switch(key.key){
 		case OIS::KC_LEFT :
-			state()->_angleLR = -(speedFactor/5);
+			state()->_angleLR = -(speedFactor/2.5);
 			break;
 		case OIS::KC_RIGHT :
-			state()->_angleLR = speedFactor/5;
+			state()->_angleLR = speedFactor/2.5;
 			break;
 		case OIS::KC_UP :
 			state()->_angleUD = -(speedFactor/5);

@@ -1,12 +1,13 @@
-//OpenGL state management: Fog, lights, matrices, viewport, bound objects etc
+//OpenGL state management: Lights, matrices, viewport, bound objects etc
 #include "Headers/GLWrapper.h"
 #include "Headers/glRenderStateBlock.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexArrayObject.h"
-#include "Hardware/Video/OpenGL/Shaders/Headers/glMatrixUniformBufferObject.h"
+#include "Hardware/Video/OpenGL/Shaders/Headers/glUniformBufferObject.h"
 #include <gtc/type_ptr.hpp>
+#include <gtc/matrix_transform.hpp>
 
 glShaderProgram* GL_API::_activeShaderProgram = NULL;
 GLuint GL_API::_activeVAOId = 0;
@@ -31,20 +32,6 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
 	}
 
 	GL_API::clearColor(DIVIDE_BLUE());
-}
-
-void GL_API::enableFog(FogMode mode, GLfloat density, GLfloat* color, GLfloat startDist, GLfloat endDist){
-	GLCheck(glFogfv(GL_FOG_COLOR,   color));
-	GLCheck(glFogf (GL_FOG_DENSITY, density));
-	GLCheck(glFogf (GL_FOG_START,   startDist));
-	GLCheck(glFogf (GL_FOG_END,     endDist));
-	switch(mode){
-        default:
-        case FOG_NONE:   return;
-        case FOG_EXP:    GLCheck(glFogi (GL_FOG_MODE, GL_EXP));    return;
-        case FOG_EXP2:   GLCheck(glFogi (GL_FOG_MODE, GL_EXP2));   return;
-        case FOG_LINEAR: GLCheck(glFogi (GL_FOG_MODE, GL_LINEAR)); return;
-    }
 }
 
 void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
@@ -110,16 +97,20 @@ void GL_API::setLight(Light* const light){
     if(!light->getEnabled()){
       return;
     }
+	
 	U32 offset = slot * sizeof(light->getProperties());
 	_uniformBufferObjects[Lights_UBO]->ChangeSubData(offset, 
 												     sizeof(light->getProperties()),
 													 (const GLvoid*)(&(light->getProperties())));
 
 	LightType type = light->getLightType();
-	vec4<GLfloat> position(light->getPosition());
-	position.w = (type == LIGHT_TYPE_DIRECTIONAL) ? 0.0f : 1.0f;
 
-	GLCheck(glLightfv(GL_LIGHT0+slot, GL_POSITION, position));
+	glm::vec4 position(light->getPosition().x, 
+					   light->getPosition().y, 
+					   light->getPosition().z,
+					   (type == LIGHT_TYPE_DIRECTIONAL) ? 0.0f : 1.0f);
+
+	GLCheck(glLightfv(GL_LIGHT0+slot, GL_POSITION, &position.x));
 
 	GLCheck(glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  light->getVProperty(LIGHT_PROPERTY_AMBIENT)));
 	GLCheck(glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  light->getVProperty(LIGHT_PROPERTY_DIFFUSE)));

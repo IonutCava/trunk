@@ -8,6 +8,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/ShaderManager.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/Camera.h"
@@ -254,4 +255,16 @@ void GFXDevice::setHorizontalFoV(I32 newFoV){
 	F32 ratio  = ParamHandler::getInstance().getParam<F32>("runtime.aspectRatio");
 	ParamHandler::getInstance().setParam("runtime.verticalFOV", xfov_to_yfov((F32)newFoV,ratio));
 	changeResolution(Application::getInstance().getResolution().width,Application::getInstance().getResolution().height);
+}
+
+void GFXDevice::enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32 startDist, F32 endDist){
+	ParamHandler& par = ParamHandler::getInstance();
+	par.setParam("rendering.sceneState.fogColor.r", color.r);
+	par.setParam("rendering.sceneState.fogColor.g", color.g);
+	par.setParam("rendering.sceneState.fogColor.b", color.b);
+	par.setParam("rendering.sceneState.fogDensity",density);
+	par.setParam("rendering.sceneState.fogStart",startDist);
+	par.setParam("rendering.sceneState.fogEnd",endDist);
+	par.setParam("rendering.sceneState.fogMode",mode);
+	ShaderManager::getInstance().refresh();
 }

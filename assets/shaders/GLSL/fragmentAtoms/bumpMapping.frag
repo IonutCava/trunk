@@ -61,9 +61,9 @@ vec4 NormalMapping(in vec2 uv){
 	return Phong(uv, normalTBN);
 }
 
-vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToEyeTBN, in vec3 pixelToLightTBN){
+vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToLightTBN){
 	vec3 lightVecTBN = normalize(pixelToLightTBN);
-	vec3 viewVecTBN = normalize(pixelToEyeTBN);
+	vec3 viewVecTBN = normalize(_viewDirection);
 	
 	//Offset, scale and biais
 	float height = texture(texBump, uv).a;
@@ -76,8 +76,7 @@ vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToEyeTBN, in vec3 pixelToLightTBN)
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
-	vec3 pixToEye = _viewDirection[bumpMapLightId];
-	vec3 viewVecTBN = normalize(pixToEye);
+	vec3 viewVecTBN = normalize(_viewDirection);
 	//Size and search starting position in texture space
 	vec2 A = uv;
 	vec2 AB = relief_factor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;

@@ -18,6 +18,10 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 	//3 buffers: Matrices, Materials and Lights
 	_UBOLocation.resize(UBO_PLACEHOLDER,-1);
 	_uniformBufferObjects.resize(UBO_PLACEHOLDER, NULL);
+	GL_API& glApi = GL_API::getInstance();
+	_uniformBufferObjects[Lights_UBO]    = glApi.getUBO(Lights_UBO);
+	_uniformBufferObjects[Matrices_UBO]  = glApi.getUBO(Matrices_UBO);
+	_uniformBufferObjects[Materials_UBO] = glApi.getUBO(Materials_UBO);
 }
 
 glShaderProgram::~glShaderProgram()
@@ -36,7 +40,7 @@ glShaderProgram::~glShaderProgram()
 
 U8 glShaderProgram::tick(const U32 deltaTime){
 	//Validate the program after we used it once
-	if(_validationQueued && isHWInitComplete()){
+	if(_validationQueued && isHWInitComplete() && _wasBound/*after it was used at least once*/){
         validateInternal();
 		flushLocCache();
     }
@@ -116,17 +120,20 @@ void glShaderProgram::initUBO(){
 	GLCheck(_UBOLocation[Lights_UBO]    =  glGetUniformBlockIndex(_shaderProgramIdTemp, "dvd_LightBlock"));
 
 	if(_UBOLocation[Matrices_UBO] != GL_INVALID_INDEX){
-		_uniformBufferObjects[Matrices_UBO] = GL_API::getInstance().getUBO(Matrices_UBO);
+		GLint blockSize = 0;
+		GLCheck(glGetActiveUniformBlockiv(_shaderProgramIdTemp, _UBOLocation[Matrices_UBO], GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize));
 		_uniformBufferObjects[Matrices_UBO]->bindUniform(_shaderProgramIdTemp, _UBOLocation[Matrices_UBO]);
 		_uniformBufferObjects[Matrices_UBO]->bindBufferBase();
 	}
 	if(_UBOLocation[Materials_UBO] != GL_INVALID_INDEX){
-		_uniformBufferObjects[Materials_UBO] = GL_API::getInstance().getUBO(Materials_UBO);
+		GLint blockSize = 0;
+		GLCheck(glGetActiveUniformBlockiv(_shaderProgramIdTemp, _UBOLocation[Materials_UBO], GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize));
 		_uniformBufferObjects[Materials_UBO]->bindUniform(_shaderProgramIdTemp, _UBOLocation[Materials_UBO]);
 		_uniformBufferObjects[Materials_UBO]->bindBufferBase();
 	}
 	if(_UBOLocation[Lights_UBO] != GL_INVALID_INDEX){
-		_uniformBufferObjects[Lights_UBO] = GL_API::getInstance().getUBO(Lights_UBO);
+		GLint blockSize = 0;
+		GLCheck(glGetActiveUniformBlockiv(_shaderProgramIdTemp, _UBOLocation[Lights_UBO], GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize));
 		_uniformBufferObjects[Lights_UBO] ->bindUniform(_shaderProgramIdTemp, _UBOLocation[Lights_UBO]);
 		_uniformBufferObjects[Lights_UBO] ->bindBufferBase();
 	}

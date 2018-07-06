@@ -81,8 +81,6 @@ private:
 	       bool                initShaders();
            bool                deInitShaders();
 
-	void enableFog(FogMode mode, F32 density, F32* color, F32 startDist, F32 endDist);
-
 	void lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView = true, bool lockProjection = true);
 	void releaseMatrices(const MATRIX_MODE& setCurrentMatrix, bool releaseView = true, bool releaseProjection = true);
 	void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
