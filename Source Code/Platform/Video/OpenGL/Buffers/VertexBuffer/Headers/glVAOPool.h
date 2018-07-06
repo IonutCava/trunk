@@ -40,7 +40,7 @@ namespace GLUtil {
 
 class glVAOPool {
 public:
-    glVAOPool();
+    glVAOPool() noexcept;
     ~glVAOPool();
 
     GLuint allocate();

@@ -310,7 +310,7 @@ class OGLTextureTargetFactory :
     public AllocatedObject<OGLTextureTargetFactory>
 {
 public:
-    OGLTextureTargetFactory() {}
+    OGLTextureTargetFactory() noexcept {}
     virtual ~OGLTextureTargetFactory() {}
     virtual TextureTarget* create(OpenGLRendererBase&) const
         { return 0; }

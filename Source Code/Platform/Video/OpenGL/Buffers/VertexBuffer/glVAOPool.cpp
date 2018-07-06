@@ -13,7 +13,7 @@ namespace {
     const U32 g_numWarmupVAOs = 25u;
 };
 
-glVAOPool::glVAOPool()
+glVAOPool::glVAOPool() noexcept
 {
 
 }

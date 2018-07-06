@@ -21,7 +21,7 @@ glObject::glObject(glObjectType type, GFXDevice& context)
     GL_API::createOrValidateContextForCurrentThread(context);
 }
 
-VAOBindings::VAOBindings()
+VAOBindings::VAOBindings() noexcept
     : _maxBindings(0)
 {
 }

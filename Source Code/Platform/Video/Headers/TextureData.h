@@ -50,7 +50,7 @@ public:
     {
     }
 
-    TextureData() = default;
+    TextureData() noexcept = default;
     TextureData(const TextureData& other) = default;
     TextureData& operator=(const TextureData& other) = default;
     TextureData(TextureData&& other) = default;
@@ -78,7 +78,7 @@ public:
 
 class TextureDataContainer {
     public:
-      TextureDataContainer();
+      TextureDataContainer() noexcept;
       ~TextureDataContainer();
 
       bool set(const TextureDataContainer& other);

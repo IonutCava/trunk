@@ -171,7 +171,7 @@ class counter {
     size_t count;
 public:
     counter &operator=(size_t val) { count = val; return *this; }
-    counter(size_t count = 0) : count(count) {}
+    counter(size_t count = 0) noexcept : count(count) {}
     operator size_t() { return count; }
     counter &operator++() { ++count; return *this; }
     counter operator++(int) { counter ret(count); ++count; return ret; }

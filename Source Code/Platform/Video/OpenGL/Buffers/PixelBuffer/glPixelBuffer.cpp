@@ -33,10 +33,14 @@ size_t glPixelBuffer::sizeOf(GLenum dataType) const {
     return 0;
 }
 
-glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type, const char* name) : PixelBuffer(context, type, name) {
-    _bufferSize = 0;
-    _dataSizeBytes = 1;
-
+glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type, const char* name) 
+    : PixelBuffer(context, type, name)
+    , _dataType(GL_NONE)
+    , _format(GL_NONE)
+    , _internalFormat(GL_NONE)
+    , _dataSizeBytes(0)
+    , _bufferSize(0)
+{
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
             _textureType = TextureType::TEXTURE_1D;

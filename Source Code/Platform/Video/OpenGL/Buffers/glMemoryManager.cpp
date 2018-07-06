@@ -16,9 +16,10 @@ U32 VBO::getChunkCountForSize(size_t sizeInBytes) {
     return to_U32(std::ceil(to_F32(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
 }
 
-VBO::VBO() : _handle(0),
-             _usage(GL_NONE),
-             _filledManually(false)
+VBO::VBO() noexcept
+    : _handle(0),
+      _usage(GL_NONE),
+      _filledManually(false)
 {
     _chunkUsageState.fill(std::make_pair(false, 0));
 }
@@ -39,7 +40,7 @@ U32 VBO::handle() {
     return _handle;
 }
 
-bool VBO::checkChunksAvailability(U32 offset, U32 count) {
+bool VBO::checkChunksAvailability(size_t offset, U32 count) {
     assert(MAX_VBO_CHUNK_COUNT > offset);
 
     std::pair<bool, U32>& chunk = _chunkUsageState[offset];
@@ -59,7 +60,7 @@ bool VBO::checkChunksAvailability(U32 offset, U32 count) {
     return freeChunkCount >= count;
 }
 
-bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
+bool VBO::allocateChunks(U32 count, GLenum usage, size_t& offsetOut) {
     if (_usage == GL_NONE || _usage == usage) {
         for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
             if (checkChunksAvailability(i, count)) {
@@ -70,7 +71,7 @@ bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
                 offsetOut = i;
                 _chunkUsageState[i].first = true;
                 _chunkUsageState[i].second = count;
-                for (U32 j = 1; j < count; ++j) {
+                for (size_t j = 1; j < count; ++j) {
                     _chunkUsageState[j + i].first = true;
                 }
                 return true;
@@ -83,7 +84,7 @@ bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
 
 bool VBO::allocateWhole(U32 count, GLenum usage) {
     assert(_handle == 0);
-    GLUtil::createAndAllocBuffer(count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle, NULL);
+    GLUtil::createAndAllocBuffer((size_t)count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle, NULL);
     _usage = usage;
     _chunkUsageState.fill(std::make_pair(true, 0));
     _chunkUsageState[0].second = count;
@@ -91,7 +92,7 @@ bool VBO::allocateWhole(U32 count, GLenum usage) {
     return true;
 }
 
-void VBO::releaseChunks(U32 offset) {
+void VBO::releaseChunks(size_t offset) {
     if (_filledManually) {
         _chunkUsageState.fill(std::make_pair(false, 0));
         return;
@@ -100,7 +101,7 @@ void VBO::releaseChunks(U32 offset) {
     assert(offset < MAX_VBO_CHUNK_COUNT);
     assert(_chunkUsageState[offset].second != 0);
     U32 childCount = _chunkUsageState[offset].second;
-    for (U32 i = 0; i < childCount; ++i) {
+    for (size_t i = 0; i < childCount; ++i) {
         std::pair<bool, U32>& chunkChild = _chunkUsageState[i + offset];
         assert(chunkChild.first);
         chunkChild.first = false;
@@ -119,7 +120,7 @@ U32 VBO::getMemUsage() {
     return usedBlocks * MAX_VBO_CHUNK_SIZE_BYTES;
 }
 
-bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut) {
+bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, size_t& offsetOut) {
     if (chunkCount < VBO::MAX_VBO_CHUNK_COUNT) {
         for (VBO& vbo : g_globalVBOs) {
             if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
@@ -147,7 +148,7 @@ bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut) 
     return false;
 }
 
-bool releaseVBO(GLuint& handle, U32& offset) {
+bool releaseVBO(GLuint& handle, size_t& offset) {
     for (VBO& vbo : g_globalVBOs) {
         if (vbo.handle() == handle) {
             vbo.releaseChunks(offset);

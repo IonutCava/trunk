@@ -129,7 +129,7 @@ struct any {
     }
 
     /// Empty constructor.
-    any()
+    any() noexcept
         : policy(anyimpl::get_policy<anyimpl::empty_any>()), object(nullptr) {}
 
     /// Special initializing constructor for string literals.

@@ -51,7 +51,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     friend class ImplResourceLoader;
     public:
        struct TextureLoadInfo {
-           TextureLoadInfo() :
+           TextureLoadInfo() noexcept :
                _layerIndex(0),
                _cubeMapCount(0)
            {

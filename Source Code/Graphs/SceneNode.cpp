@@ -16,7 +16,7 @@ namespace {
             "fit the physics model well. Thus, for now, only first-tier nodes are physically simulated!");
         // If nodes need more complex physical relationships, they can be added as first tier nodes and linked together
         // with a joint type system and the "parent" node's 'relative' mass set to infinite so the child node couldn't move it
-        if (node.getType() == SceneNodeType::TYPE_OBJECT3D) {
+        if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType crtType = static_cast<Object3D&>(node).getObjectType();
             if (crtType != Object3D::ObjectType::SUBMESH) {
                 return true;

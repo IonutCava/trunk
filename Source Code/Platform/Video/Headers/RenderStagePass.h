@@ -40,15 +40,15 @@ namespace Divide {
 struct RenderStagePass {
     typedef U8 PassIndex;
 
-    RenderStagePass() : RenderStagePass(RenderStage::COUNT, RenderPassType::COUNT)
+    RenderStagePass() noexcept : RenderStagePass(RenderStage::COUNT, RenderPassType::COUNT)
     {
     }
 
-    RenderStagePass(RenderStage stage, RenderPassType passType) : RenderStagePass(stage, passType, 0)
+    RenderStagePass(RenderStage stage, RenderPassType passType) noexcept : RenderStagePass(stage, passType, 0)
     {
     }
 
-    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant)
+    RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant) noexcept
         : _stage(stage),
           _passType(passType),
           _variant(variant)

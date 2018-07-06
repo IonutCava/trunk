@@ -1446,7 +1446,8 @@ mat4<T>::mat4() noexcept
 template<typename T>
 template<typename U>
 mat4<T>::mat4(U value) noexcept
-    : mat{ static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
+    : _comp{}
+    , mat{ static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
            static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
            static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
            static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value)}
@@ -1578,6 +1579,7 @@ mat4<T>& mat4<T>::operator=(const mat4& other) noexcept {
     set(other);
     return *this;
 }
+
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator=(const mat4<U>& other) noexcept {

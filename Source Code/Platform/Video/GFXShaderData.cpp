@@ -4,12 +4,12 @@
 
 namespace Divide {
 
-GFXShaderData::GFXShaderData()
+GFXShaderData::GFXShaderData() noexcept
     : _needsUpload(true)
 {
 }
 
-GFXShaderData::GPUData::GPUData()
+GFXShaderData::GPUData::GPUData() noexcept
 {
     _ProjectionMatrix.identity();
     _InvProjectionMatrix.identity();

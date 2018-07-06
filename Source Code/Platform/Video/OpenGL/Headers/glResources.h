@@ -90,7 +90,7 @@ class VAOBindings {
 public:
     typedef std::tuple<GLuint, GLintptr, GLsizei> BufferBindingParams;
 
-    VAOBindings();
+    VAOBindings() noexcept;
     ~VAOBindings();
     void init(U32 maxBindings);
 

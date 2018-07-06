@@ -20,7 +20,7 @@ OrbitCamera::OrbitCamera(const stringImpl& name, const CameraType& type, const v
 
 void OrbitCamera::fromCamera(Camera& camera) {
     Camera::fromCamera(camera);
-    if (camera.getType() != CameraType::THIRD_PERSON && camera.getType() != CameraType::ORBIT) {
+    if (camera.type() != CameraType::THIRD_PERSON && camera.type() != CameraType::ORBIT) {
         return;
     }
 

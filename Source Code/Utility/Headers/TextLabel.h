@@ -140,7 +140,7 @@ struct TextElement {
 struct TextElementBatch {
     typedef vectorFast<TextElement> BatchType;
 
-    TextElementBatch()
+    TextElementBatch() noexcept
     {
     }
 

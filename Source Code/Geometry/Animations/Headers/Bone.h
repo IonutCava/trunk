@@ -64,7 +64,7 @@ class Bone {
     {
     }
 
-    Bone() : Bone("")
+    Bone() noexcept : Bone("")
     {
     }
 

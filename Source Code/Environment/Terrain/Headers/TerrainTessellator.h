@@ -45,7 +45,7 @@ namespace Attorney {
 
 struct TessellatedTerrainNode {
 
-    TessellatedTerrainNode()
+    TessellatedTerrainNode() noexcept
         : type(0),
           tscale_negx(1.0f),
           tscale_posx(1.0f),

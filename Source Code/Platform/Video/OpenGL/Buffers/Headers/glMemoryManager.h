@@ -52,18 +52,18 @@ namespace GLUtil {
 
         static U32 getChunkCountForSize(size_t sizeInBytes);
 
-        VBO();
+        VBO() noexcept;
         ~VBO();
 
         void freeAll();
         U32 handle();
-        bool checkChunksAvailability(U32 offset, U32 count);
+        bool checkChunksAvailability(size_t offset, U32 count);
 
-        bool allocateChunks(U32 count, GLenum usage, U32& offsetOut);
+        bool allocateChunks(U32 count, GLenum usage, size_t& offsetOut);
 
         bool allocateWhole(U32 count, GLenum usage);
 
-        void releaseChunks(U32 offset);
+        void releaseChunks(size_t offset);
 
         U32 getMemUsage();
 
@@ -81,11 +81,11 @@ namespace GLUtil {
         }
 
         GLuint _id;
-        U32 _offset;
+        size_t _offset;
     };
 
-    bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut);
-    bool releaseVBO(GLuint& handle, U32& offset);
+    bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, size_t& offsetOut);
+    bool releaseVBO(GLuint& handle, size_t& offset);
     U32 getVBOMemUsage(GLuint handle);
     U32 getVBOCount();
 

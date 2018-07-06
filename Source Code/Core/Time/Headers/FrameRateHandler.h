@@ -43,7 +43,7 @@ class FrameRateHandler {
     static const U32 FRAME_AVG_RESET_COUNT = 60 * 5;
 
 public:
-    FrameRateHandler();
+    FrameRateHandler() noexcept;
     ~FrameRateHandler();
 
     void tick(const U64 deltaTimeUS);

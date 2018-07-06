@@ -16,7 +16,7 @@
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 
 namespace NS_GLIM {
-GlimArrayData::GlimArrayData() { Reset(); }
+GlimArrayData::GlimArrayData() noexcept { Reset(); }
 
 void GlimArrayData::Reset(void) {
     m_uiBufferOffset = 0;
@@ -97,7 +97,7 @@ void glimBatchData::Unbind(void) {
 #endif
 }
 
-glimBatchData::glimBatchData() {
+glimBatchData::glimBatchData() noexcept {
     m_bUploadedToGPU = false;
     m_bCreatedVBOs = false;
 

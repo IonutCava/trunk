@@ -96,7 +96,7 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
 
 RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_ptr& matInstance) {
     assert(node != nullptr);
-    switch (node->getType()) {
+    switch (node->type()) {
         case SceneNodeType::TYPE_LIGHT: 
             return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
 
@@ -111,7 +111,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneNode_ptr& node, const Material_
         case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_OBJECT3D: {
         case SceneNodeType::TYPE_VEGETATION_TREES:
-            if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
                 Object3D::ObjectType type = static_cast<Object3D*>(node.get())->getObjectType();
                 switch (type) {
                     case Object3D::ObjectType::TERRAIN:

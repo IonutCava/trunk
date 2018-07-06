@@ -41,7 +41,7 @@ namespace GLUtil {
 class GL_API;
 class glVAOCache {
 public:
-    glVAOCache();
+    glVAOCache() noexcept;
     ~glVAOCache();
 
     void clear();

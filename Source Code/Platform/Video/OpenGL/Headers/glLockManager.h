@@ -38,7 +38,7 @@ namespace Divide {
 
 class glLockManager {
    public:
-    glLockManager();
+    glLockManager() noexcept;
     virtual ~glLockManager();
 
     void Wait(bool blockClient);

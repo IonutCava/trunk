@@ -41,7 +41,7 @@ namespace Time {
 class ApplicationTimer;
 class ProfileTimer {
    public:
-    ProfileTimer();
+    ProfileTimer() noexcept;
     ~ProfileTimer();
 
     void start();

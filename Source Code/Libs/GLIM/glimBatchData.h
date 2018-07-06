@@ -17,7 +17,7 @@ namespace NS_GLIM
     // holds one element of attribute data
     union Glim4ByteData
     {
-        Glim4ByteData () : Int (0) {}
+        Glim4ByteData ()  noexcept : Int (0) {}
         Glim4ByteData(int Int_) : Int(Int_) {}
         Glim4ByteData(float Float_) : Float(Float_) {}
 
@@ -29,7 +29,7 @@ namespace NS_GLIM
     // one attribute array
     struct GlimArrayData
     {
-        GlimArrayData ();
+        GlimArrayData () noexcept;
 
         void Reset (void);
         void PushElement (void);
@@ -63,7 +63,7 @@ namespace NS_GLIM
     // the data of one entire batch
     struct glimBatchData
     {
-        glimBatchData ();
+        glimBatchData () noexcept;
         ~glimBatchData ();
 
         // Deletes all allocated data and resets default states

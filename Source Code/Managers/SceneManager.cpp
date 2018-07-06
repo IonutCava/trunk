@@ -557,7 +557,7 @@ namespace {
     // Return true if this node should be removed from a shadow pass
     bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node) {
         if (stage == RenderStage::SHADOW) {
-            SceneNodeType type = node.getNode()->getType();
+            SceneNodeType type = node.getNode()->type();
             if (type == SceneNodeType::TYPE_SKY) {
                 return true;
             }
@@ -594,7 +594,7 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStag
     }
     // Cull everything except 3D objects
     cullParams._cullFunction = [renderStage](const SceneGraphNode& node) -> bool {
-        if (generatesDrawCommands(node.getNode()->getType())) {
+        if (generatesDrawCommands(node.getNode()->type())) {
             // only checks nodes and can return true for a shadow stage
             return doesNotCastShadows(renderStage, node);
         }

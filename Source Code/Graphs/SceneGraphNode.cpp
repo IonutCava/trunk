@@ -239,7 +239,7 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
 
     ReadLock r_lock(_childLock);
     for (U32 i = 0; i < getChildCountLocked(); ++i) {
-        if (_children[i]->getNode()->getType() == nodeType) {
+        if (_children[i]->getNode()->type() == nodeType) {
             {
                 addToDeleteQueue(i);
                 ++removalCount;

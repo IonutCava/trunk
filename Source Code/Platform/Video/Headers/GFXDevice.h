@@ -113,7 +113,7 @@ namespace TypeUtil {
 };
 
 struct DebugView : public GUIDWrapper {
-    DebugView()
+    DebugView() noexcept
         : GUIDWrapper()
         , _textureBindSlot(0)
         , _sortIndex(-1)
@@ -121,7 +121,7 @@ struct DebugView : public GUIDWrapper {
     {
     }
 
-    DebugView(I16 sortIndex)
+    DebugView(I16 sortIndex) noexcept
         : GUIDWrapper()
         , _textureBindSlot(0)
         , _sortIndex(to_I16(sortIndex))

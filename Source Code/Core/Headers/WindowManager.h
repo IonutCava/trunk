@@ -59,7 +59,7 @@ struct WindowDescriptor {
 class PlatformContext;
 class WindowManager {
 public:
-    WindowManager();
+    WindowManager() noexcept;
     ~WindowManager();
 
     ErrorCode init(PlatformContext& context,

@@ -178,7 +178,7 @@ struct FileData {
 };
 
 struct TerrainInfo {
-    TerrainInfo() { position.set(0, 0, 0); }
+    TerrainInfo() noexcept { position.set(0, 0, 0); }
     /// "variables" contains the various strings needed for each terrain such as
     /// texture names,
     /// terrain name etc.

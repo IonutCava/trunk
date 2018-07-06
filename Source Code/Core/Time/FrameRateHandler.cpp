@@ -6,7 +6,7 @@
 namespace Divide {
 namespace Time {
 
-FrameRateHandler::FrameRateHandler() : 
+FrameRateHandler::FrameRateHandler() noexcept : 
     _frameCount(0),
     _averageFPS(0.0f),
     _minFPS(std::numeric_limits<F32>::max()),

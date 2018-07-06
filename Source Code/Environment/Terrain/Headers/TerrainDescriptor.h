@@ -38,7 +38,7 @@ namespace Divide {
 
 class TerrainDescriptor : public PropertyDescriptor {
    public:
-    explicit TerrainDescriptor(const stringImpl& name)
+    explicit TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(PropertyDescriptor::DescriptorType::DESCRIPTOR_TERRAIN_INFO)
     {
         setDefaultValues();

@@ -68,7 +68,7 @@ class TrackedObject : private NonCopyable, public GUIDWrapper {
     }
 
    protected:
-    TrackedObject();
+    TrackedObject() noexcept;
     virtual ~TrackedObject();
 
    private:

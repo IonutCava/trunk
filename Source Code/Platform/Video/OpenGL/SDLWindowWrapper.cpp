@@ -40,9 +40,9 @@ namespace {
 
     class ContextPool {
     public:
-        ContextPool()
+        ContextPool() noexcept
         {
-            _contexts.reserve(HARDWARE_THREAD_COUNT() * 2);
+            _contexts.reserve((size_t)HARDWARE_THREAD_COUNT() * 2);
         }
 
         ~ContextPool() 

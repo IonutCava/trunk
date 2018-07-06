@@ -44,7 +44,7 @@ class GPUState : private NonCopyable {
         // width x height
         vec2<U16> _resolution;
         // bits per pixel;
-        U8 _bitDepth;
+        U8 _bitDepth = 0;
         // format name;
         stringImpl _formatName;
         // Max supported

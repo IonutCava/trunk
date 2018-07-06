@@ -7,7 +7,8 @@ namespace Divide {
 GLuint64 kOneSecondInNanoSeconds = 1000000000;
 U8 kMaxWaitRetry = 5;
 
-glLockManager::glLockManager() : _defaultSync(nullptr)
+glLockManager::glLockManager() noexcept
+    : _defaultSync(nullptr)
 {
 }
 

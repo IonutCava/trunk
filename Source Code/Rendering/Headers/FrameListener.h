@@ -77,7 +77,7 @@ class FrameListener : public GUIDWrapper {
     }
 
     /// Or the frame listenr manager will assing it an ID
-    FrameListener()
+    FrameListener() noexcept
         : FrameListener("")
     {
     }

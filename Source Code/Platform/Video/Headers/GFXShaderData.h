@@ -38,11 +38,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 class GFXShaderData {
   public:
-    GFXShaderData();
+    GFXShaderData() noexcept;
 
   public:
     struct GPUData {
-        GPUData();
+        GPUData() noexcept;
 
         mat4<F32> _ProjectionMatrix;
         mat4<F32> _InvProjectionMatrix;

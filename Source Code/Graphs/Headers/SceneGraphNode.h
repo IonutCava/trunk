@@ -291,14 +291,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         ClearBit(_updateFlags, to_base(flag));
     }
 
-    bool operator==(SceneGraphNode* other) const {
-        return this->getGUID() == other->getGUID();
-    }
-
-    bool operator!=(SceneGraphNode* other) const {
-        return this->getGUID() != other->getGUID();
-    }
-
    /*protected:
     SET_DELETE_FRIEND
     SET_SAFE_UPDATE_FRIEND
@@ -309,14 +301,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     friend class std::shared_ptr<SceneGraphNode> ;*/
     explicit SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
     ~SceneGraphNode();
-
-    bool operator==(const SceneGraphNode& rhs) const {
-        return getGUID() == rhs.getGUID();
-    }
-
-    bool operator!=(const SceneGraphNode& rhs) const {
-        return getGUID() != rhs.getGUID();
-    }
 
     void postLoad();
 

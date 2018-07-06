@@ -59,8 +59,7 @@ protected:
     void musicFinished() override;
 
 private:
-    U32 buffers[MAX_SOUND_BUFFERS];
-
+    U32 buffers[MAX_SOUND_BUFFERS] = {};
 };
 
 };  // namespace Divide

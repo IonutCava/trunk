@@ -39,14 +39,15 @@ namespace Divide {
 
 class Line {
     public:
-    Line() : _widthStart(1.0f),
-             _widthEnd(1.0f)
+    Line() noexcept
+        : _widthStart(1.0f),
+          _widthEnd(1.0f)
     {
     }
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const UColour& colour)
+         const UColour& colour) noexcept
         : Line(startPoint, endPoint, colour, colour)
     {
     }

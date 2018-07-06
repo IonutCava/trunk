@@ -97,12 +97,11 @@ public:
     struct WindowEventArgs {
         I64 _windowGUID = -1;
         bool _flag = false;
-        Input::KeyCode _key;
+        Input::KeyCode _key = Input::KeyCode::KC_0;
         const char* _text = nullptr;
-        int  _mod = 0;
+        I32 _mod = 0;
         I32 x = -1, y = -1;
         I32 id = -1;
-
     };
 
     typedef DELEGATE_CBK<void, const WindowEventArgs&> EventListener;

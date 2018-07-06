@@ -179,7 +179,7 @@ enum class MoveDirection : I8 {
 
 class SceneStatePerPlayer {
   public:
-    SceneStatePerPlayer()
+    SceneStatePerPlayer() noexcept
     {
         resetAll();
     }

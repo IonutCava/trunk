@@ -9,11 +9,11 @@ namespace Divide {
 class WorldPacket : public ByteBuffer {
    public:
     // just container for later use
-    WorldPacket() : WorldPacket(OPCodes::MSG_NOP, 0)
+    WorldPacket() noexcept : WorldPacket(OPCodes::MSG_NOP, 0)
     {
     }
 
-    explicit WorldPacket(OPCodes::ValueType opcode, size_t res = 200)
+    explicit WorldPacket(OPCodes::ValueType opcode, size_t res = 200) noexcept
         : ByteBuffer(res),
           m_opcode(opcode)
     {

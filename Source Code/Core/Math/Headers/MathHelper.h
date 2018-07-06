@@ -378,7 +378,7 @@ namespace Util {
 struct GraphPlot2D;
 struct GraphPlot3D;
 struct GlobalFloatEvent {
-    GlobalFloatEvent() : GlobalFloatEvent("default", 0.0f, 0)
+    GlobalFloatEvent() noexcept : GlobalFloatEvent("default", 0.0f, 0)
     {
 
     }

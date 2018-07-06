@@ -44,7 +44,7 @@ namespace ImageTools {
 
 class ImageLayer {
    public:
-    ImageLayer() : _size(0)
+    ImageLayer() noexcept : _size(0)
     {
         _dimensions.set(0, 0, 1);
     }

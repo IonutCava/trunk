@@ -20,7 +20,7 @@ RenderBinItem::RenderBinItem(RenderStagePass currentStage,
                              I32 sortKeyA,
                              I32 sortKeyB,
                              F32 distToCamSq,
-                             RenderingComponent& renderable)
+                             RenderingComponent& renderable) noexcept
     : _renderable(&renderable),
       _sortKeyA(sortKeyA),
       _sortKeyB(sortKeyB),

@@ -111,7 +111,7 @@ class Material : public CachedResource {
         FColour _emissive; /* emissive component*/
         F32 _shininess;    /* specular exponent */
 
-        ColourData()
+        ColourData() noexcept
             : _diffuse(FColour(VECTOR3_UNIT / 1.5f, 1)),
               _specular(0.8f, 0.8f, 0.8f, 1.0f),
               _emissive(0.0f, 0.0f, 0.0f, 1.0f),

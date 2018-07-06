@@ -11,7 +11,7 @@ namespace {
     thread_local U32  g_allocatedTasks = 0u;
 };
 
-TaskPool::TaskPool()
+TaskPool::TaskPool() noexcept
     : GUIDWrapper(),
       _threadedCallbackBuffer(Config::MAX_POOLED_TASKS),
       _taskCallbacks(Config::MAX_POOLED_TASKS),

@@ -363,7 +363,7 @@ namespace details
 		std::atomic<bool> inactive;
 		ProducerToken* token;
 		
-		ConcurrentQueueProducerTypelessBase()
+		ConcurrentQueueProducerTypelessBase() noexcept
 			: next(nullptr), inactive(false), token(nullptr)
 		{
 		}
@@ -726,7 +726,7 @@ public:
 	// queue is fully constructed before it starts being used by other threads (this
 	// includes making the memory effects of construction visible, possibly with a
 	// memory barrier).
-	explicit ConcurrentQueue(size_t capacity = 6 * BLOCK_SIZE)
+	explicit ConcurrentQueue(size_t capacity = 6 * BLOCK_SIZE) noexcept
 		: producerListTail(nullptr),
 		producerCount(0),
 		initialBlockPoolIndex(0),
@@ -1362,7 +1362,7 @@ private:
 	template<typename N>		// N must inherit FreeListNode or have the same fields (and initialization of them)
 	struct FreeList
 	{
-		FreeList() : freeListHead(nullptr) { }
+		FreeList()  noexcept : freeListHead(nullptr) { }
 		FreeList(FreeList&& other) : freeListHead(other.freeListHead.load(std::memory_order_relaxed)) { other.freeListHead.store(nullptr, std::memory_order_relaxed); }
 		void swap(FreeList& other) { details::swap_relaxed(freeListHead, other.freeListHead); }
 		
@@ -1471,7 +1471,7 @@ private:
 	
 	struct Block
 	{
-		Block()
+		Block() noexcept
 			: next(nullptr), elementsCompletelyDequeued(0), freeListRefs(0), freeListNext(nullptr), shouldBeOnFreeList(false), dynamicallyAllocated(true)
 		{
 #if MCDBGQ_TRACKMEM
@@ -3207,7 +3207,7 @@ private:
 		std::atomic<details::thread_id_t> key;
 		ImplicitProducer* value;		// No need for atomicity since it's only read by the thread that sets it in the first place
 		
-		ImplicitProducerKVP() : value(nullptr) { }
+		ImplicitProducerKVP()  noexcept : value(nullptr) { }
 		
 		ImplicitProducerKVP(ImplicitProducerKVP&& other) MOODYCAMEL_NOEXCEPT
 		{

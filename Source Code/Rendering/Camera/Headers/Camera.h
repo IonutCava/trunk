@@ -217,7 +217,7 @@ class Camera : public Resource {
     inline F32 getTurnSpeedFactor() const { return _turnSpeedFactor; }
     inline F32 getZoomSpeedFactor() const { return _zoomSpeedFactor; }
 
-    inline const CameraType& getType() const { return _type; }
+    inline const CameraType& type() const { return _type; }
 
     inline const vec3<F32>& getEye() const {
         return _data._eye;

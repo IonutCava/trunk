@@ -43,11 +43,11 @@ namespace Divide {
 class GFXRTPool;
 
 struct RenderTargetID {
-    RenderTargetID() : RenderTargetID(RenderTargetUsage::COUNT)
+    RenderTargetID() noexcept : RenderTargetID(RenderTargetUsage::COUNT)
     {
     }
 
-    RenderTargetID(RenderTargetUsage usage) : RenderTargetID(usage, 0)
+    RenderTargetID(RenderTargetUsage usage) noexcept : RenderTargetID(usage, 0)
     {
     }
 
@@ -76,12 +76,12 @@ struct DepthBlitEntry {
 
 class RenderTarget;
 struct RenderTargetHandle {
-    RenderTargetHandle()
+    RenderTargetHandle() noexcept
         : RenderTargetHandle(RenderTargetID(), nullptr)
     {
     }
 
-    RenderTargetHandle(RenderTargetID targetID, RenderTarget* rt)
+    RenderTargetHandle(RenderTargetID targetID, RenderTarget* rt) noexcept
         : _rt(rt),
         _targetID(targetID)
     {

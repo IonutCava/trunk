@@ -46,7 +46,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
-    toggleRenderOption(RenderOptions::IS_OCCLUSION_CULLABLE, _parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
+    toggleRenderOption(RenderOptions::IS_OCCLUSION_CULLABLE, _parentSGN.getNode<Object3D>()->type() != SceneNodeType::TYPE_SKY);
 
     const Object3D_ptr& node = parentSGN.getNode<Object3D>();
     Object3D::ObjectType type = node->getObjectType();
@@ -316,7 +316,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     if (Config::Build::IS_DEBUG_BUILD) {
         switch(sceneRenderState.gizmoState()){
             case SceneRenderState::GizmoState::ALL_GIZMO: {
-                if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+                if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
                     if (_parentSGN.getNode<Object3D>()->getObjectType() == Object3D::ObjectType::SUBMESH) {
                         drawDebugAxis();
                         bufferInOut.add(_axisGizmo->toCommandBuffer());

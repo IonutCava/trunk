@@ -88,7 +88,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     void operator=(const RenderStateBlock& b) = delete;
 
    public:
-    RenderStateBlock();
+    RenderStateBlock() noexcept;
     RenderStateBlock(const RenderStateBlock& b);
 
     void setDefaultValues();

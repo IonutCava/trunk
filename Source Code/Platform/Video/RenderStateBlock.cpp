@@ -10,7 +10,7 @@ RenderStateBlock::RenderStateMap RenderStateBlock::s_stateBlockMap;
 SharedLock RenderStateBlock::s_stateBlockMapMutex;
 size_t RenderStateBlock::s_defaultCacheValue = 0;
 
-RenderStateBlock::RenderStateBlock()
+RenderStateBlock::RenderStateBlock() noexcept
     : GUIDWrapper()
 {
     setDefaultValues();

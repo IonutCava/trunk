@@ -80,8 +80,8 @@ class CommandBuffer;
 
 struct CommandBase
 {
-    CommandBase() : CommandBase(CommandType::COUNT) {}
-    CommandBase(CommandType type) : _type(type) {}
+    CommandBase() noexcept : CommandBase(CommandType::COUNT) {}
+    CommandBase(CommandType type) noexcept : _type(type) {}
 
     virtual ~CommandBase() = default;
 

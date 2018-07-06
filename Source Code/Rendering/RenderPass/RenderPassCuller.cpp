@@ -20,7 +20,7 @@ namespace {
     bool isParentNode(const RenderPassCuller::VisibleNode& node) {
         const SceneGraphNode* sgn = node._node;
         const SceneNode_ptr& sceneNode = sgn->getNode();
-        if (sceneNode->getType() == SceneNodeType::TYPE_OBJECT3D) {
+        if (sceneNode->type() == SceneNodeType::TYPE_OBJECT3D) {
             return sgn->getNode<Object3D>()->getObjectType() == Object3D::ObjectType::MESH;
         }
         return false;

@@ -8,7 +8,7 @@
 namespace Divide {
 namespace GLUtil {
 
-glVAOCache::glVAOCache()
+glVAOCache::glVAOCache() noexcept
 {
 }
 

@@ -1049,7 +1049,7 @@ bool Scene::mouseMoved(const Input::MouseEvent& arg) {
     Camera& cam = _scenePlayers[idx]->getCamera();
     if (cam.moveRelative(arg.relativePos()))
     {
-        if (cam.getType() == Camera::CameraType::THIRD_PERSON) {
+        if (cam.type() == Camera::CameraType::THIRD_PERSON) {
             _context.app().windowManager().snapCursorToCenter();
         }
         return true;
@@ -1272,7 +1272,7 @@ void Scene::findHoverTarget(PlayerIndex idx) {
         SceneGraphNode* target = _sceneGraph->findNode(crtCandidate);
 
         const SceneNode_ptr& node = target->getNode();
-        if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+        if (node->type() == SceneNodeType::TYPE_OBJECT3D) {
             if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::SUBMESH) {
                 crtCandidate = target->getParent()->getGUID();
             }

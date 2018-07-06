@@ -40,12 +40,13 @@ namespace {
 }
 
 
-WindowManager::WindowManager() : _displayIndex(0),
-                                 _apiFlags(0),
-                                 _activeWindowGUID(-1),
-                                 _mainWindowGUID(-1),
-                                 _focusedWindowGUID(-1),
-                                 _context(nullptr)
+WindowManager::WindowManager()  noexcept 
+   : _displayIndex(0),
+     _apiFlags(0),
+     _activeWindowGUID(-1),
+     _mainWindowGUID(-1),
+     _focusedWindowGUID(-1),
+     _context(nullptr)
 {
     SDL_Init(SDL_INIT_VIDEO);
 }

@@ -31,7 +31,7 @@ ScopedTimer::~ScopedTimer()
     _timer.stop();
 }
 
-ProfileTimer::ProfileTimer()
+ProfileTimer::ProfileTimer() noexcept
     : _timer(0UL),
       _timerAverage(0UL),
       _timerCounter(0),

@@ -49,7 +49,7 @@ class TerrainLoader : private NonCopyable {
     static bool Load(const char* filename);
 
    private:
-    TerrainLoader() {}
+    TerrainLoader() noexcept {}
     ~TerrainLoader() {}
 
     static bool loadThreadedResources(std::shared_ptr<Terrain> terrain,

@@ -61,7 +61,7 @@ struct BufferLock {
 // --------------------------------------------------------------------------------------------------------------------
 class glBufferLockManager : public glLockManager {
    public:
-    glBufferLockManager();
+    glBufferLockManager() noexcept;
     ~glBufferLockManager();
 
     void WaitForLockedRange(size_t lockBeginBytes, size_t lockLength, bool blockClient);

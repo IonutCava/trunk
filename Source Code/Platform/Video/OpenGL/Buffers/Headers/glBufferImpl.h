@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferImplParams {
-    BufferImplParams()
+    BufferImplParams() noexcept
         : _target(GL_NONE),
           _frequency(BufferUpdateFrequency::ONCE),
           _dataSizeInBytes(0),

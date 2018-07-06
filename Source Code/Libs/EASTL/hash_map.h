@@ -125,7 +125,7 @@ namespace eastl
 		///
 		/// Default constructor.
 		///
-		explicit hash_map(const allocator_type& allocator = EASTL_HASH_MAP_DEFAULT_ALLOCATOR)
+		explicit hash_map(const allocator_type& allocator = EASTL_HASH_MAP_DEFAULT_ALLOCATOR) noexcept
 			: base_type(0, Hash(), mod_range_hashing(), default_ranged_hash(), 
 						Predicate(), eastl::use_first<eastl::pair<const Key, T> >(), allocator)
 		{

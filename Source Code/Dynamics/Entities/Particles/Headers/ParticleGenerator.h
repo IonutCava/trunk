@@ -40,7 +40,7 @@ namespace Divide {
 
 class NOINITVTABLE ParticleGenerator {
    public:
-    ParticleGenerator() {}
+    ParticleGenerator() noexcept {}
     virtual ~ParticleGenerator() {}
 
     virtual void generate(TaskHandle& packagedTasksParent,

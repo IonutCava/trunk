@@ -48,7 +48,7 @@ class ShaderBuffer;
 
 class AnimationChannel {
    public:
-    AnimationChannel()
+    AnimationChannel() noexcept
         : _nameKey(0ULL),
           _numPositionKeys(0U),
           _numRotationKeys(0U),

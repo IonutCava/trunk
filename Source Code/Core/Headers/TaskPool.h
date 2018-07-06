@@ -40,7 +40,7 @@ namespace Divide {
 class TaskPool : public GUIDWrapper {
   public:
 
-    explicit TaskPool();
+    explicit TaskPool() noexcept;
     ~TaskPool();
     
     bool init(U8 threadCount, bool lockFree, const stringImpl& workerName = "DVD_WORKER");

@@ -239,7 +239,7 @@ void RenderPassManager::refreshNodeData(RenderStage stage, U32 bufferIndex, U32 
         }
     }
 
-    RenderPass::BufferData& bufferData = getBufferData(stage, passIndex, bufferIndex);
+    RenderPass::BufferData& bufferData = getBufferData(stage, bufferIndex, passIndex);
     bufferData._lastCommandCount = to_U32(g_drawCommands.size());
 
     U32 nodeCount = to_U32(g_nodeData.size());

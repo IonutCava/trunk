@@ -43,7 +43,7 @@ namespace Divide {
 /// Utility class that adds basic GUID management to objects
 class GUIDWrapper {
    public:
-    GUIDWrapper() : _GUID(generateGUID())
+    GUIDWrapper() noexcept : _GUID(generateGUID())
     {
     }
 

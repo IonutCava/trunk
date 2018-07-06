@@ -236,7 +236,7 @@ private:
     vector<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
 
     struct SwitchSceneTarget {
-        SwitchSceneTarget()
+        SwitchSceneTarget() noexcept
             : _targetSceneName(""),
             _unloadPreviousScene(true),
             _loadInSeparateThread(true),

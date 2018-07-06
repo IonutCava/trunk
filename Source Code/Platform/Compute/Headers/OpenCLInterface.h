@@ -97,9 +97,9 @@ private:
     OpenCLProgram loadProgram(const stringImpl& programPath, const stringImpl& programName, I32 deviceIndex = -1);
     
 private:
-    sclHard* _hardware;
-    sclHard  _fastestDevice;
-    I32      _deviceCount;
+    sclHard* _hardware = nullptr;
+    sclHard  _fastestDevice = {};
+    I32      _deviceCount = 0;
 
 END_SINGLETON
 

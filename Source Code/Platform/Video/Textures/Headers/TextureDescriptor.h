@@ -44,7 +44,7 @@ class SamplerDescriptor : public Hashable {
    public:
     /// The constructor specifies the type so it can be used later for
     /// down-casting if needed
-    SamplerDescriptor()
+    SamplerDescriptor() noexcept
     {
         setDefaultValues();
     }
@@ -216,21 +216,21 @@ class SamplerDescriptor : public Hashable {
 /// POD
 class TextureDescriptor : public PropertyDescriptor {
    public:
-    TextureDescriptor()
+    TextureDescriptor() noexcept
         : TextureDescriptor(TextureType::COUNT,
                             GFXImageFormat::COUNT,
                             GFXDataFormat::COUNT)
     {
     }
 
-    TextureDescriptor(TextureType type)
+    TextureDescriptor(TextureType type) noexcept
          : TextureDescriptor(type,
                              GFXImageFormat::COUNT)
     {
     }
 
     TextureDescriptor(TextureType type,
-                      GFXImageFormat internalFormat)
+                      GFXImageFormat internalFormat) noexcept
         : TextureDescriptor(type,
                             internalFormat,
                             GFXDataFormat::COUNT)
@@ -239,7 +239,7 @@ class TextureDescriptor : public PropertyDescriptor {
 
     TextureDescriptor(TextureType type,
                       GFXImageFormat internalFmt,
-                      GFXDataFormat dataType)
+                      GFXDataFormat dataType) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
           _layerCount(1),
           _baseFormat(GFXImageFormat::COUNT),

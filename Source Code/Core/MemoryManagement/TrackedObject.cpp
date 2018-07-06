@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-TrackedObject::TrackedObject() 
+TrackedObject::TrackedObject() noexcept
     : GUIDWrapper()
 {
     /// On creation, it only has a reference count of 1
