@@ -40,7 +40,7 @@ Application::Application() : _kernel(nullptr),
 
     if (Config::Build::IS_DEBUG_BUILD) {
         MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
-        MemoryManager::MemoryTracker::LogAllAllocations = true;
+        MemoryManager::MemoryTracker::LogAllAllocations = false;
     }
 }
 

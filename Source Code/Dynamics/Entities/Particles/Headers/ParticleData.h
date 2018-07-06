@@ -50,9 +50,9 @@ class ParticleData {
         COUNT
     };
     /// helper array used for sorting
-    vectorImpl<std::pair<U32, F32>> _indices;
+    vectorImplAligned<std::pair<U32, F32>> _indices;
     vectorImplAligned<vec4<F32>> _renderingPositions;
-    vectorImpl<vec4<U8>>  _renderingColours;
+    vectorImplAligned<vec4<U8>>  _renderingColours;
     /// x,y,z = position; w = size
     vectorImplAligned<vec4<F32>> _position;
     /// x,y,z = _velocity; w = angle;

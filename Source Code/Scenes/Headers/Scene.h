@@ -63,6 +63,8 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/SceneGUIElements.h"
 
+#include <ArenaAllocator/arena_allocator.h>
+
 namespace Divide {
 class Sky;
 class Light;
@@ -284,6 +286,9 @@ class Scene : public Resource {
        IMPrimitive* _linesPrimitive;
        vectorImpl<IMPrimitive*> _octreePrimitives;
        vectorImpl<BoundingBox> _octreeBoundingBoxes;
+
+       mutable std::mutex _perFrameArenaMutex;
+       mutable MyArena<Config::REQUIRED_RAM_SIZE / 2> _perFrameArena;
 };
 
 namespace Attorney {

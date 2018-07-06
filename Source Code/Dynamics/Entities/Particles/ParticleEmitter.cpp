@@ -48,7 +48,7 @@ ParticleEmitter::ParticleEmitter(const stringImpl& name)
 ParticleEmitter::~ParticleEmitter()
 { 
     unload(); 
-    MemoryManager::DELETE(_particleGPUBuffer);
+    _particleGPUBuffer->destroy();
 }
 
 bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {

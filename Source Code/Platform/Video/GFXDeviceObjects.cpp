@@ -29,143 +29,191 @@
 namespace Divide {
 
 RenderTarget* GFXDevice::newRT(const stringImpl& name) const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    RenderTarget* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new framebuffer.
             /// The callee is responsible for it's deletion!
-            return MemoryManager_NEW glFramebuffer(instance(), name);
+            temp =  new (_gpuObjectArena) glFramebuffer(instance(), name);
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dRenderTarget(instance(), name);
+            temp = new (_gpuObjectArena) d3dRenderTarget(instance(), name);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    return temp;
 }
 
 IMPrimitive* GFXDevice::newIMP() const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    IMPrimitive* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new IM emulation primitive. The callee is responsible
             /// for it's deletion!
-            return MemoryManager_NEW glIMPrimitive(instance());
+            temp = new (_gpuObjectArena) glIMPrimitive(instance());
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    return temp;
 }
 
 VertexBuffer* GFXDevice::newVB() const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    VertexBuffer* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new vertex array (VAO + VB + IB).
             /// The callee is responsible for it's deletion!
-            return MemoryManager_NEW glVertexArray(instance());
+            temp = new (_gpuObjectArena) glVertexArray(instance());
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dVertexBuffer(instance());
+            temp = new (_gpuObjectArena) d3dVertexBuffer(instance());
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    return temp;
 }
 
 PixelBuffer* GFXDevice::newPB(PBType type) const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    PixelBuffer* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new pixel buffer using the requested format.
             /// The callee is responsible for it's deletion!
-            return MemoryManager_NEW glPixelBuffer(instance(), type);
+            temp = new (_gpuObjectArena) glPixelBuffer(instance(), type);
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dPixelBuffer(instance(), type);
+            temp = new (_gpuObjectArena) d3dPixelBuffer(instance(), type);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    return temp;
 }
 
 GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength) const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    GenericVertexData* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new generic vertex data object
             /// The callee is responsible for it's deletion!
-            return MemoryManager_NEW glGenericVertexData(instance(), ringBufferLength);
+            temp = new (_gpuObjectArena) glGenericVertexData(instance(), ringBufferLength);
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dGenericVertexData(instance(), ringBufferLength);
+            temp = new (_gpuObjectArena) d3dGenericVertexData(instance(), ringBufferLength);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    return temp;
 }
 
 Texture* GFXDevice::newTexture(const stringImpl& name,
                                const stringImpl& resourceLocation,
                                TextureType type,
                                bool asyncLoad) const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    Texture* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new texture. The callee is responsible for it's deletion!
-            return MemoryManager_NEW glTexture(instance(), name, resourceLocation, type, asyncLoad);
+            temp = new (_gpuObjectArena) glTexture(instance(), name, resourceLocation, type, asyncLoad);
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dTexture(instance(), name, resourceLocation, type, asyncLoad);
+            temp = new (_gpuObjectArena) d3dTexture(instance(), name, resourceLocation, type, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    return temp;
 }
 
 ShaderProgram* GFXDevice::newShaderProgram(const stringImpl& name,
                                            const stringImpl& resourceLocation,
                                            bool asyncLoad) const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    ShaderProgram* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new shader program.
             /// The callee is responsible for it's deletion!
-            return MemoryManager_NEW glShaderProgram(instance(), name, resourceLocation, asyncLoad);
+            temp = new (_gpuObjectArena) glShaderProgram(instance(), name, resourceLocation, asyncLoad);
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dShaderProgram(instance(), name, resourceLocation, asyncLoad);
+            temp = new (_gpuObjectArena) d3dShaderProgram(instance(), name, resourceLocation, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    return temp;
 }
 
 ShaderBuffer* GFXDevice::newSB(const U32 ringBufferLength,
                                const bool unbound,
                                const bool persistentMapped ,
                                BufferUpdateFrequency frequency) const {
+    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+
+    ShaderBuffer* temp = nullptr;
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
@@ -173,25 +221,29 @@ ShaderBuffer* GFXDevice::newSB(const U32 ringBufferLength,
             /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
             /// or a 'Shader Storage Block Object' otherwise
             // The shader buffer can also be persistently mapped, if requested
-            return MemoryManager_NEW glUniformBuffer(instance(),
-                                                     ringBufferLength,
-                                                     unbound,
-                                                     persistentMapped,
-                                                     frequency);
+            temp = new (_gpuObjectArena) glUniformBuffer(instance(),
+                                                         ringBufferLength,
+                                                         unbound,
+                                                         persistentMapped,
+                                                         frequency);
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dConstantBuffer(instance(),
-                                                       ringBufferLength,
-                                                       unbound,
-                                                       persistentMapped,
-                                                       frequency);
+            temp = new (_gpuObjectArena) d3dConstantBuffer(instance(),
+                                                           ringBufferLength,
+                                                           unbound,
+                                                           persistentMapped,
+                                                           frequency);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
-    return nullptr;
+    if (temp != nullptr) {
+        _gpuObjectArena.DTOR(temp);
+    }
+
+    return temp;
 }
 
 }; // namespace Divide

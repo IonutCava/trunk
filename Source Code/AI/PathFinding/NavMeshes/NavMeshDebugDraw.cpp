@@ -30,8 +30,9 @@ NavMeshDebugDraw::NavMeshDebugDraw()
     _navMeshStateBlockHash = navigationDebugStateBlock.getHash();
 }
 
-NavMeshDebugDraw::~NavMeshDebugDraw() {
-    MemoryManager::DELETE(_primitive);
+NavMeshDebugDraw::~NavMeshDebugDraw()
+{
+	_primitive->clear();
 }
 
 void NavMeshDebugDraw::paused(bool state) {

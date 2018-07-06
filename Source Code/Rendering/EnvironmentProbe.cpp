@@ -41,8 +41,7 @@ EnvironmentProbe::EnvironmentProbe(ProbeType type) :
 EnvironmentProbe::~EnvironmentProbe()
 {
     s_availableSlices[_currentArrayIndex] = false;
-    MemoryManager::DELETE(_boundingBoxPrimitive);
-}
+    _boundingBoxPrimitive->clear();}
 
 void EnvironmentProbe::onStartup() {
     s_availableSlices.resize(g_maxEnvironmentProbes, false);

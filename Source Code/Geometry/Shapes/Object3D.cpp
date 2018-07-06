@@ -72,7 +72,7 @@ Object3D::~Object3D()
 {
     if (!BitCompare(_geometryFlagMask,
                     to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
-        MemoryManager::DELETE(_buffer);
+        _buffer->destroy();
     }
 }
 

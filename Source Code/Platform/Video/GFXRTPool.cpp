@@ -32,13 +32,8 @@ void GFXRTPool::clear() {
     }
 }
 
-void GFXRTPool::set(RenderTargetID target,RenderTarget* newTarget) {
-    RenderTarget*& existingTarget = _renderTargets[to_uint(target._usage)][target._index];
-    if (existingTarget != nullptr) {
-        MemoryManager::DELETE(existingTarget);
-    }
-
-    existingTarget = newTarget;
+void GFXRTPool::set(RenderTargetID target, RenderTarget* newTarget) {
+    _renderTargets[to_uint(target._usage)][target._index] = newTarget;
 }
 
 RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, RenderTarget* newTarget) {

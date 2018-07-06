@@ -18,7 +18,7 @@ ShaderProgram::ShaderProgramMap ShaderProgram::_shaderPrograms;
 SharedLock ShaderProgram::_programLock;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad)
-    : Resource(name, resourceLocation),
+    : Resource(ResourceType::GPU_OBJECT, name, resourceLocation),
       GraphicsResource(context),
       _asyncLoad(asyncLoad)
 {

@@ -13,7 +13,8 @@ namespace Divide {
 AnimEvaluator::AnimEvaluator() : _lastTime(0.0),
                                  _ticksPerSecond(0.0),
                                  _duration(0.0),
-                                 _playAnimationForward(true)
+                                 _playAnimationForward(true),
+                                 _boneTransformBuffer(nullptr)
 {
 }
 
@@ -63,10 +64,10 @@ AnimEvaluator::~AnimEvaluator()
 }
 
 bool AnimEvaluator::initBuffers() {
-    DIVIDE_ASSERT(_boneTransformBuffer.get() == nullptr && !_transforms.empty(),
+    DIVIDE_ASSERT(_boneTransformBuffer == nullptr && !_transforms.empty(),
                   "AnimEvaluator error: can't create bone buffer at current stage!");
 
-    _boneTransformBuffer.reset(GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::ONCE));
+    _boneTransformBuffer = GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::ONCE);
 
     DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
         "AnimEvaluator error: Too many bones for current node! "

@@ -49,6 +49,7 @@
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 #include <stack>
+#include <ArenaAllocator/arena_allocator.h>
 
 namespace Divide {
 
@@ -328,6 +329,8 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline I32 getDrawCallCount() const { return FRAME_DRAW_CALLS_PREV; }
 
+    inline Arena::Statistics getObjectAllocStats() const { return _gpuObjectArena.statistics_; }
+
     inline void registerDrawCall() { registerDrawCalls(1); }
 
     inline void registerDrawCalls(U32 count) { FRAME_DRAW_CALLS += count; }
@@ -335,9 +338,6 @@ DEFINE_SINGLETON(GFXDevice)
     inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
 
     inline RenderStage setRenderStage(RenderStage stage);
-
-    static void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
-    static void computeFrustumPlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
 
   public:
       IMPrimitive*       newIMP() const;
@@ -507,8 +507,11 @@ DEFINE_SINGLETON(GFXDevice)
     ShaderBuffer* _gfxDataBuffer;
     GenericDrawCommand _defaultDrawCmd;
 
-    GenericCommandPool _commandPool;
+    GenericCommandPool  _commandPool;
     Time::ProfileTimer& _commandBuildTimer;
+
+    mutable std::mutex _gpuObjectArenaMutex;
+    mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;
 
 END_SINGLETON
 

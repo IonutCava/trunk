@@ -257,10 +257,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingAPI() {
     assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
-
-    MemoryManager::DELETE(_axisGizmo);
-    MemoryManager::DELETE(_debugFrustumPrimitive);
-
+    _axisGizmo->clear();
+    _debugFrustumPrimitive->clear();
     // Destroy our post processing system
     Console::printfn(Locale::get(_ID("STOP_POST_FX")));
     PostFX::destroyInstance();
@@ -268,21 +266,15 @@ void GFXDevice::closeRenderingAPI() {
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
     RenderStateBlock::clear();
     _gfxDataBuffer->destroy();
-    MemoryManager::DELETE(_gfxDataBuffer);
 
     EnvironmentProbe::onShutdown();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     deallocateRT(_previousDepthBuffer);
     _rtPool.clear();
-    _previewDepthMapShader.reset();
-    _renderTargetDraw.reset();
-    _HIZConstructProgram.reset();
-    _HIZCullProgram.reset();
-    _displayShader.reset();
-
     // Close the shader manager
     ShaderProgram::onShutdown();
+    _gpuObjectArena.clear();
     // Close the rendering API
     _api->closeRenderingAPI();
 

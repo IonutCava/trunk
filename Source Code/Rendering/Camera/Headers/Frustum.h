@@ -86,6 +86,11 @@ class Frustum {
     // least 8 allocated slots
     void getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS);
 
+    void computePlanes(const mat4<F32>& invViewProj);
+
+    static void computePlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
+    static void computePlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
+
    private:
     /// Get the point where the 3 specified planes intersect
     void intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,

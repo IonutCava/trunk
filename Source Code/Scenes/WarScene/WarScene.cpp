@@ -67,7 +67,7 @@ WarScene::WarScene(const stringImpl& name)
 
 WarScene::~WarScene()
 {
-    MemoryManager::DELETE(_targetLines);
+	_targetLines->clear();
 }
 
 void WarScene::processGUI(const U64 deltaTime) {

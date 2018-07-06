@@ -169,7 +169,7 @@ class AnimEvaluator {
     /// vector that holds all bone channels
     vectorImpl<AnimationChannel> _channels;
     /// GPU buffer to hold bone transforms
-    std::shared_ptr<ShaderBuffer> _boneTransformBuffer;
+    ShaderBuffer* _boneTransformBuffer;
 };
 
 };  // namespace Divide

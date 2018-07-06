@@ -43,6 +43,8 @@ class d3dGenericVertexData : public GenericVertexData {
 
     ~d3dGenericVertexData();
 
+    void destroy() override {}
+
     void create(U8 numBuffers = 1, U8 numQueries = 1) override {}
 
     void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream, const vectorImpl<U32>& indices) override {}

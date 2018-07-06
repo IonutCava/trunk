@@ -56,7 +56,7 @@ class TiledForwardShadingRenderer : public Renderer {
    private:
     vec2<U16> _resolution;
     ShaderProgram_ptr _lightCullComputeShader;
-    std::shared_ptr<ShaderBuffer> _perTileLightIndexBuffer;
+    ShaderBuffer*     _perTileLightIndexBuffer;
 };
 
 };  // namespace Divide

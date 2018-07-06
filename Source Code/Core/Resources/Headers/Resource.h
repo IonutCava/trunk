@@ -60,6 +60,12 @@ enum class ResourceState : U32 {
     COUNT
 };
 
+enum class ResourceType : U32 {
+    DEFAULT = 0,
+    GPU_OBJECT = 1, //< Textures, Render targets, shaders, etc
+    COUNT
+};
+
 class NOINITVTABLE Resource : public GUIDWrapper
 {
     friend class ResourceCache;
@@ -68,8 +74,10 @@ class NOINITVTABLE Resource : public GUIDWrapper
     friend class ImplResourceLoader;
 
    public:
-    explicit Resource(const stringImpl& name);
-    explicit Resource(const stringImpl& name,
+    explicit Resource(ResourceType type, 
+                      const stringImpl& name);
+    explicit Resource(ResourceType type, 
+                      const stringImpl& name,
                       const stringImpl& resourceLocation);
 
     virtual ~Resource();
@@ -87,6 +95,8 @@ class NOINITVTABLE Resource : public GUIDWrapper
 
     ResourceState getState() const;
 
+    ResourceType getType() const;
+
     void setStateCallback(ResourceState targetState, DELEGATE_CBK<void> cbk);
 
    protected:
@@ -94,8 +104,9 @@ class NOINITVTABLE Resource : public GUIDWrapper
     void setResourceLocation(const stringImpl& location);
 
    protected:
-    stringImpl _name;
-    stringImpl _resourceLocation;  ///< Physical file location
+    stringImpl   _name;
+    ResourceType _resourceType;
+    stringImpl   _resourceLocation;  ///< Physical file location
     std::atomic<ResourceState> _resourceState;
     std::array<DELEGATE_CBK<void>, to_const_uint(ResourceState::COUNT)> _loadingCallbacks;
     mutable SharedLock _callbackLock;

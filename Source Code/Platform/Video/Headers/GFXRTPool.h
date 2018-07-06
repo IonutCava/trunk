@@ -37,8 +37,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class RenderTarget;
-
 class GFXRTPool {
 protected:
     friend class GFXDevice;

@@ -50,6 +50,8 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     GenericVertexData(GFXDevice& context, const U32 ringBufferLength);
     virtual ~GenericVertexData();
 
+    virtual void destroy() = 0;
+
     inline void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) {
         vectorImpl<U32> indices;
         setIndexBuffer(indicesCount, dynamic, stream);

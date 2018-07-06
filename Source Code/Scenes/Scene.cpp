@@ -46,7 +46,7 @@ struct selectionQueueDistanceFrontToBack {
 };
 
 Scene::Scene(const stringImpl& name)
-    : Resource(name),
+    : Resource(ResourceType::DEFAULT, name),
       _GFX(GFX_DEVICE),
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
@@ -78,7 +78,6 @@ Scene::Scene(const stringImpl& name)
 
 Scene::~Scene()
 {
-    MemoryManager::DELETE(_linesPrimitive);
     MemoryManager::DELETE(_sceneState);
     MemoryManager::DELETE(_input);
     MemoryManager::DELETE(_sceneGraph);
@@ -99,9 +98,15 @@ bool Scene::onShutdown() {
     return true;
 }
 
-bool Scene::frameStarted() { return true; }
+bool Scene::frameStarted() {
+    std::unique_lock<std::mutex> lk(_perFrameArenaMutex);
+    _perFrameArena.clear();
+    return true;
+}
 
-bool Scene::frameEnded() { return true; }
+bool Scene::frameEnded() {
+    return true;
+}
 
 bool Scene::idle() {  // Called when application is idle
     if (!_modelDataArray.empty()) {
@@ -879,8 +884,9 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPa
             }
         }
     }
-
-    subPass._commands.push_back(_linesPrimitive->toDrawCommand());
+    if (Config::Build::IS_DEBUG_BUILD) {
+        subPass._commands.push_back(_linesPrimitive->toDrawCommand());
+    }
     // Show NavMeshes
     _aiManager->debugDraw(subPassesInOut, false);
     _lightPool->drawLightImpostors(subPassesInOut);

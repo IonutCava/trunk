@@ -34,7 +34,7 @@ SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
 }
 
 SceneNode::SceneNode(const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type)
-    : Resource(name, resourceLocation),
+    : Resource(ResourceType::DEFAULT, name, resourceLocation),
      _materialTemplate(nullptr),
      _type(type),
      _LODcount(1)  ///<Defaults to 1 LOD level

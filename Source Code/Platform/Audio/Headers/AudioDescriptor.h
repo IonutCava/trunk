@@ -40,7 +40,7 @@ namespace Divide {
 class AudioDescriptor : public Resource {
    public:
     AudioDescriptor(const stringImpl& name, const stringImpl& audioFile)
-        : Resource(name, audioFile),
+        : Resource(ResourceType::DEFAULT, name, audioFile),
           _isLooping(false),
           _dirty(true),
           _is3D(false),

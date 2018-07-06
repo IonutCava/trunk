@@ -122,8 +122,10 @@ class MemoryTracker {
                 WriteLock w_lock(_mutex);
                 MemoryTracker::Lock lock(*this);
                 iterator it = _map.find(p);
-                if (it != std::end(_map)) {
+                if (it != std::cend(_map)) {
                     _map.erase(it);
+                } else {
+                    assert(false && "Called custom delete on non-custom allocated pointer!");
                 }
             }
         }

@@ -53,8 +53,8 @@ LightPool::LightPool(Scene& parentScene)
 LightPool::~LightPool()
 {
     clear();
-    MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]);
-    MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]);
+	_lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->destroy();
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->destroy();
 }
 
 void LightPool::init() {

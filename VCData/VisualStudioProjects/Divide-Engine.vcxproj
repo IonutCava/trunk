@@ -313,6 +313,7 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
@@ -438,6 +439,7 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIMessageBox.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIText.h" />
+    <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h" />
     <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h" />

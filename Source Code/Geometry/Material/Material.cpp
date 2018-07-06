@@ -21,7 +21,7 @@ namespace {
 };
 
 Material::Material(const stringImpl& name)
-    : Resource(name),
+    : Resource(ResourceType::DEFAULT, name),
       _parallaxFactor(1.0f),
       _dirty(false),
       _doubleSided(false),

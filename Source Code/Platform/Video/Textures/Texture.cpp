@@ -16,7 +16,7 @@ Texture::Texture(GFXDevice& context,
                  TextureType type,
                  bool asyncLoad)
     : GraphicsResource(context),
-      Resource(name, resourceLocation),
+      Resource(ResourceType::GPU_OBJECT, name, resourceLocation),
       _numLayers(1),
       _lockMipMaps(false),
       _samplerDirty(true),

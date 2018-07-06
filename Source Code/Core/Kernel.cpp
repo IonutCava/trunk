@@ -180,6 +180,7 @@ void Kernel::onLoop() {
 if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_PROFILING)
 {
     U32 frameCount = _GFX.getFrameCount();
+
     // Should be approximatelly 2 times a seconds
     bool print = false;
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -203,6 +204,14 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
             profileData.append("\n");
             profileData.append(Time::ProfileTimer::printAll());
         }
+
+        Arena::Statistics stats = _GFX.getObjectAllocStats();
+        profileData.append("\n");
+        profileData.append(Util::StringFormat("GPU Objects: %5.5 Mb, %d num allocs, %d num blocks, %d num destructors",
+                                              (to_float(stats.bytes_allocated_) / 1024) / 1024,
+                                              stats.num_of_allocs_,
+                                              stats.num_of_blocks_,
+                                              stats.num_of_dtros_));
         // Should equate to approximately once every 10 seconds
         if (frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
             Console::printfn(profileData.c_str());

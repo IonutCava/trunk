@@ -188,6 +188,9 @@
     <Filter Include="Core\Time\Headers">
       <UniqueIdentifier>{d63c0442-ae1a-42dd-a163-022eae7bc207}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\ArenaAllocator">
+      <UniqueIdentifier>{6289e84f-e6cd-4611-9119-15316985f68d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -550,6 +553,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\CameraPool.cpp">
       <Filter>Rendering\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp">
+      <Filter>Core\ArenaAllocator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -972,6 +978,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\TiledForwardShadingRenderer.h">
       <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h">
+      <Filter>Core\ArenaAllocator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

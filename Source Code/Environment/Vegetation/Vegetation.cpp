@@ -75,10 +75,10 @@ Vegetation::~Vegetation()
     assert(_threadedLoadComplete);
     _grassPositions.clear();
 
-    MemoryManager::DELETE(_grassGPUBuffer[0]);
-    MemoryManager::DELETE(_grassGPUBuffer[1]);
-    MemoryManager::DELETE(_treeGPUBuffer[0]);
-    MemoryManager::DELETE(_treeGPUBuffer[1]);
+    _grassGPUBuffer[0]->destroy();
+	_grassGPUBuffer[1]->destroy();
+	_treeGPUBuffer[0]->destroy();
+	_treeGPUBuffer[1]->destroy();
     Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 

@@ -22,7 +22,7 @@ namespace {
 namespace Import {
     ImportData::~ImportData()
     {
-        MemoryManager::SAFE_DELETE(_vertexBuffer);
+        _vertexBuffer->destroy();
     }
 
     bool ImportData::saveToFile(const stringImpl& fileName) {

@@ -25,7 +25,12 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
     _resultAvailable.fill(nullptr);
 }
 
-glGenericVertexData::~glGenericVertexData() {
+glGenericVertexData::~glGenericVertexData()
+{
+   destroy();
+}
+
+void glGenericVertexData::destroy() {
     if (!_bufferObjects.empty()) {
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
             MemoryManager::DELETE(_bufferObjects[i]);

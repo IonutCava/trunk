@@ -8,7 +8,9 @@ namespace Divide {
 void DeleteResource::operator()(Resource* res)
 {
     ResourceCache::instance().remove(res);
-    MemoryManager::DELETE(res);
+    if (res && res->getType() != ResourceType::GPU_OBJECT) {
+        MemoryManager::DELETE(res);
+    }
 }
 
 ResourceCache::ResourceCache()

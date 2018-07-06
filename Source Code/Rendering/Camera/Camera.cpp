@@ -3,7 +3,7 @@
 namespace Divide {
 
 Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& eye)
-    : Resource(name),
+    : Resource(ResourceType::DEFAULT, name),
       _isOrthoCamera(false),
       _projectionDirty(true),
       _viewMatrixDirty(true),

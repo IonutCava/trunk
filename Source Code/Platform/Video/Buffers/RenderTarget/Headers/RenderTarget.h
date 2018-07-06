@@ -82,12 +82,11 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     };
 
    protected:
-    SET_DELETE_FRIEND
-
     RenderTarget(GFXDevice& context, const stringImpl& name);
-    virtual ~RenderTarget();
 
    public:
+    virtual ~RenderTarget();
+
     static RTDrawDescriptor& defaultPolicy();
     static RTDrawDescriptor& defaultPolicyKeepDepth();
     static RTDrawDescriptor& defaultPolicyDepthOnly();

@@ -72,7 +72,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
 CascadedShadowMaps::~CascadedShadowMaps()
 {
     GFX_DEVICE.deallocateRT(_blurBuffer);
-    MemoryManager::DELETE(_shadowMatricesBuffer);
+	_shadowMatricesBuffer->destroy();
 }
 
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {

@@ -4,17 +4,20 @@
 
 namespace Divide {
 
-Resource::Resource(const stringImpl& name)
+Resource::Resource(ResourceType type,
+                   const stringImpl& name)
     : GUIDWrapper(),
+      _resourceType(type),
       _name(name),
       _resourceState(ResourceState::RES_CREATED)
 {
     _loadingCallbacks.fill(DELEGATE_CBK<>());
 }
 
-Resource::Resource(const stringImpl& name,
+Resource::Resource(ResourceType type, 
+                   const stringImpl& name,
                    const stringImpl& resourceLocation)
-    : Resource(name)
+    : Resource(type, name)
 {
     _resourceLocation = resourceLocation;
 }
@@ -48,6 +51,10 @@ void Resource::setResourceLocation(const stringImpl& location) {
 
 ResourceState Resource::getState() const {
     return _resourceState;
+}
+
+ResourceType Resource::getType() const {
+    return _resourceType;
 }
 
 void Resource::setStateCallback(ResourceState targetState, DELEGATE_CBK<void> cbk) {

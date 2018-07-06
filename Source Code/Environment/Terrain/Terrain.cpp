@@ -153,9 +153,6 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  const SceneRenderState& sceneRenderState,
                                  GenericDrawCommands& drawCommandsInOut) {
 
-    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
-    assert(renderable != nullptr);
-
     drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
     vectorImpl<vec3<U32>> chunkData;
     size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());

@@ -118,12 +118,16 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
 
 RenderingComponent::~RenderingComponent()
 {
-    MemoryManager::DELETE(_boundingBoxPrimitive[0]);
-    MemoryManager::DELETE(_boundingBoxPrimitive[1]);
-    MemoryManager::DELETE(_boundingSpherePrimitive);
-    MemoryManager::DELETE(_skeletonPrimitive);
+    _boundingBoxPrimitive[0]->clear();
+    _boundingBoxPrimitive[1]->clear();
+    _boundingSpherePrimitive->clear();
+
+    if (_skeletonPrimitive != nullptr) {
+        _skeletonPrimitive->clear();
+    }
+
     if (Config::Build::IS_DEBUG_BUILD) {
-        MemoryManager::DELETE(_axisGizmo);
+        _axisGizmo->clear();
     }
 }
 
@@ -462,7 +466,9 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     if (_skeletonPrimitive) {
         subPassInOut._commands.push_back(_skeletonPrimitive->toDrawCommand());
     }
-    subPassInOut._commands.push_back(_axisGizmo->toDrawCommand());
+    if (Config::Build::IS_DEBUG_BUILD) {
+        subPassInOut._commands.push_back(_axisGizmo->toDrawCommand());
+     }
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
