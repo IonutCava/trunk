@@ -9,7 +9,8 @@ EventHandler::EventHandler(InputInterface *pApp, Kernel& kernel)
     : _kernel(&kernel),
       _pApplication(pApp),
       _pJoystickInterface(nullptr),
-      _pEffectMgr(nullptr) {
+      _pEffectMgr(nullptr)
+{
 }
 
 void EventHandler::initialize(JoystickInterface *pJoystickInterface,

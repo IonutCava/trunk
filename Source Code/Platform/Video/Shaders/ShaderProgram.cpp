@@ -18,7 +18,8 @@ ShaderProgram::ShaderProgram(const bool optimise)
       _dirty(true),
       _outputCount(0),
       _elapsedTime(0ULL),
-      _elapsedTimeMS(0.0f) {
+      _elapsedTimeMS(0.0f)
+{
     _bound = false;
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
@@ -29,7 +30,8 @@ ShaderProgram::ShaderProgram(const bool optimise)
     _sceneDataDirty = true;
 }
 
-ShaderProgram::~ShaderProgram() {
+ShaderProgram::~ShaderProgram()
+{
     Console::d_printfn(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
     // Remove every shader attached to this program
     for (ShaderIDMap::value_type& it : _shaderIDMap) {

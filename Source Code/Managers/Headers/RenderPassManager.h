@@ -35,9 +35,6 @@
 #include "Core/Headers/NonCopyable.h"
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
 
-#include <memory>
-#include <vector>
-
 namespace Divide {
 
 class SceneGraph;

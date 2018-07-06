@@ -194,11 +194,8 @@ class glShaderProgram : public ShaderProgram {
     bool _validated;
     bool _loadedFromBinary;
     GLuint _shaderProgramIDTemp;
-    static stringImpl _lastPathPrefix;
-    static stringImpl _lastPathSuffix;
     static std::array<U32, to_const_uint(ShaderType::COUNT)> _lineOffset;
     std::array<Shader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
-    std::array<GLenum, to_const_uint(ShaderType::COUNT)> _shaderStageTable;
 };
 
 namespace Attorney {

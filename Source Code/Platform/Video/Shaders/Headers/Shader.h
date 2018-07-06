@@ -60,11 +60,6 @@ class Shader : public TrackedObject {
     /// the main shader file and the properties to load
     inline const stringImpl& getName() const { return _name; }
 
-    /// Register the given shader program with this shader
-    void addParentProgram(ShaderProgram* const shaderProgram);
-    /// Unregister the given shader program from this shader
-    void removeParentProgram(ShaderProgram* const shaderProgram);
-
     /// API dependent loading
     virtual bool load(const stringImpl& name) = 0;
     /// API conversion from text source to binary
@@ -80,7 +75,6 @@ class Shader : public TrackedObject {
     /// The API dependent object handle. Not thread-safe!
     U32 _shader;
     std::atomic_bool _compiled;
-    vectorImpl<ShaderProgram*> _parentShaderPrograms;
 };
 
 };  // namespace Divide

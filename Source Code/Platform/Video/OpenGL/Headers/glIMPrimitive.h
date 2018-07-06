@@ -35,8 +35,6 @@
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 
-#include <memory>
-
 namespace NS_GLIM {
     class GLIM_BATCH;
 }; //namespace NS_GLIM

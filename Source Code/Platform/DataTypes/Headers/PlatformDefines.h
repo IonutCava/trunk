@@ -42,6 +42,7 @@
 #include <atomic>
 #include <type_traits>
 #include <array>
+#include <memory>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #if defined(OS_WINDOWS)
@@ -128,6 +129,12 @@ constexpr T toBit(T X) {
 template<typename T>
 T to_bitwise(T X) {
     return 1 << X;
+}
+
+template<typename T >
+std::unique_ptr<T> copy_unique(const std::unique_ptr<T>& source)
+{
+    return source ? std::make_unique<T>(*source) : nullptr;
 }
 
 /* See

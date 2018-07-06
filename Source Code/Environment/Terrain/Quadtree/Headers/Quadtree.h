@@ -35,8 +35,6 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
-#include <memory>
-
 namespace Divide {
 
 class Terrain;

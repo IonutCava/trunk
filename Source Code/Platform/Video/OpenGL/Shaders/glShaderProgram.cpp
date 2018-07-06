@@ -9,59 +9,21 @@
 
 namespace Divide {
 
-stringImpl glShaderProgram::_lastPathPrefix;
-stringImpl glShaderProgram::_lastPathSuffix;
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
-
-namespace {
-static const char* getTypeString(ShaderType type) {
-    switch (type) {
-        case ShaderType::VERTEX:
-            return "Vertex";
-        case ShaderType::FRAGMENT:
-            return "Fragment";
-        case ShaderType::GEOMETRY:
-            return "Geometry";
-        case ShaderType::TESSELATION_CTRL:
-            return "TessellationC";
-        case ShaderType::TESSELATION_EVAL:
-            return "TessellationE";
-        case ShaderType::COMPUTE:
-            return "Compute";
-    }
-    return "";
-}
-};
 
 glShaderProgram::glShaderProgram(const bool optimise)
     : ShaderProgram(optimise),
       _loadedFromBinary(false),
       _validated(false),
-      _shaderProgramIDTemp(0)
-{
+      _shaderProgramIDTemp(0) {
     _validationQueued = false;
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramID = GLUtil::_invalidObjectID;
-    // some basic translation tables for shade types
-    _shaderStageTable[to_uint(ShaderType::VERTEX)] = GL_VERTEX_SHADER;
-    _shaderStageTable[to_uint(ShaderType::FRAGMENT)] = GL_FRAGMENT_SHADER;
-    _shaderStageTable[to_uint(ShaderType::GEOMETRY)] = GL_GEOMETRY_SHADER;
-    _shaderStageTable[to_uint(ShaderType::TESSELATION_CTRL)] =
-        GL_TESS_CONTROL_SHADER;
-    _shaderStageTable[to_uint(ShaderType::TESSELATION_EVAL)] =
-        GL_TESS_EVALUATION_SHADER;
-    _shaderStageTable[to_uint(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER;
     // pointers to all of our shader stages
-    _shaderStage[to_uint(ShaderType::VERTEX)] = nullptr;
-    _shaderStage[to_uint(ShaderType::FRAGMENT)] = nullptr;
-    _shaderStage[to_uint(ShaderType::GEOMETRY)] = nullptr;
-    _shaderStage[to_uint(ShaderType::TESSELATION_CTRL)] = nullptr;
-    _shaderStage[to_uint(ShaderType::TESSELATION_EVAL)] = nullptr;
-    _shaderStage[to_uint(ShaderType::COMPUTE)] = nullptr;
+    _shaderStage.fill(nullptr);
 }
 
-glShaderProgram::~glShaderProgram()
-{
+glShaderProgram::~glShaderProgram() {
     // remove shader stages
     for (ShaderIDMap::value_type& it : _shaderIDMap) {
         detachShader(it.second);
@@ -84,7 +46,7 @@ void glShaderProgram::validateInternal() {
             shader->validate();
         }
     }
-    
+
     GLint status = 0;
     glValidateProgram(_shaderProgramID);
     glGetProgramiv(_shaderProgramID, GL_VALIDATE_STATUS, &status);
@@ -201,9 +163,7 @@ void glShaderProgram::detachShader(Shader* const shader) {
                   "program that didn't finish loading!");
     glDetachShader(_shaderProgramID, shader->getShaderID());
     // glUseProgramStages(_shaderProgramID,
-    // _shaderStageTable[to_uint(shader->getType())], 0);
-
-    shader->removeParentProgram(this);
+    // GLUtil::glShaderStageTable[to_uint(shader->getType())], 0);
 }
 
 /// Add a new shader stage to this program
@@ -220,7 +180,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh) {
         ShaderIDMap::iterator it = _shaderIDMap.find(shaderID);
         if (it != std::end(_shaderIDMap)) {
             // Update the internal pointer
-            _shaderIDMap[shaderID] = shader;
+            it->second = shader;
             // and detach the shader
             detachShader(shader);
         } else {
@@ -235,9 +195,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh) {
     // Attach the shader
     glAttachShader(_shaderProgramIDTemp, shaderID);
     // glUseProgramStages(_shaderProgramIDTemp,
-    // _shaderStageTable[to_uint(shader->getType())], shaderID);
-    // And register the program with the shader
-    shader->addParentProgram(this);
+    // GLUtil::glShaderStageTable[to_uint(shader->getType())], shaderID);
     // Clear the 'linked' flag. Program must be re-linked before usage
     _linked = false;
 }
@@ -418,19 +376,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 #endif
     // The program wasn't loaded from binary, so process shaders
     if (!_loadedFromBinary) {
-        bool updatePath = false;
         // Use the specified shader path
-        if (_lastPathPrefix.compare(getResourceLocation() + "GLSL/") != 0) {
-            _lastPathPrefix = getResourceLocation() + "GLSL/";
-            updatePath = true;
-        }
-        if (_lastPathSuffix.compare(".glsl") != 0) {
-            _lastPathSuffix = ".glsl";
-            updatePath = true;
-        }
-        if (updatePath) {
-            glswSetPath(_lastPathPrefix.c_str(), _lastPathSuffix.c_str());
-        }
+        glswSetPath((getResourceLocation() + "GLSL/").c_str(), ".glsl");
         // Get all of the preprocessor defines and add them to the general
         // shader header for this program
         stringImpl shaderSourceHeader;
@@ -449,7 +396,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         stringImpl shaderName = name.substr(0, name.find_first_of(".,"));
         // We also differentiate between general properties, and vertex
         // properties
-        stringImpl shaderProperties, vertexProperties;
+        stringImpl shaderProperties;
         // Get the position of the first "," symbol. Must be added at the end of
         // the program's name!!
         stringAlg::stringSize propPositionVertex = name.find_first_of(",");
@@ -465,7 +412,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
         // Vertex properties start off identically to the rest of the stages'
         // names
-        vertexProperties += shaderProperties;
+        stringImpl vertexProperties(shaderProperties);
         // But we also add the shader specific properties
         if (propPositionVertex != stringImpl::npos) {
             vertexProperties += "." + name.substr(propPositionVertex + 1);
@@ -475,7 +422,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
             // Brute force conversion to an enum
             ShaderType type = static_cast<ShaderType>(i);
-            stringImpl shaderCompileName(shaderName + "." + getTypeString(type) + vertexProperties);
+            stringImpl shaderCompileName(
+                shaderName + "." + GLUtil::glShaderStageNameTable[to_uint(type)] + vertexProperties);
             // If we request a refresh for the current stage, we need to have a
             // pointer for the stage's shader already
             if (!_refreshStage[i]) {
@@ -524,12 +472,11 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
     }
 
     // try to link the program in a separate thread
-    return GFX_DEVICE.loadInContext(_threadedLoading && !_loadedFromBinary ?
-                                       CurrentContext::GFX_LOADING_CTX : 
-                                    CurrentContext::GFX_RENDERING_CTX,
-                                    DELEGATE_BIND(
-                                        &glShaderProgram::threadedLoad, this,
-                                        name));
+    return GFX_DEVICE.loadInContext(
+        _threadedLoading && !_loadedFromBinary
+            ? CurrentContext::GFX_LOADING_CTX
+            : CurrentContext::GFX_RENDERING_CTX,
+        DELEGATE_BIND(&glShaderProgram::threadedLoad, this, name));
 }
 
 /// Check every possible combination of flags to make sure this program can be
@@ -604,8 +551,7 @@ void glShaderProgram::unbind(bool resetActiveProgram) {
     ShaderProgram::unbind(resetActiveProgram);
 }
 
-void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {
-}
+void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {}
 
 /// This is used to set all of the subroutine indices for the specified shader
 /// stage for this program
@@ -617,7 +563,7 @@ void glShaderProgram::SetSubroutines(ShaderType type,
                   "unbound or unlinked program!");
     // Validate data and send to GPU
     if (!indices.empty() && indices[0] != GLUtil::_invalidObjectID) {
-        glUniformSubroutinesuiv(_shaderStageTable[to_uint(type)],
+        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_uint(type)],
                                 (GLsizei)indices.size(), indices.data());
     }
 }
@@ -631,7 +577,8 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
 
     if (index != GLUtil::_invalidObjectID) {
         U32 value[] = {index};
-        glUniformSubroutinesuiv(_shaderStageTable[to_uint(type)], 1, value);
+        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_uint(type)], 1,
+                                value);
     }
 }
 
@@ -642,7 +589,8 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
                   "invalid program!");
 
     I32 subroutineCount = 0;
-    glGetProgramStageiv(_shaderProgramID, _shaderStageTable[to_uint(type)],
+    glGetProgramStageiv(_shaderProgramID,
+                        GLUtil::glShaderStageTable[to_uint(type)],
                         GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
 
     return std::max(subroutineCount, 0);
@@ -651,14 +599,14 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
 /// Get the uniform location of the specified subroutine uniform for the
 /// specified stage. Not cached!
 U32 glShaderProgram::GetSubroutineUniformLocation(
-    ShaderType type,
-    const stringImpl& name) const {
+    ShaderType type, const stringImpl& name) const {
     DIVIDE_ASSERT(isValid(),
                   "glShaderProgram error: tried to query subroutines on an "
                   "invalid program!");
 
     return glGetSubroutineUniformLocation(
-        _shaderProgramID, _shaderStageTable[to_uint(type)], name.c_str());
+        _shaderProgramID, GLUtil::glShaderStageTable[to_uint(type)],
+        name.c_str());
 }
 
 /// Get the index of the specified subroutine name for the specified stage. Not
@@ -670,7 +618,8 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
                   "invalid program!");
 
     return glGetSubroutineIndex(_shaderProgramID,
-                                _shaderStageTable[to_uint(type)], name.c_str());
+                                GLUtil::glShaderStageTable[to_uint(type)],
+                                name.c_str());
 }
 
 /// Set an uniform value
@@ -731,8 +680,7 @@ void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
-                              const mat3<F32>& value,
+void glShaderProgram::Uniform(GLint location, const mat3<F32>& value,
                               bool rowMajor) {
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
@@ -741,8 +689,7 @@ void glShaderProgram::Uniform(GLint location,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
-                              const mat4<F32>& value,
+void glShaderProgram::Uniform(GLint location, const mat4<F32>& value,
                               bool rowMajor) {
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix4fv(_shaderProgramID, location, 1,

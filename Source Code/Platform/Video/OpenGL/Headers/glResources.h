@@ -127,7 +127,9 @@ extern std::array<GLenum, to_const_uint(TextureFilter::COUNT)>
     glTextureFilterTable;
 extern std::array<NS_GLIM::GLIM_ENUM, to_const_uint(PrimitiveType::COUNT)>
     glimPrimitiveType;
-
+extern std::array<GLenum, to_const_uint(ShaderType::COUNT)> glShaderStageTable;
+extern std::array<stringImpl, to_const_uint(ShaderType::COUNT)>
+    glShaderStageNameTable;
 };  // namespace GLUtil
 };  // namespace Divide
 

@@ -62,6 +62,9 @@ std::array<GLenum, to_const_uint(TextureWrap::COUNT)> glWrapTable;
 std::array<GLenum, to_const_uint(TextureFilter::COUNT)> glTextureFilterTable;
 std::array<NS_GLIM::GLIM_ENUM, to_const_uint(PrimitiveType::COUNT)>
     glimPrimitiveType;
+std::array<GLenum, to_const_uint(ShaderType::COUNT)> glShaderStageTable;
+std::array<stringImpl, to_const_uint(ShaderType::COUNT)>
+    glShaderStageNameTable;
 
 void fillEnumTables() {
     glBlendTable[to_const_uint(BlendProperty::ZERO)] = GL_ZERO;
@@ -244,6 +247,24 @@ void fillEnumTables() {
         NS_GLIM::GLIM_ENUM::GLIM_QUAD_STRIP;
     glimPrimitiveType[to_const_uint(PrimitiveType::POLYGON)] =
         NS_GLIM::GLIM_ENUM::GLIM_POLYGON;
+
+    glShaderStageTable[to_uint(ShaderType::VERTEX)] = GL_VERTEX_SHADER;
+    glShaderStageTable[to_uint(ShaderType::FRAGMENT)] = GL_FRAGMENT_SHADER;
+    glShaderStageTable[to_uint(ShaderType::GEOMETRY)] = GL_GEOMETRY_SHADER;
+    glShaderStageTable[to_uint(ShaderType::TESSELATION_CTRL)] =
+        GL_TESS_CONTROL_SHADER;
+    glShaderStageTable[to_uint(ShaderType::TESSELATION_EVAL)] =
+        GL_TESS_EVALUATION_SHADER;
+    glShaderStageTable[to_uint(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER;
+
+    glShaderStageNameTable[to_uint(ShaderType::VERTEX)] = "Vertex";
+    glShaderStageNameTable[to_uint(ShaderType::FRAGMENT)] = "Fragment";
+    glShaderStageNameTable[to_uint(ShaderType::GEOMETRY)] = "Geometry";
+    glShaderStageNameTable[to_uint(ShaderType::TESSELATION_CTRL)] =
+        "TessellationC";
+    glShaderStageNameTable[to_uint(ShaderType::TESSELATION_EVAL)] =
+        "TessellationE";
+    glShaderStageNameTable[to_uint(ShaderType::COMPUTE)] = "Compute";
 }
 }  /// GLutil
 
