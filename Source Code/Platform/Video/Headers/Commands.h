@@ -80,27 +80,39 @@ class CommandBuffer;
 
 struct CommandBase
 {
-    CommandBase() noexcept : CommandBase(CommandType::COUNT) {}
-    CommandBase(CommandType type) noexcept : _type(type) {}
+    CommandBase() noexcept 
+        : CommandBase(CommandType::COUNT)
+    {
+    }
+
+    CommandBase(CommandType type) noexcept
+        : _type(type)
+    {
+    }
 
     virtual ~CommandBase() = default;
 
     virtual void addToBuffer(CommandBuffer& buffer) const = 0;
 
-    virtual stringImpl toString() const { return stringImpl(_type._to_string()); }
+    virtual stringImpl toString() const {
+        return stringImpl(_type._to_string());
+    }
 
     CommandType _type = CommandType::COUNT;
 };
 
 template<typename T, CommandType::_enumerated EnumVal>
 struct Command : public CommandBase {
-    Command() : CommandBase(EnumVal) { }
-    
-    virtual ~Command() = default;
-
-    virtual void addToBuffer(CommandBuffer& buffer) const override {
-        buffer.add(reinterpret_cast<const T*>(this));
+    Command()
+        : CommandBase(EnumVal)
+    {
     }
+    
+    void addToBuffer(CommandBuffer& buffer) const override {
+        buffer.add(reinterpret_cast<const T&>(*this));
+    }
+
+    virtual ~Command() = default;
 };
 
 #define DECLARE_POOL(Command, Size) \

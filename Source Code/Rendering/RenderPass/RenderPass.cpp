@@ -175,6 +175,7 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
             GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), bufferInOut);
+
             GFX::EndDebugScopeCommand endDebugScopeCmd;
             GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 
@@ -299,23 +300,36 @@ RenderPass::BufferDataPoolParams RenderPass::getBufferParamsForStage(RenderStage
     //We only care about the first parameter as it will determine the properties for the rest of the stages
     switch (stage) {
         case RenderStage::REFLECTION: { //Both planar and cube
-            // max reflective nodes and an extra buffer for environment maps
-            ret._maxBuffers = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 2 + 1;
+            // Planar reflectors
+            ret._maxBuffers = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            // Cube reflectors
+            ret._maxBuffers += Config::MAX_REFLECTIVE_NODES_IN_VIEW;
+            //Add an extra buffer for environment maps
+            ret._maxBuffers += 1;
         }; break;
         case RenderStage::REFRACTION: { //Both planar and cube
-            ret._maxBuffers = Config::MAX_REFRACTIVE_NODES_IN_VIEW * 2 + 1;
+            // Planar refractions
+            ret._maxBuffers = Config::MAX_REFRACTIVE_NODES_IN_VIEW;
+            // Cube refractions
+            ret._maxBuffers += Config::MAX_REFRACTIVE_NODES_IN_VIEW;
+            //Add an extra buffer for environment maps
+            ret._maxBuffers += 1;
         } break;
         case RenderStage::SHADOW: {
+            // One buffer per light, but split into multiple pieces
             ret._maxBuffers = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS;
         }; break;
         case RenderStage::DISPLAY: {
+            // PrePass, MainPass and OitPass should share buffers
             ret._maxBuffers = 1;
             ret._maxPassesPerBuffer = 1;
         }; break;
     };
 
-    // We might need new buffer data for each pass type (prepass, main, oit, etc)
-    ret._maxPassesPerBuffer *= to_base(RenderPassType::COUNT);
+    if (stage != RenderStage::SHADOW) {
+        // We MIGHT need new buffer data for each pass type (prepass, main, oit, etc)
+        ret._maxPassesPerBuffer *= to_base(RenderPassType::COUNT);
+    }
 
     return ret;
 }

@@ -148,6 +148,10 @@ bool LightPool::addLight(Light& light) {
     UpgradeToWriteLock w_lock(ur_lock);
     _lights[lightTypeIdx].emplace_back(&light);
 
+    if (light.getLightType() == LightType::DIRECTIONAL) {
+        static_cast<DirectionalLight&>(light).csmSplitCount(_context.context().config().rendering.shadowMapping.defaultCSMSplitCount);
+    }
+
     return true;
 }
 
@@ -171,8 +175,7 @@ void LightPool::idle() {
 }
 
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
-/// Returning false in any of the FrameListener methods will exit the entire
-/// application!
+/// Returning false in any of the FrameListener methods will exit the entire application!
 bool LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut) {
     Time::ScopedTimer timer(_shadowPassTimer);
 
@@ -195,8 +198,7 @@ bool LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
         _sortedShadowProperties.emplace_back(light->getShadowProperties());
     }
 
-    vec_size lightShadowCount = std::min(_sortedShadowProperties.size(), static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
-    _shadowBuffer->writeData(0, lightShadowCount, _sortedShadowProperties.data());
+    _shadowBuffer->writeData(0, _sortedShadowProperties.size(), _sortedShadowProperties.data());
 
     return true;
 }

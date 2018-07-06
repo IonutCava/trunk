@@ -40,7 +40,7 @@ class CubeShadowMapGenerator : public ShadowMapGenerator {
    public:
     explicit CubeShadowMapGenerator(GFXDevice& context);
 
-    void render(const Camera& playerCamera, Light& light, U32 passIdx, GFX::CommandBuffer& bufferInOut) override;
+    void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) override;
 };
 
 };  // namespace Divide

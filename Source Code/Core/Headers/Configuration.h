@@ -113,6 +113,7 @@ public:
             U8 msaaSamples;
             U8 anisotropicFilteringLevel;
             bool enableBlurring;
+            U8 defaultCSMSplitCount;
         } shadowMapping;
     } rendering;
 

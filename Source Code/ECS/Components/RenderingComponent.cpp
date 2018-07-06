@@ -511,7 +511,7 @@ void RenderingComponent::updateDrawCommands(RenderStage stage, vectorEASTL<Indir
         Attorney::RenderPackageRenderingComponent::updateDrawCommands(*pkg, to_U32(drawCmdsInOut.size()));
     }
 
-    std::unique_ptr<RenderPackage>& pkg = _renderPackages[to_base(stage)].front();
+    std::unique_ptr<RenderPackage>& pkg = packagesPerPass.front();
     for (I32 i = 0; i < pkg->drawCommandCount(); ++i) {
         drawCmdsInOut.push_back(pkg->drawCommand(i, 0)._cmd);
     }

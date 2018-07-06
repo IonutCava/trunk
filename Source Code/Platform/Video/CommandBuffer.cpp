@@ -41,11 +41,8 @@ CommandBuffer::CommandBuffer()
 }
 
 void CommandBuffer::add(const CommandBuffer& other) {
-    if (!other.empty()) {
-        for (const CommandEntry& cmd : other._commandOrder) {
-            const CommandBase& command = other.getCommand<CommandBase>(cmd);
-            command.addToBuffer(*this);
-        }
+    for (const CommandEntry& cmd : other._commandOrder) {
+        other.getCommand<CommandBase>(cmd).addToBuffer(*this);
     }
 }
 

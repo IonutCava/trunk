@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/glLockManager.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
@@ -35,7 +36,9 @@ void glLockManager::Lock() {
     }
     // A glFlush call is needed after creating a new fence 
     // to make sure we don't end up with an infinite wait issue
-    glFlush();
+    if (!Runtime::isMainThread()) {
+        glFlush();
+    }
 }
 
 void glLockManager::wait(GLsync* syncObj, bool blockClient) {
@@ -48,13 +51,13 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
             if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
                 return;
             }
-            assert(waitRet != GL_WAIT_FAILED && "Not sure what to do here. Probably raise an exception or something.");
+            DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED, "glLockManager::wait error: Not sure what to do here. Probably raise an exception or something.");
             // After the first time, need to start flushing, and wait for a looong time.
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;
 
             if (++retryCount > kMaxWaitRetry) {
-                assert(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED));
+                DIVIDE_ASSERT(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED), "glLockManager::wait error: Lock timeout");
                 return;
             }
         }

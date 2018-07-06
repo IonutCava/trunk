@@ -56,6 +56,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     rendering.shadowMapping.msaaSamples = 0;
     rendering.shadowMapping.anisotropicFilteringLevel = 1;
     rendering.shadowMapping.enableBlurring = false;
+    rendering.shadowMapping.defaultCSMSplitCount = 3;
 
     title = "DIVIDE Framework";
     defaultTextureLocation = "textures/";
@@ -120,6 +121,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.shadowMapping.msaaSamples);
         GET_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
         GET_PARAM(rendering.shadowMapping.enableBlurring);
+        GET_PARAM(rendering.shadowMapping.defaultCSMSplitCount);
 
         GET_PARAM(title);
         GET_PARAM(defaultTextureLocation);
@@ -180,6 +182,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(rendering.shadowMapping.msaaSamples);
     PUT_PARAM(rendering.shadowMapping.anisotropicFilteringLevel);
     PUT_PARAM(rendering.shadowMapping.enableBlurring);
+    PUT_PARAM(rendering.shadowMapping.defaultCSMSplitCount);
 
     PUT_PARAM(title);
     PUT_PARAM(defaultTextureLocation);

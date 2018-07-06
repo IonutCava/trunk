@@ -40,10 +40,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     class ShaderBuffer;
     struct ShaderBufferBinding {
-        ShaderBuffer* _buffer;
+        ShaderBuffer* _buffer = nullptr;
         vec2<U16>     _range;
         std::pair<bool, vec2<U8>> _atomicCounter;
-        ShaderBufferLocation _binding;
+        ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
 
         ShaderBufferBinding();
         ShaderBufferBinding(ShaderBufferLocation slot,

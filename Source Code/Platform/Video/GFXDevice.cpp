@@ -169,7 +169,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 RenderStagePass stagePass,
-                                U32 passIndex,
+                                U32 bufferIndex,
                                 GFX::CommandBuffer& bufferInOut,
                                 Camera* camera) {
 
@@ -231,6 +231,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params._camera = camera;
     params._stage = stagePass._stage;
     params._target = cubeMap;
+    params._bufferIndex = bufferIndex;
     // We do our own binding
     params._bindTargets = false;
     params._passVariant = stagePass._variant;
@@ -251,8 +252,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         // Point our camera to the correct face
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
-        params._passIndex = passIndex;
-        params._bufferIndex = i;
+        params._passIndex = i;
         passMgr.doCustomPass(params, bufferInOut);
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
     }
@@ -267,7 +267,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
                                           RenderStagePass stagePass,
-                                          U32 passIndex,
+                                          U32 bufferIndex,
                                           GFX::CommandBuffer& bufferInOut,
                                           Camera* camera)
 {
@@ -308,6 +308,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     params._target = targetBuffer;
     params._bindTargets = false;
     params._passVariant = stagePass._variant;
+    params._bufferIndex = bufferIndex;
     // Enable our render target
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -331,8 +332,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
         // And generated required matrices
         // Pass our render function to the renderer
-        params._passIndex = passIndex;
-        params._bufferIndex = i;
+        params._passIndex = i;
         passMgr.doCustomPass(params, bufferInOut);
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
     }

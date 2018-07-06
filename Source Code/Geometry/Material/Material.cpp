@@ -531,10 +531,6 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         } break;
     }
 
-    if (!_context.parent().platformContext().config().rendering.shadowMapping.enabled) {
-        setShaderDefines(renderStagePass, "DISABLE_SHADOW_MAPPING");
-        shader += ".NoShadows";
-    }
     // Add any modifiers you wish
     stringImpl& modifier = _shaderModifier[renderStagePass.index()];
     if (!modifier.empty()) {

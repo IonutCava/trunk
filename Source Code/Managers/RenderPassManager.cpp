@@ -23,7 +23,6 @@ namespace Divide {
 namespace {
     thread_local vectorEASTL<GFXDevice::NodeData> g_nodeData;
     thread_local vectorEASTL<IndirectDrawCommand> g_drawCommands;
-    thread_local RenderQueue::SortedQueues g_sortedQueues;
 };
 
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
@@ -57,6 +56,8 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
         parentTimer->addChildTimer(*_flushCommandBufferTimer);
     }
 
+    const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
+
     TaskPriority priority = (false && Config::USE_THREADED_COMMAND_GENERATION) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool();
@@ -77,7 +78,6 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
                        }).startTask(priority);
         }
 
-        const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
         CreateTask(pool,
                    &renderTask,
                    [this, &cam](const Task& parentTask) {
@@ -178,12 +178,13 @@ RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex, I32 b
 GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, bool isOcclusionCullable, bool playAnimations, const mat4<F32>& viewMatrix) const {
     GFXDevice::NodeData dataOut;
 
+    BoundsComponent*    const bounds = node->get<BoundsComponent>();
     RenderingComponent* const renderable = node->get<RenderingComponent>();
     TransformComponent* const transform = node->get<TransformComponent>();
     AnimationComponent* const animComp = node->get<AnimationComponent>();
 
     // Extract transform data (if available)
-    // (Nodes without transforms are considered as using identity matrices)
+    // (Nodes without transforms just use identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
         if (Config::USE_FIXED_TIMESTEP) {
@@ -205,19 +206,26 @@ GFXDevice::NodeData RenderPassManager::processVisibleNode(SceneGraphNode* node, 
     dataOut._normalMatrixWV *= viewMatrix;
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    dataOut._normalMatrixWV.element(0, 3) = playAnimations ? to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0) : 0.0f;
-    dataOut._normalMatrixWV.setRow(3, node->get<BoundsComponent>()->getBoundingSphere().asVec4());
+    dataOut._normalMatrixWV.element(0, 3) = playAnimations ? to_F32((animComp && animComp->playAnimations()) ? animComp->boneCount() : 0) : 0.0f;
+    dataOut._normalMatrixWV.setRow(3, bounds->getBoundingSphere().asVec4());
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
-
     //set properties.w to -1 to skip occlusion culling for the node
     dataOut._properties.w = isOcclusionCullable ? 1.0f : -1.0f;
+
     return dataOut;
 }
 
-void RenderPassManager::refreshNodeData(RenderStage stage, U32 bufferIndex, U32 passIndex, const SceneRenderState& renderState, const mat4<F32>& viewMatrix, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::refreshNodeData(RenderStage stage,
+                                        U32 bufferIndex,
+                                        U32 passIndex,
+                                        const SceneRenderState& renderState,
+                                        const mat4<F32>& viewMatrix,
+                                        const RenderQueue::SortedQueues& sortedQueues,
+                                        GFX::CommandBuffer& bufferInOut)
+{
     bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
     g_nodeData.resize(0);
@@ -226,15 +234,14 @@ void RenderPassManager::refreshNodeData(RenderStage stage, U32 bufferIndex, U32 
     g_drawCommands.resize(0);
     g_drawCommands.reserve(Config::MAX_VISIBLE_NODES);
 
-    U16 queueSize = 0;
-    getQueue().getSortedQueues(stage, g_sortedQueues, queueSize);
-    for (const vectorEASTL<SceneGraphNode*>& queue : g_sortedQueues) {
+    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-            Attorney::RenderingCompRenderPass::setDataIndex(renderable, stage, to_U32(g_nodeData.size()));
             if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stage)) {
-                g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
+                Attorney::RenderingCompRenderPass::setDataIndex(renderable, stage, to_U32(g_nodeData.size()));
                 Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stage, g_drawCommands);
+
+                g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
             }
         }
     }
@@ -243,25 +250,18 @@ void RenderPassManager::refreshNodeData(RenderStage stage, U32 bufferIndex, U32 
     bufferData._lastCommandCount = to_U32(g_drawCommands.size());
 
     U32 nodeCount = to_U32(g_nodeData.size());
-
     assert(bufferData._lastCommandCount >= nodeCount);
-    bufferData._renderData->writeData(bufferData._renderDataElementOffset, nodeCount, g_nodeData.data());
 
-    bufferData._cmdBuffers[bufferIndex]->writeData(0, bufferData._lastCommandCount, g_drawCommands.data());
+    ShaderBufferBinding shaderBufferCmds(ShaderBufferLocation::CMD_BUFFER, bufferData._cmdBuffers[passIndex]);
+    shaderBufferCmds._buffer->writeData(0, bufferData._lastCommandCount, g_drawCommands.data());
 
-    ShaderBufferBinding shaderBufferCmds;
-    shaderBufferCmds._binding = ShaderBufferLocation::CMD_BUFFER;
-    shaderBufferCmds._buffer = bufferData._cmdBuffers[bufferIndex];
-
-    ShaderBufferBinding shaderBufferData;
-    shaderBufferData._binding = ShaderBufferLocation::NODE_INFO;
-    shaderBufferData._buffer = bufferData._renderData;
-    shaderBufferData._range = vec2<U16>(bufferData._renderDataElementOffset, nodeCount);
+    ShaderBufferBinding shaderBufferData(ShaderBufferLocation::NODE_INFO, bufferData._renderData);
+    shaderBufferData._range = { bufferData._renderDataElementOffset, nodeCount };
+    shaderBufferData._buffer->writeData(shaderBufferData._range.x, shaderBufferData._range.y, g_nodeData.data());
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set = _context.newDescriptorSet();
-    descriptorSetCmd._set->_shaderBuffers.emplace_back(shaderBufferCmds);
-    descriptorSetCmd._set->_shaderBuffers.emplace_back(shaderBufferData);
+    descriptorSetCmd._set->_shaderBuffers = { shaderBufferCmds, shaderBufferData };
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
@@ -270,8 +270,14 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
     const SceneRenderState& sceneRenderState = parent().sceneManager().getActiveScene().renderState();
 
     U16 queueSize = 0;
-    getQueue().getSortedQueues(stagePass._stage, g_sortedQueues, queueSize);
-    for (const vectorEASTL<SceneGraphNode*>& queue : g_sortedQueues) {
+
+    RenderQueue::SortedQueues sortedQueues;
+    for (auto& queue : sortedQueues) {
+        queue.reserve(Config::MAX_VISIBLE_NODES);
+    }
+
+    getQueue().getSortedQueues(stagePass._stage, sortedQueues, queueSize);
+    for (const vectorEASTL<SceneGraphNode*>& queue : sortedQueues) {
         for (SceneGraphNode* node : queue) {
             Attorney::RenderingCompRenderPass::prepareDrawPackage(*node->get<RenderingComponent>(), *params._camera, sceneRenderState, stagePass);
         }
@@ -279,16 +285,18 @@ void RenderPassManager::buildDrawCommands(RenderStagePass stagePass, const PassP
 
     if (refresh) {
         const mat4<F32>& viewMatrix = params._camera->getViewMatrix();
-        refreshNodeData(stagePass._stage, params._bufferIndex, params._passIndex, sceneRenderState, viewMatrix, bufferInOut);
+        refreshNodeData(stagePass._stage, params._bufferIndex, params._passIndex, sceneRenderState, viewMatrix, sortedQueues, bufferInOut);
     }
 }
 
 void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut) {
-    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stagePass, *params._camera)
-                                                                            : parent().sceneManager().getVisibleNodesCache(params._stage);
+    RenderStage stage = stagePass._stage;
+
+    const RenderPassCuller::VisibleNodeList& visibleNodes = refreshNodeData ? Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera)
+                                                                            : Attorney::SceneManagerRenderPass::getVisibleNodesCache(parent().sceneManager(), stage);
 
     RenderQueue& queue = getQueue();
-    queue.refresh(stagePass._stage);
+    queue.refresh(stage);
     const vec3<F32>& eyePos = params._camera->getEye();
     for (const RenderPassCuller::VisibleNode& node : visibleNodes) {
         queue.addNodeToQueue(*node._node, stagePass, eyePos);
@@ -296,7 +304,7 @@ void RenderPassManager::prepareRenderQueues(RenderStagePass stagePass, const Pas
     // Sort all bins
     queue.sort(stagePass);
     
-    vectorEASTL<RenderPackage*>& packageQueue = _renderQueues[to_base(stagePass._stage)];
+    vectorEASTL<RenderPackage*>& packageQueue = _renderQueues[to_base(stage)];
     packageQueue.resize(0);
     packageQueue.reserve(Config::MAX_VISIBLE_NODES);
 

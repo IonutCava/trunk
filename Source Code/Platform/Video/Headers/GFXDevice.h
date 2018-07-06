@@ -207,7 +207,7 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 passIndex,
+        U32 bufferIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
@@ -216,7 +216,7 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
-        U32 passIndex,
+        U32 bufferIndex,
         GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 

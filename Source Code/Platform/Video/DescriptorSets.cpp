@@ -5,7 +5,7 @@
 
 namespace Divide {
     ShaderBufferBinding::ShaderBufferBinding()
-        : ShaderBufferBinding(ShaderBufferLocation::COUNT, nullptr, vec2<U32>(0, 0))
+        : ShaderBufferBinding(ShaderBufferLocation::COUNT, nullptr)
     {
     }
 

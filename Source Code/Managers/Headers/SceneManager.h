@@ -103,7 +103,7 @@ public:
     void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
     // cull the scenegraph against the current view frustum
-    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStagePass stage, const Camera& camera);
+    const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera);
     // get the full list of reflective nodes
     RenderPassCuller::VisibleNodeList getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
     // get the full list of refractive nodes
@@ -225,8 +225,7 @@ private:
     U64 _saveTimer;
     Material_ptr _defaultMaterial;
 
-    typedef std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> CullTimersPerPass;
-    std::array<CullTimersPerPass, to_base(RenderPassType::COUNT)> _sceneGraphCullTimers;
+    std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> _sceneGraphCullTimers;
     PlayerList _players;
     U8 _activePlayerCount;
 
@@ -346,9 +345,14 @@ class SceneManagerCameraAccessor {
 class SceneManagerRenderPass {
    private:
     static const RenderPassCuller::VisibleNodeList& cullScene(Divide::SceneManager& mgr,
-                                                              RenderStagePass stagePass,
+                                                              RenderStage stage,
                                                               const Camera& camera) {
-        return mgr.cullSceneGraph(stagePass, camera);
+        return mgr.cullSceneGraph(stage, camera);
+    }
+
+    static const RenderPassCuller::VisibleNodeList& getVisibleNodesCache(Divide::SceneManager& mgr,
+                                                                         RenderStage stage) {
+        return mgr.getVisibleNodesCache(stage);
     }
 
     static void prepareLightData(Divide::SceneManager& mgr,

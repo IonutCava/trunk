@@ -110,7 +110,6 @@ class RenderPassCuller {
    protected:
     std::array<CullingFunction, to_base(RenderStage::COUNT)> _cullingFunction;
     std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;
-    std::array<vectorEASTL<VisibleNodeList>, to_base(RenderStage::COUNT)> _perThreadNodeList;
 };
 
 };  // namespace Divide

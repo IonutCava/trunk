@@ -112,12 +112,10 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
 
         _scenePool = MemoryManager_NEW ScenePool(*this);
 
-        for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
-            _sceneGraphCullTimers[i][to_U32(RenderStage::DISPLAY)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Display [pass: %d]", i).c_str());
-            _sceneGraphCullTimers[i][to_U32(RenderStage::REFLECTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Reflection [pass: %d]", i).c_str());
-            _sceneGraphCullTimers[i][to_U32(RenderStage::REFRACTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Refraction [pass: %d]", i).c_str());
-            _sceneGraphCullTimers[i][to_U32(RenderStage::SHADOW)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Shadow [pass: %d]", i).c_str());
-        }
+        _sceneGraphCullTimers[to_U32(RenderStage::DISPLAY)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Display").c_str());
+        _sceneGraphCullTimers[to_U32(RenderStage::REFLECTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Reflection").c_str());
+        _sceneGraphCullTimers[to_U32(RenderStage::REFRACTION)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Refraction").c_str());
+        _sceneGraphCullTimers[to_U32(RenderStage::SHADOW)] = &Time::ADD_TIMER(Util::StringFormat("SceneGraph cull timer: Shadow").c_str());
 
         // Load default material
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
@@ -470,8 +468,7 @@ void SceneManager::debugDraw(RenderStagePass stagePass, const Camera& camera, GF
 
 bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     if (_platformContext->config().rendering.shadowMapping.enabled) {
-        Scene& activeScene = getActiveScene();
-        LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
+        LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
         assert(lightPool != nullptr);
         return lightPool->generateShadowMaps(*playerCamera(), bufferInOut);
     }
@@ -500,6 +497,7 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
     _currentPlayerPass = idx;
     _platformContext->gfx().historyIndex(_currentPlayerPass, true);
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), _currentPlayerPass);
+    playerCamera()->updateLookAt();
 }
 
 RenderPassCuller::VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
@@ -573,30 +571,28 @@ namespace {
     }
 };
 
-const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStagePass stage, const Camera& camera) {
-    Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage._passType)][to_U32(stage._stage)]);
+const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera) {
+    Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
 
     Scene& activeScene = getActiveScene();
     SceneState& sceneState = activeScene.state();
-
-    RenderStage renderStage = stage._stage;
 
     RenderPassCuller::CullParams cullParams;
     cullParams._context = &activeScene.context();
     cullParams._sceneGraph = &activeScene.sceneGraph();
     cullParams._sceneState = &sceneState;
-    cullParams._stage = renderStage;
+    cullParams._stage = stage;
     cullParams._camera = &camera;
-    if (renderStage == RenderStage::SHADOW) {
+    if (stage == RenderStage::SHADOW) {
         cullParams._visibilityDistanceSq = std::numeric_limits<F32>::max();
     } else {
         cullParams._visibilityDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
     }
     // Cull everything except 3D objects
-    cullParams._cullFunction = [renderStage](const SceneGraphNode& node) -> bool {
+    cullParams._cullFunction = [stage](const SceneGraphNode& node) -> bool {
         if (generatesDrawCommands(node.getNode()->type())) {
             // only checks nodes and can return true for a shadow stage
-            return doesNotCastShadows(renderStage, node);
+            return doesNotCastShadows(stage, node);
         }
 
         return true;

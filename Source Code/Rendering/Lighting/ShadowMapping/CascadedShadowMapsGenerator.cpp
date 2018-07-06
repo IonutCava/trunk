@@ -116,7 +116,7 @@ CascadedShadowMapsGenerator::~CascadedShadowMapsGenerator()
     _context.renderTargetPool().deallocateRT(_drawBuffer);
 }
 
-void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& light, U32 passIdx, GFX::CommandBuffer& bufferInOut) {
+void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     std::array<vec3<F32>, 8> frustumCornersVS;
     std::array<vec3<F32>, 8> frustumCornersWS;
 
@@ -135,6 +135,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     params._stage = RenderStage::SHADOW;
     params._target = _drawBuffer._targetID;
     params._bindTargets = false;
+    params._bufferIndex = lightIndex;
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = params._target;
@@ -152,6 +153,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     drawParams._index = 0;
     drawParams._layer = 0;
 
+
     RenderPassManager& rpm = _context.parent().renderPassManager();
     for (U8 i = 0; i < numSplits; ++i) {
         beginDebugScopeCommand._scopeName = Util::StringFormat("CSM_PASS_%d", i).c_str();
@@ -161,8 +163,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         beginRenderSubPassCmd._writeLayers.push_back(drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
-        params._passIndex = passIdx;
-        params._bufferIndex = i;
+        params._passIndex = i;
         params._camera = light.shadowCameras()[i];
         rpm.doCustomPass(params, bufferInOut);
 
@@ -170,8 +171,6 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
         GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 
         ++drawParams._layer;
-
-        //_debugViews[i]->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, _shadowCameras[i]->getZPlanes());
     }
     
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;

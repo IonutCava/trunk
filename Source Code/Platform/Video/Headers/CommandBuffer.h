@@ -58,7 +58,7 @@ class CommandBuffer {
 
     template<typename T>
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
-    add(const T* command);
+    add(const T& command);
 
     bool validate() const;
 

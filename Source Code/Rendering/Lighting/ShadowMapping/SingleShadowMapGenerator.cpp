@@ -21,7 +21,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "Single Shadow Map");
 }
 
-void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, U32 passIdx, GFX::CommandBuffer& bufferInOut) {
+void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(playerCamera);
 
     ShadowCameraPool& shadowCameras = light.shadowCameras();
@@ -36,7 +36,8 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     params._stage = RenderStage::SHADOW;
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::SINGLE));
     params._drawPolicy = &RenderTarget::defaultPolicy();
-    params._passIndex = passIdx;
+    params._bufferIndex = lightIndex;
+    params._passIndex = 0;
     params._passVariant = to_U8(light.getLightType());
 
     passMgr.doCustomPass(params, bufferInOut);

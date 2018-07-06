@@ -355,7 +355,7 @@ bool WarScene::load(const stringImpl& name) {
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
-    _sun->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
+    //_sun->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
     _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     // Add some obstacles

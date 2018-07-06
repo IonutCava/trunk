@@ -74,7 +74,7 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
         return nodeCache;
     }
 
-    nodeCache.resize(0);
+    nodeCache.clear();
     if (params._sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         const Camera& camera = *params._camera;
 
@@ -83,10 +83,9 @@ RenderPassCuller::VisibleNodeList& RenderPassCuller::frustumCull(const CullParam
         _cullingFunction[to_U32(stage)] = params._cullFunction;
 
         const SceneGraphNode& root = params._sceneGraph->getRoot();
-        vectorEASTL<VisibleNodeList>& nodes = _perThreadNodeList[to_U32(stage)];
 
         U32 childCount = root.getChildCount();
-        nodes.resize(childCount);
+        vectorEASTL<VisibleNodeList> nodes(childCount);
 
         auto cullIterFunction = [this, &root, &camera, &nodes, &stage, cullMaxDistanceSq](const Task& parentTask, U32 start, U32 end) {
             auto perChildCull = [this, &parentTask, &camera, &nodes, start, &stage, cullMaxDistanceSq](const SceneGraphNode& child, I32 i) {

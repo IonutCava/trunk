@@ -129,8 +129,6 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
                      data,
                      rangeInBytes);
     } else {
-        assert(Runtime::isMainThread());
-
         clearData(offsetInBytes, rangeInBytes);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glNamedBufferData(_handle, _alignedSize, data, _usage);
@@ -145,8 +143,6 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
     if (_mappedBuffer) {
         memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
     } else {
-        assert(Runtime::isMainThread());
-
         glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
     }
 }
@@ -156,7 +152,6 @@ void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
         waitRange(offsetInBytes, rangeInBytes, true);
         std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
     } else {
-        assert(Runtime::isMainThread());
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glInvalidateBufferData(_handle);
         } else {
@@ -169,7 +164,6 @@ void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
     if (_mappedBuffer) {
         clearData(offsetInBytes, rangeInBytes);
     } else {
-        assert(Runtime::isMainThread());
         vector<Byte> newData(rangeInBytes, 0);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glNamedBufferData(_handle, _alignedSize, newData.data(), _usage);

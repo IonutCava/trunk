@@ -68,7 +68,7 @@ protected:
     virtual ~ShadowMapGenerator();
 
     friend class ShadowMap;
-    virtual void render(const Camera& playerCamera, Light& light, U32 passIdx, GFX::CommandBuffer& bufferInOut) = 0;
+    virtual void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) = 0;
 
 protected:
     GFXDevice& _context;

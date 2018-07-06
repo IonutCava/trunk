@@ -561,31 +561,14 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
+    static const U8 warmupLoopCount = 3;
 
-    if (false) {
-        static const U8 warmupLoopCount = 3;
-        U8 loopCount = 0;
-
-        bool shadowsEnabled = _platformContext->config().rendering.shadowMapping.enabled;
-        ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
-        _platformContext->config().rendering.shadowMapping.enabled = false;
-
+    ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
+    for (U8 i = 0; i < warmupLoopCount; ++i) {
         onLoop();
-        loopCount++;
-
-        if (shadowsEnabled) {
-            _platformContext->config().rendering.shadowMapping.enabled = shadowsEnabled;
-            onLoop();
-            loopCount++;
-        }
-
-        for (U8 i = 0; i < std::max(warmupLoopCount - loopCount, 0); ++i) {
-            onLoop();
-        }
-
     }
-
     ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
+
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
     _timingData.update(Time::ElapsedMicroseconds(true));
