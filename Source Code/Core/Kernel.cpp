@@ -592,7 +592,8 @@ void Kernel::shutdown() {
     // release the scene
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     SceneManager::destroyInstance();
-    _platformContext->gui().destroy();  /// Deactivate GUI    Camera::destroyPool();
+    _platformContext->gui().destroy();  /// Deactivate GUI 
+    Camera::destroyPool();
     ShadowMap::clearShadowMaps(_platformContext->_GFX);
     Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
     Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
