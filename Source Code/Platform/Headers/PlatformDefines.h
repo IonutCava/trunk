@@ -137,8 +137,8 @@ do {                                                \
 
 namespace Divide {
 
-static constexpr ULL basis = 14695981039346656037ULL;
-static constexpr ULL prime = 1099511628211ULL;
+constexpr ULL basis = 14695981039346656037ULL;
+constexpr ULL prime = 1099511628211ULL;
 
 constexpr ULL hash_one(char c, const char* remain, ULL value)
 {

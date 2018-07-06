@@ -54,12 +54,18 @@ class glGenericBuffer {
       void create(GLuint elementCount, 
                   size_t elementSize,
                   BufferUpdateFrequency frequency,
-                  const bufferPtr data);
+                  const bufferPtr data,
+                  const char* name = nullptr);
 
       void updateData(GLuint elementCount,
                       GLuint elementOffset,
                       GLuint ringWriteOffset,
                       const bufferPtr data);
+
+      void readData(GLuint elementCount,
+                    GLuint elementOffset,
+                    GLuint ringReadOffset,
+                    bufferPtr dataOut);
 
       void lockData(GLuint elementCount,
                     GLuint elementOffset,

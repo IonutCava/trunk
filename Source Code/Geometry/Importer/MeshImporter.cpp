@@ -212,9 +212,7 @@ namespace Import {
                 animator->load(tempBuffer);
             } else {
                 if (!dataIn._loadedFromFile) {
-                    for (const std::shared_ptr<AnimEvaluator>& animation : dataIn._animations) {
-                        animator->registerAnimation(animation);
-                    }
+                    Attorney::SceneAnimatorMeshImporter::registerAnimations(*animator, dataIn._animations);
                     animator->init(dataIn._skeleton, dataIn._bones);
                     animator->save(tempBuffer);
                     if (!tempBuffer.dumpToFile(dataIn._modelPath + "/" + 

@@ -30,7 +30,8 @@ GLuint glGenericBuffer::bufferHandle() const {
 void glGenericBuffer::create(GLuint elementCount,
                              size_t elementSize,
                              BufferUpdateFrequency frequency,
-                             const bufferPtr data)
+                             const bufferPtr data,
+                             const char* name)
 {
     // Remember the element count and size for the current buffer
     _elementCount = elementCount;
@@ -39,7 +40,7 @@ void glGenericBuffer::create(GLuint elementCount,
     size_t bufferSize = elementCount * elementSize;
     size_t totalSize = bufferSize * _ringSizeFactor;
 
-    _buffer->create(frequency, totalSize);
+    _buffer->create(frequency, totalSize, name);
 
     // Create sizeFactor copies of the data and store them in the buffer
     if (data != nullptr) {
@@ -65,6 +66,23 @@ void glGenericBuffer::updateData(GLuint elementCount,
     }
 
     _buffer->updateData(offset, dataCurrentSize, data);
+}
+
+void glGenericBuffer::readData(GLuint elementCount,
+                               GLuint elementOffset,
+                               GLuint ringReadOffset,
+                               bufferPtr dataOut) 
+{
+    // Calculate the size of the data that needs updating
+    size_t dataCurrentSize = elementCount * _elementSize;
+    // Calculate the offset in the buffer in bytes from which to start writing
+    size_t offset = elementOffset * _elementSize;
+
+    if (_ringSizeFactor > 1) {
+        offset += _elementCount * _elementSize * ringReadOffset;
+    }
+
+    _buffer->readData(offset, dataCurrentSize, dataOut);
 }
 
 void glGenericBuffer::lockData(GLuint elementCount,

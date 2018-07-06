@@ -444,6 +444,17 @@ F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,  const vec2<F32>& planes
     return data._ProjectionMatrix.mat;
 }
 
+void GFXDevice::renderFromCamera(Camera& camera) {
+    camera.updateLookAt();
+    // Tell the Rendering API to draw from our desired PoV
+    lookAt(camera.getViewMatrix(), camera.getEye());
+    if (camera.isOrthoProjected()) {
+        setProjection(camera.orthoRect(), camera.getZPlanes());
+    } else {
+        setProjection(camera.getVerticalFoV(), camera.getAspectRatio(), camera.getZPlanes());
+    }
+}
+
 /// Enable or disable 2D rendering mode 
 /// (orthographic projection, no depth reads)
 void GFXDevice::toggle2D(bool state) {
@@ -462,9 +473,7 @@ void GFXDevice::toggle2D(bool state) {
         // Push the 2D camera
         kernel.getCameraMgr().pushActiveCamera(_2DCamera);
         // Upload 2D camera matrices to the GPU
-        mat4<F32> viewMat; vec3<F32> eyeVec;
-        _2DCamera->renderLookAt(viewMat, eyeVec);
-        lookAt(viewMat, eyeVec);
+        renderFromCamera(*_2DCamera);
     } else {
         // Reverting to 3D implies popping the 2D camera
         kernel.getCameraMgr().popActiveCamera();

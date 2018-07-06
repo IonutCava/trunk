@@ -657,8 +657,11 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) {
-    /*glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1,
-                    "OpenGL render text start!");*/
+    if (Config::ENABLE_GPU_VALIDATION) {
+        constexpr char* groupLabel = "OpenGL render text start!";
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, groupLabel);
+    }
+
     // Retrieve the font from the font cache
     I32 font = getFont(textLabel._font);
     // The font may be invalid, so skip this text label
@@ -699,7 +702,10 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, siz
             _context.registerDrawCall();
         }
     }
-    // glPopDebugGroup();
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        glPopDebugGroup();
+    }
 }
 
 bool GL_API::setState(const GenericDrawCommand& cmd) {

@@ -412,6 +412,8 @@ DEFINE_SINGLETON(GFXDevice)
     /// sets a perspective projection, updating any listeners if needed
     F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
 
+    void renderFromCamera(Camera& camera);
+
     void onCameraUpdate(Camera& camera);
     void onCameraChange(Camera& camera);
 

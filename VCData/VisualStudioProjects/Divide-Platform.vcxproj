@@ -102,11 +102,11 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\TextureData.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferImpl.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferLockManager.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glGenericBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glMemoryManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\Headers\glFramebuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericVertexData.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\glsw\Headers\bstrlib.h" />
@@ -183,11 +183,11 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\IMPrimitive.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glBufferImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glBufferLockManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glGenericBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\glMemoryManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\RenderTarget\glFramebuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLError.cpp" />

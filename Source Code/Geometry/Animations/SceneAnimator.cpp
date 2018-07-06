@@ -73,7 +73,7 @@ bool SceneAnimator::init() {
 
     // pre-calculate the animations
     for (vectorAlg::vecSize i(0); i < animationCount; ++i) {
-        std::shared_ptr<AnimEvaluator> crtAnimation = _animations[i];
+        const std::shared_ptr<AnimEvaluator>& crtAnimation = _animations[i];
         D64 duration = crtAnimation->duration();
         D64 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
         D64 dt = 0;
@@ -104,7 +104,7 @@ bool SceneAnimator::init() {
     }
 
     // pay the cost upfront
-    for(std::shared_ptr<AnimEvaluator> crtAnimation : _animations) {
+    for(const std::shared_ptr<AnimEvaluator>& crtAnimation : _animations) {
         crtAnimation->initBuffers();
     }
 
@@ -121,11 +121,6 @@ bool SceneAnimator::init(Bone* skeleton, const vectorImpl<Bone*>& bones) {
     _skeletonDepthCache = to_int(_bones.size());
     return init();
    
-}
-
-void SceneAnimator::registerAnimation(std::shared_ptr<AnimEvaluator> animation) {
-    hashAlg::emplace(_animationNameToID, _ID_RT(animation->name()), to_uint(_animations.size()));
-    _animations.push_back(animation);
 }
 
 // ------------------------------------------------------------------------------------------------

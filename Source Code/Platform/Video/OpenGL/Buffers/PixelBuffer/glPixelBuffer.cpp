@@ -187,8 +187,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
             break;
     };
 
-    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW,
-                                 _pixelBufferHandle);
+    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW, _pixelBufferHandle, NULL);
     return true;
 }
 

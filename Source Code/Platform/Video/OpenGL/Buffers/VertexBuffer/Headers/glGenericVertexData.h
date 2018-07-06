@@ -34,9 +34,9 @@
 
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
-#include "glGenericBuffer.h"
 #include "Core/Math/Headers/MathHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glGenericBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 

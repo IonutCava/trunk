@@ -61,7 +61,7 @@ bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
         for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
             if (checkChunksAvailability(i, count)) {
                 if (_handle == 0) {
-                    GLUtil::createAndAllocBuffer(MAX_VBO_SIZE_BYTES, usage, _handle);
+                    GLUtil::createAndAllocBuffer(MAX_VBO_SIZE_BYTES, usage, _handle, NULL);
                     _usage = usage;
                 }
                 offsetOut = i;
@@ -80,7 +80,7 @@ bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
 
 bool VBO::allocateWhole(U32 count, GLenum usage) {
     assert(_handle == 0);
-    GLUtil::createAndAllocBuffer(count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle);
+    GLUtil::createAndAllocBuffer(count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle, NULL);
     _usage = usage;
     _chunkUsageState.fill(std::make_pair(true, 0));
     _chunkUsageState[0].second = count;
@@ -190,13 +190,16 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
                                          BufferStorageMask storageMask,
                                          BufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
-                                         bufferPtr const data) {
+                                         bufferPtr const data,
+                                         const char* name) {
     glCreateBuffers(1, &bufferIdOut);
     if (Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_BUFFER,
                       bufferIdOut,
                       -1,
-                      Util::StringFormat("DVD_PERSISTENT_BUFFER_%d", bufferIdOut).c_str());
+                      name != nullptr
+                           ? name
+                           : Util::StringFormat("DVD_PERSISTENT_BUFFER_%d", bufferIdOut).c_str());
     }
     assert(bufferIdOut != 0 && "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
@@ -207,14 +210,17 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
 void createAndAllocBuffer(GLsizeiptr bufferSize,
                           GLenum usageMask,
                           GLuint& bufferIdOut,
-                          const bufferPtr data) {
+                          const bufferPtr data,
+                          const char* name) {
     glCreateBuffers(1, &bufferIdOut);
 
     if (Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_BUFFER,
                       bufferIdOut,
                       -1,
-                      Util::StringFormat("DVD_GENERAL_BUFFER_%d", bufferIdOut).c_str());
+                      name != nullptr
+                           ? name
+                           : Util::StringFormat("DVD_GENERAL_BUFFER_%d", bufferIdOut).c_str());
     }
 
     assert(bufferIdOut != 0 && "GLUtil::allocBuffer error: buffer creation failed");

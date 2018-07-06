@@ -108,7 +108,7 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
         }
     }
 
-    return formatted.get();
+    return stringImpl(formatted.get());
 }
 
 bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {

@@ -36,120 +36,120 @@ namespace Divide {
 namespace Config {
 namespace Build {
 #if defined(_DEBUG)
-    const bool IS_DEBUG_BUILD = true;
-    const bool IS_PROFILE_BUILD = false;
-    const bool IS_RELEASE_BUILD = false;
+    constexpr bool IS_DEBUG_BUILD = true;
+    constexpr bool IS_PROFILE_BUILD = false;
+    constexpr bool IS_RELEASE_BUILD = false;
 #elif defined(_PROFILE)
-    const bool IS_DEBUG_BUILD = false;
-    const bool IS_PROFILE_BUILD = true;
-    const bool IS_RELEASE_BUILD = false;
+    constexpr bool IS_DEBUG_BUILD = false;
+    constexpr bool IS_PROFILE_BUILD = true;
+    constexpr bool IS_RELEASE_BUILD = false;
 #else
-    const bool IS_DEBUG_BUILD = false;
-    const bool IS_PROFILE_BUILD = false;
-    const bool IS_RELEASE_BUILD = true;
+    constexpr bool IS_DEBUG_BUILD = false;
+    constexpr bool IS_PROFILE_BUILD = false;
+    constexpr bool IS_RELEASE_BUILD = true;
 #endif
 };
 
 /// Use OpenGL/OpenGL ES for rendering
-const bool USE_OPENGL_RENDERING = true;
+constexpr bool USE_OPENGL_RENDERING = true;
 /// Select between desktop GL and ES GL
-const bool USE_OPENGL_ES = false;
+constexpr bool USE_OPENGL_ES = false;
 /// if this is false, a variable timestep will be used for the game loop
-const bool USE_FIXED_TIMESTEP = true;
+constexpr bool USE_FIXED_TIMESTEP = true;
 /// Application desired framerate for physics and input simulations
-const unsigned int TARGET_FRAME_RATE = 60;
+constexpr unsigned int TARGET_FRAME_RATE = 60;
 /// Minimum required RAM size (in bytes) for the current build
-const unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
+constexpr unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
 /// Application update rate divisor (how many draw calls per render call
 /// e.g. 2 = 30Hz update rate at 60Hz rendering)
-const unsigned int TICK_DIVISOR = 2;
+constexpr unsigned int TICK_DIVISOR = 2;
 /// Application update rate
-const unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
+constexpr unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
 /// Maximum frameskip
-const unsigned int MAX_FRAMESKIP = 3;
-const unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
+constexpr unsigned int MAX_FRAMESKIP = 3;
+constexpr unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
 /// The minimum threshold needed for a threaded loop to use sleep
 /// Update intervals bellow this threshold will not use sleep!
-const unsigned int MIN_SLEEP_THRESHOLD_MS = 5;
+constexpr unsigned int MIN_SLEEP_THRESHOLD_MS = 5;
 /// How many tasks should we keep in a pool to avoid using new/delete (must be power of two)
-const unsigned int MAX_POOLED_TASKS = 4096;
+constexpr unsigned int MAX_POOLED_TASKS = 4096;
 /// AI update frequency
-const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
+constexpr unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
 /// Toggle multi-threaded resource loading on or off
-const bool USE_GPU_THREADED_LOADING = true;
+constexpr bool USE_GPU_THREADED_LOADING = true;
 /// Run all threaded tasks in a serial fashion. (used to debug multi-threaded related bugs)
-const bool USE_SINGLE_THREADED_TASK_POOLS = false;
+constexpr bool USE_SINGLE_THREADED_TASK_POOLS = false;
 /// Maximum number of instances of a single mesh with a single draw call
-const unsigned int MAX_INSTANCE_COUNT = 512;
+constexpr unsigned int MAX_INSTANCE_COUNT = 512;
 /// Maximum number of points that can be sent to the GPU per batch
-const unsigned int MAX_POINTS_PER_BATCH = static_cast<unsigned int>(1 << 31);
+constexpr unsigned int MAX_POINTS_PER_BATCH = static_cast<unsigned int>(1 << 31);
 /// Maximum number of bones available per node
-const unsigned int MAX_BONE_COUNT_PER_NODE = 256;
+constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 256;
 /// Estimated maximum number of visible objects per render pass
 //(This includes debug primitives)
-const unsigned int MAX_VISIBLE_NODES = 1024;
+constexpr unsigned int MAX_VISIBLE_NODES = 1024;
 /// How many clip planes should the shaders us
 /// How many reflective objects are we allowed to display on screen at the same time
 #   if defined(_DEBUG)
-const unsigned int MAX_REFLECTIVE_NODES_IN_VIEW = 3;
+constexpr unsigned int MAX_REFLECTIVE_NODES_IN_VIEW = 3;
 #   else
-const unsigned int  MAX_REFLECTIVE_NODES_IN_VIEW = 5;
+constexpr unsigned int  MAX_REFLECTIVE_NODES_IN_VIEW = 5;
 #   endif
 #   if defined(_DEBUG)
-const unsigned int MAX_REFRACTIVE_NODES_IN_VIEW = 2;
+constexpr unsigned int MAX_REFRACTIVE_NODES_IN_VIEW = 2;
 #   else
-const unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
+constexpr unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
 #   endif
-const unsigned int MAX_REFLECTIVE_PROBES_PER_PASS = 6;
+constexpr unsigned int MAX_REFLECTIVE_PROBES_PER_PASS = 6;
 
 /// Reflection render target resolution
-const unsigned int REFLECTION_TARGET_RESOLUTION = 256;
-const unsigned int REFRACTION_TARGET_RESOLUTION = 1024;
-const unsigned int MAX_CLIP_PLANES = 6;
+constexpr unsigned int REFLECTION_TARGET_RESOLUTION = 256;
+constexpr unsigned int REFRACTION_TARGET_RESOLUTION = 1024;
+constexpr unsigned int MAX_CLIP_PLANES = 6;
 /// Generic index value used to separate primitives within the same vertex
 /// buffer
-const unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
-const unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
+constexpr unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
+constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
 /// Terrain LOD configuration
 /// Camera distance to the terrain chunk is calculated as follows:
 ///    vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance =
 ///    EyeToChunk.length();
 /// Number of LOD levels for the terrain
-const unsigned int TERRAIN_CHUNKS_LOD = 3;
+constexpr unsigned int TERRAIN_CHUNKS_LOD = 3;
 /// How many grass elements (3 quads p.e.) to add to each terrain element
-const unsigned int MAX_GRASS_BATCHES = 2000000;
+constexpr unsigned int MAX_GRASS_BATCHES = 2000000;
 /// SceneNode LOD selection
 /// Distance computation is identical to the of the terrain (using SceneNode's
 /// bounding box)
-const unsigned int SCENE_NODE_LOD = 3;
+constexpr unsigned int SCENE_NODE_LOD = 3;
 /// Relative distance for LOD0->LOD1 selection
-const unsigned int SCENE_NODE_LOD0 = 100;
+constexpr unsigned int SCENE_NODE_LOD0 = 100;
 /// Relative distance for LOD0->LOD2 selection
-const unsigned int SCENE_NODE_LOD1 = 180;
+constexpr unsigned int SCENE_NODE_LOD1 = 180;
 /// Use "precompiled" shaders if possible
-const bool USE_SHADER_BINARY = true;
+constexpr bool USE_SHADER_BINARY = true;
 /// Use HW AA'ed lines
-const bool USE_HARDWARE_AA_LINES = true;
+constexpr bool USE_HARDWARE_AA_LINES = true;
 /// Multi-draw causes some problems with profiling software (e.g.
 /// GPUPerfStudio2)
-const bool BATCH_DRAW_COMMANDS = false;
+constexpr bool BATCH_DRAW_COMMANDS = false;
 /// Maximum number of draw commands allowed in flight at any time
-const unsigned int MAX_DRAW_COMMANDS_IN_FLIGHT = 4096;
+constexpr unsigned int MAX_DRAW_COMMANDS_IN_FLIGHT = 4096;
 /// If true, load shader source coude from cache files
 /// If false, materials recompute shader source code from shader atoms
 /// If true, clear shader cache to apply changes to shader atom source code
 #if defined(_DEBUG)
-const bool USE_SHADER_TEXT_CACHE = false;
+constexpr bool USE_SHADER_TEXT_CACHE = false;
 #else
-const bool USE_SHADER_TEXT_CACHE = true;
+constexpr bool USE_SHADER_TEXT_CACHE = true;
 #endif
 /// If true, Hi-Z based occlusion culling is used
-const bool USE_HIZ_CULLING = true;
+constexpr bool USE_HIZ_CULLING = true;
 /// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
-const bool DEBUG_HIZ_CULLING = false;
+constexpr bool DEBUG_HIZ_CULLING = false;
 /// If true, the depth pass acts as a zPrePass for the main draw pass as well
 /// If false, the main draw pass will clear the depth buffer and populate a new one instead
-const bool USE_Z_PRE_PASS = true;
+constexpr bool USE_Z_PRE_PASS = true;
 
 /// Compute related options
 namespace Compute {
@@ -160,70 +160,70 @@ namespace Compute {
 namespace Profile {
 /// enable function level profiling
 #if defined(_DEBUG) || defined(_PROFILE)
-const bool ENABLE_FUNCTION_PROFILING = true;
+    constexpr bool ENABLE_FUNCTION_PROFILING = true;
 #else
-const bool ENABLE_FUNCTION_PROFILING = true;
+    constexpr bool ENABLE_FUNCTION_PROFILING = true;
 #endif
 /// run performance profiling code
 #if defined(_DEBUG) || defined(_PROFILE)
-const bool BENCHMARK_PERFORMANCE = true;
+    constexpr bool BENCHMARK_PERFORMANCE = true;
 #else
-const bool BENCHMARK_PERFORMANCE = false;
+    constexpr bool BENCHMARK_PERFORMANCE = false;
 #endif
 /// Benchmark reset frequency in milliseconds
-const unsigned int BENCHMARK_FREQUENCY = 500;
+constexpr unsigned int BENCHMARK_FREQUENCY = 500;
 /// use only a basic shader
-const bool DISABLE_SHADING = false;
+constexpr bool DISABLE_SHADING = false;
 /// skip all draw calls
-const bool DISABLE_DRAWS = false;
+constexpr bool DISABLE_DRAWS = false;
 /// every viewport call is overridden with 1x1 (width x height)
-const bool USE_1x1_VIEWPORT = false;
+constexpr bool USE_1x1_VIEWPORT = false;
 /// how many profiling timers are we allowed to use in our applications
-const unsigned int MAX_PROFILE_TIMERS = 2048;
+constexpr unsigned int MAX_PROFILE_TIMERS = 2048;
 /// textures are capped at 2x2 when uploaded to the GPU
-const bool USE_2x2_TEXTURES = false;
+constexpr bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers
-const bool DISABLE_PERSISTENT_BUFFER = false;
+constexpr bool DISABLE_PERSISTENT_BUFFER = false;
 };  // namespace Profile
 
 namespace Assert {
 #if defined(_DEBUG)
 /// Log assert fails messages to the error log file
-const bool LOG_ASSERTS = true;
+    constexpr bool LOG_ASSERTS = true;
 /// Do not call the platform "assert" function in order to continue application
 /// execution
-const bool CONTINUE_ON_ASSERT = false;
+    constexpr bool CONTINUE_ON_ASSERT = false;
 /// Popup a GUI Message Box on asserts;
-const bool SHOW_MESSAGE_BOX = true;
+    constexpr bool SHOW_MESSAGE_BOX = true;
 #elif defined(_PROFILE)
-const bool LOG_ASSERTS = true;
-const bool CONTINUE_ON_ASSERT = false;
-const bool SHOW_MESSAGE_BOX = false;
+    constexpr bool LOG_ASSERTS = true;
+    constexpr bool CONTINUE_ON_ASSERT = false;
+    constexpr bool SHOW_MESSAGE_BOX = false;
 #else  //_RELEASE
-const bool LOG_ASSERTS = false;
-const bool CONTINUE_ON_ASSERT = false;
-const bool SHOW_MESSAGE_BOX = false;
+    constexpr bool LOG_ASSERTS = false;
+    constexpr bool CONTINUE_ON_ASSERT = false;
+    constexpr bool SHOW_MESSAGE_BOX = false;
 #endif
 };  // namespace Assert
 
 namespace Lighting {
 // How many lights (in order as passed to the shader for the node) should cast shadows
-const unsigned int MAX_SHADOW_CASTING_LIGHTS = 5;
+constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 5;
 /// Used for CSM or PSSM to determine the maximum number of frustum splits
 /// And cube map shadows as well
-const unsigned int MAX_SPLITS_PER_LIGHT = 6;
+constexpr unsigned int MAX_SPLITS_PER_LIGHT = 6;
 /// How many "units" away should a directional light source be from the camera's
 /// position
-const unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
+constexpr unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
 
 /// the maximum number of lights supported, this is limited by constant buffer
 /// size, commonly this is 64kb, but AMD only seem to allow 2048 lights...
-const unsigned int MAX_POSSIBLE_LIGHTS = 1024;
+constexpr unsigned int MAX_POSSIBLE_LIGHTS = 1024;
 
 /// The following parameters control the behaviour of the Forward+ renderer
-const unsigned int FORWARD_PLUS_TILE_RES = 16;
-const unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
-const unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
+constexpr unsigned int FORWARD_PLUS_TILE_RES = 16;
+constexpr unsigned int FORWARD_PLUS_MAX_LIGHTS_PER_TILE = 544;
+constexpr unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 };  // namespace Lighting
 
 
@@ -243,9 +243,9 @@ const unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 #if (defined(_RELEASE) && defined(GPU_VALIDATION_IN_RELEASE_BUILD)) || \
     (defined(_PROFILE) && defined(GPU_VALIDATION_IN_PROFILE_BUILD)) || \
     (defined(_DEBUG) && defined(GPU_VALIDATION_IN_DEBUG_BUILD))
-    const bool ENABLE_GPU_VALIDATION = true;
+constexpr bool ENABLE_GPU_VALIDATION = true;
 #else
-    const bool ENABLE_GPU_VALIDATION = false;
+constexpr bool ENABLE_GPU_VALIDATION = false;
 #endif
 
 };  // namespace Config

@@ -70,49 +70,32 @@ void Camera::update(const U64 deltaTime) {
     _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
 }
 
-void Camera::updateProjection(bool updateGPU) {
+void Camera::updateProjection() {
     assert(_isActive);
 
-    if (updateGPU) {
-        GFXDevice& gfx = GFX_DEVICE;
-
-        F32* projectionMatrixData = 
-            _isOrthoCamera ? gfx.setProjection(_orthoRect,
-                                               _zPlanes)
-
-                           : gfx.setProjection(_verticalFoV,
-                                               _aspectRatio,
-                                               _zPlanes);
-        if (_projectionDirty) {
-            _projectionMatrix.set(projectionMatrixData);
-            _frustumDirty = true;
-            _projectionDirty = false;
+    if (_projectionDirty) {
+        if (_isOrthoCamera) {
+            _projectionMatrix.ortho(_orthoRect.x,
+                                    _orthoRect.y,
+                                    _orthoRect.z,
+                                    _orthoRect.w,
+                                    _zPlanes.x,
+                                    _zPlanes.y);
+        } else {
+            _projectionMatrix.perspective(Angle::DegreesToRadians(_verticalFoV),
+                                            _aspectRatio,
+                                            _zPlanes.x,
+                                            _zPlanes.y);
         }
-
-    } else {
-        if (_projectionDirty) {
-            if (_isOrthoCamera) {
-                _projectionMatrix.ortho(_orthoRect.x,
-                                        _orthoRect.y,
-                                        _orthoRect.z,
-                                        _orthoRect.w,
-                                        _zPlanes.x,
-                                        _zPlanes.y);
-            } else {
-                _projectionMatrix.perspective(Angle::DegreesToRadians(_verticalFoV),
-                                              _aspectRatio,
-                                              _zPlanes.x,
-                                              _zPlanes.y);
-            }
-            _frustumDirty = true;
-            _projectionDirty = false;
-        }
+        _frustumDirty = true;
+        _projectionDirty = false;
     }
+    
 }
 
 void Camera::onActivate() {
     _isActive = true;
-    updateProjection(false);
+    updateProjection();
 }
 
 void Camera::onDeactivate() {
@@ -265,15 +248,12 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
 }
 
 /// Tell the rendering API to set up our desired PoV
-void Camera::renderLookAt(mat4<F32>& viewMatrixOut, vec3<F32>& eyeVecOut) {
+void Camera::updateLookAt() {
     updateViewMatrix();
     updateProjection();
     updateFrustum();
     // Inform all listeners of a new event
     updateListeners();
-
-    viewMatrixOut = _viewMatrix;
-    eyeVecOut = _eye;
 }
 
 void Camera::reflect(const Plane<F32>& reflectionPlane) {

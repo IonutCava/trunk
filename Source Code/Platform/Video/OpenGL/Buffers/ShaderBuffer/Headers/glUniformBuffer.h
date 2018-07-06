@@ -38,20 +38,14 @@
 
 namespace Divide {
 
-/// Base class for shader uniform blocks
+class AtomicCounter;
 class glBufferImpl;
+class glGenericBuffer;
 class glBufferLockManager;
+
+/// Base class for shader uniform blocks
 class glUniformBuffer final : public ShaderBuffer {
     USE_CUSTOM_ALLOCATOR
-   public:
-       class AtomicCounter : public RingBuffer {
-       public:
-           explicit AtomicCounter(GLuint glHandle, U32 queueLength);
-           AtomicCounter(const AtomicCounter& other);
-           ~AtomicCounter();
-
-           GLuint _handle = 0;
-       };
    public:
      glUniformBuffer(GFXDevice& context,
                      const U32 ringBufferLength,
@@ -98,7 +92,7 @@ class glUniformBuffer final : public ShaderBuffer {
     bufferPtr _mappedBuffer;
     bool _updated;
     const GLenum _target;
-    vectorImpl<AtomicCounter> _atomicCounters;
+    vectorImpl<AtomicCounter*> _atomicCounters;
 };
 
 };  // namespace Divide

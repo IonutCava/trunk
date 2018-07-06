@@ -45,10 +45,16 @@ struct aiScene;
 
 namespace Divide {
 
+namespace Attorney {
+    class SceneAnimatorMeshImporter;
+};
+
 /// Calculates the global transformation matrix for the given internal node
 void calculateBoneToWorldTransform(Bone* pInternalNode);
 class ByteBuffer;
+class MeshImporter;
 class SceneAnimator {
+    friend class Attorney::SceneAnimatorMeshImporter;
    public:
     // index = frameIndex; entry = vectorIndex;
     typedef vectorImpl<I32> LineMap;
@@ -80,7 +86,7 @@ class SceneAnimator {
     /// So, passing 100, would do nothing, passing 50, would decrease the speed
     /// by half, and 150 increase it by 50%
     inline void adjustAnimationSpeedBy(I32 animationIndex, const D64 percent) {
-        std::shared_ptr<AnimEvaluator> animation = _animations.at(animationIndex);
+        std::shared_ptr<AnimEvaluator>& animation = _animations.at(animationIndex);
         animation->ticksPerSecond(animation->ticksPerSecond() * (percent / 100.0));
     }
     /// This will set the animation speed
@@ -191,8 +197,6 @@ class SceneAnimator {
         return _skeletonDepthCache;
     }
 
-    void registerAnimation(std::shared_ptr<AnimEvaluator> animation);
-
    private:
     bool init();
     /// I/O operations
@@ -220,6 +224,22 @@ class SceneAnimator {
     mat4<F32> _boneTransformCache;
     LineCollection _skeletonLines;
     vectorImpl<vectorImpl<Line>> _skeletonLinesContainer;
+};
+
+namespace Attorney {
+    class SceneAnimatorMeshImporter {
+        private:
+        static void registerAnimations(SceneAnimator& animator, const vectorImpl<std::shared_ptr<AnimEvaluator>>& animations) {
+            size_t animationCount = animations.size();
+            animator._animations.reserve(animationCount);
+            for (size_t i = 0; i < animationCount; ++i) {
+                animator._animations.push_back(animations[i]);
+                hashAlg::emplace(animator._animationNameToID, _ID_RT(animator._animations[i]->name()), to_uint(i));
+            }
+        }
+
+        friend class Divide::MeshImporter;
+    };
 };
 
 };  // namespace Divide

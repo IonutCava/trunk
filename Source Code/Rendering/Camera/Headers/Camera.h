@@ -54,7 +54,7 @@ class Camera : public Resource {
 
     virtual void update(const U64 deltaTime);
 
-    void renderLookAt(mat4<F32>& viewMatrixOut, vec3<F32>& eyeVecOut);
+    void updateLookAt();
 
     void reflect(const Plane<F32>& reflectionPlane);
     /// Moves the camera by the specified offsets in each direction
@@ -255,6 +255,10 @@ class Camera : public Resource {
 
     inline const vec2<F32>& getZPlanes() const { return _zPlanes; }
 
+    inline const vec4<F32>& orthoRect() const { return _orthoRect; }
+
+    inline bool isOrthoProjected() const { return _isOrthoCamera; }
+
     inline const F32 getVerticalFoV() const { return _verticalFoV; }
 
     inline const F32 getHorizontalFoV() const {
@@ -338,7 +342,7 @@ class Camera : public Resource {
 
    protected:
     virtual bool updateViewMatrix();
-    virtual void updateProjection(bool updateGPU = true);
+    virtual void updateProjection();
 
    protected:
     SET_DELETE_FRIEND

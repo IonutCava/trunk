@@ -170,7 +170,7 @@ void SceneAnimator::load(ByteBuffer& dataIn) {
     
     uint32_t idx = 0;
     for (std::shared_ptr<AnimEvaluator>& anim : _animations) {
-        anim = std::make_shared<AnimEvaluator>();
+        anim = std::make_unique<AnimEvaluator>();
         AnimEvaluator::load(*anim, dataIn);
         // get all the animation names so I can reference them by name and get the correct id
         hashAlg::emplace(_animationNameToID, _ID_RT(anim->name()), idx++);

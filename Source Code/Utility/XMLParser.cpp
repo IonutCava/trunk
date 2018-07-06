@@ -221,8 +221,6 @@ stringImpl loadScripts(const stringImpl &file) {
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
     read_xml(file.c_str(), pt);
 
-    par.setParam(_ID("testInt"), 2);
-    par.setParam(_ID("testFloat"), 3.2f);
     par.setParam(_ID("scriptLocation"),
                  pt.get<stringImpl>("scriptLocation", "XML"));
     par.setParam(_ID("assetsLocation"), pt.get<stringImpl>("assets", "assets"));

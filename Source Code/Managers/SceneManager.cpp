@@ -523,7 +523,7 @@ bool SceneManager::populateRenderQueue(RenderStage stage,
     updateVisibleNodes(stage, doCulling, isPrePass, passIndex);
 
     if (getActiveScene().renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
-        queue.populateRenderQueues(stage);
+        queue.populateRenderQueues(isPrePass ? RenderStage::Z_PRE_PASS : stage);
     }
 
     return queue.getRenderQueueStackSize() > 0;

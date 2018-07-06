@@ -132,11 +132,10 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     SceneManager& mgr = SceneManager::instance();
 
     GFXDevice& GFX = GFX_DEVICE;
-    mat4<F32> viewMat; vec3<F32> eyeVec;
-    params.camera->renderLookAt(viewMat, eyeVec);
-    // Tell the Rendering API to draw from our desired PoV
-    GFX.lookAt(viewMat, eyeVec);
 
+    // Tell the Rendering API to draw from our desired PoV
+    GFX.renderFromCamera(*params.camera);
+   
     GFX.setRenderStage(params.stage);
 
     if (params.doPrePass) {
