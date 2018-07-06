@@ -38,7 +38,8 @@ TerrainChunk::TerrainChunk(GFXDevice& context,
     assert(_vegetation != nullptr);
 }
 
-TerrainChunk::~TerrainChunk() {
+TerrainChunk::~TerrainChunk()
+{
     for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
         _indice[i].clear();
     }
@@ -91,7 +92,8 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
     Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }
 
-void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,
+void TerrainChunk::ComputeIndicesArray(I8 lod,
+                                       U8 depth,
                                        const vec2<U32>& position,
                                        const vec2<U32>& heightMapSize) {
     assert(lod < Config::TERRAIN_CHUNKS_LOD);

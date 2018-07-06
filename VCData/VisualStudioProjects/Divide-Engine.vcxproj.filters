@@ -770,5 +770,8 @@
     <None Include="..\..\Source Code\Scripting\Headers\Script.inl">
       <Filter>Scripting\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Geometry\Material\Headers\Material.inl">
+      <Filter>Geometry\Material\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

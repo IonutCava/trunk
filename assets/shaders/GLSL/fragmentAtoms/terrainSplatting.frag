@@ -3,7 +3,7 @@
 
 #include "bumpMapping.frag"
 
-uniform sampler2D texBlend[MAX_TEXTURE_LAYERS];
+uniform sampler2D      texBlend[MAX_TEXTURE_LAYERS];
 uniform sampler2DArray texTileMaps[MAX_TEXTURE_LAYERS];
 uniform sampler2DArray texNormalMaps[MAX_TEXTURE_LAYERS];
 
@@ -65,9 +65,9 @@ vec3 getTBNNormal(in vec2 uv, in vec3 normal) {
     return TBN * normal;
 }
 
-void getColourNormal(inout vec4 colour){
+vec4 getTerrainAlbedo(){
     vec4 blendMap;
-    colour = vec4(0.0);
+    vec4 colour = vec4(0.0);
     
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
         blendMap = texture(texBlend[i], VAR._texCoord);
@@ -81,12 +81,12 @@ void getColourNormal(inout vec4 colour){
         colour += getFinalColour4(blendMap, i, diffuseScale[i]);
 #endif
     }
+
+    return colour;
 }
 
-void getColourAndTBNNormal(inout vec4 colour, inout vec3 tbn) {
-    getColourNormal(colour);
-
-    tbn = vec3(0.0);
+vec3 getTerrainNormal() {
+    vec3 tbn = vec3(0.0);
     vec3 tbnTemp;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
         vec4 blendMap = texture(texBlend[i], VAR._texCoord);
@@ -102,13 +102,8 @@ void getColourAndTBNNormal(inout vec4 colour, inout vec3 tbn) {
         tbnTemp = getTBNNormal(VAR._texCoord, normalize(2.0 * tbnTemp - 1.0));
         tbn = normalUDNBlend(tbnTemp, tbn);
     }
-}
 
-void getColourAndTBNUnderwater(inout vec4 colour, inout vec3 tbn){
-    vec2 coords = VAR._texCoord * underwaterDiffuseScale;
-    colour = texture(texUnderwaterAlbedo, coords);
-    tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
-    tbn = getTBNNormal(VAR._texCoord, tbn);
+    return tbn;
 }
 
 #endif //_TERRAIN_SPLATTING_FRAG_

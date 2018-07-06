@@ -748,6 +748,16 @@ bool Scene::unload() {
     if (!checkLoadFlag()) {
         return false;
     }
+
+    U32 totalLoadingTasks = _loadingTasks;
+    while (totalLoadingTasks > 0) {
+        if (totalLoadingTasks != _loadingTasks) {
+            totalLoadingTasks = _loadingTasks;
+            Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
+        }
+        std::this_thread::yield();
+    }
+
     clearTasks();
     _lightPool->clear();
     /// Destroy physics (:D)

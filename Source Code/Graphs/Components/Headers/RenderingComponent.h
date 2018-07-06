@@ -225,7 +225,6 @@ class RenderingComponent : public SGNComponent {
    protected:
     GFXDevice& _context;
     Material_ptr _materialInstance;
-    std::array<ShaderProgram_ptr, to_base(RenderStage::COUNT)> _customShaders[to_base(RenderPassType::COUNT)];
 
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
@@ -301,29 +300,6 @@ class RenderingCompSceneNode {
     private:
         static RenderPackage& getDrawPackage(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
             return renderable.getDrawPackage(renderStagePass);
-        }
-
-        static void setCustomShader(RenderingComponent& renderable,
-                                    const RenderStagePass& renderStagePass,
-                                    const ShaderProgram_ptr& shaderProgram)  {
-            renderable._customShaders[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)] = shaderProgram;
-        }
-
-        static void setCustomShader(RenderingComponent& renderable,
-                                    RenderStage renderStage,
-                                    const ShaderProgram_ptr& shaderProgram) {
-            for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-                renderable._customShaders[pass][to_U32(renderStage)] = shaderProgram;
-            }
-        }
-
-        static void setCustomShader(RenderingComponent& renderable,
-                                    const ShaderProgram_ptr& shaderProgram) {
-            for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-                for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-                    renderable._customShaders[pass][i] = shaderProgram;
-                }
-            }
         }
 
     friend class Divide::Sky;

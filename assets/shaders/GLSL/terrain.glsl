@@ -72,38 +72,22 @@ layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec2 _normalOut;
 layout(location = 2) out vec2 _velocityOut;
 
-//subroutine vec4 TerrainMappingType();
-
-//subroutine(TerrainMappingType) 
-vec4 computeLightInfoLOD1Frag() {
-    vec4 albedo = vec4(1.0);
-    getColourNormal(albedo);
+vec4 CausticsColour() {
     setProcessedNormal(VAR._normalWV);
 
-    return albedo;
-}
+    setAlbedo((texture(texWaterCaustics, _scrollingUV.st) +
+               texture(texWaterCaustics, _scrollingUV.pq)) * 0.5);
 
-//subroutine(TerrainMappingType)
-vec4 computeLightInfoLOD0Frag() {
-    vec4 albedo = vec4(1.0);
-    vec3 normal = vec3(1.0);
-    getColourAndTBNNormal(albedo, normal);
-    setProcessedNormal(normal);
-
-    return albedo;
-}
-
-vec4 CausticsColour() {
-    return (texture(texWaterCaustics, _scrollingUV.st) +
-            texture(texWaterCaustics, _scrollingUV.pq)) * 0.5;
+    return getPixelColour(VAR._texCoord);
 }
 
 vec4 UnderwaterColour() {
-    vec4 albedo = vec4(1.0);
-    vec3 normal = vec3(1.0);
-    getColourAndTBNUnderwater(albedo, normal);
-    setAlbedo(albedo);
-    setProcessedNormal(normal);
+
+    vec2 coords = VAR._texCoord * underwaterDiffuseScale;
+    setAlbedo(texture(texUnderwaterAlbedo, coords));
+
+    vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
+    setProcessedNormal(getTBNNormal(VAR._texCoord, tbn));
 
     return getPixelColour(VAR._texCoord);
 }
@@ -112,18 +96,21 @@ vec4 UnderwaterMappingRoutine(){
     return mix(CausticsColour(), UnderwaterColour(), _waterDepth);
 }
 
-//subroutine uniform TerrainMappingType TerrainMappingRoutine;
-
 vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
-    setAlbedo(dvd_lodLevel == 0 && dvd_renderDetailLevel() > DETAIL_LOW
-                                ? computeLightInfoLOD0Frag()
-                                : computeLightInfoLOD1Frag());
+    setAlbedo(getTerrainAlbedo());
+
+    if (dvd_lodLevel == 0 && dvd_renderDetailLevel() > DETAIL_LOW) {
+        setProcessedNormal(getTerrainNormal());
+    } else {
+        setProcessedNormal(VAR._normalWV);
+    }
 
     return getPixelColour(VAR._texCoord);
 }
 
 void main(void) {
-   _colourOut = ToSRGB(distance > 0.0 ? applyFog(TerrainMappingRoutine()) : UnderwaterMappingRoutine());
+   _colourOut = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), min(distance, 0.0))));
+
    _normalOut = packNormal(getProcessedNormal());
    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

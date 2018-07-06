@@ -159,11 +159,6 @@ void Material::update(const U64 deltaTime) {
     clean();
 }
 
-size_t Material::getRenderStateBlock(const RenderStagePass& renderStagePass, I32 variant) {
-    assert(variant >= 0 && variant < defaultRenderStates(renderStagePass).size());
-    return defaultRenderStates(renderStagePass)[variant];
-}
-
 // base = base texture
 // second = second texture used for multitexturing
 // bump = bump map
@@ -214,27 +209,18 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     return true;
 }
 
-// Here we set the shader's name
-void Material::setShaderProgram(const stringImpl& shader,
-                                const RenderStagePass& renderStagePass,
-                                const bool computeOnAdd) {
-    shaderInfo(renderStagePass)._customShader = true;
-    setShaderProgramInternal(shader, renderStagePass, computeOnAdd);
-}
 
-void Material::setShaderProgram(const stringImpl& shader,
-                                RenderStage stage,
-                                const bool computeOnAdd) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        setShaderProgram(shader, RenderStagePass(stage, static_cast<RenderPassType>(pass)), computeOnAdd);
-    }
-}
 
-void Material::setShaderProgram(const stringImpl& shader,
-                                RenderPassType passType,
-                                const bool computeOnAdd) {
-    for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
-        setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(stage), passType), computeOnAdd);
+void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
+                                        const RenderStagePass& renderStagePass) {
+    ShaderProgramInfo& info = shaderInfo(renderStagePass);
+    if (shader != nullptr) {
+        info._customShader = true;
+        info._shader = shader->getName();
+        info._shaderRef = shader;
+        info.computeStage(ShaderProgramInfo::BuildStage::COMPUTED);
+    } else {
+        setShaderProgramInternal("", renderStagePass, true);
     }
 }
 
@@ -243,7 +229,7 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
                                         const bool computeOnAdd) {
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
-    (!shader.empty()) ? info._shader = shader : info._shader = "NULL";
+    info._shader = (shader.empty() ? "NULL" : shader);
 
     ResourceDescriptor shaderDescriptor(info._shader);
     stringstreamImpl ss;
@@ -521,13 +507,6 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
     return false;
 }
 
-/// Add a texture <-> bind slot pair to be bound with the default textures
-/// on each "bindTexture" call
-void Material::addCustomTexture(const Texture_ptr& texture, U8 offset) {
-    // custom textures are not material dependencies!
-    _customTextures.push_back(std::make_pair(texture, offset));
-}
-
 /// Remove the custom texture assigned to the specified offset
 bool Material::removeCustomTexture(U8 index) {
     vectorImpl<std::pair<Texture_ptr, U8>>::iterator it =
@@ -586,20 +565,6 @@ void Material::getTextureData(TextureDataContainer& textureData) {
             } break;
         };
     }
-}
-
-ShaderProgramInfo& Material::getShaderInfo(const RenderStagePass& renderStagePass) {
-    return shaderInfo(renderStagePass);
-}
-
-void Material::setBumpMethod(const BumpMethod& newBumpMethod) {
-    _bumpMethod = newBumpMethod;
-    recomputeShaders();
-}
-
-void Material::setShadingMode(const ShadingMode& mode) { 
-    _shadingMode = mode;
-    recomputeShaders();
 }
 
 bool Material::unload() {

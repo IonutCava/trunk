@@ -109,7 +109,17 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
 
-    return (_particleShader != nullptr);
+
+    if (_particleShader != nullptr) {
+        const Material_ptr& mat = getMaterialTpl();
+        mat->setShaderProgram(_particleShader);
+        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW);
+        mat->setRenderStateBlock(_particleStateBlockHash, RenderPassType::COLOUR_PASS);
+        mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderPassType::DEPTH_PASS);
+        return true;
+    }
+
+    return false;
 }
 
 bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
@@ -174,19 +184,12 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-if (_particleTexture && _particleTexture->flushTextureState()) {
+    if (_particleTexture && _particleTexture->flushTextureState()) {
         TextureData particleTextureData = _particleTexture->getData();
         particleTextureData.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT0));
         sgn.get<RenderingComponent>()->registerTextureDependency(particleTextureData);
     }
 
-
-    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
-    assert(renderable != nullptr);
-
-    Attorney::RenderingCompSceneNode::setCustomShader(*renderable, _particleShader);
-    Attorney::RenderingCompSceneNode::setCustomShader(*renderable, RenderStage::SHADOW, _particleDepthShader);
-    
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
     sgn.get<BoundsComponent>()->lockBBTransforms(true);
@@ -259,9 +262,6 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
     cmd.stateHash(_context.isDepthStage() ? _particleStateBlockHashDepth
                                           : _particleStateBlockHash);
 
-    cmd.shaderProgram(renderStagePass._stage != RenderStage::SHADOW
-                                              ? _particleShader
-                                              : _particleDepthShader);
     cmd.sourceBuffer(&getDataBuffer(renderStagePass._stage, sceneRenderState.playerPass()));
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }

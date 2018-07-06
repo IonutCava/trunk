@@ -55,7 +55,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
             }
         }
 
-        _customShaders[pass].fill(nullptr);
         for (RenderPackage& pkg : _renderData[pass]) {
             pkg.isOcclusionCullable(nodeType != SceneNodeType::TYPE_SKY);
         }
@@ -522,10 +521,7 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
 }
 
 ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& renderStagePass) {
-    const ShaderProgram_ptr& customShader = _customShaders[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
-    return customShader != nullptr
-                         ? customShader
-                         : _materialInstance->getShaderInfo(renderStagePass).getProgram();
+    return _materialInstance->getShaderInfo(renderStagePass).getProgram();
 }
 
 size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePass) {

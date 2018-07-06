@@ -481,6 +481,7 @@
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />
     <None Include="..\..\Source Code\Core\Headers\Application.inl" />
+    <None Include="..\..\Source Code\Geometry\Material\Headers\Material.inl" />
     <None Include="..\..\Source Code\Scripting\Headers\Script.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
