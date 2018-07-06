@@ -75,7 +75,7 @@ public:
     /// Handle any debug information rendering (nav meshes, AI paths, etc). 
     /// Called by Scene::postRender after depth map preview call
     void debugDraw(bool forceAll = true);
-	inline bool isDebugDraw() const { return _navMeshDebugDraw; }
+    inline bool isDebugDraw() const { return _navMeshDebugDraw; }
     /// Toggle debug draw for all NavMeshes
     void toggleNavMeshDebugDraw(bool state);
     inline bool navMeshDebugDraw() const { return _navMeshDebugDraw; }
@@ -110,7 +110,7 @@ private:
     AITeamMap       _aiTeams;
     mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;
-	DELEGATE_CBK<>     _sceneCallback;
+    DELEGATE_CBK<>     _sceneCallback;
 
 END_SINGLETON
 

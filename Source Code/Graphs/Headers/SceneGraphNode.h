@@ -107,7 +107,7 @@ namespace Divide {
         SceneGraphNode* createNode(SceneNode* const node, const stringImpl& name = "");
         ///Add node increments the node's ref counter if the node was already added to the scene graph
         SceneGraphNode* addNode(SceneNode* const node, const stringImpl& name = "");
-        void			removeNode(SceneGraphNode* node);
+        void            removeNode(SceneGraphNode* node);
         inline void     deleteNode(SceneGraphNode*& node) {
             removeNode(node);
             MemoryManager::DELETE(node);
@@ -120,7 +120,7 @@ namespace Divide {
 
         ///Selection helper functions
         void setSelected(const bool state);
-        inline bool isSelected()	                const { return _selected; }
+        inline bool isSelected()                    const { return _selected; }
         inline bool isSelectable()                  const { return _isSelectable; }
         inline void setSelectable(const bool state)       { _isSelectable = state; }
 
@@ -161,7 +161,7 @@ namespace Divide {
         /*Node State*/
         inline void setActive(const bool state) { _wasActive = _active; _active = state; }
         inline void restoreActive()       { _active = _wasActive; }
-        inline void	scheduleDeletion()    { _shouldDelete = true; }
+        inline void    scheduleDeletion()    { _shouldDelete = true; }
 
         inline bool inView()   const { return _inView; }
         inline bool isActive() const { return _active; }

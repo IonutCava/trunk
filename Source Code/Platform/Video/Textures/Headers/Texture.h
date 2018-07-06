@@ -33,7 +33,7 @@ class Texture : public HardwareResource {
     friend class ResourceCache;
     friend class ResourceLoader;
     template<typename T>
-	friend class ImplResourceLoader;
+    friend class ImplResourceLoader;
 
 public:
     /// Bind the texture to the specified texture unit
@@ -98,7 +98,7 @@ protected:
     bool _hasTransparency;
     TextureType _textureType;
     mat4<F32> _transformMatrix;
-    std::atomic<U32>	_handle;
+    std::atomic<U32>    _handle;
     SamplerDescriptor _samplerDescriptor;
 };
 

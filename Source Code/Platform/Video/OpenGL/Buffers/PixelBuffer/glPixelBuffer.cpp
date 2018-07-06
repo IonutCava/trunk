@@ -188,7 +188,7 @@ void glPixelBuffer::updatePixels(const GLfloat * const pixels) {
     };
 
     GLfloat* ptr = (GLfloat*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-    if(ptr)	{
+    if(ptr)    {
         memcpy(ptr, pixels, _width * _height * 4 * sizeOf(_dataType));
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release the mapped buffer
     }

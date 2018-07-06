@@ -70,10 +70,10 @@ private:
     {
     }
 
-	~PXDevice()
-	{
-		PhysX::destroyInstance();
-	}
+    ~PXDevice()
+    {
+        PhysX::destroyInstance();
+    }
 
     PhysicsAPIWrapper& _api;
 

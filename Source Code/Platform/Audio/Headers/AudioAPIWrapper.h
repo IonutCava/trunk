@@ -29,17 +29,17 @@ namespace Divide {
 
 class AudioState {
 public:
-	AudioState(bool enableA,
-		        bool enableB,
-				bool enableC,
-				bool enableD){}
+    AudioState(bool enableA,
+                bool enableB,
+                bool enableC,
+                bool enableD){}
 };
 
 enum AudioAPI
 {
-	FMOD,
-	OpenAL,
-	SDL
+    FMOD,
+    OpenAL,
+    SDL
 };
 
 static const U32 MAX_SOUND_BUFFERS = 64;
@@ -48,38 +48,38 @@ static const U32 MAX_SOUND_BUFFERS = 64;
 class AudioAPIWrapper
 {
 protected:
-	AudioAPIWrapper() : _apiId(SDL), _state(AudioState(true,true,true,true)) {}
+    AudioAPIWrapper() : _apiId(SDL), _state(AudioState(true,true,true,true)) {}
 
-	friend class SFXDevice;
+    friend class SFXDevice;
 
-	inline void setId(AudioAPI api) {_apiId = api;}
-	inline AudioAPI getId() { return _apiId;}
+    inline void setId(AudioAPI api) {_apiId = api;}
+    inline AudioAPI getId() { return _apiId;}
 
-	virtual ErrorCode initAudioApi()  = 0;
-	virtual void      closeAudioApi() = 0;
+    virtual ErrorCode initAudioApi()  = 0;
+    virtual void      closeAudioApi() = 0;
 
-	virtual void playSound(AudioDescriptor* sound) = 0;
-	virtual void playMusic(AudioDescriptor* music) = 0;
+    virtual void playSound(AudioDescriptor* sound) = 0;
+    virtual void playMusic(AudioDescriptor* music) = 0;
 
-	virtual void pauseMusic() = 0;
-	virtual void stopMusic() = 0;
-	virtual void stopAllSounds() = 0;
+    virtual void pauseMusic() = 0;
+    virtual void stopMusic() = 0;
+    virtual void stopAllSounds() = 0;
 
-	virtual void setMusicVolume(I8 value) = 0;
-	virtual void setSoundVolume(I8 value) = 0;
+    virtual void setMusicVolume(I8 value) = 0;
+    virtual void setSoundVolume(I8 value) = 0;
 
-	virtual ~AudioAPIWrapper(){};
+    virtual ~AudioAPIWrapper(){};
 
 public: //RenderAPI global
 
-	inline void setAudioState(AudioState& state){_state = state; }
-	inline AudioState& getActiveAudioState() {return _state;}
+    inline void setAudioState(AudioState& state){_state = state; }
+    inline AudioState& getActiveAudioState() {return _state;}
 
 private:
-	AudioAPI _apiId;
+    AudioAPI _apiId;
 
 protected:
-	AudioState _state;
+    AudioState _state;
 };
 
 }; //namespace Divide

@@ -31,17 +31,17 @@ namespace Divide {
 
 class FXAAPreRenderOperator : public PreRenderOperator {
 public:
-	FXAAPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
-	~FXAAPreRenderOperator();
+    FXAAPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+    ~FXAAPreRenderOperator();
 
-	void operation();
-	void reshape(I32 width, I32 height);
+    void operation();
+    void reshape(I32 width, I32 height);
 
 private:
     bool           _ready;
-	ShaderProgram* _fxaa;
-	Framebuffer*   _outputFB;
-	Framebuffer*   _samplerCopy;
+    ShaderProgram* _fxaa;
+    Framebuffer*   _outputFB;
+    Framebuffer*   _samplerCopy;
 };
 
 }; //namespace Divide

@@ -238,7 +238,7 @@ void Material::clean() {
 }
 
 void Material::recomputeShaders() {
-	for (shaderInfoMap::value_type& it : _shaderInfo) {
+    for (shaderInfoMap::value_type& it : _shaderInfo) {
         if ( !it.second._isCustomShader ) {
             it.second._shaderCompStage = ShaderInfo::SHADER_STAGE_REQUESTED;
             computeShader( it.first, false, DELEGATE_CBK<>() );
@@ -317,10 +317,10 @@ bool Material::computeShader(const RenderStage& renderStage,
             }
         }
     }
-	if (_doubleSided){
-		shader += ".DoubleSided";
-		addShaderDefines(renderStage, "USE_DOUBLE_SIDED");
-	}
+    if (_doubleSided){
+        shader += ".DoubleSided";
+        addShaderDefines(renderStage, "USE_DOUBLE_SIDED");
+    }
     //Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning){
         addShaderDefines(renderStage, "USE_GPU_SKINNING");
@@ -437,7 +437,7 @@ bool Material::unload(){
         }
     }
     _customTextures.clear();
-	for (shaderInfoMap::value_type& it : _shaderInfo) {
+    for (shaderInfoMap::value_type& it : _shaderInfo) {
         ShaderProgram* shader = FindResourceImpl<ShaderProgram>( it.second._shader );
         if ( shader != nullptr ) {
             UNREGISTER_TRACKED_DEPENDENCY( shader );
@@ -456,7 +456,7 @@ void Material::setDoubleSided(bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if ( _doubleSided ) {
-		for (renderStateBlockMap::value_type& it : _defaultRenderStates) {
+        for (renderStateBlockMap::value_type& it : _defaultRenderStates) {
             RenderStateBlockDescriptor descriptor( GFX_DEVICE.getStateBlockDescriptor( it.second ) );
             descriptor.setCullMode( CULL_MODE_NONE );
             if ( !_translucencySource.empty() ) {
@@ -467,7 +467,7 @@ void Material::setDoubleSided(bool state, const bool useAlphaTest) {
     }
 
     _dirty = true;
-	recomputeShaders();
+    recomputeShaders();
 }
 
 bool Material::isTranslucent() {
@@ -509,7 +509,7 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
 
     shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() :
                                                                       -std::numeric_limits<I8>::max();
-	textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : 
+    textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : 
                                                            -std::numeric_limits<I8>::max();
 }
 

@@ -139,20 +139,20 @@ void SceneAnimator::UpdateTransforms(Bone* pNode) {
 
 Bone* SceneAnimator::GetBoneByName(const stringImpl& bname) const {
     hashMapImpl<stringImpl, Bone*>::const_iterator found = _bonesByName.find(bname);
-	if ( found != _bonesByName.end() ) {
-		return found->second;
-	} else {
-		return nullptr;
-	}
+    if ( found != _bonesByName.end() ) {
+        return found->second;
+    } else {
+        return nullptr;
+    }
 }
 
 I32 SceneAnimator::GetBoneIndex(const stringImpl& bname) const {
     hashMapImpl<stringImpl, U32>::const_iterator found = _bonesToIndex.find(bname);
-	if ( found != _bonesToIndex.end() ) {
-		return found->second;
-	} else {
-		return -1;
-	}
+    if ( found != _bonesToIndex.end() ) {
+        return found->second;
+    } else {
+        return -1;
+    }
 }
 
 /// ------------------------------------------------------------------------------------------------

@@ -26,8 +26,8 @@ SubMesh::~SubMesh()
 
 
 void SubMesh::setParentMesh(Mesh* const parentMesh) { 
-	_parentMesh = parentMesh; 
-	setGeometryVB(_parentMesh->getGeometryVB());
+    _parentMesh = parentMesh; 
+    setGeometryVB(_parentMesh->getGeometryVB());
     // If the mesh has animation data, use dynamic VB's if we use software skinning
     _drawCmd.firstIndex( getGeometryVB()->getPartitionOffset( _geometryPartitionId ) );
     _drawCmd.indexCount( getGeometryVB()->getPartitionCount( _geometryPartitionId ) );

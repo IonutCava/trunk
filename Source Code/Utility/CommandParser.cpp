@@ -8,7 +8,7 @@ CommandParser::CommandParser()
 
 CommandParser::~CommandParser()
 {
-	_commandMap.clear();
+    _commandMap.clear();
 }
 
 };

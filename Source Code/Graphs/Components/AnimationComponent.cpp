@@ -44,9 +44,9 @@ void AnimationComponent::update(const U64 deltaTime) {
     
     D32 timeStamp = _playAnimations ? getUsToSec(_elapsedTime) : 0.0;
 
-	if ( DOUBLE_COMPARE( timeStamp, _currentTimeStamp ) ) {
-		return;
-	}
+    if ( DOUBLE_COMPARE( timeStamp, _currentTimeStamp ) ) {
+        return;
+    }
     _readBuffer  = (_readBuffer + 1) % 2;
     _writeBuffer = (_writeBuffer + 1) % 2;
 
@@ -68,13 +68,13 @@ bool AnimationComponent::playAnimation(const stringImpl& name){
     U32 animIndex = 0;
     I32 oldindex = _currentAnimIndex;
 
-	if ( _animator->GetAnimationID( name, animIndex ) ) {
-		_currentAnimIndex = animIndex;
-	}
-	if ( _currentAnimIndex == -1 ) {
-		_currentAnimIndex = 0;
-	}
-	resetTimers();
+    if ( _animator->GetAnimationID( name, animIndex ) ) {
+        _currentAnimIndex = animIndex;
+    }
+    if ( _currentAnimIndex == -1 ) {
+        _currentAnimIndex = 0;
+    }
+    resetTimers();
     return oldindex != _currentAnimIndex;
 }
 
@@ -83,7 +83,7 @@ bool AnimationComponent::playAnimation(I32  pAnimIndex){
     if (pAnimIndex >= (I32)_animator->GetAnimations().size()) return false;// no change, or the animations data is out of bounds
     I32 oldindex = _currentAnimIndex;
     _currentAnimIndex = pAnimIndex;// only set this after the checks for good data and the object was actually inserted
-	resetTimers();
+    resetTimers();
     return oldindex != _currentAnimIndex;
 }
 
@@ -91,7 +91,7 @@ bool AnimationComponent::playAnimation(I32  pAnimIndex){
 bool AnimationComponent::playNextAnimation() {
     I32 oldindex = _currentAnimIndex;
     _currentAnimIndex = ++_currentAnimIndex % _animator->GetAnimations().size();
-	resetTimers();
+    resetTimers();
     return oldindex != _currentAnimIndex;
 }
 

@@ -37,8 +37,8 @@ class Texture;
 class RenderStateBlock;
 class ResourceDescriptor;
 class RenderStateBlockDescriptor;
-enum RenderStage;
-enum BlendProperty;
+enum RenderStage : I32;
+enum BlendProperty : I32;
 
 class Material : public Resource {
 public:
@@ -232,7 +232,7 @@ public:
         _shaderInfo[renderStage]._shaderDefines.push_back(shaderDefines);
     }
 
-    inline void addShaderDefines(const stringImpl& shaderDefines)	{
+    inline void addShaderDefines(const stringImpl& shaderDefines)    {
         addShaderDefines(FINAL_STAGE, shaderDefines);
         addShaderDefines(Z_PRE_PASS_STAGE, shaderDefines);
         addShaderDefines(SHADOW_STAGE, shaderDefines);
@@ -270,7 +270,7 @@ public:
     inline U8  getTextureCount()   const { return _shaderData._textureCount;}
 
                     size_t            getRenderStateBlock(RenderStage currentStage);
-    inline       Texture*	 const getTexture(ShaderProgram::TextureUsage textureUsage) {return _textures[textureUsage];}
+    inline       Texture*     const getTexture(ShaderProgram::TextureUsage textureUsage) {return _textures[textureUsage];}
                 ShaderInfo&           getShaderInfo(RenderStage renderStage = FINAL_STAGE);
     
     inline const TextureOperation& getTextureOperation() const { return _operation; }

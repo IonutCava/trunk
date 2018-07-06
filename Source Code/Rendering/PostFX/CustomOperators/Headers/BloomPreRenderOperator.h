@@ -34,24 +34,24 @@ class ShaderProgram;
 
 class BloomPreRenderOperator : public PreRenderOperator {
 public:
-	BloomPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
-	~BloomPreRenderOperator();
+    BloomPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+    ~BloomPreRenderOperator();
 
-	void operation();
-	void reshape(I32 width, I32 height);
+    void operation();
+    void reshape(I32 width, I32 height);
 
 protected:
-	// tone maps _inputFB[0] converting it from HDR to LDR
-	void toneMapScreen();
+    // tone maps _inputFB[0] converting it from HDR to LDR
+    void toneMapScreen();
 
 private:
-	ShaderProgram* _blur;
-	ShaderProgram* _bright;
-	Framebuffer* _outputFB;
-	Framebuffer* _tempBloomFB;
-	Framebuffer* _tempHDRFB;
-	Framebuffer* _luminaFB[2];
-	U32 _luminaMipLevel;
+    ShaderProgram* _blur;
+    ShaderProgram* _bright;
+    Framebuffer* _outputFB;
+    Framebuffer* _tempBloomFB;
+    Framebuffer* _tempHDRFB;
+    Framebuffer* _luminaFB[2];
+    U32 _luminaMipLevel;
     U32 _horizBlur;
     U32 _vertBlur;
 };

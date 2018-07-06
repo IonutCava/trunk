@@ -17,8 +17,8 @@ vec4  saturate(vec4 v)  { return clamp(v, 0.0, 1.0); }
 vec3 pow_vec3(vec3 v, float p) { return vec3(pow(v.x, p), pow(v.y, p), pow(v.z, p)); }
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
-	vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));
-	targetTexture.xyz = mix(targetTexture.xyz, projectedTex.xyz, projectedTextureMixWeight);
+    vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));
+    targetTexture.xyz = mix(targetTexture.xyz, projectedTex.xyz, projectedTextureMixWeight);
 }
 
 uniform bool  dvd_enableFog = true;

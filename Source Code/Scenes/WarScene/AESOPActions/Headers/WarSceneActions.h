@@ -29,24 +29,24 @@ namespace Divide {
 
     // Some useful predicates
     enum Fact {
-		AtEnemyFlagLoc = 0,
-		AtHomeFlagLoc = 1,
-		HasEnemyFlag = 2,
-		HasOwnFlag = 3,
-		EnemyHasFlag = 4,
-		EnemyDead = 5,
-		FlagCarrierDead = 6
-	};
+        AtEnemyFlagLoc = 0,
+        AtHomeFlagLoc = 1,
+        HasEnemyFlag = 2,
+        HasOwnFlag = 3,
+        EnemyHasFlag = 4,
+        EnemyDead = 5,
+        FlagCarrierDead = 6
+    };
 
     inline const char* WarSceneFactName(GOAPFact fact) {
         switch(static_cast<Fact>(fact)){
-			case AtEnemyFlagLoc: return "At enemy flag location";
-			case AtHomeFlagLoc: return "At home location";
-			case HasEnemyFlag: return "Has enemy flag";
-			case HasOwnFlag: return "Has own flag";
-			case EnemyHasFlag: return "Enemy has flag";
-			case EnemyDead: return "Enemy dead";
-			case FlagCarrierDead: return "Flag carrier dead";
+            case AtEnemyFlagLoc: return "At enemy flag location";
+            case AtHomeFlagLoc: return "At home location";
+            case HasEnemyFlag: return "Has enemy flag";
+            case HasOwnFlag: return "Has own flag";
+            case EnemyHasFlag: return "Enemy has flag";
+            case EnemyDead: return "Enemy dead";
+            case FlagCarrierDead: return "Flag carrier dead";
         };
         return GOAPFactName(fact);
     };
@@ -57,8 +57,8 @@ namespace Divide {
         ACTION_RETURN_FLAG = 2,
         ACTION_PROTECT_FLAG_CARRIER = 3,
         ACTION_RECOVER_FLAG = 4,
-		ACTION_KILL_ENEMY = 5,
-		ACTION_RETURN_TO_BASE = 6
+        ACTION_KILL_ENEMY = 5,
+        ACTION_RETURN_TO_BASE = 6
     };
     
     class WarSceneAction : public GOAPAction {
@@ -88,28 +88,28 @@ namespace Divide {
 
     class ApproachFlag : public WarSceneAction {
         public:
-			ApproachFlag(const stringImpl& name, F32 cost = 1.0f);
+            ApproachFlag(const stringImpl& name, F32 cost = 1.0f);
             ApproachFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
     };
     class CaptureFlag : public WarSceneAction {
         public:
-			CaptureFlag(const stringImpl& name, F32 cost = 1.0f);
+            CaptureFlag(const stringImpl& name, F32 cost = 1.0f);
             CaptureFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
     };
     class ReturnFlag : public WarSceneAction {
         public:
-			ReturnFlag(const stringImpl& name, F32 cost = 1.0f);
+            ReturnFlag(const stringImpl& name, F32 cost = 1.0f);
             ReturnFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
     };
     class ProtectFlagCarrier : public WarSceneAction {
         public:
-			ProtectFlagCarrier(const stringImpl& name, F32 cost = 1.0f);
+            ProtectFlagCarrier(const stringImpl& name, F32 cost = 1.0f);
             ProtectFlagCarrier(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
@@ -117,25 +117,25 @@ namespace Divide {
     };
     class RecoverFlag : public WarSceneAction {
         public:
-			RecoverFlag(const stringImpl& name, F32 cost = 1.0f);
+            RecoverFlag(const stringImpl& name, F32 cost = 1.0f);
             RecoverFlag(WarSceneAction const & other) : WarSceneAction(other)
             {
             }
     };
-	class KillEnemy : public WarSceneAction {
-		public:
-			KillEnemy(const stringImpl& name, F32 cost = 1.0f);
-			KillEnemy(WarSceneAction const & other) : WarSceneAction(other)
-			{
-			}
-	};
-	class ReturnHome : public WarSceneAction {
-		public:
-			ReturnHome(const stringImpl& name, F32 cost = 1.0f);
-			ReturnHome(WarSceneAction const & other) : WarSceneAction(other)
-			{
-			}
-	};
+    class KillEnemy : public WarSceneAction {
+        public:
+            KillEnemy(const stringImpl& name, F32 cost = 1.0f);
+            KillEnemy(WarSceneAction const & other) : WarSceneAction(other)
+            {
+            }
+    };
+    class ReturnHome : public WarSceneAction {
+        public:
+            ReturnHome(const stringImpl& name, F32 cost = 1.0f);
+            ReturnHome(WarSceneAction const & other) : WarSceneAction(other)
+            {
+            }
+    };
     }; //namespace AI
 }; //namespace Divide
 

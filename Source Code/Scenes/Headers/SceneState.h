@@ -148,7 +148,7 @@ public:
 
     virtual ~SceneState()
     {
-		for (MusicPlaylist::value_type& it : _backgroundMusic) {
+        for (MusicPlaylist::value_type& it : _backgroundMusic) {
             RemoveResource( it.second );
         }
         _backgroundMusic.clear();
@@ -161,7 +161,7 @@ public:
     inline F32& getWindDirX()                  {return _windDirX;}
     inline F32& getWindDirZ()                  {return _windDirZ;}
     inline F32& getGrassVisibility()           {return _grassVisibility;}
-    inline F32& getTreeVisibility()	           {return _treeVisibility;}
+    inline F32& getTreeVisibility()               {return _treeVisibility;}
     inline F32& getGeneralVisibility()         {return _generalVisibility;}
     inline F32& getWaterLevel()                {return _waterHeight;}
     inline F32& getWaterDepth()                {return _waterDepth;}

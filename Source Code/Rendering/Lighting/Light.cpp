@@ -14,16 +14,16 @@
 namespace Divide {
 
 Light::Light(const F32 range, const LightType& type) : SceneNode(TYPE_LIGHT),
-													   _type(type),
-													   _drawImpostor(false),
-													   _updateLightBB(false),
-													   _lightSGN(nullptr),
-													   _impostor(nullptr),
-													   _resolutionFactor(1),
-													   _impostorSGN(nullptr),
-													   _par(ParamHandler::getInstance()),
-													   _shadowMapInfo(nullptr),
-													   _score(0.0f)
+                                                       _type(type),
+                                                       _drawImpostor(false),
+                                                       _updateLightBB(false),
+                                                       _lightSGN(nullptr),
+                                                       _impostor(nullptr),
+                                                       _resolutionFactor(1),
+                                                       _impostorSGN(nullptr),
+                                                       _par(ParamHandler::getInstance()),
+                                                       _shadowMapInfo(nullptr),
+                                                       _score(0.0f)
 {
     //All lights default to fully dynamic for now.
     setLightMode(LIGHT_MODE_MOVABLE);

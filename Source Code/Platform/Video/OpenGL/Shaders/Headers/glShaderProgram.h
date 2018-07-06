@@ -119,8 +119,8 @@ private:
     GLuint  _shaderProgramIDTemp;
     GLenum  _shaderStageTable[6];
 
-	static stringImpl _lastPathPrefix;
-	static stringImpl _lastPathSuffix;
+    static stringImpl _lastPathPrefix;
+    static stringImpl _lastPathSuffix;
 };
 
 }; //namespace Divide

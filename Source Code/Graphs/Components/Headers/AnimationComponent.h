@@ -72,7 +72,7 @@ public:
 
     inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationId) { return _boundingBoxes[animationId]; }
 
-	void resetTimers();
+    void resetTimers();
 
 protected:
     /// Pointer to the mesh's animator. Owned by the mesh!

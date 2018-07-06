@@ -37,7 +37,7 @@ void SDL_API::closeAudioApi() {
     if (_chunk != nullptr) {
         Mix_FreeChunk(_chunk);
     }
-	Mix_CloseAudio();
+    Mix_CloseAudio();
     Mix_Quit();
 }
 

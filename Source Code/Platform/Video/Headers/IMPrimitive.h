@@ -30,11 +30,11 @@ namespace Divide {
 
 class Texture;
 class ShaderProgram;
-enum PrimitiveType;
+enum PrimitiveType : I32;
 ///IMPrimitive replaces immediate mode calls to VB based rendering
 class IMPrimitive : public GUIDWrapper, private NonCopyable  {
 public:
-	inline void setRenderStates(const DELEGATE_CBK<>& setupStatesCallback, const DELEGATE_CBK<>& releaseStatesCallback){
+    inline void setRenderStates(const DELEGATE_CBK<>& setupStatesCallback, const DELEGATE_CBK<>& releaseStatesCallback){
         _setupStates = setupStatesCallback;
         _resetStates = releaseStatesCallback;
     }
@@ -45,15 +45,15 @@ public:
     }
 
     inline void setupStates() {
-		if (_setupStates) {
-			_setupStates();
-		}
+        if (_setupStates) {
+            _setupStates();
+        }
     }
 
     inline void resetStates() {
-		if (_resetStates) {
-			_resetStates();
-		}
+        if (_resetStates) {
+            _resetStates();
+        }
     }
 
     inline void drawShader(ShaderProgram* const shaderProgram) {
@@ -135,8 +135,8 @@ private:
     ///If _pause is true, rendering for the current primitive is skipped and nothing is modified (e.g. zombie counters)
     bool         _paused;
     ///2 functions used to setup or reset states
-	DELEGATE_CBK<> _setupStates;
-	DELEGATE_CBK<> _resetStates;
+    DELEGATE_CBK<> _setupStates;
+    DELEGATE_CBK<> _resetStates;
     ///The state hash associated with this render instance
     size_t       _stateHash;
     ///The transform matrix for this element

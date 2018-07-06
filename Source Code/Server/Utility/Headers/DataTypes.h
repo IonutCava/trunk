@@ -8,25 +8,25 @@ namespace Divide {
 
 enum GEOMETRY_TYPE
 {
-	MESH,
-	VEGETATION,
-	PRIMITIVE,
-	PLACEHOLDER
+    MESH,
+    VEGETATION,
+    PRIMITIVE,
+    PLACEHOLDER
 };
 
 class FileData
 {
 public:
-	stringImpl ItemName;
-	stringImpl ModelName;
-	vec3<F32> scale;
-	vec3<F32> position;
-	vec3<F32> orientation;
-	vec3<F32> color;
-	GEOMETRY_TYPE type;
-	F32 data; //general purpose
-	stringImpl data2;
-	F32 version;
+    stringImpl ItemName;
+    stringImpl ModelName;
+    vec3<F32> scale;
+    vec3<F32> position;
+    vec3<F32> orientation;
+    vec3<F32> color;
+    GEOMETRY_TYPE type;
+    F32 data; //general purpose
+    stringImpl data2;
+    F32 version;
 };
 
 }; //namespace Divide

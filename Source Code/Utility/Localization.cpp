@@ -26,7 +26,7 @@ namespace Locale {
             //And add all pairs to the language table
             CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
             for ( ;keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
-				hashAlg::emplace(_languageTable, stringImpl(keyValuePairIt->first.pItem), stringImpl(keyValuePairIt->second));
+                hashAlg::emplace(_languageTable, stringImpl(keyValuePairIt->first.pItem), stringImpl(keyValuePairIt->second));
             }
         }else{
             _languageTable[key] = defaultValue;

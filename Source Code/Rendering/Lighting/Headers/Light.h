@@ -199,7 +199,7 @@ public:
         return _shadowMapInfo;
     }
 
-	inline void setShadowMappingCallback(const DELEGATE_CBK<>& callback) { 
+    inline void setShadowMappingCallback(const DELEGATE_CBK<>& callback) { 
         _callback = callback; 
     }
 
@@ -297,7 +297,7 @@ private:
     SceneGraphNode* _lightSGN;
     SceneGraphNode* _impostorSGN;
     Camera*         _shadowCamera;
-	DELEGATE_CBK<> _callback;
+    DELEGATE_CBK<> _callback;
     F32   _score;
     bool  _enabled;
 

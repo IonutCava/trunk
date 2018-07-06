@@ -159,7 +159,7 @@ public:
         return tmp;
     }
 
-    inline void slerp(const Quaternion& q, F32 t) {	slerp(*this, q, t); }
+    inline void slerp(const Quaternion& q, F32 t) {    slerp(*this, q, t); }
 
     void slerp(const Quaternion& q0,const Quaternion& q1,F32 t) {
         F32 k0,k1;

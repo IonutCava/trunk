@@ -38,7 +38,7 @@ class TextLabel;
 class Transform;
 class GUIElement;
 class SceneRenderState;
-enum ErrorCode;
+enum ErrorCode : I32;
 
 template<typename T> class Plane;
 typedef vectorImpl<Plane<F32> > PlaneList;
@@ -141,7 +141,7 @@ public:
     }
 };
 
-enum ShaderType;
+enum ShaderType : I32;
 class Shader;
 class Texture;
 class IMPrimitive;
@@ -158,15 +158,15 @@ class RenderAPIWrapper {
 public: //RenderAPIWrapper global
 
 protected:
-	friend class GFXDevice;
+    friend class GFXDevice;
 
     RenderAPIWrapper()
     {
     }
 
-	virtual ~RenderAPIWrapper()
-	{
-	}
+    virtual ~RenderAPIWrapper()
+    {
+    }
 
     /*Application display frame*/
     /// Clear buffers, set default states, etc

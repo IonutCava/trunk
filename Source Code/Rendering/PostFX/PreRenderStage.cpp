@@ -9,15 +9,15 @@ PreRenderStage::~PreRenderStage()
 }
 
 void PreRenderStage::execute() {
-	for(PreRenderOperator* op : _operators){
-		op->operation();
-	}
+    for(PreRenderOperator* op : _operators){
+        op->operation();
+    }
 }
 
 void PreRenderStage::reshape(I32 width, I32 height){
-	for(PreRenderOperator* op : _operators){
-		op->reshape(width,height);
-	}
+    for(PreRenderOperator* op : _operators){
+        op->reshape(width,height);
+    }
 }
 
 };

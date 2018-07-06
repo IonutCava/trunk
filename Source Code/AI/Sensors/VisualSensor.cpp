@@ -15,22 +15,22 @@ VisualSensor::VisualSensor(AIEntity* const parentEntity) : Sensor(parentEntity, 
 
 VisualSensor::~VisualSensor()
 {
-	for (NodeContainerMap::value_type& container : _nodeContainerMap) {
-		container.second.clear();
-	}
-	_nodeContainerMap.clear();
-	_nodePositionsMap.clear();
+    for (NodeContainerMap::value_type& container : _nodeContainerMap) {
+        container.second.clear();
+    }
+    _nodeContainerMap.clear();
+    _nodePositionsMap.clear();
 }
 
 void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const node) {
     DIVIDE_ASSERT(node != nullptr, "VisualSensor error: Invalid node specified for follow function");
-	NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
+    NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
     if (container != _nodeContainerMap.end()) {
         NodeContainer::const_iterator nodeEntry = container->second.find(node->getGUID());
         if (nodeEntry == container->second.end()) {
             hashAlg::emplace(container->second, node->getGUID(), node);
-			node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode,
+            node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode,
                                                          this,
                                                          containerID, 
                                                          node->getGUID()));
@@ -41,7 +41,7 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
         NodeContainer& newContainer = _nodeContainerMap[containerID];
 
         hashAlg::emplace(newContainer, node->getGUID(), node);
-		node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, 
+        node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, 
                                                      this, 
                                                      containerID, 
                                                      node->getGUID() ) );
@@ -53,7 +53,7 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
 
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
     DIVIDE_ASSERT(nodeGUID != 0, "VisualSensor error: Invalid node GUID specified for unfollow function");
-	NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
+    NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != _nodeContainerMap.end()) {
         NodeContainer::iterator nodeEntry = container->second.find(nodeGUID);
         if (nodeEntry != container->second.end()) {
@@ -115,7 +115,7 @@ F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {
 
 vec3<F32> VisualSensor::getNodePosition(U32 containerID, U64 nodeGUID) {
     DIVIDE_ASSERT(nodeGUID != 0, "VisualSensor error: Invalid node GUID specified for position request");
-	NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
+    NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != _nodeContainerMap.end()) {
         NodePositions& positions = _nodePositionsMap[container->first];
         NodePositions::iterator it = positions.find(nodeGUID);

@@ -29,12 +29,12 @@ namespace Divide {
 
 class d3dShader : public Shader {
 public:
-	d3dShader(const stringImpl& name,const ShaderType& type, const bool optimise = false) : Shader(name,type,optimise) {}
-	~d3dShader(){}
+    d3dShader(const stringImpl& name,const ShaderType& type, const bool optimise = false) : Shader(name,type,optimise) {}
+    ~d3dShader(){}
 
-	bool load(const stringImpl& source){return true;}
-	bool compile() {return true;}
-	void validate(){}
+    bool load(const stringImpl& source){return true;}
+    bool compile() {return true;}
+    void validate(){}
 };
 
 }; //namespace Divide

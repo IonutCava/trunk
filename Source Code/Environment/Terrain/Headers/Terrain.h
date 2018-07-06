@@ -37,7 +37,7 @@ struct TerrainTextureLayer {
         _lastOffset = 0;
         _blendMap = nullptr;
         _tileMaps = nullptr;
-		_normalMaps = nullptr;
+        _normalMaps = nullptr;
     }
 
     ~TerrainTextureLayer();
@@ -51,7 +51,7 @@ struct TerrainTextureLayer {
 
     inline void setBlendMap(Texture* const texture)   { _blendMap = texture; }
     inline void setTileMaps(Texture* const texture)   { _tileMaps = texture; }
-	inline void setNormalMaps(Texture* const texture) { _normalMaps = texture;  }
+    inline void setNormalMaps(Texture* const texture) { _normalMaps = texture;  }
     inline void setDiffuseScale(TerrainTextureChannel textureChannel, F32 scale) { _diffuseUVScale[textureChannel] = scale; }
     inline void setDetailScale(TerrainTextureChannel textureChannel, F32 scale)  { _detailUVScale[textureChannel]  = scale; }
 
@@ -60,7 +60,7 @@ struct TerrainTextureLayer {
 
     Texture* const blendMap()   const { return _blendMap; }
     Texture* const tileMaps()   const { return _tileMaps; }
-	Texture* const normalMaps() const { return _normalMaps; }
+    Texture* const normalMaps() const { return _normalMaps; }
 
 private:
     U32 _lastOffset;
@@ -68,7 +68,7 @@ private:
     vec4<F32> _detailUVScale;
     Texture*  _blendMap;
     Texture*  _tileMaps;
-	Texture*  _normalMaps;
+    Texture*  _normalMaps;
 };
 
 class Quad3D;
@@ -129,20 +129,20 @@ protected:
     VegetationDetails _vegDetails;
 
     U8            _lightCount;
-    U16			  _terrainWidth;
+    U16              _terrainWidth;
     U16           _terrainHeight;
     U32           _chunkSize;
-    Quadtree*	  _terrainQuadtree;
+    Quadtree*      _terrainQuadtree;
  
     vec2<F32> _terrainScaleFactor;
-    F32	 _farPlane;
+    F32     _farPlane;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
     bool _terrainInView;
     bool _planeInView;
     SceneGraphNode* _vegetationGrassNode;
     BoundingBox     _boundingBox;
-    Quad3D*		    _plane;
+    Quad3D*            _plane;
     F32             _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer* > _terrainTextures;
 

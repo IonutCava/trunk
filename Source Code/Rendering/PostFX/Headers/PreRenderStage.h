@@ -10,18 +10,18 @@ namespace Divide {
 class PreRenderOperator;
 class PreRenderStage{
 public:
-	PreRenderStage(){}
-	~PreRenderStage();
-	inline bool addRenderOperator(PreRenderOperator* op) {
+    PreRenderStage(){}
+    ~PreRenderStage();
+    inline bool addRenderOperator(PreRenderOperator* op) {
         _operators.push_back(op); 
         return true;
     }
-	void execute();
-	void reshape(I32 width, I32 height);
+    void execute();
+    void reshape(I32 width, I32 height);
 
 private:
-	vectorImpl<PreRenderOperator* >	_operators;
-	bool							_isValid;		//True if the filter is valid
+    vectorImpl<PreRenderOperator* >    _operators;
+    bool                            _isValid;        //True if the filter is valid
 };
 
 }; //namespace Divide

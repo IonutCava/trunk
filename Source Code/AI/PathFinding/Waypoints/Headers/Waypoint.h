@@ -29,38 +29,38 @@
 namespace Divide {
     namespace Navigation {
 
-	/// A point in space that AI units can navigate to
-	class Waypoint {
-	public:
-		Waypoint();
-		~Waypoint();
+    /// A point in space that AI units can navigate to
+    class Waypoint {
+    public:
+        Waypoint();
+        ~Waypoint();
 
-		inline U32 getID() const {return _id;}
-	public:
+        inline U32 getID() const {return _id;}
+    public:
 
-		vec3<F32>  _position;
-		Quaternion<F32> _orientation;
-		U32        _time;
+        vec3<F32>  _position;
+        Quaternion<F32> _orientation;
+        U32        _time;
 
-	private:
-		U32 _id;
-	};
+    private:
+        U32 _id;
+    };
 
-	/// A straight line between 2 waypoints
-	///
-	class WaypointPath {
-	public:
-		WaypointPath(Waypoint* first, Waypoint* second);
-		~WaypointPath();
+    /// A straight line between 2 waypoints
+    ///
+    class WaypointPath {
+    public:
+        WaypointPath(Waypoint* first, Waypoint* second);
+        ~WaypointPath();
 
-	private:
-		Waypoint* _first;
-		Waypoint* _second;
-		/// If the path intersects an object in the scene, is the path still valid?
-		bool _throughObjects;
-		/// ray used for collision detection
-		Ray _collisionRay;
-	};
+    private:
+        Waypoint* _first;
+        Waypoint* _second;
+        /// If the path intersects an object in the scene, is the path still valid?
+        bool _throughObjects;
+        /// ray used for collision detection
+        Ray _collisionRay;
+    };
 
     }; //namespace Navigation
 }; //namespace Divide

@@ -17,18 +17,18 @@ AITeam::AITeam(U32 id) : GUIDWrapper(),
 
 AITeam::~AITeam()
 {
-	AIManager::getInstance().unregisterTeam(this);
-	{
-		WriteLock w1_lock(_crowdMutex);
+    AIManager::getInstance().unregisterTeam(this);
+    {
+        WriteLock w1_lock(_crowdMutex);
         MemoryManager::DELETE_HASHMAP(_aiTeamCrowd);
-	}
-	{
-		WriteLock w2_lock(_updateMutex);
-		for (AITeam::TeamMap::value_type& entity : _team) {
-			entity.second->setTeamPtr(nullptr);
-		}
-		_team.clear();
-	}
+    }
+    {
+        WriteLock w2_lock(_updateMutex);
+        for (AITeam::TeamMap::value_type& entity : _team) {
+            entity.second->setTeamPtr(nullptr);
+        }
+        _team.clear();
+    }
     
 }
 
@@ -49,40 +49,40 @@ void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
 void AITeam::update(const U64 deltaTime) {
     // Crowds
     ReadLock r_lock(_crowdMutex);
-	for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
+    for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
         it.second->update( deltaTime );
     }
     r_lock.unlock();
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team) {
+    for (AITeam::TeamMap::value_type& entity : _team) {
         entity.second->update( deltaTime );
     }
 }
 
 void AITeam::processInput(const U64 deltaTime) {
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team) {
+    for (AITeam::TeamMap::value_type& entity : _team) {
         entity.second->processInput( deltaTime );
     }
 }
 
 void AITeam::processData(const U64 deltaTime){
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team) {
+    for (AITeam::TeamMap::value_type& entity : _team) {
         entity.second->processData( deltaTime );
     }
 }
 
 void AITeam::init() {
     WriteLock w_lock(_updateMutex);
-	for (AITeam::TeamMap::value_type& entity : _team) {
+    for (AITeam::TeamMap::value_type& entity : _team) {
         entity.second->init();
     }
 }
 
 void AITeam::resetCrowd() {
     WriteLock w_lock(_updateMutex); 
-	for (AITeam::TeamMap::value_type& entity : _team) {
+    for (AITeam::TeamMap::value_type& entity : _team) {
         entity.second->resetCrowd();
     }
 }

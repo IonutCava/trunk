@@ -17,7 +17,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
                                                         _validated(false),
                                                         _shaderProgramIDTemp(0)
 {
-	_validationQueued = false; 
+    _validationQueued = false; 
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramId = GLUtil::_invalidObjectID;
     // some basic translation tables for shade types
@@ -321,19 +321,19 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 #   endif
     // The program wasn't loaded from binary, so process shaders
     if (!_loadedFromBinary) {
-		bool updatePath = false;
+        bool updatePath = false;
         // Use the specified shader path
-		if (_lastPathPrefix.compare(getResourceLocation() + "GLSL/") != 0) {
-			_lastPathPrefix = getResourceLocation() + "GLSL/";
-			updatePath = true;
-		}
-		if (_lastPathSuffix.compare(".glsl") != 0) {
-			_lastPathSuffix = ".glsl";
-			updatePath = true;
-		}
-		if (updatePath){
-			glswSetPath(_lastPathPrefix.c_str(), _lastPathSuffix.c_str());
-		}
+        if (_lastPathPrefix.compare(getResourceLocation() + "GLSL/") != 0) {
+            _lastPathPrefix = getResourceLocation() + "GLSL/";
+            updatePath = true;
+        }
+        if (_lastPathSuffix.compare(".glsl") != 0) {
+            _lastPathSuffix = ".glsl";
+            updatePath = true;
+        }
+        if (updatePath){
+            glswSetPath(_lastPathPrefix.c_str(), _lastPathSuffix.c_str());
+        }
         // Mirror initial shader defines to match line count
         GLint initialOffset = 20;
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) { //nVidia specific
@@ -472,7 +472,7 @@ GLint glShaderProgram::cachedLoc(const stringImpl& name, const bool uniform) {
     // Check the cache for the location
     ShaderVarMap::const_iterator it = _shaderVars.find(name);
     if (it != _shaderVars.end()) {
-    	return it->second;
+        return it->second;
     }
 
     // Cache miss. Query OpenGL for the location

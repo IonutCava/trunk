@@ -33,7 +33,7 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 
-enum RenderStage;
+enum RenderStage : I32;
 
 class Sky : public SceneNode {
 public:
@@ -62,12 +62,12 @@ private:
     bool load();
 
 private:
-    ShaderProgram*	_skyShader;
-    Texture*   	    _skybox;
+    ShaderProgram*    _skyShader;
+    Texture*           _skybox;
     Sphere3D        *_sky;
-    U16				_exclusionMask;
+    U16                _exclusionMask;
     size_t          _skyboxRenderStateHash;
-	size_t          _skyboxRenderStateReflectedHash;
+    size_t          _skyboxRenderStateReflectedHash;
 };
 
 }; //namespace Divide

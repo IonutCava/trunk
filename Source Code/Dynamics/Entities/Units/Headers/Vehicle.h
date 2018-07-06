@@ -30,32 +30,32 @@ namespace Divide {
 /// Basic vehicle class
 class Vehicle : public Unit {
 public:
-	/// Currently supported vehicle types
-	enum VehicleType{
-		/// Ground based vehicles
-		VEHICLE_TYPE_GROUND      = toBit(1),
-		/// Flying/Space vehicles
-		VEHICLE_TYPE_AIR         = toBit(2),
-		/// Water based vehicles (ships, boats, etc)
-		VEHICLE_TYPE_WATER       = toBit(3),
-		/// Underwater vehicles
-		VEHICLE_TYPE_UNDERWATER  = toBit(4),
-		/// For Future expansion
-		VEHICLE_TYPE_PLACEHOLDER = toBit(10)
-	};
+    /// Currently supported vehicle types
+    enum VehicleType{
+        /// Ground based vehicles
+        VEHICLE_TYPE_GROUND      = toBit(1),
+        /// Flying/Space vehicles
+        VEHICLE_TYPE_AIR         = toBit(2),
+        /// Water based vehicles (ships, boats, etc)
+        VEHICLE_TYPE_WATER       = toBit(3),
+        /// Underwater vehicles
+        VEHICLE_TYPE_UNDERWATER  = toBit(4),
+        /// For Future expansion
+        VEHICLE_TYPE_PLACEHOLDER = toBit(10)
+    };
 
-	Vehicle(SceneGraphNode* const node);
-	~Vehicle();
+    Vehicle(SceneGraphNode* const node);
+    ~Vehicle();
 
-	/// A vehicle can be of multiple types at once
-	void setVehicleTypeMask(U8 mask);
-	/// Check if current vehicle fits the desired type
-	bool checkVehicleMask(VehicleType type) const;
+    /// A vehicle can be of multiple types at once
+    void setVehicleTypeMask(U8 mask);
+    /// Check if current vehicle fits the desired type
+    bool checkVehicleMask(VehicleType type) const;
 
 public:
-	/// Is this vehicle controlled by the player or the AI?
-	bool _playerControlled;
-	U8   _vehicleTypeMask;
+    /// Is this vehicle controlled by the player or the AI?
+    bool _playerControlled;
+    U8   _vehicleTypeMask;
 };
 
 }; //namespace Divide

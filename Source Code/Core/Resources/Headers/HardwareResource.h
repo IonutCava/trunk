@@ -31,23 +31,23 @@ namespace Divide {
 ///singlethreaded hardware initialization (textures, shaders, etc)
 class HardwareResource : public Resource {
 public:
-	explicit HardwareResource(const stringImpl& name) : Resource(name)
-	{
-		_hardwareInitComplete = false;
-	}
+    explicit HardwareResource(const stringImpl& name) : Resource(name)
+    {
+        _hardwareInitComplete = false;
+    }
 
-	virtual ~HardwareResource(){}
+    virtual ~HardwareResource(){}
 
-	inline bool isHWInitComplete() const {return _hardwareInitComplete;}
-	///Use this as a callback for multi-threaded loading.
-	///Generate hardware elements (buffers, textures, shaders etc. after joining main loading thread.
-	virtual bool generateHWResource(const stringImpl& name) {
+    inline bool isHWInitComplete() const {return _hardwareInitComplete;}
+    ///Use this as a callback for multi-threaded loading.
+    ///Generate hardware elements (buffers, textures, shaders etc. after joining main loading thread.
+    virtual bool generateHWResource(const stringImpl& name) {
         _hardwareInitComplete = true; 
         return true;
     }
 
 private:
-	std::atomic_bool _hardwareInitComplete;
+    std::atomic_bool _hardwareInitComplete;
 };
 
 }; //namespace Divide

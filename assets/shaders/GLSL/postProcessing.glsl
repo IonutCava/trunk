@@ -67,63 +67,63 @@ layout(location = 4) subroutine uniform ScreenRoutineType ScreenRoutine;
 layout(location = 5) subroutine uniform OutputRoutineType OutputRoutine;
 
 vec4 LevelOfGrey(in vec4 colorIn) {
-	return vec4(colorIn.r * 0.299, colorIn.g * 0.587, colorIn.b * 0.114, colorIn.a);
+    return vec4(colorIn.r * 0.299, colorIn.g * 0.587, colorIn.b * 0.114, colorIn.a);
 }
 
 
 subroutine(VignetteRoutineType)
 vec4 Vignette(in vec4 colorIn){
-	vec4 colorOut = colorIn - (vec4(1,1,1,2) - texture(texVignette, _texCoord));
-	return vec4(clamp(colorOut.rgb,0.0,1.0), colorOut.a);
+    vec4 colorOut = colorIn - (vec4(1,1,1,2) - texture(texVignette, _texCoord));
+    return vec4(clamp(colorOut.rgb,0.0,1.0), colorOut.a);
 }
 
 
 subroutine(NoiseRoutineType)
 vec4 Noise(in vec4 colorIn){
-	return mix(texture(texNoise, _texCoord + vec2(randomCoeffNoise, randomCoeffNoise)), 
-		       vec4(1.0), randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colorIn) / 3.0;
+    return mix(texture(texNoise, _texCoord + vec2(randomCoeffNoise, randomCoeffNoise)), 
+               vec4(1.0), randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colorIn) / 3.0;
 }
 
 
 subroutine(BloomRoutineType)
 vec4 Bloom(in vec4 colorIn){
-	return colorIn + bloomFactor * texture(texBloom, _texCoord);
+    return colorIn + bloomFactor * texture(texBloom, _texCoord);
 }
 
 
 subroutine(SSAORoutineType)
 vec4 SSAO(in vec4 colorIn){
-	float ssaoFilter = texture(texSSAO, _texCoord).r;
-	if(ssaoFilter > 0){
-		colorIn.rgb = colorIn.rgb * ssaoFilter;
-	}
-	return colorIn;
+    float ssaoFilter = texture(texSSAO, _texCoord).r;
+    if(ssaoFilter > 0){
+        colorIn.rgb = colorIn.rgb * ssaoFilter;
+    }
+    return colorIn;
 }
 
 subroutine(ScreenRoutineType)
 vec4 screenUnderwater(){
-	float time2 = dvd_time*0.0001;
-	vec2 noiseUV = _texCoord * _noiseTile;
+    float time2 = dvd_time*0.0001;
+    vec2 noiseUV = _texCoord * _noiseTile;
     vec2 uvNormal0 = noiseUV + time2;
-	vec2 uvNormal1 = noiseUV;
-	uvNormal1.s -= time2;
-	uvNormal1.t += time2;
-		
-	vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb;
-	vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb;
+    vec2 uvNormal1 = noiseUV;
+    uvNormal1.s -= time2;
+    uvNormal1.t += time2;
+        
+    vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb;
+    vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb;
     vec3 normal = normalize(2.0 * ((normal0 + normal1) * 0.5) - 1.0);
-	
+    
     return clamp(texture(texScreen, _texCoord + _noiseFactor * normal.st), vec4(0.0), vec4(1.0));
 }
 
 subroutine(ScreenRoutineType)
 vec4 screenNormal(){
-	return texture(texScreen, _texCoord);
+    return texture(texScreen, _texCoord);
 }
 
 subroutine(SSAORoutineType, BloomRoutineType, NoiseRoutineType, VignetteRoutineType)
 vec4 ColorPassThrough(in vec4 colorIn){
-	return colorIn;
+    return colorIn;
 }
 
 subroutine(OutputRoutineType)
@@ -133,8 +133,8 @@ void outputScreen(){
 
 subroutine(OutputRoutineType)
 void outputDepth(){
-	float near = dvd_ZPlanesCombined.z;
-	float far  = dvd_ZPlanesCombined.w;
+    float near = dvd_ZPlanesCombined.z;
+    float far  = dvd_ZPlanesCombined.w;
     _colorOut = vec4(vec3((2 * near) / (far + near - texture(texScreen, _texCoord).r * (far - near))), 1.0);
 }
 

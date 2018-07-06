@@ -38,27 +38,27 @@
 namespace Divide {
 
 class Ray {
-	public:
-		Ray(const vec3<F32> &o, const vec3<F32> &d) {
-			origin = o;
-			direction = d;
-			inv_direction = vec3<F32>(1/d.x, 1/d.y, 1/d.z);
-			sign[0] = (inv_direction.x < 0);
-			sign[1] = (inv_direction.y < 0);
-			sign[2] = (inv_direction.z < 0);
-		}
+    public:
+        Ray(const vec3<F32> &o, const vec3<F32> &d) {
+            origin = o;
+            direction = d;
+            inv_direction = vec3<F32>(1/d.x, 1/d.y, 1/d.z);
+            sign[0] = (inv_direction.x < 0);
+            sign[1] = (inv_direction.y < 0);
+            sign[2] = (inv_direction.z < 0);
+        }
 
-		Ray(const Ray &r) {
-			origin = r.origin;
-			direction = r.direction;
-			inv_direction = r.inv_direction;
-			sign[0] = r.sign[0]; sign[1] = r.sign[1]; sign[2] = r.sign[2];
-		}
+        Ray(const Ray &r) {
+            origin = r.origin;
+            direction = r.direction;
+            inv_direction = r.inv_direction;
+            sign[0] = r.sign[0]; sign[1] = r.sign[1]; sign[2] = r.sign[2];
+        }
 
-		vec3<F32> origin;
-		vec3<F32> direction;
-		vec3<F32> inv_direction;
-		I32 sign[3];
+        vec3<F32> origin;
+        vec3<F32> direction;
+        vec3<F32> inv_direction;
+        I32 sign[3];
 };
 
 }; //namespace Divide

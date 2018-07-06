@@ -27,8 +27,8 @@
 
 /// boost vectors have a completely different interface, so we can't actually use them
 #if defined(VECTOR_IMP) && VECTOR_IMP == 2
-#	undef  VECTOR_IMP
-#	define VECTOR_IMP 0
+#    undef  VECTOR_IMP
+#    define VECTOR_IMP 0
 #endif
 
 #if defined(VECTOR_IMP) && VECTOR_IMP == 2
@@ -49,8 +49,8 @@ inline void shrinkToFit(vectorImpl<T>& inputVector) {
 inputVector.shrink_to_fit();
 }
 
-#	ifndef BOOST_PAIR_FUNCS
-#	define BOOST_PAIR_FUNCS
+#    ifndef BOOST_PAIR_FUNCS
+#    define BOOST_PAIR_FUNCS
 template<typename K, typename V>
 inline std::pair<K, V> makePair(const K& key, const V& val) {
 return std::make_pair(key, val);
@@ -60,7 +60,7 @@ template<typename K, typename V>
 inline std::pair<K, V> makePairCpy(const K& key, V val) {
 return std::make_pair(key, val);
 }
-#	endif
+#    endif
 };
 */
 #elif defined(VECTOR_IMP) && VECTOR_IMP == 0
@@ -86,8 +86,8 @@ namespace eastl {
         return &inputVector.back();
     }
 
-#	ifndef EASTL_PAIR_FUNCS
-#	define EASTL_PAIR_FUNCS
+#    ifndef EASTL_PAIR_FUNCS
+#    define EASTL_PAIR_FUNCS
     template<typename K, typename V>
     inline eastl::pair<K, V> makePair(const K& key, const V& val) {
         return eastl::make_pair_ref(key, val);
@@ -97,7 +97,7 @@ namespace eastl {
     inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
         return eastl::make_pair_ref(key, val);
     }
-#	endif
+#    endif
 };
 
 #else //defined(VECTOR_IMP) && VECTOR_IMP == 1
@@ -126,8 +126,8 @@ namespace std {
         return inputVector.back();
     }
 
-#	ifndef STD_PAIR_FUNCS
-#	define STD_PAIR_FUNCS
+#    ifndef STD_PAIR_FUNCS
+#    define STD_PAIR_FUNCS
     template<typename K, typename V>
     inline std::pair<K, V> makePair(const K& key, const V& val) {
         return std::make_pair(key, val);
@@ -137,7 +137,7 @@ namespace std {
     inline std::pair<K, V> makePairCpy(const K& key, V val) {
         return std::make_pair(key, val);
     }
-#	endif
+#    endif
 };
 #endif //defined(VECTOR_IMP)
 

@@ -30,30 +30,30 @@ namespace Divide {
 class glPixelBuffer : public PixelBuffer {
 public:
 
-	glPixelBuffer(PBType type);
-	~glPixelBuffer() {Destroy();}
+    glPixelBuffer(PBType type);
+    ~glPixelBuffer() {Destroy();}
 
-	bool Create(GLushort width, GLushort height,GLushort depth = 0,
-				GFXImageFormat internalFormatEnum = RGBA8,
-				GFXImageFormat formatEnum = RGBA,
-				GFXDataFormat dataTypeEnum = FLOAT_32);
+    bool Create(GLushort width, GLushort height,GLushort depth = 0,
+                GFXImageFormat internalFormatEnum = RGBA8,
+                GFXImageFormat formatEnum = RGBA,
+                GFXDataFormat dataTypeEnum = FLOAT_32);
 
-	void Destroy();
+    void Destroy();
 
-	void* Begin(GLubyte nFace=0) const;
-	void  End() const;
+    void* Begin(GLubyte nFace=0) const;
+    void  End() const;
 
-	void Bind(GLubyte unit=0) const;
+    void Bind(GLubyte unit=0) const;
 
-	void updatePixels(const GLfloat * const pixels);
+    void updatePixels(const GLfloat * const pixels);
 
 private:
-	bool checkStatus();
-	size_t sizeOf(GLenum dataType) const;
+    bool checkStatus();
+    size_t sizeOf(GLenum dataType) const;
 private:
-	GLenum _dataType;
-	GLenum _format;
-	GLenum _internalFormat;
+    GLenum _dataType;
+    GLenum _format;
+    GLenum _internalFormat;
 };
 
 }; //namespace Divide

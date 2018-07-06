@@ -21,7 +21,7 @@ uniform samplerCube texSky;
 #include "utility.frag"
 
 vec3 sunColor(){
-	vec3 vert = normalize(_vertex);
+    vec3 vert = normalize(_vertex);
     vec3 sun = normalize(sun_vector);
         
     float day_factor = max(-sun.y, 0.0);

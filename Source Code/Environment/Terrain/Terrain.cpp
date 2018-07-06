@@ -196,8 +196,8 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
     vec2<I32>  posI((I32)(posF.x),   (I32)(posF.y) );
     vec2<F32>  posD(posF.x - posI.x, posF.y - posI.y );
 
-    if(posI.x >= (I32)_terrainWidth - 1)	posI.x = _terrainWidth  - 2;
-    if(posI.y >= (I32)_terrainHeight - 1)	posI.y = _terrainHeight - 2;
+    if(posI.x >= (I32)_terrainWidth - 1)    posI.x = _terrainWidth  - 2;
+    if(posI.y >= (I32)_terrainHeight - 1)    posI.y = _terrainHeight - 2;
 
     assert(posI.x >= 0 && posI.x < (I32)(_terrainWidth)-1 && posI.y >= 0 && posI.y < (I32)(_terrainHeight) - 1);
 
@@ -217,12 +217,12 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
 vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
     assert(!(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f));
 
-    vec2<F32>  posF(	x_clampf * _terrainWidth, z_clampf * _terrainHeight );
-    vec2<I32>  posI(	(I32)(x_clampf * _terrainWidth), (I32)(z_clampf * _terrainHeight) );
-    vec2<F32>  posD(	posF.x - posI.x, posF.y - posI.y );
+    vec2<F32>  posF(    x_clampf * _terrainWidth, z_clampf * _terrainHeight );
+    vec2<I32>  posI(    (I32)(x_clampf * _terrainWidth), (I32)(z_clampf * _terrainHeight) );
+    vec2<F32>  posD(    posF.x - posI.x, posF.y - posI.y );
 
     if(posI.x >= (I32)(_terrainWidth)-1)    posI.x = (I32)(_terrainWidth) - 2;
-    if(posI.y >= (I32)(_terrainHeight)-1)	posI.y = (I32)(_terrainHeight) - 2;
+    if(posI.y >= (I32)(_terrainHeight)-1)    posI.y = (I32)(_terrainHeight) - 2;
 
     assert(posI.x >= 0 && posI.x < (I32)(_terrainWidth)-1 && posI.y >= 0 && posI.y < (I32)(_terrainHeight)-1);
 
@@ -237,12 +237,12 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
     assert(!(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f));
 
-    vec2<F32> posF(	x_clampf * _terrainWidth, z_clampf * _terrainHeight );
-    vec2<I32> posI(	(I32)(x_clampf * _terrainWidth), (I32)(z_clampf * _terrainHeight) );
-    vec2<F32> posD(	posF.x - posI.x, posF.y - posI.y );
+    vec2<F32> posF(    x_clampf * _terrainWidth, z_clampf * _terrainHeight );
+    vec2<I32> posI(    (I32)(x_clampf * _terrainWidth), (I32)(z_clampf * _terrainHeight) );
+    vec2<F32> posD(    posF.x - posI.x, posF.y - posI.y );
 
     if (posI.x >= (I32)(_terrainWidth)-1)    posI.x = (I32)(_terrainWidth)-2;
-    if (posI.y >= (I32)(_terrainHeight)-1)	posI.y = (I32)(_terrainHeight)-2;
+    if (posI.y >= (I32)(_terrainHeight)-1)    posI.y = (I32)(_terrainHeight)-2;
 
     assert(posI.x >= 0 && posI.x < (I32)(_terrainWidth)-1 && posI.y >= 0 && posI.y < (I32)(_terrainHeight)-1);
 
@@ -258,7 +258,7 @@ TerrainTextureLayer::~TerrainTextureLayer()
 {
     RemoveResource(_blendMap);
     RemoveResource(_tileMaps);
-	RemoveResource(_normalMaps);
+    RemoveResource(_normalMaps);
 }
 
 };

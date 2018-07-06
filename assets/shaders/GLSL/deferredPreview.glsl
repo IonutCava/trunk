@@ -5,7 +5,7 @@
 void main(void)
 {
 
-	computeData();
+    computeData();
 }
 
 -- Fragment
@@ -17,5 +17,5 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-	_colorOut = texture(texDiffuse0, _texCoord);
+    _colorOut = texture(texDiffuse0, _texCoord);
 }

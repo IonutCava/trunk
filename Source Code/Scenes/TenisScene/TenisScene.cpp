@@ -22,12 +22,12 @@ static std::atomic_bool s_gameStarted;
 
 void TenisScene::preRender(){
     vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-    _sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+    _sunvector = vec3<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
     _sun->setDirection(_sunvector);
-	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
 }
 
 void TenisScene::processGUI(const U64 deltaTime){
@@ -83,9 +83,9 @@ void TenisScene::resetGame(){
 void TenisScene::startGame(){
     resetGame();
     Kernel* kernel = Application::getInstance().getKernel();
-	Task_ptr newGame(kernel->AddTask(getMsToUs(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
-	registerTask(newGame);
-	newGame->startTask();
+    Task_ptr newGame(kernel->AddTask(getMsToUs(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
+    registerTask(newGame);
+    newGame->startTask();
     _gameGUID = newGame->getGUID();
 }
 
@@ -228,7 +228,7 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
 
     //-----------------DISPLAY RESULTS---------------------//
     if(updated){
-        if(_lostTeam1)	{
+        if(_lostTeam1)    {
             message = "Team 2 scored!";
             _scoreTeam2++;
         }else{
@@ -252,13 +252,13 @@ bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
 
     //Add a light
-	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
-	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
-//	ResourceDescriptor tempLight1("Light omni");
-//	tempLight1.setEnumValue(LIGHT_TYPE_POINT);
-//	light1 = CreateResource<Light>(tempLight1);
-//	addLight(light1);
+//    ResourceDescriptor tempLight1("Light omni");
+//    tempLight1.setEnumValue(LIGHT_TYPE_POINT);
+//    light1 = CreateResource<Light>(tempLight1);
+//    addLight(light1);
 
     //Position camera
     //renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));

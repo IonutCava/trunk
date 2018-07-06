@@ -37,9 +37,9 @@ namespace CEGUI {
 namespace Divide {
 
 namespace Font {
-    const static stringImpl	DIVIDE_DEFAULT ("DroidSerif-Regular.ttf"/*"Test.ttf"*/);
-    const static stringImpl	BATANG ("Batang.ttf");
-    const static stringImpl	DEJA_VU("DejaVuSans.ttf");
+    const static stringImpl    DIVIDE_DEFAULT ("DroidSerif-Regular.ttf"/*"Test.ttf"*/);
+    const static stringImpl    BATANG ("Batang.ttf");
+    const static stringImpl    DEJA_VU("DejaVuSans.ttf");
     const static stringImpl    DROID_SERIF("DroidSerif-Regular.ttf");
     const static stringImpl    DROID_SERIF_ITALIC("DroidSerif-Italic.ttf");
     const static stringImpl    DROID_SERIF_BOLD("DroidSerif-Bold.ttf");
@@ -62,7 +62,7 @@ class Scene;
 
 DEFINE_SINGLETON_EXT1( GUI, Input::InputAggregatorInterface )
     typedef hashMapImpl<stringImpl, GUIElement*> guiMap;
-	typedef DELEGATE_CBK<> ButtonCallback;
+    typedef DELEGATE_CBK<> ButtonCallback;
 
 public:
     /// Main update call
@@ -105,8 +105,8 @@ public:
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
     void selectionChangeCallback(Scene* const activeScene);
-	/// Return a pointer to the default, general purpose message box
-	inline GUIMessageBox* const getDefaultMessageBox() const { return _defaultMsgBox; }
+    /// Return a pointer to the default, general purpose message box
+    inline GUIMessageBox* const getDefaultMessageBox() const { return _defaultMsgBox; }
     /// Used to prevent text updating every frame
     inline void setTextRenderTimer(const U64 renderIntervalUs) {_textRenderInterval = renderIntervalUs;}
     /// Mouse cursor forced to a certain position
@@ -141,7 +141,7 @@ private:
     bool _init;                     //< Set to true when the GUI has finished loading
     CEGUIInput     _ceguiInput;        //< Used to implement key repeat
     GUIConsole*    _console;           //< Pointer to the GUIConsole object
-	GUIMessageBox* _defaultMsgBox;     //< Pointer to a default message box used for general purpose messages
+    GUIMessageBox* _defaultMsgBox;     //< Pointer to a default message box used for general purpose messages
     guiMap         _guiStack;          //< All the GUI elements created
     vec2<U16>      _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries
     U64            _textRenderInterval;//< We should avoid rendering text as fast as possible for performance reasons

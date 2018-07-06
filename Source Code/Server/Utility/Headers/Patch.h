@@ -9,22 +9,22 @@ namespace Divide {
 
 struct PatchData
 {
-	stringImpl sceneName;
-	U32 size;
-	vectorImpl<stringImpl> name, modelName;
-	vectorImpl<F32> version;
+    stringImpl sceneName;
+    U32 size;
+    vectorImpl<stringImpl> name, modelName;
+    vectorImpl<F32> version;
 };
 
 DEFINE_SINGLETON(Patch)
 
 public:
-	bool compareData(const PatchData& data);
-	void addGeometry(const FileData& data);
-	const vectorImpl<FileData>& updateClient();
-	void reset() {ModelData.clear();};
+    bool compareData(const PatchData& data);
+    void addGeometry(const FileData& data);
+    const vectorImpl<FileData>& updateClient();
+    void reset() {ModelData.clear();};
 
 private:
-	vectorImpl<FileData> ModelData;
+    vectorImpl<FileData> ModelData;
 
 END_SINGLETON
 

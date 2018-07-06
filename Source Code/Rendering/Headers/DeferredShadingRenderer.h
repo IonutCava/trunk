@@ -35,30 +35,30 @@ class ShaderProgram;
 ///This class implements a full  deferred renderer based on the 2 pass, huge G-buffer model
 class DeferredShadingRenderer : public Renderer {
 public:
-	DeferredShadingRenderer();
-	~DeferredShadingRenderer();
+    DeferredShadingRenderer();
+    ~DeferredShadingRenderer();
 
     void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, 
                              const GFXDevice::GPUBlock& gpuBlock);
 
-	void render(const DELEGATE_CBK<>& renderCallback, 
+    void render(const DELEGATE_CBK<>& renderCallback, 
                 const SceneRenderState& sceneRenderState);
 
-	void toggleDebugView();
+    void toggleDebugView();
     void updateResolution(U16 width, U16 height);
 
 private:
-	void firstPass(const DELEGATE_CBK<>& renderCallback, 
+    void firstPass(const DELEGATE_CBK<>& renderCallback, 
                    const SceneRenderState& sceneRenderState);
-	void secondPass(const SceneRenderState& sceneRenderState);
+    void secondPass(const SceneRenderState& sceneRenderState);
 
 private:
-	U16 _cachedLightCount;
-	vectorImpl<Quad3D* >  _renderQuads;
-	Framebuffer*    _deferredBuffer;
-	ShaderProgram*  _deferredShader;
-	ShaderProgram*  _previewDeferredShader;
-	PixelBuffer*    _lightTexture;
+    U16 _cachedLightCount;
+    vectorImpl<Quad3D* >  _renderQuads;
+    Framebuffer*    _deferredBuffer;
+    ShaderProgram*  _deferredShader;
+    ShaderProgram*  _previewDeferredShader;
+    PixelBuffer*    _lightTexture;
 };
 
 }; //namespace Divide

@@ -4,9 +4,9 @@
 uniform int bumpMapLightId = 0;
 
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
-	const int num_steps_lin = 10;
-	const int num_steps_bin = 15;
-	float linear_step = 1.0 / (float(num_steps_lin));
+    const int num_steps_lin = 10;
+    const int num_steps_bin = 15;
+    float linear_step = 1.0 / (float(num_steps_lin));
     //Current depth position
     float depth = 0.0; 
     //Best match found (starts with last position 1.0)
@@ -74,7 +74,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
     vec3 p = _vertexWV.xyz;
     vec3 v = normalize(p);
     //Compute light direction
-    p += v*h*viewVecTBN.z;	
+    p += v*h*viewVecTBN.z;    
     
     vec2 planes;
     planes.x = -dvd_ZPlanesCombined.y / (dvd_ZPlanesCombined.y - dvd_ZPlanesCombined.x);

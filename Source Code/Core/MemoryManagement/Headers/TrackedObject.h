@@ -40,8 +40,8 @@ class TrackedObject : private NonCopyable, public GUIDWrapper {
       void AddRef();
       ///Decrease reference count
       bool SubRef();
-	  ///How many references does this object belong to
-	  inline const long GetRef() const { return _refCount; }
+      ///How many references does this object belong to
+      inline const long GetRef() const { return _refCount; }
       ///Add object dependency (dependent objects are ref counted with the parent object)
       void REGISTER_TRACKED_DEPENDENCY( TrackedObject* const obj );
       ///Remove an object dependency

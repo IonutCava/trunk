@@ -324,21 +324,21 @@ void Pdc(inout vec4 color){
 
     if(depth > 0.997){
 
-        if(bHorizontal)	{		
+        if(bHorizontal)    {        
             color = convolH11();
         }else{
             color = convolV11();
         }
         
     }else if(depth > 0.995){
-        if(bHorizontal)	{
+        if(bHorizontal)    {
             color = convolH5();
         }else{
             color = convolV5();
         }
         
     }else if(depth > 0.994){
-        if(bHorizontal)	{
+        if(bHorizontal)    {
             color = convolH3();
         }else{
             color = convolV3();

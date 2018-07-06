@@ -37,15 +37,15 @@ float Gloss(in vec3 bump, in vec2 texCoord)
         float rlen = 1.0/saturate(length(bump));
         return 1.0/(1.0 + power*(rlen - 1.0));
     #elif defined(USE_TOKSVIG_MAP)
-		float baked_power = 100.0;
-	    // Fetch pre-computed "Toksvig Factor"
+        float baked_power = 100.0;
+        // Fetch pre-computed "Toksvig Factor"
         // and adjust for specified power
         float gloss = texture2D(texSpecularMap, texCoord).r;
         gloss /= mix(power/baked_power, 1.0, gloss);
-		return gloss;
-	#else
-	    return 1.0;
-	#endif
+        return gloss;
+    #else
+        return 1.0;
+    #endif
 }
 
 #if !defined(SKIP_TEXTURES)
@@ -63,7 +63,7 @@ vec4 getTextureColor(in vec2 uv) {
 
     if (dvd_textureCount == 1) {
         return color;
-	}
+    }
 
     vec4 color2 = texture(texDiffuse1, uv);
 
@@ -73,8 +73,8 @@ vec4 getTextureColor(in vec2 uv) {
         case TEX_MODULATE   : color *= color2;       break;
         case TEX_REPLACE    : color  = color2;       break;
         case TEX_SIGNED_ADD : color += color2 - 0.5; break;
-        case TEX_DIVIDE     : color /= color2; 	     break;
-        case TEX_SUBSTRACT  : color -= color2; 	     break;
+        case TEX_DIVIDE     : color /= color2;          break;
+        case TEX_SUBSTRACT  : color -= color2;          break;
         case TEX_DECAL      : color = vec4(mix(color.rgb, color2.rgb, color2.a), color.a); break;
         case TEX_ADD        : {
             color.rgb += color2.rgb;

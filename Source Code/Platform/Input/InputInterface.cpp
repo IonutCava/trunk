@@ -13,7 +13,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
 
     OIS::ParamList pl;
 #   if defined OIS_WIN32_PLATFORM
-		U32 hwnd = (U32)FindWindow(nullptr, ParamHandler::getInstance().getParam<stringImpl>("appTitle", "Divide").c_str());
+        U32 hwnd = (U32)FindWindow(nullptr, ParamHandler::getInstance().getParam<stringImpl>("appTitle", "Divide").c_str());
         // Create OIS input manager
         pl.insert(std::make_pair("WINDOW", stringAlg::fromBase(Util::toString(hwnd))));
         pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND"));
@@ -45,7 +45,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
     }
 
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
-	I32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), static_cast<I32>(Joystick_PLACEHOLDER));
+    I32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), static_cast<I32>(Joystick_PLACEHOLDER));
 
     if (numJoysticks > 0) {
         _pJoysticks.resize(numJoysticks);
@@ -60,7 +60,7 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
 
         // Create the joystick manager.
         _pJoystickInterface = MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
-        if (!_pJoystickInterface->wasFFDetected())	{
+        if (!_pJoystickInterface->wasFFDetected())    {
             PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
             MemoryManager::DELETE( _pJoystickInterface );
         } else{

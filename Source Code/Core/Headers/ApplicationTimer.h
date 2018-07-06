@@ -20,8 +20,8 @@
 
  */
 
-#ifndef _APPLICATION_TIMER_H_
-#define _APPLICATION_TIMER_H_
+#ifndef _CORE_APPLICATION_TIMER_H_
+#define _CORE_APPLICATION_TIMER_H_
 
 #include "Core\Math\Headers\MathHelper.h"
 
@@ -38,152 +38,78 @@ DEFINE_SINGLETON(ApplicationTimer)
   typedef timeval LI;
 #endif
 
-private:
+public:
+
+    void init(U8 targetFrameRate);
+    void update(U32 frameCount);
+
+    void benchmark(bool state);
+    bool benchmark() const;
+    F32  getFps() const;
+    F32  getFrameTime() const;
+    F32  getSpeedfactor() const;
+    
+    U64 getElapsedTime(bool forceUpdate = false);
+
+protected:
     ApplicationTimer();
+    ~ApplicationTimer();
+
+    void benchmarkInternal(U32 frameCount);
+    U64  getElapsedTimeInternal(LI currentTicks) const;
+    LI   getCurrentTicksInternal() const;
+    U64  getElapsedTimeInternal() const;
+
+    friend class ProfileTimer;
+    void addTimer(ProfileTimer* const timer);
+    void removeTimer(ProfileTimer* const timer);
+    vectorImpl<ProfileTimer* > _profileTimers;
+
+private:
 
     F32  _fps;
     F32  _frameTime;
     F32  _speedfactor;
     U32  _targetFrameRate; 
     D32  _ticksPerMicrosecond;
-    LI	 _ticksPerSecond; //Processor's ticks per second
-    LI	 _frameDelay;     //Previous frame's number of ticks
-    LI	 _startupTicks;   //Ticks at class initialization
+    LI     _ticksPerSecond; //Processor's ticks per second
+    LI     _frameDelay;     //Previous frame's number of ticks
+    LI     _startupTicks;   //Ticks at class initialization
     bool _benchmark;      //Measure average FPS and output max/min/average fps to console
     bool _init;
 
     std::atomic<U64> _elapsedTimeUs;
-
-public:
-
-    void init(U8 targetFrameRate);
-    void update(U32 frameCount);
-
-    inline void benchmark(bool state)  {_benchmark = state;}
-    inline bool benchmark()      const {return _benchmark;}
-    inline F32  getFps()         const {return _fps;}
-    inline F32  getFrameTime()   const {return _frameTime;}
-    inline F32  getSpeedfactor() const {return _speedfactor;}
-	
-    inline U64 getElapsedTime(bool forceUpdate = false) { 
-		if (!forceUpdate) {
-			return _elapsedTimeUs;
-		}
-
-		return getElapsedTimeInternal();
-    }
-
-protected:
-  void benchmarkInternal(U32 frameCount);
-  U64  getElapsedTimeInternal(LI currentTicks) const;
-  LI   getCurrentTicksInternal() const;
-  inline  U64  getElapsedTimeInternal() const {
-	  return getElapsedTimeInternal(getCurrentTicksInternal());
-  }
-
-  friend class ProfileTimer;
-  void addTimer(ProfileTimer* const timer);
-  void removeTimer(ProfileTimer* const timer);
-  vectorImpl<ProfileTimer* > _profileTimers;
-
 END_SINGLETON
 
-inline F32 FRAME_SPEED_FACTOR() {
-	return ApplicationTimer::getInstance().getSpeedfactor();
-}
-
-class ProfileTimer {
-public:
-	~ProfileTimer();
-
-#if defined(_DEBUG) || defined(_PROFILE)
-	ProfileTimer();
-
-	void create(const stringImpl& name);
-	void start();
-	void stop();
-	void print() const;
-	void reset();
-	inline D32  get()  const {return _timer;}
-	inline bool init() const {return _init;}
-	inline void pause(const bool state) {_paused = state;}
-#else
-	ProfileTimer()
-	{
-	}
-	void create(const stringImpl& name) { _name = name; }
-	void start() {}
-	void stop() {}
-	void print() const {}
-	void reset() {}
-	inline D32  get()  const { return 0.0; }
-	inline bool init() const { return true; }
-	inline void pause(const bool state) { }
-#endif
-
-	inline const stringImpl& name() const { return _name; }
-
-protected:
-	stringImpl       _name;
-#if defined(_DEBUG) || defined(_PROFILE)
-	std::atomic_bool _paused;
-	std::atomic_bool _init;
-	std::atomic<D32> _timer;
-	std::atomic<D32> _timerAverage;
-	std::atomic_int  _timerCounter;
-#endif
-};
-
-inline ProfileTimer* ADD_TIMER(const char* timerName) {
-    ProfileTimer* timer = MemoryManager_NEW ProfileTimer();
-	timer->create(timerName);
-	return timer;
-}
-
-inline void START_TIMER(ProfileTimer* const timer)  {
-	assert(timer);
-	timer->start();
-}
-
-inline void STOP_TIMER(ProfileTimer* const timer)   {
-	assert(timer);
-	timer->stop();
-}
-
-inline void PRINT_TIMER(ProfileTimer* const timer)  {
-	assert(timer);
-	timer->print();
-}
-
-inline void REMOVE_TIMER(ProfileTimer*& timer) { 
-	MemoryManager::DELETE(timer);  
-}
 
 inline U64 GETUSTIME() {
-	return ApplicationTimer::getInstance().getElapsedTime();
+    return ApplicationTimer::getInstance().getElapsedTime();
 }
 
 inline D32 GETTIME() {
-	return getUsToSec(GETUSTIME());
+    return getUsToSec(GETUSTIME());
 }
 
 inline D32 GETMSTIME() {
-	return getUsToMs(GETUSTIME());
+    return getUsToMs(GETUSTIME());
 }
 
 /// The following functions force a timer update (a call to query performance timer. 
 /// Use these for profiling!
 inline U64 GETUSTIME(bool state) {
-	return ApplicationTimer::getInstance().getElapsedTime(state);
+    return ApplicationTimer::getInstance().getElapsedTime(state);
 }
 
 inline D32 GETTIME(bool state) {
-	return getUsToSec(GETUSTIME(state));
+    return getUsToSec(GETUSTIME(state));
 }
 
 inline D32 GETMSTIME(bool state) {
-	return getUsToMs(GETUSTIME(state));
+    return getUsToMs(GETUSTIME(state));
 }
+
 }; //namespace Divide
 
-#endif //_FRAMERATE_H_
+#endif //_CORE_APPLICATION_TIMER_H_
+
+#include "ApplicationTimer.inl"

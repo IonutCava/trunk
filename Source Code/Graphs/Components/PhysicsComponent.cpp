@@ -48,14 +48,14 @@ void PhysicsComponent::physicsAsset(PhysicsAsset* const asset) {
     DIVIDE_ASSERT(_physicsAsset == nullptr, 
                   "PhysicsComponent error: Double set physics asset detected! remove the previous one first!");
     _physicsAsset = asset;
-	if ( _physicsAsset ) {
-		_physicsAsset->setParent( this );
-	}
+    if ( _physicsAsset ) {
+        _physicsAsset->setParent( this );
+    }
 }
 
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
-	for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()) {
+    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN->getChildren()) {
         it.second->getComponent<PhysicsComponent>()->cookCollisionMesh( sceneName );
     }
 

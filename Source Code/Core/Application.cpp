@@ -17,10 +17,10 @@ namespace Divide {
 Application::Application() : _kernel(nullptr),
                              _hasFocus(true)
 {
-	//MemoryTracker::Ready = false; //< faster way of disabling memory tracking
-	_requestShutdown = false;
-	_mainLoopActive = false;
-	_mainLoopPaused = false;
+    //MemoryTracker::Ready = false; //< faster way of disabling memory tracking
+    _requestShutdown = false;
+    _mainLoopActive = false;
+    _mainLoopPaused = false;
     _threadId = std::this_thread::get_id();
     _errorCode = NO_ERR;
     ParamHandler::createInstance();
@@ -31,22 +31,22 @@ Application::Application() : _kernel(nullptr),
 Application::~Application(){
 #if defined(_DEBUG)
     MemoryManager::MemoryTracker::Ready = false;
-	bool leakDetected = false;
-	size_t sizeLeaked = 0;
+    bool leakDetected = false;
+    size_t sizeLeaked = 0;
     stringImpl allocLog = MemoryManager::AllocTracer.Dump( leakDetected, sizeLeaked );
-	if ( leakDetected ) {
-		ERROR_FN(Locale::get( "ERROR_MEMORY_NEW_DELETE_MISMATCH" ),
+    if ( leakDetected ) {
+        ERROR_FN(Locale::get( "ERROR_MEMORY_NEW_DELETE_MISMATCH" ),
                  static_cast<I32>(std::ceil(sizeLeaked / 1024.0f)));
-	}
-	std::ofstream memLog;
-	memLog.open( _memLogBuffer.c_str() );
-	memLog << allocLog.c_str();
-	memLog.close();
+    }
+    std::ofstream memLog;
+    memLog.open( _memLogBuffer.c_str() );
+    memLog << allocLog.c_str();
+    memLog.close();
 #endif
-	PRINT_FN( Locale::get( "STOP_APPLICATION" ) );
-	ParamHandler::destroyInstance();
-	Console::destroyInstance();
-	ApplicationTimer::destroyInstance();
+    PRINT_FN( Locale::get( "STOP_APPLICATION" ) );
+    ParamHandler::destroyInstance();
+    Console::destroyInstance();
+    ApplicationTimer::destroyInstance();
 }
 
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char **argv){
@@ -73,11 +73,11 @@ void Application::snapCursorToPosition(U16 x, U16 y) const {
 }
 
 void Application::deinitialize() {
-	PRINT_FN( Locale::get( "STOP_KERNEL" ) );
+    PRINT_FN( Locale::get( "STOP_KERNEL" ) );
     MemoryManager::DELETE( _kernel );
-	for ( DELEGATE_CBK<>& cbk : _shutdownCallback ) {
-		cbk();
-	}
+    for ( DELEGATE_CBK<>& cbk : _shutdownCallback ) {
+        cbk();
+    }
 }
 
 };

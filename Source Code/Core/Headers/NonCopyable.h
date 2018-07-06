@@ -20,24 +20,25 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _NON_COPYABLE_H_
-#define _NON_COPYABLE_H_
+#ifndef _CORE_NON_COPYABLE_H_
+#define _CORE_NON_COPYABLE_H_
 
 
 namespace Divide 
 {
-	/// Inherit from this class to avoid any form of object copying.
+    /// Inherit from this class to avoid any form of object copying.
     /// (deletes thecopy constructor and assignment operator)
-	class NonCopyable
-	{
-	protected:
-		/*constexpr */NonCopyable() = default;
-		~NonCopyable() = default;
+    class NonCopyable
+    {
+    protected:
+        /*constexpr */NonCopyable() = default;
+        ~NonCopyable() = default;
 
 
-		NonCopyable(const NonCopyable&) = delete;
-		NonCopyable& operator=(const NonCopyable&) = delete;
-	};
+        NonCopyable(const NonCopyable&) = delete;
+        NonCopyable& operator=(const NonCopyable&) = delete;
+    };
+
 }; // namespace Divide
 
-#endif
+#endif //_CORE_NON_COPYABLE_H_

@@ -29,17 +29,17 @@ namespace Divide {
 
 class CubeScene : public Scene {
 public:
-	CubeScene() : Scene()
-	{
-	}
-	void render();
-	void preRender();
-	bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
-	bool loadResources(bool continueOnErrors);
-	void processInput(const U64 deltaTime);
-	void processTasks(const U64 deltaTime);
+    CubeScene() : Scene()
+    {
+    }
+    void render();
+    void preRender();
+    bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool loadResources(bool continueOnErrors);
+    void processInput(const U64 deltaTime);
+    void processTasks(const U64 deltaTime);
 
-	bool onKeyUp(const Input::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key);
 };
 
 }; //namespace Divide

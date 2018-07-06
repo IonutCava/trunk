@@ -81,7 +81,7 @@ public:
     /// Set unit type
     inline void setCharacterType(CharacterType type)      {_type = type;}
     /// Get unit type
-    inline CharacterType getCharacterType()		   const  {return _type;}
+    inline CharacterType getCharacterType()           const  {return _type;}
     /**
       * Update this character for drawing a new frame.
       * Updates one tick in the render loop.

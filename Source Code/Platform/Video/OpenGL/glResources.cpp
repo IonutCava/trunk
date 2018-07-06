@@ -10,21 +10,21 @@
 // We are actually importing GL specific libraries in code mainly for maintenance reasons
 // We can easily adjust them as needed. Same thing with PhysX libs
 #ifdef GLEW_MX
-#	ifdef _DEBUG
-#		pragma comment(lib, "CEGUIOpenGLRenderer_MX_d.lib")
-#		pragma comment(lib, "glew32mxsd.lib")
-#	else //_DEBUG
-#		pragma comment(lib, "CEGUIOpenGLRenderer_MX.lib")
-#		pragma comment(lib, "glew32mxs.lib")
-#	endif //_DEBUG
+#    ifdef _DEBUG
+#        pragma comment(lib, "CEGUIOpenGLRenderer_MX_d.lib")
+#        pragma comment(lib, "glew32mxsd.lib")
+#    else //_DEBUG
+#        pragma comment(lib, "CEGUIOpenGLRenderer_MX.lib")
+#        pragma comment(lib, "glew32mxs.lib")
+#    endif //_DEBUG
 #else //GLEW_MX
-#	ifdef _DEBUG
-#		pragma comment(lib, "CEGUIOpenGLRenderer_d.lib")
-#		pragma comment(lib, "glew32sd.lib")
-#	else//_DEBUG
-#		pragma comment(lib, "CEGUIOpenGLRenderer.lib")
-#		pragma comment(lib, "glew32s.lib")
-#	endif //_DEBUG
+#    ifdef _DEBUG
+#        pragma comment(lib, "CEGUIOpenGLRenderer_d.lib")
+#        pragma comment(lib, "glew32sd.lib")
+#    else//_DEBUG
+#        pragma comment(lib, "CEGUIOpenGLRenderer.lib")
+#        pragma comment(lib, "glew32s.lib")
+#    endif //_DEBUG
 #endif //GLEW_MX
 
 #include <glim.h>
@@ -74,32 +74,32 @@ namespace Divide {
             PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
             PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));
         }
-		/// Release thread specific GLEW pointers
-		void destroyGlew() {
+        /// Release thread specific GLEW pointers
+        void destroyGlew() {
 #ifdef GLEW_MX
-			if ( _GLEWContextPtr.get() != nullptr ) {
-				_GLEWContextPtr.reset(nullptr);
-			}
+            if ( _GLEWContextPtr.get() != nullptr ) {
+                _GLEWContextPtr.reset(nullptr);
+            }
 #   if defined( OS_WINDOWS )
-			/// Same as for normal GLEW initialization, but this time, init platform specific pointers
-			if ( _WGLEWContextPtr.get() != nullptr ) {
-				_WGLEWContextPtr.reset(nullptr);
-			}
-#	else //! OS_WINDOWS
-			/// Same as for normal GLEW initialization, but this time, init platform specific pointers
-			if ( _GLXEWContextPtr.get() != nullptr ) {
-				_GLXEWContextPtr.reset(nullptr);
-			}
+            /// Same as for normal GLEW initialization, but this time, init platform specific pointers
+            if ( _WGLEWContextPtr.get() != nullptr ) {
+                _WGLEWContextPtr.reset(nullptr);
+            }
+#    else //! OS_WINDOWS
+            /// Same as for normal GLEW initialization, but this time, init platform specific pointers
+            if ( _GLXEWContextPtr.get() != nullptr ) {
+                _GLXEWContextPtr.reset(nullptr);
+            }
 
-			err = glxewInit();
-#	endif //OS_WINDOWS
+            err = glxewInit();
+#    endif //OS_WINDOWS
 #endif //GLEW_MX
-		}
+        }
 
         /// Glew needs extra data to be initialized if it's build with the MX flag        
         void initGlew() {
 #ifdef GLEW_MX
-			if ( _GLEWContextPtr.get() == nullptr ) {
+            if ( _GLEWContextPtr.get() == nullptr ) {
                 _GLEWContextPtr.reset(MemoryManager_NEW GLEWContext);
             }
 #endif //GLEW_MX
@@ -118,19 +118,19 @@ namespace Divide {
 #ifdef GLEW_MX
 #   if defined( OS_WINDOWS )
             /// Same as for normal GLEW initialization, but this time, init platform specific pointers
-			if ( _WGLEWContextPtr.get() == nullptr ) {
+            if ( _WGLEWContextPtr.get() == nullptr ) {
                 _WGLEWContextPtr.reset(MemoryManager_NEW WGLEWContext);
             }
 
             err = wglewInit();
-#	else //! OS_WINDOWS
+#    else //! OS_WINDOWS
             /// Same as for normal GLEW initialization, but this time, init platform specific pointers
-			if ( _GLXEWContextPtr.get() == nullptr ) {
+            if ( _GLXEWContextPtr.get() == nullptr ) {
                 _GLXEWContextPtr.reset(MemoryManager_NEW GLXEWContext);
             }
 
             err = glxewInit();
-#	endif //OS_WINDOWS
+#    endif //OS_WINDOWS
             if (GLEW_OK != err) {
                 printGLInitError(err);
                 exit(GLEW_INIT_ERROR);
@@ -232,7 +232,7 @@ namespace Divide {
                glImageFormatTable[RGB] = GL_RGB;
                glImageFormatTable[BGR] = GL_BGR;
                glImageFormatTable[RGB8] = GL_RGB8;
-			   glImageFormatTable[SRGB8] = GL_SRGB8;
+               glImageFormatTable[SRGB8] = GL_SRGB8;
                glImageFormatTable[RGB8I] = GL_RGB8I;
                glImageFormatTable[RGB16] = GL_RGB16;
                glImageFormatTable[RGB16F] = GL_RGB16F;
@@ -240,7 +240,7 @@ namespace Divide {
                glImageFormatTable[RGBA] = GL_RGBA;
                glImageFormatTable[RGBA4] = GL_RGBA4;
                glImageFormatTable[RGBA8] = GL_RGBA8;
-			   glImageFormatTable[SRGBA8] = GL_SRGB8_ALPHA8;
+               glImageFormatTable[SRGBA8] = GL_SRGB8_ALPHA8;
                glImageFormatTable[RGBA8I] = GL_RGBA8I;
                glImageFormatTable[RGBA16F] = GL_RGBA16F;
                glImageFormatTable[RGBA32F] = GL_RGBA32F;

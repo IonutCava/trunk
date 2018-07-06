@@ -23,7 +23,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glfwSetErrorCallback(GLUtil::glfw_error_callback);
     // Attempt to init GLFW
     if (!glfwInit()) {
-    	return GLFW_INIT_ERROR;
+        return GLFW_INIT_ERROR;
     }
 
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
@@ -62,7 +62,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glfwWindowHint(GLFW_DEPTH_BITS,  24);
     
     // Open an OpenGL window; resolution and windowed mode is specified in the external XML files
-	GLUtil::_mainWindow = glfwCreateWindow(resolution.width, 
+    GLUtil::_mainWindow = glfwCreateWindow(resolution.width, 
                                            resolution.height, 
                                            par.getParam<stringImpl>("appTitle", "Divide").c_str(),
                                            par.getParam<bool>("runtime.windowedMode", true) ? nullptr : 
@@ -127,19 +127,19 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
-	par.setParam<I32>("rendering.maxTextureSlots", GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
+    par.setParam<I32>("rendering.maxTextureSlots", GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
     // Maximum number of color attachments per framebuffer
-	par.setParam<I32>("rendering.maxRenderTargetOutputs", GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
+    par.setParam<I32>("rendering.maxRenderTargetOutputs", GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
     stringImpl gpuVendorByte(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
     if (!gpuVendorByte.empty()) {
         if(gpuVendorByte.compare(0,5,"Intel")  == 0) {
-			GFX_DEVICE.setGPUVendor(GPU_VENDOR_INTEL);  
-		} else if (gpuVendorByte.compare(0, 6, "NVIDIA") == 0) { 
-			GFX_DEVICE.setGPUVendor(GPU_VENDOR_NVIDIA); 
-		} else if (gpuVendorByte.compare(0, 3, "ATI") == 0 || gpuVendorByte.compare(0, 3, "AMD") == 0) {
-			GFX_DEVICE.setGPUVendor(GPU_VENDOR_AMD); 
-		}
+            GFX_DEVICE.setGPUVendor(GPU_VENDOR_INTEL);  
+        } else if (gpuVendorByte.compare(0, 6, "NVIDIA") == 0) { 
+            GFX_DEVICE.setGPUVendor(GPU_VENDOR_NVIDIA); 
+        } else if (gpuVendorByte.compare(0, 3, "ATI") == 0 || gpuVendorByte.compare(0, 3, "AMD") == 0) {
+            GFX_DEVICE.setGPUVendor(GPU_VENDOR_AMD); 
+        }
     } else {
         gpuVendorByte = "Unknown GPU Vendor";
         GFX_DEVICE.setGPUVendor(GPU_VENDOR_OTHER);
@@ -183,7 +183,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // How many attributes can we send to a vertex shader
     PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
-	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), 
+    PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), 
              par.getParam<I32>("rendering.maxTextureSlots", 16));
     // Query shading language version support
     PRINT_FN(Locale::get("GL_GLSL_SUPPORT"), glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -297,18 +297,18 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
     // Once OpenGL is ready for rendering, init CEGUI
     _enableCEGUIRendering =  !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
-	_GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
+    _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
     _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
     CEGUI::System::create(*_GUIGLrenderer);
 
-	Application::getInstance().registerShutdownCallback( DELEGATE_BIND(&GLUtil::destroyGlew ) );
+    Application::getInstance().registerShutdownCallback( DELEGATE_BIND(&GLUtil::destroyGlew ) );
     return NO_ERR;
 }
 
 /// Clear everything that was setup in initRenderingApi()
 void GL_API::closeRenderingApi() {
-	CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
-	_GUIGLrenderer = nullptr;
+    CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
+    _GUIGLrenderer = nullptr;
     // Close the loading thread 
     _closeLoadingThread = true;
     while ( GFX_DEVICE.loadingThreadAvailable() ) {
@@ -387,7 +387,7 @@ void GL_API::createLoaderThread() {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
-	GLUtil::destroyGlew();
+    GLUtil::destroyGlew();
     // If we close the loading thread, update our atomic bool to make sure the application isn't using it anymore
     GFX_DEVICE.loadingThreadAvailable(false);
 }

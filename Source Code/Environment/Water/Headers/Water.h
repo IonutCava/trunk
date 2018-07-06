@@ -49,13 +49,13 @@ public:
     inline const ClipPlaneIndex  getRefractionPlaneID() { return _refractionPlaneID; }
     /// Reflector overwrite
     void updateReflection();
-	void updateRefraction();
+    void updateRefraction();
     void updatePlaneEquation();
     /// Used for many things, such as culling switches, and underwater effects
     inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
 
-	inline void setReflectionCallback(const DELEGATE_CBK<>& callback) { Reflector::setRenderCallback(callback); }
-	inline void setRefractionCallback(const DELEGATE_CBK<>& callback) { _refractionCallback = callback; }
+    inline void setReflectionCallback(const DELEGATE_CBK<>& callback) { Reflector::setRenderCallback(callback); }
+    inline void setRefractionCallback(const DELEGATE_CBK<>& callback) { _refractionCallback = callback; }
 
 protected:
     SET_DELETE_FRIEND
@@ -91,7 +91,7 @@ private:
     ClipPlaneIndex   _reflectionPlaneID;
     ClipPlaneIndex   _refractionPlaneID;
     /// cached far plane value
-    F32				 _farPlane;
+    F32                 _farPlane;
     /// cached water level
     F32              _waterLevel;
     /// cached water depth
@@ -99,10 +99,10 @@ private:
     /// Last used orientation
     Quaternion<F32> _orientation;
     /// the water's "geometry"
-    Quad3D*			_plane;
+    Quad3D*            _plane;
     Framebuffer*    _refractionTexture;
     Plane<F32>      _refractionPlane;
-	DELEGATE_CBK<>  _refractionCallback;
+    DELEGATE_CBK<>  _refractionCallback;
     bool            _refractionRendering;
     bool            _reflectionRendering;
     bool            _dirty, _paramsDirty;

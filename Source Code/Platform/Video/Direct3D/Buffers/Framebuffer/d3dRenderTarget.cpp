@@ -45,7 +45,7 @@ void d3dRenderTarget::ResetMipLevel(TextureDescriptor::AttachmentType slot)
 
 bool d3dRenderTarget::checkStatus() const
 {
-	return true;
+    return true;
 }
 
 void d3dRenderTarget::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData)

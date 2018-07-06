@@ -113,10 +113,10 @@ public:
     inline vectorImpl<vec4<U8>  >&  getBoneIndices() { _attribDirty[ATTRIB_BONE_INDICE] = true; return _boneIndices; }
     inline vectorImpl<vec4<F32> >&  getBoneWeights() { _attribDirty[ATTRIB_BONE_WEIGHT] = true; return _boneWeights; }
 
-    inline const vectorImpl<vec3<F32> >&  getPosition()	   const {return _dataPosition;}
+    inline const vectorImpl<vec3<F32> >&  getPosition()       const {return _dataPosition;}
     inline const vectorImpl<vec3<U8>  >&  getColor()       const {return _dataColor;}
-    inline const vectorImpl<vec3<F32> >&  getNormal()	   const {return _dataNormal;}
-    inline const vectorImpl<vec3<F32> >&  getTangent()	   const {return _dataTangent;}
+    inline const vectorImpl<vec3<F32> >&  getNormal()       const {return _dataNormal;}
+    inline const vectorImpl<vec3<F32> >&  getTangent()       const {return _dataTangent;}
     inline const vectorImpl<vec3<F32> >&  getBiTangent()   const {return _dataBiTangent;}
     inline const vec3<F32>&               getPosition(U32 index)  const {return _dataPosition[index];}
     inline const vec3<F32>&               getNormal(U32 index)    const {return _dataNormal[index];}
@@ -231,7 +231,7 @@ public:
     }
 
     inline size_t partitionBuffer(U32 currentIndexCount){
-		_partitions.push_back(vectorAlg::makePair(getIndexCount() - currentIndexCount, currentIndexCount));
+        _partitions.push_back(vectorAlg::makePair(getIndexCount() - currentIndexCount, currentIndexCount));
         _currentPartitionIndex = (U32)_partitions.size();
         _minPosition.push_back(std::numeric_limits<F32>::max());
         _maxPosition.push_back(std::numeric_limits<F32>::min());
@@ -295,12 +295,12 @@ protected:
         vec3<F32>& min = _minPosition[_currentPartitionIndex];
         vec3<F32>& max = _maxPosition[_currentPartitionIndex];
 
-        if (pos.x > max.x)	max.x = pos.x;
-        if (pos.x < min.x)	min.x = pos.x;
-        if (pos.y > max.y)	max.y = pos.y;
-        if (pos.y < min.y)	min.y = pos.y;
-        if (pos.z > max.z)	max.z = pos.z;
-        if (pos.z < min.z)	min.z = pos.z;
+        if (pos.x > max.x)    max.x = pos.x;
+        if (pos.x < min.x)    min.x = pos.x;
+        if (pos.y > max.y)    max.y = pos.y;
+        if (pos.y < min.y)    min.y = pos.y;
+        if (pos.z > max.z)    max.z = pos.z;
+        if (pos.z < min.z)    min.z = pos.z;
     }
 
 protected:
@@ -311,7 +311,7 @@ protected:
     GFXDataFormat _format;
     ///An index value that separates objects (OGL: primitive restart index)
     U32         _indexDelimiter;
-    ptrdiff_t	_VBoffset[VertexAttribute_PLACEHOLDER];
+    ptrdiff_t    _VBoffset[VertexAttribute_PLACEHOLDER];
         
     // first: offset, second: count
     vectorImpl<vectorAlg::pair<U32, U32> >   _partitions;

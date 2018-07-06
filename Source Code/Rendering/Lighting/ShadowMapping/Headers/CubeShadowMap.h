@@ -30,12 +30,12 @@ namespace Divide {
 class CubeShadowMap : public ShadowMap {
 public:
     CubeShadowMap(Light* light, Camera* shadowCamera);
-	~CubeShadowMap();
-	void render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction);
+    ~CubeShadowMap();
+    void render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction);
 
-	///Update depth maps
-	void resolution(U16 resolution, U8 resolutionFactor);
-	void previewShadowMaps() {}
+    ///Update depth maps
+    void resolution(U16 resolution, U8 resolutionFactor);
+    void previewShadowMaps() {}
     void init(ShadowMapInfo* const smi);
 };
 

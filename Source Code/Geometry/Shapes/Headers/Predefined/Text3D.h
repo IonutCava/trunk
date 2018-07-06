@@ -43,8 +43,8 @@ public:
     }
 
     inline stringImpl&  getText()    {return _text;}
-    inline stringImpl&	 getFont()    {return _font;}
-    inline F32&			 getWidth()   {return _width;}
+    inline stringImpl&     getFont()    {return _font;}
+    inline F32&             getWidth()   {return _width;}
     inline U32&          getHeight()  {return _height;}
 
     virtual bool computeBoundingBox(SceneGraphNode* const sgn){

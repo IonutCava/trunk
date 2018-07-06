@@ -29,25 +29,25 @@ namespace Divide {
 
 class NetworkScene : public Scene {
 public:
-	NetworkScene() : Scene() {}
-	void preRender();
+    NetworkScene() : Scene() {}
+    void preRender();
 
-	bool preLoad();
-	bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
-	bool loadResources(bool continueOnErrors);
+    bool preLoad();
+    bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool loadResources(bool continueOnErrors);
 
     void processGUI(const U64 deltaTime);
-	void processInput(const U64 deltaTime);
+    void processInput(const U64 deltaTime);
 
 private:
-	void test();
-	void connect();
-	void disconnect();
-	void checkPatches();
+    void test();
+    void connect();
+    void disconnect();
+    void checkPatches();
 
 private:
-	vec2<F32> _sunAngle;
-	vec3<F32> _sunvector;
+    vec2<F32> _sunAngle;
+    vec3<F32> _sunvector;
 };
 
 

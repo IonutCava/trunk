@@ -33,15 +33,15 @@ namespace Divide {
 
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
-	SSAOPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
-	~SSAOPreRenderOperator();
+    SSAOPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+    ~SSAOPreRenderOperator();
 
-	void operation();
-	void reshape(I32 width, I32 height);
+    void operation();
+    void reshape(I32 width, I32 height);
 
 private:
-	ShaderProgram* _ssaoShader;
-	Framebuffer*   _outputFB;
+    ShaderProgram* _ssaoShader;
+    Framebuffer*   _outputFB;
 };
 
 }; //namespace Divide

@@ -32,7 +32,7 @@ class Texture;
 class SceneGraphNode;
 class SamplerDescriptor;
 class TerrainDescriptor;
-enum TerrainTextureUsage;
+enum TerrainTextureUsage : I32;
 
 DEFINE_SINGLETON(TerrainLoader)
     friend class Terrain;
@@ -51,7 +51,7 @@ private:
 
 private:
     SamplerDescriptor* _albedoSampler;
-	SamplerDescriptor* _normalSampler;
+    SamplerDescriptor* _normalSampler;
 
 END_SINGLETON
 

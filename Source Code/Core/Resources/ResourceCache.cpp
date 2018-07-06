@@ -32,7 +32,7 @@ void ResourceCache::Destroy() {
 
     PRINT_FN( Locale::get( "STOP_RESOURCE_CACHE" ) );
 
-	for (ResourceMap::value_type& it : _resDB) {
+    for (ResourceMap::value_type& it : _resDB) {
         while ( it.second->GetRef() > 1 ) {
             it.second->SubRef();
         }
@@ -43,7 +43,7 @@ void ResourceCache::Destroy() {
 }
 
 void ResourceCache::add( const stringImpl& name, Resource* const res ) {
-	DIVIDE_ASSERT( !name.empty(), "ResourceCache add error: Invalid resource name!" );
+    DIVIDE_ASSERT( !name.empty(), "ResourceCache add error: Invalid resource name!" );
     if(res == nullptr) {
         ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
         return;
@@ -105,20 +105,20 @@ bool ResourceCache::removeInternal(Resource* const resource){
     stringImpl nameCpy( resource->getName() );
     DIVIDE_ASSERT( !nameCpy.empty(), Locale::get( "ERROR_RESOURCE_CACHE_INVALID_NAME" ) );
     ResourceMap::iterator it = _resDB.find( nameCpy );
-	DIVIDE_ASSERT( it != _resDB.end(), Locale::get( "ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE" ) );
+    DIVIDE_ASSERT( it != _resDB.end(), Locale::get( "ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE" ) );
     
-	U32 refCount = resource->GetRef();
-	if ( refCount > 1 ) {
-		resource->SubRef();
+    U32 refCount = resource->GetRef();
+    if ( refCount > 1 ) {
+        resource->SubRef();
         D_PRINT_FN( Locale::get( "RESOURCE_CACHE_REM_RES_DEC" ), nameCpy.c_str(), resource->GetRef() );
-		return false; //do not delete pointer
-	}
+        return false; //do not delete pointer
+    }
 
-	if (refCount == 1 ) {
+    if (refCount == 1 ) {
         PRINT_FN( Locale::get( "RESOURCE_CACHE_REM_RES" ), nameCpy.c_str() );
         resource->setState(RES_LOADING);
-		if ( resource->unload() ) {
-			resource->setState(RES_CREATED);
+        if ( resource->unload() ) {
+            resource->setState(RES_CREATED);
         } else {
             ERROR_FN( Locale::get( "ERROR_RESOURCE_REM" ), nameCpy.c_str() );
             resource->setState(RES_UNKNOWN);

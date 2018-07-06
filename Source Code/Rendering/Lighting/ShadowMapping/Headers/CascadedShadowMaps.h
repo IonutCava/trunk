@@ -40,7 +40,7 @@ class CascadedShadowMaps : public ShadowMap {
 public:
     CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 numSplits);
     ~CascadedShadowMaps();
-	void render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction);
+    void render(SceneRenderState& renderState, const DELEGATE_CBK<>& sceneRenderFunction);
     void postRender();
     ///Update depth maps
     void resolution(U16 resolution, U8 resolutionFactor);

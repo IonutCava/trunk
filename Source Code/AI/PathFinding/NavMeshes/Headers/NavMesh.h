@@ -97,7 +97,7 @@ namespace Divide {
         };
 
     public:
-		typedef std::function<void (NavigationMesh*) > CreationCallback;
+        typedef std::function<void (NavigationMesh*) > CreationCallback;
 
         inline void setFileName(const stringImpl& fileName) {_fileName.append(fileName);}
         /// Initiates the NavigationMesh build process, which includes notifying the
@@ -153,8 +153,8 @@ namespace Divide {
         /// Runs the build process. Not threadsafe,. so take care to synchronise
         /// calls to this method properly!
         bool buildProcess();
-		/// Used for multithreaded loading
-		void buildInternal();
+        /// Used for multithreaded loading
+        void buildInternal();
         /// Generates a navigation mesh for the collection of objects in this
         /// mesh. Returns true if successful. Stores the created mesh in tnm.
         bool generateMesh();
@@ -196,8 +196,8 @@ namespace Divide {
         boost::mutex _navigationMeshLock;
         /// A simple flag to say we are building.
         std::atomic<bool> _building;
-		/// A callback function to call after building is complete
-		CreationCallback   _loadCompleteClbk;
+        /// A callback function to call after building is complete
+        CreationCallback   _loadCompleteClbk;
         /// Data file to store this nav mesh in. (From engine executable dir.)
         stringImpl _fileName;
         /// Configuration file
@@ -213,7 +213,7 @@ namespace Divide {
         RenderMode _renderMode;
         ///DebugDraw interface
         NavMeshDebugDraw *_debugDrawInterface;
-	};
+    };
         }; // namespace Navigation
     }; // namespace AI
 }; //namespace Divide

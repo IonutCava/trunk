@@ -35,8 +35,8 @@ bool glShader::load(const stringImpl& source){
         ERROR_FN(Locale::get("ERROR_GLSL_SHADER_NOT_FOUND"),getName().c_str());
         return false;
     }
-	stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
-	Util::trim(parsedSource);
+    stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
+    Util::trim(parsedSource);
 
 #ifdef NDEBUG
 
@@ -110,10 +110,10 @@ stringImpl glShader::preprocessIncludes( const stringImpl& source, const stringI
     std::string line;
     stringImpl include_file, include_string, loc;
     ParamHandler& par = ParamHandler::getInstance();
-	stringImpl shaderAtomLocationPrefix(par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
-									    par.getParam<stringImpl>("shaderLocation", "shaders") + "/GLSL/");
-    while(std::getline(input, line))	{
-        if (std::regex_search(line, matches, re))	{
+    stringImpl shaderAtomLocationPrefix(par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
+                                        par.getParam<stringImpl>("shaderLocation", "shaders") + "/GLSL/");
+    while(std::getline(input, line))    {
+        if (std::regex_search(line, matches, re))    {
             include_file = stringAlg::toBase(matches[1].str());
 
             if(include_file.find("frag") != stringImpl::npos){

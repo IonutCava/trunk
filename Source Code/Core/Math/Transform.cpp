@@ -9,9 +9,9 @@ Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation,
                      const vec3<F32>& scale) :  GUIDWrapper()
 {
-	_dirty = true;
-	_rebuildMatrix = true; 
-	_transformValues._scale.set(scale);
+    _dirty = true;
+    _rebuildMatrix = true; 
+    _transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
     _worldMatrix.identity();

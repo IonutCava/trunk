@@ -8,19 +8,19 @@ uniform vec2 dvd_zPlanes;
 float LinearDepth(in float inDepth);
 
 void main(void){
-	computeData();
-	normals = normalize(dvd_NormalMatrix * dvd_Normal);
-	vec4 vToEye = dvd_ModelViewMatrix * dvd_Vertex;	
-	depth = LinearDepth(vToEye.z);
-	gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
+    computeData();
+    normals = normalize(dvd_NormalMatrix * dvd_Normal);
+    vec4 vToEye = dvd_ModelViewMatrix * dvd_Vertex;    
+    depth = LinearDepth(vToEye.z);
+    gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;
 }
 
 float LinearDepth(in float inDepth){
-	float dif = dvd_zPlanes.y - dvd_zPlanes.x;
-	float A = -(dvd_zPlanes.y + dvd_zPlanes.x) / dif;
-	float B = -2*dvd_zPlanes.y*dvd_zPlanes.x / dif;
-	float C = -(A*inDepth + B) / inDepth; // C in [-1, 1]
-	return 0.5 * C + 0.5; // in [0, 1]
+    float dif = dvd_zPlanes.y - dvd_zPlanes.x;
+    float A = -(dvd_zPlanes.y + dvd_zPlanes.x) / dif;
+    float B = -2*dvd_zPlanes.y*dvd_zPlanes.x / dif;
+    float C = -(A*inDepth + B) / inDepth; // C in [-1, 1]
+    return 0.5 * C + 0.5; // in [0, 1]
 }
 
 

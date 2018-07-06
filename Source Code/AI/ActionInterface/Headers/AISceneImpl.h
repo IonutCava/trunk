@@ -31,7 +31,7 @@ namespace Divide {
     class Texture;
     namespace AI {
 
-enum AIMsg;
+enum AIMsg : I32;
 /// Provides a scene-level AI implementation
 class AISceneImpl : private NonCopyable {
 public:
@@ -53,7 +53,7 @@ public:
     }
 
     inline GOAPWorldState& worldState() { return _worldState; }
-	inline const GOAPWorldState& worldStateConst() const { return _worldState; }
+    inline const GOAPWorldState& worldStateConst() const { return _worldState; }
 
     /// Register a specific action.
     /// This only holds a reference to the action itself and does not create a local copy!
@@ -171,18 +171,18 @@ protected:
         return false;
     }
 
-	inline bool printPlan() {
-		if (_activeGoal == nullptr) {
-			return false;
-		}
-		const GOAPPlan& plan = _activeGoal->getCurrentPlan();
-		for (const GOAPAction* action : plan) {
-			if (!printActionStats(action)){
-				return false;
-			}
-		}
-		return true;
-	}
+    inline bool printPlan() {
+        if (_activeGoal == nullptr) {
+            return false;
+        }
+        const GOAPPlan& plan = _activeGoal->getCurrentPlan();
+        for (const GOAPAction* action : plan) {
+            if (!printActionStats(action)){
+                return false;
+            }
+        }
+        return true;
+    }
 
     inline void invalidateCurrentPlan() { 
         _activeGoal = nullptr;   
@@ -204,7 +204,7 @@ protected:
 
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
     virtual bool performAction(const GOAPAction* planStep) = 0;
-	virtual bool printActionStats(const GOAPAction* planStep) const { return true;  }
+    virtual bool printActionStats(const GOAPAction* planStep) const { return true;  }
     virtual void processData(const U64 deltaTime) = 0;
     virtual void processInput(const U64 deltaTime) = 0;
     virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;

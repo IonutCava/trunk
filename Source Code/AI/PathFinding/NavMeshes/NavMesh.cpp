@@ -20,9 +20,9 @@ namespace Navigation {
     {
 
         ParamHandler& par = ParamHandler::getInstance();
-		stringImpl path(par.getParam<stringImpl>("scriptLocation") + "/" +
-						par.getParam<stringImpl>("scenesLocation") + "/" +
-						par.getParam<stringImpl>("currentScene"));
+        stringImpl path(par.getParam<stringImpl>("scriptLocation") + "/" +
+                        par.getParam<stringImpl>("scenesLocation") + "/" +
+                        par.getParam<stringImpl>("currentScene"));
 
         _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw();
         assert(_debugDrawInterface != nullptr);
@@ -79,7 +79,7 @@ namespace Navigation {
         _heightField = nullptr;
         _compactHeightField = nullptr;
 
-        if (!_saveIntermediates || freeAll)	{
+        if (!_saveIntermediates || freeAll)    {
             rcFreeContourSet(_countourSet);
             rcFreePolyMesh(_polyMesh);
             rcFreePolyMeshDetail(_polyMeshDetail);
@@ -169,48 +169,48 @@ namespace Navigation {
 
         Kernel* kernel = Application::getInstance().getKernel();
         _buildThread.reset(kernel->AddTask(0, 0, DELEGATE_BIND(&NavigationMesh::buildInternal, this)));
-		_buildThread->startTask();
+        _buildThread->startTask();
         return true;
     }
     
-	void NavigationMesh::buildInternal() {
-		_building = true;
-		// Create mesh
-		D32 timeStart = GETTIME();
-		bool success = generateMesh();
-		if (!success) {
-			ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), GETTIME(true) - timeStart);
-			return;
-		}
+    void NavigationMesh::buildInternal() {
+        _building = true;
+        // Create mesh
+        D32 timeStart = GETTIME();
+        bool success = generateMesh();
+        if (!success) {
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), GETTIME(true) - timeStart);
+            return;
+        }
 
-		PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"), GETTIME(true) - timeStart);
+        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"), GETTIME(true) - timeStart);
 
-		_navigationMeshLock.lock();
-		{
-			// Copy new NavigationMesh into old.
-			dtNavMesh *old = _navMesh;
-			// I am trusting that this is atomic.
-			_navMesh = _tempNavMesh;
-			dtFreeNavMesh(old);
-			_debugDrawInterface->setDirty(true);
-			_tempNavMesh = nullptr;
+        _navigationMeshLock.lock();
+        {
+            // Copy new NavigationMesh into old.
+            dtNavMesh *old = _navMesh;
+            // I am trusting that this is atomic.
+            _navMesh = _tempNavMesh;
+            dtFreeNavMesh(old);
+            _debugDrawInterface->setDirty(true);
+            _tempNavMesh = nullptr;
 
-			bool navQueryComplete = createNavigationQuery();
-			DIVIDE_ASSERT(navQueryComplete, 
+            bool navQueryComplete = createNavigationQuery();
+            DIVIDE_ASSERT(navQueryComplete, 
                           "NavigationMesh Error: Navigation query creation failed!");
-		}
-		_navigationMeshLock.unlock();
+        }
+        _navigationMeshLock.unlock();
 
-		// Free structs used during build
-		freeIntermediates(false);
+        // Free structs used during build
+        freeIntermediates(false);
 
-		_building = false;
+        _building = false;
 
-		if (_loadCompleteClbk) {
-			_loadCompleteClbk(this);
-		}
+        if (_loadCompleteClbk) {
+            _loadCompleteClbk(this);
+        }
 
-	}
+    }
 
     bool NavigationMesh::buildProcess() {
         _building = true;

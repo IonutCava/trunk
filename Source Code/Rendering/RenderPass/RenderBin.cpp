@@ -146,7 +146,7 @@ void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos)
             nodeMaterial->getSortKeys(keyA, keyB);
         }
     }
-	_renderBinStack.push_back(RenderBinItem(keyA,
+    _renderBinStack.push_back(RenderBinItem(keyA,
                                             keyB, 
                                             sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos), 
                                             sgn));

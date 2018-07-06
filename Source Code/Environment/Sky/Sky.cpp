@@ -11,7 +11,7 @@
 namespace Divide {
 
 Sky::Sky(const stringImpl& name) : SceneNode(name, TYPE_SKY),
-									_sky(nullptr),
+                                    _sky(nullptr),
                                     _skyShader(nullptr),
                                     _skybox(nullptr),
                                     _exclusionMask(0)
@@ -35,14 +35,14 @@ Sky::~Sky()
 }
 
 bool Sky::load() {
-	if ( _sky != nullptr ) {
-		return false;
-	}
-	stringImpl location(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/");
+    if ( _sky != nullptr ) {
+        return false;
+    }
+    stringImpl location(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/misc_images/");
 
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);
-	skyboxSampler.toggleSRGBColorSpace(true);
+    skyboxSampler.toggleSRGBColorSpace(true);
     skyboxSampler.setAnisotropy(16);
     skyboxSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
 
@@ -107,7 +107,7 @@ void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderS
 
 void Sky::setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor) {
     _skyShader->Uniform("sun_vector", sunVect);
-	_skyShader->Uniform("sun_color", sunColor.rgb());
+    _skyShader->Uniform("sun_color", sunColor.rgb());
 }
 
 };

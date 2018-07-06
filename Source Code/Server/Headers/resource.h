@@ -4,11 +4,11 @@
 #define GETTIME() start_time - time_t(nullptr)
 
 #if defined(_MSC_VER)
-#	pragma warning( push )
-#		pragma warning(disable:4244)
+#    pragma warning( push )
+#        pragma warning(disable:4244)
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic push
-#		//pragma GCC diagnostic ignored "-Wall"
+#    pragma GCC diagnostic push
+#    //pragma GCC diagnostic ignored "-Wall"
 #endif
 
 //#define _UNIX_
@@ -41,9 +41,9 @@ int Vsnprintf8(char* pDestination,
                va_list arguments);
 
 #if defined(_MSC_VER)
-#	pragma warning( pop )
+#    pragma warning( pop )
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 
 #endif

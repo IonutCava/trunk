@@ -29,21 +29,21 @@ namespace Divide {
 
 class FlashScene : public Scene {
 public:
-	FlashScene() : Scene() {}
-	void render();
-	void preRender();
-	bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
-	bool loadResources(bool continueOnErrors);
-	void processInput(const U64 deltaTime);
-	void processTasks(const U64 deltaTime);
+    FlashScene() : Scene() {}
+    void render();
+    void preRender();
+    bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool loadResources(bool continueOnErrors);
+    void processInput(const U64 deltaTime);
+    void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
 
 private:
-	F32 i ;
-	vec2<F32> _sunAngle;
-	vec3<F32> _sunvector;
-	F32 update_time;
-	vec4<F32> _vSunColor;
+    F32 i ;
+    vec2<F32> _sunAngle;
+    vec3<F32> _sunvector;
+    F32 update_time;
+    vec4<F32> _vSunColor;
 };
 
 }; //namespace Divide

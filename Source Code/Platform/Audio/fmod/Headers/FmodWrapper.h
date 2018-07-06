@@ -28,29 +28,29 @@
 namespace Divide {
 
 /*****************************************************************************************/
-/*				ATENTION! FMOD is not free for commercial use!!!						 */
-/*	Do not include it in commercial products unless you own a license for it.            */
-/*	Visit: http://www.fmod.org/index.php/sales  for more details -Ionut					 */
+/*                ATENTION! FMOD is not free for commercial use!!!                         */
+/*    Do not include it in commercial products unless you own a license for it.            */
+/*    Visit: http://www.fmod.org/index.php/sales  for more details -Ionut                     */
 /*****************************************************************************************/
 
 DEFINE_SINGLETON_EXT1(FMOD_API,AudioAPIWrapper)
 
 public:
-	ErrorCode initAudioApi() {
+    ErrorCode initAudioApi() {
         return FMOD_AUDIO_INIT_ERROR; 
     }
 
-	void closeAudioApi(){}
+    void closeAudioApi(){}
 
-	void playSound(AudioDescriptor* sound){}
-	void playMusic(AudioDescriptor* music){}
+    void playSound(AudioDescriptor* sound){}
+    void playMusic(AudioDescriptor* music){}
 
-	void pauseMusic(){}
-	void stopMusic(){}
-	void stopAllSounds(){}
+    void pauseMusic(){}
+    void stopMusic(){}
+    void stopAllSounds(){}
 
-	void setMusicVolume(I8 value){}
-	void setSoundVolume(I8 value){}
+    void setMusicVolume(I8 value){}
+    void setSoundVolume(I8 value){}
 END_SINGLETON
 
 

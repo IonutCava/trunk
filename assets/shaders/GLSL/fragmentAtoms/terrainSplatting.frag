@@ -98,7 +98,7 @@ void getColorNormal(inout vec4 color){
         color += getFinalColor4(blendMap, i, diffuseScale[i]);
 #endif
     }
-	color = clamp(color, vec4(0.0), vec4(1.0));
+    color = clamp(color, vec4(0.0), vec4(1.0));
 }
 
 void getColorAndTBNUnderwater(inout vec4 color, inout vec3 tbn){

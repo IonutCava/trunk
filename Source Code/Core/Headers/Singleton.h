@@ -20,8 +20,8 @@
 
  */
 
-#ifndef SINGLETON_H_
-#define SINGLETON_H_
+#ifndef _CORE_SINGLETON_H_
+#define _CORE_SINGLETON_H_
 
 namespace Divide {
 
@@ -67,8 +67,8 @@ protected :
     }
 
 private:
-	Singleton(Singleton&) = delete;
-	void operator =(Singleton&) = delete;
+    Singleton(Singleton&) = delete;
+    void operator =(Singleton&) = delete;
 
 private :
     /// C++11 standard assures a static instance should be thread safe:
@@ -95,4 +95,4 @@ template<typename T> T* Singleton<T>::_instance = 0;
 
 }; //namespace Divide
 
-#endif // SINGLETON_H
+#endif // _CORE_SINGLETON_H_

@@ -41,7 +41,7 @@ namespace Navigation {
                         start = false;
                         cont = false;
                         row[n++] = c;
-                        if (n >= len-1)	done = true;
+                        if (n >= len-1)    done = true;
                     }break;
                 }
             }
@@ -61,7 +61,7 @@ namespace Navigation {
                     row++;
                 }
 
-                if (*s == '\0')	continue;
+                if (*s == '\0')    continue;
 
                 I32 vi = atoi(s);
                 data[j++] = vi < 0 ? vi+vcnt : vi-1;
@@ -200,7 +200,7 @@ namespace Navigation {
                 I32 totalVertCt = (a.getVertCount() + b.getVertCount());
                 I32 newCap = 8;
 
-                while(newCap < totalVertCt)	newCap *= 2;
+                while(newCap < totalVertCt)    newCap *= 2;
 
                 mergedData._vertices = MemoryManager_NEW F32[newCap * 3];
                 mergedData._vertexCapacity = newCap;
@@ -212,7 +212,7 @@ namespace Navigation {
                 I32 totalTriCt = (a.getTriCount() + b.getTriCount());
                 newCap = 8;
 
-                while(newCap < totalTriCt)	newCap *= 2;
+                while(newCap < totalTriCt)    newCap *= 2;
 
                 mergedData._triangles = MemoryManager_NEW I32[newCap * 3];
                 mergedData._triangleCapacity = newCap;
@@ -224,7 +224,7 @@ namespace Navigation {
                 I32* bFacePt = mergedData._triangles + a.getTriCount() * 3;// i like pointing at faces
                 memcpy(bFacePt, b.getTris(), bFaceSize*sizeof(I32));
 
-                for(U32 i = 0; i < (U32)bFaceSize;i++)	*(bFacePt + i) += a.getVertCount();
+                for(U32 i = 0; i < (U32)bFaceSize;i++)    *(bFacePt + i) += a.getVertCount();
 
                 if(mergedData._vertexCount > 0) {
                     if(delOriginals)  {
@@ -414,7 +414,7 @@ namespace Navigation {
 
             //although labels are bad, skipping here using them is the easiest solution to follow -Ionut
             next:;
-			for (SceneGraphNode::NodeChildren::value_type& it : sgn->getChildren()) {
+            for (SceneGraphNode::NodeChildren::value_type& it : sgn->getChildren()) {
                 if ( !parse( it.second->getBoundingBoxConst(), outData, it.second ) ) {
                     return false;
                 }

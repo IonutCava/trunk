@@ -35,8 +35,8 @@ namespace CEGUI {
 namespace Divide {
 
 class GUIButton : public GUIElement {
-	typedef DELEGATE_CBK<> ButtonCallback;
-	friend class GUI;
+    typedef DELEGATE_CBK<> ButtonCallback;
+    friend class GUI;
 
 protected:
     GUIButton(const stringImpl& id,
@@ -55,11 +55,11 @@ protected:
 
 protected:
     stringImpl _text;
-    vec2<U32>	_dimensions;
-    vec3<F32>	_color;
-    bool		_pressed;
-    bool		_highlight;
-    ButtonCallback _callbackFunction;	/* A pointer to a function to call if the button is pressed */
+    vec2<U32>    _dimensions;
+    vec3<F32>    _color;
+    bool        _pressed;
+    bool        _highlight;
+    ButtonCallback _callbackFunction;    /* A pointer to a function to call if the button is pressed */
     CEGUI::Window *_btnWindow;
 };
 

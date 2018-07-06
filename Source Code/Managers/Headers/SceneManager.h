@@ -28,7 +28,7 @@
 
 namespace Divide {
 
-enum RenderStage;
+enum RenderStage : I32;
 class RenderPassCuller;
 
 DEFINE_SINGLETON_EXT2(SceneManager, FrameListener, Input::InputAggregatorInterface)

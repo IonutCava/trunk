@@ -56,41 +56,41 @@ struct FrameEvent {
 /// All events have timers associated with them for update timing
 class FrameListener{
 public:
-	///Either give it a name
+    ///Either give it a name
     FrameListener(const stringImpl& name) : _callOrder(0) { _listenerName = name; }
-	///Or the frame listenr manager will assing it an ID
+    ///Or the frame listenr manager will assing it an ID
     FrameListener() : _callOrder(0) {}
-	virtual ~FrameListener(){}
-	inline const stringImpl& getName() const {return _listenerName;}
+    virtual ~FrameListener(){}
+    inline const stringImpl& getName() const {return _listenerName;}
 
     bool operator<(FrameListener& that){
         return this->_callOrder < that._callOrder;
     }
 
 protected:
-	friend class FrameListenerManager;
-	inline void  setName(const stringImpl& name) { _listenerName = name; }
+    friend class FrameListenerManager;
+    inline void  setName(const stringImpl& name) { _listenerName = name; }
     inline void  setCallOrder(U32 order)          { _callOrder = order; }
-	///Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
-	///Implement what you need without filling classes with dummy functions
-	///frameStarted is calld at the beggining of a new frame before processing the logic aspect of a scene
-	virtual bool frameStarted(const FrameEvent& evt) {return true;}
-	///framePreRenderStarted is called when we need to start processing the visual aspect of a scene
-	virtual bool framePreRenderStarted(const FrameEvent& evt) {return true;}
-	///framePreRenderEnded is called after all the prerendering has finished and rendering should start
-	virtual bool framePreRenderEnded(const FrameEvent& evt) {return true;}
-	///frameRendering Queued is called after all the frame setup/rendering but before the call to SwapBuffers
-	virtual bool frameRenderingQueued(const FrameEvent& evt) {return true;}
+    ///Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
+    ///Implement what you need without filling classes with dummy functions
+    ///frameStarted is calld at the beggining of a new frame before processing the logic aspect of a scene
+    virtual bool frameStarted(const FrameEvent& evt) {return true;}
+    ///framePreRenderStarted is called when we need to start processing the visual aspect of a scene
+    virtual bool framePreRenderStarted(const FrameEvent& evt) {return true;}
+    ///framePreRenderEnded is called after all the prerendering has finished and rendering should start
+    virtual bool framePreRenderEnded(const FrameEvent& evt) {return true;}
+    ///frameRendering Queued is called after all the frame setup/rendering but before the call to SwapBuffers
+    virtual bool frameRenderingQueued(const FrameEvent& evt) {return true;}
     ///framePostRenderStarted is called after the main rendering calls are finished (e.g. use this for debug calls)
     virtual bool framePostRenderStarted(const FrameEvent& evt) {return true;}
     ///framePostRenderEnded is called after all the postrendering has finished
     virtual bool framePostRenderEnded(const FrameEvent& evt) { return true; }
-	///frameEnded is called after the buffers have been swapped
-	virtual bool frameEnded(const FrameEvent& evt) {return true;}
+    ///frameEnded is called after the buffers have been swapped
+    virtual bool frameEnded(const FrameEvent& evt) {return true;}
     
 private:
-	///not _name so that it doesn't conflict with Resource base class
-	stringImpl _listenerName;
+    ///not _name so that it doesn't conflict with Resource base class
+    stringImpl _listenerName;
     ///if multiple frame listeners are handling the same event, this call order variable is used for sorting
     U32 _callOrder;
 };

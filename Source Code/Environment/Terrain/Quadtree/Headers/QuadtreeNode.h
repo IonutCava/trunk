@@ -69,16 +69,16 @@ public:
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
-    inline bool isALeaf() const	{ 
+    inline bool isALeaf() const    { 
         return !(_children[CHILD_NW] && _children[CHILD_NE] && _children[CHILD_SW] && _children[CHILD_SE]); 
     }
 
-    inline BoundingBox&	getBoundingBox()         		{return _boundingBox;}
-    inline void setBoundingBox(const BoundingBox& bbox)	{_boundingBox = bbox;}
-    inline TerrainChunk*	getChunk()					{return _terrainChunk;}
+    inline BoundingBox&    getBoundingBox()                 {return _boundingBox;}
+    inline void setBoundingBox(const BoundingBox& bbox)    {_boundingBox = bbox;}
+    inline TerrainChunk*    getChunk()                    {return _terrainChunk;}
 
-    inline QuadtreeNode*	getChild(ChildPosition pos) { return _children[pos]; }
-    inline QuadtreeNode*	getChild(U32 index)         { return _children[index]; }
+    inline QuadtreeNode*    getChild(ChildPosition pos) { return _children[pos]; }
+    inline QuadtreeNode*    getChild(U32 index)         { return _children[index]; }
 
     QuadtreeNode();
     ~QuadtreeNode();
@@ -91,11 +91,11 @@ protected:
 private:
     F32             _terLoDOffset;      ///<Small offset to prevent wrong LoD selection on border cases
     U32             _minHMSize;
-    I8				_LOD;				///< LOD level
-    BoundingBox		_boundingBox;		///< Node BoundingBox
+    I8                _LOD;                ///< LOD level
+    BoundingBox        _boundingBox;        ///< Node BoundingBox
     BoundingSphere  _boundingSphere;    ///< Node BoundingSphere
-    QuadtreeNode* 	_children[4];		///< Node children
-    TerrainChunk*	_terrainChunk;		///< Terrain Chunk contained in node
+    QuadtreeNode*     _children[4];        ///< Node children
+    TerrainChunk*    _terrainChunk;        ///< Terrain Chunk contained in node
 };
 
 }; //namespace Divide

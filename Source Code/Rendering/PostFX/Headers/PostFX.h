@@ -89,7 +89,7 @@ private:
     Texture* _screenBorder;
 
     /// Noise
-    Texture*	_noise;
+    Texture*    _noise;
 
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
     D32 _timer, _tickInterval;

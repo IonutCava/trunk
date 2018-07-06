@@ -31,11 +31,11 @@
 //PhysX includes
 
 #if defined(_MSC_VER)
-#	pragma warning( push )
-#		pragma warning( disable: 4503 ) //<decorated name length exceeded, name was truncated
+#    pragma warning( push )
+#        pragma warning( disable: 4503 ) //<decorated name length exceeded, name was truncated
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic push
-#		pragma GCC diagnostic ignored "-Wall"
+#    pragma GCC diagnostic push
+#        pragma GCC diagnostic ignored "-Wall"
 #endif
 
 #include < PxPhysicsAPI.h >
@@ -46,9 +46,9 @@
 //Connecting the SDK to Visual Debugger
 #include < pvd/PxVisualDebugger.h >
 #if defined(_MSC_VER)
-#	pragma warning( pop )
+#    pragma warning( pop )
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 //PhysX includes //
 
@@ -124,9 +124,9 @@ private:
     PhysX();
     ///////////////////////////////////////////////////////////////////////////////
     // Implements PvdConnectionFactoryHandler
-    virtual	void onPvdSendClassDescriptions(physx::debugger::comm::PvdConnection&) {}
-    virtual	void onPvdConnected(physx::debugger::comm::PvdConnection& inFactory)   {}
-    virtual	void onPvdDisconnected(physx::debugger::comm::PvdConnection& inFactory){}
+    virtual    void onPvdSendClassDescriptions(physx::debugger::comm::PvdConnection&) {}
+    virtual    void onPvdConnected(physx::debugger::comm::PvdConnection& inFactory)   {}
+    virtual    void onPvdDisconnected(physx::debugger::comm::PvdConnection& inFactory){}
 
 public:
 
@@ -159,7 +159,7 @@ private:
     physx::PxCooking*            _cooking;
     physx::PxFoundation*         _foundation;
     physx::PxProfileZoneManager* _zoneManager;         
-    physx::PxProfileZone*		 _profileZone;    
+    physx::PxProfileZone*         _profileZone;    
     physx::debugger::comm::PvdConnectionManager* _pvdConnection;
     boost::mutex _physxMutex;
     physx::PxReal _timeStep;

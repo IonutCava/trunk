@@ -32,16 +32,16 @@ class SceneRenderState;
 
 class RenderPass {
 public:
-	RenderPass(const stringImpl& name);
-	~RenderPass();
+    RenderPass(const stringImpl& name);
+    ~RenderPass();
 
-	virtual void render(const SceneRenderState& renderState, SceneGraph* activeSceneGraph);
-	inline U16 getLasTotalBinSize()    const { return _lastTotalBinSize; }
-	inline const stringImpl& getName() const { return _name; }
+    virtual void render(const SceneRenderState& renderState, SceneGraph* activeSceneGraph);
+    inline U16 getLasTotalBinSize()    const { return _lastTotalBinSize; }
+    inline const stringImpl& getName() const { return _name; }
 
 private:
-	stringImpl _name;
-	U16 _lastTotalBinSize;
+    stringImpl _name;
+    U16 _lastTotalBinSize;
 };
 
 }; //namespace Divide

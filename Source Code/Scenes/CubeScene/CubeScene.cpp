@@ -95,7 +95,7 @@ bool CubeScene::onKeyUp(const Input::KeyEvent& key)
     bool keyState = Scene::onKeyUp(key);
     switch(key._key)
     {
-        case Input::KeyCode::KC_T:	_GFX.getRenderer()->toggleDebugView(); break;
+        case Input::KeyCode::KC_T:    _GFX.getRenderer()->toggleDebugView(); break;
         default: break;
     }
     return keyState;

@@ -29,28 +29,28 @@ namespace Divide {
     namespace AI {
 
 enum SensorType {
-	NONE = 0,
-	VISUAL_SENSOR = 1,
-	AUDIO_SENSOR = 2
+    NONE = 0,
+    VISUAL_SENSOR = 1,
+    AUDIO_SENSOR = 2
 };
 
 class AIEntity;
 class Sensor {
 public :
-	inline SensorType sensorType() const { return _type; }
+    inline SensorType sensorType() const { return _type; }
     virtual void update(const U64 deltaTime) = 0;
     inline void updateRange(const vec2<F32>& range) { _range.set(range); }
 
 protected:
-	Sensor(AIEntity* const parentEntity, SensorType type) 
+    Sensor(AIEntity* const parentEntity, SensorType type) 
     {
         _parentEntity = parentEntity;
         _type = type;
     }
 
 protected:
-	vec2<F32>  _range; ///< min/max
-	SensorType _type;
+    vec2<F32>  _range; ///< min/max
+    SensorType _type;
     AIEntity*  _parentEntity;
 };
     }; //namespace AI

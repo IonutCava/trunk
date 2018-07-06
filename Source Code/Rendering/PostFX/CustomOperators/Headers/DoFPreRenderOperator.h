@@ -29,16 +29,16 @@ namespace Divide {
 
 class DoFPreRenderOperator : public PreRenderOperator {
 public:
-	DoFPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
-	~DoFPreRenderOperator();
+    DoFPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+    ~DoFPreRenderOperator();
 
-	void operation();
-	void reshape(I32 width, I32 height);
+    void operation();
+    void reshape(I32 width, I32 height);
 
 private:
-	ShaderProgram* _dofShader;
-	Framebuffer*   _outputFB;
-	Framebuffer*   _samplerCopy;
+    ShaderProgram* _dofShader;
+    Framebuffer*   _outputFB;
+    Framebuffer*   _samplerCopy;
 };
 
 }; //namespace Divide

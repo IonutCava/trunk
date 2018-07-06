@@ -15,7 +15,7 @@ namespace XML {
     ptree pt;
 
     namespace {
-        const char* getFilterName(TextureFilter filter)	{
+        const char* getFilterName(TextureFilter filter)    {
             if (filter == TEXTURE_FILTER_LINEAR) {
                 return "TEXTURE_FILTER_LINEAR";
             } else if (filter == TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST) {
@@ -31,7 +31,7 @@ namespace XML {
             return "TEXTURE_FILTER_NEAREST";
         }
 
-        TextureFilter getFilter(const char* filter)	{
+        TextureFilter getFilter(const char* filter)    {
             if (strcmp(filter, "TEXTURE_FILTER_LINEAR") == 0 ) {
                 return TEXTURE_FILTER_LINEAR;
             } else if (strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST") == 0 ) {
@@ -75,7 +75,7 @@ namespace XML {
             return TEXTURE_REPEAT;
         }
 
-        const char* getBumpMethodName(Material::BumpMethod bumpMethod)	{
+        const char* getBumpMethodName(Material::BumpMethod bumpMethod)    {
             if (bumpMethod == Material::BUMP_NORMAL) {
                 return "BUMP_NORMAL";
             } else if (bumpMethod == Material::BUMP_PARALLAX) {
@@ -200,8 +200,8 @@ namespace XML {
         PRINT_FN(Locale::get("XML_LOAD_SCRIPTS"));
         read_xml(file.c_str(), pt);
         std::string activeScene("MainScene");
-		par.setParam("testInt", 2);
-		par.setParam("testFloat", 3.2f);
+        par.setParam("testInt", 2);
+        par.setParam("testFloat", 3.2f);
         par.setParam("scriptLocation",pt.get<std::string>("scriptLocation","XML"));
         par.setParam("assetsLocation",pt.get<std::string>("assets","assets"));
         par.setParam("scenesLocation",pt.get<std::string>("scenesLocation","Scenes"));
@@ -268,7 +268,7 @@ namespace XML {
         par.setParam("rendering.sceneState.fogDensity", pt.get("rendering.fogDensity",0.01f));
         par.setParam("rendering.sceneState.fogColor.r", pt.get<F32>("rendering.fogColor.<xmlattr>.r", 0.2f));
         par.setParam("rendering.sceneState.fogColor.g", pt.get<F32>("rendering.fogColor.<xmlattr>.g", 0.2f));
-        par.setParam("rendering.sceneState.fogColor.b",	pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
+        par.setParam("rendering.sceneState.fogColor.b",    pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
     }
 
     void loadScene(const std::string& sceneName, SceneManager& sceneMgr) {
@@ -289,7 +289,7 @@ namespace XML {
         par.setParam("currentScene", sceneName);
         Scene* scene = sceneMgr.createScene(sceneName.c_str());
 
-        if (!scene)	{
+        if (!scene)    {
             ERROR_FN(Locale::get("ERROR_XML_LOAD_INVALID_SCENE"));
             return;
         }
@@ -352,7 +352,7 @@ namespace XML {
                          pt.get<F32>("fog.fogColor.<xmlattr>.r", 0.2f));
             par.setParam("rendering.sceneState.fogColor.g", 
                          pt.get<F32>("fog.fogColor.<xmlattr>.g", 0.2f));
-            par.setParam("rendering.sceneState.fogColor.b",	
+            par.setParam("rendering.sceneState.fogColor.b",    
                          pt.get<F32>("fog.fogColor.<xmlattr>.b", 0.2f));
         }
 

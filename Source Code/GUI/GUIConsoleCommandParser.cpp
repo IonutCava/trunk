@@ -17,14 +17,14 @@ namespace Divide {
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr)
 {
     _commandMap["say"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand, this, std::placeholders::_1);
-	_commandMap["quit"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand, this, std::placeholders::_1);
-	_commandMap["help"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand, this, std::placeholders::_1);
-	_commandMap["editparam"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand, this, std::placeholders::_1);
-	_commandMap["playsound"] = DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand, this, std::placeholders::_1);
-	_commandMap["createnavmesh"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand, this, std::placeholders::_1);
-	_commandMap["setfov"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand, this, std::placeholders::_1);
-	_commandMap["invalidcommand"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand, this, std::placeholders::_1);
-	_commandMap["addobject"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, std::placeholders::_1);
+    _commandMap["quit"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleQuitCommand, this, std::placeholders::_1);
+    _commandMap["help"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleHelpCommand, this, std::placeholders::_1);
+    _commandMap["editparam"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleEditParamCommand, this, std::placeholders::_1);
+    _commandMap["playsound"] = DELEGATE_BIND(&GUIConsoleCommandParser::handlePlaySoundCommand, this, std::placeholders::_1);
+    _commandMap["createnavmesh"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleNavMeshCommand, this, std::placeholders::_1);
+    _commandMap["setfov"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand, this, std::placeholders::_1);
+    _commandMap["invalidcommand"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand, this, std::placeholders::_1);
+    _commandMap["addobject"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, std::placeholders::_1);
     _commandMap["recompileshader"] = DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand, 
                                                    this,
                                                    std::placeholders::_1);
@@ -52,7 +52,7 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString){
     // Be sure we have a string longer than 0
     if (commandString.length() >= 1) {
         // Check if the first letter is a 'command' operator
-        if (commandString.at(0) == '/') 	{
+        if (commandString.at(0) == '/')     {
             stringImpl::size_type commandEnd = commandString.find(" ", 1);
             stringImpl command = commandString.substr(1, commandEnd - 1);
             stringImpl commandArgs = commandString.substr(commandEnd + 1, commandString.length() - (commandEnd + 1));
@@ -68,7 +68,7 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString){
                 //invalid command
                 _commandMap["invalidcommand"](command);
             }
-        } else	{
+        } else    {
             PRINT_FN("%s",commandString.c_str()); // no commands, just output what was typed
         }
     }
@@ -90,7 +90,7 @@ void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args){
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args){
     if ( args.empty() ) {
         PRINT_FN( Locale::get( "HELP_CONSOLE_COMMAND" ) );
-		for (const CommandMap::value_type& it : _commandMap) {
+        for (const CommandMap::value_type& it : _commandMap) {
             if ( it.first.find( "invalid" ) == stringImpl::npos ) {
                 PRINT_FN( "/%s - %s", it.first.c_str(), _commandHelp[it.first] );
             }
@@ -159,19 +159,19 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args){
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
     }
     // Set it's file name
-	temp->setFileName(GET_ACTIVE_SCENE()->getName());
+    temp->setFileName(GET_ACTIVE_SCENE()->getName());
     // Try to load it from file
-	bool loaded = temp->load(nullptr);
-	if (!loaded) {
+    bool loaded = temp->load(nullptr);
+    if (!loaded) {
         // If we failed to load it from file, we need to build it first
-		loaded = temp->build(nullptr, AI::Navigation::NavigationMesh::CreationCallback(), false);
+        loaded = temp->build(nullptr, AI::Navigation::NavigationMesh::CreationCallback(), false);
         // Then save it to file
-		temp->save();
-	}
+        temp->save();
+    }
     // If we loaded/built the NavMesh correctly, add it to the AIManager
-	if (loaded) {
-		AI::AIManager::getInstance().addNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL, temp);
-	}
+    if (loaded) {
+        AI::AIManager::getInstance().addNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL, temp);
+    }
 }
 
 void GUIConsoleCommandParser::handleShaderRecompileCommand(const stringImpl& args){

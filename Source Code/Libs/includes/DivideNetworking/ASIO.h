@@ -15,42 +15,42 @@ namespace Divide {
 #error "Please include 'OPCodesTpl' and define custom OPcodes before using the networking library!"
 #endif
 
-enum  OPCodes;
+enum  OPCodes : I32;
 class Client;
 class ASIO {
 public:
-	///Send a packet to the target server
-	virtual void sendPacket(WorldPacket& p) const;
-	///Init a connection to the target address:port
-	virtual void init(const stringImpl& address,const stringImpl& port);
-	///Connect to target address:port only if we have a new IP:PORT combo or our connection timed out
-	virtual void connect(const stringImpl& address,const stringImpl& port);
-	///Disconnect from the server
-	virtual void disconnect();
-	///Check connection state;
-	virtual bool isConnected() const;
-	///Toggle the printing of debug information
-	virtual void toggleDebugOutput(const bool debugOutput);
+    ///Send a packet to the target server
+    virtual void sendPacket(WorldPacket& p) const;
+    ///Init a connection to the target address:port
+    virtual void init(const stringImpl& address,const stringImpl& port);
+    ///Connect to target address:port only if we have a new IP:PORT combo or our connection timed out
+    virtual void connect(const stringImpl& address,const stringImpl& port);
+    ///Disconnect from the server
+    virtual void disconnect();
+    ///Check connection state;
+    virtual bool isConnected() const;
+    ///Toggle the printing of debug information
+    virtual void toggleDebugOutput(const bool debugOutput);
 
 protected:
-	ASIO();
-	virtual ~ASIO();
+    ASIO();
+    virtual ~ASIO();
 
-	friend class Client;
-	void close();
+    friend class Client;
+    void close();
 
-	//Define this functions to implement various packet handling (a switch statement for example)
-	//switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case MSG_HEARTBEAT: break;}
-	virtual void handlePacket(WorldPacket& p) = 0;
+    //Define this functions to implement various packet handling (a switch statement for example)
+    //switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case MSG_HEARTBEAT: break;}
+    virtual void handlePacket(WorldPacket& p) = 0;
 
 protected:
-	Client *_localClient;
-	std::auto_ptr<io_service::work> _work;
-	std::thread *_thread;
-	bool _connected;
-	bool _debugOutput;
-	io_service io_service_;
-	stringImpl _address,_port;
+    Client *_localClient;
+    std::auto_ptr<io_service::work> _work;
+    std::thread *_thread;
+    bool _connected;
+    bool _debugOutput;
+    io_service io_service_;
+    stringImpl _address,_port;
 };
 
 }; //namespace Divide

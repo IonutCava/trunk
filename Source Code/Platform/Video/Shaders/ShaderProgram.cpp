@@ -19,8 +19,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
                                                     _elapsedTime(0ULL),
                                                     _elapsedTimeMS(0.0f)
 {
-	_bound = false;
-	_linked = false;
+    _bound = false;
+    _linked = false;
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramId = 0;
     // Start with clean refresh flags
@@ -39,7 +39,7 @@ ShaderProgram::~ShaderProgram()
 {
     D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
     // Remove every shader attached to this program
-	for (ShaderIdMap::value_type& it : _shaderIdMap) {
+    for (ShaderIdMap::value_type& it : _shaderIdMap) {
         ShaderManager::getInstance().removeShader( it.second );
     }
     // Unregister the program from the manager

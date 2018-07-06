@@ -34,13 +34,13 @@ namespace Divide {
 class ForwardPlusRenderer : public Renderer {
 
 public:
-	ForwardPlusRenderer();
-	~ForwardPlusRenderer();
+    ForwardPlusRenderer();
+    ~ForwardPlusRenderer();
 
     void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes, 
                              const GFXDevice::GPUBlock& gpuBlock);
 
-	void render(const DELEGATE_CBK<>& renderCallback,
+    void render(const DELEGATE_CBK<>& renderCallback,
                 const SceneRenderState& sceneRenderState);
 
     void updateResolution(U16 width, U16 height);

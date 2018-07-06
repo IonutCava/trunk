@@ -6,8 +6,8 @@ out vec3 _eyePos;
 void main(void)
 {
 
-	computeData();
-	_eyePos = dvd_cameraPosition.xyz;
+    computeData();
+    _eyePos = dvd_cameraPosition.xyz;
 }
 
 -- Fragment

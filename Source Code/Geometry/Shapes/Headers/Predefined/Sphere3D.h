@@ -50,7 +50,7 @@ public:
     {
 
     }
-    inline F32	  getRadius()     {return _radius;}
+    inline F32      getRadius()     {return _radius;}
     inline F32    getResolution() {return _resolution;}
     inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; getGeometryVB()->queueRefresh();}
     inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; getGeometryVB()->queueRefresh();}

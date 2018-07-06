@@ -19,7 +19,7 @@ static std::atomic<PhysXStateEnum > s_sceneState;
 
 //begin copy-paste
 void PhysXScene::preRender(){
-	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
 }
 //<<end copy-paste
 
@@ -45,9 +45,9 @@ bool PhysXScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
     //Add a light
     vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
     _sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
-	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
     _sun->setDirection(_sunvector);
-	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     s_sceneState = STATE_IDLE;
     return loadState;
 }
@@ -114,7 +114,7 @@ void PhysXScene::createTower(U32 size){
 
 
 bool PhysXScene::onKeyUp(const Input::KeyEvent& key){
-    switch(key._key)	{
+    switch(key._key)    {
         default: break;
         case Input::KeyCode::KC_5:{
             _paramHandler.setParam("simSpeed", IS_ZERO(_paramHandler.getParam<F32>("simSpeed")) ? 1.0f : 0.0f);
@@ -133,14 +133,14 @@ bool PhysXScene::onKeyUp(const Input::KeyEvent& key){
         case Input::KeyCode::KC_3:{
             Kernel* kernel = Application::getInstance().getKernel();
             Task_ptr e(kernel->AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createTower, this, (U32)random(5, 20))));
-			registerTask(e);
-			e->startTask();
+            registerTask(e);
+            e->startTask();
             }break;
         case Input::KeyCode::KC_4:{
             Kernel* kernel = Application::getInstance().getKernel();
             Task_ptr e(kernel->AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createStack, this, (U32)random(5, 10))));
-			registerTask(e);
-			e->startTask();
+            registerTask(e);
+            e->startTask();
         } break;
     }
     return Scene::onKeyUp(key);

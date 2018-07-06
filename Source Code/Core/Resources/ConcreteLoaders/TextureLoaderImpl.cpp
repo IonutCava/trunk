@@ -26,7 +26,7 @@ Texture* ImplResourceLoader<Texture>::operator()(){
     //Add the specified sampler, if any
     if(_descriptor.hasPropertyDescriptor()){
         //cast back to a SamplerDescriptor from a PropertyDescriptor
-		ptr->setCurrentSampler( *_descriptor.getPropertyDescriptor<SamplerDescriptor>() );
+        ptr->setCurrentSampler( *_descriptor.getPropertyDescriptor<SamplerDescriptor>() );
     }
 
     if ( !load( ptr, _descriptor.getName() ) ) {

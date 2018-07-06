@@ -643,7 +643,7 @@ public:
                     m[12] - matrix[12], m[13] - matrix[13], m[14] - matrix[14], m[15] - matrix[15]);
     }
 
-    inline T &element(I8 row, I8 column, bool rowMajor = false)	{
+    inline T &element(I8 row, I8 column, bool rowMajor = false)    {
         return ( rowMajor ? this->mat[column + row * 4] : this->mat[row + column * 4] );
     }
 

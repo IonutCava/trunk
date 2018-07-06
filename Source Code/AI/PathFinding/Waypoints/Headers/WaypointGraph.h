@@ -27,33 +27,33 @@
 namespace Divide {
     namespace Navigation {
 
-	class WaypointGraph {
-		typedef hashMapImpl<U32, Waypoint*> WaypointMap;
-		//typedef hashMapImpl<I32, WaypointPath> PathMap;
-	public:
-		WaypointGraph();
-		~WaypointGraph();
+    class WaypointGraph {
+        typedef hashMapImpl<U32, Waypoint*> WaypointMap;
+        //typedef hashMapImpl<I32, WaypointPath> PathMap;
+    public:
+        WaypointGraph();
+        ~WaypointGraph();
 
-	   void addWaypoint(Waypoint* wp);
-	   void removeWaypoint(Waypoint* wp);
+       void addWaypoint(Waypoint* wp);
+       void removeWaypoint(Waypoint* wp);
 
-	   void sortMarkers();
-	   void updateGraph();
-	   bool isLooping() { return _loop; }
-	   inline U32 getID() const {return _id;}
-	   inline U32 getSize() {return (U32)_waypoints.size();}
+       void sortMarkers();
+       void updateGraph();
+       bool isLooping() { return _loop; }
+       inline U32 getID() const {return _id;}
+       inline U32 getSize() {return (U32)_waypoints.size();}
 
-	private:
-		WaypointMap _waypoints;
-		//PathMap     _paths;
+    private:
+        WaypointMap _waypoints;
+        //PathMap     _paths;
 
-		U32  _id;
-		bool _loop;
+        U32  _id;
+        bool _loop;
 
-		vectorImpl<vec3<F32> >         _positions;
-		vectorImpl<Quaternion<F32> >   _rotations;
-		vectorImpl<U32>                _times;
-	};
+        vectorImpl<vec3<F32> >         _positions;
+        vectorImpl<Quaternion<F32> >   _rotations;
+        vectorImpl<U32>                _times;
+    };
 
     }; //namespace Navigation
 }; //namespace Divide

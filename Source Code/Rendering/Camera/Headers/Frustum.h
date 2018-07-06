@@ -39,9 +39,9 @@ protected:
 
 public:
     enum FrustCollision {
-        FRUSTUM_OUT		  = 0,
-        FRUSTUM_IN		  =	1,
-        FRUSTUM_INTERSECT =	2
+        FRUSTUM_OUT          = 0,
+        FRUSTUM_IN          =    1,
+        FRUSTUM_INTERSECT =    2
     };
 
     FrustCollision ContainsPoint(const vec3<F32>& point) const;

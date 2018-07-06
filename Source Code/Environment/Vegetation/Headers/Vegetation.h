@@ -41,7 +41,7 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 class GenericVertexData;
-enum RenderStage;
+enum RenderStage : I32;
 
 struct VegetationDetails {
     U16 billboardCount;
@@ -98,8 +98,8 @@ private:
     //variables
     bool _render; ///< Toggle vegetation rendering On/Off
     bool _success;
-	std::atomic_bool _threadedLoadComplete;
-	std::atomic_bool _stopLoadingRequest;
+    std::atomic_bool _threadedLoadComplete;
+    std::atomic_bool _stopLoadingRequest;
     Terrain*        _terrain;
     TerrainChunk*   _terrainChunk;
     F32 _grassDensity, _treeDensity;

@@ -20,30 +20,10 @@
 
  */
 
-#ifndef _APPLICATION_INL_
-#define _APPLICATION_INL_
+#ifndef _CORE_APPLICATION_INL_
+#define _CORE_APPLICATION_INL_
 
 namespace Divide {
-enum ErrorCode {
-    NO_ERR = 0,
-    MISSING_SCENE_DATA = -1,
-    MISSING_SCENE_LOAD_CALL = -2,
-    GFX_NOT_SUPPORTED = -3,
-    GFX_NON_SPECIFIED = -4,
-    GLFW_INIT_ERROR = -5,
-    GLFW_WINDOW_INIT_ERROR = -6,
-    GLEW_INIT_ERROR = -7,
-    GLEW_OLD_HARDWARE = -8,
-    DX_INIT_ERROR = -9,
-    DX_OLD_HARDWARE = -10,
-    SDL_AUDIO_INIT_ERROR = -11,
-    SDL_AUDIO_MIX_INIT_ERROR = -12,
-    FMOD_AUDIO_INIT_ERROR = -13,
-    OAL_INIT_ERROR = -14,
-    PHYSX_INIT_ERROR = -15,
-    PHYSX_EXTENSION_ERROR = -16,
-    NO_LANGUAGE_INI = -17
-};
 
 inline const char* getErrorCodeName(ErrorCode code) {
     switch (code) {
@@ -105,110 +85,112 @@ inline const char* getErrorCodeName(ErrorCode code) {
     };
 }
 
-const vec2<U16>& Application::getResolution() const {
+inline const vec2<U16>& Application::getResolution() const {
     return _resolution;
 }
 
-const vec2<U16>& Application::getScreenCenter() const {
+inline const vec2<U16>& Application::getScreenCenter() const {
     return _screenCenter;
 }
 
-const vec2<U16>& Application::getPreviousResolution() const { 
+inline const vec2<U16>& Application::getPreviousResolution() const { 
     return _prevResolution; 
 }
 
-void Application::setResolutionWidth(U16 w) {
-        _prevResolution.set(_resolution);
-        _resolution.width = w;
-        _screenCenter.x = w / 2;
+inline void Application::setResolutionWidth(U16 w) {
+    _prevResolution.set(_resolution);
+    _resolution.width = w;
+    _screenCenter.x = w / 2;
 }
 
-void Application::setResolutionHeight(U16 h) {
+inline void Application::setResolutionHeight(U16 h) {
     _prevResolution.set(_resolution); 
     _resolution.height = h; 
     _screenCenter.y = h / 2;
 }
 
-void Application::setResolution(U16 w, U16 h) {
+inline void Application::setResolution(U16 w, U16 h) {
     _prevResolution.set(_resolution); 
     _resolution.set(w,h); 
     _screenCenter.set(_resolution / 2);
 }
  
-void Application::RequestShutdown() {
+inline void Application::RequestShutdown() {
     _requestShutdown = true;  
 }
 
-void Application::CancelShutdown() { 
+inline void Application::CancelShutdown() { 
     _requestShutdown = false; 
 }
 
-bool Application::ShutdownRequested() const { 
+inline bool Application::ShutdownRequested() const { 
     return _requestShutdown;  
 }
 
-Kernel* const Application::getKernel() const { 
+inline Kernel* const Application::getKernel() const { 
     return _kernel; 
 }
 
-const std::thread::id&  Application::getMainThreadId() const { 
+inline const std::thread::id&  Application::getMainThreadId() const { 
     return _threadId; 
 }
 
-bool Application::isMainThread() const { 
+inline bool Application::isMainThread() const { 
     return (_threadId == std::this_thread::get_id()); 
 }
 
-void Application::setMemoryLogFile(const stringImpl& fileName) { 
+inline void Application::setMemoryLogFile(const stringImpl& fileName) { 
     _memLogBuffer = fileName; 
 }
 
-bool Application::hasFocus() const { 
+inline bool Application::hasFocus() const { 
     return _hasFocus; 
 }
 
-void Application::hasFocus(const bool state) { 
+inline void Application::hasFocus(const bool state) { 
     _hasFocus = state; 
 }
 
-bool Application::isFullScreen()  const { 
+inline bool Application::isFullScreen()  const { 
     return _isFullscreen;  
 }
 
-void Application::isFullScreen(const bool state) { 
+inline void Application::isFullScreen(const bool state) { 
     _isFullscreen = state; 
 }
 
-bool Application::mainLoopActive() const { 
+inline bool Application::mainLoopActive() const { 
     return _mainLoopActive;  
 }
 
-void Application::mainLoopActive(bool state) { 
+inline void Application::mainLoopActive(bool state) { 
     _mainLoopActive = state; 
 }
 
-bool Application::mainLoopPaused() const { 
+inline bool Application::mainLoopPaused() const { 
     return _mainLoopPaused;
 }
 
-void Application::mainLoopPaused(bool state) { 
+inline void Application::mainLoopPaused(bool state) { 
     _mainLoopPaused = state; 
 }
 
-void Application::snapCursorToCenter() const {
+inline void Application::snapCursorToCenter() const {
     snapCursorToPosition(_screenCenter.x, _screenCenter.y);
 }
 
-void Application::throwError(ErrorCode err) { 
+inline void Application::throwError(ErrorCode err) { 
     _errorCode = err; 
 }
 
-ErrorCode Application::errorCode() const { 
+inline ErrorCode Application::errorCode() const { 
     return _errorCode; 
 }
 
-void Application::registerShutdownCallback( const DELEGATE_CBK<>& cbk ) {
+inline void Application::registerShutdownCallback( const DELEGATE_CBK<>& cbk ) {
     _shutdownCallback.push_back( cbk );
 }
+
 }; //namespace Divide
-#endif
+
+#endif //_CORE_APPLICATION_INL_

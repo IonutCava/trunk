@@ -31,57 +31,57 @@ class Sphere3D;
 
 class PingPongScene : public Scene {
 public:
-	PingPongScene() : Scene() {
-		_sideDrift = 0;
-		_directionTowardsAdversary = true;
-		_upwardsDirection = false;
-		_touchedOwnTableHalf = false;
-		_touchedAdversaryTableHalf = false;
-		_lost = false;
-		_ballSGN = nullptr;
-		_ball = nullptr;
+    PingPongScene() : Scene() {
+        _sideDrift = 0;
+        _directionTowardsAdversary = true;
+        _upwardsDirection = false;
+        _touchedOwnTableHalf = false;
+        _touchedAdversaryTableHalf = false;
+        _lost = false;
+        _ballSGN = nullptr;
+        _ball = nullptr;
         _freeFlyCam = nullptr;
         _paddleCam = nullptr;
-		_sun = nullptr;
-	}
+        _sun = nullptr;
+    }
 
-	~PingPongScene() {}
-	void preRender();
+    ~PingPongScene() {}
+    void preRender();
 
-	bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
-	bool loadResources(bool continueOnErrors);
-	void processInput(const U64 deltaTime);
-	void processTasks(const U64 deltaTime);
+    bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool loadResources(bool continueOnErrors);
+    void processInput(const U64 deltaTime);
+    void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
 
-	bool onKeyUp(const Input::KeyEvent& key);
-	bool joystickAxisMoved(const Input::JoystickEvent& key,I8 axis);
-	bool joystickButtonReleased(const Input::JoystickEvent& key, I8 button);
+    bool onKeyUp(const Input::KeyEvent& key);
+    bool joystickAxisMoved(const Input::JoystickEvent& key,I8 axis);
+    bool joystickButtonReleased(const Input::JoystickEvent& key, I8 button);
 
 private:
-	void test(cdiggins::any a, CallbackParam b);
-	void serveBall();
-	void resetGame();
+    void test(cdiggins::any a, CallbackParam b);
+    void serveBall();
+    void resetGame();
 
 private:
-	I8 _score;
-	vectorImpl<stringImpl> _quotes;
-	vec3<F32> _sunvector;
-	Sphere3D* _ball;
-	SceneGraphNode* _ballSGN;
+    I8 _score;
+    vectorImpl<stringImpl> _quotes;
+    vec3<F32> _sunvector;
+    Sphere3D* _ball;
+    SceneGraphNode* _ballSGN;
     Camera*         _freeFlyCam;
     Camera*         _paddleCam;
-	DirectionalLight* _sun;
+    DirectionalLight* _sun;
 
 private: //Game stuff:
-	bool _directionTowardsAdversary;
-	bool _upwardsDirection;
-	bool _touchedOwnTableHalf;
-	bool _touchedAdversaryTableHalf;
-	bool _lost;
+    bool _directionTowardsAdversary;
+    bool _upwardsDirection;
+    bool _touchedOwnTableHalf;
+    bool _touchedAdversaryTableHalf;
+    bool _lost;
     bool _freeFly;
     bool _wasInFreeFly;
-	F32 _sideDrift;
+    F32 _sideDrift;
 };
 
 }; //namespace Divide

@@ -8,23 +8,23 @@
 #include "Core/Headers/ParamHandler.h"
 
 #if defined(_MSC_VER)
-#	pragma warning( push )
-#		pragma warning( disable: 4324 ) //<structure was padded ...
-#		pragma warning( disable: 4189 ) //<local variable is initialized but not referenced
+#    pragma warning( push )
+#        pragma warning( disable: 4324 ) //<structure was padded ...
+#        pragma warning( disable: 4189 ) //<local variable is initialized but not referenced
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic push
-#		pragma GCC diagnostic ignored "-Wall"
+#    pragma GCC diagnostic push
+#        pragma GCC diagnostic ignored "-Wall"
 #endif
 
-#	ifndef CEGUI_DEFAULT_CONTEXT
-#		define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
-#	endif
+#    ifndef CEGUI_DEFAULT_CONTEXT
+#        define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
+#    endif
 
 
 #if defined(_MSC_VER)
-#	pragma warning( pop )
+#    pragma warning( pop )
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 
 namespace Divide {
@@ -44,13 +44,13 @@ GUIConsole::GUIConsole() : _init(false),
 
 GUIConsole::~GUIConsole()
 {
-	_closing = true;
+    _closing = true;
 
     if (_consoleWindow) {
-		setVisible(false);
-		_init = false;
+        setVisible(false);
+        _init = false;
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
-		MemoryManager::DELETE(_consoleWindow);
+        MemoryManager::DELETE(_consoleWindow);
     }
     MemoryManager::DELETE( _cmdParser );
 
@@ -134,13 +134,13 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
 }
 
 void GUIConsole::setVisible(bool visible){
-	if (!_init) {
-		CreateCEGUIWindow();
-	}
+    if (!_init) {
+        CreateCEGUIWindow();
+    }
     //if it's not the first key (e.g., if the toggle key is "~", then "lorem~ipsum" should not close the Window)
-	if (!_inputBuffer.empty()){
-		return;
-	}
+    if (!_inputBuffer.empty()){
+        return;
+    }
     assert(_editBox != nullptr);
     _consoleWindow->setVisible(visible);
 

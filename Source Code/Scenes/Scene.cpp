@@ -33,7 +33,7 @@ Scene::Scene() :  Resource("temp_scene"),
                  _cookCollisionMeshesScheduled(false),
                  _paramHandler(ParamHandler::getInstance()),
                  _currentSelection(nullptr),
-				 _currentSky(nullptr),
+                 _currentSky(nullptr),
                  _sceneGraph(MemoryManager_NEW SceneGraph())
 {
     _mousePressed[OIS::MB_Left]    = false;
@@ -184,7 +184,7 @@ bool Scene::loadGeometry( const FileData& data ) {
         ERROR_FN( Locale::get( "ERROR_SCENE_UNSUPPORTED_GEOM" ), data.ModelName.c_str() );
         return false;
     }
-	STUBBED("Load material from XML disabled for primitives! - Ionut")
+    STUBBED("Load material from XML disabled for primitives! - Ionut")
     Material* tempMaterial = nullptr/*XML::loadMaterial( stringAlg::fromBase( data.ItemName + "_material" ) )*/;
     if ( !tempMaterial ) {
         ResourceDescriptor materialDescriptor( data.ItemName + "_material" );
@@ -228,9 +228,9 @@ SceneGraphNode* const Scene::addParticleEmitter(const stringImpl& name,
 }
 
 SceneGraphNode* Scene::addLight( Light* const lightItem, SceneGraphNode* const parentNode ) {
-	assert(lightItem != nullptr);
+    assert(lightItem != nullptr);
 
-	lightItem->setCastShadows(lightItem->getType() != LIGHT_TYPE_POINT);
+    lightItem->setCastShadows(lightItem->getType() != LIGHT_TYPE_POINT);
 
     SceneGraphNode* returnNode = nullptr;
     if ( parentNode ) {
@@ -242,21 +242,21 @@ SceneGraphNode* Scene::addLight( Light* const lightItem, SceneGraphNode* const p
 }
 
 SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode* const parentNode) {
-	const char* lightType = "";
-	switch (type) {
-		case LIGHT_TYPE_DIRECTIONAL: lightType = "Default_directional_light "; break;
-		case LIGHT_TYPE_POINT: lightType = "Default_point_light_"; break;
-		case LIGHT_TYPE_SPOT: lightType = "Default_spot_light_"; break;
-	}
+    const char* lightType = "";
+    switch (type) {
+        case LIGHT_TYPE_DIRECTIONAL: lightType = "Default_directional_light "; break;
+        case LIGHT_TYPE_POINT: lightType = "Default_point_light_"; break;
+        case LIGHT_TYPE_SPOT: lightType = "Default_spot_light_"; break;
+    }
 
-	ResourceDescriptor defaultLight(lightType + Util::toString(LightManager::getInstance().getLights().size()));
-	defaultLight.setEnumValue(type);
-	return addLight(CreateResource<Light>(defaultLight), parentNode);
+    ResourceDescriptor defaultLight(lightType + Util::toString(LightManager::getInstance().getLights().size()));
+    defaultLight.setEnumValue(type);
+    return addLight(CreateResource<Light>(defaultLight), parentNode);
 }
 
 SceneGraphNode* Scene::addSky(Sky* const skyItem) {
-	assert(skyItem != nullptr);
-	return _sceneGraph->getRoot()->createNode(skyItem);
+    assert(skyItem != nullptr);
+    return _sceneGraph->getRoot()->createNode(skyItem);
 }
 
 bool Scene::preLoad() {
@@ -266,7 +266,7 @@ bool Scene::preLoad() {
 }
 
 bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const guiInterface){
-	STUBBED("ToDo: load skyboxes from XML")
+    STUBBED("ToDo: load skyboxes from XML")
     _GUI = guiInterface;
     _name = name;
     renderState()._cameraMgr = cameraMgr;
@@ -302,12 +302,12 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
         renderState().getCamera().setEye( vec3<F32>( 0, 50, 0 ) );
     }
 
-	vec3<F32> ambientColor(0.1f, 0.1f, 0.1f);
-	LightManager::getInstance().setAmbientLight(ambientColor);
+    vec3<F32> ambientColor(0.1f, 0.1f, 0.1f);
+    LightManager::getInstance().setAmbientLight(ambientColor);
 
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
-	_aiTask.reset(kernel->AddTask(getMsToUs(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 
+    _aiTask.reset(kernel->AddTask(getMsToUs(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 
                                   0, 
                                   DELEGATE_BIND(&AI::AIManager::update, 
                                                 &AI::AIManager::getInstance())));
@@ -338,18 +338,18 @@ PhysicsSceneInterface* Scene::createPhysicsImplementation(){
 
 bool Scene::loadPhysics(bool continueOnErrors){
     //Add a new physics scene (can be overridden in each scene for custom behavior)
-	PHYSICS_DEVICE.setPhysicsScene( createPhysicsImplementation() );
+    PHYSICS_DEVICE.setPhysicsScene( createPhysicsImplementation() );
     //Initialize the physics scene
     PHYSICS_DEVICE.initScene();
     //Cook geometry
-	if ( _paramHandler.getParam<bool>( "options.autoCookPhysicsAssets" ) ) {
-		_cookCollisionMeshesScheduled = true;
-	}
+    if ( _paramHandler.getParam<bool>( "options.autoCookPhysicsAssets" ) ) {
+        _cookCollisionMeshesScheduled = true;
+    }
     return true;
 }
 
 void Scene::clearPhysics(){
-	PHYSICS_DEVICE.setPhysicsScene( nullptr );
+    PHYSICS_DEVICE.setPhysicsScene( nullptr );
 }
 
 bool Scene::initializeAI(bool continueOnErrors) {
@@ -358,7 +358,7 @@ bool Scene::initializeAI(bool continueOnErrors) {
     return true;
 }
 
-bool Scene::deinitializeAI(bool continueOnErrors) {	///Shut down AIManager thread
+bool Scene::deinitializeAI(bool continueOnErrors) {    ///Shut down AIManager thread
     if ( _aiTask.get() ) {
         _aiTask->stopTask();
         _aiTask.reset();
@@ -439,7 +439,7 @@ void Scene::clearTasks() {
 
 void Scene::removeTask(I64 taskGUID) {
     for ( vectorImpl<Task_ptr>::iterator it = _tasks.begin(); it != _tasks.end(); ++it ) {
-		if ((*it)->getGUID() == taskGUID) {
+        if ((*it)->getGUID() == taskGUID) {
             ( *it )->stopTask();
             _tasks.erase( it );
             return;

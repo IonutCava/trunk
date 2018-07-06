@@ -29,12 +29,12 @@
 namespace Divide {
 
 enum OPCodesEx {
-	CMSG_GEOMETRY_LIST                       = OPCODE_ID(1),
-	SMSG_GEOMETRY_APPEND					 = OPCODE_ID(2),
-	CMSG_REQUEST_GEOMETRY					 = OPCODE_ID(3),
-	CMSG_PING						         = OPCODE_ID(4),
-	SMSG_PONG								 = OPCODE_ID(5),
-	LAST_OPCODE
+    CMSG_GEOMETRY_LIST                       = OPCODE_ID(1),
+    SMSG_GEOMETRY_APPEND                     = OPCODE_ID(2),
+    CMSG_REQUEST_GEOMETRY                     = OPCODE_ID(3),
+    CMSG_PING                                 = OPCODE_ID(4),
+    SMSG_PONG                                 = OPCODE_ID(5),
+    LAST_OPCODE
 };
 
 typedef InheritEnum< OPCodesEx, OPCodes > OPCodesImpl;

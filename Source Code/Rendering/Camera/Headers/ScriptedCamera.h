@@ -31,7 +31,7 @@ namespace Divide {
 /// one with target information and one with timing info
 class ScriptedCamera : public Camera {
 public:
-	ScriptedCamera(const vec3<F32>& eye = VECTOR3_ZERO);
+    ScriptedCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 };
 
 }; //namespace Divide

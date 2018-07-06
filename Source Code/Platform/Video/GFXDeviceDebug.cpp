@@ -29,8 +29,8 @@ void GFXDevice::previewDepthBuffer() {
 
         _renderTarget[RENDER_TARGET_DEPTH]->Bind(ShaderProgram::TEXTURE_UNIT0, TextureDescriptor::Depth);
 
-		renderInViewport(vec4<I32>(Application::getInstance().getResolution().width - 256, 0, 256, 256), 
-			             DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))
+        renderInViewport(vec4<I32>(Application::getInstance().getResolution().width - 256, 0, 256, 256), 
+                         DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))
                                        &GFXDevice::drawPoints,
                                        this, 
                                        1,

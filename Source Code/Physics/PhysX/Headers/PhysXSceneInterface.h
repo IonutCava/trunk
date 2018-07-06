@@ -32,11 +32,11 @@ namespace Divide {
 class Scene;
 class Transform;
 class PhysXSceneInterface : public PhysicsSceneInterface {
-	typedef boost::lockfree::spsc_queue<PhysXActor*, boost::lockfree::capacity<128> > LoadQueue;
+    typedef boost::lockfree::spsc_queue<PhysXActor*, boost::lockfree::capacity<128> > LoadQueue;
 
 public:
-	PhysXSceneInterface( Scene* parentScene );
-	virtual ~PhysXSceneInterface();
+    PhysXSceneInterface( Scene* parentScene );
+    virtual ~PhysXSceneInterface();
 
     virtual bool init();
     virtual void idle();
@@ -60,10 +60,10 @@ private:
     typedef vectorImpl<PhysXActor* >        RigidMap;
     typedef vectorImpl<physx::PxMaterial* > MaterialMap;
     physx::PxScene* _gScene;
-    physx::PxDefaultCpuDispatcher*	_cpuDispatcher;
+    physx::PxDefaultCpuDispatcher*    _cpuDispatcher;
     MaterialMap _materials;
     RigidMap    _sceneRigidActors;
-	LoadQueue   _sceneRigidQueue;
+    LoadQueue   _sceneRigidQueue;
 };
 
 }; //namespace Divide

@@ -10,7 +10,7 @@ Shader::Shader(const stringImpl& name, const ShaderType& type,const bool optimis
                                                                                       _type(type),
                                                                                       _optimise(optimise)
 {
-	_compiled = false;
+    _compiled = false;
 }
 
 Shader::~Shader()

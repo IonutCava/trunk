@@ -167,7 +167,7 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage) {
 
     // Make sure we are not drawing our self unless this is desired
     if((currentStage == REFLECTION_STAGE || _reflectionRendering || _refractionRendering) && !_updateSelf) {
-    	return false;
+        return false;
     }
 
     // Else, process normal exclusion
@@ -176,17 +176,17 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage) {
 
 /// update water refraction
 void WaterPlane::updateRefraction(){
-	if (_cameraUnderWater) {
-		return;
-	}
+    if (_cameraUnderWater) {
+        return;
+    }
     // Early out check for render callback
-	if (!_renderCallback) {
-		return;
-	}
+    if (!_renderCallback) {
+        return;
+    }
     _refractionRendering = true;
     // If we are above water, process the plane's reflection. If we are below, we render the scene normally
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(FINAL_STAGE);
-	GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
+    GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
     _cameraMgr.getActiveCamera()->renderLookAt();
     // bind the refractive texture
     _refractionTexture->Begin(Framebuffer::defaultPolicy());
@@ -194,7 +194,7 @@ void WaterPlane::updateRefraction(){
         _refractionCallback();
     _refractionTexture->End();
 
-	GFX_DEVICE.toggleClipPlane(_refractionPlaneID, false);
+    GFX_DEVICE.toggleClipPlane(_refractionPlaneID, false);
     GFX_DEVICE.setRenderStage(prevRenderStage);
 
     _refractionRendering = false;
@@ -208,7 +208,7 @@ void WaterPlane::updateReflection(){
         _reflectionRendering = true;
     
         RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(_cameraUnderWater ? FINAL_STAGE : REFLECTION_STAGE);
-		GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
+        GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
 
         _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt() :
                             _cameraMgr.getActiveCamera()->renderLookAtReflected(getReflectionPlane());
@@ -217,7 +217,7 @@ void WaterPlane::updateReflection(){
             _renderCallback(); //< render to the reflective texture
         _reflectedTexture->End();
 
-		GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, false);
+        GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, false);
         GFX_DEVICE.setRenderStage(prevRenderStage);
     
         _reflectionRendering = false;
@@ -252,7 +252,7 @@ void WaterPlane::previewReflection(){
                                Application::getInstance().getResolution().y - height, 
                                _resolution.x  * 0.666f, 
                                height);
-			GFX_DEVICE.renderInViewport(viewport,
+            GFX_DEVICE.renderInViewport(viewport,
                                         DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))
                                                       &GFXDevice::drawPoints,
                                                       &GFX_DEVICE,

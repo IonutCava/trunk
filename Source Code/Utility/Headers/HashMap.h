@@ -48,8 +48,8 @@
         template<typename K, typename V, typename HashFun = boost::hash<K> >
         using hashPairReturn = std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
 
-		template<typename T1, typename T2>
-		using pair = std::pair<T1, T2>;
+        template<typename T1, typename T2>
+        using pair = std::pair<T1, T2>;
 
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
         inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map, 
@@ -69,18 +69,18 @@
             map.clear();
         }
 
-#	ifndef BOOST_PAIR_FUNCS
-#	define BOOST_PAIR_FUNCS
-			template<typename K, typename V>
-			inline std::pair<K, V> makePair(const K& key, const V& val) {
-				return std::make_pair(key, val);
-			}
+#    ifndef BOOST_PAIR_FUNCS
+#    define BOOST_PAIR_FUNCS
+            template<typename K, typename V>
+            inline std::pair<K, V> makePair(const K& key, const V& val) {
+                return std::make_pair(key, val);
+            }
 
-			template<typename K, typename V>
-			inline std::pair<K, V> makePairCpy(const K& key, V val) {
-				return std::make_pair(key, val);
-			}
-#	endif
+            template<typename K, typename V>
+            inline std::pair<K, V> makePairCpy(const K& key, V val) {
+                return std::make_pair(key, val);
+            }
+#    endif
     };
 
 #elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == 1
@@ -124,21 +124,21 @@
         template<typename K, typename V, typename HashFun = hashAlg::hash<K> >
         inline void fastClear(hashMapImpl<K, V, HashFun>& map) {
             //map.reset(); // leaks memory -Ionut
-			map.clear();
+            map.clear();
         }
 
-#	ifndef EASTL_PAIR_FUNCS
-#	define EASTL_PAIR_FUNCS
-			template<typename K, typename V>
-			inline eastl::pair<K, V> makePair(const K& key, const V& val) {
-				return eastl::make_pair_ref(key, val);
-			}
+#    ifndef EASTL_PAIR_FUNCS
+#    define EASTL_PAIR_FUNCS
+            template<typename K, typename V>
+            inline eastl::pair<K, V> makePair(const K& key, const V& val) {
+                return eastl::make_pair_ref(key, val);
+            }
    
-			template<typename K, typename V>
-			inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
-				return eastl::make_pair_ref(key, val);
-			}
-#	endif
+            template<typename K, typename V>
+            inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
+                return eastl::make_pair_ref(key, val);
+            }
+#    endif
     };
 
 #else //defined(HASH_MAP_IMP) && HASH_MAP_IMP == 2
@@ -181,20 +181,20 @@
             map.clear();
         }
 
-#	ifndef STD_PAIR_FUNCS
-#	define STD_PAIR_FUNCS
-			template<typename K, typename V>
-			inline std::pair<K, V> makePair(const K& key, const V& val) {
-				return std::make_pair(key, val);
-			}
+#    ifndef STD_PAIR_FUNCS
+#    define STD_PAIR_FUNCS
+            template<typename K, typename V>
+            inline std::pair<K, V> makePair(const K& key, const V& val) {
+                return std::make_pair(key, val);
+            }
 
-			template<typename K, typename V>
-			inline std::pair<K, V> makePairCpy(const K& key, V val) {
-				return std::make_pair(key, val);
-			}
-#	endif
+            template<typename K, typename V>
+            inline std::pair<K, V> makePairCpy(const K& key, V val) {
+                return std::make_pair(key, val);
+            }
+#    endif
     };
 
 #endif //defined(HASH_MAP_IMP)
-	
+    
 #endif

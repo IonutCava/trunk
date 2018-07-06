@@ -58,7 +58,7 @@ public:
     void setDimensions(const vec2<U16>& dim)    { _dimensions = dim; }
     void setAltitudeRange(const vec2<F32>& dim) { _altitudeRange = dim; }
     void setPosition(const vec3<F32>& position) { _position = position; }
-    void setScale(const vec2<F32>& scale)	    { _scale = scale; }
+    void setScale(const vec2<F32>& scale)        { _scale = scale; }
     void setGrassDensity(F32 grassDensity)      { _grassDensity = grassDensity; }
     void setTreeDensity(F32 treeDensity)        { _treeDensity = treeDensity; }
     void setGrassScale(F32 grassScale)          { _grassScale = grassScale; }
@@ -80,7 +80,7 @@ public:
 
     const vec2<F32>& getAltitudeRange() const { return _altitudeRange; }
     const vec2<U16>& getDimensions()    const { return _dimensions; }
-    const vec3<F32>& getPosition()	    const { return _position; }
+    const vec3<F32>& getPosition()        const { return _position; }
     const vec2<F32>& getScale()         const { return _scale; }
 
     stringImpl getVariable(const stringImpl& name) {
@@ -105,7 +105,7 @@ private:
     F32    _grassDensity;
     U32    _chunkSize;
     F32    _treeDensity;
-    F32	   _grassScale;
+    F32       _grassScale;
     F32    _treeScale;
     bool   _is16Bit;
     bool   _active;

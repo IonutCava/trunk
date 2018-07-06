@@ -116,9 +116,9 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
         return 0;
     }
 
-	bdestroy(gc->PathPrefix);
+    bdestroy(gc->PathPrefix);
     gc->PathPrefix = bfromcstr(pathPrefix);
-	bdestroy(gc->PathSuffix);
+    bdestroy(gc->PathSuffix);
     gc->PathSuffix = bfromcstr(pathSuffix);
 
     return 1;
@@ -140,7 +140,7 @@ const char* glswGetShader(const char* pEffectKey, int offset, int recompile)
     {
         return 0;
     }else{
-        if(recompile)	glswClear(gc);
+        if(recompile)    glswClear(gc);
     }
 
     // Extract the effect name from the effect key

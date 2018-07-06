@@ -22,7 +22,7 @@ ShaderManager::~ShaderManager()
 void ShaderManager::destroy() {
     RemoveResource(_imShader);
     RemoveResource(_nullShader);
-	GFX_DEVICE.deInitShaders();
+    GFX_DEVICE.deInitShaders();
     _atoms.clear();
 }
 
@@ -81,7 +81,7 @@ bool ShaderManager::update(const U64 deltaTime) {
             return false;
         }
     }
-	return true;
+    return true;
 }
 
 /// Calling this will force a recompilation of all shader stages for the program that matches the name specified
@@ -119,14 +119,14 @@ void ShaderManager::idle(){
 
 /// Pass uniform data update call to every registered program
 void ShaderManager::refreshShaderData() {
-	for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
         it.second->refreshShaderData();
     }
 }
 
 /// Pass scene data update call to every registered program
 void ShaderManager::refreshSceneData() {
-	for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
         it.second->refreshSceneData();
     }
 }
@@ -140,32 +140,32 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl &atomName, cons
         return it->second;
     }
     // If we forgot to specify an atom location, we have nothing to return
-	assert(!location.empty());
+    assert(!location.empty());
 
     // Open the atom file
     stringImpl file = location+"/"+atomName;
     FILE *fp = nullptr;
     fopen_s(&fp,file.c_str(),"r");
-	assert(fp != nullptr);
+    assert(fp != nullptr);
 
     // Read the contents
     fseek(fp, 0, SEEK_END);
     I32 count = ftell(fp);
     rewind(fp);
-	assert(count > 0);
+    assert(count > 0);
 
     char* content = MemoryManager_NEW char[count + 1];
     count = (I32)(fread(content,sizeof(char),count,fp));
     content[count] = '\0';
-	fclose(fp);
+    fclose(fp);
 
     // Add the code to the atom cache for future reference
-	hashAlg::pair<AtomMap::iterator, bool> result = hashAlg::emplace(_atoms, atomName, stringImpl(content));
-	assert(result.second);
+    hashAlg::pair<AtomMap::iterator, bool> result = hashAlg::emplace(_atoms, atomName, stringImpl(content));
+    assert(result.second);
     MemoryManager::DELETE_ARRAY( content );
     
     // Return the source code
-	return result.first->second;
+    return result.first->second;
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file

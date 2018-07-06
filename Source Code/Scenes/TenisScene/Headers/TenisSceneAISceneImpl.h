@@ -29,33 +29,33 @@ namespace Divide {
     namespace AI {
 
 enum AIMsg {
-	REQUEST_DISTANCE_TO_TARGET = 0,
-	RECEIVE_DISTANCE_TO_TARGET = 1,
-	ATTACK_BALL = 2,
-	DONT_ATTACK_BALL = 3
+    REQUEST_DISTANCE_TO_TARGET = 0,
+    RECEIVE_DISTANCE_TO_TARGET = 1,
+    ATTACK_BALL = 2,
+    DONT_ATTACK_BALL = 3
 };
 
 class TenisSceneAISceneImpl : public AISceneImpl {
 public:
     TenisSceneAISceneImpl(SceneGraphNode* target);
-	void processData(const U64 deltaTime);
-	void processInput(const U64 deltaTime);
-	void update(const U64 deltaTime, NPC* unitRef = nullptr);
-	void addEntityRef(AIEntity* entity);
+    void processData(const U64 deltaTime);
+    void processInput(const U64 deltaTime);
+    void update(const U64 deltaTime, NPC* unitRef = nullptr);
+    void addEntityRef(AIEntity* entity);
     void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
 
 private:
-	void updatePositions();
+    void updatePositions();
     void init(void) {}
-	F32 distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition);
+    F32 distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition);
     bool performActionStep(GOAPAction::operationsIterator step) { return true; }
     bool performAction(const GOAPAction* planStep) { return true; }
 
 private:
-	SceneGraphNode* _target;
-	vec3<F32> _ballPosition, _prevBallPosition, _entityPosition, _initialPosition;
-	bool _attackBall, _ballToTeam2,_gameStop;
-	U16 _tickCount;
+    SceneGraphNode* _target;
+    vec3<F32> _ballPosition, _prevBallPosition, _entityPosition, _initialPosition;
+    bool _attackBall, _ballToTeam2,_gameStop;
+    U16 _tickCount;
 };
 
     }; //namespace AI

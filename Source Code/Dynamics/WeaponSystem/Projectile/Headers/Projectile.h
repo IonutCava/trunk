@@ -30,34 +30,34 @@ namespace Divide {
 /// Defines a projectile object (usually bullets or rockets)
 class Projectile {
 public:
-	/// The physical characteristics of this projectile
-	enum ProjectileType {
-		/// Use a raytrace scan to the target's hitbox (raygun, non-tracked bullets)
-		PROJECTILE_TYPE_RAYTRACE    = toBit(1),
-		/// Use a slow-moving object as projectile (e.g. rockets, arrows, spells)
-		PROJECTILE_TYPE_SLOW        = toBit(2),
-		/// Add new projectile types above
-		PROJECTILE_TYPE_PLACEHOLDER = toBit(10)
-	};
+    /// The physical characteristics of this projectile
+    enum ProjectileType {
+        /// Use a raytrace scan to the target's hitbox (raygun, non-tracked bullets)
+        PROJECTILE_TYPE_RAYTRACE    = toBit(1),
+        /// Use a slow-moving object as projectile (e.g. rockets, arrows, spells)
+        PROJECTILE_TYPE_SLOW        = toBit(2),
+        /// Add new projectile types above
+        PROJECTILE_TYPE_PLACEHOLDER = toBit(10)
+    };
 
-	enum ProjectileProperty {
-		/// Projectile is not affected by gravity (raygun, spells)
-		PROJECTILE_PROPERTYE_NO_GRAVITY = toBit(1),
-		/// Projectile is affected by gravity (rockets, boulders, sniperbullets)
-		PROJECTILE_PROPERTY_GRAVITY     = toBit(2),
-		/// Add new projectile properties above
-		PROJECTILE_PROPERTY_PLACEHOLDER = toBit(10)
-	};
+    enum ProjectileProperty {
+        /// Projectile is not affected by gravity (raygun, spells)
+        PROJECTILE_PROPERTYE_NO_GRAVITY = toBit(1),
+        /// Projectile is affected by gravity (rockets, boulders, sniperbullets)
+        PROJECTILE_PROPERTY_GRAVITY     = toBit(2),
+        /// Add new projectile properties above
+        PROJECTILE_PROPERTY_PLACEHOLDER = toBit(10)
+    };
 
-	Projectile(ProjectileType type);
-	~Projectile();
+    Projectile(ProjectileType type);
+    ~Projectile();
 
-	/// Add a specific property to this projectile
-	bool addProperties(U8 propertyMask);
+    /// Add a specific property to this projectile
+    bool addProperties(U8 propertyMask);
 
 private:
-	ProjectileType _type;
-	U8 _properyMask; ///< weapon properties
+    ProjectileType _type;
+    U8 _properyMask; ///< weapon properties
 };
 
 }; //namespace Divide

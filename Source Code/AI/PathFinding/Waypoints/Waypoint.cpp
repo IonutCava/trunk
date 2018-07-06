@@ -4,12 +4,12 @@
 namespace Divide {
 namespace Navigation {
     
-	Waypoint::Waypoint(){
+    Waypoint::Waypoint(){
         STUBBED("ToDo: add accessors to the Waypoint class! -Ionut")
-		_id = 0xFFFFFFFF;
-	}
+        _id = 0xFFFFFFFF;
+    }
 
-	Waypoint::~Waypoint(){
-	}
+    Waypoint::~Waypoint(){
+    }
 };
 };

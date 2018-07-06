@@ -20,8 +20,8 @@
 
  */
 
-#ifndef _APPLICATION_H_
-#define _APPLICATION_H_
+#ifndef _CORE_APPLICATION_H_
+#define _CORE_APPLICATION_H_
 
 
 #include "Core/Math/Headers/MathMatrices.h"
@@ -31,10 +31,28 @@
 
 namespace Divide {
 
-enum ErrorCode;
+enum ErrorCode {
+    NO_ERR = 0,
+    MISSING_SCENE_DATA = -1,
+    MISSING_SCENE_LOAD_CALL = -2,
+    GFX_NOT_SUPPORTED = -3,
+    GFX_NON_SPECIFIED = -4,
+    GLFW_INIT_ERROR = -5,
+    GLFW_WINDOW_INIT_ERROR = -6,
+    GLEW_INIT_ERROR = -7,
+    GLEW_OLD_HARDWARE = -8,
+    DX_INIT_ERROR = -9,
+    DX_OLD_HARDWARE = -10,
+    SDL_AUDIO_INIT_ERROR = -11,
+    SDL_AUDIO_MIX_INIT_ERROR = -12,
+    FMOD_AUDIO_INIT_ERROR = -13,
+    OAL_INIT_ERROR = -14,
+    PHYSX_INIT_ERROR = -15,
+    PHYSX_EXTENSION_ERROR = -16,
+    NO_LANGUAGE_INI = -17
+};
 
 class Kernel;
-enum ErrorCode;
 const char* getErrorCodeName(ErrorCode code);
 
 ///Lightweight singleton class that manages our application's kernel and window information
@@ -115,6 +133,6 @@ END_SINGLETON
 
 }; //namespace Divide
 
-#include "Application.inl"
+#endif //_CORE_APPLICATION_H_
 
-#endif
+#include "Application.inl"

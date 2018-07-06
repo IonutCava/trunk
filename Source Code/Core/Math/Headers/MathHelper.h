@@ -26,23 +26,22 @@
     Square root: http://www.codeproject.com/KB/cpp/Sqrt_Prec_VS_Speed.aspx
 */
 
-#ifndef _MATH_HELPER_H_
-#define _MATH_HELPER_H_
+#ifndef _CORE_MATH_MATH_HELPER_H_
+#define _CORE_MATH_MATH_HELPER_H_
 
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
 #include <sstream>
 #include <cctype>
 #include <algorithm>
 
-#ifndef M_PI
-#define M_PI				3.141592653589793238462643383279f		//  PI
-#endif
-#define M_PIDIV2			1.570796326794896619231321691639f		//  PI / 2
-#define M_2PI				6.283185307179586476925286766559f		//  2 * PI
-#define M_PI2				9.869604401089358618834490999876f		//  PI ^ 2
-#define M_PIDIV180			0.01745329251994329576923690768488f		//  PI / 180
-#define M_180DIVPI			57.295779513082320876798154814105f		//  180 / PI
-#define M_PIDIV360          0.00872664625997164788461845384244f     //  PI / 180 / 2 - PI / 360
+#undef M_PI
+#define M_PI                3.141592653589793238462643383279f        //  PI
+#define M_PIDIV2            1.570796326794896619231321691639f        //  PI / 2
+#define M_2PI               6.283185307179586476925286766559f        //  2 * PI
+#define M_PI2               9.869604401089358618834490999876f        //  PI ^ 2
+#define M_PIDIV180          0.01745329251994329576923690768488f      //  PI / 180
+#define M_180DIVPI          57.295779513082320876798154814105f       //  180 / PI
+#define M_PIDIV360          0.00872664625997164788461845384244f      //  PI / 180 / 2 - PI / 360
 
 namespace Divide {
 
@@ -51,13 +50,13 @@ inline void DegToRad(T& a) { a*=M_PIDIV180; }
 template<typename T>
 inline void RadToDeg(T& a) { a*=M_180DIVPI; }
 template<typename T>
-inline F32 RADIANS(T a)	   { return a*M_PIDIV180;}
+inline F32 RADIANS(T a)       { return a*M_PIDIV180;}
 template<typename T>
-inline F32 DEGREES(T a)	   { return a*M_180DIVPI; }
+inline F32 DEGREES(T a)       { return a*M_180DIVPI; }
 template<typename T>
 inline F32 kilometre(T a)  { return a*1000.0f; }
 template<typename T>
-inline F32 metre(T a)	   { return a*1.0f; }
+inline F32 metre(T a)       { return a*1.0f; }
 template<typename T>
 inline F32 decimetre(T a)  { return a*0.1f; }
 template<typename T>
@@ -339,7 +338,7 @@ namespace Util {
         template<typename T>
         void decompose (const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position);
         template<typename T>
-        void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position);
+        void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,    vec3<T>& position);
 
         template<typename T>
         inline T* Multiply( const T *a, const T *b, T *r = nullptr ) {
@@ -428,4 +427,4 @@ namespace Util {
 
 }; //namespace Divide
 
-#endif
+#endif //_CORE_MATH_MATH_HELPER_H_

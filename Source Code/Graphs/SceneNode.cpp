@@ -55,7 +55,7 @@ bool SceneNode::isInView( const SceneRenderState& sceneRenderState, SceneGraphNo
             case Frustum::FRUSTUM_OUT: {
                 return false;
             };
-            case Frustum::FRUSTUM_INTERSECT:	{
+            case Frustum::FRUSTUM_INTERSECT:    {
                 if ( !cam.getFrustumConst().ContainsBoundingBox( boundingBox ) ) {
                     return false;
                 }
@@ -90,12 +90,12 @@ void SceneNode::setMaterialTpl(Material* const mat) {
                 PRINT_FN(Locale::get("REPLACE_MATERIAL"), _materialTemplate->getName().c_str(), mat->getName().c_str());
                 //UpgradeToWriteLock uw_lock(ur_lock);
                 UNREGISTER_TRACKED_DEPENDENCY(_materialTemplate);
-                RemoveResource(_materialTemplate);			//remove the old material
+                RemoveResource(_materialTemplate);            //remove the old material
                 //ur_lock.lock();
             }
         }
         //UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = mat;				   //set the new material
+        _materialTemplate = mat;                   //set the new material
         REGISTER_TRACKED_DEPENDENCY(_materialTemplate);
     } else { //if we receive a null material, the we need to remove this node's material
         //UpgradableReadLock ur_lock(_materialLock);

@@ -60,8 +60,8 @@ public:
                                                  _name(name),
                                                  _resourceState(RES_CREATED)
     {
-		_threadedLoading = true;
-		_threadedLoadComplete = false;
+        _threadedLoading = true;
+        _threadedLoadComplete = false;
     }
 
     virtual ~Resource() {}
@@ -106,7 +106,7 @@ protected:
     }
 
 protected:
-    stringImpl	 _name;
+    stringImpl     _name;
     stringImpl   _resourceLocation; ///< Physical file location
     std::atomic<ResourceState> _resourceState;
     ///Should load resource in a background thread

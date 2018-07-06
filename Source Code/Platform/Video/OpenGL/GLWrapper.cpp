@@ -32,7 +32,7 @@ GL_API::GL_API() : RenderAPIWrapper(),
                    _prevSizeString(0),
                    _lineWidthLimit(1),
                    _pointDummyVAO(0),
-				   _GUIGLrenderer(nullptr),
+                   _GUIGLrenderer(nullptr),
                    _fonsContext(nullptr),
                    _GLSLOptContex(nullptr),
                    _enableCEGUIRendering(false)
@@ -161,7 +161,7 @@ bool GL_API::initShaders() {
     glswAddDirectiveToken("Fragment", "#define VARYING in"); 
     glswAddDirectiveToken("Fragment", ("#define SHADER_BUFFER_LIGHT_SHADOW " + 
                                         Util::toString(SHADER_BUFFER_LIGHT_SHADOW)).c_str());
-	glswAddDirectiveToken("Fragment", ("#define MAX_TEXTURE_SLOTS " + 
+    glswAddDirectiveToken("Fragment", ("#define MAX_TEXTURE_SLOTS " + 
                           Util::toString(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16))).c_str());
     glswAddDirectiveToken("Fragment", ("#define TEXTURE_UNIT0 " +
                                         Util::toString(ShaderProgram::TEXTURE_UNIT0)).c_str());
@@ -241,7 +241,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
     // If we failed to find it, it wasn't loaded yet
     if (it == _fonts.end()) {
         // Fonts are stored in the general asset directory
-		stringImpl fontPath(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation", "assets") + "/");
+        stringImpl fontPath(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation", "assets") + "/");
         // In the GUI subfolder
         fontPath += "GUI/";
         // In the fonts subfolder
@@ -255,9 +255,9 @@ I32 GL_API::getFont(const stringImpl& fontName) {
         }
         // Save the font in the font cache
         hashAlg::pair<FontCache::iterator, bool> result = hashAlg::emplace(_fonts, fontName, tempFont);
-		assert(result.second);
+        assert(result.second);
         // Return the font
-		return result.first->second;
+        return result.first->second;
     }
     // We found the font in cache, so return it
     return it->second;

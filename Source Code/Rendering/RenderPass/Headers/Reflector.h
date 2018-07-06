@@ -61,7 +61,7 @@ public:
     /// we should set a custom callback
     /// Another example would be the player model. It is not rendered when in First Person,
     /// but it should show up in reflections
-	inline void setRenderCallback(const DELEGATE_CBK<>& callback) { _renderCallback = callback; }
+    inline void setRenderCallback(const DELEGATE_CBK<>& callback) { _renderCallback = callback; }
 
     void togglePreviewReflection() {_previewReflection = !_previewReflection;}
 
@@ -87,7 +87,7 @@ protected:
     bool _excludeSelfReflection;
     bool _previewReflection;
 
-	DELEGATE_CBK<> _renderCallback;
+    DELEGATE_CBK<> _renderCallback;
     Framebuffer* _reflectedTexture;
     Plane<F32> _reflectionPlane;
     ShaderProgram* _previewReflectionShader;

@@ -16,13 +16,13 @@ public:
 
 private:
 
-	void handlePacket(WorldPacket& p);
+    void handlePacket(WorldPacket& p);
 
-	void HandleHeartBeatOpCode(WorldPacket& p);
-	void HandleDisconnectOpCode(WorldPacket& p);
-	void HandleGeometryListOpCode(WorldPacket& p);
-	void HandleRequestGeometry(WorldPacket& p);
-	void HandlePingOpCode(WorldPacket& p);
+    void HandleHeartBeatOpCode(WorldPacket& p);
+    void HandleDisconnectOpCode(WorldPacket& p);
+    void HandleGeometryListOpCode(WorldPacket& p);
+    void HandleRequestGeometry(WorldPacket& p);
+    void HandlePingOpCode(WorldPacket& p);
 };
 
 }; //namespace Divide

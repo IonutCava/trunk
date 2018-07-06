@@ -18,7 +18,7 @@ void NetworkScene::preRender(){
     light->setDirection(_sunvector);
     light->setDiffuseColor(vSunColor);
 
-	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, vSunColor);
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, vSunColor);
 }
 
 void NetworkScene::processInput(const U64 deltaTime){
@@ -51,7 +51,7 @@ void NetworkScene::checkPatches(){
     p << stringImpl("NetworkScene");
     p << _modelDataArray.size();
 
-    /*for(vectorImpl<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)	{
+    /*for(vectorImpl<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)    {
         p << (*_iter).ItemName;
         p << (*_iter).ModelName;
         p << (*_iter).version;
@@ -70,8 +70,8 @@ bool NetworkScene::load(const stringImpl& name, CameraManager* const cameraMgr, 
     bool loadState = SCENE_LOAD(name, cameraMgr, gui, true, true);
 
     _paramHandler.setParam("serverResponse", "waiting");
-	addLight(LIGHT_TYPE_DIRECTIONAL);
-	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    addLight(LIGHT_TYPE_DIRECTIONAL);
+    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     renderState().getCamera().setEye(vec3<F32>(0,30,-30));
 
     return loadState;
@@ -99,7 +99,7 @@ void NetworkScene::disconnect()
 bool NetworkScene::loadResources(bool continueOnErrors)
 {
     _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-    _sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+    _sunvector = vec4<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y),
                             0.0f );

@@ -30,8 +30,8 @@ PostFX::PostFX(): _underwaterTexture(nullptr),
     _gfx(nullptr)
 {
     PreRenderStageBuilder::createInstance();
-	ParamHandler::getInstance().setParam<bool>("postProcessing.enableVignette", false);
-	ParamHandler::getInstance().setParam<bool>("postProcessing.fullScreenDepthBuffer", false);
+    ParamHandler::getInstance().setParam<bool>("postProcessing.enableVignette", false);
+    ParamHandler::getInstance().setParam<bool>("postProcessing.fullScreenDepthBuffer", false);
 }
 
 PostFX::~PostFX()
@@ -87,7 +87,7 @@ void PostFX::init(const vec2<U16>& resolution) {
         _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
 
         ResourceDescriptor textureWaterCaustics("Underwater Caustics");
-		textureWaterCaustics.setResourceLocation(par.getParam<stringImpl>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
+        textureWaterCaustics.setResourceLocation(par.getParam<stringImpl>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
         _underwaterTexture = CreateResource<Texture>(textureWaterCaustics);
 
         createOperators();
@@ -163,8 +163,8 @@ void PostFX::createOperators(){
     if (_enableNoise && !_noise) {
         ResourceDescriptor noiseTexture("noiseTexture");
         ResourceDescriptor borderTexture("borderTexture");
-		noiseTexture.setResourceLocation(par.getParam<stringImpl>("assetsLocation") + "/misc_images//bruit_gaussien.jpg");
-		borderTexture.setResourceLocation(par.getParam<stringImpl>("assetsLocation") + "/misc_images//vignette.jpeg");
+        noiseTexture.setResourceLocation(par.getParam<stringImpl>("assetsLocation") + "/misc_images//bruit_gaussien.jpg");
+        borderTexture.setResourceLocation(par.getParam<stringImpl>("assetsLocation") + "/misc_images//vignette.jpeg");
         _noise = CreateResource<Texture>(noiseTexture);
         _screenBorder = CreateResource<Texture>(borderTexture);
     }

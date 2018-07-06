@@ -33,8 +33,8 @@ class Impostor : public Sphere3D {
     friend class ImplResourceLoader;
     SET_DELETE_FRIEND
 protected:
-	Impostor(const stringImpl& name, F32 radius = 1.0f);
-	~Impostor();
+    Impostor(const stringImpl& name, F32 radius = 1.0f);
+    ~Impostor();
 };
 
 }; //namespace Divide

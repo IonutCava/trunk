@@ -25,20 +25,20 @@ public:
     ///"state" is a reference to the global variable that enables or disables the effect (via options, PostFX, config, etc)
     template<typename T>
     inline PreRenderOperator* addPreRenderOperator(bool& state,
-											       Framebuffer* result,
-											       const vec2<U16>& resolution) {
+                                                   Framebuffer* result,
+                                                   const vec2<U16>& resolution) {
         return addToStage(MemoryManager_NEW T(result, resolution, _screenSampler), state);
     }
 
-    inline PreRenderStage*	getPreRenderBatch() { return _renderStage; };
+    inline PreRenderStage*    getPreRenderBatch() { return _renderStage; };
 
 private:
-	PreRenderOperator*  addToStage(PreRenderOperator* op, bool& state);
+    PreRenderOperator*  addToStage(PreRenderOperator* op, bool& state);
 
 private:
 
-	PreRenderStage*    _renderStage;
-	SamplerDescriptor* _screenSampler;
+    PreRenderStage*    _renderStage;
+    SamplerDescriptor* _screenSampler;
 END_SINGLETON
 
 }; //namespace Divide

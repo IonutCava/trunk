@@ -8,6 +8,7 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Core/Headers/ProfileTimer.h"
 #include "Core/Headers/ApplicationTimer.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
@@ -51,9 +52,9 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 {
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
-	//General light management and rendering (individual lights are handled by each scene)
-	//Unloading the lights is a scene level responsibility
-	LightManager::createInstance();
+    //General light management and rendering (individual lights are handled by each scene)
+    //Unloading the lights is a scene level responsibility
+    LightManager::createInstance();
     _cameraMgr = MemoryManager_NEW CameraManager(this);               //Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
@@ -66,16 +67,16 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
     _mainTaskPool = MemoryManager_NEW boost::threadpool::pool(Config::THREAD_LIMIT + 1 /*A.I.*/);
 
-	ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
+    ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
 
     s_appLoopTimer = ADD_TIMER("MainLoopTimer");
 }
 
 Kernel::~Kernel()
 {
-	_mainTaskPool->clear();
-	while (_mainTaskPool->active() > 0) {
-	}
+    _mainTaskPool->clear();
+    while (_mainTaskPool->active() > 0) {
+    }
     MemoryManager::DELETE( _mainTaskPool );
     REMOVE_TIMER(s_appLoopTimer);
 }
@@ -83,6 +84,20 @@ Kernel::~Kernel()
 void Kernel::threadPoolCompleted(U64 onExitTaskID) {
     WriteLock w_lock(_threadedCallbackLock);
     _threadedCallbackBuffer.push_back(onExitTaskID);
+}
+
+Task* Kernel::AddTask(U64 tickInterval, 
+                      I32 numberOfTicks, 
+                      const DELEGATE_CBK<>& threadedFunction, 
+                      const DELEGATE_CBK<>& onCompletionFunction) {
+    Task* taskPtr = MemoryManager_NEW Task(getThreadPool(), tickInterval, numberOfTicks, threadedFunction);
+    taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
+    if (onCompletionFunction){
+        emplace(_threadedCallbackFunctions, 
+                static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
+    }
+        
+    return taskPtr;
 }
 
 void Kernel::idle(){
@@ -102,7 +117,7 @@ void Kernel::idle(){
         Application::getInstance().mainLoopPaused(_freezeLoopTime);
     }
 
-	const stringImpl& pendingLanguage = par.getParam<stringImpl>("language");
+    const stringImpl& pendingLanguage = par.getParam<stringImpl>("language");
     if(pendingLanguage.compare(Locale::currentLanguage()) != 0){
         Locale::changeLanguage(pendingLanguage);
     }
@@ -188,7 +203,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 
     U8 loops = 0;
 
-	U64 deltaTime = Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS : _currentTimeDelta;
+    U64 deltaTime = Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS : _currentTimeDelta;
     while (_currentTime > _nextGameTick && loops < Config::MAX_FRAMESKIP) {    
 
         if (!_freezeGUITime) {
@@ -205,19 +220,19 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
         _nextGameTick += deltaTime;
         loops++;
 
-		if (Config::USE_FIXED_TIMESTEP) {
-			if (loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
-				_nextGameTick = _currentTime;
-			}
-		}else {
-			_nextGameTick = _currentTime;
-		}
+        if (Config::USE_FIXED_TIMESTEP) {
+            if (loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
+                _nextGameTick = _currentTime;
+            }
+        }else {
+            _nextGameTick = _currentTime;
+        }
     } // while
 
-	if (Config::USE_FIXED_TIMESTEP) {
-		_GFX.setInterpolation(std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) /
+    if (Config::USE_FIXED_TIMESTEP) {
+        _GFX.setInterpolation(std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) /
                                        static_cast<D32>(deltaTime), 1.0));
-	}
+    }
     
     // Get input events
     _APP.hasFocus() ? _input.update(deltaTime) : _sceneMgr.onLostFocus();
@@ -369,7 +384,7 @@ void Kernel::firstLoop() {
     GFX_DEVICE.setWindowPos(10, 60);
     par.setParam("freezeGUITime", false);
     par.setParam("freezeLoopTime", false);
-	const vec2<U16> prevRes = Application::getInstance().getPreviousResolution();
+    const vec2<U16> prevRes = Application::getInstance().getPreviousResolution();
     GFX_DEVICE.changeResolution(prevRes.width, prevRes.height);
 #if defined(_DEBUG) || defined(_PROFILE)
     ApplicationTimer::getInstance().benchmark(true);
@@ -389,7 +404,7 @@ void Kernel::submitRenderCall(const RenderStage& stage,
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
-	Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, 
+    Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, 
                                                             GUI::getInstance().getConsole(), 
                                                             std::placeholders::_1, 
                                                             std::placeholders::_2));
@@ -406,7 +421,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     //Load info from XML files
     stringImpl startupScene(stringAlg::toBase(XML::loadScripts(stringAlg::fromBase(entryPoint))));
     //Create mem log file
-	const stringImpl& mem = par.getParam<stringImpl>("memFile");
+    const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
     vec2<U16> resolution = _APP.getResolution();
@@ -447,7 +462,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     //Bind the kernel with the input interface
-	Input::InputInterface::getInstance().init(this, par.getParam<stringImpl>("appTitle"));
+    Input::InputInterface::getInstance().init(this, par.getParam<stringImpl>("appTitle"));
 
     //Initialize GUI with our current resolution
     _GUI.init(resolution);
@@ -512,19 +527,19 @@ void Kernel::shutdown() {
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
     _PFX.closePhysicsApi();
-	PXDevice::destroyInstance();
+    PXDevice::destroyInstance();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
     _SFX.closeAudioApi();
     _GFX.closeRenderingApi();
     _mainTaskPool->wait();
-	Input::InputInterface::destroyInstance();
-	SFXDevice::destroyInstance();
-	GFXDevice::destroyInstance();
+    Input::InputInterface::destroyInstance();
+    SFXDevice::destroyInstance();
+    GFXDevice::destroyInstance();
     ResourceCache::destroyInstance();
-	// Destroy the shader manager AFTER the resource cache
-	ShaderManager::destroyInstance();
+    // Destroy the shader manager AFTER the resource cache
+    ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
-	Locale::clear();
+    Locale::clear();
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){

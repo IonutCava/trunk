@@ -43,9 +43,9 @@ public:
 
     F32 _spread;
     /// particle velocity on emission
-    F32 _velocity;				   
+    F32 _velocity;                   
     /// velocity variance (_velocity + rand(-_velocityVariance, _velocityVariance))
-    F32 _velocityVariance;		   
+    F32 _velocityVariance;           
     /// lifetime, in milliseconds of each particle
     I32 _lifetime;                  
     /// liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
@@ -54,22 +54,22 @@ public:
 
 public:
     ParticleEmitterDescriptor();
-	///All of these are default values that should be safe for any kind of texture usage
-	inline void setDefaultValues() {
-		_particleCount = 1000;
-		_spread = 1.5f;
-		_emissionInterval = 400;
-		_emissionIntervalVariance = 75;
-		_velocity = 10.0f;
-		_velocityVariance = 1.0f;
-		_lifetime = getSecToMs( 5.0f );
-		_lifetimeVariance = 25.0f;
-		_textureFileName = "particle.DDS";
-	}
+    ///All of these are default values that should be safe for any kind of texture usage
+    inline void setDefaultValues() {
+        _particleCount = 1000;
+        _spread = 1.5f;
+        _emissionInterval = 400;
+        _emissionIntervalVariance = 75;
+        _velocity = 10.0f;
+        _velocityVariance = 1.0f;
+        _lifetime = getSecToMs( 5.0f );
+        _lifetimeVariance = 25.0f;
+        _textureFileName = "particle.DDS";
+    }
 
-	ParticleEmitterDescriptor* clone() const { 
+    ParticleEmitterDescriptor* clone() const { 
         return MemoryManager_NEW ParticleEmitterDescriptor(*this);
-	}
+    }
 };
 
 class Texture;

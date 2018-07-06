@@ -30,37 +30,37 @@ namespace Divide {
 
 class AudioDescriptor : public Resource{
 public:
-	AudioDescriptor(const stringImpl& audioFile) : Resource(audioFile), 
+    AudioDescriptor(const stringImpl& audioFile) : Resource(audioFile), 
                          _audioFile(audioFile),
-						 _is3D(false), _volume(100),
-						 _frequency(44.2f), _bitDepth(16),
-						 _channelId(-1), _isLooping(false)
-	{
-	}
+                         _is3D(false), _volume(100),
+                         _frequency(44.2f), _bitDepth(16),
+                         _channelId(-1), _isLooping(false)
+    {
+    }
 
-	~AudioDescriptor() {}
+    ~AudioDescriptor() {}
 
-	bool  unload() {return true;}
-	inline const stringImpl& getAudioFile() {return _audioFile;}
-	inline bool& isLooping()  {return _isLooping;}
-	inline bool& is3D()       {return _is3D;}
+    bool  unload() {return true;}
+    inline const stringImpl& getAudioFile() {return _audioFile;}
+    inline bool& isLooping()  {return _isLooping;}
+    inline bool& is3D()       {return _is3D;}
 
-	inline void  setVolume(I8 value) {_volume = value;}
-	inline I32   getVolume()          {return _volume;}
+    inline void  setVolume(I8 value) {_volume = value;}
+    inline I32   getVolume()          {return _volume;}
 
-	inline void  setFrequency(F32 value) {_frequency = value;}
-	inline F32   getFrequency()          {return _frequency;}
+    inline void  setFrequency(F32 value) {_frequency = value;}
+    inline F32   getFrequency()          {return _frequency;}
 
-	inline void setBitDepth(I8 bitDepth) {_bitDepth = bitDepth;}
-	inline I8   getBitDepth()            {return _bitDepth;}
-	inline void setChannel(I8 id)		 {_channelId = id;}
-	inline I8   getChannel()			 {return _channelId;}
+    inline void setBitDepth(I8 bitDepth) {_bitDepth = bitDepth;}
+    inline I8   getBitDepth()            {return _bitDepth;}
+    inline void setChannel(I8 id)         {_channelId = id;}
+    inline I8   getChannel()             {return _channelId;}
 
 private:
-	bool _isLooping, _is3D;
-	F32 _frequency;
-	I8  _bitDepth, _channelId,_volume;
-	stringImpl _audioFile;
+    bool _isLooping, _is3D;
+    F32 _frequency;
+    I8  _bitDepth, _channelId,_volume;
+    stringImpl _audioFile;
 };
 
 }; //namespace Divide

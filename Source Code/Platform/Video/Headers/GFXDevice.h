@@ -34,8 +34,8 @@
 
 namespace Divide {
 
-enum RenderStage;
-enum SceneNodeType;
+enum RenderStage : I32;
+enum SceneNodeType : I32;
 
 class Light;
 class Camera;

@@ -78,22 +78,22 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     GUI& gui = GUI::getInstance();
     gui.addText("PositionData",           //Unique ID
                 vec2<I32>(60,60),          //Position
-                Font::DIVIDE_DEFAULT,		    //Font
+                Font::DIVIDE_DEFAULT,            //Font
                 vec3<F32>(0.0f,0.2f, 1.0f),  //Color
                 "POSITION DATA",0);    //Text and arguments
     gui.addText("NormalData",           //Unique ID
                 vec2<I32>(60+width/2,60),          //Position
-                Font::DIVIDE_DEFAULT,		    //Font
+                Font::DIVIDE_DEFAULT,            //Font
                 vec3<F32>(0.0f,0.2f, 1.0f),  //Color
                 "NORMAL DATA",0);    //Text and arguments
     gui.addText("FinalImage",           //Unique ID
                 vec2<I32>(60,60+height/2),  //Position
-                Font::DIVIDE_DEFAULT,		    //Font
+                Font::DIVIDE_DEFAULT,            //Font
                 vec3<F32>(0.0f,0.2f, 1.0f),  //Color
                 "FINAL IMAGE",0);    //Text and arguments
     gui.addText("LightTexture",           //Unique ID
             vec2<I32>(60+width/2,60+height/2),          //Position
-            Font::DIVIDE_DEFAULT,		    //Font
+            Font::DIVIDE_DEFAULT,            //Font
             vec3<F32>(0.0f,0.2f, 1.0f),  //Color
             "LIGHT TEXTURE",0);    //Text and arguments
 }

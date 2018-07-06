@@ -62,7 +62,7 @@ private:
     void ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
 
 private:
-    vectorImpl<U32> 	_indice[Config::TERRAIN_CHUNKS_LOD];
+    vectorImpl<U32>     _indice[Config::TERRAIN_CHUNKS_LOD];
     U32                 _lodIndOffset[Config::TERRAIN_CHUNKS_LOD];
     U32                 _lodIndCount[Config::TERRAIN_CHUNKS_LOD];
     U32                 _chunkIndOffset;

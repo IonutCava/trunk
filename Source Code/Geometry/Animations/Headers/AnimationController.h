@@ -116,19 +116,19 @@ public:
     inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt, U32 bindex) { 
         return _animations[animationIndex].GetTransforms(dt)[bindex]; 
     }
-	/// Get the bone's global transform
-	inline const mat4<F32>& GetBoneOffsetTransform(const stringImpl& bname) {
-		I32 bindex=GetBoneIndex(bname);
-		if(bindex != -1) {
-			AnimUtils::TransformMatrix(_bonesByName[bname]->_offsetMatrix, _cacheIdentity);
-		}
-		return _cacheIdentity;
-	}
+    /// Get the bone's global transform
+    inline const mat4<F32>& GetBoneOffsetTransform(const stringImpl& bname) {
+        I32 bindex=GetBoneIndex(bname);
+        if(bindex != -1) {
+            AnimUtils::TransformMatrix(_bonesByName[bname]->_offsetMatrix, _cacheIdentity);
+        }
+        return _cacheIdentity;
+    }
 
     /// A vector that holds each animation
     vectorImpl<AnimEvaluator> _animations;
     Bone* GetBoneByName(const stringImpl& name) const;
-	/// GetBoneIndex will return the index of the bone given its name. 
+    /// GetBoneIndex will return the index of the bone given its name. 
     /// The index can be used to index directly into the vector returned from GetTransform
     I32 GetBoneIndex(const stringImpl& bname) const;
     const vectorImpl<Line >& getSkeletonLines(I32 animationIndex, const D32 dt);

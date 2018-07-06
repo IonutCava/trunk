@@ -30,7 +30,7 @@ namespace Divide {
 
 class SpotLight : public Light{
 public:
-	SpotLight(F32 range = 2);
+    SpotLight(F32 range = 2);
 
 };
 

@@ -255,19 +255,19 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     };
     // Get the center and up vectors for each cube face
     vec3<F32> TabCenter[6] = {
-        vec3<F32>(pos.x+1.0f,	pos.y,		pos.z),
-        vec3<F32>(pos.x-1.0f,	pos.y,		pos.z),
-        vec3<F32>(pos.x,		pos.y+1.0f,	pos.z),
-        vec3<F32>(pos.x,		pos.y-1.0f,	pos.z),
-        vec3<F32>(pos.x,		pos.y,		pos.z+1.0f),
-        vec3<F32>(pos.x,		pos.y,		pos.z-1.0f)
+        vec3<F32>(pos.x+1.0f,    pos.y,        pos.z),
+        vec3<F32>(pos.x-1.0f,    pos.y,        pos.z),
+        vec3<F32>(pos.x,        pos.y+1.0f,    pos.z),
+        vec3<F32>(pos.x,        pos.y-1.0f,    pos.z),
+        vec3<F32>(pos.x,        pos.y,        pos.z+1.0f),
+        vec3<F32>(pos.x,        pos.y,        pos.z-1.0f)
     };
 
-	Kernel* const kernel = Application::getInstance().getKernel();
+    Kernel* const kernel = Application::getInstance().getKernel();
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the cube camera as the currently active one
-	kernel->getCameraMgr().pushActiveCamera(_cubeCamera, false);
+    kernel->getCameraMgr().pushActiveCamera(_cubeCamera, false);
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
@@ -288,7 +288,7 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
     // Restore our previous camera
-	kernel->getCameraMgr().popActiveCamera();
+    kernel->getCameraMgr().popActiveCamera();
 }
 
 /// Try to find the render state block that matches our specified descriptor. 
@@ -365,7 +365,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
     // Refresh shader programs
-	ShaderManager::getInstance().refreshShaderData();
+    ShaderManager::getInstance().refreshShaderData();
     // Update the 2D camera so it matches our new rendering viewport
     _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
 }
@@ -378,7 +378,7 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color) {
     par.setParam("rendering.sceneState.fogColor.b", color.b);
     par.setParam("rendering.sceneState.fogDensity", density);
     // Shader programs will pick up the new values on the next update call
-	ShaderManager::getInstance().refreshSceneData();
+    ShaderManager::getInstance().refreshSceneData();
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it
@@ -513,19 +513,19 @@ void GFXDevice::toggle2D(bool state) {
     // Prevent double 2D toggle to the same state (e.g. in a loop)
     DIVIDE_ASSERT((state && !_2DRendering) || (!state && _2DRendering),
                   "GFXDevice error: double toggle2D call with same value detected!");
-	Kernel* const kernel = Application::getInstance().getKernel();
+    Kernel* const kernel = Application::getInstance().getKernel();
     _2DRendering = state;
     // If we need to enable 2D rendering
     if (state) { 
         // Activate the 2D render state block
         previousStateBlockHash = setStateBlock(_state2DRenderingHash);
         // Push the 2D camera
-		kernel->getCameraMgr().pushActiveCamera(_2DCamera);
+        kernel->getCameraMgr().pushActiveCamera(_2DCamera);
         // Upload 2D camera matrices to the GPU
         _2DCamera->renderLookAt();
     } else { 
         // Reverting to 3D implies popping the 2D camera
-		kernel->getCameraMgr().popActiveCamera();
+        kernel->getCameraMgr().popActiveCamera();
         // And restoring the previous state block
         setStateBlock(previousStateBlockHash);
     }

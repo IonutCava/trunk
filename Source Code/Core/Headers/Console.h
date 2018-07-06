@@ -21,8 +21,8 @@
  */
 
 
-#ifndef _CONSOLE_H_
-#define _CONSOLE_H_
+#ifndef _CORE_CONSOLE_H_
+#define _CORE_CONSOLE_H_
 
 #include "Core/Headers/Singleton.h"
 #include <boost/thread/mutex.hpp>
@@ -31,35 +31,35 @@
 namespace Divide {
 
 DEFINE_SINGLETON(Console)
-	typedef std::function<void (const char*, bool)> consolePrintCallback;
+    typedef std::function<void (const char*, bool)> consolePrintCallback;
 
 public:
-	void printCopyrightNotice() const;
-	const char* printfn(const char* format, ...) const;
-	const char* printf(const char* format, ...) const;
-	const char* errorfn(const char* format, ...) const;
-	const char* errorf(const char* format, ...) const;
+    void printCopyrightNotice() const;
+    const char* printfn(const char* format, ...) const;
+    const char* printf(const char* format, ...) const;
+    const char* errorfn(const char* format, ...) const;
+    const char* errorf(const char* format, ...) const;
 #ifdef _DEBUG
-	const char* d_printfn(const char* format, ...) const;
-	const char* d_printf(const char* format, ...) const;
-	const char* d_errorfn(const char* format, ...) const;
-	const char* d_errorf(const char* format, ...) const;
+    const char* d_printfn(const char* format, ...) const;
+    const char* d_printf(const char* format, ...) const;
+    const char* d_errorfn(const char* format, ...) const;
+    const char* d_errorf(const char* format, ...) const;
 #endif
 
-	inline void toggleTimeStamps(const bool state)  {_timestamps = state;}
-	inline void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {
+    inline void toggleTimeStamps(const bool state)  {_timestamps = state;}
+    inline void bindConsoleOutput(const consolePrintCallback& guiConsoleCallback) {
         _guiConsoleCallback = guiConsoleCallback;
     }
 
 protected:
     Console();
     ~Console();
-	const char* output(const char* text,const bool error = false) const;
+    const char* output(const char* text,const bool error = false) const;
 
 private:
-	mutable boost::mutex io_mutex;
-	consolePrintCallback _guiConsoleCallback;
-	bool _timestamps;
+    mutable boost::mutex io_mutex;
+    consolePrintCallback _guiConsoleCallback;
+    bool _timestamps;
     char* _textBuffer;
 
 END_SINGLETON
@@ -87,4 +87,5 @@ END_SINGLETON
 #define CONSOLE_TIMESTAMP_ON() Console::getInstance().toggleTimeStamps(true)
 
 }; //namespace Divide
-#endif
+
+#endif //_CORE_CONSOLE_H_

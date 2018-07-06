@@ -21,7 +21,7 @@
  */
 
 /*Code references:
-	http://www.cplusplus.com/forum/lounge/27570/
+    http://www.cplusplus.com/forum/lounge/27570/
 */
 #ifndef UTIL_CRC_H_
 #define UTIL_CRC_H_
@@ -30,35 +30,35 @@
 
 namespace Divide {
 namespace Util {
-	class CRC32	{
-	public:
-		//=========================================
-		//  ctors
-		inline CRC32()                                   { Reset();                  }
-		inline CRC32(const void* buf, size_t siz)        { Reset(); Hash(buf,siz);   }
+    class CRC32    {
+    public:
+        //=========================================
+        //  ctors
+        inline CRC32()                                   { Reset();                  }
+        inline CRC32(const void* buf, size_t siz)        { Reset(); Hash(buf,siz);   }
 
-		//=========================================
-		/// implicit cast, so that you can do something like foo = CRC(dat,siz);
-		inline operator U32 () const                    { return Get();             }
+        //=========================================
+        /// implicit cast, so that you can do something like foo = CRC(dat,siz);
+        inline operator U32 () const                    { return Get();             }
 
-		//=========================================
-		/// getting the crc
-		inline U32          Get() const                 { return ~mCrc;             }
+        //=========================================
+        /// getting the crc
+        inline U32          Get() const                 { return ~mCrc;             }
 
-		//=========================================
-		// HashBase stuff
-		virtual void        Reset()                     { mCrc = (U32)~0;                }
-		virtual void        Hash(const void* buf,size_t siz);
+        //=========================================
+        // HashBase stuff
+        virtual void        Reset()                     { mCrc = (U32)~0;                }
+        virtual void        Hash(const void* buf,size_t siz);
 
-	private:
-		U32         mCrc;
-		static U32  mTable[0x100];
+    private:
+        U32         mCrc;
+        static U32  mTable[0x100];
 
-	private:
-		//=========================================
-		// internal support
-		static U32          Reflect(U32 v,I32 bits);
-	};
+    private:
+        //=========================================
+        // internal support
+        static U32          Reflect(U32 v,I32 bits);
+    };
 }; //namespace Util
 }; //namespace Divide
 

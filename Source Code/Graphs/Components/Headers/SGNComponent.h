@@ -27,7 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 /// A generic component for the SceneGraphNode class
-enum RenderStage;
+enum RenderStage : I32;
 class SceneGraphNode;
 class SGNComponent : private NonCopyable {
 public:

@@ -36,37 +36,37 @@ out vec4 _colorOut;
 
 //subroutine(MappingRoutineType)
 vec4 mappingFlat(){
-	return getPixelColor(_texCoord, _normalWV);
+    return getPixelColor(_texCoord, _normalWV);
 }
 
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
-	return getPixelColor(_texCoord, normalize(2.0 * texture(texNormalMap, _texCoord).rgb - 1.0));
+    return getPixelColor(_texCoord, normalize(2.0 * texture(texNormalMap, _texCoord).rgb - 1.0));
 }
 
 //subroutine(MappingRoutineType)
 vec4 mappingRelief(){
-	return ReliefMapping(bumpMapLightId,_texCoord);
+    return ReliefMapping(bumpMapLightId,_texCoord);
 }
 
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
-	return ParallaxMapping(bumpMapLightId, _texCoord);
+    return ParallaxMapping(bumpMapLightId, _texCoord);
 }
 #endif
 
 void main (void){
-	//_colorOut = ToSRGB(applyFog(MappingRoutine()));
+    //_colorOut = ToSRGB(applyFog(MappingRoutine()));
 #if defined(COMPUTE_TBN)
-#	if defined(USE_PARALLAX_MAPPING)
+#    if defined(USE_PARALLAX_MAPPING)
     _colorOut = ToSRGB(applyFog(ParallaxMapping()));
-#	elif defined(USE_RELIEF_MAPPING)
+#    elif defined(USE_RELIEF_MAPPING)
     _colorOut = ToSRGB(applyFog(ReliefMapping()));
-#	else
+#    else
     _colorOut = ToSRGB(applyFog(mappingNormal()));
-#	endif
+#    endif
 #else
-	_colorOut = ToSRGB(applyFog(mappingFlat()));
+    _colorOut = ToSRGB(applyFog(mappingFlat()));
 #endif
 }   

@@ -77,7 +77,7 @@ private:
     mutable std::atomic<bool> _end;
     mutable std::atomic<bool> _paused;
     mutable std::atomic<bool> _done;
-	DELEGATE_CBK<> _callback;
+    DELEGATE_CBK<> _callback;
     boost::threadpool::pool* _tp;
     SendCompleted            _completionSignal;
 

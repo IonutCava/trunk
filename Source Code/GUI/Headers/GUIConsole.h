@@ -34,7 +34,7 @@
 
     ///Maximum number of lines to display in the console Window
 #ifdef _DEBUG
-#	define _CEGUI_MAX_CONSOLE_ENTRIES  128
+#    define _CEGUI_MAX_CONSOLE_ENTRIES  128
 #else
 #   define _CEGUI_MAX_CONSOLE_ENTRIES  512
 #endif

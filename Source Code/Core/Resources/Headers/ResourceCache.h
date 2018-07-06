@@ -92,9 +92,9 @@ inline bool RemoveResource(T*& resource){
     if (ResourceCache::getInstance().remove(resource)) {
        resource = nullptr;
        return true;
-	}
+    }
 
-	return false;
+    return false;
 }
 
 template<typename T>

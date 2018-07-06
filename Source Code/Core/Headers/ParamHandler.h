@@ -20,8 +20,8 @@
 
  */
 
-#ifndef _PARAM_HANDLER_H_
-#define _PARAM_HANDLER_H_
+#ifndef _CORE_PARAM_HANDLER_H_
+#define _CORE_PARAM_HANDLER_H_
 
 #include "Console.h"
 #include "cdigginsAny.h"
@@ -41,186 +41,66 @@ typedef hashMapImpl<stringImpl, stringImpl > ParamStringMap;
 typedef hashMapImpl<stringImpl, bool > ParamBoolMap;
 
 public:
-	inline void setDebugOutput(bool logState) {
-		_logState = logState;
-	}
-
-	template<typename T>
-	inline T getParam(const stringImpl& name, T defaultValue = T()) const {
-		ReadLock r_lock(_mutex);
-		ParamMap::const_iterator it = _params.find(name);
-		if(it != _params.end()) {
-            bool success = false;
-		    const T& ret = it->second.constant_cast<T>(success);
-#           ifdef _DEBUG		
-		        if (!success) {
-			        ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str());
-					DIVIDE_ASSERT(success, 
-                                  "ParamHandler error: Can't cast requested param to specified type!");
-		        } 
-#           endif
-
-		    return ret;
-		} 
-		
-		ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
-	    return defaultValue; //integers will be 0, string will be empty, etc;
-	}
+    void setDebugOutput(bool logState);
 
     template<typename T>
-	void setParam(const stringImpl& name, const T& value) {
-		WriteLock w_lock(_mutex);
-		ParamMap::iterator it = _params.find(name); 
-        if (it == _params.end()) {
-			DIVIDE_ASSERT(emplace(_params, name, cdiggins::any(value)).second,
-                          "ParamHandler error: can't add specified value to map!");
-        } else {
-			it->second = cdiggins::any(value);
-        }
-	}
+    T getParam(const stringImpl& name, T defaultValue = T()) const;
 
-	template<typename T>
-	inline void delParam(const stringImpl& name) {
-		if (isParam(name)) {
-			WriteLock w_lock(_mutex);
-			_params.erase(name);
-			if (_logState) {
-                PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
-            }
-		} else {
-			ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"),name.c_str());
-		}
-	}
+    template<typename T>
+    void setParam(const stringImpl& name, const T& value);
 
-	template<typename T>
-	inline bool isParam(const stringImpl& param) const {
-		ReadLock r_lock(_mutex);
-		return _params.find(param) != _params.end();
-	}
+    template<typename T>
+    void delParam(const stringImpl& name);
 
-	template<>
-	inline stringImpl getParam(const stringImpl& name, stringImpl defaultValue) const {
-		ReadLock r_lock(_mutex);
-		ParamStringMap::const_iterator it = _paramsStr.find(name);
-		if (it != _paramsStr.end()) {
-			return it->second;
-		}
+    template<typename T>
+    bool isParam(const stringImpl& param) const;
 
-		ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
-		return defaultValue;
-	}
+    template<>
+    stringImpl getParam(const stringImpl& name, stringImpl defaultValue) const;
 
-	template<>
-	void setParam(const stringImpl& name, const stringImpl& value) {
-		WriteLock w_lock(_mutex);
-		ParamStringMap::iterator it = _paramsStr.find(name);
-		if (it == _paramsStr.end()) {
-			DIVIDE_ASSERT(emplace(_paramsStr, name, value).second, 
-                          "ParamHandler error: can't add specified value to map!");
-		} else {
-			it->second = value;
-		}
-	}
+    template<>
+    void setParam(const stringImpl& name, const stringImpl& value);
 
 #if defined(STRING_IMP) && STRING_IMP != 1
-	template<>
-	inline std::string getParam(const stringImpl& name, std::string defaultValue) const {
-		return stringAlg::fromBase(getParam<stringImpl>(name, stringAlg::toBase(defaultValue)));
-	}
+    template<>
+    std::string getParam(const stringImpl& name, std::string defaultValue) const;
 
-	template<>
-	inline void setParam(const stringImpl& name, const std::string& value) {
-		setParam(name, stringImpl(value.c_str()));
-	}
-	
-	template<>
-	inline void delParam<std::string>(const stringImpl& name) {
-		delParam<stringImpl>(name);
-	}
+    template<>
+    void setParam(const stringImpl& name, const std::string& value);
+    
+    template<>
+    void delParam<std::string>(const stringImpl& name);
 #endif
 
-	template<>
-	inline void delParam<stringImpl>(const stringImpl& name) {
-		if (isParam<stringImpl>(name)) {
-			WriteLock w_lock(_mutex);
-			_paramsStr.erase(name);
-			if (_logState) {
-				PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
-			}
-		} else {
-			ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
-		}
-	}
+    template<>
+    void delParam<stringImpl>(const stringImpl& name);
 
-	template<>
-	inline bool isParam<stringImpl>(const stringImpl& param) const {
-		ReadLock r_lock(_mutex);
-		return _paramsStr.find(param) != _paramsStr.end();
-	}
+    template<>
+    bool isParam<stringImpl>(const stringImpl& param) const;
 
-	template<>
-	inline bool getParam(const stringImpl& name, bool defaultValue) const {
-		ReadLock r_lock(_mutex);
-		ParamBoolMap::const_iterator it = _paramBool.find(name);
-		if (it != _paramBool.end()) {
-			return it->second;
-		}
+    template<>
+    bool getParam(const stringImpl& name, bool defaultValue) const;
 
-		ERROR_FN(Locale::get("ERROR_PARAM_GET"), name.c_str());
-		return defaultValue;
-	}
+    template<>
+    void setParam(const stringImpl& name, const bool& value);
 
-	template<>
-	void setParam(const stringImpl& name, const bool& value) {
-		WriteLock w_lock(_mutex);
-		ParamBoolMap::iterator it = _paramBool.find(name);
-		if (it == _paramBool.end()) {
-			DIVIDE_ASSERT(emplace(_paramBool, name, value).second,
-                          "ParamHandler error: can't add specified value to map!");
-		} else {
-			it->second = value;
-		}
-	}
+    template<>
+    void delParam<bool>(const stringImpl& name);
 
-	template<>
-	inline void delParam<bool>(const stringImpl& name) {
-		if (isParam<stringImpl>(name)) {
-			WriteLock w_lock(_mutex);
-			_paramBool.erase(name);
-			if (_logState) {
-				PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
-			}
-		} else {
-			ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
-		}
-	}
+    template<>
+    bool isParam<bool>(const stringImpl& param) const;
 
-	template<>
-	inline bool isParam<bool>(const stringImpl& param) const {
-		ReadLock r_lock(_mutex);
-		return _paramBool.find(param) != _paramBool.end();
-	}
-
-protected:
-	ParamHandler()
-	{
-	}
-
-	~ParamHandler()
-	{
-		_params.clear();
-		_paramBool.clear();
-		_paramsStr.clear();
-	}
 private:
-	ParamMap _params;
-	ParamBoolMap _paramBool;
-	ParamStringMap _paramsStr;
-	mutable SharedLock _mutex;
-	std::atomic_bool _logState;
+    ParamMap _params;
+    ParamBoolMap _paramBool;
+    ParamStringMap _paramsStr;
+    mutable SharedLock _mutex;
+    std::atomic_bool _logState;
 
 END_SINGLETON
 
 }; //namespace Divide
 
-#endif
+#endif //_CORE_PARAM_HANDLER_H_
+
+#include "ParamHandler.inl"

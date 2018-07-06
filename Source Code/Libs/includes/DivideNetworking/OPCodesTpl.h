@@ -6,10 +6,10 @@
 #endif
 
 namespace Divide {
-///Packet handling requires OPCodes to be defined. Use the following enum structure to define them in each app:
+///Packet handling requires OPCodes to be defined. Use the following num structure to define them in each app:
 enum OPCodes
 {
-    MSG_HEARTBEAT							 = 0x000,
+    MSG_HEARTBEAT                            = 0x000,
     SMSG_SEND_FILE                           = 0x001,
     SMSG_DISCONNECT                          = 0x002,
     CMSG_REQUEST_DISCONNECT                  = 0x003

@@ -31,22 +31,22 @@ namespace Divide {
 DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 
 public:
-	ErrorCode initAudioApi();
-	void      closeAudioApi();
+    ErrorCode initAudioApi();
+    void      closeAudioApi();
 
-	void playSound(AudioDescriptor* sound);
-	void playMusic(AudioDescriptor* music);
+    void playSound(AudioDescriptor* sound);
+    void playMusic(AudioDescriptor* music);
 
-	void stopMusic(){Mix_HaltMusic();}
-	void stopAllSounds(){}
-	void pauseMusic(){}
+    void stopMusic(){Mix_HaltMusic();}
+    void stopAllSounds(){}
+    void pauseMusic(){}
 
-	void setMusicVolume(I8 value){}
-	void setSoundVolume(I8 value){}
+    void setMusicVolume(I8 value){}
+    void setSoundVolume(I8 value){}
 
 private:
-	Mix_Music *_music;
-	Mix_Chunk *_chunk;
+    Mix_Music *_music;
+    Mix_Chunk *_chunk;
 
 END_SINGLETON
 

@@ -113,8 +113,8 @@ void main( void ){
 
 -- Fragment.Impostor
 
-in vec3	 position;
-in vec3	 normals;
+in vec3     position;
+in vec3     normals;
 
 out vec4 diffuseOutput; // layout(location = 0)
 out vec4 posOutput;     // layout(location = 1)
@@ -125,9 +125,9 @@ void main( void )
 {
     vec4 color = dvd_MatDiffuse; //diffuse
 
-    diffuseOutput	= color;
-    posOutput  		= vec4(position,1);
-    normOutput    	= vec4(normals,1);
+    diffuseOutput    = color;
+    posOutput          = vec4(position,1);
+    normOutput        = vec4(normals,1);
     blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
     blendOutput.a   = color.a;
 }

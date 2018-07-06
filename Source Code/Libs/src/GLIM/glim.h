@@ -28,11 +28,11 @@
 /*
 
  * Implement support for all primitive types:
-	GLIM_TRIANGLE_STRIP
-	GLIM_QUAD_STRIP
+    GLIM_TRIANGLE_STRIP
+    GLIM_QUAD_STRIP
 
  * If GL3 adds Quads back in (or one uses the compatibility mode):
-	Don't triangulate Quads.
+    Don't triangulate Quads.
 
  * Add an additional Index-Buffer to GLIM_BATCH for wireframe rendering.
 

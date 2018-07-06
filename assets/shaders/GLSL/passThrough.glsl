@@ -3,7 +3,7 @@
 void main(void)
 {
 
-	gl_Position = vec4(inVertexData,1.0);
+    gl_Position = vec4(inVertexData,1.0);
 }
 
 
@@ -12,5 +12,5 @@ void main(void)
 out vec4 _colorOut;
 
 void main(void){
-	_colorOut = vec4(1.0);
+    _colorOut = vec4(1.0);
 }

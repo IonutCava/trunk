@@ -33,9 +33,9 @@ namespace Divide {
 
 enum GUIType
 {
-    GUI_TEXT			= 0,
-    GUI_BUTTON			= 1,
-    GUI_FLASH			= 2,
+    GUI_TEXT            = 0,
+    GUI_BUTTON            = 1,
+    GUI_FLASH            = 2,
     GUI_CONSOLE         = 3,
     GUI_MESSAGE_BOX     = 4,
     GUI_CONFIRM_DIALOG  = 5,
@@ -97,8 +97,8 @@ protected:
 
 private:
     stringImpl _name;
-    bool	    _visible;
-    bool		_active;
+    bool        _visible;
+    bool        _active;
 };
 
 }; //namespace Divide

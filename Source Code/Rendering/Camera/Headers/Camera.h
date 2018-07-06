@@ -282,7 +282,7 @@ public:
         return true;
     }
     /// Add an event listener called after every RenderLookAt or RenderLookAtCube call
-	virtual void addUpdateListener(const DELEGATE_CBK<>& f) { 
+    virtual void addUpdateListener(const DELEGATE_CBK<>& f) { 
         _listeners.push_back(f); 
     }
     /// Informs all listeners of a new event
@@ -377,9 +377,9 @@ protected:
     F32 _cameraTurnSpeed;
     F32 _cameraZoomSpeed;
     F32 _camIOD;
-    CameraType	_type;
+    CameraType    _type;
 
-	vectorImpl<DELEGATE_CBK<> > _listeners;
+    vectorImpl<DELEGATE_CBK<> > _listeners;
     bool            _isActive;
     bool            _projectionDirty;
     bool            _viewMatrixDirty;

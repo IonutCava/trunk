@@ -45,10 +45,10 @@ void QuadtreeNode::Build(U8 depth,
 
     _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
 
-    if (std::max(newsize.x, newsize.y) < _minHMSize)	{
+    if (std::max(newsize.x, newsize.y) < _minHMSize)    {
         _terrainChunk = MemoryManager_NEW TerrainChunk(terrain, this);
         _terrainChunk->Load(depth, pos, _minHMSize, HMsize, terrain);
-		chunkCount++;
+        chunkCount++;
         return;
     }
 
@@ -122,7 +122,7 @@ void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, S
 }
 
 bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderState) const {
-	if(bitCompare(options, CHUNK_BIT_TESTCHILDREN)) {
+    if(bitCompare(options, CHUNK_BIT_TESTCHILDREN)) {
         const Camera& cam = sceneRenderState.getCameraConst();
         if (!bitCompare(options, CHUNK_BIT_SHADOWMAP)) {
             const vec3<F32>& eye = cam.getEye();
@@ -133,12 +133,12 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
                     return false;
             }
         }
-        if (!_boundingBox.ContainsPoint(cam.getEye()))	{
+        if (!_boundingBox.ContainsPoint(cam.getEye()))    {
             const Frustum& frust = cam.getFrustumConst();
             switch (frust.ContainsSphere(_boundingSphere.getCenter(), _boundingSphere.getRadius())) {
-                case Frustum::FRUSTUM_OUT:	return false;
-                case Frustum::FRUSTUM_IN:	options &= ~CHUNK_BIT_TESTCHILDREN;	break;
-                case Frustum::FRUSTUM_INTERSECT:	{
+                case Frustum::FRUSTUM_OUT:    return false;
+                case Frustum::FRUSTUM_IN:    options &= ~CHUNK_BIT_TESTCHILDREN;    break;
+                case Frustum::FRUSTUM_INTERSECT:    {
                     switch (frust.ContainsBoundingBox(_boundingBox)) {
                         case Frustum::FRUSTUM_IN: options &= ~CHUNK_BIT_TESTCHILDREN; break;
                         case Frustum::FRUSTUM_OUT: return false;
@@ -148,7 +148,7 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
         }//if
     }//CHUNK_BIT_TESTCHILDREN option
     
-	return true;
+    return true;
 }
 
 

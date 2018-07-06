@@ -17,14 +17,14 @@ enum PhysXSceneInterfaceState {
 };
 
 PhysXSceneInterface::PhysXSceneInterface( Scene* parentScene ) : PhysicsSceneInterface( parentScene ),
-																 _gScene( nullptr ),
-																 _cpuDispatcher( nullptr ) 
+                                                                 _gScene( nullptr ),
+                                                                 _cpuDispatcher( nullptr ) 
 {
 }
 
 PhysXSceneInterface::~PhysXSceneInterface()
 {
-	release();
+    release();
 }
 
 bool PhysXSceneInterface::init(){
@@ -45,9 +45,9 @@ bool PhysXSceneInterface::init(){
          sceneDesc.cpuDispatcher = _cpuDispatcher;
     }
 
-	if ( !sceneDesc.filterShader ) {
-		sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	}
+    if ( !sceneDesc.filterShader ) {
+        sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+    }
     sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVETRANSFORMS;
 
     _gScene = gPhysicsSDK->createScene(sceneDesc);
@@ -68,35 +68,35 @@ bool PhysXSceneInterface::init(){
 }
 
 void PhysXSceneInterface::release() {
-	if ( !_gScene ) {
-		ERROR_FN( Locale::get( "ERROR_PHYSX_CLOSE_INVALID_INTERFACE" ) );
-		return;
-	}
+    if ( !_gScene ) {
+        ERROR_FN( Locale::get( "ERROR_PHYSX_CLOSE_INVALID_INTERFACE" ) );
+        return;
+    }
 
-	D_PRINT_FN( Locale::get( "STOP_PHYSX_SCENE_INTERFACE" ) );
+    D_PRINT_FN( Locale::get( "STOP_PHYSX_SCENE_INTERFACE" ) );
 
-	idle();
-	for (PhysXActor* actor : _sceneRigidActors) {
+    idle();
+    for (PhysXActor* actor : _sceneRigidActors) {
         actor->_actor->release();
-	}
+    }
 
     MemoryManager::DELETE_VECTOR(_sceneRigidActors);
 
-	if ( _cpuDispatcher ) {
-		_cpuDispatcher->release();
-	}
-	_gScene->release();
-	_gScene = nullptr;
+    if ( _cpuDispatcher ) {
+        _cpuDispatcher->release();
+    }
+    _gScene->release();
+    _gScene = nullptr;
 }
 
 void PhysXSceneInterface::idle(){
-	if ( _sceneRigidQueue.empty() ) {
-		return;
-	}
-	PhysXActor* crtActor = nullptr;
-	while ( _sceneRigidQueue.pop(crtActor) ) {
-		assert( crtActor != nullptr );
-		_sceneRigidActors.push_back( crtActor );
+    if ( _sceneRigidQueue.empty() ) {
+        return;
+    }
+    PhysXActor* crtActor = nullptr;
+    while ( _sceneRigidQueue.pop(crtActor) ) {
+        assert( crtActor != nullptr );
+        _sceneRigidActors.push_back( crtActor );
     }
 }
 
@@ -166,26 +166,26 @@ void PhysXSceneInterface::process(const U64 deltaTime){
 }
 
 void PhysXSceneInterface::addRigidActor(PhysXActor* const actor, bool threaded) {
-	assert( actor != nullptr );
+    assert( actor != nullptr );
 
     if (threaded) {
-		while ( !_sceneRigidQueue.push( actor ) ) {
-			idle();
-		}
+        while ( !_sceneRigidQueue.push( actor ) ) {
+            idle();
+        }
     } else {
         _sceneRigidActors.push_back(actor);
     }
 }
 
 PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorName) {
-	if ( !_gScene ) {
-		return nullptr;
-	}
+    if ( !_gScene ) {
+        return nullptr;
+    }
 
     for(RigidMap::iterator it = _sceneRigidActors.begin(); it != _sceneRigidActors.end(); ++it) {
-		if ( ( *it )->_actorName.compare( actorName ) == 0 ) {
-			return ( *it );
-		}
+        if ( ( *it )->_actorName.compare( actorName ) == 0 ) {
+            return ( *it );
+        }
     }
 
     PhysXActor* newActor = MemoryManager_NEW PhysXActor();

@@ -44,17 +44,17 @@
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
 
 #if defined(_MSC_VER)
-#	pragma warning( push )
-#		pragma warning(disable:4505) ///<unreferenced local function removal
-#		pragma warning(disable:4100) ///<unreferenced formal parameter
+#    pragma warning( push )
+#        pragma warning(disable:4505) ///<unreferenced local function removal
+#        pragma warning(disable:4100) ///<unreferenced formal parameter
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic push
-#		//pragma GCC diagnostic ignored "-Wall"
+#    pragma GCC diagnostic push
+#        //pragma GCC diagnostic ignored "-Wall"
 #endif
 
 namespace NS_GLIM {
     class GLIM_BATCH;
-    enum GLIM_ENUM;
+    enum GLIM_ENUM : GLint;
 };
 
 namespace Divide {
@@ -67,8 +67,8 @@ namespace Divide {
         void glfw_focus_callback(GLFWwindow *window, I32 focusState);
         /// This function is called if GLFW throws an error
         void glfw_error_callback(GLint error, const char* description);
-		/// Release thread specific GLEW pointers
-		void destroyGlew();
+        /// Release thread specific GLEW pointers
+        void destroyGlew();
         /// Initialize GLEW and all needed data (GLEW_MX case handled here)
         void initGlew();
         /// Check the current operation for errors
@@ -128,15 +128,15 @@ namespace Divide {
     GLEWContext* glewGetContext();
 #   if defined( OS_WINDOWS )
         WGLEWContext* wglewGetContext();
-#	else
+#    else
         GLXEWContext* glxewGetContext();
-#	endif
+#    endif
 #endif//GLEW_MX
 
 #if defined(_MSC_VER)
-#	pragma warning( pop )
+#    pragma warning( pop )
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 
 #endif

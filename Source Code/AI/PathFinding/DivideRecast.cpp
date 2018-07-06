@@ -160,7 +160,7 @@ namespace Navigation {
         }
         F32 radiusSq = radius * radius;
 
-	    dtPolyRef resultPoly;
+        dtPolyRef resultPoly;
         findNearestPolyOnNavmesh(navMesh, centerPosition, extents, resultPt, resultPoly);
         U8 i = 0;
         for (i = 0; i < maxIters; ++i) {

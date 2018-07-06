@@ -29,23 +29,23 @@ namespace Divide {
 
 class OcclusionQuery {
 public:
-	OcclusionQuery(){}
-	virtual ~OcclusionQuery(){}
+    OcclusionQuery(){}
+    virtual ~OcclusionQuery(){}
 
-	enum QueryResult{
-		OC_VISIBLE = 0,
-		OC_OCCLUDED,
-		OC_WAITING,
-		OC_ERROR,
-		OC_PLACEHOLDER
-	};
+    enum QueryResult{
+        OC_VISIBLE = 0,
+        OC_OCCLUDED,
+        OC_WAITING,
+        OC_ERROR,
+        OC_PLACEHOLDER
+    };
 
-	///Returns the status of the last query
-	virtual QueryResult getStatus(bool blockCPU, U32* visiblePixels = nullptr) = 0;
-	///Prepares the query. If the previous query is finished, returns true, else it returs false
-	virtual bool begin() = 0;
-	///Called after the geometry is drawn to process the query and prepare the result
-	virtual end() = 0;
+    ///Returns the status of the last query
+    virtual QueryResult getStatus(bool blockCPU, U32* visiblePixels = nullptr) = 0;
+    ///Prepares the query. If the previous query is finished, returns true, else it returs false
+    virtual bool begin() = 0;
+    ///Called after the geometry is drawn to process the query and prepare the result
+    virtual end() = 0;
 };
 
 }; //namespace Divide

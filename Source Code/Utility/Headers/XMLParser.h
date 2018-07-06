@@ -24,11 +24,11 @@
 #define _XML_PARSER_H_
 
 #if defined(_MSC_VER)
-#	pragma warning( push )
-#		pragma warning(disable:4103) ///<Boost alignment shouts
+#    pragma warning( push )
+#        pragma warning(disable:4103) ///<Boost alignment shouts
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic push
-#		//pragma GCC diagnostic ignored "-Wall"
+#    pragma GCC diagnostic push
+#        //pragma GCC diagnostic ignored "-Wall"
 #endif
 
 #include "Utility/Headers/String.h"
@@ -43,25 +43,25 @@ class Material;
 class SceneManager;
 
 namespace XML {
-	///Parent Function
-	std::string loadScripts(const std::string &file);
+    ///Parent Function
+    std::string loadScripts(const std::string &file);
 
-	///Child Functions
-	void loadConfig(const std::string& file);
-	void loadScene(const std::string& sceneName, SceneManager& sceneMgr);
-	void loadGeometry(const std::string& file, Scene* const scene);
-	void loadTerrain(const std::string& file, Scene* const scene);
-	Material* loadMaterial(const std::string &file);
-	void dumpMaterial(Material& mat);
+    ///Child Functions
+    void loadConfig(const std::string& file);
+    void loadScene(const std::string& sceneName, SceneManager& sceneMgr);
+    void loadGeometry(const std::string& file, Scene* const scene);
+    void loadTerrain(const std::string& file, Scene* const scene);
+    Material* loadMaterial(const std::string &file);
+    void dumpMaterial(Material& mat);
 
-	Material* loadMaterialXML(const std::string& location, bool rendererDependent = true);
+    Material* loadMaterialXML(const std::string& location, bool rendererDependent = true);
 }; //namespace XML
 }; //namespace Divide
 
 #if defined(_MSC_VER)
-#	pragma warning( pop )
+#    pragma warning( pop )
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 
 #endif

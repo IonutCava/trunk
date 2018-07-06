@@ -4,7 +4,7 @@
 void main(void)
 {
 
-	computeData();
+    computeData();
 }
 
 
@@ -17,7 +17,7 @@ uniform sampler2D texLeftEye;
 uniform sampler2D texRightEye;
 
 void main(void){
-	vec4 colorLeftEye = texture(texLeftEye, _texCoord);
-	vec4 colorRightEye = texture(texRightEye, _texCoord);
-	_colorOut = vec4(colorLeftEye.r, colorRightEye.g, colorRightEye.b, 1.0);
+    vec4 colorLeftEye = texture(texLeftEye, _texCoord);
+    vec4 colorRightEye = texture(texRightEye, _texCoord);
+    _colorOut = vec4(colorLeftEye.r, colorRightEye.g, colorRightEye.b, 1.0);
 }

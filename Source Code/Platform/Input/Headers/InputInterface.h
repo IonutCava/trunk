@@ -131,7 +131,7 @@ protected:
     OIS::Keyboard*     _pKeyboard;
     OIS::Mouse*        _pMouse;
     ///multiple joystick support
-    vectorImpl<OIS::JoyStick* >	   _pJoysticks;
+    vectorImpl<OIS::JoyStick* >       _pJoysticks;
 
     JoystickInterface* _pJoystickInterface;
     EffectManager*     _pEffectMgr;

@@ -18,7 +18,7 @@ void FlashScene::processInput(const U64 deltaTime){
 
 void FlashScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
-    if (_guiTimers[0] >= FpsDisplay)	{
+    if (_guiTimers[0] >= FpsDisplay)    {
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 
                          ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _guiTimers[0] = 0.0;
@@ -34,7 +34,7 @@ bool FlashScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     addLight(LIGHT_TYPE_DIRECTIONAL);
-	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     return loadState;
 }
 

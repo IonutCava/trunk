@@ -87,7 +87,7 @@ void Reflector::previewReflection() {
                               Application::getInstance().getResolution().y - height, 
                               _resolution.x  * 0.333f, 
                               height);
-			GFX_DEVICE.renderInViewport(viewport,
+            GFX_DEVICE.renderInViewport(viewport,
                                         DELEGATE_BIND((void(GFXDevice::*)(U32, size_t, ShaderProgram* const))
                                                       &GFXDevice::drawPoints,
                                                       &GFX_DEVICE,

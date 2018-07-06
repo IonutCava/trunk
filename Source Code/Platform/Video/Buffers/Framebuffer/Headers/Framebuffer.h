@@ -95,9 +95,9 @@ public:
 
     inline bool isMultisampled() const { return _multisampled; }
 
-    inline U16 getWidth()  const	{return _width;}
-    inline U16 getHeight() const	{return _height;}
-    inline U8  getHandle() const	{return _framebufferHandle;}
+    inline U16 getWidth()  const    {return _width;}
+    inline U16 getHeight() const    {return _height;}
+    inline U8  getHandle() const    {return _framebufferHandle;}
     
     inline vec2<U16> getResolution() const {return vec2<U16>(_width, _height); }
 
@@ -113,11 +113,11 @@ protected:
 protected:
     bool        _layeredRendering;
     bool        _clearBuffersState;
-    bool		_useDepthBuffer;
+    bool        _useDepthBuffer;
     bool        _disableColorWrites;
     bool        _multisampled;
-    U16		    _width, _height;
-    U32		    _framebufferHandle;
+    U16            _width, _height;
+    U32            _framebufferHandle;
     vec4<F32>   _clearColor;
     TextureDescriptor _attachment[5];
     Texture*          _attachmentTexture[5];

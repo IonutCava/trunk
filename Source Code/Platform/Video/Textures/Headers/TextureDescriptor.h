@@ -49,7 +49,7 @@ public:
         setAnisotropy(16);
         setLOD();
         toggleMipMaps(true);
-		toggleSRGBColorSpace(false);
+        toggleSRGBColorSpace(false);
         //The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = CMP_FUNC_LEQUAL;
         _useRefCompare  = false;
@@ -110,15 +110,15 @@ public:
         }
     }
 
-	inline void toggleSRGBColorSpace(const bool state) {
-		_srgb = state;
-	}
+    inline void toggleSRGBColorSpace(const bool state) {
+        _srgb = state;
+    }
 
     inline size_t getHash() const {
         size_t hash = 0;
         Util::hash_combine(hash, _cmpFunc);
         Util::hash_combine(hash, _useRefCompare);
-		Util::hash_combine(hash, _srgb);
+        Util::hash_combine(hash, _srgb);
         Util::hash_combine(hash, _wrapU);
         Util::hash_combine(hash, _wrapV);
         Util::hash_combine(hash, _wrapW);
@@ -151,7 +151,7 @@ public:
     inline F32           minLOD()           const { return _minLOD; }
     inline F32           maxLOD()           const { return _maxLOD; }
     inline F32           biasLOD()          const { return _biasLOD; }
-	inline bool          srgb()             const { return _srgb; }
+    inline bool          srgb()             const { return _srgb; }
     inline U8            anisotropyLevel()  const { return _anisotropyLevel; }
     inline bool          generateMipMaps()  const { return _generateMipMaps; }
     inline vec4<F32>     borderColor()      const { return _borderColor; }
@@ -165,7 +165,7 @@ protected:
     /// If it's set to true we create automatic MipMaps
     bool           _generateMipMaps;       
     /// Use SRGB color space
-	bool           _srgb; 
+    bool           _srgb; 
     /// The value must be in the range [0...255] and is automatically clamped by the max HW supported level
     U8             _anisotropyLevel;       
     /// OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD

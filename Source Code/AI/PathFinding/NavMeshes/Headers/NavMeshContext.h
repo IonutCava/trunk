@@ -35,9 +35,9 @@ namespace Divide {
 
     private:
         /// Logs a message.
-        ///  @param[in]		category	The category of the message.
-        ///  @param[in]		msg			The formatted message.
-        ///  @param[in]		len			The length of the formatted message.
+        ///  @param[in]        category    The category of the message.
+        ///  @param[in]        msg            The formatted message.
+        ///  @param[in]        len            The length of the formatted message.
         void doLog(const rcLogCategory /*category*/, const char* /*msg*/, const I32 /*len*/);
         void doResetTimers();
         void doStartTimer(const rcTimerLabel /*label*/);

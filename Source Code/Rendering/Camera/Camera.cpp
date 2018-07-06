@@ -4,7 +4,7 @@
 #include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
-	
+    
 Camera::Camera(const CameraType& type, const vec3<F32>& eye) : Resource("temp_camera"),
                                                               _isActive(false),
                                                               _isOrthoCamera(false),
@@ -65,17 +65,17 @@ void Camera::fromCamera(const Camera& camera) {
 }
 
 void Camera::update(const U64 deltaTime) {
-	if (Config::USE_FIXED_TIMESTEP) {
-		F32 timeFactor = getUsToSec(Config::SKIP_TICKS);
-		_cameraMoveSpeed = _moveSpeedFactor * timeFactor;
-		_cameraTurnSpeed = _turnSpeedFactor * timeFactor;
-		_cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
-	} else {
-		F32 timeFactor = getUsToSec(deltaTime);
-		_cameraMoveSpeed = _moveSpeedFactor * timeFactor;
-		_cameraTurnSpeed = _turnSpeedFactor * timeFactor;
-		_cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
-	}
+    if (Config::USE_FIXED_TIMESTEP) {
+        F32 timeFactor = getUsToSec(Config::SKIP_TICKS);
+        _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
+        _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
+        _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
+    } else {
+        F32 timeFactor = getUsToSec(deltaTime);
+        _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
+        _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
+        _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
+    }
 }
 
 void Camera::updateProjection(bool force) {
@@ -346,9 +346,9 @@ bool Camera::updateViewMatrix() {
 void Camera::updateListeners() {
     assert(_isActive);
 
-	for (const DELEGATE_CBK<>& listener : _listeners) {
-		listener();
-	}
+    for (const DELEGATE_CBK<>& listener : _listeners) {
+        listener();
+    }
 }
 
 bool Camera::updateFrustum() {

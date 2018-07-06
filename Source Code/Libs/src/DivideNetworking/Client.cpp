@@ -3,12 +3,12 @@
 #endif
 
 #if defined(_MSC_VER)
-#	pragma warning( push )
+#    pragma warning( push )
 // user defined binary operator ',' exists but no overload could convert all operands, default built-in binary operator ',' used
-#		pragma warning(disable:4913)
+#        pragma warning(disable:4913)
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic push
-#		//pragma GCC diagnostic ignored "-Wall"
+#    pragma GCC diagnostic push
+#        //pragma GCC diagnostic ignored "-Wall"
 #endif
 
 #include "Client.h"
@@ -279,7 +279,7 @@ void Client::handle_connect(const boost::system::error_code& ec, tcp::resolver::
 
 }; //namespace Divide
 #if defined(_MSC_VER)
-#	pragma warning( pop )
+#    pragma warning( pop )
 #elif defined(__GNUC__)
-#	pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif

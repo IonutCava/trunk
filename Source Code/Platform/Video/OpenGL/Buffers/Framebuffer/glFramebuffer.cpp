@@ -105,22 +105,22 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
                              currentType == TEXTURE_3D);
 
     SamplerDescriptor sampler = texDescriptor.getSampler();
-	GFXImageFormat internalFormat = texDescriptor._internalFormat;
-	if (sampler.srgb()) {
-		if (internalFormat == RGBA8) {
-			internalFormat = SRGBA8;
-		}
-		if (internalFormat == RGB8) {
-			internalFormat = SRGB8;
-		}
-	} else {
-		if (internalFormat == SRGBA8) {
-			internalFormat = RGBA8;
-		}
-		if (internalFormat == SRGB8) {
-			internalFormat = RGB8;
-		}
-	}
+    GFXImageFormat internalFormat = texDescriptor._internalFormat;
+    if (sampler.srgb()) {
+        if (internalFormat == RGBA8) {
+            internalFormat = SRGBA8;
+        }
+        if (internalFormat == RGB8) {
+            internalFormat = SRGB8;
+        }
+    } else {
+        if (internalFormat == SRGBA8) {
+            internalFormat = RGBA8;
+        }
+        if (internalFormat == SRGB8) {
+            internalFormat = RGB8;
+        }
+    }
     if (_multisampled) {
         sampler.toggleMipMaps(false);
     }
@@ -145,7 +145,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
                            texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : 
                                                             1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
     
-	tex->loadData(isLayeredTexture ? 0 : GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType], 
+    tex->loadData(isLayeredTexture ? 0 : GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType], 
                   NULL, 
                   vec2<U16>(_width, _height), 
                   _mipMapLevel[slot], 

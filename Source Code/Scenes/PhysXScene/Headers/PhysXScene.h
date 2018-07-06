@@ -31,7 +31,7 @@ class PhysXScene : public Scene {
 public:
     PhysXScene() : Scene()
     {
-		_sun = nullptr;
+        _sun = nullptr;
     }
 
     void preRender();
@@ -52,7 +52,7 @@ private:
 
 private:
     vec3<F32> _sunvector;
-	DirectionalLight* _sun;
+    DirectionalLight* _sun;
 };
 
 }; //namespace Divide

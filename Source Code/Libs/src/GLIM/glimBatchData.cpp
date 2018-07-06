@@ -15,15 +15,15 @@ namespace NS_GLIM
 {
     GlimArrayData::GlimArrayData ()
     {
-        Reset ();	
+        Reset ();    
     }
 
     void GlimArrayData::Reset (void)
     {
         m_DataType = GLIM_NODATA;
         m_ArrayData.clear ();
-		m_ArrayData.reserve(256);
-		
+        m_ArrayData.reserve(256);
+        
         m_CurrentValue[0].Int = 0;
         m_CurrentValue[1].Int = 0;
         m_CurrentValue[2].Int = 0;
@@ -158,13 +158,13 @@ namespace NS_GLIM
         m_fMinZ = 99999999.0f;
         m_fMaxZ =-99999999.0f;
 
-		if (reserve) {
-			m_PositionData.reserve (64 * 3);
-			m_IndexBuffer_Points.reserve (16);
-			m_IndexBuffer_Lines.reserve (32);
-			m_IndexBuffer_Triangles.reserve (128);
-			m_IndexBuffer_Wireframe.reserve (128);
-		}
+        if (reserve) {
+            m_PositionData.reserve (64 * 3);
+            m_IndexBuffer_Points.reserve (16);
+            m_IndexBuffer_Lines.reserve (32);
+            m_IndexBuffer_Triangles.reserve (128);
+            m_IndexBuffer_Wireframe.reserve (128);
+        }
 #ifdef AE_RENDERAPI_D3D11
         if (m_pVertexBuffer)
         {

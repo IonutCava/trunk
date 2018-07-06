@@ -37,12 +37,12 @@ public:
     enum DescriptorType{
         DESCRIPTOR_TEXTURE = 0,
         DESCRIPTOR_SAMPLER = 1,
-		DESCRIPTOR_PARTICLE = 2
+        DESCRIPTOR_PARTICLE = 2
     };
 
     explicit PropertyDescriptor(const DescriptorType& type) : _type(type)
-	{
-	}
+    {
+    }
 
 protected:
     friend class ResourceDescriptor;
@@ -69,7 +69,7 @@ public:
 
     inline const  stringImpl&         getPropertyListString()  const {return _properties;}
     inline const  stringImpl&         getResourceLocation()    const {return _resourceLocation;}
-    inline const  stringImpl&         getName()			       const {return _name;}
+    inline const  stringImpl&         getName()                   const {return _name;}
 
     template<typename T>
     inline const T* getPropertyDescriptor() const {
@@ -77,18 +77,18 @@ public:
     }
 
     inline bool hasPropertyDescriptor()         const {return _propertyDescriptor != nullptr;}
-    inline bool getFlag()					    const {return _flag;}
+    inline bool getFlag()                        const {return _flag;}
     inline bool getThreaded()                   const {return _threaded;}
     inline U8   getEnumValue()                  const {return _enumValue;}
-    inline U32  getId()						    const {return _id;}
+    inline U32  getId()                            const {return _id;}
     inline P32  getMask()                       const {return _mask;}
 
     inline void setPropertyList(const stringImpl& propertyListString)    {_properties = propertyListString;}
     inline void setResourceLocation(const stringImpl& resourceLocation)  {_resourceLocation = resourceLocation;}
     inline void setEnumValue(U8 enumValue)                               {_enumValue = enumValue;}
-    inline void setName(const stringImpl& name)					         {_name = name;}
-    inline void setFlag(bool flag)				                         {_flag = flag;}
-    inline void setId(U32 id)					                         {_id = id;}
+    inline void setName(const stringImpl& name)                             {_name = name;}
+    inline void setFlag(bool flag)                                         {_flag = flag;}
+    inline void setId(U32 id)                                             {_id = id;}
     inline void setBoolMask(P32 mask)                                    {_mask = mask;}
     inline void setThreadedLoading(const bool threaded)                  {_threaded = threaded;}
 
@@ -99,7 +99,7 @@ public:
 
 private:
     /// Item name
-    stringImpl _name;			   
+    stringImpl _name;               
     /// Physical file location
     stringImpl _resourceLocation; 
     /// Comma separated list of properties

@@ -48,29 +48,29 @@ uniform float whitePoint = 0.9;
 
 vec3 Uncharted2Tonemap(vec3 x)
 {
-	float A = 0.15;
-	float B = 0.50;
-	float C = 0.10;
-	float D = 0.20;
-	float E = 0.02;
-	float F = 0.30;
+    float A = 0.15;
+    float B = 0.50;
+    float C = 0.10;
+    float D = 0.20;
+    float E = 0.02;
+    float F = 0.30;
 
-	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+    return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
-void main() {	
-	vec3 value = texture(texScreen, _texCoord).rgb;
+void main() {    
+    vec3 value = texture(texScreen, _texCoord).rgb;
 
-	if(luminancePass){
-		float PreviousExposure = texture(texPrevExposure, vec2(0.5, 0.5)).r;
-		float TargetExposure = 0.5 / clamp(dot(value, vec3(0.299, 0.587, 0.114)), 0.1, 0.9);
-		_colorOut.r = PreviousExposure + (TargetExposure - PreviousExposure) * 0.01;
-	}else{
-		if(toneMap) {
-			float exposure = textureLod(texExposure, vec2(0.5,0.5), exposureMipLevel).r;
-			_colorOut = vec4(Uncharted2Tonemap(value * exposure) / Uncharted2Tonemap(vec3(whitePoint)) , 1.0);
-		}else{
-			_colorOut = clamp(sign(((value.r + value.g + value.b)/3.0) - whitePoint) * vec4(1.0), 0.0, 1.0);
-		}
-	}
+    if(luminancePass){
+        float PreviousExposure = texture(texPrevExposure, vec2(0.5, 0.5)).r;
+        float TargetExposure = 0.5 / clamp(dot(value, vec3(0.299, 0.587, 0.114)), 0.1, 0.9);
+        _colorOut.r = PreviousExposure + (TargetExposure - PreviousExposure) * 0.01;
+    }else{
+        if(toneMap) {
+            float exposure = textureLod(texExposure, vec2(0.5,0.5), exposureMipLevel).r;
+            _colorOut = vec4(Uncharted2Tonemap(value * exposure) / Uncharted2Tonemap(vec3(whitePoint)) , 1.0);
+        }else{
+            _colorOut = clamp(sign(((value.r + value.g + value.b)/3.0) - whitePoint) * vec4(1.0), 0.0, 1.0);
+        }
+    }
 }

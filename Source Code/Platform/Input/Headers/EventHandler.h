@@ -45,8 +45,8 @@ class EventHandler : public OIS::KeyListener,
 
     InputInterface*    _pApplication;
     JoystickInterface* _pJoystickInterface;
-    EffectManager*	   _pEffectMgr;
-    Kernel*			   _kernel;
+    EffectManager*       _pEffectMgr;
+    Kernel*               _kernel;
 
   public:
 

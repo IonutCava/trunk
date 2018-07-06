@@ -15,12 +15,12 @@ REGISTER_SCENE(PingPongScene);
 //begin copy-paste
 void PingPongScene::preRender(){
     vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-    _sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+    _sunvector = vec3<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
     LightManager::getInstance().getLight(0)->setDirection(_sunvector);
-	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, vec4<F32>(1.0f));
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, vec4<F32>(1.0f));
 }
 //<<end copy-paste
 
@@ -77,9 +77,9 @@ void PingPongScene::serveBall(){
 
     if(getTasks().empty()){//A maximum of 1 Tasks allowed
         Kernel* kernel = Application::getInstance().getKernel();
-		Task_ptr newGame(kernel->AddTask(getMsToUs(30), 0, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
-		registerTask(newGame);
-		newGame->startTask();
+        Task_ptr newGame(kernel->AddTask(getMsToUs(30), 0, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
+        registerTask(newGame);
+        newGame->startTask();
     }
 }
 
@@ -101,7 +101,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     //Is the ball coming towards us or towards the opponent?
     _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z += 0.11f;
     //Up or down?
-    _upwardsDirection ? 	ballPosition.y += 0.084f : 	ballPosition.y -= 0.084f;
+    _upwardsDirection ?     ballPosition.y += 0.084f :     ballPosition.y -= 0.084f;
 
     //Is the ball moving to the right or to the left?
     ballPosition.x += _sideDrift*0.15f;
@@ -239,8 +239,8 @@ bool PingPongScene::load(const stringImpl& name, CameraManager* const cameraMgr,
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
-	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
-	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     _freeFlyCam = &renderState().getCamera();
     _paddleCam = MemoryManager_NEW FreeFlyCamera();
     _paddleCam->fromCamera(*_freeFlyCam);
@@ -306,7 +306,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 
 bool PingPongScene::onKeyUp(const Input::KeyEvent& key){
     bool keyState = Scene::onKeyUp(key);
-    switch(key._key)	{
+    switch(key._key)    {
         default: break;
         case Input::KeyCode::KC_F: {
             _freeFly = !_freeFly;

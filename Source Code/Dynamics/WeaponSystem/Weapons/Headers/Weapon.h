@@ -30,34 +30,34 @@ namespace Divide {
 ///Base class for defining a weapon
 class Weapon {
 public:
-	/// Weapon type mask
-	enum WeaponType {
-		///Melee weapon (sword,axe,kinfe,lightsaber)
-		WEAPON_TYPE_MELEE       = toBit(1),
-		///ranged weapons (guns, bows etc)
-		WEAPON_TYPE_RANGED      = toBit(2),
-		/// Place all weapon types above this
-		WEAPON_TYPE_PLACEHOLDER = toBit(10)
-	};
+    /// Weapon type mask
+    enum WeaponType {
+        ///Melee weapon (sword,axe,kinfe,lightsaber)
+        WEAPON_TYPE_MELEE       = toBit(1),
+        ///ranged weapons (guns, bows etc)
+        WEAPON_TYPE_RANGED      = toBit(2),
+        /// Place all weapon types above this
+        WEAPON_TYPE_PLACEHOLDER = toBit(10)
+    };
 
-	enum WeaponProperty {
-		/// this weapon does use ammo (or charges for melee)
-		WEAPON_PROPERTY_WITH_AMMO    = toBit(1),
-		/// this weapon does not us ammo
-		WEAPON_PROPERTY_WITHOUT_AMMO = toBit(2),
-		/// Place all weapon types above this
-		WEAPON_PROPERTY_PLACEHOLDER  = toBit(10)
-	};
+    enum WeaponProperty {
+        /// this weapon does use ammo (or charges for melee)
+        WEAPON_PROPERTY_WITH_AMMO    = toBit(1),
+        /// this weapon does not us ammo
+        WEAPON_PROPERTY_WITHOUT_AMMO = toBit(2),
+        /// Place all weapon types above this
+        WEAPON_PROPERTY_PLACEHOLDER  = toBit(10)
+    };
 
-	Weapon(WeaponType type);
-	~Weapon();
+    Weapon(WeaponType type);
+    ~Weapon();
 
-	/// Add a specific property to this weapon
-	bool addProperties(U8 propertyMask);
+    /// Add a specific property to this weapon
+    bool addProperties(U8 propertyMask);
 
 private:
-	WeaponType _type;
-	U8 _properyMask; ///< weapon properties
+    WeaponType _type;
+    U8 _properyMask; ///< weapon properties
 };
 
 }; //namespace Divide

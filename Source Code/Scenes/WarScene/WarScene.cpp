@@ -83,12 +83,12 @@ void WarScene::processTasks(const U64 deltaTime){
     if(_sunAngle.y  <= RADIANS(25) || _sunAngle.y >= RADIANS(70))
         direction = !direction;
 
-    _sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+    _sunvector = vec3<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
     _sun->setDirection(_sunvector);
-	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sun->getDiffuseColor());
 
     D32 BobTimer = getSecToMs(5);
     D32 DwarfTimer = getSecToMs(8);
@@ -226,9 +226,9 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     //Add a light
-	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
     //Add a skybox
-	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     //Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90/*yaw*/,35/*pitch*/);
@@ -356,14 +356,14 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
 #endif
     particleSystem._spread = 5.0f;
 
-	SceneGraphNode* testSGN = addParticleEmitter( "TESTPARTICLES", particleSystem, _sceneGraph->getRoot() );
-	ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
+    SceneGraphNode* testSGN = addParticleEmitter( "TESTPARTICLES", particleSystem, _sceneGraph->getRoot() );
+    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
 
-	state().getGeneralVisibility() *= 2;
-	Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(135);
+    state().getGeneralVisibility() *= 2;
+    Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(135);
 
     _sceneReady = true;
     return loadState;
@@ -396,48 +396,48 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
 
-	AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
-	approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(false));
-	approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
-	approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
-	approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(false));
+    AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
+    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(false));
+    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
+    approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
+    approachEnemyFlag.setEffect(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(false));
 
     AI::CaptureFlag captureEnemyFlag("CaptureEnemyFlag");
-	captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
-	captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
-	captureEnemyFlag.setEffect(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(true));
+    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
+    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
+    captureEnemyFlag.setEffect(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(true));
   
-	AI::ReturnHome returnHome("ReturnHome");
-	returnHome.setPrecondition(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(false));
-	returnHome.setEffect(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
-	returnHome.setEffect(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(false));
+    AI::ReturnHome returnHome("ReturnHome");
+    returnHome.setPrecondition(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(false));
+    returnHome.setEffect(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
+    returnHome.setEffect(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(false));
 
     AI::ReturnFlag returnEnemyFlag("ReturnEnemyFlag");
-	returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
-	returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(true));
-	returnEnemyFlag.setEffect(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
+    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
+    returnEnemyFlag.setPrecondition(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(true));
+    returnEnemyFlag.setEffect(AI::GOAPFact(AI::HasEnemyFlag), AI::GOAPValue(false));
 
-	AI::RecoverFlag recoverFlag("RecoverOwnFlag");
-	recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
-	recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyHasFlag), AI::GOAPValue(false));
-	recoverFlag.setEffect(AI::GOAPFact(AI::HasOwnFlag), AI::GOAPValue(true));
-	
-	AI::KillEnemy killEnemy("KillEnemy");
-	recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(false));
-	recoverFlag.setEffect(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+    AI::RecoverFlag recoverFlag("RecoverOwnFlag");
+    recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
+    recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyHasFlag), AI::GOAPValue(false));
+    recoverFlag.setEffect(AI::GOAPFact(AI::HasOwnFlag), AI::GOAPValue(true));
+    
+    AI::KillEnemy killEnemy("KillEnemy");
+    recoverFlag.setPrecondition(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(false));
+    recoverFlag.setEffect(AI::GOAPFact(AI::EnemyDead), AI::GOAPValue(true));
 
     AI::GOAPGoal findFlag("Find enemy flag");
-	findFlag.setVariable(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
+    findFlag.setVariable(AI::GOAPFact(AI::AtEnemyFlagLoc), AI::GOAPValue(true));
 
     AI::GOAPGoal captureFlag("Capture enemy flag");
-	captureFlag.setVariable(AI::GOAPFact(AI::HasEnemyFlag),   AI::GOAPValue(true));
+    captureFlag.setVariable(AI::GOAPFact(AI::HasEnemyFlag),   AI::GOAPValue(true));
 
     AI::GOAPGoal returnFlag("Return enemy flag");
-	captureFlag.setVariable(AI::GOAPFact(AI::HasEnemyFlag),  AI::GOAPValue(true));
-	captureFlag.setVariable(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
+    captureFlag.setVariable(AI::GOAPFact(AI::HasEnemyFlag),  AI::GOAPValue(true));
+    captureFlag.setVariable(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
 
     AI::GOAPGoal retrieveFlag("Retrieve flag");
-	retrieveFlag.setVariable(AI::GOAPFact(AI::HasOwnFlag), AI::GOAPValue(true));
+    retrieveFlag.setVariable(AI::GOAPFact(AI::HasOwnFlag), AI::GOAPValue(true));
     retrieveFlag.setVariable(AI::GOAPFact(AI::AtHomeFlagLoc), AI::GOAPValue(true));
 
     for(U8 k = 0; k < 2; ++k) {
@@ -486,24 +486,24 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
             AI::WarSceneAISceneImpl* brain = MemoryManager_NEW AI::WarSceneAISceneImpl();
 
-			//GOAP
-			brain->worldState().setVariable(AI::GOAPFact(AI::AtHomeFlagLoc),   AI::GOAPValue(true));
-			brain->worldState().setVariable(AI::GOAPFact(AI::AtEnemyFlagLoc),  AI::GOAPValue(false));
-			brain->worldState().setVariable(AI::GOAPFact(AI::HasEnemyFlag),    AI::GOAPValue(false));
-			brain->worldState().setVariable(AI::GOAPFact(AI::EnemyDead),       AI::GOAPValue(false));
-			brain->worldState().setVariable(AI::GOAPFact(AI::EnemyHasFlag),    AI::GOAPValue(false));
-			brain->worldState().setVariable(AI::GOAPFact(AI::HasOwnFlag),      AI::GOAPValue(false));
-			brain->worldState().setVariable(AI::GOAPFact(AI::FlagCarrierDead), AI::GOAPValue(false));
+            //GOAP
+            brain->worldState().setVariable(AI::GOAPFact(AI::AtHomeFlagLoc),   AI::GOAPValue(true));
+            brain->worldState().setVariable(AI::GOAPFact(AI::AtEnemyFlagLoc),  AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::HasEnemyFlag),    AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyDead),       AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::EnemyHasFlag),    AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::HasOwnFlag),      AI::GOAPValue(false));
+            brain->worldState().setVariable(AI::GOAPFact(AI::FlagCarrierDead), AI::GOAPValue(false));
 
-			brain->registerAction(&approachEnemyFlag);
-			brain->registerAction(&captureEnemyFlag);
-			brain->registerAction(&returnHome);
-			brain->registerAction(&returnEnemyFlag);
-			brain->registerAction(&recoverFlag);
-			brain->registerAction(&killEnemy);
+            brain->registerAction(&approachEnemyFlag);
+            brain->registerAction(&captureEnemyFlag);
+            brain->registerAction(&returnHome);
+            brain->registerAction(&returnEnemyFlag);
+            brain->registerAction(&recoverFlag);
+            brain->registerAction(&killEnemy);
             brain->registerGoal(captureFlag);
             brain->registerGoal(findFlag);
-			brain->registerGoal(returnFlag);
+            brain->registerGoal(returnFlag);
             brain->registerGoal(retrieveFlag);
 
             aiSoldier->addAISceneImpl(brain);
@@ -622,7 +622,7 @@ bool WarScene::onKeyUp(const Input::KeyEvent& key){
     static bool flyCameraActive = true;
 
     bool keyState = Scene::onKeyUp(key);
-    switch(key._key)	{
+    switch(key._key)    {
         default: break;
 
         case Input::KeyCode::KC_TAB:{
@@ -643,7 +643,7 @@ bool WarScene::onKeyUp(const Input::KeyEvent& key){
                 renderState().getCameraMgr().pushActiveCamera("defaultCamera");
                 tpsCameraActive = false; flyCameraActive = true;
             }
-//			renderState().getCamera().setTargetNode(_currentSelection);
+//            renderState().getCamera().setTargetNode(_currentSelection);
         }break;
     }
     return keyState;

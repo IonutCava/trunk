@@ -51,7 +51,7 @@ bool GUIEditor::init() {
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience to reduce typing
     CEGUI::WindowManager *pWindowManager = CEGUI::WindowManager::getSingletonPtr();
     // load the editor Window from the layout file
-	const stringImpl& layoutFile = ParamHandler::getInstance().getParam<stringImpl>("GUI.editorLayout");
+    const stringImpl& layoutFile = ParamHandler::getInstance().getParam<stringImpl>("GUI.editorLayout");
     _editorWindow = pWindowManager->loadLayoutFromFile(layoutFile.c_str());
 
     if (_editorWindow) {
@@ -177,38 +177,38 @@ bool GUIEditor::isVisible() {
 bool GUIEditor::update(const U64 deltaTime) {
     _wasControlClick = false;
     bool state = true;
-  	if (_createNavMeshQueued) {
+      if (_createNavMeshQueued) {
         state = false;
         // Check if we already have a NavMesh created
         AI::Navigation::NavigationMesh* temp = AI::AIManager::getInstance().getNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL);
         // Check debug rendering status
-		AI::AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
+        AI::AIManager::getInstance().toggleNavMeshDebugDraw(_toggleButtons[TOGGLE_NAV_MESH_DRAW]->isSelected());
         // Create a new NavMesh if we don't currently have one
         if (!temp) {
             temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
         }
         // Set it's file name
-		temp->setFileName(GET_ACTIVE_SCENE()->getName());
+        temp->setFileName(GET_ACTIVE_SCENE()->getName());
         // Try to load it from file
-		bool loaded = temp->load(nullptr);
-		if (!loaded) {
+        bool loaded = temp->load(nullptr);
+        if (!loaded) {
             // If we failed to load it from file, we need to build it first
-			loaded = temp->build(nullptr, AI::Navigation::NavigationMesh::CreationCallback(), false);
+            loaded = temp->build(nullptr, AI::Navigation::NavigationMesh::CreationCallback(), false);
             // Then save it to file
-			temp->save();
-		}
+            temp->save();
+        }
         // If we loaded/built the NavMesh correctly, add it to the AIManager
-		if (loaded) {
-			state = AI::AIManager::getInstance().addNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL, temp);
-		}
+        if (loaded) {
+            state = AI::AIManager::getInstance().addNavMesh(AI::AIEntity::AGENT_RADIUS_SMALL, temp);
+        }
 
-		_createNavMeshQueued = false;
-	}
+        _createNavMeshQueued = false;
+    }
 
     if (isVisible()) {
         TrackSelection();
     }
-	return state;
+    return state;
 }
 
 void GUIEditor::RegisterHandlers() {
@@ -620,9 +620,9 @@ bool GUIEditor::Handle_EditFieldClick(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_CreateNavMesh(const CEGUI::EventArgs &e) {
     D_PRINT_FN("[Editor]: NavMesh creation queued!");
-	GUI::getInstance().getConsole()->setVisible(true);
-	_createNavMeshQueued = true;
-	return true;
+    GUI::getInstance().getConsole()->setVisible(true);
+    _createNavMeshQueued = true;
+    return true;
 }
 
 bool GUIEditor::Handle_SaveScene(const CEGUI::EventArgs &e) {

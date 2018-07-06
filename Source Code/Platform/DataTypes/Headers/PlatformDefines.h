@@ -415,15 +415,15 @@ namespace Divide {
 }; //namespace Divide
 #if defined(_MSC_VER)
 
-#	pragma warning(disable:4103) //< Boost alignment shouts
-#	pragma warning(disable:4244)
-#	pragma warning(disable:4996) //< strcpy
-#	pragma warning(disable:4201) //< nameless struct
-#	pragma warning(disable:4100) //< unreferenced formal param
-#	pragma warning(disable:4505) //< unreferenced local function removal
-#	pragma warning(disable:4127) //< Constant conditional expressions
+#    pragma warning(disable:4103) //< Boost alignment shouts
+#    pragma warning(disable:4244)
+#    pragma warning(disable:4996) //< strcpy
+#    pragma warning(disable:4201) //< nameless struct
+#    pragma warning(disable:4100) //< unreferenced formal param
+#    pragma warning(disable:4505) //< unreferenced local function removal
+#    pragma warning(disable:4127) //< Constant conditional expressions
 #elif defined(__GNUC__)
-//#	pragma GCC diagnostic ignored "-Wall"
+//#    pragma GCC diagnostic ignored "-Wall"
 #endif
 
 #ifdef max

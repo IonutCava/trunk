@@ -20,8 +20,8 @@
 
  */
 
-#ifndef _KERNEL_H_
-#define _KERNEL_H_
+#ifndef _CORE_KERNEL_H_
+#define _CORE_KERNEL_H_
 
 #include "Core/Headers/Application.h"
 #include "Managers/Headers/CameraManager.h"
@@ -42,7 +42,7 @@ class InputInterface;
 class SceneRenderState;
 class FrameListenerManager;
 
-enum RenderStage;
+enum RenderStage : I32;
 
 struct FrameEvent;
 class GUI;
@@ -107,19 +107,10 @@ public:
     /// Mouse button released
     bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
-	inline Task* AddTask(U64 tickInterval, 
-                         I32 numberOfTicks, 
-                         const DELEGATE_CBK<>& threadedFunction, 
-                         const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>()) {
-        Task* taskPtr = MemoryManager_NEW Task(getThreadPool(), tickInterval, numberOfTicks, threadedFunction);
-        taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, std::placeholders::_1));
-        if (onCompletionFunction){
-            emplace(_threadedCallbackFunctions, 
-                    static_cast<U64>(taskPtr->getGUID()), onCompletionFunction);
-        }
-        
-        return taskPtr;
-    }
+    Task* AddTask(U64 tickInterval,
+                  I32 numberOfTicks,
+                  const DELEGATE_CBK<>& threadedFunction,
+                  const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
 
 private:
    static void firstLoop();
@@ -132,24 +123,24 @@ private:
 
 private:
     friend class SceneManager;
-	void submitRenderCall(const RenderStage& stage,
+    void submitRenderCall(const RenderStage& stage,
                           const SceneRenderState& sceneRenderState, 
                           const DELEGATE_CBK<>& sceneRenderCallback) const;
     
 private:
     Application&    _APP;
     ///Access to the GPU
-    GFXDevice&		_GFX;
+    GFXDevice&        _GFX;
     ///Access to the audio device
-    SFXDevice&		_SFX;
+    SFXDevice&        _SFX;
     ///Access to the physics system
-    PXDevice&		_PFX;
+    PXDevice&        _PFX;
     ///The graphical user interface
-    GUI&	     	_GUI;
+    GUI&             _GUI;
     ///The input interface
     Input::InputInterface& _input;
     ///The SceneManager/ Scene Pool
-    SceneManager&	_sceneMgr;
+    SceneManager&    _sceneMgr;
     ///Keep track of all active cameras used by the engine
     CameraManager* _cameraMgr;
 
@@ -167,7 +158,7 @@ private:
 
     static SharedLock _threadedCallbackLock;
     static vectorImpl<U64 >  _threadedCallbackBuffer;
-	static hashMapImpl<U64, DELEGATE_CBK<> > _threadedCallbackFunctions;
+    static hashMapImpl<U64, DELEGATE_CBK<> > _threadedCallbackFunctions;
 
     //Command line arguments
     I32    _argc;
@@ -175,4 +166,5 @@ private:
 };
 
 }; //namespace Divide
-#endif
+
+#endif //_CORE_KERNEL_H_

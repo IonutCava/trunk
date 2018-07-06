@@ -69,9 +69,9 @@ void Frustum::Extract() {
 
     _viewProjectionMatrixCache.set(GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX));
     
-	if (_viewProjectionMatrixCacheOld == _viewProjectionMatrixCache) {
+    if (_viewProjectionMatrixCacheOld == _viewProjectionMatrixCache) {
         return;
-	}
+    }
 
     _viewProjectionMatrixCacheOld.set(_viewProjectionMatrixCache);
 

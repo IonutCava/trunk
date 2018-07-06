@@ -24,8 +24,8 @@ void MainScene::updateLights(){
                      0.25f + _sun_cosy * 0.75f);
 
     _sun->setDirection(_sunvector);
-	_sun->setDiffuseColor(_sunColor);
-	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
+    _sun->setDiffuseColor(_sunColor);
+    _currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
     for(SceneGraphNode* const ter : _visibleTerrains){
         ter->getComponent<RenderingComponent>()->getMaterialInstance()->setAmbient(_sunColor);
     }
@@ -91,7 +91,7 @@ void MainScene::processTasks(const U64 deltaTime){
     D32 SunDisplay = getSecToMs(1.50);
     if (_taskTimers[0] >= SunDisplay){
         _sunAngle.y += 0.0005f;
-        _sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+        _sunvector = vec4<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                                 -cosf(_sunAngle.y),
                                 -sinf(_sunAngle.x) * sinf(_sunAngle.y),
                                 0.0f );
@@ -107,11 +107,11 @@ bool MainScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-	_sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
+    _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
     _sun->csmSplitCount(3); // 3 splits
     _sun->csmSplitLogFactor(0.965f);
     _sun->csmNearClipOffset(25.0f);
-	_currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+    _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
 
     for(U8 i = 0; i < _terrainInfoArray.size(); i++){
         SceneGraphNode* terrainNode = _sceneGraph->findNode(_terrainInfoArray[i]->getVariable("terrainName"));
@@ -156,7 +156,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b){
     if(box) pos = boxNode->getComponent<PhysicsComponent>()->getPosition();
 
     if(!switchAB){
-        if(pos.x < 300 && pos.z == 0)		   pos.x++;
+        if(pos.x < 300 && pos.z == 0)           pos.x++;
         if(pos.x == 300)
         {
             if(pos.y < 800 && pos.z == 0)      pos.y++;
@@ -177,7 +177,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b){
             }
         }
     }
-    if(box)	boxNode->getComponent<PhysicsComponent>()->setPosition(pos);
+    if(box)    boxNode->getComponent<PhysicsComponent>()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors){
@@ -208,7 +208,7 @@ bool MainScene::loadResources(bool continueOnErrors){
     _guiTimers.push_back(0.0); //Time
 
     _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-    _sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+    _sunvector = vec4<F32>(    -cosf(_sunAngle.x) * sinf(_sunAngle.y),
                             -cosf(_sunAngle.y),
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y),
                             0.0f );
@@ -216,15 +216,15 @@ bool MainScene::loadResources(bool continueOnErrors){
     Kernel* kernel = Application::getInstance().getKernel();
 
     Task_ptr boxMove(kernel->AddTask(getMsToUs(30), 0, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
-	registerTask(boxMove);
-	boxMove->startTask();
+    registerTask(boxMove);
+    boxMove->startTask();
 
     ResourceDescriptor backgroundMusic("background music");
-	backgroundMusic.setResourceLocation(_paramHandler.getParam<stringImpl>("assetsLocation") + "/music/background_music.ogg");
+    backgroundMusic.setResourceLocation(_paramHandler.getParam<stringImpl>("assetsLocation") + "/music/background_music.ogg");
     backgroundMusic.setFlag(true);
 
     ResourceDescriptor beepSound("beep sound");
-	beepSound.setResourceLocation(_paramHandler.getParam<stringImpl>("assetsLocation") + "/sounds/beep.wav");
+    beepSound.setResourceLocation(_paramHandler.getParam<stringImpl>("assetsLocation") + "/sounds/beep.wav");
     beepSound.setFlag(false);
     state()._backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
     _beep = CreateResource<AudioDescriptor>(beepSound);
@@ -242,9 +242,9 @@ bool MainScene::loadResources(bool continueOnErrors){
 
 bool _playMusic = false;
 bool MainScene::onKeyUp(const Input::KeyEvent& key){
-    switch(key._key)	{
+    switch(key._key)    {
         default: break;
-        case Input::KeyCode::KC_X:	SFX_DEVICE.playSound(_beep); break;
+        case Input::KeyCode::KC_X:    SFX_DEVICE.playSound(_beep); break;
         case Input::KeyCode::KC_M:{
             _playMusic = !_playMusic;
             if(_playMusic){

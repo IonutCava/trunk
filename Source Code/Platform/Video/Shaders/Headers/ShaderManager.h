@@ -32,7 +32,7 @@ namespace Divide {
 class Kernel;
 class Shader;
 class ShaderProgram;
-enum  ShaderType;
+enum  ShaderType : I32;
 
 DEFINE_SINGLETON(ShaderManager)
 

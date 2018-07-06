@@ -34,8 +34,8 @@
 
 namespace Divide {
 namespace Config {
-	/// if this is false, a variable timestep will be used for the game loop
-	const bool USE_FIXED_TIMESTEP = true;
+    /// if this is false, a variable timestep will be used for the game loop
+    const bool USE_FIXED_TIMESTEP = true;
     /// How many textures to store per material. 
     /// bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
     const unsigned int MAX_TEXTURE_STORAGE = 6;
@@ -44,11 +44,11 @@ namespace Config {
     /// Application update rate divisor (how many draw calls per render call
     /// e.g. 2 = 30Hz update rate at 60Hz rendering)
     const unsigned int TICK_DIVISOR = 2;
-    ///	Application update rate
+    ///    Application update rate
     const unsigned int TICKS_PER_SECOND = TARGET_FRAME_RATE / TICK_DIVISOR;
     /// Maximum frameskip
     const unsigned int MAX_FRAMESKIP = 5;
-	const unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
+    const unsigned long long SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
     /// AI update frequency
     const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
     /// Maximum number of instances of a single mesh with a single draw call
@@ -66,7 +66,7 @@ namespace Config {
     const unsigned int PRIMITIVE_RESTART_INDEX_S = (unsigned int)(1 << 15);
     /// Terrain LOD configuration
     /// Camera distance to the terrain chunk is calculated as follows:
-    ///	vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();
+    ///    vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();
     /// Number of LOD levels for the terrain
     const unsigned int TERRAIN_CHUNKS_LOD = 3; 
     /// How many grass elements (3 quads p.e.) to add to each terrain element
@@ -101,25 +101,25 @@ namespace Config {
         const bool DISABLE_PERSISTENT_BUFFER = true; 
     };
 
-	namespace Assert {
+    namespace Assert {
 #if defined(_DEBUG)
         /// Log assert fails messages to the error log file
-		const bool LOG_ASSERTS = true; 
+        const bool LOG_ASSERTS = true; 
         /// Do not call the platform "assert" function in order to continue application execution
-		const bool CONTINUE_ON_ASSERT = false; 
+        const bool CONTINUE_ON_ASSERT = false; 
         /// Popup a GUI Message Box on asserts;
-		const bool SHOW_MESSAGE_BOX = false; 
+        const bool SHOW_MESSAGE_BOX = false; 
 #elif defined(_PROFILE)
-		const bool LOG_ASSERTS = true;
-		const bool CONTINUE_ON_ASSERT = false;
-		const bool SHOW_MESSAGE_BOX = false;
+        const bool LOG_ASSERTS = true;
+        const bool CONTINUE_ON_ASSERT = false;
+        const bool SHOW_MESSAGE_BOX = false;
 #else //_RELEASE
-		const bool LOG_ASSERTS = false;
-		const bool CONTINUE_ON_ASSERT = false;
-		const bool SHOW_MESSAGE_BOX = false;
+        const bool LOG_ASSERTS = false;
+        const bool CONTINUE_ON_ASSERT = false;
+        const bool SHOW_MESSAGE_BOX = false;
 #endif
-	}
-	
+    }
+    
     namespace Lighting {
         /// How many lights total to use in the application (4 should be enough)
         const unsigned int MAX_LIGHTS_PER_SCENE = 4;
@@ -197,7 +197,7 @@ namespace Config {
 ///0 = EASTL
 ///1 = STL
 #ifndef VECTOR_IMP
-	#define VECTOR_IMP 0
+    #define VECTOR_IMP 0
 #endif //VECTOR_IMP
 
 ///Use boost, eastl or stl hash maps / unordered maps

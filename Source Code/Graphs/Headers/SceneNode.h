@@ -51,7 +51,7 @@ enum SceneNodeType {
 class SceneState;
 class SceneRenderState;
 class ShaderProgram;
-enum  RenderStage;
+enum  RenderStage : I32;
 
 class SceneNode : public Resource {
     friend class SceneGraphNode;
@@ -65,28 +65,28 @@ public:
     /// Perform any pre-draw operations (this is after sort and transform updates)
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
     virtual bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) = 0;
-    virtual	bool getDrawState() const { return _renderState.getDrawState(); }
+    virtual    bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
-    virtual	bool getDrawState(const RenderStage& currentStage);
+    virtual    bool getDrawState(const RenderStage& currentStage);
     virtual void getDrawCommands(SceneGraphNode* const sgn, 
                                  const RenderStage& currentRenderStage, 
                                  SceneRenderState& sceneRenderState, 
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
     /*//Rendering/Processing*/
 
-    virtual	bool	  unload();
-    virtual bool	  isInView(const SceneRenderState& sceneRenderState, 
+    virtual    bool      unload();
+    virtual bool      isInView(const SceneRenderState& sceneRenderState, 
                                SceneGraphNode* const sgn, 
                                const bool distanceCheck = true);
-    virtual	void	  setMaterialTpl(Material* const m);
+    virtual    void      setMaterialTpl(Material* const m);
     Material*   const getMaterialTpl();
 
     /// Every SceneNode computes a bounding box in it's own way.
-    virtual	bool computeBoundingBox(SceneGraphNode* const sgn);
+    virtual    bool computeBoundingBox(SceneGraphNode* const sgn);
     virtual void postDrawBoundingBox(SceneGraphNode* const sgn) const;
 
     inline       void           setType(const SceneNodeType& type)        { _type = type; }
-    inline const SceneNodeType& getType()					        const { return _type; }
+    inline const SceneNodeType& getType()                            const { return _type; }
 
     inline SceneNodeRenderState& renderState() { return _renderState; }
 
@@ -124,7 +124,7 @@ protected:
 private:
     SceneNodeType _type;
     bool          _hasSGNParent;
-    Material*	  _materialTemplate;
+    Material*      _materialTemplate;
 };
 
 }; //namespace Divide

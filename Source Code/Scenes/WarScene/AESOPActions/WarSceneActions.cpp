@@ -24,34 +24,34 @@ namespace AI {
         return _parentScene->postAction(_type, this);
     }
 
-	ApproachFlag::ApproachFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_APPROACH_FLAG, name, cost)
+    ApproachFlag::ApproachFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_APPROACH_FLAG, name, cost)
     {
     }
 
-	CaptureFlag::CaptureFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_CAPTURE_FLAG, name, cost)
+    CaptureFlag::CaptureFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_CAPTURE_FLAG, name, cost)
     {
     }
 
-	ReturnFlag::ReturnFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_RETURN_FLAG, name, cost)
+    ReturnFlag::ReturnFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_RETURN_FLAG, name, cost)
     {
     }
 
-	ProtectFlagCarrier::ProtectFlagCarrier(const stringImpl& name,
+    ProtectFlagCarrier::ProtectFlagCarrier(const stringImpl& name,
                                            F32 cost) : WarSceneAction(ACTION_PROTECT_FLAG_CARRIER, name, cost)
     {
     }
 
-	RecoverFlag::RecoverFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_RECOVER_FLAG, name, cost)
+    RecoverFlag::RecoverFlag(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_RECOVER_FLAG, name, cost)
     {
     }
 
-	KillEnemy::KillEnemy(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_KILL_ENEMY, name, cost)
-	{
-	}
+    KillEnemy::KillEnemy(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_KILL_ENEMY, name, cost)
+    {
+    }
 
-	ReturnHome::ReturnHome(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_RETURN_TO_BASE, name, cost)
-	{
-	}
-	 
+    ReturnHome::ReturnHome(const stringImpl& name, F32 cost) : WarSceneAction(ACTION_RETURN_TO_BASE, name, cost)
+    {
+    }
+     
 }; //namespace AI
 }; //namespace Divide

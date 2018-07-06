@@ -93,22 +93,22 @@ public:
     inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}
     inline SceneState&                     state()                  {return _sceneState;}
     inline SceneRenderState&               renderState()            {return _sceneState.getRenderState();}
-    inline SceneGraph*					   getSceneGraph()	        {return _sceneGraph;}
+    inline SceneGraph*                       getSceneGraph()            {return _sceneGraph;}
 
-	void registerTask(Task_ptr taskItem);
+    void registerTask(Task_ptr taskItem);
     void clearTasks();
     void removeTask(I64 taskGUID);
-	inline void removeTask(Task_ptr taskItem) {
-		removeTask(taskItem->getGUID());
-	}
+    inline void removeTask(Task_ptr taskItem) {
+        removeTask(taskItem->getGUID());
+    }
 
     inline void addModel(FileData& model)              {_modelDataArray.push(model);}
     inline void addTerrain(TerrainDescriptor* ter)     {_terrainInfoArray.push_back(ter);}
            void addPatch(vectorImpl<FileData>& data);
 
     SceneGraphNode* addLight(Light* const lightItem, SceneGraphNode* const parentNode = nullptr);
-	SceneGraphNode* addLight(LightType type, SceneGraphNode* const parentNode = nullptr);
-	SceneGraphNode* addSky(Sky* const skyItem);
+    SceneGraphNode* addLight(LightType type, SceneGraphNode* const parentNode = nullptr);
+    SceneGraphNode* addSky(Sky* const skyItem);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
         _sceneState.getRenderState()._cachedResolution = newResolution;
@@ -118,18 +118,18 @@ public:
     inline SceneGraphNode* getCurrentSelection() const { return _currentSelection; }
     void findSelection(F32 mouseX, F32 mouseY);
     void deleteSelection();
-	inline void addSelectionCallback(const DELEGATE_CBK<>& selectionCallback) {
+    inline void addSelectionCallback(const DELEGATE_CBK<>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback); 
     }
     
     ///call this function if you want to use a more complex rendering callback other than "SceneGraph::render()"
-	void renderCallback(const DELEGATE_CBK<>& renderCallback) { _renderCallback = renderCallback; }
-	const DELEGATE_CBK<>& renderCallback() { return _renderCallback; }
+    void renderCallback(const DELEGATE_CBK<>& renderCallback) { _renderCallback = renderCallback; }
+    const DELEGATE_CBK<>& renderCallback() { return _renderCallback; }
 
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
-	SceneGraphNode* const addParticleEmitter(const stringImpl& name, 
+    SceneGraphNode* const addParticleEmitter(const stringImpl& name, 
                                              const ParticleEmitterDescriptor& descriptor,
                                              SceneGraphNode* parentNode );
 
@@ -153,10 +153,10 @@ protected:
     F32                            _LRSpeedFactor;
     ///Current selection
     SceneGraphNode* _currentSelection;
-	SceneGraphNode* _currentSky;
+    SceneGraphNode* _currentSky;
     ///This is the rendering function used to override the default one for the renderer.
     ///If this is empty, the renderer will use the scene's scenegraph render function
-	DELEGATE_CBK<> _renderCallback;
+    DELEGATE_CBK<> _renderCallback;
 
     ///Scene::load must be called by every scene. Add a load flag to make sure!
     bool _loadComplete;
@@ -170,7 +170,7 @@ private:
     vectorImpl<Task_ptr> _tasks;
     ///Contains all game related info for the scene (wind speed, visibility ranges, etc)
     SceneState       _sceneState;
-	vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
+    vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
 
 protected:
 
@@ -260,7 +260,7 @@ protected: //Input
 }; //namespace Divide
 
 ///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
-///									  -B is the name used to refer to that scene in the XML files
+///                                      -B is the name used to refer to that scene in the XML files
 ///Call this function after each scene declaration
 #define REGISTER_SCENE_W_NAME(scene, sceneName) bool scene ## _registered = \
                                                 SceneManager::getOrCreateInstance().registerScene<scene>(#sceneName);

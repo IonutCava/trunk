@@ -85,7 +85,7 @@ public:
         _hasEnemyFlag.value(false);
         _enemyHasFlag.value(false);
         _enemyFlagNear.value(false);
-		_friendlyFlagNear.value(true);
+        _friendlyFlagNear.value(true);
         _teamMateHasFlag.value(false);
         _health.value(100);
         _flagCarrier.value(nullptr);
@@ -93,13 +93,13 @@ public:
         _currentTargetEntity.value(nullptr);  
         _staticDataUpdated = false;
     }
-	static SGNNodeFact      _flags[2];
+    static SGNNodeFact      _flags[2];
     static SmallCounterFact _teamCount[2];
     static SmallCounterFact _flagProtectors[2];
     static SmallCounterFact _flagRetrievers[2];
-	static PositionFact     _teamFlagPosition[2];
-		   AINodeFact       _flagCarrier;
-		   AINodeFact       _enemyFlagCarrier;
+    static PositionFact     _teamFlagPosition[2];
+           AINodeFact       _flagCarrier;
+           AINodeFact       _enemyFlagCarrier;
            SmallCounterFact _health;
            SGNNodeFact      _currentTargetEntity;
            PositionFact     _currentTargetPosition;
@@ -107,7 +107,7 @@ public:
            ToggleStateFact  _enemyHasFlag;
            ToggleStateFact  _teamMateHasFlag;
            ToggleStateFact  _enemyFlagNear;
-		   ToggleStateFact  _friendlyFlagNear;
+           ToggleStateFact  _friendlyFlagNear;
     bool _staticDataUpdated;
 };
 
@@ -156,8 +156,8 @@ private:
     void updatePositions();
     bool performAction(const GOAPAction* planStep);
     bool performActionStep(GOAPAction::operationsIterator step);
-	bool printActionStats(const GOAPAction* planStep) const;
-	void printWorkingMemory() const;
+    bool printActionStats(const GOAPAction* planStep) const;
+    void printWorkingMemory() const;
     void init();
 
 private:

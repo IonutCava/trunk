@@ -65,13 +65,13 @@ enum CurrentContext {
 };
 
 enum RenderStage {
-    DEFERRED_STAGE			   = 1 << (1),
-    SHADOW_STAGE			   = 1 << (2),
-    REFLECTION_STAGE		   = 1 << (3),
-    FINAL_STAGE				   = 1 << (4),
+    DEFERRED_STAGE               = 1 << (1),
+    SHADOW_STAGE               = 1 << (2),
+    REFLECTION_STAGE           = 1 << (3),
+    FINAL_STAGE                   = 1 << (4),
     Z_PRE_PASS_STAGE           = 1 << (5),
     //Place all stages above this
-    INVALID_STAGE		       = 1 << (6),
+    INVALID_STAGE               = 1 << (6),
     //Special composite stages go here
     DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
     DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS_STAGE
@@ -255,7 +255,7 @@ enum TextureType {
 };
 
 enum TextureFilter{
-    TEXTURE_FILTER_LINEAR	= 0x0000,
+    TEXTURE_FILTER_LINEAR    = 0x0000,
     TEXTURE_FILTER_NEAREST   = 0x0001,
     TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST = 0x0002,
     TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST  = 0x0003,
@@ -265,7 +265,7 @@ enum TextureFilter{
 };
 
 enum TextureWrap {
-    /** Texture coordinates outside [0...1] are clamped to the nearest valid value.	 */
+    /** Texture coordinates outside [0...1] are clamped to the nearest valid value.     */
     TEXTURE_CLAMP = 0x0,
     TEXTURE_CLAMP_TO_EDGE = 0x1,
     TEXTURE_CLAMP_TO_BORDER = 0x2,
@@ -300,7 +300,7 @@ enum GFXImageFormat {
     BGR,
     RGB,
     RGB8,
-	SRGB8,
+    SRGB8,
     RGB8I,
     RGB16,
     RGB16F,
@@ -308,7 +308,7 @@ enum GFXImageFormat {
     RGBA,
     RGBA4,
     RGBA8,
-	SRGBA8,
+    SRGBA8,
     RGBA8I,
     RGBA16F,
     RGBA32F,

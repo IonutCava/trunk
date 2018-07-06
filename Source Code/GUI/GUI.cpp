@@ -21,7 +21,7 @@ namespace Divide {
 
 GUI::GUI() : _init(false),
              _rootSheet(nullptr),
-			 _defaultMsgBox(nullptr),
+             _defaultMsgBox(nullptr),
              _console(MemoryManager_NEW GUIConsole()),
              _textRenderInterval(getMsToUs(10))
 {
@@ -33,11 +33,11 @@ GUI::GUI() : _init(false),
 GUI::~GUI()
 {
     PRINT_FN(Locale::get("STOP_GUI"));
-	GUIEditor::destroyInstance();
+    GUIEditor::destroyInstance();
     MemoryManager::DELETE( _console );
     RemoveResource(_guiShader);
     MemoryManager::DELETE_HASHMAP(_guiStack);
-	_defaultMsgBox = nullptr;
+    _defaultMsgBox = nullptr;
 }
 
 void GUI::onResize(const vec2<U16>& newResolution) {
@@ -51,7 +51,7 @@ void GUI::onResize(const vec2<U16>& newResolution) {
     vec2<I32> difDimensions((I32)_cachedResolution.width - newResolution.width,
                             (I32)_cachedResolution.height - newResolution.height);
 
-	for (guiMap::value_type& guiStackIterator : _guiStack) {
+    for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->onResize( difDimensions );
     }
 
@@ -66,7 +66,7 @@ void GUI::draw2D() {
     _guiShader->bind();
 
     GFXDevice& gfx = GFX_DEVICE;
-	for (const guiMap::value_type& guiStackIterator : _guiStack) {
+    for (const guiMap::value_type& guiStackIterator : _guiStack) {
         gfx.drawGUIElement( guiStackIterator.second );
     }
     const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
@@ -128,7 +128,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-10-NoScale.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
-	_defaultGUIScheme = ParamHandler::getInstance().getParam<stringImpl>("GUI.defaultScheme");
+    _defaultGUIScheme = ParamHandler::getInstance().getParam<stringImpl>("GUI.defaultScheme");
     CEGUI::SchemeManager::getSingleton().createFromFile(stringAlg::fromBase(_defaultGUIScheme + ".scheme")) ;
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow","root_window");
@@ -147,7 +147,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
     const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
-	_defaultMsgBox = addMsgBox( "AssertMsgBox", "Assertion failure", "Assertion failed with message: " );
+    _defaultMsgBox = addMsgBox( "AssertMsgBox", "Assertion failure", "Assertion failed with message: " );
     _init = true;
     return true;
 }
@@ -203,7 +203,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     event.mousePoint.x = arg.state.X.abs;
     event.mousePoint.y = arg.state.Y.abs;
 
-	for (guiMap::value_type& guiStackIterator : _guiStack) {
+    for (guiMap::value_type& guiStackIterator : _guiStack) {
         guiStackIterator.second->mouseMoved( event );
     }
 
@@ -219,7 +219,7 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton bu
         if ( button == Input::MouseButton::MB_Left ) {
             GUIEvent event;
             event.mouseClickCount = 0;
-			for (guiMap::value_type& guiStackIterator : _guiStack) {
+            for (guiMap::value_type& guiStackIterator : _guiStack) {
                 guiStackIterator.second->onMouseDown( event );
             }
         }
@@ -237,7 +237,7 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton b
         if ( button == Input::MouseButton::MB_Left ) {
             GUIEvent event;
             event.mouseClickCount = 1;
-			for (guiMap::value_type& guiStackIterator : _guiStack) {
+            for (guiMap::value_type& guiStackIterator : _guiStack) {
                 guiStackIterator.second->onMouseUp( event );
             }
         }
@@ -348,9 +348,9 @@ GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie, const vec2<U32>&
 }
 
 GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
-	if (_guiStack.find(id) == _guiStack.end()) {
-		return nullptr;
-	}
+    if (_guiStack.find(id) == _guiStack.end()) {
+        return nullptr;
+    }
     va_list args;
     stringImpl fmt_text;
 
@@ -361,10 +361,10 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...){
     fmt_text.append(text);
     MemoryManager::DELETE_ARRAY( text );
     va_end(args);
-	
+    
     GUIElement* element = _guiStack[id];
     assert(element->getType() == GUI_TEXT);
-	
+    
     GUIText* textElement = dynamic_cast<GUIText*>(element);
     textElement->_text = fmt_text;
     fmt_text.empty();

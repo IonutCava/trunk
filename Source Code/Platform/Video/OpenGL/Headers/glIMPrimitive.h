@@ -28,7 +28,7 @@
 
 namespace NS_GLIM {
     class GLIM_BATCH;
-    enum GLIM_ENUM;
+    enum GLIM_ENUM : int;
 };
 
 namespace Divide {

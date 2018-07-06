@@ -28,7 +28,7 @@
 #include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
-    enum GFXImageFormat;
+    enum GFXImageFormat : I32;
     namespace ImageTools {
 
     class ImageData {
@@ -90,7 +90,7 @@ namespace Divide {
 
         private:
             /// the image data as it was read from the file / memory
-            U8*	 _data;
+            U8*     _data;
             /// is the image stored as a regular image or in a compressed format? (eg. DXT1 / DXT3 / DXT5)
             bool _compressed;
             /// should we flip the image's origin on load?

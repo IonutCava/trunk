@@ -61,7 +61,7 @@ public:
 
 protected:
     friend class Mesh;
-	void setParentMesh(Mesh* const parentMesh);
+    void setParentMesh(Mesh* const parentMesh);
 
     friend class DVDConverter;
     mat4<F32> _sceneRootMatrix;

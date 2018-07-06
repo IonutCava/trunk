@@ -44,7 +44,7 @@ public:
     void Build( BoundingBox& terrainBBox, const vec2<U32>& HMSize, U32 minHMSize, Terrain* const terrain );
     BoundingBox& computeBoundingBox();
 
-	inline U32  getChunkCount() const { return _chunkCount;}
+    inline U32  getChunkCount() const { return _chunkCount;}
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void createDrawCommands(const SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
@@ -56,8 +56,8 @@ public:
     ~Quadtree();
 
 private:
-	U32             _chunkCount;
-    QuadtreeNode*	_root;
+    U32             _chunkCount;
+    QuadtreeNode*    _root;
     VertexBuffer*   _parentVB; //<Pointer to the terrain VB
 };
 

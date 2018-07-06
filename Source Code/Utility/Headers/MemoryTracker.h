@@ -32,7 +32,7 @@ namespace Divide {
         /// From https://www.relisoft.com/book/tech/9new.html
         class MemoryTracker {
         private:
-            class Entry	{
+            class Entry    {
             public:
                 Entry( char const * file, I32 line, size_t size ) : _file( file ), _line( line ), _size( size ) {
                 }
@@ -81,7 +81,7 @@ namespace Divide {
                 if ( _locked ) {
                     return;
                 } 
-				WriteLock w_lock(_mutex);
+                WriteLock w_lock(_mutex);
                 MemoryTracker::Lock lock( *this );
                 hashAlg::insert( _map, hashAlg::makePair(p, Entry( file, line, size )) );
             }
@@ -91,7 +91,7 @@ namespace Divide {
                     return;
                 }
 
-				WriteLock w_lock(_mutex);
+                WriteLock w_lock(_mutex);
                 MemoryTracker::Lock lock( *this );
                 iterator it = _map.find( p );
                 if ( it != _map.end() ) {

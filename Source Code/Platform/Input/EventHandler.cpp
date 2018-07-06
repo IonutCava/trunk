@@ -6,11 +6,11 @@ namespace Divide {
     namespace Input {
 
 EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) : _kernel(kernel),
-										                                 _pApplication(pApp),
-										                                 _pJoystickInterface(nullptr),
-										                                 _pEffectMgr(nullptr)
+                                                                         _pApplication(pApp),
+                                                                         _pJoystickInterface(nullptr),
+                                                                         _pEffectMgr(nullptr)
 {
-	DIVIDE_ASSERT(kernel != nullptr, "EventHandler error: INVALID KERNEL PASSED ON HANDLER CREATION");
+    DIVIDE_ASSERT(kernel != nullptr, "EventHandler error: INVALID KERNEL PASSED ON HANDLER CREATION");
 }
 
 void EventHandler::initialize(JoystickInterface* pJoystickInterface, EffectManager* pEffectMgr){
@@ -85,7 +85,7 @@ void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
   D32 dForce = mapVars["Force"]->getValue();
   D32 dAttackFactor = 1.0;
   if (mapVars.find("AttackFactor") != mapVars.end())
-	dAttackFactor = mapVars["AttackFactor"]->getValue();
+    dAttackFactor = mapVars["AttackFactor"]->getValue();
 
   OIS::ConstantEffect* pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
   pConstForce->level = (I16)dForce;
@@ -101,7 +101,7 @@ void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
   pPeriodForce->period = (U32)dPeriod;
 }
 
-LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ){	return FALSE; }
+LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ){    return FALSE; }
 
     }; //namespace Input
 }; //namespace Divide

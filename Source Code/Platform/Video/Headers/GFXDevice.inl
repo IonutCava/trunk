@@ -39,30 +39,30 @@ inline bool GFXDevice::isCurrentRenderStage(U8 renderStageMask) {
 }
 /// Change the width of rendered lines to the specified value
 inline void GFXDevice::setLineWidth(F32 width) { 
-	_previousLineWidth = _currentLineWidth;
-	_currentLineWidth = width; 
-	_api->setLineWidth(width); 
+    _previousLineWidth = _currentLineWidth;
+    _currentLineWidth = width; 
+    _api->setLineWidth(width); 
 }
 /// Restore the width of rendered lines to the previously set value
 inline void GFXDevice::restoreLineWidth() {
-	setLineWidth(_previousLineWidth); 
+    setLineWidth(_previousLineWidth); 
 }
 /// Toggle hardware rasterization on or off. 
 inline void GFXDevice::toggleRasterization(bool state) {
-	if (_rasterizationEnabled == state) {
-		return;
-	}
+    if (_rasterizationEnabled == state) {
+        return;
+    }
     _rasterizationEnabled = state;
 
     _api->toggleRasterization(state);
 }
 /// Register a function to be called in the 2D rendering fase of the GFX Flush routine. Use callOrder for sorting purposes 
 inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder) {
-	_2dRenderQueue.push_back(std::make_pair(callOrder, callback));
+    _2dRenderQueue.push_back(std::make_pair(callOrder, callback));
 
     std::sort(_2dRenderQueue.begin(), 
               _2dRenderQueue.end(), 
-			  [](const std::pair<U32, DELEGATE_CBK<> > & a, const std::pair<U32, DELEGATE_CBK<> > & b) -> bool {
+              [](const std::pair<U32, DELEGATE_CBK<> > & a, const std::pair<U32, DELEGATE_CBK<> > & b) -> bool {
                     return a.first < b.first;
               });
 }
@@ -70,42 +70,42 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 c
 ///Sets the current render stage.
 ///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
 inline RenderStage GFXDevice::setRenderStage(RenderStage stage) {
-	RenderStage prevRenderStage = _renderStage;
-	_renderStage = stage; 
-	return prevRenderStage; 
+    RenderStage prevRenderStage = _renderStage;
+    _renderStage = stage; 
+    return prevRenderStage; 
 }
 /// disable or enable a clip plane by index
 inline void GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
-	assert(index != ClipPlaneIndex_PLACEHOLDER);
-	if (state != _clippingPlanes[index].active()) {
-		_clippingPlanes[index].active(state);
-		_api->updateClipPlanes();
-	}
+    assert(index != ClipPlaneIndex_PLACEHOLDER);
+    if (state != _clippingPlanes[index].active()) {
+        _clippingPlanes[index].active(state);
+        _api->updateClipPlanes();
+    }
 }
 /// modify a single clip plane by index
 inline void GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) {
-	assert(index != ClipPlaneIndex_PLACEHOLDER);
-	_clippingPlanes[index] = p;
-	updateClipPlanes();
+    assert(index != ClipPlaneIndex_PLACEHOLDER);
+    _clippingPlanes[index] = p;
+    updateClipPlanes();
 }
 /// set a new list of clipping planes. The old one is discarded
 inline void GFXDevice::setClipPlanes(const PlaneList& clipPlanes)  {
-	if (clipPlanes != _clippingPlanes) {
-		_clippingPlanes = clipPlanes;
-		updateClipPlanes();
-		_api->updateClipPlanes();
-	}
+    if (clipPlanes != _clippingPlanes) {
+        _clippingPlanes = clipPlanes;
+        updateClipPlanes();
+        _api->updateClipPlanes();
+    }
 }
 /// clear all clipping planes
 inline void GFXDevice::resetClipPlanes() {
-	_clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
-	updateClipPlanes();
-	_api->updateClipPlanes();
+    _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
+    updateClipPlanes();
+    _api->updateClipPlanes();
 }
 /// Alternative to the normal version of getMatrix
 inline const mat4<F32>& GFXDevice::getMatrix(const MATRIX_MODE& mode)  { 
-	getMatrix(mode, _mat4Cache); 
-	return _mat4Cache; 
+    getMatrix(mode, _mat4Cache); 
+    return _mat4Cache; 
 }
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)

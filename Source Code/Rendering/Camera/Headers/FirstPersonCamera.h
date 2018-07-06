@@ -31,7 +31,7 @@ namespace Divide {
 /// Similar to the "Free fly" camera, but more restrained in it's movement.
 class FirstPersonCamera : public Camera {
 public:
-	FirstPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
+    FirstPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 };
 
 }; //namespace Divide

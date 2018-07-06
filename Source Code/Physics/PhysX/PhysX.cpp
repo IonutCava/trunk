@@ -19,7 +19,7 @@ namespace Divide {
 physx::PxDefaultAllocator     PhysX::_gDefaultAllocatorCallback;
 physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
 
-physx::PxProfileZone* PhysX::getOrCreateProfileZone(PxFoundation& inFoundation) { 	
+physx::PxProfileZone* PhysX::getOrCreateProfileZone(PxFoundation& inFoundation) {     
 #ifdef PHYSX_PROFILE_SDK
     if (_profileZone == nullptr) {
         _profileZone = &physx::PxProfileZone::createProfileZone( &inFoundation, "SampleProfileZone", gProfileNameProvider );
@@ -102,8 +102,8 @@ bool PhysX::closePhysicsApi() {
     }
     
     PRINT_FN(Locale::get("STOP_PHYSX_API"));
-	
-	DIVIDE_ASSERT(_targetScene == nullptr, 
+    
+    DIVIDE_ASSERT(_targetScene == nullptr, 
                   "PhysX error: target scene not destroyed before calling closePhysicsApi." 
                   "Call \"setPhysicsScene( nullptr )\" first" );
 
@@ -111,9 +111,9 @@ bool PhysX::closePhysicsApi() {
         _cooking->release();
     }
     PxCloseExtensions();
-	if (_zoneManager) {
-		//_zoneManager->release();
-	}
+    if (_zoneManager) {
+        //_zoneManager->release();
+    }
     _gPhysicsSDK->release();
     _foundation->release();
 
@@ -159,14 +159,14 @@ PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
 }
 
 void PhysX::setPhysicsScene( PhysicsSceneInterface* const targetScene ) {
-	if ( _targetScene ) {
+    if ( _targetScene ) {
         MemoryManager::DELETE( _targetScene );
-	}
-	_targetScene = targetScene;
+    }
+    _targetScene = targetScene;
 }
 
 void PhysX::initScene() {
-	DIVIDE_ASSERT( _targetScene != nullptr, "PhysX error: no target scene specified before a call to initScene()" );
+    DIVIDE_ASSERT( _targetScene != nullptr, "PhysX error: no target scene specified before a call to initScene()" );
     _targetScene->init();
 }
 
@@ -237,8 +237,8 @@ bool PhysX::createActor(SceneGraphNode* const node,
                                      node->getParent()->getComponent<PhysicsComponent>() :
                                      node->getComponent<PhysicsComponent>();
 
-	PhysXActor* tempActor = targetScene->getOrCreateRigidActor( node->getName() );
-	assert( tempActor != nullptr );
+    PhysXActor* tempActor = targetScene->getOrCreateRigidActor( node->getName() );
+    assert( tempActor != nullptr );
     tempActor->setParent(nodePhysics);
 
     if (!tempActor->_actor) {
@@ -261,7 +261,7 @@ bool PhysX::createActor(SceneGraphNode* const node,
         }
 
         tempActor->_type = PxGeometryType::eTRIANGLEMESH;
-		// If we got here, the new actor was just created (didn't exist previously in the scene), so add it
+        // If we got here, the new actor was just created (didn't exist previously in the scene), so add it
         targetScene->addRigidActor(tempActor, false);
     }
     
@@ -277,7 +277,7 @@ bool PhysX::createActor(SceneGraphNode* const node,
 
     const vec3<F32>& scale = tempActor->getComponent()->getScale();
     PxTriangleMeshGeometry triangleGeometry(triangleMesh, PxMeshScale(PxVec3(scale.x,scale.y,scale.z), PxQuat(PxIdentity)));
-	tempActor->_actor->createShape(triangleGeometry, *_gPhysicsSDK->createMaterial( 0.7f, 0.7f, 1.0f ) );
+    tempActor->_actor->createShape(triangleGeometry, *_gPhysicsSDK->createMaterial( 0.7f, 0.7f, 1.0f ) );
 
     return true;
 };

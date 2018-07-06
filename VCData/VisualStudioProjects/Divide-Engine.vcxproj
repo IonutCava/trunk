@@ -398,10 +398,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Core\ApplicationTimer.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\ProfileTimer.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp" />
@@ -510,6 +513,7 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\ProfileTimer.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl" />
@@ -636,6 +640,11 @@
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />
     <None Include="..\..\Source Code\Core\Headers\Application.inl" />
+    <None Include="..\..\Source Code\Core\Headers\ApplicationTimer.inl" />
+    <None Include="..\..\Source Code\Core\Headers\ParamHandler.inl" />
+    <None Include="..\..\Source Code\Core\Headers\ProfileTimer.inl" />
+    <None Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.inl" />
+    <None Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

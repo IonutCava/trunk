@@ -33,7 +33,7 @@
 #include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
-enum  RenderStage;
+enum  RenderStage : I32;
 class SceneGraphNode;
 
 struct RenderBinItem{
@@ -99,7 +99,7 @@ public:
     virtual void addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos);
 
     inline  const RenderBinItem& getItem(U16 index) const {
-        assert(index < _renderBinStack.size());	
+        assert(index < _renderBinStack.size());    
         return _renderBinStack[index]; 
     }
 

@@ -72,7 +72,7 @@ public:
     bool computeTriangleList(bool force = false);
 
 protected:
-    virtual	void render(SceneGraphNode* const sgn, 
+    virtual    void render(SceneGraphNode* const sgn, 
                         const SceneRenderState& sceneRenderState, 
                         const RenderStage& currentRenderStage);
     virtual void getDrawCommands(SceneGraphNode* const sgn, 
@@ -81,18 +81,18 @@ protected:
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();
     virtual void computeTangents();
-	/// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
-	/// Please manually delete the old VB if available before replacing!
-	virtual void setGeometryVB(VertexBuffer* const vb);
+    /// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
+    /// Please manually delete the old VB if available before replacing!
+    virtual void setGeometryVB(VertexBuffer* const vb);
 
 protected:
-    bool		    _update;
+    bool            _update;
     U32             _geometryFlagMask;
     U32             _geometryPartitionId;
     ObjectType      _geometryType;
     /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
-    vectorImpl<vec3<U32> > _geometryTriangles;	
+    vectorImpl<vec3<U32> > _geometryTriangles;    
     ///A custom, override vertex buffer
     VertexBuffer* _buffer;
 };

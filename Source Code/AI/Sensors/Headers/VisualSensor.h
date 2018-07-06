@@ -57,8 +57,8 @@ public:
 
 protected:
     friend class AIEntity;
-	VisualSensor(AIEntity* const parentEntity);
-	~VisualSensor();
+    VisualSensor(AIEntity* const parentEntity);
+    ~VisualSensor();
 
 protected:
     NodeContainerMap _nodeContainerMap;
