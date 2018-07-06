@@ -207,7 +207,7 @@ if (Config::Profile::BENCHMARK_PERFORMANCE || Config::Profile::ENABLE_FUNCTION_P
 
         Arena::Statistics stats = _GFX.getObjectAllocStats();
         profileData.append("\n");
-        profileData.append(Util::StringFormat("GPU Objects: %5.5 Mb, \n"
+        profileData.append(Util::StringFormat("GPU Objects: %5.5f Mb,\n"
                                               "             %d num allocs,\n"
                                               "             %d num blocks,\n"
                                               "             %d num destructors",
