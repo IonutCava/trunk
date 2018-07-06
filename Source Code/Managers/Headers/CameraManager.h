@@ -86,7 +86,7 @@ class CameraManager : private NonCopyable, public FrameListener {
     }
 
     inline void pushActiveCamera(const Camera* camera) {
-        _cameraStack.push(findCamera(camera->getGUID()));
+        _cameraStack.push(findCamera(_ID_RT(camera->getName())));
         setActiveCamera(_cameraStack.top());
     }
 
@@ -99,8 +99,7 @@ class CameraManager : private NonCopyable, public FrameListener {
     /// This is inherited from FrameListener and is used to update the view
     /// matrix every frame
     bool frameStarted(const FrameEvent& evt);
-    Camera* findCamera(const stringImpl& name);
-    Camera* findCamera(U64 cameraGUID);
+    Camera* findCamera(ULL nameHash);
     void setActiveCamera(Camera* cam);
 
    private:

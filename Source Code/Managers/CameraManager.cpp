@@ -81,16 +81,9 @@ void CameraManager::addNewCamera(const stringImpl& cameraName,
     hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);
 }
 
-Camera* CameraManager::findCamera(const stringImpl& name) {
-    const CameraPool::const_iterator& it = _cameraPool.find(_ID_RT(name));
+Camera* CameraManager::findCamera(ULL nameHash) {
+    const CameraPool::const_iterator& it = _cameraPool.find(nameHash);
     assert(it != std::end(_cameraPool));
-
-    return it->second;
-}
-
-Camera* CameraManager::findCamera(U64 cameraGUID) {
-    const CameraPoolGUID::const_iterator& it = _cameraPoolGUID.find(cameraGUID);
-    assert(it != std::end(_cameraPoolGUID));
 
     return it->second;
 }

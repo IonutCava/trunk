@@ -388,7 +388,6 @@ bool GL_API::setActiveVAO(GLuint ID, GLuint& previousID) {
     _activeVAOID = ID;
     // Activate the specified VAO
     glBindVertexArray(ID);
-    //setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     return true;
 }
