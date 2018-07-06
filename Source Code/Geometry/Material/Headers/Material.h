@@ -37,6 +37,8 @@
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 
+#include "Managers/Headers/FrameListenerManager.h"
+
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -49,7 +51,7 @@ class RenderStateBlock;
 enum class RenderStage : U32;
 enum class BlendProperty : U32;
 
-class Material : public Resource {
+class Material : public Resource, public FrameListener {
    public:
     enum class BumpMethod : U32 {
         NONE = 0,    //<Use phong
@@ -372,6 +374,10 @@ class Material : public Resource {
 
     bool canDraw(RenderStage renderStage);
 
+   protected:
+    bool frameStarted(const FrameEvent& evt) override;
+    bool frameEnded(const FrameEvent& evt) override;
+
    private:
     void getTextureData(ShaderProgram::TextureUsage slot,
                         TextureDataContainer& container);
@@ -416,6 +422,10 @@ class Material : public Resource {
     BumpMethod _bumpMethod;
 
     ShaderData _shaderData;
+
+    static bool _shadersComputedThisFrame;
+    static U32  _totalShaderComputeCountThisFrame;
+    static U32 _totalShaderComputeCount;
 };
 
 };  // namespace Divide

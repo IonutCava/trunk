@@ -192,17 +192,17 @@ void DeferredShadingRenderer::secondPass(
         _previewDeferredShader->Uniform("texDiffuse0", 4);
         if (_renderQuads[1]->onDraw(GFX_DEVICE.getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
-            GFX_DEVICE.submitRenderCommand(cmd);
+            GFX_DEVICE.submitCommand(cmd);
         }
         _previewDeferredShader->Uniform("texDiffuse0", 1);
         if (_renderQuads[2]->onDraw(GFX_DEVICE.getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
-            GFX_DEVICE.submitRenderCommand(cmd);
+            GFX_DEVICE.submitCommand(cmd);
         }
         _previewDeferredShader->Uniform("texDiffuse0", 2);
         if (_renderQuads[3]->onDraw(GFX_DEVICE.getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
-            GFX_DEVICE.submitRenderCommand(cmd);
+            GFX_DEVICE.submitCommand(cmd);
         }
     }
 
@@ -211,7 +211,7 @@ void DeferredShadingRenderer::secondPass(
     cmd.shaderProgram(_deferredShader);
     if (_renderQuads[_debugView ? 4 : 0]->onDraw(GFX_DEVICE.getRenderStage())) {
         cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
-        GFX_DEVICE.submitRenderCommand(cmd);
+        GFX_DEVICE.submitCommand(cmd);
     }
 
     GUI& gui = GUI::getInstance();

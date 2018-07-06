@@ -75,6 +75,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Create an immediate mode shader used for general purpose rendering (e.g.
     // to mimic the fixed function pipeline)
     _imShader = ShaderManager::getInstance().getDefaultShader();
+    _imShaderTextureFlag = _imShader->getUniformLocation("useTexture");
+    _imShaderWorldMatrix = _imShader->getUniformLocation("dvd_WorldMatrix");
+
     DIVIDE_ASSERT(_imShader != nullptr,
                   "GFXDevice error: No immediate mode emulation shader available!");
     PostFX::createInstance();

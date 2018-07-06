@@ -1,5 +1,7 @@
 #include "Headers/ParticleData.h"
 
+#include <future>
+
 namespace Divide {
 
 ParticleData::ParticleData(U32 particleCount, U32 optionsMask) {
@@ -95,11 +97,26 @@ void ParticleData::sort(bool invalidateCache) {
         Util::insertion_sort(std::begin(_indices), std::end(_indices), sortFunc);
     }
 
-    for (U32 i = 0; i < count; ++i) {
-        U32 idx = _indices[i].first;
-        _renderingPositions[i].set(_position[idx]);
-        Util::ToByteColor(_color[idx], _renderingColors[i]);
-    }
+    auto parsePositions = [&](U32 count) -> void {
+        for (U32 i = 0; i < count; ++i) {
+            _renderingPositions[i].set(_position[_indices[i].first]);
+        }
+    };
+
+    auto parseColors = [&](U32 count) -> void {
+        for (U32 i = 0; i < count; ++i) {
+            Util::ToByteColor(_color[_indices[i].first], _renderingColors[i]);
+        }
+    };
+    
+    std::future<void> positionUpdate =
+        std::async(std::launch::async | std::launch::deferred, parsePositions, count);
+
+    std::future<void> colorUpdate =
+        std::async(std::launch::async | std::launch::deferred, parseColors, count);
+
+    positionUpdate.get();
+    colorUpdate.get();
 
 }
 

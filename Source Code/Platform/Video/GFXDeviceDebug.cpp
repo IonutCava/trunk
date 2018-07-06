@@ -75,6 +75,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
     }
     // Debug axis form the axis arrow gizmo in the corner of the screen
     drawDebugAxis(sceneRenderState);
+    bool previousTextureFlag = false;
     // Loop over all available primitives
     for (IMPrimitive* prim : _imInterfaces) {
         // A primitive may be paused if drawing it isn't desired at the current
@@ -98,10 +99,13 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         if (texture) {
             prim->_texture->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
         }
-        // Inform the shader if we have (or don't have) a texture
-        _imShader->Uniform("useTexture", texture);
+        if (previousTextureFlag != texture) {
+            previousTextureFlag = texture;
+            // Inform the shader if we have (or don't have) a texture
+            _imShader->Uniform(_imShaderTextureFlag, texture);
+        }
         // Upload the primitive's world matrix to the shader
-        _imShader->Uniform("dvd_WorldMatrix", prim->worldMatrix());
+        _imShader->Uniform(_imShaderWorldMatrix, prim->worldMatrix());
         // Submit the render call. We do not support instancing yet!
         prim->render(prim->forceWireframe(), 1);
         registerDrawCall();

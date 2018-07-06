@@ -127,10 +127,18 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, const stringImpl& na
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
-    // Do all the post load operations on the SceneNode
-    // Pass a reference to the newly created SceneGraphNode in case we need
-    // transforms or bounding boxes
-    Attorney::SceneNodeSceneGraph::postLoad(node, *sceneGraphNode);
+    if (node.getState() == ResourceState::RES_LOADED) {
+        // Do all the post load operations on the SceneNode
+        // Pass a reference to the newly created SceneGraphNode in case we need
+        // transforms or bounding boxes
+        Attorney::SceneNodeSceneGraph::postLoad(node, *sceneGraphNode);
+    } else if (node.getState() == ResourceState::RES_LOADING) {
+        node.setStateCallback(ResourceState::RES_LOADED,
+            [&node, sceneGraphNode]() {
+                Attorney::SceneNodeSceneGraph::postLoad(node, *sceneGraphNode);
+            }
+        );
+    }
     // return the newly created node
     return sceneGraphNode;
 }
@@ -273,8 +281,15 @@ void SceneGraphNode::setActive(const bool state) {
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
-    assert(_node->getState() == ResourceState::RES_LOADED ||
-           _node->getState() == ResourceState::RES_SPECIAL);
+    ResourceState nodeState = _node->getState();
+    assert(nodeState == ResourceState::RES_LOADED ||
+           nodeState == ResourceState::RES_LOADING ||
+           nodeState == ResourceState::RES_SPECIAL);
+
+    // Node is not fully loaded. Skip.
+    if (nodeState == ResourceState::RES_LOADING) {
+        return;
+    }
 
     // Compute from leaf to root to ensure proper calculations
     U32 childCount = getChildCount();

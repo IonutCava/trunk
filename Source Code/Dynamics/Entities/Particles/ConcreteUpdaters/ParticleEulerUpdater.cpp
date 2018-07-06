@@ -33,12 +33,10 @@ void ParticleEulerUpdater::update(const U64 deltaTime, std::shared_ptr<ParticleD
     const U32 half = endID / 2;
 
     std::future<void> firstHalf = 
-        std::async(std::launch::async | std::launch::deferred,
-                   parseRange, 0, half);
+        std::async(std::launch::async | std::launch::deferred, parseRange, 0, half);
 
     std::future<void> secondHalf =
-        std::async(std::launch::async | std::launch::deferred,
-            parseRange, half, endID);
+        std::async(std::launch::async | std::launch::deferred, parseRange, half, endID);
 
     firstHalf.get();
     secondHalf.get();

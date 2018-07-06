@@ -11,8 +11,21 @@
 
 namespace Divide {
 
+namespace {
+#if defined(_DEBUG)
+    const U32 g_MaxShadersComputedPerFrame = 2;
+#else
+    const U32 g_MaxShadersComputedPerFrame = 3;
+#endif
+};
+
+bool Material::_shadersComputedThisFrame = false;
+U32 Material::_totalShaderComputeCountThisFrame = 0;
+U32 Material::_totalShaderComputeCount = 0;
+
 Material::Material()
     : Resource("temp_material"),
+      FrameListener(),
       _parallaxFactor(1.0f),
       _dirty(false),
       _doubleSided(false),
@@ -25,6 +38,8 @@ Material::Material()
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE)
 {
+    REGISTER_FRAME_LISTENER(this, 9999);
+
     _textures.resize(to_uint(ShaderProgram::TextureUsage::COUNT), nullptr);
 
     _operation = TextureOperation::REPLACE;
@@ -57,6 +72,22 @@ Material::Material()
 
 Material::~Material()
 {
+    UNREGISTER_FRAME_LISTENER(this);
+}
+
+bool Material::frameStarted(const FrameEvent& evt) {
+    _shadersComputedThisFrame = false;
+    _totalShaderComputeCountThisFrame = 0;
+
+    return true;
+}
+
+bool Material::frameEnded(const FrameEvent& evt) {
+    if (_shadersComputedThisFrame) {
+        _totalShaderComputeCount += _totalShaderComputeCountThisFrame;
+    }
+
+    return true;
 }
 
 Material* Material::clone(const stringImpl& nameSuffix) {
@@ -453,10 +484,14 @@ bool Material::computeShader(RenderStage renderStage,
 }
 
 void Material::computeShaderInternal() {
-    if (_shaderComputeQueue.empty()) {
+    if (_shaderComputeQueue.empty() || _shadersComputedThisFrame) {
         return;
     }
-    // Material::lockShaderQueue();
+    
+    if (g_MaxShadersComputedPerFrame == ++_totalShaderComputeCountThisFrame) {
+        _shadersComputedThisFrame = true;
+    }
+
     const ShaderQueueElement& currentItem = _shaderComputeQueue.front();
     _dirty = true;
 

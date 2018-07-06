@@ -60,6 +60,8 @@ GFXDevice::GFXDevice()
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     _lastCommandCount = 0;
     _lastNodeCount = 0;
+    _imShaderTextureFlag = -1;
+    _imShaderWorldMatrix = -1;
     // Floats
     _interpolationFactor = 1.0;
     // Cameras

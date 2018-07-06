@@ -127,7 +127,6 @@ DEFINE_SINGLETON(GFXDevice)
                 const vec2<U32>& range);
    };
 
-   typedef vectorImpl<SceneGraphNode_wptr> VisibleNodeList;
    typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
 
    struct RenderPackage {
@@ -273,10 +272,6 @@ DEFINE_SINGLETON(GFXDevice)
     /// Query rasterization state
     inline bool rasterizationState();
 
-    inline void submitRenderCommand(const GenericDrawCommand& cmd);
-    inline void submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
-    inline void submitIndirectRenderCommand(const GenericDrawCommand& cmd);
-    inline void submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
     /**
      *@brief Returns an immediate mode emulation buffer that can be used to
      *construct geometry in a vertex by vertex manner.
@@ -401,8 +396,7 @@ DEFINE_SINGLETON(GFXDevice)
 
     /// returns the standard state block
     inline U32 getDefaultStateBlock(bool noDepth) const {
-        return noDepth ? _defaultStateNoDepthHash
-                       : _defaultStateBlockHash;
+        return (noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash);
     }
 
     inline RenderTarget& getRenderTarget(RenderTargetID target) {
@@ -427,6 +421,11 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline RenderStage setRenderStage(RenderStage stage);
 
+    void submitCommand(const GenericDrawCommand& cmd,
+                       bool useIndirectRender = false);
+
+    inline void submitCommands(const vectorImpl<GenericDrawCommand>& cmds,
+                               bool useIndirectRender = false);
   public:  // Direct API calls
     /// Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool initShaders() { return _api->initShaders(); }
@@ -529,7 +528,7 @@ DEFINE_SINGLETON(GFXDevice)
     friend class SceneManager;
     friend class RenderPass;
     void occlusionCull(U32 pass);
-    void buildDrawCommands(VisibleNodeList& visibleNodes,
+    void buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
                            bool refreshNodeData,
                            U32 pass);
@@ -543,10 +542,6 @@ DEFINE_SINGLETON(GFXDevice)
 
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
-    void processCommand(const GenericDrawCommand& cmd,
-                        bool useIndirectRender);
-    void processCommands(const vectorImpl<GenericDrawCommand>& cmds,
-                         bool useIndirectRender);
     /// returns false if there was an invalid state detected that could prevent
     /// rendering
     bool setBufferData(const GenericDrawCommand& cmd);
@@ -560,7 +555,7 @@ DEFINE_SINGLETON(GFXDevice)
     U32 setStateBlock(U32 stateBlockHash);
     ErrorCode createAPIInstance();
 
-    NodeData& processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex);
+    NodeData& processVisibleNode(SceneGraphNode& node, U32 dataIndex);
 
     ShaderBuffer& getCommandBuffer(RenderStage stage, U32 pass) const;
 
@@ -626,6 +621,8 @@ DEFINE_SINGLETON(GFXDevice)
 
     /// Immediate mode emulation shader
     ShaderProgram *_imShader, *_imShaderLines;
+    I32 _imShaderTextureFlag;
+    I32 _imShaderWorldMatrix;
     /// The interface that coverts IM calls to VB data
     vectorImpl<IMPrimitive*>  _imInterfaces;
     /// Current viewport stack

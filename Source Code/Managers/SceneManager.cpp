@@ -189,8 +189,8 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
         return false;
     };
 
-    auto meshCullingFunction = [](SceneGraphNode_wptr node) -> bool {
-        SceneGraphNode_ptr sgnNode = node.lock();
+    auto meshCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
+        SceneGraphNode_ptr sgnNode = node.second.lock();
         if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::MESH);
@@ -198,10 +198,9 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
         return false;
     };
 
-    auto shadowCullingFunction = [](SceneGraphNode_wptr node) -> bool {
-        SceneGraphNode_ptr sgnNode = node.lock();
-        return sgnNode->getNode()->getType() == SceneNodeType::TYPE_LIGHT ||
-               sgnNode->getNode()->getType() == SceneNodeType::TYPE_TRIGGER;
+    auto shadowCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
+        SceneNodeType type = node.second.lock()->getNode()->getType();
+        return type == SceneNodeType::TYPE_LIGHT || type == SceneNodeType::TYPE_TRIGGER;
     };
 
     // If we are rendering a high node count, we might want to use async frustum culling
@@ -242,18 +241,23 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
     if (refreshNodeData) {
         queue.refresh();
         const vec3<F32>& eyePos = _activeScene->renderState().getCameraConst().getEye();
-        for (SceneGraphNode_wptr node : visibleNodes) {
-            queue.addNodeToQueue(*node.lock(), eyePos);
+        for (RenderPassCuller::VisibleNode& node : visibleNodes) {
+            queue.addNodeToQueue(*node.second.lock(), eyePos);
         }
     }
     
     queue.sort(stage);
+    for (RenderPassCuller::VisibleNode& node : visibleNodes) {
+        node.first = node.second.lock()->getComponent<RenderingComponent>()->drawOrder();
+    }
+
     std::sort(std::begin(visibleNodes), std::end(visibleNodes),
-        [](SceneGraphNode_wptr nodeA, SceneGraphNode_wptr nodeB) {
-            RenderingComponent* renderableA = nodeA.lock()->getComponent<RenderingComponent>();
-            RenderingComponent* renderableB = nodeB.lock()->getComponent<RenderingComponent>();
-            return renderableA->drawOrder() < renderableB->drawOrder();
-    });
+        [](const RenderPassCuller::VisibleNode& nodeA,
+           const RenderPassCuller::VisibleNode& nodeB)
+        {
+            return nodeA.first < nodeB.first;
+        }
+    );
 
     GFX_DEVICE.buildDrawCommands(visibleNodes, _activeScene->renderState(), refreshNodeData, pass);
 }

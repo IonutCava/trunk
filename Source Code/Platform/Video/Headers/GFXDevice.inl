@@ -274,25 +274,6 @@ GFXDevice::getMatrix(const MATRIX& mode) {
     return _mat4Cache;
 }
 
-inline void 
-GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
-    processCommand(cmd, false);
-}
-
-inline void 
-GFXDevice::submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
-    processCommands(cmds, false);
-}
-
-inline void 
-GFXDevice::submitIndirectRenderCommand(const GenericDrawCommand& cmd) {
-    processCommand(cmd, true);
-}
-
-inline void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
-    processCommands(cmds, true);
-}
-
 inline ShaderBuffer& GFXDevice::getCommandBuffer(RenderStage stage, U32 pass) const {
     U32 bufferIdx = getNodeBufferIndexForStage(stage);
     assert(pass < MAX_PASSES_PER_STAGE && _indirectCommandBuffers[bufferIdx][pass]);
@@ -317,6 +298,15 @@ inline ShaderBuffer& GFXDevice::getNodeBuffer(RenderStage stage, U32 pass) const
     U32 bufferIdx = getNodeBufferIndexForStage(stage);
     assert(pass < MAX_PASSES_PER_STAGE && _nodeBuffers[bufferIdx][pass]);
     return *_nodeBuffers[bufferIdx][pass].get();
+}
+
+/// Submit multiple draw commands that use the same source buffer (e.g. terrain or batched meshes)
+inline void
+GFXDevice::submitCommands(const vectorImpl<GenericDrawCommand>& cmds, bool useIndirectRender) {
+    for (const GenericDrawCommand& cmd : cmds) {
+        // Data validation is handled in the single command version
+        submitCommand(cmd, useIndirectRender);
+    }
 }
 
 };  // namespace Divide

@@ -42,8 +42,8 @@ bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
 
     VisibleNodeList::const_iterator it;
     it = std::find_if(std::cbegin(cache), std::cend(cache),
-        [GUID](SceneGraphNode_wptr node) {
-            SceneGraphNode_ptr nodePtr = node.lock();
+        [GUID](VisibleNode node) {
+            SceneGraphNode_ptr nodePtr = node.second.lock();
             return (nodePtr != nullptr && nodePtr->getGUID() == GUID);
         });
 
@@ -66,17 +66,21 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         // rendering or rendering of their bounding boxes
         SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
-        _cullingTasks.resize(0);
         _perThreadNodeList.resize(childCount);
+
+        std::launch launchPolicy = async ? std::launch::async | std::launch::deferred :
+                                           std::launch::deferred;
+
+        _cullingTasks.resize(0);
         for (U32 i = 0; i < childCount; ++i) {
             SceneGraphNode& child = root.getChild(i, childCount);
             VisibleNodeList& container = _perThreadNodeList[i];
             container.resize(0);
-            _cullingTasks.push_back(std::async(async ? std::launch::async | std::launch::deferred
-                                                     : std::launch::deferred,
-            [&]() {
-                frustumCullNode(child, stage, renderState, container);
-            }));
+            _cullingTasks.push_back(std::async(launchPolicy,
+                [&]() {
+                    frustumCullNode(child, stage, renderState, container);
+                })
+            );
         }
 
         for (std::future<void>& task : _cullingTasks) {
@@ -84,7 +88,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         }
 
         for (VisibleNodeList& nodeList : _perThreadNodeList) {
-            for (SceneGraphNode_wptr ptr : nodeList) {
+            for (VisibleNode& ptr : nodeList) {
                 nodeCache.push_back(ptr);
             }
         }
@@ -108,7 +112,7 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
                 !currentNode.cullNode(sceneRenderState, collisionResult, currentStage);
 
     if (isVisible) {
-        nodes.push_back(currentNode.shared_from_this());
+        nodes.push_back(std::make_pair(0, currentNode.shared_from_this()));
         U32 childCount = currentNode.getChildCount();
         if (childCount > 0) {
             if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
@@ -135,7 +139,7 @@ void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, RenderStage c
                            !currentNode.getComponent<RenderingComponent>()->castsShadows());
 
         if (isVisible && child->isActive() && !_cullingFunction(*child)) {
-            nodes.push_back(child);
+            nodes.push_back(std::make_pair(0, child));
             addAllChildren(*child, currentStage, nodes);
         }
     }

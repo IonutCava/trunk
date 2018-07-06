@@ -70,9 +70,14 @@ class FrameListener {
         _listenerName = name;
     }
     /// Or the frame listenr manager will assing it an ID
-    FrameListener() : _callOrder(0) {}
+    FrameListener() : _callOrder(0) {
+    }
+
     virtual ~FrameListener() {}
-    inline const stringImpl& getName() const { return _listenerName; }
+
+    inline const stringImpl& getListenerName() const {
+        return _listenerName;
+    }
 
     bool operator<(FrameListener& that) {
         return this->_callOrder < that._callOrder;

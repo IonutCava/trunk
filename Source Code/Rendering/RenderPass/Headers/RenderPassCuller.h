@@ -46,7 +46,9 @@ class SceneGraphNode;
 typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 class RenderPassCuller {
    public:
-    typedef vectorImpl<SceneGraphNode_wptr> VisibleNodeList;
+    // draw order, node pointer
+    typedef std::pair<U32, SceneGraphNode_wptr> VisibleNode;
+    typedef vectorImpl<VisibleNode> VisibleNodeList;
 
     //Should return true if the node is not inside the frustum
     typedef std::function<bool(const SceneGraphNode&)> CullingFunction;

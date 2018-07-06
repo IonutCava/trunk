@@ -34,6 +34,7 @@
 
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
+#include <mutex>
 
 namespace Divide {
 
@@ -58,7 +59,8 @@ enum class ResourceState : U32 {
     RES_LOADING = 2,  //<The resource is loading or unloading, creating or
                       //deleting data, parsing scripts, etc
     RES_LOADED  = 3,  //<The resource is loaded and available
-    RES_SPECIAL = 4   //<The resource was not loaded via the resource manager (e.g. SceneRoot or SceneTransform)
+    RES_SPECIAL = 4,  //<The resource was not loaded via the resource manager (e.g. SceneRoot or SceneTransform)
+    COUNT
 };
 
 class NOINITVTABLE Resource : public TrackedObject {
@@ -83,7 +85,9 @@ class NOINITVTABLE Resource : public TrackedObject {
         return true;
     }
 
-    virtual bool unload() { return true; }
+    virtual bool unload() { 
+        return true;
+    }
 
     /// Name management
     const stringImpl& getName() const { return _name; }
@@ -99,15 +103,27 @@ class NOINITVTABLE Resource : public TrackedObject {
 
     inline ResourceState getState() const { return _resourceState; }
 
+    inline void setStateCallback(ResourceState targetState, DELEGATE_CBK<void> cbk) {
+        std::lock_guard<std::mutex> lock(_callbackLock);
+        _loadingCallbacks[to_uint(targetState)] = cbk;
+    }
+
    protected:
-    inline void setState(const ResourceState& currentState) {
+    inline void setState(ResourceState currentState) {
         _resourceState = currentState;
+        std::lock_guard<std::mutex> lock(_callbackLock);
+        DELEGATE_CBK<void>& cbk = _loadingCallbacks[to_uint(currentState)];
+        if (cbk) {
+            cbk();
+        }
     }
 
    protected:
     stringImpl _name;
     stringImpl _resourceLocation;  ///< Physical file location
     std::atomic<ResourceState> _resourceState;
+    std::mutex _callbackLock;
+    std::array<DELEGATE_CBK<void>, to_const_uint(ResourceState::COUNT)> _loadingCallbacks;
 };
 
 enum class GeometryType : U32 {

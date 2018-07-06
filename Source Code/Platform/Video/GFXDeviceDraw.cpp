@@ -87,13 +87,11 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     return cmd.shaderProgram()->bind();
 }
 
-void GFXDevice::processCommand(const GenericDrawCommand& cmd, bool useIndirectRender) {
-    /// Submit a single draw command
-    DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr,
-                  "GFXDevice error: Invalid vertex buffer submitted!");
-    // We may choose the instance count programmatically, and it may turn out to
-    // be 0, so skip draw
+void GFXDevice::submitCommand(const GenericDrawCommand& cmd, bool useIndirectRender) {
+    // We may choose the instance count programmatically, and it may turn out to be 0, so skip draw
     if (setBufferData(cmd)) {
+        /// Submit a single draw command
+        DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
         // Same rules about pre-processing the draw command apply
         cmd.sourceBuffer()->draw(cmd, useIndirectRender);
         if (cmd.renderGeometry()) {
@@ -102,15 +100,6 @@ void GFXDevice::processCommand(const GenericDrawCommand& cmd, bool useIndirectRe
         if (cmd.renderWireframe()) {
             registerDrawCall();
         }
-    }
-}
-
-/// Submit multiple draw commands that use the same source buffer (e.g. terrain
-/// or batched meshes)
-void GFXDevice::processCommands(const vectorImpl<GenericDrawCommand>& cmds, bool useIndirectRender) {
-    for (const GenericDrawCommand& cmd : cmds) {
-        // Data validation is handled in the single command version
-        processCommand(cmd, useIndirectRender);
     }
 }
 
@@ -142,7 +131,7 @@ void GFXDevice::flushRenderQueue() {
             }
 
             _api->makeTexturesResident(package._textureData);
-            submitIndirectRenderCommands(package._drawCommands);
+            submitCommands(package._drawCommands, true);
         }
     }
 
@@ -173,15 +162,12 @@ void GFXDevice::addToRenderQueue(U32 binPropertyMask, const RenderPackage& packa
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex) {
+GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode& node, U32 dataIndex) {
     NodeData& dataOut = _matricesData[dataIndex];
 
-    SceneGraphNode_ptr nodePtr = node.lock();
-    assert(nodePtr);
-
-    RenderingComponent* const renderable = nodePtr->getComponent<RenderingComponent>();
-    AnimationComponent* const animComp = nodePtr->getComponent<AnimationComponent>();
-    PhysicsComponent* const transform = nodePtr->getComponent<PhysicsComponent>();
+    RenderingComponent* const renderable = node.getComponent<RenderingComponent>();
+    AnimationComponent* const animComp = node.getComponent<AnimationComponent>();
+    PhysicsComponent* const transform = node.getComponent<PhysicsComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -205,7 +191,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     dataOut._normalMatrixWV.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
-    dataOut._normalMatrixWV.setRow(3, nodePtr->getBoundingSphereConst().asVec4());
+    dataOut._normalMatrixWV.setRow(3, node.getBoundingSphereConst().asVec4());
     // Get the color matrix (diffuse, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._colorMatrix);
     // Get the material property matrix (alpha test, texture count,
@@ -215,7 +201,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     return dataOut;
 }
 
-void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
+void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
                                   SceneRenderState& sceneRenderState,
                                   bool refreshNodeData,
                                   U32 pass) {
@@ -248,8 +234,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     U32 nodeCount = 0;
     U32 cmdCount = 0;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
-        [&](GFXDevice::VisibleNodeList::value_type& node) -> void {
-        SceneGraphNode_ptr nodeRef = node.lock();
+        [&](RenderPassCuller::VisibleNode& node) -> void {
+        SceneGraphNode_ptr nodeRef = node.second.lock();
 
         RenderingComponent* renderable = nodeRef->getComponent<RenderingComponent>();
         RenderPackage& pkg = 
@@ -264,7 +250,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
         if (pkg.isRenderable()) {
             if (refreshNodeData) {
-                NodeData& dataOut = processVisibleNode(node, nodeCount);
+                NodeData& dataOut = processVisibleNode(*nodeRef, nodeCount);
                 if (isDepthStage()) {
                     for (TextureData& data : pkg._textureData) {
                         if (data.getHandleLow() == to_uint(ShaderProgram::TextureUsage::UNIT0)) {
@@ -524,6 +510,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (!lines.empty()) {
+        vec4<F32> tempFloatColor;
         primitive.paused(false);
         // If we need to render it into a specific viewport, set the pre and post
         // draw functions to set up the
@@ -539,7 +526,8 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         }
         // Create the object containing all of the lines
         primitive.beginBatch(true, to_uint(lines.size()) * 2 * 14);
-        primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(lines[0]._colorStart));
+        Util::ToFloatColor(lines[0]._colorStart, tempFloatColor);
+        primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), tempFloatColor);
         // Set the mode to line rendering
         //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
         primitive.begin(PrimitiveType::LINES);
@@ -547,7 +535,8 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         //vec3<F32> tempVertex;
         // Add every line in the list to the batch
         for (const Line& line : lines) {
-            primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(line._colorStart));
+            Util::ToFloatColor(lines[0]._colorStart, tempFloatColor);
+            primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), tempFloatColor);
             /*for (U16 idx : indices) {
                 tempVertex.set(line._startPoint * vertices[idx]);
                 tempVertex *= line._widthStart;
@@ -556,7 +545,8 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
             }*/
             primitive.vertex(line._startPoint);
 
-            primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(line._colorEnd));
+            Util::ToFloatColor(lines[0]._colorEnd, tempFloatColor);
+            primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), tempFloatColor);
             /*for (U16 idx : indices) {
                 tempVertex.set(line._endPoint * vertices[idx]);
                 tempVertex *= line._widthEnd;

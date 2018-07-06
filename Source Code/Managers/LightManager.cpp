@@ -284,19 +284,32 @@ Light* LightManager::getLight(I64 lightGUID, LightType type) {
 }
 
 void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+    // Sort all lights (Sort in parallel by type)   
+    _lightSortingTasks.resize(0);
+    for (Light::LightList& lights : _lights) {
+        _lightSortingTasks.push_back(std::async(std::launch::async | std::launch::deferred,
+            [&lights, &eyePos]()
+            {
+                std::sort(std::begin(lights), std::end(lights),
+                          [&eyePos](Light* a, Light* b) -> bool
+                {
+                    return a->getPosition().distanceSquared(eyePos) <
+                           b->getPosition().distanceSquared(eyePos);
+                });
+            })
+        );
+    }
+
+    for (std::future<void>& task : _lightSortingTasks) {
+        task.get();
+    }
+
+    // Create and upload light data for current pass
     _activeLightCount.fill(0);
     _shadowCastingLights.fill(nullptr);
-    
     U32 totalLightCount = 0;
     U32 lightShadowPropertiesCount = 0;
     for(Light::LightList& lights : _lights) {
-
-        std::sort(std::begin(lights), std::end(lights),
-                 [&eyePos](Light* a, Light* b) -> bool {
-                    return a->getPosition().distanceSquared(eyePos) <
-                           b->getPosition().distanceSquared(eyePos);
-                 });
-
         for (Light* light : lights) {
             LightType type = light->getLightType();
             if (!light->getEnabled() || !_lightTypeState[to_uint(type)]) {

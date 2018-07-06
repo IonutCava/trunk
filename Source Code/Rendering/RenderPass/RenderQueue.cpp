@@ -137,8 +137,6 @@ void RenderQueue::postRender(SceneRenderState& renderState,
 }
 
 void RenderQueue::sort(RenderStage renderStage) {
-    
-
     U32 index = 0;
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin != nullptr) {
@@ -161,6 +159,7 @@ void RenderQueue::sort(RenderStage renderStage) {
     for (std::future<void>& task : _sortingTasks) {
         task.get();
     }
+
 }
 
 void RenderQueue::refresh() {
