@@ -261,12 +261,6 @@ void ShaderProgram::onShutdown() {
     s_shaderFileWatcher.reset();
 }
 
-void ShaderProgram::preCommandSubmission() {
-}
-
-void ShaderProgram::postCommandSubmission() {
-}
-
 bool ShaderProgram::updateAll(const U64 deltaTime) {
     ReadLock r_lock(_programLock);
     // Pass the update call to all registered programs

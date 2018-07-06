@@ -378,8 +378,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
     pipeDesc._stateHash = _grassStateBlockHash;
     pipelines.front()->fromDescriptor(pipeDesc);
 
-    RenderingComponent* comp = sgn.get<RenderingComponent>();
-    PushConstants& constants = comp->pushConstants();
+    PushConstants& constants = *pkgInOut._commands.getPushConstants().front();
     constants.set("grassScale", PushConstantType::FLOAT, 1.0f);
     constants.set("positionOffsets", PushConstantType::VEC3, _grassBlades);
     constants.set("texCoordOffsets", PushConstantType::VEC2, _texCoord);

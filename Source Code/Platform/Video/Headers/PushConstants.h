@@ -58,9 +58,18 @@ enum class PushConstantType : U8 {
     DVEC2,
     DVEC3,
     DVEC4,
+    IMAT2,
+    IMAT3,
+    IMAT4,
+    UMAT2,
+    UMAT3,
+    UMAT4,
     MAT2,
     MAT3,
     MAT4,
+    DMAT2,
+    DMAT3,
+    DMAT4,
     //MAT_N_x_M,
     COUNT
 };

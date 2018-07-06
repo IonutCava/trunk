@@ -117,7 +117,7 @@ void cleanCommandBuffer(CommandBuffer& cmdBuffer) {
         subPasses.erase(std::remove_if(std::begin(subPasses),
                                        std::end(subPasses),
                                        [](const RenderSubPassCmd& subPassCmd) -> bool {
-                                           return subPassCmd._commands.getDrawCommands().empty();
+                                           return subPassCmd._commands.empty();
                                        }),
                         std::end(subPasses));
 

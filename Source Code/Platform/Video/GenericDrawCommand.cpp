@@ -126,6 +126,15 @@ void GenericCommandBuffer::rebuildCaches() {
             }
         }
     }
+
+    _pushConstantsCache.resize(0);
+    for (const std::shared_ptr<Command>& cmd : _data) {
+        if (cmd->_type == CommandType::SEND_PUSH_CONSTANTS) {
+            PushConstants& constants = std::dynamic_pointer_cast<SendPushConstantsCommand>(cmd)->_constants;
+            _pushConstantsCache.push_back(&constants);
+        }
+    }
+
     _drawCommandsCache.resize(0);
     for (const std::shared_ptr<Command>& cmd : _data) {
         if (cmd->_type == CommandType::DRAW_COMMANDS) {

@@ -220,10 +220,6 @@ public:
         GLintptr offset,
         GLsizei stride);
 
-    /// Called right before a glDraw* command
-    static void preCommandSubmission();
-    /// Called right after a glDraw* command returns
-    static void postCommandSubmission();
 private:
     /// Prepare our shader loading system
     bool initShaders();

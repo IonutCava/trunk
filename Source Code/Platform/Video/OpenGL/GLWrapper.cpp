@@ -1008,16 +1008,6 @@ bool GL_API::makeTextureResident(const TextureData& textureData) {
         textureData._samplerHash);
 }
 
-/// Called right before a glDraw* command
-void GL_API::preCommandSubmission() {
-    ShaderProgram::preCommandSubmission();
-}
-
-/// Called right after a glDraw* command returns
-void GL_API::postCommandSubmission() {
-    ShaderProgram::postCommandSubmission();
-}
-
 /// Verify if we have a sampler object created and available for the given
 /// descriptor
 size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {

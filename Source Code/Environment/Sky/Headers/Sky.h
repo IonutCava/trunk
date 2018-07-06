@@ -59,9 +59,6 @@ class Sky : public SceneNode {
                                 const RenderStagePass& renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
-    void sceneUpdate(const U64 deltaTime,
-                     SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
    protected:
     template <typename T>
     friend class ImplResourceLoader;

@@ -167,6 +167,8 @@ RenderingComponent::~RenderingComponent()
 void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     RenderPackage& pkg = renderData(stagePass);
 
+    pkg._commands.clear();
+
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = getMaterialStateHash(stagePass);
     pipelineDescriptor._shaderProgram = getDrawShader(stagePass);
@@ -492,6 +494,7 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
 
     for (GenericDrawCommand* cmd : commands) {
         cmd->commandOffset(cmdOffset++);
+        cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT, true);
         cmd->cmd().baseInstance = cmdIndex;
     }
 }

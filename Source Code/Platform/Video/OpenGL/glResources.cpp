@@ -323,7 +323,6 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          GLenum internalFormat,
                          GLuint indexBuffer) {
 
-    GL_API::preCommandSubmission();
     bool queryPrimitives = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);
     bool querySampleCount = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_SAMPLE_COUNT);
     bool querySamplePassed = drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_ANY_SAMPLE_RENDERED);
@@ -381,7 +380,6 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                             GL_QUERY_RESULT,
                             &result);
     }
-    GL_API::postCommandSubmission();
 }
 
 };

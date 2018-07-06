@@ -194,8 +194,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static void idle();
     static void onStartup(GFXDevice& context, ResourceCache& parentCache);
     static void onShutdown();
-    static void preCommandSubmission();
-    static void postCommandSubmission();
     static bool updateAll(const U64 deltaTime);
     /// Queue a shaderProgram recompile request
     static bool recompileShaderProgram(const stringImpl& name);

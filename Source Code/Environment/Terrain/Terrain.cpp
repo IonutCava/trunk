@@ -118,8 +118,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     const vec3<F32>& bbExtent = _boundingBox.getExtent();
     TerrainTextureLayer* textureLayer = _terrainTextures;
 
-    RenderingComponent* comp = sgn.get<RenderingComponent>();
-    PushConstants& pushConstants = comp->pushConstants();
+    PushConstants& pushConstants = *pkgInOut._commands.getPushConstants().front();
 
     pushConstants.set("bbox_min", PushConstantType::VEC3, bbMin);
     pushConstants.set("bbox_extent", PushConstantType::VEC3, bbExtent);

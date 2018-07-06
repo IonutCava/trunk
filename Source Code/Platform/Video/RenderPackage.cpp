@@ -129,9 +129,12 @@ void RenderPackageQueue::unlock() {
 
 void RenderPackageQueue::batch() {
     assert(!locked());
+    if (empty()) {
+        return;
+    }
 
     lock();
-    for (vectorAlg::vecSize i = 0; i < _packages.size() - 1; ++i) {
+    for (U32 i = 0; i < _currentCount - 1; ++i) {
         RenderPackage& prev = _packages[i];
         RenderPackage& next = _packages[i + 1];
 

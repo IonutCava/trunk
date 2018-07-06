@@ -133,6 +133,9 @@ GFXDevice::GFXDevice(Kernel& parent)
 
     _lastCommandCount.fill(0);
     _lastNodeCount.fill(0);
+
+    memset(_matricesData.data(), 0, sizeof(NodeData) * Config::MAX_VISIBLE_NODES);
+
     // Red X-axis
     _axisLines.push_back(
         Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 3.0f));
@@ -631,6 +634,8 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
     static GenericDrawCommand triangleCmd;
     static Pipeline pipeline;
     static PushConstants constants;
+
+    GFX::ScopedDebugMessage(*this, "Construct Hi-Z", depthBuffer._index);
 
     if (firstRun) {
         // We use a special shader that downsamples the buffer

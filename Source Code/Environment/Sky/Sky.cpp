@@ -103,13 +103,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Sky::sceneUpdate(const U64 deltaTime,
-                      SceneGraphNode& sgn,
-                      SceneState& sceneState) {
-
-    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
-}
-
 bool Sky::onRender(const RenderStagePass& renderStagePass) {
     return _sky->onRender(renderStagePass);
 }
@@ -117,6 +110,10 @@ bool Sky::onRender(const RenderStagePass& renderStagePass) {
 void Sky::buildDrawCommands(SceneGraphNode& sgn,
                             const RenderStagePass& renderStagePass,
                             RenderPackage& pkgInOut) {
+    if (renderStagePass.stage() == RenderStage::SHADOW) {
+        return;
+    }
+
     GenericDrawCommand cmd;
     cmd.sourceBuffer(_sky->getGeometryVB());
     cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();

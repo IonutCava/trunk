@@ -425,7 +425,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Push debug state
     if (Config::ENABLE_GPU_VALIDATION) {
         assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
-        _context.pushDebugMessage(("FBO Begin: " + getName()).c_str(), 4);
+        _context.pushDebugMessage(("FBO Begin: " + getName()).c_str(), _framebufferHandle);
         glFramebuffer::_bufferBound = true;
     }
 
