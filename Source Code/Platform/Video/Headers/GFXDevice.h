@@ -206,6 +206,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
        SCREEN = 0,
        ANAGLYPH = 1,
        DEPTH = 2,
+       ENVIRONMENT = 3,
        COUNT
    };
 
@@ -629,7 +630,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     ShaderProgram *_imShader, *_imShaderLines;
     /// The interface that coverts IM calls to VB data
     vectorImpl<IMPrimitive*>  _imInterfaces;
-
     /// Current viewport stack
     ViewportStack _viewport;
 

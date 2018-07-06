@@ -377,6 +377,12 @@ bool GL_API::initShaders() {
         lineOffsets);
 
     appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define TEXTURE_REFLECTION " +
+        std::to_string(to_uint(ShaderProgram::TextureUsage::REFLECTION)),
+        lineOffsets);
+
+    appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP " +
         std::to_string(

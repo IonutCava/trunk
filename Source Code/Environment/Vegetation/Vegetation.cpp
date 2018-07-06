@@ -378,8 +378,7 @@ void Vegetation::gpuCull() {
 
         _cullDrawCommand.cmd().primCount = _instanceCountGrass;
 
-        _cullDrawCommand.queryID(to_ubyte(queryID));
-        _cullDrawCommand.drawToBuffer(true);
+        _cullDrawCommand.drawToBuffer(to_ubyte(queryID));
         _cullDrawCommand.shaderProgram(_cullShader);
         _cullDrawCommand.sourceBuffer(buffer);
 

@@ -55,9 +55,11 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
         SPECULAR = 4,
         PROJECTION = 5,
         DEPTH = 6,
+        REFLECTION = 7,
+        COUNT,
+
         GLOSS = SPECULAR,
-        ROUGHNESS = GLOSS,
-        COUNT
+        ROUGHNESS = GLOSS
     };
 
     virtual ~ShaderProgram();

@@ -331,22 +331,7 @@ bool glVertexArray::createInternal() {
 }
 
 /// Render the current buffer data using the specified command
-void glVertexArray::draw(const GenericDrawCommand& command,
-                         bool useCmdBuffer) {
-    // Process the actual draw command
-    if (Config::Profile::DISABLE_DRAWS) {
-        return;
-    }
-
-    DIVIDE_ASSERT(command.primitiveType() != PrimitiveType::COUNT,
-                  "glVertexArray error: Draw command's type is not valid!");
-    // Get the OpenGL specific command from the generic one
-    const IndirectDrawCommand& cmd = command.cmd();
-    // Instance count can be generated programmatically,
-    // so we need to make sure it's valid
-    if (cmd.primCount == 0) {
-        return;
-    }
+void glVertexArray::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
     if (_IBid == 0) {

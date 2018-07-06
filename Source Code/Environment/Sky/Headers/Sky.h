@@ -58,6 +58,8 @@ class Sky : public SceneNode {
         return true;
     }
 
+    inline Texture* getCubemap() const { return _skybox; }
+
    protected:
     bool computeBoundingBox(SceneGraphNode& sgn) override;
     void postLoad(SceneGraphNode& sgn) override;

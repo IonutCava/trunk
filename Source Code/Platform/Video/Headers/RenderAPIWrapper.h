@@ -108,10 +108,8 @@ struct GenericDrawCommand {
    private:
     U8 _lodIndex;
     U16 _drawCount;
-    U32 _queryID;
     U32 _renderOptions;
-    bool _locked;
-    bool _drawToBuffer;
+    U32 _drawToBuffer;
     U32 _stateHash;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
@@ -119,71 +117,54 @@ struct GenericDrawCommand {
     VertexDataInterface* _sourceBuffer;
 
    public:
-    inline void lock() { _locked = true; }
 
     inline void drawCount(U16 count) { 
-        assert(!_locked);
         _drawCount = count; 
     }
 
     inline void LoD(U8 lod) {
-        assert(!_locked);
         _lodIndex = lod;
     }
 
-    inline void queryID(U32 queryID) {
-        assert(!_locked);
-        _queryID = queryID;
-    }
-
     inline void stateHash(U32 hashValue) {
-        assert(!_locked);
         _stateHash = hashValue;
     }
 
-    inline void drawToBuffer(bool state) {
-        assert(!_locked);
-        _drawToBuffer = state;
+    inline void drawToBuffer(U32 index) {
+        _drawToBuffer = index;
     }
 
     inline void renderWireframe(bool state) {
-        assert(!_locked);
         state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME))
               : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME));
     }
 
     inline void renderBounds(bool state) {
-        assert(!_locked);
         state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS))
               : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS));
     }
 
     inline void renderGeometry(bool state) {
-        assert(!_locked);
         state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY))
               : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY));
     }
 
     inline void shaderProgram(ShaderProgram* const program) {
-        assert(!_locked);
         _shaderProgram = program;
     }
 
     inline void sourceBuffer(VertexDataInterface* const sourceBuffer) {
-        assert(!_locked);
         _sourceBuffer = sourceBuffer;
     }
 
     inline void primitiveType(PrimitiveType type) {
-        assert(!_locked);
         _type = type;
     }
 
     inline U8 LoD() const { return _lodIndex; }
-    inline U32 queryID() const { return _queryID; }
     inline U16 drawCount() const { return _drawCount; }
     inline U32 stateHash() const { return _stateHash; }
-    inline bool drawToBuffer() const { return _drawToBuffer; }
+    inline U32 drawToBuffer() const { return _drawToBuffer; }
 
     inline bool renderWireframe() const {
         return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME));
@@ -200,7 +181,6 @@ struct GenericDrawCommand {
     }
 
     inline IndirectDrawCommand& cmd() {
-        assert(!_locked);
         return _cmd;
     }
 
@@ -215,11 +195,9 @@ struct GenericDrawCommand {
 
     GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 indexCount,
                        U32 primCount = 1)
-        : _queryID(0),
-          _lodIndex(0),
+        : _lodIndex(0),
           _drawCount(1),
-          _locked(false),
-          _drawToBuffer(false),
+          _drawToBuffer(0),
           _stateHash(0),
     	  _type(type),
           _shaderProgram(nullptr),
@@ -231,11 +209,8 @@ struct GenericDrawCommand {
         _cmd.primCount = primCount;
     }
 
-    inline void set(const GenericDrawCommand& base)
-    {
-        assert(!_locked);
+    inline void set(const GenericDrawCommand& base) {
         _cmd.set(base._cmd);
-        _queryID = base._queryID;
         _lodIndex = base._lodIndex;
         _drawCount = base._drawCount;
         _drawToBuffer = base._drawToBuffer;
@@ -247,7 +222,7 @@ struct GenericDrawCommand {
     }
 
     inline bool compatible(const GenericDrawCommand& other) const {
-        return _queryID == other._queryID && _lodIndex == other._lodIndex &&
+        return _lodIndex == other._lodIndex &&
                _drawToBuffer == other._drawToBuffer &&
                _renderOptions == other._renderOptions &&
                _stateHash == other._stateHash && _type == other._type &&

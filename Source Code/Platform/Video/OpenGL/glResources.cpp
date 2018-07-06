@@ -318,6 +318,13 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLenum internalFormat,
                          GLuint indexBuffer) {
+    // Process the actual draw command
+    if (Config::Profile::DISABLE_DRAWS) {
+        return;
+    }
+
+    DIVIDE_ASSERT(drawCommand.primitiveType() != PrimitiveType::COUNT,
+                  "GLUtil::submitRenderCommand error: Draw command's type is not valid!");
 
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
     if (drawCommand.renderGeometry()) {

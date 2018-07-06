@@ -107,6 +107,12 @@ void RenderingComponent::update(const U64 deltaTime) {
     Material* mat = getMaterialInstance();
     if (mat) {
         mat->update(deltaTime);
+        if (mat->isReflective()) {
+            if (mat->getTexture(ShaderProgram::TextureUsage::REFLECTION) == nullptr) {
+                mat->setTexture(ShaderProgram::TextureUsage::REFLECTION,
+                                GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::ENVIRONMENT)->getAttachment());
+            }
+        }
     }
 
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();

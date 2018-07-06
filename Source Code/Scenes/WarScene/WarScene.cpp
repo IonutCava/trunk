@@ -259,6 +259,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         cylinder[i]->getChild(0, temp).getNode()->getMaterialTpl()->setDoubleSided(true);
     }
 
+    // Make the center cylinder reflective
+    Material* matInstance = cylinder[0]->getChild(0, temp).getComponent<RenderingComponent>()->getMaterialInstance();
+    matInstance->setReflective(true);
+    matInstance->setTexture(ShaderProgram::TextureUsage::REFLECTION, _currentSky.lock()->getNode<Sky>()->getCubemap());
+
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();
     SceneNode* cylinderMeshNE = cylinder[2]->getNode();
     SceneNode* cylinderMeshSW = cylinder[3]->getNode();

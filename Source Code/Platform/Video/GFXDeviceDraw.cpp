@@ -150,9 +150,6 @@ void GFXDevice::flushRenderQueue() {
                                }),
                 std::end(drawCommands));
 
-            std::for_each(std::begin(drawCommands), std::end(drawCommands),
-                          [](GenericDrawCommand& cmd) -> void { cmd.lock(); });
-
             for (ShaderBufferList::value_type& it : package._shaderBuffers) {
                 it._buffer->bindRange(it._slot, it._range.x, it._range.y);
             }

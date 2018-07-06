@@ -8,6 +8,10 @@
 #include "shadowMapping.frag"
 #include "phong_lighting.frag"
 
+#if defined(USE_REFLECTIVE_CUBEMAP)
+layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
+#endif
+
 void getBRDFFactors(const in LightPropertiesFrag lightProp, inout MaterialProperties materialProp) {
 #if defined(USE_SHADING_PHONG)
     Phong(lightProp, materialProp);
@@ -20,6 +24,10 @@ void getBRDFFactors(const in LightPropertiesFrag lightProp, inout MaterialProper
 }
 
 vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor) {
+    
+    if (dvd_lodLevel > 2 && (texCoord.x + texCoord.y == 0)) {
+        discard;
+    }
     
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_DIFFUSE_MAP)
@@ -66,7 +74,14 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
     vec3 color = (materialProp.ambient + dvd_lightAmbient * dvd_MatAmbient) + 
                  (materialProp.diffuse * textureColor.rgb) + 
                   materialProp.specular;
-    
+
+#if defined(USE_REFLECTIVE_CUBEMAP)
+    vec3 reflectDirection = normalize(reflect(_vertexWV.xyz, normal));
+    color = mix(texture(texEnvironmentCube, vec4(reflectDirection, 0.0)).rgb,
+                color,
+                1.0 - saturate(dvd_MatShininess / 255.0));
+#endif
+
     color *= mix(mix(1.0, 2.0, dvd_isHighlighted), 3.0, dvd_isSelected);
     // Apply shadowing
     color *= mix(1.0, shadow_loop(), dvd_shadowMapping);

@@ -121,6 +121,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTarget::SCREEN)] = newFB(true);
     // The depth buffer should probably be merged into the screen buffer
     _renderTarget[to_uint(RenderTarget::DEPTH)] = newFB(false);
+    // This is an environment cube map centered around the camera
+    _renderTarget[to_uint(RenderTarget::ENVIRONMENT)] = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -150,6 +152,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->setClearColor(DefaultColors::DIVIDE_BLUE());
+
     // If we enabled anaglyph rendering, we need a second target, identical to
     // the screen target
     // used to render the scene at an offset
@@ -168,6 +171,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth)->lockAutomaticMipMapGeneration(true);
+
+    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
+        GFXImageFormat::RGBA16F,
+        GFXDataFormat::FLOAT_16);
+    environmentDescriptor.setSampler(screenSampler);
+    _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->create(256, 256);
+    _renderTarget[to_uint(RenderTarget::ENVIRONMENT)]->setClearColor(DefaultColors::DIVIDE_BLUE());
+
     // We also add a couple of useful cameras used by this class. One for
     // rendering in 2D and one for generating cube maps
     Application::getInstance().getKernel().getCameraMgr().addNewCamera(
@@ -216,6 +228,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _axisGizmo->name("GFXDeviceAxisGizmo");
     RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
     _axisGizmo->stateHash(primitiveDescriptor.getHash());
+
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }

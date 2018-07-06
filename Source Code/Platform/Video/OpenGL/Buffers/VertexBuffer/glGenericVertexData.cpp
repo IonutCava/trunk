@@ -98,8 +98,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Create two vertex array objects. One for rendering and one for transform
     // feedback
     glGenVertexArrays(to_uint(GVDUsage::COUNT), &_vertexArray[0]);
-    // Transform feedback may not be used, but it simplifies the class interface
-    // a lot
+    // Transform feedback may not be used, but it simplifies the class interface a lot
     // Create a transform feedback object
     glGenTransformFeedbacks(1, &_transformFeedback);
     // Create our buffer objects
@@ -194,15 +193,10 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::draw(const GenericDrawCommand& command,
                                bool useCmdBuffer) {
-    // Get the OpenGL specific command from the generic one
-    const IndirectDrawCommand& cmd = command.cmd();
-    // Instance count can be generated programmatically, so make sure it's valid
-    if (cmd.primCount == 0) {
-        return;
-    }
 
+    U32 drawBufferID = command.drawToBuffer();
     // Check if we are rendering to the screen or to a buffer
-    bool feedbackActive = (command.drawToBuffer() && !_feedbackBuffers.empty());
+    bool feedbackActive = (drawBufferID > 0 && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we
     // requested
     GL_API::setActiveVAO(_vertexArray[to_uint(feedbackActive ? GVDUsage::FDBCK : GVDUsage::DRAW)]);
@@ -214,20 +208,18 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
         GL_API::setActiveTransformFeedback(_transformFeedback);
         glBeginTransformFeedback(GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())]);
         // Count the number of primitives written to the buffer
-        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][command.queryID()]);
+        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][drawBufferID]);
     }
 
     // Submit the draw command
-    if (!Config::Profile::DISABLE_DRAWS) {
-        GLUtil::submitRenderCommand(command, useCmdBuffer, GL_UNSIGNED_INT, _indexBuffer);
-    }
+    GLUtil::submitRenderCommand(command, useCmdBuffer, GL_UNSIGNED_INT, _indexBuffer);
 
     // Deactivate transform feedback if needed
     if (feedbackActive) {
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
         glEndTransformFeedback();
         // Mark the current query as completed and ready to be retrieved
-        _resultAvailable[_currentWriteQuery][command.queryID()] = true;
+        _resultAvailable[_currentWriteQuery][command.drawToBuffer()] = true;
     }
 
     if (_persistentMapped) {
@@ -428,11 +420,9 @@ void glGenericVertexData::setAttributeInternal(
         glEnableVertexAttribArray(descriptor.attribIndex());
         descriptor.wasSet(true);
     }
-    // Persistently mapped buffers are already bound when this function is
-    // called
+    // Persistently mapped buffers are already bound when this function is called
     //if (!_persistentMapped) {
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER,
-                                _bufferObjects[descriptor.bufferIndex()]._id);
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[descriptor.bufferIndex()]._id);
     //}
     // Update the attribute data
 

@@ -19,6 +19,7 @@ Material::Material()
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
       _useAlphaTest(false),
+      _isReflective(false),
       _dumpToFile(true),
       _translucencyCheck(true),
       _shadingMode(ShadingMode::COUNT),
@@ -65,6 +66,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_translucencyCheck = base._translucencyCheck;
     cloneMat->_dumpToFile = base._dumpToFile;
     cloneMat->_useAlphaTest = base._useAlphaTest;
+    cloneMat->_isReflective = base._isReflective;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
     cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
@@ -393,6 +395,12 @@ bool Material::computeShader(RenderStage renderStage,
         shader += ".DoubleSided";
         setShaderDefines(renderStage, "USE_DOUBLE_SIDED");
     }
+
+    if (_isReflective) {
+        shader += ".Reflective";
+        setShaderDefines(renderStage, "USE_REFLECTIVE_CUBEMAP");
+    }
+
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
         setShaderDefines(renderStage, "USE_GPU_SKINNING");
@@ -476,6 +484,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
+        getTextureData(ShaderProgram::TextureUsage::REFLECTION, textureData);
 
         for (std::pair<Texture*, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
@@ -508,6 +517,16 @@ Material::ShaderInfo& Material::getShaderInfo(RenderStage renderStage) {
 
 void Material::setBumpMethod(const BumpMethod& newBumpMethod) {
     _bumpMethod = newBumpMethod;
+    recomputeShaders();
+}
+
+void Material::setShadingMode(const ShadingMode& mode) { 
+    _shadingMode = mode;
+    recomputeShaders();
+}
+
+void Material::setReflective(const bool state) {
+    _isReflective = state;
     recomputeShaders();
 }
 

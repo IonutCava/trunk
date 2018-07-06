@@ -231,8 +231,11 @@ class Material : public Resource {
         _shaderData._shininess = value;
     }
 
+    void setReflective(const bool state);
+    void setShadingMode(const ShadingMode& mode);
+
     inline void useAlphaTest(const bool state) { _useAlphaTest = state; }
-    inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
+    
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
@@ -348,12 +351,11 @@ class Material : public Resource {
     }
     ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::DISPLAY);
 
-    inline const TextureOperation& getTextureOperation() const {
-        return _operation;
-    }
-    inline const ShaderData& getShaderData() const { return _shaderData; }
+    inline const TextureOperation& getTextureOperation() const { return _operation; }
+
+    inline const ShaderData&  getShaderData()  const { return _shaderData; }
     inline const ShadingMode& getShadingMode() const { return _shadingMode; }
-    inline const BumpMethod& getBumpMethod() const { return _bumpMethod; }
+    inline const BumpMethod&  getBumpMethod()  const { return _bumpMethod; }
 
     void getTextureData(TextureDataContainer& textureData);
 
@@ -364,7 +366,7 @@ class Material : public Resource {
     inline bool isDirty() const { return _dirty; }
     inline bool isDoubleSided() const { return _doubleSided; }
     inline bool useAlphaTest() const { return _useAlphaTest; }
-
+    inline bool isReflective() const { return _isReflective; }
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
     bool computeShader(RenderStage renderStage, const bool computeOnAdd);
@@ -396,6 +398,7 @@ class Material : public Resource {
     bool _texturesChanged;
     /// use discard if true / blend if otherwise
     bool _useAlphaTest;
+    bool _isReflective;
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
