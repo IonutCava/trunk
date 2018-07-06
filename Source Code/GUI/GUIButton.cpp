@@ -1,5 +1,9 @@
 #include "Headers/GUIButton.h"
 
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Audio/Headers/SFXDevice.h"
+
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
@@ -7,14 +11,14 @@
 
 namespace Divide {
 
-GUIButton::GUIButton(ULL ID,
+GUIButton::GUIButton(ULL guiID,
                      const stringImpl& text,
                      const stringImpl& guiScheme,
                      const vec2<F32>& relativeOffset,
                      const vec2<F32>& relativeDimensions,
                      CEGUI::Window* parent,
                      ButtonCallback callback)
-    : GUIElement(ID, parent, GUIType::GUI_BUTTON),
+    : GUIElement(guiID, parent, GUIType::GUI_BUTTON),
       _callbackFunction(callback),
       _btnWindow(nullptr)
 {
@@ -29,6 +33,13 @@ GUIButton::GUIButton(ULL ID,
                                CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
     _parent->addChild(_btnWindow);
     _btnWindow->setEnabled(true);
+
+    stringImpl assetPath = ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation"));
+
+    ResourceDescriptor beepSound("buttonClick");
+    beepSound.setResourceLocation(assetPath + "/sounds/beep.wav");
+    beepSound.setFlag(false);
+    _onClickSound = CreateResource<AudioDescriptor>(beepSound);
     setActive(true);
 }
 
@@ -76,8 +87,16 @@ void GUIButton::setFont(const stringImpl& fontName,
 bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/) {
     if (_callbackFunction) {
         _callbackFunction(getGUID());
+        if (_onClickSound) {
+            SFXDevice::instance().playSound(_onClickSound);
+        }
         return true;
     }
     return false;
 }
+
+void GUIButton::setOnClickSound(const AudioDescriptor_ptr& onClickSound) {
+    _onClickSound = onClickSound;
+}
+
 };

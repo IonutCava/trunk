@@ -54,8 +54,8 @@ DEFINE_SINGLETON_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
     inline void setAudioState(AudioState& state) { _state = state; }
     inline AudioState& getActiveAudioState() { return _state; }
 
-    void playSound(std::shared_ptr<AudioDescriptor> sound);
-    void playMusic(std::shared_ptr<AudioDescriptor> music);
+    void playSound(const AudioDescriptor_ptr& sound);
+    void playMusic(const AudioDescriptor_ptr& music);
     void pauseMusic();
     void stopMusic();
     void stopAllSounds();

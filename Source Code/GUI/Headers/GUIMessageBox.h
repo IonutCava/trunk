@@ -66,7 +66,7 @@ class GUIMessageBox : public GUIElement {
     }
 
    protected:
-    GUIMessageBox(ULL ID, 
+    GUIMessageBox(ULL guiID,
                   const stringImpl& title,
                   const stringImpl& message,
                   const vec2<I32>& offsetFromCentre = vec2<I32>(0),

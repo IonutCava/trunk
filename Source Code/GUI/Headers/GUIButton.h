@@ -43,6 +43,9 @@ class EventArgs;
 
 namespace Divide {
 
+class AudioDescriptor;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
+
 class GUIButton : public GUIElement {
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
     friend class GUIInterface;
@@ -54,9 +57,10 @@ class GUIButton : public GUIElement {
     void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
     void setActive(const bool active) override;
     void setVisible(const bool visible) override;
+    void setOnClickSound(const AudioDescriptor_ptr& onClickSound);
 
    protected:
-    GUIButton(ULL ID,
+    GUIButton(ULL guiID,
               const stringImpl& text,
               const stringImpl& guiScheme, 
               const vec2<F32>& relativeOffset,
@@ -72,6 +76,7 @@ class GUIButton : public GUIElement {
     /// A pointer to a function to call if the button is pressed
     ButtonCallback _callbackFunction;
     CEGUI::Window* _btnWindow;
+    AudioDescriptor_ptr _onClickSound;
 };
 
 };  // namespace Divide

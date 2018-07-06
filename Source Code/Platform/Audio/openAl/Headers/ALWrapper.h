@@ -41,8 +41,8 @@ DEFINE_SINGLETON_W_SPECIFIER(OpenAL_API, AudioAPIWrapper, final)
     ErrorCode initAudioAPI();
     void closeAudioAPI();
 
-    void playSound(std::shared_ptr<AudioDescriptor> sound);
-    void playMusic(std::shared_ptr<AudioDescriptor> music);
+    void playSound(const AudioDescriptor_ptr& sound);
+    void playMusic(const AudioDescriptor_ptr& music);
 
     void pauseMusic();
     void stopMusic();

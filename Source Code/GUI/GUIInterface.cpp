@@ -89,13 +89,13 @@ void GUIInterface::onMouseDown(const GUIEvent& event) {
 }
 
 
-GUIButton* GUIInterface::addButton(ULL ID,
+GUIButton* GUIInterface::addButton(ULL guiID,
                                    const stringImpl& text,
                                    const vec2<I32>& position,
                                    const vec2<U32>& dimensions,
                                    ButtonCallback callback,
                                    const stringImpl& rootSheetID) {
-    assert(getGUIElement(ID) == nullptr);
+    assert(getGUIElement(guiID) == nullptr);
 
     const vec2<U16>& resolution = getDisplayResolution();
 
@@ -114,34 +114,34 @@ GUIButton* GUIInterface::addButton(ULL ID,
         parent = GUI::instance().rootSheet();
     }
 
-    GUIButton* btn = MemoryManager_NEW GUIButton(ID, text, GUI::instance().guiScheme(), relOffset, relDim, parent, callback);
+    GUIButton* btn = MemoryManager_NEW GUIButton(guiID, text, GUI::instance().guiScheme(), relOffset, relDim, parent, callback);
 
-    addElement(ID, btn);
+    addElement(guiID, btn);
 
     return btn;
 }
 
-GUIMessageBox* GUIInterface::addMsgBox(ULL ID,
+GUIMessageBox* GUIInterface::addMsgBox(ULL guiID,
                                        const stringImpl& title,
                                        const stringImpl& message,
                                        const vec2<I32>& offsetFromCentre) {
-    assert(getGUIElement(ID) == nullptr);
+    assert(getGUIElement(guiID) == nullptr);
 
-    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(ID, title, message, offsetFromCentre, GUI::instance().rootSheet());
-    addElement(ID, box);
+    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(guiID, title, message, offsetFromCentre, GUI::instance().rootSheet());
+    addElement(guiID, box);
 
     return box;
 }
 
-GUIText* GUIInterface::addText(ULL ID,
+GUIText* GUIInterface::addText(ULL guiID,
                                const vec2<I32>& position,
                                const stringImpl& font,
                                const vec4<U8>& colour,
                                const stringImpl& text,
                                U32 fontSize) {
-    assert(getGUIElement(ID) == nullptr);
+    assert(getGUIElement(guiID) == nullptr);
 
-    GUIText* t = MemoryManager_NEW GUIText(ID,
+    GUIText* t = MemoryManager_NEW GUIText(guiID,
                                            text,
                                            vec2<F32>(position.width,
                                                      position.height),
@@ -150,25 +150,25 @@ GUIText* GUIInterface::addText(ULL ID,
                                            GUI::instance().rootSheet(),
                                            fontSize);
     t->initialHeightCache(to_float(getDisplayResolution().height));
-    addElement(ID, t);
+    addElement(guiID, t);
 
     return t;
 }
 
-GUIFlash* GUIInterface::addFlash(ULL ID,
+GUIFlash* GUIInterface::addFlash(ULL guiID,
                                  stringImpl movie,
                                  const vec2<U32>& position,
                                  const vec2<U32>& extent) {
-    assert(getGUIElement(ID) == nullptr);
+    assert(getGUIElement(guiID) == nullptr);
 
-    GUIFlash* flash = MemoryManager_NEW GUIFlash(ID, GUI::instance().rootSheet());
-    addElement(ID, flash);
+    GUIFlash* flash = MemoryManager_NEW GUIFlash(guiID, GUI::instance().rootSheet());
+    addElement(guiID, flash);
 
     return flash;
 }
 
-GUIText* GUIInterface::modifyText(ULL ID, const stringImpl& text) {
-    GUIMap::iterator it = _guiElements.find(ID);
+GUIText* GUIInterface::modifyText(ULL guiID, const stringImpl& text) {
+    GUIMap::iterator it = _guiElements.find(guiID);
 
     if (it == std::cend(_guiElements)) {
         return nullptr;

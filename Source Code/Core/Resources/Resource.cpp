@@ -42,6 +42,10 @@ const stringImpl& Resource::getResourceLocation() const {
     return _resourceLocation;
 }
 
+void Resource::setResourceLocation(const stringImpl& location) {
+    _resourceLocation = location;
+}
+
 ResourceState Resource::getState() const {
     return _resourceState;
 }

@@ -38,6 +38,8 @@
 namespace Divide {
 
 class AudioDescriptor;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
+
 class GUIConsoleCommandParser : public CommandParser {
    public:
     GUIConsoleCommandParser();
@@ -64,7 +66,7 @@ class GUIConsoleCommandParser : public CommandParser {
     /// Help text for every command
     hashMapImpl<ULL, const char*> _commandHelp;
     /// used for sound playback
-    std::shared_ptr<AudioDescriptor> _sound;
+    AudioDescriptor_ptr _sound;
 };
 
 };  // namespace Divide

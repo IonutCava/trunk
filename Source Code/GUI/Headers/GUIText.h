@@ -40,7 +40,7 @@ class GUIText : public GUIElement, public TextLabel {
     friend class GUIInterface;
 
    public:
-    GUIText(ULL ID, 
+    GUIText(ULL guiID,
             const stringImpl& text,
             const vec2<F32>& relativePosition,
             const stringImpl& font,

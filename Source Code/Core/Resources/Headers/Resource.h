@@ -91,6 +91,7 @@ class NOINITVTABLE Resource : public GUIDWrapper
 
    protected:
     void setState(ResourceState currentState);
+    void setResourceLocation(const stringImpl& location);
 
    protected:
     stringImpl _name;

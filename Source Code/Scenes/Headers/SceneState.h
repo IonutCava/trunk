@@ -51,6 +51,13 @@
 
 namespace Divide {
 
+enum class MusicType : U32 {
+    TYPE_BACKGROUND = 0,
+    TYPE_COMBAT,
+    COUNT
+};
+
+
 struct FogDescriptor {
   public:
     FogDescriptor();
@@ -249,7 +256,7 @@ class SceneState : public SceneComponent {
 
    public:
     /// Background music map : trackName - track
-    typedef hashMapImpl<ULL, std::shared_ptr<AudioDescriptor>> MusicPlaylist;
+    typedef hashMapImpl<ULL, AudioDescriptor_ptr> MusicPlaylist;
 
     SceneState(Scene& parentScene)
         : SceneComponent(parentScene),
@@ -265,7 +272,9 @@ class SceneState : public SceneComponent {
 
     virtual ~SceneState()
     {
-        _backgroundMusic.clear();
+        for (MusicPlaylist& playlist : _music) {
+            playlist.clear();
+        }
     }
 
     inline void resetMovement() {
@@ -275,11 +284,11 @@ class SceneState : public SceneComponent {
 
     inline FogDescriptor& fogDescriptor()   { return _fog; }
     inline SceneRenderState& renderState()  { return _renderState; }
-    inline MusicPlaylist& backgroundMusic() { return _backgroundMusic; }
+    inline MusicPlaylist& music(MusicType type) { return _music[to_uint(type)]; }
 
     inline const FogDescriptor& fogDescriptor() const { return _fog; }
     inline const SceneRenderState& renderState() const { return _renderState; }
-    inline const MusicPlaylist& backgroundMusic() const { return _backgroundMusic; }
+    inline const MusicPlaylist& music(MusicType type) const { return _music[to_uint(type)]; }
 
     inline void windSpeed(F32 speed) { _windSpeed = speed; }
     inline F32  windSpeed()    const { return _windSpeed; }
@@ -339,7 +348,8 @@ class SceneState : public SceneComponent {
     inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
 
 protected:
-    MusicPlaylist _backgroundMusic;
+
+    std::array<MusicPlaylist, to_const_uint(MusicType::COUNT)> _music;
 
     I32 _mouseXDelta;
     I32 _mouseYDelta;

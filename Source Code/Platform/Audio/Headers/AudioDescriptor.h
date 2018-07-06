@@ -42,6 +42,7 @@ class AudioDescriptor : public Resource {
     AudioDescriptor(const stringImpl& name, const stringImpl& audioFile)
         : Resource(name, audioFile),
           _isLooping(false),
+          _dirty(true),
           _is3D(false),
           _frequency(44.2f),
           _bitDepth(16),
@@ -50,16 +51,24 @@ class AudioDescriptor : public Resource {
    {
    }
 
-    ~AudioDescriptor()
+    virtual ~AudioDescriptor()
     {
 
     }
 
-    bool unload() { return true; }
-
-    inline const stringImpl& getAudioFile() { 
-        return Resource::getResourceLocation();
+    inline bool unload() { 
+        return true;
     }
+
+    inline const stringImpl& getAudioFile() const { 
+        return getResourceLocation();
+    }
+
+    inline void setAudioFile(const stringImpl& filePath) {
+        setResourceLocation(filePath);
+        _dirty = true;
+    }
+
 
     inline bool& isLooping() { return _isLooping; }
     inline bool& is3D() { return _is3D; }
@@ -72,10 +81,14 @@ class AudioDescriptor : public Resource {
 
     inline void setBitDepth(I8 bitDepth) { _bitDepth = bitDepth; }
     inline I8 getBitDepth() { return _bitDepth; }
+
     inline void setChannel(I8 ID) { _channelID = ID; }
     inline I8 getChannel() { return _channelID; }
 
+    inline bool dirty() const { return _dirty; }
+    inline void clean() { _dirty = false; }
    private:
+    bool _dirty;
     bool _isLooping, _is3D;
     F32 _frequency;
     I8 _bitDepth, _channelID, _volume;

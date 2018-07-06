@@ -10,8 +10,6 @@ ErrorCode SDL_API::initAudioAPI() {
     I32 flags = MIX_INIT_OGG | MIX_INIT_MP3;
     I32 ret = Mix_Init(flags);
     if ((ret & flags) == flags) {
-        _music = nullptr;
-        _chunk = nullptr;
         // Try HiFi sound
         if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS,
                           4096) == -1) {
@@ -31,51 +29,73 @@ ErrorCode SDL_API::initAudioAPI() {
 }
 
 void SDL_API::closeAudioAPI() {
-    if (_music != nullptr) {
-        Mix_HaltMusic();
-        Mix_FreeMusic(_music);
+    Mix_HaltMusic();
+    for (MusicMap::value_type it : _musicMap) {
+        Mix_FreeMusic(it.second);
     }
-
-    if (_chunk != nullptr) {
-        Mix_FreeChunk(_chunk);
+    for (SoundMap::value_type it : _soundMap) {
+        Mix_FreeChunk(it.second);
     }
     Mix_CloseAudio();
     Mix_Quit();
 }
 
-void SDL_API::playMusic(std::shared_ptr<AudioDescriptor> musicFile) {
-    if (!musicFile) {
-        return;
-    }
-    _music = Mix_LoadMUS(musicFile->getAudioFile().c_str());
-    Mix_VolumeMusic(musicFile->getVolume());
-    if (nullptr != _music) {
-        if (Mix_PlayMusic(_music, musicFile->isLooping() ? -1 : 0) == -1) {
-            Console::errorfn("%s", Mix_GetError());
+void SDL_API::playMusic(const AudioDescriptor_ptr& music) {
+    if (music) {
+        Mix_Music* musicPtr = nullptr;
+        MusicMap::iterator it = _musicMap.find(music->getGUID());
+        if (it == std::cend(_musicMap)) {
+            musicPtr = Mix_LoadMUS(music->getAudioFile().c_str());
+            hashAlg::emplace(_musicMap, music->getGUID(), musicPtr);
+        } else {
+            if (music->dirty()) {
+                musicPtr = Mix_LoadMUS(music->getAudioFile().c_str());
+                Mix_FreeMusic(it->second);
+                it->second = musicPtr;
+                music->clean();
+            } else {
+                musicPtr = it->second;
+            }
+        }
+        
+        if(musicPtr) {
+            Mix_VolumeMusic(music->getVolume());
+            if (Mix_PlayMusic(musicPtr, music->isLooping() ? -1 : 0) == -1) {
+                Console::errorfn("%s", Mix_GetError());
+            }
+        } else {
+            Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")), music->getName().c_str());
         }
     }
 }
 
-void SDL_API::playSound(std::shared_ptr<AudioDescriptor> sound) {
-    if (sound == nullptr) {
-        return;
-    }
-    if (_chunk != nullptr) {
-        Mix_FreeChunk(_chunk);
-    }
-    _chunk = Mix_LoadWAV(sound->getAudioFile().c_str());
-    assert(_chunk);
-    Mix_Volume(sound->getChannel(), sound->getVolume());
+void SDL_API::playSound(const AudioDescriptor_ptr& sound) {
+    if (sound) {
+        Mix_Chunk* soundPtr = nullptr;
+        SoundMap::iterator it = _soundMap.find(sound->getGUID());
+        if (it == std::cend(_soundMap)) {
+            soundPtr = Mix_LoadWAV(sound->getAudioFile().c_str());
+            hashAlg::emplace(_soundMap, sound->getGUID(), soundPtr);
+        } else {
+            if (sound->dirty()) {
+                soundPtr = Mix_LoadWAV(sound->getAudioFile().c_str());
+                Mix_FreeChunk(it->second);
+                it->second = soundPtr;
+                sound->clean();
+            } else {
+                soundPtr = it->second;
+            }
+        }
 
-    if (_chunk == nullptr) {
-        Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")),
-                         sound->getName().c_str());
-    }
-
-    if (Mix_PlayChannel(sound->getChannel(), _chunk,
-                        sound->isLooping() ? -1 : 0) == -1) {
-        Console::errorfn(Locale::get(_ID("ERROR_SDL_CANT_PLAY")),
-                         sound->getName().c_str(), Mix_GetError());
-    }
+        if (soundPtr) {
+            Mix_Volume(sound->getChannel(), sound->getVolume());
+            if (Mix_PlayChannel(sound->getChannel(), soundPtr, sound->isLooping() ? -1 : 0) == -1) {
+                Console::errorfn(Locale::get(_ID("ERROR_SDL_CANT_PLAY")), sound->getName().c_str(), Mix_GetError());
+            }
+        } else {
+            Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")), sound->getName().c_str());
+        }
+    }   
 }
+
 };

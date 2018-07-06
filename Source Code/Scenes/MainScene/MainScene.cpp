@@ -185,12 +185,11 @@ U16 MainScene::registerInputActions() {
         _musicPlaying = !_musicPlaying;
         if (_musicPlaying) {
             SceneState::MusicPlaylist::const_iterator it;
-            it = state().backgroundMusic().find(_ID("generalTheme"));
-            if (it != std::end(state().backgroundMusic())) {
+            it = state().music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
+            if (it != std::cend(state().music(MusicType::TYPE_BACKGROUND))) {
                 SFX_DEVICE.playMusic(it->second);
             }
-        }
-        else {
+        } else {
             SFX_DEVICE.stopMusic();
         }
     });
@@ -283,22 +282,14 @@ bool MainScene::loadResources(bool continueOnErrors) {
     boxMove.startTask();
     registerTask(boxMove);
 
-    ResourceDescriptor backgroundMusic("background music");
-    backgroundMusic.setResourceLocation(
-        _paramHandler.getParam<stringImpl>(_ID("assetsLocation")) +
-        "/music/background_music.ogg");
-    backgroundMusic.setFlag(true);
+  
 
     ResourceDescriptor beepSound("beep sound");
     beepSound.setResourceLocation(
         _paramHandler.getParam<stringImpl>(_ID("assetsLocation")) +
         "/sounds/beep.wav");
     beepSound.setFlag(false);
-    hashAlg::emplace(state().backgroundMusic(), _ID("generalTheme"),
-                     CreateResource<AudioDescriptor>(backgroundMusic));
     _beep = CreateResource<AudioDescriptor>(beepSound);
-
-
 
     return true;
 }

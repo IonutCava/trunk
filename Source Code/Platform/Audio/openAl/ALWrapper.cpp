@@ -28,9 +28,9 @@ ErrorCode OpenAL_API::initAudioAPI() {
 
 void OpenAL_API::closeAudioAPI() {}
 
-void OpenAL_API::playSound(std::shared_ptr<AudioDescriptor> sound) {}
+void OpenAL_API::playSound(const AudioDescriptor_ptr& sound) {}
 
-void OpenAL_API::playMusic(std::shared_ptr<AudioDescriptor> music) {}
+void OpenAL_API::playMusic(const AudioDescriptor_ptr& music) {}
 
 void OpenAL_API::pauseMusic() {}
 

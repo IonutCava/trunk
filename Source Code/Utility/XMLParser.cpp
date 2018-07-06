@@ -406,6 +406,7 @@ void loadScene(const stringImpl &sceneName, Scene* scene) {
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     if (!Util::FileExists(sceneDataFile.c_str())) {
+        loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene);
         return;
     }
 
@@ -473,6 +474,25 @@ void loadScene(const stringImpl &sceneName, Scene* scene) {
     scene->state().fogDescriptor().set(fogColour, fogDensity);
     loadTerrain((sceneLocation + "/" + pt.get("terrain", "terrain.xml")).c_str(), scene);
     loadGeometry((sceneLocation + "/" + pt.get("assets", "assets.xml")).c_str(), scene);
+    loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "musicPlaylist.xml")).c_str(), scene);
+}
+
+void loadMusicPlaylist(const stringImpl& file, Scene* const scene) {
+    if (!Util::FileExists(file.c_str())) {
+        return;
+    }
+    Console::printfn(Locale::get(_ID("XML_LOAD_MUSIC")), file.c_str());
+    ptree pt;
+    read_xml(file.c_str(), pt);
+
+    stringImpl assetLocation(ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
+    for (const ptree::value_type & f : pt.get_child("backgroundThemes", empty_ptree()))
+    {
+        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        scene->addMusic(MusicType::TYPE_BACKGROUND,
+                        attributes.get<std::string>("name", "").c_str(),
+                        assetLocation + attributes.get<std::string>("src", "").c_str());
+    }
 }
 
 void loadTerrain(const stringImpl &file, Scene *const scene) {

@@ -121,6 +121,15 @@ bool Scene::idle() {  // Called when application is idle
     return true;
 }
 
+void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile) {
+    ResourceDescriptor music(name);
+    music.setResourceLocation(srcFile);
+    music.setFlag(true);
+    hashAlg::emplace(state().music(type),
+                     _ID_RT(name),
+                     CreateResource<AudioDescriptor>(music));
+}
+
 void Scene::addPatch(vectorImpl<FileData>& data) {
 }
 
@@ -648,10 +657,17 @@ void Scene::postLoadMainThread() {
 void Scene::onSetActive() {
     PHYSICS_DEVICE.setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
+    const SceneState::MusicPlaylist& playlist = state().music(MusicType::TYPE_BACKGROUND);
+    if (!playlist.empty()) {
+        SFX_DEVICE.playMusic(playlist.begin()->second);
+        //ToDo: add a way to detect when the song is finished 
+        // and start the next song in the queue (with proper fade in/out) -Ionut
+    }
 }
 
 void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
+    SFX_DEVICE.stopMusic();
 }
 
 bool Scene::loadPhysics(bool continueOnErrors) {

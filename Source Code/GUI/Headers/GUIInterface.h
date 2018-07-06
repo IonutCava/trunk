@@ -70,29 +70,29 @@ public:
         return static_cast<T*>(getGUIElementImpl(elementID));
     }
 
-    virtual GUIText* addText(ULL ID,
+    virtual GUIText* addText(ULL guiID,
                              const vec2<I32>& position,
                              const stringImpl& font,
                              const vec4<U8>& colour,
                              const stringImpl& text,
                              U32 fontSize = 16);
 
-    virtual GUIText* modifyText(ULL ID,
+    virtual GUIText* modifyText(ULL guiID,
                                 const stringImpl& text);
 
-    virtual GUIMessageBox* addMsgBox(ULL ID,
+    virtual GUIMessageBox* addMsgBox(ULL guiID,
                                      const stringImpl& title,
                                      const stringImpl& message,
                                      const vec2<I32>& offsetFromCentre = vec2<I32>(0));
 
-    virtual GUIButton* addButton(ULL ID,
+    virtual GUIButton* addButton(ULL guiID,
                                  const stringImpl& text,
                                  const vec2<I32>& position,
                                  const vec2<U32>& dimensions,
                                  ButtonCallback callback,
                                  const stringImpl& rootSheetID = "");
 
-    virtual GUIFlash* addFlash(ULL ID,
+    virtual GUIFlash* addFlash(ULL guiID,
                                stringImpl movie,
                                const vec2<U32>& position,
                                const vec2<U32>& extent);

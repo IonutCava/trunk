@@ -6,9 +6,9 @@ namespace Divide {
 
 template <>
 Resource_ptr ImplResourceLoader<AudioDescriptor>::operator()() {
-    std::shared_ptr<AudioDescriptor> ptr(MemoryManager_NEW AudioDescriptor(_descriptor.getName(),
-                                                                           _descriptor.getResourceLocation()),
-                                          DeleteResource());
+    AudioDescriptor_ptr ptr(MemoryManager_NEW AudioDescriptor(_descriptor.getName(),
+                                                               _descriptor.getResourceLocation()),
+                            DeleteResource());
     if (!load(ptr)) {
         ptr.reset();
     } else {

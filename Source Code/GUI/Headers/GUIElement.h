@@ -68,7 +68,7 @@ class GUIElement : public GUIDWrapper {
     friend class GUI;
 
    public:
-    GUIElement(ULL ID, CEGUI::Window* const parent, const GUIType& type);
+    GUIElement(ULL guiID, CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
 
     virtual void draw() const = 0;
@@ -102,7 +102,7 @@ class GUIElement : public GUIDWrapper {
     stringImpl _name;
     bool _visible;
     bool _active;
-    ULL  _ID;
+    ULL  _guiID;
 };
 
 };  // namespace Divide

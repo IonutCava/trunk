@@ -128,6 +128,7 @@ class Scene : public Resource {
     inline void addTerrain(TerrainDescriptor* ter) {
         _terrainInfoArray.push_back(ter);
     }
+    void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
     void addPatch(vectorImpl<FileData>& data);
 
     // DIRECTIONAL lights have shadow mapping enabled automatically

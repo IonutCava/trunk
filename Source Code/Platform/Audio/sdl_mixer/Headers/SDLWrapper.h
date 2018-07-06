@@ -43,8 +43,8 @@ DEFINE_SINGLETON_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
     ErrorCode initAudioAPI();
     void closeAudioAPI();
 
-    void playSound(std::shared_ptr<AudioDescriptor> sound);
-    void playMusic(std::shared_ptr<AudioDescriptor> music);
+    void playSound(const AudioDescriptor_ptr& sound);
+    void playMusic(const AudioDescriptor_ptr& music);
 
     void stopMusic() { Mix_HaltMusic(); }
     void stopAllSounds() {}
@@ -54,9 +54,11 @@ DEFINE_SINGLETON_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
     void setSoundVolume(I8 value) {}
 
   private:
-    Mix_Music* _music;
-    Mix_Chunk* _chunk;
+    typedef hashMapImpl<I64, Mix_Music*> MusicMap;
+    typedef hashMapImpl<I64, Mix_Chunk*> SoundMap;
 
+    MusicMap _musicMap;
+    SoundMap _soundMap;
 END_SINGLETON
 
 };  // namespace Divide
