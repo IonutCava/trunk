@@ -23,6 +23,7 @@ glTexture::glTexture(GFXDevice& context,
                      bool isFlipped,
                      bool asyncLoad)
     : Texture(context, descriptorHash, name, resourceName, resourceLocation, type, isFlipped, asyncLoad),
+      glObject(glObjectType::TYPE_TEXTURE),
      _lockManager(MemoryManager_NEW glLockManager())
 {
     _allocatedStorage = false;

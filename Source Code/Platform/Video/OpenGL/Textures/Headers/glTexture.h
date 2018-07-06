@@ -37,7 +37,8 @@
 
 namespace Divide {
 class glLockManager;
-class glTexture final : public Texture {
+class glTexture final : public Texture,
+                        public glObject {
    public:
     explicit glTexture(GFXDevice& context,
                        size_t descriptorHash,

@@ -15,6 +15,12 @@
 
 namespace Divide {
 
+glObject::glObject(glObjectType type)
+    : _type(type)
+{
+    GL_API::createOrValidateContextForCurrentThread();
+}
+
 VAOBindings::VAOBindings()
     : _maxBindings(0)
 {

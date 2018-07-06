@@ -32,11 +32,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GL_HARDWARE_QUERY_H_
 #define _GL_HARDWARE_QUERY_H_
 
+#include "glResources.h"
+
 #include "Core/Headers/RingBuffer.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 
 namespace Divide {
-class glHardwareQuery {
+class glHardwareQuery : public glObject {
 public:
     glHardwareQuery();
     ~glHardwareQuery();

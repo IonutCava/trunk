@@ -35,6 +35,7 @@ bool glFramebuffer::_zWriteEnabled = true;
 IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
 glFramebuffer::glFramebuffer(GFXDevice& context, const stringImpl& name)
     : RenderTarget(context, name),
+      glObject(glObjectType::TYPE_FRAMEBUFFER),
       _resolveBuffer(nullptr),
       _resolved(false),
       _isLayeredDepth(false),

@@ -53,7 +53,7 @@ struct BufferImplParams {
 };
 
 class glBufferLockManager;
-class glBufferImpl {
+class glBufferImpl : public glObject {
 public:
     glBufferImpl(const BufferImplParams& params);
     virtual ~glBufferImpl();

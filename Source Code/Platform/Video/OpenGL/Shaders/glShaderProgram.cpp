@@ -40,6 +40,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
                                  const stringImpl& resourceLocation,
                                  bool asyncLoad)
     : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, asyncLoad),
+      glObject(glObjectType::TYPE_SHADER_PROGRAM),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),

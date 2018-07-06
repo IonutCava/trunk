@@ -8,6 +8,8 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
 #include "Utility/Headers/Localization.h"
+
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
@@ -392,9 +394,9 @@ void GL_API::closeRenderingAPI() {
 }
 
 void GL_API::createOrValidateContextForCurrentThread() {
-	if (glbinding::getCurrentContext() != 0) {
-		return;
-	}
+    if (Runtime::isMainThread() || glbinding::getCurrentContext() != 0) {
+        return;
+    }
 
     // Double check so that we don't run into a race condition!
     UpgradableReadLock r_lock(GLUtil::_glSecondaryContextMutex);
@@ -405,7 +407,7 @@ void GL_API::createOrValidateContextForCurrentThread() {
         bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
         assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
         ACKNOWLEDGE_UNUSED(ctxFound);
-		const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
+        const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
         SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glSecondaryContext);
         glbinding::Binding::initialize(false);
         // Enable OpenGL debug callbacks for this context as well

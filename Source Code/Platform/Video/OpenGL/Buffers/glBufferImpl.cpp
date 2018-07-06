@@ -32,7 +32,8 @@ namespace {
 };
 
 glBufferImpl::glBufferImpl(const BufferImplParams& params)
-    : _target(params._target),
+    : glObject(glObjectType::TYPE_BUFFER),
+      _target(params._target),
       _handle(0),
       _alignedSize(params._dataSizeInBytes),
       _updateFrequency(params._frequency),

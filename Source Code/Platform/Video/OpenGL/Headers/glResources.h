@@ -93,6 +93,26 @@ private:
     U32 _maxBindings;
 };
 
+enum class glObjectType : U8 {
+    TYPE_BUFFER = 0,
+    TYPE_TEXTURE,
+    TYPE_SHADER,
+    TYPE_SHADER_PROGRAM,
+    TYPE_FRAMEBUFFER,
+    TYPE_QUERY,
+    COUNT
+};
+
+class glObject {
+public:
+    explicit glObject(glObjectType type);
+
+    inline glObjectType type() const { return _type;  }
+
+private:
+   const glObjectType _type;
+};
+
 namespace GLUtil {
 
 /// Wrapper for glGetIntegerv

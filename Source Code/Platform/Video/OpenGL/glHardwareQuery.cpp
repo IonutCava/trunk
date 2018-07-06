@@ -5,8 +5,10 @@
 
 namespace Divide {
 
-glHardwareQuery::glHardwareQuery() : _enabled(false),
-    _queryID(0)
+glHardwareQuery::glHardwareQuery() 
+    : glObject(glObjectType::TYPE_QUERY),
+      _enabled(false),
+      _queryID(0)
 {
 }
 
