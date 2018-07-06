@@ -53,6 +53,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _argv(argv),
       _resCache(nullptr),
       _viewportDirty(false),
+      _renderPassManager(nullptr),
       _splashScreenUpdating(false),
       _platformContext(std::make_unique<PlatformContext>(parentApp, *this)),
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
@@ -69,8 +70,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _postRenderTimer(Time::ADD_TIMER("Post-render Timer"))
 {
     _platformContext->init();
-
-    _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
 
     _sceneManager = std::make_unique<SceneManager>(*this); // Scene Manager
 
@@ -677,6 +676,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
+    _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
     _renderPassManager->addRenderPass("shadowPass",     0, RenderStage::SHADOW);
     _renderPassManager->addRenderPass("reflectionPass", 1, RenderStage::REFLECTION);
     _renderPassManager->addRenderPass("refractionPass", 2, RenderStage::REFRACTION);

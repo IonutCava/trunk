@@ -392,7 +392,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         {
             bool renderSkeletonFlagInitialized = false;
             bool renderParentSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, renderSkeletonFlagInitialized);
-            if (!renderParentSkeleton || !renderSkeletonFlagInitialized) {
+            //if (!renderParentSkeleton || !renderSkeletonFlagInitialized) {
                 // Get the animation component of any submesh. They should be synced anyway.
                 AnimationComponent* childAnimComp = _parentSGN.get<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
@@ -404,7 +404,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
 
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
-            }
+            //}
         }
     }
 }

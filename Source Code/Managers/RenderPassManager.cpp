@@ -38,21 +38,32 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     TaskHandle renderTarsk = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
 
     for (vec_size_eastl i = 0; i < _renderPasses.size(); ++i) {
-        RenderPass& rp = _renderPasses[i];
+        std::shared_ptr<RenderPass>& rp = _renderPasses[i];
         GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
         CreateTask(pool,
             &renderTarsk,
             [&rp, &buf, &sceneRenderState](const Task& parentTask) {
-                rp.render(sceneRenderState, buf);
+                rp->render(sceneRenderState, buf);
             }).startTask(TaskPriority::REALTIME);
     }
 
     renderTarsk.startTask(TaskPriority::REALTIME).wait();
 
+    
     //ToDo: Maybe handle this differently?
+#if 1 //Direct render and clear
     for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
         _context.flushAndClearCommandBuffer(*_renderPassCommandBuffer[i]);
     }
+#else // Maybe better batching and validation?
+    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
+    for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
+        GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
+        sBuffer().add(buf);
+        buf.clear();
+    }
+    _context.flushCommandBuffer(sBuffer());
+#endif
 }
 
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
@@ -60,24 +71,24 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              RenderStage renderStage) {
     assert(!renderPassName.empty());
 
-    _renderPasses.emplace_back(*this, _context, renderPassName, orderKey, renderStage);
-    _renderPassCommandBuffer.emplace_back(GFX::allocateCommandBuffer());
+    _renderPasses.push_back(std::make_shared<RenderPass>(*this, _context, renderPassName, orderKey, renderStage));
+    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
 
-    RenderPass& item = _renderPasses.back();
+    std::shared_ptr<RenderPass>& item = _renderPasses.back();
 
     eastl::sort(eastl::begin(_renderPasses),
                 eastl::end(_renderPasses),
-                [](RenderPass* a, RenderPass* b) -> bool {
+                [](const std::shared_ptr<RenderPass>& a, const std::shared_ptr<RenderPass>& b) -> bool {
                       return a->sortKey() < b->sortKey();
                 });
 
-    return item;
+    return *item;
 }
 
 void RenderPassManager::removeRenderPass(const stringImpl& name) {
-    for (vectorEASTL<RenderPass>::iterator it = eastl::begin(_renderPasses);
+    for (vectorEASTL<std::shared_ptr<RenderPass>>::iterator it = eastl::begin(_renderPasses);
          it != eastl::end(_renderPasses); ++it) {
-        if ((*it).name().compare(name) == 0) {
+        if ((*it)->name().compare(name) == 0) {
             _renderPasses.erase(it);
             // Remove one command buffer
             GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
@@ -93,25 +104,25 @@ U16 RenderPassManager::getLastTotalBinSize(RenderStage renderStage) const {
 }
 
 RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) {
-    for (RenderPass& pass : _renderPasses) {
-        if (pass.stageFlag() == renderStage) {
-            return pass;
+    for (std::shared_ptr<RenderPass>& pass : _renderPasses) {
+        if (pass->stageFlag() == renderStage) {
+            return *pass;
         }
     }
 
     DIVIDE_UNEXPECTED_CALL();
-    return _renderPasses.front();
+    return *_renderPasses.front();
 }
 
 const RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) const {
-    for (const RenderPass& pass : _renderPasses) {
-        if (pass.stageFlag() == renderStage) {
-            return pass;
+    for (const std::shared_ptr<RenderPass>& pass : _renderPasses) {
+        if (pass->stageFlag() == renderStage) {
+            return *pass;
         }
     }
 
     DIVIDE_UNEXPECTED_CALL();
-    return _renderPasses.front();
+    return *_renderPasses.front();
 }
 
 const RenderPass::BufferData& 

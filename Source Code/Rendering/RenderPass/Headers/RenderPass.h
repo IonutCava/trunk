@@ -86,7 +86,6 @@ class RenderPass : private NonCopyable {
 
     inline RenderStage stageFlag() const { return _stageFlag; }
 
-
     BufferData& getBufferData(I32 bufferIndex);
     const BufferData& getBufferData(I32 bufferIndex) const;
 
@@ -94,8 +93,9 @@ class RenderPass : private NonCopyable {
     U32 getBufferCountForStage(RenderStage stages) const;
 
    private:
+    GFXDevice & _context;
     RenderPassManager& _parent;
-    GFXDevice& _context;
+
     U8 _sortKey;
     stringImpl _name;
     U16 _lastTotalBinSize;
