@@ -173,9 +173,7 @@ void Task::run() {
     }
 
     // task finished. Everything else is bookkeeping
-    if (_tp != nullptr) {
-        _tp->taskCompleted(poolIndex(), _priority);
-    }
+    _tp->taskCompleted(poolIndex(), _priority);
 }
 
 void Task::beginSyncGPU() {

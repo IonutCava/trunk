@@ -158,12 +158,14 @@ class LightPool : public SceneComponent {
   private:
       void init();
       void waitForTasks();
+      void uploadLightBuffers();
 
   private:
     GFXDevice& _context;
 
     vectorImpl<TaskHandle> _lightUpdateTask;
 
+    bool _buffersUpdated;
     std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
     bool _init;

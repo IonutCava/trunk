@@ -34,6 +34,7 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
       _context(context),
       _previewShadowMapsCBK(DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr)),
       _init(false),
+      _buffersUpdated(false),
       _lightImpostorShader(nullptr),
       _lightIconsTexture(nullptr),
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
@@ -330,7 +331,28 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
             ++totalLightCount;
             ++_activeLightCount[typeIndex];
         }
+        _buffersUpdated = false;
+        if (g_usePersistentMapping) {
+            uploadLightBuffers();
+        }
+    };
 
+    // Sort all lights (Sort in parallel by type)
+    _lightUpdateTask.emplace_back(CreateTask(Application::instance().kernel().taskPool(), lightUpdate));
+    _lightUpdateTask.back().startTask(Task::TaskPriority::LOW, to_uint(Task::TaskFlags::SYNC_WITH_GPU));
+}
+
+void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,
+                                ShaderBufferLocation shadowDataLocation) {
+    waitForTasks();
+    uploadLightBuffers();
+
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(lightDataLocation);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(shadowDataLocation);
+}
+
+void LightPool::uploadLightBuffers() {
+    if (!_buffersUpdated) {
         // Passing 0 elements is fine (early out in the buffer code)
         vectorAlg::vecSize lightPropertyCount = _sortedLightProperties.size();
         vectorAlg::vecSize lightShadowCount = _sortedShadowProperties.size();
@@ -349,20 +371,8 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
         } else {
             _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->setData(nullptr);
         }
-    };
-
-    if (!_sortedLights.empty()) {
-        // Sort all lights (Sort in parallel by type)
-        _lightUpdateTask.emplace_back(CreateTask(Application::instance().kernel().taskPool(), lightUpdate));
-        _lightUpdateTask.back().startTask(Task::TaskPriority::LOW, g_usePersistentMapping ? 0 : to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+        _buffersUpdated = true;
     }
-}
-
-void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,
-                                ShaderBufferLocation shadowDataLocation) {
-    waitForTasks();
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(lightDataLocation);
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(shadowDataLocation);
 }
 
 void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {

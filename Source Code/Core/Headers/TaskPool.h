@@ -64,6 +64,7 @@ class TaskPool {
     }
 
     void nameThreadpoolWorkers(const char* name, ThreadPool& pool);
+    void runCbkAndClearTask(U32 taskIndex);
 
   private:
     ThreadPool _mainTaskPool;
@@ -128,8 +129,8 @@ TaskHandle parallel_for(TaskPool& pool,
                         U32 taskFlags = 0,
                         bool waitForResult = true);
 
-void WaitForAllTasks(bool yeld, bool flushCallbacks);
-void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks);
+void WaitForAllTasks(bool yeld, bool flushCallbacks, bool foceClear);
+void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks, bool foceClear);
 };
 
 #endif _TASK_POOL_H_

@@ -131,9 +131,9 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // We need to transform the gizmo so that it always remains axis aligned
             // Create a world matrix using a look at function with the eye position
             // backed up from the camera's view direction
-            _axisGizmo->worldMatrix(
-                    mat4<F32>(-activeCamera.getForwardDir() * 2, VECTOR3_ZERO, activeCamera.getUpDir()) *
-                    getMatrix(MATRIX::VIEW_INV));
+            _axisGizmo->worldMatrix(mat4<F32>(-activeCamera.getForwardDir() * 2,
+                                               VECTOR3_ZERO,
+                                               activeCamera.getUpDir()) * getMatrix(MATRIX::VIEW_INV));
             _axisGizmo->paused(false);
         
             subPassesInOut.back()._commands.push_back(_axisGizmo->toDrawCommand());

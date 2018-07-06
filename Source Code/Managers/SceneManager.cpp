@@ -92,7 +92,7 @@ void SceneManager::idle() {
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.loadInSeparateThread());
-        WaitForAllTasks(true, true);
+        WaitForAllTasks(true, true, false);
     } else {
         while (!_playerAddQueue.empty()) {
             std::pair<Scene*, SceneGraphNode_ptr>& playerToAdd = _playerAddQueue.front();
@@ -638,7 +638,7 @@ bool SceneManager::populateRenderQueue(RenderStage stage,
 
     if (!isPrePass) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-        lightPool->prepareLightData(camera.getEye(), _platformContext->gfx().getMatrix(MATRIX::VIEW));
+        lightPool->prepareLightData(camera.getEye(), camera.getViewMatrix());
     }
 
     if (doCulling) {

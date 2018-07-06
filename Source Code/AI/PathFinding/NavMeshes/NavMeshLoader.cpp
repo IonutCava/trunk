@@ -415,20 +415,17 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
             const vectorImpl<vec3<U32> >& triangles =
                 static_cast<Object3D*>(sn.get())->getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
-                (nodeType == SceneNodeType::TYPE_OBJECT3D &&
-                    static_cast<Object3D*>(sn.get())->getObjectType() !=
-                     Object3D::ObjectType::TERRAIN)) {
-                mat4<F32> nodeTransform =
-                    nodeSGN->get<PhysicsComponent>()->getWorldMatrix();
+               (nodeType == SceneNodeType::TYPE_OBJECT3D &&
+                static_cast<Object3D*>(sn.get())->getObjectType() != Object3D::ObjectType::TERRAIN))
+            {
+                mat4<F32> nodeTransform = nodeSGN->get<PhysicsComponent>()->getWorldMatrix();
                 for (U32 i = 0; i < vertices.size(); ++i) {
-                    // Apply the node's transform and add the vertex to the
-                    // NavMesh
+                    // Apply the node's transform and add the vertex to the NavMesh
                     addVertex(&outData, nodeTransform * (vertices[i]._position));
                 }
             } else {
                 for (U32 i = 0; i < vertices.size(); ++i) {
-                    // Apply the node's transform and add the vertex to the
-                    // NavMesh
+                    // Apply the node's transform and add the vertex to the NavMesh
                     addVertex(&outData, (vertices[i]._position));
                 }
             }
