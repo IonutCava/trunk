@@ -73,8 +73,6 @@ class NOINITVTABLE ShaderProgram : public Resource {
     virtual bool update(const U64 deltaTime);
     virtual bool unload() { return true; }
 
-    virtual void registerShaderBuffer(ShaderBuffer& buffer) = 0;
-
     /// Uniforms (update constant buffer for D3D. Use index as location in
     /// buffer)
     virtual void Uniform(const stringImpl& ext, U32 value) = 0;

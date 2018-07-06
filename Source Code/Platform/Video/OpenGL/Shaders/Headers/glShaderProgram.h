@@ -65,9 +65,6 @@ class glShaderProgram final : public ShaderProgram {
     void attachShader(Shader* const shader, const bool refresh = false) override;
     /// Remove a shader stage from this program
     void detachShader(Shader* const shader) override;
-    /// Register a shader buffer to be used every time the shader is
-    /// used to render. Makes sure the buffer is bound to the proper location
-    void registerShaderBuffer(ShaderBuffer& buffer) override;
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;

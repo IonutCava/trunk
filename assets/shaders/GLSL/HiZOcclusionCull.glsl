@@ -26,7 +26,6 @@ void main()
 {
     uint ident = gl_GlobalInvocationID.x;
     if (ident >= dvd_numEntities) {
-        atomicCounterIncrement(culledCount);
         dvd_drawCommands[ident].instanceCount = 0;
         return;
     }

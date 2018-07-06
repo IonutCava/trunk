@@ -83,8 +83,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
         // Call the internal validation function
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
-        if (!_loadedFromBinary &&
-            GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
+        if (!_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
             STUBBED(
                 "GLSL binary dump/load is only enabled for nVidia GPUS. "
                 "Catalyst 13.x  - 15.x destroys uniforms on shader dump, for whatever "
@@ -314,10 +313,8 @@ bool glShaderProgram::load() {
     }
 
 #if !defined(_DEBUG)
-    // Load the program from the binary file, if available and allowed, to avoid
-    // linking.
-    if (Config::USE_SHADER_BINARY && !refresh && false &&
-        GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
+    // Load the program from the binary file, if available and allowed, to avoid linking.
+    if (Config::USE_SHADER_BINARY && !refresh && false &&  GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
         stringImpl fileName("shaderCache/Binary/" + _name + ".bin");
@@ -414,8 +411,7 @@ bool glShaderProgram::load() {
         for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
             // Brute force conversion to an enum
             ShaderType type = static_cast<ShaderType>(i);
-            stringImpl shaderCompileName(
-                shaderName + "." + GLUtil::glShaderStageNameTable[to_uint(type)] + vertexProperties);
+            stringImpl shaderCompileName(shaderName + "." + GLUtil::glShaderStageNameTable[to_uint(type)] + vertexProperties);
             // If we request a refresh for the current stage, we need to have a
             // pointer for the stage's shader already
             if (!_refreshStage[i]) {
@@ -438,10 +434,8 @@ bool glShaderProgram::load() {
                 if (!sourceCode.empty()) {
                     // And replace in place with our program's headers created
                     // earlier
-                    Util::ReplaceStringInPlace(
-                        sourceCode, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                    Util::ReplaceStringInPlace(
-                        sourceCode, "//__LINE_OFFSET_", 
+                    Util::ReplaceStringInPlace(sourceCode, "//__CUSTOM_DEFINES__", shaderSourceHeader);
+                    Util::ReplaceStringInPlace(sourceCode, "//__LINE_OFFSET_", 
                         Util::StringFormat("#line %d\n", 1 + _lineOffset[i] + to_uint(_definesList.size())));
                     // Load our shader from the final string and save it in the
                     // manager in case a new Shader Program needs it
@@ -537,9 +531,6 @@ bool glShaderProgram::bind() {
         _validationQueued = true;
     }
     return true;
-}
-
-void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {
 }
 
 /// This is used to set all of the subroutine indices for the specified shader

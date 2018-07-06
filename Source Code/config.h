@@ -118,12 +118,12 @@ namespace Profile {
 const bool DISABLE_SHADING = false;
 /// skip all draw calls
 const bool DISABLE_DRAWS = false;
-/// every viewport call is overriden with 1x1 (width x height)
+/// every viewport call is overridden with 1x1 (width x height)
 const bool USE_1x1_VIEWPORT = false;
 /// textures are capped at 2x2 when uploaded to the GPU
 const bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers
-const bool DISABLE_PERSISTENT_BUFFER = true;
+const bool DISABLE_PERSISTENT_BUFFER = false;
 };  // namespace Profile
 
 namespace Assert {

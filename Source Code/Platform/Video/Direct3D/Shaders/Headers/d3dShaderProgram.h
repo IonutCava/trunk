@@ -53,9 +53,7 @@ class d3dShaderProgram final : public ShaderProgram {
 
     void attachShader(Shader* const shader, const bool refresh = false) override {}
     void detachShader(Shader* const shader)  override {}
-
-    void registerShaderBuffer(ShaderBuffer& buffer) override {}
-
+    
     // Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override {}
     void SetSubroutine(ShaderType type, U32 index) const override {}
