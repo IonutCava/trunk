@@ -24,6 +24,9 @@ bool GUIEditorAIInterface::init(CEGUI::Window *parent) {
 
 bool GUIEditorAIInterface::update(const U64 deltaTime){
 	bool state = true;
+	if(_debugDrawCheckbox->isSelected() != AIManager::getInstance().isDebugDraw()){
+		_debugDrawCheckbox->setSelected(AIManager::getInstance().isDebugDraw());
+	}
 	if(_createNavMeshQueued){
 		AIManager::getInstance().toggleNavMeshDebugDraw(_debugDrawCheckbox->isSelected());
 		Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();

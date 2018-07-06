@@ -253,4 +253,8 @@ namespace Navigation {
     bool DivideDtCrowd::destinationReached(const dtCrowdAgent* agent, const F32 maxDistanceFromTarget) {
         return getDistanceToGoal(agent, maxDistanceFromTarget) < maxDistanceFromTarget;
     }
+
+	bool DivideDtCrowd::isValidNavMesh() const {
+		return _recast->getNavQuery().getAttachedNavMesh() != NULL;
+	}
 };

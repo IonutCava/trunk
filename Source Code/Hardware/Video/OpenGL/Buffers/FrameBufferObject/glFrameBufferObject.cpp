@@ -67,8 +67,13 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
         const SamplerDescriptor& sampler = texDescriptor.getSampler();
         _mipMapEnabled[slot] = sampler.generateMipMaps();
             
+
         GLCheck(glGenTextures( 1, &_textureId[slot] ));
         GLCheck(glBindTexture(_textureType, _textureId[slot]));
+
+		if(currentType == TEXTURE_2D_MS){
+			_textureType = GL_TEXTURE_2D;
+		}
 
         //generate a new texture attachement
         //anisotrophic filtering is only added to color attachements
@@ -98,6 +103,9 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
             GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_R, glWrapTable[sampler.wrapW()]));
         }
 
+		if(currentType == TEXTURE_2D_MS){
+			_textureType = GL_TEXTURE_2D_MULTISAMPLE;
+		}
         //generate empty texture data using each texture type's specific function
         switch(_textureType){
             case GL_TEXTURE_1D:{

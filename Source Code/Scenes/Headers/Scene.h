@@ -55,6 +55,7 @@ class TerrainDescriptor;
 ///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
 class PhysicsSceneInterface;
 class Scene : public Resource{
+protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 #ifdef _DEBUG
     enum DebugLines{

@@ -108,30 +108,25 @@ namespace Navigation {
         return true;
     }
 
-    bool NavigationMesh::build(SceneGraphNode* const sgn, bool threaded){
+    bool NavigationMesh::build(SceneGraphNode* const sgn, CreationCallback creationCompleteCallback, bool threaded){
         if(!loadConfigFromFile()){
             ERROR_FN(Locale::get("NAV_MESH_CONFIG_NOT_FOUND"));
             return false;
         }
 
         _sgn = (sgn != NULL) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
-
-        if(_buildThreaded && threaded)
-            return buildThreaded();
-
-        boost::mutex::scoped_lock(_buildLock);
+		_loadCompleteClbk = creationCompleteCallback;
 
         if(_buildThreaded && threaded){
-            if(!_buildLock.owns_lock()) return false;
-        }else{
-            return buildProcess();
-        }
-        return true;
+            return buildThreaded();
+		}
+
+		return buildProcess();
     }
 
     bool NavigationMesh::buildThreaded(){
-        boost::mutex::scoped_lock(_buildLock);
-        if(!_buildLock.owns_lock()) 
+        boost::mutex::scoped_lock sl(_buildLock);
+		if(!sl.owns_lock()) 
             return false;
 
         if(_buildThread) 
@@ -142,15 +137,11 @@ namespace Navigation {
                                     3,
                                     true,
                                     true,
-                                    DELEGATE_BIND(&NavigationMesh::launchThreadedBuild,this)));
+                                    DELEGATE_BIND(&NavigationMesh::buildProcess,this)));
 
         return true;
     }
-
-    void NavigationMesh::launchThreadedBuild(void *data){
-        static_cast<NavigationMesh*>(data)->buildProcess();
-    }
-
+	
     bool NavigationMesh::buildProcess(){
         _building = true;
         // Create mesh
@@ -178,6 +169,9 @@ namespace Navigation {
         freeIntermediates(false);
 
         _building = false;
+
+		if(!_loadCompleteClbk.empty())
+			_loadCompleteClbk(this);
 
         return success;
     }

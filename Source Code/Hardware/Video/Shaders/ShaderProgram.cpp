@@ -38,7 +38,8 @@ ShaderProgram::~ShaderProgram()
 U8 ShaderProgram::update(const U64 deltaTime){
     _elapsedTime += deltaTime;
     ParamHandler& par = ParamHandler::getInstance();
-    this->Uniform("dvd_enableFog",par.getParam<bool>("rendering.enableFog"));
+	bool enableFog = par.getParam<bool>("rendering.enableFog");
+    this->Uniform("dvd_enableFog", enableFog);
     this->Uniform("dvd_lightAmbient", LightManager::getInstance().getAmbientLight());
 
     if(_dirty){
@@ -69,14 +70,16 @@ U8 ShaderProgram::update(const U64 deltaTime){
             this->UniformTexture(uniformSlot, i);
         }
 
-        this->Uniform("fogColor",  vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
-                                             par.getParam<F32>("rendering.sceneState.fogColor.g"),
-                                             par.getParam<F32>("rendering.sceneState.fogColor.b")));
-        this->Uniform("fogDensity",par.getParam<F32>("rendering.sceneState.fogDensity"));
-        this->Uniform("fogStart",  par.getParam<F32>("rendering.sceneState.fogStart"));
-        this->Uniform("fogEnd",    par.getParam<F32>("rendering.sceneState.fogEnd"));
-        this->Uniform("fogMode",   par.getParam<FogMode>("rendering.sceneState.fogMode"));
-        this->Uniform("fogDetailLevel", par.getParam<U8>("rendering.fogDetailLevel", 2));
+		if(enableFog){
+			this->Uniform("fogColor",  vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
+												 par.getParam<F32>("rendering.sceneState.fogColor.g"),
+												 par.getParam<F32>("rendering.sceneState.fogColor.b")));
+			this->Uniform("fogDensity",par.getParam<F32>("rendering.sceneState.fogDensity"));
+			this->Uniform("fogStart",  par.getParam<F32>("rendering.sceneState.fogStart"));
+			this->Uniform("fogEnd",    par.getParam<F32>("rendering.sceneState.fogEnd"));
+			this->Uniform("fogMode",   par.getParam<FogMode>("rendering.sceneState.fogMode"));
+			this->Uniform("fogDetailLevel", par.getParam<U8>("rendering.fogDetailLevel", 2));
+		}
         _dirty = false;
     }
 

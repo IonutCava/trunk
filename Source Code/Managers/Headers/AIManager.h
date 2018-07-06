@@ -40,6 +40,7 @@ public:
     ///Handle any debug information rendering (nav meshes, AI paths, etc);
     ///Called by Scene::postRender after depth map preview call
     void debugDraw(bool forceAll = true);
+	inline bool isDebugDraw() const {return _navMeshDebugDraw;}
     ///Add an AI Entity from the manager
     bool addEntity(AIEntity* entity);
     ///Remove an AI Entity from the manager
@@ -57,6 +58,7 @@ public:
 
     ///Toggle NavMesh debugDraw
     void toggleNavMeshDebugDraw(bool state);
+	void toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool state);
 
 protected:
     AIManager();

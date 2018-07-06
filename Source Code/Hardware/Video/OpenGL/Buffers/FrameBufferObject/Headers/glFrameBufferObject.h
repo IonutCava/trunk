@@ -57,7 +57,6 @@ protected:
     GLuint _textureId[5];  ///<4 color attachements and 1 depth
     GLuint _imageLayers;
     GLuint _clearBufferMask;
-    GLuint _msaaSamples;
     bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
     bool   _hasDepth;
     bool   _hasColor;

@@ -2,6 +2,10 @@
 	<item>Soldier1</item>
 	<item>Soldier2</item>
 	<item>Soldier3</item>
+	<item>cylinderNE</item>
+	<item>cylinderNW</item>
+	<item>cylinderSE</item>
+	<item>cylinderSW</item>
 </geometry>
 
 <primitives>
@@ -43,3 +47,47 @@
 	<version>1.0</version>
 	<addToNavigation>true</addToNavigation>
 </Ground_placeholder>
+
+<cylinderNE>
+	<model>models/cylinder.obj</model>
+	<scale x="2" y="2" z="2" />
+	<position x="-10" y="0" z="-10" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
+</cylinderNE>
+
+<cylinderNW>
+	<model>models/cylinder.obj</model>
+	<scale x="2" y="2" z="2" />
+	<position x="10" y="0" z="-10" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
+</cylinderNW>
+
+<cylinderSE>
+	<model>models/cylinder.obj</model>
+	<scale x="2" y="2" z="2" />
+	<position x="-10" y="0" z="10" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
+</cylinderSE>
+
+<cylinderSW>
+	<model>models/cylinder.obj</model>
+	<scale x="2" y="2" z="2" />
+	<position x="10" y="0" z="10" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
+	<useHighNavigationDetail>true</useHighNavigationDetail>
+</cylinderSW>

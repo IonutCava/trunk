@@ -94,10 +94,12 @@ namespace Navigation {
         };
 
     public:
+		typedef boost::function1<void, NavigationMesh* > CreationCallback;
+
         inline void setFileName(const std::string& fileName) {_fileName.append(fileName);}
         /// Initiates the NavigationMesh build process, which includes notifying the
         /// clients and posting a task.
-        bool build(SceneGraphNode* const sgn, bool threaded = true);
+        bool build(SceneGraphNode* const sgn, CreationCallback creationCompleteCallback, bool threaded = true);
         /// Save the NavigationMesh to a file.
         bool save();
         /// Load a saved NavigationMesh from a file.
@@ -123,6 +125,7 @@ namespace Navigation {
         friend class DivideDtCrowd;
         dtNavMesh*            getNavigationMesh() { return _navMesh; }
         NavigationMeshConfig& getConfigParams()   { return _configParams; }
+
     private:
 
         /// Initiates the build process in a separate thread.
@@ -171,8 +174,8 @@ namespace Navigation {
         boost::mutex _navigationMeshLock;
         /// A simple flag to say we are building.
         boost::atomic<bool> _building;
-        /// Thread launch function.
-        static void launchThreadedBuild(void *data);
+		/// A callback function to call after building is complete
+		CreationCallback   _loadCompleteClbk;
         /// Data file to store this nav mesh in. (From engine executable dir.)
         std::string _fileName;
         /// Configuration file
@@ -188,7 +191,7 @@ namespace Navigation {
         RenderMode _renderMode;
         ///DebugDraw interface
         NavMeshDebugDraw *_debugDrawInterface;
-    };
+		    };
 };
 
 #endif

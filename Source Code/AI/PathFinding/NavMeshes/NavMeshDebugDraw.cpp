@@ -13,10 +13,10 @@
 namespace Navigation {
     NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _paused(false), _color(0), _primitive(NULL)
     {
-        ///Generate a render state
+        //Generate a render state
         RenderStateBlockDescriptor navigationDebugDesc;
         navigationDebugDesc.setCullMode(CULL_MODE_NONE);
-        navigationDebugDesc.setBlend(true);
+		navigationDebugDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
         _navMeshStateBlock = GFX_DEVICE.createStateBlock(navigationDebugDesc);
     }
 
@@ -42,7 +42,7 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::prepareMaterial(){
-        SET_STATE_BLOCK(_navMeshStateBlock);
+        SET_STATE_BLOCK(_navMeshStateBlock, true);
         GFX_DEVICE.pushWorldMatrix(mat4<F32>(), true);
    }
 
@@ -82,7 +82,7 @@ namespace Navigation {
             case DU_DRAW_QUADS:  /*_primType = QUADS;*/ assert(prim == DU_DRAW_QUADS);
         }
 
-        _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,128));
+        _primitive->attribute4ub("inColorData",vec4<U8>(255,255,255,64));
         _primitive->begin(_primType);
    }
 

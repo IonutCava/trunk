@@ -137,6 +137,11 @@ void AIManager::destroyNavMesh(Navigation::NavigationMesh* const navMesh){
     _updateNavMeshes = true;
 }
 
+void AIManager::toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool state) {
+	navMesh->debugDraw(state);
+	toggleNavMeshDebugDraw(state);
+}
+
 void AIManager::toggleNavMeshDebugDraw(bool state) {
     WriteLock w_lock(_navMeshMutex);
     for_each(Navigation::NavigationMesh* navMesh, _navMeshes){

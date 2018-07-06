@@ -126,26 +126,35 @@ void WarScene::processInput(const U64 deltaTime){
     }
 }
 
+static boost::atomic_bool navMeshStarted;
+
+void navMeshCreationCompleteCallback(Navigation::NavigationMesh* navMesh){
+	navMesh->save();
+	AIManager::getInstance().addNavMesh(navMesh);
+	AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+}
+
 void WarScene::updateSceneState(const U64 deltaTime){
     if(!_sceneReady) return;
 
     static U64 totalTime = 0;
-    static bool navMeshCreated = false;
+    
     totalTime += deltaTime;
-    if(getUsToSec(totalTime) > 20 && !navMeshCreated){
-        Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
-        temp->setFileName(GET_ACTIVE_SCENE()->getName());
-        bool loaded = temp->load(NULL);//<Start from root for now
 
-        if(!loaded){
-            loaded = temp->build(NULL,false);
-            temp->save();
-        }
+    if(getUsToSec(totalTime) > 20 && !navMeshStarted){
+        Navigation::NavigationMesh* navMesh = New Navigation::NavigationMesh();
+        navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
-        if(loaded){
-            navMeshCreated = AIManager::getInstance().addNavMesh(temp);
-        }
+        if(!navMesh->load(NULL)) //<Start from root for now
+            navMesh->build(NULL, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
+		else{
+			AIManager::getInstance().addNavMesh(navMesh);
+			AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+		}
+
+		navMeshStarted = true;
     }
+
     Scene::updateSceneState(deltaTime);
     if(_lampLightNode && _bobNodeBody){
       /*  static mat4<F32> position = _lampLightNode->getTransform()->getMatrix(); 
@@ -154,27 +163,51 @@ void WarScene::updateSceneState(const U64 deltaTime){
         _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());*/
     }
     
-    if(!navMeshCreated)
+    if(!AIManager::getInstance().getNavMesh(0))
         return;
 
     Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
+#ifdef _DEBUG
+	U32 characterCount = _army1.size() + _army2.size();
+	_pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
+	_pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
+	_colors[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec4<U8>(255,0,255,128));
 
+	renderState().drawDebugLines(true);
+#endif
+	U32 count = 0;
     for_each(AIEntity* character, _army1){
+#ifdef _DEBUG
+		_pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
+#endif
         // If destination reached: Set new random destination
         if (character->destinationReached()) {
             character->updateDestination(navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army2[0]->getUnitRef()->getPosition());
+#ifdef _DEBUG
+			_pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
+#endif
         }
+		count++;
     }
     
     for_each(AIEntity* character, _army2){
         // If destination reached: Set new random destination
+#ifdef _DEBUG
+		_pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
+#endif		
         if (character->destinationReached()) {
             character->updateDestination( navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army1[0]->getUnitRef()->getPosition());
+#ifdef _DEBUG
+			_pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
+#endif
         }
+		count++;
     }
+
 }
 
 bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
+	navMeshStarted = false;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,true,true);
     //Add a light
@@ -182,8 +215,8 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
     //Add a skybox
     addDefaultSky();
     //Position camera
-    renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
-    renderState().getCamera().setGlobalRotation(-45/*yaw*/,25/*pitch*/);
+    renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
+    renderState().getCamera().setGlobalRotation(-90/*yaw*/,35/*pitch*/);
     //Create 2 AI teams
     _faction1 = New AICoordination(1);
     _faction2 = New AICoordination(2);
