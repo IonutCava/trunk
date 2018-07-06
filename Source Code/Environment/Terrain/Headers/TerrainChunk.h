@@ -51,11 +51,7 @@ public:
 
     inline vec4<F32> getOffsetAndSize() const { return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);}
 
-    inline U8 getLoD() const { return _LoD; }
-
-protected:
-    friend class QuadtreeNode;
-    inline void setLoD(U8 lod) { _LoD = lod; }
+    U8 getLoD() const;
 
 private:
     void ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
@@ -69,7 +65,6 @@ private:
     F32                 _yOffset;
     F32                 _sizeX;
     F32                 _sizeY;
-    U8                  _LoD;
     vec2<F32>           _heightBounds; //< 0 = minHeight, 1 = maxHeight
     VertexBuffer*       _terrainVB;
     Terrain*            _parentTerrain;

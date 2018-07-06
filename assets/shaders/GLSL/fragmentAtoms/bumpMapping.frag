@@ -9,7 +9,6 @@ const int num_steps_lin = 10;
 const int num_steps_bin = 15;
 float linear_step = 1.0 / (float(num_steps_lin));
 
-#if defined(USE_RELIEF_MAPPING)
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 
     //Current depth position
@@ -41,14 +40,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     }
     return best_depth;
 }
-#endif
 
-vec4 NormalMapping(in vec2 uv){
-    //Normal mapping in TBN space
-    return Phong(uv, normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0));
-}
-
-#if defined(USE_PARALLAX_MAPPING)
 vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToLightTBN){
     vec3 lightVecTBN = normalize(pixelToLightTBN);
     vec3 viewVecTBN = normalize(_viewDirection);
@@ -60,8 +52,6 @@ vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToLightTBN){
     return Phong(vTexCoord, normalize(2.0 * texture(texNormalMap, vTexCoord).xyz - 1.0));
 }
 
-#endif
-#if defined(USE_RELIEF_MAPPING)
 vec4 ReliefMapping(in int _light, in vec2 uv){
     vec3 viewVecTBN = normalize(_viewDirection);
     //Size and search starting position in texture space
@@ -71,7 +61,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
     
     vec2 uv_offset = h * AB;
     
-    vec3 p = (dvd_ViewMatrix * _vertexW).xyz;
+    vec3 p = _vertexWV.xyz;
     vec3 v = normalize(p);
     //Compute light direction
     p += v*h*viewVecTBN.z;	
@@ -82,6 +72,6 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-    return NormalMapping(uv + uv_offset);
+	return Phong(uv + uv_offset, normalize(2.0 * texture(texNormalMap, uv + uv_offset).xyz - 1.0));
 }
-#endif
+

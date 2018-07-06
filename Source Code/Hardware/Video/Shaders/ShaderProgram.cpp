@@ -53,15 +53,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _fogColorLoc       = -1;
     _fogDensityLoc     = -1;
     _prevLOD           = 250;
-    _prevTextureCount  = 250;
     _lodVertLight.resize(2);
     _lodFragLight.resize(2);
-    I32 i = 0, j = 0;
-    for (; i < Material::TEXTURE_UNIT0; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation[%d]", Material::TEXTURE_UNIT0 + i);
-
-    for (i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation[%d]", j++);
 }
 
 ShaderProgram::~ShaderProgram()
@@ -244,31 +237,6 @@ void ShaderProgram::uploadNodeMatrices(){
         if (_clipPlanes.empty()) return;
 
         this->Uniform(_clipPlanesLoc, _clipPlanes);
-    }
-}
-
-void ShaderProgram::ApplyMaterial(Material* const material){
-    if (!material) return;
-
-    Texture* texture = nullptr;
-    for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
-        if ((texture = material->getTexture(i)) != nullptr){
-            texture->Bind(i);
-            if (i >= Material::TEXTURE_UNIT0)
-                Uniform(_textureOperationUniformSlots[i], (I32)material->getTextureOperation(i));
-        }
-    }
-    
-    if (material->isTranslucent()){
-        Uniform("opacity",      material->getOpacityValue());
-        Uniform("useAlphaTest", material->useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE));
-    }
-
-    Uniform("material",     material->getMaterialMatrix());
-    U8 currentTextureCount = material->getTextureCount();
-    if(_prevTextureCount != currentTextureCount){
-        Uniform("textureCount", material->getTextureCount());
-        _prevTextureCount = currentTextureCount;
     }
 }
 

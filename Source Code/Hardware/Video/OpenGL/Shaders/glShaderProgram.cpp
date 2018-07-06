@@ -394,7 +394,7 @@ void glShaderProgram::Attribute(I32 location, const vec4<GLfloat>& value) const 
 
 void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {
     DIVIDE_ASSERT(_bound && _linked, "glShaderProgram error: tried to set subroutines on an unbound or unlinked program!");
-    if (indices[0] != GL_INVALID_INDEX)
+    if (!indices.empty() && indices[0] != GL_INVALID_INDEX)
         glUniformSubroutinesuiv(_shaderStageTable[type], (GLsizei)indices.size(), &indices.front());
     
 }

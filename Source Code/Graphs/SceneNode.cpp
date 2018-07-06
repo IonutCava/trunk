@@ -147,8 +147,7 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     if (!_drawShader->bind())
         return false;
 
-    _drawShader->ApplyMaterial(_material);
- 
+    getMaterial()->UploadToShader(shaderInfo);
     bool temp = sgn->isSelected();
     if(shaderInfo.getTrackedBool(0) != temp){
         shaderInfo.setTrackedBool(0, temp);
@@ -170,7 +169,6 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         shaderInfo.setTrackedBool(2, temp);
         _drawShader->Uniform("dvd_hasAnimations", temp);
     }
-        
 
     return true;
 }
@@ -198,8 +196,7 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     if (!_drawShader->bind())
         return false;
 
-    _drawShader->ApplyMaterial(_material);
-
+    getMaterial()->UploadToShader(shaderInfo);
     if (_material->isTranslucent()){
         if (_material->getTexture(Material::TEXTURE_OPACITY)) 
             _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);

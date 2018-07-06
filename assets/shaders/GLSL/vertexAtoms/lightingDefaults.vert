@@ -1,6 +1,8 @@
 #include "lightInput.cmn"
 
-subroutine void LightInfoType(in vec3 vertexWV);
+out vec4 _vertexWV;
+
+subroutine void LightInfoType();
 subroutine uniform LightInfoType LightInfoRoutine;
 
 const float pidiv180 = 0.0174532777777778; //3.14159 / 180.0; // 36 degrees
@@ -22,7 +24,7 @@ float computeAttenuation(const in uint currentLightIndex, const in vec3 lightDir
 }
 
 subroutine(LightInfoType)
-void computeLightInfoLOD0(in vec3 vertexWV){
+void computeLightInfoLOD0(){
     uint lightType = LIGHT_DIRECTIONAL;
 
 #if defined(COMPUTE_TBN)
@@ -30,12 +32,12 @@ void computeLightInfoLOD0(in vec3 vertexWV){
     vec3 t = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Tangent);
     vec3 b = normalize(cross(n, t));
     
-    vec3 tmpVec = -vertexWV;
+    vec3 tmpVec = -_vertexWV.xyz;
    _viewDirection.x = dot(tmpVec, t);
    _viewDirection.y = dot(tmpVec, b);
    _viewDirection.z = dot(tmpVec, n);
 #else
-    _viewDirection = -vertexWV;
+    _viewDirection = -_vertexWV.xyz;
 #endif
     _viewDirection = normalize(_viewDirection);
 
@@ -71,10 +73,10 @@ void computeLightInfoLOD0(in vec3 vertexWV){
 }
 
 subroutine(LightInfoType)
-void computeLightInfoLOD1(in vec3 vertexWV){
+void computeLightInfoLOD1(){
     uint lightType = LIGHT_DIRECTIONAL;
 
-    _viewDirection = normalize(-vertexWV);
+    _viewDirection = normalize(-_vertexWV.xyz);
 
     vec3 lightDirection;
 
@@ -105,5 +107,6 @@ void computeLightInfoLOD1(in vec3 vertexWV){
 
 void computeLightVectors(){
     _normalWV = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal); //<ModelView Normal 
-    LightInfoRoutine(vec3(dvd_ViewMatrix * _vertexW));
+	_vertexWV = dvd_ViewMatrix * _vertexW;
+    LightInfoRoutine();
 }

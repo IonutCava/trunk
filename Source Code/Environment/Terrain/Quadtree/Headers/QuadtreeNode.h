@@ -72,6 +72,8 @@ public:
     QuadtreeNode();
     ~QuadtreeNode();
 
+    inline U8 getLoD() const { return _LOD; }
+
 protected:
     bool  isInView(U32 options, const SceneRenderState& sceneState) const;
 

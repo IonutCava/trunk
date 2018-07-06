@@ -39,6 +39,57 @@ enum BlendProperty;
 
 class Material : public Resource {
 public:
+  enum BumpMethod {
+        BUMP_NONE = 0,   //<Use phong
+        BUMP_NORMAL = 1, //<Normal mapping
+        BUMP_PARALLAX = 2,
+        BUMP_RELIEF = 3,
+        BumpMethod_PLACEHOLDER = 4
+    };
+
+    enum TextureUsage {
+        TEXTURE_NORMALMAP = 0,
+        TEXTURE_OPACITY = 1,
+        TEXTURE_SPECULAR = 2,
+        TEXTURE_UNIT0 = 3
+    };
+
+    /// How should each texture be added
+    enum TextureOperation {
+        TextureOperation_Multiply = 0x0,
+        TextureOperation_Add = 0x1,
+        TextureOperation_Subtract = 0x2,
+        TextureOperation_Divide = 0x3,
+        TextureOperation_SmoothAdd = 0x4,
+        TextureOperation_SignedAdd = 0x5,
+        TextureOperation_Decal = 0x6,
+        TextureOperation_Replace = 0x7,
+        TextureOperation_PLACEHOLDER = 0x8
+    };
+
+    enum TranslucencySource {
+        TRANSLUCENT_DIFFUSE = 0,
+        TRANSLUCENT_OPACITY,
+        TRANSLUCENT_OPACITY_MAP,
+        TRANSLUCENT_DIFFUSE_MAP,
+        TRANSLUCENT_NONE
+    };
+    /// Not used yet but implemented for shading model selection in shaders
+    /// This enum matches the ASSIMP one on a 1-to-1 basis
+    enum ShadingMode {
+        SHADING_FLAT = 0x1,
+        SHADING_GOURAUD = 0x2,
+        SHADING_PHONG = 0x3,
+        SHADING_BLINN = 0x4,
+        SHADING_TOON = 0x5,
+        SHADING_OREN_NAYAR = 0x6,
+        SHADING_MINNAERT = 0x7,
+        SHADING_COOK_TORRANCE = 0x8,
+        SHADING_NONE = 0x9,
+        SHADING_FRESNEL = 0xa,
+        ShadingMode_PLACEHOLDER = 0xb
+    };
+
     /// ShaderData stores information needed by the shader code to properly shade objects
     struct ShaderData{
         vec4<F32> _diffuse;  /* diffuse component */
@@ -85,60 +136,13 @@ public:
             _shader = "";
             _computedShader = false;
             memset(_trackedBools, false, 10 * sizeof(bool));
+            for(U8 i = 0; i < ShaderType_PLACEHOLDER; ++i)
+                memset(_shadingFunction[i], 0, BumpMethod_PLACEHOLDER * sizeof(U32));
         }
-    };
 
-    enum BumpMethod {
-        BUMP_NONE = 0,   //<Use phong
-        BUMP_NORMAL = 1, //<Normal mapping
-        BUMP_PARALLAX = 2,
-        BUMP_RELIEF = 3,
-        BUMP_PLACEHOLDER = 4
+        U32 _shadingFunction[ShaderType_PLACEHOLDER][BumpMethod_PLACEHOLDER];
     };
-
-    enum TextureUsage {
-        TEXTURE_NORMALMAP = 0,
-        TEXTURE_OPACITY = 1,
-        TEXTURE_SPECULAR = 2,
-        TEXTURE_UNIT0 = 3
-    };
-
-    /// How should each texture be added
-    enum TextureOperation {
-        TextureOperation_Multiply = 0x0,
-        TextureOperation_Add = 0x1,
-        TextureOperation_Subtract = 0x2,
-        TextureOperation_Divide = 0x3,
-        TextureOperation_SmoothAdd = 0x4,
-        TextureOperation_SignedAdd = 0x5,
-        TextureOperation_Decal = 0x6,
-        TextureOperation_Replace = 0x7,
-        TextureOperation_PLACEHOLDER = 0x8
-    };
-
-    enum TranslucencySource {
-        TRANSLUCENT_DIFFUSE = 0,
-        TRANSLUCENT_OPACITY,
-        TRANSLUCENT_OPACITY_MAP,
-        TRANSLUCENT_DIFFUSE_MAP,
-        TRANSLUCENT_NONE
-    };
-    /// Not used yet but implemented for shading model selection in shaders
-    /// This enum matches the ASSIMP one on a 1-to-1 basis
-    enum ShadingMode {
-        SHADING_FLAT = 0x1,
-        SHADING_GOURAUD = 0x2,
-        SHADING_PHONG = 0x3,
-        SHADING_BLINN = 0x4,
-        SHADING_TOON = 0x5,
-        SHADING_OREN_NAYAR = 0x6,
-        SHADING_MINNAERT = 0x7,
-        SHADING_COOK_TORRANCE = 0x8,
-        SHADING_NONE = 0x9,
-        SHADING_FRESNEL = 0xa,
-        ShadingMode_PLACEHOLDER = 0xb
-    };
-
+  
 public:
     Material();
     ~Material();
@@ -212,6 +216,8 @@ public:
     inline const ShadingMode& getShadingMode()            const {return _shadingMode;}
     inline const BumpMethod&  getBumpMethod()             const {return _bumpMethod;}
 
+    void UploadToShader(Material::ShaderInfo& shaderInfo);
+
     void clean();
     bool isTranslucent(U8 index = 0);
 
@@ -254,6 +260,8 @@ private:
     /// 3 render state's: Normal, reflection and shadow
     typedef Unordered_map<RenderStage, I64 /*renderStateBlockHash*/ > renderStateBlockMap;
     renderStateBlockMap _defaultRenderStates;
+    
+    char _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
     /// use this map to add textures to the material
     Texture* _textures[Config::MAX_TEXTURE_STORAGE];
     /// use the bellow map to define texture operation

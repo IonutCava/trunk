@@ -1,5 +1,6 @@
 #include "Headers/TerrainChunk.h"
 #include "Headers/Terrain.h"
+#include "Quadtree/Headers/QuadtreeNode.h"
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
@@ -16,7 +17,6 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const par
                                                                                            _vegetation(nullptr)
 {
     _chunkID++;
-    _LoD = 0;
     _xOffset = _yOffset = _sizeX = _sizeY = 0;
     _chunkIndOffset = 0;
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
@@ -131,3 +131,7 @@ void TerrainChunk::CreateDrawCommand(I8 lod) {
     _drawCommand._cmd.count = _lodIndCount[lod];
     _parentTerrain->addDrawCommand(_drawCommand);
 }
+
+U8 TerrainChunk::getLoD() const { 
+    return _parentNode->getLoD();
+ }

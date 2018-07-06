@@ -136,7 +136,7 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
     SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash);
 
     Material::ShaderInfo& shaderInfo = getMaterial()->getShaderInfo();
-    _drawShader->ApplyMaterial(getMaterial());
+    getMaterial()->UploadToShader(shaderInfo);
     bool temp = lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows();
     if(shaderInfo.getTrackedBool(1) != temp){
         shaderInfo.setTrackedBool(1, temp);

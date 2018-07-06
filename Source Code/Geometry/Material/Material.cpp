@@ -31,10 +31,18 @@ Material::Material() : Resource("temp_material"),
                                          _shaderData[0]._emissive.y,
                                          _shaderData[0]._emissive.z));
 
-   for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+    for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
        _textures[i] = nullptr;
-   for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0; ++i)
+    for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0; ++i)
        _operations[i] = TextureOperation_Replace;
+
+    I32 i = 0, j = 0;
+    for (; i < TEXTURE_UNIT0; ++i)
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation[%d]", TEXTURE_UNIT0 + i);
+
+    for (i = TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation[%d]", j++);
+
    //std::fill(_textures, _textures + Config::MAX_TEXTURE_STORAGE, static_cast<Texture*>(nullptr));
    //std::fill(_operations, _operations + (Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0), TextureOperation_Replace);
 
@@ -199,6 +207,9 @@ bool Material::computeShader(bool force, const RenderStage& renderStage){
                 // Or simple texture mapping?
                 shader += ".Texture";
             }
+        }else{
+            addShaderDefines(renderStage, "SKIP_TEXTURES");
+            shader += ".NoTexture";
         }
 
         if (_textures[TEXTURE_SPECULAR]){
@@ -260,6 +271,31 @@ void Material::computeShaderInternal(){
     _shaderInfo[currentItem.first]._computedShader = true;
 
     _shaderComputeQueue.pop();
+}
+
+void Material::UploadToShader(Material::ShaderInfo& shaderInfo){
+    ShaderProgram* shader = shaderInfo.getProgram();
+
+    Texture* texture = nullptr;
+    for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
+        if ((texture = getTexture(i)) != nullptr){
+            texture->Bind(i);
+            if (i >= TEXTURE_UNIT0)
+                shader->Uniform(_textureOperationUniformSlots[i], (I32)getTextureOperation(i));
+        }
+    }
+
+    if (isTranslucent()){
+        shader->Uniform("opacity",      getOpacityValue());
+        shader->Uniform("useAlphaTest", useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE));
+    }
+
+    shader->Uniform("material",     getMaterialMatrix());
+    shader->Uniform("textureCount", getTextureCount());
+    /*shader->setFunctionIndex(VERTEX_SHADER,   0, 0, shaderInfo._shadingFunction[VERTEX_SHADER][getBumpMethod()]);
+    shader->setFunctionIndex(VERTEX_SHADER,   1, 0, shaderInfo._shadingFunction[VERTEX_SHADER][BUMP_NONE]);
+    shader->setFunctionIndex(FRAGMENT_SHADER, 0, 0, shaderInfo._shadingFunction[FRAGMENT_SHADER][getBumpMethod()]);
+    shader->setFunctionIndex(FRAGMENT_SHADER, 1, 0, shaderInfo._shadingFunction[FRAGMENT_SHADER][BUMP_NONE]);*/
 }
 
 ShaderProgram* const Material::ShaderInfo::getProgram(){

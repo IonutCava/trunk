@@ -105,8 +105,6 @@ void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, S
         _children[CHILD_NE]->sceneUpdate(deltaTime, sgn, sceneState);
         _children[CHILD_SW]->sceneUpdate(deltaTime, sgn, sceneState);
         _children[CHILD_SE]->sceneUpdate(deltaTime, sgn, sceneState);
-    }else{
-        _terrainChunk->setLoD(_LOD);
     }
 }
 

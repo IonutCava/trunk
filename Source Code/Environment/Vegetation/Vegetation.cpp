@@ -324,9 +324,10 @@ bool Vegetation::setMaterialInternal(SceneGraphNode* const sgn) {
     bool depthPrePass = GFX_DEVICE.isDepthPrePass();
 
     LightManager& lightMgr = LightManager::getInstance();
-    _drawShader = getMaterial()->getShaderInfo(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE).getProgram();
+    Material::ShaderInfo& shaderInfo = getMaterial()->getShaderInfo(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE);
+    _drawShader = shaderInfo.getProgram();
     if (!depthPass){
-        _drawShader->ApplyMaterial(getMaterial());
+        getMaterial()->UploadToShader(shaderInfo);
         _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
     }
     

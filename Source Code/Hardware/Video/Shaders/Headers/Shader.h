@@ -25,17 +25,9 @@
 
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Utility/Headers/Vector.h"
 
-enum ShaderType {
-    FRAGMENT_SHADER = 0,
-    VERTEX_SHADER   = 1,
-    GEOMETRY_SHADER = 2,
-    TESSELATION_CTRL_SHADER = 3,
-    TESSELATION_EVAL_SHADER = 4,
-    COMPUTE_SHADER = 5,
-    ShaderType_PLACEHOLDER = 6
-};
 
 class ShaderProgram;
 class Shader : public TrackedObject{

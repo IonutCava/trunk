@@ -207,6 +207,17 @@ enum CullMode {
    CullMode_PLACEHOLDER
 };
 
+/// Available shader stages
+enum ShaderType {
+    FRAGMENT_SHADER = 0,
+    VERTEX_SHADER   = 1,
+    GEOMETRY_SHADER = 2,
+    TESSELATION_CTRL_SHADER = 3,
+    TESSELATION_EVAL_SHADER = 4,
+    COMPUTE_SHADER = 5,
+    ShaderType_PLACEHOLDER = 6
+};
+
 /// Valid front and back stencil test actions
 enum StencilOperation {
    /// Keeps the current value.

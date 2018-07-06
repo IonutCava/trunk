@@ -41,7 +41,6 @@ public:
     virtual void unbind(bool resetActiveProgram = true);
     virtual U8   update(const U64 deltaTime);
 
-    void ApplyMaterial(Material* const material);
     void SetLOD(U8 currentLOD);
 
     ///Attributes
@@ -122,10 +121,38 @@ public:
     //add either fragment or vertex uniforms (without the "uniform" word. e.g. addShaderUniform("vec3 eyePos", VERTEX_SHADER);)
            void addShaderUniform(const std::string& uniform, const ShaderType& type);
            void removeUniform(const std::string& uniform, const ShaderType& type);
-    //flash stored uniform locations
+    //flush stored uniform locations
     virtual void flushLocCache() = 0;
 
     void uploadNodeMatrices();
+
+    inline size_t getFunctionCount(ShaderType shader, U8 LoD){
+        return _functionIndex[shader][LoD].size();
+    }
+
+    inline void setFunctionCount(ShaderType shader, U8 LoD, size_t count){
+        _functionIndex[shader][LoD].resize(count, 0);
+    }
+
+    inline void setFunctionCount(ShaderType shader, size_t count){
+        for(U8 i = 0; i < Config::SCENE_NODE_LOD; ++i)
+            setFunctionCount(shader, i, count);
+    }
+
+    inline void setFunctionIndex(ShaderType shader, U8 LoD, U32 index, U32 functionEntry){
+        if(_functionIndex[shader][LoD].empty()) return;
+
+        DIVIDE_ASSERT(index < _functionIndex[shader][LoD].size(), "ShaderProgram error: Invalid function index specified for update!");
+        if(_availableFunctionIndex[shader].empty()) return;
+
+        DIVIDE_ASSERT(functionEntry < _availableFunctionIndex[shader].size(), "ShaderProgram error: Specified function entry does not exist!");
+        _functionIndex[shader][LoD][index] = _availableFunctionIndex[shader][functionEntry];
+    }
+
+    inline U32 addFunctionIndex(ShaderType type, U32 index){
+        _availableFunctionIndex[type].push_back(index);
+        return U32(_availableFunctionIndex[type].size() - 1);
+    }
 
 protected:
     friend class ShaderManager;
@@ -147,6 +174,7 @@ protected:
     friend class ImplResourceLoader;
     virtual bool generateHWResource(const std::string& name);
     void updateMatrices();
+    const vectorImpl<U32>& getAvailableFunctions(ShaderType type) const;
 
 protected:
     bool _refreshStage[ShaderType_PLACEHOLDER];
@@ -169,17 +197,15 @@ protected:
     ShaderIdMap _shaderIdMap;
     ///cached clipping planes
     vectorImpl<vec4<F32> > _clipPlanes;
-    ///light computation subroutines
-    vectorImpl<U32 >  _lodVertLight;
-    vectorImpl<U32 >  _lodFragLight;
     ///Active camera's cached eye position
     static vec3<F32> _cachedCamEye;
     ///Active camera's cached zPlanes
     static vec2<F32> _cachedZPlanes;
     ///Default camera's cached zPlanes
     static vec2<F32> _cachedSceneZPlanes;
+    vectorImpl<U32> _lodVertLight;
+    vectorImpl<U32> _lodFragLight;
 private:
-    char _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
     Camera* _activeCamera;
     Unordered_map<EXTENDED_MATRIX, I32  > _extendedMatrixEntry;
     bool _extendedMatricesDirty;
@@ -200,7 +226,9 @@ private:
     I32 _fogDensityLoc;
     I32 _invProjMatrixEntry;
     U8  _prevLOD;
-    U8  _prevTextureCount;
+
+    vectorImpl<U32> _functionIndex[ShaderType_PLACEHOLDER][Config::SCENE_NODE_LOD];
+    vectorImpl<U32> _availableFunctionIndex[ShaderType_PLACEHOLDER];
 };
 
 #endif
