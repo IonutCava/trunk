@@ -106,7 +106,7 @@ struct GenericDrawCommand {
     inline void firstIndex(U32 index) { _cmd.firstIndex = index; }
     inline void indexCount(U32 count) { _cmd.count = count; }
     inline void baseInstance(U32 value) { _cmd.baseInstance = value; }
-    inline void drawID(I32 drawID) { baseInstance(drawID); }
+    inline void drawID(U32 drawID) { baseInstance(drawID); }
     inline void shaderProgram(ShaderProgram* const program) {
         _shaderProgram = program;
     }
@@ -122,7 +122,7 @@ struct GenericDrawCommand {
     inline bool renderWireframe() const { return _renderWireframe; }
     inline U32 instanceCount() const { return _cmd.instanceCount; }
     inline U32 indexCount() const { return _cmd.count; }
-    inline I32 drawID() const { return _cmd.baseInstance; }
+    inline U32 drawID() const { return _cmd.baseInstance; }
 
     inline const IndirectDrawCommand& cmd() const { return _cmd; }
     inline ShaderProgram* shaderProgram() const { return _shaderProgram; }

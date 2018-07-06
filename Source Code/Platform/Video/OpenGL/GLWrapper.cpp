@@ -378,7 +378,10 @@ void GL_API::drawPoints(GLuint numPoints) {
 
 void GL_API::uploadDrawCommands(
     const vectorImpl<IndirectDrawCommand>& drawCommands) const {
-    glNamedBufferData(_indirectDrawBuffer,
+    /*glNamedBufferData(_indirectDrawBuffer,
+                      sizeof(IndirectDrawCommand) * drawCommands.size(),
+                      drawCommands.data(), GL_DYNAMIC_COPY);*/
+    gl45ext::glNamedBufferDataEXT(_indirectDrawBuffer,
                       sizeof(IndirectDrawCommand) * drawCommands.size(),
                       drawCommands.data(), GL_DYNAMIC_COPY);
 }

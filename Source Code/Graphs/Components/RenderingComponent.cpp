@@ -259,9 +259,9 @@ const vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
     _drawCommandsCache.clear();
     _parentSGN.getNode()->getDrawCommands(
         _parentSGN, renderStage, sceneRenderState, _drawCommandsCache);
-    vectorAlg::vecSize i = 0;
+    U32 i = 0;
     for (GenericDrawCommand& cmd : _drawCommandsCache) {
-        cmd.drawID(static_cast<I32>(commandOffset + i++));
+        cmd.drawID(static_cast<U32>(commandOffset) + i++);
     }
     return _drawCommandsCache;
 }

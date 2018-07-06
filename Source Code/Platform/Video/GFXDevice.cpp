@@ -117,9 +117,10 @@ GFXDevice::~GFXDevice() {}
 bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // We also need a valid draw command ID so we can index the node buffer
     // properly
-    DIVIDE_ASSERT(cmd.drawID() < std::max((I32)_matricesData.size(), 1) &&
-                      cmd.drawID() >= 0,
-                  "GFXDevice error: Invalid draw ID encountered!");
+    DIVIDE_ASSERT(
+        cmd.drawID() < std::max(static_cast<U32>(_matricesData.size()), 1u) &&
+            cmd.drawID() >= 0,
+        "GFXDevice error: Invalid draw ID encountered!");
     if (cmd.instanceCount() == 0) {
         return false;
     }
