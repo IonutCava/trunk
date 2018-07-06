@@ -34,16 +34,6 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
         Texture::s_missingTextureFileName = "missing_texture.jpg";
     }
 
-    TextureType type = texDescriptor->type();
-
-    if ((type == TextureType::TEXTURE_2D_MS || type == TextureType::TEXTURE_2D_ARRAY_MS) && _context.config().rendering.msaaSamples == 0) {
-        if (type == TextureType::TEXTURE_2D_MS) {
-            type = TextureType::TEXTURE_2D;
-        }
-        if (type == TextureType::TEXTURE_2D_ARRAY_MS) {
-            type = TextureType::TEXTURE_2D_ARRAY;
-        }
-    }
     stringImpl resourceLocation = _descriptor.getResourceLocation();
 
     size_t numCommas = std::count(std::cbegin(_descriptor.getResourceName()),

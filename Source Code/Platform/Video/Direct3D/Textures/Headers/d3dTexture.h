@@ -59,7 +59,7 @@ class d3dTexture final : public Texture {
     void resize(const bufferPtr ptr,
                 const vec2<U16>& dimensions) override {}
 
-    void updateMipMaps() override { Texture::updateMipMaps(); }
+    void updateMipMaps(bool force = false) override { Texture::updateMipMaps(); }
 
     void loadData(const TextureLoadInfo& info,
                   const vectorImpl<ImageTools::ImageLayer>& imageLayers) override {}

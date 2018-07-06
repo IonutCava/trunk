@@ -69,21 +69,21 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
 
     // Process only valid attachments
     const RTAttachment_ptr& attachment = _attachmentPool->get(type, index);
-     if (!attachment->used()) {
-         return;
-     }
+    if (!attachment->used()) {
+        return;
+    }
 
-     const Texture_ptr& tex = attachment->texture();
+    const Texture_ptr& tex = attachment->texture();
 
-     // Do we need to resize the attachment?
-     bool shouldResize = tex->getWidth() != getWidth() || tex->getHeight() != getHeight();
-     if (shouldResize) {
-         tex->resize(NULL, vec2<U16>(getWidth(), getHeight()));
-     }
+    // Do we need to resize the attachment?
+    bool shouldResize = tex->getWidth() != getWidth() || tex->getHeight() != getHeight();
+    if (shouldResize) {
+        tex->resize(NULL, vec2<U16>(getWidth(), getHeight()));
+    }
 
-     // Find the appropriate binding point
-     GLenum attachmentEnum;
-     if (type == RTAttachmentType::Depth) {
+    // Find the appropriate binding point
+    GLenum attachmentEnum;
+    if (type == RTAttachmentType::Depth) {
         attachmentEnum = GL_DEPTH_ATTACHMENT;
 
         TextureType texType = tex->getTextureType();

@@ -41,8 +41,7 @@ void main() {
                                    depthLoD).r);
         }
     } else {
-        // need this to handle non-power of two
-        // very conservative
+        // need this to handle non-power of two very conservative
 
         vec2 offsets[] = vec2[](vec2(-1, -1),
                                 vec2(0, -1),

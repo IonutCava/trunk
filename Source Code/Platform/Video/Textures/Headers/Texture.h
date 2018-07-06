@@ -146,7 +146,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback);
     /// Force a refresh of the entire mipmap chain
-    virtual void updateMipMaps() { _mipMapsDirty = false; }
+    virtual void updateMipMaps(bool force = false) { _mipMapsDirty = false; }
 
     virtual void validateDescriptor();
 

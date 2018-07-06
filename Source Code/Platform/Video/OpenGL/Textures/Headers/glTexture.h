@@ -75,7 +75,7 @@ class glTexture final : public Texture,
    protected:
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) override;
     void reserveStorage();
-    void updateMipMaps();
+    void updateMipMaps(bool force = false);
 
     void loadDataCompressed(const TextureLoadInfo& info,
                             const vectorImpl<ImageTools::ImageLayer>& imageLayers);

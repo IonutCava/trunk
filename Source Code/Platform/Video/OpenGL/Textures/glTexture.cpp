@@ -110,11 +110,11 @@ void glTexture::resize(const bufferPtr ptr,
     loadData(info, ptr, dimensions);
 }
 
-void glTexture::updateMipMaps() {
-    if (_mipMapsDirty && _descriptor.automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
+void glTexture::updateMipMaps(bool force) {
+    if (force || (_mipMapsDirty && _descriptor.automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps())) {
         glGenerateTextureMipmap(_textureData.getHandleHigh());
     }
-    Texture::updateMipMaps();
+    Texture::updateMipMaps(force);
 }
 
 void glTexture::reserveStorage() {

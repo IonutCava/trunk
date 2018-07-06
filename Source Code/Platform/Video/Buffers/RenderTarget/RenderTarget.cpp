@@ -34,6 +34,8 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
 {
     if (!g_policiesInitialised) {
         s_policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+
+        s_policyDepthOnly.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
         s_policyDepthOnly.drawMask().disableAll();
         s_policyDepthOnly.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
         g_policiesInitialised = true;

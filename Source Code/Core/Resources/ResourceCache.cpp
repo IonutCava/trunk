@@ -33,16 +33,16 @@ ResourceCache::~ResourceCache()
 void ResourceCache::clear() {
     WriteLock w_lock(_creationMutex);
     Console::printfn(Locale::get(_ID("STOP_RESOURCE_CACHE")));
-    for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB);)
-    {
-        if (it->second.expired()) {
-            it = _resDB.erase(it);
-        } else {
-            ++it;
+    while (!_resDB.empty()) {
+        for (ResourceMap::iterator it = std::begin(_resDB); it != std::end(_resDB);)
+        {
+            if (it->second.expired()) {
+                it = _resDB.erase(it);
+            } else {
+                ++it;
+            }
         }
     }
-    WAIT_FOR_CONDITION_TIMEOUT(_resDB.empty(), Time::SecondsToMilliseconds(5.0))
-    assert(_resDB.empty());
 }
 
 void ResourceCache::add(CachedResource_wptr res) {

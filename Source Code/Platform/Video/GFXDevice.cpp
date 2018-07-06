@@ -623,6 +623,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
 void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     static bool firstRun = true;
     static RTDrawDescriptor depthOnlyTarget;
+    static size_t stateHash = 0;
 
     if (firstRun) {
         // We use a special shader that downsamples the buffer
@@ -634,6 +635,12 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
         depthOnlyTarget.disableState(RTDrawDescriptor::State::CHANGE_VIEWPORT);
         depthOnlyTarget.drawMask().disableAll();
         depthOnlyTarget.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+
+        RenderStateBlock defaultStateNoDepth;
+        defaultStateNoDepth.setZRead(false);
+        defaultStateNoDepth.setZFunc(ComparisonFunction::ALWAYS);
+        stateHash = defaultStateNoDepth.getHash();
+
         firstRun = false;
     }
 
@@ -657,7 +664,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     }
 
     PipelineDescriptor pipelineDesc;
-    pipelineDesc._stateHash = _defaultStateNoDepthHash;
+    pipelineDesc._stateHash = stateHash;
     pipelineDesc._shaderProgram = _HIZConstructProgram;
 
     GenericDrawCommand triangleCmd;
