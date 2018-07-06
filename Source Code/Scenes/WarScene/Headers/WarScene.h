@@ -35,21 +35,8 @@ namespace AI {
 
 class WarScene : public Scene {
 public:
-    WarScene() : Scene(),
-        _groundPlaceholder(nullptr),
-        _faction1(nullptr),
-        _faction2(nullptr),
-        _bobNode(nullptr),
-        _bobNodeBody(nullptr),
-        _lampLightNode(nullptr),
-        _lampTransform(nullptr),
-        _lampTransformNode(nullptr),
-        _sceneReady(false),
-        _sun(nullptr)
-    {
-        _scorTeam1 = 0;
-        _scorTeam2 = 0;
-    }
+    WarScene();
+    ~WarScene();
 
     bool unload();
     bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
@@ -67,20 +54,20 @@ public:
     bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 private:
-    void processSimulation(cdiggins::any a, CallbackParam b);
     void startSimulation();
-    void resetSimulation();
 
 private:
     I8 _score;
     vec4<F32> _sunvector;
     SceneGraphNode* _groundPlaceholder;
-    DirectionalLight *_sun;
+    DirectionalLight* _sun;
+    GUIMessageBox* _infoBox;
 
 private: //Game
     bool _sceneReady;
     I8 _scorTeam1;
     I8 _scorTeam2;
+    U64 _lastNavMeshBuildTime;
     ///AIEntities are the "processors" behing the NPC's
     vectorImpl<AI::AIEntity *> _army1;
     vectorImpl<AI::AIEntity *> _army2;

@@ -38,7 +38,7 @@ public:
     TenisSceneAISceneImpl(SceneGraphNode* target);
 	void processData(const U64 deltaTime);
 	void processInput(const U64 deltaTime);
-	void update(NPC* unitRef = nullptr);
+	void update(const U64 deltaTime, NPC* unitRef = nullptr);
 	void addEntityRef(AIEntity* entity);
     void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
 

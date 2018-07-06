@@ -73,6 +73,8 @@ public:
     inline SceneGraphNode* const getBoundNode() const {return _node;} 
     /// Just before we render the frame
     virtual bool frameRenderingQueued(const FrameEvent& evt) {return true;}
+    /// If the parent node is deleted, this gets called automatically
+    inline void nodeDeleted() {  _node = nullptr; }
 protected:
     /// Unit type
     UnitType _type;

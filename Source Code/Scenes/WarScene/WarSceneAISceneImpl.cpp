@@ -8,7 +8,14 @@
 
 using namespace AI;
 
-static const D32 ATTACK_RADIUS = 4 * 4;
+static const D32 ATTACK_RADIUS = 5 * 5;
+
+PositionFact     WorkingMemory::_team1FlagPosition;
+PositionFact     WorkingMemory::_team2FlagPosition;
+SmallCounterFact WorkingMemory::_team1Count;
+SmallCounterFact WorkingMemory::_team2Count;
+SceneGraphNode*  WarSceneAISceneImpl::_team1Flag = nullptr;
+SceneGraphNode*  WarSceneAISceneImpl::_team2Flag = nullptr;
 
 WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
                                             _tickCount(0),
@@ -202,7 +209,7 @@ void WarSceneAISceneImpl::processData(const U64 deltaTime) {
     updatePositions();
 }
 
-void WarSceneAISceneImpl::update(NPC* unitRef){
+void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
     if (!unitRef) {
         return;
     }
@@ -210,9 +217,44 @@ void WarSceneAISceneImpl::update(NPC* unitRef){
     updatePositions();
 
     /// Update sensor information
-    Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
-    if (visualSensor) {
-        visualSensor->updatePosition(unitRef->getPosition());
+    Sensor* sensor = _entity->getSensor(VISUAL_SENSOR);
+    if (sensor) {
+        sensor->update(deltaTime);
+    }
+    sensor = _entity->getSensor(AUDIO_SENSOR);
+    if (sensor) {
+        sensor->update(deltaTime);
+    }
+
+
+    if (!_workingMemory._staticDataUpdated) {
+        AITeam* team1 = AIManager::getInstance().getTeamByID(0);
+        if (team1 != nullptr) {
+            const AITeam::teamMap& team1Members = team1->getTeamMembers();
+            _workingMemory._team1Count.value(static_cast<U8>(team1Members.size()));
+            _workingMemory._team1Count.belief(1.0f);
+        }
+        AITeam* team2 = AIManager::getInstance().getTeamByID(1);
+        if (team2 != nullptr) {
+            const AITeam::teamMap& team2Members = team2->getTeamMembers();
+            _workingMemory._team2Count.value(static_cast<U8>(team2Members.size()));
+            _workingMemory._team2Count.belief(1.0f);
+        }
+        if (_team1Flag != nullptr) {
+            _workingMemory._team1FlagPosition.value(_team1Flag->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+            _workingMemory._team1FlagPosition.belief(1.0f);
+        }
+        if (_team2Flag != nullptr) {
+            _workingMemory._team2FlagPosition.value(_team2Flag->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+            _workingMemory._team2FlagPosition.belief(1.0f);
+        }
+        _workingMemory._staticDataUpdated = true;
+    }
+    if (_currentEnemyTarget) {
+        _workingMemory._currentTargetEntity.value(_currentEnemyTarget);
+        _workingMemory._currentTargetEntity.belief(1.0f);
+        _workingMemory._currentTargetPosition.value(_currentEnemyTarget->getUnitRef()->getCurrentPosition());
+        _workingMemory._currentTargetPosition.belief(1.0f);
     }
 }
 

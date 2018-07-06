@@ -887,6 +887,12 @@
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.cpp">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\Sensors\AudioSensor.cpp">
+      <Filter>AI\Sensors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1408,6 +1414,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.h">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIMessageBox.h">
+      <Filter>GUI\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

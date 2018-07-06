@@ -43,6 +43,10 @@ namespace Navigation {
 
     NavigationMesh::~NavigationMesh()
     {
+       unload();
+    }
+
+    bool NavigationMesh::unload() {
         if (_buildThread) {
             _buildThread->stopTask();
             while (!_buildThread->isFinished()){
@@ -51,7 +55,7 @@ namespace Navigation {
         
         if (_navQuery) {
             dtFreeNavMeshQuery(_navQuery);
-            _navQuery = 0 ;
+            _navQuery = 0;
         }
 
         freeIntermediates(true);
@@ -61,6 +65,7 @@ namespace Navigation {
         _tempNavMesh = nullptr;
 
         SAFE_DELETE(_debugDrawInterface);
+        return true;
     }
 
     void NavigationMesh::freeIntermediates(bool freeAll) {

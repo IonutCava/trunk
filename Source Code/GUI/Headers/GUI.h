@@ -53,6 +53,7 @@ class Scene;
 class GUIText;
 class GUIFlash;
 class GUIButton;
+class GUIMessageBox;
 /// Grafical User Interface
 DEFINE_SINGLETON_EXT1( GUI, InputAggregatorInterface )
     typedef Unordered_map<std::string, GUIElement*> guiMap;
@@ -63,12 +64,13 @@ public:
     void update(const U64 deltaTime);
     /// Add a text label
     GUIText* addText(const std::string& id,const vec2<I32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
+    /// Modify a text label
+    GUIText* modifyText(const std::string& id, char* format, ...);
+    GUIMessageBox* addMsgBox(const std::string& id, const std::string& title, const std::string& message, const vec2<I32>& offsetFromCentre = vec2<I32>(0));
     /// Add a button with a specific callback. The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up from the bottom
     GUIButton* addButton(const std::string& id,const std::string& text,const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,ButtonCallback callback,const std::string& rootSheetId = "");
     /// Add a flash element -DEPRECATED-
     GUIFlash* addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent);
-    /// Modify a text label
-    GUIText* modifyText(const std::string& id, char* format, ...);
     /// Called on window resize to adjust the dimensions of all the GUI elements
     void onResize(const vec2<U16>& newResolution);
     /// Get a pointer to our console window
@@ -120,8 +122,6 @@ private:
     guiMap      _guiStack;          //< All the GUI elements created
     vec2<U16>   _cachedResolution;  //< We keep a cache of the current resolution to avoid useless queries
     U64         _textRenderInterval;//< We should avoid rendering text as fast as possible for performance reasons
-    /// Used to check if we need to add a new GUIElement or modify an existing one
-    std::pair<guiMap::iterator, bool > _resultGuiElement;
     CEGUI::Window* _rootSheet; //< gui root Window
     std::string _defaultGUIScheme;
     ShaderProgram* _guiShader;//<Used to apply color for text for now

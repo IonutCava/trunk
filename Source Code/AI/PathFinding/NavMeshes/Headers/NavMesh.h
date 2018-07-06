@@ -107,6 +107,8 @@ namespace Navigation {
         bool save();
         /// Load a saved NavigationMesh from a file.
         bool load(SceneGraphNode* const node);
+        /// Unload the navmesh reverting the instance to an empty container
+        bool unload();
         /// Called once per frame with the time diff between this and the last frame
         void update(const U64 deltaTime);
         /// Render the debug mesh if debug drawing is enabled

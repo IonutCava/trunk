@@ -96,7 +96,6 @@ Sensor* AIEntity::getSensor(SensorType type) {
 
 bool AIEntity::addSensor(SensorType type, Sensor* sensor) {
     
-    sensor->updatePosition(_currentPosition);
     if (_sensorList.find(type) != _sensorList.end()) {
         SAFE_UPDATE(_sensorList[type], sensor);
     } else {
@@ -131,7 +130,7 @@ void AIEntity::processData(const U64 deltaTime){
 void AIEntity::update(const U64 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
-        _AISceneImpl->update(_unitRef);
+        _AISceneImpl->update(deltaTime, _unitRef);
     }
     if (_unitRef) {
         _unitRef->update(deltaTime);

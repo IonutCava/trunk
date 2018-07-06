@@ -402,6 +402,7 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshLoader.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\WaypointGraph.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\Sensors\AudioSensor.cpp" />
     <ClCompile Include="..\..\Source Code\Core\ApplicationTimer.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
@@ -466,6 +467,7 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp" />
@@ -619,6 +621,7 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsoleCommandParser.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIElement.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h" />
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIMessageBox.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIText.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h" />

@@ -27,11 +27,13 @@
 
 enum GUIType
 {
-    GUI_TEXT				= 0x0000,
-    GUI_BUTTON				= 0x0001,
-    GUI_FLASH				= 0x0002,
-    GUI_CONSOLE             = 0x0003,
-    GUI_PLACEHOLDER			= 0x0004
+    GUI_TEXT			= 0,
+    GUI_BUTTON			= 1,
+    GUI_FLASH			= 2,
+    GUI_CONSOLE         = 3,
+    GUI_MESSAGE_BOX     = 4,
+    GUI_CONFIRM_DIALOG  = 5,
+    GUIType_PLACEHOLDER = 6
 };
 
 struct GUIEvent {
@@ -62,9 +64,9 @@ public:
     inline const bool isActive()  const {return _active;}
     inline const bool isVisible() const {return _visible;}
 
-    inline void  setName(const std::string& name) {_name = name;}
-    inline void  setVisible(const bool visible)   {_visible = visible;}
-    inline void  setActive(const bool active)     {_active = active;}
+    inline  void  setName(const std::string& name) {_name = name;}
+    virtual void  setVisible(const bool visible)   {_visible = visible;}
+    virtual void  setActive(const bool active)     {_active = active;}
 
     inline void  addChildElement(GUIElement* child)    {}
 

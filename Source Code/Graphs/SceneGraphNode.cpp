@@ -129,8 +129,9 @@ void SceneGraphNode::getShadowCastersAndReceivers(vectorImpl<const SceneGraphNod
 
 ///When unloading the current graph node
 bool SceneGraphNode::unload(){
-    if (!_loaded) return true;
-
+    if (!_loaded) {
+         return true;
+    }
     //Unload every sub node recursively
     FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->unload();
@@ -147,6 +148,10 @@ bool SceneGraphNode::unload(){
         }
     }
     _loaded = false;
+
+    for(DELEGATE_CBK& cbk : _deletionCallbacks) {
+        cbk();
+    }
     return true;
 }
 

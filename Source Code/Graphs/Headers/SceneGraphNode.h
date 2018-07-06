@@ -203,6 +203,9 @@ public:
     inline const mat4<F32>& getMaterialColorMatrix()    const { return _materialColorMatrix; }
     inline const mat4<F32>& getMaterialPropertyMatrix() const { return _materialPropertyMatrix; }
 
+    inline void registerdeletionCallback(const DELEGATE_CBK& cbk) {
+        _deletionCallbacks.push_back(cbk);
+    }
 #ifdef _DEBUG
     void drawDebugAxis();
 #endif
@@ -262,7 +265,7 @@ private:
 
     UsageContext _usageContext;
     NodeComponents _components;
-
+    vectorImpl<DELEGATE_CBK> _deletionCallbacks; 
     Unordered_map<RenderStage, bool> _drawReset;
 
     StateTracker<bool> _trackedBools;

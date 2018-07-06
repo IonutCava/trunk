@@ -19,9 +19,8 @@ TenisSceneAISceneImpl::TenisSceneAISceneImpl(SceneGraphNode* target) : AISceneIm
 void TenisSceneAISceneImpl::addEntityRef(AIEntity* entity){
     assert(entity != nullptr);
     _entity = entity;
-    VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
-    if(visualSensor){
-        _initialPosition = visualSensor->getSpatialPosition();
+    if (_entity->getUnitRef()) {
+        _initialPosition = _entity->getUnitRef()->getCurrentPosition();
     }
 }
 
@@ -66,21 +65,18 @@ void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cd
 }
 
 void TenisSceneAISceneImpl::updatePositions(){
-    VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
-    if(visualSensor){
-        _tickCount++;
-        if(_tickCount == 96){
-            _prevBallPosition = _ballPosition;
-            _tickCount = 0;
-        }
-        _ballPosition = visualSensor->getPositionOfObject(_target);
-        _entityPosition = visualSensor->getSpatialPosition();
-        if(_prevBallPosition.z != _ballPosition.z){
-            _prevBallPosition.z < _ballPosition.z ? _ballToTeam2 = false : _ballToTeam2 = true;
-            _gameStop = false;
-        }else{
-            _gameStop = true;
-        }
+    _tickCount++;
+    if (_tickCount == 96) {
+        _prevBallPosition = _ballPosition;
+        _tickCount = 0;
+    }
+    _ballPosition = _target->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
+    _entityPosition = _entity->getUnitRef()->getCurrentPosition();
+    if (_prevBallPosition.z != _ballPosition.z) {
+        _prevBallPosition.z < _ballPosition.z ? _ballToTeam2 = false : _ballToTeam2 = true;
+        _gameStop = false;
+    } else {
+        _gameStop = true;
     }
 }
 
@@ -111,7 +107,7 @@ void TenisSceneAISceneImpl::processData(const U64 deltaTime){
     _entity->sendMessage(nearestEntity, ATTACK_BALL, distance);
 }
 
-void TenisSceneAISceneImpl::update(NPC* unitRef){
+void TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
     if(!unitRef)
         return;
 
@@ -129,7 +125,7 @@ void TenisSceneAISceneImpl::update(NPC* unitRef){
     Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
 
     if(visualSensor){
-        visualSensor->updatePosition(unitRef->getPosition());
+        visualSensor->update(deltaTime);
     }
 }
 

@@ -25,17 +25,14 @@
 
 #include "Sensor.h"
 namespace AI {
-class AIEntity;
-class AudioSensor : public Sensor{
+
+class AudioSensor : public Sensor {
 public:
-	AudioSensor() : Sensor(AUDIO_SENSOR) {}
+    AudioSensor();
 
-	U32  getNearbyEntityCount(U32 range)         {}  ///< number of smart units nearby     (only noisy ones)
-	U32  getNearbyHostileEntityCount(U32 range)  {}  ///< lookup hostile entity count in range (only noisy ones)
-	U32  getNearbyFriendlyEntityCount(U32 range) {}  ///< lookup friendly entity count in range (only noisy ones)
-
-	AIEntity* getNearestFriendlyEntity()         {}  ///< get closest noisy friendly entity
-	AIEntity* getNearestHostileEntity()          {}  ///< get closest noisy hostile entity
+protected:
+    friend class AIEntity;
+    void update(const U64 deltaTime);
 };
 }; //namespace AI
 #endif

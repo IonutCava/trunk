@@ -6,6 +6,7 @@
 #include "Headers/GUIText.h"
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
+#include "Headers/GUIMessageBox.h"
 #include "GUIEditor/Headers/GUIEditor.h"
 
 #include "Scenes/Headers/Scene.h"
@@ -119,7 +120,9 @@ bool GUI::init(const vec2<U16>& resolution) {
     if (parser->isPropertyPresent("SchemaDefaultResourceGroup")){
         parser->setProperty("SchemaDefaultResourceGroup", "schemas");
     }
+    CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-10.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12.font");
+    CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-10-NoScale.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
     _defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
     CEGUI::SchemeManager::getSingleton().createFromFile(  _defaultGUIScheme + ".scheme") ;
@@ -262,8 +265,8 @@ bool GUI::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){
 }
 
 GUIButton* GUI::addButton(const std::string& id, const std::string& text,
-                    const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
-                    ButtonCallback callback,const std::string& rootSheetId){
+                          const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
+                          ButtonCallback callback,const std::string& rootSheetId){
     CEGUI::Window* parent = nullptr;
     if (!rootSheetId.empty()) {
         parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(rootSheetId);
@@ -271,9 +274,27 @@ GUIButton* GUI::addButton(const std::string& id, const std::string& text,
     if (!parent) {
         parent = _rootSheet;
     }
-    GUIButton* btn = New GUIButton(id,text,_defaultGUIScheme,position,dimensions,color,parent,callback);
-    _guiStack[id] = btn;
+    GUIButton* btn = New GUIButton(id, text, _defaultGUIScheme,position,dimensions,color,parent,callback);
+    guiMap::iterator it = _guiStack.find(id);
+    if (it != _guiStack.end()) {
+        SAFE_UPDATE(it->second, btn);
+    }else {
+        _guiStack.insert(std::make_pair(id,  btn));
+    }
+    
     return btn;
+}
+
+GUIMessageBox* GUI::addMsgBox(const std::string& id, const std::string& title, const std::string& message, const vec2<I32>& offsetFromCentre ) {
+    GUIMessageBox* box = New GUIMessageBox(id, title, message, offsetFromCentre, _rootSheet);
+    guiMap::iterator it = _guiStack.find(id);
+    if (it != _guiStack.end()) {
+        SAFE_UPDATE(it->second, box);
+    }else {
+        _guiStack.insert(std::make_pair(id,  box));
+    }
+    
+    return box;
 }
 
 GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std::string& font,const vec3<F32> &color, char* format, ...){
@@ -289,8 +310,13 @@ GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std
     va_end(args);
 
     GUIText *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
-    _resultGuiElement = _guiStack.insert(make_pair(id,t));
-    if(!_resultGuiElement.second) (_resultGuiElement.first)->second = t;
+    guiMap::iterator it = _guiStack.find(id);
+    if (it != _guiStack.end()) {
+        SAFE_UPDATE(it->second, t);
+    }else {
+        _guiStack.insert(std::make_pair(id,  t));
+    }
+
     fmt_text.empty();
 
     return t;
@@ -298,9 +324,12 @@ GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std
 
 GUIFlash* GUI::addFlash(const std::string& id, std::string movie, const vec2<U32>& position, const vec2<U32>& extent){
     GUIFlash *flash = New GUIFlash(_rootSheet);
-    _resultGuiElement = _guiStack.insert(make_pair(id,flash));
-    if(!_resultGuiElement.second) (_resultGuiElement.first)->second = flash;
-
+    guiMap::iterator it = _guiStack.find(id);
+    if (it != _guiStack.end()) {
+        SAFE_UPDATE(it->second, flash);
+    }else {
+        _guiStack.insert(std::make_pair(id,  flash));
+    }
     return flash;
 }
 

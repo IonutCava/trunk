@@ -24,23 +24,30 @@
 #define _AI_VISUAL_SENSOR_H_
 
 #include "Sensor.h"
-
+#include "Utility/Headers/UnorderedMap.h"
 class SceneGraphNode;
 namespace AI {
-class AIEntity;
 
-class VisualSensor : public Sensor{
+/// SGN GUID, SGN pointer
+typedef Unordered_map<U64, SceneGraphNode* > NodeContainer;
+/// Container ID, NodeContainer
+typedef Unordered_map<U32, NodeContainer> NodeContainerMap;
+
+class VisualSensor : public Sensor {
 public:
-	VisualSensor() : Sensor(VISUAL_SENSOR) {}
+	VisualSensor();
 
-	U32  getNearbyEntityCount(U32 range)         {}  ///< number of smart units nearby     (only visible ones)
-	U32  getNearbyHostileEntityCount(U32 range)  {}  ///< lookup hostile entity count in range (only visible ones)
-	U32  getNearbyFriendlyEntityCount(U32 range) {}  ///< lookup friendly entity count in range (only visible ones)
+    void followSceneGraphNode(U32 containerID, SceneGraphNode* const node);
+    void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
 
-	U32        getDistanceToEntity(AIEntity* target)   {}
-	vec3<F32>  getPositionOfObject(SceneGraphNode* node);
-	AIEntity*  getNearestFriendlyEntity()         {}  ///< get closest visible friendly entity
-	AIEntity*  getNearestHostileEntity()          {}  ///< get closest visible hostile entity
+protected:
+    friend class AIEntity;
+    void update(const U64 deltaTime);
+    NodeContainerMap::iterator findContainer(U32 container);
+    NodeContainer::const_iterator findNodeEntry(NodeContainerMap::const_iterator containerIt, U64 GUID) const;
+
+protected:
+    NodeContainerMap _nodeContainerMap;
 };
 }; //namespace AI
 #endif

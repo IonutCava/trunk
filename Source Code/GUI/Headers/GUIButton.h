@@ -35,7 +35,7 @@ namespace CEGUI{
 class GUIButton : public GUIElement {
 typedef DELEGATE_CBK ButtonCallback;
 friend class GUI;
-public:
+protected:
     GUIButton(const std::string& id,
               const std::string& text,
               const std::string& guiScheme,
@@ -48,8 +48,6 @@ public:
 
     void setTooltip(const std::string& tooltipText);
     void setFont(const std::string& fontName, const std::string& fontFileName, U32 size);
-
-protected:
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
 protected:

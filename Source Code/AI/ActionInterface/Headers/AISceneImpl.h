@@ -46,7 +46,7 @@ public:
 
 	virtual void processData(const U64 deltaTime) = 0;
 	virtual void processInput(const U64 deltaTime) = 0;
-	virtual void update(NPC* unitRef = nullptr) = 0;
+	virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
 	virtual void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) = 0;
 
 	virtual void addEntityRef(AIEntity* entity) {

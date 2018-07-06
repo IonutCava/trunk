@@ -32,17 +32,19 @@ enum SensorType {
 	AUDIO_SENSOR = 2
 };
 
-class Sensor{
+class Sensor {
 public:
-	Sensor(SensorType type){_type = type;}
-	virtual void updatePosition(const vec3<F32>& newPosition) {_position = newPosition;}
-	/// return the coordinates at which the sensor is found (or the entity it's attached to)
-	inline vec3<F32>& getSpatialPosition() {return _position;}
-	inline SensorType getSensorType()      {return _type;}
+	Sensor(SensorType type) 
+    {
+        _type = type;
+    }
+
+	inline SensorType sensorType() const { return _type; }
+    inline void updateRange(const vec2<F32>& range) { _range.set(range); }
+
+    virtual void update(const U64 deltaTime) = 0;
 
 protected:
-
-	vec3<F32> _position;
 	vec2<F32> _range; ///< min/max
 	SensorType _type;
 };

@@ -2,6 +2,7 @@
 #include "Headers/WarSceneAISceneImpl.h"
 #include "AESOPActions/Headers/WarSceneActions.h"
 
+#include "GUI/Headers/GUIMessageBox.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -18,6 +19,28 @@
 #include "Managers/Headers/AIManager.h"
 
 REGISTER_SCENE(WarScene);
+
+WarScene::WarScene() : Scene(),
+                       _sun(nullptr),
+                       _infoBox(nullptr),
+                       _faction1(nullptr),
+                       _faction2(nullptr),
+                       _bobNode(nullptr),
+                       _bobNodeBody(nullptr),
+                       _lampLightNode(nullptr),
+                       _lampTransform(nullptr),
+                       _lampTransformNode(nullptr),
+                       _groundPlaceholder(nullptr),
+                       _sceneReady(false),
+                       _lastNavMeshBuildTime(0UL)
+{
+    _scorTeam1 = 0;
+    _scorTeam2 = 0;
+}
+
+WarScene::~WarScene()
+{
+}
 
 void WarScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
@@ -91,24 +114,28 @@ static boost::atomic_bool navMeshStarted;
 void navMeshCreationCompleteCallback(AI::AIEntity::PresetAgentRadius radius,  AI::Navigation::NavigationMesh* navMesh){
     navMesh->save();
     AI::AIManager::getInstance().addNavMesh(radius, navMesh);
-    //AI::AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
-}
-
-void WarScene::resetSimulation(){
-    navMeshStarted = false;
 }
 
 void WarScene::startSimulation(){
-    resetSimulation();
-
-    if (!navMeshStarted) {
+    _infoBox->setTitle("NavMesh state");
+    _infoBox->setMessageType(GUIMessageBox::MESSAGE_INFO);
+    bool previousMesh = false;
+    bool loadedFromFile = true;
+    U64 currentTime = GETUSTIME(true);
+    U64 diffTime = currentTime - _lastNavMeshBuildTime;
+    if (diffTime > getSecToUs(10)) {
+        AI::AIManager::getInstance().pauseUpdate(true);
         AI::Navigation::NavigationMesh* navMesh = AI::AIManager::getInstance().getNavMesh(_army1[0]->getAgentRadiusCategory());
         if (!navMesh) {
             navMesh = New AI::Navigation::NavigationMesh();
+        } else {
+            previousMesh = true;
+            AI::AIManager::getInstance().destroyNavMesh(_army1[0]->getAgentRadiusCategory());
         }
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
         if (!navMesh->load(nullptr)) {
+            loadedFromFile = false;
             navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, _army1[0]->getAgentRadiusCategory(), navMesh));
         } else {
             AI::AIManager::getInstance().addNavMesh(_army1[0]->getAgentRadiusCategory(), navMesh);
@@ -117,18 +144,29 @@ void WarScene::startSimulation(){
 #       endif
         }
 
+        if (previousMesh) {
+            if (loadedFromFile) {
+                _infoBox->setMessage("Re-loaded the navigation mesh from file!");
+            } else {
+                _infoBox->setMessage("Re-building the navigation mesh in a background thread!");
+            }
+        } else {
+            if (loadedFromFile) {
+                _infoBox->setMessage("Navigation mesh loaded from file!");
+            } else {
+                _infoBox->setMessage("Navigation mesh building in a background thread!");
+            }
+        }
+        _infoBox->show();
         navMeshStarted = true;
+        AI::AIManager::getInstance().pauseUpdate(false);
+        _lastNavMeshBuildTime = currentTime;
+        
+    } else {    
+        _infoBox->setMessage(std::string("Can't reload the navigation mesh this soon.\n Please wait \\[ " + Util::toString(getUsToSec<U64>(diffTime)) + " ] seconds more!"));
+        _infoBox->setMessageType(GUIMessageBox::MESSAGE_WARNING);
+        _infoBox->show();
     }
-
-}
-
-void WarScene::processSimulation(cdiggins::any a, CallbackParam b){
-    if(getTasks().empty()) return;
-    //SceneGraphNode* Soldier1 = _sceneGraph->findNode("Soldier1");
-    //assert(Soldier1);
-    //assert(_groundPlaceholder);
-
-
 }
 
 void WarScene::processInput(const U64 deltaTime){
@@ -528,6 +566,7 @@ bool WarScene::loadResources(bool continueOnErrors){
                   vec3<F32>(0.2f,0.8f,0.2f),
                   "Lamp Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]",
                   0.0f, 0.0f, 0.0f);
+    _infoBox = _GUI->addMsgBox("infoBox", "Info", "Blabla");
     //Add a first person camera
     Camera* cam = New FirstPersonCamera();
     cam->fromCamera(renderState().getCameraConst());

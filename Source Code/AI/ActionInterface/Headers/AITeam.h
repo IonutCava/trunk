@@ -49,7 +49,7 @@ public:
 
     inline void setTeamID(U32 value) { _teamID = value; }
 
-    inline U32      getTeamID() const {return  _teamID;}
+    inline U32  getTeamID() const { return  _teamID; }
     inline const teamMap& getTeamMembers()  const {
         return _team;
     }

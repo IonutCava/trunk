@@ -33,6 +33,65 @@ enum AIMsg {
     CHANGE_DESTINATION_POINT = 2
 };
 
+enum FactType {
+    FACT_TYPE_POSITION       = 0,
+    FACT_TYPE_COUNTER_SMALL  = 1,
+    FACT_TYPE_COUNTER_MEDIUM = 2,
+    FACT_TYPE_COUNTER_LARGE  = 3,
+    FACT_TYPE_AI_NODE        = 4,
+    FACT_TYPE_SGN_NODE       = 5,
+    FactType_PLACEHOLDER     = 6
+};
+
+template<typename T, FactType F>
+class WorkingMemoryFact {
+public:
+
+    WorkingMemoryFact()
+    {
+        _type = F;
+        _belief = 0.0f;
+    }
+
+    inline void value(const T& val) { _value = val; }
+    inline void belief(F32 belief)  { _belief = belief; }
+
+    inline const T& value()  { return _value; }
+    inline FactType type()   { return _type; }
+    inline F32      belief() { return _belief; }
+
+protected:
+    T   _value;
+    F32 _belief;
+    FactType _type;
+};
+
+typedef WorkingMemoryFact<AIEntity*, FACT_TYPE_AI_NODE>          AINodeFact;
+typedef WorkingMemoryFact<SceneGraphNode*, FACT_TYPE_SGN_NODE>   SGNNodeFact;
+typedef WorkingMemoryFact<vec3<F32>, FACT_TYPE_POSITION>         PositionFact;
+typedef WorkingMemoryFact<U8,  FACT_TYPE_COUNTER_SMALL>          SmallCounterFact;
+typedef WorkingMemoryFact<U16, FACT_TYPE_COUNTER_MEDIUM>         MediumCounterFact;
+typedef WorkingMemoryFact<U32, FACT_TYPE_COUNTER_LARGE>          LargeCounterFact;
+
+class WorkingMemory {
+public:
+    WorkingMemory() 
+    {
+        _health.value(100);
+        _currentTargetEntity.value(nullptr);  
+        _staticDataUpdated = false;
+    }
+    static PositionFact     _team1FlagPosition;
+    static PositionFact     _team2FlagPosition;
+    static SmallCounterFact _team1Count;
+    static SmallCounterFact _team2Count;
+           SmallCounterFact _health;
+           AINodeFact       _currentTargetEntity;
+           PositionFact     _currentTargetPosition;
+
+    bool _staticDataUpdated;
+};
+
 class WarSceneAISceneImpl : public AI::AISceneImpl {
 public:
     WarSceneAISceneImpl();
@@ -40,7 +99,7 @@ public:
 
     void processData(const U64 deltaTime);
     void processInput(const U64 deltaTime);
-    void update(NPC* unitRef = nullptr);
+    void update(const U64 deltaTime, NPC* unitRef = nullptr);
     void processMessage(AIEntity* sender, AIMsg msg,const cdiggins::any& msg_content);
     void registerAction(GOAPAction* const action);
     void registerGoal(const GOAPGoal& goal);
@@ -51,7 +110,6 @@ private:
 
     void handlePlan(const GOAPPlan& plan);
     bool performAction(const GOAPAction* planStep);
-
     void receiveOrder(AI::Order order);
 
 private:
@@ -63,6 +121,10 @@ private:
     bool _newPlan;
     bool _newPlanSuccess;
     bool _orderReceived;
+
+    static SceneGraphNode* _team1Flag;
+    static SceneGraphNode* _team2Flag;
+    WorkingMemory _workingMemory;
 };
 
 }; //namespace AI
