@@ -52,6 +52,7 @@ namespace GFX {
 class GUIConsole;
 class GUIElement;
 class ResourceCache;
+class SceneGraphNode;
 class PlatformContext;
 class RenderStateBlock;
 
@@ -108,7 +109,7 @@ public:
     inline CEGUI::Window* rootSheet() const { return _rootSheet; }
     inline const stringImpl& guiScheme() const { return _defaultGUIScheme; }
 
-    void selectionChangeCallback(Scene* const activeScene, PlayerIndex idx);
+    void selectionChangeCallback(Scene* const activeScene, PlayerIndex idx, SceneGraphNode* node);
     /// Return a pointer to the default, general purpose message box
     inline GUIMessageBox* const getDefaultMessageBox() const {
         return _defaultMsgBox;

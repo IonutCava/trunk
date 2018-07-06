@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
+    //ToDo: Make this more generic. Also used by the Editor -Ionut
     enum class PushConstantType : U8 {
         BOOL = 0,
         INT,

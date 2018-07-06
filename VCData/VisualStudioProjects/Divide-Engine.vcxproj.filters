@@ -597,6 +597,9 @@
     <ClCompile Include="..\..\Source Code\ECS\Systems\BoundsSystem.cpp">
       <Filter>ECS\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\EditorComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1044,6 +1047,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\BoundsSystem.h">
       <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EditorComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

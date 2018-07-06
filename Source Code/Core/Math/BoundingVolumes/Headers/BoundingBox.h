@@ -36,8 +36,15 @@
 
 namespace Divide {
 
+namespace Attorney {
+    class BoundingBoxEditor;
+};
+
+class PropertyWindow;
 class BoundingSphere;
 class BoundingBox {
+    friend class Attorney::BoundingBoxEditor;
+
    public:
     BoundingBox() noexcept;
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept;
@@ -115,6 +122,19 @@ class BoundingBox {
    private:
     vec3<F32> _min, _max;
 };
+
+namespace Attorney {
+    class BoundingBoxEditor {
+        private:
+        static F32* min(BoundingBox& bb) {
+            return bb._min._v;
+        }
+        static F32* max(BoundingBox& bb) {
+            return bb._max._v;
+        }
+        friend class Divide::PropertyWindow;
+    };
+}; //namespace Attorney
 
 };  // namespace Divide
 

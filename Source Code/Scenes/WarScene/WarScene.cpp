@@ -53,9 +53,9 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
     _resetUnits = false;
 
-    addSelectionCallback([&](PlayerIndex idx) {
-        if (_currentSelection[idx]) {
-            _GUI->modifyText(_ID("entityState"), _currentSelection[idx]->getName().c_str());
+    addSelectionCallback([&](PlayerIndex idx, SceneGraphNode* node) {
+        if (node != nullptr) {
+            _GUI->modifyText(_ID("entityState"), node->getName().c_str());
         } else {
             _GUI->modifyText(_ID("entityState"), "");
         }
@@ -97,10 +97,13 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
     }
 
     if (_guiTimersMS[1] >= Time::SecondsToMilliseconds(1)) {
-        if (_currentSelection[0]) {
-            AI::AIEntity* entity = findAI(_currentSelection[0]);
-            if (entity) {
-                _GUI->modifyText(_ID("entityState"), entity->toString().c_str());
+        if (!_currentSelection[0].empty()) {
+            SceneGraphNode* node = sceneGraph().findNode(_currentSelection[0].front());
+            if (node != nullptr) {
+                AI::AIEntity* entity = findAI(node);
+                if (entity) {
+                    _GUI->modifyText(_ID("entityState"), entity->toString().c_str());
+                }
             }
         }
     }
@@ -685,13 +688,16 @@ void WarScene::toggleCamera(InputParams param) {
     }
 
     PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
-    if (_currentSelection[idx]) {
-        if (flyCameraActive) {
-            state().playerState(idx).overrideCamera(tpsCamera);
-            static_cast<ThirdPersonCamera&>(*tpsCamera).setTarget(_currentSelection[idx]);
-            flyCameraActive = false;
-            tpsCameraActive = true;
-            return;
+    if (!_currentSelection[idx].empty()) {
+        SceneGraphNode* node = sceneGraph().findNode(_currentSelection[idx].front());
+        if (node != nullptr) {
+            if (flyCameraActive) {
+                state().playerState(idx).overrideCamera(tpsCamera);
+                static_cast<ThirdPersonCamera&>(*tpsCamera).setTarget(node);
+                flyCameraActive = false;
+                tpsCameraActive = true;
+                return;
+            }
         }
     }
     if (tpsCameraActive) {

@@ -7,12 +7,16 @@
 namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
-    : SGNComponent(sgn),
+    : SGNComponent(sgn, "BOUNDS"),
      _transformDirty(true),
      _boundingBoxDirty(true),
      _lockBBTransforms(false)
 {
     RegisterEventCallback(&BoundsComponent::OnTransformDirty);
+    EditorComponent::registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX);
+    EditorComponent::registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX);
+    EditorComponent::registerField("BoundingSphere", &_boundingSphere, EditorComponentFieldType::BOUNDING_SPHERE);
+    EditorComponent::registerField("Lock BB Transform", &_lockBBTransforms, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::BOOL);
 }
 
 BoundsComponent::~BoundsComponent()

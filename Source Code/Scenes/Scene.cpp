@@ -504,7 +504,12 @@ U16 Scene::registerInputActions() {
     _input->flushCache();
 
     auto none = [](InputParams param) {};
-    auto deleteSelection = [this](InputParams param) { _sceneGraph->removeNode(_currentSelection[0]); };
+    auto deleteSelection = [this](InputParams param) { 
+        PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
+        if (!_currentSelection[idx].empty()) {
+            _sceneGraph->removeNode(_currentSelection[idx].front());
+        }
+    };
     auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
@@ -577,7 +582,8 @@ U16 Scene::registerInputActions() {
     auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
     auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
-    auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex)); };
+    auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), true); };
+    auto multiselect = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex), false); };
     auto lockCameraToMouse = [this](InputParams  param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(true); };
     auto releaseCameraFromMouse = [this](InputParams  param) {
         state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(false);
@@ -711,6 +717,7 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(actionID++, toggleFlashLight);
     actions.registerInputAction(actionID++, toggleOctreeRegionRendering);
     actions.registerInputAction(actionID++, select);
+    actions.registerInputAction(actionID++, multiselect);
     actions.registerInputAction(actionID++, lockCameraToMouse);
     actions.registerInputAction(actionID++, releaseCameraFromMouse);
     actions.registerInputAction(actionID++, rendererDebugView);
@@ -761,7 +768,9 @@ bool Scene::load(const stringImpl& name) {
 
     loadDefaultCamera();
     loadXMLAssets();
-    addSelectionCallback([this](U8 pIndex){_context.gui().selectionChangeCallback(this, pIndex);});
+    addSelectionCallback([this](U8 pIndex, SceneGraphNode* node){
+        _context.gui().selectionChangeCallback(this, pIndex, node);
+    });
 
     U32 totalLoadingTasks = _loadingTasks;
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
@@ -778,7 +787,7 @@ bool Scene::load(const stringImpl& name) {
 }
 
 bool Scene::unload() {
-    // prevent double unload calls%
+    // prevent double unload calls
     if (!checkLoadFlag()) {
         return false;
     }
@@ -821,10 +830,18 @@ void Scene::postLoadMainThread() {
 }
 
 void Scene::rebuildShaders() {
-    SceneGraphNode* selection(_currentSelection[0]);
-    if (selection != nullptr) {
-        selection->get<RenderingComponent>()->rebuildMaterial();
-    } else {
+    bool rebuilt = false;
+    for (auto iter : _currentSelection) {
+        for (I64 selection : iter.second) {
+            SceneGraphNode* node = sceneGraph().findNode(selection);
+            if (node != nullptr) {
+                node->get<RenderingComponent>()->rebuildMaterial();
+                rebuilt = true;
+            }
+        }
+    }
+
+    if (!rebuilt) {
         ShaderProgram::rebuildAllShaders();
     }
 }
@@ -1112,9 +1129,13 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
         if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
-            SceneGraphNode* selection(_currentSelection[0]);
-            if (selection != nullptr) {
-                selection->get<RenderingComponent>()->drawDebugAxis();
+            for (auto iter : _currentSelection) {
+                for (I64 selection : iter.second) {
+                    SceneGraphNode* node = sceneGraph().findNode(selection);
+                    if (node != nullptr) {
+                        node->get<RenderingComponent>()->drawDebugAxis();
+                    }
+                }
             }
         }
 
@@ -1198,58 +1219,88 @@ void Scene::findHoverTarget(PlayerIndex idx) {
     }
 
     if (!_sceneSelectionCandidates.empty()) {
-        _currentHoverTarget[idx] = _sceneSelectionCandidates.front();
-
-        SceneGraphNode* target = _sceneGraph->findNode(_currentHoverTarget[idx]);
+        I64 crtCandidate = _sceneSelectionCandidates.front();
+        SceneGraphNode* target = _sceneGraph->findNode(crtCandidate);
 
         const std::shared_ptr<SceneNode>& node = target->getNode();
         if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
             if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::SUBMESH) {
-                _currentHoverTarget[idx] = target->getParent()->getGUID();
+                crtCandidate = target->getParent()->getGUID();
             }
         }
 
-         SceneGraphNode* sgn = _sceneGraph->findNode(_currentHoverTarget[idx]);
-        if (sgn->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+        _currentHoverTarget[idx] = crtCandidate;
+        SceneGraphNode* sgn = _sceneGraph->findNode(crtCandidate);
+        if (sgn != nullptr && sgn->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             sgn->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_HOVER);
         }
     } else {
         SceneGraphNode* target(_sceneGraph->findNode(_currentHoverTarget[idx]));
-        if (target) {
-            if (target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
-                target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
-            }
-            _currentHoverTarget[idx] = 0;
+        if (target != nullptr && target->getSelectionFlag() != SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
+            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
         }
+        _currentHoverTarget[idx] = -1;
     }
 }
 
-void Scene::resetSelection() {
-    if (_currentSelection[0]) {
-        _currentSelection[0]->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
+void Scene::onNodeDestroy(SceneGraphNode& node) {
+    I64 guid = node.getGUID();
+    for (auto iter : _currentHoverTarget) {
+        if (iter.second == guid) {
+            iter.second = -1;
+        }
     }
 
-    _currentSelection[0] = nullptr;
+    for (auto iter : _currentSelection) {
+        iter.second.erase(
+            std::remove_if(std::begin(iter.second), std::end(iter.second),
+                           [guid](I64 crtGUID) -> bool { return guid == crtGUID; }),
+            std::end(iter.second));
+    }
 }
 
-void Scene::findSelection(PlayerIndex idx) {
-    bool hadTarget = _currentSelection[idx] != nullptr;
-    bool haveTarget = _currentHoverTarget[idx] != 0;
-
-    I64 crtGUID = hadTarget ? _currentSelection[idx]->getGUID() : -1;
-    I64 GUID = haveTarget ? _currentHoverTarget[idx] : -1;
-
-    if (crtGUID != GUID) {
-        resetSelection();
-
-        if (haveTarget) {
-            _currentSelection[idx] = _sceneGraph->findNode(_currentHoverTarget[idx]);
-            _currentSelection[idx]->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
+void Scene::resetSelection(PlayerIndex idx) {
+    for (I64 selectionGUID : _currentSelection[idx]) {
+        SceneGraphNode* node = sceneGraph().findNode(selectionGUID);
+        if (node != nullptr) {
+            node->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
         }
+    }
 
-        for (DELEGATE_CBK<void, U8>& cbk : _selectionChangeCallbacks) {
-            cbk(idx);
+    _currentSelection[idx].clear();
+}
+
+void Scene::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {
+    _currentSelection[idx].push_back(sgn.getGUID());
+    sgn.setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
+    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
+        cbk(idx, &sgn);
+    }
+}
+
+void Scene::findSelection(PlayerIndex idx, bool clearOld) {
+    // Clear old selection
+    if (clearOld) {
+        resetSelection(idx);
+    }
+
+    I64 hoverGUID = _currentHoverTarget[idx];
+    // No hover target
+    if (hoverGUID == -1) {
+        return;
+    }
+
+    vectorImpl<I64>& selections = _currentSelection[idx];
+    if (!selections.empty()) {
+        if (std::find(std::cbegin(selections), std::cend(selections), hoverGUID) != std::cend(selections)) {
+            //Already selected
+            return;
         }
+    }
+
+    SceneGraphNode* selectedNode = _sceneGraph->findNode(hoverGUID);
+    if (selectedNode != nullptr) {
+        setSelected(idx, *selectedNode);
     }
 }
 

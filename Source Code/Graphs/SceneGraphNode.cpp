@@ -47,48 +47,48 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     setName(name);
 
     if (BitCompare(componentMask, to_U32(ComponentType::ANIMATION))) {
-        AddComponent<AnimationComponent>(*this);
+        AddSGNComponent<AnimationComponent>(*this);
     }
 
     if (BitCompare(componentMask, to_U32(ComponentType::INVERSE_KINEMATICS))) {
-        AddComponent<IKComponent>(*this);
+        AddSGNComponent<IKComponent>(*this);
     }
     if (BitCompare(componentMask, to_U32(ComponentType::NETWORKING))) {
         LocalClient& client = _sceneGraph.parentScene().platformContext().client();
-        AddComponent<NetworkingComponent>(*this, client);
+        AddSGNComponent<NetworkingComponent>(*this, client);
     }
     if (BitCompare(componentMask, to_U32(ComponentType::RAGDOLL))) {
-        AddComponent<RagdollComponent>(*this);
+        AddSGNComponent<RagdollComponent>(*this);
     }
     if (BitCompare(componentMask, to_U32(ComponentType::NAVIGATION))) {
-        AddComponent<NavigationComponent>(*this);
+        AddSGNComponent<NavigationComponent>(*this);
     }
     if (BitCompare(componentMask, to_U32(ComponentType::RIGID_BODY))) {
         STUBBED("Rigid body physics disabled for now - Ionut");
         physicsGroup = PhysicsGroup::GROUP_IGNORE;
         PXDevice& pxContext = _sceneGraph.parentScene().platformContext().pfx();
-        AddComponent<RigidBodyComponent>(*this, physicsGroup, pxContext);
+        AddSGNComponent<RigidBodyComponent>(*this, physicsGroup, pxContext);
     }
     if (BitCompare(componentMask, to_U32(ComponentType::TRANSFORM))) {
-        AddComponent<TransformComponent>(*this);
+        AddSGNComponent<TransformComponent>(*this);
     }
 
     if (BitCompare(componentMask, to_U32(ComponentType::BOUNDS))) {
-        AddComponent<BoundsComponent>(*this);
+        AddSGNComponent<BoundsComponent>(*this);
     }
 
     if (BitCompare(componentMask, to_U32(ComponentType::UNIT))) {
-        AddComponent<UnitComponent>(*this);
+        AddSGNComponent<UnitComponent>(*this);
     }
     
     if (BitCompare(componentMask, to_U32(ComponentType::RENDERING))) {
         GFXDevice& gfxContext = _sceneGraph.parentScene().platformContext().gfx();
 
         const Material_ptr& materialTpl = _node->getMaterialTpl();
-        AddComponent<RenderingComponent>(gfxContext,
-                                         materialTpl ? materialTpl->clone("_instance_" + name)
-                                                     : nullptr,
-                                         *this);
+        AddSGNComponent<RenderingComponent>(gfxContext,
+                                            materialTpl ? materialTpl->clone("_instance_" + name)
+                                                        : nullptr,
+                                            *this);
     }
 
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, getGUID());
@@ -111,7 +111,7 @@ SceneGraphNode::~SceneGraphNode()
 
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), getName().c_str(), _node->getName().c_str());
 
-    GetComponentManager()->RemoveAllComponents(GetEntityID());
+    RemoveAllSGNComponents();
 
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
 

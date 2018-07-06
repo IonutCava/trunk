@@ -144,15 +144,18 @@ class Scene : public Resource, public PlatformContextComponent {
     SceneGraphNode* addSky(const stringImpl& nodeName = "");
 
     /// Object picking
-    inline SceneGraphNode* getCurrentSelection(U8 index) {
+    inline const vectorImpl<I64>& getCurrentSelection(PlayerIndex index = 0) {
         return _currentSelection[index];
     }
 
-    void findSelection(PlayerIndex idx);
+    void findSelection(PlayerIndex idx, bool clearOld);
 
-    inline void addSelectionCallback(const DELEGATE_CBK<void, U8>& selectionCallback) {
+    inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
+
+    void resetSelection(PlayerIndex idx);
+    void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
     SceneGraphNode* addParticleEmitter(const stringImpl& name,
                                           std::shared_ptr<ParticleData> data,
@@ -181,7 +184,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual U16 registerInputActions();
     virtual void loadKeyBindings();
 
-    void resetSelection();
+    void onNodeDestroy(SceneGraphNode& node);
     void findHoverTarget(PlayerIndex idx);
     bool checkCameraUnderwater(PlayerIndex idx) const;
     void toggleFlashlight(PlayerIndex idx);
@@ -288,7 +291,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorImpl<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
-       hashMapImpl<PlayerIndex, SceneGraphNode*> _currentSelection;
+       hashMapImpl<PlayerIndex, vectorImpl<I64>> _currentSelection;
        hashMapImpl<PlayerIndex, I64> _currentHoverTarget;
 
        SceneGraphNode* _currentSky;
@@ -305,7 +308,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorImpl<TaskHandle> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
-       vectorImpl<DELEGATE_CBK<void, U8 /*player index*/> > _selectionChangeCallbacks;
+       vectorImpl<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
        vectorImpl<I64> _sceneSelectionCandidates;
        std::unordered_set<PlayerIndex> _hoverUpdateQueue;
 
@@ -424,11 +427,7 @@ class SceneLoadSave {
 class SceneGraph {
 private:
     static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
-        if (scene.getCurrentSelection(0) &&
-            scene.getCurrentSelection(0)->getGUID() == node.getGUID())
-        {
-            scene.resetSelection();
-        }
+        scene.onNodeDestroy(node);
     }
     friend class Divide::SceneGraph;
 };

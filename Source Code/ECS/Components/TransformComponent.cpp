@@ -6,12 +6,15 @@
 
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
-      : SGNComponent(parentSGN),
+      : SGNComponent(parentSGN, "TRANSFORM"),
         _dirty(true),
         _dirtyInterp(true),
         _parentDirty(true),
         _prevInterpValue(0.0)
     {
+        EditorComponent::registerField("Transform",
+                                       &_transformInterface,
+                                       EditorComponentFieldType::TRANSFORM);
     }
 
     TransformComponent::~TransformComponent()

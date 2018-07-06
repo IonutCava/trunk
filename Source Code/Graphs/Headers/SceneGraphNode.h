@@ -35,6 +35,9 @@
 #include "SceneNode.h"
 #include "SGNRelationshipCache.h"
 #include "Utility/Headers/StateTracker.h"
+
+#include "ECS/Components/Headers/EditorComponent.h"
+
 #include "ECS/Components/Headers/IKComponent.h"
 #include "ECS/Components/Headers/UnitComponent.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
@@ -52,6 +55,8 @@ class SceneGraph;
 class SceneState;
 struct TransformDirty;
 struct TransformClean;
+
+class PropertyWindow;
 
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
@@ -80,6 +85,8 @@ class SceneTransform : public SceneNode {
     }
 
     inline void updateBoundsInternal(SceneGraphNode& sgn) override {
+        ACKNOWLEDGE_UNUSED(sgn);
+
         _boundingBox.setMin(-_extents * 0.5f);
         _boundingBox.setMax( _extents * 0.5f);
     }
@@ -90,12 +97,19 @@ class SceneTransform : public SceneNode {
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneTransform);
 
+namespace Attorney {
+    class SceneGraphNodeEditor;
+};
+
 class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
                        protected ECS::Event::IEventListener,
                        public GUIDWrapper,
                        private NonCopyable
 {
     static const size_t INITIAL_CHILD_COUNT = 128;
+
+    friend class Attorney::SceneGraphNodeEditor;
+
    public:
     /// Usage context affects lighting, navigation, physics, etc
     enum class UsageContext : U32 {
@@ -215,6 +229,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         // ToDo: Optimise this -Ionut
         return GetComponentManager()->GetComponent<T>(GetEntityID());
     }
+
+    inline U32 componentMask() const { return _componentMask; }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
@@ -356,6 +372,32 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void OnTransformDirty(const TransformDirty* event);
     void OnTransformClean(const TransformClean* event);
 
+
+    template<class T, class ...P>
+    SGNComponent<T>* AddSGNComponent(P&&... param) {
+        SGNComponent<T>* comp = static_cast<SGNComponent<T>*>(AddComponent<T>(std::forward<P>(param)...));
+        _components.emplace_back(static_cast<EditorComponent*>(comp));
+        return comp;
+    }
+
+    template<class T>
+    void RemoveSGNComponent() {
+        SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
+        if (comp) {
+            _components.erase(
+                std::remove_if(std::begin(_components), std::end(_components),
+                               [comp](EditorComponent* editorComp)
+                               -> bool { return comp->getGUID() == editorComp->getGUID(); }),
+                std::end(_components));
+            RemoveComponent<T>();
+        }
+    }
+
+    void RemoveAllSGNComponents() {
+        GetComponentManager()->RemoveAllComponents(GetEntityID());
+        _components.clear();
+    }
+
    private:
     friend class SGNRelationshipCache;
     inline const SGNRelationshipCache& relationshipCache() const {
@@ -392,7 +434,26 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     mutable SharedLock _childrenDeletionLock;
     vectorImpl<vectorAlg::vecSize> _childrenPendingDeletion;
+
+    // ToDo: Remove this HORRIBLE hack -Ionut
+    vectorImpl<EditorComponent*> _components;
 };
+
+namespace Attorney {
+    class SceneGraphNodeEditor {
+        private:
+        static vectorImpl<EditorComponent*>& editorComponents(SceneGraphNode& node) {
+            return node._components;
+        }
+
+        static const vectorImpl<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
+            return node._components;
+        }
+
+        friend class Divide::PropertyWindow;
+};
+};  // namespace Attorney
+
 
 };  // namespace Divide
 #endif

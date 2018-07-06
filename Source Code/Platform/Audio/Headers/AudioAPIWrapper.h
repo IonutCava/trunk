@@ -40,7 +40,13 @@ class PlatformContext;
 
 class AudioState {
    public:
-    AudioState(bool enableA, bool enableB, bool enableC, bool enableD) {}
+    AudioState(bool enableA, bool enableB, bool enableC, bool enableD)
+    {
+        ACKNOWLEDGE_UNUSED(enableA);
+        ACKNOWLEDGE_UNUSED(enableB);
+        ACKNOWLEDGE_UNUSED(enableC);
+        ACKNOWLEDGE_UNUSED(enableD);
+    }
 };
 
 static const U32 MAX_SOUND_BUFFERS = 64;

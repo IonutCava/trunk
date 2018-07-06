@@ -110,16 +110,30 @@ class GUIElement : public GUIDWrapper {
     virtual void setVisible(const bool visible) { _visible = visible; }
     virtual void setActive(const bool active) { _active = active; }
 
-    inline void addChildElement(GUIElement* child) {}
+    inline void addChildElement(GUIElement* child) {
+        ACKNOWLEDGE_UNUSED(child);
+    }
 
-    virtual void setTooltip(const stringImpl& tooltipText) {}
+    virtual void setTooltip(const stringImpl& tooltipText) {
+        ACKNOWLEDGE_UNUSED(tooltipText);
+    }
 
     // Return true if input was consumed
-    virtual bool mouseMoved(const GUIEvent& event) { return false; }
+    virtual bool mouseMoved(const GUIEvent& event) {
+        ACKNOWLEDGE_UNUSED(event);
+        return false;
+    }
     // Return true if input was consumed
-    virtual bool onMouseUp(const GUIEvent& event) { return false; }
+    virtual bool onMouseUp(const GUIEvent& event) {
+        ACKNOWLEDGE_UNUSED(event);
+        return false;
+    }
+
     // Return true if input was consumed
-    virtual bool onMouseDown(const GUIEvent& event) { return false; }
+    virtual bool onMouseDown(const GUIEvent& event) {
+        ACKNOWLEDGE_UNUSED(event);
+        return false;
+    }
 
     virtual void onSizeChange(const SizeChangeParams& params) {
         ACKNOWLEDGE_UNUSED(params);

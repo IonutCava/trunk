@@ -22,7 +22,7 @@ namespace Divide {
 RenderingComponent::RenderingComponent(GFXDevice& context,
                                        Material_ptr materialInstance,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN),
+    : SGNComponent(parentSGN, "RENDERING"),
       _context(context),
       _lodLevel(0),
       _commandIndex(0),

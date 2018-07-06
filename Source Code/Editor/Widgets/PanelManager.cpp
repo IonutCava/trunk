@@ -455,7 +455,7 @@ namespace Divide {
         MemoryManager::DELETE_VECTOR(s_dockedWindows);
         s_dockedWindows.push_back(MemoryManager_NEW SolutionExplorerWindow(*this, context));
         s_dockedWindows.push_back(MemoryManager_NEW ToolboxWindow(*this));
-        s_dockedWindows.push_back(MemoryManager_NEW PropertyWindow(*this));
+        s_dockedWindows.push_back(MemoryManager_NEW PropertyWindow(*this, context));
         s_dockedWindows.push_back(MemoryManager_NEW EditorFindWindow(*this));
         s_dockedWindows.push_back(MemoryManager_NEW OutputWindow(*this));
         s_dockedWindows.push_back(MemoryManager_NEW ApplicationOutputWindow(*this));

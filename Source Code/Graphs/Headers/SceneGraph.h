@@ -97,6 +97,7 @@ class SceneGraph : private NonCopyable,
     void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& selectionHits) const;
 
     // If this function returns true, the node was successfully removed (or queued for removal)
+    bool removeNode(I64 guid);
     bool removeNode(SceneGraphNode* node);
     // If this function returns true, nodes of the specified type were successfully removed (or queued for removal)
     bool removeNodesByType(SceneNodeType nodeType);
@@ -148,6 +149,9 @@ class SceneGraphSGN {
                                   SceneGraphNode::UsageContext oldUsage,
                                   SceneGraphNode::UsageContext newUsage)
     {
+        ACKNOWLEDGE_UNUSED(oldUsage);
+        ACKNOWLEDGE_UNUSED(newUsage);
+
         sceneGraph.unregisterNode(node.getGUID(), node.usageContext());
 
     }

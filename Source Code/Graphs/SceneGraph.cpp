@@ -132,6 +132,10 @@ bool SceneGraph::removeNodesByType(SceneNodeType nodeType) {
     return _root != nullptr && getRoot().removeNodesByType(nodeType);
 }
 
+bool SceneGraph::removeNode(I64 guid) {
+    return removeNode(findNode(guid));
+}
+
 bool SceneGraph::removeNode(SceneGraphNode* node) {
     if (node) {
         SceneGraphNode* parent = node->getParent();

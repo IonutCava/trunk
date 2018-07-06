@@ -37,8 +37,14 @@
 #include "Core/Math/Headers/Ray.h"
 
 namespace Divide {
+namespace Attorney {
+    class BoundingSphereEditor;
+};
 
+class PropertyWindow;
 class BoundingSphere {
+    friend class Attorney::BoundingSphereEditor;
+
    public:
     BoundingSphere() noexcept;
     BoundingSphere(const vec3<F32>& center, F32 radius) noexcept;
@@ -80,6 +86,19 @@ class BoundingSphere {
     F32 _radius;
     //mutable SharedLock _lock;
 };
+
+namespace Attorney {
+    class BoundingSphereEditor {
+        private:
+        static F32* center(BoundingSphere& bs) {
+            return bs._center._v;
+        }
+        static F32& radius(BoundingSphere& bs) {
+            return bs._radius;
+        }
+        friend class Divide::PropertyWindow;
+    };
+}; //namespace Attorney
 
 };  // namespace Divide
 

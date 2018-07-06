@@ -5,7 +5,7 @@
 namespace Divide {
 
 IKComponent::IKComponent(SceneGraphNode& parentSGN)
- : SGNComponent(parentSGN)
+ : SGNComponent(parentSGN, "IK")
 {
 }
 

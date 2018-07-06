@@ -6,7 +6,7 @@
 
 namespace Divide {
     RigidBodyComponent::RigidBodyComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context)
-        : SGNComponent(parentSGN),
+        : SGNComponent(parentSGN, "RIGID_BODY"),
           _physicsCollisionGroup(physicsGroup)
     {
         _rigidBody.reset(context.createRigidActor(parentSGN, *this));

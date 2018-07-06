@@ -33,14 +33,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EDITOR_PROPERTY_WINDOW_H_
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
-class PropertyWindow : public DockedWindow {
+
+struct EditorComponentField;
+class PropertyWindow : public DockedWindow, public PlatformContextComponent {
     public:
-        PropertyWindow(PanelManager& parent);
+        PropertyWindow(PanelManager& parent, PlatformContext& context);
         ~PropertyWindow();
 
         void draw() override;
+
+    protected:
+     void processField(EditorComponentField& field);
+     void processBasicField(EditorComponentField& field);
 };
 }; //namespace Divide
 

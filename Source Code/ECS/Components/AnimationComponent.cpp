@@ -8,7 +8,7 @@
 namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN),
+    : SGNComponent(parentSGN, "ANIMATION"),
       _playAnimations(true),
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),

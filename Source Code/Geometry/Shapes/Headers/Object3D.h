@@ -97,7 +97,9 @@ class Object3D : public SceneNode {
                           const SceneRenderState& sceneRenderState,
                           const RenderStagePass& renderStagePass) override;
                         
-    virtual void updateAnimations(SceneGraphNode& sgn) { }
+    virtual void updateAnimations(SceneGraphNode& sgn) { 
+        ACKNOWLEDGE_UNUSED(sgn);
+    }
     /// Use playAnimations() to toggle animation playback for the current object
     /// (and all subobjects) on or off
     inline void playAnimations(const bool state) { _playAnimations = state; }

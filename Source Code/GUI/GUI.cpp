@@ -275,9 +275,10 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
     GUIInterface::onSizeChange(params);
 }
 
-void GUI::selectionChangeCallback(Scene* const activeScene, PlayerIndex idx) {
+void GUI::selectionChangeCallback(Scene* const activeScene, PlayerIndex idx, SceneGraphNode* node) {
     ACKNOWLEDGE_UNUSED(activeScene);
     ACKNOWLEDGE_UNUSED(idx);
+    ACKNOWLEDGE_UNUSED(node);
 }
 
 void GUI::setCursorPosition(I32 x, I32 y) {

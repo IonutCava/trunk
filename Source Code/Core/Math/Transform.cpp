@@ -87,8 +87,7 @@ void Transform::setTransforms(const mat4<F32>& transform) {
         vRows[2] /= scale.z;
     }
 
-    // build a 3x3 rotation matrix and generate the rotation quaternion from
-    // it
+    // build a 3x3 rotation matrix and generate the rotation quaternion from it
     rotation = Quaternion<F32>(mat3<F32>(
         vRows[0].x, vRows[1].x, vRows[2].x, vRows[0].y, vRows[1].y,
         vRows[2].y, vRows[0].z, vRows[1].z, vRows[2].z));

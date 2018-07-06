@@ -372,6 +372,7 @@
     <ClCompile Include="..\../Source Code/Scripting\ScriptBindings.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\AnimationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\BoundsComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\EditorComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\IKComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\NavigationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\NetworkingComponent.cpp" />
@@ -511,6 +512,7 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContextComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\AnimationComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\BoundsComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EditorComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\IKComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NavigationComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NetworkingComponent.h" />

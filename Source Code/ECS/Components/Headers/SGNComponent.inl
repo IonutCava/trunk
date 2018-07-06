@@ -36,8 +36,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
     template<typename T>
-    SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN)
-      : _parentSGN(parentSGN)
+    SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name)
+      : EditorComponent(name),
+        _parentSGN(parentSGN)
     {
         RegisterEventCallbacks();
     }
