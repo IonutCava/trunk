@@ -1,8 +1,8 @@
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
-  <useShaderBinaryCache>true</useShaderBinaryCache>
+  <useShaderBinaryCache>false</useShaderBinaryCache>
   <!-- this is only taken into consideration if binary cache is disabled-->
-  <useShaderTextCache>true</useShaderTextCache>
+  <useShaderTextCache>false</useShaderTextCache>
   <!-- memFile: file name that the application should use to write  memory allocation info -->
   <!-- leave empty for none! -->
   <memFile>mem.log</memFile>
@@ -43,6 +43,7 @@
     <ExtraStates>false</ExtraStates>
     <SkipRendering>false</SkipRendering>
     <defaultGUIScheme>GWEN</defaultGUIScheme>
+    <showDebugCursor>false</showDebugCursor>
   </CEGUI>
   <enableDebugVariableControls>false</enableDebugVariableControls>
   <consoleLayoutFile>console.layout</consoleLayoutFile>

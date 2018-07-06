@@ -46,6 +46,8 @@ enum class FrameEventType : U32 {
     FRAME_EVENT_STARTED,
     FRAME_PRERENDER_START,
     FRAME_PRERENDER_END,
+    FRAME_SCENERENDER_START,
+    FRAME_SCENERENDER_END,
     FRAME_POSTRENDER_START,
     FRAME_POSTRENDER_END,
     FRAME_EVENT_PROCESS,
@@ -107,6 +109,10 @@ class FrameListener : public GUIDWrapper {
     /// framePreRenderEnded is called after all the prerendering has finished
     /// and rendering should start
     virtual bool framePreRenderEnded(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
+    /// frameSceneRenderStarted is called right before rendering the scene for the current player starts
+    virtual bool frameSceneRenderStarted(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
+    /// frameSceneRenderEnded is called immediately after scene rendering for the current player has ended but before any blitting operations
+    virtual bool frameSceneRenderEnded(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
     /// frameRendering Queued is called after all the frame setup/rendering but
     /// before the call to SwapBuffers
     virtual bool frameRenderingQueued(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }

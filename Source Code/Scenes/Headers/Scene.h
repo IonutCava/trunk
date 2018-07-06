@@ -154,9 +154,6 @@ class Scene : public Resource, public PlatformContextComponent {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
-    void resetSelection(PlayerIndex idx);
-    void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
-
     SceneGraphNode* addParticleEmitter(const stringImpl& name,
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
@@ -267,6 +264,9 @@ class Scene : public Resource, public PlatformContextComponent {
     stringImpl getPlayerSGNName(PlayerIndex idx);
 
     void currentPlayerPass(PlayerIndex idx);
+
+    void resetSelection(PlayerIndex idx);
+    void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
 
    protected:
        /// Global info
@@ -397,6 +397,14 @@ class SceneManager {
 
     static SceneGUIElements* gui(Scene& scene) {
         return scene._GUI;
+    }
+
+    static void resetSelection(Scene& scene, PlayerIndex idx) {
+        scene.resetSelection(idx);
+    }
+
+    static void setSelected(Scene& scene, PlayerIndex idx, SceneGraphNode& sgn) {
+        scene.setSelected(idx, sgn);
     }
 
     friend class Divide::SceneManager;

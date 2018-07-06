@@ -23,9 +23,9 @@
 // SOFTWARE.
 
 #include "imgui.h"
-
-#undef IMGUI_DEFINE_MATH_OPERATORS
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
+#endif
 #include "imgui_internal.h"
 
 #include "ImGuizmo.h"
@@ -1488,9 +1488,12 @@ namespace ImGuizmo
          // find new possible way to move
          vec_t gizmoHitProportion;
          type = GetMoveType(&gizmoHitProportion);
-         if (CanActivate() && type != NONE)
+         if(type != NONE)
          {
             ImGui::CaptureMouseFromApp();
+         }
+         if (CanActivate() && type != NONE)
+         {
             gContext.mbUsing = true;
             gContext.mCurrentOperation = type;
             const vec_t movePlanNormal[] = { gContext.mModel.v.up, gContext.mModel.v.dir, gContext.mModel.v.right, gContext.mModel.v.dir, gContext.mModel.v.right, gContext.mModel.v.up, -gContext.mCameraDir };
@@ -1513,9 +1516,12 @@ namespace ImGuizmo
       {
          // find new possible way to scale
          type = GetScaleType();
-         if (CanActivate() && type != NONE)
+         if(type != NONE)
          {
             ImGui::CaptureMouseFromApp();
+         }
+         if (CanActivate() && type != NONE)
+         {
             gContext.mbUsing = true;
             gContext.mCurrentOperation = type;
             const vec_t movePlanNormal[] = { gContext.mModel.v.up, gContext.mModel.v.dir, gContext.mModel.v.right, gContext.mModel.v.dir, gContext.mModel.v.up, gContext.mModel.v.right, -gContext.mCameraDir };
@@ -1599,6 +1605,11 @@ namespace ImGuizmo
       {
          type = GetRotateType();
 
+         if(type != NONE)
+         {
+            ImGui::CaptureMouseFromApp();
+         }
+      
          if (type == ROTATE_SCREEN)
          {
             applyRotationLocaly = true;
@@ -1606,7 +1617,6 @@ namespace ImGuizmo
             
          if (CanActivate() && type != NONE)
          {
-            ImGui::CaptureMouseFromApp();
             gContext.mbUsing = true;
             gContext.mCurrentOperation = type;
             const vec_t rotatePlanNormal[] = { gContext.mModel.v.right, gContext.mModel.v.up, gContext.mModel.v.dir, -gContext.mCameraDir };

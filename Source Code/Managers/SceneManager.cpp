@@ -435,7 +435,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->detailLevel(_platformContext->gfx().renderDetailLevel(), _platformContext->gfx().shadowDetailLevel());
     _sceneData->toggleShadowMapping(_platformContext->gfx().shadowDetailLevel() != RenderDetailLevel::OFF);
 
-
     FogDescriptor& fog = activeScene.state().fogDescriptor();
     bool fogEnabled = _platformContext->config().rendering.enableFog;
     if (fog.dirty() || fogEnabled != fog.active()) {
@@ -725,6 +724,18 @@ bool SceneManager::populateRenderQueue(const Camera& camera,
 void SceneManager::onLostFocus() {
     getActiveScene().onLostFocus();
 }
+
+void SceneManager::resetSelection(PlayerIndex idx) {
+    Attorney::SceneManager::resetSelection(getActiveScene(), idx);
+}
+
+void SceneManager::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {
+    Attorney::SceneManager::setSelected(getActiveScene(), idx, sgn);
+    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
+        cbk(idx, &sgn);
+    }
+}
+
 ///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {

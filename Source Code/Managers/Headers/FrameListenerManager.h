@@ -62,6 +62,8 @@ DEFINE_SINGLETON(FrameListenerManager)
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
     bool framePreRenderEnded(const FrameEvent& evt);
+    bool frameSceneRenderStarted(const FrameEvent& evt);
+    bool frameSceneRenderEnded(const FrameEvent& evt);
     bool frameRenderingQueued(const FrameEvent& evt);
     bool framePostRenderStarted(const FrameEvent& evt);
     bool framePostRenderEnded(const FrameEvent& evt);

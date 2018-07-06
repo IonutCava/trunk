@@ -83,6 +83,7 @@ public:
             bool enabled;
             bool extraStates;
             bool skipRendering;
+            bool showDebugCursor;
             stringImpl defaultGUIScheme;
         } cegui;
         stringImpl consoleLayoutFile;

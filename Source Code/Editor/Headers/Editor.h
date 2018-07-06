@@ -54,6 +54,7 @@ class MenuBar;
 class OutputWindow;
 class PanelManager;
 class DisplayWindow;
+class SceneGraphNode;
 class PlatformContext;
 class ApplicationOutput;
 
@@ -106,11 +107,13 @@ class Editor : public PlatformContextComponent,
     inline const Rect<I32>& getScenePreviewRect() const { return _scenePreviewRect; }
 
     void onSizeChange(const SizeChangeParams& params);
+    void selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node);
 
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
     bool framePreRenderEnded(const FrameEvent& evt);
+    bool frameSceneRenderEnded(const FrameEvent& evt);
     bool frameRenderingQueued(const FrameEvent& evt);
     bool framePostRenderStarted(const FrameEvent& evt);
     bool framePostRenderEnded(const FrameEvent& evt);
@@ -137,9 +140,11 @@ class Editor : public PlatformContextComponent,
 
   protected:
     void drawIMGUIDebug(const U64 deltaTime);
+    bool renderGizmos(const U64 deltaTime);
     bool renderMinimal(const U64 deltaTime);
     bool renderFull(const U64 deltaTime);
     bool needInput();
+
 
   protected: // window events
     bool OnClose();
@@ -190,6 +195,7 @@ class Editor : public PlatformContextComponent,
     Time::ProfileTimer& _editorRenderTimer;
 
     std::array<vectorImpl<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
+    vectorImpl<SceneGraphNode*> _selectedNodes;
 
     size_t _consoleCallbackIndex;
 }; //Editor

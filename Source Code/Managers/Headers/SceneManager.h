@@ -103,6 +103,13 @@ public:
     // generate a list of nodes to render
     void updateVisibleNodes(const RenderStagePass& stage, bool refreshNodeData, U32 pass = 0);
 
+
+    inline void addSelectionCallback(const DELEGATE_CBK<void, U8, SceneGraphNode*>& selectionCallback) {
+        _selectionChangeCallbacks.push_back(selectionCallback);
+    }
+    void resetSelection(PlayerIndex idx);
+    void setSelected(PlayerIndex idx, SceneGraphNode& sgn);
+
     // cull the scenegraph against the current view frustum
     const RenderPassCuller::VisibleNodeList& cullSceneGraph(const RenderStagePass& stage);
     // get the full list of reflective nodes
@@ -229,6 +236,8 @@ private:
     std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
     std::queue<std::pair<Scene*, Player_ptr>>  _playerRemoveQueue;
 
+    vectorImpl<DELEGATE_CBK<void, U8 /*player index*/, SceneGraphNode* /*node*/> > _selectionChangeCallbacks;
+
     struct SwitchSceneTarget {
         SwitchSceneTarget()
             : _targetSceneName(""),
@@ -317,6 +326,7 @@ class SceneManagerCameraAccessor {
     }
 
     friend class Divide::Scene;
+    friend class Divide::Editor;
     friend class Divide::ShadowMap;
     friend class Divide::RenderPass;
     friend class Divide::SolutionExplorerWindow;

@@ -199,7 +199,10 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _rootSheet->setMousePassThroughEnabled(true);
     _rootSheet->setUsingAutoRenderingSurface(false);
     _rootSheet->setPixelAligned(false);
-    _rootSheet->setMouseCursor("GWEN/Tree.Plus");
+
+    if (parent().platformContext().config().gui.cegui.showDebugCursor) {
+        _rootSheet->setMouseCursor("GWEN/Tree.Plus");
+    }
     
     CEGUI::Sizef size(static_cast<float>(renderResolution.width), static_cast<float>(renderResolution.height));
     // We create a CEGUI texture target and create a GUIContext that will use it.

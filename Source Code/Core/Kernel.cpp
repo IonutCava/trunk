@@ -520,6 +520,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     computeViewports(mainViewport, targetViewports, playerCount);
 
     for (U8 i = 0; i < playerCount; ++i) {
+        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt);
         Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
         {
             Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));
@@ -529,6 +530,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
             Time::ScopedTimer time3(getTimer(_flushToScreenTimer, _postFxRenderTimer, i, "PostFX Timer"));
             PostFX::instance().apply();
         }
+        frameMgr.createEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt);
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
             if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
@@ -730,11 +732,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                          entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
-
     if (Config::Build::ENABLE_EDITOR) {
         if (!_platformContext->editor().init(renderResolution)) {
             return ErrorCode::EDITOR_INIT_ERROR;
         }
+        _sceneManager->addSelectionCallback([&](PlayerIndex idx, SceneGraphNode* node) {
+            _platformContext->editor().selectionChangeCallback(idx, node);
+        });
     }
 
     Console::printfn(Locale::get(_ID("INITIAL_DATA_LOADED")));

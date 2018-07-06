@@ -13,6 +13,8 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+
+#include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
 #include "Platform/File/Headers/FileManagement.h"
@@ -298,6 +300,79 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
     return true;
 }
 
+bool Editor::renderGizmos(const U64 deltaTime) {
+    static mat4<F32> objectMatrix;
+    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
+    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+    static bool useSnap = false;
+    static F32 snap[3] = { 1.f, 1.f, 1.f };
+
+    //const Camera* utilityCam = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
+    const Camera* utilityCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager(), 0);
+    const mat4<F32>& cameraView = utilityCam->getViewMatrix();
+    const mat4<F32>& cameraProjection = utilityCam->getProjectionMatrix();
+    objectMatrix.identity();
+    ImGuizmo::DrawCube(cameraView, cameraProjection, objectMatrix);
+
+    TransformValues valuesOut;
+    if (!_selectedNodes.empty()) {
+        SceneGraphNode* sgn = _selectedNodes.front();
+        if (sgn != nullptr) {
+            TransformComponent* const transform = sgn->get<TransformComponent>();
+            if (transform != nullptr) {
+
+                ImGui::SetNextWindowPos(ImVec2(10, 10));
+                ImGui::SetNextWindowSize(ImVec2(320, 240));
+                ImGui::Begin("Matrix Inspector");
+
+                if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))  mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+                ImGui::SameLine();
+                if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE)) mCurrentGizmoOperation = ImGuizmo::ROTATE;
+                ImGui::SameLine();
+                if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE)) mCurrentGizmoOperation = ImGuizmo::SCALE;
+
+                if (mCurrentGizmoOperation != ImGuizmo::SCALE)
+                {
+                    if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL)) mCurrentGizmoMode = ImGuizmo::LOCAL;
+                    ImGui::SameLine();
+                    if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD)) mCurrentGizmoMode = ImGuizmo::WORLD;
+                }
+
+                ImGui::Checkbox("", &useSnap);
+                ImGui::SameLine();
+
+                switch (mCurrentGizmoOperation)
+                {
+                    case ImGuizmo::TRANSLATE:
+                        ImGui::InputFloat3("Snap", &snap[0]);
+                        break;
+                    case ImGuizmo::ROTATE:
+                        ImGui::InputFloat("Angle Snap", &snap[0]);
+                        break;
+                    case ImGuizmo::SCALE:
+                        ImGui::InputFloat("Scale Snap", &snap[0]);
+                        break;
+                }
+                ImGui::End();
+
+                mat4<F32> matrix = transform->getWorldMatrix();
+                ImGuiIO& io = ImGui::GetIO();
+                ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+                ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL);
+
+                TransformValues values;  vec3<F32> euler;
+                ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
+                values._orientation.fromEuler(euler);
+                transform->setTransform(values);
+
+                
+            }
+        }
+    }
+
+    return true;
+}
+
 bool Editor::renderMinimal(const U64 deltaTime) {
     if (showDebugWindow()) {
         drawIMGUIDebug(deltaTime);
@@ -313,8 +388,23 @@ bool Editor::renderMinimal(const U64 deltaTime) {
 bool Editor::renderFull(const U64 deltaTime) {
     drawMenuBar();
     _panelManager->draw(deltaTime);
-    renderMinimal(deltaTime);
+    if (renderMinimal(deltaTime)) {
+        return renderGizmos(deltaTime);
+    }
 
+    return false;
+}
+
+bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
+    if (!_running) {
+    //    return true;
+    }
+
+    ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
+    renderGizmos(evt._timeSinceLastFrameUS);
+    ImGui::Render();
+    renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID());
     return true;
 }
 
@@ -322,6 +412,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     Time::ScopedTimer timer(_editorRenderTimer);
     {
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
     }
     
     if (!_running) {
@@ -512,6 +603,16 @@ void Editor::setScenePreviewRect(const Rect<I32>& rect, bool hovered) {
     _scenePreviewRect.set(rect);
 }
 
+void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
+    if (idx == 0) {
+        if (node == nullptr) {
+            _selectedNodes.resize(0);
+        } else {
+            _selectedNodes.push_back(node);
+        }
+    }
+}
+
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
     if (!needInput() || _scenePreviewFocused) {
@@ -588,7 +689,7 @@ bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton
     ImGuiIO& io = ImGui::GetIO();
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
 
-    bool ret = ImGui::GetIO().WantCaptureMouse;
+    bool ret = ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsUsing();
     return ret;
 }
 

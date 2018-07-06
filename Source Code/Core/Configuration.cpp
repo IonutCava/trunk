@@ -32,6 +32,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     gui.cegui.enabled = true;
     gui.cegui.extraStates = false;
     gui.cegui.skipRendering = false;
+    gui.cegui.showDebugCursor = false;
     gui.cegui.defaultGUIScheme = "GWEN";
     gui.consoleLayoutFile = "console.layout";
     gui.editorLayoutFile = "editor.layout";
@@ -88,6 +89,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(gui.cegui.enabled);
         GET_PARAM(gui.cegui.extraStates);
         GET_PARAM(gui.cegui.skipRendering);
+        GET_PARAM(gui.cegui.showDebugCursor);
         GET_PARAM(gui.cegui.defaultGUIScheme);
         GET_PARAM(gui.enableDebugVariableControls);
         GET_PARAM(gui.consoleLayoutFile);
@@ -149,6 +151,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(gui.cegui.enabled);
     PUT_PARAM(gui.cegui.extraStates);
     PUT_PARAM(gui.cegui.skipRendering);
+    PUT_PARAM(gui.cegui.showDebugCursor);
     PUT_PARAM(gui.cegui.defaultGUIScheme);
     PUT_PARAM(gui.enableDebugVariableControls);
     PUT_PARAM(gui.consoleLayoutFile);

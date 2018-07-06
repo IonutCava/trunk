@@ -72,6 +72,10 @@ bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
             return framePreRenderStarted(evt);
         case FrameEventType::FRAME_PRERENDER_END:
             return framePreRenderEnded(evt);
+        case FrameEventType::FRAME_SCENERENDER_START:
+            return frameSceneRenderStarted(evt);
+        case FrameEventType::FRAME_SCENERENDER_END:
+            return frameSceneRenderEnded(evt);
         case FrameEventType::FRAME_POSTRENDER_START:
             return framePostRenderStarted(evt);
         case FrameEventType::FRAME_POSTRENDER_END:
@@ -109,6 +113,26 @@ bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt) {
     ReadLock r_lock(_listenerLock);
     for (FrameListener* listener : _listeners) {
         if (!listener->framePreRenderEnded(evt)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool FrameListenerManager::frameSceneRenderStarted(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
+    for (FrameListener* listener : _listeners) {
+        if (!listener->frameSceneRenderStarted(evt)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool FrameListenerManager::frameSceneRenderEnded(const FrameEvent& evt) {
+    ReadLock r_lock(_listenerLock);
+    for (FrameListener* listener : _listeners) {
+        if (!listener->frameSceneRenderEnded(evt)) {
             return false;
         }
     }

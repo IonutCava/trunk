@@ -26,7 +26,7 @@ namespace Divide {
 
     }
 
-    void SolutionExplorerWindow::printCameraNode(Scene& activeScene, Camera* camera) {
+    void SolutionExplorerWindow::printCameraNode(SceneManager& sceneManager, Camera* camera) {
         if (camera == nullptr) {
             return;
         }
@@ -34,7 +34,7 @@ namespace Divide {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Leaf;
         if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->name().c_str())) {
             if (ImGui::IsItemClicked()) {
-                activeScene.resetSelection(0);
+                sceneManager.resetSelection(0);
                 Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, camera);
             }
 
@@ -42,7 +42,7 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::printSceneGraphNode(Scene& activeScene, SceneGraphNode& sgn) {
+    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn) {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
         if (sgn.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
@@ -54,13 +54,13 @@ namespace Divide {
         }
         bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str());
         if (ImGui::IsItemClicked()) {
-            activeScene.resetSelection(0);
-            activeScene.setSelected(0, sgn);
+            sceneManager.resetSelection(0);
+            sceneManager.setSelected(0, sgn);
             Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, nullptr);
         }
         if (node_open) {
-            sgn.forEachChild([this, &activeScene](SceneGraphNode& child) {
-                printSceneGraphNode(activeScene, child);
+            sgn.forEachChild([this, &sceneManager](SceneGraphNode& child) {
+                printSceneGraphNode(sceneManager, child);
             });
             ImGui::TreePop();
         }
@@ -82,9 +82,9 @@ namespace Divide {
             ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
             const SceneManager::PlayerList& activePlayers = sceneManager.getPlayers();
             for (const Player_ptr& player : activePlayers) {
-                printCameraNode(activeScene, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, player->index()));
+                printCameraNode(sceneManager, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, player->index()));
             }
-            printSceneGraphNode(activeScene, root);
+            printSceneGraphNode(sceneManager, root);
             ImGui::PopStyleVar();
             ImGui::TreePop();
         }

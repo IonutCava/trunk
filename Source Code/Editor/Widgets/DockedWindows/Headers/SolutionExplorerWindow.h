@@ -36,8 +36,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
-class Scene;
+
 class Camera;
+class SceneManager;
 class SceneGraphNode;
 class SolutionExplorerWindow : public DockedWindow, public PlatformContextComponent {
     public:
@@ -46,8 +47,8 @@ class SolutionExplorerWindow : public DockedWindow, public PlatformContextCompon
 
         void draw() override;
   protected:
-      void printCameraNode(Scene& activeScene, Camera* camera);
-      void printSceneGraphNode(Scene& activeScene, SceneGraphNode& sgn);
+      void printCameraNode(SceneManager& sceneManager, Camera* camera);
+      void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn);
 };
 }; //namespace Divide
 

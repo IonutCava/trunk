@@ -1272,6 +1272,10 @@ void Scene::resetSelection(PlayerIndex idx) {
     }
 
     _currentSelection[idx].clear();
+
+    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
+        cbk(idx, nullptr);
+    }
 }
 
 void Scene::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {
@@ -1285,7 +1289,7 @@ void Scene::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {
 void Scene::findSelection(PlayerIndex idx, bool clearOld) {
     // Clear old selection
     if (clearOld) {
-        resetSelection(idx);
+        _parent.resetSelection(idx);
     }
 
     I64 hoverGUID = _currentHoverTarget[idx];
@@ -1304,7 +1308,7 @@ void Scene::findSelection(PlayerIndex idx, bool clearOld) {
 
     SceneGraphNode* selectedNode = _sceneGraph->findNode(hoverGUID);
     if (selectedNode != nullptr) {
-        setSelected(idx, *selectedNode);
+        _parent.setSelected(idx, *selectedNode);
     }
 }
 
