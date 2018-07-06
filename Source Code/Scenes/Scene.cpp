@@ -8,6 +8,7 @@
 
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/AIManager.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
@@ -29,6 +30,7 @@ Scene::Scene() :  Resource(),
                  _FBSpeedFactor(1.0f),
                  _LRSpeedFactor(5.0f),
                  _loadComplete(false),
+                 _cookCollisionMeshesScheduled(false),
                  _paramHandler(ParamHandler::getInstance()),
                  _currentSelection(NULL),
                  _physicsInterface(NULL),
@@ -58,6 +60,12 @@ bool Scene::idle(){ //Called when application is idle
     if(!_modelDataArray.empty())
         loadXMLAssets(true);
 
+    if(_cookCollisionMeshesScheduled){
+        if(SceneManager::getInstance().getFrameCount() > 2){
+            _sceneGraph->getRoot()->cookCollisionMesh();
+            _cookCollisionMeshesScheduled = false;
+        }
+    }
     return true;
 }
 
@@ -298,7 +306,7 @@ bool Scene::loadPhysics(bool continueOnErrors){
     PHYSICS_DEVICE.initScene();
     //Cook geometry
     if(_paramHandler.getParam<bool>("options.autoCookPhysicsAssets"))
-        _sceneGraph->getRoot()->cookCollisionMesh();
+        _cookCollisionMeshesScheduled = true;
     return true;
 }
 

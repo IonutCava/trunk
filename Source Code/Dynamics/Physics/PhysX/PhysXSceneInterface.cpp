@@ -24,9 +24,7 @@ bool PhysXSceneInterface::init(){
         }
          sceneDesc.cpuDispatcher = mCpuDispatcher;
     }
-    if(!sceneDesc.filterShader){
-        sceneDesc.filterShader  = PhysX::getInstance().getFilterShader();
-    }
+
     physx::PxPhysics* gPhysicsSDK = PhysX::getInstance().getSDK();
     _gScene = gPhysicsSDK->createScene(sceneDesc);
     if (!_gScene){

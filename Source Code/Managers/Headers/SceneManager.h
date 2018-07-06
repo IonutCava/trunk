@@ -31,74 +31,76 @@ enum RenderStage;
 DEFINE_SINGLETON_EXT1(SceneManager, FrameListener)
 
 public:
-	///Lookup the factory methods table and return the pointer to a newly constructed scene bound to that name
-	Scene* createScene(const std::string& name);
+    ///Lookup the factory methods table and return the pointer to a newly constructed scene bound to that name
+    Scene* createScene(const std::string& name);
 
-	inline Scene* getActiveScene()                   { return _activeScene; }
-	inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_activeScene, scene); }
+    inline Scene* getActiveScene()                   { return _activeScene; }
+    inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_activeScene, scene); }
 
-	bool   init();
+    bool   init();
 
-	/*Base Scene Operations*/
-	void preRender();
-	void render(const RenderStage& stage);
-	void postRender();
+    /*Base Scene Operations*/
+    void preRender();
+    void render(const RenderStage& stage);
+    void postRender();
 
-	inline void idle()                                 { _activeScene->idle(); }
-	inline bool unloadCurrentScene()                   { return _activeScene->unload(); }
-	bool load(const std::string& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
-	///Check if the scene was loaded properly
-	inline bool checkLoadFlag()                 const  {return _activeScene->checkLoadFlag();}
-	///Create AI entities, teams, NPC's etc
-	inline bool initializeAI(bool continueOnErrors)    { return _activeScene->initializeAI(continueOnErrors); }
-	///Destroy all AI entities, teams, NPC's createa in "initializeAI"
-	///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
-	inline bool deinitializeAI(bool continueOnErrors)  { return _activeScene->deinitializeAI(continueOnErrors); }
-	/// Update animations, network data, sounds, triggers etc.
-	inline void updateCameras()                           { _activeScene->updateCameras();}
-	inline void updateSceneState(const U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
+    inline void idle()                                 { _activeScene->idle(); }
+    inline bool unloadCurrentScene()                   { return _activeScene->unload(); }
+    bool load(const std::string& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
+    ///Check if the scene was loaded properly
+    inline bool checkLoadFlag()                 const  {return _activeScene->checkLoadFlag();}
+    ///Create AI entities, teams, NPC's etc
+    inline bool initializeAI(bool continueOnErrors)    { return _activeScene->initializeAI(continueOnErrors); }
+    ///Destroy all AI entities, teams, NPC's createa in "initializeAI"
+    ///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
+    inline bool deinitializeAI(bool continueOnErrors)  { return _activeScene->deinitializeAI(continueOnErrors); }
+    /// Update animations, network data, sounds, triggers etc.
+    inline void updateCameras()                           { _activeScene->updateCameras();}
+    inline void updateSceneState(const U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
 
-	///Gather input events and process them in the current scene
-	inline void processInput()                      { _activeScene->processInput(); }
-	inline void processTasks(const U32 time)        { _activeScene->processTasks(time); }
+    ///Gather input events and process them in the current scene
+    inline void processInput()                      { _activeScene->processInput(); }
+    inline void processTasks(const U32 time)        { _activeScene->processTasks(time); }
 
-	inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
-
-	///Insert a new scene factory method for the given name
-	template<class DerivedScene>
-	inline bool registerScene(const std::string& sceneName) {
-		_sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));
-		return true;
-	}
+    inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
+    ///Get the number of frames render since the application started
+    inline U32  getFrameCount() const {return _frameCount;}
+    ///Insert a new scene factory method for the given name
+    template<class DerivedScene>
+    inline bool registerScene(const std::string& sceneName) {
+        _sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));
+        return true;
+    }
 
 protected:
-	///This is inherited from FrameListener and is used to setup cameras before rendering the frame
-	bool framePreRenderStarted(const FrameEvent& evt);
+    ///This is inherited from FrameListener and is used to setup cameras before rendering the frame
+    bool framePreRenderStarted(const FrameEvent& evt);
 
 private:
-	SceneManager();
-	~SceneManager();
+    SceneManager();
+    ~SceneManager();
 
 private:
-	typedef Unordered_map<std::string, Scene*> SceneMap;
-	boost::function0<void> _renderFunction;
-	bool _init;
-	///Pointer to the currently active scene
-	Scene* _activeScene;
-	///Scene pool
-	SceneMap _sceneMap;
-	///Scene_Name -Scene_Factory table
-	Unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
+    typedef Unordered_map<std::string, Scene*> SceneMap;
+    boost::function0<void> _renderFunction;
+    bool _init;
+    U32  _frameCount;
+    ///Pointer to the currently active scene
+    Scene* _activeScene;
+    ///Scene pool
+    SceneMap _sceneMap;
+    ///Scene_Name -Scene_Factory table
+    Unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
 
 END_SINGLETON
 
 ///Return a pointer to the currently active scene
 inline Scene* GET_ACTIVE_SCENE() {
-	return SceneManager::getInstance().getActiveScene();
+    return SceneManager::getInstance().getActiveScene();
 }
 
 ///Return a pointer to the curently active scene's scenegraph
 inline SceneGraph* GET_ACTIVE_SCENEGRAPH() {
-	return GET_ACTIVE_SCENE()->getSceneGraph();
+    return GET_ACTIVE_SCENE()->getSceneGraph();
 }
 #endif

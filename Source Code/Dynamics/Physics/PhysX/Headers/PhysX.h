@@ -51,7 +51,8 @@
 #include < PxPhysicsAPI.h >
 #include < PxDefaultErrorCallback.h >
 #include < PxDefaultAllocator.h >
-#include < PxVisualDebuggerExt.h>
+#include < PxVisualDebuggerExt.h >
+#include < PxAllocatorCallback.h >
 
 #if defined(_MSC_VER)
 #	pragma warning( pop )
@@ -63,11 +64,15 @@
 #include "core.h"
 //PhysX libraries
 #ifdef _DEBUG
+#pragma comment(lib, "PhysXProfileSDKDEBUG.lib")
+#pragma comment(lib, "PhysX3CookingDEBUG_x86.lib")
 #pragma comment(lib, "PhysX3DEBUG_x86.lib")
 #pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")
 #pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
 #pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib")
 #else
+#pragma comment(lib, "PhysXProfileSDKCHECKED.lib")
+#pragma comment(lib, "PhysX3CookingCHECKED_x86.lib")
 #pragma comment(lib, "PhysX3CHECKED_x86.lib")
 #pragma comment(lib, "PhysX3CommonCHECKED_x86.lib")
 #pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
@@ -78,6 +83,19 @@
 #include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
 
 #define MAX_ACTOR_QUEUE 30
+
+class PxDefaultAllocator : public physx::PxAllocatorCallback
+{
+    void* allocate(size_t size, const char*, const char*, int)
+    {
+        return _aligned_malloc(size, 16);
+    }
+
+    void deallocate(void* ptr)
+    {
+        _aligned_free(ptr);
+    }
+};
 
 class SceneGraphNode;
 class PhysXSceneInterface;
@@ -106,22 +124,24 @@ public:
    bool createBox(const vec3<F32>& position = vec3<F32>(0.0f), F32 size = 1.0f);
    bool createActor(SceneGraphNode* const node, PhysicsActorMask mask,PhysicsCollisionGroup group);
    inline physx::PxPhysics* const getSDK() {return _gPhysicsSDK;}
-   inline const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}
    inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {assert(targetScene); _targetScene = targetScene;}
           void initScene();
 protected:
     PhysicsSceneInterface* _targetScene;
 
 private:
-    physx::PxPhysics* _gPhysicsSDK ;
-    physx::PxFoundation* _foundation;
-    physx::PxDefaultErrorCallback _gDefaultErrorCallback;
-    physx::PxDefaultAllocator _gDefaultAllocatorCallback;
-    physx::PxSimulationFilterShader _gDefaultFilterShader;
+    physx::PxPhysics*            _gPhysicsSDK ;
+    physx::PxCooking*            _cooking;
+    physx::PxFoundation*         _foundation;
+    physx::PxProfileZoneManager* _zoneManager;         
+    
     physx::debugger::comm::PvdConnectionManager* _pvdConnection;
     boost::mutex _physxMutex;
     physx::PxReal _timeStep;
 
+    static physx::PxDefaultAllocator              _gDefaultAllocatorCallback;
+    static physx::PxDefaultErrorCallback          _gDefaultErrorCallback;
+    
 END_SINGLETON
 #endif
 #endif
