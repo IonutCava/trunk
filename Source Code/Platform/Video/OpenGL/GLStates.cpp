@@ -691,10 +691,12 @@ void GL_API::setBlending(bool enable, const BlendingProperties& blendingProperti
     if ((GL_API::s_blendEnabledGlobal == GL_TRUE) != enable || force) {
         enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
         GL_API::s_blendEnabledGlobal = (enable ? GL_TRUE : GL_FALSE);
+        std::fill(std::begin(GL_API::s_blendEnabled), std::end(GL_API::s_blendEnabled), GL_API::s_blendEnabledGlobal);
     }
 
     if (enable || force) {
-        if (GL_API::s_blendPropertiesGlobal != blendingProperties || force) {
+        if (GL_API::s_blendPropertiesGlobal != blendingProperties || force)
+        {
             if (blendingProperties._blendSrcAlpha != BlendProperty::COUNT) {
                 glBlendFuncSeparate(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
                                     GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
@@ -710,6 +712,8 @@ void GL_API::setBlending(bool enable, const BlendingProperties& blendingProperti
             }
 
             GL_API::s_blendPropertiesGlobal = blendingProperties;
+
+            std::fill(std::begin(GL_API::s_blendProperties), std::end(GL_API::s_blendProperties), GL_API::s_blendPropertiesGlobal);
         }
     }
 }
@@ -720,6 +724,7 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
     if ((GL_API::s_blendEnabled[drawBufferIdx] == GL_TRUE) != enable || force) {
         enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
         GL_API::s_blendEnabled[drawBufferIdx] = (enable ? GL_TRUE : GL_FALSE);
+        GL_API::s_blendEnabledGlobal = GL_FALSE;
     }
 
     if (enable || force) {
@@ -743,6 +748,7 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
             }
 
             GL_API::s_blendProperties[drawBufferIdx] = blendingProperties;
+            GL_API::s_blendPropertiesGlobal.reset();
         }
     }
 }

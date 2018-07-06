@@ -36,6 +36,7 @@ GUIMessageBox::GUIMessageBox(U64 guiID,
 GUIMessageBox::~GUIMessageBox()
 {
     _parent->removeChild(_msgBoxWindow);
+    CEGUI::WindowManager::getSingletonPtr()->destroyWindow(_msgBoxWindow);
 }
 
 void GUIMessageBox::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {

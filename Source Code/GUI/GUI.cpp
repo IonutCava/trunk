@@ -144,13 +144,6 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
             guiRenderer->endRendering();
 
-            GFX::SetBlendCommand blendCmd;
-            blendCmd._enabled = true;
-            blendCmd._blendProperties = BlendingProperties {
-                BlendProperty::ONE,
-                BlendProperty::INV_SRC_ALPHA
-            };
-            GFX::SetBlend(bufferInOut, blendCmd);
             context.drawFullscreenTexture(getCEGUIRenderTextureData(), bufferInOut);
         }
     }

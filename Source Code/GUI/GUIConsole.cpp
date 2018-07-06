@@ -59,8 +59,9 @@ GUIConsole::~GUIConsole()
         setVisible(false);
         _init = false;
         _parent.getCEGUIContext().getRootWindow()->removeChild(_consoleWindow);
-        MemoryManager::DELETE(_consoleWindow);
+        CEGUI::WindowManager::getSingletonPtr()->destroyWindow(_consoleWindow);
     }
+
     MemoryManager::DELETE(_cmdParser);
 
     _outputBuffer.clear();

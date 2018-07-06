@@ -47,20 +47,20 @@ struct BlendingProperties {
 
     inline bool operator==(const BlendingProperties& rhs) const {
         return _blendSrc == rhs._blendSrc &&
-            _blendDest == rhs._blendDest &&
-            _blendOp == rhs._blendOp &&
-            _blendSrcAlpha == rhs._blendSrcAlpha &&
-            _blendDestAlpha == rhs._blendDestAlpha &&
-            _blendOpAlpha == rhs._blendOpAlpha;
+               _blendDest == rhs._blendDest &&
+               _blendOp == rhs._blendOp &&
+               _blendSrcAlpha == rhs._blendSrcAlpha &&
+               _blendDestAlpha == rhs._blendDestAlpha &&
+               _blendOpAlpha == rhs._blendOpAlpha;
     }
 
     inline bool operator!=(const BlendingProperties& rhs) const {
         return _blendSrc != rhs._blendSrc ||
-            _blendDest != rhs._blendDest ||
-            _blendOp != rhs._blendOp ||
-            _blendSrcAlpha != rhs._blendSrcAlpha ||
-            _blendDestAlpha != rhs._blendDestAlpha ||
-            _blendOpAlpha != rhs._blendOpAlpha;
+               _blendDest != rhs._blendDest ||
+               _blendOp != rhs._blendOp ||
+               _blendSrcAlpha != rhs._blendSrcAlpha ||
+               _blendDestAlpha != rhs._blendDestAlpha ||
+               _blendOpAlpha != rhs._blendOpAlpha;
     }
 
     inline void reset() {
