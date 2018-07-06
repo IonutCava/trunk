@@ -89,6 +89,16 @@ void ProfileTimer::removeChildTimer(ProfileTimer& child) {
     child._parent = Config::Profile::MAX_PROFILE_TIMERS + 1;
 }
 
+U64 ProfileTimer::getChildTotal() const {
+    U64 ret = 0;
+    for (U32 child : _children) {
+        if (g_profileTimersState[child]) {
+            ret += g_profileTimers[child].get();
+        }
+    }
+    return ret;
+}
+
 stringImpl ProfileTimer::print(U32 level) const {
     if (Config::Profile::ENABLE_FUNCTION_PROFILING) {
         stringImpl ret(Util::StringFormat("[ %s ] : [ %5.3f ms]",
@@ -111,10 +121,15 @@ stringImpl ProfileTimer::print(U32 level) const {
 }
 
 U64 ProfileTimer::overhead() {
+    static const U8 overheadLoopCount = 3;
+    U64 overhead = 0;
     ProfileTimer test;
-    test.start();
-    test.stop();
-    return test.get();
+    for (U8 i = 0; i < overheadLoopCount; ++i) {
+        test.start();
+        test.stop();
+        overhead += test.get();
+    }
+    return overhead / overheadLoopCount;
 }
 
 stringImpl ProfileTimer::printAll() {

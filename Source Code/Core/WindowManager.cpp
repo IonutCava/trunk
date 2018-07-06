@@ -13,7 +13,9 @@
 namespace Divide {
 
 WindowManager::WindowManager() : _displayIndex(0),
+                                 _apiFlags(0),
                                  _activeWindowGUID(-1),
+                                 _mainWindowGUID(-1),
                                  _context(nullptr)
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -24,18 +26,23 @@ WindowManager::~WindowManager()
     MemoryManager::DELETE_VECTOR(_windows);
 }
 
+vec2<U16> WindowManager::getFullscreenResolution() const {
+    SysInfo& systemInfo = sysInfo();
+    return vec2<U16>(systemInfo._systemResolutionWidth,
+                     systemInfo._systemResolutionHeight);
+}
+
 ErrorCode WindowManager::init(PlatformContext& context,
                               RenderAPI api,
-                              ResolutionByType initialResolutions,
+                              const vec2<U16>& initialResolution,
                               bool startFullScreen,
                               I32 targetDisplayIndex)
 {
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
         return ErrorCode::WINDOW_INIT_ERROR;
     }
-
+    
     _context = &context;
-
     targetDisplay(std::max(std::min(targetDisplayIndex, SDL_GetNumVideoDisplays() - 1), 0));
 
     SysInfo& systemInfo = sysInfo();
@@ -44,22 +51,22 @@ ErrorCode WindowManager::init(PlatformContext& context,
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
 
-    initialResolutions[to_base(WindowType::FULLSCREEN)].set(to_U16(displayMode.w),
-                                                                  to_U16(displayMode.h));
-    initialResolutions[to_base(WindowType::FULLSCREEN_WINDOWED)].set(to_U16(displayMode.w),
-                                                                           to_U16(displayMode.h));
+    _apiFlags = createAPIFlags(api);
 
-    _windows.emplace_back(MemoryManager_NEW DisplayWindow(*this, context));
+    WindowDescriptor descriptor;
+    descriptor.dimensions = initialResolution;
+    descriptor.fullscreen = startFullScreen;
+    descriptor.targetDisplay = targetDisplayIndex;
+    descriptor.title = _context->config().title;
 
-    ErrorCode err = initWindow(0,
-                               createAPIFlags(api),
-                               initialResolutions,
-                               startFullScreen,
-                               targetDisplayIndex,
-                               _context->config().title.c_str());
+    ErrorCode err = ErrorCode::NO_ERR;
+
+    U32 idx = createWindow(descriptor, err);
 
     if (err == ErrorCode::NO_ERR) {
-        setActiveWindow(0);
+        setActiveWindow(idx);
+        _mainWindowGUID = _windows[idx]->getGUID();
+
         GPUState& gState = _context->gfx().gpuState();
         // Query available display modes (resolution, bit depth per channel and
         // refresh rates)
@@ -95,19 +102,27 @@ void WindowManager::close() {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-ErrorCode WindowManager::initWindow(U32 index,
-                                    U32 windowFlags,
-                                    const ResolutionByType& initialResolutions,
-                                    bool startFullScreen,
-                                    I32 targetDisplayIndex,
-                                    const char* windowTitle) {
-    index = std::min(index, to_U32(_windows.size() - 1));
+U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err) {
+    U32 ret = std::numeric_limits<U32>::max();
 
-    return _windows[index]->init(windowFlags,
-                                 startFullScreen ? WindowType::FULLSCREEN
-                                                 : WindowType::WINDOW,
-                                 initialResolutions,
-                                 windowTitle);
+    DisplayWindow* window = MemoryManager_NEW DisplayWindow(*this, *_context);
+    if (window != nullptr) {
+        ret = to_U32(_windows.size());
+        _windows.emplace_back(window);
+        err = _windows[ret]->init(_apiFlags,
+                                  descriptor.fullscreen ? WindowType::FULLSCREEN : WindowType::WINDOW,
+                                  descriptor.dimensions,
+                                  descriptor.title.c_str());
+
+        if (err != ErrorCode::NO_ERR) {
+            _windows.pop_back();
+            MemoryManager::SAFE_DELETE(window);
+        } else {
+            return to_U32(_windows.size() - 1);
+        }
+    }
+
+    return ret;
 }
 
 bool WindowManager::destroyWindow(DisplayWindow*& window) {
@@ -125,6 +140,20 @@ bool WindowManager::destroyWindow(DisplayWindow*& window) {
     return false;
 }
 
+void WindowManager::update(const U64 deltaTime) {
+    for (DisplayWindow* win : _windows) {
+        win->update(deltaTime);
+    }
+}
+
+bool WindowManager::anyWindowFocus() const {
+    for (DisplayWindow* win : _windows) {
+        if (win->hasFocus()) {
+            return true;
+        }
+    }
+    return false;
+}
 void WindowManager::setActiveWindow(U32 index) {
     index = std::min(index, to_U32(_windows.size() -1));
     _activeWindowGUID = _windows[index]->getGUID();
@@ -245,13 +274,19 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::SHOWN: {
         } break;
         case WindowEvent::MINIMIZED: {
-            _context->app().mainLoopPaused(true);
+            if (_mainWindowGUID == winGUID) {
+                _context->app().mainLoopPaused(true);
+            }
             getWindow(winGUID).minimized(true);
         } break;
         case WindowEvent::MAXIMIZED: {
             getWindow(winGUID).minimized(false);
         } break;
         case WindowEvent::RESTORED: {
+            if (_mainWindowGUID == winGUID) {
+                _context->app().mainLoopPaused(false);
+            }
+
             getWindow(winGUID).minimized(false);
         } break;
         case WindowEvent::LOST_FOCUS: {
@@ -262,7 +297,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         } break;
         case WindowEvent::RESIZED_INTERNAL: {
             // Only if rendering window
-            if (_activeWindowGUID == winGUID) {
+            if (_mainWindowGUID == winGUID) {
                 _context->app().onChangeWindowSize(to_U16(data1), to_U16(data2));
             }
         } break;
@@ -272,19 +307,17 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         } break;
         case WindowEvent::RESOLUTION_CHANGED: {
             // Only if rendering window
-            if (_activeWindowGUID == winGUID) {
+            if (_mainWindowGUID == winGUID) {
                 _context->app().onChangeRenderResolution(to_U16(data1), to_U16(data2));
             }
         } break;
         case WindowEvent::APP_LOOP: {
-            for (DisplayWindow* win : _windows) {
-                win->update();
-            }
+            //Nothing ... already handled
         } break;
         case WindowEvent::CLOSE_REQUESTED: {
             Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), winGUID);
 
-            if (_activeWindowGUID == winGUID) {
+            if (_mainWindowGUID == winGUID) {
                 getWindow(winGUID).hidden(true);
                 _context->app().RequestShutdown();
             } else {

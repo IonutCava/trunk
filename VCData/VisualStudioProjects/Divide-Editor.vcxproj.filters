@@ -98,6 +98,8 @@
     <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowManagerDivide.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
+    <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwConfig.h">
@@ -157,14 +159,14 @@
     <ClInclude Include="..\../Source Code/Editor\Headers\Editor.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Editor\Editor.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowDivide.h">
       <Filter>Widgets\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowManagerDivide.h">
       <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

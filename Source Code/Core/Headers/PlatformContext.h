@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class GUI;
+class Kernel;
 class GFXDevice;
 class SFXDevice;
 class PXDevice;
@@ -44,6 +45,7 @@ class Application;
 class LocalClient;
 class XMLEntryData;
 class Configuration;
+class DisplayWindow;
 class DebugInterface;
 
 namespace Input {
@@ -57,7 +59,6 @@ public:
                              std::unique_ptr<SFXDevice> sfx,
                              std::unique_ptr<PXDevice> pfx,
                              std::unique_ptr<GUI> gui,
-                             std::unique_ptr<Input::InputInterface> input,
                              std::unique_ptr<XMLEntryData> entryData,
                              std::unique_ptr<Configuration> config,
                              std::unique_ptr<LocalClient> client,
@@ -82,9 +83,6 @@ public:
     inline PXDevice& pfx() { return *_pfx; }
     inline const PXDevice& pfx() const { return *_pfx; }
 
-    inline Input::InputInterface& input() { return *_input; }
-    inline const Input::InputInterface& input() const { return *_input; }
-
     inline XMLEntryData& entryData() { return *_entryData; }
     inline const XMLEntryData& entryData() const { return *_entryData; }
 
@@ -97,7 +95,11 @@ public:
     inline DebugInterface& debug() { return *_debug; }
     inline const DebugInterface& debug() const { return *_debug; }
 
-private:
+    Kernel& kernel();
+    DisplayWindow& activeWindow();
+    Input::InputInterface& input();
+
+    private:
     /// Main application instance
     Application& _app;
     /// Access to the GPU
@@ -108,8 +110,6 @@ private:
     std::unique_ptr<SFXDevice> _sfx;
     /// Access to the physics system
     std::unique_ptr<PXDevice> _pfx;
-    /// The input interface
-    std::unique_ptr<Input::InputInterface> _input;
     /// XML configuration data
     std::unique_ptr<XMLEntryData>  _entryData;
     std::unique_ptr<Configuration> _config;

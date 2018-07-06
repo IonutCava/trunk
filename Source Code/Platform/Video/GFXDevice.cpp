@@ -375,13 +375,13 @@ void GFXDevice::toggleFullScreen() {
     switch (winManager.getActiveWindow().type()) {
         case WindowType::WINDOW:
         case WindowType::SPLASH:
-            winManager.getActiveWindow().type(WindowType::FULLSCREEN_WINDOWED);
+            winManager.getActiveWindow().changeType(WindowType::FULLSCREEN_WINDOWED);
             break;
         case WindowType::FULLSCREEN_WINDOWED:
-            winManager.getActiveWindow().type(WindowType::FULLSCREEN);
+            winManager.getActiveWindow().changeType(WindowType::FULLSCREEN);
             break;
         case WindowType::FULLSCREEN:
-            winManager.getActiveWindow().type(WindowType::WINDOW);
+            winManager.getActiveWindow().changeType(WindowType::WINDOW);
             break;
     };
 }

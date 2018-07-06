@@ -87,7 +87,6 @@ namespace ImWindow
 
 	JsonValue::~JsonValue()
 	{
-		ImwSafeFree(m_pName);
 		Reset();
 	}
 
@@ -256,13 +255,13 @@ namespace ImWindow
 		else if (m_eType == E_TYPE_INTEGER)
 		{
 			ImwChar sBuffer[256];
-			sprintf(sBuffer, "%d", m_iInteger);
+			sprintf_s(sBuffer, 256, "%d", m_iInteger);
 			sOutJson += sBuffer;
 		}
 		else if (m_eType == E_TYPE_FLOAT)
 		{
 			ImwChar sBuffer[256];
-			sprintf(sBuffer, "%.17Lg", m_fFloat);
+			sprintf_s(sBuffer, 256, "%.17Lg", m_fFloat);
 			sOutJson += sBuffer;
 		}
 		else
@@ -477,7 +476,7 @@ namespace ImWindow
 		{
 			InitType(oValue.m_eType);
 			
-			JsonValue* pSourceChild = oValue.m_oChilds.m_pFirst;
+			JsonValue* pSourceChild = oValue.m_oChilds.m_pFirst;;
 			while (pSourceChild != NULL)
 			{
 				JsonValue* pNewChild = new JsonValue(*pSourceChild);
@@ -610,8 +609,6 @@ namespace ImWindow
 	{
 		if (m_eType == E_TYPE_INTEGER)
 			return m_iInteger;
-		else if (m_eType == E_TYPE_FLOAT)
-			return (long)m_fFloat;
 		return 0;
 	}
 
@@ -619,8 +616,6 @@ namespace ImWindow
 	{
 		if (m_eType == E_TYPE_FLOAT)
 			return m_fFloat;
-		else if (m_eType == E_TYPE_INTEGER)
-			return (double)m_iInteger;
 		return 0.0;
 	}
 

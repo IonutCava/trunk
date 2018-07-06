@@ -70,6 +70,16 @@ inline const DisplayWindow& WindowManager::getActiveWindow() const {
     return getWindow(_activeWindowGUID);
 }
 
+inline DisplayWindow& WindowManager::getWindow(U32 index) {
+    assert(index < to_U32(_windows.size()));
+    return *_windows[index];
+}
+
+inline const DisplayWindow& WindowManager::getWindow(U32 index) const {
+    assert(index < to_U32(_windows.size()));
+    return *_windows[index];
+}
+
 }; //namespace Divide
 
 #endif //_CORE_WINDOW_MANAGER_INL_

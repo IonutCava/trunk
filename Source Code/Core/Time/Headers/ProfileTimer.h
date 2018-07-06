@@ -49,6 +49,7 @@ class ProfileTimer {
     stringImpl print(U32 level = 0) const;
 
     U64 get() const;
+    U64 getChildTotal() const;
     const stringImpl& name() const;
 
     static stringImpl printAll();

@@ -38,6 +38,13 @@ namespace Divide {
 
 enum class RenderAPI : U32;
 
+struct WindowDescriptor {
+    U32 targetDisplay = 0;
+    stringImpl title;
+    vec2<U16> dimensions;
+    bool fullscreen = false;
+};
+
 class PlatformContext;
 class WindowManager {
 public:
@@ -46,19 +53,18 @@ public:
 
     ErrorCode init(PlatformContext& context,
                    RenderAPI api,
-                   ResolutionByType initialResolutions,
+                   const vec2<U16>& initialResolution,
                    bool startFullScreen,
                    I32 targetDisplayIndex);
 
     void close();
 
+    void update(const U64 deltaTime);
+
+    bool anyWindowFocus() const;
+
     void setActiveWindow(U32 index);
-    ErrorCode initWindow(U32 index,
-                         U32 windowFlags,
-                         const ResolutionByType& initialResolutions,
-                         bool startFullScreen,
-                         I32 targetDisplayIndex,
-                         const char* windowTitle);
+    U32 createWindow(const WindowDescriptor& descriptor, ErrorCode& err);
     bool destroyWindow(DisplayWindow*& window);
 
     inline I32 targetDisplay() const;
@@ -72,14 +78,21 @@ public:
     inline const DisplayWindow& getActiveWindow() const;
     inline DisplayWindow& getWindow(I64 guid);
     inline const DisplayWindow& getWindow(I64 guid) const;
+    inline DisplayWindow& getWindow(U32 index);
+    inline const DisplayWindow& getWindow(U32 index) const;
+
     void handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2);
+
+    vec2<U16> getFullscreenResolution() const;
 
 protected:
     U32 createAPIFlags(RenderAPI api);
 
 protected:
+    U32 _apiFlags;
     I32 _displayIndex;
     I64 _activeWindowGUID;
+    I64 _mainWindowGUID;
     PlatformContext* _context;
     vectorImpl<DisplayWindow*> _windows;
 };

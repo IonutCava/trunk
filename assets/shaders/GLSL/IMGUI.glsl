@@ -15,7 +15,7 @@ void main()
 
 -- Fragment
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D Texture;\n
+layout(binding = TEXTURE_UNIT0) uniform sampler2D Texture;
 
 in vec2 Frag_UV;
 in vec4 Frag_Color;

@@ -33,20 +33,40 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DIVIDE_EDITOR_H_
 
 #include "Core/Headers/NonCopyable.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "Platform/Headers/PlatformDefines.h"
+#include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {
 
 class PlatformContext;
-class Editor : private NonCopyable {
+class ImwWindowManagerDivide;
+
+class Editor : private NonCopyable, public FrameListener {
   public:
     explicit Editor(PlatformContext& context);
     ~Editor();
 
+    bool init();
+    void close();
+
     void update(const U64 deltaTime);
 
+  protected:
+    bool frameStarted(const FrameEvent& evt);
+    bool framePreRenderStarted(const FrameEvent& evt);
+    bool framePreRenderEnded(const FrameEvent& evt);
+    bool frameRenderingQueued(const FrameEvent& evt);
+    bool framePostRenderStarted(const FrameEvent& evt);
+    bool framePostRenderEnded(const FrameEvent& evt);
+    bool frameEnded(const FrameEvent& evt);
   private:
     PlatformContext& _context;
+    std::unique_ptr<ImwWindowManagerDivide> _windowManager;
+
+    Time::ProfileTimer& _editorTimer;
+    Time::ProfileTimer& _editorUpdateTimer;
+    Time::ProfileTimer& _editorRenderTimer;
 
 }; //Editor
 }; //namespace Divide

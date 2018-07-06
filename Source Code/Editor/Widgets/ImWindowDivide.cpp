@@ -4,6 +4,7 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -18,8 +19,8 @@ namespace Divide {
 
 U32 ImwWindowDivide::m_windowCount = 0;
 
-ImwWindowDivide::ImwWindowDivide(PlatformContext& context, ImWindow::EPlatformWindowType eType, bool bCreateState)
-    : ImwPlatformWindow(eType, bCreateState)
+ImwWindowDivide::ImwWindowDivide(PlatformContext& context, bool bMain, bool bIsDragWindow, bool bCreateState)
+    : ImwPlatformWindow(bMain, bIsDragWindow, bCreateState)
     , m_context(context)
     , m_pWindow(nullptr)
 {
@@ -45,18 +46,32 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* pMain)
     if (pMainDivide != NULL) {
         //Copy texture reference
         m_texture = pMainDivide->m_texture;
+
+        WindowDescriptor descriptor;
+        descriptor.fullscreen = false;
+        descriptor.title = "ImWindow";
+        descriptor.targetDisplay = 0;
+        descriptor.dimensions.set(m_context.config().runtime.resolution);
+
+        ErrorCode err = ErrorCode::NO_ERR;
+        U32 idx = m_context.app().windowManager().createWindow(descriptor, err);
+        if (err != ErrorCode::NO_ERR) {
+            RestoreState();
+            return false;
+        }
+        m_pWindow = &m_context.app().windowManager().getWindow(idx);
     } else {
         unsigned char* pPixels;
         int iWidth;
         int iHeight;
         io.Fonts->AddFontDefault();
-        io.Fonts->GetTexDataAsAlpha8(&pPixels, &iWidth, &iHeight);
+        io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
 
         SamplerDescriptor sampler;
         sampler.setFilters(TextureFilter::LINEAR);
 
         TextureDescriptor descriptor(TextureType::TEXTURE_2D,
-                                     GFXImageFormat::ALPHA,
+                                     GFXImageFormat::RGBA8,
                                      GFXDataFormat::UNSIGNED_BYTE);
         descriptor.setSampler(sampler);
 
@@ -74,8 +89,11 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* pMain)
 
         // Store our identifier
         io.Fonts->TexID = (void *)(intptr_t)tex->getHandle();
+        m_pWindow = &m_context.app().windowManager().getWindow(0u);
     }
 
+    m_oSize = ImVec2(m_pWindow->getDimensions());
+    m_oPosition = ImVec2(m_pWindow->getPosition());
 
     m_pWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
     m_pWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
@@ -118,14 +136,12 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* pMain)
 
 ImVec2 ImwWindowDivide::GetPosition() const
 {
-    const vec2<I32>& pos = m_pWindow->getPosition();
-    return ImVec2(float(pos.x), float(pos.y));
+    return m_oPosition;
 }
 
 ImVec2 ImwWindowDivide::GetSize() const
 {
-    const vec2<U16>& dim = m_pWindow->getDimensions();
-    return ImVec2(float(dim.width), float(dim.height));
+    return m_oSize;
 }
 
 bool ImwWindowDivide::IsWindowMaximized() const
@@ -151,6 +167,8 @@ void ImwWindowDivide::SetSize(int iWidth, int iHeight)
 void ImwWindowDivide::SetPosition(int iX, int iY)
 {
     m_pWindow->setPosition(iX, iY);
+    m_oPosition.x = (float)iX;
+    m_oPosition.y = (float)iY;
 }
 
 void ImwWindowDivide::SetWindowMaximized(bool bMaximized)
@@ -170,9 +188,11 @@ void ImwWindowDivide::SetTitle(const ImwChar* pTitle)
 
 void ImwWindowDivide::PreUpdate()
 {
-    m_pWindow->update();
 
-    ImGuiIO& oIO = ((ImGuiContext*)m_pState)->IO;
+    ImGuiIO& oIO = ((ImGuiContext*)m_pContext)->IO;
+
+    //m_pWindow->update(oIO.DeltaTime);
+
     oIO.KeyCtrl = m_context.input().getKeyState(0, Input::KeyCode::KC_LCONTROL) == Input::InputState::PRESSED ||
                   m_context.input().getKeyState(0, Input::KeyCode::KC_RCONTROL) == Input::InputState::PRESSED;
 
@@ -188,7 +208,7 @@ void ImwWindowDivide::PreUpdate()
         m_pWindow->setCursorStyle(CursorStyle::NONE);
     } else if (oIO.MousePos.x != -1.f && oIO.MousePos.y != -1.f)
     {
-        switch (((ImGuiContext*)m_pState)->MouseCursor)
+        switch (((ImGuiContext*)m_pContext)->MouseCursor)
         {
             case ImGuiMouseCursor_Arrow:
                 m_pWindow->setCursorStyle(CursorStyle::ARROW);
@@ -228,8 +248,7 @@ void ImwWindowDivide::Render()
         //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
         SetState();
-        ImVec2 oSize = ImVec2(vec2<F32>(m_pWindow->getDimensions()));
-        ImGui::GetIO().DisplaySize = oSize;
+        ImGui::GetIO().DisplaySize = ImVec2(m_oSize.x, m_oSize.y);
 
         ImGui::Render();
         RenderDrawList(ImGui::GetDrawData());
@@ -255,7 +274,7 @@ void ImwWindowDivide::OnFocus(bool bHasFocus)
 
 void ImwWindowDivide::OnSize(int iWidth, int iHeight)
 {
-    (void)iWidth; (void)iHeight;
+    m_oSize = ImVec2((float)iWidth, (float)iHeight);
     /*if (m_hDC != NULL && m_hRC != NULL)
     {
         wglMakeCurrent(m_hDC, m_hRC);
@@ -265,27 +284,27 @@ void ImwWindowDivide::OnSize(int iWidth, int iHeight)
 
 void ImwWindowDivide::OnMouseButton(int iButton, bool bDown)
 {
-    ((ImGuiContext*)m_pState)->IO.MouseDown[iButton] = bDown;
+    ((ImGuiContext*)m_pContext)->IO.MouseDown[iButton] = bDown;
 }
 
 void ImwWindowDivide::OnMouseMove(int iX, int iY)
 {
-    ((ImGuiContext*)m_pState)->IO.MousePos = ImVec2((float)iX, (float)iY);
+    ((ImGuiContext*)m_pContext)->IO.MousePos = ImVec2((float)iX, (float)iY);
 }
 
 void ImwWindowDivide::OnMouseWheel(int iStep)
 {
-    ((ImGuiContext*)m_pState)->IO.MouseWheel += iStep;
+    ((ImGuiContext*)m_pContext)->IO.MouseWheel += iStep;
 }
 
 void ImwWindowDivide::OnKey(Input::KeyCode eKey, bool bDown)
 {
-    ((ImGuiContext*)m_pState)->IO.KeysDown[eKey] = bDown;
+    ((ImGuiContext*)m_pContext)->IO.KeysDown[eKey] = bDown;
 }
 
 void ImwWindowDivide::OnChar(int iChar)
 {
-    ((ImGuiContext*)m_pState)->IO.AddInputCharacter((ImwChar)iChar);
+    ((ImGuiContext*)m_pContext)->IO.AddInputCharacter((ImwChar)iChar);
 }
 
 void ImwWindowDivide::RenderDrawList(ImDrawData* pDrawData)

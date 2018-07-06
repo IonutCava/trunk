@@ -47,7 +47,7 @@ class ImwWindowManagerDivide : public ImWindow::ImwWindowManager
   protected:
     virtual bool CanCreateMultipleWindow() { return true; }
 
-    virtual ImWindow::ImwPlatformWindow* CreatePlatformWindow(ImWindow::EPlatformWindowType eType, ImWindow::ImwPlatformWindow* pParent);
+    virtual ImWindow::ImwPlatformWindow* CreatePlatformWindow(bool bMain, ImWindow::ImwPlatformWindow* pParent, bool bDragWindow);
 
     virtual ImVec2 GetCursorPos();
     virtual bool IsLeftClickDown();

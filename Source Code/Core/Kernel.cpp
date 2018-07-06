@@ -10,6 +10,7 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUISplash.h"
 #include "GUI/Headers/GUIConsole.h"
+#include "Editor/Headers/Editor.h"
 #include "Scripting/Headers/Script.h"
 #include "Physics/Headers/PXDevice.h"
 #include "Utility/Headers/XMLParser.h"
@@ -71,7 +72,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         std::make_unique<SFXDevice>(*this),              // Audio
         std::make_unique<PXDevice>(*this),               // Physics
         std::make_unique<GUI>(*this),                    // Graphical User Interface
-        std::make_unique<Input::InputInterface>(*this),  // Input
         std::make_unique<XMLEntryData>(),                // Initial XML data
         std::make_unique<Configuration>(),               // XML based configuration
         std::make_unique<LocalClient>(*this),            // Network client
@@ -94,6 +94,10 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _sceneUpdateTimer.addChildTimer(_sceneUpdateLoopTimer);
 
     _resCache = std::make_unique<ResourceCache>(*_platformContext);
+
+    if (Config::Build::ENABLE_EDITOR) {
+        _editor = std::make_unique<Editor>(*_platformContext);
+    }
 
     FrameListenerManager::createInstance();
     OpenCLInterface::createInstance();
@@ -290,6 +294,10 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
                 _sceneUpdateLoopTimer.start();
             }
 
+            if (Config::Build::ENABLE_EDITOR) {
+                _editor->update(deltaTime);
+            }
+
             _sceneManager->processGUI(deltaTime);
 
             // Flush any pending threaded callbacks
@@ -343,12 +351,13 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
 
     GFXDevice::setFrameInterpolationFactor(interpolationFactor);
     
-    // Get input events
-    if (_platformContext->app().windowManager().getActiveWindow().hasFocus()) {
-        _platformContext->input().update(_timingData._currentTimeDelta);
-    } else {
+    // Update windows and get input events
+    WindowManager& winManager = _platformContext->app().windowManager();
+    winManager.update(_timingData._currentTimeDelta);
+    if (!winManager.anyWindowFocus()) {
         _sceneManager->onLostFocus();
     }
+
     {
         Time::ScopedTimer timer3(_physicsUpdateTimer);
         // Update physics
@@ -630,22 +639,17 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
     // Fullscreen is automatically calculated
-    ResolutionByType initRes;
-    initRes[to_base(WindowType::WINDOW)].set(config.runtime.resolution.w, config.runtime.resolution.h);
-    initRes[to_base(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
-
     bool startFullScreen = !config.runtime.windowedMode;
     WindowManager& winManager = _platformContext->app().windowManager();
 
-    ErrorCode initError = winManager.init(*_platformContext, _platformContext->gfx().getAPI(), initRes, startFullScreen, config.runtime.targetDisplay);
+    ErrorCode initError = winManager.init(*_platformContext, _platformContext->gfx().getAPI(), config.runtime.resolution, startFullScreen, config.runtime.targetDisplay);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
     // Match initial rendering resolution to window/screen size
     const DisplayWindow& mainWindow  = winManager.getActiveWindow();
-    vec2<U16> renderResolution(startFullScreen ? mainWindow.getDimensions(WindowType::FULLSCREEN)
-                                               : mainWindow.getDimensions(WindowType::WINDOW));
+    vec2<U16> renderResolution(mainWindow.getDimensions());
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
 
     Camera::initPool(renderResolution);
@@ -676,11 +680,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
 
     DisplayWindow& window = winManager.getActiveWindow();
-    window.type(WindowType::SPLASH);
+    window.setDimensions(config.runtime.splashScreen);
+    window.changeType(WindowType::SPLASH);
     winManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
     // Load and render the splash screen
     _platformContext->gfx().beginFrame();
-    GUISplash(*_resCache, "divideLogo.jpg", initRes[to_base(WindowType::SPLASH)]).render(_platformContext->gfx());
+    GUISplash(*_resCache, "divideLogo.jpg", config.runtime.splashScreen).render(_platformContext->gfx());
     _platformContext->gfx().endFrame();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
@@ -691,12 +696,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
     initError = _platformContext->pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE, config.runtime.simSpeed);
-    if (initError != ErrorCode::NO_ERR) {
-        return initError;
-    }
-
-    // Bind the kernel with the input interface
-    initError = _platformContext->input().init(*this, renderResolution);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
@@ -727,6 +726,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
 
+    if (Config::Build::ENABLE_EDITOR) {
+        if (!_editor->init()) {
+            return ErrorCode::EDITOR_INIT_ERROR;
+        }
+    }
+
     Console::printfn(Locale::get(_ID("INITIAL_DATA_LOADED")));
 
     return initError;
@@ -735,6 +740,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
     WaitForAllTasks(_taskPool, true, true, true);
+    if (Config::Build::ENABLE_EDITOR) {
+        _editor->close();
+    }
     SceneManager::onShutdown();
     Script::onShutdown();
     _sceneManager.reset();
@@ -751,7 +759,6 @@ void Kernel::shutdown() {
     _renderPassManager.reset();
     _platformContext->sfx().closeAudioAPI();
     _platformContext->gfx().closeRenderingAPI();
-    _platformContext->input().terminate();
     _platformContext->terminate();
     _resCache->clear();
     FrameListenerManager::destroyInstance();
@@ -760,11 +767,6 @@ void Kernel::shutdown() {
 
 void Kernel::onChangeWindowSize(U16 w, U16 h) {
     Attorney::GFXDeviceKernel::onChangeWindowSize(_platformContext->gfx(), w, h);
-
-    if (_platformContext->input().isInit()) {
-        _platformContext->input().onChangeWindowSize(w, h);
-    }
-
     _platformContext->gui().onChangeResolution(w, h);
 }
 

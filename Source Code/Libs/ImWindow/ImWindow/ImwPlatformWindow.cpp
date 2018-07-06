@@ -6,106 +6,82 @@
 
 namespace ImWindow
 {
-//SFF_BEGIN
-	ImwPlatformWindow::ImwPlatformWindow(EPlatformWindowType eType, bool bCreateState)
-	{
-		m_eType = eType;
-		m_pContainer = new ImwContainer(this);
-		m_pState = NULL;
-		m_pPreviousState = NULL;
+    //SFF_BEGIN
+    ImwPlatformWindow::ImwPlatformWindow(bool bMain, bool bIsDragWindow, bool bCreateState)
+    {
+        m_bMain = bMain;
+        m_bIsDragWindow = bIsDragWindow;
+        m_pContainer = new ImwContainer(this);
+
+        m_pContext = NULL;
+        m_pPreviousContext = NULL;
 		m_bNeedRender = false;
 		m_bShowContent = true;
 
-		if (bCreateState)
-		{
-			void* pTemp = ImGui::GetCurrentContext();
+        if (bCreateState)
+        {
+            m_pContext = ImGui::CreateContext();
+        }
+    }
 
-			ImGuiIO& oCurrentIO = ImGui::GetIO();
-			m_pState = ImGui::CreateContext();
-            ImGui::SetCurrentContext(static_cast<ImGuiContext*>(m_pState));
-			ImGuiIO& oNewIO = ImGui::GetIO();
+    ImwPlatformWindow::~ImwPlatformWindow()
+    {
+        ImwSafeDelete(m_pContainer);
 
-			memcpy(&((ImGuiContext*)m_pState)->IO.KeyMap, &((ImGuiContext*)pTemp)->IO.KeyMap, sizeof(int) * ImGuiKey_COUNT);
-			oNewIO.RenderDrawListsFn = oCurrentIO.RenderDrawListsFn;
-			oNewIO.GetClipboardTextFn = oCurrentIO.GetClipboardTextFn;
-			oNewIO.SetClipboardTextFn = oCurrentIO.SetClipboardTextFn;
-			oNewIO.MemAllocFn = oCurrentIO.MemAllocFn;
-			oNewIO.MemFreeFn = oCurrentIO.MemFreeFn;
-			oNewIO.ImeSetInputScreenPosFn = oCurrentIO.ImeSetInputScreenPosFn;
-			ImGui::GetIO().IniFilename = NULL;
-
-			ImGui::SetCurrentContext((static_cast<ImGuiContext*>(pTemp)));
-		}
-	}
-
-	ImwPlatformWindow::~ImwPlatformWindow()
-	{
-		ImwSafeDelete(m_pContainer);
-
-		SetState();
-		if (GetType() != E_PLATFORM_WINDOW_TYPE_MAIN)
-		{
-			ImGui::GetIO().Fonts = NULL;
-		}
-		ImGui::Shutdown();
+        SetState();
+        if (!IsMain())
+        {
+            ImGui::GetIO().Fonts = NULL;
+        }
+        ImGui::Shutdown();
 		RestoreState();
-		ImwSafeFree(m_pState);
-	}
+        ImwSafeDelete(m_pContext);
+    }
 
-	bool ImwPlatformWindow::Init(ImwPlatformWindow* /*pParent*/)
-	{
-		return true;
-	}
+    bool ImwPlatformWindow::Init(ImwPlatformWindow* /*pParent*/)
+    {
+        return true;
+    }
 
-	EPlatformWindowType ImwPlatformWindow::GetType() const
-	{
-		return m_eType;
-	}
+    const ImVec2 c_oVec2_0 = ImVec2(0, 0);
+    ImVec2 ImwPlatformWindow::GetPosition() const
+    {
+        return c_oVec2_0;
+    }
 
-	const ImVec2 c_oVec2_0 = ImVec2(0,0);
-	ImVec2 ImwPlatformWindow::GetPosition() const
-	{
-		return c_oVec2_0;
-	}
-
-	ImVec2 ImwPlatformWindow::GetSize() const
-	{
-		return ImGui::GetIO().DisplaySize;
-	}
+    ImVec2 ImwPlatformWindow::GetSize() const
+    {
+        return ImGui::GetIO().DisplaySize;
+    }
 
 	bool ImwPlatformWindow::IsWindowMaximized() const
 	{
 		return false;
 	}
 
-	bool ImwPlatformWindow::IsWindowMinimized() const
-	{
-		return false;
-	}
+    void ImwPlatformWindow::Show()
+    {
+    }
 
-	void ImwPlatformWindow::Show(bool /*bShow*/)
-	{
-	}
+    void ImwPlatformWindow::Hide()
+    {
+    }
 
-	void ImwPlatformWindow::SetSize(int /*iWidth*/, int /*iHeight*/)
-	{
-	}
+    void ImwPlatformWindow::SetSize(int /*iWidth*/, int /*iHeight*/)
+    {
+    }
 
-	void ImwPlatformWindow::SetPosition(int /*iX*/, int /*iY*/)
-	{
-	}
+    void ImwPlatformWindow::SetPosition(int /*iX*/, int /*iY*/)
+    {
+    }
 
 	void ImwPlatformWindow::SetWindowMaximized(bool /*bMaximized*/)
 	{
 	}
 
-	void  ImwPlatformWindow::SetWindowMinimized()
-	{
-	}
-
-	void ImwPlatformWindow::SetTitle(const char* /*pTtile*/)
-	{
-	}
+    void ImwPlatformWindow::SetTitle(const char* /*pTtile*/)
+    {
+    }
 
 	bool ImwPlatformWindow::IsShowContent() const
 	{
@@ -117,10 +93,10 @@ namespace ImWindow
 		m_bShowContent = bShow;
 	}
 
-	void ImwPlatformWindow::OnClose()
-	{
-		ImwWindowManager::GetInstance()->OnClosePlatformWindow(this);
-	}
+    void ImwPlatformWindow::OnClose()
+    {
+        ImwWindowManager::GetInstance()->OnClosePlatformWindow(this);
+    }
 
 	bool ImwPlatformWindow::Save(JsonValue& oJson)
 	{
@@ -148,48 +124,42 @@ namespace ImWindow
 		return m_pContainer->Load(oJson["Container"], bJustCheck);
 	}
 
-	static bool s_bStatePush = false;
+    static bool s_bStatePush = false;
 
-	bool ImwPlatformWindow::IsStateSet()
-	{
-		return s_bStatePush;
-	}
+    bool ImwPlatformWindow::IsStateSet()
+    {
+        return s_bStatePush;
+    }
 
 	bool ImwPlatformWindow::HasState() const
 	{
-		return m_pState != NULL;
+		return m_pContext != NULL;
 	}
 
-	void ImwPlatformWindow::SetState()
-	{
-		IM_ASSERT(s_bStatePush == false);
-		s_bStatePush = true;
-		if (m_pState != NULL)
-		{
-            m_pPreviousState = ImGui::GetCurrentContext();
-            ImGui::SetCurrentContext(static_cast<ImGuiContext*>(m_pState));
-            memcpy(&((ImGuiContext*)m_pState)->Style, &((ImGuiContext*)m_pPreviousState)->Style, sizeof(ImGuiStyle));
-		}
-	}
+    void ImwPlatformWindow::SetState()
+    {
+        IM_ASSERT(s_bStatePush == false);
+        s_bStatePush = true;
 
-	void ImwPlatformWindow::RestoreState()
-	{
-		IM_ASSERT(s_bStatePush == true);
-		s_bStatePush = false;
-		if (m_pState != NULL)
-		{
-            memcpy(&((ImGuiContext*)m_pPreviousState)->Style, &((ImGuiContext*)m_pState)->Style, sizeof(ImGuiStyle));
-            ImGui::SetCurrentContext(static_cast<ImGuiContext*>(m_pPreviousState));
-		}
-	}
+        m_pPreviousContext = ImGui::GetCurrentContext();
+        ImGui::SetCurrentContext(m_pContext);
+		memcpy(&m_pContext->Style, &m_pPreviousContext->Style, sizeof(ImGuiStyle));
+    }
 
-	void ImwPlatformWindow::OnLoseFocus()
-	{
-		if (NULL != m_pState)
-		{
-            ImGuiContext& g = *((ImGuiContext*)m_pState);
+    void ImwPlatformWindow::RestoreState()
+    {
+        IM_ASSERT(s_bStatePush == true);
+        s_bStatePush = false;
+		memcpy(&m_pPreviousContext->Style, &m_pContext->Style, sizeof(ImGuiStyle));
+        ImGui::SetCurrentContext(m_pPreviousContext);
+    }
+
+    void ImwPlatformWindow::OnLoseFocus()
+    {
+        if (NULL != m_pContext)
+        {
+			ImGuiContext& g = *m_pContext;
 			g.SetNextWindowPosCond = g.SetNextWindowSizeCond = g.SetNextWindowContentSizeCond = g.SetNextWindowCollapsedCond = g.SetNextWindowFocus = 0;
-			g.ActiveId = 0;
 
 			for (int i = 0; i < 512; ++i)
 				g.IO.KeysDown[i] = false;
@@ -200,15 +170,32 @@ namespace ImWindow
 			g.IO.KeyAlt = false;
 			g.IO.KeyCtrl = false;
 			g.IO.KeyShift = false;
-		}
-	}
+        }
+    }
 
-	void ImwPlatformWindow::PreUpdate()
-	{
-	}
+    void ImwPlatformWindow::PreUpdate()
+    {
+    }
+
+    void ImwPlatformWindow::Destroy()
+    {
+    }
+
+    void ImwPlatformWindow::StartDrag()
+    {
+    }
+
+    void ImwPlatformWindow::StopDrag()
+    {
+    }
+
+    bool ImwPlatformWindow::IsDraging()
+    {
+        return false;
+    }
 
 	void ImwPlatformWindow::Render()
-	{
+    {
 		if (m_bNeedRender)
 		{
 			m_bNeedRender = false;
@@ -216,36 +203,41 @@ namespace ImWindow
 			ImGui::Render();
 			RestoreState();
 		}
-	}
+    }
 
-	void ImwPlatformWindow::Dock(ImwWindow* pWindow)
-	{
-		m_pContainer->Dock(pWindow);
-	}
+    bool ImwPlatformWindow::IsMain()
+    {
+        return m_bMain;
+    }
 
-	bool ImwPlatformWindow::UnDock(ImwWindow* pWindow)
-	{
-		return m_pContainer->UnDock(pWindow);
-	}
+    void ImwPlatformWindow::Dock(ImwWindow* pWindow)
+    {
+        m_pContainer->Dock(pWindow);
+    }
 
-	ImwContainer* ImwPlatformWindow::GetContainer()
-	{
-		return m_pContainer;
-	}
+    bool ImwPlatformWindow::UnDock(ImwWindow* pWindow)
+    {
+        return m_pContainer->UnDock(pWindow);
+    }
 
-	ImwContainer* ImwPlatformWindow::HasWindow(ImwWindow* pWindow)
-	{
-		return m_pContainer->HasWindow(pWindow);
-	}
+    ImwContainer* ImwPlatformWindow::GetContainer()
+    {
+        return m_pContainer;
+    }
 
-	bool ImwPlatformWindow::FocusWindow(ImwWindow* pWindow)
-	{
-		return m_pContainer->FocusWindow(pWindow);
-	}
+    ImwContainer* ImwPlatformWindow::HasWindow(ImwWindow* pWindow)
+    {
+        return m_pContainer->HasWindow(pWindow);
+    }
 
-	void ImwPlatformWindow::PaintContainer()
-	{
-		m_pContainer->Paint();
-	}
-//SFF_END
+    bool ImwPlatformWindow::FocusWindow(ImwWindow* pWindow)
+    {
+        return m_pContainer->FocusWindow(pWindow);
+    }
+
+    void ImwPlatformWindow::PaintContainer()
+    {
+        m_pContainer->Paint();
+    }
+    //SFF_END
 }

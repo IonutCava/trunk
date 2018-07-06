@@ -374,13 +374,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.b,
                  DefaultColours::DIVIDE_BLUE.a);
 
-    // Prepare shader headers and various shader related states
-    if (initShaders()) {
-        // That's it. Everything should be ready for draw calls
-        Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
-
-        return ErrorCode::NO_ERR;
-    }
 
     // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
     _IMGUIBuffer = _context.newGVD(1);
@@ -389,8 +382,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, 2 * sizeof(vec2<F32>) + sizeof(vec4<U8>), false, NULL, true, true); //Pos, UV and Colour
     _IMGUIBuffer->setIndexBuffer(MAX_IMGUI_VERTS * 3, true, true, {});
 
-    AttributeDescriptor& descPos   = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
-    AttributeDescriptor& descUV     = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
+    AttributeDescriptor& descPos = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
+    AttributeDescriptor& descUV = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
     AttributeDescriptor& descColour = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
@@ -398,6 +391,15 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     descUV.set(0, 0, 2, false, 1, GFXDataFormat::FLOAT_32, to_U32(OFFSETOF(ImDrawVert, uv)));
     descColour.set(0, 0, 4, true, 1, GFXDataFormat::UNSIGNED_BYTE, to_U32(OFFSETOF(ImDrawVert, col)));
 #undef OFFSETOF
+
+    // Prepare shader headers and various shader related states
+    if (initShaders()) {
+        // That's it. Everything should be ready for draw calls
+        Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
+
+        return ErrorCode::NO_ERR;
+    }
+
 
     return ErrorCode::GLSL_INIT_ERROR;
 }

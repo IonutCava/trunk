@@ -34,6 +34,7 @@
 
 #include "Core/Headers/GUIDWrapper.h"
 #include "Core/TemplateLibraries/Headers/String.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 /// As you might of guessed it, it's the same system used in Ogre3D
 /// (http://www.ogre3d.org/docs/api/html/OgreFrameListener_8h_source.html)
@@ -101,23 +102,23 @@ class FrameListener : public GUIDWrapper {
     /// Implement what you need without filling classes with dummy functions
     /// frameStarted is calld at the beggining of a new frame before processing
     /// the logic aspect of a scene
-    virtual bool frameStarted(const FrameEvent& evt) { return true; }
+    virtual bool frameStarted(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
     /// framePreRenderStarted is called when we need to start processing the
     /// visual aspect of a scene
-    virtual bool framePreRenderStarted(const FrameEvent& evt) { return true; }
+    virtual bool framePreRenderStarted(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
     /// framePreRenderEnded is called after all the prerendering has finished
     /// and rendering should start
-    virtual bool framePreRenderEnded(const FrameEvent& evt) { return true; }
+    virtual bool framePreRenderEnded(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
     /// frameRendering Queued is called after all the frame setup/rendering but
     /// before the call to SwapBuffers
-    virtual bool frameRenderingQueued(const FrameEvent& evt) { return true; }
+    virtual bool frameRenderingQueued(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
     /// framePostRenderStarted is called after the main rendering calls are
     /// finished (e.g. use this for debug calls)
-    virtual bool framePostRenderStarted(const FrameEvent& evt) { return true; }
+    virtual bool framePostRenderStarted(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
     /// framePostRenderEnded is called after all the postrendering has finished
-    virtual bool framePostRenderEnded(const FrameEvent& evt) { return true; }
+    virtual bool framePostRenderEnded(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
     /// frameEnded is called after the buffers have been swapped
-    virtual bool frameEnded(const FrameEvent& evt) { return true; }
+    virtual bool frameEnded(const FrameEvent& evt) { ACKNOWLEDGE_UNUSED(evt); return true; }
 
    private:
     /// not _name so that it doesn't conflict with Resource base class

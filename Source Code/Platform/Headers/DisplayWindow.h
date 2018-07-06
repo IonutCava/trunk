@@ -80,8 +80,10 @@ enum class WindowEvent : U32 {
     CHAR = 17,
     COUNT
 };
-typedef std::array<vec2<I32>, to_base(WindowType::COUNT)> PositionByType;
-typedef std::array<vec2<U16>, to_base(WindowType::COUNT)> ResolutionByType;
+
+namespace Input {
+    class InputInterface;
+};
 
 class WindowManager;
 class PlatformContext;
@@ -105,9 +107,9 @@ public:
     ~DisplayWindow();
     ErrorCode init(U32 windowFlags,
                    WindowType initialType,
-                   const ResolutionByType& initialResolutions,
+                   const vec2<U16>& dimensions,
                    const char* windowTitle);
-    void update();
+    void update(const U64 deltaTime);
 
     ErrorCode destroyWindow();
 
@@ -128,27 +130,23 @@ public:
     inline bool hidden() const;
            void hidden(const bool state);
 
+    inline bool fullscreen() const;
+
     inline WindowType type() const;
-    inline void type(WindowType type);
-    inline void previousType();
+    inline void changeType(WindowType newType);
+    inline void changeToPreviousType();
 
            void opacity(U8 opacity);
     inline U8   opacity() const;
 
-    inline void setDimensions(U16 dimensionX, U16 dimensionY);
-    inline void setDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY);
-    inline void setDimensions(WindowType windowType, const vec2<U16>& dimensions);
-
-    inline const vec2<U16>& getDimensions(WindowType windowType) const;
-    inline const vec2<U16>& getPreviousDimensions(WindowType windowType) const;
-
-    inline const vec2<U16>& getDimensions() const;
-    inline const vec2<U16>& getPreviousDimensions() const;
+    void setDimensions(U16 dimensionX, U16 dimensionY);
+    void setDimensions(const vec2<U16>& dimensions);
+    vec2<U16> getDimensions() const;
+    vec2<U16> getPreviousDimensions() const;
 
     inline void setPosition(I32 positionX, I32 positionY);
-    inline void setPosition(WindowType windowType, I32 positionX, I32 positionY);
-    inline void setPosition(WindowType windowType, const vec2<I32>& position);
-    inline const vec2<I32>& getPosition(WindowType windowType) const;
+    inline void setPosition(const vec2<I32>& position);
+
     inline const vec2<I32>& getPosition() const;
 
     inline const stringImpl& title() const;
@@ -163,6 +161,8 @@ public:
 
     inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
 
+    inline Input::InputInterface& inputHandler();
+
 private:
     /// Internally change window size
     void setDimensionsInternal(U16 w, U16 h);
@@ -173,7 +173,6 @@ private:
     /// Changing from one window type to another
     /// should also change display dimensions and position
     void handleChangeWindowType(WindowType newWindowType);
-
 private:
     WindowManager& _parent;
     PlatformContext& _context;
@@ -197,12 +196,14 @@ private:
     bool _externalResizeEvent;
 
     U8 _opacity;
-    PositionByType   _windowPosition;
-    ResolutionByType _prevDimensions;
-    ResolutionByType _windowDimensions;
+    vec2<I32> _windowPosition;
+    vec2<U16> _prevDimensions;
+    vec2<U16> _windowDimensions;
 
     typedef vectorImpl<EventListener> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
+
+    std::unique_ptr<Input::InputInterface> _inputHandler;
 
     // Varies from OS to OS
     WindowHandle _handle;

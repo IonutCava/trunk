@@ -29,7 +29,7 @@
 //#define IMGUI_DISABLE_TEST_WINDOWS
 
 //---- Don't define obsolete functions names. Consider enabling from time to time or when updating to reduce like hood of using already obsolete function/names
-//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 //---- Pack colors to BGRA instead of RGBA (remove need to post process vertex buffer in back ends)
 //#define IMGUI_USE_BGRA_PACKED_COLOR
@@ -43,12 +43,13 @@
 
 #define IM_VEC2_CLASS_EXTRA                                                 \
         ImVec2(const Divide::vec2<Divide::F32>& f) { x = f.x; y = f.y; }            \
-        operator Divide::vec2<Divide::F32>() const { return Divide::vec2<Divide::F32>(x,y); }
+        operator Divide::vec2<Divide::F32>() const { return Divide::vec2<Divide::F32>(x,y); } \
+        inline ImVec2 operator+(const ImVec2& rhs) { return ImVec2(x + rhs.x, y + rhs.y); } \
+        inline ImVec2 operator-(const ImVec2& rhs) { return ImVec2(x - rhs.x, y - rhs.y); }
 
 #define IM_VEC4_CLASS_EXTRA                                                        \
         ImVec4(const Divide::vec4<Divide::F32>& f) { x = f.x; y = f.y; z = f.z; w = f.w; } \
         operator Divide::vec4<Divide::F32>() const { return Divide::vec4<Divide::F32>(x,y,z,w); }
-
 
 //---- Use 32-bit vertex indices (instead of default: 16-bit) to allow meshes with more than 64K vertices
 //#define ImDrawIdx unsigned int

@@ -36,6 +36,10 @@ namespace Divide {
 namespace Time {
 
 inline U64 ProfileTimer::get() const {
+    if (_timerAverage == 0) {
+        return getChildTotal();
+    }
+
     return _timerAverage / std::max(_timerCounter, 1u);
 }
 

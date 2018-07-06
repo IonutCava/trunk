@@ -5,6 +5,8 @@
 #include "Headers/Kernel.h"
 #include "Headers/ParamHandler.h"
 
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 
 #include "Utility/Headers/MemoryTracker.h"
@@ -63,7 +65,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
         throwError(err);
         stop();
     } else {
-        warmup();
+        warmup(_kernel->platformContext().config());
         mainLoopActive(true);
     }
 
@@ -104,15 +106,20 @@ void Application::stop() {
     }
 }
 
-void Application::warmup() {
+void Application::warmup(const Configuration& config) {
+    DisplayWindow& window = _windowManager.getActiveWindow();
+
+    vec2<U16> previousDimensions = window.getPreviousDimensions();
     Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
     //Make sure we are displaying a splash screen
-    _windowManager.getActiveWindow().type(WindowType::SPLASH);
-    _windowManager.getActiveWindow().swapBuffers(false);
+    window.setDimensions(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
+    window.changeType(WindowType::SPLASH);
+    window.swapBuffers(false);
     Attorney::KernelApplication::warmup(*_kernel);
     //Restore to normal window
-    _windowManager.getActiveWindow().swapBuffers(true);
-    _windowManager.getActiveWindow().previousType();
+    window.swapBuffers(true);
+    window.setDimensions(previousDimensions);
+    window.changeToPreviousType();
 }
 
 void Application::idle() {

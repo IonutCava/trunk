@@ -48,11 +48,13 @@ namespace Build {
     constexpr bool IS_RELEASE_BUILD = false;
 #else
     // Set IS_SHIPPING_BUILD to true to disable non-required functionality for shipped games: editors, debug code, etc
-    constexpr bool IS_SHIPPING_BUILD = false;
+    constexpr bool IS_SHIPPING_BUILD = true;
     constexpr bool IS_DEBUG_BUILD = false;
     constexpr bool IS_PROFILE_BUILD = false;
     constexpr bool IS_RELEASE_BUILD = true;
 #endif
+
+    constexpr bool ENABLE_EDITOR = !IS_SHIPPING_BUILD;
 };
 
 /// Use OpenGL/OpenGL ES for rendering

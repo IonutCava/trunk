@@ -7,6 +7,7 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
+#include "Platform/Input/Headers/InputInterface.h"
 
 #ifndef HAVE_M_PI
 #define HAVE_M_PI
@@ -75,11 +76,12 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _queuedType(WindowType::COUNT),
    _sdlWindow(nullptr),
    _internalMoveEvent(false),
-   _externalResizeEvent(false)
+   _externalResizeEvent(false),
+   _inputHandler(std::make_unique<Input::InputInterface>(*this))
 {
-    _windowPosition.fill(vec2<I32>(0));
-    _prevDimensions.fill(vec2<U16>(1));
-    _windowDimensions.fill(vec2<U16>(1));
+    _windowPosition.set(0);
+    _prevDimensions.set(1);
+    _windowDimensions.set(1);
 }
 
 DisplayWindow::~DisplayWindow() 
@@ -94,18 +96,18 @@ ErrorCode DisplayWindow::destroyWindow() {
         SDL_DestroyWindow(_sdlWindow);
         _sdlWindow = nullptr;
     }
-
+    _inputHandler->terminate();
     return ErrorCode::NO_ERR;
 }
 
 ErrorCode DisplayWindow::init(U32 windowFlags,
                               WindowType initialType,
-                              const ResolutionByType& initialResolutions,
+                              const vec2<U16>& dimensions,
                               const char* windowTitle)
 {
     _type = initialType;
 
-    _windowDimensions = initialResolutions;
+    _windowDimensions = dimensions;
 
     _sdlWindow = SDL_CreateWindow(windowTitle,
                                   SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
@@ -116,7 +118,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     
     I32 positionX, positionY;
     SDL_GetWindowPosition(_sdlWindow, &positionX, &positionY);
-    setPosition(type(), positionX, positionY);
+    setPosition(positionX, positionY);
 
     getWindowHandle(_sdlWindow, _handle);
     _title = windowTitle;
@@ -130,10 +132,14 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
         return ErrorCode::SDL_WINDOW_INIT_ERROR;
     }
 
-    return ErrorCode::NO_ERR;
+    return _inputHandler->init(_context.app().kernel(), dimensions);
 }
 
-void DisplayWindow::update() {
+void DisplayWindow::update(const U64 deltaTime) {
+    if (hasFocus()) {
+        _inputHandler->update(deltaTime);
+    }
+
     static int s_KeyMod = 0;
 
     SDL_Event event;
@@ -152,10 +158,6 @@ void DisplayWindow::update() {
         switch (event.type)
         {
             case SDL_QUIT: {
-                for (EventListener& listener : _eventListeners[to_base(WindowEvent::CLOSE_REQUESTED)]) {
-                    listener(args);
-                }
-
                 _parent.handleWindowEvent(WindowEvent::CLOSE_REQUESTED,
                     getGUID(),
                     event.quit.type,
@@ -265,6 +267,10 @@ void DisplayWindow::update() {
                         for (EventListener& listener : _eventListeners[to_base(WindowEvent::CLOSE_REQUESTED)]) {
                             listener(args);
                         }
+                        _parent.handleWindowEvent(WindowEvent::CLOSE_REQUESTED,
+                                                  getGUID(),
+                                                  event.quit.type,
+                                                  event.quit.timestamp);
                     } break;
                     case SDL_WINDOWEVENT_ENTER:
                     case SDL_WINDOWEVENT_FOCUS_GAINED: {
@@ -329,8 +335,7 @@ void DisplayWindow::update() {
                             event.window.data2);
 
                         if (!_internalMoveEvent) {
-                            setPosition(type(),
-                                        event.window.data1,
+                            setPosition(event.window.data1,
                                         event.window.data2);
                             _internalMoveEvent = false;
                         }
@@ -397,6 +402,10 @@ void DisplayWindow::update() {
 }
 
 void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
+    if (_inputHandler->isInit()) {
+        _inputHandler->onChangeWindowSize(w, h);
+    }
+
     if (_externalResizeEvent && 
         (_type != WindowType::WINDOW &&
          _type != WindowType::SPLASH))
@@ -444,8 +453,7 @@ void DisplayWindow::setPositionInternal(I32 w, I32 h) {
 void DisplayWindow::centerWindowPosition() {
     _internalMoveEvent = true;
 
-    setPosition(type(),
-                SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
+    setPosition(SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
                 SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()));
 }
 
@@ -541,14 +549,38 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
         } break;
     };
 
-    const vec2<U16>& dimensions = getDimensions(newWindowType);
-    setDimensionsInternal(dimensions.width, dimensions.height);
-
     centerWindowPosition();
 
     if (hidden()) {
         hidden(false);
     }
+}
+
+vec2<U16> DisplayWindow::getPreviousDimensions() const {
+    if (fullscreen()) {
+        return _parent.getFullscreenResolution();
+    }
+    return _prevDimensions;
+}
+
+void DisplayWindow::setDimensions(U16 dimensionX, U16 dimensionY) {
+    if (!fullscreen()) {
+        _prevDimensions.set(_windowDimensions);
+        _windowDimensions.set(dimensionX, dimensionY);
+        setDimensionsInternal(dimensionX, dimensionY);
+    }
+}
+
+void DisplayWindow::setDimensions(const vec2<U16>& dimensions) {
+    setDimensions(dimensions.x, dimensions.y);
+}
+
+vec2<U16> DisplayWindow::getDimensions() const {
+    if (fullscreen()) {
+        return _parent.getFullscreenResolution();
+    }
+
+    return _windowDimensions;
 }
 
 }; //namespace Divide

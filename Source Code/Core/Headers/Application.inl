@@ -138,6 +138,9 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case ErrorCode::WRONG_WORKING_DIRECTORY: {
             return "Wrong working directory specified! All paths are relative based on the executable's location.";
         };
+        case ErrorCode::EDITOR_INIT_ERROR: {
+            return "Editor failed to load!";
+        };
     };
 }
 

@@ -19,7 +19,6 @@ PlatformContext::PlatformContext(Application& app,
                                  std::unique_ptr<SFXDevice> sfx,
                                  std::unique_ptr<PXDevice> pfx,
                                  std::unique_ptr<GUI> gui,
-                                 std::unique_ptr<Input::InputInterface> input,
                                  std::unique_ptr<XMLEntryData> entryData,
                                  std::unique_ptr<Configuration> config,
                                  std::unique_ptr<LocalClient> client,
@@ -29,7 +28,6 @@ PlatformContext::PlatformContext(Application& app,
     _sfx(std::move(sfx)),
     _pfx(std::move(pfx)),
     _gui(std::move(gui)),
-    _input(std::move(input)),
     _entryData(std::move(entryData)),
     _config(std::move(config)),
     _client(std::move(client)),
@@ -46,7 +44,6 @@ void PlatformContext::terminate() {
     _sfx.reset();
     _pfx.reset();
     _gui.reset();
-    _input.reset();
     _entryData.reset();
     _config.reset();
     _client.reset();
@@ -59,8 +56,19 @@ void PlatformContext::idle() {
     //_sfx->idle();
     _pfx->idle();
     //_gui->idle();
-    //_input->idle();
     _debug->idle();
+}
+
+Input::InputInterface& PlatformContext::input() {
+    return activeWindow().inputHandler();
+}
+
+DisplayWindow& PlatformContext::activeWindow() {
+    return app().windowManager().getActiveWindow();
+}
+
+Kernel& PlatformContext::kernel() {
+    return app().kernel();
 }
 
 }; //namespace Divide

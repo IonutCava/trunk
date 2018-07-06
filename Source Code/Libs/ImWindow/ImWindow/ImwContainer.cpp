@@ -374,19 +374,30 @@
 	    return m_pParentWindow;
     }
 
+    void ImwContainer::EndChildAlpha()
+    {
+        ImGui::PopStyleColor();
+        ImGui::End();
+        ImGui::PopStyleColor();
+    }
+
     bool ImwContainer::BeginChildAlpha(const char* pStrId, const ImVec2& oSizeArg, float fAlpha, ImGuiWindowFlags eExtraFlags)
     {
 	    ImGuiWindow* pWindow = ImGui::GetCurrentWindow();
 	    ImGuiWindowFlags eFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_ChildWindow;
 
 	    const ImVec2 oContentAvailable = ImGui::GetContentRegionAvail();
-	    ImVec2 oSize = ImFloor(oSizeArg);
+	    ImVec2 oSize = oSizeArg;
 	    if (oSize.x <= 0.0f)
 	    {
+			/*if (oSize.x == 0.0f)
+				eFlags |= ImGuiWindowFlags_ChildWindowAutoFitX;*/
 		    oSize.x = ImMax(oContentAvailable.x, 4.0f) - fabsf(oSize.x); // Arbitrary minimum zero-ish child size of 4.0f (0.0f causing too much issues)
 	    }
 	    if (oSize.y <= 0.0f)
 	    {
+			/*if (oSize.y == 0.0f)
+				eFlags |= ImGuiWindowFlags_ChildWindowAutoFitY;*/
 		    oSize.y = ImMax(oContentAvailable.y, 4.0f) - fabsf(oSize.y);
 	    }
 		
@@ -395,7 +406,12 @@
 	    char pTitle[256];
 	    ImFormatString(pTitle, IM_ARRAYSIZE(pTitle), "%s.%s", pWindow->Name, pStrId);
 
-	    bool ret = ImGui::Begin(pTitle, NULL, oSize, fAlpha, eFlags);
+        ImGui::SetNextWindowSize(oSize);
+        ImVec4 backup = ImGui::GetStyleColorVec4(ImGuiCol_ChildWindowBg);
+        ImVec4 colour = backup; colour.w = fAlpha;
+        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, colour);
+	    bool ret = ImGui::Begin(pTitle, NULL, eFlags);
+        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, backup);
 
 	    if (!(pWindow->Flags & ImGuiWindowFlags_ShowBorders))
 		    ImGui::GetCurrentWindow()->Flags &= ~ImGuiWindowFlags_ShowBorders;
@@ -430,7 +446,7 @@
 			
 			    BeginChildAlpha("Split1", ImVec2(0, iFirstHeight), 0.f, ImGuiWindowFlags_NoScrollbar);
 			    m_pSplits[0]->Paint(/*iX, iY, iWidth, iFirstHeight*/);
-			    ImGui::EndChild();
+                EndChildAlpha();
 
 			    ImRect oSeparatorRect( 0, iFirstHeight, oSize.x, iFirstHeight + iSeparatorSize);
 			    if (pWindowManager->GetConfig().m_bVisibleDragger)
@@ -459,14 +475,14 @@
 
 			    BeginChildAlpha("Split2", ImVec2(0, 0), 0.f, ImGuiWindowFlags_NoScrollbar);
 			    m_pSplits[1]->Paint(/*iX, iY + iFirstHeight, iWidth, iSecondHeight*/);
-			    ImGui::EndChild();
+                EndChildAlpha();
 		    }
 		    else
 		    {
 			    float iFirstWidth = oSize.x * m_fSplitRatio - iSeparatorHalfSize - pWindow->WindowPadding.y;
 			    BeginChildAlpha("Split1", ImVec2(iFirstWidth, 0), 0.f, ImGuiWindowFlags_NoScrollbar);
 			    m_pSplits[0]->Paint();
-			    ImGui::EndChild();
+                EndChildAlpha();
 
 			    ImGui::SameLine();
 
@@ -499,7 +515,7 @@
 
 			    BeginChildAlpha("Split2", ImVec2(0, 0), 0.f, ImGuiWindowFlags_NoScrollbar);
 			    m_pSplits[1]->Paint();
-			    ImGui::EndChild();
+                EndChildAlpha();
 		    }
 	    }
 	    else if (HasWindowTabbed())

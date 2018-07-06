@@ -23,8 +23,8 @@ namespace {
     KeyByNameMap g_keysByNameMap = initKeyByNameMap();
 };
 
-InputInterface::InputInterface(Kernel& parent)
-     : KernelComponent(parent), 
+InputInterface::InputInterface(DisplayWindow& parent)
+    : _parent(parent), 
       _pInputInterface(nullptr),
       _pEventHdlr(nullptr),
       _pJoystickInterface(nullptr),
@@ -54,7 +54,7 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     
     std::stringstream ss;
 #if defined(_WIN32)
-    ss << (size_t)(const_sysInfo()._focusedWindowHandle->_handle);
+    ss << (size_t)(_parent.handle()._handle);
     // Create OIS input manager
     pl.insert(std::make_pair("WINDOW", ss.str()));
     pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND"));
@@ -62,7 +62,7 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     pl.insert(std::make_pair("w32_keyboard", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_NONEXCLUSIVE"));
 #else
-    ss << const_sysInfo()._focusedWindowHandle->_handle;
+    ss << _parent.handle()._window;
     pl.insert(std::make_pair("GLXWINDOW", ss.str()));
     pl.insert(std::make_pair("XAutoRepeatOn", "true"));
     pl.insert(std::make_pair("x11_mouse_grab", "false"));

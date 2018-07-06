@@ -45,13 +45,13 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
 {
     friend class ImwWindowManagerOGL;
     public:
-    ImwWindowDivide(PlatformContext& context, ImWindow::EPlatformWindowType eType, bool bCreateState);
+    ImwWindowDivide(PlatformContext& context, bool bMain, bool bIsDragWindow, bool bCreateState);
     virtual ~ImwWindowDivide();
 
     virtual bool Init(ImWindow::ImwPlatformWindow* pMain);
 
-    virtual ImVec2 GetPosition() const;
-    virtual ImVec2 GetSize() const;
+    virtual ImVec2 GetPosition() const override;
+    virtual ImVec2 GetSize() const override;
     virtual bool IsWindowMaximized() const;
     virtual bool IsWindowMinimized() const;
 
@@ -81,6 +81,8 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
     Texture_ptr    m_texture;
 
   private:
+    ImVec2 m_oPosition;
+    ImVec2 m_oSize;
     static U32 m_windowCount;
     PlatformContext& m_context;
     ShaderProgram_ptr m_imWindowProgram;

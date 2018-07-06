@@ -38,6 +38,7 @@ namespace Divide {
 
 class Task;
 class Kernel;
+class Configuration;
 const char* getErrorCodeName(ErrorCode code);
   
 namespace Attorney {
@@ -93,7 +94,7 @@ class Application {
   private:
 
     //ToDo: Remove this hack - Ionut
-    void warmup();
+    void warmup(const Configuration& config);
 
   private:
     WindowManager _windowManager;

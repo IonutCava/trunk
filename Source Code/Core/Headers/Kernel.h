@@ -39,6 +39,7 @@
 namespace Divide {
 
 class Scene;
+class Editor;
 class PXDevice;
 class GFXDevice;
 class SFXDevice;
@@ -203,7 +204,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     std::unique_ptr<PlatformContext>   _platformContext;
     std::unique_ptr<SceneManager>      _sceneManager;
     std::unique_ptr<RenderPassManager> _renderPassManager;
-
+    std::unique_ptr<Editor>            _editor;
     LoopTimingData _timingData;
 
     TaskPool _taskPool;
@@ -239,7 +240,6 @@ namespace Attorney {
         static void shutdown(Kernel& kernel) {
             kernel.shutdown();
         }
-
 
         static void onChangeWindowSize(Kernel& kernel, U16 w, U16 h) {
             kernel.onChangeWindowSize(w, h);

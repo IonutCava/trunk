@@ -38,61 +38,22 @@ namespace Divide {
         return _sdlWindow;
     }
 
-    inline const vec2<U16>& DisplayWindow::getPreviousDimensions(WindowType windowType) const {
-        return _prevDimensions[to_base(windowType)];
-    }
-
-    inline void DisplayWindow::setDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY) {
-        _prevDimensions[to_base(type())].set(_windowDimensions[to_base(type())]);
-        _windowDimensions[to_base(type())].set(dimensionX, dimensionY);
-
-        if (windowType == type()) {
-            setDimensionsInternal(dimensionX, dimensionY);
-        }
-    }
-
-    inline void DisplayWindow::setDimensions(WindowType windowType, const vec2<U16>& dimensions) {
-        setDimensions(windowType, dimensions.x, dimensions.y);
-    }
-
-    inline void DisplayWindow::setDimensions(U16 dimensionX, U16 dimensionY) {
-        setDimensions(type(), dimensionX, dimensionY);
-    }
-
-    inline const vec2<U16>& DisplayWindow::getDimensions(WindowType windowType) const {
-        return _windowDimensions[to_U32(windowType)];
-    }
-
-    inline const vec2<U16>& DisplayWindow::getDimensions() const {
-        return getDimensions(type());
-    }
-
-    inline const vec2<U16>& DisplayWindow::getPreviousDimensions() const {
-        return getPreviousDimensions(type());
-    }
-
-    inline void DisplayWindow::setPosition(WindowType windowType, I32 positionX, I32 positionY) {
-        _windowPosition[to_base(windowType)].set(positionX, positionY);
-
-        if (windowType == type()) {
-            setPositionInternal(positionX, positionY);
-        }
-    }
-
-    inline void DisplayWindow::setPosition(WindowType windowType, const vec2<I32>& position) {
-        setPosition(windowType, position.x, position.y);
+    inline bool DisplayWindow::fullscreen() const {
+        return type() == WindowType::FULLSCREEN ||
+               type() == WindowType::FULLSCREEN_WINDOWED;
     }
 
     inline void DisplayWindow::setPosition(I32 positionX, I32 positionY) {
-        setPosition(type(), positionX, positionY);
+        _windowPosition.set(positionX, positionY);
+        setPositionInternal(positionX, positionY);
     }
 
-    inline const vec2<I32>& DisplayWindow::getPosition(WindowType windowType) const {
-        return _windowPosition[to_base(windowType)];
+    inline void DisplayWindow::setPosition(const vec2<I32>& position) {
+        setPosition(position.x, position.y);
     }
 
     inline const vec2<I32>& DisplayWindow::getPosition() const {
-        return getPosition(type());
+        return _windowPosition;
     }
 
     inline bool DisplayWindow::swapBuffers() const {
@@ -132,15 +93,15 @@ namespace Divide {
         return _type;
     }
 
-    inline void DisplayWindow::type(WindowType type) {
-        if (type != _type) {
-            _queuedType = type;
+    inline void DisplayWindow::changeType(WindowType newType) {
+        if (newType != _type) {
+            _queuedType = newType;
             handleChangeWindowType(_queuedType);
         }
     }
 
-    inline void DisplayWindow::previousType() {
-        type(_previousType);
+    inline void DisplayWindow::changeToPreviousType() {
+        changeType(_previousType);
     }
 
     inline const stringImpl& DisplayWindow::title() const {
@@ -154,6 +115,11 @@ namespace Divide {
     inline void DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
         _eventListeners[to_base(windowEvent)].push_back(listener);
     }
+
+    inline Input::InputInterface& DisplayWindow::inputHandler() {
+        return *_inputHandler;
+    }
+
 }; //namespace Divide
 
 #endif //_DISPLAY_WINDOW_INL_

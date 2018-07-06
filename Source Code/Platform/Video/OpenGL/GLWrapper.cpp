@@ -839,15 +839,19 @@ void GL_API::drawText(const TextElementBatch& batch) {
 }
 
 void GL_API::drawIMGUI(ImDrawData* data) {
+#define USE_FIXED_FUNCTION
+
     if (data != nullptr && data->Valid) {
         
         GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
-
+            assert(cmd_list->VtxBuffer.size() < MAX_IMGUI_VERTS);
+#if defined(USE_FIXED_FUNCTION)
+#else
             _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0, (bufferPtr)&cmd_list->VtxBuffer.front());
             _IMGUIBuffer->updateIndexBuffer(vectorImpl<U32>(std::cbegin(cmd_list->IdxBuffer), std::cend(cmd_list->IdxBuffer)));
-
+#endif
             for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {
                 const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
                 if (pcmd->UserCallback) {
@@ -860,8 +864,10 @@ void GL_API::drawIMGUI(ImDrawData* data) {
                                        (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
                     cmd.cmd().indexCount = to_U32(pcmd->ElemCount);
-
+#if defined(USE_FIXED_FUNCTION)
+#else
                     _IMGUIBuffer->draw(cmd);
+#endif
                 }
                 cmd.cmd().firstIndex += pcmd->ElemCount;
             }

@@ -7,7 +7,7 @@
 #include "ImwMenu.h"
 #include "ImwPlatformWindow.h"
 #include "ImwStatusBar.h"
-#include "ImwToolBar.h"
+#include "ImwToolbar.h"
 #include "JsonValue.h"
 
 namespace ImWindow
@@ -24,22 +24,19 @@ namespace ImWindow
 
 		enum EPlatformWindowAction
 		{
-			E_PLATFORM_WINDOW_ACTION_DESTROY,
-			E_PLATFORM_WINDOW_ACTION_SHOW,
-			E_PLATFORM_WINDOW_ACTION_HIDE,
-			E_PLATFORM_WINDOW_ACTION_SET_POSITION,
-			E_PLATFORM_WINDOW_ACTION_SET_SIZE,
-			E_PLATFORM_WINDOW_ACTION_MAXIMIZE,
-			E_PLATFORM_WINDOW_ACTION_MINIMIZE,
-			E_PLATFORM_WINDOW_ACTION_RESTORE,
+			E_PLATFORM_WINDOW_ACTION_DESTROY		= 1,
+			E_PLATFORM_WINDOW_ACTION_SHOW			= 2,
+			E_PLATFORM_WINDOW_ACTION_HIDE			= 4,
+			E_PLATFORM_WINDOW_ACTION_SET_POSITION	= 8,
+			E_PLATFORM_WINDOW_ACTION_SET_SIZE		= 16,
 		};
 
 		struct PlatformWindowAction
 		{
-			PlatformWindowAction(ImwPlatformWindow* pPlatformWindow, EPlatformWindowAction eAction, ImVec2 oValue = ImVec2(0.f, 0.f));
 			ImwPlatformWindow*		m_pPlatformWindow;
-			EPlatformWindowAction	m_eAction;
-			ImVec2					m_oValue;
+			unsigned int			m_iFlags;
+			ImVec2					m_oPosition;
+			ImVec2					m_oSize;
 		};
 
 		struct DockAction
@@ -97,9 +94,6 @@ namespace ImWindow
 			float					m_fTabShadowDropSize;
 			float					m_fTabShadowSlopRatio;
 			float					m_fTabShadowAlpha;
-
-			ImVec2					m_oStatusBarWindowPadding;
-			ImVec2					m_oStatusBarFramePadding;
 		};
 	public:
 		ImwWindowManager();
@@ -109,8 +103,7 @@ namespace ImWindow
 		bool								Run(bool bRender);
 		void								Destroy();
 
-		ImwPlatformWindow*					GetMainPlatformWindow() const;
-		const ImwPlatformWindowList&		GetSecondariesPlatformWindows() const;
+		ImwPlatformWindow*					GetMainPlatformWindow();
 		Config&								GetConfig();
 
 		void								SetMainTitle(const ImwChar* pTitle);
@@ -125,10 +118,6 @@ namespace ImWindow
 		const ImwWindowList&				GetWindowList() const;
 		ImwPlatformWindow*					GetCurrentPlatformWindow();
 		ImwPlatformWindow*					GetWindowParent(ImwWindow* pWindow);
-
-		void								MaximizeCurrentPlatformWindow();
-		void								MinimizeCurrentPlatformWindow();
-		void								RestoreCurrentPlatformWindow();
 
 		bool								HasWantCaptureKeyboard() const { return m_bHasWantCaptureKeyboard; }
 		bool								HasWantCaptureMouse() const { return m_bHasWantCaptureMouse; }
@@ -146,7 +135,7 @@ namespace ImWindow
 		//To override for use multi window mode
 		virtual bool						CanCreateMultipleWindow();
 		virtual bool						InternalInit();
-		virtual ImwPlatformWindow*			CreatePlatformWindow(EPlatformWindowType eType, ImwPlatformWindow* pParent);
+		virtual ImwPlatformWindow*			CreatePlatformWindow(bool bMain, ImwPlatformWindow* pParent, bool bDragWindow);
 		virtual ImVec2						GetCursorPos();
 		virtual bool						IsLeftClickDown();
 

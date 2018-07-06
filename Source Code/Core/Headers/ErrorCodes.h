@@ -63,6 +63,7 @@ namespace Divide {
         WRONG_WORKING_DIRECTORY = -26,
         PLATFORM_INIT_ERROR = -27,
         PLATFORM_CLOSE_ERROR = -28,
+        EDITOR_INIT_ERROR = -29
     };
 };
 

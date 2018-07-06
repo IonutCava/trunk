@@ -34,7 +34,6 @@
 
 #include "EffectManager.h"
 #include "Core/Headers/Application.h"
-#include "Core/Headers/KernelComponent.h"
 
 namespace Divide {
 namespace Input {
@@ -43,13 +42,13 @@ namespace Attorney {
     class InputInterfaceEvent;
 };
 //////////// Event handler class declaration ////////////////////////////////////////////////
-class InputInterface : public KernelComponent {
+class InputInterface {
     friend class Attorney::InputInterfaceEvent;
 public:
     typedef std::pair<OIS::Keyboard*, OIS::Mouse*> KBMousePair;
 
 public:
-    explicit InputInterface(Kernel& parent);
+    explicit InputInterface(DisplayWindow& parent);
     ~InputInterface();
 
     ErrorCode init(Kernel& kernel, const vec2<U16>& inputAreaDimensions);
@@ -105,6 +104,8 @@ protected:
     inline KeyEvent& getKeyRef(U32 index) { return _keys[index]; }
 
 protected:
+    DisplayWindow& _parent;
+
     OIS::InputManager* _pInputInterface;
     EventHandler* _pEventHdlr;
 
