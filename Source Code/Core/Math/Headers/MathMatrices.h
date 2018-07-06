@@ -181,26 +181,34 @@ public:
     mat2 &operator+=(const mat2 &m) { return *this = *this + m; }
     mat2 &operator-=(const mat2 &m) { return *this = *this - m; }
 
-    bool operator==(mat2 &B) const {
-        if (!COMPARE(this->m[0][0], B[0][0]) ||
-            !COMPARE(this->m[0][1], B[0][1])) {
+    inline bool operator==(const mat2 &B) const {
+        if (!COMPARE(this->m[0][0], B.m[0][0]) ||
+            !COMPARE(this->m[0][1], B.m[0][1])) {
             return false;
         }
-        if (!COMPARE(this->m[1][0], B[1][0]) ||
-            !COMPARE(this->m[1][1], B[1][1])) {
+        if (!COMPARE(this->m[1][0], B.m[1][0]) ||
+            !COMPARE(this->m[1][1], B.m[1][1])) {
             return false;
         }
 
         return true;
     }
 
-    bool operator!=(mat2 &B) const { return !(*this == B); }
+    inline bool operator!=(const mat2 &B) const { return !(*this == B); }
 
     operator T *() { return this->mat; }
     operator const T *() const { return this->mat; }
 
     T &operator[](I32 i) { return this->mat[i]; }
     const T operator[](I32 i) const { return this->mat[i]; }
+
+    inline T &element(I8 row, I8 column) {
+        return this->m[row][column];
+    }
+
+    inline const T &element(I8 row, I8 column) const {
+        return this->m[row][column];
+    }
 
     inline void set(T m0, T m1, T m2, T m3) {
         this->mat[0] = m0;
@@ -261,7 +269,7 @@ public:
         this->transpose();
     }
 
-    inline void transpose() const {
+    inline void transpose() {
         this->set(this->mat[0], this->mat[2],
                   this->mat[1], this->mat[3]);
     }
@@ -393,32 +401,40 @@ class mat3 {
     mat3 &operator+=(const mat3 &m) { return *this = *this + m; }
     mat3 &operator-=(const mat3 &m) { return *this = *this - m; }
 
-    bool operator==(mat3 &B) const {
-        if (!COMPARE(this->m[0][0], B[0][0]) ||
-            !COMPARE(this->m[0][1], B[0][1]) ||
-            !COMPARE(this->m[0][2], B[0][2])) {
+    inline bool operator==(const mat3 &B) const {
+        if (!COMPARE(this->m[0][0], B.m[0][0]) ||
+            !COMPARE(this->m[0][1], B.m[0][1]) ||
+            !COMPARE(this->m[0][2], B.m[0][2])) {
             return false;
         }
-        if (!COMPARE(this->m[1][0], B[1][0]) ||
-            !COMPARE(this->m[1][1], B[1][1]) ||
-            !COMPARE(this->m[1][2], B[1][2])) {
+        if (!COMPARE(this->m[1][0], B.m[1][0]) ||
+            !COMPARE(this->m[1][1], B.m[1][1]) ||
+            !COMPARE(this->m[1][2], B.m[1][2])) {
             return false;
         }
-        if (!COMPARE(this->m[2][0], B[2][0]) ||
-            !COMPARE(this->m[2][1], B[2][1]) ||
-            !COMPARE(this->m[2][2], B[2][2])) {
+        if (!COMPARE(this->m[2][0], B.m[2][0]) ||
+            !COMPARE(this->m[2][1], B.m[2][1]) ||
+            !COMPARE(this->m[2][2], B.m[2][2])) {
             return false;
         }
         return true;
     }
 
-    bool operator!=(mat3 &B) const { return !(*this == B); }
+    inline bool operator!=(const mat3 &B) const { return !(*this == B); }
 
     operator T *() { return this->mat; }
     operator const T *() const { return this->mat; }
 
     T &operator[](I32 i) { return this->mat[i]; }
     const T operator[](I32 i) const { return this->mat[i]; }
+
+    inline T &element(I8 row, I8 column) {
+        return this->m[row][column];
+    }
+
+    inline const T &element(I8 row, I8 column) const {
+        return this->m[row][column];
+    }
 
     inline void set(T m0, T m1, T m2, T m3, T m4, T m5, T m6, T m7, T m8) {
         this->mat[0] = m0;
@@ -482,10 +498,10 @@ class mat3 {
         this->transpose();
     }
 
-    inline void transpose() const {
-        this->set(this->mat[0], this->mat[3], this->mat[6], this->mat[1],
-                  this->mat[4], this->mat[2], this->mat[7], this->mat[5],
-                  this->mat[8]);
+    inline void transpose() {
+        this->set(this->mat[0], this->mat[3], this->mat[6],
+                  this->mat[1], this->mat[4], this->mat[7],
+                  this->mat[2], this->mat[5], this->mat[8]);
     }
 
     inline T det() const {

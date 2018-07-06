@@ -89,4 +89,177 @@ TEST(matNSizeTest)
     CHECK_EQUAL(sizeof(b10), sizeof(b9)  * 2);
 }
 
+TEST(matNUnionTests)
+{
+    mat2<I32> input1;
+    mat3<U8> input2;
+    mat4<I16> input3;
+    mat4<F32> input4;
+
+    // Random, unique values
+    input1.set(-1, 0, 1, 2);
+    input2.set(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    input3.set(-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8);
+    for (U8 i = 0; i < 16; ++i) {
+        input4.mat[i] = 22.345f * (i + 1);
+    }
+
+    // Quick constructor check
+    CHECK_EQUAL(input2.element(1, 2), 6);
+    // Check that element is just a direct access to m-member
+    CHECK_EQUAL(input1.element(1, 2), input1.m[1][2]);
+    CHECK_EQUAL(input2.element(2, 1), input2.m[2][1]);
+    CHECK_EQUAL(input3.element(3, 2), input3.m[3][2]);
+    CHECK_EQUAL(input4.element(2, 2), input4.m[2][2]);
+
+    U8 row, column;
+    U8 elementsPerLine = 2;
+    for (row = 0; row < elementsPerLine; ++row) {
+        for (column = 0; column < elementsPerLine; ++column) {
+            CHECK_EQUAL(input1.element(row, column), input1.mat[row * elementsPerLine + column]);
+        }
+    }
+    elementsPerLine = 3;
+    for (row = 0; row < elementsPerLine; ++row) {
+        for (column = 0; column < elementsPerLine; ++column) {
+            CHECK_EQUAL(input2.element(row, column), input2.mat[row * elementsPerLine + column]);
+        }
+    }
+    elementsPerLine = 4;
+    for (row = 0; row < elementsPerLine; ++row) {
+        for (column = 0; column < elementsPerLine; ++column) {
+            CHECK_EQUAL(input3.element(row, column), input3.mat[row * elementsPerLine + column]);
+        }
+    }
+
+    for (row = 0; row < elementsPerLine; ++row) {
+        for (column = 0; column < elementsPerLine; ++column) {
+            CHECK_EQUAL(input4.element(row, column), input4.mat[row * elementsPerLine + column]);
+        }
+    }
+}
+
+TEST_CONST_MEMBER_FUNCTION(matN, equalityOperator, NA)
+{
+    mat2<I32> input1[2];
+    mat3<U8>  input2[2];
+    mat4<I16> input3[2];
+    mat4<F32> input4[2];
+
+    // Random, unique values
+    input1[0].set(-1, 0, 1, 2);
+    input1[1].set(-1, 0, 1, 2);
+    CHECK_TRUE(input1[0] == input1[1]);
+    CHECK_FALSE(input1[0] != input1[1]);
+    input1[1].mat[2] = 2;
+    CHECK_TRUE(input1[0] != input1[1]);
+    CHECK_FALSE(input1[0] == input1[1]);
+
+    input2[0].set(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    input2[1].set(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+    CHECK_TRUE(input2[0] == input2[1]);
+    CHECK_FALSE(input2[0] != input2[1]);
+    input2[1].m[2][0] = 22;
+    CHECK_TRUE(input2[0] != input2[1]);
+    CHECK_FALSE(input2[0] == input2[1]);
+
+    input3[0].set(-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8);
+    input3[1].set(-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8);
+    CHECK_TRUE(input3[0] == input3[1]);
+    CHECK_FALSE(input3[0] != input3[1]);
+    input3[1].m[1][3] = 22;
+    CHECK_TRUE(input3[0] != input3[1]);
+    CHECK_FALSE(input3[0] == input3[1]);
+
+    for (U8 i = 0; i < 2; ++i) {
+        for (U8 j = 0; j < 16; ++j) {
+            input4[i].mat[j] = 22.345f * j * (j % 2 == 0 ? -1.0f : 1.0f);
+        }
+    }
+    CHECK_TRUE(input4[0] == input4[1]);
+    CHECK_FALSE(input4[0] != input4[1]);
+    
+    for (U8 i = 0; i < 2; ++i) {
+        for (U8 j = 0; j < 16; ++j) {
+            input4[i].mat[j] = 22.345f * (j + i + 1);
+        }
+    }
+
+    CHECK_TRUE(input4[0] != input4[1]);
+    CHECK_FALSE(input4[0] == input4[1]);
+}
+
+TEST_MEMBER_FUNCTION(matN, identity, NA)
+{
+    mat2<F32> input1; input1.zero();
+    const mat2<F32> result1(1.0f, 0.0f,
+                            0.0f, 1.0f);
+    CHECK_NOT_EQUAL(result1, input1);
+    input1.identity();
+    CHECK_TRUE(result1 == input1);
+
+    mat3<F32> input2; input2.zero();
+    const mat3<F32> result2(1.0f, 0.0f, 0.0f,
+                            0.0f, 1.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f);
+
+    CHECK_NOT_EQUAL(result2, input2);
+    input2.identity();
+    CHECK_EQUAL(result2, input2);
+
+    mat4<F32> input3; input3.zero();
+    const mat4<F32> result3(1.0f, 0.0f, 0.0f, 0.0f,
+                            0.0f, 1.0f, 0.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f,
+                            0.0f, 0.0f, 0.0f, 1.0f);
+    CHECK_NOT_EQUAL(result3, input3);
+    input3.identity();
+    CHECK_EQUAL(result3, input3);
+}
+
+TEST_MEMBER_FUNCTION(matN, transpose, NA)
+{
+    mat2<F32> input1(1.0f, 2.0f, 3.0f, 4.0f);
+    const mat2<F32> result1(1.0f, 3.0f, 2.0f, 4.0f);
+    const mat2<F32> result2(1.0f, 2.0f, 3.0f, 4.0f);
+    CHECK_TRUE(input1.getTranspose() == result1);
+    CHECK_TRUE(input1 != result1);
+    input1.transpose();
+    CHECK_TRUE(input1 == result1);
+    input1.transpose();
+    CHECK_TRUE(input1 == result2);
+
+
+    mat3<I32> input2(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    const mat3<I32> result3(1, 4, 7, 2, 5, 8, 3, 6, 9);
+    const mat3<I32> result4(1, 2, 3, 4, 5, 6, 7, 8, 9);
+    CHECK_TRUE(input2.getTranspose() == result3);
+    CHECK_TRUE(input2 != result3);
+    input2.transpose();
+    CHECK_TRUE(input2 == result3);
+    input2.transpose();
+    CHECK_TRUE(input2 == result4);
+
+
+    mat4<F32> input3(1.0f, 2.0f, 3.0f, 4.0f,
+                     5.0f, 6.0f, 7.0f, 8.0f,
+                     9.0f, 10.0f, 11.0f, 12.0f,
+                     13.0f, 14.0f, 15.0f, 16.0f);
+    const mat4<F32> result5(1.0f, 5.0f, 9.0f, 13.0f,
+                            2.0f, 6.0f, 10.0f, 14.0f,
+                            3.0f, 7.0f, 11.0f, 15.0f,
+                            4.0f, 8.0f, 12.0f, 16.0f);
+    const mat4<F32> result6(1.0f, 2.0f, 3.0f, 4.0f,
+                            5.0f, 6.0f, 7.0f, 8.0f,
+                            9.0f, 10.0f, 11.0f, 12.0f,
+                            13.0f, 14.0f, 15.0f, 16.0f);
+    CHECK_TRUE(input3.getTranspose() == result5);
+    CHECK_TRUE(input3 != result5);
+    input3.transpose();
+    CHECK_TRUE(input3 == result5);
+    input3.transpose();
+    CHECK_TRUE(input3 == result6);
+}
+
 }; //namespace Divide
