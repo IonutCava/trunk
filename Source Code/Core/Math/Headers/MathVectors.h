@@ -103,7 +103,15 @@ public:
 
 template<typename T>
 class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
-   
+    simd_vector() : simd_vector(0)
+    {
+    }
+
+    simd_vector(T reg[4]) : _reg(reg)
+    {
+    }
+
+    T _reg[4];
 };
 
 /***********************************************************************

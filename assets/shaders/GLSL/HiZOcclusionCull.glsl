@@ -7,8 +7,10 @@ struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
     mat4 _colorMatrix;
-    mat4 _propertyMatrix;
-    vec4 _boundingSphere;
+    vec4 dvd_BufferIntegerValues;
+    vec4 dvd_BufferMatProperties;
+    vec4 dvd_boundingSphere;
+    vec4 _padding_reserved;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) buffer dvd_MatrixBlock
@@ -17,7 +19,7 @@ layout(binding = BUFFER_NODE_INFO, std430) buffer dvd_MatrixBlock
 };
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - reserved
-#define dvd_customData(X) dvd_Matrices[X]._propertyMatrix[0].w 
+#define dvd_customData(X) dvd_Matrices[X].dvd_BufferIntegerValues.w 
 
 layout(location = 0) uniform uint dvd_numEntities;
 layout(binding = 0, offset = 0) uniform atomic_uint culledCount;
@@ -33,8 +35,8 @@ void main()
     
     uint nodeIndex = dvd_drawCommands[ident].baseInstance;
 
-    vec3 center = dvd_Matrices[nodeIndex]._boundingSphere.xyz;
-    float radius = dvd_Matrices[nodeIndex]._boundingSphere.w;
+    vec3 center = dvd_Matrices[nodeIndex].dvd_boundingSphere.xyz;
+    float radius = dvd_Matrices[nodeIndex].dvd_boundingSphere.w;
 
     // Sphere clips against near plane, just assume visibility.
     if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_ZPlanesCombined.x) {

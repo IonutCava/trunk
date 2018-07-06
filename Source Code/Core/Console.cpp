@@ -78,6 +78,7 @@ const char* Console::output(std::ostream& outStream, const char* text,
     if (_threadID) {
         outStream << "[ " << std::this_thread::get_id() << " ] ";
     }
+
     outStream << (error ? " Error: " : "")
               << text
               << (newline ? "\n" : "");

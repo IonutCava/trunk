@@ -43,7 +43,7 @@ struct SceneShaderData {
     vec4<F32> _fogDetails;
     vec4<F32> _windDetails;
     vec4<F32> _shadowingSettings;
-    vec4<F32> _otherData;
+    vec4<U32> _otherData;
 
     inline void fogDetails(F32 colorR, F32 colorG, F32 colorB, F32 density) {
         _fogDetails.set(colorR, colorG, colorB, density);
@@ -66,15 +66,15 @@ struct SceneShaderData {
     }
 
     inline void elapsedTime(U32 timeMS) {
-        _otherData.x = to_float(timeMS);
+        _otherData.x = timeMS;
     }
 
     inline void enableDebugRender(bool state) {
-        _otherData.y = state ? 1.0f : 0.0f;
+        _otherData.y = state ? 1 : 0;
     }
 
     inline void toggleShadowMapping(bool state) {
-        _otherData.z = state ? 1.0f : 0.0f;
+        _otherData.z = state ? 1 : 0;
     }
 };
 

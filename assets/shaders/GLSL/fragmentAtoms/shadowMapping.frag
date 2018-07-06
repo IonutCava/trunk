@@ -52,7 +52,7 @@ int _shadowTempInt = -2;
 
 
 float shadow_loop(){
-    if (!dvd_shadowsEnabled()) {
+    if (!dvd_shadowsEnabled) {
         return 1.0;
     }
 

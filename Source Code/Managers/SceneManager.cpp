@@ -140,7 +140,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
     _sceneData.fogDensity(par.getParam<bool>("rendering.enableFog")
                             ? par.getParam<F32>("rendering.sceneState.fogDensity")
-                            : -1.0f);
+                            : 0.0f);
 
     const SceneState& activeSceneState = _activeScene->state();
     _sceneData.windDetails(activeSceneState.windDirX(),
@@ -160,7 +160,7 @@ void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
     par.setParam("rendering.sceneState.fogDensity", density);
 
     _sceneData.fogDetails(color.r, color.g, color.b,
-                          par.getParam<bool>("rendering.enableFog") ? density : -1.0f);
+                          par.getParam<bool>("rendering.enableFog") ? density : 0.0f);
 }
 
 const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderStage stage) {

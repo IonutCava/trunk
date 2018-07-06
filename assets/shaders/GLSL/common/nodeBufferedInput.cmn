@@ -7,8 +7,10 @@ struct NodeData {
     mat4 _worldMatrix;
     mat4 _normalMatrix;
     mat4 _colorMatrix;
-    mat4 _propertyMatrix;
-    vec4 _boundingSphere;
+    vec4 dvd_integerValues;
+    vec4 dvd_BufferMatProperties;
+    vec4 dvd_boundingSphere;
+    vec4 _padding_reserved;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
@@ -25,7 +27,7 @@ mat3 dvd_NormalMatrix() {
 }
 
 ivec4 dvd_BufferIntegerValues() {
-    return ivec4(dvd_Matrices[dvd_drawID]._propertyMatrix[0]);
+    return ivec4(dvd_Matrices[dvd_drawID].dvd_integerValues);
 }
 
 #if defined(VERT_SHADER)
@@ -37,7 +39,7 @@ ivec4 dvd_BufferIntegerValues() {
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor
-#define buffer_matProperties dvd_Matrices[dvd_drawID]._propertyMatrix[1] 
+#define buffer_matProperties dvd_Matrices[dvd_drawID].dvd_BufferMatProperties 
 
 #define dvd_isSelected     (dvd_BufferIntegerValues().x < -0.5)
 #define dvd_isHighlighted  (dvd_BufferIntegerValues().x >  0.5)

@@ -198,8 +198,6 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
 
     mat4<F32>& normalMatrix = dataOut.normalMatrix();
 
-    dataOut._boundingSphere.set(nodePtr->getBoundingSphereConst().asVec4());
-
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
@@ -211,12 +209,13 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
 
     // Since the normal matrix is 3x3, we can use the extra row and column
     // to store additional data
-    normalMatrix.element(3, 2, true) = to_float(animComp ? animComp->boneCount() : 0);
+    normalMatrix.element(3, 2) = to_float(animComp ? animComp->boneCount() : 0);
     // Get the color matrix (diffuse, ambient, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut.colorMatrix());
     // Get the material property matrix (alpha test, texture count,
     // texture operation, etc.)
     renderable->getMaterialPropertyMatrix(dataOut.propertyMatrix());
+    dataOut.boundingSphere(nodePtr->getBoundingSphereConst().asVec4());
 
     return dataOut;
 }
@@ -260,7 +259,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                             {
                                 data.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
                                     // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
-                                    dataOut.propertyMatrix().element(3, 3, true) = 1;
+                                    dataOut.propertyMatrix().element(3, 3) = 1;
                                     lastUnit1Handle = textureHandle;
                                     lastUsedSlot = 1;
                             } else {

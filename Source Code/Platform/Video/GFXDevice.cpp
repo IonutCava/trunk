@@ -115,8 +115,8 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
                                 RenderStage renderStage) {
     // Only the first color attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    Texture* colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0);
-    Texture* depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth);
+    Texture* colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    Texture* depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);

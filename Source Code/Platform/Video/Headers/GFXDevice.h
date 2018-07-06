@@ -93,7 +93,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         };
 
       public:
-        vec4<F32> _boundingSphere;
 
         NodeData()
         {
@@ -101,7 +100,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
             normalMatrix().identity();
             colorMatrix().zero();
             propertyMatrix().zero();
-            _boundingSphere.reset();
         }
 
         inline mat4<F32>& worldMatrix() {
@@ -118,6 +116,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
         inline mat4<F32>& propertyMatrix() {
             return _matrix[3];
+        }
+
+        inline void boundingSphere(const vec4<F32>& bSphere) {
+            return propertyMatrix().setRow(2, bSphere);
         }
 
         inline F32* data() {

@@ -289,7 +289,7 @@ void RenderingComponent::getMaterialColorMatrix(mat4<F32>& matOut) const {
 
 void RenderingComponent::getMaterialPropertyMatrix(mat4<F32>& matOut) const {
     matOut.zero();
-    matOut.setCol(0,
+    matOut.setRow(0,
                   vec4<F32>(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
                                                           ? -1.0f
                                                           : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
@@ -302,7 +302,7 @@ void RenderingComponent::getMaterialPropertyMatrix(mat4<F32>& matOut) const {
     if (mat) {
         bool isTranslucent = mat->isTranslucent() ? mat->useAlphaTest() : false;
 
-        matOut.setCol(1,
+        matOut.setRow(1,
                       vec4<F32>(isTranslucent ? 1.0f : 0.0f,
                                 to_float(mat->getTextureOperation()),
                                 to_float(mat->getTextureCount()),
