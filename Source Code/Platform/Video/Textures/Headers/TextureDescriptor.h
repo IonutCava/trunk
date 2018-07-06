@@ -69,6 +69,7 @@ class SamplerDescriptor : public PropertyDescriptor {
         // The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = ComparisonFunction::LEQUAL;
         _useRefCompare = false;
+        _mipmaps = false;
         _borderColor.set(DefaultColors::BLACK());
     }
 
@@ -127,6 +128,7 @@ class SamplerDescriptor : public PropertyDescriptor {
                 setMagFilter(TextureFilter::NEAREST);
                 break;
             default:
+                setMagFilter(filters);
                 break;
         }
     }
@@ -147,31 +149,7 @@ class SamplerDescriptor : public PropertyDescriptor {
     }
 
     inline void toggleMipMaps(const bool state) {
-        if (state) {
-            switch (_minFilter) {
-                case TextureFilter::LINEAR:
-                    _minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-                    break;
-                case TextureFilter::NEAREST:
-                    _minFilter = TextureFilter::NEAREST_MIPMAP_NEAREST;
-                    break;
-                default:
-                    break;
-            };
-        } else {
-            switch (_minFilter) {
-                case TextureFilter::LINEAR_MIPMAP_LINEAR:
-                case TextureFilter::LINEAR_MIPMAP_NEAREST:
-                    _minFilter = TextureFilter::LINEAR;
-                    break;
-                case TextureFilter::NEAREST_MIPMAP_LINEAR:
-                case TextureFilter::NEAREST_MIPMAP_NEAREST:
-                    _minFilter = TextureFilter::NEAREST;
-                    break;
-                default:
-                    break;
-            };
-        }
+        _mipmaps = state;
     }
 
     inline void toggleSRGBColorSpace(const bool state) { _srgb = state; }
@@ -181,6 +159,7 @@ class SamplerDescriptor : public PropertyDescriptor {
         Util::Hash_combine(hash, to_uint(_cmpFunc));
         Util::Hash_combine(hash, _useRefCompare);
         Util::Hash_combine(hash, _srgb);
+        Util::Hash_combine(hash, _mipmaps);
         Util::Hash_combine(hash, to_uint(_wrapU));
         Util::Hash_combine(hash, to_uint(_wrapV));
         Util::Hash_combine(hash, to_uint(_wrapW));
@@ -215,8 +194,7 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline bool srgb() const { return _srgb; }
     inline U8 anisotropyLevel() const { return _anisotropyLevel; }
     inline bool generateMipMaps() const { 
-        return _minFilter != TextureFilter::LINEAR &&
-               _minFilter != TextureFilter::NEAREST; 
+        return _mipmaps;
     }
     inline vec4<F32> borderColor() const { return _borderColor; }
 
@@ -228,6 +206,8 @@ class SamplerDescriptor : public PropertyDescriptor {
     TextureWrap _wrapU, _wrapV, _wrapW;
     /// Use SRGB color space
     bool _srgb;
+    /// Use mipmapping
+    bool _mipmaps;
     /// The value must be in the range [0...255] and is automatically clamped by
     /// the max HW supported level
     U8 _anisotropyLevel;

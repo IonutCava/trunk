@@ -310,11 +310,7 @@ void glVertexArray::draw(const GenericDrawCommand& command,
     if (command.renderGeometry()) {
         GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
         // Submit the draw command
-        if (drawCount > 1) {
-            glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, cmdSize);
-        } else {
-            glDrawElementsIndirect(mode, _formatInternal, offset);
-        }
+        glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, cmdSize);
         // Always update draw call counter after draw calls
         GFX_DEVICE.registerDrawCall();
     }

@@ -205,9 +205,7 @@ class SceneGraphNode : public GUIDWrapper,
     inline void decChildQueue() { _childQueue--; }
 
     inline const UsageContext& usageContext() const { return _usageContext; }
-    inline void usageContext(const UsageContext& newContext) {
-        _usageContext = newContext;
-    }
+    void usageContext(const UsageContext& newContext);
 
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {

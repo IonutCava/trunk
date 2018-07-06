@@ -133,6 +133,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
     // Next, create a depth attachment for the screen render target.
     // Must also multisampled. Use full float precision for long view distances
@@ -142,6 +143,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Use greater or equal depth compare function, but depth comparison is
     // disabled, anyway.
     depthSampler._cmpFunc = ComparisonFunction::GEQUAL;
+    depthSampler.toggleMipMaps(false);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS,
                                       GFXImageFormat::DEPTH_COMPONENT32F,
                                       GFXDataFormat::FLOAT_32);
@@ -153,12 +155,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         depthDescriptor, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->Create(resolution.width,
                                                          resolution.height);
-
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->AddAttachment(
-        depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->Create(resolution.width,
-                                                        resolution.height);
     // If we enabled anaglyph rendering, we need a second target, identical to
     // the screen target
     // used to render the scene at an offset
@@ -171,6 +167,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->Create(
             resolution.width, resolution.height);
     }
+
+    depthSampler.toggleMipMaps(true);
+    depthSampler.setMinFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
+    depthDescriptor.setSampler(depthSampler);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->AddAttachment(
+        depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->Create(resolution.width,
+        resolution.height);
 
     // We also add a couple of useful cameras used by this class. One for
     // rendering in 2D and one for generating cube maps

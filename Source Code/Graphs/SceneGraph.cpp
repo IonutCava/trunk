@@ -5,6 +5,16 @@
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
+
+namespace {
+    U32 ignoredNodeType = to_uint(SceneNodeType::TYPE_ROOT) |
+                          to_uint(SceneNodeType::TYPE_LIGHT) |
+                          to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+                          to_uint(SceneNodeType::TYPE_TRIGGER) |
+                          to_uint(SceneNodeType::TYPE_SKY) |
+                          to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
+};
+
 SceneGraph::SceneGraph()
     : _root(nullptr)
 {
@@ -19,6 +29,7 @@ SceneGraph::SceneGraph()
         to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
         to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) |
         to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
+    onNodeAdd(_root);
 }
 
 SceneGraph::~SceneGraph()
@@ -29,8 +40,41 @@ SceneGraph::~SceneGraph()
     _root.reset();
 }
 
+void SceneGraph::unregisterNode(I64 guid, SceneGraphNode::UsageContext usage) {
+    /*if (usage == SceneGraphNode::UsageContext::NODE_DYNAMIC) {
+        _dynamicNodes.erase(
+            std::remove_if(std::begin(_dynamicNodes), std::end(_dynamicNodes),
+                [&guid](SceneGraphNode_wptr node) -> bool {
+                    return node.lock() && node.lock()->getGUID() == guid;
+                }),
+            std::end(_dynamicNodes));
+    } else {
+        _staticNodes.erase(
+            std::remove_if(std::begin(_staticNodes), std::end(_staticNodes),
+                [&guid](SceneGraphNode_wptr node) -> bool {
+                    return node.lock() && node.lock()->getGUID() == guid;
+                }),
+            std::end(_staticNodes));
+    }*/
+}
+
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
+    if (!BitCompare(ignoredNodeType, to_uint(oldNode.getNode<>()->getType()))) {
+        I64 guid = oldNode.getGUID();
+        unregisterNode(guid, oldNode.usageContext());
+    }
+
     Attorney::SceneGraph::onNodeDestroy(GET_ACTIVE_SCENE(), oldNode);
+}
+
+void SceneGraph::onNodeAdd(SceneGraphNode_ptr newNode) {
+    if (!BitCompare(ignoredNodeType, to_uint(newNode->getNode<>()->getType()))) {
+        /*if (newNode->usageContext() == SceneGraphNode::UsageContext::NODE_DYNAMIC) {
+            _dynamicNodes.push_back(newNode);
+        } else {
+            _staticNodes.push_back(newNode);
+        }*/
+    }
 }
 
 void SceneGraph::idle()

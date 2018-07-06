@@ -138,9 +138,11 @@ void glFramebuffer::InitAttachment(AttachmentType type,
     tex->setNumLayers(texDescriptor._layerCount);
     _mipMapLevel[slot].set(
         texDescriptor._mipMinLevel,
-        texDescriptor._mipMaxLevel > 0
-            ? texDescriptor._mipMaxLevel
-            : 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height)))));
+        sampler.generateMipMaps() 
+            ?  texDescriptor._mipMaxLevel > 0
+               ? texDescriptor._mipMaxLevel
+               : 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
+            : 1);
 
     if (resize) {
         tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);

@@ -64,11 +64,18 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
             *this));
 }
 
+void SceneGraphNode::usageContext(const UsageContext& newContext) {
+    Attorney::SceneGraphSGN::onNodeUsageChange(GET_ACTIVE_SCENEGRAPH(),
+                                               shared_from_this(),
+                                               _usageContext,
+                                               newContext);
+    _usageContext = newContext;
+}
+
 /// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
     Attorney::SceneGraphSGN::onNodeDestroy(GET_ACTIVE_SCENEGRAPH(), *this);
-
     Console::printfn(Locale::get("REMOVE_SCENEGRAPH_NODE"),
                      getName().c_str(), _node->getName().c_str());
 
@@ -128,7 +135,7 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
     if (child) {
         removeNode(child, true);
     }
-
+    Attorney::SceneGraphSGN::onNodeAdd(GET_ACTIVE_SCENEGRAPH(), node);
     WriteLock w_lock(_childrenLock);
     _children.push_back(node);
 

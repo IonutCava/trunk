@@ -70,19 +70,40 @@ class SceneGraph : private NonCopyable {
 
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
+    void onNodeAdd(SceneGraphNode_ptr newNode);
+    void unregisterNode(I64 guid, SceneGraphNode::UsageContext usage);
 
    private:
     SceneGraphNode_ptr _root;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
+    vectorImpl<SceneGraphNode_wptr> _dynamicNodes;
+    vectorImpl<SceneGraphNode_wptr> _staticNodes;
 };
 
 namespace Attorney {
 class SceneGraphSGN {
    private:
+    static void onNodeAdd(SceneGraph& sceneGraph, SceneGraphNode_ptr newNode) {
+        sceneGraph.onNodeAdd(newNode);
+    }
+
     static void onNodeDestroy(SceneGraph& sceneGraph, SceneGraphNode& oldNode) {
         sceneGraph.onNodeDestroy(oldNode);
     }
 
+    static void onNodeUsageChange(SceneGraph& sceneGraph, 
+                                  SceneGraphNode_ptr node,
+                                  SceneGraphNode::UsageContext oldUsage,
+                                  SceneGraphNode::UsageContext newUsage)
+    {
+        sceneGraph.unregisterNode(node->getGUID(), node->usageContext());
+        /*if (node->usageContext() == SceneGraphNode::UsageContext::NODE_DYNAMIC) {
+            sceneGraph._dynamicNodes.push_back(node);
+        } else {
+            sceneGraph._staticNodes.push_back(node);
+        }*/
+
+    }
     friend class Divide::SceneGraphNode;
 };
 
