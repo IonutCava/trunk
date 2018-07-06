@@ -4,9 +4,13 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
+
+#include "Editor/Headers/Editor.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Widgets/Headers/PanelManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
+
+
 
 namespace Divide {
     PropertyWindow::PropertyWindow(PanelManager& parent, PlatformContext& context)
@@ -110,6 +114,8 @@ namespace Divide {
                 }
             }
         }
+
+        drawTransformSettings();
     }
 
      bool PropertyWindow::processField(EditorComponentField& field) {
@@ -314,5 +320,42 @@ namespace Divide {
          }
 
          return ret;
+     }
+
+     void PropertyWindow::drawTransformSettings() {
+         TransformSettings settings;
+
+         ImGui::Separator();
+         if (ImGui::RadioButton("Translate", settings.currentGizmoOperation == ImGuizmo::TRANSLATE))  settings.currentGizmoOperation = ImGuizmo::TRANSLATE;
+         ImGui::SameLine();
+         if (ImGui::RadioButton("Rotate", settings.currentGizmoOperation == ImGuizmo::ROTATE)) settings.currentGizmoOperation = ImGuizmo::ROTATE;
+         ImGui::SameLine();
+         if (ImGui::RadioButton("Scale", settings.currentGizmoOperation == ImGuizmo::SCALE)) settings.currentGizmoOperation = ImGuizmo::SCALE;
+
+         if (settings.currentGizmoOperation != ImGuizmo::SCALE)
+         {
+             if (ImGui::RadioButton("Local", settings.currentGizmoMode == ImGuizmo::LOCAL)) settings.currentGizmoMode = ImGuizmo::LOCAL;
+             ImGui::SameLine();
+             if (ImGui::RadioButton("World", settings.currentGizmoMode == ImGuizmo::WORLD)) settings.currentGizmoMode = ImGuizmo::WORLD;
+         }
+
+         ImGui::Checkbox("", &settings.useSnap);
+         ImGui::SameLine();
+
+         switch (settings.currentGizmoOperation)
+         {
+             case ImGuizmo::TRANSLATE:
+                 ImGui::InputFloat3("Snap", &settings.snap[0]);
+                 break;
+             case ImGuizmo::ROTATE:
+                 ImGui::InputFloat("Angle Snap", &settings.snap[0]);
+                 break;
+             case ImGuizmo::SCALE:
+                 ImGui::InputFloat("Scale Snap", &settings.snap[0]);
+                 break;
+         }
+
+
+         _parent.setTransformSettings(settings);
      }
 }; //namespace Divide

@@ -26,7 +26,6 @@
 #include "Rendering/Camera/Headers/Camera.h"
 
 #include <imgui_internal.h>
-#include <imgui/addons/imguigizmo/ImGuizmo.h>
 
 namespace Divide {
 
@@ -301,18 +300,12 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
 }
 
 bool Editor::renderGizmos(const U64 deltaTime) {
-    static mat4<F32> objectMatrix;
-    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
-    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-    static bool useSnap = false;
-    static F32 snap[3] = { 1.f, 1.f, 1.f };
-
     //const Camera* utilityCam = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
     const Camera* utilityCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager(), 0);
     const mat4<F32>& cameraView = utilityCam->getViewMatrix();
     const mat4<F32>& cameraProjection = utilityCam->getProjectionMatrix();
-    objectMatrix.identity();
-    ImGuizmo::DrawCube(cameraView, cameraProjection, objectMatrix);
+    
+    ImGuizmo::DrawCube(cameraView, cameraProjection, mat4<F32>());
 
     TransformValues valuesOut;
     if (!_selectedNodes.empty()) {
@@ -320,45 +313,16 @@ bool Editor::renderGizmos(const U64 deltaTime) {
         if (sgn != nullptr) {
             TransformComponent* const transform = sgn->get<TransformComponent>();
             if (transform != nullptr) {
-
-                ImGui::SetNextWindowPos(ImVec2(10, 10));
-                ImGui::SetNextWindowSize(ImVec2(320, 240));
-                ImGui::Begin("Matrix Inspector");
-
-                if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))  mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-                ImGui::SameLine();
-                if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE)) mCurrentGizmoOperation = ImGuizmo::ROTATE;
-                ImGui::SameLine();
-                if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE)) mCurrentGizmoOperation = ImGuizmo::SCALE;
-
-                if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-                {
-                    if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL)) mCurrentGizmoMode = ImGuizmo::LOCAL;
-                    ImGui::SameLine();
-                    if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD)) mCurrentGizmoMode = ImGuizmo::WORLD;
-                }
-
-                ImGui::Checkbox("", &useSnap);
-                ImGui::SameLine();
-
-                switch (mCurrentGizmoOperation)
-                {
-                    case ImGuizmo::TRANSLATE:
-                        ImGui::InputFloat3("Snap", &snap[0]);
-                        break;
-                    case ImGuizmo::ROTATE:
-                        ImGui::InputFloat("Angle Snap", &snap[0]);
-                        break;
-                    case ImGuizmo::SCALE:
-                        ImGui::InputFloat("Scale Snap", &snap[0]);
-                        break;
-                }
-                ImGui::End();
-
                 mat4<F32> matrix = transform->getWorldMatrix();
                 ImGuiIO& io = ImGui::GetIO();
                 ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-                ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL);
+                ImGuizmo::Manipulate(cameraView,
+                                     cameraProjection,
+                                     _transformSettings.currentGizmoOperation,
+                                     _transformSettings.currentGizmoMode,
+                                     matrix,
+                                     NULL, 
+                                     _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
 
                 TransformValues values;  vec3<F32> euler;
                 ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
@@ -468,6 +432,10 @@ bool Editor::showDebugWindow() const {
 
 bool Editor::showSampleWindow() const {
     return _showSampleWindow;
+}
+
+void Editor::setTransformSettings(const TransformSettings& settings) {
+    _transformSettings = settings;
 }
 
 void Editor::savePanelLayout() const {

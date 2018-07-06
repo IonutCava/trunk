@@ -41,6 +41,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Headers/DisplayWindow.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
+#include <imgui/addons/imguigizmo/ImGuizmo.h>
+
 struct ImDrawData;
 namespace Divide {
 
@@ -62,6 +64,13 @@ FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 struct SizeChangeParams;
+
+struct TransformSettings {
+    ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::ROTATE;
+    ImGuizmo::MODE currentGizmoMode = ImGuizmo::WORLD;
+    bool useSnap = false;
+    F32 snap[3] = { 1.f, 1.f, 1.f };
+};
 
 class Editor : public PlatformContextComponent,
                public FrameListener,
@@ -167,6 +176,7 @@ class Editor : public PlatformContextComponent,
     void showSampleWindow(bool state);
     bool showDebugWindow() const;
     bool showSampleWindow() const;
+    void setTransformSettings(const TransformSettings& settings);
 
   private:
     Theme _currentTheme;
@@ -175,6 +185,7 @@ class Editor : public PlatformContextComponent,
 
     Rect<I32> _scenePreviewRect;
 
+    TransformSettings _transformSettings;
     I64 _activeWindowGUID = -1;
     std::unique_ptr<MenuBar> _menuBar;
     std::unique_ptr<PanelManager> _panelManager;
@@ -216,6 +227,11 @@ namespace Attorney {
         static void setScenePreviewRect(Editor& editor, const Rect<I32>& rect, bool hovered) {
             editor.setScenePreviewRect(rect, hovered);
         }
+
+        static void setTransformSettings(Editor& editor, const TransformSettings& settings) {
+            editor.setTransformSettings(settings);
+        }
+
         static void savePanelLayout(const Editor& editor) {
             editor.savePanelLayout();
         }
@@ -240,6 +256,7 @@ namespace Attorney {
         static bool showSampleWindow(Editor& editor) {
             return editor.showSampleWindow();
         }
+
         friend class Divide::MenuBar;
         friend class Divide::PanelManager;
     };

@@ -324,9 +324,6 @@
     <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMeshLoader.cpp">
       <Filter>AI\PathFinding\NavMeshes</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
-      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Dynamics\Entities\Impostor.cpp">
       <Filter>Dynamics\Entities</Filter>
     </ClCompile>

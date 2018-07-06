@@ -977,4 +977,9 @@ namespace Divide {
     Camera* PanelManager::getSelectedCamera() const {
         return _selectedCamera;
     }
+
+
+    void PanelManager::setTransformSettings(const TransformSettings& settings) {
+        Attorney::EditorPanelManager::setTransformSettings(context().editor(), settings);
+    }
 }; //namespace Divide

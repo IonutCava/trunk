@@ -352,9 +352,6 @@
     <ClCompile Include="..\../Source Code/GUI\GUIFlash.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Physics\PhysicsAPIWrapper.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Physics\PhysicsSceneInterface.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
@@ -574,9 +571,6 @@
       <Filter>ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponentState.cpp">
-      <Filter>ECS\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\ECS\Components\SGNComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\ECS\Components\UnitComponent.cpp">

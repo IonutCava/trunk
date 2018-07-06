@@ -777,7 +777,6 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
     }
 
     inp.close();
-    bool skip = false;
     Console::printfn(Locale::get(_ID("XML_LOAD_MATERIAL")), matName.c_str());
     read_xml(materialFile.c_str(), pt);
 
@@ -786,12 +785,9 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
 
     ResourceDescriptor desc(materialName);
 
-    if (!FindResourceImpl<Material>(cache, desc.getHash())) {
-        skip = true;
-    }
-
-    Material_ptr mat = CreateResource<Material>(cache, desc);
-    if (skip) {
+    bool wasInCache = false;
+    Material_ptr mat = CreateResource<Material>(cache, desc, wasInCache);
+    if (wasInCache) {
         return mat;
     }
 

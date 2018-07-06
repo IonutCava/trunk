@@ -116,9 +116,7 @@ struct PanelManager {
         IMGUI_API int findWindowIndex(const char* windowName) const;  // Can return -1
 
         IMGUI_API bool isButtonPressed(int index) const;
-        IMGUI_API bool isButtonPressed(const char* windowName) const;
         IMGUI_API bool setButtonPressed(int index,bool flag=true);
-        IMGUI_API bool setButtonPressed(const char* windowName,bool flag=true);
 
         // getButtonAndWindow(...) methods return references
         IMGUI_API void getButtonAndWindow(size_t index,Toolbutton** pToolbutton=NULL,AssociatedWindow** pAssociatedWindow=NULL);

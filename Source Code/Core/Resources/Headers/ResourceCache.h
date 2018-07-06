@@ -40,6 +40,33 @@
 
 namespace Divide {
 
+class ResourceLoadLock {
+public:
+    explicit ResourceLoadLock(size_t hash)
+        : _loadingHash(hash)
+    {
+        UpgradableReadLock ur_lock(_hashLock);
+        WAIT_FOR_CONDITION(notLoading(_loadingHash));
+        UpgradeToWriteLock w_lock(ur_lock);
+        _loadingHashes.push_back(_loadingHash);
+    }
+
+    ~ResourceLoadLock()
+    {
+        WriteLock w_lock(_hashLock);
+        _loadingHashes.erase(std::find(std::cbegin(_loadingHashes), std::cend(_loadingHashes), _loadingHash));
+    }
+
+private:
+    static bool notLoading(size_t hash) {
+        return std::find(std::cbegin(_loadingHashes), std::cend(_loadingHashes), hash) == std::cend(_loadingHashes);
+    }
+
+private:
+    size_t _loadingHash;
+    static SharedLock _hashLock;
+    static vectorImpl<size_t> _loadingHashes;
+};
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources
 /// - load new resources using appropriate resource loader and store them in
@@ -50,14 +77,22 @@ public:
     ResourceCache(PlatformContext& context);
     ~ResourceCache();
 
+ 
     /// Each resource entity should have a 'resource name'Loader implementation.
     template <typename T>
-    typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type loadResource(const ResourceDescriptor& descriptor) {
-        // The loading process may change the resource descriptor so always use the user-specified descriptor hash for loockup!
+    typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type loadResource(const ResourceDescriptor& descriptor, bool& wasInCache) {
+        // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
         size_t loadingHash = descriptor.getHash();
-        /// Check cache first to avoit loading the same resource twice
+
+        // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
+        // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done
+        // Once done, lock the hash for ourselves
+        ResourceLoadLock res_lock(loadingHash);
+
+        /// Check cache first to avoid loading the same resource twice
         std::shared_ptr<T> ptr = std::static_pointer_cast<T>(loadResource(loadingHash, descriptor.name()));
         /// If the cache did not contain our resource ...
+        wasInCache = ptr != nullptr;
         if (!ptr) {
             /// ...aquire the resource's loader
             /// and get our resource as the loader creates it
@@ -98,15 +133,17 @@ protected:
 
 template <typename T>
 typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
-CreateResource(ResourceCache& cache, const ResourceDescriptor& descriptor) {
-    return cache.loadResource<T>(descriptor);
+CreateResource(ResourceCache& cache, const ResourceDescriptor& descriptor, bool& wasInCache) {
+    return cache.loadResource<T>(descriptor, wasInCache);
 }
 
 template <typename T>
 typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
-FindResourceImpl(ResourceCache& cache, size_t hash) {
-    return std::static_pointer_cast<T>(cache.find(hash));
+CreateResource(ResourceCache& cache, const ResourceDescriptor& descriptor) {
+    bool wasInCache = false;
+    return CreateResource<T>(cache, descriptor, wasInCache);
 }
+
 
 };  // namespace Divide
 

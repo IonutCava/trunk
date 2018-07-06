@@ -22,7 +22,6 @@
     <ClCompile Include="..\../Source Code/AI\AIManager.cpp" />
     <ClCompile Include="..\../Source Code/AI\PathFinding\DivideCrowd.cpp" />
     <ClCompile Include="..\../Source Code/AI\PathFinding\DivideRecast.cpp" />
-    <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp" />
     <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMesh.cpp" />
     <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMeshContext.cpp" />
     <ClCompile Include="..\../Source Code/AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp" />

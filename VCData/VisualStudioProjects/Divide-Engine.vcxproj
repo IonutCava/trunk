@@ -312,7 +312,6 @@
     <ClCompile Include="..\../Source Code/GUI\GUIText.cpp" />
     <ClCompile Include="..\../Source Code/Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\../Source Code/Managers\RenderPassManager.cpp" />
-    <ClCompile Include="..\../Source Code/Physics\PhysicsAPIWrapper.cpp" />
     <ClCompile Include="..\../Source Code/Physics\PhysicsAsset.cpp" />
     <ClCompile Include="..\../Source Code/Physics\PhysicsSceneInterface.cpp" />
     <ClCompile Include="..\../Source Code/Physics\PhysX\PhysX.cpp" />
@@ -380,7 +379,6 @@
     <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\RenderingComponentState.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\RigidBodyComponent.cpp" />
-    <ClCompile Include="..\..\Source Code\ECS\Components\SGNComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\TransformComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\UnitComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Systems\AnimationSystem.cpp" />

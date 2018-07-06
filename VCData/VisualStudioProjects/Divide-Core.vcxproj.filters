@@ -230,9 +230,6 @@
     <ClCompile Include="..\../Source Code/Core\ByteBuffer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\../Source Code/Core\Math\Quaternion.cpp">
-      <Filter>Core\Math</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Patch3DLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>

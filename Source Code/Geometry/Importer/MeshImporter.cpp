@@ -307,15 +307,12 @@ namespace Import {
             materialDesc.setEnumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
 
-        // If it's not defined in an XML File, see if it was previously loaded by
-        // the Resource Cache
-        tempMaterial = FindResourceImpl<Material>(cache, materialDesc.getHash());
-        if (tempMaterial) {
+        // If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
+        bool wasInCache = false;
+        tempMaterial = CreateResource<Material>(cache, materialDesc, wasInCache);
+        if (wasInCache) {
             return tempMaterial;
         }
-
-        tempMaterial = CreateResource<Material>(cache, materialDesc);
-
         tempMaterial->setColourData(importData._colourData);
         tempMaterial->setShadingMode(importData._shadingMode);
         tempMaterial->setBumpMethod(importData._bumpMethod);

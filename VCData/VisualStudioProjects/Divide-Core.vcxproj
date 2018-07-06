@@ -23,7 +23,6 @@
     <ClCompile Include="..\../Source Code/Core\Math\BoundingVolumes\BoundingSphere.cpp" />
     <ClCompile Include="..\../Source Code/Core\Math\MathClasses.cpp" />
     <ClCompile Include="..\../Source Code/Core\Math\MathHelper.cpp" />
-    <ClCompile Include="..\../Source Code/Core\Math\Quaternion.cpp" />
     <ClCompile Include="..\../Source Code/Core\Math\Transform.cpp" />
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
     <ClCompile Include="..\../Source Code/Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />

@@ -33,12 +33,8 @@ glTexture::glTexture(GFXDevice& context,
 
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
 
-    U8 retry = 0;
     U32 tempHandle = 0;
-    //ToDo: Remove this hack. On occasion, this returns 0 for whatever reason -Ionut
-    while (tempHandle == 0 && retry++ < 5) {
-        glCreateTextures(_type, 1, &tempHandle);
-    }
+    glCreateTextures(_type, 1, &tempHandle);
 
     assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
     _textureData.setHandle(tempHandle);

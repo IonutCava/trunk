@@ -9,6 +9,9 @@
 
 namespace Divide {
 
+SharedLock ResourceLoadLock::_hashLock;
+vectorImpl<size_t> ResourceLoadLock::_loadingHashes;
+
 void DeleteResource::operator()(CachedResource* res)
 {
     _context.remove(res);
@@ -26,9 +29,7 @@ ResourceCache::~ResourceCache()
 {
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_DELETE")));
     clear();
-    // DELETE(_loadingPool);
 }
-
 
 void ResourceCache::clear() {
     WriteLock w_lock(_creationMutex);

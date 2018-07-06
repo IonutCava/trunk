@@ -51,6 +51,7 @@ class PropertyWindow : public DockedWindow, public PlatformContextComponent {
      bool processField(EditorComponentField& field);
      bool processBasicField(EditorComponentField& field);
      bool processTransform(Transform* transform, bool readOnly);
+     void drawTransformSettings();
 };
 }; //namespace Divide
 

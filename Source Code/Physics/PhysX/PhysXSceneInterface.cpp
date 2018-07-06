@@ -204,9 +204,8 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
 
         case PxGeometryType::ePLANE: {
             sgnName = "PlaneActor";
-            if (FindResourceImpl<Quad3D>(sgnName)) {
-                targetNode = parentScene.sceneGraph().findNode(sgnName).lock();
-                assert(targetNode);
+            targetNode = parentScene.sceneGraph().findNode(sgnName).lock();
+            if (targetNode != nullptr) {
                 actor.setParent(targetNode->get<RigidBodyComponent>());
                 return;
             }

@@ -50,6 +50,8 @@ namespace Divide {
     class PreferencesWindow;
     class SolutionExplorerWindow;
 
+    struct TransformSettings;
+
     FWD_DECLARE_MANAGED_CLASS(Texture);
     class PanelManager : public PlatformContextComponent {
         friend class Attorney::PanelManagerWidgets;
@@ -100,6 +102,8 @@ namespace Divide {
         inline bool simulationPauseRequested() const { 
             return _sceneStepCount == 0 && _simulationPaused != nullptr && *_simulationPaused;
         }
+
+        void setTransformSettings(const TransformSettings& settings);
 
       protected:
         F32 calcMainMenuHeight();
