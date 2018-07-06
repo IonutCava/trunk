@@ -45,7 +45,7 @@ class NOINITVTABLE ParticleGenerator {
 
     virtual void generate(vectorImpl<std::future<void>>& packagedTasks,
                           const U64 deltaTime,
-                          std::shared_ptr<ParticleData> p,
+                          ParticleData& p,
                           U32 startIndex,
                           U32 endIndex) = 0;
         void updateTransform(const vec3<F32>& position, const Quaternion<F32>& orientation);

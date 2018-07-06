@@ -32,6 +32,10 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
+#ifndef BOOST_EXCEPTION_DISABLE
+#define BOOST_EXCEPTION_DISABLE
+#endif
+
 #include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Core/TemplateLibraries/Headers/String.h"
 #include "Core/TemplateLibraries/Headers/HashMap.h"

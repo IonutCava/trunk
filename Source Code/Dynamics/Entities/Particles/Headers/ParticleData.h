@@ -51,15 +51,15 @@ class ParticleData {
     };
     /// helper array used for sorting
     vectorImpl<std::pair<U32, F32>> _indices;
-    /// x,y,z = position; w = size
-    vectorImpl<vec4<F32>> _position;
     vectorImpl<vec4<F32>> _renderingPositions;
     vectorImpl<vec4<U8>>  _renderingColors;
+    /// x,y,z = position; w = size
+    vectorImpl<vec4<F32>> _position;
     /// x,y,z = _velocity; w = angle;
     vectorImpl<vec4<F32>> _velocity;
     /// x,y,z = _acceleration; w = weight;
     vectorImpl<vec4<F32>> _acceleration;
-    /// x = time; y = interp; z = 1 / time;  w = distance to camera sq;
+    /// x = time; y = interpolation; z = 1 / time;  w = distance to camera sq;
     vectorImpl<vec4<F32>> _misc;
     /// r,g,b,a = color and transparency
     vectorImpl<vec4<F32>> _color;

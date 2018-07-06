@@ -42,63 +42,61 @@ bool Texture::load() {
 /// Load texture data using the specified file name
 void Texture::threadedLoad(const stringImpl& name) {
     // Make sure we have a valid file path
-    if (getResourceLocation().empty() ||
-        getResourceLocation().compare("default") == 0) {
-        return;
-    }
+    if (!getResourceLocation().empty() && getResourceLocation().compare("default") != 0) {
 
-    TextureLoadInfo info;
-    info._type = _textureData._textureType;
+        TextureLoadInfo info;
+        info._type = _textureData._textureType;
 
-    // Each texture face/layer must be in a comma separated list
-    std::stringstream textureLocationList(getResourceLocation());
-    // We loop over every texture in the above list and store it in this
-    // temporary string
-    stringImpl currentTexture;
-    while (std::getline(textureLocationList, currentTexture, ',')) {
-        // Skip invalid entries
-        if (!currentTexture.empty()) {
-               // Attempt to load the current entry
-                if (!LoadFile(info, currentTexture)) {
-                    // Invalid texture files are not handled yet, so stop loading
-                    return;
-                }
-                info._layerIndex++;
-                if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-                    if (info._layerIndex == 6) {
-                        info._layerIndex = 0;
-                        info._cubeMapCount++;
+        // Each texture face/layer must be in a comma separated list
+        std::stringstream textureLocationList(getResourceLocation());
+        // We loop over every texture in the above list and store it in this
+        // temporary string
+        stringImpl currentTexture;
+        while (std::getline(textureLocationList, currentTexture, ',')) {
+            // Skip invalid entries
+            if (!currentTexture.empty()) {
+                   // Attempt to load the current entry
+                    if (!LoadFile(info, currentTexture)) {
+                        // Invalid texture files are not handled yet, so stop loading
+                        return;
                     }
-                }
+                    info._layerIndex++;
+                    if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+                        if (info._layerIndex == 6) {
+                            info._layerIndex = 0;
+                            info._cubeMapCount++;
+                        }
+                    }
+            }
         }
-    }
 
-    if (info._type == TextureType::TEXTURE_CUBE_MAP ||
-        info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-        if (info._layerIndex != 6) {
-            Console::errorfn(
-                Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
-                getResourceLocation().c_str());
-            return;
+        if (info._type == TextureType::TEXTURE_CUBE_MAP ||
+            info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+            if (info._layerIndex != 6) {
+                Console::errorfn(
+                    Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
+                    getResourceLocation().c_str());
+                return;
+            }
         }
-    }
 
-    if (info._type == TextureType::TEXTURE_2D_ARRAY ||
-        info._type == TextureType::TEXTURE_2D_ARRAY_MS) {
-        if (info._layerIndex != _numLayers) {
-            Console::errorfn(
-                Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
-                getResourceLocation().c_str());
-            return;
+        if (info._type == TextureType::TEXTURE_2D_ARRAY ||
+            info._type == TextureType::TEXTURE_2D_ARRAY_MS) {
+            if (info._layerIndex != _numLayers) {
+                Console::errorfn(
+                    Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
+                    getResourceLocation().c_str());
+                return;
+            }
         }
-    }
 
-    if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-        if (info._cubeMapCount != _numLayers) {
-            Console::errorfn(
-                Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
-                getResourceLocation().c_str());
-            return;
+        if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+            if (info._cubeMapCount != _numLayers) {
+                Console::errorfn(
+                    Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
+                    getResourceLocation().c_str());
+                return;
+            }
         }
     }
 

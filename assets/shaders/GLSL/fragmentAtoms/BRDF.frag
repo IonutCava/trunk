@@ -95,13 +95,14 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     vec3 color = mix(dvd_MatEmissive, lightColor, DIST_TO_ZERO(length(lightColor)));
 #endif
 
-    float reflectance = 1.0 - saturate(dvd_MatShininess / 255.0);
+    float reflectance = saturate(dvd_MatShininess / 255.0);
     if (reflectance > 0.75 && dvd_lodLevel < 1) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
         color = mix(texture(texEnvironmentCube, vec4(reflectDirection, 0.0)).rgb,
                     color,
-                    reflectance);
+                    vec3(reflectance));
+
     }
 
     color *= mix(mix(1.0, 2.0, dvd_isHighlighted), 3.0, dvd_isSelected);

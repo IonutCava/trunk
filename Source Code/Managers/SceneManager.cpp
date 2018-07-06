@@ -213,7 +213,6 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
 
     _reflectiveNodesCache.resize(0);
     const SceneRenderState& renderState = _activeScene->state().renderState();
-    const vec2<F32>& zPlanes = renderState.getCameraConst().getZPlanes();
     const vec3<F32>& camPos = renderState.getCameraConst().getEye();
 
     // Get list of nodes in view from the previous frame

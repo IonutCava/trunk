@@ -19,7 +19,7 @@ vec3 UNPACK_FLOAT(in float value) {
 }
 
 void computeData(){
-    VAR.dvd_drawID  = gl_BaseInstanceARB;
+    VAR.dvd_drawID  = gl_BaseInstanceARB;// + gl_DrawIDARB;
     dvd_Vertex  = vec4(inVertexData,1.0);
     dvd_Normal  = UNPACK_FLOAT(inNormalData);
     dvd_Color   = inColorData;

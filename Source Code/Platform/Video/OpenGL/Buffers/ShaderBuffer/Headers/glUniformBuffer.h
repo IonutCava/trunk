@@ -56,20 +56,17 @@ class glUniformBuffer final : public ShaderBuffer {
 
     void getData(GLintptr offsetElementCount,
                  GLsizeiptr rangeElementCount,
-                 bufferPtr result,
-                 U32 sizeFactorOffset = 0) const override;
+                 bufferPtr result) const override;
 
     void updateData(GLintptr offsetElementCount,
                     GLsizeiptr rangeElementCount,
-                    const bufferPtr data,
-                    U32 sizeFactorOffset = 0) override;
+                    const bufferPtr data) override;
 
     bool bindRange(U32 bindIndex,
                    U32 offsetElementCount,
-                   U32 rangeElementCount,
-                   U32 sizeFactorOffset = 0) override;
+                   U32 rangeElementCount) override;
 
-    bool bind(U32 bindIndex, U32 sizeFactorOffset = 0) override;
+    bool bind(U32 bindIndex) override;
 
     GLuint getBufferID() const { return _UBOid; }
 

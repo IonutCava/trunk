@@ -38,9 +38,9 @@ namespace Divide {
         DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::Create error: Invalid buffer size!");
     }
 
-    void ShaderBuffer::setData(const bufferPtr data, U32 sizeFactorOffset) {
+    void ShaderBuffer::setData(const bufferPtr data) {
         DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::SetData error: Invalid buffer size!");
-        updateData(0, _primitiveCount, data, sizeFactorOffset);
+        updateData(0, _primitiveCount, data);
     }
 
 }; //namespace Divide;

@@ -15,15 +15,16 @@ ParticleSource::~ParticleSource()
 }
 
 void ParticleSource::emit(const U64 deltaTime, std::shared_ptr<ParticleData> p) {
+    ParticleData& data = *p;
+
     const F32 dt = Time::MicrosecondsToSeconds<F32>(deltaTime);
     const U32 maxNewParticles = to_uint(dt * _emitRate);
-    const U32 startID = p->aliveCount();
-    const U32 endID = std::min(startID + maxNewParticles, p->totalCount() - 1);
+    const U32 startID = data.aliveCount();
+    const U32 endID = std::min(startID + maxNewParticles, data.totalCount() - 1);
 
     _generatorTasks.reserve(_particleGenerators.size() * (endID - startID));
-
     for (std::shared_ptr<ParticleGenerator>& gen : _particleGenerators) {
-        gen->generate(_generatorTasks, deltaTime, p, startID, endID);
+        gen->generate(_generatorTasks, deltaTime, data, startID, endID);
         for (std::future<void>& task : _generatorTasks) {
             task.get();
         }

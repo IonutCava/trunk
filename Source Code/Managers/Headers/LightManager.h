@@ -103,7 +103,7 @@ DEFINE_SINGLETON(LightManager)
     void togglePreviewShadowMaps();
 
     void updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
-    void uploadLightData(LightType lightsByType, ShaderBufferLocation location);
+    void uploadLightData(ShaderBufferLocation location);
 
     /// Get the appropriate shadow bind slot for every light's shadow
     U8 getShadowBindSlotOffset(ShadowType type);

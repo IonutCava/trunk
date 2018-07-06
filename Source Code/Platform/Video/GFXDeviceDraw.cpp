@@ -208,15 +208,16 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     Time::ScopedTimer timer(*_commandBuildTimer);
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
-    if (refreshNodeData) {
-        _lastCommandCount = _lastNodeCount = 0;
-    }
 
     U32 textureHandle = 0;
     U32 lastUnit0Handle = 0;
     U32 lastUnit1Handle = 0;
     U32 lastUsedSlot = 0;
     RenderStage currentStage = getRenderStage();
+    if (refreshNodeData) {
+        _lastCommandCount[getNodeBufferIndexForStage(currentStage)] = 0;
+        _lastNodeCount[getNodeBufferIndexForStage(currentStage)] = 0;
+    }
 
     if (currentStage == RenderStage::SHADOW) {
         Light* shadowLight = LightManager::getInstance().currentShadowCastingLight();
@@ -281,9 +282,9 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     });
     
     if (refreshNodeData) {
-        _lastCommandCount = cmdCount;
-        _lastNodeCount = nodeCount;
-        assert(_lastCommandCount >= _lastNodeCount);
+        _lastCommandCount[getNodeBufferIndexForStage(currentStage)] = cmdCount;
+        _lastNodeCount[getNodeBufferIndexForStage(currentStage)] = nodeCount;
+        assert(cmdCount >= nodeCount);
         getNodeBuffer(currentStage, pass).setData(_matricesData.data());
 
         ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage, pass);
@@ -306,12 +307,13 @@ void GFXDevice::occlusionCull(U32 pass) {
     Framebuffer* screenTarget = _renderTarget[anaglyphEnabled()
                                                ? to_const_uint(RenderTargetID::ANAGLYPH)
                                                : to_const_uint(RenderTargetID::SCREEN)]._buffer;
-    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
-                       TextureDescriptor::AttachmentType::Depth);
 
+    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), TextureDescriptor::AttachmentType::Depth);
+
+    U32 cmdCount = _lastCommandCount[getNodeBufferIndexForStage(currentStage)];
     _HIZCullProgram->bind();
-    _HIZCullProgram->Uniform("dvd_numEntities", _lastCommandCount);
-    _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
+    _HIZCullProgram->Uniform("dvd_numEntities", cmdCount);
+    _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     _HIZCullProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::COUNTER);
 }
 
@@ -528,7 +530,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         //vec3<F32> tempVertex;
         // Add every line in the list to the batch
         for (const Line& line : lines) {
-            Util::ToFloatColor(lines[0]._colorStart, tempFloatColor);
+            Util::ToFloatColor(line._colorStart, tempFloatColor);
             primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), tempFloatColor);
             /*for (U16 idx : indices) {
                 tempVertex.set(line._startPoint * vertices[idx]);
@@ -538,7 +540,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
             }*/
             primitive.vertex(line._startPoint);
 
-            Util::ToFloatColor(lines[0]._colorEnd, tempFloatColor);
+            Util::ToFloatColor(line._colorEnd, tempFloatColor);
             primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), tempFloatColor);
             /*for (U16 idx : indices) {
                 tempVertex.set(line._endPoint * vertices[idx]);

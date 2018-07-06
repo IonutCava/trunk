@@ -41,7 +41,7 @@ class NOINITVTABLE ParticleUpdater {
     ParticleUpdater() {}
     virtual ~ParticleUpdater() {}
 
-    virtual void update(const U64 deltaTime, std::shared_ptr<ParticleData> p) = 0;
+    virtual void update(const U64 deltaTime, ParticleData& p) = 0;
 };
 };
 #endif

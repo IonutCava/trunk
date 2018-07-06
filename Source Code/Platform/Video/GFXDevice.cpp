@@ -58,8 +58,6 @@ GFXDevice::GFXDevice()
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-    _lastCommandCount = 0;
-    _lastNodeCount = 0;
     _imShaderTextureFlag = -1;
     _imShaderWorldMatrix = -1;
     // Floats
@@ -89,6 +87,8 @@ GFXDevice::GFXDevice()
     
     _viewport.push(vec4<I32>(-1));
 
+    _lastCommandCount.fill(0);
+    _lastNodeCount.fill(0);
     // Red X-axis
     _axisLines.push_back(
         Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 3.0f));

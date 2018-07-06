@@ -68,15 +68,13 @@ void LightManager::init() {
 
     GFX_DEVICE.add2DRenderFunction(
         DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
-    // NORMAL holds general info about the currently active
-    // lights: position, color, etc.
+    // NORMAL holds general info about the currently active lights: position, color, etc.
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock",
                                                                                     1,
                                                                                     true,
                                                                                     false,
                                                                                     BufferUpdateFrequency::OCASSIONAL);
-    // SHADOWS holds info about the currently active shadow
-    // casting lights:
+    // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB("dvd_ShadowBlock",
@@ -362,33 +360,14 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
         offset = range;
     }
 
-    uploadLightData(LightType::COUNT, ShaderBufferLocation::LIGHT_NORMAL);
+    uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
     
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
 }
 
-void LightManager::uploadLightData(LightType lightsByType, ShaderBufferLocation location) {
-    if (lightsByType == LightType::COUNT) {
-        _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(location);
-        return;
-    }
-
-    U32 offset = 0;
-    switch(lightsByType) {
-        case LightType::DIRECTIONAL: 
-            offset = 0;
-            break;
-        case LightType::POINT:
-            offset = _activeLightCount[to_const_uint(LightType::DIRECTIONAL)];
-            break;
-        case LightType::SPOT:
-            offset = _activeLightCount[to_const_uint(LightType::POINT)];
-            break;
-    };
-
-    U32 range = _activeLightCount[to_uint(lightsByType)];
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bindRange(location, offset, range);
+void LightManager::uploadLightData(ShaderBufferLocation location) {
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(location);
 }
 
 void LightManager::drawLightImpostors() const {

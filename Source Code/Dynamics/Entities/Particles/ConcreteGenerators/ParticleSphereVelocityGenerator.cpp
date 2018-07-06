@@ -4,7 +4,7 @@ namespace Divide {
 
 void ParticleSphereVelocityGenerator::generate(vectorImpl<std::future<void>>& packagedTasks, 
                                                const U64 deltaTime,
-                                               std::shared_ptr<ParticleData> p,
+                                               ParticleData& p,
                                                U32 startIndex,
                                                U32 endIndex) {
 
@@ -15,9 +15,9 @@ void ParticleSphereVelocityGenerator::generate(vectorImpl<std::future<void>>& pa
         theta = Random(-floatPI, floatPI);
         v = Random(_minVel, _maxVel);
         r = v * std::sin(phi);
-        p->_velocity[i].z = v * std::cos(phi);
-        p->_velocity[i].x = r * std::cos(theta);
-        p->_velocity[i].y = r * std::sin(theta);
+        p._velocity[i].z = v * std::cos(phi);
+        p._velocity[i].x = r * std::cos(theta);
+        p._velocity[i].y = r * std::sin(theta);
     }
 }
 };

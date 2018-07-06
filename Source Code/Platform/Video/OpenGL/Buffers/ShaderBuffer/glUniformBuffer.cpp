@@ -111,18 +111,16 @@ void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 si
 
 void glUniformBuffer::getData(GLintptr offsetElementCount,
                               GLsizeiptr rangeElementCount,
-                              bufferPtr result,
-                              U32 sizeFactorOffset) const {
+                              bufferPtr result) const {
     if (rangeElementCount > 0) {
         GLintptr range = rangeElementCount * _primitiveSize;
         GLintptr offset = offsetElementCount * _primitiveSize;
 
-        DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize && sizeFactorOffset < _sizeFactor,
+        DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize,
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
         offset += queueWriteIndex() * _allignedBufferSize;
-        offset += _allignedBufferSize * sizeFactorOffset;
 
         glGetNamedBufferSubData(_UBOid, offset, range, result);
     }
@@ -130,8 +128,7 @@ void glUniformBuffer::getData(GLintptr offsetElementCount,
 
 void glUniformBuffer::updateData(GLintptr offsetElementCount, 
                                  GLsizeiptr rangeElementCount,
-                                 const bufferPtr data,
-                                 U32 sizeFactorOffset) {
+                                 const bufferPtr data) {
 
     if (rangeElementCount == 0) {
         return;
@@ -144,12 +141,11 @@ void glUniformBuffer::updateData(GLintptr offsetElementCount,
     GLintptr range = rangeElementCount * _primitiveSize;
     GLintptr offset = offsetElementCount * _primitiveSize;
 
-    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize && sizeFactorOffset < _sizeFactor,
+    DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
     offset += queueWriteIndex() * _allignedBufferSize;
-    offset += _allignedBufferSize * sizeFactorOffset;
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, range, true);
@@ -160,7 +156,7 @@ void glUniformBuffer::updateData(GLintptr offsetElementCount,
     }
 }
 
-bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount, U32 sizeFactorOffset) {
+bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
@@ -171,12 +167,12 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
     size_t range = rangeElementCount * _primitiveSize;
     size_t offset = offsetElementCount * _primitiveSize;
     offset += queueReadIndex() * _allignedBufferSize;
-    offset += _allignedBufferSize * sizeFactorOffset;
+
     bool success = false;
     if (setIfDifferentBindRange(_UBOid, 
                                 bindIndex,
-                                offsetElementCount + (offsetElementCount * sizeFactorOffset),
-                                rangeElementCount + (rangeElementCount * sizeFactorOffset)))
+                                offsetElementCount,
+                                rangeElementCount))
     {
         glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
         success = true;
@@ -189,8 +185,8 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
     return success;
 }
 
-bool glUniformBuffer::bind(U32 bindIndex, U32 sizeFactorOffset) {
-    return bindRange(bindIndex, 0, _primitiveCount, sizeFactorOffset);
+bool glUniformBuffer::bind(U32 bindIndex) {
+    return bindRange(bindIndex, 0, _primitiveCount);
 }
 
 void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {

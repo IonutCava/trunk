@@ -18,14 +18,6 @@ SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
 
 SkinnedSubMesh::~SkinnedSubMesh()
 {
-    for (Task_weak_ptr task_ptr : _bbBuildTasks) {
-        Task_ptr task = task_ptr.lock();
-        if (task) {
-            task->stopTask();
-            while (!task->isFinished());
-        }
-    }
-    _bbBuildTasks.clear();
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes

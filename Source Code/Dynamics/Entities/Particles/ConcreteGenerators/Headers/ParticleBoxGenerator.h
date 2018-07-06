@@ -35,15 +35,15 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleBoxGenerator : public ParticleGenerator {
+class ParticleBoxGenerator final : public ParticleGenerator {
    public:
     ParticleBoxGenerator() {}
 
-    virtual void generate(vectorImpl<std::future<void>>& packagedTasks,
-                          const U64 deltaTime,
-                          std::shared_ptr<ParticleData> p,
-                          U32 startIndex,
-                          U32 endIndex) override;
+    void generate(vectorImpl<std::future<void>>& packagedTasks,
+                  const U64 deltaTime,
+                  ParticleData& p,
+                  U32 startIndex,
+                  U32 endIndex) override;
 
     inline void pos(const vec4<F32>& pos) {
         _pos.set(pos);

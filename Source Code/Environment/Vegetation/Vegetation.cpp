@@ -254,19 +254,19 @@ void Vegetation::uploadGrassData() {
                           sizeof(I32), true, NULL, true, false);
 
         buffer->getDrawAttribDescriptor(posLocation)
-            .set(to_const_uint(BufferUsage::CulledPositionBuffer), instanceDiv, 4, false, 0, 0,
-                 GFXDataFormat::FLOAT_32);
+            .set(to_const_uint(BufferUsage::CulledPositionBuffer), instanceDiv, 4, false, 0, 
+                             GFXDataFormat::FLOAT_32);
         buffer->getDrawAttribDescriptor(scaleLocation)
-            .set(to_const_uint(BufferUsage::CulledSizeBuffer), instanceDiv, 1, false, 0, 0,
+            .set(to_const_uint(BufferUsage::CulledSizeBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::FLOAT_32);
         buffer->getDrawAttribDescriptor(instLocation)
-            .set(to_const_uint(BufferUsage::CulledInstanceBuffer), instanceDiv, 1, false, 0, 0,
+            .set(to_const_uint(BufferUsage::CulledInstanceBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::SIGNED_INT);
         buffer->getFdbkAttribDescriptor(posLocation)
-            .set(to_const_uint(BufferUsage::UnculledPositionBuffer), instanceDiv, 4, false, 0, 0,
+            .set(to_const_uint(BufferUsage::UnculledPositionBuffer), instanceDiv, 4, false, 0,
                  GFXDataFormat::FLOAT_32);
         buffer->getFdbkAttribDescriptor(scaleLocation)
-            .set(to_const_uint(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0, 0,
+            .set(to_const_uint(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0,
                  GFXDataFormat::FLOAT_32);
 
         buffer->toggleDoubleBufferedQueries(false);

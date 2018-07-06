@@ -15,6 +15,8 @@
 namespace Divide {
 
 namespace {
+    const bool USE_Z_PRE_PASS = false;
+
     Framebuffer::FramebufferTarget _noDepthClear;
     Framebuffer::FramebufferTarget _depthOnly;
 
@@ -79,7 +81,7 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
             case RenderStage::Z_PRE_PASS:
             case RenderStage::DISPLAY: {
                 renderer.render(
-                    [stageFlag, refreshNodeData, idx]() {
+                    [stageFlag, refreshNodeData]() {
                         SceneManager::getInstance().renderVisibleNodes(stageFlag, refreshNodeData);
                     },
                     renderState);
@@ -134,8 +136,10 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
             GFX.occlusionCull(0);
-            GFX.toggleDepthWrites(false);
-            GFX.getRenderTarget(target)._buffer->begin(_noDepthClear);
+            if (USE_Z_PRE_PASS) {
+                GFX.toggleDepthWrites(false);
+            }
+            GFX.getRenderTarget(target)._buffer->begin(USE_Z_PRE_PASS ? _noDepthClear : Framebuffer::defaultPolicy());
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -177,7 +181,9 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
                 SceneManager::getInstance().getRenderer().preRender();
                 renderTarget.cacheSettings();
             } else {
-                GFX.toggleDepthWrites(true);
+                if (USE_Z_PRE_PASS) {
+                    GFX.toggleDepthWrites(true);
+                }
             }
         } break;
 

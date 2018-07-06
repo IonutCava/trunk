@@ -36,7 +36,7 @@ Task::~Task()
         stopTask();
     }
 
-    WAIT_FOR_CONDITION(_done);
+    WAIT_FOR_CONDITION(_done || _tp.active() == 0);
 }
 
 void Task::updateTickInterval(U64 tickInterval) {
@@ -48,7 +48,8 @@ void Task::updateTickCounter(I32 numberOfTicks) {
 }
 
 void Task::startTask(TaskPriority priority) {
-    if (!_tp.schedule(PoolTask(to_uint(priority), [&](){ run(); }))) {
+    if (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this))))
+    {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
     }
 }
@@ -72,7 +73,7 @@ void Task::run() {
 
     Application& app = Application::getInstance();
 
-    _done = false;
+    _done = !_callback;
     while (true) {
         if (_numberOfTicks == 0) {
             _end = true;
@@ -82,7 +83,7 @@ void Task::run() {
             break;
         }
 
-        while ((_paused && !_end) && !app.ShutdownRequested()) {
+        if (_paused) {
             continue;
         }
 
@@ -99,7 +100,7 @@ void Task::run() {
             }
         }
 
-   }
+    }
 
     Console::d_printfn(Locale::get(_ID("TASK_DELETE_THREAD")), getGUID(), std::this_thread::get_id());
 

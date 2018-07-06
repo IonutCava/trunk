@@ -36,13 +36,13 @@
 
 namespace Divide {
 
-class ParticleBasicTimeUpdater : public ParticleUpdater {
+class ParticleBasicTimeUpdater final : public ParticleUpdater {
    public:
     ParticleBasicTimeUpdater() {}
 
     ~ParticleBasicTimeUpdater() {}
 
-    virtual void update(const U64 deltaTime, std::shared_ptr<ParticleData> p) override;
+    void update(const U64 deltaTime, ParticleData& p) override;
 };
 };
 #endif

@@ -27,24 +27,21 @@ void d3dConstantBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 
 
 void d3dConstantBuffer::getData(ptrdiff_t offsetElementCount,
                                 ptrdiff_t rangeElementCount,
-                                bufferPtr result,
-                                U32 sizeFactorOffset) const {
+                                bufferPtr result) const {
 }
 
 void d3dConstantBuffer::updateData(ptrdiff_t offsetElementCount,
                                    ptrdiff_t rangeElementCount,
-                                   const bufferPtr data,
-                                   U32 sizeFactorOffset) {
+                                   const bufferPtr data) {
 }
 
 bool d3dConstantBuffer::bindRange(U32 bindIndex,
                                   U32 offsetElementCount,
-                                  U32 rangeElementCount,
-                                  U32 sizeFactorOffset) {
+                                  U32 rangeElementCount) {
     return false;
 }
 
-bool d3dConstantBuffer::bind(U32 bindIndex, U32 sizeFactorOffset) {
+bool d3dConstantBuffer::bind(U32 bindIndex) {
     return false;
 }
 

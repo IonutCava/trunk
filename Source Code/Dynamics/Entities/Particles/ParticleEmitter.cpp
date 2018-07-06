@@ -53,11 +53,11 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
          0.5f,  0.5f, 0.0f,
     };
 
-    _particleGPUBuffer->setBuffer(g_particleGeometryBuffer, 12, sizeof(F32), false, particleQuad, false, false, true);
+    _particleGPUBuffer->setBuffer(g_particleGeometryBuffer, 4, 3 * sizeof(F32), false, particleQuad, false, false, true);
     GenericVertexData::AttributeDescriptor& descriptor = 
         _particleGPUBuffer->getDrawAttribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
 
-    descriptor.set(g_particleGeometryBuffer, 0, 3, false, 0, 0, GFXDataFormat::FLOAT_32);
+    descriptor.set(g_particleGeometryBuffer, 0, 3, false, 0, GFXDataFormat::FLOAT_32);
 
     updateData(particleData);
 
@@ -100,14 +100,14 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     U32 particleCount = _particles->totalCount();
 
-    _particleGPUBuffer->setBuffer(g_particlePositionBuffer, particleCount, sizeof(vec4<F32>), true, NULL, true, true, true);
-    _particleGPUBuffer->setBuffer(g_particleColorBuffer, particleCount, sizeof(vec4<U8>), true, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(g_particlePositionBuffer, particleCount, 4 * sizeof(F32), true, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(g_particleColorBuffer, particleCount, 4 * sizeof(U8), true, NULL, true, true, true);
 
     _particleGPUBuffer->getDrawAttribDescriptor(positionAttribLocation)
-        .set(g_particlePositionBuffer, 1, 4, false, sizeof(vec4<F32>), 0, GFXDataFormat::FLOAT_32);
+        .set(g_particlePositionBuffer, 1, 4, false, 0, GFXDataFormat::FLOAT_32);
 
     _particleGPUBuffer->getDrawAttribDescriptor(colorAttribLocation)
-        .set(g_particleColorBuffer, 1, 4, true, sizeof(vec4<U8>), 0, GFXDataFormat::UNSIGNED_BYTE);
+        .set(g_particleColorBuffer, 1, 4, true, 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
         // Distance to camera (squared)
@@ -194,12 +194,6 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
                                       RenderStage renderStage,
                                       const SceneRenderState& sceneRenderState,
                                       vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-
-    U32 particleCount = getAliveParticleCount();
-    if (!_enabled || particleCount == 0) {
-        return false;
-    }
-
     const Camera& camera = sceneRenderState.getCameraConst();
 
     vec3<F32> up(camera.getUpDir());
@@ -223,7 +217,7 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
 
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
-    cmd.cmd().primCount = particleCount;
+    cmd.cmd().primCount = to_uint(_particles->_renderingPositions.size());
     cmd.stateHash(GFX_DEVICE.isDepthStage() ? _particleStateBlockHashDepth
                                             : _particleStateBlockHash);
 
@@ -247,7 +241,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         return;
     }
 
-    bool validCount = getAliveParticleCount() > 0;
+    U32 aliveCount = getAliveParticleCount();
+    bool validCount = aliveCount > 0;
     renderState().setDrawState(validCount);
 
     PhysicsComponent* transform = sgn.getComponent<PhysicsComponent>();
@@ -266,14 +261,16 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     averageEmitRate /= _sources.size();
 
     U32 count = _particles->totalCount();
+
     for (U32 i = 0; i < count; ++i) {
         _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
-        _particles->_position[i].w = 1.0f * _particles->_misc[i].z;
+        _particles->_position[i].w = _particles->_misc[i].z;
         _particles->_acceleration[i].set(0.0f);
     }
 
+    ParticleData& data = *_particles;
     for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
-        up->update(deltaTime, _particles);
+        up->update(deltaTime, data);
     }
 
     // const vec3<F32>& origin = transform->getPosition();
@@ -282,7 +279,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     // invalidateCache means that the existing particle data is no longer partially sorted
     _particles->sort(true);
 
-    U32 aliveCount = _particles->aliveCount();
+
+    aliveCount = to_uint(_particles->_renderingPositions.size());
     _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
     _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
     _particleGPUBuffer->incQueue();

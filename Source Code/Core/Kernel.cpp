@@ -77,7 +77,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
 
 Kernel::~Kernel()
 {
-    _mainTaskPool.clear();
+    _mainTaskPool.wait(0);
+    _tasks.clear();
 }
 
 void Kernel::threadPoolCompleted(I64 onExitTaskID) {
@@ -397,7 +398,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    _mainTaskPool.size_controller().resize(threadCount - 1);
+    _mainTaskPool.size_controller().resize(std::max(threadCount - 2, 1U));
 
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),

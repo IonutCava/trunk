@@ -56,35 +56,30 @@ class NOINITVTABLE ShaderBuffer : protected GraphicsResource,
 
     virtual void updateData(ptrdiff_t offsetElementCount,
                             ptrdiff_t rangeElementCount,
-                            const bufferPtr data,
-                            U32 sizeFactorOffset = 0) = 0;
+                            const bufferPtr data) = 0;
 
-    virtual void setData(const bufferPtr data, U32 sizeFactorOffset = 0);
+    virtual void setData(const bufferPtr data);
 
     virtual void getData(ptrdiff_t offsetElementCount,
                          ptrdiff_t rangeElementCount,
-                         bufferPtr result,
-                         U32 sizeFactorOffset = 0) const = 0;
+                         bufferPtr result) const = 0;
 
     virtual bool bindRange(U32 bindIndex,
                            U32 offsetElementCount,
-                           U32 rangeElementCount,
-                           U32 sizeFactorOffset = 1) = 0;
+                           U32 rangeElementCount) = 0;
 
-    virtual bool bind(U32 bindIndex, U32 sizeFactorOffset = 0) = 0;
+    virtual bool bind(U32 bindIndex) = 0;
 
-    inline bool bind(ShaderBufferLocation bindIndex, U32 sizeFactorOffset = 0) {
-        return bind(to_uint(bindIndex), sizeFactorOffset);
+    inline bool bind(ShaderBufferLocation bindIndex) {
+        return bind(to_uint(bindIndex));
     }
 
     inline bool bindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
-                          U32 rangeElementCount,
-                          U32 sizeFactorOffset = 0) {
+                          U32 rangeElementCount) {
         return bindRange(to_uint(bindIndex),
                          offsetElementCount,
-                         rangeElementCount,
-                         sizeFactorOffset);
+                         rangeElementCount);
 
     }
 

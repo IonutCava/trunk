@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class ParticleEulerUpdater : public ParticleUpdater {
+class ParticleEulerUpdater final : public ParticleUpdater {
    public:
     vec3<F32> _globalAcceleration;
 
@@ -45,7 +45,7 @@ class ParticleEulerUpdater : public ParticleUpdater {
 
     ~ParticleEulerUpdater() {}
 
-    virtual void update(const U64 deltaTime, std::shared_ptr<ParticleData> p) override;
+    void update(const U64 deltaTime, ParticleData& p) override;
 };
 };
 #endif

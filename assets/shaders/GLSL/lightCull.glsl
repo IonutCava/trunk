@@ -121,15 +121,18 @@ void main(void)
     maxZ = uintBitsToFloat(ldsZMax);
 
     // loop over the point lights and do a sphere vs. frustum intersection test
+    uint numDirLights = dvd_lightCountPerType[0];
     uint numPointLights = dvd_lightCountPerType[1];
+    uint numSpotLights = dvd_lightCountPerType[2];
 
+    uint lightIDXOffset = numDirLights;
     for (uint i = 0; i < numPointLights; i += NUM_THREADS_PER_TILE)
     {
         uint il = localIdxFlattened + i;
 
         if (il < numPointLights)
         {
-            vec4 center = dvd_PointLightSource[il]._positionWV;
+            vec4 center = dvd_LightSource[il + lightIDXOffset]._positionWV;
             float r = center.w;
             // test if sphere is intersecting or inside frustum
             if (center.z + minZ < r && center.z - maxZ < r)
@@ -151,8 +154,8 @@ void main(void)
     barrier();
 
     // Spot lights.
+    lightIDXOffset += numPointLights;
     uint uNumPointLightsInThisTile = ldsLightIdxCounter;
-    uint numSpotLights = dvd_lightCountPerType[2];
 
     for (uint i = 0; i < numSpotLights; i += NUM_THREADS_PER_TILE)
     {
@@ -160,8 +163,8 @@ void main(void)
 
         if (il < numSpotLights)
         {
-            vec4 center = dvd_SpotLightSource[il]._positionWV;
-            vec3 direction = dvd_SpotLightSource[il]._directionWV.xyz;
+            vec4 center = dvd_LightSource[il + lightIDXOffset]._positionWV;
+            vec3 direction = dvd_LightSource[il + lightIDXOffset]._directionWV.xyz;
             float r = center.w * 0.5;
             center.xyz += direction * r;
             // test if sphere is intersecting or inside frustum

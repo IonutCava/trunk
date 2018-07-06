@@ -20,28 +20,24 @@ int InstanceCloudReduction(const in vec3 position, const in vec3 extents) {
     BoundingBox[7] = dvd_ViewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y, -extents.z), 1.0);
 
     // check how the bounding box resides regarding to the view frustum 
-    uvec2 outOfBoundX = uvec2(0);
-    uvec2 outOfBoundY = uvec2(0);
-    uvec2 outOfBoundZ = uvec2(0);
-
-    vec4 crtBB;
-    float frustumLimit = 0.0;
-    for (uint i = 0; i < 8; i++) {
-        crtBB = BoundingBox[i];
-        frustumLimit = crtBB.w + frustumBias;
-        if (crtBB.x >  frustumLimit) outOfBoundX[0]++;
-        if (crtBB.x < -frustumLimit) outOfBoundX[1]++;
-        if (crtBB.y >  frustumLimit) outOfBoundY[0]++;
-        if (crtBB.y < -frustumLimit) outOfBoundY[1]++;
-        if (crtBB.z >  frustumLimit) outOfBoundZ[0]++;
-        if (crtBB.z < -frustumLimit) outOfBoundZ[1]++;
+    uint outOfBound[6] = uint[](0, 0, 0, 0, 0, 0);
+    
+    for (int i = 0; i<8; i++)
+    {
+        if (BoundingBox[i].x >  BoundingBox[i].w) outOfBound[0]++;
+        if (BoundingBox[i].x < -BoundingBox[i].w) outOfBound[1]++;
+        if (BoundingBox[i].y >  BoundingBox[i].w) outOfBound[2]++;
+        if (BoundingBox[i].y < -BoundingBox[i].w) outOfBound[3]++;
+        if (BoundingBox[i].z >  BoundingBox[i].w) outOfBound[4]++;
+        if (BoundingBox[i].z < -BoundingBox[i].w) outOfBound[5]++;
     }
 
-    return (outOfBoundX[0] == 8 || outOfBoundX[1] == 8 ||
-            outOfBoundY[0] == 8 || outOfBoundY[1] == 8 ||
-            outOfBoundZ[0] == 8 || outOfBoundZ[0] == 8) 
-            ? 0
-            : 1;
+    int inFrustum = 1;
+
+    for (int i = 0; i<6; i++)
+        if (outOfBound[i] == 8) inFrustum = 0;
+
+    return inFrustum;
 }
 
 //Return: 0 = culled, 1 = visible
@@ -52,7 +48,7 @@ int zBufferCull(const in vec3 position, const in vec3 extents) {
     }
 
     /* perform perspective division for the bounding box */
-    for (int i = 0; i < 8; i++) {
+    for (uint i = 0; i < 8; i++) {
         BoundingBox[i].xyz /= BoundingBox[i].w;
     }
 

@@ -623,7 +623,8 @@ DEFINE_SINGLETON(GFXDevice)
     I32 _imShaderTextureFlag;
     I32 _imShaderWorldMatrix;
     /// The interface that coverts IM calls to VB data
-    vectorImpl<IMPrimitive*>  _imInterfaces;
+    vectorImpl<IMPrimitive*> _imInterfaces;
+    vectorImpl<IMPrimitive*> _activeImInterfaces;
     /// Current viewport stack
     ViewportStack _viewport;
 
@@ -631,8 +632,9 @@ DEFINE_SINGLETON(GFXDevice)
 
     DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES> _matricesData;
-    U32 _lastCommandCount;
-    U32 _lastNodeCount;
+    std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastCommandCount;
+    std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastNodeCount;
+
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;

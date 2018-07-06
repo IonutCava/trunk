@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class ParticlePositionColorUpdater : public ParticleUpdater {
+class ParticlePositionColorUpdater final : public ParticleUpdater {
    public:
     vec4<F32> _minPos;
     vec4<F32> _maxPos;
@@ -46,7 +46,7 @@ class ParticlePositionColorUpdater : public ParticleUpdater {
 
     ~ParticlePositionColorUpdater() {}
 
-    virtual void update(const U64 deltaTime, std::shared_ptr<ParticleData> p) override;
+    void update(const U64 deltaTime, ParticleData& p) override;
 };
 };
 #endif

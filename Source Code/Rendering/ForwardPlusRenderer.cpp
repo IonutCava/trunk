@@ -37,8 +37,7 @@ void ForwardPlusRenderer::preRender() {
     Renderer::preRender();
 
     LightManager& lightMgr = LightManager::getInstance();
-    lightMgr.uploadLightData(LightType::POINT, ShaderBufferLocation::LIGHT_CULL_POINT);
-    lightMgr.uploadLightData(LightType::SPOT, ShaderBufferLocation::LIGHT_CULL_SPOT);
+    lightMgr.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
 
     GFX_DEVICE.getRenderTarget(GFX_DEVICE.anaglyphEnabled() 
                                  ? GFXDevice::RenderTargetID::ANAGLYPH 

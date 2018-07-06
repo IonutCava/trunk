@@ -54,20 +54,17 @@ class d3dConstantBuffer final : public ShaderBuffer {
 
     void getData(ptrdiff_t offsetElementCount,
                  ptrdiff_t rangeElementCount,
-                 bufferPtr result,
-                 U32 sizeFactorOffset = 0) const override;
+                 bufferPtr result) const override;
 
     void updateData(ptrdiff_t offsetElementCount,
                     ptrdiff_t rangeElementCount,
-                    const bufferPtr data,
-                    U32 sizeFactorOffset = 0) override;
+                    const bufferPtr data) override;
 
     bool bindRange(U32 bindIndex,
                    U32 offsetElementCount,
-                   U32 rangeElementCount,
-                   U32 sizeFactorOffset = 0) override;
+                   U32 rangeElementCount) override;
 
-    bool bind(U32 bindIndex, U32 sizeFactorOffset = 0) override;
+    bool bind(U32 bindIndex) override;
 
     void addAtomicCounter(U32 sizeFactor = 1) override;
 

@@ -367,18 +367,6 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define BUFFER_LIGHT_CULL_SPOT " +
-        std::to_string(to_const_uint(ShaderBufferLocation::LIGHT_CULL_SPOT)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_CULL_POINT " +
-        std::to_string(to_const_uint(ShaderBufferLocation::LIGHT_CULL_POINT)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + std::to_string(Config::Lighting::FORWARD_PLUS_TILE_RES),
         lineOffsets);
 

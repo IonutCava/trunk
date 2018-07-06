@@ -132,7 +132,7 @@ class glGenericVertexData : public GenericVertexData {
 
     void incQueryQueue() override;
 
-    static bool setIfDifferentBindRange(GLuint attributeIndex, BufferBindConfig bindConfig);
+    static bool setIfDifferentBindRange(GLuint bindIndex, const BufferBindConfig& bindConfig);
 
    private:
     GLuint _indexBuffer;

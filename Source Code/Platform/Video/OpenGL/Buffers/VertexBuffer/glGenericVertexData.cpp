@@ -8,17 +8,16 @@ namespace Divide {
 
 hashMapImpl<GLuint, glGenericVertexData::BufferBindConfig> glGenericVertexData::_bindConfigs;
 
-bool glGenericVertexData::setIfDifferentBindRange(GLuint attributeIndex, 
-                                                  BufferBindConfig bindConfig) {
+bool glGenericVertexData::setIfDifferentBindRange(GLuint bindIndex, const BufferBindConfig& bindConfig) {
 
     // If this is a new index, this will just create a default config
-    BufferBindConfig& crtConfig = _bindConfigs[attributeIndex];
+    BufferBindConfig& crtConfig = _bindConfigs[bindIndex];
     if (bindConfig == crtConfig) {
         return false;
     }
 
     crtConfig.set(bindConfig);
-    glBindVertexBuffer(attributeIndex, bindConfig._buffer, bindConfig._offset, bindConfig._stride);
+    glBindVertexBuffer(bindIndex, bindConfig._buffer, bindConfig._offset, bindConfig._stride);
     return true;
 }
 
@@ -417,11 +416,11 @@ void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) 
         offset += _elementCount[bufferIndex] * _elementSize[bufferIndex] * queueReadIndex();
     }
 
-    setIfDifferentBindRange(bufferIndex,
-                            BufferBindConfig(_bufferObjects[bufferIndex]._id,
-                                             offset,
-                                             static_cast<GLsizei>(descriptor.componentsPerElement() *
-                                                                  _elementSize[bufferIndex])));
+    BufferBindConfig crtConfig = BufferBindConfig(_bufferObjects[bufferIndex]._id,
+                                                  offset,
+                                                  static_cast<GLsizei>(_elementSize[bufferIndex]));
+
+    setIfDifferentBindRange(bufferIndex, crtConfig);
 
     // Early out if the attribute didn't change
     if (!descriptor.dirty()) {

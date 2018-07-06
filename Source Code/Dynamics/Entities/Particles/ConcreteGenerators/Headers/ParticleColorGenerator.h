@@ -35,7 +35,7 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleColorGenerator : public ParticleGenerator {
+class ParticleColorGenerator final : public ParticleGenerator {
    public:
     vec4<U8> _minStartCol;
     vec4<U8> _maxStartCol;
@@ -45,11 +45,11 @@ class ParticleColorGenerator : public ParticleGenerator {
    public:
     ParticleColorGenerator() {}
 
-    virtual void generate(vectorImpl<std::future<void>>& packagedTasks,
-                          const U64 deltaTime,
-                          std::shared_ptr<ParticleData> p,
-                          U32 startIndex,
-                          U32 endIndex) override;
+    void generate(vectorImpl<std::future<void>>& packagedTasks,
+                  const U64 deltaTime,
+                  ParticleData& p,
+                  U32 startIndex,
+                  U32 endIndex) override;
 };
 };
 

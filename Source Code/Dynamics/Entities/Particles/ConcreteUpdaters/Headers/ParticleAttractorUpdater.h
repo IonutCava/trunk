@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class ParticleAttractorUpdater : public ParticleUpdater {
+class ParticleAttractorUpdater final : public ParticleUpdater {
    public:
     /// w = force
     vectorImpl<vec4<F32>> _attractors;
@@ -46,7 +46,7 @@ class ParticleAttractorUpdater : public ParticleUpdater {
 
     ~ParticleAttractorUpdater() {}
 
-    virtual void update(const U64 deltaTime, std::shared_ptr<ParticleData> p) override;
+    void update(const U64 deltaTime, ParticleData& p) override;
 
     inline size_t collectionSize() const { return _attractors.size(); }
     inline void add(const vec4<F32>& attractor) {

@@ -41,6 +41,10 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
                           "Not sure what to do here. Probably raise an "
                           "exception or something.");
 
+            // temp hack
+            if (waitDuration > 0 && waitRet == GL_TIMEOUT_EXPIRED) {
+                return;
+            }
             assert(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED));
                           
             // After the first time, need to start flushing, and wait for a looong time.

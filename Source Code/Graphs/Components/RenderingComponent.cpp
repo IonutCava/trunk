@@ -54,20 +54,24 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _boundingBoxPrimitive[0] = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
     _boundingBoxPrimitive[0]->stateHash(primitiveStateBlock.getHash());
-    
+    _boundingBoxPrimitive[0]->paused(true);
+
     _boundingBoxPrimitive[1] = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.getName());
     _boundingBoxPrimitive[1]->stateHash(primitiveStateBlock.getHash());
+    _boundingBoxPrimitive[1]->paused(true);
 
     _boundingSpherePrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
     _boundingSpherePrimitive->stateHash(primitiveStateBlock.getHash());
+    _boundingSpherePrimitive->paused(true);
 
     if (nodeSkinned) {
         primitiveStateBlock.setZRead(false);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
         _skeletonPrimitive->stateHash(primitiveStateBlock.getHash());
+        _skeletonPrimitive->paused(true);
     }
 
 #ifdef _DEBUG

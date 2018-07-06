@@ -4,15 +4,15 @@ namespace Divide {
 
 void ParticleVelocityGenerator::generate(vectorImpl<std::future<void>>& packagedTasks, 
                                          const U64 deltaTime,
-                                         std::shared_ptr<ParticleData> p,
+                                         ParticleData& p,
                                          U32 startIndex,
                                          U32 endIndex) {
     vec3<F32> min = _sourceOrientation * _minStartVel.xyz();
     vec3<F32> max = _sourceOrientation * _maxStartVel.xyz();
     
-    typedef decltype(std::begin(p->_velocity)) iter_t;
-    for_each_interval<iter_t>(std::begin(p->_velocity) + startIndex,
-                              std::begin(p->_velocity) + endIndex,
+    typedef decltype(std::begin(p._velocity)) iter_t;
+    for_each_interval<iter_t>(std::begin(p._velocity) + startIndex,
+                              std::begin(p._velocity) + endIndex,
                               ParticleData::g_threadPartitionSize,
                               [&](iter_t from, iter_t to)
     {

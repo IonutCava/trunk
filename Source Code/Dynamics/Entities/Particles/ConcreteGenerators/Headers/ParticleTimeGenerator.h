@@ -35,7 +35,7 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleTimeGenerator : public ParticleGenerator {
+class ParticleTimeGenerator final : public ParticleGenerator {
    public:
     F32 _minTime;
     F32 _maxTime;
@@ -43,11 +43,11 @@ class ParticleTimeGenerator : public ParticleGenerator {
    public:
     ParticleTimeGenerator() : _minTime(0.0), _maxTime(0.0) {}
 
-    virtual void generate(vectorImpl<std::future<void>>& packagedTasks, 
-                          const U64 deltaTime,
-                          std::shared_ptr<ParticleData> p,
-                          U32 startIndex,
-                          U32 endIndex) override;
+    void generate(vectorImpl<std::future<void>>& packagedTasks, 
+                  const U64 deltaTime,
+                  ParticleData& p,
+                  U32 startIndex,
+                  U32 endIndex) override;
 };
 };
 

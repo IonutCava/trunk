@@ -35,7 +35,7 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleVelocityGenerator : public ParticleGenerator {
+class ParticleVelocityGenerator final : public ParticleGenerator {
    public:
     vec4<F32> _minStartVel;
     vec4<F32> _maxStartVel;
@@ -43,11 +43,11 @@ class ParticleVelocityGenerator : public ParticleGenerator {
    public:
     ParticleVelocityGenerator() {}
 
-    virtual void generate(vectorImpl<std::future<void>>& packagedTasks, 
-                          const U64 deltaTime,
-                          std::shared_ptr<ParticleData> p,
-                          U32 startIndex,
-                          U32 endIndex) override;
+    void generate(vectorImpl<std::future<void>>& packagedTasks, 
+                  const U64 deltaTime,
+                  ParticleData& p,
+                  U32 startIndex,
+                  U32 endIndex) override;
 };
 };
 

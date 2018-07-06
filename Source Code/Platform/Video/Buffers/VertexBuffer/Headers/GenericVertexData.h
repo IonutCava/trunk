@@ -55,19 +55,16 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
               _wasSet(false),
               _dirty(false),
               _normalized(false),
-              _stride(0),
               _type(GFXDataFormat::UNSIGNED_INT)
         {
         }
 
         void set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement,
-                 bool normalized, size_t stride, U32 elementCountOffset,
-                 GFXDataFormat dataType) {
+                 bool normalized, U32 elementCountOffset, GFXDataFormat dataType) {
             this->bufferIndex(bufferIndex);
             this->instanceDivisor(instanceDivisor);
             this->componentsPerElement(componentsPerElement);
             this->normalized(normalized);
-            this->stride(stride);
             this->offset(elementCountOffset);
             this->dataType(dataType);
         }
@@ -104,11 +101,6 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
             _dirty = true;
         }
 
-        inline void stride(size_t stride) {
-            _stride = stride;
-            _dirty = true;
-        }
-
         inline void dataType(GFXDataFormat type) {
             _type = type;
             _dirty = true;
@@ -131,7 +123,6 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
             return _componentsPerElement;
         }
         inline bool normalized() const { return _normalized; }
-        inline size_t stride() const { return _stride; }
         inline GFXDataFormat dataType() const { return _type; }
         inline bool wasSet() const { return _wasSet; }
         inline bool dirty() const { return _dirty; }
