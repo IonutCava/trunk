@@ -192,8 +192,6 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
                 case _ID(comnAtomExt): typeIndex = ShaderType::COUNT; break;
             };
 
-            assert(index != -1);
-
             include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_uint(typeIndex)]);
 
             if (include_string.empty()) {
