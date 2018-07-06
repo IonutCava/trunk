@@ -36,8 +36,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
 #endif
     // Toggle multi-sampling if requested. This options requires a client-restart, sadly.    
-    if (GFX_DEVICE.MSAAEnabled()) {
-        glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.MSAASamples());
+    if (GFX_DEVICE.gpuState().MSAAEnabled()) {
+        glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.gpuState().MSAASamples());
     }
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror OpenGL functionality 1-to-1
@@ -172,7 +172,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     if (samplerBuffers == 0 || sampleCount == 0) {
         msaaSamples = 0;
     }
-    GFX_DEVICE.initAA(par.getParam<I32>("rendering.FXAAsamples", 0), msaaSamples);
+    GFX_DEVICE.gpuState().initAA(par.getParam<I32>("rendering.FXAAsamples", 0), msaaSamples);
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get("GL_MAX_UNIFORM"), GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
@@ -215,7 +215,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // Seamless cubemaps are a nice feature to have enabled (core since 3.2)
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     // Enable multisampling if we actually support and request it
-    if (GFX_DEVICE.MSAAEnabled()) {
+    if (GFX_DEVICE.gpuState().MSAAEnabled()) {
         glEnable(GL_MULTISAMPLE);
     }
 
@@ -241,13 +241,13 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     DIVIDE_ASSERT(modes != nullptr, "GLFWWrapper error: No display modes found for the current monitor!");
     Console::printfn(Locale::get("AVAILABLE_VIDEO_MODES"), numberOfDisplayModes);
     // Register the display modes with the GFXDevice object
-    GFXDevice::GPUVideoMode tempDisplayMode;
+    GPUState::GPUVideoMode tempDisplayMode;
     for(U16 i = 0; i < numberOfDisplayModes; ++i){
         const GLFWvidmode& temp = modes[i];
         tempDisplayMode._resolution.set(temp.width, temp.height);
         tempDisplayMode._bitDepth.set(temp.redBits, temp.greenBits, temp.blueBits);
         tempDisplayMode._refreshRate =  temp.refreshRate;
-        GFX_DEVICE.registerDisplayMode(tempDisplayMode);
+        GFX_DEVICE.gpuState().registerDisplayMode(tempDisplayMode);
         // Optionally, output to console/file each display mode
         Console::d_printfn(Locale::get("CURRENT_DISPLAY_MODE"), 
                    temp.width, 
@@ -311,7 +311,7 @@ void GL_API::closeRenderingApi() {
     _GUIGLrenderer = nullptr;
     // Close the loading thread 
     _closeLoadingThread = true;
-    while ( GFX_DEVICE.loadingThreadAvailable() ) {
+    while ( GFX_DEVICE.gpuState().loadingThreadAvailable() ) {
         std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
     }
 
@@ -336,8 +336,8 @@ void GL_API::closeRenderingApi() {
     glfwTerminate();
 }
 
-/// changeResolutionInternal is simply asking GLFW to do the resizing and updating the resolution cache
-void GL_API::changeResolutionInternal(GLushort w, GLushort h) {
+/// changeResolution is simply asking GLFW to do the resizing and updating the resolution cache
+void GL_API::changeResolution(GLushort w, GLushort h) {
     glfwSetWindowSize(GLUtil::_mainWindow, w, h);
     _cachedResolution.set(w, h);
 }
@@ -354,7 +354,7 @@ void GL_API::setCursorPosition(GLushort x, GLushort y) const {
 
 /// This functions should be run in a separate, consumer thread.
 /// The main app thread, the producer, adds tasks via a lock-free queue that is checked every 20 ms
-void GL_API::createLoaderThread() {
+void GL_API::threadedLoadCallback() {
     // We need a valid OpenGL context to make current in this thread
     assert(GLUtil::_loaderWindow != nullptr);
     glfwMakeContextCurrent(GLUtil::_loaderWindow);
@@ -369,16 +369,17 @@ void GL_API::createLoaderThread() {
 #      endif
 #   endif
 
+    GPUState& gfxState = GFX_DEVICE.gpuState();
     // This will be our target container for new items pulled from the queue
     DELEGATE_CBK<> callback;
     // Delay startup of the thread by a 1/4 of a second. No real reason
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     // Use an atomic bool to check if the thread is still active (cheap and easy)
-    GFX_DEVICE.loadingThreadAvailable(true);
+    gfxState.loadingThreadAvailable(true);
     // Run an infinite loop until we actually request otherwise
     while (!_closeLoadingThread) {
         // Try to pull a new element from the queue
-        if (GFX_DEVICE.getLoadQueue().pop(callback)) {
+        if (gfxState.getLoadQueue().pop(callback)) {
             // If we manage, we run it and force the gpu to process it
             callback();
             glFlush();
@@ -389,7 +390,7 @@ void GL_API::createLoaderThread() {
     }
     GLUtil::destroyGlew();
     // If we close the loading thread, update our atomic bool to make sure the application isn't using it anymore
-    GFX_DEVICE.loadingThreadAvailable(false);
+    gfxState.loadingThreadAvailable(false);
 }
 
 };

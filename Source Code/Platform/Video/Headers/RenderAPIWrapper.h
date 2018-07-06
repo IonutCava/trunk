@@ -207,9 +207,9 @@ protected:
 
 protected:
     ///Change the resolution and reshape all graphics data
-    virtual void changeResolutionInternal(U16 w, U16 h) = 0;
+    virtual void changeResolution(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
-    virtual void createLoaderThread() = 0;
+    virtual void threadedLoadCallback() = 0;
     virtual void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const = 0;
 };
 

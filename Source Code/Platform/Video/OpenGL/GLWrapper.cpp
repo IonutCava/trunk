@@ -359,8 +359,9 @@ Framebuffer* GL_API::newFB(bool multisampled) const {
     // If we requested a MultiSampledFramebuffer and MSAA is enabled, we also allocate a resolve framebuffer
     // We set the resolve framebuffer as the requested framebuffer's child. 
     // The framebuffer is responsible for deleting it's own resolve child!
-    return MemoryManager_NEW glFramebuffer((multisampled && GFX_DEVICE.MSAAEnabled()) ? MemoryManager_NEW glFramebuffer() : 
-                                                                                        nullptr);
+    return MemoryManager_NEW glFramebuffer((multisampled && GFX_DEVICE.gpuState().MSAAEnabled()) ? 
+                                            MemoryManager_NEW glFramebuffer() : 
+                                            nullptr);
 }
 
 /// Create and return a new vertex array (VAO + VB + IB). The callee is responsible for it's deletion!

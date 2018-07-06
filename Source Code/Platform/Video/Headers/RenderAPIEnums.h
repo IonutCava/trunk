@@ -23,6 +23,10 @@
 #ifndef _GFX_ENUMS_H
 #define _GFX_ENUMS_H
 
+#ifndef toBit
+#define toBit(X) (1 << (X))
+#endif
+
 namespace Divide {
 
 ///State the various attribute locations to use in shaders with VAO/VB's
@@ -46,7 +50,7 @@ enum ShaderBufferLocation {
 };
 
 ///Fixed pipeline functionality should be avoided. Both D3D and OGL should have these matrices
-enum MATRIX_MODE{
+enum MATRIX_MODE {
     VIEW_MATRIX = 0,
     VIEW_INV_MATRIX = 1,
     PROJECTION_MATRIX = 2,
@@ -65,13 +69,13 @@ enum CurrentContext {
 };
 
 enum RenderStage {
-    DEFERRED_STAGE               = 1 << (1),
-    SHADOW_STAGE               = 1 << (2),
-    REFLECTION_STAGE           = 1 << (3),
-    FINAL_STAGE                   = 1 << (4),
-    Z_PRE_PASS_STAGE           = 1 << (5),
+    DEFERRED_STAGE             = toBit(1),
+    SHADOW_STAGE               = toBit(2),
+    REFLECTION_STAGE           = toBit(3),
+    FINAL_STAGE                = toBit(4),
+    Z_PRE_PASS_STAGE           = toBit(5),
     //Place all stages above this
-    INVALID_STAGE               = 1 << (6),
+    INVALID_STAGE              = toBit(6),
     //Special composite stages go here
     DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
     DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS_STAGE

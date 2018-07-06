@@ -37,89 +37,89 @@
 
 namespace Divide {
 
-DEFINE_SINGLETON_EXT1(DX_API, RenderAPIWrapper)
+DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
 
 protected:
-    DX_API() : RenderAPIWrapper() {}
+    DX_API() : RenderAPIWrapper()
+    {
+    }
 
-    ErrorCode initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv);
-    void      closeRenderingApi();
-    void changeResolutionInternal(U16 w, U16 h);
-    void changeViewport(const vec4<I32>& newViewport) const;
-    void setCursorPosition(U16 x, U16 y) const;
-    void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const;
+    ErrorCode initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) override;
+    void      closeRenderingApi() override;
+    void changeResolution(U16 w, U16 h) override;
+    void changeViewport(const vec4<I32>& newViewport) const override;
+    void setCursorPosition(U16 x, U16 y) const override;
+    void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const override;
     ///Change the window's position
-    void setWindowPos(U16 w, U16 h)  const;
-    void beginFrame();
-    void endFrame();
+    void setWindowPos(U16 w, U16 h) const override;
+    void beginFrame() override;
+    void endFrame() override;
 
-    inline ShaderBuffer* newSB(const bool unbound = false, const bool persistentMapped = true) const { 
+    inline ShaderBuffer* newSB(const bool unbound = false, const bool persistentMapped = true) const  override {
         return MemoryManager_NEW d3dConstantBuffer(unbound, persistentMapped); 
     }
 
-    inline IMPrimitive* newIMP() const { 
+    inline IMPrimitive* newIMP() const  override {
         return nullptr; 
     }
 
-    inline Framebuffer* newFB(bool multisampled) const { 
+    inline Framebuffer* newFB(bool multisampled) const override {
         return MemoryManager_NEW d3dRenderTarget(multisampled); 
     }
 
-    inline GenericVertexData* newGVD(const bool persistentMapped = false) const { 
+    inline GenericVertexData* newGVD(const bool persistentMapped = false) const override {
         return MemoryManager_NEW d3dGenericVertexData(persistentMapped); 
     }
 
-    inline VertexBuffer* newVB() const { 
+    inline VertexBuffer* newVB() const override {
         return MemoryManager_NEW d3dVertexBuffer(); 
     }
 
-    inline PixelBuffer* newPB(const PBType& type)  const {
+    inline PixelBuffer* newPB(const PBType& type)  const override {
         return MemoryManager_NEW d3dPixelBuffer(type); 
     }
 
-    inline Texture* newTextureArray(const bool flipped = false) const { 
+    inline Texture* newTextureArray(const bool flipped = false) const override {
         return MemoryManager_NEW d3dTexture(TEXTURE_2D_ARRAY, flipped); 
     }
 
-    inline Texture* newTexture2D(const bool flipped = false) const { 
+    inline Texture* newTexture2D(const bool flipped = false) const override {
         return MemoryManager_NEW d3dTexture(TEXTURE_2D, flipped); 
     }
 
-    inline Texture* newTextureCubemap(const bool flipped = false) const {
+    inline Texture* newTextureCubemap(const bool flipped = false) const override {
         return MemoryManager_NEW d3dTexture(TEXTURE_CUBE_MAP, flipped); 
     }
 
-    inline ShaderProgram* newShaderProgram(const bool optimise = false) const { 
+    inline ShaderProgram* newShaderProgram(const bool optimise = false) const override {
         return MemoryManager_NEW d3dShaderProgram(optimise); 
     }
 
-    inline Shader* newShader(const stringImpl& name, const  ShaderType& type, const bool optimise = false) const { 
+    inline Shader* newShader(const stringImpl& name, 
+                             const ShaderType& type,
+                             const bool optimise = false) const override {
         return MemoryManager_NEW d3dShader(name, type, optimise); 
     }
 
-    bool initShaders();
-    bool deInitShaders();
+    bool initShaders() override;
+    bool deInitShaders() override;
 
-    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
-    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
-    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
+    void toggleRasterization(bool state) override;
+    void setLineWidth(F32 width) override;
 
-    void toggleRasterization(bool state);
-    void setLineWidth(F32 width);
+    void drawText(const TextLabel& textLabel, const vec2<I32>& position) override;
+    void drawPoints(U32 numPoints) override;
 
-    void drawText(const TextLabel& textLabel, const vec2<I32>& position);
-    void drawPoints(U32 numPoints);
-
-    void updateClipPlanes();
+    void updateClipPlanes() override;
     friend class GFXDevice;
     typedef void (*callback)();
     void dxCommand(callback f){(*f)();};
 
-    void createLoaderThread();
+    void threadedLoadCallback() override;
 
-    U64 getFrameDurationGPU() { return 0; }
+    U64 getFrameDurationGPU()  override { return 0; }
 
-    void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
+    void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const  override;
 
 END_SINGLETON
 

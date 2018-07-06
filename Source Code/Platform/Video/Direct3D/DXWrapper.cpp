@@ -23,7 +23,7 @@ void DX_API::closeRenderingApi()
 {
 }
 
-void DX_API::changeResolutionInternal(U16 w, U16 h)
+void DX_API::changeResolution(U16 w, U16 h)
 {
 }
 
@@ -59,20 +59,6 @@ void DX_API::setLineWidth(F32 width)
 {
 }
 
-F32* DX_API::setProjection(const vec4<F32>& rect, const vec2<F32>& planes)
-{
-    return nullptr;
-}
-
-F32* DX_API::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes)
-{
-    return nullptr;
-}
-
-void DX_API::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum)
-{
-}
-
 void DX_API::updateClipPlanes()
 {
 }
@@ -95,7 +81,7 @@ bool DX_API::deInitShaders()
     return true;
 }
 
-void DX_API::createLoaderThread()
+void DX_API::threadedLoadCallback()
 {
 }
 

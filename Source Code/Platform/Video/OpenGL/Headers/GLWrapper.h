@@ -37,7 +37,7 @@ struct FONScontext;
 namespace Divide {
 
 /// OpenGL implementation of the RenderAPIWrapper
-DEFINE_SINGLETON_EXT1(GL_API, RenderAPIWrapper)
+DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     friend class glShader;
     friend class glTexture;
     friend class glIMPrimitive;
@@ -52,65 +52,69 @@ protected:
     ~GL_API();
 
     /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
-    ErrorCode initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv);
+    ErrorCode initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) override;
     /// Clear everything that was setup in initRenderingApi()
-    void closeRenderingApi();
+    void closeRenderingApi() override;
     /// Prepare our shader loading system
-    bool initShaders();
+    bool initShaders() override;
     /// Revert everything that was set up in "initShaders()"
-    bool deInitShaders();
+    bool deInitShaders() override;
     /// Window positioning is handled by GLFW
-    void setWindowPos(GLushort w, GLushort h) const;
+    void setWindowPos(GLushort w, GLushort h) const override;
     /// Mouse positioning is handled by GLFW
-    void setCursorPosition(GLushort x, GLushort y) const;
+    void setCursorPosition(GLushort x, GLushort y) const override;
     /// Prepare the GPU for rendering a frame
-    void beginFrame();
+    void beginFrame() override;
     /// Finish rendering the current frame
-    void endFrame();
+    void endFrame() override;
     /// Create and return a new IM emulation primitive. The callee is responsible for it's deletion!
-    IMPrimitive*        newIMP() const;
+    IMPrimitive*        newIMP() const override;
     /// Create and return a new framebuffer. The callee is responsible for it's deletion!
-    Framebuffer*        newFB(bool multisampled) const;
+    Framebuffer*        newFB(bool multisampled) const override;
     /// Create and return a new vertex array (VAO + VB + IB). The callee is responsible for it's deletion!
-    VertexBuffer*       newVB() const;
+    VertexBuffer*       newVB() const override;
     /// Create and return a new pixel buffer using the requested format. The callee is responsible for it's deletion!
-    PixelBuffer*        newPB(const PBType& type) const;
+    PixelBuffer*        newPB(const PBType& type) const override;
     /// Create and return a new generic vertex data object and, optionally set it as persistently mapped.
     /// The callee is responsible for it's deletion!
-    GenericVertexData*  newGVD(const bool persistentMapped) const;
+    GenericVertexData*  newGVD(const bool persistentMapped) const override;
     /// Create and return a new shader buffer. The callee is responsible for it's deletion!
     /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false 
     /// or a 'Shader Storage Block Object' otherwise
-    ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const;
+    ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const override;
     /// Create and return a new texture array (optionally, flipped vertically). The callee is responsible for it's deletion!
-    Texture*            newTextureArray(const bool flipped = false) const;
+    Texture*            newTextureArray(const bool flipped = false) const override;
     /// Create and return a new 2D texture (optionally, flipped vertically). The callee is responsible for it's deletion!
-    Texture*            newTexture2D(const bool flipped = false) const;
+    Texture*            newTexture2D(const bool flipped = false) const override;
     /// Create and return a new cube texture (optionally, flipped vertically). The callee is responsible for it's deletion!
-    Texture*            newTextureCubemap(const bool flipped = false) const;
+    Texture*            newTextureCubemap(const bool flipped = false) const override;
     /// Create and return a new shader program (optionally, post load optimised). The callee is responsible for it's deletion!
-    ShaderProgram*      newShaderProgram(const bool optimise = false) const;
+    ShaderProgram*      newShaderProgram(const bool optimise = false) const override;
     /// Create and return a new shader of the specified type by loading the specified name (optionally, post load optimised). 
     /// The callee is responsible for it's deletion!
-    Shader*             newShader(const stringImpl& name, const ShaderType& type, const bool optimise = false) const;
+    Shader*             newShader(const stringImpl& name, const ShaderType& type, const bool optimise = false) const override;
     /// Enable or disable rasterization (useful for transform feedback)
-    inline void toggleRasterization(bool state) { state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD); }
+    inline void toggleRasterization(bool state)  override {
+        state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD);
+    }
     /// Modify the line width used by OpenGL when rendering lines. It's upper limit is capped to what the hardware supports
-    inline void setLineWidth(GLfloat width) { glLineWidth(std::min(width, (GLfloat)_lineWidthLimit)); }
+    inline void setLineWidth(GLfloat width)  override {
+        glLineWidth(std::min(width, (GLfloat)_lineWidthLimit));
+    }
     /// Verify if we have a sampler object created and available for the given descriptor
     static size_t getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
     /// Clipping planes are only enabled/disabled if they differ from the current state
-    void updateClipPlanes();
+    void updateClipPlanes() override;
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash) 
     /// with his OpenGL frontend adapted for core context profiles
-    void drawText(const TextLabel& textLabel, const vec2<I32>& position);
+    void drawText(const TextLabel& textLabel, const vec2<I32>& position) override;
     /// Rendering points is universally useful, so we have a function, and a VAO, dedicated to this process
-    void drawPoints(GLuint numPoints);
+    void drawPoints(GLuint numPoints) override;
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is checked every 20 ms
-    void createLoaderThread();
+    void threadedLoadCallback() override;
     /// Return the time it took to render a single frame (in nanoseconds). Only works in debug builds
-    inline GLuint64 getFrameDurationGPU() { 
+    inline GLuint64 getFrameDurationGPU() override {
 #       ifdef _DEBUG
             // The returned results are 4 frames old!
             glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &FRAME_DURATION_GPU); 
@@ -119,7 +123,9 @@ protected:
         return FRAME_DURATION_GPU; 
     }
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
-    inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage)  { return _activeFBId[usage]; }
+    inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage) {
+        return _activeFBId[usage];
+    }
     /// Change the clear color for the specified renderTarget
     static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     /// Change the clear color for the specified renderTarget
@@ -128,15 +134,15 @@ protected:
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
-    /// changeResolutionInternal is simply asking GLFW to do the resizing and updating the resolution cache
-    void changeResolutionInternal(GLushort w, GLushort h);
+    /// changeResolution is simply asking GLFW to do the resizing and updating the resolution cache
+    void changeResolution(GLushort w, GLushort h) override;
     /// Change the current viewport area. Redundancy check is performed in GFXDevice class
-    void changeViewport(const vec4<GLint>& newViewport) const;
+    void changeViewport(const vec4<GLint>& newViewport) const override;
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const bool skipShader, const bool skipTextures, const bool skipBuffers);
     /// Return the glsl optimisation context (created by the glsl-optimizer library)
     inline glslopt_ctx* getGLSLOptContext() const { return _GLSLOptContex; }
-    void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const;
+    void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const override;
 
 public:
     /// Enable or disable primitive restart and ensure that the correct index size is used
@@ -155,7 +161,7 @@ public:
     static bool setActiveProgram(glShaderProgram* const program);
     /// A state block should contain all rendering state changes needed for the next draw call. 
     /// Some may be redundant, so we check each one individually 
-    void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
+    void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const override;
     /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelPackUnpackAlignment(GLint packAlignment = 1, GLint unpackAlignment = 1) {
         return (setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment));

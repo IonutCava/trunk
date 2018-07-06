@@ -71,7 +71,7 @@ void PostFX::init(const vec2<U16>& resolution) {
     _enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
     _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
-    _enableFXAA = _gfx->FXAAEnabled();
+    _enableFXAA = _gfx->gpuState().FXAAEnabled();
 
     if (_gfx->postProcessingEnabled()) {
         ResourceDescriptor postFXShader("postProcessing");
@@ -250,7 +250,7 @@ void PostFX::idle(){
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
     _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
     _depthPreview = par.getParam<bool>("postProcessing.fullScreenDepthBuffer");
-    _enableFXAA = _gfx->FXAAEnabled();
+    _enableFXAA = _gfx->gpuState().FXAAEnabled();
 
     bool recompileShader = false;
     if (_enableBloom != par.getParam<bool>("postProcessing.enableBloom")) {

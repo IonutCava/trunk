@@ -208,6 +208,9 @@
     <ClInclude Include="..\..\Source Code\Libs\src\GLIM\glimInterface.h">
       <Filter>Video\OpenGL\GLIM</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXState.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -359,6 +362,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\src\GLIM\Stuff.cpp">
       <Filter>Video\OpenGL\GLIM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\GFXState.cpp">
+      <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

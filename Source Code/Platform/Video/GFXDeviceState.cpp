@@ -129,7 +129,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
     // Create a separate loading thread that shares resources with the main rendering context
-    _loaderThread = MemoryManager_NEW std::thread(&GFXDevice::createLoaderThread, this);
+    _state.startLoaderThread(DELEGATE_BIND(&GFXDevice::threadedLoadCallback, this));
     // Register a 2D function used for previewing the depth buffer.
 #   ifdef _DEBUG
         add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
@@ -169,9 +169,7 @@ void GFXDevice::closeRenderingApi() {
     // Close the rendering API
     _api->closeRenderingApi();
     // Wait for the loading thread to terminate
-    _loaderThread->join();
-    // And delete it
-    MemoryManager::DELETE( _loaderThread );
+    _state.stopLoaderThread();
 
     switch ( _apiId ) {
         case RenderAPI::OpenGL:

@@ -64,14 +64,11 @@ GFXDevice::GFXDevice() : _api(nullptr),
    _imShader = nullptr;
    _renderer = nullptr;
    _nodeBuffer = nullptr;
-   _loaderThread = nullptr;
    _gfxDataBuffer = nullptr;
    _activeShaderProgram = nullptr;
    _HIZConstructProgram = nullptr;
    _previewDepthMapShader = nullptr;
    // Integers
-   _MSAASamples = 0;
-   _FXAASamples = 0;
    _prevShaderId = 0;
    _prevTextureId = 0;
    _stateExclusionMask = 0;
@@ -89,7 +86,6 @@ GFXDevice::GFXDevice() : _api(nullptr),
    _viewportUpdate = false;
    _rasterizationEnabled = true;
    _enablePostProcessing = false;
-   _loadingThreadAvailable = false;
    // Enumerated Types
    _shadowDetailLevel = DETAIL_HIGH;
    _generalDetailLevel = DETAIL_HIGH;
@@ -354,7 +350,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         }
     }
     // Inform rendering API of the resolution change
-    changeResolutionInternal(w, h);
+    _api->changeResolution(w, h);
     // Set the viewport to be the entire window. Force the update so we don't push a new value (we replace the old)
     forceViewportInternal(vec4<I32>(0, 0, w, h));
     // Make sure the main viewport is the only one active. Never change resolution while rendering to a render target
@@ -668,8 +664,8 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
         return false;
     }
     // If we want and can call the function in the loading thread, add it to the lock-free, single-producer, single-consumer queue
-    if (context == GFX_LOADING_CONTEXT && loadingThreadAvailable()) {
-        while (!_loadQueue.push(callback));
+    if (context == GFX_LOADING_CONTEXT && _state.loadingThreadAvailable()) {
+        while (!_state.getLoadQueue().push(callback));
     } else {
         callback();
     }
