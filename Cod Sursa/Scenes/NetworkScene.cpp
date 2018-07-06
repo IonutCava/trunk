@@ -3,11 +3,16 @@
 #include "Rendering/Framerate.h"
 #include "Rendering/common.h"
 #include "Hardware/Network/ASIO.h"
+#include "Rendering/Camera.h"
 
 void NetworkScene::render()
 {
+
+	_box->draw();
 	GUI &gui = GUI::getInstance();
 	gui.draw();
+	for(ModelIterator = ModelArray.begin();  ModelIterator != ModelArray.end();  ModelIterator++)
+		(*ModelIterator)->Draw();
 }
 
 void NetworkScene::preRender()
@@ -16,6 +21,15 @@ void NetworkScene::preRender()
 
 void NetworkScene::processInput()
 {
+	moveFB  = Engine::getInstance().moveFB;
+	moveLR  = Engine::getInstance().moveLR;
+	angleLR = Engine::getInstance().angleLR;
+	angleUD = Engine::getInstance().angleUD;
+	
+	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
+	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
+	if(moveFB)	Camera::getInstance().PlayerMoveForward(moveFB * Framerate::getInstance().getSpeedfactor());
+	if(moveLR)	Camera::getInstance().PlayerMoveStrafe(moveLR * Framerate::getInstance().getSpeedfactor());
 }
 
 void NetworkScene::processEvents(F32 time)
@@ -52,12 +66,34 @@ bool NetworkScene::unload()
 	return true;
 }
 
+void NetworkScene::checkPatches()
+{
+	if(ModelDataArray.empty()) return;
+	WorldPacket p(CMSG_GEOMERTY_LIST);
+	p << string("NetworkScene");
+	p << ModelDataArray.size();
+
+	for(vector<FileData>::iterator _iter = ModelDataArray.begin(); _iter != ModelDataArray.end(); _iter++)
+	{
+		p << (*_iter).ModelName;
+		p << (*_iter).version;
+
+	}
+	ASIO::getInstance().sendPacket(p);
+	bool _load = false;
+}
+
 bool NetworkScene::load(const string& name)
 {
 	GFXDevice::getInstance().resizeWindow(640,384);
 	ASIO& asio = ASIO::getInstance();
-	ParamHandler::getInstance().setParam("serverResponse",string("waiting"));
+
+	checkPatches();
+	_box = new Box3D(40);
+
 	bool state = loadResources(true);
+	ParamHandler::getInstance().setParam("serverResponse",string("waiting"));
+	
 	return state;
 }
 

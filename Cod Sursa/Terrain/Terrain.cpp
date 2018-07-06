@@ -9,7 +9,6 @@
 #include "Hardware/Video/VertexBufferObject.h"
 #include "Rendering/Camera.h"
 #include "Sky.h"
-#include <omp.h>
 #include "Hardware/Video/GFXDevice.h"
 
 Terrain::Terrain()

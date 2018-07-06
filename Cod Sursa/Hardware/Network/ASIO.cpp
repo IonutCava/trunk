@@ -1,6 +1,8 @@
 #include "ASIO.h"
 #include <boost/archive/text_iarchive.hpp>
 #include "Utility/Headers/MathHelper.h"
+#include "Utility/Headers/BaseClasses.h"
+#include "Managers/SceneManager.h"
 
 	void ASIO::init()
 	{
@@ -38,9 +40,7 @@
 		c->sendPacket(p);
 		char code[3];
 		_itoa(p.getOpcode(),code,3);
-		string t = "ASIO: sent opcode [ 0x";
-		t += code;
-		t += "]";
+		string t = "ASIO: sent opcode [ 0x" + Util::toString(code) + string("]");
 		cout << t << endl;
 		ParamHandler::getInstance().setParam("asioStatus",t);
 	}
@@ -57,6 +57,9 @@
 				break;
 			case SMSG_DISCONNECT:
 				HandleDisconnectOpCode(p);
+				break;
+			case SMSG_GEOMETRY_APPEND:
+				HandleGeometryAppendOpCode(p);
 				break;
 			default:
 				ParamHandler::getInstance().setParam("serverResponse",
@@ -82,6 +85,33 @@
 		cout << "CLOSING" << endl;
 		if(code == 0) ASIO::getInstance().close();
 		// else handleError(code);
+	}
+
+	void client::HandleGeometryAppendOpCode(WorldPacket& p)
+	{
+		cout << "ASIO: received  [SMSG_GEOMETRY_APPEND]" << endl;
+		U32 size;
+		p >> size;
+		vector<FileData> patch;
+		for(U32 i = 0; i < size; i++)
+		{
+			FileData d;
+			int type = -1;
+			p >> d.ModelName;
+			p >> d.orientation.x;
+			p >> d.orientation.y;
+			p >> d.orientation.z;
+			p >> d.position.x;
+			p >> d.position.y;
+			p >> d.position.z;
+			p >> d.scale.x;
+			p >> d.scale.y;
+			p >> d.scale.z;
+			p >> type; if(type = 0) d.type = MESH; else d.type = VEGETATION;
+			p >> d.version;
+			patch.push_back(d);
+		}
+		SceneManager::getInstance().addPatch(patch);
 	}
 
 	void client::HandleHeartBeatOpCode(WorldPacket& p)

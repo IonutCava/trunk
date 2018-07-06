@@ -151,6 +151,7 @@ namespace XML
 			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = MESH;
+			model.version = pt.get<F32>(name + ".version");
 			SceneManager::getInstance().addModel(model);
 		}
 		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
@@ -170,6 +171,7 @@ namespace XML
 			model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y"); 
 			model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z"); 
 			model.type = VEGETATION;
+			model.version = pt.get<F32>(name + ".version");
 			SceneManager::getInstance().addModel(model);
 		}
 	}

@@ -40,12 +40,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\assimp&quot;;&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\Physics&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\Foundation&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\Cooking&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				OpenMP="true"
+				OpenMP="false"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -61,10 +61,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/Y3"
-				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib assimpd.lib"
+				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimpd.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
-				AdditionalLibraryDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)\Libs\lib&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\boost\lib&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\assimp\lib&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
 				GenerateDebugInformation="true"
@@ -122,14 +122,14 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\assimp&quot;;&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\assimp\include&quot;;&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\Physics&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\Foundation&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\include\Cooking&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="2"
-				OpenMP="true"
+				OpenMP="false"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -144,9 +144,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib assimp.lib"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimp.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
-				AdditionalLibraryDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)\Libs\lib&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\boost\lib&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\assimp\lib&quot;;&quot;C:\Users\k1ngp1n\Documents\My Dropbox\Engine Libraries\physx\lib&quot;"
 				IgnoreDefaultLibraryNames="LIBCMTD.lib"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -398,10 +398,6 @@
 			</File>
 			<File
 				RelativePath="..\Utility\Headers\Manager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Utility\Math.cpp"
 				>
 			</File>
 			<File

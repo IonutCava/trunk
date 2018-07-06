@@ -264,6 +264,7 @@ private:
 	void HandlePongOpCode(WorldPacket& p);
 	void HandleHeartBeatOpCode(WorldPacket& p);
 	void HandleDisconnectOpCode(WorldPacket& p);
+	void HandleGeometryAppendOpCode(WorldPacket& p);
 
 private:
   bool stopped_;

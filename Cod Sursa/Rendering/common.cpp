@@ -4,7 +4,6 @@
 #include "Utility/Headers/Guardian.h"
 #include "Managers/TextureManager.h"
 #include "Managers/ResourceManager.h"
-#include "Managers/SceneManager.h"
 #include "Managers/TerrainManager.h"
 #include "Terrain/Sky.h"
 #include "Camera.h"
@@ -19,6 +18,7 @@
 
 void Engine::Idle()
 {
+	SceneManager::getInstance().clean();
 	glutSetWindow(Engine::getInstance().getMainWindowId()); 
 	glutPostRedisplay();
 }

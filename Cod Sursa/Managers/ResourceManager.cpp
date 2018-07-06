@@ -164,5 +164,3 @@ Resource* ResourceManager::LoadResource(const string& name)
 }
 
 
-
-

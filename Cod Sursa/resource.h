@@ -4,6 +4,8 @@
 #ifdef HIDE_DEBUG_CONSOLE
 	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
+
+#pragma warning(disable:4244)
  
 #define GETTIME() ((F32)glutGet(GLUT_ELAPSED_TIME)/1000.0f)
 #define GETMSTIME() ((F32)glutGet(GLUT_ELAPSED_TIME))

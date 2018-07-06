@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>Divide</ProjectName>
+    <ProjectGuid>{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}</ProjectGuid>
+    <RootNamespace>Grafica</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</EmbedManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</EmbedManifest>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(OutDir);C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>glew32d.lib;glu32.lib;opengl32.lib;DevIL.lib;PhysXloader.lib;PhysXCooking.lib;PhysXCore.lib;VCOMP.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
+      <OutputFile>$(OutDir)../$(ProjectName)_VC90_dbg.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(OutDir);C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <OpenMPSupport>true</OpenMPSupport>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;PhysXloader.lib;PhysXCooking.lib;PhysXCore.lib;VCOMP.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)../$(ProjectName)_VC90.exe</OutputFile>
+      <AdditionalLibraryDirectories>C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Rendering\Camera.cpp" />
+    <ClCompile Include="..\Rendering\common.cpp" />
+    <ClCompile Include="..\Rendering\Framerate.cpp" />
+    <ClCompile Include="..\Rendering\Frustum.cpp" />
+    <ClCompile Include="..\PhysX\PhysX.cpp" />
+    <ClCompile Include="..\PhysX\pxStream.cpp" />
+    <ClCompile Include="..\PhysX\Actors\pxSimpleShapes.cpp" />
+    <ClCompile Include="..\PhysX\Debug\pxDebugRenderer.cpp" />
+    <ClCompile Include="..\Importer\OBJ.cpp" />
+    <ClCompile Include="..\Importer\objImporter.cpp" />
+    <ClCompile Include="..\Importer\3DS\scene3ds.cpp" />
+    <ClCompile Include="..\Importer\3DS\mesh\mesh3ds.cpp" />
+    <ClCompile Include="..\Importer\3DS\mesh\mesh3dsobject.cpp" />
+    <ClCompile Include="..\Importer\3DS\chunk\chunk.cpp" />
+    <ClCompile Include="..\Importer\3DS\chunk\file.cpp" />
+    <ClCompile Include="..\Importer\3DS\light\light3ds.cpp" />
+    <ClCompile Include="..\Importer\3DS\light\light3dsobject.cpp" />
+    <ClCompile Include="..\Importer\3DS\material\material3ds.cpp" />
+    <ClCompile Include="..\Importer\3DS\material\material3dsobject.cpp" />
+    <ClCompile Include="..\MultiThreading\threadHandler.cpp" />
+    <ClCompile Include="..\GUI\GLUIManager.cpp" />
+    <ClCompile Include="..\GUI\GUI.cpp" />
+    <ClCompile Include="..\GUI\zpr.cpp" />
+    <ClCompile Include="..\Vegetation\Vegetation.cpp" />
+    <ClCompile Include="..\Terrain\Sky.cpp" />
+    <ClCompile Include="..\Terrain\Terrain.cpp" />
+    <ClCompile Include="..\Terrain\TerrainChunk.cpp" />
+    <ClCompile Include="..\Utility\Event.cpp" />
+    <ClCompile Include="..\Utility\Guardian.cpp" />
+    <ClCompile Include="..\Utility\Math.cpp" />
+    <ClCompile Include="..\Utility\Quadtree.cpp" />
+    <ClCompile Include="..\Utility\QuadtreeNode.cpp" />
+    <ClCompile Include="..\Utility\XMLParser.cpp" />
+    <ClCompile Include="..\TextureManager\ImageTools.cpp" />
+    <ClCompile Include="..\TextureManager\Texture.cpp" />
+    <ClCompile Include="..\TextureManager\Texture2D.cpp" />
+    <ClCompile Include="..\TextureManager\TextureCubemap.cpp" />
+    <ClCompile Include="..\Assets\Bones.cpp" />
+    <ClCompile Include="..\Scenes\CubeScene.cpp" />
+    <ClCompile Include="..\Scenes\MainScene.cpp" />
+    <ClCompile Include="..\Scenes\Scene.cpp" />
+    <ClCompile Include="..\Hardware\Input\Keyboard.cpp" />
+    <ClCompile Include="..\Hardware\Video\GFXDevice.cpp" />
+    <ClCompile Include="..\Hardware\Video\OpenGL\glFrameBufferObject.cpp" />
+    <ClCompile Include="..\Hardware\Video\OpenGL\glShader.cpp" />
+    <ClCompile Include="..\Hardware\Video\OpenGL\glVertexBufferObject.cpp" />
+    <ClCompile Include="..\Hardware\Video\OpenGL\GLWrapper.cpp" />
+    <ClCompile Include="..\Hardware\Video\Direct3D\DXWrapper.cpp" />
+    <ClCompile Include="..\Managers\Manager.cpp" />
+    <ClCompile Include="..\Managers\ResourceManager.cpp" />
+    <ClCompile Include="..\Managers\SceneManager.cpp" />
+    <ClCompile Include="..\Managers\TerrainManager.cpp" />
+    <ClCompile Include="..\Managers\TextureManager.cpp" />
+    <ClCompile Include="..\Geometry\Mesh.cpp" />
+    <ClCompile Include="..\Geometry\SubMesh.cpp" />
+    <ClCompile Include="..\Geometry\Predefined\Text3D.cpp" />
+    <ClCompile Include="..\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Rendering\Camera.h" />
+    <ClInclude Include="..\Rendering\common.h" />
+    <ClInclude Include="..\Rendering\Framerate.h" />
+    <ClInclude Include="..\Rendering\Frustum.h" />
+    <ClInclude Include="..\PhysX\PhysX.h" />
+    <ClInclude Include="..\PhysX\pxDecorator.h" />
+    <ClInclude Include="..\PhysX\pxStream.h" />
+    <ClInclude Include="..\PhysX\Debug\ErrorStream.h" />
+    <ClInclude Include="..\PhysX\Debug\pxDebugRenderer.h" />
+    <ClInclude Include="..\Importer\OBJ.h" />
+    <CustomBuildStep Include="..\Importer\objImporter.h" />
+    <ClInclude Include="..\Importer\3DS\3ds.h" />
+    <ClInclude Include="..\Importer\3DS\scene3ds.h" />
+    <ClInclude Include="..\Importer\3DS\mesh\mesh3ds.h" />
+    <ClInclude Include="..\Importer\3DS\mesh\mesh3dsobject.h" />
+    <ClInclude Include="..\Importer\3DS\chunk\chunk.h" />
+    <ClInclude Include="..\Importer\3DS\chunk\file.h" />
+    <ClInclude Include="..\Importer\3DS\light\light3ds.h" />
+    <ClInclude Include="..\Importer\3DS\light\light3dsobject.h" />
+    <ClInclude Include="..\Importer\3DS\material\material3ds.h" />
+    <ClInclude Include="..\Importer\3DS\material\material3dsobject.h" />
+    <ClInclude Include="..\MultiThreading\threadHandler.h" />
+    <ClInclude Include="..\GUI\GLUIManager.h" />
+    <ClInclude Include="..\GUI\GUI.h" />
+    <ClInclude Include="..\GUI\zpr.h" />
+    <ClInclude Include="..\Vegetation\Vegetation.h" />
+    <ClInclude Include="..\Terrain\Sky.h" />
+    <CustomBuildStep Include="..\Terrain\Terrain.h" />
+    <ClInclude Include="..\Terrain\TerrainChunk.h" />
+    <ClInclude Include="..\Utility\Headers\Manager.h" />
+    <ClInclude Include="..\Utility\Headers\BaseClasses.h" />
+    <ClInclude Include="..\Utility\Headers\BoundingBox.h" />
+    <ClInclude Include="..\Utility\Headers\DataTypes.h" />
+    <ClInclude Include="..\Utility\Headers\Event.h" />
+    <ClInclude Include="..\Utility\Headers\Guardian.h" />
+    <ClInclude Include="..\Utility\Headers\MathClasses.h" />
+    <ClInclude Include="..\Utility\Headers\MathHelper.h" />
+    <ClInclude Include="..\Utility\Headers\ParamHandler.h" />
+    <ClInclude Include="..\Utility\Headers\Quadtree.h" />
+    <ClInclude Include="..\Utility\Headers\QuadtreeNode.h" />
+    <ClInclude Include="..\Utility\Headers\Singleton.h" />
+    <ClInclude Include="..\Utility\Headers\XMLParser.h" />
+    <ClInclude Include="..\TextureManager\ImageTools.h" />
+    <ClInclude Include="..\TextureManager\Texture.h" />
+    <ClInclude Include="..\TextureManager\Texture2D.h" />
+    <ClInclude Include="..\TextureManager\TextureCubemap.h" />
+    <ClInclude Include="..\Assets\Bones.h" />
+    <ClInclude Include="..\Scenes\CubeScene.h" />
+    <ClInclude Include="..\Scenes\MainScene.h" />
+    <ClInclude Include="..\Scenes\Scene.h" />
+    <ClInclude Include="..\Hardware\Input\Keyboard.h" />
+    <ClInclude Include="..\Hardware\Video\FrameBufferObject.h" />
+    <ClInclude Include="..\Hardware\Video\GFXDevice.h" />
+    <ClInclude Include="..\Hardware\Video\RenderAPIWrapper.h" />
+    <ClInclude Include="..\Hardware\Video\ShaderHandler.h" />
+    <ClInclude Include="..\Hardware\Video\VertexBufferObject.h" />
+    <ClInclude Include="..\Hardware\Video\OpenGL\glFrameBufferObject.h" />
+    <ClInclude Include="..\Hardware\Video\OpenGL\glShader.h" />
+    <ClInclude Include="..\Hardware\Video\OpenGL\glVertexBufferObject.h" />
+    <ClInclude Include="..\Hardware\Video\OpenGL\GLWrapper.h" />
+    <ClInclude Include="..\Hardware\Video\Direct3D\DXWrapper.h" />
+    <ClInclude Include="..\Managers\Manager.h" />
+    <ClInclude Include="..\Managers\ResourceManager.h" />
+    <ClInclude Include="..\Managers\SceneManager.h" />
+    <ClInclude Include="..\Managers\TerrainManager.h" />
+    <ClInclude Include="..\Managers\TextureManager.h" />
+    <ClInclude Include="..\Geometry\Mesh.h" />
+    <ClInclude Include="..\Geometry\Object3D.h" />
+    <ClInclude Include="..\Geometry\SubMesh.h" />
+    <ClInclude Include="..\Geometry\Predefined\Text3D.h" />
+    <ClInclude Include="..\config.h" />
+    <ClInclude Include="..\readme.h" />
+    <ClInclude Include="..\resource.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

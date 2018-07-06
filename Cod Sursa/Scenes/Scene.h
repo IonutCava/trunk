@@ -45,7 +45,8 @@ public:
 
    void addModel(FileData& model) {ModelDataArray.push_back(model);}
    void addTerrain(const TerrainInfo& ter) {TerrainInfoArray.push_back(ter);}
-
+   void addPatch(vector<FileData>& data);
+   void clean();
 protected:
 	GFXDevice& _GFX;
 	TerrainManager* _terMgr;
@@ -74,6 +75,8 @@ protected:
 	virtual void setInitialData();
 	void clearEvents(){/*foreach(_events as event) event.end()*/_events.empty();}
 	void clearObjects(){/*foreach(_ModelArray as model) model.unload();*/ ModelArray.empty();}
+
+	void loadModel(FileData& data);
 
 };
 

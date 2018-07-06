@@ -430,6 +430,25 @@ class ByteBuffer
 };
 
 template <typename T>
+inline ByteBuffer &operator<<(ByteBuffer &b, vec3 const& v)
+{
+   b << x;
+   b << y;
+   b << z;
+   return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator>>(ByteBuffer &b, vec3 &v)
+{
+	b >> v.x;
+	b >> v.y;
+	b >> v.z
+	return b;
+}
+
+
+template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::vector<T> const& v)
 {
     b << (U32)v.size();

@@ -30,6 +30,7 @@ public:
 	vec3 position;
 	vec3 orientation;
 	GEOMETRY_TYPE type;
+	F32 version;
 };
 
 class TerrainInfo

@@ -269,29 +269,33 @@ void GL_API::drawQuad(vec3& _topLeft, vec3& _topRight, vec3& _bottomLeft, vec3& 
 
 void GL_API::loadOrtographicView()
 {
-	glMatrixMode( GL_PROJECTION );
-		pushMatrix();
-		glLoadIdentity();
-		gluOrtho2D(0, Engine::getInstance().getWindowWidth(), 0,Engine::getInstance().getWindowHeight());
-		glScalef(1, -1, 1);
-		glTranslatef(0, (F32)-Engine::getInstance().getWindowHeight(), 0);
-	glMatrixMode( GL_MODELVIEW );
+	F32 width = Engine::getInstance().getWindowWidth();
+	F32 height = Engine::getInstance().getWindowHeight();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, width, height, 0);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void GL_API::loadModelView()
 {
-	glMatrixMode( GL_PROJECTION );
-	popMatrix();
-	glMatrixMode( GL_MODELVIEW );
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void GL_API::toggle2D3D(bool _3D)
 {
+	
 	if(!_3D)
 	{
+		F32 width = Engine::getInstance().getWindowWidth();
+		F32 height = Engine::getInstance().getWindowHeight();
 		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
 		glLoadIdentity();
-		glOrtho(0,Engine::getInstance().getWindowWidth(),Engine::getInstance().getWindowHeight(),0,-1,1);
+		glOrtho(0,width,height,0,-1,1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glDisable(GL_DEPTH_TEST);
@@ -299,11 +303,11 @@ void GL_API::toggle2D3D(bool _3D)
 	}
 	else
 	{
+		ParamHandler& par = ParamHandler::getInstance();
 		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluPerspective(45,(Engine::getInstance().getWindowHeight()==0)?(1):((float)Engine::getInstance().getWindowWidth()/Engine::getInstance().getWindowHeight()),1,100);
+		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHTING);
 	}

@@ -18,6 +18,7 @@
 	<scale x="0.5" y="0.5" z="0.5" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
 </pin>
 
 <copacel>
@@ -25,6 +26,7 @@
 	<scale x="10" y="10" z="10" />
 	<position x="0" y="0" z="-50" />
 	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
 </copacel>
 
 <copac>
@@ -32,6 +34,7 @@
 	<scale x="1" y="1" z="1" />
 	<position x="20" y="-480" z="0" />
 	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
 </copac>
 
 <box>
@@ -39,6 +42,7 @@
 	<scale x="0.5" y="0.5" z="0.5" />
 	<position x="-10" y="90" z="-20" />
 	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
 </box>
 
 <dwarf>
@@ -46,6 +50,7 @@
 	<scale x="1" y="1" z="1" />
 	<position x="-120" y="-10" z="20" />
 	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
 </dwarf>
 
 <rifle>
@@ -53,5 +58,6 @@
 	<scale x="1" y="1" z="1" />
 	<position x="120" y="30" z="100" />
 	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
 </rifle>
 

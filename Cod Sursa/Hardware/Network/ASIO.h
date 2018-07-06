@@ -24,7 +24,6 @@ public:
 	void disconnect();
 	void connect(){if(!_connected)init();}
 	bool isConnected() {return _connected;}
-	
 private:
 	void init();
 

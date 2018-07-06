@@ -85,7 +85,7 @@ void MainScene::render()
 	_terMgr->drawTerrains(true,false,vGroundAmbient);
 	_terMgr->drawInfinitePlane(15.0f*1500,*_skyFBO);
 
-	gui.draw();
+	gui.draw();	
 	
 }
 

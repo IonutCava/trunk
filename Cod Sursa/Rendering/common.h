@@ -6,6 +6,7 @@
 #include "Utility/Headers/Singleton.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Vegetation/Vegetation.h"
+#include "Managers/SceneManager.h"
 
 using namespace std;
 

@@ -16,12 +16,17 @@ public:
 
 	void processEvents(F32 time);
 	void processInput();
+
 private: 
 	void test();
 	void connect();
 	void disconnect();
+	void checkPatches();
+
 private:
 	vector<F32> _eventTimers;
+	F32 angleLR,angleUD,moveFB,moveLR;
+	Box3D *_box;
 
 };
 

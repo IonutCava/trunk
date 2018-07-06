@@ -3,4 +3,4 @@
 <config>config.xml</config>
 <scenes>Scenes</scenes>
 <assets>Assets</assets>
-<server>85.186.50.146</server>
+<server>192.168.3.3</server>

@@ -23,7 +23,6 @@ public:
 	/*Base Scene Operations*/
 
 	inline vector<DVDFile* >& getModelArray(){return _scene->getModelArray();}
-
 	inline vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
 	inline vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
 
@@ -36,8 +35,10 @@ public:
 	void addModel(FileData& model){_scene->addModel(model);}
 	void addTerrain(const TerrainInfo& ter) {_scene->addTerrain(ter);}
 	void toggleBoundingBoxes();
-
+	void addPatch(vector<FileData>& data){_scene->addPatch(data);}
+	
 	void findSelection(int x, int y);
+	void clean(){_scene->clean();}
 private:
 
 	SceneManager()

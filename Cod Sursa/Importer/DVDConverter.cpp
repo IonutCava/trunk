@@ -20,6 +20,7 @@ DVDFile::DVDFile()
 			   aiProcess_LimitBoneWeights         | // limit bone weights to 4 per vertex
 			   aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
 			   0;
+	_shouldDelete = false;
 }
 
 DVDFile::~DVDFile()
