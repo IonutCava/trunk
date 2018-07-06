@@ -44,6 +44,7 @@ public:
 
 private:
 	void updatePositions();
+    void init(void) {}
 	F32 distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition);
 
 private:

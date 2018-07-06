@@ -23,6 +23,7 @@
 #define _AI_ENTITY_H_
 
 #include "Core/Headers/cdigginsAny.h"
+#include "AI/Sensors/Headers/AudioSensor.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "Utility/Headers/GUIDWrapper.h"
@@ -57,7 +58,7 @@ public:
     void load(const vec3<F32>& position);
     void unload();
 
-    bool addSensor(SensorType type, Sensor* sensor);
+    bool addSensor(SensorType type);
     bool addAISceneImpl(AISceneImpl* AISceneImpl);
     void sendMessage(AIEntity* receiver,  AIMsg msg, const cdiggins::any& msg_content);
     void receiveMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content);
@@ -160,6 +161,7 @@ protected:
     void processInput(const U64 deltaTime);
     void processData(const U64 deltaTime);
     void update(const U64 deltaTime);
+    void init();
 
 private:
     ::std::string         _name;

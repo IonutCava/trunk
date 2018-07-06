@@ -58,7 +58,7 @@ public:
     Kernel(I32 argc, char **argv, Application& parentApp);
     ~Kernel();
 
-    I8 initialize(const std::string& entryPoint);
+    ErrorCode initialize(const std::string& entryPoint);
 
     void runLogicLoop();
     ///Our main application rendering loop. Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
@@ -102,8 +102,8 @@ public:
     ///Mouse button released
     bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
-    inline Task* AddTask(D32 tickInterval, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
-         Task* taskPtr = New Task(getThreadPool(), tickInterval, startOnCreate, numberOfTicks, threadedFunction);
+    inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
+         Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, numberOfTicks, threadedFunction);
          taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
          if (!onCompletionFunction.empty()){
              _threadedCallbackFunctions.insert(std::make_pair(taskPtr->getGUID(), onCompletionFunction));
@@ -111,8 +111,8 @@ public:
          return taskPtr;
     }
 
-    inline Task* AddTask(D32 tickInterval, bool startOnCreate, bool runOnce, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
-        Task* taskPtr = New Task(getThreadPool(), tickInterval, startOnCreate, runOnce, threadedFunction);
+    inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
+        Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, runOnce, threadedFunction);
         taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
         if (!onCompletionFunction.empty()){
             _threadedCallbackFunctions.insert(std::make_pair(taskPtr->getGUID(), onCompletionFunction));

@@ -1,11 +1,13 @@
 #include "Headers/VisualSensor.h"
 
+#include "AI/Headers/AIEntity.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Dynamics/Entities/Units/Headers/NPC.h"
 
 using namespace AI;
 
-VisualSensor::VisualSensor() : Sensor(VISUAL_SENSOR) 
+VisualSensor::VisualSensor(AIEntity* const parentEntity) : Sensor(parentEntity, VISUAL_SENSOR) 
 {
 }
 
@@ -43,9 +45,38 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
 
 void VisualSensor::update(const U64 deltaTime) {
     for(NodeContainerMap::value_type& container : _nodeContainerMap) {
+        NodePositions& positions = _nodePositionsMap[container.first];
         for(NodeContainer::value_type& entry : container.second){
+            positions[entry.first] = entry.second->getComponent<PhysicsComponent>()->getConstTransform()->getPosition();
         }
     }
+}
+
+SceneGraphNode* const VisualSensor::getClosestNode(U32 containerID) {
+    NodeContainerMap::iterator container = findContainer(containerID);
+    if (container != _nodeContainerMap.end()) {
+        NodePositions& positions = _nodePositionsMap[container->first];
+        NPC* const unit = _parentEntity->getUnitRef();
+        if (unit) {
+            const vec3<F32>& currentPosition = unit->getCurrentPosition();
+            U64 currentNearest = 0;
+            U32 currentDistanceSq = 0;
+            for(NodePositions::value_type& entry : positions) {
+                U32 temp = currentPosition.distanceSquared(entry.second);           
+                if (temp < currentDistanceSq) {
+                    currentDistanceSq = temp;
+                    currentNearest = entry.first;
+                }
+            }
+            if (currentNearest != 0) {
+                NodeContainer::const_iterator nodeEntry = findNodeEntry(container, currentNearest);
+                if (nodeEntry != container->second.end()) {
+                    return nodeEntry->second;
+                }
+            }
+        }
+    }
+    return nullptr;
 }
 
 NodeContainerMap::iterator VisualSensor::findContainer(U32 container)  {

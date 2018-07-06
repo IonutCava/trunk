@@ -108,6 +108,10 @@ namespace Navigation {
             **/
             vec3<F32> getRandomNavMeshPoint(const NavigationMesh& navMesh);
             /**
+            * Returns a random point on the navmesh contained withing the specified circle
+            **/
+            vec3<F32> getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius);
+            /**
             * Find a point on the navmesh closest to the specified point position, within predefined
             * bounds.
             * Returns true if such a point is found (returned as resultPt), returns false

@@ -116,7 +116,7 @@ inline void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b){
   b = (b * 2.0f) - 1.0f;
 }
 
-enum ErrorCodes {
+enum ErrorCode {
     NO_ERR = 0,
     MISSING_SCENE_DATA = -1,
     MISSING_SCENE_LOAD_CALL = -2,
@@ -127,12 +127,67 @@ enum ErrorCodes {
     DX_INIT_ERROR = -7,
     DX_OLD_HARDWARE = -8,
     SDL_AUDIO_INIT_ERROR = -9,
-    FMOD_AUDIO_INIT_ERROR = -10,
-    OAL_INIT_ERROR = -11,
-    PHYSX_INIT_ERROR = -12,
-    PHYSX_EXTENSION_ERROR = -13,
-    NO_LANGUAGE_INI = -14
+    SDL_AUDIO_MIX_INIT_ERROR = -10,
+    FMOD_AUDIO_INIT_ERROR = -11,
+    OAL_INIT_ERROR = -12,
+    PHYSX_INIT_ERROR = -13,
+    PHYSX_EXTENSION_ERROR = -14,
+    NO_LANGUAGE_INI = -15
 };
+
+inline const char* getErrorCodeName(ErrorCode code) {
+    switch (code) {
+        default:
+        case NO_ERR : {
+            return "Unknown error";
+        };
+        case MISSING_SCENE_DATA : {
+            return "Invalid Scene Data. SceneManager failed to load the specified scene";
+        };
+        case MISSING_SCENE_LOAD_CALL : {
+            return "The specified scene failed to load all of its data properly";
+        };
+        case GLFW_INIT_ERROR : {
+            return "GLFW system failed to initialize";
+        };
+        case GLFW_WINDOW_INIT_ERROR : {
+            return "GLFW failed to create a valid window";
+        };
+        case GLEW_INIT_ERROR : {
+            return "GLEW failed to initialize";
+        };
+        case GLEW_OLD_HARDWARE : {
+            return "Current hardware does not support the minimum OpenGL features required";
+        };
+        case DX_INIT_ERROR : {
+            return "DirectX API failed to initialize";
+        };
+        case DX_OLD_HARDWARE : {
+            return "Current hardware does not support the minimum DirectX features required";
+        };
+        case SDL_AUDIO_INIT_ERROR : {
+            return "SDL Audio library failed to initialize";
+        };
+        case SDL_AUDIO_MIX_INIT_ERROR : {
+            return "SDL Audio Mixer failed to initialize";
+        };
+        case FMOD_AUDIO_INIT_ERROR : {
+            return "FMod Audio library failed to initialize";
+        };
+        case OAL_INIT_ERROR : {
+            return "OpenAL failed to initialize";
+        };
+        case PHYSX_INIT_ERROR : {
+            return "The PhysX library failed to initialize";
+        };
+        case PHYSX_EXTENSION_ERROR: {
+            return "The PhysX library failed to load the required extensions";
+        };
+        case NO_LANGUAGE_INI : {
+            return "Invalid language file";
+        };
+    };
+}
 
 namespace DefaultColors {
     ///Random stuff added for convenience

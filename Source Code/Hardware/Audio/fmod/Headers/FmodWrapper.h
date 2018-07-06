@@ -34,7 +34,7 @@
 DEFINE_SINGLETON_EXT1(FMOD_API,AudioAPIWrapper)
 
 public:
-	ErrorCodes initAudioApi() {
+	ErrorCode initAudioApi() {
         return FMOD_AUDIO_INIT_ERROR; 
     }
 

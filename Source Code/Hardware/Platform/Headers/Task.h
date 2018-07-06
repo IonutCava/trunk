@@ -56,43 +56,11 @@ public:
     /// <param name="startOnCreate">The Task begins processing as soon as it is created (no need to call 'startTask()')</param>
     /// <param name="numberOfTicks">The number of times to call the callback function before the Task is deleted</param>
     /// <param name="*f">The callback function</param>
-    Task(boost::threadpool::pool* tp,
-          D32 tickInterval,
-          bool startOnCreate,
-          I32 numberOfTicks,
-          const DELEGATE_CBK& f) : GUIDWrapper(),
-      _tp(tp),
-      _tickInterval(tickInterval),
-      _numberOfTicks(numberOfTicks),
-      _callback(f),
-      _end(false),
-      _paused(false),
-      _done(false)
-      {
-          if(startOnCreate) startTask();
-      }
-
-    Task(boost::threadpool::pool* tp,
-          D32 tickInterval,
-          bool startOnCreate,
-          bool runOnce,
-          const DELEGATE_CBK& f) : GUIDWrapper(),
-      _tp(tp),
-      _tickInterval(tickInterval),
-      _numberOfTicks(1),
-      _callback(f),
-      _end(false),
-      _paused(false),
-      _done(false)
-      {
-          ///If runOnce is true, then we only run the Task once (# of ticks is 1)
-          ///If runOnce is false, then we run the Task until stopTask() is called
-          runOnce ? _numberOfTicks = 0 : _numberOfTicks = -1;
-          if(startOnCreate) startTask();
-      }
+    Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& f);
+    Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK& f);
     ~Task();
-    void updateTickInterval(D32 tickInterval){_tickInterval = tickInterval;}
-    void updateTickCounter(I32 numberOfTicks){_numberOfTicks = numberOfTicks;}
+    void updateTickInterval(U64 tickIntervalMs) {_tickIntervalMS = tickIntervalMs;}
+    void updateTickCounter(I32 numberOfTicks)   {_numberOfTicks = numberOfTicks;}
     void startTask();
     void stopTask();
     void pauseTask(bool state);
@@ -106,7 +74,7 @@ public:
 
 private:
     mutable SharedLock _lock;
-    mutable boost::atomic<D32> _tickInterval;
+    mutable boost::atomic<U64> _tickIntervalMS;
     mutable boost::atomic<I32> _numberOfTicks;
     mutable boost::atomic<bool> _end;
     mutable boost::atomic<bool> _paused;

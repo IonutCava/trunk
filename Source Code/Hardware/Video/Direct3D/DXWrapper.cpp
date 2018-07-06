@@ -7,7 +7,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
-ErrorCodes DX_API::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
+ErrorCode DX_API::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
     PRINT_FN(Locale::get("START_D3D_API"));
     D3D_ENUM_TABLE::fill();
     //CEGUI::System::create(CEGUI::Direct3D10Renderer::create( /*myD3D10Device*/nullptr ));

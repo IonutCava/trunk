@@ -56,7 +56,6 @@ void AIEntity::load(const vec3<F32>& position) {
         _agent = _detourCrowd->getAgent(_agentID);
         _destination = position;
     }
-    
 }
 
 void AIEntity::unload() {
@@ -88,20 +87,35 @@ void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& 
 }
 
 Sensor* AIEntity::getSensor(SensorType type) {
+    ReadLock r_lock(_updateMutex);
     if (_sensorList.find(type) != _sensorList.end()) {
         return _sensorList[type];
     }
     return nullptr;
 }
 
-bool AIEntity::addSensor(SensorType type, Sensor* sensor) {
-    
-    if (_sensorList.find(type) != _sensorList.end()) {
-        SAFE_UPDATE(_sensorList[type], sensor);
-    } else {
-        _sensorList.insert(std::make_pair(type,sensor));
+bool AIEntity::addSensor(SensorType type) {
+    WriteLock w_lock(_updateMutex);
+    Sensor* sensor = nullptr;
+    switch (type) {
+        case AUDIO_SENSOR: {
+            sensor = New AudioSensor(this);
+        } break;
+        case VISUAL_SENSOR: {
+            sensor = New VisualSensor(this);
+        } break;
+    };
+
+    if (sensor) {
+        if (_sensorList.find(type) != _sensorList.end()) {
+            SAFE_UPDATE(_sensorList[type], sensor);
+        } else {
+            _sensorList.insert(std::make_pair(type,sensor));
+        }
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl) {
@@ -139,6 +153,11 @@ void AIEntity::update(const U64 deltaTime){
         }
     }
     updatePosition(deltaTime);
+}
+
+void AIEntity::init() {
+    DIVIDE_ASSERT(_AISceneImpl != nullptr, "AIEntity error: Can't init entity without a proper AISceneImpl");
+    _AISceneImpl->init();
 }
 
 void AIEntity::setTeam(AITeam* const teamPtr) {

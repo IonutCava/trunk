@@ -44,7 +44,7 @@ namespace Locale {
 		clear();
 	}
 	///Query the current language code to detect changes
-	inline const std::string& currentLanguage() {return _localeFile;}
+	inline const std::string& currentLanguage() { return _localeFile; }
 	///usage: Locale::get("A_B_C") or Locale::get("A_B_C","X") where "A_B_C" is the language key we want
 	///and "X" is a default string in case the key does not exist in the INI file
 	char* get(const std::string& key,const std::string& defaultValue = std::string("String not found!"));

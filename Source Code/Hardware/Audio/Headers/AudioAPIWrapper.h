@@ -41,6 +41,8 @@ enum AudioAPI
 	SDL
 };
 
+static const U32 MAX_SOUND_BUFFERS = 64;
+
 ///Audio Programming Interface
 class AudioAPIWrapper
 {
@@ -52,8 +54,8 @@ protected:
 	inline void setId(AudioAPI api) {_apiId = api;}
 	inline AudioAPI getId() { return _apiId;}
 
-	virtual ErrorCodes initAudioApi()  = 0;
-	virtual void       closeAudioApi() = 0;
+	virtual ErrorCode initAudioApi()  = 0;
+	virtual void      closeAudioApi() = 0;
 
 	virtual void playSound(AudioDescriptor* sound) = 0;
 	virtual void playMusic(AudioDescriptor* music) = 0;

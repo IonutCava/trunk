@@ -101,6 +101,10 @@ protected:
     AIManager();
     ~AIManager();
 
+protected:
+    friend class Scene;
+    void signalInit();
+
 private:
     void processInput(const U64 deltaTime);  ///< sensors
     void processData(const U64 deltaTime);   ///< think

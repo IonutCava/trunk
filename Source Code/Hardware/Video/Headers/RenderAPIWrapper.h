@@ -129,7 +129,7 @@ class GenericVertexData;
 
 ///FWD DECLARE ENUMS
 enum ShaderType;
-enum ErrorCodes;
+enum ErrorCode;
 
 template<typename T> class Plane;
 typedef vectorImpl<Plane<F32> > PlaneList;
@@ -178,8 +178,8 @@ protected:
     virtual bool                initShaders() = 0;
     virtual bool                deInitShaders() = 0;
 
-    virtual ErrorCodes initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) = 0;
-    virtual void       closeRenderingApi() = 0;
+    virtual ErrorCode initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) = 0;
+    virtual void      closeRenderingApi() = 0;
 
     virtual void toggleRasterization(bool state) = 0;
     virtual void setLineWidth(F32 width) = 0;

@@ -36,6 +36,8 @@ WarScene::WarScene() : Scene(),
 {
     _scorTeam1 = 0;
     _scorTeam2 = 0;
+    _flags[0] = nullptr;
+    _flags[1] = nullptr;
 }
 
 WarScene::~WarScene()
@@ -286,6 +288,25 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         currentNode->getComponent<PhysicsComponent>()->setScale(baseNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale());
         currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
+    SceneGraphNode* baseFlagNode = cylinderNW;
+    _flags[0] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team1Flag");
+    _flags[0]->setSelectable(false);
+    _flags[0]->usageContext(baseFlagNode->usageContext());
+    _flags[0]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
+    _flags[0]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
+    _flags[0]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    _flags[0]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
+
+
+    _flags[1] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team2Flag");      
+    _flags[1]->setSelectable(false);
+    _flags[1]->usageContext(baseFlagNode->usageContext());
+    _flags[1]->getComponent<PhysicsComponent>()->physicsGroup(baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
+    _flags[1]->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NODE_IGNORE);
+    _flags[1]->getComponent<PhysicsComponent>()->setScale(baseFlagNode->getComponent<PhysicsComponent>()->getConstTransform()->getScale() * vec3<F32>(0.05f, 1.1f, 0.05f));
+    _flags[1]->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
+
+    AI::WarSceneAISceneImpl::registerFlags(_flags[0], _flags[1]);
 
     /*_bobNode = _sceneGraph->findNode("Soldier3");
     _bobNodeBody = _sceneGraph->findNode("Soldier3_Bob.md5mesh-submesh-0");
@@ -451,7 +472,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
             aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), currentNode->getName());
             aiSoldier->setTeam(k == 0 ? _faction1 : _faction2);
-            aiSoldier->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
+            aiSoldier->addSensor(AI::VISUAL_SENSOR);
 
             AI::WarSceneAISceneImpl* brain = New AI::WarSceneAISceneImpl();
             brain->worldState().setVariable(AI::GOAPFact(AI::EnemyVisible),       AI::GOAPValue(false));

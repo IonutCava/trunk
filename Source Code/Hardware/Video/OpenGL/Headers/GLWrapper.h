@@ -55,7 +55,7 @@ protected:
     ~GL_API();
 
     /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
-    ErrorCodes initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv);
+    ErrorCode initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv);
     /// Clear everything that was setup in initRenderingApi()
     void closeRenderingApi();
     /// Prepare our shader loading system

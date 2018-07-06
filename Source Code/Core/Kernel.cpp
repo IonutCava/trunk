@@ -157,7 +157,11 @@ void Kernel::mainLoopApp() {
     _keepAlive = frameMgr.frameEvent(evt) && _keepAlive;
 
     _keepAlive = !APP.ShutdownRequested() && _keepAlive;
-
+    ErrorCode err = APP.errorCode();
+    if (err != NO_ERR) {
+        ERROR_FN("Error detected: [ %s ]", getErrorCodeName(err));
+        _keepAlive = false;
+    }
     STOP_TIMER(s_appLoopTimer);
 
 #if defined(_DEBUG) || defined(_PROFILE)  
@@ -369,7 +373,7 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
     _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
 }
 
-I8 Kernel::initialize(const std::string& entryPoint) {
+ErrorCode Kernel::initialize(const std::string& entryPoint) {
     ParamHandler& par = ParamHandler::getInstance();
 
     Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), _1, _2));
@@ -390,7 +394,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     vec2<U16> resolution = _APP.getResolution();
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
     _GFX.registerKernel(this);
-    ErrorCodes initError = _GFX.initRenderingApi(vec2<U16>(400, 300), _argc, _argv);
+    ErrorCode initError = _GFX.initRenderingApi(vec2<U16>(400, 300), _argc, _argv);
 
     //If we could not initialize the graphics device, exit
     if(initError != NO_ERR) {

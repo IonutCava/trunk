@@ -39,7 +39,7 @@ PhysX::PhysX() : _gPhysicsSDK(nullptr),
 {
 }
 
-ErrorCodes PhysX::initPhysicsApi(U8 targetFrameRate) {
+ErrorCode PhysX::initPhysicsApi(U8 targetFrameRate) {
     PRINT_FN(Locale::get("START_PHYSX_API"));
 
     // create foundation object with default error and allocator callbacks.

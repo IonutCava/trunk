@@ -9,7 +9,7 @@
 #include <CEGUI/CEGUI.h>
 
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
-ErrorCodes GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) {
+ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     Divide::GLUtil::GL_ENUM_TABLE::fill();
     // Most runtime variables are stored in the ParamHandler, including initialization settings retrieved from XML

@@ -32,22 +32,29 @@ namespace AI {
 typedef Unordered_map<U64, SceneGraphNode* > NodeContainer;
 /// Container ID, NodeContainer
 typedef Unordered_map<U32, NodeContainer> NodeContainerMap;
+/// SGN GUID, Last position
+typedef Unordered_map<U64, vec3<F32> > NodePositions;
+/// Container ID, NodePositions
+typedef Unordered_map<U32, NodePositions> NodePositionsMap;
 
 class VisualSensor : public Sensor {
-public:
-	VisualSensor();
-
+public: 
+    void update(const U64 deltaTime);
     void followSceneGraphNode(U32 containerID, SceneGraphNode* const node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
 
+    SceneGraphNode* const getClosestNode(U32 containerID);
+
 protected:
     friend class AIEntity;
-    void update(const U64 deltaTime);
+	VisualSensor(AIEntity* const parentEntity);
+
     NodeContainerMap::iterator findContainer(U32 container);
     NodeContainer::const_iterator findNodeEntry(NodeContainerMap::const_iterator containerIt, U64 GUID) const;
 
 protected:
     NodeContainerMap _nodeContainerMap;
+    NodePositionsMap _nodePositionsMap;
 };
 }; //namespace AI
 #endif

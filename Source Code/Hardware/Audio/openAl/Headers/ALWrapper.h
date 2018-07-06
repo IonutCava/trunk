@@ -25,23 +25,25 @@
 
 #include "Hardware/Audio/Headers/AudioAPIWrapper.h"
 
-DEFINE_SINGLETON_EXT1(AL_API,AudioAPIWrapper)
+DEFINE_SINGLETON_EXT1(OpenAL_API, AudioAPIWrapper)
 
 public:
-	ErrorCodes initAudioApi() { 
-        return OAL_INIT_ERROR; 
-    }
-	void       closeAudioApi(){}
+	ErrorCode initAudioApi();
+	void      closeAudioApi();
 
-	void playSound(AudioDescriptor* sound){}
-	void playMusic(AudioDescriptor* music){}
+	void playSound(AudioDescriptor* sound);
+	void playMusic(AudioDescriptor* music);
 
-	void pauseMusic(){}
-	void stopMusic(){}
-	void stopAllSounds(){}
+	void pauseMusic();
+	void stopMusic();
+	void stopAllSounds();
 
-	void setMusicVolume(I8 value){}
-	void setSoundVolume(I8 value){}
+	void setMusicVolume(I8 value);
+	void setSoundVolume(I8 value);
+
+private:
+    U32 buffers[MAX_SOUND_BUFFERS];   
+ 
 END_SINGLETON
 
 #endif

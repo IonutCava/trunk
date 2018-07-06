@@ -72,8 +72,8 @@ protected:
     inline void setId(PhysicsAPI api) {_apiId = api;}
     inline PhysicsAPI getId() { return _apiId;}
 
-    virtual ErrorCodes initPhysicsApi(U8 targetFrameRate) = 0;
-    virtual bool       closePhysicsApi() = 0;
+    virtual ErrorCode initPhysicsApi(U8 targetFrameRate) = 0;
+    virtual bool      closePhysicsApi() = 0;
     virtual void updateTimeStep(U8 timeStepFactor)  = 0;
     virtual void updateTimeStep()  = 0;
     virtual void update(const U64 deltaTime) = 0;

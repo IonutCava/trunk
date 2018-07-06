@@ -4,18 +4,6 @@
     <Filter Include="Audio">
       <UniqueIdentifier>{636a5660-c658-40cd-b9fe-6641fb656e8f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Audio\fmod">
-      <UniqueIdentifier>{14021f6e-71e8-4d7c-a67b-b2289295be37}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Audio\fmod\Headers">
-      <UniqueIdentifier>{51591b78-53fb-4997-aa8b-c9f591e3d22d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Audio\openal">
-      <UniqueIdentifier>{4f5b6e12-d537-4cc2-bca8-3ac0f5c2f81d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Audio\openal\Headers">
-      <UniqueIdentifier>{eec75372-abb5-4193-aabc-d8c12c9b9c0c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Audio\sdl_mixer">
       <UniqueIdentifier>{abfcec24-d638-4cf7-bf6e-2dea279318ca}</UniqueIdentifier>
     </Filter>
@@ -232,13 +220,25 @@
     <Filter Include="Video\OpenGL\Buffers\Framebuffer\Headers">
       <UniqueIdentifier>{30d5ae86-3a75-4925-bdee-ee7163580c20}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Audio\FMod">
+      <UniqueIdentifier>{14021f6e-71e8-4d7c-a67b-b2289295be37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\FMod\Headers">
+      <UniqueIdentifier>{51591b78-53fb-4997-aa8b-c9f591e3d22d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\OpenAL">
+      <UniqueIdentifier>{4f5b6e12-d537-4cc2-bca8-3ac0f5c2f81d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\OpenAL\Headers">
+      <UniqueIdentifier>{eec75372-abb5-4193-aabc-d8c12c9b9c0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Hardware\Audio\fmod\Headers\FmodWrapper.h">
-      <Filter>Audio\fmod\Headers</Filter>
+      <Filter>Audio\FMod\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Audio\openAl\Headers\ALWrapper.h">
-      <Filter>Audio\openal\Headers</Filter>
+      <Filter>Audio\OpenAL\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Audio\sdl_mixer\Headers\SDLWrapper.h">
       <Filter>Audio\sdl_mixer\Headers</Filter>
@@ -592,6 +592,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Input\EffectManager.cpp">
       <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Audio\openAl\ALWrapper.cpp">
+      <Filter>Audio\OpenAL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

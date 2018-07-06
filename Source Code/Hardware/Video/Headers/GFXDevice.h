@@ -101,8 +101,8 @@ public:
     inline RenderAPI getApi()        {return _api.getId(); }
     inline GPUVendor getGPUVendor()  {return _api.getGPUVendor();}
 
-    ErrorCodes initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv);
-    void       closeRenderingApi();
+    ErrorCode initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv);
+    void      closeRenderingApi();
 
     void idle();
 

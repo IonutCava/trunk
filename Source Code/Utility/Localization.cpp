@@ -1,4 +1,7 @@
 #include "Headers/Localization.h"
+
+#include "core.h"
+#include "Core/Headers/Application.h"
 #include <SimpleIni.h>
 
 namespace Locale {
@@ -14,7 +17,9 @@ namespace Locale {
         //Use SimpleIni library for cross-platform INI parsing
         CSimpleIniA ini;
         ini.SetUnicode();
-        ini.LoadFile(file.c_str());
+        if (ini.LoadFile(file.c_str()) != SI_OK) {
+            Application::getInstance().throwError(NO_LANGUAGE_INI);
+        }
         //Load all key-value pairs for the "language" section
         const CSimpleIni::TKeyVal * keyValue = ini.GetSection("language");
         const TCHAR *keyName = 0;

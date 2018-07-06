@@ -130,8 +130,8 @@ namespace Navigation {
 
     protected:
         friend class DivideDtCrowd;
-        dtNavMesh*            getNavigationMesh() { return _navMesh; }
-        NavigationMeshConfig& getConfigParams()   { return _configParams; }
+        dtNavMesh*            getNavigationMesh() const { return _navMesh; }
+        const NavigationMeshConfig& getConfigParams()   const { return _configParams; }
 
     private:
 

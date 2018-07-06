@@ -14,8 +14,7 @@ PositionFact     WorkingMemory::_team1FlagPosition;
 PositionFact     WorkingMemory::_team2FlagPosition;
 SmallCounterFact WorkingMemory::_team1Count;
 SmallCounterFact WorkingMemory::_team2Count;
-SceneGraphNode*  WarSceneAISceneImpl::_team1Flag = nullptr;
-SceneGraphNode*  WarSceneAISceneImpl::_team2Flag = nullptr;
+SGNNodeFact      WorkingMemory::_flags[2];
 
 WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
                                             _tickCount(0),
@@ -24,6 +23,7 @@ WarSceneAISceneImpl::WarSceneAISceneImpl() : AISceneImpl(),
                                             _orderReceived(false),
                                             _activeGoal(nullptr),
                                             _currentEnemyTarget(nullptr),
+                                            _visualSensorUpdateCounter(0),
                                             _deltaTime(0ULL),
                                             _indexInMap(-1)
 {
@@ -54,6 +54,32 @@ void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
 
 void WarSceneAISceneImpl::registerGoal(const GOAPGoal& goal) {
     AISceneImpl::registerGoal(WarSceneGoal(goal));
+}
+
+void WarSceneAISceneImpl::init() {
+    VisualSensor* sensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
+    U32 myTeamContainer = 0;
+    U32 enemyTeamContainer = 1;
+    U32 flagContainer = 2;
+
+    if (sensor) {
+        AITeam* currentTeam = _entity->getTeam();
+        const AITeam::teamMap& teamAgents = currentTeam->getTeamMembers();
+        FOR_EACH(const AITeam::teamMap::value_type& member, teamAgents) {
+            sensor->followSceneGraphNode(myTeamContainer, member.second->getUnitRef()->getBoundNode());
+        }
+
+        AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
+        if (enemyTeam != nullptr) {
+            const AITeam::teamMap& enemyMembers = enemyTeam->getTeamMembers();
+            FOR_EACH(const AITeam::teamMap::value_type& enemy, enemyMembers) {
+                sensor->followSceneGraphNode(enemyTeamContainer, enemy.second->getUnitRef()->getBoundNode());
+            }
+        }
+
+        sensor->followSceneGraphNode(flagContainer, WorkingMemory::_flags[0].value());
+        sensor->followSceneGraphNode(flagContainer, WorkingMemory::_flags[1].value());
+    }
 }
 
 void WarSceneAISceneImpl::receiveOrder(AI::Order order) {
@@ -216,17 +242,19 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
 
     updatePositions();
 
+    U8 visualSensorUpdateFreq = 10;
+    _visualSensorUpdateCounter = (_visualSensorUpdateCounter + 1) % (visualSensorUpdateFreq + 1);
     /// Update sensor information
-    Sensor* sensor = _entity->getSensor(VISUAL_SENSOR);
-    if (sensor) {
-        sensor->update(deltaTime);
+    VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
+    if (visualSensor && _visualSensorUpdateCounter == visualSensorUpdateFreq) {
+        visualSensor->update(deltaTime);
     }
-    sensor = _entity->getSensor(AUDIO_SENSOR);
-    if (sensor) {
-        sensor->update(deltaTime);
+    AudioSensor* audioSensor = dynamic_cast<AudioSensor*>(_entity->getSensor(AUDIO_SENSOR));
+    if (audioSensor) {
+        audioSensor->update(deltaTime);
     }
 
-
+    
     if (!_workingMemory._staticDataUpdated) {
         AITeam* team1 = AIManager::getInstance().getTeamByID(0);
         if (team1 != nullptr) {
@@ -240,12 +268,12 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
             _workingMemory._team2Count.value(static_cast<U8>(team2Members.size()));
             _workingMemory._team2Count.belief(1.0f);
         }
-        if (_team1Flag != nullptr) {
-            _workingMemory._team1FlagPosition.value(_team1Flag->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+        if (_workingMemory._flags[0].value() != nullptr) {
+            _workingMemory._team1FlagPosition.value(_workingMemory._flags[0].value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
             _workingMemory._team1FlagPosition.belief(1.0f);
         }
-        if (_team2Flag != nullptr) {
-            _workingMemory._team2FlagPosition.value(_team2Flag->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
+        if (_workingMemory._flags[0].value() != nullptr) {
+            _workingMemory._team2FlagPosition.value(_workingMemory._flags[1].value()->getComponent<PhysicsComponent>()->getConstTransform()->getPosition());
             _workingMemory._team2FlagPosition.belief(1.0f);
         }
         _workingMemory._staticDataUpdated = true;

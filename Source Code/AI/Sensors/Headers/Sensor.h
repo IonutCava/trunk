@@ -32,21 +32,24 @@ enum SensorType {
 	AUDIO_SENSOR = 2
 };
 
+class AIEntity;
 class Sensor {
-public:
-	Sensor(SensorType type) 
+public :
+	inline SensorType sensorType() const { return _type; }
+    virtual void update(const U64 deltaTime) = 0;
+    inline void updateRange(const vec2<F32>& range) { _range.set(range); }
+
+protected:
+	Sensor(AIEntity* const parentEntity, SensorType type) 
     {
+        _parentEntity = parentEntity;
         _type = type;
     }
 
-	inline SensorType sensorType() const { return _type; }
-    inline void updateRange(const vec2<F32>& range) { _range.set(range); }
-
-    virtual void update(const U64 deltaTime) = 0;
-
 protected:
-	vec2<F32> _range; ///< min/max
+	vec2<F32>  _range; ///< min/max
 	SensorType _type;
+    AIEntity*  _parentEntity;
 };
 }; //namespace AI
 #endif 

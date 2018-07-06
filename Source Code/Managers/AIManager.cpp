@@ -66,6 +66,12 @@ U8 AIManager::update(){
     return 0;
 }
 
+void AIManager::signalInit() {
+    FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
+        entity.second->init();
+    }
+}
+
 void AIManager::processInput(const U64 deltaTime){  //sensors
     FOR_EACH(AIEntityMap::value_type& entity, _aiEntities){
         entity.second->processInput(deltaTime);

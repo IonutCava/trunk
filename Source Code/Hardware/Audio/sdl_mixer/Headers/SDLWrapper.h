@@ -29,8 +29,8 @@
 DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 
 public:
-	ErrorCodes initAudioApi();
-	void       closeAudioApi();
+	ErrorCode initAudioApi();
+	void      closeAudioApi();
 
 	void playSound(AudioDescriptor* sound);
 	void playMusic(AudioDescriptor* music);

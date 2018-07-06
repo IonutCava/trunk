@@ -130,8 +130,8 @@ private:
 
 public:
 
-   ErrorCodes initPhysicsApi(U8 targetFrameRate);
-   bool       closePhysicsApi();
+   ErrorCode initPhysicsApi(U8 targetFrameRate);
+   bool      closePhysicsApi();
    void update(const U64 deltaTime);
    void process(const U64 deltaTime);
    void idle();

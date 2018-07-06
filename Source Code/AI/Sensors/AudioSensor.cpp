@@ -2,7 +2,7 @@
 
 using namespace AI;
 
-AudioSensor::AudioSensor() : Sensor(AUDIO_SENSOR) 
+AudioSensor::AudioSensor(AIEntity* const parentEntity) : Sensor(parentEntity, AUDIO_SENSOR) 
 {
 }
 

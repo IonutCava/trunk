@@ -44,11 +44,6 @@ public:
         _goals.clear();
     }
 
-	virtual void processData(const U64 deltaTime) = 0;
-	virtual void processInput(const U64 deltaTime) = 0;
-	virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
-	virtual void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) = 0;
-
 	virtual void addEntityRef(AIEntity* entity) {
         if (entity) {
             _entity = entity;
@@ -82,6 +77,7 @@ public:
     inline const GOAPActionSet&         actionSet() const { return _actionSet; }
 
 protected:
+    friend class AIEntity;
     inline GOAPActionSet&  actionSetPtr() { return _actionSet; }
     /// Although we want the goal to be activated, it might not be the most relevant in the current scene state
     inline bool activateGoal(const std::string& name) {
@@ -127,6 +123,12 @@ protected:
         _activeGoals.erase(it);
         return true;
     }
+
+	virtual void processData(const U64 deltaTime) = 0;
+	virtual void processInput(const U64 deltaTime) = 0;
+	virtual void update(const U64 deltaTime, NPC* unitRef = nullptr) = 0;
+	virtual void processMessage(AIEntity* sender, AIMsg msg, const cdiggins::any& msg_content) = 0;
+    virtual void init() = 0;
 
 protected:
 	AIEntity*  _entity;

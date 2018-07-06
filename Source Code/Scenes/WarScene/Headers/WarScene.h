@@ -74,6 +74,7 @@ private: //Game
     ///NPC's are the actual game entities
     vectorImpl<NPC *> _army1NPCs;
     vectorImpl<NPC *> _army2NPCs;
+    SceneGraphNode*   _flags[2];
     ///Team's are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam *_faction1, *_faction2;
     SceneGraphNode *_bobNode;

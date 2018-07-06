@@ -27,12 +27,12 @@
 namespace AI {
 
 class AudioSensor : public Sensor {
-public:
-    AudioSensor();
+public: 
+    void update(const U64 deltaTime);
 
 protected:
     friend class AIEntity;
-    void update(const U64 deltaTime);
+    AudioSensor(AIEntity* const parentEntity);
 };
 }; //namespace AI
 #endif

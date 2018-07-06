@@ -4,13 +4,13 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 
 Application::Application() : _kernel(nullptr),
-                             _mainWindowId(-1),
                              _totalMemoryOcuppied(0),
                              _requestShutdown(false),
                              _hasFocus(true),
                              _mainLoopActive(false)
 {
     _threadId = boost::this_thread::get_id();
+    _errorCode = NO_ERR;
     ParamHandler::createInstance();
     Console::createInstance();
     ApplicationTimer::createInstance();
@@ -25,7 +25,7 @@ Application::~Application(){
     ApplicationTimer::destroyInstance();
 }
 
-I8 Application::initialize(const std::string& entryPoint, I32 argc, char **argv){
+ErrorCode Application::initialize(const std::string& entryPoint, I32 argc, char **argv){
     assert(!entryPoint.empty());
     //Read language table
     ParamHandler::getInstance().setDebugOutput(false);
@@ -37,8 +37,7 @@ I8 Application::initialize(const std::string& entryPoint, I32 argc, char **argv)
     _kernel = New Kernel(argc,argv,this->getInstance());
     assert(_kernel != nullptr);
     //and load it via an XML file config
-    _mainWindowId = _kernel->initialize(entryPoint);
-    return _mainWindowId;
+    return _kernel->initialize(entryPoint);
 }
 
 void Application::run(){

@@ -49,6 +49,7 @@ public:
 
     WorkingMemoryFact()
     {
+        _value = 0;
         _type = F;
         _belief = 0.0f;
     }
@@ -85,6 +86,7 @@ public:
     static PositionFact     _team2FlagPosition;
     static SmallCounterFact _team1Count;
     static SmallCounterFact _team2Count;
+    static SGNNodeFact      _flags[2];
            SmallCounterFact _health;
            AINodeFact       _currentTargetEntity;
            PositionFact     _currentTargetPosition;
@@ -104,6 +106,13 @@ public:
     void registerAction(GOAPAction* const action);
     void registerGoal(const GOAPGoal& goal);
 
+    static void registerFlags(SceneGraphNode* const flag1, SceneGraphNode* const flag2) {
+        WorkingMemory::_flags[0].value(flag1);
+        WorkingMemory::_flags[0].belief(1.0f);
+        WorkingMemory::_flags[1].value(flag2);
+        WorkingMemory::_flags[1].belief(1.0f);
+    }
+
 private:
     void updatePositions();
     // Creates a copy of the specified object and adds it to the action vector and the ActionSet
@@ -111,6 +120,7 @@ private:
     void handlePlan(const GOAPPlan& plan);
     bool performAction(const GOAPAction* planStep);
     void receiveOrder(AI::Order order);
+    void init();
 
 private:
     U16       _tickCount;
@@ -121,9 +131,7 @@ private:
     bool _newPlan;
     bool _newPlanSuccess;
     bool _orderReceived;
-
-    static SceneGraphNode* _team1Flag;
-    static SceneGraphNode* _team2Flag;
+    U8   _visualSensorUpdateCounter;
     WorkingMemory _workingMemory;
 };
 

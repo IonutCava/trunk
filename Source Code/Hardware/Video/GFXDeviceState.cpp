@@ -10,9 +10,9 @@
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 
 /// Create a display context using the selected API and create all of the needed primitives needed for frame rendering
-ErrorCodes GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
+ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
     // Initialize the rendering API
-    ErrorCodes hardwareState = _api.initRenderingApi(resolution, argc, argv);
+    ErrorCode hardwareState = _api.initRenderingApi(resolution, argc, argv);
     // Validate initialization
     if (hardwareState != NO_ERR) {
         return hardwareState;

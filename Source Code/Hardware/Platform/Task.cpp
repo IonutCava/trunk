@@ -5,6 +5,24 @@
 #include "Utility/Headers/Localization.h"
 #include <boost/thread.hpp>
 
+Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK& f) : Task(tp, tickIntervalMS, startOnCreate, runOnce ? 0 : -1, f)
+{
+}
+
+Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMs, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& f) : GUIDWrapper(), 
+                                                                                                                            _tp(tp), 
+                                                                                                                            _tickIntervalMS(tickIntervalMs),
+                                                                                                                            _numberOfTicks(numberOfTicks),
+                                                                                                                            _callback(f),
+                                                                                                                            _end(false),
+                                                                                                                            _paused(false),
+                                                                                                                            _done(false)
+{
+    if (startOnCreate) {
+        startTask();
+    }
+}
+
 Task::~Task(){
     if (_end != true) {
         ERROR_FN(Locale::get("TASK_DELETE_ACTIVE"));
@@ -34,14 +52,14 @@ void Task::run(){
         D_PRINT_FN(Locale::get("TASK_START_THREAD"), boost::this_thread::get_id());
         while(true) {
             while (_paused) {
-                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickInterval));
+                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickIntervalMS > 0 ? _tickIntervalMS : 10));
             }
             if (_end || Application::getInstance().ShutdownRequested()) {
                 break;
             }
 
-            if (_tickInterval > 0) {
-                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickInterval));
+            if (_tickIntervalMS > 0) {
+                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickIntervalMS));
             }
 
             _callback();

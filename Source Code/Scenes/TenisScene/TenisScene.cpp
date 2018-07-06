@@ -286,10 +286,10 @@ bool TenisScene::initializeAI(bool continueOnErrors){
     _aiPlayer2 = New AI::AIEntity(player[1]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player2");
     _aiPlayer3 = New AI::AIEntity(player[2]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player3");
     _aiPlayer4 = New AI::AIEntity(player[3]->getComponent<PhysicsComponent>()->getConstTransform()->getPosition(), "Player4");
-    _aiPlayer1->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
-    _aiPlayer2->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
-    _aiPlayer3->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
-    _aiPlayer4->addSensor(AI::VISUAL_SENSOR, New AI::VisualSensor());
+    _aiPlayer1->addSensor(AI::VISUAL_SENSOR);
+    _aiPlayer2->addSensor(AI::VISUAL_SENSOR);
+    _aiPlayer3->addSensor(AI::VISUAL_SENSOR);
+    _aiPlayer4->addSensor(AI::VISUAL_SENSOR);
 
     _aiPlayer1->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));
     _aiPlayer2->addAISceneImpl(New AI::TenisSceneAISceneImpl(_ballSGN));

@@ -29,12 +29,13 @@
 #include "Hardware/Platform/Headers/Thread.h"
 
 class Kernel;
+enum ErrorCode;
 ///Lightweight singleton class that manages our application's kernel and window information
 DEFINE_SINGLETON( Application )
 
 public:
     ///Startup and shutdown
-    I8 initialize(const std::string& entryPoint,I32 argc, char **argv);
+    ErrorCode initialize(const std::string& entryPoint,I32 argc, char **argv);
     void deinitialize();
     void run();
 
@@ -49,8 +50,6 @@ public:
     inline void RequestShutdown()                   {_requestShutdown = true;}
     inline void CancelShutdown()                    {_requestShutdown = false;}
     inline bool ShutdownRequested()           const {return _requestShutdown;}
-    ///Application window ID
-    inline I8            getMainWindowId()    const {return _mainWindowId;}
     inline Kernel* const getKernel()          const {return _kernel;}
 
     inline const boost::thread::id&  getMainThreadId()               const {return _threadId;}
@@ -74,12 +73,15 @@ public:
         snapCursorToPosition(_screenCenter.x, _screenCenter.y);
     }
 
+    inline void      throwError(ErrorCode err) { _errorCode = err; }
+    inline ErrorCode errorCode()         const { return _errorCode; }
+
 private:
     Application();
     ~Application();
 
 private:
-    I8        _mainWindowId;
+    ErrorCode _errorCode;
     /// this is true when we are inside the main app loop
     bool      _mainLoopActive;
     bool      _requestShutdown;

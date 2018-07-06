@@ -96,30 +96,30 @@ public:
     inline void base_setDetailSampleDist(F32 detailSampleDist)         { this->_base_detailSampleDist = detailSampleDist; }
     inline void base_setDetailSampleMaxError(F32 detailSampleMaxError) { this->_base_detailSampleMaxError = detailSampleMaxError; }
 
-    inline F32 getCellSize()              { return _cellSize; }
-    inline F32 getCellHeight()            { return _cellHeight; }
-    inline I32 getTileSize()              { return _tileSize; }
-    inline F32 getAgentMaxSlope()         { return _agentMaxSlope; }
-    inline F32 getAgentHeight()           { return _agentHeight; }
-    inline F32 getAgentMaxClimb()         { return _agentMaxClimb; }
-    inline F32 getAgentRadius()           { return _agentRadius; }
-    inline F32 getEdgeMaxLen()            { return _edgeMaxLen; }
-    inline F32 getEdgeMaxError()          { return _edgeMaxError; }
-    inline F32 getRegionMinSize()         { return _regionMinSize; }
-    inline F32 getRegionMergeSize()       { return _regionMergeSize; }
-    inline I32 getVertsPerPoly()          { return _vertsPerPoly; }
-    inline F32 getDetailSampleDist()      { return _detailSampleDist; }
-    inline F32 getDetailSampleMaxError()  { return _detailSampleMaxError; }
-    inline bool getKeepInterResults()     { return _keepInterResults; }
+    inline F32 getCellSize()             const { return _cellSize; }
+    inline F32 getCellHeight()           const { return _cellHeight; }
+    inline I32 getTileSize()             const { return _tileSize; }
+    inline F32 getAgentMaxSlope()        const { return _agentMaxSlope; }
+    inline F32 getAgentHeight()          const { return _agentHeight; }
+    inline F32 getAgentMaxClimb()        const { return _agentMaxClimb; }
+    inline F32 getAgentRadius()          const { return _agentRadius; }
+    inline F32 getEdgeMaxLen()           const { return _edgeMaxLen; }
+    inline F32 getEdgeMaxError()         const { return _edgeMaxError; }
+    inline F32 getRegionMinSize()        const { return _regionMinSize; }
+    inline F32 getRegionMergeSize()      const { return _regionMergeSize; }
+    inline I32 getVertsPerPoly()         const { return _vertsPerPoly; }
+    inline F32 getDetailSampleDist()     const { return _detailSampleDist; }
+    inline F32 getDetailSampleMaxError() const { return _detailSampleMaxError; }
+    inline bool getKeepInterResults()    const { return _keepInterResults; }
 
-    inline I32 base_getWalkableHeight()       { return _walkableHeight; }
-    inline I32 base_getWalkableClimb()        { return _walkableClimb; }
-    inline I32 base_getWalkableRadius()       { return _walkableRadius; }
-    inline I32 base_getMaxEdgeLen()           { return _maxEdgeLen; }
-    inline I32 base_getMinRegionArea()        { return _minRegionArea; }
-    inline I32 base_getMergeRegionArea()      { return _mergeRegionArea; }
-    inline I32 base_getDetailSampleDist()     { return (I32)_base_detailSampleDist; }
-    inline I32 base_getDetailSampleMaxError() { return (I32)_base_detailSampleMaxError; }
+    inline I32 base_getWalkableHeight()       const { return _walkableHeight; }
+    inline I32 base_getWalkableClimb()        const { return _walkableClimb; }
+    inline I32 base_getWalkableRadius()       const { return _walkableRadius; }
+    inline I32 base_getMaxEdgeLen()           const { return _maxEdgeLen; }
+    inline I32 base_getMinRegionArea()        const { return _minRegionArea; }
+    inline I32 base_getMergeRegionArea()      const { return _mergeRegionArea; }
+    inline I32 base_getDetailSampleDist()     const { return (I32)_base_detailSampleDist; }
+    inline I32 base_getDetailSampleMaxError() const { return (I32)_base_detailSampleMaxError; }
 
 private:
     /**

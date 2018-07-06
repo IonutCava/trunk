@@ -116,9 +116,9 @@ namespace Navigation {
     }
 
     vec3<F32> DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh){
-        if(navMesh.getNavQuery().getAttachedNavMesh() == nullptr)
+        if (navMesh.getNavQuery().getAttachedNavMesh() == nullptr) {
             return VECTOR3_ZERO;
-
+        }
         F32 resultPoint[3];
         dtPolyRef resultPoly;
         navMesh.getNavQuery().findRandomPoint(_filter, frand, &resultPoly, resultPoint);
@@ -126,7 +126,37 @@ namespace Navigation {
         return vec3<F32>(resultPoint[0], resultPoint[1], resultPoint[2]);
     }
 
-    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt){
+    vec3<F32> DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh, const vec3<F32>& centerPosition, F32 radius) {
+        if (navMesh.getNavQuery().getAttachedNavMesh() == nullptr) {
+            return VECTOR3_ZERO;
+        }
+        F32 resultPoint[3];
+        dtPolyRef resultPoly;
+
+	    // Randomly pick one tile. Assume that all tiles cover roughly the same area.
+	    const dtMeshTile* tile = 0;
+	    float tsum = 0.0f;
+	    for (int i = 0; i < navMesh.getNavigationMesh()->getMaxTiles(); i++)
+	    {
+		    const dtMeshTile* t = navMesh.getNavigationMesh()->getTile(i);
+		    if (!t || !t->header) continue;
+
+		    // Choose random tile using reservoir sampling.
+		    const float area = 1.0f; // Could be tile area too.
+		    tsum += area;
+		    const float u = frand();
+		    if (u*tsum <= area)
+			    tile = t;
+	    }
+	    if (!tile) {
+		    return DT_FAILURE;
+        }
+        navMesh.getNavQuery().findRandomPointAroundCircle(navMesh.getNavigationMesh()->getPolyRefBase(tile), centerPosition._v, radius, _filter, frand,  &resultPoly, resultPoint);
+
+        return vec3<F32>(resultPoint[0], resultPoint[1], resultPoint[2]);
+    }
+
+    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt) {
         dtPolyRef navmeshPoly;
         return findNearestPolyOnNavmesh(navMesh, position, resultPt, navmeshPoly);
     }

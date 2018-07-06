@@ -345,7 +345,8 @@ void Scene::clearPhysics(){
     }
 }
 
-bool Scene::initializeAI(bool continueOnErrors)   {
+bool Scene::initializeAI(bool continueOnErrors) {
+    AI::AIManager::getInstance().signalInit();
     _aiTask->startTask();
     return true;
 }

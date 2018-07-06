@@ -194,7 +194,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             LightManager::getInstance().togglePreviewShadowMaps();
             GFX_DEVICE.togglePreviewDepthBuffer();
             break;
-        case OIS::KC_F12:
+        case OIS::KC_F7:
             GFX_DEVICE.Screenshot("screenshot_");
             break;
         default:
