@@ -59,7 +59,7 @@ private:
 	void drawQuad3D(Quad3D* const quad);
 	void drawText3D(Text3D* const text);
 
-	void renderModel(Mesh* const model);
+	void renderModel(Object3D* const model);
 	void renderElements(Type t, U32 count, const void* first_element);
 	
 	void setMaterial(Material& mat);

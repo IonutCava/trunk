@@ -13,7 +13,7 @@ public:
 	virtual bool unload() = 0;
 	virtual void scheduleDeletion(){_shouldDelete = true;}
 	virtual void cancelDeletion(){_shouldDelete = false;}
-	virtual bool clean() {if(_shouldDelete) return unload(); else return false;}
+	virtual bool shouldDelete(){return _shouldDelete;}
 	const std::string& getName() {return _name;}
 	void setName(const std::string& name) {_name = name;}
 	virtual ~Resource() {}

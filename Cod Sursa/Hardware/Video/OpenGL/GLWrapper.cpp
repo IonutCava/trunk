@@ -518,6 +518,92 @@ void GL_API::drawText3D(Text3D* const text)
 
 }
 
+void GL_API::renderModel(Object3D* const model)
+{
+	Mesh* tempModel = dynamic_cast<Mesh*>(model);
+	SubMesh *s;
+	vector<SubMesh* >::iterator _subMeshIterator;
+	
+	pushMatrix();
+	//ToDo: Per submesh transforms
+	glMultMatrixf(tempModel->getTransform()->getMatrix());
+
+	for(_subMeshIterator = tempModel->getSubMeshes().begin(); 
+		_subMeshIterator != tempModel->getSubMeshes().end(); 
+		++_subMeshIterator)	{
+
+		s = (*_subMeshIterator);
+
+		setMaterial(s->getMaterial());
+		
+		U8 count = s->getMaterial().textures.size();
+		U8 i = 0;
+		if(count)
+			for(U8 j = 0; j < count; j++,i++)
+				s->getMaterial().textures[j]->Bind(i);
+
+		
+		
+		if(s->getMaterial().bumpMap)
+			s->getMaterial().bumpMap->Bind(i++);
+				
+		U8 n = 0;
+		
+		if(!tempModel->getShaders().empty()){
+
+			Shader* shader = NULL;
+			//for(U8 n = 0; n < tempModel->getShaders().size(); n++)
+			if(tempModel->getShaders()[n]){
+				shader = tempModel->getShaders()[n];
+				shader->bind();
+				if(!GFXDevice::getInstance().getDeferredShading()){
+     				shader->Uniform("enable_shadow_mapping", 0);
+					shader->Uniform("tile_factor", 1.0f);
+					shader->Uniform("textureCount",count <= 2 ? count : 2);
+					shader->UniformTexture("texDiffuse0",0);
+					if(count > 1) shader->UniformTexture("texDiffuse1",1);
+					if(s->getMaterial().bumpMap){
+						shader->Uniform("mode", 1);
+						shader->UniformTexture("texNormalHeightMap",i);
+					}else{
+						shader->Uniform("mode", 0);
+					}
+				}else{
+					shader->Uniform("tDiffuse",0);
+				}
+			}
+		}
+
+		s->getGeometryVBO()->Enable();
+			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
+		s->getGeometryVBO()->Disable();
+
+		if(!tempModel->getShaders().empty()){
+			//for(U8 n = 0; n < model->getShaders().size(); n++){
+				if(tempModel->getShaders()[n])
+					tempModel->getShaders()[n]->unbind();
+			//}
+		}
+
+		if(s->getMaterial().bumpMap)
+			s->getMaterial().bumpMap->Unbind(i);
+
+		if(count) 
+			for(U8 j = count-1; j > 0; j--) s->getMaterial().textures[j]->Unbind(i--);
+				
+	}
+
+
+	
+	popMatrix();
+
+}
+
+void GL_API::renderElements(Type t, U32 count, const void* first_element)
+{
+	glDrawElements(t, count, GL_UNSIGNED_INT, first_element );
+}
+
 void GL_API::toggle2D(bool _2D)
 {
 	
@@ -546,91 +632,6 @@ void GL_API::toggle2D(bool _2D)
 		glEnable(GL_LIGHTING);
 		glEnable(GL_DEPTH_TEST);
 	}
-}
-
-void GL_API::renderModel(Mesh* const model)
-{
-	SubMesh *s;
-	vector<SubMesh* >::iterator _subMeshIterator;
-	
-	pushMatrix();
-	//ToDo: Per submesh transforms
-	glMultMatrixf(model->getTransform()->getMatrix());
-
-	for(_subMeshIterator = model->getSubMeshes().begin(); 
-		_subMeshIterator != model->getSubMeshes().end(); 
-		++_subMeshIterator)	{
-
-		s = (*_subMeshIterator);
-
-		setMaterial(s->getMaterial());
-		
-		U8 count = s->getMaterial().textures.size();
-		U8 i = 0;
-		if(count)
-			for(U8 j = 0; j < count; j++,i++)
-				s->getMaterial().textures[j]->Bind(i);
-
-		
-		
-		if(s->getMaterial().bumpMap)
-			s->getMaterial().bumpMap->Bind(i++);
-				
-		U8 n = 0;
-		
-		if(!model->getShaders().empty()){
-
-			Shader* shader = NULL;
-			//for(U8 n = 0; n < model->getShaders().size(); n++)
-			if(model->getShaders()[n]){
-				shader = model->getShaders()[n];
-				shader->bind();
-				if(!GFXDevice::getInstance().getDeferredShading()){
-     				shader->Uniform("enable_shadow_mapping", 0);
-					shader->Uniform("tile_factor", 1.0f);
-					shader->Uniform("textureCount",count <= 2 ? count : 2);
-					shader->UniformTexture("texDiffuse0",0);
-					if(count > 1) shader->UniformTexture("texDiffuse1",1);
-					if(s->getMaterial().bumpMap){
-						shader->Uniform("mode", 1);
-						shader->UniformTexture("texNormalHeightMap",i);
-					}else{
-						shader->Uniform("mode", 0);
-					}
-				}else{
-					shader->Uniform("tDiffuse",0);
-				}
-			}
-		}
-
-		s->getGeometryVBO()->Enable();
-			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
-		s->getGeometryVBO()->Disable();
-
-		if(!model->getShaders().empty()){
-			//for(U8 n = 0; n < model->getShaders().size(); n++){
-				if(model->getShaders()[n])
-					model->getShaders()[n]->unbind();
-			//}
-		}
-
-		if(s->getMaterial().bumpMap)
-			s->getMaterial().bumpMap->Unbind(i);
-
-		if(count) 
-			for(U8 j = count-1; j > 0; j--) s->getMaterial().textures[j]->Unbind(i--);
-				
-	}
-
-
-	
-	popMatrix();
-
-}
-
-void GL_API::renderElements(Type t, U32 count, const void* first_element)
-{
-	glDrawElements(t, count, GL_UNSIGNED_INT, first_element );
 }
 
 void GL_API::setMaterial(Material& mat)

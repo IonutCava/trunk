@@ -17,6 +17,7 @@ enum PrimitiveType
 	TEXT_3D,
 	MESH,
 	SUBMESH,
+	OBJECT_3D_FLYWEIGHT
 };
 
 class BoundingBox;
@@ -56,7 +57,7 @@ public:
 
 	inline	Material&					getMaterial()		  {return _material;}
 	inline  PrimitiveType               getType()       const {return _geometryType;}
-	inline  bool                        getVisibility() const {return _render;}
+	virtual inline  bool                getVisibility() const {return _render;}
 	inline	bool                        isSelected()	      {return _selected;}
 	inline  const   BoundingBox&    	getOriginalBB()		  {return _originalBB;}
 	virtual inline	BoundingBox&		getBoundingBox()	  {if(!_bb.isComputed()) computeBoundingBox(); _bb.Transform(_originalBB,getTransform()->getMatrix()); return _bb;}

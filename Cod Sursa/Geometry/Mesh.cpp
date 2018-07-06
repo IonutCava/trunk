@@ -63,7 +63,7 @@ void Mesh::onDraw()
 		computeLightShaders();
 }
 
-bool Mesh::isVisible()
+bool Mesh::getVisibility()
 {
 	if(!_render || !isInView() || _subMeshes.empty())
 		return false;
@@ -161,6 +161,6 @@ bool Mesh::optimizeSubMeshes()
 bool Mesh::clean()
 {
 	if(_shouldDelete)
-		return SceneManager::getInstance().getActiveScene()->removeModel(getName());
+		return SceneManager::getInstance().getActiveScene()->removeGeometry(getName());
 	else return false;
 }

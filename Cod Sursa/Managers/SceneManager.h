@@ -21,7 +21,6 @@ public:
 	void processEvents(F32 time){_scene->processEvents(time);}
 	/*Base Scene Operations*/
 
-	inline std::tr1::unordered_map<std::string, Mesh* >& getModelArray(){return _scene->getModelArray();}
 	inline std::tr1::unordered_map<std::string, Object3D* >& getGeometryArray(){return _scene->getGeometryArray();}
 	inline std::vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
 	inline std::vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
@@ -48,7 +47,7 @@ private:
 	Scene* _scene;
 	std::map<std::string, Scene*> _scenes;
 	std::map<std::string, Scene*>::iterator _sceneIter;
-    Mesh* _currentSelection;
+    Object3D* _currentSelection;
 
 SINGLETON_END()
 

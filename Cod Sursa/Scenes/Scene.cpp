@@ -19,7 +19,7 @@ Scene::~Scene()
 
 bool Scene::clean() //Called when application is idle
 {
-	if(ModelArray.empty() && GeometryArray.empty()) return false;
+	if(GeometryArray.empty()) return false;
 
 	bool _updated = false;
 	if(!PendingDataArray.empty())
@@ -61,22 +61,12 @@ void Scene::addPatch(vector<FileData>& data)
 {
 	for(vector<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
 	{
-		for(tr1::unordered_map<string,Mesh*>::iterator iter2 = ModelArray.begin(); iter2 != ModelArray.end(); iter2++)
-			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
-			{
-				(iter2->second)->scheduleDeletion();
-			
-				Con::getInstance().printfn("SCENE: new pending geometry added in queue [ %s ]",(*iter).ModelName.c_str());
-				boost::mutex::scoped_lock l(_mutex);
-				PendingDataArray.push_back(*iter);
-			}
-
 		for(tr1::unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
 			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
 			{
 				boost::mutex::scoped_lock l(_mutex);
 				PendingDataArray.push_back(*iter);
-				ResourceManager::getInstance().remove(iter2->second);
+				(iter2->second)->scheduleDeletion();
 				GeometryArray.erase(iter2);
 				break;
 			}
@@ -121,8 +111,8 @@ bool Scene::loadModel(const FileData& data)
 	thisObj->getTransform()->rotateEuler(data.orientation);
 	thisObj->getTransform()->translate(data.position);
 
-	pair<tr1::unordered_map<string,Mesh*>::iterator,bool> _result;
-	_result = ModelArray.insert(pair<string,Mesh*>(data.ItemName,thisObj));
+	pair<tr1::unordered_map<string,Object3D*>::iterator,bool> _result;
+	_result = GeometryArray.insert(pair<string,Object3D*>(data.ItemName,thisObj));
 	if(!_result.second) (_result.first)->second = thisObj;
 
 	return true;
@@ -187,28 +177,12 @@ void Scene::addGeometry(Object3D* const object)
 	GeometryArray.insert(pair<string,Object3D*>(object->getName(),object));
 }
 
-void Scene::addModel(Mesh* const model)
-{
-	ModelArray.insert(pair<string,Mesh*>(model->getName(),model));
-}
-
 bool Scene::removeGeometry(const std::string& name)
 {
 	if(GeometryArray.find(name) != GeometryArray.end())
 	{
 		ResourceManager::getInstance().remove(GeometryArray[name]);
 		GeometryArray.erase(name);
-		return true;
-	}
-	return false;
-}
-
-bool Scene::removeModel(const std::string& name)
-{
-	if(ModelArray.find(name) != ModelArray.end())
-	{
-		ResourceManager::getInstance().remove(ModelArray[name]);
-		ModelArray.erase(name);
 		return true;
 	}
 	return false;
@@ -241,12 +215,6 @@ void Scene::clearObjects()
 	}
 	GeometryArray.clear(); 
 
-	for(ModelIterator = ModelArray.begin(); ModelIterator != ModelArray.end(); ModelIterator++){
-		ResourceManager::getInstance().remove(ModelIterator->second);
-	}
-
-	ModelArray.clear();
-
 	ModelDataArray.clear();
 	VegetationDataArray.clear();
 	PendingDataArray.clear();
@@ -255,18 +223,12 @@ void Scene::clearObjects()
 
 void Scene::clearLights()
 {
-	/*for(U8 i = 0; i < _lights.size(); i++){
-		delete _lights[i];
-		_lights[i] = NULL;
-	}*/
 	_lights.empty();
 }
 
 void Scene::clearEvents()
 {
 	Con::getInstance().printfn("Stopping all events ...");
-	/*for(U8 i = 0; i < _events.size(); i++)
-		_events[i]->stopEvent();*/
 	_events.clear();
 }
 

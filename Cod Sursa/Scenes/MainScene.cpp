@@ -112,7 +112,6 @@ void MainScene::render()
 
 void MainScene::renderActors()
 {
-	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
 }
 
@@ -190,10 +189,10 @@ bool _switchAB = false;
 void MainScene::test(boost::any a, CallbackParam b)
 {
 	vec3 pos;
-	if(!ModelArray.empty())
-		if(ModelArray["box"]){
+	if(!GeometryArray.empty())
+		if(GeometryArray["box"]){
 		//	boost::mutex::scoped_lock l(_mutex);
-			pos = ModelArray["box"]->getTransform()->getPosition();
+			pos = GeometryArray["box"]->getTransform()->getPosition();
 			//l.release();
 	}
  
@@ -224,9 +223,9 @@ void MainScene::test(boost::any a, CallbackParam b)
 			}
 		}
 	}
-	if(!ModelArray.empty())
-		if(ModelArray["box"]){
-			ModelArray["box"]->getTransform()->setPosition(pos);
+	if(!GeometryArray.empty())
+		if(GeometryArray["box"]){
+			GeometryArray["box"]->getTransform()->setPosition(pos);
 		}
 }
 

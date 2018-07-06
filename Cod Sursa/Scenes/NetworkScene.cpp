@@ -16,7 +16,6 @@ void NetworkScene::render()
 
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 
-	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
 
 	GUI::getInstance().draw();

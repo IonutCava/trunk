@@ -34,7 +34,6 @@ void CubeScene::render()
 	//Draw the geometry, saving parameters into the buffer
 	_deferredBuffer->Begin();
 		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-		GFXDevice::getInstance().renderElements(ModelArray);
 		GFXDevice::getInstance().renderElements(GeometryArray);
 		for(U8 i = 0; i < getLights().size(); i++)
 			getLights()[i]->draw();
@@ -115,8 +114,8 @@ void CubeScene::preRender()
 			(iter->second)->getTransform()->translateY(j*0.25f);
 	}
 
-	if(ModelArray["dwarf"])
-		ModelArray["dwarf"]->getTransform()->rotate(vec3(0,1,0),i);
+	if(GeometryArray["dwarf"])
+		GeometryArray["dwarf"]->getTransform()->rotate(vec3(0,1,0),i);
 
 	if(PhysX::getInstance().getScene() != NULL)	
 		PhysX::getInstance().UpdateActors();

@@ -62,11 +62,9 @@ public:
 	void drawQuad3D(Quad3D* const quad){_api.drawQuad3D(quad);}
 	void drawText3D(Text3D* const text){_api.drawText3D(text);}
 
-	void renderModel(Mesh* const model);
+	void renderModel(Object3D* const model);
 	void renderElements(Type t, U32 count, const void* first_element){_api.renderElements(t,count,first_element);}
 	void renderElements(std::tr1::unordered_map<std::string,Object3D*>&  primitiveArray);
-	void renderElements(std::tr1::unordered_map<std::string,Mesh*>&  geometryArray);
-	void renderElements(std::vector<Mesh*>& geometryArray);
 	void renderElements(std::vector<Object3DFlyWeight*>& geometryArray);
 	
 	void setMaterial(Material& mat){_api.setMaterial(mat);}

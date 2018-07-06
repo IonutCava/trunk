@@ -57,7 +57,7 @@ enum Type
 };
 
 //Forward declarations
-class Mesh;
+class Object3D;
 class Text;
 class Shader;
 class Button;
@@ -142,7 +142,7 @@ protected:
 	/*Primitives Rendering*/
 
 	/*Mesh Rendering*/
-	virtual void renderModel(Mesh* const model) = 0;
+	virtual void renderModel(Object3D* const model) = 0;
 	virtual void renderElements(Type t, U32 count, const void* first_element) = 0;
 	/*Mesh Rendering*/
 

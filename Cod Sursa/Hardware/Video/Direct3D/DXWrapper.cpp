@@ -107,32 +107,29 @@ void DX_API::drawText3D(Text3D* const text)
 {
 }
 
-void DX_API::renderModel(Mesh* const model)
+void DX_API::renderModel(Object3D* const model)
 {
-	
-	if(!model->isVisible()) return;
-	
+	Mesh* tempModel = dynamic_cast<Mesh*>(model);	
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	
-	//pushMatrix();
 	//translate(model->getPosition());
 	//rotate(model->getOrientation().x,vec3(1.0f,0.0f,0.0f));
 	//rotate(model->getOrientation().y,vec3(0.0f,1.0f,0.0f));
 	//rotate(model->getOrientation().z,vec3(0.0f,0.0f,1.0f));
 	//scale(model->getScale());
-	for(U8 n = 0; n < model->getShaders().size(); n++)
-		model->getShaders()[n]->bind();
+	for(U8 n = 0; n < tempModel->getShaders().size(); n++)
+		tempModel->getShaders()[n]->bind();
 	
-	for(_subMeshIterator = model->getSubMeshes().begin(); 
-		_subMeshIterator != model->getSubMeshes().end(); 
+	for(_subMeshIterator = tempModel->getSubMeshes().begin(); 
+		_subMeshIterator != tempModel->getSubMeshes().end(); 
 		_subMeshIterator++)
 	{
 		s = (*_subMeshIterator);
 		//s->getGeometryVBO()->Enable();
 		//s->getMaterial().texture->Bind(0);
 			for(U8 n = 0; n < model->getShaders().size(); n++)
-				model->getShaders()[n]->UniformTexture("texDiffuse",0);
+				tempModel->getShaders()[n]->UniformTexture("texDiffuse",0);
 	
 	//		glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
 
@@ -140,9 +137,8 @@ void DX_API::renderModel(Mesh* const model)
 		//s->getGeometryVBO()->Disable();
 		
 	}
-	for(U8 n = 0; n < model->getShaders().size(); n++)
-		model->getShaders()[n]->unbind();
-	//popMatrix();
+	for(U8 n = 0; n < tempModel->getShaders().size(); n++)
+		tempModel->getShaders()[n]->unbind();
 }
 
 void DX_API::renderElements(Type t, U32 count, const void* first_element)

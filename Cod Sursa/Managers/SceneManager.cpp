@@ -138,8 +138,8 @@ void SceneManager::findSelection(U32 x, U32 y)
 	
 	Ray r(origin,dir);
 	_currentSelection = NULL;
-	for(tr1::unordered_map<string, Mesh* >::iterator it = getModelArray().begin(); 
-													 it != getModelArray().end(); it++){
+	for(tr1::unordered_map<string, Object3D* >::iterator it = getGeometryArray().begin(); 
+													 it != getGeometryArray().end(); it++){
 		assert(it->second != NULL);
 		(it->second)->setSelected(false);
 		

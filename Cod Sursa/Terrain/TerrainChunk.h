@@ -10,6 +10,7 @@ using namespace std;
 #define TERRAIN_CHUNK_LOD0	300.0f
 #define TERRAIN_CHUNK_LOD1	380.0f
 
+class Mesh;
 class TerrainChunk
 {
 public:

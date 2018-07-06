@@ -439,7 +439,6 @@ void PhysX::DrawObjects(NxShape *obj)
 	F32 *orient = new F32[16];
 	NxMat34 pose = obj->getActor().getGlobalPose();
 	pose.M.getColumnMajorStride4(orient);
-    //GFXDevice::getInstance().pushMatrix();
 	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;

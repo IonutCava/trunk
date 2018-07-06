@@ -35,7 +35,6 @@ public:
 	void addGeometry(Object3D* const object);
 	void addModel(Mesh* const model);
 	bool removeGeometry(const std::string& name);
-	bool removeModel(const std::string& name);
 
 	virtual bool unload();
 
@@ -46,12 +45,11 @@ public:
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
-   U32 getNumberOfObjects(){return ModelArray.size() + GeometryArray.size();}
+   U32 getNumberOfObjects(){return GeometryArray.size();}
    U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
 
    TerrainManager* getTerrainManager() {return _terMgr;}
    inline Shader*                                         getDeferredShaders() {return _deferredShader;}
-   inline std::tr1::unordered_map<std::string,Mesh*>&     getModelArray(){return ModelArray;}
    inline std::tr1::unordered_map<std::string,Object3D*>& getGeometryArray(){return GeometryArray;}
 
    inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
@@ -78,11 +76,6 @@ protected:
 	GFXDevice& _GFX;
 	TerrainManager* _terMgr;
 
-	//Dynamic geometry
-	std::tr1::unordered_map<std::string, Mesh*> ModelArray;
-	std::tr1::unordered_map<std::string, Mesh*>::iterator ModelIterator;
-
-	//Static geometry
 	std::tr1::unordered_map<std::string, Object3D*> GeometryArray;
 	std::tr1::unordered_map<std::string, Object3D*>::iterator GeometryIterator;
 

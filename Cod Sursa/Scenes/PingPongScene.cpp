@@ -19,7 +19,6 @@ void PingPongScene::render()
 	GFXDevice::getInstance().setRenderState(s);
 
 	//Randam toata geometria
-	GFXDevice::getInstance().renderElements(ModelArray);
 	GFXDevice::getInstance().renderElements(GeometryArray);
 	getLights()[0]->draw();
 	GUI::getInstance().draw();
@@ -83,12 +82,12 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	string mesaj;
 	boost::mutex::scoped_lock l(_mutex);
 	vec3 pozitieMinge    = _minge->getTransform()->getPosition();
-	vec3 pozitiePaleta   = ModelArray["paleta"]->getTransform()->getPosition();
-	vec3 pozitieMasa     = ModelArray["masa"]->getTransform()->getPosition();
-	vec3 pozitieAdversar = ModelArray["perete"]->getTransform()->getPosition();
+	vec3 pozitiePaleta   = GeometryArray["paleta"]->getTransform()->getPosition();
+	vec3 pozitieMasa     = GeometryArray["masa"]->getTransform()->getPosition();
+	vec3 pozitieAdversar = GeometryArray["perete"]->getTransform()->getPosition();
 	//Miscare minge si detectie coliziuni
 
-	if(pozitieMinge.y + 0.75f < ModelArray["masa"]->getBoundingBox().getMax().y)
+	if(pozitieMinge.y + 0.75f < GeometryArray["masa"]->getBoundingBox().getMax().y)
 	{
 		//Daca am lovit noi si am atins terenul adversarului
 		//Sau daca a lovit adversarul si nu a atins terenul nostrue
@@ -123,13 +122,13 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	//Mingea se deplaseaza spre stanga sau spre dreapta?
 	pozitieMinge.x += _miscareLaterala*0.15f;
 	if(pozitieAdversar.x != pozitieMinge.x)
-		ModelArray["perete"]->getTransform()->translateX(pozitieMinge.x - pozitieAdversar.x);
+		GeometryArray["perete"]->getTransform()->translateX(pozitieMinge.x - pozitieAdversar.x);
 
 	_minge->getTransform()->translate(pozitieMinge - _minge->getTransform()->getPosition());
 
 
 	//Am lovit masa? Ricosam
-	if(ModelArray["masa"]->getBoundingBox().Collision(_minge->getBoundingBox()))
+	if(GeometryArray["masa"]->getBoundingBox().Collision(_minge->getBoundingBox()))
 	{
 		if(pozitieMinge.z > pozitieMasa.z) 
 		{
@@ -147,7 +146,7 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	if(pozitieMinge.y > 2.1f) _directieSus = false;
 
 	//Am lovit paleta?
-	if(_minge->getBoundingBox().Collision(ModelArray["paleta"]->getBoundingBox()))
+	if(_minge->getBoundingBox().Collision(GeometryArray["paleta"]->getBoundingBox()))
 	{
 		_miscareLaterala = pozitieMinge.x - pozitiePaleta.x;
 		//Dca am lovit cu partea de sus a paletei, mai atasam un mic impuls miscarii mingii
@@ -157,14 +156,14 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	}
 
 	//Am lovit plasa?
-	if(_minge->getBoundingBox().Collision(ModelArray["plasa"]->getBoundingBox()) &&	_directieAdversar)
+	if(_minge->getBoundingBox().Collision(GeometryArray["plasa"]->getBoundingBox()) &&	_directieAdversar)
 	{
 		_pierdut = true;
 		updated = true;
 		getEvents()[0]->stopEvent();
     }
 	//A lovit adversarul plasa
-	if(_minge->getBoundingBox().Collision(ModelArray["plasa"]->getBoundingBox()) &&	!_directieAdversar)
+	if(_minge->getBoundingBox().Collision(GeometryArray["plasa"]->getBoundingBox()) &&	!_directieAdversar)
 	{
 		_pierdut = false;
 		updated = true;
@@ -173,9 +172,9 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	//Am lovit adversarul? Ne intoarcem ... DAR
 	//... adaugam o mica sansa sa castigam meciul .. dar mica ...
 	if(random(30) != 2)
-	if(_minge->getBoundingBox().Collision(ModelArray["perete"]->getBoundingBox()))
+	if(_minge->getBoundingBox().Collision(GeometryArray["perete"]->getBoundingBox()))
 	{
-		_miscareLaterala = pozitieMinge.x - ModelArray["perete"]->getTransform()->getPosition().x;
+		_miscareLaterala = pozitieMinge.x - GeometryArray["perete"]->getTransform()->getPosition().x;
 		_directieAdversar = false;
 	}
 	//Rotim mingea doar de efect ...
@@ -228,19 +227,19 @@ void PingPongScene::processInput()
 	if(angleLR)	cam->RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	cam->RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
 
-	vec3 pos = ModelArray["paleta"]->getTransform()->getPosition();
+	vec3 pos = GeometryArray["paleta"]->getTransform()->getPosition();
 	//Miscarea pe ambele directii de deplasare este limitata in intervalul [-3,3] cu exceptia coborarii pe Y;
 	if(moveFB)
 	{
 		if((moveFB > 0 && pos.y >= 3) || (moveFB < 0 && pos.y <= 0.5f)) return;
-		ModelArray["paleta"]->getTransform()->translateY((moveFB * Framerate::getInstance().getSpeedfactor())/6);
+		GeometryArray["paleta"]->getTransform()->translateY((moveFB * Framerate::getInstance().getSpeedfactor())/6);
 		
 	}
 	if(moveLR)
 	{
 		//Miscarea stanga dreapta necesita inversarea directiei de deplasare.
 		if((moveLR < 0 && pos.x >= 3) || (moveLR > 0 && pos.x <= -3)) return;
-		ModelArray["paleta"]->getTransform()->translateX((-moveLR * Framerate::getInstance().getSpeedfactor())/6);
+		GeometryArray["paleta"]->getTransform()->translateX((-moveLR * Framerate::getInstance().getSpeedfactor())/6);
 	}
 }
 

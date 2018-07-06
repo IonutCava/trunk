@@ -33,7 +33,7 @@ public:
 	inline std::vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
 	inline SubMesh*				    getSubMesh(const std::string& name);
 
-	bool				isVisible();
+	bool				getVisibility();
 	void				onDraw();
 
 	bool load(const std::string& file);

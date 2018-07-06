@@ -45,26 +45,8 @@ void GFXDevice::resizeWindow(U16 w, U16 h)
 void GFXDevice::renderElements(tr1::unordered_map<string,Object3D*>& primitiveArray)
 {
 	tr1::unordered_map<string,Object3D*>::iterator _iter;
-	for(_iter = primitiveArray.begin();  _iter != primitiveArray.end();  _iter++)
-	{
-		if(!(_iter->second)->getVisibility()) continue;
-		switch((_iter->second)->getType())
-		{
-			case BOX_3D:
-				drawBox3D(dynamic_cast<Box3D*>(_iter->second));
-				break;
-			case SPHERE_3D:
-				drawSphere3D(dynamic_cast<Sphere3D*>(_iter->second));
-				break;
-			case QUAD_3D:
-				drawQuad3D(dynamic_cast<Quad3D*>(_iter->second));
-				break;
-			case TEXT_3D:
-				drawText3D(dynamic_cast<Text3D*>(_iter->second));
-				break;
-			default:
-				break;
-		};
+	for(_iter = primitiveArray.begin();  _iter != primitiveArray.end();  _iter++){
+		renderModel(_iter->second);
 	}
 }
 
@@ -81,34 +63,35 @@ void GFXDevice::renderElements(vector<Object3DFlyWeight*>& geometryArray)
 	}
 }
 
-void GFXDevice::renderElements(vector<Mesh*>& geometryArray)
+void GFXDevice::renderModel(Object3D* const model)
 {
-	vector<Mesh*>::iterator _iter;
-	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
-	{
-		renderModel(*_iter);
-	}
-}
-
-void GFXDevice::renderElements(tr1::unordered_map<string,Mesh*>& geometryArray)
-{
-	tr1::unordered_map<string,Mesh*>::iterator _iter;
-	for(_iter = geometryArray.begin();  _iter != geometryArray.end(); ++ _iter)
-	{
-		renderModel(_iter->second);
-	}
-}
-
-void GFXDevice::renderModel(Mesh* const model)
-{
-	if(!model) return;
-	if(model->clean()){
-		ResourceManager::getInstance().remove(model);
-		return;
-	}
-	model->onDraw(); //Update BB, shaders etc.
-	if(!model->isVisible()) return;
-	_api.renderModel(model);
+		if(!model) return;
+		if(!model->getVisibility()) return;
+		if(model->shouldDelete()){
+			ResourceManager::getInstance().remove(model);
+			return;;
+		}
+		model->onDraw();
+		switch(model->getType())
+		{
+			case BOX_3D:
+				drawBox3D(dynamic_cast<Box3D*>(model));
+				break;
+			case SPHERE_3D:
+				drawSphere3D(dynamic_cast<Sphere3D*>(model));
+				break;
+			case QUAD_3D:
+				drawQuad3D(dynamic_cast<Quad3D*>(model));
+				break;
+			case TEXT_3D:
+				drawText3D(dynamic_cast<Text3D*>(model));
+				break;
+			case MESH:
+				_api.renderModel(dynamic_cast<Mesh*>(model));
+				break;
+			default:
+				break;
+		};
 }
 
 void GFXDevice::toggleWireframe(bool state)
