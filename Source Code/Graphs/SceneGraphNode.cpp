@@ -317,14 +317,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     if (transformUpdateMask.hasSetFlags()) {
         Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
         _boundingBoxDirty = true;
-        for (U32 i = 0; i < childCount; ++i) {
-            getChild(i, childCount).getComponent<PhysicsComponent>()->transformUpdateMask().setFlags(transformUpdateMask);
-        }
-        pComp->transformUpdateMask().clearAllFlags();
     }
 
-    SceneNode::BoundingBoxPair& pair =
-        Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
+    SceneNode::BoundingBoxPair& pair = Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
 
     if (_boundingBoxDirty || pair.second) {
         SceneGraphNode_ptr parent = getParent().lock();
@@ -336,9 +331,11 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         for (U32 i = 0; i < childCount; ++i) {
             _boundingBox.add(getChild(i, childCount).getBoundingBoxConst());
         }
+
         if (!_lockBBTransforms) {
-            _boundingBox.transform(getComponent<PhysicsComponent>()->getWorldMatrix());
+            _boundingBox.transform(pComp->getWorldMatrix());
         }
+
         _boundingSphere.fromBoundingBox(_boundingBox);
         _boundingBoxDirty = false;
         pair.second = false;
@@ -432,4 +429,5 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
 
     return false;
 }
+
 };

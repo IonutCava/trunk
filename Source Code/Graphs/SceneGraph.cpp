@@ -16,21 +16,29 @@ namespace {
 };
 
 SceneGraph::SceneGraph() : FrameListener(),
+                           _loadComplete(false),
                            _rootNode(MemoryManager_NEW SceneRoot())
 {
     REGISTER_FRAME_LISTENER(this, 1);
     _root = std::make_shared<SceneGraphNode>(*this, *_rootNode, "ROOT");
+    _root->lockBBTransforms(true);
     _rootNode->postLoad(*_root);
 
     onNodeAdd(*_root);
-    vectorImpl<SceneGraphNode_wptr> objects;
-    objects.push_back(_root);
-    _octree.reset(MemoryManager_NEW Octree(BoundingBox(vec3<F32>(-10000), vec3<F32>(10000)), objects));
+    _allNodes.push_back(_root);
+
+    U32 octreeNodeMask = to_const_uint(SceneNodeType::TYPE_ROOT) |
+                         to_const_uint(SceneNodeType::TYPE_LIGHT) |
+                         to_const_uint(SceneNodeType::TYPE_SKY) |
+                         to_const_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
+
+    _octree.reset(MemoryManager_NEW Octree(octreeNodeMask));
 }
 
 SceneGraph::~SceneGraph()
 { 
     _octree.reset();
+    _allNodes.clear();
     UNREGISTER_FRAME_LISTENER(this);
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
@@ -58,23 +66,33 @@ void SceneGraph::unregisterNode(I64 guid, SceneGraphNode::UsageContext usage) {
 }
 
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
-    if (!BitCompare(ignoredNodeType, to_uint(oldNode.getNode<>()->getType()))) {
-        I64 guid = oldNode.getGUID();
+    I64 guid = oldNode.getGUID();
+    if (_loadComplete) {
         unregisterNode(guid, oldNode.usageContext());
     }
 
     Attorney::SceneGraph::onNodeDestroy(GET_ACTIVE_SCENE(), oldNode);
+
+    _allNodes.erase(std::remove_if(std::begin(_allNodes), std::end(_allNodes),
+                                   [guid](SceneGraphNode_wptr node)-> bool 
+                                   {
+                                       SceneGraphNode_ptr nodePtr = node.lock();
+                                       return nodePtr && nodePtr->getGUID() == guid;
+                                   }),
+                    std::end(_allNodes));
 }
 
 void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
-    if (!BitCompare(ignoredNodeType, to_uint(newNode.getNode<>()->getType()))) {
-        _octree->addNode(newNode);
+    _allNodes.push_back(newNode.shared_from_this());
+
+    if (_loadComplete) {
+        _octree->addNode(newNode.shared_from_this());
     }
 }
 
 void SceneGraph::onNodeTransform(SceneGraphNode& node) {
-    if (!BitCompare(ignoredNodeType, to_uint(node.getNode<>()->getType()))) {
-        //_octree->registerMovedNode(node);
+    if (_loadComplete) {
+        _octree->registerMovedNode(node);
     }
 }
 
@@ -109,8 +127,9 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _root->sceneUpdate(deltaTime, sceneState);
-    _octree->updateTree();
-    _octree->update(deltaTime);
+    if (_loadComplete) {
+        _octree->update(deltaTime);
+    }
 }
 
 void SceneGraph::onCameraUpdate(Camera& camera) {
@@ -119,6 +138,11 @@ void SceneGraph::onCameraUpdate(Camera& camera) {
 
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
+}
+
+void SceneGraph::postLoad() {
+    _octree->addNodes(_allNodes);
+    _loadComplete = true;
 }
 
 };

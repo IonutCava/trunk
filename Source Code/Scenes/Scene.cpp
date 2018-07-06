@@ -547,6 +547,10 @@ bool Scene::unload() {
     return true;
 }
 
+void Scene::postLoad() {
+    _sceneGraph.postLoad();
+}
+
 PhysicsSceneInterface* Scene::createPhysicsImplementation() {
     return PHYSICS_DEVICE.NewSceneInterface(this);
 }
@@ -725,11 +729,14 @@ void Scene::debugDraw(RenderStage stage) {
 
         size_t primitiveCount = _octreePrimitives.size();
         size_t regionCount = _octreeBoundingBoxes.size();
-        size_t diff = regionCount - primitiveCount;
-        for (size_t i = 0; i < diff; ++i) {
-            _octreePrimitives.push_back(gfx.getOrCreatePrimitive(false));
+        if (regionCount > primitiveCount) {
+            size_t diff = regionCount - primitiveCount;
+            for (size_t i = 0; i < diff; ++i) {
+                _octreePrimitives.push_back(gfx.getOrCreatePrimitive(false));
+            }
         }
-        assert(_octreePrimitives.size() == _octreeBoundingBoxes.size());
+
+        assert(_octreePrimitives.size() >= _octreeBoundingBoxes.size());
 
         for (size_t i = 0; i < regionCount; ++i) {
             const BoundingBox& box = _octreeBoundingBoxes[i];

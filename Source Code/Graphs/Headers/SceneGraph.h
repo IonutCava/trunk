@@ -85,6 +85,8 @@ class SceneGraph : private NonCopyable, public FrameListener {
 
     void onCameraUpdate(Camera& camera);
 
+    void postLoad();
+
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);
@@ -96,9 +98,11 @@ class SceneGraph : private NonCopyable, public FrameListener {
     bool frameEnded(const FrameEvent& evt);
 
    private:
+    bool _loadComplete;
     SceneRoot* _rootNode;
     SceneGraphNode_ptr _root;
     std::shared_ptr<Octree> _octree;
+    vectorImpl<SceneGraphNode_wptr> _allNodes;
     vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
 };
 

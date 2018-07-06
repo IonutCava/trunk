@@ -185,6 +185,8 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
             Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
             pkg._drawCommands.push_back(cmd);
     }
+    computeBoundingBox();
+
     sgn.lockBBTransforms(true);
 
     SceneNode::postLoad(sgn);
@@ -301,4 +303,28 @@ U32 ParticleEmitter::getAliveParticleCount() const {
     }
     return _particles->aliveCount();
 }
+
+void ParticleEmitter::computeBoundingBox() {
+    U32 aliveCount = getAliveParticleCount();
+    if (aliveCount > 2) {
+
+        F32 averageEmitRate = 0;
+        for (std::shared_ptr<ParticleSource>& source : _sources) {
+            averageEmitRate += source->emitRate();
+        }
+        averageEmitRate /= _sources.size();
+
+        _boundingBox.first.reset();
+
+        U32 step = std::max(aliveCount, to_uint(averageEmitRate) / 4);
+        for (U32 i = 0; i < aliveCount; i += step) {
+            _boundingBox.first.add(_particles->_position[i]);
+        }
+    } else {
+        _boundingBox.first.set(VECTOR3_ZERO, VECTOR3_ZERO);
+    }
+
+    _boundingBox.second = true;
+}
+
 };

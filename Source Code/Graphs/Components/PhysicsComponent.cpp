@@ -347,19 +347,29 @@ bool PhysicsComponent::popTransforms() {
 }
 
 bool PhysicsComponent::isParentTransformDirty(bool interp) const {
+    // ToDo: HACK - PLEASE REMOVE -Ionut
+    return true;
+
     SceneGraphNode_ptr parent = _parentSGN.getParent().lock();
     while (parent != nullptr) {
         PhysicsComponent* parentComp = parent->getComponent<PhysicsComponent>();
         if (parentComp->_ignoreViewSettings._cameraGUID != -1) {
-            parentComp->_dirty = parentComp->_dirtyInterp = true;
+            if (interp) {
+                parentComp->_dirtyInterp = true;
+            } else {
+                parentComp->_dirty = true;
+            }
         }
 
-        if(interp ? parentComp->_dirtyInterp
-                  : parentComp->_dirty) {
+        if((interp && parentComp->_dirtyInterp) ||
+           (!interp && parentComp->_dirty))
+        {
             return true;
         }
+
         parent = parent->getParent().lock();
     }
+
     return false;
 }
 
@@ -383,7 +393,9 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
                  grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
         }
         _dirtyInterp = false;
-
+        if (!_dirty) {
+            _transformUpdatedMask.clearAllFlags();
+        }
     }
 
     if (_ignoreViewSettings._cameraGUID != -1) {
@@ -399,11 +411,15 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix() {
 
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
+            // THIS CLEARS PARENT DIRTY FLAG, THUS ALL CHILD BB's except the first update properly
             _worldMatrix *=
                 grandParent->getComponent<PhysicsComponent>()->getWorldMatrix();
         }
 
         _dirty = false;
+        if (!_dirtyInterp) {
+            _transformUpdatedMask.clearAllFlags();
+        }
     }
 
     if (_ignoreViewSettings._cameraGUID != -1) {

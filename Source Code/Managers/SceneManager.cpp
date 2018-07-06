@@ -104,6 +104,9 @@ bool SceneManager::load(const stringImpl& sceneName,
     if (state) {
         state = LoadSave::loadScene(*_activeScene);
     }
+    if (state) {
+        Attorney::SceneManager::postLoad(*_activeScene);
+    }
     return state;
 }
 

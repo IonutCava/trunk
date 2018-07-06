@@ -51,7 +51,7 @@ class SceneRoot : public SceneNode {
     {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_SPECIAL);
-        _boundingBox.first.reset();
+        _boundingBox.first.set(VECTOR3_UNIT, -VECTOR3_UNIT);
         _boundingBox.second = false;
     }
 
@@ -296,7 +296,6 @@ class SceneGraphNode : public GUIDWrapper,
     std::atomic<bool> _boundingBoxDirty;
     bool _lockBBTransforms;
     BoundingBox _boundingBox;
-    BoundingBox _boundingBoxTransformedCache;
     BoundingSphere _boundingSphere;
 
     UsageContext _usageContext;

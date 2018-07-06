@@ -49,12 +49,15 @@ void BoundingBox::operator=(const BoundingBox& b) {
 }
 
 bool BoundingBox::containsBox(const BoundingBox& AABB2) const {
-    return _max.x <= AABB2._max.x &&
-           _max.y <= AABB2._max.y &&
-           _max.z <= AABB2._max.z &&
-           _min.x >= AABB2._min.x &&
-           _min.y >= AABB2._min.y &&
-           _min.z >= AABB2._min.z;
+    if (_min.x > AABB2._max.x) return false;
+    if (_min.y > AABB2._max.y) return false;
+    if (_min.z > AABB2._max.z) return false;
+    
+    if (_max.x < AABB2._min.x) return false;
+    if (_max.y < AABB2._min.y) return false;
+    if (_max.z < AABB2._min.z) return false;
+
+    return true;
 }
 
 bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const {

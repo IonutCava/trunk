@@ -136,8 +136,8 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
-            GFX.occlusionCull(0);
             if (_useZPrePass) {
+                GFX.occlusionCull(0);
                 GFX.toggleDepthWrites(false);
             }
             GFX.getRenderTarget(target)._buffer->begin(_useZPrePass ? _noDepthClear : Framebuffer::defaultPolicy());

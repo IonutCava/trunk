@@ -223,6 +223,7 @@ class NOINITVTABLE Scene : public Resource {
     bool loadModel(const FileData& data);
     bool loadGeometry(const FileData& data);
     virtual bool unload();
+    virtual void postLoad();
     /// Description in SceneManager
     virtual bool initializeAI(bool continueOnErrors);
     virtual bool deinitializeAI(bool continueOnErrors);
@@ -293,6 +294,10 @@ class SceneManager {
         return scene.load(name, guiInterface);
     }
     static bool unload(Scene& scene) { return scene.unload(); }
+
+    static void postLoad(Scene& scene) {
+        scene.postLoad();
+    }
 
     friend class Divide::SceneManager;
 };

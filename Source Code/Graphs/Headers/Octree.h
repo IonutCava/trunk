@@ -42,26 +42,28 @@ class Octree : public std::enable_shared_from_this<Octree> {
     static const I32 MAX_LIFE_SPAN_LIMIT = 32;
 
     public:
-        Octree();
-        Octree(const BoundingBox& rootAABB);
-        Octree(const BoundingBox& rootAABB,
-                vectorImpl<SceneGraphNode_wptr> objects);
+        Octree(U32 nodeMask);
+        Octree(U32 nodeMask, const BoundingBox& rootAABB);
+        Octree(U32 nodeMask, const BoundingBox& rootAABB, const vectorImpl<SceneGraphNode_wptr>& nodes);
+
         ~Octree();
 
-        void updateTree();
         void update(const U64 deltaTime);
-        void addNode(SceneGraphNode& node);
+        void addNode(SceneGraphNode_wptr node);
+        void addNodes(const vectorImpl<SceneGraphNode_wptr>& nodes);
         void getAllRegions(vectorImpl<BoundingBox>& regionsOut) const;
 
         inline const BoundingBox& getRegion() const {
             return _region;
         }
 
-        static void registerMovedNode(SceneGraphNode& node);
+        void registerMovedNode(SceneGraphNode& node);
 
     private:
+        U8 activeNodes() const;
         void buildTree();
         void insert(SceneGraphNode_wptr object);
+        void findEnclosingBox();
         void findEnclosingCube();
         std::shared_ptr<Octree>
         createNode(const BoundingBox& region, const vectorImpl<SceneGraphNode_wptr>& objects);
@@ -70,9 +72,9 @@ class Octree : public std::enable_shared_from_this<Octree> {
         createNode(const BoundingBox& region, SceneGraphNode_wptr object);
 
     private:
+        U32 _nodeMask;
         I32 _curLife;
         I32 _maxLifespan;
-        bool _hasChildren;
         BoundingBox _region;
         std::shared_ptr<Octree> _parent;
         std::array<bool, 8> _activeNodes;
@@ -81,7 +83,6 @@ class Octree : public std::enable_shared_from_this<Octree> {
         vectorImpl<SceneGraphNode_wptr> _movedObjects;
 
         static vectorImpl<I64> _movedObjectsQueue;
-        static std::queue<SceneGraphNode_ptr> _pendingInsertion;
         static bool _treeReady;
         static bool _treeBuilt;
             

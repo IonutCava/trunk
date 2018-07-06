@@ -74,6 +74,8 @@ class ParticleEmitter : public SceneNode {
     U32 getAliveParticleCount() const;
 
    protected:
+    void computeBoundingBox(); 
+
     void postLoad(SceneGraphNode& sgn)  override;
 
     /// preprocess particles here

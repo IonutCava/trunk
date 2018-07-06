@@ -53,7 +53,7 @@ BloomPreRenderOperator::~BloomPreRenderOperator() {
 
 void BloomPreRenderOperator::idle() {
     _bloomApply->Uniform("bloomFactor",
-                         ParamHandler::getInstance().getParam<F32>(_ID("postProcessing.bloomFactor"), 0.8));
+                         ParamHandler::getInstance().getParam<F32>(_ID("postProcessing.bloomFactor"), 0.8f));
 }
 
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {

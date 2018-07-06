@@ -10,6 +10,10 @@
 
 namespace Divide {
 
+namespace {
+    const bool MULTITHREADED_BOUNDING_BOX_CALCULATION = false;
+};
+
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
     : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
     _parentAnimatorPtr(nullptr)
@@ -100,14 +104,19 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
 
     if (_boundingBoxesAvailable.at(animationIndex) == false) {
         if (_boundingBoxesComputing.at(animationIndex) == false) {
-            DELEGATE_CBK<> buildBB = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
-                                                   this, animationIndex, animComp);
-            DELEGATE_CBK<> builBBComplete = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
-                                                          this, animationIndex);
-            _bbBuildTasks.push_back(Application::getInstance()
-                .getKernel()
-                .AddTask(1, 1, buildBB, builBBComplete));
-            _bbBuildTasks.back().lock()->startTask(Task::TaskPriority::DONT_CARE);
+            if (MULTITHREADED_BOUNDING_BOX_CALCULATION) {
+                DELEGATE_CBK<> buildBB = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                                       this, animationIndex, animComp);
+                DELEGATE_CBK<> builBBComplete = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
+                                                              this, animationIndex);
+                _bbBuildTasks.push_back(Application::getInstance()
+                    .getKernel()
+                    .AddTask(1, 1, buildBB, builBBComplete));
+                _bbBuildTasks.back().lock()->startTask(Task::TaskPriority::DONT_CARE);
+            } else {
+                buildBoundingBoxesForAnim(animationIndex, animComp);
+                buildBoundingBoxesForAnimCompleted(animationIndex);
+            }
         }
     }
 }
@@ -120,8 +129,7 @@ SkinnedSubMesh::getBoundingBox(const SceneGraphNode& sgn) {
         // Attempt to get the map of BBs for the current animation
         U32 animationIndex = animComp->animationIndex();
         if (_boundingBoxesAvailable.at(animationIndex) == true) {
-            SceneNode::BoundingBoxPair& pair = 
-                _boundingBoxes.at(animationIndex).at(animComp->frameIndex());
+            SceneNode::BoundingBoxPair& pair =  _boundingBoxes.at(animationIndex).at(animComp->frameIndex());
             pair.second = true;
             return pair;
         }

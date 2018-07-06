@@ -320,7 +320,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     _currentSky = addSky();
     // Position camera
     renderState().getCamera().setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
-    renderState().getCamera().setGlobalRotation(-90 /*yaw*/, 59.21 /*pitch*/);
+    renderState().getCamera().setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);

@@ -66,7 +66,7 @@ class PhysicsComponent : public SGNComponent {
         public:
            TransformMask()
            {
-               _transformFlags.fill(false);
+               clearAllFlags();
            }
 
            inline bool hasSetFlags() const {
@@ -82,15 +82,19 @@ class PhysicsComponent : public SGNComponent {
            }
 
            inline bool getFlag(TransformType type) const {
-               return _transformFlags[to_uint(type)];
+               return _transformFlags[to_uint(type)] == true;
            }
 
            inline void clearAllFlags() {
-               _transformFlags.fill(false);
+               _transformFlags[to_const_uint(TransformType::SCALE)] = false;
+               _transformFlags[to_const_uint(TransformType::ROTATION)] = false;
+               _transformFlags[to_const_uint(TransformType::TRANSLATION)] = false;
            }
 
            inline void setAllFlags() {
-               _transformFlags.fill(true);
+               _transformFlags[to_const_uint(TransformType::SCALE)] = true;
+               _transformFlags[to_const_uint(TransformType::ROTATION)] = true;
+               _transformFlags[to_const_uint(TransformType::TRANSLATION)] = true;
            }
 
            inline bool clearFlag(TransformType type) {
@@ -110,7 +114,7 @@ class PhysicsComponent : public SGNComponent {
                        other.getFlag(TransformType::TRANSLATION);
            }
         private:
-           std::array<bool, to_const_uint(TransformType::COUNT)> _transformFlags;
+           std::array<AtomicWrapper<bool>, to_const_uint(TransformType::COUNT)> _transformFlags;
     };
 
     struct IgnoreViewSettings {
@@ -246,10 +250,6 @@ class PhysicsComponent : public SGNComponent {
         return _transformUpdatedMask;
     }
 
-    inline TransformMask& transformUpdateMask() {
-        return _transformUpdatedMask;
-    }
-
    private:
     void setTransformDirty(TransformType type);
     bool isParentTransformDirty(bool interp) const;
@@ -265,8 +265,9 @@ class PhysicsComponent : public SGNComponent {
     TransformMask _transformUpdatedMask;
     /// Transform cache values
     std::atomic_bool _dirty;
+    std::atomic_bool _dirtyInterp;
+
     mat4<F32> _worldMatrix;
-    bool _dirtyInterp;
     D32  _prevInterpValue;
     mat4<F32> _worldMatrixInterp;
 };

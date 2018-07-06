@@ -76,6 +76,8 @@ void Light::postLoad(SceneGraphNode& sgn) {
 
     _lightSGN = &sgn;
     _lightSGN->getComponent<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
+    _lightSGN->lockBBTransforms(true);
+    computeBoundingBox();
     SceneNode::postLoad(sgn);
 }
 
