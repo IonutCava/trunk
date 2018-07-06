@@ -123,10 +123,10 @@ void PhysXScene::postLoadMainThread() {
     _GUI->addText("fpsDisplay",  // Unique ID
         pixelPosition(60, 20),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 64, 255, 255),  // Colour
+                  UColour(0, 64, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText("RenderBinCount", pixelPosition(60, 30), Font::DIVIDE_DEFAULT,
-        vec4<U8>(164, 64, 64, 255),
+                  UColour(164, 64, 64, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 
     Scene::postLoadMainThread();

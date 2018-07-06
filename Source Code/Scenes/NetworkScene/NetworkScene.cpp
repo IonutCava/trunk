@@ -2,6 +2,7 @@
 
 #include "Headers/NetworkScene.h"
 
+#include "GUI/Headers/GUIButton.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
@@ -22,9 +23,9 @@ NetworkScene::~NetworkScene()
 
 void NetworkScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     Light* light = _lightPool->getLight(0, LightType::DIRECTIONAL);
-    vec4<F32> vSunColour = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
-        vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
-        0.25f + cosf(_sunAngle.y) * 0.75f);
+    FColour vSunColour = Lerp(FColour(1.0f, 0.5f, 0.0f, 1.0f),
+                              FColour(1.0f, 1.0f, 0.8f, 1.0f),
+                              0.25f + cosf(_sunAngle.y) * 0.75f);
 
     light->setDiffuseColour(vSunColour);
 
@@ -122,48 +123,55 @@ void NetworkScene::postLoadMainThread() {
     _GUI->addText("fpsDisplay",  // Unique ID
         RelativePosition2D(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 60.0f)),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 164, 255, 255),  // Colour
+                  UColour(0, 164, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText("timeDisplay",
         RelativePosition2D(RelativeValue(0.0f, 60.0f), RelativeValue(0.0f, 70.0f)),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(164, 64, 64, 255),
+                  UColour(164, 64, 64, 255),
         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
 
     _GUI->addText("serverMessage",
                   pixelPosition(resolution.width / 4,
             resolution.height / 1),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(128, 128, 64, 255),
+                  UColour(128, 128, 64, 255),
         Util::StringFormat("Server says: %s", "<< nothing yet >>"));
     _GUI->addText("statusText",
                   pixelPosition(resolution.width / 3,
             resolution.height / 2),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(64, 128, 64, 255),
+                  UColour(64, 128, 64, 255),
         "");
 
-    _GUI->addButton(
-        _ID("getPing"), "ping me",
-        pixelPosition(60, to_I32(resolution.height / 1.1f)),
-        pixelScale(100, 25),
-        DELEGATE_BIND(&NetworkScene::test, this, std::placeholders::_1));
-    _GUI->addButton(
-        _ID("disconnect"), "disconnect",
-        pixelPosition(180, to_I32(resolution.height / 1.1f)),
-        pixelScale(100, 25),
-        DELEGATE_BIND(&NetworkScene::disconnect, this, std::placeholders::_1));
-    _GUI->addButton(
-        _ID("connect"), "connect",
-        pixelPosition(300, to_I32(resolution.height / 1.1f)),
-        pixelScale(100, 25),
-        DELEGATE_BIND(&NetworkScene::connect, this, std::placeholders::_1));
-    _GUI->addButton(
-        _ID("patch"), "patch",
-        pixelPosition(420, to_I32(resolution.height / 1.1f)),
-        pixelScale(100, 25),
-        DELEGATE_BIND(&NetworkScene::checkPatches, this, std::placeholders::_1));
+    GUIButton* btn = _GUI->addButton(_ID("getPing"),
+                                     "ping me",
+                                     pixelPosition(60, to_I32(resolution.height / 1.1f)),
+                                     pixelScale(100, 25));
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          DELEGATE_BIND(&NetworkScene::test, this, std::placeholders::_1));
 
+    btn = _GUI->addButton(_ID("disconnect"),
+                          "disconnect",
+                          pixelPosition(180, to_I32(resolution.height / 1.1f)),
+                          pixelScale(100, 25));
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          DELEGATE_BIND(&NetworkScene::disconnect, this, std::placeholders::_1));
+   
+    btn = _GUI->addButton(_ID("connect"),
+                          "connect",
+                          pixelPosition(300, to_I32(resolution.height / 1.1f)),
+                          pixelScale(100, 25));
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          DELEGATE_BIND(&NetworkScene::connect, this, std::placeholders::_1));
+
+    btn = _GUI->addButton(_ID("patch"),
+                          "patch",
+                          pixelPosition(420, to_I32(resolution.height / 1.1f)),
+                          pixelScale(100, 25));
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          DELEGATE_BIND(&NetworkScene::checkPatches, this, std::placeholders::_1));
+   
     Scene::postLoadMainThread();
 }
 

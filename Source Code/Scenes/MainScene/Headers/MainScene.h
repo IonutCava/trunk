@@ -60,7 +60,8 @@ class MainScene : public Scene {
 
    private:
     vec2<F32> _sunAngle;
-    vec4<F32> _sunvector, _sunColour;
+    vec4<F32> _sunvector;
+    FColour _sunColour;
     F32 _sun_cosy;
     bool _musicPlaying;
     bool _freeflyCamera;

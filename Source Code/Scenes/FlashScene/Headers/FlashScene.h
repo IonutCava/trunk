@@ -55,7 +55,7 @@ class FlashScene : public Scene {
     vec2<F32> _sunAngle;
     vec3<F32> _sunvector;
     F32 update_time;
-    vec4<F32> _vSunColour;
+    FColour _vSunColour;
 };
 
 };  // namespace Divide

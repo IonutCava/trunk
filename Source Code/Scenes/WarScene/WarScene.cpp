@@ -3,6 +3,7 @@
 #include "Headers/WarScene.h"
 #include "Headers/WarSceneAIProcessor.h"
 
+#include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Headers/PlatformContext.h"
@@ -174,7 +175,7 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
         _sun->get<TransformComponent>()->setPosition(sunVector);
-        vec4<F32> sunColour = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
+        FColour sunColour = FColour(1.0f, 1.0f, 0.2f, 1.0f);
 
         _sun->getNode<Light>()->setDiffuseColour(sunColour);
 
@@ -298,8 +299,8 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 
     // renderState().drawDebugLines(true);
     vec3<F32> tempDestination;
-    vec4<U8> redLine(255,0,0,128);
-    vec4<U8> blueLine(0,0,255,128);
+    UColour redLine(255,0,0,128);
+    UColour blueLine(0,0,255,128);
     vectorImpl<Line> paths;
     paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
     for (U8 i = 0; i < 2; ++i) {
@@ -556,10 +557,10 @@ bool WarScene::load(const stringImpl& name) {
     particleSource->addGenerator(boxGenerator);
 
     std::shared_ptr<ParticleColourGenerator> colGenerator = std::make_shared<ParticleColourGenerator>();
-    colGenerator->_minStartCol.set(Util::ToByteColour(vec4<F32>(0.7f, 0.4f, 0.4f, 1.0f)));
-    colGenerator->_maxStartCol.set(Util::ToByteColour(vec4<F32>(1.0f, 0.8f, 0.8f, 1.0f)));
-    colGenerator->_minEndCol.set(Util::ToByteColour(vec4<F32>(0.5f, 0.2f, 0.2f, 0.5f)));
-    colGenerator->_maxEndCol.set(Util::ToByteColour(vec4<F32>(0.7f, 0.5f, 0.5f, 0.75f)));
+    colGenerator->_minStartCol.set(Util::ToByteColour(FColour(0.7f, 0.4f, 0.4f, 1.0f)));
+    colGenerator->_maxStartCol.set(Util::ToByteColour(FColour(1.0f, 0.8f, 0.8f, 1.0f)));
+    colGenerator->_minEndCol.set(Util::ToByteColour(FColour(0.5f, 0.2f, 0.2f, 0.5f)));
+    colGenerator->_maxEndCol.set(Util::ToByteColour(FColour(0.7f, 0.5f, 0.5f, 0.75f)));
     particleSource->addGenerator(colGenerator);
 
     std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
@@ -725,42 +726,46 @@ bool WarScene::loadResources(bool continueOnErrors) {
 void WarScene::postLoadMainThread() {
     const vec2<U16>& resolution = _context.gfx().renderingResolution();
 
-    _GUI->addButton(_ID("Simulate"), "Simulate",
-                    pixelPosition(resolution.width - 220, 60),
-       pixelScale(100, 25),
-        DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
+    GUIButton* btn = _GUI->addButton(_ID("Simulate"),
+                                     "Simulate",
+                                     pixelPosition(resolution.width - 220, 60),
+                                     pixelScale(100, 25));
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
 
-    _GUI->addButton(_ID("ShaderReload"), "Shader Reload",
-                    pixelPosition(resolution.width - 220, 30),
-        pixelScale(100, 25),
-        [this](I64 btnID) { rebuildShaders(); });
+    btn = _GUI->addButton(_ID("ShaderReload"),
+                          "Shader Reload",
+                          pixelPosition(resolution.width - 220, 30),
+                          pixelScale(100, 25));
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                         [this](I64 btnID) { rebuildShaders(); });
 
     _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 63),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 50, 255, 255), // Colour
+                  UColour(0, 50, 255, 255), // Colour
         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
     _GUI->addText("RenderBinCount",
                   pixelPosition(60, 83),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(164, 50, 50, 255),
+                  UColour(164, 50, 50, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
     _GUI->addText("camPosition", pixelPosition(60, 103),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(50, 192, 50, 255),
+                  UColour(50, 192, 50, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 
     _GUI->addText("scoreDisplay",
                   pixelPosition(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(50, 192, 50, 255),// Colour
+                  UColour(50, 192, 50, 255),// Colour
         Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
 
     _GUI->addText("entityState",
                   pixelPosition(60, 163),
                   Font::DIVIDE_DEFAULT,
-                  vec4<U8>(0, 0, 0, 255),
+                  UColour(0, 0, 0, 255),
                   "");
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");

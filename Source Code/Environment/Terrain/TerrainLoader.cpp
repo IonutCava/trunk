@@ -204,8 +204,8 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     Attorney::TerrainLoader::altitudeRange(*terrain).set(altitudeRange);
 
     F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
-    terrainMaterial->setDiffuse(vec4<F32>(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
-    terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
+    terrainMaterial->setDiffuse(FColour(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
+    terrainMaterial->setSpecular(FColour(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
     terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
 

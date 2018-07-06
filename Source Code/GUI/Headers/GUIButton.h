@@ -53,13 +53,29 @@ class GUIButton : public GUIElement {
     friend class GUIInterface;
     friend class SceneGUIElements;
 
+    public:
+    enum class Event : U8 {
+        HoverEnter = 0,
+        HoverLeave,
+        MouseDown,
+        MouseUp,
+        MouseMove,
+        MouseClick,
+        MouseDoubleClick,
+        MouseTripleClick,
+        COUNT
+    };
+
    public:
     void setTooltip(const stringImpl& tooltipText);
     void setText(const stringImpl& text);
     void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
     void setActive(const bool active) override;
     void setVisible(const bool visible) override;
-    void setOnClickSound(const AudioDescriptor_ptr& onClickSound);
+
+    void setEventCallback(Event event, ButtonCallback callback);
+    void setEventSound(Event event, AudioDescriptor_ptr sound);
+    void setEventCallback(Event event, ButtonCallback callback, AudioDescriptor_ptr sound);
 
     // return false if we replace an existing callback
     static bool soundCallback(const AudioCallback& cbk);
@@ -71,20 +87,28 @@ class GUIButton : public GUIElement {
               const stringImpl& guiScheme, 
               const RelativePosition2D& offset,
               const RelativeScale2D& size,
-              CEGUI::Window* parent,
-              ButtonCallback callback,
-              AudioDescriptor_ptr onClickSound);
+              CEGUI::Window* parent);
+
     ~GUIButton();
 
-    bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
+    bool onEvent(Event event, const CEGUI::EventArgs& /*e*/);
+    bool onMove(const CEGUI::EventArgs& e);
+    bool onHoverEnter(const CEGUI::EventArgs& e);
+    bool onHoverLeave(const CEGUI::EventArgs& e);
+    bool onButtonDown(const CEGUI::EventArgs& e);
+    bool onButtonUp(const CEGUI::EventArgs& e);
+    bool onClick(const CEGUI::EventArgs& e);
+    bool onDoubleClick(const CEGUI::EventArgs& e);
+    bool onTripleClick(const CEGUI::EventArgs& e);
 
    protected:;
     /// A pointer to a function to call if the button is pressed
-    ButtonCallback _callbackFunction;
-    CEGUI::Window* _btnWindow;
-    AudioDescriptor_ptr _onClickSound;
+    std::array<ButtonCallback, to_base(Event::COUNT)> _callbackFunction;
+    std::array<AudioDescriptor_ptr, to_base(Event::COUNT)> _eventSound;
 
-    static AudioCallback _soundCallback;
+    CEGUI::Window* _btnWindow;
+
+    static AudioCallback s_soundCallback;
 };
 
 };  // namespace Divide

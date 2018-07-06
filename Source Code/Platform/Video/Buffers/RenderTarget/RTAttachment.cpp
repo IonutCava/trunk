@@ -59,11 +59,11 @@ bool RTAttachment::changed() const {
     return _changed;
 }
 
-void RTAttachment::clearColour(const vec4<F32>& clearColour) {
+void RTAttachment::clearColour(const FColour& clearColour) {
     _descriptor._clearColour.set(clearColour);
 }
 
-const vec4<F32>& RTAttachment::clearColour() const {
+const FColour& RTAttachment::clearColour() const {
     return _descriptor._clearColour;
 }
 

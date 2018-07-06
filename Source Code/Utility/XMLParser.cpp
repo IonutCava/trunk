@@ -799,15 +799,15 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
     mat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
 
     mat->setDiffuse(
-        vec4<F32>(pt.get<F32>("material.diffuse.<xmlattr>.r", 0.6f),
-                  pt.get<F32>("material.diffuse.<xmlattr>.g", 0.6f),
-                  pt.get<F32>("material.diffuse.<xmlattr>.b", 0.6f),
-                  pt.get<F32>("material.diffuse.<xmlattr>.a", 1.f)));
+        FColour(pt.get<F32>("material.diffuse.<xmlattr>.r", 0.6f),
+                pt.get<F32>("material.diffuse.<xmlattr>.g", 0.6f),
+                pt.get<F32>("material.diffuse.<xmlattr>.b", 0.6f),
+                pt.get<F32>("material.diffuse.<xmlattr>.a", 1.f)));
     mat->setSpecular(
-        vec4<F32>(pt.get<F32>("material.specular.<xmlattr>.r", 1.f),
-                  pt.get<F32>("material.specular.<xmlattr>.g", 1.f),
-                  pt.get<F32>("material.specular.<xmlattr>.b", 1.f),
-                  pt.get<F32>("material.specular.<xmlattr>.a", 1.f)));
+        FColour(pt.get<F32>("material.specular.<xmlattr>.r", 1.f),
+                pt.get<F32>("material.specular.<xmlattr>.g", 1.f),
+                pt.get<F32>("material.specular.<xmlattr>.b", 1.f),
+                pt.get<F32>("material.specular.<xmlattr>.a", 1.f)));
     mat->setEmissive(
         vec3<F32>(pt.get<F32>("material.emissive.<xmlattr>.r", 0.f),
                   pt.get<F32>("material.emissive.<xmlattr>.g", 0.f),

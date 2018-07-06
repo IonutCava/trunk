@@ -111,13 +111,13 @@ class Material : public CachedResource {
     /// ShaderData stores information needed by the shader code to properly
     /// shade objects
     struct ColourData {
-        vec4<F32> _diffuse;  /* diffuse component */
-        vec4<F32> _specular; /* specular component*/
-        vec4<F32> _emissive; /* emissive component*/
-        F32 _shininess;      /* specular exponent */
+        FColour _diffuse;  /* diffuse component */
+        FColour _specular; /* specular component*/
+        FColour _emissive; /* emissive component*/
+        F32 _shininess;    /* specular exponent */
 
         ColourData()
-            : _diffuse(vec4<F32>(VECTOR3_UNIT / 1.5f, 1)),
+            : _diffuse(FColour(VECTOR3_UNIT / 1.5f, 1)),
               _specular(0.8f, 0.8f, 0.8f, 1.0f),
               _emissive(0.0f, 0.0f, 0.0f, 1.0f),
               _shininess(5)
@@ -153,8 +153,8 @@ class Material : public CachedResource {
     void update(const U64 deltaTimeUS);
 
     void setColourData(const ColourData& other);
-    void setDiffuse(const vec4<F32>& value);
-    void setSpecular(const vec4<F32>& value);
+    void setDiffuse(const FColour& value);
+    void setSpecular(const FColour& value);
     void setEmissive(const vec3<F32>& value);
     void setHardwareSkinning(const bool state);
     void setOpacity(F32 value);

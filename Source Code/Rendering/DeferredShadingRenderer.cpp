@@ -112,14 +112,14 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     gui.addText("PositionData",                // Unique ID
                 position,                      // Position
                 Font::DIVIDE_DEFAULT,          // Font
-                vec4<U8>(0, 64, 255, 255),     // Colour
+                UColour(0, 64, 255, 255),      // Colour
                 "POSITION DATA");              // Text
 
     position.d_x.d_offset = 60.0f + width / 2;
     gui.addText("NormalData",                  // Unique ID
                 position,                      // Position
                 Font::DIVIDE_DEFAULT,          // Font
-                vec4<U8>(0, 64, 255, 255),     // Colour
+                UColour(0, 64, 255, 255),      // Colour
                 "NORMAL DATA");                // Text
 
     position.d_x.d_offset = 60.0f;
@@ -127,7 +127,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     gui.addText("FinalImage",                   // Unique ID
                 position,                       // Position
                 Font::DIVIDE_DEFAULT,           // Font
-                vec4<U8>(0, 64, 255, 255),      // Colour
+                UColour(0, 64, 255, 255),       // Colour
                 "FINAL IMAGE");                 // Text
 
     position.d_x.d_offset = 60.0f + width / 2;
@@ -135,7 +135,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     gui.addText("LightTexture",                 // Unique ID
                 position,                       // Position
                 Font::DIVIDE_DEFAULT,           // Font
-                vec4<U8>(0, 64, 255, 255),      // Colour
+                UColour(0, 64, 255, 255),       // Colour
                 "LIGHT TEXTURE");               // Text
 }
 

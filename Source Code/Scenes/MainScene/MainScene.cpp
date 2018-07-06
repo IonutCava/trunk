@@ -38,8 +38,8 @@ void MainScene::updateLights() {
 
     _sun_cosy = cosf(_sunAngle.y);
     _sunColour =
-        Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
-             vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
+        Lerp(FColour(1.0f, 0.5f, 0.0f, 1.0f),
+             FColour(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
     _sun->get<TransformComponent>()->setPosition(_sunvector);
     _sun->getNode<Light>()->setDiffuseColour(_sunColour);
@@ -325,19 +325,19 @@ void MainScene::postLoadMainThread() {
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     _GUI->addText("timeDisplay", pixelPosition(60, 80), Font::DIVIDE_DEFAULT,
-        vec4<U8>(164, 64, 64, 255),
+        UColour(164, 64, 64, 255),
         Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
     _GUI->addText("underwater", pixelPosition(60, 115), Font::DIVIDE_DEFAULT,
-        vec4<U8>(64, 200, 64, 255),
+                  UColour(64, 200, 64, 255),
         Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]", "false", 0));
     _GUI->addText("RenderBinCount", pixelPosition(60, 135), Font::BATANG,
-        vec4<U8>(164, 64, 64, 255),
+                  UColour(164, 64, 64, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 
     const vec3<F32>& eyePos = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getEye();
     const vec3<F32>& euler = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getEuler();
     _GUI->addText("camPosition", pixelPosition(60, 100), Font::DIVIDE_DEFAULT,
-        vec4<U8>(64, 200, 64, 255),
+                  UColour(64, 200, 64, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
 

@@ -8,7 +8,8 @@
 
 namespace Divide {
 
-GUIButton::AudioCallback GUIButton::_soundCallback;
+
+GUIButton::AudioCallback GUIButton::s_soundCallback;
 
 GUIButton::GUIButton(U64 guiID,
                      const stringImpl& name,
@@ -16,16 +17,14 @@ GUIButton::GUIButton(U64 guiID,
                      const stringImpl& guiScheme,
                      const RelativePosition2D& offset,
                      const RelativeScale2D& size,
-                     CEGUI::Window* parent,
-                     ButtonCallback callback,
-                     AudioDescriptor_ptr onClickSound)
+                     CEGUI::Window* parent)
     : GUIElement(guiID, name, parent, GUIType::GUI_BUTTON),
-      _callbackFunction(callback),
-      _btnWindow(nullptr),
-      _onClickSound(onClickSound)
+      _btnWindow(nullptr)
 {
     
-    _btnWindow = CEGUI::WindowManager::getSingleton().createWindow((guiScheme + "/Button").c_str(), text.c_str());
+    static stringImpl buttonInfo = guiScheme + "/Button";
+
+    _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(buttonInfo.c_str(), name.c_str());
 
     _btnWindow->setPosition(offset);
 
@@ -33,10 +32,24 @@ GUIButton::GUIButton(U64 guiID,
 
     _btnWindow->setText(text.c_str());
 
-    _btnWindow->subscribeEvent(CEGUI::PushButton::EventClicked,
-                               CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
-
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseMove,
+                               CEGUI::Event::Subscriber(&GUIButton::onMove, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseEntersArea,
+                               CEGUI::Event::Subscriber(&GUIButton::onHoverEnter, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseLeavesArea,
+                               CEGUI::Event::Subscriber(&GUIButton::onHoverLeave, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseButtonDown,
+                               CEGUI::Event::Subscriber(&GUIButton::onButtonDown, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseButtonUp,
+                               CEGUI::Event::Subscriber(&GUIButton::onButtonUp, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseClick,
+                               CEGUI::Event::Subscriber(&GUIButton::onClick, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseDoubleClick,
+                               CEGUI::Event::Subscriber(&GUIButton::onDoubleClick, this));
+    _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseDoubleClick,
+                               CEGUI::Event::Subscriber(&GUIButton::onTripleClick, this));
     _parent->addChild(_btnWindow);
+
     setActive(true);
 }
 
@@ -71,7 +84,7 @@ void GUIButton::setFont(const stringImpl& fontName,
                         const stringImpl& fontFileName, U32 size) {
     if (!fontName.empty()) {
         if (!CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {
-            CEGUI::FontManager::getSingleton().createFreeTypeFont(
+             CEGUI::FontManager::getSingleton().createFreeTypeFont(
                 fontName.c_str(), to_F32(size), true, fontFileName.c_str());
         }
 
@@ -81,27 +94,67 @@ void GUIButton::setFont(const stringImpl& fontName,
     }
 }
 
-bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/) {
-    if (_callbackFunction) {
-        _callbackFunction(getGUID());
-        if (_onClickSound && _soundCallback) {
-            _soundCallback(_onClickSound);
+bool GUIButton::soundCallback(const AudioCallback& cbk) {
+    bool hasCbk = s_soundCallback ? true : false;
+    s_soundCallback = cbk;
+
+    return hasCbk;
+}
+
+bool GUIButton::onEvent(Event event, const CEGUI::EventArgs& /*e*/) {
+    if (_callbackFunction[to_base(event)]) {
+        _callbackFunction[to_base(event)](getGUID());
+        if (_eventSound[to_base(event)] && s_soundCallback) {
+            s_soundCallback(_eventSound[to_base(event)]);
         }
         return true;
     }
     return false;
 }
 
-void GUIButton::setOnClickSound(const AudioDescriptor_ptr& onClickSound) {
-    _onClickSound = onClickSound;
+bool GUIButton::onMove(const CEGUI::EventArgs& e) {
+    return onEvent(Event::MouseMove, e);
 }
 
+bool GUIButton::onHoverEnter(const CEGUI::EventArgs& e) {
+    return onEvent(Event::HoverEnter, e);
+}
 
-bool GUIButton::soundCallback(const AudioCallback& cbk) {
-    bool hasCbk = _soundCallback ? true : false;
-    _soundCallback = cbk;
+bool GUIButton::onHoverLeave(const CEGUI::EventArgs& e) {
+    return onEvent(Event::HoverLeave, e);
+}
 
-    return hasCbk;
+bool GUIButton::onButtonDown(const CEGUI::EventArgs& e) {
+    return onEvent(Event::MouseDown, e);
+}
+
+bool GUIButton::onButtonUp(const CEGUI::EventArgs& e) {
+    return onEvent(Event::MouseUp, e);
+}
+
+bool GUIButton::onClick(const CEGUI::EventArgs& e) {
+    return onEvent(Event::MouseClick, e);
+}
+
+bool GUIButton::onDoubleClick(const CEGUI::EventArgs& e) {
+    return onEvent(Event::MouseDoubleClick, e);
+}
+
+bool GUIButton::onTripleClick(const CEGUI::EventArgs& e) {
+    return onEvent(Event::MouseTripleClick, e);
+}
+
+void GUIButton::setEventCallback(Event event, ButtonCallback callback) {
+    _callbackFunction[to_base(event)] = callback;
+}
+
+void GUIButton::setEventSound(Event event, AudioDescriptor_ptr sound) {
+    _eventSound[to_base(event)] = sound;
+}
+
+void GUIButton::setEventCallback(Event event, ButtonCallback callback, AudioDescriptor_ptr sound) {
+    setEventCallback(event, callback);
+    setEventSound(event, sound);
 }
 
 };

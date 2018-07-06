@@ -1128,7 +1128,7 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
 
             for (size_t i = 0; i < regionCount; ++i) {
                 const BoundingBox& box = _octreeBoundingBoxes[i];
-                _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
+                _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), UColour(255, 0, 255, 255));
                 bufferInOut.add(_octreePrimitives[i]->toCommandBuffer());
             }
         }

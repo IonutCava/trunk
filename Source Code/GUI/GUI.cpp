@@ -155,6 +155,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
+    _defaultGUIScheme = context.config().gui.cegui.defaultGUIScheme;
 
     _console = MemoryManager_NEW GUIConsole(*this, context, cache);
 
@@ -163,8 +164,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     }
 
     CEGUI::DefaultResourceProvider* rp
-        = static_cast<CEGUI::DefaultResourceProvider*>(
-            CEGUI::System::getSingleton().getResourceProvider());
+        = static_cast<CEGUI::DefaultResourceProvider*>(CEGUI::System::getSingleton().getResourceProvider());
 
     CEGUI::String CEGUIInstallSharePath(Paths::g_assetsLocation + Paths::g_GUILocation);
     rp->setResourceGroupDirectory("schemes", CEGUIInstallSharePath + "schemes/");
@@ -190,16 +190,14 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     }
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-10.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12.font");
-    CEGUI::FontManager::getSingleton().createFromFile(
-        "DejaVuSans-10-NoScale.font");
-    CEGUI::FontManager::getSingleton().createFromFile(
-        "DejaVuSans-12-NoScale.font");
-    _defaultGUIScheme = context.config().gui.cegui.defaultGUIScheme;
+    CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-10-NoScale.font");
+    CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
     CEGUI::SchemeManager::getSingleton().createFromFile((_defaultGUIScheme + ".scheme").c_str());
 
-    _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(
-        "DefaultWindow", "root_window");
+    _rootSheet = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "root_window");
     _rootSheet->setMousePassThroughEnabled(true);
+    _rootSheet->setUsingAutoRenderingSurface(false);
+    _rootSheet->setPixelAligned(false);
 
     CEGUI::Sizef size(static_cast<float>(renderResolution.width), static_cast<float>(renderResolution.height));
     // We create a CEGUI texture target and create a GUIContext that will use it.
@@ -210,12 +208,9 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     getCEGUIContext().setRootWindow(_rootSheet);
     getCEGUIContext().setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
     _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
-
-    _rootSheet->setPixelAligned(false);
     assert(_console);
     
-
-    //_console->CreateCEGUIWindow();
+    _console->createCEGUIWindow();
 
     _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
                                "Assertion failure",

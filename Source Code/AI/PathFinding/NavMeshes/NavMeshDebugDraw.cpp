@@ -108,7 +108,7 @@ void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z,
         colour = _colour;
     }
 
-    vec4<U8> colourVec;
+    UColour colourVec;
     rcCol(colour, colourVec.r, colourVec.g, colourVec.b, colourVec.a);
     colourVec.a = 64;
 

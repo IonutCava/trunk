@@ -76,26 +76,26 @@ namespace Divide {
         return _opacity;
     }
 
-    inline void DisplayWindow::clearColour(const vec4<F32>& colour, bool force) {
+    inline void DisplayWindow::clearColour(const FColour& colour, bool force) {
         _clearColour.set(colour);
         if (force) {
             _clearColourOriginal.set(colour);
         }
     }
 
-    inline vec4<F32>& DisplayWindow::clearColour() {
+    inline FColour& DisplayWindow::clearColour() {
         return _clearColour;
     }
 
-    inline const vec4<F32>& DisplayWindow::clearColour() const {
+    inline const FColour& DisplayWindow::clearColour() const {
         return _clearColour;
     }
 
-    inline vec4<F32>& DisplayWindow::originalClearColour() {
+    inline FColour& DisplayWindow::originalClearColour() {
         return _clearColourOriginal;
     }
 
-    inline const vec4<F32>& DisplayWindow::originalClearColour() const {
+    inline const FColour& DisplayWindow::originalClearColour() const {
         return _clearColourOriginal;
     }
 

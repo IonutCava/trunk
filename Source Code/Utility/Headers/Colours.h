@@ -38,20 +38,20 @@ namespace Divide {
 namespace DefaultColours {
 
 /// Random stuff added for convenience
-static vec4<F32> WHITE(1.0f, 1.0f, 1.0f, 1.0f);
-static vec4<F32> BLACK(0.0f, 0.0f, 0.0f, 1.0f);
-static vec4<F32> RED  (1.0f, 0.0f, 0.0f, 1.0f);
-static vec4<F32> GREEN(0.0f, 1.0f, 0.0f, 1.0f);
-static vec4<F32> BLUE (0.0f, 0.0f, 1.0f, 1.0f);
+static FColour WHITE(1.0f, 1.0f, 1.0f, 1.0f);
+static FColour BLACK(0.0f, 0.0f, 0.0f, 1.0f);
+static FColour RED  (1.0f, 0.0f, 0.0f, 1.0f);
+static FColour GREEN(0.0f, 1.0f, 0.0f, 1.0f);
+static FColour BLUE (0.0f, 0.0f, 1.0f, 1.0f);
 
-static vec4<U8> WHITE_U8(255, 255, 255, 255);
-static vec4<U8> BLACK_U8(0,   0,   0,   255);
-static vec4<U8> RED_U8  (255, 0,   0,   255);
-static vec4<U8> GREEN_U8(0,   255, 0,   255);
-static vec4<U8> BLUE_U8 (0,   0,   255, 255);
+static UColour WHITE_U8(255, 255, 255, 255);
+static UColour BLACK_U8(0,   0,   0,   255);
+static UColour RED_U8  (255, 0,   0,   255);
+static UColour GREEN_U8(0,   255, 0,   255);
+static UColour BLUE_U8 (0,   0,   255, 255);
 
-static vec4<F32> DIVIDE_BLUE(0.1f, 0.1f, 0.8f, 1.0f);
-static vec4<U8>  DIVIDE_BLUE_U8(26, 26, 204, 255);
+static FColour DIVIDE_BLUE(0.1f, 0.1f, 0.8f, 1.0f);
+static UColour  DIVIDE_BLUE_U8(26, 26, 204, 255);
 
 inline vec4<U8> RANDOM() {
     return vec4<U8>(Random<U8>(255),

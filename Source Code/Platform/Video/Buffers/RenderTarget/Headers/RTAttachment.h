@@ -50,7 +50,7 @@ struct RTAttachmentDescriptor {
     TextureDescriptor _texDescriptor;
     RTAttachmentType _type = RTAttachmentType::COUNT;
     U8 _index = 0;
-    vec4<F32> _clearColour = DefaultColours::WHITE;
+    FColour _clearColour = DefaultColours::WHITE;
 };
 
 class RTAttachment {
@@ -63,8 +63,8 @@ class RTAttachment {
         bool changed() const;
         void clearChanged();
 
-        void clearColour(const vec4<F32>& clearColour);
-        const vec4<F32>& clearColour() const;
+        void clearColour(const FColour& clearColour);
+        const FColour& clearColour() const;
 
         void mipWriteLevel(U16 level);
         U16  mipWriteLevel() const;

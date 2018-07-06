@@ -17,11 +17,6 @@
 #endif
 #include <CEGUI/CEGUI.h>
 
-#ifndef CEGUI_DEFAULT_CTX
-#define CEGUI_DEFAULT_CTX \
-    CEGUI::System::getSingleton().getDefaultGUIContext()
-#endif
-
 namespace Divide {
 
 namespace {
@@ -67,7 +62,7 @@ GUIConsole::~GUIConsole()
     _outputBuffer.clear();
 }
 
-void GUIConsole::CreateCEGUIWindow() {
+void GUIConsole::createCEGUIWindow() {
     if (_init) {
         Console::errorfn(Locale::get(_ID("ERROR_CONSOLE_DOUBLE_INIT")));
     }
@@ -90,6 +85,7 @@ void GUIConsole::CreateCEGUIWindow() {
                          layoutFile.c_str());
     }
 
+    _consoleWindow->setVisible(false);
     _init = true;
     Console::printfn(Locale::get(_ID("GUI_CONSOLE_CREATED")));
 }
@@ -153,31 +149,29 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs& e) {
 }
 
 void GUIConsole::setVisible(bool visible) {
-    if (!_init) {
-        CreateCEGUIWindow();
-    }
-    // if it's not the first key (e.g., if the toggle key is "~", then
-    // "lorem~ipsum" should not close the Window)
-    if (!_inputBuffer.empty()) {
-        return;
-    }
-    assert(_editBox != nullptr);
-    _consoleWindow->setVisible(visible);
+    if (_init) {
+        // if it's not the first key (e.g., if the toggle key is "~", then
+        // "lorem~ipsum" should not close the Window)
+        if (!_inputBuffer.empty()) {
+            return;
+        }
+        assert(_editBox != nullptr);
+        _consoleWindow->setVisible(visible);
 
-    if (visible) {
-        _editBox->activate();
-    } else {
-        _editBox->deactivate();
-        _editBox->setText("");
-    }
+        if (visible) {
+            _editBox->activate();
+        } else {
+            _editBox->deactivate();
+            _editBox->setText("");
+        }
 
-    printText(Console::OutputEntry(visible ? "Toggling console display: ON"
-                                           : "Toggling console display: OFF",
-                                   Console::EntryType::Info));
-    if (_outputWindow->getItemCount() > 0 && visible) {
-        _outputWindow->ensureItemIsVisible(
-            _outputWindow->getListboxItemFromIndex(
-                _outputWindow->getItemCount() - 1));
+        printText(Console::OutputEntry(visible ? "Toggling console display: ON"
+                                               : "Toggling console display: OFF",
+                                       Console::EntryType::Info));
+        size_t count = _outputWindow->getItemCount();
+        if (count > 0 && visible) {
+            _outputWindow->ensureItemIsVisible(count - 1);
+        }
     }
 }
 

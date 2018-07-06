@@ -38,8 +38,8 @@ bool FlashScene::load(const stringImpl& name) {
 bool FlashScene::loadResources(bool continueOnErrors) {
     _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     _sunvector =
-        vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
-                  -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
+        FColour(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
+                -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
     _guiTimersMS.push_back(0.0);
     i = 0;
@@ -51,7 +51,7 @@ void FlashScene::postLoadMainThread() {
         RelativePosition2D(RelativeValue(0.0f, 60.0f),
                            RelativeValue(0.0f, 60.0f)),  // Position
         Font::DIVIDE_DEFAULT,                            // Font
-        vec4<U8>(0, 64, 255, 255),                       // Colour
+        UColour(0, 64, 255, 255),                        // Colour
         Util::StringFormat("FPS: %d", 0));               // Text and arguments
 
     Scene::postLoadMainThread();

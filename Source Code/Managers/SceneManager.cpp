@@ -5,6 +5,7 @@
 #include "Headers/FrameListenerManager.h"
 
 #include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIButton.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/StringHelper.h"
@@ -103,7 +104,7 @@ const Scene& SceneManager::getActiveScene() const {
 
 void SceneManager::idle() {
     if (_sceneSwitchTarget.isSet()) {
-        PostFX::instance().setFadeOut(vec4<U8>(0), 1000.0, 0.0);
+        PostFX::instance().setFadeOut(UColour(0), 1000.0, 0.0);
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.loadInSeparateThread());
@@ -272,14 +273,16 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                 if (loadedScene->getGUID() != _scenePool->defaultScene().getGUID())
                 {
                     SceneGUIElements* gui = Attorney::SceneManager::gui(*loadedScene);
-                    gui->addButton(_ID_RT("Back"),
-                        "Back",
-                        pixelPosition(15, 15),
-                        pixelScale(50, 25),
+                    GUIButton* btn = gui->addButton(_ID_RT("Back"),
+                                                    "Back",
+                                                    pixelPosition(15, 15),
+                                                    pixelScale(50, 25));
+                    
+                    btn->setEventCallback(GUIButton::Event::MouseClick,
                         [this](I64 btnGUID)
-                    {
-                        _sceneSwitchTarget.set(_scenePool->defaultScene().getName(), true, false);
-                    });
+                        {
+                            _sceneSwitchTarget.set(_scenePool->defaultScene().getName(), true, false);
+                        });
                 }
             }
             assert(loadedScene->getState() == ResourceState::RES_LOADED);

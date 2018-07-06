@@ -40,7 +40,7 @@ inline void Material::setColourData(const ColourData& other) {
     _translucencyCheck = true;
 }
 
-inline void Material::setDiffuse(const vec4<F32>& value) {
+inline void Material::setDiffuse(const FColour& value) {
     _dirty = true;
     _colourData._diffuse = value;
     if (value.a < 0.95f) {
@@ -48,7 +48,7 @@ inline void Material::setDiffuse(const vec4<F32>& value) {
     }
 }
 
-inline void Material::setSpecular(const vec4<F32>& value) {
+inline void Material::setSpecular(const FColour& value) {
     _dirty = true;
     _colourData._specular = value;
 }

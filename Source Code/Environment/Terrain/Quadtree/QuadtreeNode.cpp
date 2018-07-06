@@ -192,7 +192,7 @@ void QuadtreeNode::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
 
     _bbPrimitive->fromBox(_boundingBox.getMin(),
                           _boundingBox.getMax(),
-                          vec4<U8>(0, 128, 255, 255));
+                          UColour(0, 128, 255, 255));
 
     packageOut.addCommandBuffer(_bbPrimitive->toCommandBuffer());
 

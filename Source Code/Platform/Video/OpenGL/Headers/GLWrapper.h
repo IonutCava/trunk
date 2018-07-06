@@ -186,7 +186,7 @@ public:
         setBlending(drawBufferIdx, enable, s_blendProperties[drawBufferIdx], force);
     }
 
-    static void setBlendColour(const vec4<U8>& blendColour, bool force = false);
+    static void setBlendColour(const UColour& blendColour, bool force = false);
     /// Switch the current framebuffer by binding it as either a R/W buffer, read
     /// buffer or write buffer
     static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
@@ -258,8 +258,8 @@ public:
         setScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
     }
 
-    static bool setClearColour(const vec4<F32>& colour);
-    inline static bool setClearColour(const vec4<U8>& colour) {
+    static bool setClearColour(const FColour& colour);
+    inline static bool setClearColour(const UColour& colour) {
         return setClearColour(Util::ToFloatColour(colour));
     }
 
@@ -357,11 +357,11 @@ private:
     static vectorImpl<BlendingProperties> s_blendProperties;
     static vectorImpl<GLboolean> s_blendEnabled;
 
-    static vec4<U8> s_blendColour;
+    static UColour   s_blendColour;
     static Rect<I32> s_activeViewport;
     static Rect<I32> s_previousViewport;
     static Rect<I32> s_activeScissor;
-    static vec4<F32> s_activeClearColour;
+    static FColour   s_activeClearColour;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;

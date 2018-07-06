@@ -20,7 +20,7 @@ namespace Divide {
 
 void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
     static DebugView* HiZPtr;
-    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, vec4<U8>(255), 96).getHash();
+    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour(255), 96).getHash();
 
     // As this is touched once per frame, we'll only enable it in debug builds
     if (Config::Build::IS_DEBUG_BUILD) {

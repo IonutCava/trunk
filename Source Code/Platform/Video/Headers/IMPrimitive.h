@@ -134,10 +134,10 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,
-                 const vec4<U8>& colour = DefaultColours::WHITE);
+                 const UColour& colour = DefaultColours::WHITE);
     void fromSphere(const vec3<F32>& center,
                     F32 radius,
-                    const vec4<U8>& colour = DefaultColours::WHITE);
+                    const UColour& colour = DefaultColours::WHITE);
     void fromLines(const vectorImpl<Line>& lines);
     void fromLines(const vectorImpl<Line>& lines,
                    const Rect<I32>& viewport);

@@ -84,7 +84,7 @@ class SamplerDescriptor : public Hashable {
         _biasLOD = biasLOD;
     }
 
-    inline void setBorderColour(const vec4<F32>& colour) {
+    inline void setBorderColour(const FColour& colour) {
         _borderColour.set(colour);
     }
 
@@ -190,7 +190,7 @@ class SamplerDescriptor : public Hashable {
                _minFilter != TextureFilter::COUNT;
     }
 
-    inline vec4<F32> borderColour() const { return _borderColour; }
+    inline const FColour& borderColour() const { return _borderColour; }
 
    protected:
     // Sampler states
@@ -208,7 +208,7 @@ class SamplerDescriptor : public Hashable {
     /// OpenGL eg: used by TEXTURE_LOD_BIAS
     F32 _biasLOD;
     /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
-    vec4<F32> _borderColour;
+    FColour _borderColour;
     /// number of MSAA samples: -1 (default) - max supported by implementation/settings, 0 - disabled
     I32 _msaaSamples;
 };

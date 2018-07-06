@@ -9,7 +9,7 @@ GUIText::GUIText(U64 guiID,
                  const stringImpl& text,
                  const RelativePosition2D& relativePosition,
                  const stringImpl& font,
-                 const vec4<U8>& colour,
+                 const UColour& colour,
                  CEGUI::Window* parent,
                  U8 fontSize)
     : GUIElement(guiID, name, parent, GUIType::GUI_TEXT),

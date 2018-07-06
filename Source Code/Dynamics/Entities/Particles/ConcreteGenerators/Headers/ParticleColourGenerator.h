@@ -37,10 +37,10 @@
 namespace Divide {
 class ParticleColourGenerator final : public ParticleGenerator {
    public:
-    vec4<U8> _minStartCol;
-    vec4<U8> _maxStartCol;
-    vec4<U8> _minEndCol;
-    vec4<U8> _maxEndCol;
+    UColour _minStartCol;
+    UColour _maxStartCol;
+    UColour _minEndCol;
+    UColour _maxEndCol;
 
    public:
     ParticleColourGenerator() {}

@@ -105,7 +105,7 @@ class ImageData : private NonCopyable {
     /// the image format as given by STB/NV_DDS
     inline GFXImageFormat format() const { return _format; }
     /// get the texel colour at the specified offset from the origin
-    vec4<U8> getColour(I32 x, I32 y, U32 mipLevel = 0) const;
+    UColour getColour(I32 x, I32 y, U32 mipLevel = 0) const;
     void getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
 
     void getRed(I32 x, I32 y, U8& r, U32 mipLevel = 0) const;

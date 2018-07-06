@@ -88,7 +88,7 @@ DEFINE_SINGLETON(PostFX)
     // set durationMS to instantly set fade colour
     // optionally, set a callback when fade out completes
     // waitDurationMS = how much time to wait vefore calling the completeion callback after fade out completes
-    void setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete = DELEGATE_CBK<void>());
+    void setFadeOut(const UColour& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete = DELEGATE_CBK<void>());
     // clear any fading effect currently active over the specified time interval
     // set durationMS to instantly clear the fade effect
     // optionally, set a callback when fade in completes
@@ -96,8 +96,8 @@ DEFINE_SINGLETON(PostFX)
     // fade out to specified colour and back again within the given time slice
     // if duration is 0.0, nothing happens
     // waitDurationMS is the ammount of time to wait before fading back in
-    void setFadeOutIn(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS);
-    void setFadeOutIn(const vec4<U8>& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
+    void setFadeOutIn(const UColour& targetColour, D64 durationMS, D64 waitDurationMS);
+    void setFadeOutIn(const UColour& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 
     inline void cacheDisplaySettings(const GFXDevice& context) {
         PreRenderOperator::cacheDisplaySettings(context);

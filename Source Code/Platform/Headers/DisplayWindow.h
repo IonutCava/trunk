@@ -149,11 +149,11 @@ public:
            void opacity(U8 opacity);
     inline U8   opacity() const;
 
-    inline void clearColour(const vec4<F32>& colour, bool force = false);
-    inline vec4<F32>& clearColour();
-    inline const vec4<F32>& clearColour() const;
-    inline vec4<F32>& originalClearColour();
-    inline const vec4<F32>& originalClearColour() const;
+    inline void clearColour(const FColour& colour, bool force = false);
+    inline FColour& clearColour();
+    inline const FColour& clearColour() const;
+    inline FColour& originalClearColour();
+    inline const FColour& originalClearColour() const;
 
     /// dimensionX and dimensionY get adjusted to the closest supported value
     void setDimensions(U16& dimensionX, U16& dimensionY);
@@ -259,8 +259,8 @@ private:
     vec2<U16> _prevDimensions;
     vec2<U16> _windowDimensions;
     vec2<U16> _windowDrawableArea;
-    vec4<F32> _clearColour;
-    vec4<F32> _clearColourOriginal;
+    FColour   _clearColour;
+    FColour   _clearColourOriginal;
     typedef vectorImpl<EventListener> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 

@@ -145,7 +145,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
                              BufferUpdateFrequency::OFTEN);
             buffer.setBuffer(g_particleColourBuffer,
                              particleCount,
-                             sizeof(vec4<U8>),
+                             sizeof(UColour),
                              true,
                              NULL,
                              BufferUpdateFrequency::OFTEN);

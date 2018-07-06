@@ -79,8 +79,7 @@ class GUIConsole : public PlatformContextComponent {
 
    protected:
     friend class GUI;
-    void CreateCEGUIWindow();  //< The function which will load in the CEGUI
-                               //Window and register event handlers
+    void createCEGUIWindow();  //< The function which will load in the CEGUI Window and register event handlers
     // Post the message to the ChatHistory listbox with a white colour default
     void OutputText(const Console::OutputEntry& text);
 

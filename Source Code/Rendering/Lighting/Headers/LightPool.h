@@ -53,7 +53,7 @@ class LightPool : public SceneComponent {
       struct LightProperties {
           /// rgb = diffuse
           /// w = cosOuterConeAngle;
-          vec4<F32> _diffuse;
+          FColour _diffuse;
           /// light position (or direction for Directional lights)
           /// w = range
           vec4<F32> _position;

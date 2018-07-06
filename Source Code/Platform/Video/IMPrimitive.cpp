@@ -29,7 +29,7 @@ void IMPrimitive::clear() {
     _texture = nullptr;
 }
 
-void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const vec4<U8>& colour) {
+void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour& colour) {
     paused(false);
     // Create the object
     beginBatch(true, 16, 1);
@@ -66,7 +66,7 @@ void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const vec4
 
 void IMPrimitive::fromSphere(const vec3<F32>& center,
                              F32 radius,
-                             const vec4<U8>& colour) {
+                             const UColour& colour) {
     U32 slices = 8, stacks = 8;
     F32 drho = to_F32(M_PI) / stacks;
     F32 dtheta = 2.0f * to_F32(M_PI) / slices;
@@ -145,7 +145,7 @@ void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (!lines.empty()) {
-        vec4<F32> tempFloatColour;
+        FColour tempFloatColour;
         paused(false);
         // If we need to render it into a specific viewport, set the pre and post
         // draw functions to set up the

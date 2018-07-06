@@ -2,6 +2,7 @@
 
 #include "Headers/PingPongScene.h"
 
+#include "GUI/Headers/GUIButton.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -328,10 +329,9 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball = CreateResource<Sphere3D>(_resCache, minge);
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
-    _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.4f, 0.4f, 1.0f));
+    _ball->getMaterialTpl()->setDiffuse(FColour(0.4f, 0.4f, 0.4f, 1.0f));
     _ball->getMaterialTpl()->setShininess(36.8f);
-    _ball->getMaterialTpl()->setSpecular(
-        vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
+    _ball->getMaterialTpl()->setSpecular(FColour(0.774597f, 0.774597f, 0.774597f, 1.0f));
     _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "PingPongBallSGN");
     _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
 
@@ -371,35 +371,38 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
 void PingPongScene::postLoadMainThread() {
     const vec2<U16>& resolution = _context.gfx().renderingResolution();
     // Buttons and text labels
-    _GUI->addButton(_ID("Serve"), "Serve",
-                    pixelPosition(to_I32(resolution.width - 120),
-            to_I32(resolution.height / 1.1f)),
-        pixelScale(100, 25),
-        DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
+    GUIButton* btn = _GUI->addButton(_ID("Serve"),
+                                     "Serve",
+                                     pixelPosition(to_I32(resolution.width - 120),
+                                                   to_I32(resolution.height / 1.1f)),
+                                     pixelScale(100, 25));
+
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
 
     _GUI->addText("Score",
                   pixelPosition(to_I32(resolution.width - 120),
             to_I32(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(255, 0, 0, 255),
+                  UColour(255, 0, 0, 255),
         Util::StringFormat("Score: %d", 0));
 
     _GUI->addText("Message",
                   pixelPosition(to_I32(resolution.width - 120),
             to_I32(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(255, 0, 0, 255),
+                  UColour(255, 0, 0, 255),
         "");
     _GUI->addText("insults",
                   pixelPosition(resolution.width / 4,
             resolution.height / 3),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(0, 255, 0, 255),
+                  UColour(0, 255, 0, 255),
         "");
     _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 50, 255, 255),// Colour
+                  UColour(0, 50, 255, 255),// Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     Scene::postLoadMainThread();

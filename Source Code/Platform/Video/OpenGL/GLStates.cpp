@@ -50,11 +50,11 @@ Pipeline const* GL_API::s_activePipeline = nullptr;
 glFramebuffer* GL_API::s_activeRenderTarget = nullptr;
 glPixelBuffer* GL_API::s_activePixelBuffer = nullptr;
 
-vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
+UColour GL_API::s_blendColour = UColour(0u);
 Rect<I32> GL_API::s_activeViewport = Rect<I32>(-1);
 Rect<I32> GL_API::s_previousViewport = Rect<I32>(-1);
 Rect<I32> GL_API::s_activeScissor = Rect<I32>(-1);
-vec4<F32> GL_API::s_activeClearColour = DefaultColours::DIVIDE_BLUE;
+FColour GL_API::s_activeClearColour = DefaultColours::DIVIDE_BLUE;
 GLfloat GL_API::s_depthFarVal = 1.0f;
 bool GL_API::s_primitiveRestartEnabled = false;
 bool GL_API::s_rasterizationEnabled = true;
@@ -132,7 +132,7 @@ void GL_API::clearStates() {
     for (vectorAlg::vecSize i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
         setBlending((GLuint)i, false, BlendingProperties(), true);
     }
-    GL_API::setBlendColour(vec4<U8>(0u), true);
+    GL_API::setBlendColour(UColour(0u), true);
 
     s_activeWindowGUID = -1;
     s_activePipeline = nullptr;
@@ -669,9 +669,9 @@ void GL_API::setDepthRange(F32 nearVal, F32 farVal) {
     }
 }
 
-void GL_API::setBlendColour(const vec4<U8>& blendColour, bool force) {
+void GL_API::setBlendColour(const UColour& blendColour, bool force) {
     if (GL_API::s_blendColour != blendColour || force) {
-        vec4<F32> floatColour = Util::ToFloatColour(blendColour);
+        FColour floatColour = Util::ToFloatColour(blendColour);
         glBlendColor(static_cast<GLfloat>(floatColour.r),
                      static_cast<GLfloat>(floatColour.g),
                      static_cast<GLfloat>(floatColour.b),
@@ -776,7 +776,7 @@ bool GL_API::restoreViewport() {
                           GL_API::s_previousViewport.w);
 }
 
-bool GL_API::setClearColour(const vec4<F32>& colour) {
+bool GL_API::setClearColour(const FColour& colour) {
     if (colour != GL_API::s_activeClearColour) {
         glClearColor(colour.r, colour.g, colour.b, colour.a);
         GL_API::s_activeClearColour.set(colour);

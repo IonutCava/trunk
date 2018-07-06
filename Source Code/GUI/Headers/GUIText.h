@@ -46,7 +46,7 @@ class GUIText : public GUIElement, public TextElement {
             const stringImpl& text,
             const RelativePosition2D& relativePosition,
             const stringImpl& font,
-            const vec4<U8>& colour,
+            const UColour& colour,
             CEGUI::Window* parent,
             U8 fontSize = 16u);
 

@@ -10,6 +10,11 @@
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
+#if !defined(CEGUI_STATIC)
+#define CEGUI_STATIC
+#endif
+#include <CEGUI/CEGUI.h>
+
 namespace Divide {
 DefaultScene::DefaultScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
     : Scene(context, cache, parent, name)
@@ -81,10 +86,13 @@ void DefaultScene::postLoadMainThread() {
 
             buttonPosition.d_x.d_offset = to_F32(localOffsetX);
             buttonPosition.d_y.d_offset = to_F32(localOffsetY);
-            GUIButton* btn = _GUI->addButton(_ID_RT("StartScene" + scene), scene,
+            GUIButton* btn = _GUI->addButton(_ID_RT("StartScene" + scene),
+                                             scene,
                                              buttonPosition,
-                                             buttonSize,
-                                             DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
+                                             buttonSize);
+
+            btn->setEventCallback(GUIButton::Event::MouseClick,
+                                  DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
 
             _buttonToSceneMap[btn->getGUID()] = scene;
             i++;
@@ -99,44 +107,50 @@ void DefaultScene::postLoadMainThread() {
     RelativeScale2D quitScale(RelativeValue(0.0f, to_F32(quitButtonWidth)),
                               RelativeValue(0.0f, to_F32(quitButtonHeight)));
 
-    _GUI->addButton(_ID_RT("Quit"),
-                    "Quit",
-                    quitPosition,
-                    quitScale,
-                    [this](I64 btnGUID) {
-                        _context.app().RequestShutdown();
-                    });
+    GUIButton* btn = _GUI->addButton(_ID_RT("Quit"),
+                                     "Quit",
+                                     quitPosition,
+                                     quitScale);
+
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          [this](I64 btnGUID) {
+                              _context.app().RequestShutdown();
+                          });
 
     RelativePosition2D playerChangePosition(RelativeValue(0.01f, 0.0f),
                                             RelativeValue(0.0f, resolution.height - playerButtonHeight * 1.5f));
 
     RelativeScale2D playerChangeScale = pixelScale(quitButtonWidth, playerButtonHeight);
 
-    _GUI->addButton(_ID_RT("AddPlayer"),
+    btn = _GUI->addButton(_ID_RT("AddPlayer"),
                     "Add Player",
                     playerChangePosition,
-                    playerChangeScale,
-                    [this](I64 btnGUID) {
-                        addPlayerInternal(true);
-                    });
+                    playerChangeScale);
+
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          [this](I64 btnGUID) {
+                              addPlayerInternal(true);
+                          });
 
     playerChangePosition.d_y.d_offset -= playerButtonHeight * 1.5f;
 
-    _GUI->addButton(_ID_RT("RemovePlayer"),
-                    "Remove Player",
-                    playerChangePosition,
-                    playerChangeScale,
-                    [this](I64 btnGUID) {
-                        if (_scenePlayers.size() > 1) {
-                            removePlayerInternal(_scenePlayers.back()->index());
-                        }
-                });
+    btn = _GUI->addButton(_ID_RT("RemovePlayer"),
+                          "Remove Player",
+                          playerChangePosition,
+                          playerChangeScale);
+
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          [this](I64 btnGUID) {
+                              if (_scenePlayers.size() > 1) {
+                                  removePlayerInternal(_scenePlayers.back()->index());
+                              }
+                          });
 
     RelativePosition2D textPosition = pixelPosition(windowCenterX - 100, windowCenterY - ((numRows / 2) + 1)* btnHeight);
     _GUI->addText("globalMessage",
                   textPosition,
                   Font::DIVIDE_DEFAULT,
-                  vec4<U8>(128, 64, 64, 255),
+                  UColour(128, 64, 64, 255),
                   "");
     
     Scene::postLoadMainThread();
@@ -181,19 +195,17 @@ void DefaultScene::loadScene(I64 btnGUID) {
     Console::d_printf("Loading scene [ %s ]", _sceneToLoad.c_str());
 
     GUIButton* selection = _GUI->getGUIElement<GUIButton>(btnGUID);
-    selection->setText("Loading ...");
+    selection->setText(_sceneToLoad + "\nLoading ...");
     for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
-        if (btn->getGUID() != btnGUID) {
+        btn->setActive(false);
+        if (it.first != btnGUID) {
             btn->setVisible(false);
-            btn->setActive(false);
         }
     }
 }
 
 void DefaultScene::onSetActive() {
-    vectorImpl<stringImpl> scenes = _parent.sceneNameList();
-
     for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         

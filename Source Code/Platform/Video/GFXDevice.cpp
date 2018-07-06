@@ -138,13 +138,13 @@ GFXDevice::GFXDevice(Kernel& parent)
 
     // Red X-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 3.0f));
+        Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour(255, 0, 0, 255), 3.0f));
     // Green Y-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 3.0f));
+        Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour(0, 255, 0, 255), 3.0f));
     // Blue Z-axis
     _axisLines.push_back(
-        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 3.0f));
+        Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour(0, 0, 255, 255), 3.0f));
 
     AttribFlags flags;
     flags.fill(true);

@@ -153,17 +153,12 @@ GUIButton* GUIInterface::addButton(U64 guiID,
                                    const stringImpl& text,
                                    const RelativePosition2D& position,
                                    const RelativeScale2D& size,
-                                   ButtonCallback callback,
                                    const stringImpl& rootSheetID) {
     assert(getGUIElement(guiID) == nullptr);
 
-    CEGUI::Window* parent = nullptr;
+    CEGUI::Window* parent = _context->getCEGUIContext().getRootWindow();
     if (!rootSheetID.empty()) {
-        parent = _context->getCEGUIContext().getRootWindow()->getChild(rootSheetID.c_str());
-    }
-
-    if (!parent) {
-        parent = _context->rootSheet();
+        parent = parent->getChild(rootSheetID.c_str());
     }
 
     ResourceDescriptor beepSound("buttonClick");
@@ -178,9 +173,9 @@ GUIButton* GUIInterface::addButton(U64 guiID,
                                                  _context->guiScheme(),
                                                  position,
                                                  size,
-                                                 parent,
-                                                 callback,
-                                                 onClickSound);
+                                                 parent);
+
+    btn->setEventSound(GUIButton::Event::MouseClick, onClickSound);
 
     addElement(guiID, btn);
 
@@ -209,7 +204,7 @@ GUIText* GUIInterface::addText(U64 guiID,
                                const stringImpl& name,
                                const RelativePosition2D& position,
                                const stringImpl& font,
-                               const vec4<U8>& colour,
+                               const UColour& colour,
                                const stringImpl& text,
                                U8 fontSize) {
     assert(getGUIElement(guiID) == nullptr);

@@ -373,9 +373,9 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     // Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(_resCache, ballDescriptor);
-    _ball->getMaterialTpl()->setDiffuse(vec4<F32>(0.4f, 0.5f, 0.5f, 1.0f));
+    _ball->getMaterialTpl()->setDiffuse(FColour(0.4f, 0.5f, 0.5f, 1.0f));
     _ball->getMaterialTpl()->setShininess(0.2f);
-    _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
+    _ball->getMaterialTpl()->setSpecular(FColour(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
     _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "TenisBallSGN");
@@ -390,42 +390,42 @@ bool TenisScene::loadResources(bool continueOnErrors) {
 void TenisScene::postLoadMainThread() {
     const vec2<U16>& resolution = _context.gfx().renderingResolution();
 
-    GUIElement* btn = _GUI->addButton(
-        _ID("Serve"), "Serve",
-        pixelPosition(resolution.width - 220, 60),
-        pixelScale(100, 25),
-        DELEGATE_BIND(&TenisScene::startGame, this, std::placeholders::_1));
+    GUIButton* btn = _GUI->addButton(_ID("Serve"),
+                                      "Serve",
+                                      pixelPosition(resolution.width - 220, 60),
+                                      pixelScale(100, 25));
     btn->setTooltip("Start a new game!");
-
+    btn->setEventCallback(GUIButton::Event::MouseClick,
+                          DELEGATE_BIND(&TenisScene::startGame, this, std::placeholders::_1));
     _GUI->addText(
         "Team1Score", pixelPosition(to_I32(resolution.width - 250),
             to_I32(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(0, 192, 192, 255),
+        UColour(0, 192, 192, 255),
         Util::StringFormat("Team 1 Score: %d", 0));
 
     _GUI->addText(
         "Team2Score", pixelPosition(to_I32(resolution.width - 250),
             to_I32(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(50, 192, 0, 255),
+        UColour(50, 192, 0, 255),
         Util::StringFormat("Team 2 Score: %d", 0));
 
     _GUI->addText("Message",
                   pixelPosition(to_I32(resolution.width - 250),
             to_I32(resolution.height / 1.7f)),
         Font::DIVIDE_DEFAULT,
-        vec4<U8>(0, 255, 0, 255),
+                  UColour(0, 255, 0, 255),
         "");
 
     _GUI->addText("fpsDisplay",  // Unique ID
                   pixelPosition(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 50, 255, 255),// Colour
+                  UColour(0, 50, 255, 255),// Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     _GUI->addText("RenderBinCount", pixelPosition(60, 70), Font::DIVIDE_DEFAULT,
-        vec4<U8>(164, 50, 50, 255),
+                  UColour(164, 50, 50, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 
     Scene::postLoadMainThread();

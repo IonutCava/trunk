@@ -99,11 +99,11 @@ class Light : public SceneNode {
 
     void setDiffuseColour(const vec3<U8>& newDiffuseColour);
 
-    inline void setDiffuseColour(const vec4<U8>& newDiffuseColour) {
+    inline void setDiffuseColour(const UColour& newDiffuseColour) {
         setDiffuseColour(newDiffuseColour.rgb());
     }
 
-    inline void setDiffuseColour(const vec4<F32>& newDiffuseColour) {
+    inline void setDiffuseColour(const FColour& newDiffuseColour) {
         setDiffuseColour(newDiffuseColour.rgb());
     }
 
@@ -225,8 +225,8 @@ class Light : public SceneNode {
     vec4<F32> _positionAndRange;
     /// xyz - direction, w - cone angle
     vec4<F32> _spotProperties;
-    /// rgb - diffuse, w - reserved
-    vec4<U8>  _colour;
+    /// rgb - diffuse, a - reserved
+    UColour  _colour;
     // does this light casts shadows?
     bool _castsShadows;
     // Shadow mapping properties

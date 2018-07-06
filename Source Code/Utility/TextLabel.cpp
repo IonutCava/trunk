@@ -11,7 +11,7 @@ size_t TextLabelStyle::s_defaultCacheValue = 0;
 TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontNameMap;
 
 TextLabelStyle::TextLabelStyle(const char* font,
-                               const vec4<U8>& colour,
+                               const UColour& colour,
                                U8 fontSize)
   : _width(1),
     _font(_ID_RT(font)),

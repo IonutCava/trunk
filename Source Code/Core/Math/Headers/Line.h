@@ -44,40 +44,40 @@ class Line {
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const vec4<U8> &colour)
+         const UColour& colour)
         : Line(startPoint, endPoint, colour, colour)
     {
     }
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const vec4<U8> &colour,
+         const UColour& colour,
          F32 width)
         : Line(startPoint, endPoint, colour, colour, width)
     {
     }
 
     Line(const vec3<F32> &startPoint,
-        const vec3<F32> &endPoint,
-        const vec4<U8> &colourStart,
-        const vec4<U8>& colourEnd)
+         const vec3<F32> &endPoint,
+         const UColour& colourStart,
+         const UColour& colourEnd)
         : Line(startPoint, endPoint, colourStart, colourEnd, 1.0f)
     {
     }
 
     Line(const vec3<F32> &startPoint,
-        const vec3<F32> &endPoint,
-        const vec4<U8> &colourStart,
-        const vec4<U8>& colourEnd,
-        F32 width)
+         const vec3<F32> &endPoint,
+         const UColour& colourStart,
+         const UColour& colourEnd,
+         F32 width)
         : Line(startPoint, endPoint, colourStart, colourEnd, width, width)
     {
     }
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const vec4<U8> &colourStart,
-         const vec4<U8>& colourEnd,
+         const UColour& colourStart,
+         const UColour& colourEnd,
          F32 widthStart,
          F32 widthEnd)
         : _startPoint(startPoint),
@@ -123,11 +123,11 @@ class Line {
         return _endPoint;
     }
 
-    inline const vec4<U8>& colourStart() const {
+    inline const UColour& colourStart() const {
         return _colourStart;
     }
 
-    inline const vec4<U8>& colourEnd() const {
+    inline const UColour& colourEnd() const {
         return _colourEnd;
     }
 
@@ -142,8 +142,8 @@ class Line {
 public:
     vec3<F32> _startPoint;
     vec3<F32> _endPoint;
-    vec4<U8>  _colourStart;
-    vec4<U8>  _colourEnd;
+    UColour   _colourStart;
+    UColour   _colourEnd;
     F32       _widthStart;
     F32       _widthEnd;
 };

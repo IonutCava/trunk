@@ -110,11 +110,11 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionDepth);
 
         // Red X-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, UColour(255, 0, 0, 255), 5.0f));
         // Green Y-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, UColour(0, 255, 0, 255), 5.0f));
         // Blue Z-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, UColour(0, 0, 255, 255), 5.0f));
         _axisGizmo = _context.newIMP();
         // Prepare it for line rendering
         size_t noDepthStateBlock = _context.getDefaultStateBlock(true);
@@ -377,7 +377,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
 
     if (renderBBox) {
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
-        _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
+        _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), UColour(0, 0, 255, 255));
 
         renderBSphere = renderBSphere || _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED;
         toggleRenderOption(RenderOptions::RENDER_BOUNDS_SPHERE, renderBSphere);
@@ -393,14 +393,14 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
                 _boundingBoxPrimitive[1]->fromBox(
                                      bbGrandParent.getMin() - vec3<F32>(0.0025f),
                                      bbGrandParent.getMax() + vec3<F32>(0.0025f),
-                                     vec4<U8>(0, 128, 128, 255));
+                                     UColour(0, 128, 128, 255));
             }
         }
     }
 
     if (renderBSphere) {
         const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
-        _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), vec4<U8>(0, 255, 0, 255));
+        _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), UColour(0, 255, 0, 255));
     }
 
     bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON);

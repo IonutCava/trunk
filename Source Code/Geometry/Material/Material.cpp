@@ -656,7 +656,7 @@ void Material::getSortKeys(const RenderStagePass& renderStagePass, I32& shaderKe
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
     retMatrix.setRow(0, _colourData._diffuse);
     retMatrix.setRow(1, _colourData._specular);
-    retMatrix.setRow(2, vec4<F32>(_colourData._emissive.rgb(), _colourData._shininess));
+    retMatrix.setRow(2, FColour(_colourData._emissive.rgb(), _colourData._shininess));
     retMatrix.setRow(3, vec4<F32>(to_F32(getTextureOperation()), getParallaxFactor(), 0.0, 0.0));
 }
 

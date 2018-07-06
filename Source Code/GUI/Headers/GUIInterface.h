@@ -54,6 +54,8 @@ public:
 
     virtual void onLanguageChange(const char* newLanguage);
 
+    inline GUI& getParentContext() { return *_context; }
+    inline const GUI& getParentContext() const { return *_context; }
     /// Get a pointer to an element by name/id
     template<typename T = GUIElement>
     inline T* getGUIElement(U64 elementName) const {
@@ -75,14 +77,14 @@ public:
                              const stringImpl& name,
                              const RelativePosition2D& position,
                              const stringImpl& font,
-                             const vec4<U8>& colour,
+                             const UColour& colour,
                              const stringImpl& text,
                              U8 fontSize = 16u);
 
     inline GUIText* addText(const stringImpl& name,
                             const RelativePosition2D& position,
                             const stringImpl& font,
-                            const vec4<U8>& colour,
+                            const UColour& colour,
                             const stringImpl& text,
                             U8 fontSize = 16u) {
 
@@ -115,16 +117,14 @@ public:
                                  const stringImpl& text,
                                  const RelativePosition2D& offset,
                                  const RelativeScale2D& size,
-                                 ButtonCallback callback,
                                  const stringImpl& rootSheetID = "");
 
     inline GUIButton* addButton(U64 guiID,
                                 const stringImpl& text,
                                 const RelativePosition2D& offset,
                                 const RelativeScale2D& size,
-                                ButtonCallback callback,
                                 const stringImpl& rootSheetID = "") {
-        return addButton(guiID, text, text, offset, size, callback, rootSheetID);
+        return addButton(guiID, text, text, offset, size, rootSheetID);
    }
 
     virtual GUIFlash* addFlash(U64 guiID,

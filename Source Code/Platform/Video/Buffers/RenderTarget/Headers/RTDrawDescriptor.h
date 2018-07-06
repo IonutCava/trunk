@@ -61,7 +61,7 @@ class RTDrawMask {
 
 struct RTBlendState {
     bool _blendEnable = false;
-    vec4<U8> _blendColour = vec4<U8>(0);
+    UColour _blendColour = UColour(0);
     BlendingProperties _blendProperties;
 
     bool operator==(const RTBlendState& other) const;
