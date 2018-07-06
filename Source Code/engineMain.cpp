@@ -15,16 +15,16 @@ int engineMain(int argc, char **argv) {
 
     if (returnCode == NO_ERR) {
         Application::getInstance().run();
-        //Stop our application
-        Application::getInstance().deinitialize();
-        //When the application is deleted, the last kernel used gets deleted as well
-        Application::getInstance().destroyInstance();
     } else {
         //If any error occurred, close the application as details should already be logged
         Console::errorfn("System failed to initialize properly. Error [ %s ] ", 
-                  getErrorCodeName(returnCode));
+                         getErrorCodeName(returnCode));
     }
-    
+
+    //Stop our application
+    //When the application is deleted, the last kernel used gets deleted as well
+    Application::getInstance().destroyInstance();
+
     return returnCode;
 }
 

@@ -61,7 +61,6 @@ DEFINE_SINGLETON( Application )
 public:
     ///Startup and shutdown
     ErrorCode initialize(const stringImpl& entryPoint,I32 argc, char **argv);
-    void deinitialize();
     void run();
 
     ///Application resolution (either fullscreen resolution or window dimensions)
@@ -76,7 +75,7 @@ public:
     inline void RequestShutdown();
     inline void CancelShutdown();
     inline bool ShutdownRequested() const;
-    inline Kernel* const getKernel() const;
+    inline Kernel& getKernel() const;
 
     inline bool isMainThread() const;
     inline const std::thread::id&  getMainThreadId() const;
@@ -122,7 +121,7 @@ private:
     vec2<U16> _resolution;
     vec2<U16> _screenCenter;
     vec2<U16> _prevResolution;
-    Kernel*   _kernel;
+    std::unique_ptr<Kernel> _kernel;
     ///buffer to register all of the memory allocations recorded via "MemoryManager_NEW"
     stringImpl _memLogBuffer;
     ///Main application thread id

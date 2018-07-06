@@ -77,8 +77,8 @@ void PingPongScene::serveBall(){
     resetGame();
 
     if(getTasks().empty()){//A maximum of 1 Tasks allowed
-        Kernel* kernel = Application::getInstance().getKernel();
-        Task_ptr newGame(kernel->AddTask(Time::MillisecondsToMicroseconds(30), 0, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
+        Kernel& kernel = Application::getInstance().getKernel();
+        Task_ptr newGame(kernel.AddTask(Time::MillisecondsToMicroseconds(30), 0, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
         registerTask(newGame);
         newGame->startTask();
     }
@@ -233,12 +233,12 @@ void PingPongScene::processInput(const U64 deltaTime){
     }
 }
 
-bool PingPongScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool PingPongScene::load(const stringImpl& name, GUI* const gui){
     _freeFly = false;
     _wasInFreeFly = false;
 
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    bool loadState = SCENE_LOAD(name,gui,true,true);
     //Add a light
     _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
     _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));

@@ -232,10 +232,10 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
 #endif
 }
 
-bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool WarScene::load(const stringImpl& name, GUI* const gui){
     navMeshStarted = false;
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    bool loadState = SCENE_LOAD(name,gui,true,true);
     //Add a light
     _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
     //Add a skybox
@@ -401,7 +401,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     test->addUpdater(std::make_shared<ParticleFloorUpdater>());
 
     state().getGeneralVisibility() *= 2;
-    Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(135);
+    Application::getInstance().getKernel().getCameraMgr().getActiveCamera()->setHorizontalFoV(135);
 
     _sceneReady = true;
     return loadState;

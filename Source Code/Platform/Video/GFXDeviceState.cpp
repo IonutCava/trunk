@@ -120,8 +120,8 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     PostFX::getInstance().init(resolution);
     // We also add a couple of useful cameras used by this class. One for rendering in 2D and one for generating cube maps
     
-    Application::getInstance().getKernel()->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
-    Application::getInstance().getKernel()->getCameraMgr().addNewCamera("_gfxCubeCamera", _cubeCamera);
+    Application::getInstance().getKernel().getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
+    Application::getInstance().getKernel().getCameraMgr().addNewCamera("_gfxCubeCamera", _cubeCamera);
     // Initialized our HierarchicalZ construction shader (takes a depth attachment and down-samples it for every mip level)
     _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
     _HIZConstructProgram->UniformTexture("LastMip", 0);
@@ -150,7 +150,6 @@ void GFXDevice::closeRenderingApi() {
     PostFX::destroyInstance();
     // Delete the renderer implementation
     Console::printfn(Locale::get("CLOSING_RENDERER"));
-    _renderer.reset(nullptr);
     // Delete our default render state blocks
     MemoryManager::DELETE_HASHMAP(_stateBlockMap);
     // Destroy all of the immediate mode emulation primitives created during runtime

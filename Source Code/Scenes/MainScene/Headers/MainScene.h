@@ -43,7 +43,7 @@ public:
     }
 
     /*General Scene Requirement*/
-    bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool load(const stringImpl& name, GUI* const gui);
     bool unload();
     bool loadResources(bool continueOnErrors);
 

@@ -257,11 +257,11 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap,
         vec3<F32>(pos.x,        pos.y,        pos.z-1.0f)
     };
 
-    Kernel* const kernel = Application::getInstance().getKernel();
+    Kernel& kernel = Application::getInstance().getKernel();
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the cube camera as the currently active one
-    kernel->getCameraMgr().pushActiveCamera(_cubeCamera, false);
+    kernel.getCameraMgr().pushActiveCamera(_cubeCamera, false);
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
@@ -282,7 +282,7 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     // Return to our previous rendering stage
     setRenderStage(prevRenderStage);
     // Restore our previous camera
-    kernel->getCameraMgr().popActiveCamera();
+    kernel.getCameraMgr().popActiveCamera();
 }
 
 /// Try to find the render state block that matches our specified descriptor. 
@@ -507,19 +507,19 @@ void GFXDevice::toggle2D(bool state) {
     // Prevent double 2D toggle to the same state (e.g. in a loop)
     DIVIDE_ASSERT((state && !_2DRendering) || (!state && _2DRendering),
                   "GFXDevice error: double toggle2D call with same value detected!");
-    Kernel* const kernel = Application::getInstance().getKernel();
+    Kernel& kernel = Application::getInstance().getKernel();
     _2DRendering = state;
     // If we need to enable 2D rendering
     if (state) { 
         // Activate the 2D render state block
         previousStateBlockHash = setStateBlock(_state2DRenderingHash);
         // Push the 2D camera
-        kernel->getCameraMgr().pushActiveCamera(_2DCamera);
+        kernel.getCameraMgr().pushActiveCamera(_2DCamera);
         // Upload 2D camera matrices to the GPU
         _2DCamera->renderLookAt();
     } else { 
         // Reverting to 3D implies popping the 2D camera
-        kernel->getCameraMgr().popActiveCamera();
+        kernel.getCameraMgr().popActiveCamera();
         // And restoring the previous state block
         setStateBlock(previousStateBlockHash);
     }

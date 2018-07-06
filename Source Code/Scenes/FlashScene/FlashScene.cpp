@@ -31,9 +31,9 @@ void FlashScene::processTasks(const U64 deltaTime){
     Scene::processTasks(deltaTime);
 }
 
-bool FlashScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool FlashScene::load(const stringImpl& name, GUI* const gui){
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    bool loadState = SCENE_LOAD(name,gui,true,true);
     addLight(LIGHT_TYPE_DIRECTIONAL);
     _currentSky = addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     return loadState;

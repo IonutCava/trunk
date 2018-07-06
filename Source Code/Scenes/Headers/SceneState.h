@@ -61,16 +61,7 @@ public:
         DRAW_OBJECT_WITH_BOUNDING_BOX = DRAW_OBJECT | DRAW_BOUNDING_BOX
     };
 
-    SceneRenderState(): _drawBB(false),
-                        _drawSkeletons(false),
-                        _drawObjects(true),
-                        _debugDrawLines(false),
-                        _debugDrawTargetLines(false),
-                        _cameraMgr(nullptr)
-    {
-        _gizmoState = NO_GIZMO;
-        _objectState = DRAW_OBJECT;
-    }
+    SceneRenderState();
 
     inline bool drawSkeletons()           const {return  _drawSkeletons;}
     inline void drawSkeletons(bool visibility)  {_drawSkeletons = visibility;}
@@ -87,41 +78,20 @@ public:
     }
 
     /// Show/hide bounding boxes and/or objects
-    inline void toggleBoundingBoxes(){
-        Console::d_printfn(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
-        if (objectState() == NO_DRAW) {
-            objectState(DRAW_OBJECT);
-        } else if (objectState() == DRAW_OBJECT) {
-            objectState(DRAW_OBJECT_WITH_BOUNDING_BOX);
-        } else if (objectState() == DRAW_OBJECT_WITH_BOUNDING_BOX) {
-            objectState(DRAW_BOUNDING_BOX);
-        } else {
-            objectState(NO_DRAW);
-        }
-    }
-
+    void toggleBoundingBoxes();
     /// Show/hide axis gizmos
-    inline void toggleAxisLines() {
-        Console::d_printfn(Locale::get("TOGGLE_SCENE_AXIS_GIZMO"));
-        if (gizmoState() == NO_GIZMO) {
-            gizmoState(SELECTED_GIZMO);
-        } else if (gizmoState() == SELECTED_GIZMO) {
-            gizmoState(ALL_GIZMO);
-        } else if (gizmoState() == ALL_GIZMO) {
-            gizmoState(SCENE_GIZMO);
-        } else {
-            gizmoState(NO_GIZMO);
-        }
-    }
+    void toggleAxisLines();
 
     inline CameraManager& getCameraMgr()         { return *_cameraMgr;}
     inline       Camera&  getCamera()            { return *_cameraMgr->getActiveCamera(); }
     inline const Camera&  getCameraConst() const { return *_cameraMgr->getActiveCamera(); }
-    inline vec2<U16>&     cachedResolution() {return _cachedResolution;}
+    inline vec2<U16>&     cachedResolution()     { return _cachedResolution; }
 
 protected:
-
     friend class Scene;
+    inline void cachedResolution(const vec2<U16>& resolution) { return _cachedResolution.set(resolution); }
+
+protected:
     bool _drawBB;
     bool _drawObjects;
     bool _drawSkeletons;

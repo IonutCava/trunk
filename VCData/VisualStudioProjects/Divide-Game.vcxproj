@@ -103,6 +103,7 @@
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAISceneImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />

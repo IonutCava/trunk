@@ -103,16 +103,16 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
         if (!_buildingBoundingBoxes) {
             _buildingBoundingBoxes = true;
             if (USE_MUTITHREADED_LOADING) {
-                Kernel* kernel = Application::getInstance().getKernel();
-                Task* task = kernel->AddTask(1,
-                                             1,
-                                             DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
-                                                           this,
-                                                           animationIndex,
-                                                           animComp),
-                                             DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
-                                                           this,
-                                                           animationIndex));
+                Kernel& kernel = Application::getInstance().getKernel();
+                Task* task = kernel.AddTask(1,
+                                            1,
+                                            DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                                          this,
+                                                          animationIndex,
+                                                          animComp),
+                                            DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
+                                                          this,
+                                                          animationIndex));
                 task->startTask();
             } else {
                 buildBoundingBoxesForAnim(animationIndex, animComp);

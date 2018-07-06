@@ -165,8 +165,8 @@ namespace Navigation {
             _buildThread->stopTask();
         }
 
-        Kernel* kernel = Application::getInstance().getKernel();
-        _buildThread.reset(kernel->AddTask(0, 0, DELEGATE_BIND(&NavigationMesh::buildInternal, this)));
+        Kernel& kernel = Application::getInstance().getKernel();
+        _buildThread.reset(kernel.AddTask(0, 0, DELEGATE_BIND(&NavigationMesh::buildInternal, this)));
         _buildThread->startTask();
         return true;
     }

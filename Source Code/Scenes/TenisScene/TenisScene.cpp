@@ -83,8 +83,8 @@ void TenisScene::resetGame(){
 
 void TenisScene::startGame(){
     resetGame();
-    Kernel* kernel = Application::getInstance().getKernel();
-    Task_ptr newGame(kernel->AddTask(Time::MillisecondsToMicroseconds(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
+    Kernel& kernel = Application::getInstance().getKernel();
+    Task_ptr newGame(kernel.AddTask(Time::MillisecondsToMicroseconds(15), 0, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
     registerTask(newGame);
     newGame->startTask();
     _gameGUID = newGame->getGUID();
@@ -247,10 +247,10 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
 void TenisScene::processInput(const U64 deltaTime){
 }
 
-bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool TenisScene::load(const stringImpl& name, GUI* const gui){
     s_gameStarted = false;
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    bool loadState = SCENE_LOAD(name,gui,true,true);
 
     //Add a light
     _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();

@@ -26,6 +26,8 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
+#include <memory>
+
 namespace Divide {
 
 class Terrain;
@@ -57,8 +59,9 @@ public:
 
 private:
     U32             _chunkCount;
-    QuadtreeNode*    _root;
     VertexBuffer*   _parentVB; //<Pointer to the terrain VB
+
+    std::unique_ptr<QuadtreeNode> _root;
 };
 
 }; //namespace Divide

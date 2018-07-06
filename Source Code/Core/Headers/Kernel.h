@@ -142,7 +142,7 @@ private:
     ///The SceneManager/ Scene Pool
     SceneManager&    _sceneMgr;
     ///Keep track of all active cameras used by the engine
-    CameraManager* _cameraMgr;
+    std::unique_ptr<CameraManager> _cameraMgr;
 
     static bool   _keepAlive;
     static bool   _renderingPaused;

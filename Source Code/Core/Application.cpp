@@ -25,9 +25,19 @@ Application::Application() : _kernel(nullptr),
     _errorCode = NO_ERR;
     ParamHandler::createInstance();
     Time::ApplicationTimer::createInstance();
+    //Don't log parameter requests
+    ParamHandler::getInstance().setDebugOutput(false);
+    //Print a copyright notice in the log file
+    Console::printCopyrightNotice();
+    Console::toggleTimeStamps(true);
 }
 
-Application::~Application(){
+Application::~Application() {
+    for ( DELEGATE_CBK<>& cbk : _shutdownCallback ) {
+        cbk();
+    }
+    Console::printfn( Locale::get( "STOP_APPLICATION" ) );
+
 #if defined(_DEBUG)
     MemoryManager::MemoryTracker::Ready = false;
     bool leakDetected = false;
@@ -42,45 +52,36 @@ Application::~Application(){
     memLog << allocLog.c_str();
     memLog.close();
 #endif
+
     ParamHandler::destroyInstance();
     Time::ApplicationTimer::destroyInstance();
+    Locale::clear();
 }
 
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char **argv) {
     assert(!entryPoint.empty());
+
     //Read language table
     if (!Locale::init()) {
         return errorCode();
     }
-    //Don't log parameter requests
-    ParamHandler::getInstance().setDebugOutput(false);
-    //Print a copyright notice in the log file
-    Console::printCopyrightNotice();
-    Console::toggleTimeStamps(true);
+
     Console::printfn(Locale::get("START_APPLICATION"));
+
     //Create a new kernel
-    _kernel = MemoryManager_NEW Kernel(argc, argv, this->getInstance());
-    assert(_kernel != nullptr);
+    _kernel.reset(MemoryManager_NEW Kernel(argc, argv, this->getInstance()));
+    assert(_kernel.get() != nullptr);
+
     //and load it via an XML file config
     return _kernel->initialize(entryPoint);
 }
 
-void Application::run(){
+void Application::run() {
     _kernel->runLogicLoop();
 }
 
 void Application::snapCursorToPosition(U16 x, U16 y) const {
     _kernel->setCursorPosition(x, y);
-}
-
-void Application::deinitialize() {
-    Console::printfn( Locale::get( "STOP_KERNEL" ) );
-    MemoryManager::DELETE( _kernel );
-    for ( DELEGATE_CBK<>& cbk : _shutdownCallback ) {
-        cbk();
-    }
-    Console::printfn( Locale::get( "STOP_APPLICATION" ) );
-    Locale::clear();
 }
 
 };

@@ -64,10 +64,10 @@ bool NetworkScene::preLoad(){
     return Scene::preLoad();
 }
 
-bool NetworkScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool NetworkScene::load(const stringImpl& name, GUI* const gui){
     ASIOImpl::getInstance().init(_paramHandler.getParam<std::string>("serverAddress").c_str(), "443");
     //Load scene resources
-    bool loadState = SCENE_LOAD(name, cameraMgr, gui, true, true);
+    bool loadState = SCENE_LOAD(name, gui, true, true);
 
     _paramHandler.setParam("serverResponse", "waiting");
     addLight(LIGHT_TYPE_DIRECTIONAL);

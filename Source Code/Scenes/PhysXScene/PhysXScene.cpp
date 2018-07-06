@@ -39,10 +39,10 @@ void PhysXScene::processInput(const U64 deltaTime){
 
 }
 
-bool PhysXScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool PhysXScene::load(const stringImpl& name, GUI* const gui){
     s_sceneState = STATE_LOADING;
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    bool loadState = SCENE_LOAD(name,gui,true,true);
     //Add a light
     vec2<F32> sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
     _sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
@@ -132,14 +132,14 @@ bool PhysXScene::onKeyUp(const Input::KeyEvent& key){
             PHYSICS_DEVICE.createBox(vec3<F32>(0,random(10,30),0),random(0.5f,2.0f));
             break;
         case Input::KeyCode::KC_3:{
-            Kernel* kernel = Application::getInstance().getKernel();
-            Task_ptr e(kernel->AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createTower, this, (U32)random(5, 20))));
+            Kernel& kernel = Application::getInstance().getKernel();
+            Task_ptr e(kernel.AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createTower, this, (U32)random(5, 20))));
             registerTask(e);
             e->startTask();
             }break;
         case Input::KeyCode::KC_4:{
-            Kernel* kernel = Application::getInstance().getKernel();
-            Task_ptr e(kernel->AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createStack, this, (U32)random(5, 10))));
+            Kernel& kernel = Application::getInstance().getKernel();
+            Task_ptr e(kernel.AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createStack, this, (U32)random(5, 10))));
             registerTask(e);
             e->startTask();
         } break;

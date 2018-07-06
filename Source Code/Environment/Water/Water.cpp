@@ -21,7 +21,7 @@ WaterPlane::WaterPlane() : SceneNode(TYPE_WATER),
                            _dirty(true), 
                            _paramsDirty(true), 
                            _cameraUnderWater(false), 
-                           _cameraMgr(Application::getInstance().getKernel()->getCameraMgr())
+                           _cameraMgr(Application::getInstance().getKernel().getCameraMgr())
 {
     //Set water plane to be single-sided
     P32 quadMask;

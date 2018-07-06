@@ -186,7 +186,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args){
     I32 FoV = (atoi(args.c_str()));
     CLAMP<I32>(FoV,40,140);
 
-    Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(FoV);
+    Application::getInstance().getKernel().getCameraMgr().getActiveCamera()->setHorizontalFoV(FoV);
 }
 
 void GUIConsoleCommandParser::handleAddObject(const stringImpl& args){

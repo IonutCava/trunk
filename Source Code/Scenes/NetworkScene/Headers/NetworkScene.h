@@ -33,7 +33,7 @@ public:
     void preRender();
 
     bool preLoad();
-    bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui);
+    bool load(const stringImpl& name, GUI* const gui);
     bool loadResources(bool continueOnErrors);
 
     void processGUI(const U64 deltaTime);

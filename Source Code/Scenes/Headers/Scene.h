@@ -110,7 +110,7 @@ public:
     SceneGraphNode* addSky(Sky* const skyItem);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
-        _sceneState.getRenderState()._cachedResolution = newResolution;
+        _sceneState.getRenderState().cachedResolution(newResolution);
     }
 
     ///Object picking
@@ -185,7 +185,7 @@ protected:
     ///if singleStep is true, only the first model from the modelArray will be loaded. 
     ///Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
-    virtual bool load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const guiInterface);
+    virtual bool load(const stringImpl& name, GUI* const guiInterface);
             bool loadModel(const FileData& data);
             bool loadGeometry(const FileData& data);
     virtual bool unload();
@@ -212,11 +212,10 @@ protected:
    
     ///simple function to load the scene elements.
     inline bool SCENE_LOAD(const stringImpl& name, 
-                           CameraManager* const cameraMgr,
                            GUI* const gui,
                            const bool contOnErrorRes,
                            const bool contOnErrorTasks) {
-        if(!Scene::load(name,cameraMgr,gui)) {
+        if(!Scene::load(name,gui)) {
             Console::errorfn(Locale::get("ERROR_SCENE_LOAD"), "scene load function");
             return false;
         }

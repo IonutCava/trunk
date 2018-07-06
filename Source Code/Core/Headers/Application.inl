@@ -127,8 +127,8 @@ inline bool Application::ShutdownRequested() const {
     return _requestShutdown;  
 }
 
-inline Kernel* const Application::getKernel() const { 
-    return _kernel; 
+inline Kernel& Application::getKernel() const { 
+    return *_kernel; 
 }
 
 inline const std::thread::id&  Application::getMainThreadId() const { 

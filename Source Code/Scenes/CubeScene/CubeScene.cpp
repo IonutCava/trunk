@@ -62,10 +62,10 @@ void CubeScene::preRender() {
 void CubeScene::processInput(const U64 deltaTime){
 }
 
-bool CubeScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool CubeScene::load(const stringImpl& name, GUI* const gui){
     GFX_DEVICE.setRenderer(RENDERER_DEFERRED_SHADING);
     //Load scene resources
-    return SCENE_LOAD(name,cameraMgr,gui,true,true);
+    return SCENE_LOAD(name,gui,true,true);
 }
 
 bool CubeScene::loadResources(bool continueOnErrors){

@@ -53,7 +53,7 @@ public:
     inline void onLostFocus()                          { _activeScene->onLostFocus(); }
     inline void idle()                                 { _activeScene->idle(); }
     bool unloadCurrentScene();
-    bool load(const stringImpl& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
+    bool load(const stringImpl& name, const vec2<U16>& resolution);
     ///Check if the scene was loaded properly
     inline bool checkLoadFlag()                 const  {return _activeScene->checkLoadFlag();}
     ///Create AI entities, teams, NPC's etc

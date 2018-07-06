@@ -103,9 +103,9 @@ void MainScene::processTasks(const U64 deltaTime){
     Scene::processTasks(deltaTime);
 }
 
-bool MainScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
+bool MainScene::load(const stringImpl& name, GUI* const gui){
     //Load scene resources
-    bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    bool loadState = SCENE_LOAD(name,gui,true,true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
     _sun = addLight(LIGHT_TYPE_DIRECTIONAL)->getNode<DirectionalLight>();
@@ -214,9 +214,9 @@ bool MainScene::loadResources(bool continueOnErrors){
                             -sinf(_sunAngle.x) * sinf(_sunAngle.y),
                             0.0f );
 
-    Kernel* kernel = Application::getInstance().getKernel();
+    Kernel& kernel = Application::getInstance().getKernel();
 
-    Task_ptr boxMove(kernel->AddTask(Time::MillisecondsToMicroseconds(30), 0, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
+    Task_ptr boxMove(kernel.AddTask(Time::MillisecondsToMicroseconds(30), 0, DELEGATE_BIND(&MainScene::test, this, stringImpl("test"), TYPE_STRING)));
     registerTask(boxMove);
     boxMove->startTask();
 

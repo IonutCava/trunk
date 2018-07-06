@@ -268,11 +268,10 @@ bool Scene::preLoad() {
     return true;
 }
 
-bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const guiInterface){
+bool Scene::load(const stringImpl& name, GUI* const guiInterface){
     STUBBED("ToDo: load skyboxes from XML")
     _GUI = guiInterface;
     _name = name;
-    renderState()._cameraMgr = cameraMgr;
     preLoad();
     loadXMLAssets();
     SceneGraphNode* root = _sceneGraph.getRoot();
@@ -309,11 +308,11 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
     LightManager::getInstance().setAmbientLight(ambientColor);
 
     //Create an AI thread, but start it only if needed
-    Kernel* kernel = Application::getInstance().getKernel();
-    _aiTask.reset(kernel->AddTask(Time::MillisecondsToMicroseconds(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 
-                                  0, 
-                                  DELEGATE_BIND(&AI::AIManager::update, 
-                                                &AI::AIManager::getInstance())));
+    Kernel& kernel = Application::getInstance().getKernel();
+    _aiTask.reset(kernel.AddTask(Time::MillisecondsToMicroseconds(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY), 
+                                 0, 
+                                 DELEGATE_BIND(&AI::AIManager::update, 
+                                               &AI::AIManager::getInstance())));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, 
                                        &GUI::getInstance(), 

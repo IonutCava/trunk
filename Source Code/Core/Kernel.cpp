@@ -55,7 +55,7 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     //General light management and rendering (individual lights are handled by each scene)
     //Unloading the lights is a scene level responsibility
     LightManager::createInstance();
-    _cameraMgr = MemoryManager_NEW CameraManager(this);               //Camera manager
+    _cameraMgr.reset(new CameraManager(this)); //Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
     _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange,
@@ -164,7 +164,7 @@ void Kernel::mainLoopApp() {
         _keepAlive = frameMgr.frameEvent(evt);
 
         //Process the current frame
-        _keepAlive = APP.getKernel()->mainLoopScene(evt) && _keepAlive;
+        _keepAlive = APP.getKernel().mainLoopScene(evt) && _keepAlive;
 
         //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
         frameMgr.createEvent(_currentTime, FRAME_EVENT_PROCESS, evt);
@@ -468,7 +468,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _GUI.init(resolution);
     _sceneMgr.init(&_GUI);
 
-    if(!_sceneMgr.load(startupScene, resolution, _cameraMgr)){       //< Load the scene
+    if(!_sceneMgr.load(startupScene, resolution)){ //< Load the scene
         Console::errorfn(Locale::get("ERROR_SCENE_LOAD"),startupScene.c_str());
         return MISSING_SCENE_DATA;
     }
@@ -509,6 +509,7 @@ void Kernel::runLogicLoop(){
 }
 
 void Kernel::shutdown() {
+    Console::printfn( Locale::get( "STOP_KERNEL" ) );
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
     Console::bindConsoleOutput(std::function<void (const char*, bool)>());
@@ -522,7 +523,7 @@ void Kernel::shutdown() {
     } catch( ... ) { 
         Console::d_errorfn(Locale::get("ERROR_CEGUI_DESTROY")); 
     }
-    MemoryManager::DELETE( _cameraMgr );
+    _cameraMgr.reset(nullptr);
     LightManager::destroyInstance();
     Console::printfn(Locale::get("STOP_ENGINE_OK"));
     Console::printfn(Locale::get("STOP_PHYSICS_INTERFACE"));
