@@ -185,10 +185,9 @@ bool NavigationMesh::buildThreaded() {
     stopThreadedBuild();
 
     CreateTask(getGUID(),
-            DELEGATE_BIND(&NavigationMesh::buildInternal,
-                          this,
-                          std::placeholders::_1))
-            .startTask(Task::TaskPriority::HIGH);
+               [this](const Task& parentTask) {
+                   buildInternal(parentTask);
+               }).startTask(Task::TaskPriority::HIGH);
 
     return true;
 }

@@ -36,14 +36,18 @@ namespace Divide {
 namespace Config {
 namespace Build {
 #if defined(_DEBUG)
+    constexpr bool IS_SHIPPING_BUILD = false;
     constexpr bool IS_DEBUG_BUILD = true;
     constexpr bool IS_PROFILE_BUILD = false;
     constexpr bool IS_RELEASE_BUILD = false;
 #elif defined(_PROFILE)
+    constexpr bool IS_SHIPPING_BUILD = false;
     constexpr bool IS_DEBUG_BUILD = false;
     constexpr bool IS_PROFILE_BUILD = true;
     constexpr bool IS_RELEASE_BUILD = false;
 #else
+    // Set IS_SHIPPING_BUILD to true to disable non-required functionality for shipped games: editors, debug code, etc
+    constexpr bool IS_SHIPPING_BUILD = false;
     constexpr bool IS_DEBUG_BUILD = false;
     constexpr bool IS_PROFILE_BUILD = false;
     constexpr bool IS_RELEASE_BUILD = true;

@@ -213,7 +213,9 @@
     <Xml Include="..\..\XML\Scenes\WarScene\assets.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Scripts\utility.chai" />
+    <None Include="..\..\assets\Scripts\atoms\defines.chai" />
+    <None Include="..\..\assets\Scripts\atoms\utility.chai" />
+    <None Include="..\..\assets\Scripts\main.chai" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}</ProjectGuid>

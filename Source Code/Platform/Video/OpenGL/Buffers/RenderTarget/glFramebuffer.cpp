@@ -241,6 +241,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
             assert(GL_API::s_maxFBOAttachments > ++attachmentCountTotal);
         }
     }
+    ACKNOWLEDGE_UNUSED(attachmentCountTotal);
 
     resetAttachments();
     prepareBuffers(RenderTarget::defaultPolicy());

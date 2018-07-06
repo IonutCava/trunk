@@ -247,6 +247,9 @@
     <Filter Include="Scripts">
       <UniqueIdentifier>{0a4e1a34-6de7-4230-aae7-bf19c5e05e05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\atoms">
+      <UniqueIdentifier>{ff42f9d9-6fd3-4676-a930-8c5f1e1968dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
@@ -829,8 +832,14 @@
     </Xml>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\assets\Scripts\utility.chai">
+    <None Include="..\..\assets\Scripts\main.chai">
       <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\..\assets\Scripts\atoms\defines.chai">
+      <Filter>Scripts\atoms</Filter>
+    </None>
+    <None Include="..\..\assets\Scripts\atoms\utility.chai">
+      <Filter>Scripts\atoms</Filter>
     </None>
   </ItemGroup>
 </Project>

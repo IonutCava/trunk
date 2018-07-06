@@ -139,7 +139,7 @@ bool createFile(const char* filePath, bool overwriteExisting) {
     }
 
     const SysInfo& systemInfo = const_sysInfo();
-    createDirectories((systemInfo._pathAndFilename._path + "\\" + splitPathToNameAndLocation(filePath)._path).c_str());
+    createDirectories((systemInfo._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePath)._path).c_str());
 
     return std::ifstream(filePath, std::fstream::in).good();
 

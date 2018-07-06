@@ -308,7 +308,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
    private:
     std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_const_uint(ShaderType::COUNT)> _functionIndex;
     std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>  _availableFunctionIndex;
-    
+
     static std::unique_ptr<FW::FileWatcher> s_shaderFileWatcher;
 };
 

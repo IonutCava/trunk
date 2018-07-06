@@ -59,6 +59,7 @@ bool PlatformPostInit(int argc, char** argv) {
 void InitSysInfo(SysInfo& info, I32 argc, char** argv) {
     GetAvailableMemory(info);
     info._pathAndFilename = getExecutableLocation(argc, argv);
+    info._pathAndFilename._path.append("/");
 }
 
 U32 HARDWARE_THREAD_COUNT() {

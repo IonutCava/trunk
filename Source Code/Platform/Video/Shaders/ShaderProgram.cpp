@@ -3,6 +3,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/StringHelper.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -126,8 +127,9 @@ void ShaderProgram::idle() {
         }
         _recompileQueue.pop();
     }
-
-    s_shaderFileWatcher->update();
+    if (!Config::Build::IS_SHIPPING_BUILD) {
+        s_shaderFileWatcher->update();
+    }
 }
 
 /// Calling this will force a recompilation of all shader stages for the program
@@ -216,12 +218,14 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
 void ShaderProgram::onStartup(ResourceCache& parentCache) {
     s_shaderFileWatcher = std::make_unique<FW::FileWatcher>();
 
-    vectorImpl<stringImpl> atomLocations = getAllAtomLocations();
-    for (const stringImpl& loc : atomLocations) {
-        createDirectories(loc.c_str());
-        s_fileWatcherListener.addIgnoredEndCharacter('~');
-        s_fileWatcherListener.addIgnoredExtension("tmp");
-        s_shaderFileWatcher->addWatch(loc, &s_fileWatcherListener);
+    if (!Config::Build::IS_SHIPPING_BUILD) {
+        vectorImpl<stringImpl> atomLocations = getAllAtomLocations();
+        for (const stringImpl& loc : atomLocations) {
+            createDirectories(loc.c_str());
+            s_fileWatcherListener.addIgnoredEndCharacter('~');
+            s_fileWatcherListener.addIgnoredExtension("tmp");
+            s_shaderFileWatcher->addWatch(loc, &s_fileWatcherListener);
+        }
     }
 
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
@@ -314,7 +318,7 @@ void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     for (ShaderProgramMap::value_type& program : _shaderPrograms) {
         for (const stringImpl& atom : program.second->_usedAtoms) {
-            if (atom.compare(atomName) == 0) {
+            if (Util::CompareIgnoreCase(atom, atomName)) {
                 _recompileQueue.push(program.second);
                 break;
             }

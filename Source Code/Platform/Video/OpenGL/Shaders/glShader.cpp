@@ -79,7 +79,7 @@ bool glShader::load(const stringImpl& source) {
 
     _usedAtoms.clear();
     stringImpl parsedSource = _skipIncludes ? source
-                                            : preprocessIncludes(source, getName(), 0);
+                                            : preprocessIncludes(source, 0);
 
     const char* src = parsedSource.c_str();
 
@@ -131,9 +131,7 @@ bool glShader::validate() {
     return true;
 }
 
-stringImpl glShader::preprocessIncludes(const stringImpl& source,
-                                        const stringImpl& filename,
-                                        I32 level /*= 0 */) {
+stringImpl glShader::preprocessIncludes(const stringImpl& source, I32 level /*= 0 */) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
     }
@@ -148,7 +146,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
 
     while (std::getline(input, line)) {
         if (std::regex_search(line, matches, Paths::g_includePattern)) {
-            include_file = matches[1].str().c_str();
+            include_file = Util::Trim(matches[1].str().c_str());
             _usedAtoms.push_back(include_file);
 
             ShaderType typeIndex = ShaderType::COUNT;
@@ -180,7 +178,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
                                  line_number,
                                  include_file.c_str());
             }
-            output.append(preprocessIncludes(include_string, include_file, level + 1));
+            output.append(preprocessIncludes(include_string, level + 1));
         } else {
             output.append(line);
         }

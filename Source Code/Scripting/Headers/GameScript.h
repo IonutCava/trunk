@@ -36,6 +36,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {
+class GameScriptInstance {
+    public:
+        void frameStarted();
+        void framePreRenderStarted();
+        void framePreRenderEnded();
+        void frameRenderingQueued();
+        void framePostRenderStarted();
+        void framePostRenderEnded();
+        void frameEnded();
+    };
 
     class GameScript : public Script,
                        public FrameListener {
@@ -52,7 +62,10 @@ namespace Divide {
         bool framePostRenderStarted(const FrameEvent& evt);
         bool framePostRenderEnded(const FrameEvent& evt);
         bool frameEnded(const FrameEvent& evt);
-    };
+
+    private:
+        void addGameInstance();
+};
 
 }; //namespace Divide
 

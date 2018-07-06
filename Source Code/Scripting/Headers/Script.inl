@@ -40,40 +40,42 @@ template<typename T>
 inline void Script::addGlobal(const T& var, const char* name, bool asConst, bool overwrite) {
     if (overwrite) {
         if (asConst) {
-            _script.set_global_const(chaiscript::const_var(var), name);
+            _script->set_global_const(chaiscript::const_var(var), name);
         }
         else {
-            _script.set_global(chaiscript::var(var), name); // global non-const, overwrites existing object
+            _script->set_global(chaiscript::var(var), name); // global non-const, overwrites existing object
         }
     }
     else {
         if (asConst) {
-            _script.add(chaiscript::const_var(var), name); // copied in and made const
+            _script->add(chaiscript::const_var(var), name); // copied in and made const
         }
         else {
-            _script.add(chaiscript::var(var), name); // copied in
+            _script->add(chaiscript::var(var), name); // copied in
         }
     }
 }
 
 template <typename T>
 inline void Script::registerType(const char* typeName) {
-    _script.add(chaiscript::user_type<T>(), typeName);
+    _script->add(chaiscript::user_type<T>(), typeName);
 }
 
 template <typename Func >
 inline void Script::registerFunction(const Func& function, const char* functionName) {
-    _script.add(chaiscript::fun(function), functionName);
+    _script->add(chaiscript::fun(function), functionName);
 }
 
 template<typename T>
 inline T Script::eval() {
-    return _script.eval<T>(_scriptSource);
+    assert(!_scriptSource.empty());
+    return _script->eval<T>(_scriptSource);
 }
 
 template<>
 inline void Script::eval() {
-    _script.eval(_scriptSource);
+    assert(!_scriptSource.empty());
+    _script->eval(_scriptSource);
 }
 
 }; //namespace Divide

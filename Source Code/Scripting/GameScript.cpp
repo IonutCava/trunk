@@ -3,6 +3,8 @@
 
 #include "Managers/Headers/FrameListenerManager.h"
 
+#include <chaiscript/utility/utility.hpp>
+
 namespace Divide {
 
 GameScript::GameScript(const stringImpl& sourceCode)
@@ -11,7 +13,8 @@ GameScript::GameScript(const stringImpl& sourceCode)
 {
     REGISTER_FRAME_LISTENER(this, 1);
 
-    _script.add(create_chaiscript_bindings());
+    _script->add(create_chaiscript_bindings());
+    addGameInstance();
 }
 
 GameScript::GameScript(const stringImpl& scriptPath, FileType fileType)
@@ -20,12 +23,35 @@ GameScript::GameScript(const stringImpl& scriptPath, FileType fileType)
 {
     REGISTER_FRAME_LISTENER(this, 1);
 
-    _script.add(create_chaiscript_bindings());
+    _script->add(create_chaiscript_bindings());
+    addGameInstance();
 }
 
 GameScript::~GameScript()
 {
     UNREGISTER_FRAME_LISTENER(this);
+}
+
+void GameScript::addGameInstance() {
+    chaiscript::ModulePtr m = chaiscript::ModulePtr(new chaiscript::Module());
+    chaiscript::utility::add_class<GameScriptInstance>(*m,
+        "GameScriptInstance",
+        { 
+            chaiscript::constructor<GameScriptInstance()>(),
+            chaiscript::constructor<GameScriptInstance(const GameScriptInstance &)>()
+        },
+        {
+            { chaiscript::fun(&GameScriptInstance::frameStarted), "frameStarted"  },
+            { chaiscript::fun(&GameScriptInstance::framePreRenderStarted), "framePreRenderStarted" },
+            { chaiscript::fun(&GameScriptInstance::framePreRenderEnded), "framePreRenderEnded" },
+            { chaiscript::fun(&GameScriptInstance::frameRenderingQueued), "frameRenderingQueued" },
+            { chaiscript::fun(&GameScriptInstance::framePostRenderStarted), "framePostRenderStarted" },
+            { chaiscript::fun(&GameScriptInstance::framePostRenderEnded), "framePostRenderEnded" },
+            { chaiscript::fun(&GameScriptInstance::frameEnded), "frameEnded" }
+        }
+    );
+
+    _script->add(m);
 }
 
 bool GameScript::frameStarted(const FrameEvent& evt) {

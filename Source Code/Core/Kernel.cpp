@@ -8,6 +8,8 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUISplash.h"
 #include "GUI/Headers/GUIConsole.h"
+#include "Scripting/Headers/Script.h"
+#include "Physics/Headers/PXDevice.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/ParamHandler.h"
@@ -21,7 +23,6 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/File/Headers/FileManagement.h"
-#include "Physics/Headers/PXDevice.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Platform/Input/Headers/InputInterface.h"
@@ -103,6 +104,7 @@ void Kernel::idle() {
     _platformContext->idle();
     _sceneManager->idle();
     Locale::idle();
+    Script::idle();
 
     FrameListenerManager::instance().idle();
 
@@ -651,6 +653,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 
+    Script::onStartup();
     SceneManager::onStartup();
     // We start of with a forward plus renderer
     _platformContext->gfx().setRenderer(RendererType::RENDERER_TILED_FORWARD_SHADING);
@@ -721,6 +724,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
     SceneManager::onShutdown();
+    Script::onShutdown();
     _sceneManager.reset();
     WaitForAllTasks(_taskPool, true, true, true);
     // release the scene

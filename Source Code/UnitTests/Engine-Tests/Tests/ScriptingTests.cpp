@@ -3,29 +3,10 @@
 #include "Scripting/Headers/Script.h"
 
 namespace Divide {
-
-class PlatformSetup
-{
-public:
-    PlatformSetup()
-    {
-        PlatformInit(0, nullptr);
-    }
-};
-
-
-namespace {
-    PlatformSetup* my_class_ptr = nullptr;
-};
-
+    
 TEST_SETUP(PathSetup)
 {
-    my_class_ptr = new PlatformSetup();
-}
-
-TEST_TEARDOWN(PathSetup)
-{
-    delete my_class_ptr;
+    PlatformInit(0, nullptr);
 }
 
 TEST(TestSimpleMath)
@@ -38,7 +19,8 @@ TEST(TestSimpleMath)
 
 TEST(TestCFunctionCall)
 {
-    Script input("var my_fun = fun(x) { return x + 2; };"
+    Script input("use(\"utility.chai\");"
+                 "var my_fun = fun(x) { return x + 2; };"
                  "something(my_fun)");
 
     I32 variable = 0;
@@ -47,7 +29,6 @@ TEST(TestCFunctionCall)
     };
 
     input.registerFunction(testFunc, "something");
-
     input.eval();
     CHECK_EQUAL(variable, 2);
 }

@@ -35,14 +35,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Headers/PlatformDefines.h"
 #include <chaiscript/chaiscript.hpp>
 
+namespace FW {
+    class FileWatcher;
+};
+
 namespace Divide {
 
-class Script {
+enum class FileUpdateEvent : U8;
+
+class Script : public GUIDWrapper {
 public:
-    explicit Script(const stringImpl& sourceCode);
-    explicit Script(const stringImpl& scriptPath, FileType fileType);
+    explicit Script(const stringImpl& scriptPathOrCode, FileType fileType = FileType::TEXT);
     virtual ~Script();
-       
+
+    static void idle();
+    static bool onStartup();
+    static bool onShutdown();
+
     template<typename T>
     void addGlobal(const T& var, const char* name, bool asConst, bool overwrite);
 
@@ -55,14 +64,30 @@ public:
     template<typename T = void>
     T eval();
 
+    static void onScriptModify(const char* script, FileUpdateEvent& evt);
+
 protected:
+    void compile();
     void bootstrap();
+    void extractAtoms();
+    void preprocessIncludes(const stringImpl& source, I32 level /*= 0 */);
+
+protected:
     static void handleOutput(const std::string& msg);
 
 protected:
     //ToDo: Move this somewhere else to avoid having the include in this file -Ionut
-    chaiscript::ChaiScript _script;
+    std::unique_ptr<chaiscript::ChaiScript> _script;
     std::string _scriptSource;
+    FileWithPath _scriptFile;
+    FileType     _scriptFileType;
+    vectorImpl<stringImpl> _usedAtoms;
+
+    static std::unique_ptr<FW::FileWatcher> s_scriptFileWatcher;
+
+    typedef hashMapImpl<I64, Script*> ScriptMap;
+    static  ScriptMap s_scripts;
+    static bool s_scriptsReady;
 };
 
 }; //namespace Divide

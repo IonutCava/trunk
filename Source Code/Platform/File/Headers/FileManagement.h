@@ -54,7 +54,11 @@ namespace Paths {
     extern stringImpl g_GUILocation;
     extern stringImpl g_fontsPath;
     extern stringImpl g_localisationPath;
-    extern stringImpl g_scriptsLocation;
+
+    namespace Scripts {
+        extern stringImpl g_scriptsLocation;
+        extern stringImpl g_scriptsAtomsLocation;
+    };
 
     namespace Shaders {
         extern stringImpl g_cacheLocation;
@@ -89,6 +93,8 @@ namespace Paths {
 
     // include command regex pattern
     extern std::regex g_includePattern;
+    // use command regex pattern
+    extern std::regex g_usePattern;
 
     void initPaths();
     void updatePaths(const PlatformContext& context);

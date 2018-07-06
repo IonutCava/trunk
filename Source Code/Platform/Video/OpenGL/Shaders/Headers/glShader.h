@@ -80,9 +80,7 @@ class glShader : public GraphicsResource, public TrackedObject {
                                 const bool parseCode);
    private:
     friend class glShaderProgram;
-    stringImpl preprocessIncludes(const stringImpl& source,
-                                  const stringImpl& filename,
-                                  GLint level /*= 0 */);
+    stringImpl preprocessIncludes(const stringImpl& source, GLint level /*= 0 */);
 
     inline void skipIncludes(bool state) {
         _skipIncludes = state;

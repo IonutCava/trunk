@@ -21,7 +21,11 @@ namespace Paths {
     stringImpl g_GUILocation;
     stringImpl g_fontsPath;
     stringImpl g_localisationPath;
-    stringImpl g_scriptsLocation;
+
+    namespace Scripts {
+        stringImpl g_scriptsLocation;
+        stringImpl g_scriptsAtomsLocation;
+    };
 
     namespace Shaders {
         stringImpl g_cacheLocation;
@@ -54,7 +58,9 @@ namespace Paths {
             stringImpl g_parentShaderLoc;
         };
     };
+
     std::regex g_includePattern;
+    std::regex g_usePattern;
 
     void initPaths() {
         g_assetsLocation = "assets/";
@@ -71,7 +77,8 @@ namespace Paths {
         g_fontsPath = "fonts/";
         g_soundsLocation = "sounds/";
         g_localisationPath = "localisation/";
-        g_scriptsLocation = g_assetsLocation + "scripts/";
+        Scripts::g_scriptsLocation = g_assetsLocation + "scripts/";
+        Scripts::g_scriptsAtomsLocation = Scripts::g_scriptsLocation + "atoms/";
 
         Shaders::g_cacheLocation = "shaderCache/";
         Shaders::g_cacheLocationText = Shaders::g_cacheLocation + "Text/";
@@ -97,6 +104,7 @@ namespace Paths {
         Shaders::HLSL::g_parentShaderLoc = "HLSL/";
 
         g_includePattern = std::regex("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+        g_usePattern = std::regex("^[ ]*use[ ]*\\([ ]*[\"](.*)[\"][ ]*\\).*");
     }
 
     void updatePaths(const PlatformContext& context) {
@@ -108,7 +116,8 @@ namespace Paths {
         g_texturesLocation = config.defaultTextureLocation + "/";
         g_xmlDataLocation = entryData.scriptLocation + "/";
         g_scenesLocation = entryData.scenesLocation + "/";
-        g_scriptsLocation = g_assetsLocation + "scripts/";
+        Scripts::g_scriptsLocation = g_assetsLocation + "scripts/";
+        Scripts::g_scriptsAtomsLocation = Scripts::g_scriptsLocation + "atoms/";
     }
 
 }; //namespace Paths

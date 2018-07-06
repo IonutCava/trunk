@@ -35,11 +35,13 @@ namespace detail {
 
 ErrorCode init(const stringImpl& newLanguage) {
     clear();
-    if (!s_LanguageFileWatcher) {
-         s_LanguageFileWatcher.reset(new FW::FileWatcher());
-         s_fileWatcherListener.addIgnoredEndCharacter('~');
-         s_fileWatcherListener.addIgnoredExtension("tmp");
-         s_LanguageFileWatcher->addWatch(Paths::g_localisationPath.c_str(), &s_fileWatcherListener);
+    if (!Config::Build::IS_SHIPPING_BUILD) {
+        if (!s_LanguageFileWatcher) {
+            s_LanguageFileWatcher.reset(new FW::FileWatcher());
+            s_fileWatcherListener.addIgnoredEndCharacter('~');
+            s_fileWatcherListener.addIgnoredExtension("tmp");
+            s_LanguageFileWatcher->addWatch(Paths::g_localisationPath.c_str(), &s_fileWatcherListener);
+        }
     }
 
     detail::s_localeFile = newLanguage;
