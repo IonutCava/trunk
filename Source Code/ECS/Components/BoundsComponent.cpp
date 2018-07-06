@@ -8,8 +8,9 @@ namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
     : SGNComponent(sgn),
-    _boundingBoxDirty(true),
-    _lockBBTransforms(false)
+     _transformDirty(true),
+     _boundingBoxDirty(true),
+     _lockBBTransforms(false)
 {
     RegisterEventCallback(&BoundsComponent::OnTransformDirty);
 }
@@ -21,17 +22,8 @@ BoundsComponent::~BoundsComponent()
 
 void BoundsComponent::OnTransformDirty(const TransformDirty* event) {
     if (GetOwner() == event->ownerID) {
-        TransformComponent* tComp = 
-            ECS::ECS_Engine->GetComponentManager()->GetComponent<TransformComponent>(event->ownerID);
-        if (tComp) {
-            onTransform(tComp->getWorldMatrix());
-        }
+        _transformDirty = true;
     }
-}
-
-void BoundsComponent::onTransform(const mat4<F32>& worldMatrix) {
-    _worldMatrix.set(worldMatrix);
-    flagBoundingBoxDirty();
 }
 
 void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
@@ -40,6 +32,16 @@ void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
 }
 
 void BoundsComponent::update(const U64 deltaTimeUS) {
+    if (_transformDirty) {
+        TransformComponent* tComp =
+            ECS::ECS_Engine->GetComponentManager()->GetComponent<TransformComponent>(GetOwner());
+        if (tComp) {
+            _worldMatrix.set(tComp->getWorldMatrix());
+            _boundingBoxDirty = true;
+        }
+        _transformDirty = false;
+    }
+
     if (_boundingBoxDirty) {
         SceneGraphNode* parent = _parentSGN.getParent();
         if (parent) {

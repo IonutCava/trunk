@@ -165,6 +165,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
         pkg.pipeline(1, _context.newPipeline(descriptor));
 
+        // draw bounding boxes;
         U16 state = _drawBBoxes ? 1 : 0;
         for (I32 i = 2; i < pkg.drawCommandCount(); ++i) {
             GenericDrawCommand cmd = pkg.drawCommand(i, 0);
@@ -233,6 +234,14 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
             drawCommand._drawCommands.push_back(planeCmd);
             pkgInOut.addDrawCommand(drawCommand);
         }
+
+        pipelineDescriptor._shaderProgram = ShaderProgram::defaultShader();
+        {
+            GFX::BindPipelineCommand pipelineCommand;
+            pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);
+            pkgInOut.addPipelineCommand(pipelineCommand);
+        }
+
         //BoundingBoxes
         _terrainQuadtree.drawBBox(_context, pkgInOut);
     }

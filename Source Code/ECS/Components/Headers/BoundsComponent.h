@@ -53,17 +53,16 @@ namespace Divide {
 
     protected:
         friend class SceneGraph;
-        void onTransform(const mat4<F32>& worldMatrix);
-        
+        friend class BoundsSystem;
+                
         void update(const U64 deltaTimeUS);
 
-        inline void flagBoundingBoxDirty() {
-            _boundingBoxDirty = true;
-        }
+        inline void flagBoundingBoxDirty() { _boundingBoxDirty = true; }
 
         void OnTransformDirty(const TransformDirty* event);
 
     private:
+        std::atomic<bool> _transformDirty;
         std::atomic<bool> _boundingBoxDirty;
         bool _lockBBTransforms;
         mat4<F32> _worldMatrix;

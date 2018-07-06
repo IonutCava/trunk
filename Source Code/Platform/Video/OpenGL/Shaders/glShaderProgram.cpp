@@ -130,11 +130,7 @@ bool glShaderProgram::update(const U64 deltaTimeUS) {
         validateInternal();
 
         // We dump the shader binary only if it wasn't loaded from one
-        if (!_loadedFromBinary && GFXDevice::getGPUVendor() == GPUVendor::NVIDIA && false) {
-            STUBBED(
-                "GLSL binary dump/load is only enabled for nVidia GPUS. "
-                "Catalyst 13.x  - 15.x destroys uniforms on shader dump, for whatever "
-                "reason. - Ionut")
+        if (!_loadedFromBinary) {
             // Get the size of the binary code
             GLint binaryLength = 0;
             glGetProgramiv(_shaderProgramID, GL_PROGRAM_BINARY_LENGTH, &binaryLength);

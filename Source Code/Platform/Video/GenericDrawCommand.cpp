@@ -70,7 +70,8 @@ GenericDrawCommand::GenericDrawCommand(const GenericDrawCommand& other)
       _renderOptions(other._renderOptions),
       _type(other._type),
       _sourceBuffer(other._sourceBuffer),
-      _commandOffset(other._commandOffset)
+      _commandOffset(other._commandOffset),
+      _patchVertexCount(other._patchVertexCount)
 {
 }
 
@@ -83,6 +84,7 @@ const GenericDrawCommand& GenericDrawCommand::operator= (const GenericDrawComman
     _type = other._type;
     _sourceBuffer = other._sourceBuffer;
     _commandOffset = other._commandOffset;
+    _patchVertexCount = other._patchVertexCount;
     return *this;
 }
 
@@ -95,6 +97,7 @@ bool GenericDrawCommand::compatible(const GenericDrawCommand& other) const {
            _drawToBuffer == other._drawToBuffer &&
            _renderOptions == other._renderOptions &&
            _type == other._type &&
+           _patchVertexCount == other._patchVertexCount &&
            (_sourceBuffer != nullptr) == (other._sourceBuffer != nullptr);
 }
 

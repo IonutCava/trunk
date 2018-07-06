@@ -55,6 +55,7 @@ GUIButton::GUIButton(U64 guiID,
 
 GUIButton::~GUIButton()
 {
+    _btnWindow->removeAllEvents();
     _parent->removeChild(_btnWindow);
 }
 

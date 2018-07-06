@@ -237,7 +237,7 @@ vectorImpl<SceneGraphNode*> Object3D::filterByType(const vectorImpl<SceneGraphNo
     result.reserve(nodes.size());
 
     for (SceneGraphNode* ptr : nodes) {
-        if (!ptr && ptr->getNode<Object3D>()->getObjectType() == filter) {
+        if (ptr && ptr->getNode<Object3D>()->getObjectType() == filter) {
             result.push_back(ptr);
         }
     };

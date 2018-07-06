@@ -133,6 +133,65 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     glbinding::Binding::useCurrentContext();
 
+    // Query GPU vendor to enable/disable vendor specific features
+    GPUVendor vendor = GPUVendor::COUNT;
+    const char* gpuVendorStr = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+    if (gpuVendorStr != nullptr) {
+        if (strstr(gpuVendorStr, "Intel") != nullptr) {
+            vendor = GPUVendor::INTEL;
+        } else if (strstr(gpuVendorStr, "NVIDIA") != nullptr) {
+            vendor = GPUVendor::NVIDIA;
+        } else if (strstr(gpuVendorStr, "ATI") != nullptr || strstr(gpuVendorStr, "AMD") != nullptr) {
+            vendor = GPUVendor::AMD;
+        } else if (strstr(gpuVendorStr, "Microsoft") != nullptr) {
+            vendor = GPUVendor::MICROSOFT;
+        } else {
+            vendor = GPUVendor::OTHER;
+        }
+    } else {
+        gpuVendorStr = "Unknown GPU Vendor";
+        vendor = GPUVendor::OTHER;
+    }
+    GPURenderer renderer = GPURenderer::COUNT;
+    const char* gpuRendererStr = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+    if (gpuRendererStr != nullptr) {
+        if (strstr(gpuRendererStr, "Tegra") || strstr(gpuRendererStr, "GeForce") || strstr(gpuRendererStr, "NV")) {
+            renderer = GPURenderer::GEFORCE;
+        } else if (strstr(gpuRendererStr, "PowerVR") || strstr(gpuRendererStr, "Apple")) {
+            renderer = GPURenderer::POWERVR;
+            vendor = GPUVendor::IMAGINATION_TECH;
+        } else if (strstr(gpuRendererStr, "Mali")) {
+            renderer = GPURenderer::MALI;
+            vendor = GPUVendor::ARM;
+        } else if (strstr(gpuRendererStr, "Adreno")) {
+            renderer = GPURenderer::ADRENO;
+            vendor = GPUVendor::QUALCOMM;
+        } else if (strstr(gpuRendererStr, "AMD") || strstr(gpuRendererStr, "ATI")) {
+            renderer = GPURenderer::RADEON;
+        } else if (strstr(gpuRendererStr, "Intel")) {
+            renderer = GPURenderer::INTEL;
+        } else if (strstr(gpuRendererStr, "Vivante")) {
+            renderer = GPURenderer::VIVANTE;
+            vendor = GPUVendor::VIVANTE;
+        } else if (strstr(gpuRendererStr, "VideoCore")) {
+            renderer = GPURenderer::VIDEOCORE;
+            vendor = GPUVendor::ALPHAMOSAIC;
+        } else if (strstr(gpuRendererStr, "WebKit") || strstr(gpuRendererStr, "Mozilla") || strstr(gpuRendererStr, "ANGLE")) {
+            renderer = GPURenderer::WEBGL;
+            vendor = GPUVendor::WEBGL;
+        } else if (strstr(gpuRendererStr, "GDI Generic")) {
+            renderer = GPURenderer::GDI;
+        } else {
+            renderer = GPURenderer::UNKNOWN;
+        }
+    } else {
+        gpuRendererStr = "Unknown GPU Renderer";
+        renderer = GPURenderer::UNKNOWN;
+    }
+
+    GFXDevice::setGPURenderer(renderer);
+    GFXDevice::setGPUVendor(vendor);
+
     if (s_hardwareQueryPool == nullptr) {
         s_hardwareQueryPool = MemoryManager_NEW glHardwareQueryPool(_context);
     }
@@ -156,10 +215,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
             // Disable nVidia buffer allocation info (an easy enable is to change the
             // count param to 0)
             glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
-                                  GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
-              // Shader will be recompiled nVidia error
+                                  GL_DONT_CARE, 3, nvidiaBufferErrors, GL_FALSE);
+            // Shader will be recompiled nVidia error
             glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
-                                  GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+                                  GL_DONT_CARE, 3, nvidiaBufferErrors, GL_FALSE);
         }
     }
 
@@ -173,65 +232,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     if (!vsyncSet) {
         vsyncSet = SDL_GL_SetSwapInterval(config.runtime.enableVSync ? 1 : 0) != -1;
     }
-	assert(vsyncSet);
-    // Query GPU vendor to enable/disable vendor specific features
-    GPUVendor vendor = GPUVendor::COUNT;
-    const char* gpuVendorStr = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-    if (gpuVendorStr != nullptr) {
-        if (strstr(gpuVendorStr, "Intel") != nullptr) {
-            vendor = GPUVendor::INTEL;
-        } else if (strstr(gpuVendorStr, "NVIDIA") != nullptr) {
-            vendor = GPUVendor::NVIDIA;
-        } else if (strstr(gpuVendorStr, "ATI") != nullptr || strstr(gpuVendorStr, "AMD") != nullptr) {
-            vendor = GPUVendor::AMD;
-        } else if(strstr(gpuVendorStr, "Microsoft") != nullptr) {
-            vendor = GPUVendor::MICROSOFT;
-        } else {
-            vendor = GPUVendor::OTHER;
-        }
-    } else {
-        gpuVendorStr = "Unknown GPU Vendor";
-        vendor = GPUVendor::OTHER;
-    }
-    GPURenderer renderer = GPURenderer::COUNT;
-    const char* gpuRendererStr = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
-    if (gpuRendererStr != nullptr) {
-        if (strstr(gpuRendererStr,"Tegra") || strstr(gpuRendererStr, "GeForce") || strstr(gpuRendererStr, "NV")) {
-            renderer = GPURenderer::GEFORCE;
-        } else if(strstr(gpuRendererStr, "PowerVR") || strstr(gpuRendererStr, "Apple")) {
-            renderer = GPURenderer::POWERVR;
-            vendor = GPUVendor::IMAGINATION_TECH;
-        } else if(strstr(gpuRendererStr, "Mali")) {
-            renderer = GPURenderer::MALI;
-            vendor = GPUVendor::ARM;
-        } else if (strstr(gpuRendererStr, "Adreno")) {
-            renderer = GPURenderer::ADRENO;
-            vendor = GPUVendor::QUALCOMM;
-        } else if(strstr(gpuRendererStr, "AMD") || strstr(gpuRendererStr, "ATI")) {
-            renderer = GPURenderer::RADEON;
-        } else if (strstr(gpuRendererStr, "Intel")) {
-            renderer = GPURenderer::INTEL;
-        } else if(strstr(gpuRendererStr, "Vivante")) {
-            renderer = GPURenderer::VIVANTE;
-            vendor = GPUVendor::VIVANTE;
-        } else if(strstr(gpuRendererStr, "VideoCore")) {
-            renderer = GPURenderer::VIDEOCORE;
-            vendor = GPUVendor::ALPHAMOSAIC;
-        } else if (strstr(gpuRendererStr, "WebKit") || strstr(gpuRendererStr, "Mozilla") || strstr(gpuRendererStr, "ANGLE")) {
-            renderer = GPURenderer::WEBGL;
-            vendor = GPUVendor::WEBGL;
-        } else if (strstr(gpuRendererStr, "GDI Generic")) {
-            renderer = GPURenderer::GDI;
-        } else {
-            renderer = GPURenderer::UNKNOWN;
-        }
-    } else {
-        gpuRendererStr = "Unknown GPU Renderer";
-        renderer = GPURenderer::UNKNOWN;
-    }
-
-    GFXDevice::setGPURenderer(renderer);
-    GFXDevice::setGPUVendor(vendor);
+    assert(vsyncSet);
     
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader

@@ -19,7 +19,7 @@ Quad3D::Quad3D(GFXDevice& context,
     U16 indices[] = { 2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3 };
 
     getGeometryVB()->setVertexCount(4);
-
+    getGeometryVB()->keepData(true);
     getGeometryVB()->modifyPositionValue(0, -1.0f, 1.0f, 0.0f); // TOP LEFT
     getGeometryVB()->modifyPositionValue(1, 1.0f, 1.0f, 0.0f); // TOP RIGHT
     getGeometryVB()->modifyPositionValue(2, -1.0f, -1.0f, 0.0f); // BOTTOM LEFT

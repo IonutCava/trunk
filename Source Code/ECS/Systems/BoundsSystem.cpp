@@ -44,7 +44,12 @@ namespace Divide {
     }
 
     void BoundsSystem::Update(F32 dt) {
-
+        auto bComp = ECS::ECS_Engine->GetComponentManager()->begin<BoundsComponent>();
+        auto bCompEnd = ECS::ECS_Engine->GetComponentManager()->end<BoundsComponent>();
+        for (;bComp != bCompEnd; ++bComp)
+        {
+            bComp->update(Time::MillisecondsToMicroseconds(dt));
+        }
     }
 
     void BoundsSystem::PostUpdate(F32 dt) {

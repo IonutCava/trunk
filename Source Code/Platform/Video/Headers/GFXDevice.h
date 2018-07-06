@@ -323,8 +323,6 @@ public:  // Accessors and Mutators
 
     void addDebugView(const std::shared_ptr<DebugView>& view);
 
-    void setWindowTarget(I64 windowGUID);
-
     static void setFrameInterpolationFactor(const D64 interpolation) { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() { return s_interpolationFactor; }
     static void setGPUVendor(GPUVendor gpuvendor) { s_GPUVendor = gpuvendor; }

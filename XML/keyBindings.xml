@@ -86,7 +86,6 @@
 <key actionLAtlUp="32">RETURN</key>
 <key actionUp="33">F</key>
 <key actionUp="34">Y</key>
-<key actionUp="39">T</key>
 <key actionLCtrlUp="42" actionUp="43">F11</key>
 <key actionUp="44">GRAVE</key><!-- GRAVE == '~' -->
 </keys>
