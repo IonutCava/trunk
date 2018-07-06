@@ -28,7 +28,7 @@
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 class Quad3D;
-class FrameBuffer;
+class Framebuffer;
 class PixelBuffer;
 class ShaderProgram;
 
@@ -49,7 +49,7 @@ private:
 	U16 _cachedLightCount;
 	bool _debugView;
 	vectorImpl<Quad3D* >  _renderQuads;
-	FrameBuffer*    _deferredBuffer;
+	Framebuffer*    _deferredBuffer;
 	ShaderProgram*  _deferredShader;
 	ShaderProgram*  _previewDeferredShader;
 	PixelBuffer*    _lightTexture;

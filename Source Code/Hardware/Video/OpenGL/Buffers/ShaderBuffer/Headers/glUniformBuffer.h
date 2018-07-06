@@ -30,25 +30,19 @@
 class glBufferLockManager;
 class glUniformBuffer : public ShaderBuffer {
 public:
-    glUniformBuffer(const bool unbound);
+    glUniformBuffer(bool unbound, bool persistentMapped);
     ~glUniformBuffer();
-    ///Create a new buffer object to hold our uniform shader data
-    ///if "dynamic" is false, the buffer will be created using GL_STATIC_DRAW
-    ///if "dynamic" is true, the buffer will use either GL_STREAM_DRAW or GL_DYNAMIC_DRAW depending on the "stream" param
-    ///default value will be a GL_DYNAMIC_DRAW, as most data will change once every few frames
-    ///(lights might change per frame, so stream will be better in that case)
-    virtual void Create(bool dynamic, bool stream, U32 primitiveCount, ptrdiff_t primitiveSize);
-    virtual void UpdateData(GLintptr offset,	GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer = false) const;
-    virtual void SetData(const void *data);
-    virtual bool BindRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const;
-    virtual bool Bind(GLuint bindIndex) const;
 
-    void PrintInfo(const ShaderProgram* shaderProgram, U32 bindIndex);
+    ///Create a new buffer object to hold our uniform shader data
+    virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+    virtual void UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer = false) const;
+    virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
+    virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const;
+
+    void PrintInfo(const ShaderProgram* shaderProgram, Divide::ShaderBufferLocation bindIndex);
 
 protected:
-    GLsizei _bufferSize;
     GLuint _UBOid;
-    GLenum _usage;
     GLenum _target;
     GLvoid* _mappedBuffer;
     glBufferLockManager* _lockManager;

@@ -48,6 +48,10 @@ namespace Config
     const unsigned int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
     /// Maximum number of instances of a single mesh with a single draw call
     const unsigned int MAX_INSTANCE_COUNT = 512;
+    /// Maximum number of bones available per node
+    const unsigned int MAX_BONE_COUNT_PER_NODE = 256;
+    /// Estimated maximum number of visible objects per render pass (This includes debug primitives);
+    const unsigned int MAX_VISIBLE_NODES = 2048;
     /// How many clip planes should the shaders us
     const unsigned int MAX_CLIP_PLANES = 6;
     /// Generic index value used to separate primitives within the same vertex buffer
@@ -79,8 +83,6 @@ namespace Config
         const bool USE_2x2_TEXTURES = false;
     };
     namespace Lighting {
-        /// How many lights should affect a single node
-        const unsigned int MAX_LIGHTS_PER_SCENE_NODE = 4;
         /// How many lights total to use in the application (8 should be enough)
         const unsigned int MAX_LIGHTS_PER_SCENE = 8;
         /// How many lights (in order as passed to the shader for the node) should cast shadows
@@ -100,7 +102,7 @@ namespace Config
         const unsigned int LIGHT_GRID_MAX_DIM_X = ((1920 + LIGHT_GRID_TILE_DIM_X - 1) / LIGHT_GRID_TILE_DIM_X);
         const unsigned int LIGHT_GRID_MAX_DIM_Y = ((1080 + LIGHT_GRID_TILE_DIM_Y - 1) / LIGHT_GRID_TILE_DIM_Y);
 
-        // the maximum number if lights supported, this is limited by constant buffer size, commonly
+        // the maximum number of lights supported, this is limited by constant buffer size, commonly
         // this is 64kb, but AMD only seem to allow 2048 lights...
         const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
     };

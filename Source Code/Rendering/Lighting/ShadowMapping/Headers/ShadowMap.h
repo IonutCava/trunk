@@ -23,7 +23,7 @@
 #ifndef _SHADOW_MAP_H_
 #define _SHADOW_MAP_H_
 
-#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 enum ShadowType{
     SHADOW_TYPE_NONE = -1,
@@ -52,7 +52,7 @@ public:
     virtual void postRender();
     ///Get the current shadow mapping tehnique
     inline  ShadowType             getShadowMapType()     const { return _shadowMapType; }
-    inline  FrameBuffer*           getDepthMap()                { return _depthMap; }
+    inline  Framebuffer*           getDepthMap()                { return _depthMap; }
     inline  const vectorImpl<F32>& getShadowFloatValues() const { return _shadowFloatValues; }
 
             U16  resolution();
@@ -70,7 +70,7 @@ protected:
 protected:
     ShadowType _shadowMapType;
     ///The depth maps. Number depends on the current method
-    FrameBuffer* _depthMap;
+    Framebuffer* _depthMap;
     U16 _resolution;
     ///Internal pointer to the parent light
     Light* _light;

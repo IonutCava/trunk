@@ -25,17 +25,35 @@
 
 #include <boost/noncopyable.hpp>
 #include "Core/Math/Headers/MathClasses.h"
+#include "Utility/Headers/GUIDWrapper.h"
 
 class Texture;
 
 enum PrimitiveType;
 ///IMPrimitive replaces immediate mode calls to VB based rendering
-class IMPrimitive  : private boost::noncopyable{
+class IMPrimitive : public GUIDWrapper, private boost::noncopyable  {
 public:
     inline void setRenderStates(const DELEGATE_CBK& setupStatesCallback, const DELEGATE_CBK& releaseStatesCallback){
         _setupStates = setupStatesCallback;
         _resetStates = releaseStatesCallback;
     }
+
+    inline void clearRenderStates(){
+        _setupStates.clear();
+        _resetStates.clear();
+    }
+
+    inline void setupStates() {
+        if(!_setupStates.empty())
+            _setupStates();
+    }
+
+    inline void resetStates() {
+        if(!_resetStates.empty())
+            _resetStates();
+    }
+
+    virtual void render(U32 instanceCount = 1, bool forceWireframe = false) = 0;
 
     virtual void beginBatch() = 0;
     virtual void begin(PrimitiveType type) = 0;
@@ -45,7 +63,17 @@ public:
     virtual void attribute4f(const std::string& attribName, const vec4<F32>& value) = 0;
     virtual void end() = 0;
     virtual void endBatch() = 0;
-    virtual void clear() = 0;
+
+    virtual void clear() {
+        zombieCounter(0);
+        stateHash(0);
+        clearRenderStates();
+        inUse(false);
+        _worldMatrix.identity();
+        _lineWidth = 1.0f;
+        _canZombify = true;
+        _texture = nullptr;
+    }
 
     inline void paused(bool state)                 {_paused = state;}
     inline bool paused()                     const {return _paused;}
@@ -58,14 +86,17 @@ public:
     inline bool hasRenderStates()            const {return (!_setupStates.empty() && !_resetStates.empty());}
 
     ///State management
-    inline I64  stateHash()              const { return _stateHash; }
-    inline void stateHash(I64 hashValue)       { _stateHash = hashValue;}
+    inline size_t  stateHash()              const { return _stateHash; }
+    inline void stateHash(size_t hashValue)       { _stateHash = hashValue;}
+
+    inline const mat4<F32>& worldMatrix()                             const { return _worldMatrix;}
+    inline void             worldMatrix(const mat4<F32>& worldMatrix)       { _worldMatrix.set(worldMatrix); }
 
 protected:
     IMPrimitive();
-    virtual ~IMPrimitive();
 
 public:
+    virtual ~IMPrimitive();
 
     Texture* _texture;
     bool     _hasLines;
@@ -74,7 +105,7 @@ public:
 
 protected:
     ///after rendering an IMPrimitive, it's "inUse" flag is set to false.
-    ///If OpenGL tries to render it again, we just increment the _zombieCounter
+    ///If the API tries to render it again, we just increment the _zombieCounter
     ///If the _zombieCounter reaches 3, we remove it from the vector as it is not needed
     U8           _zombieCounter;
     ///After rendering the primitive, we se "inUse" to false but leave it in the vector
@@ -89,7 +120,10 @@ protected:
     DELEGATE_CBK _setupStates;
     DELEGATE_CBK _resetStates;
     ///The state hash associated with this render instance
-    I64       _stateHash;
+    size_t       _stateHash;
+    ///The transform matrix for this element
+    mat4<F32> _worldMatrix;
+   
 };
 
 #endif

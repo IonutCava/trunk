@@ -5,7 +5,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
-FXAAPreRenderOperator::FXAAPreRenderOperator(FrameBuffer* result,
+FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler) : PreRenderOperator(FXAA_STAGE,resolution,sampler),
                                                                                  _outputFB(result),
@@ -48,9 +48,9 @@ void FXAAPreRenderOperator::operation(){
     //Copy current screen
     _samplerCopy->BlitFrom(_inputFB[0]);
     //Apply FXAA to the output screen using the sampler copy as the texture input
-    _outputFB->Begin(FrameBuffer::defaultPolicy());
+    _outputFB->Begin(Framebuffer::defaultPolicy());
     _samplerCopy->Bind(0);
     _fxaa->bind();
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
     _outputFB->End();
 }

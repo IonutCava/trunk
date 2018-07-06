@@ -1,4 +1,5 @@
 #include "Headers/RenderStateBlock.h"
+#include <boost/functional/hash.hpp>
 
 RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
                                                            _cachedHash(0),
@@ -42,7 +43,7 @@ void RenderStateBlockDescriptor::flipCullMode(){
 
 void RenderStateBlockDescriptor::setCullMode( CullMode mode ) {
    _cullMode = mode;
-
+   _cullEnabled = _cullMode == CULL_MODE_NONE ? false : true;
    clean();
 }
 
@@ -135,24 +136,25 @@ void RenderStateBlockDescriptor::clean(){
     if (_lockHash) return;
 
     _cachedHash = 0;
-    _cachedHash += Util::CRC32(&_colorWrite.i, sizeof(U32));
-    _cachedHash += Util::CRC32(&_blendEnable,  sizeof(bool));
-    _cachedHash += Util::CRC32(&_blendSrc,     sizeof(BlendProperty));
-    _cachedHash += Util::CRC32(&_blendDest,    sizeof(BlendProperty));
-    _cachedHash += Util::CRC32(&_blendOp,      sizeof(BlendOperation));
-    _cachedHash += Util::CRC32(&_cullMode,     sizeof(CullMode));
-    _cachedHash += Util::CRC32(&_zEnable,      sizeof(bool));
-    _cachedHash += Util::CRC32(&_zWriteEnable, sizeof(bool));
-    _cachedHash += Util::CRC32(&_zFunc,         sizeof(ComparisonFunction));
-    _cachedHash += Util::CRC32(&_zBias,         sizeof(F32));
-    _cachedHash += Util::CRC32(&_zUnits,        sizeof(F32));
-    _cachedHash += Util::CRC32(&_stencilEnable, sizeof(bool));
-    _cachedHash += Util::CRC32(&_stencilRef,    sizeof(U32));
-    _cachedHash += Util::CRC32(&_stencilMask,      sizeof(U32));
-    _cachedHash += Util::CRC32(&_stencilWriteMask, sizeof(U32));
-    _cachedHash += Util::CRC32(&_stencilFailOp,  sizeof(StencilOperation));
-    _cachedHash += Util::CRC32(&_stencilZFailOp, sizeof(StencilOperation));
-    _cachedHash += Util::CRC32(&_stencilPassOp,  sizeof(StencilOperation));
-    _cachedHash += Util::CRC32(&_stencilFunc, sizeof(ComparisonFunction));
-    _cachedHash += Util::CRC32(&_fillMode,    sizeof(FillMode));
+    boost::hash_combine(_cachedHash, _colorWrite.i);
+    boost::hash_combine(_cachedHash, _blendEnable);
+    boost::hash_combine(_cachedHash, _blendSrc);
+    boost::hash_combine(_cachedHash, _blendDest);
+    boost::hash_combine(_cachedHash, _blendOp);
+    boost::hash_combine(_cachedHash, _cullMode);
+    boost::hash_combine(_cachedHash, _cullEnabled);
+    boost::hash_combine(_cachedHash, _zEnable);
+    boost::hash_combine(_cachedHash, _zWriteEnable);
+    boost::hash_combine(_cachedHash, _zFunc);
+    boost::hash_combine(_cachedHash, _zBias);
+    boost::hash_combine(_cachedHash, _zUnits);
+    boost::hash_combine(_cachedHash, _stencilEnable);
+    boost::hash_combine(_cachedHash, _stencilRef);
+    boost::hash_combine(_cachedHash, _stencilMask);
+    boost::hash_combine(_cachedHash, _stencilWriteMask);
+    boost::hash_combine(_cachedHash, _stencilFailOp);
+    boost::hash_combine(_cachedHash, _stencilZFailOp);
+    boost::hash_combine(_cachedHash, _stencilPassOp);
+    boost::hash_combine(_cachedHash, _stencilFunc);
+    boost::hash_combine(_cachedHash, _fillMode);
 }

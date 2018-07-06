@@ -1,6 +1,7 @@
 #include "Headers/glImmediateModeEmulation.h"
 #include "Headers/glResources.h"
 #include "Headers/GLWrapper.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 #include "core.h"
 #include <glim.h>
@@ -62,15 +63,16 @@ void glIMPrimitive::endBatch() {
 }
 
 void glIMPrimitive::clear() {
+    IMPrimitive::clear();
     _imInterface->Clear();
 }
 
 void glIMPrimitive::renderBatch(bool wireframe) {
     _imInterface->RenderBatch(wireframe);
-    GL_API::registerDrawCall();
+    GFX_DEVICE.registerDrawCall();
 }
 
 void glIMPrimitive::renderBatchInstanced(I32 count, bool wireframe) {
     _imInterface->RenderBatchInstanced(count, wireframe);
-    GL_API::registerDrawCall();
+    GFX_DEVICE.registerDrawCall();
 }

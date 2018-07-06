@@ -299,11 +299,8 @@ void Vegetation::gpuCull(){
 
     if (draw && _threadedLoadComplete && _terrainChunk->getLoD() == 0){
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
-        _cullShader->bind();
         //_cullShader->SetSubroutine(VERTEX_SHADER, _instanceRoutineIdx[HI_Z_CULL]);
         _cullShader->Uniform("cullType", /*queryId*/(U32)INSTANCE_CLOUD_REDUCTION);
-        _cullShader->uploadNodeMatrices();
-        buffer->setShaderProgram(_cullShader);
 
         GFX_DEVICE.toggleRasterization(false);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(0, TextureDescriptor::Depth);
@@ -314,34 +311,21 @@ void Vegetation::gpuCull(){
         _cullDrawCommand.setInstanceCount(_instanceCountGrass);
         _cullDrawCommand.setQueryID(queryId);
         _cullDrawCommand.setDrawToBuffer(true);
-        buffer->Draw(_cullDrawCommand);
+        _cullDrawCommand.setShaderProgram(_cullShader);
+        GFX_DEVICE.submitRenderCommand(buffer, _cullDrawCommand);
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
-        //_treeGPUBuffer->Draw(_cullDrawCommand);
+        //GFX_DEVICE.submitRenderCommand(_treeGPUBuffer, _cullDrawCommand);
         GFX_DEVICE.toggleRasterization(true);
     }
 }
 
 bool Vegetation::onDraw(SceneGraphNode* const sgn, const RenderStage& renderStage){
     _staticDataUpdated = false;
-    return !(!_render || !_success || !_threadedLoadComplete || _terrainChunk->getLoD() > 0 || (LightManager::getInstance().currentShadowPass() > 0 && GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)));
+    //return !(!_render || !_success || !_threadedLoadComplete || _terrainChunk->getLoD() > 0 || (LightManager::getInstance().currentShadowPass() > 0 && GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)));
+    return false;
 }
 
-bool Vegetation::setMaterialInternal(SceneGraphNode* const sgn) {
-    bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
-    bool depthPrePass = GFX_DEVICE.isDepthPrePass();
-
-    LightManager& lightMgr = LightManager::getInstance();
-    Material::ShaderInfo& shaderInfo = getMaterial()->getShaderInfo(depthPass ? (depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE) : FINAL_STAGE);
-    _drawShader = shaderInfo.getProgram();
-    if (!depthPass){
-        getMaterial()->UploadToShader(shaderInfo);
-        _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
-    }
-    
-    return _drawShader->bind();
-}
-
-void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
+void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     U32 queryId = getQueryID();
     //gpuCull();
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
@@ -350,18 +334,17 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
         return;
 
     _grassBillboards->Bind(0);
-    if(setMaterialInternal(sgn)){
-        _renderDrawCommand.setStateHash(_grassStateBlockHash);
-        _renderDrawCommand.setInstanceCount(instanceCount);
-        _renderDrawCommand.setLoD(1);
 
-        SET_STATE_BLOCK(_grassStateBlockHash, true);
-        buffer->setShaderProgram(_drawShader);
-        buffer->getDrawAttribDescriptor(posLocation).setOffset(_instanceCountGrass * queryId);
-        buffer->getDrawAttribDescriptor(scaleLocation).setOffset(_instanceCountGrass * queryId);
-        buffer->getDrawAttribDescriptor(instLocation).setOffset(_instanceCountGrass * queryId);
-        buffer->Draw(_renderDrawCommand);
-    }
+    _renderDrawCommand.setStateHash(_grassStateBlockHash);
+    _renderDrawCommand.setInstanceCount(instanceCount);
+    _renderDrawCommand.setLoD(1);
+    _renderDrawCommand.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+    _renderDrawCommand.setShaderProgram(getDrawShader(currentRenderStage));
+    buffer->getDrawAttribDescriptor(posLocation).setOffset(_instanceCountGrass * queryId);
+    buffer->getDrawAttribDescriptor(scaleLocation).setOffset(_instanceCountGrass * queryId);
+    buffer->getDrawAttribDescriptor(instLocation).setOffset(_instanceCountGrass * queryId);
+        
+    GFX_DEVICE.submitRenderCommand(buffer, _renderDrawCommand);
 }
 
 void Vegetation::generateTrees(){

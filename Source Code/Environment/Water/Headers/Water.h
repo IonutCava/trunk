@@ -28,7 +28,7 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/Reflector.h"
-#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 class Texture;
 class CameraManager;
@@ -42,7 +42,7 @@ public:
     bool unload();
     /// General SceneNode stuff
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
-    bool getDrawState(const RenderStage& currentStage)  const;
+    bool getDrawState(const RenderStage& currentStage);
     void setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
@@ -62,9 +62,8 @@ public:
 
 protected:
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     void postLoad(SceneGraphNode* const sgn);
-    bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
     bool previewReflection();
 
     inline const Plane<F32>&  getRefractionPlane() { return _refractionPlane; }
@@ -83,16 +82,12 @@ private:
     F32              _waterLevel;
     /// cached water depth
     F32             _waterDepth;
-    /// Last known camera position
-    vec3<F32>       _eyePos;
-    /// Camera's position delta from the previous frame only on the XY plane
-    vec2<F32>       _eyeDiff;
     /// the water's "geometry"
     Quad3D*			_plane;
     Transform*      _planeTransform;
     SceneGraphNode* _node;
     SceneGraphNode* _planeSGN;
-    FrameBuffer*    _refractionTexture;
+    Framebuffer*    _refractionTexture;
     Plane<F32>      _refractionPlane;
     DELEGATE_CBK    _refractionCallback;
     bool            _refractionRendering;

@@ -2,11 +2,12 @@
 
 out vec2 _texCoord;
 out vec4 _color;
+uniform mat4 dvd_WorldMatrix;
 
 void main(){
   _texCoord = inTexCoordData;
   _color = inColorData;
-  gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix[dvd_drawID] * vec4(inVertexData,1.0);
+  gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * vec4(inVertexData,1.0);
 } 
 
 -- Vertex.GUI

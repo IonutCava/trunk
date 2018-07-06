@@ -4,7 +4,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-DoFPreRenderOperator::DoFPreRenderOperator(FrameBuffer* result,
+DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
                                            const vec2<U16>& resolution,
                                            SamplerDescriptor* const sampler) : PreRenderOperator(DOF_STAGE,resolution,sampler),
                                                                                _outputFB(result)
@@ -42,10 +42,10 @@ void DoFPreRenderOperator::operation(){
     //Copy current screen
     _samplerCopy->BlitFrom(_inputFB[0]);
 
-    _outputFB->Begin(FrameBuffer::defaultPolicy());
+    _outputFB->Begin(Framebuffer::defaultPolicy());
     _dofShader->bind();
     _samplerCopy->Bind(0); //screenFB
     _inputFB[1]->Bind(1, TextureDescriptor::Depth); //depthFB
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
     _outputFB->End();
 }

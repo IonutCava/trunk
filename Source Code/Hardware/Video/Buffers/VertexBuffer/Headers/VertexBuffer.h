@@ -52,7 +52,6 @@ public:
     VertexBuffer() : GUIDWrapper(),
                     _largeIndices(false),
                     _format(UNSIGNED_SHORT),
-                    _currentShader(nullptr),
                     _primitiveRestartEnabled(false),
                     _indexDelimiter(0),
                     _currentPartitionIndex(0)
@@ -64,7 +63,6 @@ public:
     virtual ~VertexBuffer()
     {
         _LODcount = 1;
-        _currentShader = nullptr;
         Reset();
     }
 
@@ -75,10 +73,6 @@ public:
 
     virtual void Draw(const GenericDrawCommand& command, bool skipBind = false) = 0;
     virtual void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false) = 0;
-
-    inline void setShaderProgram(ShaderProgram* const shaderProgram) { _currentShader = shaderProgram; }
-
-    inline ShaderProgram* const currentShader()  {return _currentShader;}
 
     inline void setLODCount(const U8 LODcount)               {_LODcount = LODcount;}
     inline void useLargeIndices(bool state = true)           {
@@ -324,8 +318,6 @@ protected:
     bool _primitiveRestartEnabled;
     ///Was the data submitted to the GPU?
     bool _created;
-    ///Used for VertexAttribPointer data.
-    ShaderProgram* _currentShader;
 
 private:
     U32 _currentPartitionIndex;

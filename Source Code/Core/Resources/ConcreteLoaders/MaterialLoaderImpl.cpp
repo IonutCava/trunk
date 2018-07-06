@@ -1,6 +1,7 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 
 Material* ImplResourceLoader<Material>::operator()(){
     Material* ptr = New Material();
@@ -12,6 +13,8 @@ Material* ImplResourceLoader<Material>::operator()(){
         if(_descriptor.getFlag()) {
             ptr->setShaderProgram("");
         }
+        if(_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED)
+            ptr->setHardwareSkinning(true);
     }
 
     return ptr;

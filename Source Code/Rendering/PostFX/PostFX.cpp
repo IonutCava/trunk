@@ -10,7 +10,7 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
-#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 PostFX::PostFX(): _underwaterTexture(nullptr),
     _anaglyphShader(nullptr),
@@ -106,8 +106,8 @@ void PostFX::createOperators(){
     ParamHandler& par = ParamHandler::getInstance();
 
     PreRenderStageBuilder& stageBuilder = PreRenderStageBuilder::getInstance();
-    FrameBuffer* screenBuffer = _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN);
-    FrameBuffer* depthBuffer = _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH);
+    Framebuffer* screenBuffer = _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN);
+    Framebuffer* depthBuffer = _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH);
 
     if (_gfx->anaglyphEnabled()){
         ResourceDescriptor anaglyph("anaglyph");
@@ -192,7 +192,7 @@ void PostFX::displayScene(){
         if(_SSAO_FB) _SSAO_FB->Bind(TEX_BIND_POINT_SSAO);
     }    
 
-    _gfx->drawPoints(1);
+    _gfx->drawPoints(1, _gfx->getDefaultStateBlock(true));
     _gfx->toggle2D(false);
 }
 

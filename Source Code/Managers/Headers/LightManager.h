@@ -48,20 +48,15 @@ public:
     ///remove a light from the manager
     bool removeLight(U32 lightId);
     ///Update the ambient light values used in shader programs
-    inline void setAmbientLight(const vec4<F32>& light){_ambientLight = light;}
+    inline void setAmbientLight(const vec3<F32>& light){_ambientLight = light;}
     ///Retrieve the current ambient light values
-    inline const vec4<F32>& getAmbientLight() const {return _ambientLight;}
-    ///Find all the lights affecting the current node. Return the number of found lights
-    ///Note: the returned value is clamped between 0 and MAX_LIGHTS_PER_SCENE_NODE
-    ///Use typeFilter to find only lights of a certain type
-    U8   findLightsForSceneNode(SceneGraphNode* const node, LightType typeFilter = LightType_PLACEHOLDER);
+    inline const vec3<F32>& getAmbientLight() const {return _ambientLight;}
 
     bool clear();
     void idle();
     void onCameraChange();
     inline Light::LightMap& getLights() {return _lights;}
            Light* getLight(U32 slot);
-    inline Light*    getLightForCurrentNode(U32 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}
 
     inline Light*    getCurrentLight()             const { return _currLight; }
     inline void      setCurrentLight(Light* light)       { _currLight = light; _currentShadowPass = 0; }
@@ -69,7 +64,7 @@ public:
     void updateResolution(I32 newWidth, I32 newHeight);
 
     ///shadow mapping
-    void bindDepthMaps(U32 lightIndex, bool overrideDominant = false);
+    void bindDepthMaps();
     bool shadowMappingEnabled() const;
 
     ///shadow mapping
@@ -82,26 +77,24 @@ public:
     void updateAndUploadLightData(const mat4<F32>& viewMatrix);
 
     /// Get the appropriate shadow bind slot for every light's shadow
-    inline I32 getShadowBindSlot(ShadowSlotType type, U8 lightIndex) {
+    inline U8 getShadowBindSlot(ShadowSlotType type, U8 lightIndex) {
         assert(lightIndex < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
-        I32 retValue = -1;
         switch (type){
-            case SHADOW_SLOT_TYPE_NORMAL: retValue = normShadowLocation[lightIndex];  break;
-            case SHADOW_SLOT_TYPE_CUBE  : retValue = cubeShadowLocation[lightIndex];  break;
-            case SHADOW_SLOT_TYPE_ARRAY : retValue = arrayShadowLocation[lightIndex]; break;
+            default:
+            case SHADOW_SLOT_TYPE_NORMAL: return normShadowLocation[lightIndex];
+            case SHADOW_SLOT_TYPE_CUBE  : return cubeShadowLocation[lightIndex];
+            case SHADOW_SLOT_TYPE_ARRAY : return arrayShadowLocation[lightIndex];
         };
-
-        return retValue;
     }
+
     /// Get the appropriate shadow bind slot for every light's shadow
-    inline I32 getShadowBindSlot(LightType lightType, U8 lightIndex) {
-        ShadowSlotType type = SHADOW_SLOT_TYPE_NORMAL;
+    inline U8 getShadowBindSlot(LightType lightType, U8 lightIndex) {
         switch (lightType){
-            case LIGHT_TYPE_DIRECTIONAL : type = SHADOW_SLOT_TYPE_ARRAY; break;
-            case LIGHT_TYPE_POINT : type = SHADOW_SLOT_TYPE_CUBE; break;
-            case LIGHT_TYPE_SPOT  : type = SHADOW_SLOT_TYPE_NORMAL; break;
+            default:
+            case LIGHT_TYPE_SPOT        : return  getShadowBindSlot(SHADOW_SLOT_TYPE_NORMAL, lightIndex);
+            case LIGHT_TYPE_POINT       : return  getShadowBindSlot(SHADOW_SLOT_TYPE_CUBE, lightIndex);
+            case LIGHT_TYPE_DIRECTIONAL : return  getShadowBindSlot(SHADOW_SLOT_TYPE_ARRAY, lightIndex);
         };
-        return getShadowBindSlot(type, lightIndex);
     }
 
     bool buildLightGrid(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix, const vec2<F32>& zPlanes);
@@ -114,8 +107,7 @@ private:
     enum ShaderBufferType {
         SHADER_BUFFER_NORMAL     = 0,
         SHADER_BUFFER_SHADOW     = 1,
-        SHADER_BUFFER_PER_NODE   = 2,
-        ShaderBuffer_PLACEHOLDER = 3
+        ShaderBuffer_PLACEHOLDER = 2
     };
 
     LightManager();
@@ -126,12 +118,10 @@ private:
     bool      _previewShadowMaps;
     Light*    _currLight;
     bool      _shadowMapsEnabled;
-    vec4<F32> _ambientLight;
+    vec3<F32> _ambientLight;
     vec2<U16> _cachedResolution;
     U8        _currentShadowPass; //<used by CSM. Resets to 0 for every light
 
-    vectorImpl<Light* >     _currLightsPerNode;
-    vectorImpl<Light* >     _tempLightsPerNode;
     vectorImpl<LightProperties >       _lightProperties;
     vectorImpl<LightShadowProperties > _lightShadowProperties;
 
@@ -140,9 +130,9 @@ private:
     LightGrid*              _opaqueGrid;
     LightGrid*              _transparentGrid;
 
-    I32 normShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
-    I32 cubeShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
-    I32 arrayShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
+    U8 normShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
+    U8 cubeShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
+    U8 arrayShadowLocation[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE];
 
 END_SINGLETON
 

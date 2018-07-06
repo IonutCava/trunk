@@ -30,44 +30,47 @@
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 #include <boost/noncopyable.hpp>
 
-class FrameBuffer : private boost::noncopyable, public GUIDWrapper {
+class Texture;
+class Framebuffer : private boost::noncopyable, public GUIDWrapper {
 public:
-    struct FrameBufferTarget {
+    struct FramebufferTarget {
         bool _depthOnly;
         bool _colorOnly;
         U32  _numColorChannels;
         bool _clearBuffersOnBind;
         bool _changeViewport;
-        FrameBufferTarget() : _depthOnly(false), _colorOnly(false), _clearBuffersOnBind(true), _changeViewport(true), _numColorChannels(1)
+        FramebufferTarget() : _depthOnly(false), _colorOnly(false), _clearBuffersOnBind(true), _changeViewport(true), _numColorChannels(1)
         {
         }
     };
 
-    inline static FrameBufferTarget& defaultPolicy() { static FrameBufferTarget _defaultPolicy; return _defaultPolicy; }
+    inline static FramebufferTarget& defaultPolicy() { static FramebufferTarget _defaultPolicy; return _defaultPolicy; }
+
+    inline Texture* GetAttachment(TextureDescriptor::AttachmentType slot) const { return _attachmentTexture[slot]; }
 
     virtual bool AddAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType slot);
     virtual bool Create(U16 width, U16 height) = 0;
 
     virtual void Destroy() = 0;
     virtual void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true) = 0; ///<Use by multilayered FB's
-    inline void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) {  ///<Used by cubemap FB's    
+    inline  void DrawToFace(TextureDescriptor::AttachmentType slot, U8 nFace, bool includeDepth = true) {  ///<Used by cubemap FB's    
         DrawToLayer(slot, nFace, includeDepth);
     }
 
-    virtual void SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot) = 0;
+    virtual void SetMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel, TextureDescriptor::AttachmentType slot) = 0;
     virtual void ResetMipLevel(TextureDescriptor::AttachmentType slot) = 0;
 
-    virtual void Begin(const FrameBufferTarget& drawPolicy) = 0;
+    virtual void Begin(const FramebufferTarget& drawPolicy) = 0;
     virtual void End() = 0;
 
-    virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) {}
+    virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) = 0;
 
     virtual void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData) = 0;
     inline  void ReadData(GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData){
         ReadData(vec4<U16>(0, 0, _width, _height), imageFormat, dataType, outData);
     }
 
-    virtual void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false) = 0;
+    virtual void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false) = 0;
     //If true, array texture and/or cubemaps are bound to a single attachment and shader based layered rendering should be used
     virtual void toggleLayeredRendering(const bool state) {_layeredRendering = state;}
     //Enable/Disable color writes
@@ -81,17 +84,15 @@ public:
 
     inline U16 getWidth()  const	{return _width;}
     inline U16 getHeight() const	{return _height;}
-    inline U8  getHandle() const	{return _frameBufferHandle;}
+    inline U8  getHandle() const	{return _framebufferHandle;}
     
     inline vec2<U16> getResolution() const {return vec2<U16>(_width, _height); }
-
-    virtual const TextureDescriptor& GetAttachment(TextureDescriptor::AttachmentType slot) const { return _attachment[slot]; }
 
     inline void clearBuffers(bool state)       {_clearBuffersState = state;}
     inline bool clearBuffers()           const {return _clearBuffersState;}
 
-    FrameBuffer(bool multiSample);
-    virtual ~FrameBuffer();
+    Framebuffer(bool multiSample);
+    virtual ~Framebuffer();
 
 protected:
     virtual bool checkStatus() const = 0;
@@ -103,9 +104,10 @@ protected:
     bool        _disableColorWrites;
     bool        _multisampled;
     U16		    _width, _height;
-    U32		    _frameBufferHandle;
+    U32		    _framebufferHandle;
     vec4<F32>   _clearColor;
     TextureDescriptor _attachment[5];
+    Texture*          _attachmentTexture[5];
     bool              _attachmentDirty[5];
 };
 

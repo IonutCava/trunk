@@ -505,6 +505,17 @@ public:
         this->set(matrix.mat);
     }
 
+    inline F32* getRow(I32 index) {
+        return m[index];
+    }
+    
+    inline void setRow(I32 index, const vec4<T>& value){
+        m[index][0] = value.x;
+        m[index][1] = value.y;
+        m[index][2] = value.z;
+        m[index][3] = value.w;
+    }
+
     inline vec4<T> getCol(I32 index) const {
         return vec4<T>(this->mat[0 + (index*4)],
                        this->mat[1 + (index*4)],
@@ -827,6 +838,19 @@ inline void projectPoint(const vec3<T>& position,vec3<T>& output){
     output.z = position.y;
 }
 
+struct Line {
+    vec3<F32> _startPoint;
+    vec3<F32> _endPoint;
+    vec4<U8 > _color;
+    Line()
+    {
+    }
+    Line(const vec3<F32>& startPoint, const vec3<F32>& endPoint, const vec4<U8>& color) : _startPoint(startPoint),
+                                                                                          _endPoint(endPoint),
+                                                                                          _color(color)
+    {
+    }
+};
 
 namespace Util{
     inline F32 Lerp(const F32 v1, const F32 v2, const F32 t)
@@ -899,3 +923,4 @@ namespace Util{
     };//Mat4
 };//Util
 #endif
+

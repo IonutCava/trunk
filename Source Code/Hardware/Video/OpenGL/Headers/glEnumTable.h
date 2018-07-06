@@ -38,7 +38,7 @@ extern unsigned int glStencilOpTable[StencilOperation_PLACEHOLDER];
 extern unsigned int glCullModeTable[CullMode_PLACEHOLDER];
 extern unsigned int glFillModeTable[FillMode_PLACEHOLDER];
 extern unsigned int glTextureTypeTable[TextureType_PLACEHOLDER];
-extern unsigned int glImageFormatTable[IMAGE_FORMAT_PLACEHOLDER];
+extern unsigned int glImageFormatTable[GFXImageFormat_PLACEHOLDER];
 extern unsigned int glPrimitiveTypeTable[PrimitiveType_PLACEHOLDER];
 extern unsigned int glDataFormat[GDF_PLACEHOLDER];
 extern unsigned int glWrapTable[TextureWrap_PLACEHOLDER];

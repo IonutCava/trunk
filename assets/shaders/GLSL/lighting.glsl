@@ -48,23 +48,20 @@ vec4 mappingRelief(){
 
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
-	return ParallaxMapping(_texCoord, _lightInfo._lightDirection[bumpMapLightId]);
+	return ParallaxMapping(_texCoord, _lightInfo[bumpMapLightId]._lightDirection);
 }
 
 void main (void){
-	//vec4 color = MappingRoutine();
+	//_colorOut = applyFog(MappingRoutine());
 #if defined(COMPUTE_TBN)
 #	if defined(USE_PARALLAX_MAPPING)
-    vec4 color = ParallaxMapping();
+    _colorOut = applyFog(ParallaxMapping());
 #	elif defined(USE_RELIEF_MAPPING)
-    vec4 color = ReliefMapping();
+    _colorOut = applyFog(ReliefMapping());
 #	else
-    vec4 color = mappingNormal();
+    _colorOut = applyFog(mappingNormal());
 #	endif
 #else
-	vec4 color = mappingFlat();
+	_colorOut = applyFog(mappingFlat());
 #endif
-    applyFog(color);
-
-    _colorOut = color;
 }

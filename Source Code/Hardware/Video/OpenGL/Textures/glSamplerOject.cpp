@@ -6,26 +6,11 @@
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
-glSamplerObject::glSamplerObject() : _samplerID(Divide::GLUtil::_invalidObjectID)
+glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor)
 {
     DIVIDE_ASSERT((glewIsSupported("GL_ARB_sampler_objects") == GL_TRUE), Locale::get("ERROR_NO_SAMPLER_SUPPORT"));
-}
-
-glSamplerObject::~glSamplerObject()
-{
-    Destroy();
-}
-
-bool glSamplerObject::Destroy() {
-    if (_samplerID > 0 && _samplerID != Divide::GLUtil::_invalidObjectID){
-        glDeleteSamplers(1, &_samplerID);
-        _samplerID = 0;
-    }
-    return (_samplerID == 0);
-}
-
-bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
-    if (_samplerID == Divide::GLUtil::_invalidObjectID) glGenSamplers(1, &_samplerID);
+    
+    glGenSamplers(1, &_samplerID);
 
     glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD());
@@ -51,5 +36,13 @@ bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
         glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
     }
     //glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &vec4<F32>(0.0f).r));
-    return true;
 }
+
+glSamplerObject::~glSamplerObject()
+{
+    if (_samplerID > 0 && _samplerID != Divide::GLUtil::_invalidObjectID){
+        glDeleteSamplers(1, &_samplerID);
+        _samplerID = 0;
+    }
+}
+

@@ -1,0 +1,54 @@
+uniform ivec2 dvd_drawIDs;
+
+struct NodeData2 {
+    mat4 _matrix1;
+    mat4 _matrix2;
+};
+
+layout(binding = SHADER_BUFFER_NODE_TRANSFORMS, std430) coherent readonly buffer dvd_MatrixBlock
+{
+    NodeData2 dvd_Matrices[];
+};
+
+#define dvd_WorldMatrix   dvd_Matrices[dvd_drawIDs.x]._matrix1
+#define dvd_NormalMatrix  mat3(dvd_Matrices[dvd_drawIDs.x]._matrix2)
+#if defined(VERT_SHADER)
+#define dvd_lightCount    uint(dvd_Matrices[dvd_drawIDs.x]._matrix2[3][2])
+#define dvd_boneCount     uint(dvd_Matrices[dvd_drawIDs.x]._matrix2[3][3])
+#endif
+
+#if defined(FRAG_SHADER)
+struct NodeData4 {
+    mat4 _matrix1;
+    mat4 _matrix2;
+    mat4 _matrix3;
+    mat4 _matrix4;
+};
+
+layout(binding = SHADER_BUFFER_NODE_MATERIAL, std430) coherent readonly buffer dvd_MaterialBlock
+{
+    NodeData4 dvd_MaterialData;//[];
+};
+
+//#define buffer_matData dvd_MaterialData[dvd_drawIDs.y]
+#define buffer_matData dvd_MaterialData
+
+// x - isSelected; y - isShadowMapped; z - textureCount; w - reserved
+#define buffer_integerValues buffer_matData._matrix2[0] 
+
+// x - useAlphaTest; y - textureOperation; z,w - reserved
+#define buffer_matProperties buffer_matData._matrix2[1] 
+
+#define dvd_isSelected    (buffer_integerValues.x > 0.0)
+#define dvd_shadowMapping (buffer_integerValues.y > 0.0)
+#define dvd_useAlphaTest  (buffer_matProperties.x > 0.0)
+#define dvd_TextureCount  uint(buffer_matProperties.z)
+#define dvd_texOperation  uint(buffer_matProperties.y)
+#define dvd_MatAmbient    buffer_matData._matrix1[0].rgb
+#define dvd_MatDiffuse    buffer_matData._matrix1[1]
+#define dvd_MatSpecular   buffer_matData._matrix1[2].rgb
+#define dvd_MatEmissive   buffer_matData._matrix1[3].rgb
+#define dvd_MatShininess  buffer_matData._matrix1[3].w
+#endif
+
+

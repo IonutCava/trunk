@@ -26,6 +26,7 @@
 #include "core.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include <boost/functional/hash.hpp>
 
 ///This class is used to define all of the sampler settings needed to use a texture
 ///Apply a sampler descriptor to either a texture's ResourceDescriptor or to a TextureDescriptor to use it
@@ -105,6 +106,26 @@ public:
         }
     }
 
+    inline size_t getHash() const {
+        size_t hash = 0;
+        boost::hash_combine(hash, _cmpFunc);
+        boost::hash_combine(hash, _useRefCompare);
+        boost::hash_combine(hash, _wrapU);
+        boost::hash_combine(hash, _wrapV);
+        boost::hash_combine(hash, _wrapW);
+        boost::hash_combine(hash, _minFilter);
+        boost::hash_combine(hash, _magFilter);
+        boost::hash_combine(hash, _minLOD);
+        boost::hash_combine(hash, _maxLOD);
+        boost::hash_combine(hash, _biasLOD);
+        boost::hash_combine(hash, _anisotropyLevel);
+        boost::hash_combine(hash, _generateMipMaps);
+        boost::hash_combine(hash, _borderColor.r);
+        boost::hash_combine(hash, _borderColor.g);
+        boost::hash_combine(hash, _borderColor.b);
+        boost::hash_combine(hash, _borderColor.a);
+        return hash;
+    }
     /*
     *  "Internal" data
     */
@@ -124,6 +145,7 @@ public:
     inline U8            anisotropyLevel()  const {return _anisotropyLevel;}
     inline bool          generateMipMaps()  const {return _generateMipMaps;}
     inline vec4<F32>     borderColor()      const {return _borderColor;}
+
 protected:
     //Sampler states
     TextureFilter  _minFilter, _magFilter; ///Texture filtering mode
@@ -148,7 +170,7 @@ public:
         Depth
     };
 
-    TextureDescriptor() : TextureDescriptor(TextureType_PLACEHOLDER, IMAGE_FORMAT_PLACEHOLDER, GDF_PLACEHOLDER)
+    TextureDescriptor() : TextureDescriptor(TextureType_PLACEHOLDER, GFXImageFormat_PLACEHOLDER, GDF_PLACEHOLDER)
     {
     }
 

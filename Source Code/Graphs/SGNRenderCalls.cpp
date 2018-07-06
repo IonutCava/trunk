@@ -47,6 +47,13 @@ void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox
     }
 }
 
+void SceneGraphNode::onCameraChange(){
+    FOR_EACH(NodeChildren::value_type& it, _children)
+        it.second->onCameraChange();
+    
+    _node->onCameraChange(this);
+}
+
 ///Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     //Compute from leaf to root to ensure proper calculations
@@ -67,31 +74,43 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     FOR_EACH(NodeComponents::value_type& it, _components)
         if (it.second) it.second->update(deltaTime);
 
-    if (_node) {
-        assert(_node->getState() == RES_LOADED);
-        //Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
+    assert(_node->getState() == RES_LOADED);
+    //Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
 
-        //Compute the BoundingBox if it isn't already
-        if (!_boundingBox.isComputed()) {
-            _node->computeBoundingBox(this);
-            assert(_boundingBox.isComputed());
-            _boundingBoxDirty = true;
-        }
-
-        if (_boundingBoxDirty){
-            if (_transform) updateBoundingBoxTransform(_transform->getGlobalMatrix());
-            if (_parent)    _parent->getBoundingBox().setComputed(false);
-
-            _boundingBoxDirty = false;
-        }
-
-        _node->sceneUpdate(deltaTime, this, sceneState);
-
-        Material* mat = _node->getMaterial();
-        if (mat) mat->update(deltaTime);
+    //Compute the BoundingBox if it isn't already
+    if (!_boundingBox.isComputed()) {
+        _node->computeBoundingBox(this);
+        assert(_boundingBox.isComputed());
+        _boundingBoxDirty = true;
     }
 
+    if (_boundingBoxDirty){
+        if (_transform) updateBoundingBoxTransform(_transform->getGlobalMatrix());
+        if (_parent)    _parent->getBoundingBox().setComputed(false);
+
+        _boundingBoxDirty = false;
+    }
+
+    _node->sceneUpdate(deltaTime, this, sceneState);
+
+    Material* mat = _node->getMaterial();
+    if (mat)
+        mat->update(deltaTime);
+    
+
     if(_shouldDelete) GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+}
+
+void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
+    //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
+    //Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
+    if(!onDraw(currentRenderStage))
+        return; //< If the SGN isn't ready for rendering, skip it this frame
+    
+    _node->bindTextures();
+    _node->render(this, sceneRenderState, currentRenderStage);
+
+    postDraw(currentRenderStage);
 }
 
 bool SceneGraphNode::onDraw(RenderStage renderStage){
@@ -99,7 +118,8 @@ bool SceneGraphNode::onDraw(RenderStage renderStage){
         _drawReset[renderStage] = false;
         if (getParent() && !bitCompare(DEPTH_STAGE, renderStage)){
             FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, getParent()->getChildren())
-                if (it.second->getComponent<AnimationComponent>()) it.second->getComponent<AnimationComponent>()->reset();
+                if (it.second->getComponent<AnimationComponent>()) 
+                    it.second->getComponent<AnimationComponent>()->reset();
         }
             
     }
@@ -108,45 +128,40 @@ bool SceneGraphNode::onDraw(RenderStage renderStage){
         if (it.second) it.second->onDraw(renderStage);
     
     //Call any pre-draw operations on the SceneNode (refresh VB, update materials, etc)
-    if (_node){
-        Material* mat = _node->getMaterial();
-        if (mat){
-            if (mat->computeShader(false, renderStage)){
-                scheduleDrawReset(renderStage); //reset animation on next draw call
-                return false;
-            }
+    Material* mat = _node->getMaterial();
+    if (mat){
+        if (mat->computeShader(renderStage)){
+            scheduleDrawReset(renderStage); //reset animation on next draw call
+            return false;
         }
-        return _node->onDraw(this, renderStage);
     }
 
-    return true;
+    if(_node->onDraw(this, renderStage))
+        return _node->getDrawState(renderStage);
+
+    return false;
 }
 
 void SceneGraphNode::postDraw(RenderStage renderStage){
     // Perform any post draw operations regardless of the draw state
-    if (_node) _node->postDraw(this, renderStage);
+    _node->postDraw(this, renderStage);
 }
 
-void SceneGraphNode::updateShaderData(I32 drawID, const mat4<F32>& viewMatrix, const D32 interpolationFactor){
-    Transform* transform = getTransform();
-    if (transform) {
-        _nodeShaderData._worldMatrix.set(transform->interpolate(getPrevTransform(), interpolationFactor));
-        _nodeShaderData._normalMatrix.set(_nodeShaderData._worldMatrix * viewMatrix);
+void SceneGraphNode::isInViewCallback(){
+    if(!_inView)
+        return;
 
-        if(!transform->isUniformScaled())
-            _nodeShaderData._normalMatrix.inverseTranspose();
-    }else{
-        _nodeShaderData._worldMatrix.identity();
-        _nodeShaderData._normalMatrix.identity();
+    _materialColorMatrix.zero();
+    _materialPropertyMatrix.zero();
+
+    _materialPropertyMatrix.setCol(0, vec4<F32>(isSelected() ? 1.0f : 0.0f, getReceivesShadows() ? 1.0f : 0.0f, 0.0f, 0.0f));
+
+    Material* mat = _node->getMaterial();
+    
+    if (mat){
+        mat->getMaterialMatrix(_materialColorMatrix);
+        _materialPropertyMatrix.setCol(1, vec4<F32>((mat->isTranslucent() ? (mat->useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) : false) ? 1.0f : 0.0f,
+                                                    (F32)mat->getTextureOperation(), (F32)mat->getTextureCount(), 0.0f));
     }
 
-    _nodeShaderData._integerValues.x = isSelected() ? 1 : 0;
-    _nodeShaderData._integerValues.y = getReceivesShadows() ? 1 : 0;
-
-    AnimationComponent* animComponent = getComponent<AnimationComponent>();
-    if(animComponent && !animComponent->animationTransforms().empty()){
-        _nodeShaderData._integerValues.z = (U32)(getInstanceID() * animComponent->animationTransforms().size());
-    }
-
-    _nodeShaderData._lightInfo.set(LightManager::getInstance().findLightsForSceneNode(this), 0, 0, 0);
 }

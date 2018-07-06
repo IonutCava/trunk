@@ -30,293 +30,123 @@ extern "C" {
 }
 #endif
 
-ShaderProgram* GFXDevice::_activeShaderProgram = nullptr;
-ShaderProgram* GFXDevice::_HIZConstructProgram = nullptr;
-ShaderProgram* GFXDevice::_depthRangesConstructProgram = nullptr;
-
 GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
                          _postFX(PostFX::getOrCreateInstance()),
-                         _shaderManager(ShaderManager::getOrCreateInstance()) //<Defaulting to OpenGL if no api has been defined
+                         _shaderManager(ShaderManager::getOrCreateInstance()), //<Defaulting to OpenGL if no api has been defined
+                         _loaderThread(nullptr), _renderer(nullptr), _maxTextureSlots(0),
+                         _interpolationFactor(1.0), _renderStage(INVALID_STAGE)
 {
-   _stateExclusionMask = 0;
-   _prevShaderId = 0;
-   _prevTextureId = 0;
-   _interpolationFactor = 1.0;
-   _MSAASamples = 0;
-   _FXAASamples = 0;
-   _2DRendering = false;
-   _loaderThread = nullptr;
-   _matricesBuffer = nullptr;
-   _nodeDataBuffer = nullptr;
-   _drawDebugAxis = false;
-   _enablePostProcessing = false;
-   _enableAnaglyph = false;
-   _enableHDR = false;
-   _isDepthPrePass = false;
-   _previewDepthBuffer = false;
-    _stateBlockDirty = true;
-   _renderer = nullptr;
+   _MSAASamples = _FXAASamples = 0;
+   _previousLineWidth = _currentLineWidth = 1.0;
+   _prevTextureId = _stateExclusionMask = _prevShaderId = 0;
+   _gfxDataBuffer = _nodeMaterialsBuffer = _nodeMatricesBuffer = nullptr;
+   _isDepthPrePass = _previewDepthBuffer = _viewportUpdate = false;
+   _2DRendering = _drawDebugAxis = _enablePostProcessing = _enableAnaglyph = _enableHDR = false;
+   _previewDepthMapShader = _imShader = _activeShaderProgram = nullptr;
+   _HIZConstructProgram = _depthRangesConstructProgram = nullptr;
    _rasterizationEnabled = true;
-   _viewportUpdate = false;
-   _viewportForced = false;
-   _generalDetailLevel = DETAIL_HIGH;
-   _shadowDetailLevel = DETAIL_HIGH;
-   _renderStage = INVALID_STAGE;
-   _worldMatrices.push(mat4<F32>(/*identity*/));
+   _generalDetailLevel = _shadowDetailLevel = DETAIL_HIGH;
+   _state2DRenderingHash = _stateDepthOnlyRenderingHash = _defaultStateBlockHash = 0;
+   _defaultStateNoDepthHash = _currentStateBlockHash = 0;
+
    _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0,0,0,0));
-   _isUniformedScaled = true;
-   _WDirty = _VDirty = _PDirty = true;
-   _WVCachedMatrix.identity();
-   _WVPCachedMatrix.identity();
-   _viewport.push(vec4<I32>(0, 0, 0, 0));
+
    _cubeCamera = New FreeFlyCamera();
    _2DCamera = New FreeFlyCamera();
    _2DCamera->lockView(true);
    _2DCamera->lockFrustum(true);
 
-   for (FrameBuffer*& renderTarget : _renderTarget)
+   for (Framebuffer*& renderTarget : _renderTarget)
        renderTarget = nullptr;
 
-   _depthRanges = nullptr;
-
-   RenderPass* diffusePass = New RenderPass("diffusePass");
-   RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
+   RenderPassManager::getOrCreateInstance().addRenderPass(New RenderPass("diffusePass"), 1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
-
-   _state2DRenderingHash = 0;
-   _stateDepthOnlyRenderingHash = 0;
-   _defaultStateBlockHash = 0;
-   _defaultStateNoDepthHash = 0;
-   _currentStateBlockHash = 0;
-   _previewDepthMapShader = 0;
 }
 
 GFXDevice::~GFXDevice()
 {
-    _2dRenderQueue.clear();
 }
 
-void GFXDevice::setApi(const RenderAPI& api){
-    _api.setId(api);
-    switch (api)	{
-        default:
-        case OpenGLES:
-        case OpenGL:    _api = GL_API::getOrCreateInstance();	break;
-        case Direct3D:	_api = DX_API::getOrCreateInstance();	break;
+void GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
+    DIVIDE_ASSERT(cmd._shaderProgram && cmd._shaderProgram->getId() != 0,
+                  "GFXDevice error: Draw shader state is not valid for the current draw operation!");
 
-        case GFX_RENDER_API_PLACEHOLDER:
-        case None:		{ ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API")); setApi(OpenGL); return; }
-    };
-}
+#ifdef _DEBUG
+    assert(cmd._shaderProgram->bind());
+#else
+    cmd._shaderProgram->bind();
+#endif
 
-I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
-    I8 hardwareState = _api.initHardware(resolution,argc,argv);
-
-    if(hardwareState == NO_ERR){
-        _matricesBuffer = newSB();
-        //View, Projection, ViewProjection,
-        //Camera Position, Viewport, 
-        //zPlanes and ClipPlanes[MAX_CLIP_PLANES] 3 x 16 + 4 + 4 + 4 + 4 * MAX_CLIP_PLANES float values
-        _matricesBuffer->Create(true, false, 3 * 16 + 4 + 4 + 4 + 4 * Config::MAX_CLIP_PLANES, sizeof(F32)); 
-        _matricesBuffer->Bind(Divide::SHADER_BUFFER_CAM_MATRICES);
-
-        _nodeDataBuffer = newSB(true);
-        // 65536/2 sceneNodes visible at the same time. Each node can be instanced!
-        _nodeDataBuffer->Create(true, false, std::numeric_limits<I16>::max(), sizeof(SceneGraphNode::NodeShaderData)); 
-        _nodeDataBuffer->Bind(Divide::SHADER_BUFFER_PER_NODE);
-
-        changeResolution(resolution);
-
-        RenderStateBlockDescriptor defaultStateDescriptor;
-        _defaultStateBlockHash = getOrCreateStateBlock(defaultStateDescriptor);
-        RenderStateBlockDescriptor defaultStateDescriptorNoDepth;
-        defaultStateDescriptorNoDepth.setZReadWrite(false, false);
-        _defaultStateNoDepthHash = getOrCreateStateBlock(defaultStateDescriptorNoDepth);
-        RenderStateBlockDescriptor state2DRenderingDesc;
-        state2DRenderingDesc.setCullMode(CULL_MODE_NONE);
-        state2DRenderingDesc.setZReadWrite(false, true);
-        _state2DRenderingHash = getOrCreateStateBlock(state2DRenderingDesc);
-        RenderStateBlockDescriptor stateDepthOnlyRendering;
-        stateDepthOnlyRendering.setColorWrites(false, false, false, false);
-        stateDepthOnlyRendering.setZFunc(CMP_FUNC_ALWAYS);
-        _stateDepthOnlyRenderingHash = getOrCreateStateBlock(stateDepthOnlyRendering);
-        _stateBlockMap[0] = nullptr;
-
-        SET_DEFAULT_STATE_BLOCK(true);
-        //Screen FB should use MSAA if available, else fallback to normal color FB (no AA or FXAA)
-        _renderTarget[RENDER_TARGET_SCREEN] = newFB(true);
-        _renderTarget[RENDER_TARGET_DEPTH]  = newFB(false);
-        _depthRanges = newFB(false);
-
-        SamplerDescriptor depthRangesSampler;
-        TextureDescriptor depthRangesDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32);
-        depthRangesSampler.setFilters(TEXTURE_FILTER_NEAREST);
-        depthRangesSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-        depthRangesSampler.toggleMipMaps(false);
-        depthRangesDescriptor.setSampler(depthRangesSampler);
-        _depthRanges->AddAttachment(depthRangesDescriptor, TextureDescriptor::Color0);
-        _depthRanges->toggleDepthBuffer(false);
-        _depthRanges->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
-
-        vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
-        vec2<U16> resTemp(resolution + tileSize);
-        _depthRanges->Create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
-
-        SamplerDescriptor screenSampler;
-        TextureDescriptor screenDescriptor(TEXTURE_2D_MS, RGBA16F, FLOAT_16);
-        screenSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
-        screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-        screenSampler.toggleMipMaps(false);
-        screenDescriptor.setSampler(screenSampler);
-
-        SamplerDescriptor depthSamplerHiZ;
-        depthSamplerHiZ.setFilters(TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST, TEXTURE_FILTER_NEAREST);
-        depthSamplerHiZ.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-        depthSamplerHiZ.toggleMipMaps(true);
-        depthSamplerHiZ._useRefCompare = true; //< Use compare function
-        depthSamplerHiZ._cmpFunc = CMP_FUNC_GEQUAL; //< Use greater or equal
-
-        SamplerDescriptor depthSampler;
-        depthSampler.setFilters(TEXTURE_FILTER_NEAREST);
-        depthSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-        depthSampler.toggleMipMaps(false);
-        depthSampler._useRefCompare = true; //< Use compare function
-        depthSampler._cmpFunc = CMP_FUNC_GEQUAL; //< Use greater or equal
-
-        TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
-        depthDescriptorHiZ.setSampler(depthSamplerHiZ);
-
-        TextureDescriptor depthDescriptor(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
-        depthDescriptor.setSampler(depthSampler);
-
-        _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptorHiZ, TextureDescriptor::Depth);
-        _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
-        _renderTarget[RENDER_TARGET_DEPTH]->Create(resolution.width, resolution.height);
-
-        _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
-        _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(depthDescriptor,  TextureDescriptor::Depth);
-        _renderTarget[RENDER_TARGET_SCREEN]->Create(resolution.width, resolution.height);
-
-        if(_enableAnaglyph){
-            _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(true);
-            _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
-            _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(depthDescriptor,  TextureDescriptor::Depth);
-            _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width, resolution.height);
-        }
-
-
-        _postFX.init(resolution);
-        add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
-        _kernel->getCameraMgr().addNewCamera("2DRenderCamera", _2DCamera);
-
-        _HIZConstructProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZConstruct"));
-        _HIZConstructProgram->UniformTexture("LastMip", 0);
-
-        ResourceDescriptor rangesDesc("DepthRangesConstruct");
-        rangesDesc.setPropertyList("LIGHT_GRID_TILE_DIM_X " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X) + "," + "LIGHT_GRID_TILE_DIM_Y " + Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
-        _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
-        _depthRangesConstructProgram->UniformTexture("depthTex", 0);
-
-        _cachedSceneZPlanes.set(ParamHandler::getInstance().getParam<F32>("rendering.zNear"), ParamHandler::getInstance().getParam<F32>("rendering.zFar"));
+    cmd._shaderProgram->Uniform("dvd_drawIDs", cmd._drawIDs);
+    cmd._shaderProgram->UpdateDrawCommand(cmd._lodIndex);
+    
+    if(cmd._drawIDs.y > -1){
+        _nodeMaterialsBuffer->BindRange(Divide::SHADER_BUFFER_NODE_MATERIAL, cmd._drawIDs.y, 1);
     }
 
-    return hardwareState;
+    setStateBlock(cmd._stateHash);
 }
 
-void GFXDevice::closeRenderingApi(){
-    _shaderManager.destroyInstance();
-    _api.closeRenderingApi();
-    _loaderThread->join();
-    SAFE_DELETE(_loaderThread);
-
-    FOR_EACH(RenderStateMap::value_type& it, _stateBlockMap){
-        SAFE_DELETE(it.second);
-    }
-    _stateBlockMap.clear();
-
-    //Destroy all rendering Passes
-    RenderPassManager::getInstance().destroyInstance();
-
-    for (FrameBuffer*& renderTarget : _renderTarget)
-        SAFE_DELETE(renderTarget);
-
-    SAFE_DELETE(_depthRanges);
-    SAFE_DELETE(_matricesBuffer);
-    SAFE_DELETE(_nodeDataBuffer);
-}
-
-void GFXDevice::closeRenderer(){
-    RemoveResource(_HIZConstructProgram);
-    RemoveResource(_depthRangesConstructProgram);
-    PRINT_FN(Locale::get("STOP_POST_FX"));
-    _postFX.destroyInstance();
-    _shaderManager.Destroy();
-    PRINT_FN(Locale::get("CLOSING_RENDERER"));
-    SAFE_DELETE(_renderer);
-}
-
-void GFXDevice::idle() {
-    if (!_renderer) return;
-    _cachedSceneZPlanes.set(ParamHandler::getInstance().getParam<F32>("rendering.zNear"), ParamHandler::getInstance().getParam<F32>("rendering.zFar"));
-    _postFX.idle();
-    _shaderManager.idle();
-    _api.idle();
-}
-
-void GFXDevice::drawPoints(U32 numPoints) {
-    if (_activeShaderProgram)
-        _activeShaderProgram->uploadNodeMatrices();
-
-    updateStates();
-    _api.drawPoints(numPoints); 
-}
-
-void GFXDevice::renderInstance(RenderInstance* const instance){
-    //All geometry is stored in VB format
-    assert(instance->object3D() != nullptr);
-    Object3D* model = instance->object3D();
-
-    if (model->getObjectType() == Object3D::OBJECT_3D_PLACEHOLDER || model->getObjectType() == Object3D::TEXT_3D){
-        ERROR_FN(Locale::get("ERROR_GFX_INVALID_OBJECT_TYPE"), model->getName().c_str());
-        //Text3D* text = dynamic_cast<Text3D*>(model);
-        //drawText(text->getText(),text->getWidth(),text->getFont(),text->getHeight(),false,false);
-        //3D text disabled for now - to add later - Ionut
+void GFXDevice::drawPoints(U32 numPoints, size_t stateHash) {
+    if(numPoints == 0)
         return;
-    }
 
-    if (instance->preDraw()){
-        if (!model->onDraw(nullptr, getRenderStage()))
-            return;
-    }
+    _defaultDrawCmd.setDrawIDs(vec2<I32>(-1));
+    _defaultDrawCmd.setStateHash(stateHash);
+    _defaultDrawCmd.setShaderProgram(activeShaderProgram());
 
-    Transform* transform = instance->transform();
-    if (transform) pushWorldMatrix(transform->interpolate(instance->prevTransform(), _interpolationFactor), transform->isUniformScaled());
-  
-    VertexBuffer* modelVB = instance->buffer();
-    if(!modelVB) modelVB = model->getGeometryVB();
-
-    assert(modelVB != nullptr);
-
-    //Render our current vertex array object
-    modelVB->Draw(instance->drawCommands() , false);
-
-    if (transform) popWorldMatrix();
+    setBufferData(_defaultDrawCmd);
+    drawPoints(numPoints); 
 }
 
-void GFXDevice::render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState){
-    //Call the specific render function that prepares the scene for presentation
-    _renderer->render(renderFunction, sceneRenderState);
+void GFXDevice::drawGUIElement(GUIElement* guiElement){
+    assert(guiElement);
+    if (!guiElement->isVisible()) return;
+
+    setStateBlock(guiElement->getStateBlockHash());
+
+    switch (guiElement->getType()){
+        case GUI_TEXT:{
+            const GUIText& text = dynamic_cast<GUIText&>(*guiElement);
+            drawText(text, text.getPosition());
+        }break;
+        case GUI_FLASH:
+            dynamic_cast<GUIFlash* >(guiElement)->playMovie();
+            break;
+        default:
+            break;
+    };
+    guiElement->lastDrawTimer(GETUSTIME());
 }
 
-void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap, const vec3<F32>& pos, const DELEGATE_CBK& callback, const vec2<F32>& zPlanes, const RenderStage& renderStage){
-    static bool firstCall = true;
-    if (firstCall){
-        _kernel->getCameraMgr().addNewCamera("_gfxCubeCamera", _cubeCamera);
-        firstCall = false;
-    }
+void GFXDevice::submitRenderCommand(VertexBuffer* const buffer, const GenericDrawCommand& cmd) {
+    assert(buffer != nullptr);
+    if(cmd._cmd.instanceCount == 0)
+        return;
+    
+    setBufferData(cmd);
+    buffer->Draw(cmd);
+}
 
+void GFXDevice::submitRenderCommand(GenericVertexData* const buffer, const GenericDrawCommand& cmd){
+    assert(buffer != nullptr);
+    if(cmd._cmd.instanceCount == 0)
+        return;
+
+    setBufferData(cmd);
+    buffer->Draw(cmd);
+}
+
+void GFXDevice::submitRenderCommand(VertexBuffer* const buffer, const vectorImpl<GenericDrawCommand>& cmds){
+    STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");
+    FOR_EACH(const GenericDrawCommand& cmd, cmds){
+        submitRenderCommand(buffer, cmd);
+    }
+}
+
+void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, const DELEGATE_CBK& callback, const vec2<F32>& zPlanes, const RenderStage& renderStage){
     //Only use cube map FB's
-    if (cubeMap.GetAttachment(TextureDescriptor::Color0)._type != TEXTURE_CUBE_MAP) {
+    if (cubeMap.GetAttachment(TextureDescriptor::Color0)->getTextureType() != TEXTURE_CUBE_MAP) {
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
         return;
     }
@@ -324,12 +154,9 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap, const vec3<F32>& pos, con
     assert(!callback.empty());
 
     static vec3<F32> TabUp[6] = {
-        WORLD_Y_NEG_AXIS,
-        WORLD_Y_NEG_AXIS,
-        WORLD_Z_AXIS,
-        WORLD_Z_NEG_AXIS,
-        WORLD_Y_NEG_AXIS,
-        WORLD_Y_NEG_AXIS
+        WORLD_Y_NEG_AXIS,  WORLD_Y_NEG_AXIS,
+        WORLD_Z_AXIS,      WORLD_Z_NEG_AXIS,
+        WORLD_Y_NEG_AXIS,  WORLD_Y_NEG_AXIS
     };
 
     //Get the center and up vectors for each cube face
@@ -349,7 +176,7 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap, const vec3<F32>& pos, con
     //And set the current render stage to
     RenderStage prevRenderStage = setRenderStage(renderStage);
     //Bind our FB
-    cubeMap.Begin(FrameBuffer::defaultPolicy());
+    cubeMap.Begin(Framebuffer::defaultPolicy());
    
     //For each of the environment's faces (TOP,DOWN,NORTH,SOUTH,EAST,WEST)
     for(U8 i = 0; i < 6; i++){
@@ -359,7 +186,7 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap, const vec3<F32>& pos, con
         _cubeCamera->lookAt(pos, TabCenter[i], TabUp[i]);
         _cubeCamera->renderLookAt();
         //draw our scene
-        render(callback, GET_ACTIVE_SCENE()->renderState());
+        getRenderer()->render(callback, GET_ACTIVE_SCENE()->renderState());
     }
     //Unbind this fb
     cubeMap.End();
@@ -368,7 +195,7 @@ void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap, const vec3<F32>& pos, con
     _kernel->getCameraMgr().popActiveCamera();
 }
 
-I64 GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor){
+size_t GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor){
    size_t hashValue = descriptor.getHash();
 
    if (_stateBlockMap.find(hashValue) == _stateBlockMap.end())
@@ -377,31 +204,22 @@ I64 GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descripto
    return hashValue;
 }
 
-I64 GFXDevice::setStateBlock(I64 stateBlockHash, bool forceUpdate) {
-   
-   I64 prevStateHash = _newStateBlockHash;
+size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
+   stateBlockHash = stateBlockHash == 0 ? _defaultStateBlockHash : stateBlockHash;
+   size_t prevStateHash = _newStateBlockHash;
    if (_currentStateBlockHash == 0 || stateBlockHash != _currentStateBlockHash) {
-       _stateBlockDirty = true;
-       _newStateBlockHash = stateBlockHash;
-       if(forceUpdate)  updateStates();//<there is no need to force a internal update of stateblocks if nothing changed
+        _newStateBlockHash = stateBlockHash;
+        if (_newStateBlockHash)
+            activateStateBlock(*_stateBlockMap[_newStateBlockHash], _stateBlockMap[_currentStateBlockHash]);
+        _currentStateBlockHash = _newStateBlockHash;
    } else {
-       _stateBlockDirty = false;
        _newStateBlockHash = _currentStateBlockHash;
    }
 
    return prevStateHash;
 }
 
-void GFXDevice::updateStates() {
-    if (_newStateBlockHash && _stateBlockDirty){
-        activateStateBlock(*_stateBlockMap[_newStateBlockHash], _stateBlockMap[_currentStateBlockHash]);
-        _stateBlockDirty = false;
-    }
-
-    _currentStateBlockHash = _newStateBlockHash;
-}
-
-const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(I64 renderStateBlockHash) const {
+const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(size_t renderStateBlockHash) const {
     RenderStateMap ::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
     assert(it != _stateBlockMap.end());
     return it->second->getDescriptor(); 
@@ -412,16 +230,18 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         if (vec2<U16>(w,h) == _renderTarget[RENDER_TARGET_SCREEN]->getResolution() || !(w > 1 && h > 1)) 
             return;
         
-        for (FrameBuffer* renderTarget : _renderTarget){
+        for (Framebuffer* renderTarget : _renderTarget){
             if (renderTarget)
                 renderTarget->Create(w, h);
         }
     }
 
     // Set the viewport to be the entire window
-    setViewport(vec4<I32>(0, 0, w, h));
+    forceViewportInternal(vec4<I32>(0, 0, w, h));
+    assert(_viewport.size() == 1);
     changeResolutionInternal(w,h);
-
+    //Inform the Kernel
+    Kernel::updateResolutionCallback(w,h);
     //Update post-processing render targets and buffers
     _postFX.updateResolution(w, h);
     //Refresh shader programs
@@ -436,79 +256,30 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color){
     par.setParam("rendering.sceneState.fogColor.r", color.r);
     par.setParam("rendering.sceneState.fogColor.g", color.g);
     par.setParam("rendering.sceneState.fogColor.b", color.b);
-    par.setParam("rendering.sceneState.fogDensity",density);
+    par.setParam("rendering.sceneState.fogDensity", density);
     _shaderManager.refreshSceneData();
 }
 
- void GFXDevice::popWorldMatrix(){
-     _worldMatrices.pop();
-     _isUniformedScaled = _WDirty = true;
-     _shaderManager.setMatricesDirty();
-}
-
-void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled){
-    _worldMatrices.push(worldMatrix);
-    _isUniformedScaled = isUniformedScaled;
-    _WDirty = true;
-    _shaderManager.setMatricesDirty();
-}
-       
 void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
     if (mode == VIEW_PROJECTION_MATRIX)          mat.set(_viewProjectionMatrix);
     else if (mode == VIEW_MATRIX)                mat.set(_viewMatrix);
-    else if (mode == VIEW_INV_MATRIX)            _viewMatrix.inverse(mat);
     else if (mode == PROJECTION_MATRIX)          mat.set(_projectionMatrix);
-    else if (mode == PROJECTION_INV_MATRIX)      _projectionMatrix.inverse(mat);
     else if (mode == TEXTURE_MATRIX)             mat.set(_textureMatrix);
-    else if(mode == VIEW_PROJECTION_INV_MATRIX) _viewProjectionMatrix.inverse(mat);
+    else if (mode == VIEW_INV_MATRIX)            _viewMatrix.inverse(mat);
+    else if (mode == PROJECTION_INV_MATRIX)      _projectionMatrix.inverse(mat);
+    else if(mode == VIEW_PROJECTION_INV_MATRIX)  _viewProjectionMatrix.inverse(mat);
     else { DIVIDE_ASSERT(mode == -1, "GFXDevice error: attempted to query an invalid matrix target!"); }
-}
-
-void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
-     assert(mode == NORMAL_MATRIX /*|| mode == ... */);
-     cleanMatrices();
-            
-     // Normal Matrix
-     mat.set(_isUniformedScaled ? _WVCachedMatrix : _WVCachedMatrix.getInverseTranspose());
-}
-
-void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
-     assert(mode != NORMAL_MATRIX /*|| mode != ... */);
-
-     //refresh cache
-     if(mode != WORLD_MATRIX)
-          cleanMatrices();
-      
-      switch(mode){
-          case WORLD_MATRIX:  mat.set(_worldMatrices.top()); break;
-          case WV_MATRIX:     mat.set(_WVCachedMatrix);      break;
-          case WVP_MATRIX:    mat.set(_WVPCachedMatrix);     break;
-          case WV_INV_MATRIX: _WVCachedMatrix.inverse(mat);  break;
-      }
-}
-
-void GFXDevice::cleanMatrices(){
-    if(!_WDirty)
-        return;
-
-    assert(!_worldMatrices.empty());
-
-    // we transpose the matrices when we use them in the shader
-    _WVCachedMatrix.set(_worldMatrices.top() * _viewMatrix);
-    _WVPCachedMatrix.set(_worldMatrices.top() * _viewProjectionMatrix);
-
-    _VDirty = _PDirty = _WDirty = false;
 }
 
 void GFXDevice::updateClipPlanes(){
     const size_t vec4Size = 4 * sizeof(F32);
     const size_t mat4Size = 4 * vec4Size;
 
-    vectorImpl<vec4<F32> > clipPlanes; clipPlanes.resize(Config::MAX_CLIP_PLANES, vec4<F32>());
+    vectorImpl<vec4<F32> > clipPlanes(Config::MAX_CLIP_PLANES, vec4<F32>());
     for(U8 i = 0 ; i < Config::MAX_CLIP_PLANES; ++i)
         clipPlanes[i] = _clippingPlanes[i].getEquation();
 
-    _matricesBuffer->UpdateData(3 * mat4Size + 3 * vec4Size, Config::MAX_CLIP_PLANES * vec4Size, &clipPlanes.front());
+    _gfxDataBuffer->UpdateData(3 * mat4Size + 3 * vec4Size, Config::MAX_CLIP_PLANES * vec4Size, &clipPlanes.front());
 }
 
 void GFXDevice::updateProjectionMatrix(const vec2<F32>& zPlanes){
@@ -527,9 +298,8 @@ void GFXDevice::updateProjectionMatrix(const vec2<F32>& zPlanes){
     memcpy(matrixDataProjection + 16, _viewMatrix.mat,           mat4Size);
     memcpy(matrixDataProjection + 32, _viewProjectionMatrix.mat, mat4Size);
 
-    _matricesBuffer->UpdateData(0, 3 * mat4Size, matrixDataProjection);
-    _matricesBuffer->UpdateData(3 * mat4Size + 2 * vec4Size, vec4Size, zPlaneData);
-    _PDirty = true; 
+    _gfxDataBuffer->UpdateData(0, 3 * mat4Size, matrixDataProjection);
+    _gfxDataBuffer->UpdateData(3 * mat4Size + 2 * vec4Size, vec4Size, zPlaneData);
 }
 
 void GFXDevice::updateViewMatrix(const vec3<F32>& eyePos){
@@ -545,8 +315,16 @@ void GFXDevice::updateViewMatrix(const vec3<F32>& eyePos){
     memcpy(matrixDataView + 16, _viewProjectionMatrix.mat, mat4Size);
     memcpy(matrixDataView + 32, eyePos,                    vec4Size);
 
-    _matricesBuffer->UpdateData(mat4Size, 2 * mat4Size + vec4Size, matrixDataView);
-    _VDirty = true;
+    _gfxDataBuffer->UpdateData(mat4Size, 2 * mat4Size + vec4Size, matrixDataView);
+}
+
+void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
+    const size_t vec4Size = 4 * sizeof(F32);
+    const size_t mat4Size = 16 * sizeof(F32);
+    changeViewport(viewport);
+
+    vec4<F32> viewportFloat(viewport.x, viewport.y, viewport.z, viewport.w);
+    _gfxDataBuffer->UpdateData(3 * mat4Size + vec4Size, vec4Size, &viewportFloat[0]);
 }
 
 F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
@@ -579,23 +357,20 @@ namespace {
         F32 modeltranslation;
     } _leftCam, _rightCam;
     F32  _anaglyphIOD = -0.01f;
-
 };
+
 //Setting anaglyph frustum for specified eye
 void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) {
-
-    F32 zNear = (F32)zPlanes.x;
-    F32 zFar = (F32)zPlanes.y;
 
     if(!FLOAT_COMPARE(_anaglyphIOD,camIOD)){
         static const D32 DTR = 0.0174532925;
         static const D32 screenZ = 10.0;
 
-        //sets top of frustum based on fovy and near clipping plane
-        F32 top = zNear*tan(DTR * verticalFoV * 0.5f);
+        //sets top of frustum based on FoV-Y and near clipping plane
+        F32 top = zPlanes.x*tan(DTR * verticalFoV * 0.5f);
         F32 right = aspectRatio*top;
         //sets right of frustum based on aspect ratio
-        F32 frustumshift = (camIOD/2)*zNear/screenZ;
+        F32 frustumshift = (camIOD/2)*zPlanes.x/screenZ;
 
         _leftCam.topfrustum = top;
         _leftCam.bottomfrustum = -top;
@@ -614,56 +389,32 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 asp
 
     CameraFrustum& tempCamera = rightFrustum ? _rightCam : _leftCam;
 
-    _projectionMatrix.frustum(tempCamera.leftfrustum,
-                              tempCamera.rightfrustum,
-                              tempCamera.bottomfrustum,
-                              tempCamera.topfrustum,
-                              zNear,
-                              zFar);
+    _projectionMatrix.frustum(tempCamera.leftfrustum,   tempCamera.rightfrustum,
+                              tempCamera.bottomfrustum, tempCamera.topfrustum,
+                              zPlanes.x, zPlanes.y);
 
     //translate to cancel parallax
     _projectionMatrix.translate(tempCamera.modeltranslation, 0.0, 0.0);
 
-    updateProjectionMatrix(vec2<F32>(zNear, zFar));
+    updateProjectionMatrix(zPlanes);
 }
 
 void GFXDevice::toggle2D(bool state) {
-    static I64 previousStateBlockHash = 0;
+    static size_t previousStateBlockHash = 0;
     if (state == _2DRendering) return;
-#ifdef _DEBUG
+
     assert((state && !_2DRendering) || (!state && _2DRendering));
-#endif
+
     _2DRendering = state;
 
     if (state){ //2D
-        previousStateBlockHash = SET_STATE_BLOCK(_state2DRenderingHash);
+        previousStateBlockHash = setStateBlock(_state2DRenderingHash);
         _kernel->getCameraMgr().pushActiveCamera(_2DCamera);
         _2DCamera->renderLookAt();
     }else{ //3D
         _kernel->getCameraMgr().popActiveCamera();
-        SET_STATE_BLOCK(previousStateBlockHash);
+        setStateBlock(previousStateBlockHash);
     }
-}
-
-void GFXDevice::previewDepthBuffer(){
-    if (!_previewDepthBuffer)
-        return;
-
-    if(!_previewDepthMapShader){
-        ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
-        _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
-        assert(_previewDepthMapShader != nullptr);
-        _previewDepthMapShader->UniformTexture("tex", 0);
-        _previewDepthMapShader->Uniform("useScenePlanes", true);
-    }
-
-    if(_previewDepthMapShader->getState() != RES_LOADED)
-        return;
-
-    _previewDepthMapShader->bind();
-    _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
-    
-    renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-256,0,256,256), DELEGATE_BIND(&GFXDevice::drawPoints, this, 1));
 }
 
 void GFXDevice::postProcessingEnabled(const bool state) {
@@ -674,51 +425,80 @@ void GFXDevice::postProcessingEnabled(const bool state) {
 }
 
 void GFXDevice::restoreViewport(){
-    if (!_viewportUpdate)  return;
-    if (!_viewportForced) _viewport.pop(); //push / pop only if new viewport (not-forced)
+    if (!_viewportUpdate)
+        return;
 
+    _viewport.pop();
     updateViewportInternal(_viewport.top());
+    _viewportUpdate = false;
 }
 
-vec4<I32> GFXDevice::setViewport(const vec4<I32>& viewport, bool force){
+void GFXDevice::setViewport(const vec4<I32>& viewport){
     _viewportUpdate = !viewport.compare(_viewport.top());
-
+    
     if (_viewportUpdate) {
 
-        _viewportForced = force;
-        if (!_viewportForced) _viewport.push(viewport); //push / pop only if new viewport (not-forced)
-        else                  _viewport.top() = viewport;
+        _viewport.push(viewport);
 
         updateViewportInternal(viewport);
-    }
-
-    return viewport;
+   }
 }
 
-void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
-    static vec4<F32> viewportF;
-    const size_t vec4Size = 4 * sizeof(F32);
-    const size_t mat4Size = 16 * sizeof(F32);
-    viewportF.set(viewport.x, viewport.y, viewport.z, viewport.w);
-    changeViewport(viewport);
-    _matricesBuffer->UpdateData(3 * mat4Size + vec4Size, vec4Size, &viewportF[0]);
+void GFXDevice::forceViewportInternal(const vec4<I32>& viewport){
+    while(!_viewport.empty())
+        _viewport.pop();
+
+    _viewport.push(viewport);
+    updateViewportInternal(viewport);
+    _viewportUpdate = false;
 }
 
 void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes){
-    // Generate and upload per node data
-    _nodeData.resize(0);
-    _nodeData.resize(visibleNodes.size());
-    for(U16 i = 0; i < visibleNodes.size(); ++i){
-        SceneGraphNode* crtNode = visibleNodes[i];
-        crtNode->updateShaderData(i, _viewMatrix, _interpolationFactor);
-        _nodeData[i] = crtNode->getShaderData();
-    }
-    if(!_nodeData.empty())
-        _nodeDataBuffer->UpdateData(0, _nodeData.size() * sizeof(SceneGraphNode::NodeShaderData), &_nodeData.front(), true);
-
     // Generate and upload all lighting data
     //LightManager::getInstance().buildLightGrid(_viewMatrix, _projectionMatrix, _cachedZPlanes);
     LightManager::getInstance().updateAndUploadLightData(_viewMatrix);
+
+    // Generate and upload per node data
+    _sgnToDrawIDMap.clear();
+    
+    _matricesData.resize(0);
+    _materialData.resize(0);
+
+    if(visibleNodes.empty())
+        return;
+
+    _matricesData.reserve(visibleNodes.size());
+    _materialData.reserve(visibleNodes.size());
+
+    NodeData2 temp2; 
+    NodeData4 temp4; 
+    for(U16 i = 0; i < visibleNodes.size(); ++i){
+        SceneGraphNode* crtNode = visibleNodes[i];
+        Transform* transform = crtNode->getTransform();
+        if (transform) {
+            temp2._matrix1.set(transform->interpolate(crtNode->getPrevTransform(), _interpolationFactor));
+            temp2._matrix2.set(temp2._matrix1 * _viewMatrix);
+            if(!transform->isUniformScaled())
+                temp2._matrix2.inverseTranspose();
+        }else{
+            temp2._matrix1.identity();
+            temp2._matrix2.identity();
+        }
+    
+        temp2._matrix2.element(3,2,true) = (F32)LightManager::getInstance().getLights().size();
+        temp2._matrix2.element(3,3,true) = (F32)(crtNode->getComponent<AnimationComponent>() ? crtNode->getComponent<AnimationComponent>()->boneCount() : 0);
+        
+        temp4._matrix1.set(crtNode->getMaterialColorMatrix());
+        temp4._matrix2.set(crtNode->getMaterialPropertyMatrix());
+
+        _matricesData.push_back(temp2);
+        _materialData.push_back(temp4);
+
+        _sgnToDrawIDMap[crtNode->getGUID()] = vec2<I32>((I32)_matricesData.size() - 1, (I32)_materialData.size() - 1);
+    }
+
+    _nodeMatricesBuffer->UpdateData(0,  _matricesData.size() * sizeof(NodeData2), &_matricesData.front(), true);
+    _nodeMaterialsBuffer->UpdateData(0, _materialData.size() * sizeof(NodeData4), &_materialData.front(), true);
 }
 
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {
@@ -736,22 +516,20 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK&
 }
 
 void GFXDevice::ConstructHIZ() {
-    static FrameBuffer::FrameBufferTarget hizTarget;
+    static Framebuffer::FramebufferTarget hizTarget;
     hizTarget._clearBuffersOnBind = false;
     hizTarget._changeViewport = false;
     _HIZConstructProgram->bind();
     // disable color buffer as we will render only a depth image
     // we have to disable depth testing but allow depth writes
-    setStateBlock(_stateDepthOnlyRenderingHash);
-    
     _renderTarget[RENDER_TARGET_DEPTH]->Begin(hizTarget);
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
     vec2<U16> resolution = _renderTarget[RENDER_TARGET_DEPTH]->getResolution();
     // calculate the number of mipmap levels for NPOT texture
-    I32 numLevels = 1 + (I32)floorf(log2f(fmaxf((F32)resolution.width, (F32)resolution.height)));
+    U32 numLevels = 1 + (U32)floorf(log2f(fmaxf((F32)resolution.width, (F32)resolution.height)));
     I32 currentWidth = resolution.width;
     I32 currentHeight = resolution.height;
-    for (int i = 1; i<numLevels; i++) {
+    for (U32 i = 1; i < numLevels; i++) {
         _HIZConstructProgram->Uniform("LastMipSize", vec2<I32>(currentWidth, currentHeight));
         // calculate next viewport size
         currentWidth  /= 2;
@@ -761,31 +539,29 @@ void GFXDevice::ConstructHIZ() {
         currentHeight = currentHeight > 0 ? currentHeight : 1;
         setViewport(vec4<I32>(0, 0, currentWidth, currentHeight));
         // bind next level for rendering but first restrict fetches only to previous level
-        _renderTarget[RENDER_TARGET_DEPTH]->SetMipLevel(i - 1, TextureDescriptor::Depth);
+        _renderTarget[RENDER_TARGET_DEPTH]->SetMipLevel(i - 1, i - 1, i, TextureDescriptor::Depth);
         // dummy draw command as the full screen quad is generated completely by a geometry shader
-        drawPoints(1);
+        drawPoints(1, _stateDepthOnlyRenderingHash);
+        restoreViewport();
     }
+    
     // reset mipmap level range for the depth image
     _renderTarget[RENDER_TARGET_DEPTH]->ResetMipLevel(TextureDescriptor::Depth);
     _renderTarget[RENDER_TARGET_DEPTH]->End();
-    setViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
-    
-    SET_DEFAULT_STATE_BLOCK(true);
-}
 
+}
 
 void GFXDevice::DownSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges){
 
-    _depthRanges->Begin(FrameBuffer::defaultPolicy());
+    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->Begin(Framebuffer::defaultPolicy());
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
-    SET_STATE_BLOCK(_defaultStateNoDepthHash);
     _depthRangesConstructProgram->bind();
     _depthRangesConstructProgram->Uniform("dvd_ProjectionMatrixInverse", getMatrix(PROJECTION_INV_MATRIX));
     _depthRangesConstructProgram->Uniform("dvd_screenDimension", _renderTarget[RENDER_TARGET_DEPTH]->getResolution());
-    drawPoints(1);
-    depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());
-    _depthRanges->ReadData(RG, FLOAT_32, &depthRanges[0]);
-    _depthRanges->End();
+    drawPoints(1, _defaultStateNoDepthHash);
+    depthRanges.resize(_renderTarget[RENDER_TARGET_DEPTH_RANGES]->getWidth() * _renderTarget[RENDER_TARGET_DEPTH_RANGES]->getHeight());
+    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->ReadData(RG, FLOAT_32, &depthRanges[0]);
+    _renderTarget[RENDER_TARGET_DEPTH_RANGES]->End();
 }
 
 void GFXDevice::Screenshot(char* filename){
@@ -797,4 +573,99 @@ void GFXDevice::Screenshot(char* filename){
     //save to file
     ImageTools::SaveSeries(filename, vec2<U16>(resolution.width, resolution.height), 32, imageData);
     SAFE_DELETE_ARRAY(imageData);
+}
+
+IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
+    IMPrimitive* tempPriv = nullptr;
+    //Find a zombified primitive
+    vectorImpl<IMPrimitive* >::iterator it = std::find_if(_imInterfaces.begin(),_imInterfaces.end(), 
+                                                          [](IMPrimitive* const priv){return (priv && !priv->inUse());});
+    if(allowPrimitiveRecycle && it != _imInterfaces.end()){//If we have one ...
+        tempPriv = *it;
+        //... resurrect it
+        tempPriv->clear();
+    }else{//If we do not have a valid zombie, add a new element
+        tempPriv = newIMP();
+        _imInterfaces.push_back(tempPriv);
+    }
+
+    tempPriv->_canZombify = allowPrimitiveRecycle;
+
+    return tempPriv;
+}
+
+void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max, const mat4<F32>& globalOffset){
+    IMPrimitive* priv = getOrCreatePrimitive();
+
+    priv->_hasLines = true;
+    priv->_lineWidth = 4.0f;
+
+    priv->stateHash(_defaultStateBlockHash);
+    priv->worldMatrix(globalOffset);
+ 
+    priv->beginBatch();
+
+    vec4<U8> color(0,0,255,255);
+    priv->attribute4ub("inColorData", color);
+
+    priv->begin(LINE_LOOP);
+        priv->vertex( vec3<F32>(min.x, min.y, min.z) );
+        priv->vertex( vec3<F32>(max.x, min.y, min.z) );
+        priv->vertex( vec3<F32>(max.x, min.y, max.z) );
+        priv->vertex( vec3<F32>(min.x, min.y, max.z) );
+    priv->end();
+
+    priv->begin(LINE_LOOP);
+        priv->vertex( vec3<F32>(min.x, max.y, min.z) );
+        priv->vertex( vec3<F32>(max.x, max.y, min.z) );
+        priv->vertex( vec3<F32>(max.x, max.y, max.z) );
+        priv->vertex( vec3<F32>(min.x, max.y, max.z) );
+    priv->end();
+
+    priv->begin(LINES);
+        priv->vertex( vec3<F32>(min.x, min.y, min.z) );
+        priv->vertex( vec3<F32>(min.x, max.y, min.z) );
+        priv->vertex( vec3<F32>(max.x, min.y, min.z) );
+        priv->vertex( vec3<F32>(max.x, max.y, min.z) );
+        priv->vertex( vec3<F32>(max.x, min.y, max.z) );
+        priv->vertex( vec3<F32>(max.x, max.y, max.z) );
+        priv->vertex( vec3<F32>(min.x, min.y, max.z) );
+        priv->vertex( vec3<F32>(min.x, max.y, max.z) );
+    priv->end();
+
+    priv->endBatch();
+}
+
+void GFXDevice::drawLines(const vectorImpl<Line >& lines,
+                          const mat4<F32>& globalOffset,
+                          const vec4<I32>& viewport,
+                          const bool inViewport,
+                          const bool disableDepth){
+
+    if(lines.empty()) return;
+    
+    IMPrimitive* priv = getOrCreatePrimitive();
+
+    priv->_hasLines = true;
+    priv->_lineWidth = 5.0f;
+    priv->worldMatrix(globalOffset);
+    priv->stateHash(getDefaultStateBlock(disableDepth));
+   
+    if(inViewport)
+        priv->setRenderStates(DELEGATE_BIND(&GFXDevice::setViewport, DELEGATE_REF(GFX_DEVICE), viewport),
+                              DELEGATE_BIND(&GFXDevice::restoreViewport, DELEGATE_REF(GFX_DEVICE)));            
+    priv->beginBatch();
+
+    priv->attribute4ub("inColorData", lines[0]._color);
+
+    priv->begin(LINES);
+
+    for(size_t i = 0; i < lines.size(); i++){
+        priv->attribute4ub("inColorData", lines[i]._color);
+        priv->vertex( lines[i]._startPoint );
+        priv->vertex( lines[i]._endPoint );
+    }
+
+    priv->end();
+    priv->endBatch();
 }

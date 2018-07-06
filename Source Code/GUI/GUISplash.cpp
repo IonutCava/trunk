@@ -35,5 +35,5 @@ GUISplash::~GUISplash()
 void GUISplash::render(){
     _splashShader->bind();
     _splashImage->Bind(0);
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
 }

@@ -50,9 +50,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
         // set it's state to selected
         _currentSelection->setSelected(true);
 #ifdef _DEBUG
-        _pointsA[DEBUG_LINE_RAY_PICK].push_back(startRay);
-        _pointsB[DEBUG_LINE_RAY_PICK].push_back(endRay);
-        _colors[DEBUG_LINE_RAY_PICK].push_back(vec4<U8>(0,255,0,255));
+        _lines[DEBUG_LINE_RAY_PICK].push_back(Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
 #endif
     }
 }
@@ -60,7 +58,9 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
 bool Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = true;
     switch (button){
-        case OIS::MB_Left:   break;
+        default:       return false;
+
+        case OIS::MB_Left:    break;
         case OIS::MB_Right:   break;
         case OIS::MB_Middle:  break;
         case OIS::MB_Button3: break;
@@ -75,6 +75,8 @@ bool Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID butto
 bool Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = false;
     switch (button){
+        default:       return false;
+
         case OIS::MB_Left:    findSelection(key.state.X.abs, key.state.Y.abs); break;
         case OIS::MB_Right:   break;
         case OIS::MB_Middle:  break;
@@ -127,7 +129,7 @@ bool Scene::onKeyDown(const OIS::KeyEvent& key){
     defaultCameraKeys(key.key, false);
 
     switch(key.key){
-        default: break;
+        default:             return false;
         case OIS::KC_END   : deleteSelection(); break;
         case OIS::KC_ADD   : {
             Camera& cam = renderState().getCamera();
@@ -186,11 +188,8 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             break;
         case OIS::KC_F9:{
 #ifdef _DEBUG
-            for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i) {
-                _pointsA[i].clear();
-                _pointsB[i].clear();
-                _colors[i].clear();
-            }
+            for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i)
+                _lines[i].clear();
 #endif
             }break;
         case OIS::KC_F10:
@@ -201,7 +200,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             GFX_DEVICE.Screenshot("screenshot_");
             break;
         default:
-            break;
+            return false;
     }
 
     return true;

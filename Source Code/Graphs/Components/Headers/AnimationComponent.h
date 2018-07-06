@@ -57,6 +57,8 @@ public:
    
     I32 frameIndex() const;
     I32 frameCount() const;
+    U32 boneCount()  const;
+
     const vectorImpl<mat4<F32> >& transformsByIndex(U32 index) const;
     const mat4<F32>& currentBoneTransform(const std::string& name);
     Bone* getBoneByName(const std::string& bname) const;
@@ -65,7 +67,8 @@ public:
     inline bool playAnimations()           const { return _playAnimations; }
     inline void playAnimations(bool state)       { _playAnimations = state; }
 
-    inline I32  animationIndex() const { return _currentAnimIndex; }
+    
+    inline I32  animationIndex()      const { return _currentAnimIndex; }
     inline const vectorImpl<mat4<F32> >& animationTransforms() const { return _animationTransforms; }
 
     inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationId) { return _boundingBoxes[animationId]; }

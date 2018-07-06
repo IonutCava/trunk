@@ -29,7 +29,7 @@ void computeLightInfoLOD0(){
 
 #if defined(COMPUTE_TBN)
     vec3 n = _normalWV;
-    vec3 t = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Tangent);
+    vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
     vec3 b = normalize(cross(n, t));
     
     vec3 tmpVec = -_vertexWV.xyz;
@@ -43,31 +43,27 @@ void computeLightInfoLOD0(){
 
     vec3 lightDirection;
 
-    _lightInfo._lightCount = uint(ceil(dvd_perNodeLightData[0].w / (lodLevel + 1.0f)));
-
-    for (uint i = 0; i < MAX_LIGHTS_PER_NODE; i++){
-        if (_lightInfo._lightCount == i) break;
-
-        uint currentLightIndex = dvd_perNodeLightData[i].x;
+    for (uint i = 0; i < MAX_LIGHTS_PER_SCENE; i++){
+        if (_lightCount == i) break;
         
-        lightType = dvd_perNodeLightData[currentLightIndex].y;
+        lightType = uint(dvd_LightSource[i]._position.w);
         //Directional light => lightType == 0; Spot or Omni => lightType == 1
         if (lightType == LIGHT_DIRECTIONAL){
             //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
-            lightDirection = -normalize(dvd_LightSource[currentLightIndex]._position.xyz);
+            lightDirection = -normalize(dvd_LightSource[i]._position.xyz);
             //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
-            _lightInfo._attenuation[i] = 1.0;
+            _lightInfo[i]._attenuation = 1.0;
         }else{
             //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
-            lightDirection = normalize(_viewDirection + dvd_LightSource[currentLightIndex]._position.xyz);
+            lightDirection = normalize(_viewDirection + dvd_LightSource[i]._position.xyz);
             //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
-            _lightInfo._attenuation[i] = computeAttenuation(currentLightIndex, lightDirection, lightType);
+            _lightInfo[i]._attenuation = computeAttenuation(i, lightDirection, lightType);
         }
 
 #if defined(COMPUTE_TBN)
-        _lightInfo._lightDirection[i] = normalize(vec3(dot(lightDirection, t), dot(lightDirection, b), dot(lightDirection, n)));
+        _lightInfo[i]._lightDirection = normalize(vec3(dot(lightDirection, t), dot(lightDirection, b), dot(lightDirection, n)));
 #else
-        _lightInfo._lightDirection[i] = lightDirection;
+        _lightInfo[i]._lightDirection = lightDirection;
 #endif
     }
 }
@@ -80,33 +76,30 @@ void computeLightInfoLOD1(){
 
     vec3 lightDirection;
 
-    _lightInfo._lightCount = uint(ceil(dvd_perNodeLightData[0].w / (lodLevel + 1.0f)));
+    for (uint i = 0; i < MAX_LIGHTS_PER_SCENE; i++){
+        if (_lightCount == i) break;
 
-    for (uint i = 0; i < MAX_LIGHTS_PER_NODE; i++){
-        if (_lightInfo._lightCount == i) break;
-
-        uint currentLightIndex = dvd_perNodeLightData[i].x;
-
-        lightType = dvd_perNodeLightData[currentLightIndex].y;
+        lightType = uint(dvd_LightSource[i]._position.w);
         //Directional light => lightType == 0; Spot or Omni => lightType == 1
         if (lightType == LIGHT_DIRECTIONAL){
             //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
-            lightDirection = -normalize(dvd_LightSource[currentLightIndex]._position.xyz);
+            lightDirection = -normalize(dvd_LightSource[i]._position.xyz);
             //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
-            _lightInfo._attenuation[i] = 1.0;
+            _lightInfo[i]._attenuation = 1.0;
         }else{
             //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
-            lightDirection = normalize(_viewDirection + dvd_LightSource[currentLightIndex]._position.xyz);
+            lightDirection = normalize(_viewDirection + dvd_LightSource[i]._position.xyz);
             //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
-            _lightInfo._attenuation[i] = computeAttenuation(currentLightIndex, lightDirection, lightType);
+            _lightInfo[i]._attenuation = computeAttenuation(i, lightDirection, lightType);
         }
 
-        _lightInfo._lightDirection[i] = lightDirection;
+        _lightInfo[i]._lightDirection = lightDirection;
     }
 }
 
 void computeLightVectors(){
-    _normalWV = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal); //<ModelView Normal 
+    _lightCount = dvd_lightCount;
+    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal); //<ModelView Normal 
 	_vertexWV = dvd_ViewMatrix * _vertexW;
     LightInfoRoutine();
 }

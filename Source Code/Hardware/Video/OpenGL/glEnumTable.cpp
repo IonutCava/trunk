@@ -8,7 +8,7 @@ GLenum glStencilOpTable[StencilOperation_PLACEHOLDER];
 GLenum glCullModeTable[CullMode_PLACEHOLDER];
 GLenum glFillModeTable[FillMode_PLACEHOLDER];
 GLenum glTextureTypeTable[TextureType_PLACEHOLDER];
-GLenum glImageFormatTable[IMAGE_FORMAT_PLACEHOLDER];
+GLenum glImageFormatTable[GFXImageFormat_PLACEHOLDER];
 GLenum glPrimitiveTypeTable[PrimitiveType_PLACEHOLDER];
 GLenum glDataFormat[GDF_PLACEHOLDER];
 GLuint glWrapTable[TextureWrap_PLACEHOLDER];

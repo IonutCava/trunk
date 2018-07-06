@@ -72,7 +72,7 @@ U8 glShaderProgram::update(const U64 deltaTime){
             glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
             void* binary = (void*)malloc(binaryLength);
             DIVIDE_ASSERT(binary != NULL, "glShaderProgram error: could not allocate memory for the program binary!");
-            glGetProgramBinary(_shaderProgramId, binaryLength, nullptr, &_binaryFormat, binary);
+            glGetProgramBinary(_shaderProgramId, binaryLength, NULL, &_binaryFormat, binary);
  
             std::string outFileName("shaderCache/Binary/"+getName()+".bin");
             FILE* outFile = fopen(outFileName.c_str(), "wb");
@@ -95,7 +95,7 @@ std::string glShaderProgram::getLog() const {
     if(length > 1){
         validationBuffer = "\n -- ";
         vectorImpl<char> shaderProgramLog(length);
-        glGetProgramInfoLog(_shaderProgramIDTemp, length, nullptr, &shaderProgramLog[0]);
+        glGetProgramInfoLog(_shaderProgramIDTemp, length, NULL, &shaderProgramLog[0]);
         validationBuffer.append(&shaderProgramLog[0]);
         if(validationBuffer.size() > 4096 * 16){
             validationBuffer.resize(4096 * 16 - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10);
@@ -132,9 +132,6 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
     glAttachShader(_shaderProgramIDTemp, shaderId);
     shader->addParentProgram(this);
 
-    if (!shader->compile())
-        ERROR_FN(Locale::get("ERROR_GLSL_SHADER_COMPILE"), shader->getShaderId());
-
     _linked = false;
 }
 
@@ -146,8 +143,12 @@ void glShaderProgram::threadedLoad(const std::string& name){
 
         for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i){
             // Attach, compile and validate shaders into this program and update state
-            attachShader(_shaderStage[i], _refreshStage[i]);
-            _refreshStage[i] = false;
+            Shader* shader = _shaderStage[i];
+            if(shader){
+                shader->validate();
+                attachShader(shader, _refreshStage[i]);
+                _refreshStage[i] = false;
+            }
         }
         
         link();
@@ -315,8 +316,13 @@ bool glShaderProgram::generateHWResource(const std::string& name){
                 }
             }
 
-            if (!_shaderStage[type]) PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), shaderCompileName[type].c_str())
-        }
+            if (!_shaderStage[type]){ 
+                PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), shaderCompileName[type].c_str())
+            }else{
+                if (!_shaderStage[type]->compile())
+                    ERROR_FN(Locale::get("ERROR_GLSL_SHADER_COMPILE"), _shaderStage[type]->getShaderId());
+            }
+        }   
     }
 
     return GFX_DEVICE.loadInContext(/*_threadedLoading ? GFX_LOADING_CONTEXT : */GFX_RENDERING_CONTEXT, DELEGATE_BIND(&glShaderProgram::threadedLoad, this, name));
@@ -341,6 +347,9 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform){
 }
 
 bool glShaderProgram::bind() {
+    if(_bound)
+        return true;
+
     //If we did not create the hardware resource, do not try and bind it, as it is invalid
     if (!isHWInitComplete()){
         GL_API::setActiveProgram(nullptr);

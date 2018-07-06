@@ -66,7 +66,7 @@ public:
 	inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime) {
         I32 frameIndex = GetFrameIndexAt(elapsedTime);
         assert(frameIndex < _transforms.size());
-         return _transforms[frameIndex];
+        return _transforms[frameIndex];
     }
 
 protected:

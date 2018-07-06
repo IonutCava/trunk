@@ -33,13 +33,11 @@
 
 struct aiNode;
 struct aiScene;
-class ShaderBuffer;
 class SceneAnimator{
 public:
 
     SceneAnimator(): _skeleton(0)
     {
-        _boneTransformBuffer[0] = _boneTransformBuffer[1] = nullptr;
     }
 
     ~SceneAnimator()
@@ -108,8 +106,6 @@ public:
 
     size_t GetBoneCount() const { return _bones.size(); }
 
-    ShaderBuffer* getBoneDataBuffer(U8 index) const { return _boneTransformBuffer[index]; }
-
 private:
 
     ///I/O operations
@@ -125,8 +121,7 @@ private:
     /// Recursively creates an internal node structure matching the current scene and animation.
     Bone* CreateBoneTree( aiNode* pNode, Bone* parent);
 
-    I32 SubmitSkeletonToGPU(I32 animationIndex, U32 frameIndex);
-    I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA, vectorImpl<vec3<F32> >& pointsB, vectorImpl<vec4<U8> >& colors);
+    I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<Line >& lines);
 
 private:
     Bone* _skeleton;/** Root node of the internal scene structure */
@@ -138,17 +133,12 @@ private:
     vectorImpl<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST REFERENCES!!
     vectorImpl<aiMatrix4x4 > _transforms;// temp array of transforms
 
-    typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec3<F32> >> pointMap;
-    typedef Unordered_map<U32/*animationId*/, pointMap > pointCollection;
-    typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec4<U8> >> colorMap;
-    typedef Unordered_map<U32/*animationId*/, colorMap > colorCollection;
-    pointCollection _pointsA;
-    pointCollection _pointsB;
-    colorCollection _colors;
-    mat4<F32>  _cacheIdentity;
-    mat4<F32>  _rootTransformRender;
+    typedef Unordered_map<U32/*frameIndex*/, vectorImpl<Line >> LineMap;
+    typedef Unordered_map<U32/*animationId*/, LineMap > LineCollection;
 
-    ShaderBuffer* _boneTransformBuffer[2];
+    LineCollection _skeletonLines;
+    mat4<F32>      _cacheIdentity;
+    mat4<F32>      _rootTransformRender;
 };
 
 #endif

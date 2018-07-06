@@ -27,6 +27,8 @@
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
 
+class ShaderProgram;
+
 typedef struct {
     // Video resolution
     I32 Width, Height;
@@ -51,16 +53,21 @@ struct IndirectDrawCommand {
 struct GenericDrawCommand {
     U8  _queryID;
     U8  _lodIndex;
-    I64 _stateHash;
+    size_t _stateHash;
     bool _drawToBuffer;
+    vec2<I32> _drawIDs;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
+    ShaderProgram*      _shaderProgram;
 
-    inline void setLoD(U8 lod)              { _lodIndex = lod; }
-    inline void setQueryID(U8 queryID)      { _queryID = queryID; }
-    inline void setStateHash(I64 hashValue) { _stateHash = hashValue; }
-    inline void setDrawToBuffer(bool state) { _drawToBuffer = state; }
-    inline void setInstanceCount(U32 count) { _cmd.instanceCount = count; }
+    inline void setLoD(U8 lod)                       { _lodIndex = lod; }
+    inline void setQueryID(U8 queryID)               { _queryID = queryID; }
+    inline void setStateHash(size_t hashValue)       { _stateHash = hashValue; }
+    inline void setDrawToBuffer(bool state)          { _drawToBuffer = state; }
+    inline void setInstanceCount(U32 count)          { _cmd.instanceCount = count; }
+    inline void setDrawIDs(const vec2<I32>& drawIDs) { _drawIDs.set(drawIDs); }
+
+    inline void setShaderProgram(ShaderProgram* const program) { _shaderProgram = program; }
 
     GenericDrawCommand() : GenericDrawCommand(TRIANGLE_STRIP, 0, 0)
     {
@@ -70,12 +77,13 @@ struct GenericDrawCommand {
                                                                                                       _lodIndex(0),
                                                                                                       _stateHash(0),
                                                                                                       _queryID(0),
-                                                                                                      _drawToBuffer(false)
-                                                                    
+                                                                                                      _drawToBuffer(false),
+                                                                                                      _shaderProgram(nullptr)
     {
         _cmd.count = count;
         _cmd.firstIndex = firstIndex;
         _cmd.instanceCount = instanceCount;
+        _drawIDs.set(-1);
     }
 };
 
@@ -92,7 +100,7 @@ class SceneGraph;
 class GUIElement;
 class IMPrimitive;
 class PixelBuffer;
-class FrameBuffer;
+class Framebuffer;
 class VertexBuffer;
 class ShaderBuffer;
 class ShaderProgram;
@@ -141,9 +149,10 @@ protected:
     virtual void setWindowPos(U16 w, U16 h) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
     virtual void setMousePosition(U16 x, U16 y) const = 0;
-    virtual FrameBuffer*        newFB(bool multisampled) const = 0;
+    virtual IMPrimitive*        newIMP() const = 0;
+    virtual Framebuffer*        newFB(bool multisampled) const = 0;
     virtual VertexBuffer*       newVB() const = 0;
-    virtual ShaderBuffer*       newSB(const bool unbound = false) const = 0;
+    virtual ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const = 0;
     virtual GenericVertexData*  newGVD(const bool persistentMapped = false) const = 0;
     virtual PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D) const = 0;
     virtual Texture*            newTextureArray(const bool flipped = false) const = 0;
@@ -160,32 +169,16 @@ protected:
     virtual void initDevice(U32 targetFrameRate) = 0;
 
     virtual void toggleRasterization(bool state) = 0;
+    virtual void setLineWidth(F32 width) = 0;
     virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
     /*Object viewing*/
     virtual void updateClipPlanes() = 0;
     /*Object viewing*/
 
-    /*Primitives Rendering*/
-    virtual void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset) = 0;
-    virtual void drawLines(const vectorImpl<vec3<F32> >& pointsA,
-                           const vectorImpl<vec3<F32> >& pointsB,
-                           const vectorImpl<vec4<U8> >& colors,
-                           const mat4<F32>& globalOffset,
-                           const bool orthoMode = false,
-                           const bool disableDepth = false) = 0;
-    ///Render bounding boxes, skeletons, axis etc.
-    virtual void debugDraw(const SceneRenderState& sceneRenderState) = 0;
-    /*Primitives Rendering*/
-    /*Immediate Mode Emmlation*/
-    virtual IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) = 0;
-    /*Immediate Mode Emmlation*/
-
     virtual ~RenderAPIWrapper(){};
 
     virtual U64 getFrameDurationGPU() const = 0;
-    virtual I32 getDrawCallCount() const = 0;
-    virtual U32 getFrameCount() const = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const = 0;
 
     virtual void drawPoints(U32 numPoints) = 0;

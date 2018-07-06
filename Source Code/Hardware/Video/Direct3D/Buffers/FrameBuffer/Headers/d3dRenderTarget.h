@@ -23,9 +23,9 @@
 #ifndef _D3D_FRAME_BUFFER_OBJECT_H_
 #define _D3D_FRAME_BUFFER_OBJECT_H_
 
-#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
-class d3dRenderTarget : public FrameBuffer
+class d3dRenderTarget : public Framebuffer
 {
 public:
 
@@ -36,14 +36,14 @@ public:
 
     void Destroy();
     void DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth = true);
-    void SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot);
+    void SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel, TextureDescriptor::AttachmentType slot);
     void ResetMipLevel(TextureDescriptor::AttachmentType slot);
-    void Begin(const FrameBufferTarget& drawPolicy);
+    void Begin(const FramebufferTarget& drawPolicy);
     void End();
 
     void Bind(U8 unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
     void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData);
-    void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
+    void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
 
 protected:
     bool checkStatus() const;

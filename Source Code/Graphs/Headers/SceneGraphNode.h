@@ -51,7 +51,7 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
 protected:
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) {}
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) {}
     void postLoad(SceneGraphNode* const sgn)           { SceneNode::postLoad(sgn); }
 };
 
@@ -64,7 +64,7 @@ public:
         setState(RES_LOADED);
     }
     
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) { return; }
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) {}
     void postLoad(SceneGraphNode* const sgn)           {return;}
     bool onDraw(const RenderStage& currentStage)       {return true;}
     bool unload()                                      {return true;}
@@ -77,14 +77,7 @@ public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
     typedef Unordered_map<SGNComponent::ComponentType, SGNComponent* > NodeComponents;
 
-    struct NodeShaderData {
-        mat4<F32> _worldMatrix;
-        mat4<F32> _normalMatrix;
-        vec4<U32> _lightInfo; //< x - lightCount; y,z,w - reserved
-        vec4<U32> _integerValues; //< x - isSelected; y - isShadowMapped; z - boneOffset; w - reserved
-    };
-
-    ///Usage context affects lighting, navigation, physics, etc
+     ///Usage context affects lighting, navigation, physics, etc
     enum UsageContext {
         NODE_DYNAMIC = 0,
         NODE_STATIC
@@ -94,16 +87,16 @@ public:
     ~SceneGraphNode();
 
     bool unload();
+    /// Draw the current scene graph node
+    void render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     /// Update bounding boxes
     void checkBoundingBoxes();
     /// Apply current transform to the node's BB
     void updateBoundingBoxTransform(const mat4<F32>& transform);
-    /// Called if the current node is in view and is about to be rendered
-    bool onDraw(RenderStage renderStage); 
-    /// Called after the current node was rendered
-    void postDraw(RenderStage renderStage);
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
+    /// Called when the camera updates the view matrix and/or the projection matrix
+    void onCameraChange();
     /*Node Management*/
     template<class T = SceneNode>
     ///Always use the level of redirection needed to reduce virtual function overhead
@@ -202,16 +195,22 @@ public:
     
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-    void updateShaderData(I32 drawID, const mat4<F32>& viewMatrix, const D32 interpolationFactor);
-    inline const NodeShaderData& getShaderData() const { return _nodeShaderData; }
+    inline const mat4<F32>& getMaterialColorMatrix()    const { return _materialColorMatrix; }
+    inline const mat4<F32>& getMaterialPropertyMatrix() const { return _materialPropertyMatrix; }
 
 protected:
     friend class RenderPassCuller;
-    inline void inView(const bool isInView) { _inView = isInView; }
+    inline void inView(const bool isInView) { _inView = isInView; isInViewCallback(); }
 
 private:
     inline void setName(const std::string& name){_name = name;}
     inline void scheduleDrawReset(RenderStage currentStage) { _drawReset[currentStage] = true; }
+           void isInViewCallback();
+
+    /// Called if the current node is in view and is about to be rendered
+    bool onDraw(RenderStage renderStage); 
+    /// Called after the current node was rendered
+    void postDraw(RenderStage renderStage);
 
 private:
     SceneNode* _node;
@@ -221,7 +220,7 @@ private:
     boost::atomic<bool> _active;
     boost::atomic<bool> _loaded;
     boost::atomic<bool> _inView;
-    //Used to skip certain BB's (sky, ligts, etc);
+    //Used to skip certain BB's (sky, lights, etc);
     U32 _bbAddExclusionList;
     bool _selected;
     bool _isSelectable;
@@ -257,7 +256,9 @@ private:
 
     StateTracker<bool> _trackedBools;
 
-    NodeShaderData  _nodeShaderData;
+    mat4<F32> _materialColorMatrix;
+    mat4<F32> _materialPropertyMatrix;
+
 };
 
 #endif

@@ -43,7 +43,8 @@ protected:
 
     /// Rasterizer
     CullMode _cullMode;
-    
+    bool     _cullEnabled;
+
     /// Depth
     bool _zEnable;
     bool _zWriteEnable;
@@ -64,8 +65,8 @@ protected:
     FillMode   _fillMode;
 
 private:
-    U32  _cachedHash;
-    bool _lockHash;
+    size_t _cachedHash;
+    bool   _lockHash;
 
     void clean();
 
@@ -100,8 +101,8 @@ public:
 
     void setColorWrites( bool red, bool green, bool blue, bool alpha );
     
-    inline U32 getHash() const { return _cachedHash; }
-    inline I64 getGUID() const { return getGUID(); }
+    inline size_t getHash() const { return _cachedHash; }
+    inline I64    getGUID() const { return getGUID(); }
 
     bool operator == (RenderStateBlockDescriptor& RSBD) const {
         return getHash() == RSBD.getHash();

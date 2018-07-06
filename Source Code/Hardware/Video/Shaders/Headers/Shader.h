@@ -42,7 +42,6 @@ public:
     inline const std::string& getName()     const {return _name;}
            void  addParentProgram(ShaderProgram* const shaderProgram);
            void  removeParentProgram(ShaderProgram* const shaderProgram);
-protected:
     virtual void validate() = 0;
 
 protected:

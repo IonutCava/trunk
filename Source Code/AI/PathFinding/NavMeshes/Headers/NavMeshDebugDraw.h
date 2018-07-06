@@ -31,7 +31,7 @@ class IMPrimitive;
 class RenderStateBlock;
 
 namespace Navigation {
-   /// Convert a Rcast color integer to RGBA components.
+    /// Convert a Rcast color integer to RGBA components.
     inline void rcCol(U32 col, U8 &r, U8 &g, U8 &b, U8 &a) {
         r = col % 256; col /= 256;
         g = col % 256; col /= 256;
@@ -40,44 +40,40 @@ namespace Navigation {
     }
 
     class NavMeshDebugDraw : public duDebugDraw {
-    public:
-          NavMeshDebugDraw();
-          ~NavMeshDebugDraw();
+        public:
+            NavMeshDebugDraw();
+            ~NavMeshDebugDraw();
 
-          void depthMask(bool state);
-          void texture(bool state);
-          void paused(bool state);
-          void overrideColor(U32 col);
-          void cancelOverride();
-          void beginBatch();
-          void endBatch();
+            void depthMask(bool state);
+            void paused(bool state);
+            void overrideColor(U32 col);
+            void beginBatch();
+            void endBatch();
 
-          void begin(duDebugDrawPrimitives prim, F32 size = 1.0f);
-          void vertex(const F32* pos, U32 color);
-          void vertex(const F32 x, const F32 y, const F32 z, U32 color);
-          void vertex(const F32* pos, U32 color, const F32* uv);
-          void vertex(const F32 x, const F32 y, const F32 z, U32 color, const F32 u, const F32 v);
-          void end();
+            void begin(duDebugDrawPrimitives prim, F32 size = 1.0f);
+            void vertex(const F32 x, const F32 y, const F32 z, U32 color);
+            void end();
 
-          inline void setDirty(bool state)       {_dirty = state;}
-          inline bool isDirty()            const {return _dirty; }
+            inline void setDirty(bool state)       { _dirty = state; }
+            inline bool isDirty()            const { return _dirty;  }
+            inline bool paused()             const { return _paused; }
+            inline void cancelOverride()           { _overrideColor = false; }
+            inline void texture(bool state) {}
+            inline void vertex(const F32* pos, U32 color)                { vertex(pos[0], pos[1], pos[2], color); }
+            inline void vertex(const F32* pos, U32 color, const F32* uv) { vertex(pos[0], pos[1], pos[2], color); }         
+            inline void vertex(const F32 x, const F32 y, const F32 z, U32 color, const F32 u, const F32 v) {
+                vertex(x, y, z, color);
+            }
 
-         
-          inline bool paused()             const {return _paused;}
-
-    protected:
-        void setDrawState();
-        void releaseDrawState();
-
-    private:
-        I64   _navMeshStateBlockHash;
-        IMPrimitive* _primitive;
-        U32 _vertCount;
-        U32 _color;
-        PrimitiveType _primType;
-        bool _overrideColor;
-        bool _dirty;
-        bool _paused;
+        private:
+            PrimitiveType _primType;
+            IMPrimitive* _primitive;
+            size_t  _navMeshStateBlockHash;
+            U32  _vertCount;
+            U32  _color;
+            bool _overrideColor;
+            bool _dirty;
+            bool _paused;
     };
 };
 #endif

@@ -1,6 +1,6 @@
 #include "Headers/d3dRenderTarget.h"
 
-d3dRenderTarget::d3dRenderTarget(bool multisampled) : FrameBuffer(multisampled)
+d3dRenderTarget::d3dRenderTarget(bool multisampled) : Framebuffer(multisampled)
 {
 }
 
@@ -17,7 +17,7 @@ void d3dRenderTarget::Destroy()
 {
 }
 
-void d3dRenderTarget::Begin(const FrameBufferTarget& drawPolicy)
+void d3dRenderTarget::Begin(const FramebufferTarget& drawPolicy)
 {
 }
 
@@ -33,7 +33,7 @@ void d3dRenderTarget::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 lay
 {
 }
 
-void d3dRenderTarget::SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot) 
+void d3dRenderTarget::SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel, TextureDescriptor::AttachmentType slot) 
 {
 }
 
@@ -50,6 +50,6 @@ void d3dRenderTarget::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat
 {
 }
 
-void d3dRenderTarget::BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot, bool blitColor, bool blitDepth)
+void d3dRenderTarget::BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot, bool blitColor, bool blitDepth)
 {
 }

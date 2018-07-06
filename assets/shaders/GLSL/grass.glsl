@@ -6,8 +6,8 @@
 layout(location = 10) in vec4 instanceData;
 layout(location = 11) in float instanceScale;
 layout(location = 12) in int  instanceID;
-/*layout(std430, binding = 10) buffer dvd_transformBlock{
-    coherent readonly mat4 transform[];
+/*layout(std430, binding = 10) coherent readonly buffer dvd_transformBlock{
+    mat4 transform[];
 };*/
 
 uniform vec3 positionOffsets[36];
@@ -49,8 +49,7 @@ void main (void){
     if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
 
     //color = Phong(_texCoord, _normalWV, color);
-    applyFog(color);
-    _colorOut = color;
+    _colorOut = applyFog(color);
 }
 
 --Fragment.Shadow

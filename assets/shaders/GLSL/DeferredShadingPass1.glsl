@@ -8,9 +8,9 @@ void main( void ){
     computeData();
     gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 
-    position = vec3(transpose(dvd_ViewMatrix * dvd_WorldMatrix[dvd_drawID]) * dvd_Vertex);
-    normals = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
-    vec3 t = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Tangent);
+    position = vec3(transpose(dvd_ViewMatrix * dvd_WorldMatrix) * dvd_Vertex);
+    normals = normalize(dvd_NormalMatrix * dvd_Normal);
+    vec3 t = normalize(dvd_NormalMatrix * dvd_Tangent);
     vec3 n = normals;
     vec3 b = cross(n, t);
 
@@ -30,11 +30,11 @@ out vec3 position;
 void main( void ){
     vec4 dvd_Vertex     = vec4(inVertexData,1.0);
     vec3 dvd_Normal     = inNormalData;
-    mat 4 worldView = dvd_ViewMatrix * dvd_WorldMatrix[dvd_drawID];
+    mat 4 worldView = dvd_ViewMatrix * dvd_WorldMatrix;
     gl_Position = dvd_ProjectionMatrix * worldView * dvd_Vertex;
 
     position = vec3(transpose(worldView) * dvd_Vertex);
-    normals = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
+    normals = normalize(dvd_NormalMatrix * dvd_Normal);
 } 
 
 -- Fragment
@@ -47,12 +47,11 @@ out vec4 posOutput;     // layout(location = 1)
 out vec4 normOutput;    // layout(location = 2)
 out vec4 blendOutput;   // layout(location = 3)
 
-uniform mat4 material;
 in mat4 TBN;
 
 void main( void ){
 
-    vec4 color = material[1]; //diffuse
+    vec4 color = dvd_MatDiffuse; //diffuse
 
     diffuseOutput = color;
     posOutput     = vec4(position,1);
@@ -122,11 +121,9 @@ out vec4 posOutput;     // layout(location = 1)
 out vec4 normOutput;    // layout(location = 2)
 out vec4 blendOutput;   // layout(location = 3)
 
-uniform mat4 material;
-
 void main( void )
 {
-    vec4 color = material[1]; //diffuse
+    vec4 color = dvd_MatDiffuse; //diffuse
 
     diffuseOutput	= color;
     posOutput  		= vec4(position,1);

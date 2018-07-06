@@ -29,11 +29,8 @@ class SamplerDescriptor;
 
 class glSamplerObject {
 public:
-    glSamplerObject();
+    glSamplerObject(const SamplerDescriptor& descriptor);
     ~glSamplerObject();
-
-    bool Destroy();
-    bool Create(const SamplerDescriptor& descriptor);
 
     inline GLuint getObjectHandle() {return _samplerID;}
 

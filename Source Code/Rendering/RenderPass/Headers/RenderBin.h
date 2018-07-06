@@ -39,7 +39,7 @@ struct RenderBinItem{
     SceneGraphNode  *_node;
     I32              _sortKeyA; 
     I32              _sortKeyB;
-    I64              _stateHash;
+    size_t           _stateHash;
     F32              _distanceToCameraSq;
 
     RenderBinItem() : _node(nullptr){}

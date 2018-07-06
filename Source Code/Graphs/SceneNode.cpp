@@ -14,13 +14,10 @@ SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 
 SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resource(name),
                                                              _material(nullptr),
-                                                             _customShader(nullptr),
-                                                             _drawShader(nullptr),
                                                              _refreshMaterialData(true),
                                                              _nodeReady(false),
                                                              _type(type),
                                                              _lodLevel(0),
-                                                             _drawStateHash(0),
                                                              _LODcount(1), ///<Defaults to 1 LOD level
                                                              _sgnReferenceCount(0),
                                                              _physicsAsset(nullptr)
@@ -54,12 +51,12 @@ void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
     }
 }
 
-bool SceneNode::isReadyForDraw(const RenderStage& currentStage){
+bool SceneNode::getDrawState(const RenderStage& currentStage)  { 
     Material* mat = getMaterial();
-    if (!mat)
-        return true;
+    if (mat && !mat->getShaderInfo(currentStage).getProgram()->isHWInitComplete())
+       return false;
 
-    return mat->getShaderInfo(currentStage).getProgram()->isHWInitComplete();
+    return _renderState.getDrawState(currentStage); 
 }
 
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
@@ -89,7 +86,7 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const Boundin
     return true;
 }
 
-Material* SceneNode::getMaterial(){
+Material* const SceneNode::getMaterial(){
     //UpgradableReadLock ur_lock(_materialLock);
     if(_material == nullptr){
         if(!_renderState._noDefaultMaterial){
@@ -127,73 +124,29 @@ void SceneNode::setMaterial(Material* const m){
     }
 }
 
-bool SceneNode::prepareMaterial(SceneGraphNode* const sgn, bool depthPass){
-    assert(_nodeReady);
+ShaderProgram* const SceneNode::getDrawShader(RenderStage renderStage) {
+    return (_material ? _material->getShaderInfo(renderStage).getProgram() : nullptr);
+}
 
-    if(getType() != TYPE_OBJECT3D)
-            return true;
+size_t SceneNode::getDrawStateHash(RenderStage renderStage){
+    if(!_material) 
+        return 0L;
 
+    bool depthPass = bitCompare(DEPTH_STAGE, renderStage);
     bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
+
+    if(!_material && depthPass)
+        return shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock();
+
     bool reflectionStage = GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE);
 
-    RenderStage currentStage = depthPass ? (shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE) :
-                                           (reflectionStage ? REFLECTION_STAGE : FINAL_STAGE);
-    //UpgradableReadLock ur_lock(_materialLock);
-    if(!_material && depthPass) {
-        SET_STATE_BLOCK(shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock());
-        return true;
-    }
+    return _material->getRenderStateBlock(depthPass ? (shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE) :
+                                                      (reflectionStage ? REFLECTION_STAGE : FINAL_STAGE));
+}
 
-    if(!_material)
-        return true;
-
-    SET_STATE_BLOCK(_material->getRenderStateBlock(currentStage));
-
-    Material::ShaderInfo& shaderInfo = _material->getShaderInfo(currentStage);
-
-    _drawShader = shaderInfo.getProgram();
-    assert(_drawShader != nullptr);
-
-    if (!_drawShader->bind())
-        return false;
-
-    getMaterial()->UploadToShader(shaderInfo);
-
-    StateTracker<bool>& shaderStates = shaderInfo.getTrackedBools();
-    StateTracker<bool>& sgnStates = sgn->getTrackedBools();
-
-    bool temp = sgn->isSelected();
-    shaderStates.initTrackedValue(0, !temp);
-    sgnStates.initTrackedValue(0, !temp);
-    if(shaderStates.getTrackedValue(0) != temp || sgnStates.getTrackedValue(0) != temp){
-        shaderStates.setTrackedValue(0, temp);
-        sgnStates.setTrackedValue(0, temp);
-        _drawShader->Uniform("dvd_isSelected", temp);
-    }   
-
-    temp = sgn->getReceivesShadows();
-    shaderStates.initTrackedValue(1, !temp);
-    sgnStates.initTrackedValue(1, !temp);
-    if(shaderStates.getTrackedValue(1) != temp || sgnStates.getTrackedValue(1) != temp){
-        shaderStates.setTrackedValue(1, temp);
-        sgnStates.setTrackedValue(1, temp);
-        _drawShader->Uniform("dvd_enableShadowMapping", temp);
-    }     
-
-    AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();
-    temp = animComponent != nullptr && !animComponent->animationTransforms().empty();
-    if(temp)
-        _drawShader->Uniform("dvd_boneOffset", (I32)(sgn->getInstanceID() * animComponent->animationTransforms().size()));
-
-    shaderStates.initTrackedValue(2, !temp);
-    sgnStates.initTrackedValue(2, !temp);
-    if(shaderStates.getTrackedValue(2) != temp || sgnStates.getTrackedValue(2) != temp){
-        shaderStates.setTrackedValue(2, temp);
-        sgnStates.setTrackedValue(2, temp);
-        _drawShader->Uniform("dvd_hasAnimations", temp);
-    }
-
-    return true;
+void SceneNode::bindTextures() {
+    if(getMaterial())
+        getMaterial()->bindTextures();
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {

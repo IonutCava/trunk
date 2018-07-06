@@ -67,12 +67,17 @@ bool Scene::idle(){ //Called when application is idle
     return true;
 }
 
+void Scene::onCameraChange(){
+    if(_sceneGraph)
+        _sceneGraph->getRoot()->onCameraChange();
+}
+
 void Scene::postRender(){
 #ifdef _DEBUG
     if(renderState()._debugDrawLines) {
         for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i)
-            if(!_pointsA[i].empty())
-                GFX_DEVICE.drawLines(_pointsA[i], _pointsB[i], _colors[i], mat4<F32>(),  false,  false);
+            if(!_lines[i].empty())
+                GFX_DEVICE.drawLines(_lines[i], mat4<F32>(), vec4<I32>(), false,  false);
     }
 #endif
 }
@@ -228,8 +233,9 @@ DirectionalLight* Scene::addDefaultLight(){
     defaultLight.setResourceLocation("root");
     defaultLight.setEnumValue(LIGHT_TYPE_DIRECTIONAL);
     DirectionalLight* l = dynamic_cast<DirectionalLight*>(CreateResource<Light>(defaultLight));
+    l->setCastShadows(true);
     addLight(l);
-    vec4<F32> ambientColor(0.1f, 0.1f, 0.1f, 1.0f);
+    vec3<F32> ambientColor(0.1f, 0.1f, 0.1f);
     LightManager::getInstance().setAmbientLight(ambientColor);
     return l;
 }

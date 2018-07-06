@@ -97,9 +97,11 @@ public: ///Input
     ///Mouse button released
     bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
+
 protected:
     friend class Kernel;
     void initPostLoadState();
+    void onCameraChange();
 
 protected:
     ///This is inherited from FrameListener and is used to setup cameras before rendering the frame

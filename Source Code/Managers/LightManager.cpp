@@ -6,34 +6,10 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
-#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 #include "Hardware/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 ProfileTimer* s_shadowPassTimer = nullptr;
-
-namespace {
-    struct PerNodeLightData { 
-        U32  _lightIndex;
-        U32  _lightType;
-        U32  _lightCastsShadows;
-        U32  _lightCount; // padding basically
-
-        PerNodeLightData() : _lightCount(0),
-                             _lightIndex(0),
-                             _lightType(0),
-                             _lightCastsShadows(0)
-        {
-        }
-
-        void fromLight(U32 count, Light* crtLight){
-            _lightCount = count;
-            _lightCastsShadows = crtLight->castsShadows() ? 1 : 0;
-            _lightType  = crtLight->getLightType();
-            _lightIndex = crtLight->getSlot();
-        }
-    };
-    vectorImpl<PerNodeLightData> g_perNodeLights;
-}
 
 LightManager::LightManager() : FrameListener(),
                                _shadowMapsEnabled(true),
@@ -44,11 +20,12 @@ LightManager::LightManager() : FrameListener(),
     
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]   = GFX_DEVICE.newSB();
     _lightShaderBuffer[SHADER_BUFFER_SHADOW]   = GFX_DEVICE.newSB();
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE] = GFX_DEVICE.newSB();
     
-    memset(normShadowLocation,  -1, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
-    memset(cubeShadowLocation,  -1, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
-    memset(arrayShadowLocation, -1, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
+    for(U8 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
+        normShadowLocation[i] = 255;
+        cubeShadowLocation[i] = 255;
+        arrayShadowLocation[i] = 255;
+    }
 
     _opaqueGrid = New LightGrid();
     _transparentGrid = New LightGrid();
@@ -60,29 +37,25 @@ LightManager::~LightManager()
     REMOVE_TIMER(s_shadowPassTimer);
     SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_NORMAL] );
     SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_SHADOW]);
-    SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_PER_NODE]);
     SAFE_DELETE(_opaqueGrid);
     SAFE_DELETE(_transparentGrid);
 }
 
 void LightManager::init(){
+    STUBBED("Replace light map bind slots with bindless textures! Max texture units is currently hard coded! -Ionut!");
+
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
-    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
 
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
     _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(Divide::SHADER_BUFFER_LIGHT_SHADOW);
-
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->Create(true, true, Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE, sizeof(PerNodeLightData));
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->Bind(Divide::SHADER_BUFFER_LIGHT_PER_NODE);
-
-    g_perNodeLights.resize(Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE);
 
     _cachedResolution.set(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution());
 
-    I32 maxTextureStorage = GFX_DEVICE.getMaxTextureUnits();
-    I32 maxSlotsPerLight = 3;
+    U32 maxTextureStorage = GFX_DEVICE.getMaxTextureSlots();
+    U32 maxSlotsPerLight = 3;
     maxTextureStorage -= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * maxSlotsPerLight;
 
     for (U8 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
@@ -141,8 +114,8 @@ void LightManager::idle(){
 }
 
 void LightManager::updateResolution(I32 newWidth, I32 newHeight){
-    for(Light* light : _currLightsPerNode)
-        light->updateResolution(newWidth, newHeight);
+    FOR_EACH(Light::LightMap::value_type& it, _lights)
+        it.second->updateResolution(newWidth, newHeight);
 
     _cachedResolution.set(newWidth, newHeight);
 }
@@ -151,9 +124,9 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight){
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
 void LightManager::onCameraChange(){
-    for(Light* light : _currLightsPerNode){
-        assert(light != nullptr);
-        light->onCameraChange();
+     FOR_EACH(Light::LightMap::value_type& it, _lights){
+        assert(it.second != nullptr);
+        it.second->onCameraChange();
     }
 }
 
@@ -221,8 +194,9 @@ void LightManager::togglePreviewShadowMaps() {
         return;
 
     FOR_EACH(Light::LightMap::value_type& it, _lights){
-        assert(it.second->getShadowMapInfo() && it.second->getShadowMapInfo()->getShadowMap());
-        it.second->getShadowMapInfo()->getShadowMap()->togglePreviewShadowMaps(_previewShadowMaps);
+        if(it.second->getShadowMapInfo()->getShadowMap()){
+            it.second->getShadowMapInfo()->getShadowMap()->togglePreviewShadowMaps(_previewShadowMaps);
+        }
     }
 }
 
@@ -240,21 +214,29 @@ void LightManager::previewShadowMaps(Light* light) {
 }
 
 //If we have computed shadowmaps, bind them before rendering any geometry;
-//Always bind shadowmaps to slots Config::MAX_TEXTURE_STORAGE, Config::MAX_TEXTURE_STORAGE+1, Config::MAX_TEXTURE_STORAGE+2 ...
-void LightManager::bindDepthMaps(U32 lightIndex, bool overrideDominant){
+void LightManager::bindDepthMaps(){
     //Skip applying shadows if we are rendering to depth map, or we have shadows disabled
     if(!_shadowMapsEnabled)
         return;
 
-    Light* lightLocal = getLightForCurrentNode(lightIndex);
-    assert(lightLocal);
+    for(U8 i = 0; i < std::min((U32)_lights.size(), Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE); ++i){
+        Light* lightLocal = getLight(i);
+        assert(lightLocal);
 
-    if(!lightLocal->castsShadows())
-        return;
+        if(!lightLocal->castsShadows())
+            continue;
 
-    ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
-    if(sm)
-        sm->Bind(getShadowBindSlot(lightLocal->getLightType(), lightIndex));
+        ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
+        if(sm){
+#           if defined(_DEBUG)
+                U8 slot = getShadowBindSlot(lightLocal->getLightType(), i);
+                assert(slot < GFX_DEVICE.getMaxTextureSlots());
+                sm->Bind(slot);
+#           else
+                sm->Bind(getShadowBindSlot(lightLocal->getLightType(), i));
+#           endif
+        }
+    }
 }
 
 bool LightManager::shadowMappingEnabled() const {
@@ -280,67 +262,6 @@ bool LightManager::shadowMappingEnabled() const {
     }
 
     return false;
-}
-
-U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType typeFilter){
-    const vec3<F32> lumDot( 0.2125f, 0.7154f, 0.0721f );
-    F32 luminace = 0.0f;
-    F32 dist = 0.0f;
-    F32 weight = 1.0f; // later
-    U16 i = 0;
-
-    // Reset light buffer
-    _tempLightsPerNode.resize(_lights.size());
-    _currLightsPerNode.resize(0);
-    // loop over every light in the scene
-    // ToDo: add a grid based light search system? -Ionut
-    FOR_EACH(Light::LightMap::value_type& lightIt, _lights){
-        Light* light = lightIt.second;
-        if(!light->getEnabled())
-            continue;
-
-        LightType lType = light->getLightType();
-        if(lType != LIGHT_TYPE_DIRECTIONAL )  {
-            // get the luminosity.
-            luminace  = light->getDiffuseColor().dot(lumDot);
-            luminace *= light->getRange();
-
-            F32 radiusSq = squared(light->getRange() + node->getBoundingSphereConst().getRadius());
-            // get the distance to the light... score it 1 to 0 near to far.
-            vec3<F32> distToLight(node->getBoundingBoxConst().getCenter() - light->getPosition());
-            F32 distSq = radiusSq - distToLight.lengthSquared();
-
-            if ( distSq > 0.0f ) {
-                dist = square_root_tpl(distSq) / 1000.0f;
-                CLAMP<F32>(dist, 0.0f, 1.0f );
-            }
-            light->setScore( luminace * weight * dist );
-        }else{// directional
-            light->setScore( weight );
-        }
-        // use type filter
-        if ((typeFilter != LightType_PLACEHOLDER && lType == typeFilter) || //< whether we have the correct light type
-            typeFilter == LightType_PLACEHOLDER){ //< or we did not specify a type filter
-            _tempLightsPerNode[i++] = light;
-        }
-    }
-
-    // sort the lights by score
-    std::sort(_tempLightsPerNode.begin(), _tempLightsPerNode.end(), [](Light* const a, Light* const b) -> bool { return (a)->getScore() >(b)->getScore(); });
-
-    // create the light buffer for the specified node
-    size_t maxLights = std::min((U32)_tempLightsPerNode.size(), Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE);
-    for(i = 0; i < maxLights; i++){
-        Light* crtLight = _tempLightsPerNode[i];
-
-        g_perNodeLights[i].fromLight((U32)maxLights, crtLight);
-
-        _currLightsPerNode.push_back(crtLight);
-    }
-
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->UpdateData(0, g_perNodeLights.size() * sizeof(PerNodeLightData), &g_perNodeLights.front(), true);
-
-    return (U8)maxLights;
 }
 
 Light* LightManager::getLight(U32 slot) {

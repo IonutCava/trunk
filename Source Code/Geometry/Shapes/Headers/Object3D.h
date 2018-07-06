@@ -27,7 +27,6 @@
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 class BoundingBox;
-class RenderInstance;
 
 class Object3D : public SceneNode {
 public:
@@ -58,9 +57,12 @@ public:
     virtual VertexBuffer*   const getGeometryVB()   const;
     inline  ObjectType            getObjectType()   const {return _geometryType;}
     inline  U32                   getFlagMask()     const {return _geometryFlagMask;}
-    inline  RenderInstance* const renderInstance()  const {return _renderInstance;}
 
-    virtual void  postLoad(SceneGraphNode* const sgn);
+    ///Draw Command
+    inline void  addDrawCommand(const GenericDrawCommand& drawCommand)      { _drawCommands.push_back(drawCommand);}
+    inline const vectorImpl<GenericDrawCommand >& drawCommands()      const { return _drawCommands; }
+    inline void  clearDrawCommands()                                        { _drawCommands.clear(); }
+
     virtual bool  onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     virtual bool  updateAnimations(SceneGraphNode* const sgn) { return false; }
 
@@ -74,7 +76,7 @@ public:
     bool computeTriangleList(bool force = false);
 
 protected:
-    virtual	void  render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    virtual	void  render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
 
     virtual void computeNormals();
     virtual void computeTangents();
@@ -84,11 +86,13 @@ protected:
     U32             _geometryFlagMask;
     U32             _geometryPartitionId;
     ObjectType      _geometryType;
-    ///The actual render instance needed by the rendering API
-    RenderInstance* _renderInstance;
     /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
     vectorImpl<vec3<U32> > _geometryTriangles;	
+    ///A custom, override vertex buffer
+    VertexBuffer* _buffer;
+    ///The draw command associated with this render instance
+    vectorImpl<GenericDrawCommand > _drawCommands;
 };
 
 #endif

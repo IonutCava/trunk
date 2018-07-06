@@ -6,7 +6,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
-BloomPreRenderOperator::BloomPreRenderOperator(FrameBuffer* result,
+BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
                                                const vec2<U16>& resolution,
                                                SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,resolution,sampler),
                                                                                    _outputFB(result),
@@ -94,23 +94,25 @@ void BloomPreRenderOperator::operation(){
     toneMapScreen();
     _bright->Uniform("toneMap", false);
     // render all of the "bright spots"
-    _outputFB->Begin(FrameBuffer::defaultPolicy());
+    _outputFB->Begin(Framebuffer::defaultPolicy());
     //screen FB
     _inputFB[0]->Bind(0);
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
     _blur->bind();
     _blur->SetSubroutine(FRAGMENT_SHADER, _horizBlur);
+    _outputFB->End();
     //Blur horizontally
-    _tempBloomFB->Begin(FrameBuffer::defaultPolicy());
+    _tempBloomFB->Begin(Framebuffer::defaultPolicy());
     //bright spots
     _outputFB->Bind(0);
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
     _blur->SetSubroutine(FRAGMENT_SHADER, _vertBlur);
+    _tempBloomFB->End();
     //Blur vertically
-    _outputFB->Begin(FrameBuffer::defaultPolicy());
+    _outputFB->Begin(Framebuffer::defaultPolicy());
     //horizontally blurred bright spots
     _tempBloomFB->Bind(0);
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
     // clear states
     _outputFB->End();
 }
@@ -156,20 +158,20 @@ void BloomPreRenderOperator::toneMapScreen()
 
     _luminaFB[1]->BlitFrom(_luminaFB[0]);
 
-    _luminaFB[0]->Begin(FrameBuffer::defaultPolicy());
+    _luminaFB[0]->Begin(Framebuffer::defaultPolicy());
     _inputFB[0]->Bind(0);
     _luminaFB[1]->Bind(2);
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
     
     _bright->Uniform("luminancePass", false);
     _bright->Uniform("toneMap", true);
 
     _tempHDRFB->BlitFrom(_inputFB[0]);
 
-    _inputFB[0]->Begin(FrameBuffer::defaultPolicy());
+    _inputFB[0]->Begin(Framebuffer::defaultPolicy());
     //screen FB
     _tempHDRFB->Bind(0);
     // luminance FB
     _luminaFB[0]->Bind(1);
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
 }

@@ -21,26 +21,6 @@ TerrainLoader::~TerrainLoader()
 bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDescriptor){
     const std::string& name = terrainDescriptor->getVariable("terrainName");
   
-    Texture* tempTexture = nullptr;
-
-    ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
-    textureWaterCaustics.setResourceLocation(terrainDescriptor->getVariable("waterCaustics"));
-    textureWaterCaustics.setPropertyDescriptor(*_textureSampler);
-    tempTexture = CreateResource<Texture>(textureWaterCaustics);
-    terrain->setCausticsTex(tempTexture);
-
-    ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
-    underwaterAlbedoTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
-    underwaterAlbedoTexture.setPropertyDescriptor(*_textureSampler);
-    tempTexture = CreateResource<Texture>(underwaterAlbedoTexture);
-    terrain->setUnderwaterAlbedoTex(tempTexture);
-
-    ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
-    underwaterDetailTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterDetailTexture"));
-    underwaterDetailTexture.setPropertyDescriptor(*_textureSampler);
-    tempTexture = CreateResource<Texture>(underwaterDetailTexture);
-    terrain->setUnderwaterDetailTex(tempTexture);
-    
     terrain->setUnderwaterDiffuseScale(terrainDescriptor->getVariablef("underwaterDiffuseScale"));
 
     SamplerDescriptor blendMapSampler;
@@ -134,8 +114,8 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
     Material* terrainMaterial = CreateResource<Material>(terrainMaterialDescriptor);
 
-    terrainMaterial->setDiffuse(DefaultColors::WHITE() / 2);
-    terrainMaterial->setAmbient(DefaultColors::WHITE() / 3);
+    terrainMaterial->setDiffuse(vec4<F32>(DefaultColors::WHITE().rgb() / 2, 1.0f));
+    terrainMaterial->setAmbient(vec4<F32>(DefaultColors::WHITE().rgb() / 3, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
     terrainMaterial->addShaderDefines("COMPUTE_TBN");
@@ -145,6 +125,22 @@ bool TerrainLoader::loadTerrain(Terrain* terrain, TerrainDescriptor* terrainDesc
     terrainMaterial->setShaderProgram("terrain", FINAL_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", SHADOW_STAGE, true);
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", Z_PRE_PASS_STAGE, true);
+
+    ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
+    textureWaterCaustics.setResourceLocation(terrainDescriptor->getVariable("waterCaustics"));
+    textureWaterCaustics.setPropertyDescriptor(*_textureSampler);
+    terrainMaterial->setTexture(Material::TEXTURE_UNIT0, CreateResource<Texture>(textureWaterCaustics));
+
+    ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
+    underwaterAlbedoTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
+    underwaterAlbedoTexture.setPropertyDescriptor(*_textureSampler);
+    terrainMaterial->setTexture(Material::TEXTURE_UNIT1, CreateResource<Texture>(underwaterAlbedoTexture));
+
+    ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
+    underwaterDetailTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterDetailTexture"));
+    underwaterDetailTexture.setPropertyDescriptor(*_textureSampler);
+    terrainMaterial->setTexture(Material::TEXTURE_NORMALMAP, CreateResource<Texture>(underwaterDetailTexture));
+
     terrainMaterial->setShaderLoadThreaded(false);
     terrainMaterial->dumpToFile(false);
     terrain->setMaterial(terrainMaterial);

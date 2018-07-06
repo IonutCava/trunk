@@ -37,7 +37,7 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor){
     U16 resolutionTemp = resolution * resolutionFactor;
     if (resolutionTemp != _resolution){
         _resolution = resolutionTemp;
-		///Initialize the FB's with a variable resolution
+		//Initialize the FB's with a variable resolution
         PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FB"), _light->getGUID());
         _depthMap->Create(_resolution, _resolution);
 	}

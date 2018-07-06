@@ -23,11 +23,11 @@
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_H_
 
-#include "RenderInstance.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Direct3D/Headers/DXWrapper.h"
 #include "Managers/Headers/RenderPassManager.h" ///<For GFX_RENDER_BIN_SIZE
+#include "Graphs/Headers/SceneGraphNode.h"
 #include "Rendering/Headers/Renderer.h"
 
 enum RenderStage;
@@ -45,15 +45,39 @@ class GFXDevice;
 
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
-friend class Frustum; ///< For matrix recovery operations
-    typedef std::stack<mat4<F32>, vectorImpl<mat4<F32> > > matrixStackW;
-    typedef Unordered_map<I64, RenderStateBlock* > RenderStateMap;
+    friend class Frustum; ///< For matrix recovery operations
+    typedef Unordered_map<size_t, RenderStateBlock* > RenderStateMap;
+    typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
 public:
+    struct NodeData2{
+        mat4<F32> _matrix1;
+        mat4<F32> _matrix2;
+
+        NodeData2()
+        {
+            _matrix1.zero();
+            _matrix2.zero();
+        }
+    };
+    struct NodeData4{
+        mat4<F32> _matrix1;
+        mat4<F32> _matrix2;
+        mat4<F32> _matrix3;
+        mat4<F32> _matrix4;
+        NodeData4()
+        {
+            _matrix1.zero();
+            _matrix2.zero();
+            _matrix3.zero();
+            _matrix4.zero();
+        }
+    };
     enum RenderTarget {
         RENDER_TARGET_SCREEN = 0,
         RENDER_TARGET_ANAGLYPH = 1,
         RENDER_TARGET_DEPTH = 2,
-        RenderTarget_PLACEHOLDER = 3
+        RENDER_TARGET_DEPTH_RANGES = 3,
+        RenderTarget_PLACEHOLDER = 4
     };
 
     enum SortReservedValues {
@@ -61,7 +85,7 @@ public:
         SORT_NO_VALUE = -333
     };
 
-    void setApi(const RenderAPI& api);
+    inline void setApi(const RenderAPI& api);
 
     inline RenderAPI        getApi()        {return _api.getId(); }
     inline GPUVendor        getGPUVendor()  {return _api.getGPUVendor();}
@@ -80,18 +104,19 @@ public:
     ///Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool initShaders()   { return _api.initShaders(); }
     inline bool deInitShaders() { return _api.deInitShaders(); }
-    inline void beginFrame()    {_api.beginFrame();}
-    inline void endFrame()      {_api.endFrame();  }
     inline void flush();
-
+           void beginFrame();
+           void endFrame();
     /// Rendering buffer management
-    inline FrameBuffer*        getRenderTarget(RenderTarget target) const  {return _renderTarget[target];}
-
-    inline FrameBuffer*        newFB(bool multisampled = false)              const { return _api.newFB(multisampled); }
+    inline ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const {
+        return _api.newSB(unbound, persistentMapped); 
+    }
+    inline Framebuffer*        getRenderTarget(RenderTarget target)          const { return _renderTarget[target]; }
+    inline IMPrimitive*        newIMP()                                      const { return _api.newIMP(); }
+    inline Framebuffer*        newFB(bool multisampled = false)              const { return _api.newFB(multisampled); }
     inline VertexBuffer*       newVB()                                       const { return _api.newVB(); }
     inline PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D)     const { return _api.newPB(type); }
     inline GenericVertexData*  newGVD(const bool persistentMapped)           const { return _api.newGVD(persistentMapped); }
-    inline ShaderBuffer*       newSB(const bool unbound = false)             const { return _api.newSB(unbound); }
     inline Texture*            newTextureArray(const bool flipped = false)   const { return _api.newTextureArray(flipped); }
     inline Texture*            newTexture2D(const bool flipped = false)      const { return _api.newTexture2D(flipped); }
     inline Texture*            newTextureCubemap(const bool flipped = false) const { return _api.newTextureCubemap(flipped);}
@@ -103,32 +128,38 @@ public:
     void enableFog(F32 density, const vec3<F32>& color);
     void toggle2D(bool state);
     inline void toggleRasterization(bool state);
+    inline void setLineWidth(F32 width) { _previousLineWidth = _currentLineWidth; _currentLineWidth = width; _api.setLineWidth(width); }
+    inline void restoreLineWidth()      { setLineWidth(_previousLineWidth); }
     inline void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback);
 
     //returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
-    //allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
-    inline IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) { return _api.createPrimitive(allowPrimitiveRecycle); }
+    //allowPrimitiveRecycle = do not reuse old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
+    IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
 
     inline void setInterpolation(const D32 interpolation)       {_interpolationFactor = interpolation; }
     inline D32  getInterpolation()                        const {return _interpolationFactor;} 
     inline void drawDebugAxis(const bool state)                 {_drawDebugAxis = state;}
     inline bool drawDebugAxis()                           const {return _drawDebugAxis;}
 
-    inline void debugDraw(const SceneRenderState& sceneRenderState) { _api.debugDraw(sceneRenderState); }
-    inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) { _api.drawText(textLabel, position); }
-    inline void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset) {_api.drawBox3D(min,max,globalOffset);}
-    inline void drawLines(const vectorImpl<vec3<F32> >& pointsA,
-                          const vectorImpl<vec3<F32> >& pointsB,
-                          const vectorImpl<vec4<U8> >& colors,
-                          const mat4<F32>& globalOffset,
-                          const bool orthoMode = false,
-                          const bool disableDepth = false) {_api.drawLines(pointsA,pointsB,colors,globalOffset,orthoMode,disableDepth);}
-           void drawPoints(U32 numPoints);
-    ///Useful to perform pre-draw operations on the model if it's drawn outside the scenegraph
-    void renderInstance(RenderInstance* const instance);
-    void renderInstanceCmd(RenderInstance* const instance, const GenericDrawCommand& cmd);
-    ///The render callback must update all visual information and populate the "RenderBin"'s!
-    void render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState);
+    void debugDraw(const SceneRenderState& sceneRenderState);
+    void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
+    void drawLines(const vectorImpl<Line >& lines,
+                   const mat4<F32>& globalOffset,
+                   const vec4<I32>& viewport, //<only for ortho mode
+                   const bool inViewport = false,
+                   const bool disableDepth = false);
+    
+    void drawPoints(U32 numPoints, size_t stateHash);
+    void drawGUIElement(GUIElement* guiElement);
+    void submitRenderCommand(VertexBuffer* const buffer,      const GenericDrawCommand& cmd);
+    void submitRenderCommand(VertexBuffer* const buffer,      const vectorImpl<GenericDrawCommand>& cmds);
+    void submitRenderCommand(GenericVertexData* const buffer, const GenericDrawCommand& cmd);
+    void setBufferData(const GenericDrawCommand& cmd);
+
+    inline const vec2<I32>& getDrawIDs(I64 drawIDIndex) {
+        assert(_sgnToDrawIDMap.find(drawIDIndex) != _sgnToDrawIDMap.end());
+        return _sgnToDrawIDMap[drawIDIndex];
+    }
     ///Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
     inline RenderStage setRenderStage(RenderStage stage) { RenderStage prevRenderStage = _renderStage; _renderStage = stage; return prevRenderStage; }
@@ -201,47 +232,31 @@ public:
         return (_stateExclusionMask & currentType) == currentType ? true : false;
     }
     inline void setStateChangeExclusionMask(I32 stateMask) {_stateExclusionMask = stateMask; }
-    ///Creates a new API dependent stateblock based on the received description
-    ///Sets the current state block to the one passed as a param
-    ///It is not set immediately, but a call to "updateStates" is required
-    I64 setStateBlock(I64 stateBlockHash, bool forceUpdate = false);
     /// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
-    I64 getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
-    const RenderStateBlockDescriptor& getStateBlockDescriptor(I64 renderStateBlockHash) const;
-    ///Sets a standard state block
-    inline I64 setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(_defaultStateBlockHash, forceUpdate);}
-    ///If a new state has been set, update the Graphics pipeline
-           void updateStates();
+    size_t getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor);
+    const RenderStateBlockDescriptor& getStateBlockDescriptor(size_t renderStateBlockHash) const;
+    ///returs the standard state block
+    inline size_t getDefaultStateBlock(bool noDepth = false)      { return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash; } 
     /*//Render State Management */
 
     ///Generate a cubemap from the given position
     ///It renders the entire scene graph (with culling) as default
     ///use the callback param to override the draw function
-    void  generateCubeMap(FrameBuffer& cubeMap,
+    void  generateCubeMap(Framebuffer& cubeMap,
                           const vec3<F32>& pos,
                           const DELEGATE_CBK& callback, 
                           const vec2<F32>& zPlanes,
                           const RenderStage& renderStage = REFLECTION_STAGE);
 
-    /// Matrix management 
-           void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
-           void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat);
-           void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
-           void pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled);
-           void popWorldMatrix(); 
-           void cleanMatrices();
+    void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
-    inline static ShaderProgram* getActiveProgram()  { return _activeShaderProgram; }
+    inline ShaderProgram* activeShaderProgram()                             const { return _activeShaderProgram; }
+    inline void           activeShaderProgram(ShaderProgram* const program)       { _activeShaderProgram = program; }
 
-    inline const mat4<F32>& getMatrix(const MATRIX_MODE& mode)      { getMatrix(mode, _mat4Cache); return _mat4Cache; }
-    inline const mat4<F32>& getMatrix4(const EXTENDED_MATRIX& mode) { getMatrix(mode, _mat4Cache); return _mat4Cache; }
-    inline const mat3<F32>& getMatrix3(const EXTENDED_MATRIX& mode) { getMatrix(mode, _mat3Cache); return _mat3Cache; }
-
-    inline I32 getMaxTextureUnits()  const { return _maxTextureSlots; }
-    inline U64 getFrameDurationGPU() const { return _api.getFrameDurationGPU(); }
-    inline I32 getDrawCallCount()    const { return _api.getDrawCallCount(); }
-    inline U32 getFrameCount()       const { return _api.getFrameCount(); }
-    inline void togglePreviewDepthBuffer() { _previewDepthBuffer = !_previewDepthBuffer; }
+    inline const mat4<F32>& getMatrix(const MATRIX_MODE& mode)  { getMatrix(mode, _mat4Cache); return _mat4Cache; }
+    
+    inline U64  getFrameDurationGPU()      const { return _api.getFrameDurationGPU(); }
+    inline void togglePreviewDepthBuffer()       { _previewDepthBuffer = !_previewDepthBuffer; }
 
     inline bool MSAAEnabled() const { return _MSAASamples > 0; }
     inline U8   MSAASamples() const { return _MSAASamples; }
@@ -260,8 +275,8 @@ public:
 
     inline void add2DRenderFunction(const DELEGATE_CBK& callback, U32 callOrder);
 
-    void      restoreViewport();
-    vec4<I32> setViewport(const vec4<I32>& viewport, bool force = false);
+    void restoreViewport();
+    void setViewport(const vec4<I32>& viewport);
 
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
@@ -270,17 +285,24 @@ public:
 
     void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes);
 
-protected:
-    typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
+    inline U32  getFrameCount()       const { return FRAME_COUNT; }
+    inline I32  getDrawCallCount()    const { return FRAME_DRAW_CALLS_PREV; }
+    inline void registerDrawCall()          { FRAME_DRAW_CALLS++; }
 
+    inline LoadQueue& getLoadQueue() { return _loadQueue; }
+
+    inline void setMaxTextureSlots(U32 textureSlots)       { _maxTextureSlots = textureSlots; }
+    inline U32  getMaxTextureSlots()                 const { return _maxTextureSlots; }
+
+protected:
     friend class Kernel;
     friend class Application;
     inline void setMousePosition(U16 x, U16 y) const {_api.setMousePosition(x,y);}
     inline void changeResolutionInternal(U16 width, U16 height)       { _api.changeResolutionInternal(width, height); }
     inline void changeViewport(const vec4<I32>& newViewport)    const { _api.changeViewport(newViewport); }
     inline void loadInContextInternal()                               { _api.loadInContextInternal(); }
-
-    inline LoadQueue& getLoadQueue() { return _loadQueue; }
+    inline void drawPoints(U32 numPoints)                             { _api.drawPoints(numPoints); }
+           void drawDebugAxis(const SceneRenderState& sceneRenderState);
 
 protected:
     friend class Camera;
@@ -302,8 +324,12 @@ private:
     ~GFXDevice();
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
+    void forceViewportInternal(const vec4<I32>& viewport);
     ///Update the graphics pipeline using the current rendering API with the state block passed
     inline void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock)  const { _api.activateStateBlock(newBlock, oldBlock); }
+    inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) { _api.drawText(textLabel, position); }
+    ///Sets the current state block to the one passed as a param
+    size_t setStateBlock(size_t stateBlockHash);
 
 private:
     Camera*           _cubeCamera;
@@ -312,49 +338,40 @@ private:
     ShaderManager&    _shaderManager;
     RenderAPIWrapper& _api;
     RenderStage _renderStage;
+    U32  _maxTextureSlots;
     U32  _prevShaderId,  _prevTextureId;
     I32  _stateExclusionMask;
     bool _drawDebugAxis;
     bool _isDepthPrePass;
     bool _viewportUpdate;
-    bool _viewportForced;
     LoadQueue _loadQueue;
     boost::thread *_loaderThread;
-    static ShaderProgram* _activeShaderProgram;
-    
+    ShaderProgram* _activeShaderProgram;
+     
+    vectorImpl<Line > _axisLines;
+    vectorImpl<Line > _axisLinesTrasnformed;
+
 protected:
-    friend class GL_API;
-    friend class DX_API;
     Renderer* _renderer;
     /* Rendering buffers*/
-    FrameBuffer* _renderTarget[RenderTarget_PLACEHOLDER];
-    FrameBuffer* _depthRanges;
+    Framebuffer* _renderTarget[RenderTarget_PLACEHOLDER];
     /*State management */
     RenderStateMap _stateBlockMap;
-    bool _stateBlockDirty;
     bool _stateBlockByDescription;
-    I64 _currentStateBlockHash;
-    I64 _newStateBlockHash;
-    I64 _defaultStateBlockHash;
-    I64 _defaultStateNoDepthHash; //<The default render state buth with depth testing disabled
-    I64 _state2DRenderingHash;    //<Special render state for 2D rendering
-    I64 _stateDepthOnlyRenderingHash;
-    matrixStackW  _worldMatrices;
+    size_t _currentStateBlockHash;
+    size_t _newStateBlockHash;
+    size_t _defaultStateBlockHash;
+    size_t _defaultStateNoDepthHash; //<The default render state buth with depth testing disabled
+    size_t _state2DRenderingHash;    //<Special render state for 2D rendering
+    size_t _stateDepthOnlyRenderingHash;
     mat4<F32> _textureMatrix;
     mat4<F32> _viewMatrix;
     mat4<F32> _projectionMatrix;
     mat4<F32> _viewProjectionMatrix;
-    mat4<F32> _WVCachedMatrix;
-    mat4<F32> _VPCachedMatrix;
-    mat4<F32> _WVPCachedMatrix;
-    //The interpolation factor between the current and the last frame
+    ///The interpolation factor between the current and the last frame
     D32       _interpolationFactor;
-    bool      _isUniformedScaled;
-    bool      _WDirty;
-    ///If the _view changed, this will change to true
-    bool      _VDirty;
-    ///If _projection changed, this will change to true
-    bool      _PDirty;
+    ///Line width management 
+    F32 _previousLineWidth, _currentLineWidth;
     ///Pointer to current kernel
     Kernel*   _kernel;
     PlaneList _clippingPlanes;
@@ -363,14 +380,18 @@ protected:
     bool      _enableHDR;
     bool      _2DRendering;
     bool      _rasterizationEnabled;
+   
+    // number of draw calls (rough estimate)
+    I32 FRAME_DRAW_CALLS;
+    U32 FRAME_DRAW_CALLS_PREV;
+    U32 FRAME_COUNT;
     ///shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
-    static ShaderProgram* _HIZConstructProgram;
-    static ShaderProgram* _depthRangesConstructProgram;
+    ShaderProgram* _HIZConstructProgram;
+    ShaderProgram* _depthRangesConstructProgram;
     bool    _previewDepthBuffer;
     ///getMatrix cache
     mat4<F32> _mat4Cache;
-    mat3<F32> _mat3Cache;
     ///Default camera's cached zPlanes
     vec2<F32> _cachedSceneZPlanes;
     ///Current zPlanes
@@ -378,22 +399,30 @@ protected:
     /// AA system
     U8        _MSAASamples;
     U8        _FXAASamples;
-    // Texture slots
-    I32       _maxTextureSlots;
     /// Quality settings
     RenderDetailLevel _generalDetailLevel;
     RenderDetailLevel _shadowDetailLevel;
 
     vectorImpl<std::pair<U32, DELEGATE_CBK> > _2dRenderQueue;
 
+    //Immediate mode emulation
+    ShaderProgram*             _imShader;     //<The shader used to render VB data
+    vectorImpl<IMPrimitive* >  _imInterfaces; //<The interface that coverts IM calls to VB data
+
     ///Current viewport stack
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > viewportStack;
     viewportStack _viewport;
 
-    vectorImpl<SceneGraphNode::NodeShaderData> _nodeData;
+    vectorImpl<NodeData2 > _matricesData;
+    vectorImpl<NodeData4 > _materialData;
+    Unordered_map<I64, vec2<I32> > _sgnToDrawIDMap;
 
-    ShaderBuffer*  _matricesBuffer;
-    ShaderBuffer*  _nodeDataBuffer;
+    ShaderBuffer*  _gfxDataBuffer;
+    ShaderBuffer*  _nodeMaterialsBuffer;
+    ShaderBuffer*  _nodeMatricesBuffer;
+  
+    GenericDrawCommand _defaultDrawCmd;
+
 END_SINGLETON
 
 #include "GFXDevice-Inl.h"

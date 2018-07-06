@@ -23,13 +23,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SHADER_BUFFER_H_
 #define _SHADER_BUFFER_H_
 
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Utility/Headers/GUIDWrapper.h"
 #include <boost/noncopyable.hpp>
 
 class ShaderProgram;
 class ShaderBuffer : private boost::noncopyable, public GUIDWrapper {
 public:
-    ShaderBuffer(bool unbound) : GUIDWrapper(), _unbound(unbound), _primitiveSize(0), _primitiveCount(0)
+    ShaderBuffer(bool unbound, bool persistentMapped) : GUIDWrapper(), _unbound(unbound), _primitiveSize(0),
+                                                        _primitiveCount(0), _bufferSize(0), _persistentMapped(persistentMapped)
     {
     }
 
@@ -38,23 +40,26 @@ public:
     }
 
     ///Create a new buffer to hold our shader data
-    virtual void Create(bool dynamic, bool stream, U32 primitiveCount, ptrdiff_t primitiveSize) {
+    virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
         _primitiveCount = primitiveCount;
         _primitiveSize = primitiveSize;
+        _bufferSize = primitiveSize * primitiveCount;
     }
 
     virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const = 0;
-    virtual void SetData(const void *data) = 0;
+    inline  void SetData(const void *data) { UpdateData(0, _bufferSize, data, true); }
 
-    virtual bool BindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const = 0;
-    virtual bool Bind(U32 bindIndex) const = 0;
-    virtual void PrintInfo(const ShaderProgram* shaderProgram, U32 bindIndex) = 0;
+    virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const = 0;
+    virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const = 0;
+    virtual void PrintInfo(const ShaderProgram* shaderProgram, Divide::ShaderBufferLocation bindIndex) = 0;
 
     inline size_t getPrimitiveSize()  const { return _primitiveSize; }
     inline U32    getPrimitiveCount() const { return _primitiveCount; }
 
 protected:
-    bool _unbound;
+    bool   _unbound;
+    bool   _persistentMapped;
+    size_t _bufferSize;
     size_t _primitiveSize;
     U32    _primitiveCount;
 };

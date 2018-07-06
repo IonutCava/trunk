@@ -31,7 +31,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 n
     _shadowFloatValues.resize(_numSplits);
     _horizBlur = 0;
     _vertBlur = 0;
-    _renderPolicy = New FrameBuffer::FrameBufferTarget(FrameBuffer::defaultPolicy());
+    _renderPolicy = New Framebuffer::FramebufferTarget(Framebuffer::defaultPolicy());
     _renderPolicy->_clearBuffersOnBind = false; //<we clear the FB on each face draw call, not on Begin()
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM");
@@ -134,14 +134,14 @@ void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CB
     for (U8 i = 0; i < _numSplits; ++i){
         ApplyFrustumSplit(i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, true);
-        _gfxDevice.render(sceneRenderFunction, renderState);
+        _gfxDevice.getRenderer()->render(sceneRenderFunction, renderState);
         LightManager::getInstance().registerShadowPass();
     }
     _depthMap->End();
     renderState.getCameraMgr().popActiveCamera();
 }
 
-void CascadedShadowMaps::CalculateSplitDepths(Camera& cam){
+void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam){
     const mat4<F32>& projMatrixCache = cam.getProjectionMatrix();
 
     F32 N = _numSplits;
@@ -231,9 +231,9 @@ void CascadedShadowMaps::postRender(){
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _blurBuffer->DrawToLayer(TextureDescriptor::Color0, i, false);
-        _gfxDevice.drawPoints(1);
+        _gfxDevice.drawPoints(1, _gfxDevice.getDefaultStateBlock(true));
     }
-
+    _blurBuffer->End();
     //Blur vertically
     _blurDepthMapShader->SetSubroutine(GEOMETRY_SHADER, _vertBlur);
     _depthMap->Begin(*_renderPolicy);
@@ -242,7 +242,7 @@ void CascadedShadowMaps::postRender(){
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, false);
-        _gfxDevice.drawPoints(1);
+        _gfxDevice.drawPoints(1, _gfxDevice.getDefaultStateBlock(true));
     }
     _depthMap->End();
 
@@ -265,6 +265,6 @@ void CascadedShadowMaps::previewShadowMaps(){
     for (U8 i = 0; i < _numSplits; ++i){
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform("zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
-        _gfxDevice.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(_gfxDevice), 1));
+        _gfxDevice.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(_gfxDevice), 1, _gfxDevice.getDefaultStateBlock(true)));
     }
 }

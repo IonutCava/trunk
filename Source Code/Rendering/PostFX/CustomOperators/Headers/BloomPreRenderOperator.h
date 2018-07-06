@@ -27,12 +27,12 @@
 
 class Quad3D;
 class Texture;
-class FrameBuffer;
+class Framebuffer;
 class ShaderProgram;
 
 class BloomPreRenderOperator : public PreRenderOperator {
 public:
-	BloomPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	BloomPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~BloomPreRenderOperator();
 
 	void operation();
@@ -45,10 +45,10 @@ protected:
 private:
 	ShaderProgram* _blur;
 	ShaderProgram* _bright;
-	FrameBuffer* _outputFB;
-	FrameBuffer* _tempBloomFB;
-	FrameBuffer* _tempHDRFB;
-	FrameBuffer* _luminaFB[2];
+	Framebuffer* _outputFB;
+	Framebuffer* _tempBloomFB;
+	Framebuffer* _tempHDRFB;
+	Framebuffer* _luminaFB[2];
 	U32 _luminaMipLevel;
     U32 _horizBlur;
     U32 _vertBlur;

@@ -34,35 +34,35 @@ class Texture : public HardwareResource {
 /*Abstract interface*/
 public:
     virtual void Bind(U16 slot) = 0;
-    virtual void Destroy() = 0;
-    virtual void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, U8 bpp, GFXImageFormat format) = 0;
-    virtual void setMipMapRange(U32 base = 0, U32 max = 1000) = 0;
+    virtual void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, const vec2<U16>& mipLevels, 
+                          GFXImageFormat format, GFXImageFormat internalFormat, bool usePOW2 = false) = 0;
+    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
+    virtual void updateMipMaps() = 0;
     virtual ~Texture() {}
 
 public:
     bool LoadFile(U32 target, const std::string& name);
+
     void resize(U16 width, U16 height);
 
     inline       void               setCurrentSampler(const SamplerDescriptor& descriptor) {_samplerDescriptor = descriptor;}
     inline const SamplerDescriptor& getCurrentSampler()                              const {return _samplerDescriptor;}
 
-    inline void setNumLayers(U8 numLayers)       { _numLayers  = numLayers; }
-    inline U8   getNumLayers()             const { return _numLayers; }
+    inline void        refreshMipMaps()                 { _mipMapsDirty = true; }
+    inline void        setNumLayers(U8 numLayers)       { _numLayers  = numLayers; }
+    inline U8          getNumLayers()             const { return _numLayers; }
+    inline U8          getBitDepth()              const { return _bitDepth; }
+    inline U16         getWidth()                 const { return _width; }
+    inline U16         getHeight()                const { return _height; }
+    inline U32         getHandle()                const { return _handle; }
+    inline bool        isFlipped()                const { return _flipped; }
+    inline bool        hasTransparency()          const { return _hasTransparency; }
+    inline TextureType getTextureType()           const { return _textureType; }
 
-    inline U32 getHandle()        const {return _handle;}
-    inline U16 getWidth()         const {return _width;}
-    inline U16 getHeight()        const {return _height;}
-    inline U8  getBitDepth()      const {return _bitDepth;}
-    inline bool isFlipped()       const {return _flipped;}
-    inline bool hasTransparency() const {return _hasTransparency;}
-    
-protected:
-    template<typename T>
-    friend class ImplResourceLoader;
-    virtual bool generateHWResource(const std::string& name) {return HardwareResource::generateHWResource(name);}
+    virtual bool generateHWResource(const std::string& name);
 
 protected:
-    Texture(const bool flipped = false);
+    Texture(TextureType type, const bool flipped = false);
 
 protected:
     boost::atomic<U32>	_handle;
@@ -70,7 +70,9 @@ protected:
     U8  _bitDepth;
     U8  _numLayers;
     bool _flipped;
+    bool _mipMapsDirty;
     bool _hasTransparency;
+    TextureType _textureType;
     mat4<F32>  _transformMatrix;
     SamplerDescriptor _samplerDescriptor;
 };

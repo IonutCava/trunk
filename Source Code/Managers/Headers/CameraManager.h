@@ -23,7 +23,6 @@
 #ifndef _CAMERA_MANAGER_H
 #define _CAMERA_MANAGER_H
 
-#include "core.h"
 #include <boost/noncopyable.hpp>
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Managers/Headers/FrameListenerManager.h"

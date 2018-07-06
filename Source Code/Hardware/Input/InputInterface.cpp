@@ -169,6 +169,7 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
         _pJoystickInterface->getCurrentFFDevice()->upload(_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect());
     }
 }
+
 U8 InputInterface::init(Kernel* const kernel, const std::string& windowTitle) {
     if (_bIsInitialized)	return NO_ERR;
     PRINT_FN(Locale::get("INPUT_CREATE_START"));
@@ -315,4 +316,5 @@ void InputInterface::terminate() {
     XDestroyWindow(_pXDisp, _xWin);
     XCloseDisplay(_pXDisp);
 #endif
+
 }

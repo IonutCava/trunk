@@ -12,7 +12,7 @@
 class ShaderProgram;
 class Quad3D;
 class PreRenderStage;
-class FrameBuffer;
+class Framebuffer;
 struct ScreenSampler;
 DEFINE_SINGLETON(PreRenderStageBuilder)
 
@@ -24,7 +24,7 @@ public:
    ///"state" is a reference to the global variable that enables or disables the effect (via options, PostFX, config, etc)
    template<class T>
    inline PreRenderOperator* addPreRenderOperator(bool& state,
-												  FrameBuffer* result,
+												  Framebuffer* result,
 												  const vec2<U16>& resolution){
 			return addToStage(New T(result,resolution,_screenSampler),state);
    }

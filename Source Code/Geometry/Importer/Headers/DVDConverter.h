@@ -69,7 +69,7 @@ private:
     DVDConverter();
     ~DVDConverter();
     SubMesh* loadSubMeshGeometry(const aiMesh* source, Mesh* parentMesh, U16 count);
-    Material* loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName);
+    Material* loadSubMeshMaterial(bool skinned, const aiMaterial* source, const std::string& materialName);
 
 private:
     struct vertexWeight {

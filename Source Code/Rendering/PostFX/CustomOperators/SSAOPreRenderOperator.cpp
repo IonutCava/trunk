@@ -6,7 +6,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-SSAOPreRenderOperator::SSAOPreRenderOperator(FrameBuffer* result,
+SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,resolution,sampler),
                                                                                  _outputFB(result)
@@ -34,9 +34,9 @@ void SSAOPreRenderOperator::operation(){
     if(!_enabled) return;
 
     _ssaoShader->bind();
-    _outputFB->Begin(FrameBuffer::defaultPolicy());
+    _outputFB->Begin(Framebuffer::defaultPolicy());
     _inputFB[0]->Bind(0); // screen
     _inputFB[1]->Bind(1, TextureDescriptor::Depth); // depth
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
     _outputFB->End();
 }

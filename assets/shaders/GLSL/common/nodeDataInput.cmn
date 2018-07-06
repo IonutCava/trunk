@@ -1,17 +1,5 @@
 
-struct PerNodeData {
-    mat4  _worldMatrix;
-    mat4  _normalMatrix;
-    uvec4 _lightInfo;     //< x - lightCount; y,z,w - reserved
-    uvec4 _integerValues; //< x - isSelected; y - isShadowMapped; z - boneOffset; w - reserved
-};
-
-layout(binding = SHADER_BUFFER_PER_NODE, std430) buffer dvd_PerNodeBlock
-{
-    PerNodeData dvd_PerNodeData[];
-};
-
-layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
+layout(binding = SHADER_BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 {
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
@@ -25,15 +13,12 @@ layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
 vec2 dvd_sceneZPlanes = dvd_ZPlanesCombined.zw;
 vec2 dvd_zPlanes = dvd_ZPlanesCombined.xy;
 
-uniform int  dvd_drawID = 0;
-uniform mat4 dvd_WorldMatrix[MAX_INSTANCES];
-uniform mat3 dvd_NormalMatrix[MAX_INSTANCES];
-
 #if defined(VERT_SHADER)
 
 out float gl_ClipDistance[MAX_CLIP_PLANES];
 
 void setClipPlanes(in vec4 worldSpaceVertex) {
+    
 #if MAX_CLIP_PLANES > 0
     gl_ClipDistance[0] = dot(worldSpaceVertex, dvd_clip_plane[0]);
 #endif

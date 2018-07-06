@@ -155,21 +155,20 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
 
     U32 characterCount = (U32)(_army1.size() + _army2.size());
 
-    _pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
-    _pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
-    _colors[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec4<U8>(255,0,255,128));
+    _lines[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount);
     //renderState().drawDebugLines(true);
-
     U32 count = 0;
     for(AIEntity* character : _army1){
-        _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
-        _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
+        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
+        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
+        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
         count++;
     }
     
     for(AIEntity* character : _army2){
-       _pointsA[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getPosition());
-       _pointsB[DEBUG_LINE_OBJECT_TO_TARGET][count].set(character->getDestination());
+        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._startPoint.set(character->getPosition());
+        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._endPoint.set(character->getDestination());
+        _lines[DEBUG_LINE_OBJECT_TO_TARGET][count]._color.set(255,0,255,128);
         count++;
     }
 #endif

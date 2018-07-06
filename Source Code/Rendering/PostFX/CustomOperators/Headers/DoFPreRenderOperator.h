@@ -28,7 +28,7 @@
 
 class DoFPreRenderOperator : public PreRenderOperator {
 public:
-	DoFPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	DoFPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~DoFPreRenderOperator();
 
 	void operation();
@@ -36,8 +36,8 @@ public:
 
 private:
 	ShaderProgram* _dofShader;
-	FrameBuffer*   _outputFB;
-	FrameBuffer*   _samplerCopy;
+	Framebuffer*   _outputFB;
+	Framebuffer*   _samplerCopy;
 };
 
 #endif

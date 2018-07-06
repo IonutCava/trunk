@@ -4,21 +4,17 @@ const int LIGHT_SPOT = 2;
 
 
 struct Light {
-    vec4  _diffuse;      //< rgb = diffuse,  w = ambientFactor;
-    vec4  _specular;     //< rgb = specular color, w = spot cutoff
-    vec4  _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
-    vec4  _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
-    vec4  _direction;   //< xyz = Used by spot lights, w = spotExponent
+    vec4   _diffuse;     //< rgb = diffuse,  w = ambientFactor;
+    vec4   _specular;    //< rgb = specular color, w = spot cutoff
+    vec4   _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
+    vec4   _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4   _direction;   //< xyz = Used by spot lights, w = spotExponent
+    ivec4  _options;     //< x = casts shadows, yzw = reserved
 };
 
 layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
     Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
-};
-
-layout(binding = SHADER_BUFFER_LIGHT_PER_NODE, std140) uniform dvd_PerNodeLights
-{
-    uvec4 dvd_perNodeLightData[MAX_LIGHTS_PER_NODE]; //x = lightIndex, y = lightType, z = castsShadows, w = totalCount
 };
 
 #if defined(FRAG_SHADER)
@@ -37,8 +33,7 @@ layout(binding = SHADER_BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
     Shadow dvd_ShadowSource[MAX_LIGHTS_PER_SCENE];
 }; 
 
-uniform vec4 dvd_lightAmbient;
-uniform bool dvd_enableShadowMapping = false;
+uniform vec3 dvd_lightAmbient;
 #endif
 
 #if defined(VERT_SHADER)
@@ -49,10 +44,10 @@ uniform bool dvd_enableShadowMapping = false;
 
 /// Light Info is used internally to communicate between vertex and fragment shaders
 VARYING LightInfo {
-    vec3  _lightDirection[MAX_LIGHTS_PER_NODE];
-    smooth float _attenuation[MAX_LIGHTS_PER_NODE];
-    flat uint _lightCount;
-} _lightInfo;
+    vec3  _lightDirection;
+    smooth float _attenuation;
+} _lightInfo[MAX_LIGHTS_PER_SCENE];
 
 VARYING vec3 _normalWV;
 VARYING vec3 _viewDirection;
+flat VARYING uint _lightCount;

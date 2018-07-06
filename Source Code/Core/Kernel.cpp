@@ -63,6 +63,8 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     // force all lights to update on camera change (to keep them still actually)
     _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange,
                                                        DELEGATE_REF(LightManager::getInstance())));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&SceneManager::onCameraChange,
+                                                      DELEGATE_REF(SceneManager::getInstance())));
     //We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
     //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
@@ -220,7 +222,7 @@ void Kernel::renderScene(){
     RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
     bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
-    FrameBuffer::FrameBufferTarget depthPassPolicy, colorPassPolicy;
+    Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
     
@@ -231,30 +233,30 @@ void Kernel::renderScene(){
     /// Lock the render pass manager because the Z_PRE_PASS and the FINAL_STAGE pass must render the exact same geometry
     RenderPassManager::getInstance().lock();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(FrameBuffer::defaultPolicy());
+    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
         SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
+    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
+
     _GFX.ConstructHIZ();
     _GFX.isDepthPrePass(false);
 
-    if(!postProcessing){
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
-    }else{
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(FrameBuffer::defaultPolicy());
-    }
-        SceneManager::getInstance().render(stage, *this);
+    if(postProcessing)
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(Framebuffer::defaultPolicy());
+
+    SceneManager::getInstance().render(stage, *this);
 
     RenderPassManager::getInstance().unlock();
 
-    if(postProcessing){
+    if(postProcessing)
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->End();
-    }
+    
     PostFX::getInstance().displayScene();
 }
 
 void Kernel::renderSceneAnaglyph(){
     RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
     
-    FrameBuffer::FrameBufferTarget depthPassPolicy, colorPassPolicy;
+    Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
     
@@ -265,11 +267,11 @@ void Kernel::renderSceneAnaglyph(){
     currentCamera->renderLookAt();
         RenderPassManager::getInstance().lock();
         // Z-prePass
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(FrameBuffer::defaultPolicy());
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
         SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this); 
 
         // first screen buffer
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(FrameBuffer::defaultPolicy());
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(Framebuffer::defaultPolicy());
         SceneManager::getInstance().render(stage, *this);
 
         RenderPassManager::getInstance().unlock();
@@ -278,10 +280,10 @@ void Kernel::renderSceneAnaglyph(){
     currentCamera->renderLookAt();
         RenderPassManager::getInstance().lock();
         // Z-prePass
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(FrameBuffer::defaultPolicy());
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
         SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
         // second screen buffer
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Begin(FrameBuffer::defaultPolicy());
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Begin(Framebuffer::defaultPolicy());
         SceneManager::getInstance().render(stage, *this);
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->End();
 
@@ -354,7 +356,7 @@ void Kernel::firstLoop(){
 
 void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK& sceneRenderCallback) const {
     _GFX.setRenderStage(stage);
-    _GFX.render(sceneRenderCallback, sceneRenderState);
+    _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
 
     if (bitCompare(FINAL_STAGE, stage) || bitCompare(DEFERRED_STAGE, stage)){
         // Draw bounding boxes, skeletons, axis gizmo, etc.
@@ -505,46 +507,68 @@ void Kernel::updateResolutionCallback(I32 w, I32 h){
 
 ///--------------------------Input Management-------------------------------------///
 bool Kernel::onKeyDown(const OIS::KeyEvent& key) {
-    return _sceneMgr.onKeyDown(key);
+    if(!_sceneMgr.onKeyDown(key)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onKeyUp(const OIS::KeyEvent& key) {
-    return _sceneMgr.onKeyUp(key);
+    if(!_sceneMgr.onKeyUp(key)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onMouseMove(const OIS::MouseEvent& arg) {
     _cameraMgr->onMouseMove(arg);
-    return _sceneMgr.onMouseMove(arg);
+    if(!_sceneMgr.onMouseMove(arg)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
-    return _sceneMgr.onMouseClickDown(arg,button);
+    if(!_sceneMgr.onMouseClickDown(arg,button)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
-    return _sceneMgr.onMouseClickUp(arg,button);
+    if(!_sceneMgr.onMouseClickUp(arg,button)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone) {
-    return _sceneMgr.onJoystickMoveAxis(arg,axis,deadZone);
+    if(!_sceneMgr.onJoystickMoveAxis(arg,axis,deadZone)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov){
-    return _sceneMgr.onJoystickMovePOV(arg,pov);
+    if(!_sceneMgr.onJoystickMovePOV(arg,pov)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button){
-    return _sceneMgr.onJoystickButtonDown(arg,button);
+    if(!_sceneMgr.onJoystickButtonDown(arg,button)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button){
-    return _sceneMgr.onJoystickButtonUp(arg,button);
+    if(!_sceneMgr.onJoystickButtonUp(arg,button)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::sliderMoved( const OIS::JoyStickEvent &arg, I8 index){
-    return _sceneMgr.sliderMoved(arg,index);
+    if(!_sceneMgr.sliderMoved(arg,index)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }
 
 bool Kernel::vector3Moved( const OIS::JoyStickEvent &arg, I8 index){
-    return _sceneMgr.vector3Moved(arg,index);
+    if(!_sceneMgr.vector3Moved(arg,index)) {
+    }
+    return true; //< InputInterface needs to know when this is completed
 }

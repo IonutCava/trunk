@@ -23,7 +23,7 @@
 #ifndef _GL_IM_EMULATION_H_
 #define _GL_IM_EMULATION_H_
 
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Hardware/Video/Headers/ImmediateModeEmulation.h"
 
 namespace NS_GLIM {
@@ -34,8 +34,8 @@ namespace NS_GLIM {
 extern NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
 
 class glIMPrimitive : public IMPrimitive {
-protected:
-    friend class GLWrapper;
+
+public:
     glIMPrimitive();
     ~glIMPrimitive();
 
@@ -51,10 +51,14 @@ public:
     void endBatch();
     void clear();
 
+    inline void render(U32 instanceCount = 1, bool forceWireframe = false) {
+        instanceCount > 1 ? renderBatchInstanced(instanceCount, forceWireframe) : renderBatch(forceWireframe);
+    }
+
 protected:
-    friend class GL_API;
     void renderBatch(bool wireframe = false);
     void renderBatchInstanced(I32 count, bool wireframe = false);
+
 protected:
     NS_GLIM::GLIM_BATCH*  _imInterface;//< Rendering API specific implementation
 };

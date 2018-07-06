@@ -61,7 +61,7 @@ public:
     void postLoad(SceneGraphNode* const sgn);
 
     ///When the SceneGraph calls the trigger's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
 
     ///SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {

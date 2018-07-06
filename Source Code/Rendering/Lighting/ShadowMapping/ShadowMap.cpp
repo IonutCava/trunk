@@ -7,7 +7,7 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type) : _init(false),
                                                                             _light(light),

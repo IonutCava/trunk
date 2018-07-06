@@ -74,7 +74,7 @@ public:
     ///SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {
         if(_enabled && _impostor)
-            return _impostor->getDummy()->isInView(sceneRenderState, boundingBox, sphere, distanceCheck);
+            return _impostor->isInView(sceneRenderState, boundingBox, sphere, distanceCheck);
 
         return false;
     }
@@ -88,8 +88,9 @@ protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
-    bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
+    void onCameraChange(SceneGraphNode* const sgn);
+    ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
 
 private:
     I32 findUnusedParticle();
@@ -100,6 +101,7 @@ private:
     vectorImpl<F32 > _particlePositionData;
     vectorImpl<U8 >  _particleColorData;
 
+    U32 _readOffset, _writeOffset;
     I32 _lastUsedParticle;
     U32 _particlesCurrentCount;
     /// create particles
@@ -116,7 +118,7 @@ private:
 
     GenericVertexData* _particleGPUBuffer;
 
-    I64 _particleStateBlockHash;
+    size_t _particleStateBlockHash;
 
     ShaderProgram* _particleShader;
     ShaderProgram* _particleDepthShader;

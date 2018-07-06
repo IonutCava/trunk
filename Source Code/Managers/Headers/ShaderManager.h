@@ -77,8 +77,6 @@ public:
     ///Return a default shader if we try to render something with a material that is missing a valid shader
     ShaderProgram* const getDefaultShader() const {return _imShader;}
 
-    void setMatricesDirty();
-
 private:
     ///Shader cache
     ShaderMap        _shaderNameMap;

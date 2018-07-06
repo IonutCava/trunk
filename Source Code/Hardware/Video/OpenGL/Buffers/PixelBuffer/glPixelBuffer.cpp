@@ -68,13 +68,13 @@ GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch(_pbtype){
         case PB_TEXTURE_1D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*4) * sizeOf(_dataType), NULL, GL_STREAM_DRAW);
             break;
         case PB_TEXTURE_2D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*4) * sizeOf(_dataType), NULL, GL_STREAM_DRAW);
             break;
         case PB_TEXTURE_3D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*_depth*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*_depth*4) * sizeOf(_dataType), NULL, GL_STREAM_DRAW);
             break;
     };
 
@@ -111,7 +111,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
     size *= 4/*channels*/;
 
     glGenTextures(1, &_textureId);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    GL_API::setPixelPackUnpackAlignment();
     GL_API::bindTexture(0, _textureId, _textureType);
     glTexParameteri(_textureType, GL_GENERATE_MIPMAP, GL_FALSE);
     glTexParameteri(_textureType,GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -155,7 +155,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXIm
 
     glGenBuffers(1, &_pixelBufferHandle);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, size * sizeOf(_dataType), 0, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, size * sizeOf(_dataType), NULL, GL_STREAM_DRAW);
 
     GL_API::unbindTexture(0, _textureType);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -167,13 +167,13 @@ void glPixelBuffer::updatePixels(const GLfloat * const pixels) {
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch(_pbtype){
         case PB_TEXTURE_1D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*4) * sizeOf(_dataType), NULL, GL_STREAM_DRAW);
             break;
         case PB_TEXTURE_2D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*4) * sizeOf(_dataType), NULL, GL_STREAM_DRAW);
             break;
         case PB_TEXTURE_3D:
-            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*_depth*4) * sizeOf(_dataType), 0, GL_STREAM_DRAW);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, (_width*_height*_depth*4) * sizeOf(_dataType), NULL, GL_STREAM_DRAW);
             break;
     };
 

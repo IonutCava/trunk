@@ -65,8 +65,6 @@ bool glShader::compile(){
 
     glCompileShader(_shader);
 
-    validate();
-
     _compiled = true;
 
     return _compiled;
@@ -80,7 +78,7 @@ void glShader::validate() {
     glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length);
     if(length <= 1) return;
     vectorImpl<char> shaderLog(length);
-    glGetShaderInfoLog(_shader, length, nullptr, &shaderLog[0]);
+    glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
     shaderLog.push_back('\n');
     if(status == GL_FALSE){
         ERROR_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),&shaderLog[0]);

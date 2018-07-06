@@ -24,54 +24,49 @@
 #define _GL_FRAME_BUFFER_OBJECT_H
 
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
-#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
+#include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
-class glFrameBuffer : public FrameBuffer {
+class glFramebuffer : public Framebuffer {
 public:
     /// if resolveBuffer is not null, we add all of our attachments to it and initialize it with this buffer
-    glFrameBuffer(glFrameBuffer* resolveBuffer = nullptr);
-    ~glFrameBuffer();
+    glFramebuffer(glFramebuffer* resolveBuffer = nullptr);
+    ~glFramebuffer();
 
     bool Create(GLushort width, GLushort height);
     void Destroy();
     void DrawToLayer(TextureDescriptor::AttachmentType slot, GLubyte layer, bool includeDepth = true);
-    void SetMipLevel(U8 mipLevel, TextureDescriptor::AttachmentType slot);
+    void SetMipLevel(GLushort mipLevel, GLushort mipMaxLevel, GLushort writeLevel, TextureDescriptor::AttachmentType slot);
     void ResetMipLevel(TextureDescriptor::AttachmentType slot);
     void AddDepthBuffer();
 
-    void Begin(const FrameBufferTarget& drawPolicy);
+    void Begin(const FramebufferTarget& drawPolicy);
     void End();
 
     void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
-    void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData);
-    void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
+    void ReadData(const vec4<GLushort>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, void* outData);
+    void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
 
 protected:
     void resolve();
     bool checkStatus() const;
     void InitAttachment(TextureDescriptor::AttachmentType type, const TextureDescriptor& texDescriptor);
-    void UpdateMipMaps(TextureDescriptor::AttachmentType slot);
 
 protected:
-    GLuint _textureId[5];  ///<4 color attachments and 1 depth
-    GLuint _textureType[5];
     GLuint _clearBufferMask;
     GLint  _attOffset[5];
-    GLint  _mipMaxLevel[5];
-    GLint  _mipMinLevel[5];
-    bool   _mipMapEnabled[5]; ///< depth may have mipmaps if needed, too
-    bool   _mipMapsDirty[5];
     bool   _hasDepth;
     bool   _hasColor;
     bool   _resolved;
     bool   _isLayeredDepth;
-    static bool         _viewportChanged;
-    static vec2<U16>    _prevViewportDim;
-    vectorImpl<GLenum > _colorBuffers;
+    static bool _viewportChanged;
+    static bool _bufferBound;
+    static vec2<GLushort>  _prevViewportDim;
+    vectorImpl<GLenum >    _colorBuffers;
+    vec2<GLushort > _mipMapLevel[5];
     bool _colorMaskChanged;
     bool _depthMaskChanged;
     static GLint _maxColorAttachments;
-    glFrameBuffer* _resolveBuffer;
+    glFramebuffer* _resolveBuffer;
 };
 
 #endif

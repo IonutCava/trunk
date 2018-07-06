@@ -5,6 +5,8 @@ out vec2 _texCoord;
 
 uniform int lodLevel = 0;
 
+#include "nodeBufferedInput.cmn"
+
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif
@@ -28,7 +30,7 @@ void computeData(){
     #endif
 
     _texCoord = inTexCoordData;
-    _vertexW  = dvd_WorldMatrix[dvd_drawID] * dvd_Vertex;
+    _vertexW  = dvd_WorldMatrix * dvd_Vertex;
 
     setClipPlanes(_vertexW);
 }

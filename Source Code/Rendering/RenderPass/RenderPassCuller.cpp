@@ -35,6 +35,8 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
     cullSceneGraphGPU(sceneState);
 
     currentNode->getRoot()->inView(true);
+
+    GFX_DEVICE.processVisibleNodes(_visibleNodes);
     if(!renderingLocked) refreshNodeList();
 }
 

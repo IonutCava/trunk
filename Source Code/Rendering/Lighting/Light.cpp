@@ -21,7 +21,6 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
                                                    _impostor(nullptr),
                                                    _resolutionFactor(1),
                                                    _impostorSGN(nullptr),
-                                                   _castsShadows(true),
                                                    _par(ParamHandler::getInstance()),
                                                    _shadowMapInfo(nullptr),
                                                    _score(0.0f)
@@ -195,29 +194,21 @@ bool Light::isInView(const SceneRenderState& sceneRenderState, const BoundingBox
     return ((_impostorSGN != nullptr) && _drawImpostor);
 }
 
-void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
+void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     // The isInView call should stop impostor rendering if needed
-    Sphere3D* lightDummy = nullptr;
     if (!_impostor){
         _impostor = New Impostor(_name, _properties._attenuation.w);
-        lightDummy = _impostor->getDummy();
-        lightDummy->getSceneNodeRenderState().setDrawState(false);
-        _impostorSGN = _lightSGN->addNode(lightDummy);
-        _impostorSGN->setActive(false);
+        _impostor->getSceneNodeRenderState().setDrawState(true);
+        _impostorSGN = _lightSGN->addNode(_impostor);
+        _impostorSGN->setActive(true);
     }
 
-    lightDummy = _impostor->getDummy();
-
-    lightDummy->getMaterial()->setDiffuse(getDiffuseColor());
-    lightDummy->getMaterial()->setAmbient(getDiffuseColor());
+    _impostor->getMaterial()->setDiffuse(getDiffuseColor());
+    _impostor->getMaterial()->setAmbient(getDiffuseColor());
 
     //Updating impostor range is expensive, so check if we need to
-    if (!FLOAT_COMPARE(getRange(), lightDummy->getRadius()))
-        _impostor->getDummy()->setRadius(getRange());
-
-    if(!_impostor)  return;
-
-    _impostor->render(sgn, sceneRenderState);
+    if (!FLOAT_COMPARE(getRange(), _impostor->getRadius()))
+        _impostor->setRadius(getRange());
 }
 
 void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo){

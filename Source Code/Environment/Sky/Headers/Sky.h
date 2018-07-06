@@ -46,8 +46,7 @@ public:
     void drawBoundingBox(SceneGraphNode* const sgn) const {}
 
 protected:
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
-    bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     void postLoad(SceneGraphNode* const sgn);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
@@ -60,8 +59,8 @@ private:
     Sphere3D        *_sky;
     SceneGraphNode  *_skyGeom;
     U16				_exclusionMask;
-    I64             _skyboxRenderStateHash;
-	I64             _skyboxRenderStateReflectedHash;
+    size_t          _skyboxRenderStateHash;
+	size_t          _skyboxRenderStateReflectedHash;
 };
 
 #endif

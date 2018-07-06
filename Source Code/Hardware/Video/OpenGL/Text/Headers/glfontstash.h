@@ -60,10 +60,7 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
 
     if (gl->tex == 0) return;
     GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
-    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, gl->width);
-    glPixelStorei(GL_UNPACK_SKIP_PIXELS, rect[0]);
-    glPixelStorei(GL_UNPACK_SKIP_ROWS, rect[1]);
+    GL_API::setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
     glTexSubImage2D(GL_TEXTURE_2D, 0, rect[0], rect[1], w, h, GL_RED, GL_UNSIGNED_BYTE, data);
     GL_API::unbindTexture(0, GL_TEXTURE_2D);
 }
@@ -77,7 +74,7 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
     GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
-    glBufferData(GL_ARRAY_BUFFER, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 2 * vertDataSize + sizeof(unsigned char) * 4 * nverts, NULL, GL_STREAM_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0,                vertDataSize,                       verts);
     glBufferSubData(GL_ARRAY_BUFFER, vertDataSize,     vertDataSize,                       tcoords);
     glBufferSubData(GL_ARRAY_BUFFER, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, colors);
@@ -85,9 +82,9 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (void*)(0));
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (char *)nullptr + (vertDataSize));
+    glVertexAttribPointer(3, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (char *)0 + (vertDataSize));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char *)nullptr + (2 * vertDataSize));
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char *)0 + (2 * vertDataSize));
 
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 }

@@ -14,15 +14,15 @@ DEFINE_SINGLETON(Console)
 
 public:
 	void printCopyrightNotice() const;
-	void printfn(const char* format, ...) const;
-	void printf(const char* format, ...) const;
-	void errorfn(const char* format, ...) const;
-	void errorf(const char* format, ...) const;
+	const char* printfn(const char* format, ...) const;
+	const char* printf(const char* format, ...) const;
+	const char* errorfn(const char* format, ...) const;
+	const char* errorf(const char* format, ...) const;
 #ifdef _DEBUG
-	void d_printfn(const char* format, ...) const;
-	void d_printf(const char* format, ...) const;
-	void d_errorfn(const char* format, ...) const;
-	void d_errorf(const char* format, ...) const;
+	const char* d_printfn(const char* format, ...) const;
+	const char* d_printf(const char* format, ...) const;
+	const char* d_errorfn(const char* format, ...) const;
+	const char* d_errorf(const char* format, ...) const;
 #endif
 
 	inline void toggleTimeStamps(const bool state)                                {_timestamps = state;}
@@ -31,7 +31,7 @@ public:
 protected:
     Console();
     ~Console();
-	void output(const char* text,const bool error = false) const;
+	const char* output(const char* text,const bool error = false) const;
 
 private:
 	mutable boost::mutex io_mutex;

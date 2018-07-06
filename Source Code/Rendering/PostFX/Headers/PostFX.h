@@ -28,7 +28,7 @@
 class Quad3D;
 class Camera;
 class GFXDevice;
-class FrameBuffer;
+class Framebuffer;
 class ShaderProgram;
 class PreRenderOperator;
 
@@ -72,11 +72,11 @@ private:
         TEX_BIND_POINT_RIGHT_EYE = 7,
     };
     /// Bloom
-    FrameBuffer* _bloomFB;
+    Framebuffer* _bloomFB;
     PreRenderOperator* _bloomOP;
 
     /// SSAO
-    FrameBuffer* _SSAO_FB;
+    Framebuffer* _SSAO_FB;
 
     /// FXAA
     PreRenderOperator* _fxaaOP;

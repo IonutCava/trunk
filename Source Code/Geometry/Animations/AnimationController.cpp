@@ -7,27 +7,12 @@
 using namespace boost;
 
 void SceneAnimator::Release(){// this should clean everything up
-    FOR_EACH(pointCollection::value_type& it, _pointsA){
-        FOR_EACH(pointMap::value_type& it2, it.second){
+    FOR_EACH(LineCollection::value_type& it, _skeletonLines){
+        FOR_EACH(LineMap::value_type& it2, it.second){
             it2.second.clear();
         }
     }
-
-    FOR_EACH(pointCollection::value_type& it, _pointsB){
-        FOR_EACH(pointMap::value_type& it2, it.second){
-            it2.second.clear();
-        }
-     }
-
-    FOR_EACH(colorCollection::value_type& it, _colors){
-        FOR_EACH(colorMap::value_type& it2, it.second){
-            it2.second.clear();
-        }
-     }
-
-    _pointsA.clear();
-    _pointsB.clear();
-    _colors.clear();
+    _skeletonLines.clear();
     _animations.clear();// clear all animations
     _bonesByName.clear();
     _bonesToIndex.clear();
@@ -35,8 +20,6 @@ void SceneAnimator::Release(){// this should clean everything up
     _transforms.clear();
     // This node will delete all children recursivly
     SAFE_DELETE(_skeleton);
-    SAFE_DELETE(_boneTransformBuffer[0]);
-    SAFE_DELETE(_boneTransformBuffer[1]);
 }
 
 bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
@@ -94,12 +77,6 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
         }
     }
 
-    _boneTransformBuffer[0] = GFX_DEVICE.newSB(true);
-    _boneTransformBuffer[0]->Create(true, true, Config::MAX_INSTANCE_COUNT, _bones.size() * sizeof(mat4<F32>));
-
-    _boneTransformBuffer[1] = GFX_DEVICE.newSB(true);
-    _boneTransformBuffer[1]->Create(true, true, Config::MAX_INSTANCE_COUNT, _bones.size() * sizeof(mat4<F32>));
-
     D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
     return !_transforms.empty();
 }
@@ -140,7 +117,7 @@ Bone* SceneAnimator::CreateBoneTree( aiNode* pNode, Bone* parent){
     CalculateBoneToWorldTransform(internalNode);
 
     // continue for all child nodes and assign the created internal nodes as our children
-    // recursivly call this function on all children
+    // recursively call this function on all children
     for(uint32_t i = 0; i < pNode->mNumChildren; i++){
         Bone* childNode = CreateBoneTree(pNode->mChildren[i], internalNode);
         internalNode->_children.push_back(childNode);
@@ -197,63 +174,43 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 I32 SceneAnimator::RenderSkeleton(I32 animationIndex, const D32 dt){
     I32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
 
-    if (_pointsA.find(animationIndex) == _pointsA.end()){
-        pointMap pointsA;
-        pointMap pointsB;
-        colorMap colors;
-        _pointsA.insert(std::make_pair(animationIndex, pointsA));
-        _pointsB.insert(std::make_pair(animationIndex, pointsB));
-        _colors.insert(std::make_pair(animationIndex, colors));
-    }
-
-    if (_pointsA[animationIndex][frameIndex].empty()){
+    if (_skeletonLines.find(animationIndex) == _skeletonLines.end())
+        _skeletonLines.insert(std::make_pair(animationIndex, LineMap()));
+    
+    if (_skeletonLines[animationIndex][frameIndex].empty()){
         // create all the needed points
-        vectorImpl<vec3<F32> >& pA = _pointsA[animationIndex][frameIndex];
-        vectorImpl<vec3<F32> >& pB = _pointsB[animationIndex][frameIndex];
-        vectorImpl<vec4<U8> >& cl = _colors[animationIndex][frameIndex];
-        pA.reserve(_bones.size());
-        pB.reserve(_bones.size());
-        cl.reserve(_bones.size());
+        vectorImpl<Line >& lines = _skeletonLines[animationIndex][frameIndex];
+        lines.reserve(_bones.size());
         // Construct skeleton
         Calculate(animationIndex, dt);
         // Prepare global transform
         aiMatrix4x4 rootTransform;
         AnimUtils::TransformMatrix(rootTransform,_rootTransformRender);
-        CreateSkeleton(_skeleton, rootTransform, pA, pB, cl);
+        CreateSkeleton(_skeleton, rootTransform, lines);
     }
     // Submit skeleton to gpu
-    return SubmitSkeletonToGPU(animationIndex, frameIndex);
+    GFX_DEVICE.drawLines(_skeletonLines[animationIndex][frameIndex], _rootTransformRender, vec4<I32>(), false, true);
+    return 1;
 }
 
 /// Create animation skeleton
-I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA,
-                                                                           vectorImpl<vec3<F32> >& pointsB,
-                                                                           vectorImpl<vec4<U8> >& colors){
+I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<Line >& lines){
+
     aiMatrix4x4 me = piNode->_globalTransform;
     if(GFX_DEVICE.getApi() == Direct3D){
         me.Transpose();
     }
 
     if (piNode->_parent) {
-        colors.push_back(vec4<U8>(255,0,0,255));
-        pointsA.push_back(vec3<F32>(parent.a4, parent.b4, parent.c4));
-        pointsB.push_back(vec3<F32>(me.a4, me.b4, me.c4));
+        lines.push_back(Line(vec3<F32>(parent.a4, parent.b4, parent.c4),
+                             vec3<F32>(me.a4, me.b4, me.c4),
+                             vec4<U8>(255,0,0,255)));
     }
 
     // render all child nodes
     for(Bone* bone : piNode->_children){
-        CreateSkeleton(bone, me, pointsA, pointsB, colors);
+        CreateSkeleton(bone, me, lines);
     }
 
-    return 1;
-}
-
-I32 SceneAnimator::SubmitSkeletonToGPU(I32 animationIndex, U32 frameIndex){
-    GFX_DEVICE.drawLines(_pointsA[animationIndex][frameIndex],
-                         _pointsB[animationIndex][frameIndex],
-                         _colors[animationIndex][frameIndex],
-                         _rootTransformRender,
-                         false,
-                         true);
     return 1;
 }

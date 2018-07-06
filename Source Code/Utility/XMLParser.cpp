@@ -129,7 +129,7 @@ namespace XML {
             return Material::TextureOperation_Replace;
         }
 
-        void saveTextureXML(const std::string& textureNode, const char* operation, Texture* texture, ptree& tree) {
+        void saveTextureXML(const std::string& textureNode, Texture* texture, ptree& tree, const std::string& operation = "") {
             const SamplerDescriptor& sampler = texture->getCurrentSampler();
             while(texture->getState() != RES_LOADED)
             {
@@ -145,7 +145,9 @@ namespace XML {
             tree.put(textureNode+".minFilter",getFilterName(sampler.minFilter()));
             tree.put(textureNode+".magFilter",getFilterName(sampler.magFilter()));
             tree.put(textureNode+".anisotropy",(U32)sampler.anisotropyLevel());
-            tree.put(textureNode+".operation", operation);
+
+            if(!operation.empty())
+                tree.put(textureNode+".operation", operation);
         }
 
         Texture* loadTextureXML(const std::string& textureNode, const std::string& textureName) {
@@ -680,34 +682,27 @@ namespace XML {
 
         mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
 
-        Texture* tempTexture = nullptr;
         if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){
-            tempTexture = loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none"));
-            mat->setTexture(Material::TEXTURE_UNIT0, tempTexture,
-                            getTextureOperation(pt.get<std::string>("diffuseTexture1.operation","TEX_OP_MULTIPLY").c_str()));
+            mat->setTexture(Material::TEXTURE_UNIT0, loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none")));
         }
+
         if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture2")){
-            mat->setTexture(Material::TEXTURE_UNIT0 + 1,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
+            mat->setTexture(Material::TEXTURE_UNIT1,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
                             getTextureOperation(pt.get<std::string>("diffuseTexture2.operation","TEX_OP_MULTIPLY").c_str()));
         }
+
         if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap")){
-            mat->setTexture(Material::TEXTURE_NORMALMAP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")),
-                            getTextureOperation(pt.get<std::string>("bumpMap.operation", "BUMP_NONE").c_str()));
-            if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap.method")){
+            mat->setTexture(Material::TEXTURE_NORMALMAP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")));
+            if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap.method"))
                 mat->setBumpMethod(getBumpMethod(pt.get<std::string>("bumpMap.method","BUMP_NORMAL").c_str()));
-            }
         }
         if(boost::optional<ptree &> child = pt.get_child_optional("opacityMap")){
-            mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML("opacityMap", pt.get("opacityMap.file","none")),
-                            getTextureOperation(pt.get<std::string>("opacityMap.operation","TEX_OP_REPLACE").c_str()));
+            mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML("opacityMap", pt.get("opacityMap.file","none")));
         }
         if(boost::optional<ptree &> child = pt.get_child_optional("specularMap")){
-            mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML("specularMap", pt.get("specularMap.file","none")),
-                            getTextureOperation(pt.get<std::string>("specularMap.operation","TEX_OP_REPLACE").c_str()));
+            mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML("specularMap", pt.get("specularMap.file","none")));
         }
-        //if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
-        //	mat->setShaderProgram(pt.get("shaderProgram.effect","NULL_SHADER"));
-        //}
+ 
         return mat;
     }
 
@@ -725,45 +720,45 @@ namespace XML {
         std::string fileLocation = location +  file + "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml";
         pt_writer.clear();
         pt_writer.put("material.name",file);
-        pt_writer.put("material.ambient.<xmlattr>.r",mat.getMaterialMatrix().getCol(0).x);
-        pt_writer.put("material.ambient.<xmlattr>.g",mat.getMaterialMatrix().getCol(0).y);
-        pt_writer.put("material.ambient.<xmlattr>.b",mat.getMaterialMatrix().getCol(0).z);
-        pt_writer.put("material.ambient.<xmlattr>.a",mat.getMaterialMatrix().getCol(0).w);
-        pt_writer.put("material.diffuse.<xmlattr>.r",mat.getMaterialMatrix().getCol(1).x);
-        pt_writer.put("material.diffuse.<xmlattr>.g",mat.getMaterialMatrix().getCol(1).y);
-        pt_writer.put("material.diffuse.<xmlattr>.b",mat.getMaterialMatrix().getCol(1).z);
-        pt_writer.put("material.diffuse.<xmlattr>.a",mat.getMaterialMatrix().getCol(1).w);
-        pt_writer.put("material.specular.<xmlattr>.r",mat.getMaterialMatrix().getCol(2).x);
-        pt_writer.put("material.specular.<xmlattr>.g",mat.getMaterialMatrix().getCol(2).y);
-        pt_writer.put("material.specular.<xmlattr>.b",mat.getMaterialMatrix().getCol(2).z);
-        pt_writer.put("material.specular.<xmlattr>.a",mat.getMaterialMatrix().getCol(2).w);
-        pt_writer.put("material.shininess.<xmlattr>.v",mat.getMaterialMatrix().getCol(3).x);
-        pt_writer.put("material.emissive.<xmlattr>.r", mat.getMaterialMatrix().getCol(3).y);
-        pt_writer.put("material.emissive.<xmlattr>.g", mat.getMaterialMatrix().getCol(3).z);
-        pt_writer.put("material.emissive.<xmlattr>.b", mat.getMaterialMatrix().getCol(3).w);
+        pt_writer.put("material.ambient.<xmlattr>.r",  mat.getShaderData()._ambient.r);
+        pt_writer.put("material.ambient.<xmlattr>.g",  mat.getShaderData()._ambient.g);
+        pt_writer.put("material.ambient.<xmlattr>.b",  mat.getShaderData()._ambient.b);
+        pt_writer.put("material.ambient.<xmlattr>.a",  mat.getShaderData()._ambient.a);
+        pt_writer.put("material.diffuse.<xmlattr>.r",  mat.getShaderData()._diffuse.r);
+        pt_writer.put("material.diffuse.<xmlattr>.g",  mat.getShaderData()._diffuse.g);
+        pt_writer.put("material.diffuse.<xmlattr>.b",  mat.getShaderData()._diffuse.b);
+        pt_writer.put("material.diffuse.<xmlattr>.a" , mat.getShaderData()._diffuse.a);
+        pt_writer.put("material.specular.<xmlattr>.r", mat.getShaderData()._specular.r);
+        pt_writer.put("material.specular.<xmlattr>.g", mat.getShaderData()._specular.g);
+        pt_writer.put("material.specular.<xmlattr>.b", mat.getShaderData()._specular.b);
+        pt_writer.put("material.specular.<xmlattr>.a", mat.getShaderData()._specular.a);
+        pt_writer.put("material.shininess.<xmlattr>.v",mat.getShaderData()._shininess);
+        pt_writer.put("material.emissive.<xmlattr>.r", mat.getShaderData()._emissive.y);
+        pt_writer.put("material.emissive.<xmlattr>.g", mat.getShaderData()._emissive.z);
+        pt_writer.put("material.emissive.<xmlattr>.b", mat.getShaderData()._emissive.w);
         pt_writer.put("material.doubleSided", mat.isDoubleSided());
 
         Texture* texture = nullptr;
 
         if((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != nullptr){
-            saveTextureXML("diffuseTexture1",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0)), texture, pt_writer);
+            saveTextureXML("diffuseTexture1", texture, pt_writer);
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_UNIT0 + 1)) != nullptr){
-            saveTextureXML("diffuseTexture2",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0 + 1)), texture, pt_writer);
+        if((texture = mat.getTexture(Material::TEXTURE_UNIT1)) != nullptr){
+            saveTextureXML("diffuseTexture2", texture, pt_writer, getTextureOperationName(mat.getTextureOperation())); 
         }
 
         if((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != nullptr){
-            saveTextureXML("bumpMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_NORMALMAP)), texture, pt_writer);
+            saveTextureXML("bumpMap", texture, pt_writer);
             pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
         }
 
         if((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != nullptr){
-            saveTextureXML("opacityMap",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_OPACITY)), texture, pt_writer);
+            saveTextureXML("opacityMap", texture, pt_writer);
         }
 
         if((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != nullptr){
-            saveTextureXML("specularMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_SPECULAR)), texture, pt_writer);
+            saveTextureXML("specularMap", texture, pt_writer);
         }
 
         ShaderProgram* s = mat.getShaderInfo().getProgram();

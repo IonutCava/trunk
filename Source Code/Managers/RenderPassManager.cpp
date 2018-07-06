@@ -10,9 +10,9 @@ RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPass
 
 RenderPassManager::~RenderPassManager()
 {
-    for(RenderPassItem& rpi : _renderPasses){
+    for(RenderPassItem& rpi : _renderPasses)
         SAFE_DELETE(rpi._rp);
-    }
+    
     _renderPasses.clear();
     RenderQueue::destroyInstance();
 }
@@ -29,9 +29,8 @@ void RenderPassManager::unlock(bool resetNodes) {
 }
 
 void RenderPassManager::render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph) {
-    for(RenderPassItem& rpi : _renderPasses){
+    for(RenderPassItem& rpi : _renderPasses)
         rpi._rp->render(sceneRenderState, activeSceneGraph);
-    }
 }
 
 void RenderPassManager::addRenderPass(RenderPass* const renderPass, U8 orderKey) {
@@ -55,9 +54,9 @@ void RenderPassManager::removeRenderPass(RenderPass* const renderPass,bool delet
 void RenderPassManager::removeRenderPass(const std::string& name,bool deleteRP) {
     for(vectorImpl<RenderPassItem >::iterator it = _renderPasses.begin(); it != _renderPasses.end(); it++){
         if(it->_rp->getName().compare(name) == 0){
-            if(deleteRP){
+            if(deleteRP)
                 SAFE_DELETE(it->_rp);
-            }
+            
             _renderPasses.erase(it);
             break;
         }
@@ -65,8 +64,8 @@ void RenderPassManager::removeRenderPass(const std::string& name,bool deleteRP) 
 }
 
 U16 RenderPassManager::getLastTotalBinSize(U8 renderPassId) const {
-    if(renderPassId < _renderPasses.size()){
+    if(renderPassId < _renderPasses.size())
         return _renderPasses[renderPassId]._rp->getLasTotalBinSize();
-    }
+    
     return 0;
 }

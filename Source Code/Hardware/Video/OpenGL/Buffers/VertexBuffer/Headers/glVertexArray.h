@@ -46,10 +46,12 @@ public:
 
     virtual bool SetActive();
 
-    void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false);
-
     ///Never call Refresh() just queue it and the data will update before drawing
     inline bool queueRefresh() {_refreshQueued = true; return true;}
+
+protected:
+    friend class GFXDevice;
+    void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false);
 
 protected:
     /// If we have a shader, we create a VAO, if not, we use simple VB + IB. If that fails, use VA
@@ -64,7 +66,6 @@ protected:
     void Draw(const GenericDrawCommand& command, bool skipBind = false);
 
 protected:
-    U8 _prevLoD;
     GLenum _formatInternal;
     GLuint _IBid;
     GLuint _VBid;
@@ -79,11 +80,6 @@ protected:
 
     GLsizei _prevSize[VertexAttribute_PLACEHOLDER];
     GLsizei _prevSizeIndices;
-
-    const static U32 MAX_DRAW_COMMANDS = 128 * 8;
-    vectorImpl<U32> _lodBatches[Config::SCENE_NODE_LOD];
-    vectorImpl<GLsizei > _multiCount;
-    vectorImpl<const GLvoid* > _multiIndices;
 };
 
 #endif

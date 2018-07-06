@@ -36,20 +36,20 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
 void SubMesh::postLoad(SceneGraphNode* const sgn){
     //sgn->getTransform()->setTransforms(_localMatrix);
     /// If the mesh has animation data, use dynamic VB's if we use software skinning
-    _renderInstance->buffer(_parentMesh->getGeometryVB());
     VertexBuffer* vb = _parentMesh->getGeometryVB();
     _drawCmd._cmd.firstIndex =  vb->getPartitionOffset(_geometryPartitionId);
     _drawCmd._cmd.count =       vb->getPartitionCount(_geometryPartitionId);
     Object3D::postLoad(sgn);
 }
 
-void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
+void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     assert(_parentMesh != nullptr);
-   
-    _drawCmd.setLoD(getCurrentLOD());
-    _parentMesh->addDrawCommand(_drawCmd, _drawShader);
 
-    _renderInstance->addDrawCommand(_drawCmd);
-    Object3D::render(sgn, sceneRenderState);
-    _renderInstance->clearDrawCommands();
+    _drawCmd.setLoD(getCurrentLOD());
+    _drawCmd.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+    _drawCmd.setStateHash(getDrawStateHash(currentRenderStage));
+    _drawCmd.setShaderProgram(getDrawShader(currentRenderStage));
+    _parentMesh->addDrawCommand(_drawCmd);
+
+    GFX_DEVICE.submitRenderCommand(_parentMesh->getGeometryVB(), _drawCmd);
 }

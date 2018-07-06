@@ -7,10 +7,9 @@ uniform float mixWeight;
 
 #if defined(_DEBUG)
 uniform bool dvd_showShadowSplits = false;
-#endif
-
 // set this to whatever (current cascade, current depth comparison result, anything)
 int _shadowTempInt = -1;
+#endif
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 tex){
 	vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));

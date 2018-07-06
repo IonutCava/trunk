@@ -23,8 +23,8 @@ public:
             bool getDrawState(const RenderStage& currentStage)  const;
             void addToDrawExclusionMask(U32 stageMask);
             void removeFromDrawExclusionMask(U32 stageMask);
-            I64 getDepthStateBlock();
-            I64 getShadowStateBlock();
+            size_t getDepthStateBlock();
+            size_t getShadowStateBlock();
 
 protected:
     friend class SceneNode;
@@ -34,8 +34,8 @@ protected:
     bool _noDefaultMaterial;
     U32  _exclusionMask;
 
-    I64 _depthStateBlockHash;
-    I64 _shadowStateBlockHash;
+    size_t _depthStateBlockHash;
+    size_t _shadowStateBlockHash;
 };
 
 #endif

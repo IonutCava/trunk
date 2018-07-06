@@ -31,7 +31,7 @@
 
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
-	SSAOPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	SSAOPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~SSAOPreRenderOperator();
 
 	void operation();
@@ -39,7 +39,7 @@ public:
 
 private:
 	ShaderProgram* _ssaoShader;
-	FrameBuffer*   _outputFB;
+	Framebuffer*   _outputFB;
 };
 
 #endif

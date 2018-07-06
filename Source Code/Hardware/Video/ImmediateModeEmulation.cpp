@@ -1,7 +1,8 @@
 #include "Headers/ImmediateModeEmulation.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
-IMPrimitive::IMPrimitive() : _inUse(false),
+IMPrimitive::IMPrimitive() : GUIDWrapper(),
+                             _inUse(false),
                              _hasLines(false),
                              _canZombify(true),
                              _forceWireframe(false),

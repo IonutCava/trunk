@@ -44,10 +44,10 @@ public:
     void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false)
     {
     }
-    void BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount)
+    void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount)
     {
     }
-    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool steam)
+    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam)
     {
     }
     void SetFeedbackBuffer(U32 buffer, U32 bindPoint)

@@ -52,27 +52,10 @@ void GUI::draw2D(){
     GFXDevice& gfx = GFX_DEVICE;
 
     _guiShader->bind();
-    _guiShader->uploadNodeMatrices();
 
     //------------------------------------------------------------------------
     FOR_EACH(guiMap::value_type& guiStackIterator, _guiStack){
-        GUIElement* guiElement = guiStackIterator.second;
-        assert(guiElement);
-        if (!guiElement->isVisible()) continue;
-        switch (guiElement->getType()){
-            case GUI_TEXT:{
-                SET_STATE_BLOCK(guiElement->_guiSBHash);
-                gfx.updateStates();
-                GUIText* text = dynamic_cast<GUIText*>(guiElement);
-                gfx.drawText(*text, text->getPosition());
-                text->_lastDrawTimer = GETUSTIME();
-            }break;
-            case GUI_FLASH:
-                dynamic_cast<GUIFlash* >(guiElement)->playMovie();
-                break;
-        default:
-            break;
-        };
+        gfx.drawGUIElement(guiStackIterator.second);
     }
     //------------------------------------------------------------------------
 }

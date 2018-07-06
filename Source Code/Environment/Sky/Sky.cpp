@@ -72,15 +72,8 @@ void Sky::postLoad(SceneGraphNode* const sgn){
 
     _skyGeom = sgn->addNode(_sky);
     _sky->getSceneNodeRenderState().setDrawState(false);
-    _sky->setCustomShader(_skyShader);
-    _sky->renderInstance()->addDrawCommand(GenericDrawCommand());
 
     SceneNode::postLoad(sgn);
-}
-
-bool Sky::prepareMaterial(SceneGraphNode* const sgn, bool depthPass) {
-    _sky->renderInstance()->stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
-	SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);    return true;
 }
 
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
@@ -91,11 +84,14 @@ bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
     return _sky->onDraw(sgn, currentStage);
 }
 
-void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
-    sgn->getTransform()->setPosition(sceneRenderState.getCameraConst().getEye());
-    _skyShader->bind();
+void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     _skybox->Bind(0);
-    GFX_DEVICE.renderInstance(_sky->renderInstance());
+
+    GenericDrawCommand cmd;
+    cmd.setStateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
+    cmd.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+    cmd.setShaderProgram(_skyShader);
+    GFX_DEVICE.submitRenderCommand(_sky->getGeometryVB(), cmd);
 }
 
 void Sky::setSunVector(const vec3<F32>& sunVect) {

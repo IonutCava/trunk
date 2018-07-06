@@ -29,6 +29,7 @@
 #include "Hardware/Video/Headers/ImmediateModeEmulation.h"
 #include "Hardware/Video/OpenGL/Shaders/Headers/glShaderProgram.h"
 #include "Hardware/Video/OpenGL/Shaders/Headers/glShader.h"
+#include "Hardware/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 #include "Hardware/Video/OpenGL/Textures/Headers/glTexture.h"
 #include "Hardware/Video/OpenGL/Headers/glEnumTable.h"
 #include <boost/lockfree/spsc_queue.hpp>
@@ -39,17 +40,19 @@ class glUniformBuffer;
 
 struct glslopt_ctx;
 
-DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
-    typedef Unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
+DEFINE_SINGLETON_EXT1(GL_API, RenderAPIWrapper)
+
     typedef void (*callback)();	void glCommand(callback f){f();}
 
     friend class glShader;
+    friend class glTexture;
     friend class glIMPrimitive;
-    friend class glFrameBuffer;
+    friend class glFramebuffer;
     friend class glVertexArray;
     friend class glShaderProgram;
     friend class glSamplerObject;
     friend class glGenericVertexData;
+
 protected:
 
     GL_API() : RenderAPIWrapper(),
@@ -67,47 +70,39 @@ protected:
     GLbyte initHardware(const vec2<GLushort>& resolution, GLint argc, char **argv);
     void closeRenderingApi();
     void initDevice(GLuint targetFrameRate);
+    bool initShaders();
+    bool deInitShaders();
+
     ///Change the window's position
-    void      setWindowPos(GLushort w, GLushort h) const;
-    void      setMousePosition(GLushort x, GLushort y) const;
+    void setWindowPos(GLushort w, GLushort h) const;
+    void setMousePosition(GLushort x, GLushort y) const;
 
     void beginFrame();
     void endFrame();
     void idle();
     void flush();
 
-    FrameBuffer*        newFB(bool multisampled) const;
+    IMPrimitive*        newIMP() const;
+    Framebuffer*        newFB(bool multisampled) const;
     VertexBuffer*       newVB() const;
     PixelBuffer*        newPB(const PBType& type) const;
     GenericVertexData*  newGVD(const bool persistentMapped) const;
-    ShaderBuffer*       newSB(const bool unbound = false) const;
+    ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const;
 
-    inline Texture*       newTextureArray(const bool flipped = false)   const {return New glTexture(glTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }
-    inline Texture*       newTexture2D(const bool flipped = false)      const {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
-    inline Texture*       newTextureCubemap(const bool flipped = false) const {return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
+    inline Texture*       newTextureArray(const bool flipped = false)   const {return New glTexture(TEXTURE_2D_ARRAY, flipped); }
+    inline Texture*       newTexture2D(const bool flipped = false)      const {return New glTexture(TEXTURE_2D, flipped);}
+    inline Texture*       newTextureCubemap(const bool flipped = false) const {return New glTexture(TEXTURE_CUBE_MAP, flipped);}
     inline ShaderProgram* newShaderProgram(const bool optimise = false) const {return New glShaderProgram(optimise); }
     inline Shader*        newShader(const std::string& name,const ShaderType& type, const bool optimise = false) const {return New glShader(name,type,optimise); }
-           bool           initShaders();
-           bool           deInitShaders();
-
-    void updateClipPlanes();
 
     inline void toggleRasterization(bool state) { state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD); }
+    inline void setLineWidth(GLfloat width) { glLineWidth(std::min(width, (GLfloat)_lineWidthLimit)); }
 
-    void debugDraw(const SceneRenderState& sceneRenderState);
+    static size_t getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
+
+    void updateClipPlanes();
     void drawText(const TextLabel& textLabel, const vec2<I32>& position);
-    void drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset);
-    void drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
-                   const vectorImpl<vec3<GLfloat> >& pointsB,
-                   const vectorImpl<vec4<GLubyte> >& colors,
-                   const mat4<GLfloat>& globalOffset,
-                   const bool orthoMode = false,
-                   const bool disableDepth = false);
     void drawPoints(GLuint numPoints);
-
-    /*immediate mode emmlation*/
-    IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
-    /*immediate mode emmlation end*/
 
     void loadInContextInternal();
 
@@ -118,53 +113,47 @@ protected:
         return GL_API::FRAME_DURATION_GPU; 
     }
 
-    inline GLuint      getFrameCount()    const { return GL_API::FRAME_COUNT; }
-    inline GLint       getDrawCallCount() const { return GL_API::FRAME_DRAW_CALLS_PREV; }
-    inline static void registerDrawCall()       { GL_API::FRAME_DRAW_CALLS++; }
+    inline static GLuint       getActiveFB()          { return _activeFBId; }
+    inline static glslopt_ctx* getGLSLOptContext()    { return _GLSLOptContex; }
 
-    inline static GLuint getActiveVAOId()              {return _activeVAOId;}
-
-    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget = 0, bool force = false);
-    inline static void clearColor(const vec4<GLfloat>& color, GLuint renderTarget = 0, bool force = false) {
-        clearColor(color.r,color.g,color.b,color.a,renderTarget,force);
+    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget = 0);
+    inline static void clearColor(const vec4<GLfloat>& color, GLuint renderTarget = 0) {
+        clearColor(color.r,color.g,color.b,color.a,renderTarget);
     }
-    inline static GLuint getActiveFB() { return _activeFBId; }
 
+    I32 getFont(const std::string& fontName);
 
-    inline static glslopt_ctx*     getGLSLOptContext()          {return _GLSLOptContex;}
-
-    inline static GLuint getActiveTextureUnit() {return _activeTextureUnit;}
+    void changeResolutionInternal(GLushort w, GLushort h);
+    void changeViewport(const vec4<GLint>& newViewport) const;
+    void clearStates(const bool skipShader, const bool skipTextures, const bool skipBuffers);
 
 public:
     static void togglePrimitiveRestart(bool state, bool smallIndices);
-    static bool setActiveTextureUnit(GLuint unit,const bool force = false);
-    static bool setActiveVAO(GLuint id, const bool force = false);
-    static bool setActiveBuffer(GLenum target, GLuint id, const bool force = false);
-    static bool setActiveFB(GLuint id, const bool read = true, const bool write = true, const bool force = false);
-    static bool setActiveTransformFeedback(GLuint id, const bool force = false);
-    static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
+    static bool setActiveTextureUnit(GLuint unit);
+    static bool setActiveVAO(GLuint id);
+    static bool setActiveBuffer(GLenum target, GLuint id);
+    static bool setActiveFB(GLuint id, const bool read = true, const bool write = true);
+    static bool setActiveTransformFeedback(GLuint id);
+    static bool setActiveProgram(glShaderProgram* const program);
            void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
 
-    static bool bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID = 0);
-    static bool bindSampler(GLuint unit, GLuint handle);
-    inline static bool unbindTexture(GLuint unit, GLenum type){
-        return bindTexture(unit, 0, type);
+
+    static bool setPixelPackUnpackAlignment(GLint packAlignment = 1, GLint unpackAlignment = 1) {
+        return (setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment));
     }
-protected:
-    boost::atomic_bool _closeLoadingThread;
+    static bool setPixelPackAlignment(GLint packAlignment = 1, GLint rowLength = 0, GLint skipRows = 0, GLint skipPixels = 0);
+    static bool setPixelUnpackAlignment(GLint unpackAlignment = 1, GLint rowLength = 0, GLint skipRows = 0, GLint skipPixels = 0);
 
-    I32 getFont(const std::string& fontName);
-    glIMPrimitive* getOrCreateIMPrimitive(bool allowPrimitiveRecycle = true);
-    ///Used for rendering skeletons
-    void setupLineState(const mat4<F32>& mat, const bool ortho);
-    void releaseLineState(const bool ortho);
-    void drawDebugAxisInternal(const SceneRenderState& sceneRenderState);
-    void setupLineStateViewPort(const mat4<F32>& mat);
-    void releaseLineStateViewPort();
-    void changeResolutionInternal(GLushort w, GLushort h);
-    void changeViewport(const vec4<GLint>& newViewport) const;
-    void clearStates(const bool skipShader, const bool skipTextures, const bool skipBuffers, const bool forceAll);
+    static bool bindTexture(GLuint unit, GLuint handle, GLenum type, size_t samplerHash = 0);
+    static bool bindSampler(GLuint unit, size_t samplerHash);
+    static bool unbindTexture(GLuint unit, GLenum type) { return bindTexture(unit, 0, type); }
 
+    static GLuint getSamplerHandle(size_t samplerHash);
+
+private:
+    void createFonsContext();
+    void deleteFonsContext();
+    
 private: //OpenGL specific:
 
     ///Text Rendering
@@ -180,17 +169,13 @@ private: //OpenGL specific:
     vec2<GLushort> _cachedResolution; ///<Current window resolution
     // line width limit
     GLint _lineWidthLimit;
-    vectorImpl<vec3<GLfloat> > _pointsA, _axisPointsA;
-    vectorImpl<vec3<GLfloat> > _pointsB, _axisPointsB;
-    vectorImpl<vec4<GLubyte> > _colors, _axisColors;
-    //Immediate mode emulation
-    ShaderProgram*               _imShader;       //<The shader used to render VB data
-    vectorImpl<glIMPrimitive* >  _glimInterfaces; //<The interface that coverts IM calls to VB data
     GLuint _pointDummyVAO; //< Used to render points (e.g. to render full screen quads with geometry shaders)
     ///A cache of all fonts used 
     typedef Unordered_map<std::string , I32 > FontCache;
     ///2D GUI-like text (bitmap fonts) go in this
     FontCache  _fonts;
+
+    boost::atomic_bool _closeLoadingThread;
 
     static glslopt_ctx* _GLSLOptContex;
     static GLuint _activeVAOId;
@@ -198,6 +183,10 @@ private: //OpenGL specific:
     static GLuint _activeBufferId[7]; //< VB, IB, SB, TB, UB, PUB, DIB
     static GLuint _activeTextureUnit;
     static GLuint _activeTransformFeedback;
+    static GLint _activePackUnpackAlignments[2];
+    static GLint _activePackUnpackRowLength[2];
+    static GLint _activePackUnpackSkipPixels[2];
+    static GLint _activePackUnpackSkipRows[2];
     static Unordered_map<GLuint, vec4<GLfloat> > _prevClearColor;
     
     static bool _lastRestartIndexSmall;
@@ -209,11 +198,7 @@ private: //OpenGL specific:
     static const GLint PERFORMANCE_COUNTER_BUFFERS = 4;
     // number of queries
     static const GLint PERFORMANCE_COUNTERS = 1;
-    // number of draw calls (rough estimate)
-    static GLint FRAME_DRAW_CALLS;
-    static GLint FRAME_DRAW_CALLS_PREV;
-    static GLuint FRAME_COUNT;
-
+  
     GLuint _queryID[PERFORMANCE_COUNTER_BUFFERS][PERFORMANCE_COUNTERS];
     GLuint _queryBackBuffer;
     GLuint _queryFrontBuffer;
@@ -222,10 +207,13 @@ private: //OpenGL specific:
     struct FONScontext* _fonsContext;
     /*slot*/ /*<textureHandle , textureType>*/
     typedef Unordered_map<GLushort, std::pair<GLuint, GLenum> > textureBoundMapDef;
-    static textureBoundMapDef textureBoundMap;
+    static textureBoundMapDef _textureBoundMap;
 
-    typedef Unordered_map<GLushort, GLuint> samplerBoundMapDef;
-    static samplerBoundMapDef samplerBoundMap;
+    typedef Unordered_map<GLushort, size_t> samplerBoundMapDef;
+    static samplerBoundMapDef _samplerBoundMap;
+
+    typedef Unordered_map<size_t, glSamplerObject* > samplerObjectMap;
+    static samplerObjectMap _samplerMap;
 
 END_SINGLETON
 

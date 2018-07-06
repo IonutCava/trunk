@@ -72,20 +72,15 @@ vec4 UnderwaterColor() {
 }
 
 vec4 UnderwaterMappingRoutine(){
-	return mix(CausticsColor(), UnderwaterColor(), _waterDepth);
+    return mix(CausticsColor(), UnderwaterColor(), _waterDepth);
 }
 
 //subroutine uniform TerrainMappingType TerrainMappingRoutine;
 
 vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
-	return lodLevel == 0 ? computeLightInfoLOD0Frag() :  computeLightInfoLOD1Frag();
+    return lodLevel == 0 ? computeLightInfoLOD0Frag() :  computeLightInfoLOD1Frag();
 }
 
 void main(void) {
-    
-   vec4 color = gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine(); 
-   
-   applyFog(color);
-    
-   _colorOut = color;
+   _colorOut = applyFog(gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine());
 }

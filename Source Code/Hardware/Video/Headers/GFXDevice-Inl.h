@@ -23,6 +23,19 @@
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_INL_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_INL_H_
 
+inline void GFXDevice::setApi(const RenderAPI& api){
+    _api.setId(api);
+    switch (api)	{
+        default:
+        case OpenGLES:
+        case OpenGL:    _api = GL_API::getOrCreateInstance();	break;
+        case Direct3D:	_api = DX_API::getOrCreateInstance();	break;
+
+        case GFX_RENDER_API_PLACEHOLDER:
+        case None:	ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API")); setApi(OpenGL); break; 
+    };
+}
+
 /// Render all 2D debug info and call API specific flush function
 inline void GFXDevice::flush(){
     toggle2D(true);
@@ -67,14 +80,5 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK& callback, U32 cal
 
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)
-
-inline I64 SET_STATE_BLOCK(I64 blockHash, bool forceUpdate = false){
-    return blockHash == 0 ? GFX_DEVICE.setDefaultStateBlock(forceUpdate) :
-                            GFX_DEVICE.setStateBlock(blockHash, forceUpdate);
-}
-
-inline I64 SET_DEFAULT_STATE_BLOCK(bool forceUpdate = false){
-    return GFX_DEVICE.setDefaultStateBlock(forceUpdate);
-}
 
 #endif

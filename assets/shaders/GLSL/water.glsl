@@ -11,12 +11,11 @@ void main(void)
 {
     computeData();
 
-    _pixToLight = -(dvd_LightSource[dvd_perNodeLightData[0].x]._position.xyz);
-    _pixToEye = -vec3(dvd_ViewMatrix * _vertexW);
+    _pixToLight = -(dvd_LightSource[0]._position.xyz);
+    _pixToEye   = -vec3(dvd_ViewMatrix * _vertexW);
 
     _vertexWVP = dvd_ViewProjectionMatrix * _vertexW;
-    _normalWV = normalize(dvd_NormalMatrix[dvd_drawID] * dvd_Normal);
-
+    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal);
 
     gl_Position = _vertexWVP;
 }
@@ -36,12 +35,11 @@ uniform float _waterShininess;
 uniform float _transparencyBias;
 uniform bool  underwater;
 
-uniform sampler2D texWaterReflection;
-uniform sampler2D texWaterRefraction;
 uniform sampler2D texWaterNoiseNM;
 uniform sampler2D texWaterNoiseDUDV;
+uniform sampler2D texWaterReflection;
+uniform sampler2D texWaterRefraction;
 
-uniform mat4  material;
 uniform float dvd_time;
 uniform ivec2 dvd_invScreenDimension;
 
@@ -49,9 +47,8 @@ uniform ivec2 dvd_invScreenDimension;
 #include "lightingDefaults.frag"
 #include "shadowMapping.frag"
 
-
 float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return underwater ? 1.0 : 0.3 + 1.0 / pow(1.0 + dot(viewDir, normal), 5);
+    return underwater ? 1.0 : 1.0 / pow(1.0 + dot(viewDir, normal), 5);
 }
 
 void main (void)
@@ -76,23 +73,22 @@ void main (void)
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
-    vec3 N = normalize(dvd_NormalMatrix[dvd_drawID] * normal);
+    vec3 N = normalize(dvd_NormalMatrix * normal);
     vec3 L = normalize(_pixToLight);
     vec3 V = normalize(_pixToEye);
 
     float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);
 
     // add Diffuse
-    _colorOut.rgb = mix(texture(texWaterRefraction, uvFinalRefract), texture(texWaterReflection, uvFinalReflect), Fresnel(V, normalize(_normalWV))).rgb;
+    _colorOut.rgb = mix(texture(texWaterReflection, uvFinalRefract).rgb, 
+                        texture(texWaterRefraction, uvFinalReflect).rgb, 
+                        vec3(clamp(Fresnel(V, normalize(_normalWV)), 0.0, 1.0)));
     // add Specular
-    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[dvd_perNodeLightData[0].x]._specular.rgb * material[2].rgb * iSpecular, vec3(0.0), vec3(1.0));
+    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[0]._specular.rgb * dvd_MatSpecular.rgb * iSpecular, vec3(0.0), vec3(1.0));
     // shadow mapping
     if (!underwater){
-        float shadow = applyShadowDirectional(0, dvd_ShadowSource[0]);
-      //  _colorOut.rgb *= (0.2 + 0.8 * shadow);
+        _colorOut.rgb *= (0.2 + 0.8 * applyShadowDirectional(0, dvd_ShadowSource[0]));
     }
     // add Fog
-    //applyFog(_colorOut);
-    _colorOut.a = 1.0;
-
+    _colorOut = applyFog(vec4(_colorOut.rgb, 1.0));
 }

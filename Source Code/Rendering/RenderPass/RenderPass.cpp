@@ -29,9 +29,13 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
 
     //Draw the entire queue;
     //Limited to 65536 (2^16) items per queue pass!
-    if(renderState.drawObjects())
-        for(U16 i = 0; i < renderBinCount; i++)
+    if(renderState.drawObjects()) {
+        if(bitCompare(DISPLAY_STAGE | REFLECTION_STAGE, currentStage) && renderBinCount > 0)
+            LightManager::getInstance().bindDepthMaps();
+
+        for(U16 i = 0; i < renderBinCount; ++i)
             renderQueue.getBinSorted(i)->render(renderState, currentStage);
+    }
 
     //Unbind all shaders after every render pass
     ShaderManager::getInstance().unbind();

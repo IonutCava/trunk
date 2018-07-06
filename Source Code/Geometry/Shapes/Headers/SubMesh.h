@@ -64,7 +64,7 @@ protected:
     inline void setParentMesh(Mesh* const parentMesh) { _parentMesh = parentMesh; }
     inline void setParentMeshSGN(SceneGraphNode* const meshSGN) { _parentMeshSGN = meshSGN; }
 
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
 
     friend class DVDConverter;
     mat4<F32> _sceneRootMatrix;

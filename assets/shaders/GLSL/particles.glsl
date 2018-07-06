@@ -1,6 +1,6 @@
 -- Vertex
 
-layout(location = 16) in vec4 particleNormalData;
+layout(location = 13) in vec4 particleNormalData;
 // Output data ; will be interpolated for each fragment.
 out vec2 texCoord;
 out vec4 particleColor;
@@ -52,11 +52,11 @@ out vec4 color;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 uniform sampler2D depthBuffer;
-uniform vec2 size;
+uniform ivec2 dvd_screenDimension;
 
 void main(){
     
-    float d = texture(depthBuffer, gl_FragCoord.xy * size).r  - gl_FragCoord.z;
+    float d = texture(depthBuffer, gl_FragCoord.xy * dvd_screenDimension).r  - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 40.0 * d), 2.0);
     softness = 1.0 - pow(softness, 2.0);
 

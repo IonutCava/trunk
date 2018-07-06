@@ -68,6 +68,7 @@ Resource* const ResourceCache::find(const std::string& name){
 }
 
 bool ResourceCache::scheduleDeletion(Resource* const resource,bool force){
+    if(_resDB.empty()) return false;
     if(resource == nullptr) return false;
     ResourceMap::const_iterator resDBiter = _resDB.find(resource->getName());
      /// it's already deleted. Double-deletion should be safe

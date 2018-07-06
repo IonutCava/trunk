@@ -24,35 +24,37 @@
 #define _GL_TEXTURE_H_
 
 #include "core.h"
-#include "glSamplerObject.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
 class glTexture : public Texture {
 public:
-    glTexture(GLuint type, bool flipped = false);
+    glTexture(TextureType type, bool flipped = false);
     ~glTexture();
 
-    bool unload() {Destroy(); return true;}
+    bool unload();
 
     void Bind(GLushort unit);
 
-    void setMipMapRange(U32 base = 0, U32 max = 1000);
-    void loadData(GLuint target, const GLubyte* const ptr, const vec2<U16>& dimensions, GLubyte bpp, GFXImageFormat format);
+    void setMipMapRange(GLushort base = 0, GLushort max = 1000);
+    void updateMipMaps();
+
+    void loadData(GLuint target, const GLubyte* const ptr, const vec2<GLushort>& dimensions, const vec2<GLushort>& mipLevels,
+                  GFXImageFormat format, GFXImageFormat internalFormat, bool usePOW2 = false);
 
 protected:
     bool generateHWResource(const std::string& name);
     void threadedLoad(const std::string& name);
-
-private:
-    void Destroy();
-    void createSampler();
+    void reserveStorage();
 
 private:
     GLenum _type;
-    bool   _allocatedStorage;
-    ///We currently only use one sampler per texture. When the texture is destroyed, the sampler is destroyed!!!!
-    glSamplerObject  _sampler;
-
+    GLenum _format;
+    GLenum _internalFormat;
+    boost::atomic_bool _allocatedStorage;
+    boost::atomic_bool _samplerCreated;    
+    size_t _samplerHash;
+    GLushort _mipMaxLevel;
+    GLushort _mipMinLevel;
 };
 
 #endif

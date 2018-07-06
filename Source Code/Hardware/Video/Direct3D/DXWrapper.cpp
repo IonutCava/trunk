@@ -59,6 +59,10 @@ void DX_API::toggleRasterization(bool state)
 {
 }
 
+void DX_API::setLineWidth(F32 width)
+{
+}
+
 F32* DX_API::setProjection(const vec4<F32>& rect, const vec2<F32>& planes)
 {
     return nullptr;
@@ -81,19 +85,7 @@ void DX_API::drawText(const TextLabel& textLabel, const vec2<I32>& position)
 {
 }
 
-void DX_API::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset)
-{
-}
-
-void DX_API::drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<vec3<F32> >& pointsB,const vectorImpl<vec4<U8> >& colors, const mat4<F32>& globalOffset,const bool orthoMode,const bool disableDepth)
-{
-}
-
 void DX_API::drawPoints(U32 numPoints)
-{
-}
-
-void DX_API::debugDraw(const SceneRenderState& sceneRenderState)
 {
 }
 

@@ -3,9 +3,15 @@
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Scenes/Headers/SceneState.h"
+
+#include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIText.h"
+
+#include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+#include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
@@ -13,22 +19,34 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
 #include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/OpenGL/glsw/Headers/glsw.h"
 
-//Max number of frames before an unused primitive is deleted (default: 180 - 3 seconds at 60 fps)
-const GLint GLIM_MAX_FRAMES_ZOMBIE_COUNT = 180;
+#include "Hardware/Video/OpenGL/Buffers/Framebuffer/Headers/glFramebuffer.h"
+#include "Hardware/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
+#include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
+#include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
+#include "Hardware/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 
-GLint GL_API::FRAME_DRAW_CALLS = 0;
-GLint GL_API::FRAME_DRAW_CALLS_PREV = 0;
+#include <glsl/glsl_optimizer.h>
+
+#ifndef GLFONTSTASH_IMPLEMENTATION
+#define GLFONTSTASH_IMPLEMENTATION
+#define FONTSTASH_IMPLEMENTATION
+#include "Text/Headers/fontstash.h"
+#include "Text/Headers/glfontstash.h"
+#endif
+
 GLuint64 GL_API::FRAME_DURATION_GPU = 0;
-GLuint GL_API::FRAME_COUNT = 0;
 
 #include <glim.h>
 
-namespace IMPrimitiveValidation{
-    inline bool zombieCountMatch(glIMPrimitive* const priv){
-        if(priv->_canZombify) return priv->zombieCounter() < GLIM_MAX_FRAMES_ZOMBIE_COUNT;
-        else return true;
-    }
+void GL_API::createFonsContext() {
+    _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
+}
+
+void GL_API::deleteFonsContext() {
+    glfonsDelete(_fonsContext);
+    _fonsContext = nullptr;
 }
 
 void GL_API::beginFrame(){
@@ -36,227 +54,202 @@ void GL_API::beginFrame(){
     GLuint queryId = _queryID[_queryBackBuffer][0];
     glBeginQuery(GL_TIME_ELAPSED, queryId);
 #endif
-    GL_API::clearColor(DefaultColors::DIVIDE_BLUE(), 0, true);
+    GL_API::clearColor(DefaultColors::DIVIDE_BLUE(), 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT/* | GL_STENCIL_BUFFER_BIT*/);
-    GL_API::registerDrawCall();
-    SET_DEFAULT_STATE_BLOCK();
+    GFX_DEVICE.registerDrawCall();
 }
 
 void GL_API::endFrame(){
 
-    //Remove dead primitives in 3 steps (or we could automate this with shared_ptr?):
-    //1) Partition the vector in 2 parts: valid objects first, zombie objects second
-    vectorImpl<glIMPrimitive* >::iterator zombie = std::partition(_glimInterfaces.begin(),
-                                                                  _glimInterfaces.end(),
-                                                                  IMPrimitiveValidation::zombieCountMatch);
-    //2) For every zombie object, free the memory it's using
-    for( vectorImpl<glIMPrimitive *>::iterator i = zombie ; i != _glimInterfaces.end() ; ++i ){
-        SAFE_DELETE(*i);
-    }
-
-    //3) Remove all the zombie objects once the memory is freed
-    _glimInterfaces.erase(zombie, _glimInterfaces.end());
-
     //unbind all states (shaders, textures, buffers)
-    clearStates(false,false,false,true);
+    clearStates(false,false,false);
 
     glfwSwapBuffers(Divide::GLUtil::_mainWindow);
-    GL_API::FRAME_COUNT++;
 
 #ifdef _DEBUG
     glEndQuery(GL_TIME_ELAPSED);
 
-    GLuint query = GL_API::FRAME_COUNT % 4;
+    GLuint query = GFX_DEVICE.getFrameCount() % 4;
     
     _queryBackBuffer = query;
     _queryFrontBuffer = 3 - _queryBackBuffer;
     
 #endif
-    GL_API::FRAME_DRAW_CALLS_PREV = GL_API::FRAME_DRAW_CALLS;
-    GL_API::FRAME_DRAW_CALLS = 0;
-}
-
-void GL_API::debugDraw(const SceneRenderState& sceneRenderState){
-    drawDebugAxisInternal(sceneRenderState);
-
-    _imShader->bind();
-
-    NS_GLIM::GLIM_BATCH::s_bForceWireframe = false;
-
-    for(glIMPrimitive* priv : _glimInterfaces){
-        if(priv->paused())
-            continue;
-        if(!priv->_inUse && priv->_canZombify) {
-            ++priv->_zombieCounter;
-            continue;
-        }
-
-        if(!priv->_setupStates.empty()){
-            priv->_setupStates();
-        }
-        
-        SET_STATE_BLOCK(priv->stateHash(), true);
-        
-        if(priv->_hasLines){
-            glLineWidth(std::min(priv->_lineWidth, (F32)_lineWidthLimit));
-        }
-
-        bool texture = (priv->_texture != nullptr);
-
-        if(texture){
-            priv->_texture->Bind(0);
-        }
-
-        _imShader->Uniform("useTexture", texture);
-
-        _imShader->uploadNodeMatrices();
-
-        priv->renderBatch(priv->forceWireframe());
-
-        if(priv->_hasLines) {
-            glLineWidth(1.0f);
-        }
-
-        if(!priv->_resetStates.empty()){
-            priv->_resetStates();
-        }
-        if(priv->_canZombify){
-            priv->_inUse = false;
-        }
-    }
-    _imShader->unbind();
 }
 
 void GL_API::flush(){
-    clearStates(false,false,false,false);
+    clearStates(false,false,false);
 }
 
-void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset){
-    IMPrimitive* priv = getOrCreateIMPrimitive();
+bool GL_API::initShaders(){
+    //Init glsw library
+    GLint glswState = glswInit();
+    glswAddDirectiveToken("","#version 440 core\n/*“Copyright 2009-2014 DIVIDE-Studio”*/");
+#if defined(_DEBUG)
+    glswAddDirectiveToken("", "#define _DEBUG");
+#elif defined(_PROFILE)
+    glswAddDirectiveToken("", "#define _PROFILE");
+#else
+    glswAddDirectiveToken("", "#define _RELEASE");
+#endif
 
-    priv->_hasLines = true;
-    priv->_lineWidth = 4.0f;
-    mat4<F32> offset(globalOffset);
+    glswAddDirectiveToken("Vertex",   "#define VERT_SHADER");
+    glswAddDirectiveToken("Geometry", "#define GEOM_SHADER");
+    glswAddDirectiveToken("Fragment", "#define FRAG_SHADER");
 
-    priv->stateHash(GFX_DEVICE._defaultStateBlockHash);
-    priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, offset, false),
-                          DELEGATE_BIND(&GL_API::releaseLineState, this, false));
-    priv->beginBatch();
+    if(getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
+        glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
+        glswAddDirectiveToken("","#pragma optionNV(fastprecision on)");
+        glswAddDirectiveToken("","#pragma optionNV(inline all)");
+        glswAddDirectiveToken("","#pragma optionNV(ifcvt none)");
+        glswAddDirectiveToken("","#pragma optionNV(strict on)");
+        glswAddDirectiveToken("","#pragma optionNV(unroll all)");
+    }
 
-    vec4<GLubyte> color(0,0,255,255);
-    priv->attribute4ub("inColorData", color);
+    glswAddDirectiveToken("", std::string("#define MAX_INSTANCES " + Util::toString(Config::MAX_INSTANCE_COUNT)).c_str());
+    glswAddDirectiveToken("", std::string("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES)).c_str());
+    glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
+    glswAddDirectiveToken("", std::string("#define MAX_SPLITS_PER_LIGHT " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT)).c_str());
+    glswAddDirectiveToken("", std::string("const uint MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
+    glswAddDirectiveToken("", std::string("#define MAX_LIGHTS_PER_SCENE_NODE 3").c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(Divide::SHADER_BUFFER_LIGHT_NORMAL)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_GPU_BLOCK " + Util::toString(Divide::SHADER_BUFFER_GPU_BLOCK)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_MATERIAL " + Util::toString(Divide::SHADER_BUFFER_NODE_MATERIAL)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_NODE_TRANSFORMS)).c_str());
+    glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
+    glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
+    glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
+    glswAddDirectiveToken("", "//__CUSTOM_UNIFORMS__");
+    glswAddDirectiveToken("Vertex",   std::string("#define MAX_BONE_COUNT_PER_NODE " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE)).c_str());
+    glswAddDirectiveToken("Vertex",   std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(Material::TEXTURE_UNIT0)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(Material::TEXTURE_UNIT1)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_NORMALMAP " + Util::toString(Material::TEXTURE_NORMALMAP)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(Material::TEXTURE_OPACITY)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(Material::TEXTURE_SPECULAR)).c_str());
 
-    priv->begin(LINE_LOOP);
-        priv->vertex( vec3<GLfloat>(min.x, min.y, min.z) );
-        priv->vertex( vec3<GLfloat>(max.x, min.y, min.z) );
-        priv->vertex( vec3<GLfloat>(max.x, min.y, max.z) );
-        priv->vertex( vec3<GLfloat>(min.x, min.y, max.z) );
-    priv->end();
-
-    priv->begin(LINE_LOOP);
-        priv->vertex( vec3<GLfloat>(min.x, max.y, min.z) );
-        priv->vertex( vec3<GLfloat>(max.x, max.y, min.z) );
-        priv->vertex( vec3<GLfloat>(max.x, max.y, max.z) );
-        priv->vertex( vec3<GLfloat>(min.x, max.y, max.z) );
-    priv->end();
-
-    priv->begin(LINES);
-        priv->vertex( vec3<GLfloat>(min.x, min.y, min.z) );
-        priv->vertex( vec3<GLfloat>(min.x, max.y, min.z) );
-        priv->vertex( vec3<GLfloat>(max.x, min.y, min.z) );
-        priv->vertex( vec3<GLfloat>(max.x, max.y, min.z) );
-        priv->vertex( vec3<GLfloat>(max.x, min.y, max.z) );
-        priv->vertex( vec3<GLfloat>(max.x, max.y, max.z) );
-        priv->vertex( vec3<GLfloat>(min.x, min.y, max.z) );
-        priv->vertex( vec3<GLfloat>(min.x, max.y, max.z) );
-    priv->end();
-
-    priv->endBatch();
-}
-
-void GL_API::setupLineState(const mat4<F32>& mat, const bool ortho){
-    GFX_DEVICE.pushWorldMatrix(mat,true);
-
-    if(ortho)
-        GFX_DEVICE.setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
-}
-
-
-void GL_API::releaseLineState(const bool ortho){
-    GFX_DEVICE.popWorldMatrix();
-    if(ortho)
-        GFX_DEVICE.restoreViewport();
-}
-
-void GL_API::drawDebugAxisInternal(const SceneRenderState& sceneRenderState){
-    if(!GFX_DEVICE.drawDebugAxis()) return;
+    glswAddDirectiveToken("Fragment", "const uint DEPTH_EXP_WARP = 32;");
     
-    if(_axisPointsA.empty()){
-        vec3<GLfloat> ORG(0,0,0);
-        vec3<GLfloat> XP(1,0,0);
-        vec3<GLfloat> YP(0,1,0);
-        vec3<GLfloat> ZP(0,0,1);
+    // GLSL <-> VBO intercommunication 
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION) + ") in vec3  inVertexData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_COLOR_LOCATION) + ") in vec4  inColorData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_NORMAL_LOCATION) + ") in vec3  inNormalData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TEXCOORD_LOCATION) + ") in vec2  inTexCoordData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TANGENT_LOCATION) + ") in vec3  inTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BITANGENT_LOCATION) + ") in vec3  inBiTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
 
-        //Red X-axis
-        _axisPointsA.push_back(ORG);
-        _axisPointsB.push_back(XP);
-        _axisColors.push_back(vec4<GLubyte>(255,0,0,255));
+    glswAddDirectiveToken("", std::string("#include \"nodeDataInput.cmn\"").c_str());
+    GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES ? kGlslTargetOpenGLES30 : kGlslTargetOpenGL);
 
-        //Green Y-axis
-        _axisPointsA.push_back(ORG);
-        _axisPointsB.push_back(YP);
-        _axisColors.push_back(vec4<GLubyte>(0,255,0,255));
-
-        //Blue Z-axis
-        _axisPointsA.push_back(ORG);
-        _axisPointsB.push_back(ZP);
-        _axisColors.push_back(vec4<GLubyte>(0,0,255,255));
-    }
-
-    vec3<GLfloat> eyeVector = -(sceneRenderState.getCameraConst().getViewDir() * 2);
-    mat4<F32> offset(eyeVector, vec3<F32>(0.0f), vec3<F32>(GFX_DEVICE._viewMatrix.m[0][1], GFX_DEVICE._viewMatrix.m[1][1], GFX_DEVICE._viewMatrix.m[2][1]));
-    drawLines(_axisPointsA, _axisPointsB, _axisColors, offset, true, true);
+    return glswState == 1 && GL_API::_GLSLOptContex != nullptr;
 }
 
-void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
-                       const vectorImpl<vec3<GLfloat> >& pointsB,
-                       const vectorImpl<vec4<GLubyte> >& colors,
-                       const mat4<GLfloat>& globalOffset,
-                       const bool orthoMode,
-                       const bool disableDepth){
-    // We need a perfect pair of point A's to point B's
-    // We need a color for each line, even if it is the same one
-    if(pointsA.size() != pointsB.size() || pointsA.size() != colors.size()) return;
+bool GL_API::deInitShaders(){
+    glslopt_cleanup(_GLSLOptContex);
+    //Shut down glsw and clean memory
+    return (glswShutdown() == 1);
+}
+
+I32 GL_API::getFont(const std::string& fontName){
+    const FontCache::const_iterator& it = _fonts.find(fontName);
+    if(it == _fonts.end()){
+        std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
+        fontPath += "GUI/";
+        fontPath += "fonts/";
+        fontPath += fontName;
+        I32 tempFont = fonsAddFont(_fonsContext, fontName.c_str(), fontPath.c_str());
+
+        if (tempFont == FONS_INVALID) {
+            ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName.c_str());
+        }
+        _fonts.insert(std::make_pair(fontName, tempFont));
+        return tempFont;
+    }
     
+    return it->second;
+}
 
-    IMPrimitive* priv = getOrCreateIMPrimitive();
+void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position){
+    I32 font = getFont(textLabel._font);
+    if(font == FONS_INVALID) return;
 
-    priv->_hasLines = true;
-    priv->_lineWidth = std::min((F32)_lineWidthLimit, 5.0f);
-
-    if(!priv->hasRenderStates()){
-        priv->stateHash(disableDepth ? GFX_DEVICE._defaultStateNoDepthHash : GFX_DEVICE._defaultStateBlockHash);
-        priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, globalOffset, orthoMode),
-                              DELEGATE_BIND(&GL_API::releaseLineState, this, orthoMode));
-    }
-
-    priv->beginBatch();
-
-    priv->attribute4ub("inColorData", colors[0]);
-
-    priv->begin(LINES);
-    for(GLushort i = 0; i < pointsA.size(); i++){
-        priv->attribute4ub("inColorData", colors[i]);
-        priv->vertex( pointsA[i] );
-        priv->vertex( pointsB[i] );
-    }
-
-    priv->end();
-    priv->endBatch();
+    F32 lh = 0;
+    fonsClearState(_fonsContext);
+    fonsSetSize(_fonsContext, textLabel._height);
+    fonsSetFont(_fonsContext, font);
+    fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
+    fonsSetColor(_fonsContext, textLabel._color.r * 255, 
+                               textLabel._color.g * 255,
+                               textLabel._color.b * 255, 
+                               textLabel._color.a * 255);
+    if(textLabel._blurAmount > 0.01f)
+        fonsSetBlur(_fonsContext, textLabel._blurAmount );
+    
+    if(textLabel._spacing > 0.01f)
+        fonsSetBlur(_fonsContext, textLabel._spacing );
+    
+    if(textLabel._alignFlag != 0)
+        fonsSetAlign(_fonsContext, textLabel._alignFlag);
+    
+    fonsDrawText(_fonsContext, position.x, _cachedResolution.y - (position.y + lh), textLabel._text.c_str(), nullptr);
+    GFX_DEVICE.registerDrawCall();
 }
 
 void GL_API::drawPoints(GLuint numPoints) {
     GL_API::setActiveVAO(_pointDummyVAO);
     glDrawArrays(GL_POINTS, 0, numPoints);
-    GL_API::registerDrawCall();
+    GFX_DEVICE.registerDrawCall();
+}
+
+IMPrimitive* GL_API::newIMP() const {
+    return New glIMPrimitive();
+}
+
+/// Creates a new frame buffer
+Framebuffer* GL_API::newFB(bool multisampled) const {
+    // if MSAA is disabled, this will be a simple color / depth buffer
+    // if we requested a MSFB and msaa is enabled, create a resolve buffer
+    // and create our FB adding the resolve buffer as it's child
+    // else, return a regular frame buffer
+     return New glFramebuffer((multisampled && GFX_DEVICE.MSAAEnabled()) ? New glFramebuffer() : nullptr);
+}
+
+VertexBuffer* GL_API::newVB() const {
+    return New glVertexArray();
+}
+
+PixelBuffer* GL_API::newPB(const PBType& type) const {
+    return New glPixelBuffer(type);
+}
+
+GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
+    return New glGenericVertexData(persistentMapped);
+}
+
+ShaderBuffer* GL_API::newSB(const bool unbound, const bool persistentMapped) const {
+    return New glUniformBuffer(unbound, persistentMapped);
+}
+
+size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor){
+    size_t hashValue = descriptor.getHash();
+
+    samplerObjectMap::iterator it = _samplerMap.find(hashValue);
+    if (it == _samplerMap.end())
+        _samplerMap.insert(std::make_pair(hashValue, New glSamplerObject(descriptor)));
+ 
+    return hashValue;
+}
+
+GLuint GL_API::getSamplerHandle(size_t samplerHash) {
+    if(samplerHash == 0)
+        return 0;
+
+    samplerObjectMap::iterator it = _samplerMap.find(samplerHash);
+    if (it == _samplerMap.end()) 
+        return 0;
+
+    return it->second->getObjectHandle();
 }

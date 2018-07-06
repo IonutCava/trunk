@@ -35,13 +35,9 @@ public:
             const vec3<F32>& color,
             CEGUI::Window* parent,
             U32 textHeight = 16) : GUIElement(parent,GUI_TEXT,position), 
-                                   TextLabel(text, font, color, textHeight),
-                                   _lastDrawTimer(0)
+                                   TextLabel(text, font, color, textHeight)
     {
     }
-      
-    U64         _lastDrawTimer;
-
     void onMouseMove(const GUIEvent &event);
     void onMouseUp(const GUIEvent &event);
     void onMouseDown(const GUIEvent &event);

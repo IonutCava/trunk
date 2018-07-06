@@ -46,8 +46,6 @@ struct TerrainTextureLayer {
         TEXTURE_ALPHA_CHANNEL = 3
     };
 
-    void bindTextures(U32 offset);
-
     inline void setBlendMap(Texture* texture) { _blendMap = texture; }
     inline void setTileMaps(Texture* texture) { _tileMaps = texture; }
     inline void setDiffuseScale(TerrainTextureChannel textureChannel, F32 scale) { _diffuseUVScale[textureChannel] = scale; }
@@ -55,6 +53,9 @@ struct TerrainTextureLayer {
 
     inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }
     inline const vec4<F32>& getDetailScales()  const { return _detailUVScale;  }
+
+    Texture* const blendMap() const { return _blendMap; }
+    Texture* const tileMaps() const { return _tileMaps; }
 
 private:
     U32 _lastOffset;
@@ -100,25 +101,21 @@ protected:
 
     void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {}
 
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
-    bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
     void postLoad(SceneGraphNode* const sgn);
-    void setCausticsTex(Texture* causticTexture);
-    void setUnderwaterAlbedoTex(Texture* underwaterAlbedoTexture);
-    void setUnderwaterDetailTex(Texture* underwaterDetailTexture);
 
     inline void setUnderwaterDiffuseScale(F32 diffuseScale) {_underwaterDiffuseScale = diffuseScale;}
 
+    size_t getDrawStateHash(RenderStage renderStage);
+    ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
+    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
+
 protected:
     friend class TerrainChunk;
-    inline void addDrawCommand(const GenericDrawCommand& cmd) {
-        cmd._lodIndex == 0 ? _drawCommands[0].push_back(cmd) : _drawCommands[1].push_back(cmd);
-    }
-    
-protected:
+    VegetationDetails _vegDetails;
 
     U8            _lightCount;
     U16			  _terrainWidth;
@@ -130,23 +127,21 @@ protected:
     F32	 _farPlane;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
-
-    SceneGraphNode*   _vegetationGrassNode;
-    BoundingBox       _boundingBox;
-    Quad3D*		      _plane;
-    VegetationDetails _vegDetails;
-    Texture*          _causticsTex;
-    Texture*          _underwaterAlbedoTex;
-    Texture*          _underwaterDetailTex;
-    F32               _underwaterDiffuseScale;
+    bool _terrainInView;
+    bool _planeInView;
+    SceneGraphNode* _planeSGN;
+    SceneGraphNode* _vegetationGrassNode;
+    BoundingBox     _boundingBox;
+    Quad3D*		    _plane;
+    F32             _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer* > _terrainTextures;
-    vectorImpl<GenericDrawCommand >   _drawCommands[2]; // one for LoD 0 and one for LoD > 0
+
     ///Normal rendering state
-    I64 _terrainRenderStateHash;
+    size_t _terrainRenderStateHash;
     ///Depth map rendering state
-    I64 _terrainDepthRenderStateHash;
+    size_t _terrainDepthRenderStateHash;
     ///Reflection rendering state
-    I64 _terrainReflectionRenderStateHash;
+    size_t _terrainReflectionRenderStateHash;
 };
 
 #endif

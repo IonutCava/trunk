@@ -8,8 +8,8 @@ uniform float dvd_visibilityDistance;
 uniform float dvd_frustumBias = 0.01;
 
 
-/*layout(std430, binding = 10) buffer dvd_transformBlock{
-    coherent readonly mat4 transform[];
+/*layout(std430, binding = 10) coherent readonly buffer dvd_transformBlock{
+    mat4 transform[];
 };*/
 
 out vec4 OrigData;

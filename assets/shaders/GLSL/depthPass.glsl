@@ -1,5 +1,7 @@
 -- Vertex.Shadow
 
+#include "nodeBufferedInput.cmn"
+
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif
@@ -16,7 +18,7 @@ void main(void){
 #endif
 
     _texCoord = inTexCoordData;
-    vec4 wVertex = dvd_WorldMatrix[dvd_drawID] * dvd_Vertex;
+    vec4 wVertex = dvd_WorldMatrix * dvd_Vertex;
     setClipPlanes(wVertex);
     gl_Position = dvd_ViewProjectionMatrix * wVertex;
 }
@@ -26,11 +28,8 @@ void main(void){
 in vec2 _texCoord;
 out vec2 _colorOut;
 
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
 #define HAS_TRANSPARENCY
-#if defined(USE_OPACITY)
-uniform float opacity = 1.0;
-#endif
 #if defined(USE_OPACITY_DIFFUSE)
 uniform mat4 material;
 #endif
@@ -58,18 +57,14 @@ void main(){
     alpha *= texture(texDiffuse0, _texCoord).a;
 #endif
 #if defined(USE_OPACITY_DIFFUSE)
-    alpha *= material[1].w;
-#endif
-#if defined(USE_OPACITY)
-    alpha *= opacity;
+    alpha *= dvd_MatDiffuse.a;
 #endif
 #if defined(USE_OPACITY_MAP)
     vec4 opacityMap = texture(texOpacityMap, _texCoord);
     alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
-    if (alpha < ALPHA_DISCARD_THRESHOLD) discard;
+    /*if (alpha < ALPHA_DISCARD_THRESHOLD) discard;*/
 #endif
-
 
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     float linearz = gl_FragCoord.z;
@@ -93,11 +88,8 @@ in vec2 _texCoord;
 in vec4 _vertexW;
 out vec4 _colorOut;
 
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
 #define HAS_TRANSPARENCY
-#if defined(USE_OPACITY)
-uniform float opacity = 1.0;
-#endif
 #if defined(USE_OPACITY_DIFFUSE)
 uniform mat4 material;
 #endif
@@ -116,10 +108,7 @@ void main(){
     alpha *= texture(texDiffuse0, _texCoord).a;
 #endif
 #if defined(USE_OPACITY_DIFFUSE)
-    alpha *= material[1].w;
-#endif
-#if defined(USE_OPACITY)
-    alpha *= opacity;
+    alpha *= dvd_MatDiffuse.a;
 #endif
 #if defined(USE_OPACITY_MAP)
     vec4 opacityMap = texture(texOpacityMap, _texCoord);

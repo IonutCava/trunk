@@ -31,7 +31,6 @@
 /// Use this class to create precise VB data with specific usage (such as particle systems)
 /// Use IMPrimitive for on-the-fly geometry creation
 
-class ShaderProgram;
 class GenericVertexData : private boost::noncopyable, public FrameListener {
 public:
 
@@ -80,7 +79,6 @@ public:
     {
         REGISTER_FRAME_LISTENER(this, 4);
         _doubleBufferedQuery = true;
-        _currentShader = nullptr;
     }
 
     virtual ~GenericVertexData()
@@ -95,9 +93,9 @@ public:
     virtual void Draw(const GenericDrawCommand& command) = 0;
 
     virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
-    virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool steam) = 0;
+    virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam) = 0;
 
-    virtual void BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount) = 0;
+    virtual void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) = 0;
 
     virtual U32  GetFeedbackPrimitiveCount(U8 queryID) = 0;
     /// Just before we render the frame
@@ -108,8 +106,6 @@ public:
     inline AttributeDescriptor& getDrawAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapDraw[attribIndex]; desc._index = attribIndex; return desc; }
     inline AttributeDescriptor& getFdbkAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapFdbk[attribIndex]; desc._index = attribIndex; return desc; }
 
-    inline void setShaderProgram(ShaderProgram* const shaderProgram) { _currentShader = shaderProgram;}
-
 protected:
     typedef Unordered_map<U32, AttributeDescriptor > attributeMap;
     bool _persistentMapped;
@@ -118,7 +114,6 @@ protected:
     vectorImpl<U32 > _bufferObjects;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
-    ShaderProgram* _currentShader;
 };
 
 #endif

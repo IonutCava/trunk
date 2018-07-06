@@ -28,6 +28,11 @@ bool inRange(const in float value){
 }
 
 float applyShadowDirectional(const in uint lightIndex, const in Shadow currentShadowSource) {
+
+#if !defined(_DEBUG)
+    int _shadowTempInt = -1;
+#endif
+
     // find the appropriate depth map to look up in based on the depth of this fragment
     if (gl_FragCoord.z < currentShadowSource._floatValues.x)      {
         _shadowTempInt = 0;
@@ -63,11 +68,12 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
         shadow_coord.w = shadow_coord.z;
         shadow_coord.z = _shadowTempInt;
 
-        vec2 moments = texture(texDepthMapFromLightArray[lightIndex], shadow_coord.xyz).rg;
+        //vec2 moments = texture(texDepthMapFromLightArray[lightIndex], shadow_coord.xyz).rg;
         //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_minShadowVariance);
         //float shadowWarpedz1 = exp(shadow_coord.w * DEPTH_EXP_WARP);
         //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance), 1.0, clamp(((gl_FragCoord.z + dvd_shadowFadeDist) - dvd_shadowMaxDist) / dvd_shadowFadeDist, 0.0, 1.0));
-        return chebyshevUpperBound(moments, shadow_coord.w, dvd_minShadowVariance);
+        return chebyshevUpperBound(texture(texDepthMapFromLightArray[lightIndex], shadow_coord.xyz).rg,
+                                   shadow_coord.w, dvd_minShadowVariance);
     }
 
     return 1.0;

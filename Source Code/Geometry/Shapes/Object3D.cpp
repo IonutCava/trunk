@@ -15,66 +15,37 @@ Object3D::Object3D(const std::string& name, const ObjectType& type, U32 flag) : 
                                                                                 _geometryFlagMask(flag),
                                                                                 _geometryPartitionId(0)
 {
-    _renderInstance = New RenderInstance(this);
-    _renderInstance->buffer(bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB) ? nullptr : GFX_DEVICE.newVB());
+    _buffer = bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB) ? nullptr : GFX_DEVICE.newVB();
 }
 
 Object3D::~Object3D()
 {
-    if(!bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB))
-        _renderInstance->deleteBuffer();
-
-    SAFE_DELETE(_renderInstance);
+    SAFE_DELETE(_buffer);
 }
 
 VertexBuffer* const Object3D::getGeometryVB() const {
-    assert(_renderInstance->buffer() != nullptr);
-    return _renderInstance->buffer();
+    return _buffer;
 }
 
-void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
-    if(!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
-        _renderInstance->transform(sgn->getTransform());
+void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
+    ShaderProgram* drawShader = getDrawShader(currentRenderStage);
+
+    if(drawCommands().empty()){
+        GenericDrawCommand drawCmd;
+        drawCmd.setStateHash(getDrawStateHash(currentRenderStage));
+        drawCmd.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+        drawCmd.setShaderProgram(drawShader);
+        GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCmd);
+    }else{
+        for(GenericDrawCommand& cmd : _drawCommands)
+            cmd.setShaderProgram(drawShader);
+
+        GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCommands());
     }
-    _renderInstance->stateHash(_drawStateHash);
-
-    if(_renderInstance->drawCommands().empty())
-        _renderInstance->addDrawCommand(GenericDrawCommand());
-
-    GFX_DEVICE.renderInstance(_renderInstance);
-
-}
-
-void  Object3D::postLoad(SceneGraphNode* const sgn){
-    Material* mat = getMaterial();
-    if (mat && bitCompare(_geometryFlagMask, OBJECT_FLAG_SKINNED))
-        mat->setHardwareSkinning(true);
-
-    SceneNode::postLoad(sgn);
 }
 
 bool Object3D::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
-    if (getState() != RES_LOADED) 
-        return false;
-
-    if(getObjectType() == MESH)
-        return true;
-
-    //check if we need to update vb shader
-    //custom shaders ALWAYS override material shaders
-    if (_customShader){
-        _drawShader = _customShader;
-    } else {
-        if (!getMaterial())
-            return false;
-        RenderStage shaderFlag =  bitCompare(DEPTH_STAGE, currentStage) ? ((bitCompare(currentStage, SHADOW_STAGE) ? SHADOW_STAGE : Z_PRE_PASS_STAGE)) : FINAL_STAGE;
-        _drawShader = getMaterial()->getShaderInfo(shaderFlag).getProgram();
-    }
-
-    assert(_drawShader != nullptr);
-    if(getGeometryVB()) getGeometryVB()->setShaderProgram(_drawShader);
-
-    return true;
+    return getState() == RES_LOADED;
 }
 
 void Object3D::computeNormals() {
@@ -166,7 +137,7 @@ void Object3D::computeTangents(){
 
 //Create a list of triangles from the vertices + indices lists based on primitive type
 bool Object3D::computeTriangleList(bool force){
-    VertexBuffer* geometry = _renderInstance->buffer();
+    VertexBuffer* geometry = getGeometryVB();
     U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionId);
     U32 partitionCount  = geometry->getPartitionCount(_geometryPartitionId);
     PrimitiveType type  = (_geometryType == MESH || _geometryType == SUBMESH ? TRIANGLES : TRIANGLE_STRIP);

@@ -175,8 +175,8 @@ protected:
     virtual bool loadResources(bool continueOnErrors)  {return true;}
     virtual bool loadTasks(bool continueOnErrors)      {return true;}
     virtual bool loadPhysics(bool continueOnErrors);
-    //if singleStep is true, only the first model from the modelArray will be loaded. 
-    //Usefull for loading one modle per frame
+    ///if singleStep is true, only the first model from the modelArray will be loaded. 
+    ///Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
     virtual bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const guiInterface);
             bool loadModel(const FileData& data);
@@ -195,8 +195,9 @@ protected:
     ///Destroy physics (:D)
     void clearPhysics();
     /**End loading and unloading logic*/
-
-    // returns true if the camera was moved/rotated/etc
+    ///This is a camera listener. Do not call directly.
+    void onCameraChange();
+    /// returns true if the camera was moved/rotated/etc
     bool updateCameraControls();
 
     Sky*               addDefaultSky();
@@ -242,9 +243,7 @@ protected: //Input
     vec2<F32> _previousMousePos;
     bool _mousePressed[8];
 #ifdef _DEBUG
-    vectorImpl<vec3<F32> > _pointsA[DEBUG_LINE_PLACEHOLDER];
-    vectorImpl<vec3<F32> > _pointsB[DEBUG_LINE_PLACEHOLDER];
-    vectorImpl<vec4<U8>  > _colors[DEBUG_LINE_PLACEHOLDER];
+    vectorImpl<Line > _lines[DEBUG_LINE_PLACEHOLDER];
 #endif
 };
 

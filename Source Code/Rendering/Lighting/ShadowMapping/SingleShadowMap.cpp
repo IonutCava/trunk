@@ -66,9 +66,9 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const 
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
     _shadowCamera->renderLookAt();
 
-    _depthMap->Begin(FrameBuffer::defaultPolicy());
+    _depthMap->Begin(Framebuffer::defaultPolicy());
         //draw the scene
-        GFX_DEVICE.render(sceneRenderFunction, renderState);
+        GFX_DEVICE.getRenderer()->render(sceneRenderFunction, renderState);
     //unbind the associated depth map
     _depthMap->End();
     LightManager::getInstance().registerShadowPass();
@@ -77,5 +77,5 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const 
 void SingleShadowMap::previewShadowMaps(){
     _depthMap->Bind(0);
     _previewDepthMapShader->bind();
-    GFX_DEVICE.drawPoints(1);
+    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
 }

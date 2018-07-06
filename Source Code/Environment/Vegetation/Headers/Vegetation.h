@@ -32,7 +32,7 @@ class Terrain;
 class Texture;
 class Transform;
 class SceneState;
-class FrameBuffer;
+class Framebuffer;
 class ShaderBuffer;
 class TerrainChunk;
 class ShaderProgram;
@@ -65,15 +65,13 @@ public:
     void initialize(TerrainChunk* const terrainChunk, SceneGraphNode* const terrainSGN);
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     inline bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) { return true; }
 
 protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     bool onDraw(SceneGraphNode* const sgn, const RenderStage& renderStage);
     void gpuCull();
-    //bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
-    bool setMaterialInternal(SceneGraphNode* const sgn);
 
 private:
     bool uploadGrassData();
@@ -107,7 +105,7 @@ private:
     ShaderProgram*         _cullShader;
     std::string            _grassShaderName;
     bool                   _shadowMapped;
-    I64                    _grassStateBlockHash;
+    size_t                 _grassStateBlockHash;
     bool                   _culledFinal;
     U32                    _readBuffer;
     U32                    _writeBuffer;

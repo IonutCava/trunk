@@ -49,10 +49,12 @@ public:
     };
 
     enum TextureUsage {
-        TEXTURE_NORMALMAP = 0,
-        TEXTURE_OPACITY = 1,
-        TEXTURE_SPECULAR = 2,
-        TEXTURE_UNIT0 = 3
+        TEXTURE_UNIT0 = 0,
+        TEXTURE_UNIT1 = 1,
+        TEXTURE_NORMALMAP = 2,
+        TEXTURE_OPACITY   = 3,
+        TEXTURE_SPECULAR  = 4,
+        TextureUsage_PLACEHOLDER = 5
     };
 
     /// How should each texture be added
@@ -70,7 +72,6 @@ public:
 
     enum TranslucencySource {
         TRANSLUCENT_DIFFUSE = 0,
-        TRANSLUCENT_OPACITY,
         TRANSLUCENT_OPACITY_MAP,
         TRANSLUCENT_DIFFUSE_MAP,
         TRANSLUCENT_NONE
@@ -98,7 +99,6 @@ public:
         vec4<F32> _specular; /* specular component*/
         vec4<F32> _emissive; /* emissive component*/
         F32 _shininess;      /* specular exponent */
-        F32 _opacity;        /* material opacity value*/
         I32 _textureCount;
 
         ShaderData() : _textureCount(0),
@@ -106,8 +106,7 @@ public:
             _diffuse(vec4<F32>(vec3<F32>(1.0f) / 1.5f, 1)),
             _specular(0.8f, 0.8f, 0.8f, 1.0f),
             _emissive(0.6f, 0.6f, 0.6f, 1.0f),
-            _shininess(5),
-            _opacity(1.0f) {}
+            _shininess(5) {}
     };
 
     /// ShaderInfo stores information about the shader programs used by this material
@@ -115,6 +114,7 @@ public:
         ShaderProgram* _shaderRef;
         std::string _shader;
         bool _computedShader;
+        bool _isCustomShader;
         vectorImpl<std::string> _shaderDefines;
 
         ShaderProgram* const getProgram();
@@ -126,6 +126,7 @@ public:
             _shaderRef = nullptr;
             _shader = "";
             _computedShader = false;
+            _isCustomShader = false;
             for(U8 i = 0; i < ShaderType_PLACEHOLDER; ++i)
                 memset(_shadingFunction[i], 0, BumpMethod_PLACEHOLDER * sizeof(U32));
         }
@@ -143,28 +144,42 @@ public:
     bool unload();
     void update(const U64 deltaTime);
 
-    inline void setAmbient(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._ambient = value;  _materialMatrix[index].setCol(0, value); }
-    inline void setDiffuse(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._diffuse = value;  _materialMatrix[index].setCol(1, value); if (value.a < 0.95f) _translucencyCheck  = false; }
-    inline void setSpecular(const vec4<F32>& value, U8 index = 0) { _dirty = true; _shaderData[index]._specular = value; _materialMatrix[index].setCol(2, value); }
-    inline void setEmissive(const vec3<F32>& value, U8 index = 0) { _dirty = true; _shaderData[index]._emissive = value; _materialMatrix[index].setCol(3, vec4<F32>(_shaderData[index]._shininess, value.x, value.y, value.z)); }
+    inline void setDiffuse(const vec4<F32>& value)  { _dirty = true; _shaderData._diffuse = value;  if (value.a < 0.95f) _translucencyCheck  = false; }
+    inline void setAmbient(const vec4<F32>& value)  { _dirty = true; _shaderData._ambient = value;  }
+    inline void setSpecular(const vec4<F32>& value) { _dirty = true; _shaderData._specular = value; }
+    inline void setEmissive(const vec3<F32>& value) { _dirty = true; _shaderData._emissive = value; }
 
     inline void setHardwareSkinning(const bool state) { _dirty = true; _hardwareSkinning = state; }
-    inline void setOpacity(F32 value, U8 index = 0)   { _dirty = true; _shaderData[index]._opacity = value; _translucencyCheck = false; }
-    inline void setShininess(F32 value, U8 index = 0) {
-        _dirty = true;
-        _shaderData[index]._shininess = value;
-        _materialMatrix[index].setCol(3, vec4<F32>(value, _shaderData[index]._emissive.x,
-            _shaderData[index]._emissive.y,
-            _shaderData[index]._emissive.z));
-    }
+    inline void setOpacity(F32 value)   { _dirty = true; _shaderData._diffuse.a = value; _translucencyCheck = false; }
+    inline void setShininess(F32 value) { _dirty = true; _shaderData._shininess = value; }
 
     inline void useAlphaTest(const bool state)          { _useAlphaTest = state; }
     inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
-    void setTexture(U32 textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace, U8 index = 0);
-    ///Set the desired bump mapping method. If force == true, the shader is updated immediately
-    void setBumpMethod(const BumpMethod& newBumpMethod, const bool force = false);
+    void setTexture(TextureUsage textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace);
+    /// Add a texture <-> bind slot pair to be bound with the default textures on each "bindTexture" call
+    inline void addCustomTexture(Texture* texture, U32 offset) {
+        // custom textures are not material dependencies!
+        _customTextures.push_back(std::make_pair(texture, offset));
+    }
+
+    /// Remove the custom texture assigned to the specified offset
+    inline bool removeCustomTexture(U32 index) {
+        vectorImpl<std::pair<Texture*, U32 > >::const_iterator it = std::find_if(_customTextures.begin(), _customTextures.end(), 
+                                                                                [&index](const std::pair<Texture*, U32>& tex) {
+                                                                                    return tex.second == index;
+                                                                                });
+        if(it == _customTextures.end())
+            return false;
+
+        _customTextures.erase(it);
+
+        return true;
+    }
+        
+    ///Set the desired bump mapping method.
+    void setBumpMethod(const BumpMethod& newBumpMethod);
     ///Shader modifiers add tokens to the end of the shader name.
     ///Add as many tokens as needed but separate them with a ".". i.e: "Tree.NoWind.Glow"
     inline void addShaderModifier(const std::string& shaderModifier) { _shaderModifier = shaderModifier; }
@@ -188,31 +203,32 @@ public:
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
     void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
-    I64 setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
+    size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, const RenderStage& renderStage);
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
 
-    inline const mat4<F32>& getMaterialMatrix(U8 index = 0)  const {return _materialMatrix[index];}
-               
-    inline F32   getOpacityValue(U8 index = 0)    const {return _shaderData[index]._opacity;}
-    inline U8    getTextureCount(U8 index = 0)    const {return _shaderData[index]._textureCount;}
-
-                 I64               getRenderStateBlock(RenderStage currentStage);
-    inline       Texture*	 const getTexture(U32 textureUsage) {return _textures[textureUsage];}
-             ShaderInfo&           getShaderInfo(RenderStage renderStage = FINAL_STAGE);
-    
-    inline const TextureOperation& getTextureOperation(U32 textureUsage)   const {
-        return _operations[textureUsage >= TEXTURE_UNIT0 ? textureUsage - TEXTURE_UNIT0 : 0];
+   inline void getMaterialMatrix(mat4<F32>& retMatrix) const {
+        retMatrix.setCol(0,_shaderData._ambient);
+        retMatrix.setCol(1,_shaderData._diffuse);
+        retMatrix.setCol(2,_shaderData._specular);
+        retMatrix.setCol(3,vec4<F32>(_shaderData._emissive, _shaderData._shininess));
     }
 
-    inline const ShaderData&  getShaderData(U8 index = 0) const {return _shaderData[index];}
-    inline const ShadingMode& getShadingMode()            const {return _shadingMode;}
-    inline const BumpMethod&  getBumpMethod()             const {return _bumpMethod;}
+    inline U8    getTextureCount() const {return _shaderData._textureCount;}
 
-    void UploadToShader(Material::ShaderInfo& shaderInfo);
+                 size_t            getRenderStateBlock(RenderStage currentStage);
+    inline       Texture*	 const getTexture(TextureUsage textureUsage) {return _textures[textureUsage];}
+             ShaderInfo&           getShaderInfo(RenderStage renderStage = FINAL_STAGE);
+    
+    inline const TextureOperation& getTextureOperation() const { return _operation; }
+    inline const ShaderData&       getShaderData()       const { return _shaderData; }
+    inline const ShadingMode&      getShadingMode()      const { return _shadingMode; }
+    inline const BumpMethod&       getBumpMethod()       const { return _bumpMethod; }
+
+    void bindTextures();
 
     void clean();
-    bool isTranslucent(U8 index = 0);
+    bool isTranslucent();
 
     inline void dumpToFile(bool state) { _dumpToFile  = state;}
     inline bool isDirty()       const {return _dirty;}
@@ -220,22 +236,23 @@ public:
     inline bool useAlphaTest()  const {return _useAlphaTest;}
 
     // Checks if the shader needed for the current stage is already constructed. Returns false if the shader was already ready.
-    bool computeShader(bool force = false,const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
+    bool computeShader(const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
 
     static void unlockShaderQueue()   {_shaderQueueLocked = false; }
     static void serializeShaderLoad(const bool state) { _serializeShaderLoad = state; }
 
 private:
+    void recomputeShaders();
     void computeShaderInternal();
+    void setShaderProgramInternal(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
     static bool isShaderQueueLocked() {return _shaderQueueLocked; }
     static void lockShaderQueue()     {if(_serializeShaderLoad) _shaderQueueLocked = true; }
-
+    
 private:
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
 
     std::queue<std::pair<RenderStage, ResourceDescriptor> > _shaderComputeQueue;
-    vectorImpl<mat4<F32> > _materialMatrix; /* all properties bundled togheter */
     ShadingMode _shadingMode;
     std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
     vectorImpl<TranslucencySource > _translucencySource;
@@ -245,23 +262,26 @@ private:
     bool _useAlphaTest; //< use discard if true / blend if otherwise
     bool _doubleSided;
     bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
-    Unordered_map<RenderStage, ShaderInfo > _shaderInfo;
+    typedef Unordered_map<RenderStage, ShaderInfo > shaderInfoMap;
+    shaderInfoMap _shaderInfo;
 
     bool        _shaderThreadedLoad;
     bool        _computedShaderTextures;//<if we should recompute only fragment shader on texture change
     /// use this map to add more render states mapped to a specific state
     /// 3 render state's: Normal, reflection and shadow
-    typedef Unordered_map<RenderStage, I64 /*renderStateBlockHash*/ > renderStateBlockMap;
+    typedef Unordered_map<RenderStage, size_t /*renderStateBlockHash*/ > renderStateBlockMap;
     renderStateBlockMap _defaultRenderStates;
     
-    char _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
     /// use this map to add textures to the material
-    Texture* _textures[Config::MAX_TEXTURE_STORAGE];
-    /// use the bellow map to define texture operation
-    TextureOperation _operations[Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0];
+    vectorImpl<Texture* > _textures;
+    vectorImpl<std::pair<Texture*, U32> > _customTextures;
+
+    /// use the below map to define texture operation
+    TextureOperation _operation;
+
     BumpMethod _bumpMethod;
 
-    vectorImpl<ShaderData> _shaderData;
+    ShaderData _shaderData;
 };
 
 #endif

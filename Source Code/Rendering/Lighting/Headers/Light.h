@@ -47,6 +47,7 @@ struct LightProperties {
     vec4<F32> _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
     vec4<F32> _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
     vec4<F32> _direction;   //< xyz = Used by spot lights, w = spotExponent
+    vec4<I32> _options;     //< x - casts shadows, yzw - reserved;
 };
 
 struct LightShadowProperties {
@@ -85,7 +86,7 @@ public:
     ///Get light slot
     inline U8    getSlot() const {return _slot;}
     ///Is the light a shadow caster?
-    inline bool  castsShadows() const {return _castsShadows;}
+    inline bool  castsShadows() const {return _properties._options.x == 1;}
     ///Get the entire property block
     inline const LightProperties& getProperties() const { return _properties; }
     inline const LightShadowProperties& getShadowProperties() const {return _shadowProperties;}
@@ -108,7 +109,7 @@ public:
     inline bool  getEnabled() const {return _enabled;}
 
     ///Does this list cast shadows?
-    inline void  setCastShadows(const bool state) {_castsShadows = state;}
+    inline void  setCastShadows(const bool state) { _properties._options.x = (state ? 1 : 0);}
     ///Draw a sphere at the lights position
     ///The impostor has the range of the light's effect range and the diffuse color as the light's diffuse property
     inline void  setDrawImpostor(const bool state) {_drawImpostor = state;}
@@ -155,7 +156,7 @@ protected:
     bool load(const std::string& name);
 
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
     void postLoad(SceneGraphNode* const sgn);
     ///Set light type
     ///@param type Directional/Spot/Omni (see LightType enum)
@@ -183,7 +184,6 @@ private:
     U8   _resolutionFactor;
     U8   _slot; 
     bool _drawImpostor;
-    bool _castsShadows;
     bool _updateLightBB;
     Impostor* _impostor; ///< Used for debug rendering -Ionut
     SceneGraphNode* _lightSGN;

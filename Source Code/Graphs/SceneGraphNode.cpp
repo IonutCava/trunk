@@ -105,11 +105,11 @@ bool SceneGraphNode::unload(){
         it.second->unload();
     }
     //Some debug output ...
-    if(!_silentDispose && getParent() && _node){
+    if(!_silentDispose && getParent()){
         PRINT_FN(Locale::get("REMOVE_SCENEGRAPH_NODE"),_node->getName().c_str(), getName().c_str());
     }
     //if not root
-    if (_node && getParent()){
+    if (getParent()){
         _node->decReferenceCount();
         if(_node->getReferenceCount() == 0) {
             RemoveResource(_node);

@@ -47,7 +47,7 @@ public:
 
 protected:
     bool BindInternal(U8 offset);
-    void CalculateSplitDepths(Camera& cam);
+    void CalculateSplitDepths(const Camera& cam);
     void ApplyFrustumSplit(U8 pass);
     void updateResolution(I32 newWidth, I32 newHeight);
 
@@ -62,10 +62,10 @@ protected:
     mat4<F32> _viewInvMatrixCache;
     ShaderProgram*  _previewDepthMapShader;
     ShaderProgram*  _blurDepthMapShader;
-    FrameBuffer::FrameBufferTarget* _renderPolicy;
+    Framebuffer::FramebufferTarget* _renderPolicy;
     ///Shortcut for the owning directional light
     DirectionalLight*  _dirLight;
-    FrameBuffer*       _blurBuffer;
+    Framebuffer*       _blurBuffer;
     GFXDevice&         _gfxDevice;
     vectorImpl<vec3<F32> > _frustumCornersVS;
     vectorImpl<vec3<F32> > _frustumCornersWS;

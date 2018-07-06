@@ -1,14 +1,10 @@
-uniform mat4  material;
-uniform bool  dvd_isSelected;
 uniform int   lodLevel = 0;
 
 #include "lightInput.cmn"
 #include "lightingDefaults.frag"
 
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
+#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
     #define HAS_TRANSPARENCY
-    uniform float opacity = 1.0;
-    uniform bool  useAlphaTest = false;
 #endif
 
 //Specular and opacity maps are available even for non-textured geometry
@@ -24,62 +20,67 @@ layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
 #include "texturing.frag"
 #endif
 
+struct MaterialProperties {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    vec3 specularValue;
+};
+
 #include "phong_light_loop.frag"
 
-vec4 Phong(const in vec2 texCoord, const in vec3 normal, const in vec4 textureColor){
-
-    materialProp.diffuse = vec4(0.0);
-    materialProp.ambient = vec4(0.0);
-    materialProp.specular = vec4(0.0);
-    
-#if defined(USE_SPECULAR_MAP)
-    materialProp.specularValue = texture(texSpecularMap, texCoord);
-#else
-    materialProp.specularValue = material[2];
-#endif
-
-    phong_loop(normalize(normal));
+vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
 
     float alpha = 1.0;
-
 #if defined(HAS_TRANSPARENCY)
-#if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_DIFFUSE_MAP)
-    alpha *= materialProp.diffuse.a * textureColor.a;
+#if defined(USE_OPACITY_DIFFUSE_MAP)
+    alpha *= textureColor.a;
 #endif
-#if defined(USE_OPACITY)
-    alpha *= opacity
+#if defined(USE_OPACITY_DIFFUSE)
+    alpha *= dvd_MatDiffuse.a;
 #endif
 #if defined(USE_OPACITY_MAP)
     vec4 opacityMap = texture(texOpacityMap, texCoord);
     alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
-    if (useAlphaTest && alpha < ALPHA_DISCARD_THRESHOLD) discard;
+    /*if (dvd_useAlphaTest && alpha < ALPHA_DISCARD_THRESHOLD)
+        discard;*/
 #endif
 
-    //Add global ambient value and selection ambient value
-    materialProp.ambient += dvd_lightAmbient * material[0] + materialProp.diffuse + (dvd_isSelected ? vec4(1.0) : vec4(0.0));
-    //Add material color terms to the final color
-    vec4 linearColor = vec4((materialProp.ambient.rgb * textureColor.rgb) + materialProp.specular.rgb, alpha);
-    // Gama correction
-    // vec3 gamma = vec3(1.0/2.2);
-    // linearColor.rgb = pow(linearColor.rgb, gamma);
+    MaterialProperties materialProp;
+    
+#if defined(USE_SPECULAR_MAP)
+    materialProp.specularValue = texture(texSpecularMap, texCoord).rgb;
+#else
+    materialProp.specularValue = dvd_MatSpecular;
+#endif
 
-    //Apply shadowing
-    linearColor.rgb *= shadow_loop();
+    phong_loop(normalize(gl_FrontFacing ? normal : -normal), materialProp);
+    //Add global ambient value and selection ambient value
+    vec3 color = (materialProp.ambient + dvd_lightAmbient * dvd_MatAmbient) + materialProp.diffuse;
+
+    if(dvd_isSelected)
+        color *= 2;
+
+    color *= textureColor.rgb;
+    color += materialProp.specular;
+    // Gama correction
+    // color = pow(color, vec3(1.0/2.2));
+    // Apply shadowing
+    color *= shadow_loop();
 
 #if defined(_DEBUG)
-    _shadowTempInt = dvd_showShadowSplits ? _shadowTempInt : -2;
-
-    switch (_shadowTempInt){
-        case -2: return linearColor;
+    switch (dvd_showShadowSplits ? _shadowTempInt : -2){
+        case -2: return vec4(color, alpha);
         case -1: return vec4(1.0);
-        case  0: return linearColor + vec4(0.15, 0.0,  0.0,  0.0);
-        case  1: return linearColor + vec4(0.00, 0.25, 0.0,  0.0);
-        case  2: return linearColor + vec4(0.00, 0.0,  0.40, 0.0);
-        case  3: return linearColor + vec4(0.15, 0.25, 0.40, 0.0);
+        case  0: return vec4(color, alpha) + vec4(0.15, 0.0,  0.0,  0.0);
+        case  1: return vec4(color, alpha) + vec4(0.00, 0.25, 0.0,  0.0);
+        case  2: return vec4(color, alpha) + vec4(0.00, 0.0,  0.40, 0.0);
+        case  3: return vec4(color, alpha) + vec4(0.15, 0.25, 0.40, 0.0);
     };
 #else
-    return linearColor;
+
+    return vec4(color, alpha);
 #endif
 }
 

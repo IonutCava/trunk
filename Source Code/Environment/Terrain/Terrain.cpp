@@ -25,13 +25,13 @@ Terrain::Terrain() : Object3D(TERRAIN),
     _plane(nullptr),
     _drawBBoxes(false),
     _vegetationGrassNode(nullptr),
-    _causticsTex(nullptr),
-    _underwaterAlbedoTex(nullptr),
-    _underwaterDetailTex(nullptr),
     _underwaterDiffuseScale(100.0f),
     _terrainRenderStateHash(0),
     _terrainDepthRenderStateHash(0),
-    _terrainReflectionRenderStateHash(0)
+    _terrainReflectionRenderStateHash(0),
+    _terrainInView(false),
+    _planeInView(false),
+    _planeSGN(nullptr)
 {
     getGeometryVB()->useLargeIndices(true);//<32bit indices
 }
@@ -48,9 +48,6 @@ bool Terrain::unload(){
     }
     _terrainTextures.clear();
 
-    RemoveResource(_causticsTex);
-    RemoveResource(_underwaterAlbedoTex);
-    RemoveResource(_underwaterDetailTex);
     RemoveResource(_vegDetails.grassBillboards);
     return SceneNode::unload();
 }
@@ -63,26 +60,30 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     reserveTriangleCount((_terrainWidth - 1) * (_terrainHeight - 1) * 2);
     _terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), _chunkSize, sgn);
 
-    _drawShader = getMaterial()->getShaderInfo().getProgram();
-    _drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
-    _drawShader->Uniform("bbox_min", _boundingBox.getMin());
-    _drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
-    _drawShader->UniformTexture("texWaterCaustics", 0);
-    _drawShader->UniformTexture("texUnderwaterAlbedo", 1);
-    _drawShader->UniformTexture("texUnderwaterDetail", 2);
-    _drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
-    U8 textureOffset = 3;
+    ShaderProgram* drawShader = getDrawShader();
+    drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
+    drawShader->Uniform("bbox_min", _boundingBox.getMin());
+    drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
+    drawShader->UniformTexture("texWaterCaustics",    Material::TEXTURE_UNIT0);
+    drawShader->UniformTexture("texUnderwaterAlbedo", Material::TEXTURE_UNIT1);
+    drawShader->UniformTexture("texUnderwaterDetail", Material::TEXTURE_NORMALMAP);
+    drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
+
+    U8 textureOffset = Material::TEXTURE_NORMALMAP + 1;
     U8 layerOffset = 0;
     std::string layerIndex;
     for (U32 i = 0; i < _terrainTextures.size(); ++i){
         layerOffset = i * 2 + textureOffset;
         layerIndex = Util::toString(i);
         TerrainTextureLayer* textureLayer = _terrainTextures[i];
-        _drawShader->UniformTexture("texBlend[" + layerIndex + "]", layerOffset);
-        _drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);
+        drawShader->UniformTexture("texBlend[" + layerIndex + "]",    layerOffset);
+        drawShader->UniformTexture("texTileMaps[" + layerIndex + "]", layerOffset + 1);
         
-        _drawShader->Uniform("diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales());
-        _drawShader->Uniform("detailScale[" + layerIndex + "]", textureLayer->getDetailScales());
+        getMaterial()->addCustomTexture(textureLayer->blendMap(), layerOffset);
+        getMaterial()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
+
+        drawShader->Uniform("diffuseScale[" + layerIndex + "]", textureLayer->getDiffuseScales());
+        drawShader->Uniform("detailScale["  + layerIndex + "]", textureLayer->getDetailScales());
 
     }
 
@@ -96,12 +97,9 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     _plane->setCorner(Quad3D::TOP_RIGHT,    vec3<F32>( _farPlane * 1.5f, height, -_farPlane * 1.5f));
     _plane->setCorner(Quad3D::BOTTOM_LEFT,  vec3<F32>(-_farPlane * 1.5f, height,  _farPlane * 1.5f));
     _plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>( _farPlane * 1.5f, height,  _farPlane * 1.5f));
-    SceneGraphNode* planeSGN = sgn->addNode(_plane);
-    planeSGN->setActive(false);
-    _plane->computeBoundingBox(planeSGN);
-    _plane->renderInstance()->preDraw(true);
-    _plane->renderInstance()->transform(planeSGN->getTransform());
-    _plane->renderInstance()->addDrawCommand(GenericDrawCommand(TRIANGLE_STRIP, 0, 0));
+    _planeSGN = sgn->addNode(_plane);
+    _planeSGN->setActive(false);
+    _plane->computeBoundingBox(_planeSGN);
     computeBoundingBox(sgn);
 
     SceneNode::postLoad(sgn);
@@ -115,75 +113,66 @@ bool Terrain::computeBoundingBox(SceneGraphNode* const sgn){
     return  SceneNode::computeBoundingBox(sgn);
 }
 
+bool Terrain::isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
+    _terrainInView = SceneNode::isInView(sceneRenderState, boundingBox, sphere, distanceCheck);
+    _planeInView = _terrainInView ? false : _plane->isInView(sceneRenderState, _planeSGN->getBoundingBoxConst(), _planeSGN->getBoundingSphereConst(), distanceCheck);
+
+    return _terrainInView || _planeInView;
+}
+
 void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     _terrainQuadtree->sceneUpdate(deltaTime, sgn, sceneState);
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Terrain::prepareMaterial(SceneGraphNode* const sgn, bool depthPass){
-    if(depthPass){
-        SET_STATE_BLOCK(GFX_DEVICE.isDepthPrePass() ? _terrainRenderStateHash : _terrainDepthRenderStateHash);
-        _plane->setCustomShader(_drawShader);
-        return _drawShader->bind();
-    }
+size_t Terrain::getDrawStateHash(RenderStage renderStage){
+    if(bitCompare(DEPTH_STAGE, renderStage))
+        return GFX_DEVICE.isDepthPrePass() ? _terrainRenderStateHash : _terrainDepthRenderStateHash;
 
-    if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE))
-        return false;
-
-    LightManager& lightMgr = LightManager::getInstance();
-
-    _causticsTex->Bind(0);
-    _underwaterAlbedoTex->Bind(1);
-    _underwaterDetailTex->Bind(2);
-    U8 textureOffset = 3;
-    for (U8 i = 0; i < _terrainTextures.size(); ++i){
-        _terrainTextures[i]->bindTextures((i * 2) + textureOffset);
-    }
-
-    SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash);
-
-    Material::ShaderInfo& shaderInfo = getMaterial()->getShaderInfo();
-    StateTracker<bool>& shaderStates = shaderInfo.getTrackedBools();
-    StateTracker<bool>& sgnStates = sgn->getTrackedBools();
-
-    getMaterial()->UploadToShader(shaderInfo);
-    bool temp = lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows();
-    shaderStates.initTrackedValue(0, !temp);
-    sgnStates.initTrackedValue(0, !temp);
-
-    if(shaderStates.getTrackedValue(0) != temp || sgnStates.getTrackedValue(0) != temp){
-        shaderStates.setTrackedValue(0, temp);
-        sgnStates.setTrackedValue(0, temp);
-        _drawShader->Uniform("dvd_enableShadowMapping", temp);
-    }        
-
-    _plane->setCustomShader(_drawShader);
-
-    return _drawShader->bind();
+    return GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash;
 }
 
-void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
-    // draw ground
-    _terrainQuadtree->CreateDrawCommands(sceneRenderState);
+ShaderProgram* const Terrain::getDrawShader(RenderStage renderStage){
+    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
+        renderStage = FINAL_STAGE;
 
-    for(GenericDrawCommand& cmd : _drawCommands[0]){
-        cmd._lodIndex = 0;
-        _renderInstance->addDrawCommand(cmd);
+    return SceneNode::getDrawShader(renderStage);
+}
+
+void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
+    size_t drawStateHash = getDrawStateHash(currentRenderStage);
+    ShaderProgram* drawShader = getDrawShader(currentRenderStage);
+    const vec2<I32>& drawIDs = GFX_DEVICE.getDrawIDs(sgn->getGUID());
+
+    if(_terrainInView){
+        // draw ground
+        _terrainQuadtree->CreateDrawCommands(sceneRenderState);
+
+
+        std::sort(_drawCommands.begin(), _drawCommands.end(),
+                  [](const GenericDrawCommand& a, const GenericDrawCommand& b) {
+                        return a._lodIndex < b._lodIndex;
+                    });
+
+        for(GenericDrawCommand& cmd : _drawCommands){
+            cmd.setStateHash(drawStateHash);
+            cmd.setShaderProgram(drawShader);
+            cmd.setDrawIDs(drawIDs);
+        }
+
+        GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCommands());
+
+        clearDrawCommands();
     }
-    _drawCommands[0].resize(0);
-    for(GenericDrawCommand& cmd : _drawCommands[1]){
-        cmd._lodIndex = 1;
-        _renderInstance->addDrawCommand(cmd);
-    }
-    _drawCommands[1].resize(0);
-
-    Object3D::render(sgn, sceneRenderState);
-
-    renderInstance()->clearDrawCommands();
-
+    
     // draw infinite plane
-    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE))
-        GFX_DEVICE.renderInstance(_plane->renderInstance());
+    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) && _planeInView){
+        GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
+        cmd.setStateHash(drawStateHash);
+        cmd.setDrawIDs(drawIDs);
+        cmd.setShaderProgram(drawShader);
+        GFX_DEVICE.submitRenderCommand(_plane->getGeometryVB(), cmd);
+    }
 }
 
 void Terrain::drawBoundingBox(SceneGraphNode* const sgn) const {
@@ -268,29 +257,8 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
          + (tangents[TER_COORD(posI.x + 1, posI.y + 1, (I32)_terrainWidth)]) *         posD.x  *         posD.y;
 }
 
-void Terrain::setCausticsTex(Texture* causticTexture) {
-    RemoveResource(_causticsTex);
-    _causticsTex = causticTexture;
-}
-
-void Terrain::setUnderwaterAlbedoTex(Texture* underwaterAlbedoTexture) {
-    RemoveResource(_underwaterAlbedoTex);
-    _underwaterAlbedoTex = underwaterAlbedoTexture;
-}
-
-void Terrain::setUnderwaterDetailTex(Texture* underwaterDetailTexture) {
-    RemoveResource(_underwaterDetailTex);
-    _underwaterDetailTex = underwaterDetailTexture;
-}
-
 TerrainTextureLayer::~TerrainTextureLayer()
 {
     RemoveResource(_blendMap);
     RemoveResource(_tileMaps);
-}
-
-void TerrainTextureLayer::bindTextures(U32 offset){
-    _lastOffset = offset;
-    if (_blendMap)  _blendMap->Bind(_lastOffset);
-    if (_tileMaps)  _tileMaps->Bind(_lastOffset + 1);
 }

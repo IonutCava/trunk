@@ -64,18 +64,16 @@ public:
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
     virtual bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) = 0;
     virtual	bool getDrawState() const { return _renderState.getDrawState(); }
-    /// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
-    virtual	bool getDrawState(const RenderStage& currentStage)  const { return _renderState.getDrawState(currentStage); }
+    /// Some SceneNodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
+    virtual	bool getDrawState(const RenderStage& currentStage);
     /*//Rendering/Processing*/
 
     virtual	bool	  unload();
-    virtual bool      isReadyForDraw(const RenderStage& currentStage);
     virtual bool	  isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     virtual	void	  setMaterial(Material* const m);
-    Material* getMaterial();
-    /// A custom shader is used if we either don't have a material or we need to render in a special way.
-    /// Either way, we are not using the fixed pipeline so a shader is always needed for rendering
-    inline void  setCustomShader(ShaderProgram* const shader) { _customShader = shader; }
+    Material*   const getMaterial();
+    virtual ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
+    virtual size_t               getDrawStateHash(RenderStage renderStage);
 
     /// Every SceneNode computes a bounding box in it's own way.
     virtual	bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -105,10 +103,12 @@ protected:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     /*Rendering/Processing*/
-    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) = 0; //Sounds are played, geometry is displayed etc.
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) = 0; //Sounds are played, geometry is displayed etc.
+
+    virtual void onCameraChange(SceneGraphNode* const sgn) {}
 
     /* Material */
-    virtual	bool prepareMaterial(SceneGraphNode* const sgn, bool depthPass);
+    virtual	void bindTextures();
 
     /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
     virtual void preFrameDrawEnd(SceneGraphNode* const sgn);
@@ -116,12 +116,6 @@ protected:
     virtual void postLoad(SceneGraphNode* const sgn) { _nodeReady = (sgn != nullptr); }; 
 
 protected:
-    /// A custom shader will always override the material shader for the current stage
-    ShaderProgram*        _customShader;
-    /// This is the currently active shader at the time onDraw() / render() is called
-    ShaderProgram*        _drawShader;
-    /// This is the currently active state block's hash value at the time onDraw() / render() is called
-    I64                   _drawStateHash;
     ///The various states needed for rendering
     SceneNodeRenderState  _renderState;
     ///Attach a physics asset to the node to make it physics enabled

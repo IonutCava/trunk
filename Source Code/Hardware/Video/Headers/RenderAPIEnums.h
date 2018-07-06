@@ -30,7 +30,7 @@
 
 namespace Divide {
     ///State the various attribute locations to use in shaders with VAO/VB's
-    enum {
+    enum AttribLocation {
          VERTEX_POSITION_LOCATION    = 0,
          VERTEX_COLOR_LOCATION       = 1,
          VERTEX_NORMAL_LOCATION      = 2,
@@ -41,13 +41,13 @@ namespace Divide {
          VERTEX_BONE_INDICE_LOCATION = 7
     };
 
-    enum {
-        SHADER_BUFFER_LIGHT_NORMAL = 0,
-        SHADER_BUFFER_LIGHT_SHADOW = 1,
-        SHADER_BUFFER_LIGHT_PER_NODE = 2,
-        SHADER_BUFFER_PER_NODE = 3,
+    enum ShaderBufferLocation {
+        SHADER_BUFFER_GPU_BLOCK       = 0,
+        SHADER_BUFFER_LIGHT_NORMAL    = 1,
+        SHADER_BUFFER_LIGHT_SHADOW    = 2,
+        SHADER_BUFFER_NODE_TRANSFORMS = 3,
         SHADER_BUFFER_BONE_TRANSFORMS = 4,
-        SHADER_BUFFER_CAM_MATRICES = 5,
+        SHADER_BUFFER_NODE_MATERIAL   = 5
     };
 };
 
@@ -60,15 +60,6 @@ enum MATRIX_MODE{
     VIEW_PROJECTION_MATRIX = 4,
     VIEW_PROJECTION_INV_MATRIX  = 5, //<ViewProjection matrix's invers: inverse (VIEW_PROJECTION_MATRIX)
     TEXTURE_MATRIX = 6
-};
-
-///Compund matrices or sub-matrices
-enum EXTENDED_MATRIX{
-    WORLD_MATRIX = 0, //<Current model's world matrix. Changed for each render call, mainly
-    WV_MATRIX = 1, //<WorldView matrix : ViewMatrix * WorldMatrix (as per OpenGL standards: name is backwards)
-    WV_INV_MATRIX = 2, //<WorldViewInverse matrix: (ViewMatrix * WorldMatrix)^-1
-    WVP_MATRIX = 4, //<WorldViewProjection matrix: ProjectionMatrix * ViewMatrix * WorldMatrix
-    NORMAL_MATRIX = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * WorldMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*WorldMatrix)
 };
 
 ///Using multiple threads for streaming and issuing API specific construction commands to the rendering API will
@@ -328,7 +319,7 @@ enum GFXImageFormat{
     DEPTH_COMPONENT24,
     DEPTH_COMPONENT32,
     DEPTH_COMPONENT32F,
-    IMAGE_FORMAT_PLACEHOLDER
+    GFXImageFormat_PLACEHOLDER
 };
 
 enum GFXDataFormat{

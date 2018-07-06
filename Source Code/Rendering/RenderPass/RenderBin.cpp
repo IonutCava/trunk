@@ -124,41 +124,12 @@ void RenderBin::preRender(const RenderStage& currentRenderStage){
 }
 
 void RenderBin::render(const SceneRenderState& renderState, const RenderStage& currentRenderStage){
-    SceneNode* sn = nullptr;
-    SceneGraphNode* sgn = nullptr;
-    LightManager& lightMgr = LightManager::getInstance();
-    //if needed, add more stages to which lighting is applied
-    U32 lightValidStages = DISPLAY_STAGE | REFLECTION_STAGE;
-    bool isDepthPass = bitCompare(DEPTH_STAGE, currentRenderStage);
-    bool isLightValidStage = bitCompare(lightValidStages, currentRenderStage);
-    
-    for(U16 j = 0; j < getBinSize(); j++){
-        //Get the current scene node and validate it
-        sgn = getItem(j)._node;
-        assert(sgn);
-        //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
-        if(!sgn->onDraw(currentRenderStage))
-            continue; //< If the SGN isn't ready for rendering, skip it this frame
-        //And get it's attached SceneNode and validate it
-        sn = sgn->getNode();
-        if (!sn) continue;
-        //Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
-        if (sn->getDrawState(currentRenderStage) && sn->isReadyForDraw(currentRenderStage)) {
-            if(isLightValidStage){
-                U32 lightCount = std::min(/*sgn->getShaderData()._lightInfo.x*/(U32)lightMgr.findLightsForSceneNode(sgn), 
-                                          Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
-                //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
-                for (U32 lightIndex = 0; lightIndex < lightCount; lightIndex++)
-                    lightMgr.bindDepthMaps(lightIndex);
-            }
+    U16  binSize = getBinSize();
 
-            //We need to apply different materials for each stage. As nodes are sorted, this should be very fast
-            //Call render and the stage exclusion mask should do the rest
-            if (sn->prepareMaterial(sgn, isDepthPass))
-                sn->render(sgn, renderState);
-        }
-
-        sgn->postDraw(currentRenderStage);
+    //We need to apply different materials for each stage. As nodes are sorted, this should be very fast
+    for(U16 j = 0; j < binSize; ++j){
+        //Call render and the stage exclusion mask should do the rest
+        getItem(j)._node->render(renderState, currentRenderStage);
     }
 }
 

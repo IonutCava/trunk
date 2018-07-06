@@ -79,7 +79,7 @@ END_SINGLETON
 
 template<class T>
 inline void RemoveResource(T*& resource, bool force = false){
-    if(ResourceCache::getInstance().scheduleDeletion(resource,force)){
+    if(ResourceCache::hasInstance() && ResourceCache::getInstance().scheduleDeletion(resource,force)){
         SAFE_DELETE(resource);
     }
 }

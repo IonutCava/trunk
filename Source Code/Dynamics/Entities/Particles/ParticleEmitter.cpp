@@ -36,6 +36,8 @@ ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
                                     _particleDepthShader(nullptr)
 {
     _drawCommand = GenericDrawCommand(TRIANGLE_STRIP, 0, 4, 1);
+    _readOffset = 0;
+    _writeOffset = 2;
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -83,11 +85,6 @@ bool ParticleEmitter::unload(){
     if(getState() != RES_LOADED && getState() != RES_LOADING)
         return true;
 
-    if(_impostor){
-        _particleEmitterSGN->removeNode(_impostorSGN);
-        SAFE_DELETE(_impostor);
-    }
-
     UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
     UNREGISTER_TRACKED_DEPENDENCY(_particleShader);
     UNREGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
@@ -108,12 +105,11 @@ void ParticleEmitter::postLoad(SceneGraphNode* const sgn){
     ///Hold a pointer to the trigger's location in the SceneGraph
     _particleEmitterSGN = sgn;
     
-    Sphere3D* dummy = _impostor->getDummy();
-    dummy->getSceneNodeRenderState().setDrawState(false);
-    _impostorSGN = _particleEmitterSGN->addNode(dummy);
+    _impostor->getSceneNodeRenderState().setDrawState(false);
+    _impostorSGN = _particleEmitterSGN->addNode(_impostor);
     _impostorSGN->setActive(false);
-    dummy->getMaterial()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-    dummy->getMaterial()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
+    _impostor->getMaterial()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
+    _impostor->getMaterial()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
     
     _updateParticleEmitterBB = true;
 
@@ -131,46 +127,39 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn, bool depthPass){
-    if(!_enabled || !_created)
-        return false;
-
-    SET_STATE_BLOCK(_particleStateBlockHash);
-
-    ShaderProgram* shader = (depthPass ? _particleDepthShader : _particleShader);
-    if(!shader->bind())
-        return false;
-
+void ParticleEmitter::onCameraChange(SceneGraphNode* const sgn){
     const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
-    shader->Uniform("size", vec2<F32>(Application::getInstance().getResolution().width, Application::getInstance().getResolution().height));
-    shader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
-    shader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
-    _particleGPUBuffer->setShaderProgram(shader);
+    _particleShader->Uniform("CameraRight_worldspace",      vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
+    _particleShader->Uniform("CameraUp_worldspace",         vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
+    _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
+    _particleDepthShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
+}
 
-    _particleTexture->Bind(Material::TEXTURE_UNIT0);
-    GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
-    return true;
+ShaderProgram* const ParticleEmitter::getDrawShader(RenderStage renderStage){
+    return renderStage == FINAL_STAGE ? _particleShader : _particleDepthShader;
 }
 
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
-void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
+void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     if(_particlesCurrentCount > 0 && _enabled && _created){
+        _particleTexture->Bind(Material::TEXTURE_UNIT0);
+        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
+
         _drawCommand.setStateHash(_particleStateBlockHash);
         _drawCommand.setInstanceCount(_particlesCurrentCount);
-        _particleGPUBuffer->Draw(_drawCommand);
+        _drawCommand.setDrawIDs(GFX_DEVICE.getDrawIDs(sgn->getGUID()));
+        _drawCommand.setShaderProgram(getDrawShader(currentRenderStage));
+        GFX_DEVICE.submitRenderCommand(_particleGPUBuffer, _drawCommand);
     }
-
-    /*if(_drawImpostor)
-        _impostor->render(_impostorSGN);*/
 }
 
 ///The descriptor defines the particle properties
 void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor){
     _descriptor = descriptor;
-    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount, 4 * sizeof(F32), nullptr, true, true, /*true*/false);
-    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount, 4 * sizeof(U8),  nullptr, true, true, /*true*/false);
+    _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 3, 4 * sizeof(F32), NULL, true, true, /*true*/false);
+    _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 3, 4 * sizeof(U8),  NULL, true, true, /*true*/false);
 
-    _particleGPUBuffer->getDrawAttribDescriptor(16).set(1, 1, 4, false, 0, 0, FLOAT_32);
+    _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, 0, FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
 
     _particles.resize(descriptor._particleCount);
@@ -200,12 +189,22 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
 
 void ParticleEmitter::uploadToGPU(){
     static const size_t attribSize_float = 4 * sizeof(F32);
-    static const size_t attribSize_char = 4 * sizeof(U8);
+    static const size_t attribSize_char  = 4 * sizeof(U8);
     if(_uploaded || !_created)
         return;
 
-    _particleGPUBuffer->UpdateBuffer(1, _particlesCurrentCount, &_particlePositionData[0], 0, true, true);
-    _particleGPUBuffer->UpdateBuffer(2, _particlesCurrentCount, &_particleColorData[0],    0, true, true);
+    U32 writeOffset = _writeOffset * (U32)_particles.size();
+    U32 readOffset  = _readOffset  * (U32)_particles.size();
+
+    _particleGPUBuffer->UpdateBuffer(1, _particlesCurrentCount, &_particlePositionData[0], writeOffset, true, true);
+    _particleGPUBuffer->UpdateBuffer(2, _particlesCurrentCount, &_particleColorData[0],    writeOffset, true, true);
+        
+    _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, readOffset, FLOAT_32);
+    _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, readOffset, UNSIGNED_BYTE);
+
+    _writeOffset = (_writeOffset + 1) % 3;
+    _readOffset  = (_readOffset + 1) % 3;
+
     _uploaded = true;
 }
 

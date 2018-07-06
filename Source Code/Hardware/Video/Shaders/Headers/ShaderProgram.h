@@ -31,6 +31,7 @@
 class Shader;
 class Camera;
 class Material;
+struct GenericDrawCommand;
 enum MATRIX_MODE;
 
 class ShaderProgram : public HardwareResource {
@@ -41,7 +42,7 @@ public:
     virtual void unbind(bool resetActiveProgram = true);
     virtual U8   update(const U64 deltaTime);
 
-    void SetLOD(U8 currentLOD);
+    void UpdateDrawCommand(U8 LoD);
 
     ///Attributes
     inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
@@ -114,7 +115,7 @@ public:
     //calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
            void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
     //calling refresh will force an update on default shader uniforms
-           void refresh() { _dirty = true; _extendedMatricesDirty = true;}
+           void refresh() { _dirty = true;}
     //add global shader defines
     inline void addShaderDefine(const std::string& define) {_definesList.push_back(define);}
            void removeShaderDefine(const std::string& define);
@@ -123,8 +124,6 @@ public:
            void removeUniform(const std::string& uniform, const ShaderType& type);
     //flush stored uniform locations
     virtual void flushLocCache() = 0;
-
-    void uploadNodeMatrices();
 
     inline size_t getFunctionCount(ShaderType shader, U8 LoD){
         return _functionIndex[shader][LoD].size();
@@ -157,7 +156,6 @@ public:
 protected:
     friend class ShaderManager;
     vectorImpl<Shader* > getShaders(const ShaderType& type) const;
-    inline void setMatricesDirty()  { _extendedMatricesDirty = true; }
     inline void setSceneDataDirty() { _sceneDataDirty = true; }
     I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
     I32 operator!=(const ShaderProgram &_v) { return !(*this == _v); }
@@ -198,7 +196,6 @@ protected:
 
 private:
     Camera* _activeCamera;
-    bool _extendedMatricesDirty;
     bool _sceneDataDirty;
     ///Various uniform/attribute locations
     I32 _timeLoc;
@@ -207,8 +204,6 @@ private:
     I32 _invScreenDimension;
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
-    I32 _worldMatrixLoc;
-    I32 _normalMatrixLoc;
     U8  _prevLOD;
 
     vectorImpl<U32> _functionIndex[ShaderType_PLACEHOLDER][Config::SCENE_NODE_LOD];

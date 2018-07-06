@@ -26,7 +26,7 @@
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 #include "core.h"
-#include "Hardware/Video/Direct3D/Buffers/FrameBuffer/Headers/d3dRenderTarget.h"
+#include "Hardware/Video/Direct3D/Buffers/Framebuffer/Headers/d3dRenderTarget.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h"
 #include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h"
 #include "Hardware/Video/Direct3D/Buffers/ShaderBuffer/Headers/d3dConstantBuffer.h"
@@ -55,14 +55,16 @@ protected:
     void beginFrame();
     void endFrame();
 
-    inline FrameBuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
+    inline ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const { return New d3dConstantBuffer(unbound, persistentMapped); }
+
+    inline IMPrimitive*        newIMP()                                      const { return nullptr; }
+    inline Framebuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
     inline GenericVertexData*  newGVD(const bool persistentMapped = false)   const { return New d3dGenericVertexData(persistentMapped); }
     inline VertexBuffer*       newVB()                                       const { return New d3dVertexBuffer(); }
     inline PixelBuffer*        newPB(const PBType& type)                     const { return New d3dPixelBuffer(type); }
-    inline ShaderBuffer*       newSB(const bool unbound = false)             const { return New d3dConstantBuffer(unbound); }
-    inline Texture*            newTextureArray(const bool flipped = false)   const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }
-    inline Texture*            newTexture2D(const bool flipped = false)      const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D], flipped); }
-    inline Texture*            newTextureCubemap(const bool flipped = false) const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP], flipped); }
+    inline Texture*            newTextureArray(const bool flipped = false)   const { return New d3dTexture(TEXTURE_2D_ARRAY, flipped); }
+    inline Texture*            newTexture2D(const bool flipped = false)      const { return New d3dTexture(TEXTURE_2D, flipped); }
+    inline Texture*            newTextureCubemap(const bool flipped = false) const { return New d3dTexture(TEXTURE_CUBE_MAP, flipped); }
     inline ShaderProgram*      newShaderProgram(const bool optimise = false) const { return New d3dShaderProgram(optimise); }
 
     inline Shader*             newShader(const std::string& name,const  ShaderType& type,const bool optimise = false) const {return New d3dShader(name,type,optimise);}
@@ -74,19 +76,10 @@ protected:
     void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
 
     void toggleRasterization(bool state);
+    void setLineWidth(F32 width);
 
     void drawText(const TextLabel& textLabel, const vec2<I32>& position);
-    void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
-    void drawLines(const vectorImpl<vec3<F32> >& pointsA,
-                   const vectorImpl<vec3<F32> >& pointsB,
-                   const vectorImpl<vec4<U8> >& colors,
-                   const mat4<F32>& globalOffset,
-                   const bool orthoMode = false,
-                   const bool disableDepth = false);
     void drawPoints(U32 numPoints);
-
-    void debugDraw(const SceneRenderState& sceneRenderState);
-    IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return nullptr; }
 
     void updateClipPlanes();
     friend class GFXDevice;
@@ -96,8 +89,6 @@ protected:
     void loadInContextInternal();
 
     U64 getFrameDurationGPU() const { return 0; }
-    U32 getFrameCount()       const { return 0; }
-    I32 getDrawCallCount()    const { return 0; }
 
     void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
 

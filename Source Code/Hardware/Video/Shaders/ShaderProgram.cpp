@@ -27,10 +27,7 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
 
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 
-    _extendedMatricesDirty = true;
     _sceneDataDirty = true;
-    _worldMatrixLoc      = -1;
-    _normalMatrixLoc     = -1;
     _timeLoc             = -1;
     _enableFogLoc        = -1;
     _lightAmbientLoc     = -1;
@@ -86,7 +83,7 @@ U8 ShaderProgram::update(const U64 deltaTime){
         this->Uniform(_invScreenDimension, vec2<F32>(1.0f / screenRes.width, 1.0f / screenRes.height));
         //Apply global shader values valid throughout application runtime:
         char depthMapSampler1[32], depthMapSampler2[32], depthMapSampler3[32];
-        for (I32 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
+        for (I32 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
             sprintf_s(depthMapSampler1, "texDepthMapFromLight[%d]",      i);
             sprintf_s(depthMapSampler2, "texDepthMapFromLightArray[%d]", i);
             sprintf_s(depthMapSampler3, "texDepthMapFromLightCube[%d]",  i);
@@ -96,12 +93,9 @@ U8 ShaderProgram::update(const U64 deltaTime){
             this->UniformTexture(depthMapSampler3, lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_CUBE,   i));
         }
 
-        char textureSampler[32];
-        for (I32 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
-            sprintf_s(textureSampler, "texDiffuse[%d]", i);
-            //Shadow Maps always bound from the last texture slot upwards
-            this->UniformTexture(textureSampler, Material::TEXTURE_UNIT0 + i);
-        }
+        this->UniformTexture("texDiffuse0", Material::TEXTURE_UNIT0);
+        this->UniformTexture("texDiffuse1", Material::TEXTURE_UNIT1);
+
         this->Uniform("dvd_lightBleedBias", 0.0000002f);
         this->Uniform("dvd_minShadowVariance", 0.0002f);
         this->Uniform("dvd_shadowMaxDist", 250.0f);
@@ -122,8 +116,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 
     DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
 
-    _worldMatrixLoc      = this->cachedLoc("dvd_WorldMatrix[0]");
-    _normalMatrixLoc     = this->cachedLoc("dvd_NormalMatrix[0]");
     _timeLoc             = this->cachedLoc("dvd_time");
     _enableFogLoc        = this->cachedLoc("dvd_enableFog");
     _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
@@ -146,26 +138,13 @@ bool ShaderProgram::bind(){
     return _shaderProgramId != 0;
 }
 
-void ShaderProgram::uploadNodeMatrices(){
-    if(!_extendedMatricesDirty)
-        return;
+void ShaderProgram::UpdateDrawCommand(U8 LoD) {
+    SetSubroutine(VERTEX_SHADER,   LoD == 0 ? _lodVertLight[0] : _lodVertLight[1]);
+    SetSubroutine(FRAGMENT_SHADER, LoD == 0 ? _lodFragLight[0] : _lodFragLight[1]);
 
-    if (_normalMatrixLoc != -1)
-        this->Uniform(_normalMatrixLoc, GFX_DEVICE.getMatrix3(NORMAL_MATRIX));
-     
-    if (_worldMatrixLoc != -1)
-        this->Uniform(_worldMatrixLoc, GFX_DEVICE.getMatrix4(WORLD_MATRIX));
-
-    _extendedMatricesDirty = false;
-}
-
-void ShaderProgram::SetLOD(U8 currentLOD){
-    SetSubroutine(VERTEX_SHADER, currentLOD == 0 ? _lodVertLight[0] : _lodVertLight[1]);
-    SetSubroutine(FRAGMENT_SHADER, currentLOD == 0 ? _lodFragLight[0] : _lodFragLight[1]);
-
-    if (currentLOD != _prevLOD){
-        Uniform("lodLevel", (I32)currentLOD);
-        _prevLOD = currentLOD;
+    if (LoD != _prevLOD){
+        Uniform("lodLevel", (I32)LoD);
+        _prevLOD = LoD;
     }
 }
 

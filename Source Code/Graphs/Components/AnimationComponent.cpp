@@ -19,12 +19,19 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* 
     _animationTransforms.reserve(40);
     _readBuffer  = 1;
     _writeBuffer = 0;
-    _boneTransformBuffer[0] = animator->getBoneDataBuffer(0);
-    _boneTransformBuffer[1] = animator->getBoneDataBuffer(1);
+    DIVIDE_ASSERT(_animator->GetBoneCount() <= Config::MAX_BONE_COUNT_PER_NODE, "AnimationComponent error: Too many bones for current node! Increase MAX_BONE_COUNT_PER_NODE in Config!"); 
+
+    _boneTransformBuffer[_writeBuffer] = GFX_DEVICE.newSB();
+    _boneTransformBuffer[_writeBuffer]->Create((U32)_animator->GetBoneCount(), sizeof(mat4<F32>));
+    _boneTransformBuffer[_readBuffer] = GFX_DEVICE.newSB();
+    _boneTransformBuffer[_readBuffer]->Create((U32)_animator->GetBoneCount(), sizeof(mat4<F32>));
+
 }
 
 AnimationComponent::~AnimationComponent()
 {
+    SAFE_DELETE(_boneTransformBuffer[0]);
+    SAFE_DELETE(_boneTransformBuffer[1]);
 }
 
 void AnimationComponent::update(const U64 deltaTime) {
@@ -40,9 +47,6 @@ void AnimationComponent::update(const U64 deltaTime) {
     _currentTimeStamp = timeStamp;
 
     _animationTransforms = _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
-        
-    size_t animationDataSize = _animationTransforms.size() * sizeof(mat4<F32>);
-    _boneTransformBuffer[_writeBuffer]->UpdateData(_instanceID * animationDataSize, animationDataSize, &_animationTransforms[0][0]);
 
     Object3D* node = _parentSGN->getNode<Object3D>();
     node->updateAnimations(_parentSGN);
@@ -93,8 +97,12 @@ void AnimationComponent::renderSkeleton(){
 }
 
 void AnimationComponent::onDraw(RenderStage currentStage) {
+    STUBBED("BoneTransformBuffers: Replace Read/Write design with 3xSize single buffer with UpdateData + BindRange");
+
     _skeletonAvailable = false;
 
+    _boneTransformBuffer[_writeBuffer]->UpdateData(0, _animationTransforms.size() * sizeof(mat4<F32>),
+                                                   &_animationTransforms.front().mat, true);
     _boneTransformBuffer[_readBuffer]->Bind(Divide::SHADER_BUFFER_BONE_TRANSFORMS);
 
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations || _currentTimeStamp < 0.0)
@@ -110,6 +118,10 @@ I32 AnimationComponent::frameIndex() const {
 
 I32 AnimationComponent::frameCount() const {
     return _animator->GetFrameCount(_currentAnimIndex);
+}
+
+U32 AnimationComponent::boneCount()  const {
+     return (U32)_animator->GetBoneCount(); 
 }
 
 const vectorImpl<mat4<F32> >& AnimationComponent::transformsByIndex(U32 index) const { 

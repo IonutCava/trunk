@@ -5,7 +5,7 @@ SceneNodeRenderState::~SceneNodeRenderState()
 {
 }
 
-I64 SceneNodeRenderState::getDepthStateBlock(){
+size_t SceneNodeRenderState::getDepthStateBlock(){
     if(_depthStateBlockHash == 0){
         RenderStateBlockDescriptor depthDesc;
         depthDesc.setColorWrites(false,false,false,false);
@@ -14,7 +14,7 @@ I64 SceneNodeRenderState::getDepthStateBlock(){
     return _depthStateBlockHash;
 }
 
-I64 SceneNodeRenderState::getShadowStateBlock(){
+size_t SceneNodeRenderState::getShadowStateBlock(){
     if(_shadowStateBlockHash == 0){
         RenderStateBlockDescriptor depthDesc;
         /// Cull back faces for shadow rendering

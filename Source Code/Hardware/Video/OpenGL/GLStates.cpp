@@ -11,42 +11,100 @@
 GLuint GL_API::_activeVAOId = GL_INVALID_INDEX;
 GLuint GL_API::_activeFBId  = GL_INVALID_INDEX;
 GLuint GL_API::_activeBufferId[] = {GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX, GL_INVALID_INDEX};
-GLuint GL_API::_activeTextureUnit = GL_INVALID_INDEX;
+GLuint GL_API::_activeTextureUnit       = GL_INVALID_INDEX;
 GLuint GL_API::_activeTransformFeedback = GL_INVALID_INDEX;
+GLint  GL_API::_activePackUnpackAlignments[] = {1, 1};
+GLint  GL_API::_activePackUnpackRowLength[]  = {0, 0};
+GLint  GL_API::_activePackUnpackSkipPixels[] = {0, 0};
+GLint  GL_API::_activePackUnpackSkipRows[]   = {0, 0};
 
-bool GL_API::_lastRestartIndexSmall = true;
+bool GL_API::_lastRestartIndexSmall   = true;
 bool GL_API::_primitiveRestartEnabled = false;
 
-GL_API::textureBoundMapDef GL_API::textureBoundMap;
-GL_API::samplerBoundMapDef GL_API::samplerBoundMap;
+GL_API::textureBoundMapDef GL_API::_textureBoundMap;
+GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
+GL_API::samplerObjectMap   GL_API::_samplerMap;
+
 Unordered_map<GLuint, vec4<GLfloat> > GL_API::_prevClearColor;
 
-void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
-    if(!skipShader || forceAll) {
-        setActiveProgram(nullptr,forceAll);
+void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers){
+    if(!skipShader)
+        setActiveProgram(nullptr);
+    
+    if(!skipTextures){
+        FOR_EACH(textureBoundMapDef::value_type& it, _textureBoundMap)
+            GL_API::bindTexture(it.first, 0, it.second.second);
+
+        setActiveTextureUnit(0);
     }
 
-    if(!skipTextures || forceAll){
-        FOR_EACH(textureBoundMapDef::value_type& it, textureBoundMap)
-            GL_API::bindTexture(it.first, 0, it.second.second, 0);
-
-        setActiveTextureUnit(0, forceAll);
-    }
-
-    if(!skipBuffers || forceAll){
-        setActiveVAO(0,forceAll);
-        setActiveFB(0, true, true, forceAll);
-        setActiveBuffer(GL_ARRAY_BUFFER, 0, forceAll);
-        setActiveBuffer(GL_TEXTURE_BUFFER, 0, forceAll);
-        setActiveBuffer(GL_UNIFORM_BUFFER, 0, forceAll);
-        setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0, forceAll);
-        setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0, forceAll);
-        setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0, forceAll);
-        setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0, forceAll);
-        setActiveTransformFeedback(0, forceAll);
+    if(!skipBuffers){
+        setPixelPackUnpackAlignment();
+        setActiveVAO(0);
+        setActiveFB(0, true, true);
+        setActiveBuffer(GL_ARRAY_BUFFER, 0);
+        setActiveBuffer(GL_TEXTURE_BUFFER, 0);
+        setActiveBuffer(GL_UNIFORM_BUFFER, 0);
+        setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+        setActiveTransformFeedback(0);
     }
 
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
+}
+
+bool GL_API::setPixelPackAlignment(GLint packAlignment, GLint rowLength, GLint skipRows, GLint skipPixels) {
+    bool changed = false;
+    if(_activePackUnpackAlignments[0] != packAlignment){
+        glPixelStorei(GL_PACK_ALIGNMENT, packAlignment);
+        _activePackUnpackAlignments[0] = packAlignment;
+        changed = true;
+    }
+    if(_activePackUnpackRowLength[0] != rowLength){
+        glPixelStorei(GL_PACK_ROW_LENGTH, rowLength);
+        _activePackUnpackRowLength[0] = rowLength;
+        changed = true;
+    }
+    if(_activePackUnpackSkipRows[0] != skipRows){
+        glPixelStorei(GL_PACK_SKIP_ROWS, skipRows);
+        _activePackUnpackSkipRows[0] = skipRows;
+        changed = true;
+    }
+    if(_activePackUnpackSkipPixels[0] != skipPixels){
+        glPixelStorei(GL_PACK_SKIP_PIXELS, skipPixels);
+        _activePackUnpackSkipPixels[0] = skipPixels;
+        changed = true;
+    }
+
+    return changed;
+}
+
+bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment, GLint rowLength, GLint skipRows, GLint skipPixels) {
+   bool changed = false;
+    if(_activePackUnpackAlignments[1] != unpackAlignment){
+        glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
+        _activePackUnpackAlignments[1] = unpackAlignment;
+        changed = true;
+    }
+    if(_activePackUnpackRowLength[1] != rowLength){
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, rowLength);
+        _activePackUnpackRowLength[1] = rowLength;
+        changed = true;
+    }
+    if(_activePackUnpackSkipRows[1] != skipRows){
+        glPixelStorei(GL_UNPACK_SKIP_ROWS, skipRows);
+        _activePackUnpackSkipRows[1] = skipRows;
+        changed = true;
+    }
+    if(_activePackUnpackSkipPixels[1] != skipPixels){
+        glPixelStorei(GL_UNPACK_SKIP_PIXELS, skipPixels);
+        _activePackUnpackSkipPixels[1] = skipPixels;
+        changed = true;
+    }
+
+    return changed;
 }
 
 void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
@@ -61,7 +119,7 @@ void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
 }
 
 void GL_API::updateClipPlanes(){
-    bool   clipPlaneActive = false;
+    bool clipPlaneActive = false;
 
     const PlaneList& list = GFX_DEVICE.getClippingPlanes();
     
@@ -75,8 +133,8 @@ void GL_API::updateClipPlanes(){
     }
 }
 
-bool GL_API::setActiveTextureUnit(GLuint unit,const bool force){
-    if(_activeTextureUnit == unit && !force)
+bool GL_API::setActiveTextureUnit(GLuint unit){
+    if(_activeTextureUnit == unit)
         return false; //< prevent double bind
 
     _activeTextureUnit = unit;
@@ -85,23 +143,24 @@ bool GL_API::setActiveTextureUnit(GLuint unit,const bool force){
     return true;
 }
 
-bool GL_API::bindSampler(GLuint unit, GLuint samplerID){
-    if(samplerBoundMap[unit] != samplerID){
-        glBindSampler(unit, samplerID);
-        samplerBoundMap[unit] = samplerID;
+bool GL_API::bindSampler(GLuint unit, size_t samplerHash){
+    if(_samplerBoundMap[unit] != samplerHash){
+        glBindSampler(unit, getSamplerHandle(samplerHash));
+        _samplerBoundMap[unit] = samplerHash;
         return true;
     }
     return false;
 }
   
-bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID){
-    GL_API::bindSampler(unit, samplerID);
+bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, size_t samplerHash){
+    assert(unit < GFX_DEVICE.getMaxTextureSlots());
 
-    std::pair<GLuint, GLenum>& currentMapping = textureBoundMap[unit];
+    GL_API::bindSampler(unit, samplerHash);
+
+    std::pair<GLuint, GLenum>& currentMapping = _textureBoundMap[unit];
     if (currentMapping.first != handle || currentMapping.second != type){
         GL_API::setActiveTextureUnit(unit);
         glBindTexture(type, handle);
-
         currentMapping.first = handle;
         currentMapping.second = type;
         return true;
@@ -109,8 +168,8 @@ bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint sampler
     return false;
 }
 
-bool GL_API::setActiveFB(GLuint id, const bool read, const bool write, const bool force){
-    if (_activeFBId == id && !force)
+bool GL_API::setActiveFB(GLuint id, const bool read, const bool write){
+    if (_activeFBId == id)
         return false; //<prevent double bind
 
     _activeFBId = id;
@@ -121,8 +180,8 @@ bool GL_API::setActiveFB(GLuint id, const bool read, const bool write, const boo
     return true;
 }
 
-bool GL_API::setActiveVAO(GLuint id, const bool force){
-    if(_activeVAOId == id && !force)
+bool GL_API::setActiveVAO(GLuint id){
+    if(_activeVAOId == id)
         return false; //<prevent double bind
         
     _activeVAOId = id;
@@ -131,8 +190,8 @@ bool GL_API::setActiveVAO(GLuint id, const bool force){
     return true;
 }
 
-bool GL_API::setActiveTransformFeedback(GLuint id, const bool force){
-    if(_activeTransformFeedback == id && !force)
+bool GL_API::setActiveTransformFeedback(GLuint id){
+    if(_activeTransformFeedback == id)
         return false;
 
     _activeTransformFeedback = id;
@@ -140,7 +199,7 @@ bool GL_API::setActiveTransformFeedback(GLuint id, const bool force){
     return true;
 }
 
-bool GL_API::setActiveBuffer(GLenum target, GLuint id, const bool force){
+bool GL_API::setActiveBuffer(GLenum target, GLuint id){
     GLint index = -1;
     switch (target){
         case GL_ARRAY_BUFFER          : index = 0; break;
@@ -154,7 +213,7 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id, const bool force){
 
     DIVIDE_ASSERT(index != -1, "GLStates error: attempted to bind an invalid buffer target!");
 
-    if (_activeBufferId[index] == id && !force)
+    if (_activeBufferId[index] == id)
         return false; //<prevent double bind
 
     _activeBufferId[index] = id;
@@ -163,21 +222,22 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id, const bool force){
     return true;
 }
 
-bool GL_API::setActiveProgram(glShaderProgram* const program,const bool force){
+bool GL_API::setActiveProgram(glShaderProgram* const program){
     GLuint newProgramId = (program != nullptr) ? program->getId() : 0;
-    GLuint oldProgramId = (GFXDevice::_activeShaderProgram != nullptr) ? GFXDevice::_activeShaderProgram->getId() : 0;
-    if(oldProgramId == newProgramId && !force)
+    GLuint oldProgramId = (GFX_DEVICE.activeShaderProgram() != nullptr) ? GFX_DEVICE.activeShaderProgram()->getId() : 0;
+    if(oldProgramId == newProgramId)
         return false; //<prevent double bind
 
-    if (GFXDevice::_activeShaderProgram != nullptr) GFXDevice::_activeShaderProgram->unbind(false);
+    if (GFX_DEVICE.activeShaderProgram() != nullptr)
+        GFX_DEVICE.activeShaderProgram()->unbind(false);
 
-    GFXDevice::_activeShaderProgram = program;
+    GFX_DEVICE.activeShaderProgram(program);
 
     glUseProgram(newProgramId);
     return true;
 }
 
-void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget, bool force){
+void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget){
     vec4<F32>& prevClearColor = _prevClearColor[renderTarget];
     if (prevClearColor != vec4<F32>(r,g,b,a)){
         prevClearColor.set(r, g, b, a);
@@ -207,7 +267,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
     const RenderStateBlockDescriptor& newDescriptor = newBlock.getDescriptor();
 
     TOGGLE_WITH_CHECK(_blendEnable,   GL_BLEND);
-    TOGGLE_WITH_CHECK(_cullMode,      GL_CULL_FACE);
+    TOGGLE_WITH_CHECK(_cullEnabled,   GL_CULL_FACE);
     TOGGLE_WITH_CHECK(_stencilEnable, GL_STENCIL_TEST);
     TOGGLE_WITH_CHECK(_zEnable,       GL_DEPTH_TEST);
 
@@ -227,7 +287,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
         glDepthFunc(glCompareFuncTable[newDescriptor._zFunc]);
     
     if (SHOULD_TOGGLE(_zWriteEnable))
-        glDepthMask(newDescriptor._zWriteEnable);
+        glDepthMask(newDescriptor._zWriteEnable ? GL_TRUE : GL_FALSE);
     
     if (SHOULD_TOGGLE(_stencilWriteMask))
         glStencilMask(newDescriptor._stencilWriteMask);

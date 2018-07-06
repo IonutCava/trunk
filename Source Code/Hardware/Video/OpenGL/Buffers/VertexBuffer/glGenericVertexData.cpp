@@ -123,7 +123,7 @@ bool glGenericVertexData::frameStarted(const FrameEvent& evt) {
     return GenericVertexData::frameStarted(evt);
 }
 
-void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount){
+void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount){
     DIVIDE_ASSERT(isFeedbackBuffer(buffer), "glGenericVertexData error: called bind buffer range for non-feedback buffer!");
 
     GL_API::setActiveTransformFeedback(_transformFeedback);
@@ -131,17 +131,9 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, size_t elementCoun
 }
 
 void glGenericVertexData::Draw(const GenericDrawCommand& command) {
-    DIVIDE_ASSERT(_currentShader != nullptr, "glGenericVertexData error: No draw shader specified for generic vertex data draw command!");
     const IndirectDrawCommand& cmd = command._cmd;
 
     if (cmd.instanceCount == 0) return;
-
-    SET_STATE_BLOCK(command._stateHash, true);
-    
-    DIVIDE_ASSERT(_currentShader->isBound() && _currentShader->getId() != 0, "glGenericVertexData error: Draw shader state is not valid for the current draw operation!");
-
-    _currentShader->SetLOD(command._lodIndex);
-    _currentShader->uploadNodeMatrices();
 
     bool feedbackActive = (command._drawToBuffer && !_feedbackBuffers.empty());
 
@@ -171,7 +163,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command) {
         _resultAvailable[_currentWriteQuery][command._queryID] = true;
     }
    
-    GL_API::registerDrawCall();    
+    GFX_DEVICE.registerDrawCall();    
 }
 
 void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped) {
@@ -211,12 +203,13 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
     _bufferPersistent[buffer] = persistentMapped;
 }
 
-void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool stream) {
+void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool stream) {
     size_t dataCurrentSize = elementCount * _elementSize[buffer];
-    GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
+    size_t offset = elementCountOffset * _elementSize[buffer];
     if (!_bufferPersistent[buffer]){
-        glBufferSubData(GL_ARRAY_BUFFER, offset, dataCurrentSize, data);
+        glNamedBufferSubDataEXT(_bufferObjects[buffer], offset, dataCurrentSize, data);
     }else{
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
         size_t bufferSize = _elementCount[buffer] * _elementSize[buffer];
 
         _lockManager->WaitForLockedRange(_startDestOffset[buffer], bufferSize);

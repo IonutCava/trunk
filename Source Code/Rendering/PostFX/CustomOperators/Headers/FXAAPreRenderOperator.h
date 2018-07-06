@@ -29,7 +29,7 @@
 
 class FXAAPreRenderOperator : public PreRenderOperator {
 public:
-	FXAAPreRenderOperator(FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	FXAAPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~FXAAPreRenderOperator();
 
 	void operation();
@@ -38,8 +38,8 @@ public:
 private:
     bool           _ready;
 	ShaderProgram* _fxaa;
-	FrameBuffer*   _outputFB;
-	FrameBuffer*   _samplerCopy;
+	Framebuffer*   _outputFB;
+	Framebuffer*   _samplerCopy;
 };
 
 #endif

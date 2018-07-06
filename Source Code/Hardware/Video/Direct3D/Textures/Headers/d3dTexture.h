@@ -28,22 +28,21 @@
 
 class d3dTexture : public Texture {
 public:
-	d3dTexture(U32 type, bool flipped = false) : Texture(flipped), _type(type) {}
-	~d3dTexture() {}
+    d3dTexture(TextureType type, bool flipped = false);
+    ~d3dTexture() {}
 
-	bool generateHWResource(const std::string& name){return true;}
-	bool unload() {Destroy(); return true;}
+    bool generateHWResource(const std::string& name){return true;}
+    bool unload() {return true;}
 
-	void Bind(U16 unit){}
-	
-	void setMipMapRange(U32 base = 0, U32 max = 1000){}
-	void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, U8 bpp, GFXImageFormat format){}
+    void Bind(U16 unit){}
+    
+    void setMipMapRange(U16 base = 0, U16 max = 1000){}
+    void updateMipMaps() {}
+    void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, const vec2<U16>& mipLevels,
+                  GFXImageFormat format, GFXImageFormat internalFormat, bool usePOW2 = false){}
 
 private:
-	void Destroy() {}
-
-private:
-	U32 _type;
+    U32 _type;
 };
 
 #endif

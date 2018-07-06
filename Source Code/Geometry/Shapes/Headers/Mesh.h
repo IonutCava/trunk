@@ -30,8 +30,8 @@ Mesh class. This class wraps all of the renderable geometry drawn by the engine.
 The only exceptions are: Terrain (including TerrainChunk) and Vegetation.
 
 Meshes are composed of at least 1 submesh that contains vertex data, texture info and so on.
-A mesh has a name, position, rotation, scale and a boolean value that enables or disables rendering
-across the network and one that disables rendering alltogheter;
+A mesh has a name, position, rotation, scale and a Boolean value that enables or disables rendering
+across the network and one that disables rendering altogether;
 
 Note: all transformations applied to the mesh affect every submesh that compose the mesh.
 */
@@ -58,11 +58,9 @@ public:
     inline bool playAnimations()                 const { return _playAnimations; }
 
 protected:
-    friend class SubMesh;
-    void addDrawCommand(const GenericDrawCommand& cmd, ShaderProgram* const shaderProgram);
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) { }
 
 protected:
 
@@ -72,8 +70,6 @@ protected:
     bool _visibleToNetwork;
     bool _playAnimations;
     bool _playAnimationsCurrent;
-
-    vectorImpl<GenericDrawCommand >  _drawCommands[Config::SCENE_NODE_LOD];
 
     vectorImpl<std::string > _subMeshes;
     subMeshRefMap            _subMeshRefMap;

@@ -324,7 +324,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Task.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Thread.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\FrameBuffer\Headers\FrameBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\Framebuffer\Headers\Framebuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\PixelBuffer\Headers\PixelBuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\ShaderBuffer\Headers\ShaderBuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\GenericVertexData.h" />
@@ -346,9 +346,8 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderInstance.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderStateBlock.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBuffer\Headers\glFrameBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\Framebuffer\Headers\glFramebuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\Headers\glBufferLockManager.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\ShaderBuffer\Headers\glUniformBuffer.h" />
@@ -385,7 +384,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Input\InputInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\FrameBuffer\FrameBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\Framebuffer\Framebuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBuffer\d3dRenderTarget.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBuffer\d3dPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\ShaderBuffer\d3dConstantBuffer.cpp" />
@@ -396,14 +395,15 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\d3dTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDeviceDebug.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDeviceState.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBuffer\glFrameBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\Framebuffer\glFramebuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\glBufferLockManager.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\ShaderBuffer\glUniformBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp" />
@@ -438,6 +438,7 @@
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\shaders\GLSL\common\lightInput.cmn" />
+    <None Include="..\..\assets\shaders\GLSL\common\nodeBufferedInput.cmn" />
     <None Include="..\..\assets\shaders\GLSL\common\nodeDataInput.cmn" />
     <None Include="..\..\assets\shaders\GLSL\deferredPreview.glsl">
       <FileType>Document</FileType>

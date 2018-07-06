@@ -44,11 +44,9 @@ public:
     U32  GetFeedbackPrimitiveCount(U8 queryID);
 
     void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false);
-    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 offset, bool dynamic, bool stream);
+    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool stream);
 
-    void BindFeedbackBufferRange(U32 buffer, size_t elementCountOffset, size_t elementCount);
-
-    void Draw(const GenericDrawCommand& command);
+    void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount);
 
     inline void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {
         if (!isFeedbackBuffer(buffer)){
@@ -59,6 +57,10 @@ public:
         GL_API::setActiveTransformFeedback(_transformFeedback);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]);
     }
+
+protected:
+    friend class GFXDevice;
+    void Draw(const GenericDrawCommand& command);
 
 protected:
     void SetAttributes(bool feedbackPass);

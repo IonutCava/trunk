@@ -65,13 +65,6 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     _renderQuads.push_back(CreateResource<Quad3D>(mrt3));
     _renderQuads.push_back(CreateResource<Quad3D>(mrt4));
     _renderQuads.push_back(CreateResource<Quad3D>(mrtPreviewSmall));
-    for(Quad3D* renderQuad : _renderQuads){
-        assert(renderQuad);
-        renderQuad->setCustomShader(_previewDeferredShader);
-        renderQuad->renderInstance()->preDraw(true);
-    }
-    _renderQuads[0]->setCustomShader(_deferredShader);
-    _renderQuads[4]->setCustomShader(_deferredShader);
 
     ParamHandler& par = ParamHandler::getInstance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
@@ -123,7 +116,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
 
 void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState) {
     GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
-    SET_DEFAULT_STATE_BLOCK();
+
     Light::LightMap& lights = LightManager::getInstance().getLights();
     if(lights.size() != _cachedLightCount){
         _cachedLightCount = (U16)lights.size();
@@ -153,7 +146,7 @@ void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const S
 void DeferredShadingRenderer::firstPass(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState){
     //Pass 1
     //Draw the geometry, saving parameters into the buffer
-    _deferredBuffer->Begin(FrameBuffer::defaultPolicy());
+    _deferredBuffer->Begin(Framebuffer::defaultPolicy());
         renderCallback();
     _deferredBuffer->End();
 }
@@ -168,19 +161,29 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     _deferredBuffer->Bind(2, TextureDescriptor::Color2);
     _deferredBuffer->Bind(3, TextureDescriptor::Color3);
     _lightTexture->Bind(4);
-        if(_debugView){
-            _previewDeferredShader->bind();
-            _previewDeferredShader->UniformTexture("tex",4);
-            GFX_DEVICE.renderInstance(_renderQuads[1]->renderInstance());
-            _previewDeferredShader->UniformTexture("tex",1);
-            GFX_DEVICE.renderInstance(_renderQuads[2]->renderInstance());
-            _previewDeferredShader->UniformTexture("tex",2);
-            GFX_DEVICE.renderInstance(_renderQuads[3]->renderInstance());
-        }
-        _deferredShader->bind();
-            _deferredShader->Uniform("lightCount",(I32)_cachedLightCount);
 
-            GFX_DEVICE.renderInstance(_renderQuads[ _debugView ? 4 : 0]->renderInstance());
+    GenericDrawCommand cmd;
+    cmd.setStateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    cmd.setDrawIDs(GFX_DEVICE.getDrawIDs(0));
+    cmd.setShaderProgram(_previewDeferredShader);
+    if(_debugView){
+        _previewDeferredShader->bind();
+        _previewDeferredShader->UniformTexture("tex",4);
+        if(_renderQuads[1]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
+            GFX_DEVICE.submitRenderCommand(_renderQuads[1]->getGeometryVB(), cmd);
+        _previewDeferredShader->UniformTexture("tex",1);
+        if(_renderQuads[2]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
+            GFX_DEVICE.submitRenderCommand(_renderQuads[2]->getGeometryVB(), cmd);
+        _previewDeferredShader->UniformTexture("tex",2);
+        if(_renderQuads[3]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
+            GFX_DEVICE.submitRenderCommand(_renderQuads[3]->getGeometryVB(), cmd);
+    }
+    _deferredShader->bind();
+        _deferredShader->Uniform("lightCount",(I32)_cachedLightCount);
+
+    cmd.setShaderProgram(_deferredShader);
+    if(_renderQuads[ _debugView ? 4 : 0]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
+        GFX_DEVICE.submitRenderCommand(_renderQuads[ _debugView ? 4 : 0]->getGeometryVB(), cmd);
 
     GFX_DEVICE.toggle2D(false);
     GUI& gui = GUI::getInstance();

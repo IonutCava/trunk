@@ -163,7 +163,7 @@ Mesh* DVDConverter::load(const std::string& file){
 
         if (tempSubMesh){
             if(!tempSubMesh->getMaterial()){
-                tempSubMesh->setMaterial(loadSubMeshMaterial(_aiScenePointer->mMaterials[currentMesh->mMaterialIndex], std::string(tempSubMesh->getName() + "_material")));
+                tempSubMesh->setMaterial(loadSubMeshMaterial(skinned, _aiScenePointer->mMaterials[currentMesh->mMaterialIndex], std::string(tempSubMesh->getName() + "_material")));
             }
           
             tempMesh->addSubMesh(tempSubMesh);
@@ -321,16 +321,19 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
 }
 
 /// Load the material for the current SubMesh
-Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName) {
+Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* source, const std::string& materialName) {
     // See if the material already exists in a cooked state (XML file)
-    Material* tempMaterial = XML::loadMaterial(materialName);
+    STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
+    Material* tempMaterial = nullptr;//XML::loadMaterial(materialName);
     if(tempMaterial) return tempMaterial;
 
     // If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
     bool skip = (FindResourceImpl<Material>(materialName) != nullptr);
 
     // If we found it in the Resource Cache, return a copy of it
-    tempMaterial = CreateResource<Material>(ResourceDescriptor(materialName));
+    ResourceDescriptor materialDesc(materialName);
+    if(skinned) materialDesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
+    tempMaterial = CreateResource<Material>(materialDesc);
     if(skip) return tempMaterial;
 
     // Compare load results with the standard success value
@@ -442,9 +445,6 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
         path = par.getParam<std::string>("assetsLocation")+"/"+par.getParam<std::string>("defaultTextureLocation") +"/"+ path;
         // if we have a name and an extension
         if(!img_name.substr(img_name.find_first_of(".")).empty()){
-            // Is this the base texture or the secondary?
-            U32 item = Material::TEXTURE_UNIT0;
-            if(count == 1) item++;
             // Load the texture resource
             if(mode[0] != _aiTextureMapMode_Force32Bit)
                 textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
@@ -458,7 +458,9 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             assert(tempMaterial != nullptr);
             assert(textureRes != nullptr);
             //The first texture is always "Replace"
-            tempMaterial->setTexture(item,textureRes, count == 0 ? Material::TextureOperation_Replace : aiTextureOperationTable[op]);
+            tempMaterial->setTexture(count == 1 ? Material::TEXTURE_UNIT1 : Material::TEXTURE_UNIT0, 
+                                     textureRes, 
+                                     count == 0 ? Material::TextureOperation_Replace : aiTextureOperationTable[op]);
         }//endif
 
         tName.Clear();
@@ -484,7 +486,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
+            tempMaterial->setTexture(Material::TEXTURE_NORMALMAP, textureRes, aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
         }//endif
     }//endif
@@ -527,7 +529,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes,aiTextureOperationTable[op]);
+            tempMaterial->setTexture(Material::TEXTURE_OPACITY, textureRes,aiTextureOperationTable[op]);
             tempMaterial->setDoubleSided(true);
         }//endif
     }else{
@@ -540,7 +542,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             if(!(flags & aiTextureFlags_IgnoreAlpha) &&
                 tempMaterial->getTexture(Material::TEXTURE_UNIT0)->hasTransparency()){
                     Texture* textureRes = CreateResource<Texture>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_UNIT0)->getName()));
-                    tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes);
+                    tempMaterial->setTexture(Material::TEXTURE_OPACITY, textureRes);
             }
         }
     }
