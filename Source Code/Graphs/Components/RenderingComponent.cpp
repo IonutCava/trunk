@@ -123,6 +123,7 @@ void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
                       [&slot](const TextureData& data)
                           -> bool { return data.getHandleLow() == slot; });
 
+    
     TextureData data = texture.getData();
     data.setHandleLow(to_uint(slot));
 

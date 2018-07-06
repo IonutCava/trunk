@@ -58,6 +58,8 @@ class glTexture : public Texture {
                   GFXImageFormat format,
                   GFXImageFormat internalFormat);
 
+    bool flushTextureState();
+
    protected:
     bool generateHWResource(const stringImpl& name);
     void threadedLoad(const stringImpl& name);

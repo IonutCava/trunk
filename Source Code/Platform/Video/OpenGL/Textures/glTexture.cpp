@@ -299,9 +299,9 @@ void glTexture::loadData(const TextureLoadInfo& info,
                   "glTexture error: Invalid texture dimensions!");
 }
 
-void glTexture::Bind(GLubyte unit) {
+bool glTexture::flushTextureState() {
     if (!_threadedLoadComplete) {
-        return;
+        return false;
     }
     if (_lockManager) {
         _lockManager->Wait();
@@ -309,7 +309,13 @@ void glTexture::Bind(GLubyte unit) {
     }
     updateSampler();
     updateMipMaps();
-    GL_API::bindTexture(unit, _textureData.getHandleHigh(), _type,
-                        _textureData._samplerHash);
+    return true;
+}
+
+void glTexture::Bind(GLubyte unit) {
+    if (flushTextureState()) {
+        GL_API::bindTexture(unit, _textureData.getHandleHigh(), _type,
+                            _textureData._samplerHash);
+    }
 }
 };

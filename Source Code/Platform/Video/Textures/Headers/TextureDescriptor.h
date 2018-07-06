@@ -48,8 +48,8 @@ namespace Divide {
 /// POD
 class SamplerDescriptor : public PropertyDescriptor {
    public:
-    /// The constructer specifies the type so it can be used later for
-    /// downcasting if needed
+    /// The constructor specifies the type so it can be used later for
+    /// down-casting if needed
     SamplerDescriptor() : PropertyDescriptor(DescriptorType::DESCRIPTOR_SAMPLER)
     {
         setDefaultValues();

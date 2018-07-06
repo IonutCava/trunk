@@ -115,7 +115,9 @@ class NOINITVTABLE Texture : public HardwareResource {
     inline TextureType getTextureType() const { return _textureData._textureType; }
     /// Force a full refresh of the mip chain on the next texture bind
     inline void refreshMipMaps() { _mipMapsDirty = true; }
-
+    /// Force a full update of the texture (all pending changes and mipmap refresh);
+    /// Returns false if the texture is not ready or in an invalid state
+    virtual bool flushTextureState() = 0;
    protected:
     SET_DELETE_FRIEND
 

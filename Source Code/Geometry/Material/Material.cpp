@@ -460,7 +460,7 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
     U32 slotValue = to_uint(slot);
     Texture* crtTexture = _textures[slotValue];
-    if (crtTexture) {
+    if (crtTexture && crtTexture->flushTextureState()) {
         TextureData data = crtTexture->getData();
         data.setHandleLow(slotValue);
         container.push_back(data);
@@ -481,9 +481,11 @@ void Material::getTextureData(TextureDataContainer& textureData) {
                        textureData);
 
         for (std::pair<Texture*, U8>& tex : _customTextures) {
-            TextureData data = tex.first->getData();
-            data.setHandleLow(to_uint(tex.second));
-            textureData.push_back(data);
+            if (tex.first->flushTextureState()) {
+                TextureData data = tex.first->getData();
+                data.setHandleLow(to_uint(tex.second));
+                textureData.push_back(data);
+            }
         }
     }
 }

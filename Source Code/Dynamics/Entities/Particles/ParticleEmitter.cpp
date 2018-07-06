@@ -168,7 +168,7 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     depthBufferData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
     sgn.getComponent<RenderingComponent>()->registerTextureDependency(depthBufferData);
 
-    if (_particleTexture) {
+    if (_particleTexture && _particleTexture->flushTextureState()) {
         TextureData particleTextureData = _particleTexture->getData();
         particleTextureData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT0));
         sgn.getComponent<RenderingComponent>()->registerTextureDependency(particleTextureData);
