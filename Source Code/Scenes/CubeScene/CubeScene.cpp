@@ -14,7 +14,7 @@ REGISTER_SCENE(CubeScene);
 void CubeScene::render() {}
 
 void CubeScene::processTasks(const U64 deltaTime) {
-    Light::LightList& lights = LightManager::getInstance().getLights();
+    Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
     D32 updateLights = Time::SecondsToMilliseconds(0.05);
 
     if (_taskTimers[0] >= updateLights) {

@@ -40,20 +40,23 @@ class LightGrid {
    public:
     struct LightInternal {
        public:
+        I64 guid;
         vec3<F32> position;
         vec3<F32> color;
         F32 range;
     };
 
-    inline static LightInternal makeLight(const vec3<F32>& position,
-                                          const vec3<F32>& color, F32 range) {
-        LightInternal l = {position, color, range};
+    inline static LightInternal makeLight(I64 guid,
+                                          const vec3<F32>& position,
+                                          const vec3<F32>& color,
+                                          F32 range) {
+        LightInternal l = {guid, position, color, range};
         return l;
     }
 
     inline static LightInternal makeLight(const vec3<F32>& position,
                                           const LightInternal& l) {
-        return makeLight(position, l.color, l.range);
+        return makeLight(l.guid, position, l.color, l.range);
     }
 
     typedef vectorImpl<LightInternal> Lights;

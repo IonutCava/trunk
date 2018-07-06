@@ -66,7 +66,7 @@ bool Light::unload() {
     }
 
     // DELETE(_shadowCamera); <-- deleted by the camera manager
-    LightManager::getInstance().removeLight(getGUID());
+    LightManager::getInstance().removeLight(getGUID(), getLightType());
 
     removeShadowMapInfo();
 

@@ -15,9 +15,9 @@ struct Light {
     ivec4  _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, z = shadow block index, w = reserved
 };
 
-layout(binding = BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
+layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent readonly buffer dvd_LightBlock
 {
-    Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
+    Light dvd_LightSource[MAX_LIGHTS_IN_VIEW];
 };
 
 struct Shadow {
@@ -26,6 +26,7 @@ struct Shadow {
     vec4  _lightPosition[4];
 };
 
+
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
@@ -33,6 +34,8 @@ layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 
 uniform vec3 dvd_lightAmbient;
 #endif
+
+uniform uint dvd_lightCount = 0;
 
 VARYING vec3 _normalWV;
 #if defined(COMPUTE_TBN)

@@ -308,7 +308,8 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 
     ResourceDescriptor defaultLight(
         lightType +
-        std::to_string(LightManager::getInstance().getLights().size()));
+        std::to_string(LightManager::getInstance().getLights(type).size()));
+
     defaultLight.setEnumValue(to_uint(type));
     return addLight(*CreateResource<Light>(defaultLight), parentNode);
 }

@@ -127,11 +127,13 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
 
 void DeferredShadingRenderer::preRender(const GFXDevice::GPUBlock& gpuBlock) {
 
-    Light::LightList& lights = LightManager::getInstance().getLights();
+    Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
+
     if (lights.size() != _cachedLightCount) {
         _cachedLightCount = (U16)lights.size();
         _lightTexture->Create(2, _cachedLightCount);
     }
+
     U8 index = 0;
     F32* pixels = (F32*)_lightTexture->Begin();
     for (U8 row = 0; row < 3; row++) {

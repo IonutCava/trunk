@@ -58,10 +58,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
         materialProp.specular = vec3(0.0);
 #else
     // Apply all lighting contributions
-    for (uint i = 0; i < MAX_LIGHTS_PER_SCENE; i++){
-        if (_lightCount == i) {
-            break;
-        }
+    for (uint i = 0; i < _lightCount; i++){
         getBRDFFactors(getLightProperties(i, normal), materialProp);
     }
 #endif

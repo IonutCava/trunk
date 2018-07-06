@@ -19,7 +19,7 @@ void PingPongScene::preRender() {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    LightManager::getInstance().getLight(0)->setDirection(_sunvector);
+    LightManager::getInstance().getLight(0, LightType::DIRECTIONAL)->setDirection(_sunvector);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, vec4<F32>(1.0f));
 }
 //<<end copy-paste

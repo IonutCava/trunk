@@ -63,6 +63,8 @@ bool ShaderProgram::update(const U64 deltaTime) {
     this->Uniform("dvd_time", _elapsedTimeMS);
     this->Uniform("dvd_enableFog", enableFog);
     this->Uniform("dvd_lightAmbient", lightMgr.getAmbientLight());
+    this->Uniform("dvd_lightCount", lightMgr.getActiveLightCount());
+                                    
     // Scene specific data is updated only if it changed
     if (_sceneDataDirty) {
         // Check and update fog properties

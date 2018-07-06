@@ -10,7 +10,7 @@ namespace Divide {
 REGISTER_SCENE(NetworkScene);
 
 void NetworkScene::preRender() {
-    Light* light = LightManager::getInstance().getLight(0);
+    Light* light = LightManager::getInstance().getLight(0, LightType::DIRECTIONAL);
     vec4<F32> vSunColor = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
                                vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
                                0.25f + cosf(_sunAngle.y) * 0.75f);

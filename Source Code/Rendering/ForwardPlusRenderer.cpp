@@ -79,17 +79,22 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
     if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
         return true;
     }
-    const Light::LightList& lights = LightManager::getInstance().getLights();
+    Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
+
+    //Disable all lights until we finish pruning
+    for(Light* light : lights) {
+        light->setEnabled(false);
+    }
 
     _omniLightList.clear();
     _omniLightList.reserve(static_cast<vectorAlg::vecSize>(lights.size()));
 
     for (Light* const light : lights) {
-        if (light->getLightType() == LightType::POINT) {
-            _omniLightList.push_back(LightGrid::makeLight(
-                light->getPosition(), light->getDiffuseColor(),
-                light->getRange()));
-        }
+        _omniLightList.push_back(LightGrid::makeLight(
+            light->getGUID(),
+            light->getPosition(),
+            light->getDiffuseColor(),
+            light->getRange()));
     }
 
     if (!_omniLightList.empty()) {
@@ -112,11 +117,31 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
         STUBBED("ADD OPTIMIZED COPY!!!");
         *_opaqueGrid = *_transparentGrid;
         // Note that the pruning does not occur if the pre-z pass was not
-        // performed
-        // (depthRanges is empty in this case).
+        // performed (depthRanges is empty in this case).
         _opaqueGrid->prune(_depthRangesCache);
         _transparentGrid->pruneFarOnly(gpuBlock._data._ZPlanesCombined.x,
                                        _depthRangesCache);
+
+        vectorImpl<I64> guidList;
+        guidList.reserve(_opaqueGrid->getViewSpaceLights().size() + 
+                         _transparentGrid->getViewSpaceLights().size());
+
+        for (const LightGrid::LightInternal& light : _opaqueGrid->getViewSpaceLights()) {
+            guidList.push_back(light.guid);
+        }
+        for (const LightGrid::LightInternal& light : _transparentGrid->getViewSpaceLights()) {
+            guidList.push_back(light.guid);
+        }
+
+        for(Light* light : lights) {
+            I64 crtGUID = light->getGUID();
+            for (I64 guid: guidList) {
+                if (guid == crtGUID) {
+                    light->setEnabled(true);
+                    continue;
+                }
+            }
+        }
         return true;
     }
 

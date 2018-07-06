@@ -176,9 +176,6 @@
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIProcessor.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{87F22E92-2988-41FA-9E23-00033408A869}</ProjectGuid>
     <RootNamespace>DivideHardware</RootNamespace>

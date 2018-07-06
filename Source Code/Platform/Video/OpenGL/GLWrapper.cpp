@@ -276,8 +276,8 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "const uint MAX_LIGHTS_PER_SCENE = " +
-            std::to_string(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";",
+        "const uint MAX_LIGHTS_IN_VIEW = " +
+            std::to_string(Config::Lighting::MAX_LIGHTS_IN_VIEW) + ";",
         lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
                          "const int MAX_VISIBLE_NODES = " +

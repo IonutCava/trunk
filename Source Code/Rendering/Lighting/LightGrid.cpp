@@ -172,7 +172,9 @@ void LightGrid::prune(const vectorImpl<vec2<F32> >& gridMinMaxZ) {
     _gridMinMaxZ = gridMinMaxZ;
     _minMaxGridValid = !gridMinMaxZ.empty();
 
-    if (!_minMaxGridValid || _tileLightIndexLists.empty()) return;
+    if (!_minMaxGridValid || _tileLightIndexLists.empty()) {
+        return;
+    }
 
     const vec2<F32>* gridMinMaxZPtr =
         _minMaxGridValid ? &_gridMinMaxZ[0] : nullptr;

@@ -214,8 +214,7 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
 
     // Since the normal matrix is 3x3, we can use the extra row and column
     // to store additional data
-    normalMatrix.element(3, 2, true) = to_float(LightManager::getInstance().getLights().size());
-    normalMatrix.element(3, 3, true) = to_float(animComp ? animComp->boneCount() : 0);
+    normalMatrix.element(3, 2, true) = to_float(animComp ? animComp->boneCount() : 0);
 
     // Get the color matrix (diffuse, ambient, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._matrix[2]);

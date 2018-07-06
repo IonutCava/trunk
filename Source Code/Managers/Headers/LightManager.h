@@ -49,17 +49,19 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     /// Add a new light to the manager
     bool addLight(Light& light);
     /// remove a light from the manager
-    bool removeLight(I64 lightGUID);
+    bool removeLight(I64 lightGUID, LightType type);
     /// Update the ambient light values used in shader programs
     inline void setAmbientLight(const vec3<F32>& light) { _ambientLight = light; }
     /// Retrieve the current ambient light values
     inline const vec3<F32>& getAmbientLight() const { return _ambientLight; }
+    /// Retrieve the number of active lights in the scene;
+    inline const U32 getActiveLightCount() const { return _activeLightCount; }
 
     bool clear();
     void idle();
     void onCameraUpdate(Camera& camera);
-    inline Light::LightList& getLights() { return _lights; }
-    Light* getLight(I64 lightGUID);
+    inline Light::LightList& getLights(LightType type) { return _lights[to_uint(type)]; }
+    Light* getLight(I64 lightGUID, LightType type);
 
     /// shadow mapping
     void bindDepthMaps();
@@ -86,17 +88,13 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
         };
     }
 
-    bool buildLightGrid(const mat4<F32>& viewMatrix,
-                        const mat4<F32>& projectionMatrix,
-                        const vec2<F32>& zPlanes);
-
   protected:
     /// This is inherited from FrameListener and is used to queue up reflection on
     /// every frame start
     bool framePreRenderEnded(const FrameEvent& evt);
 
-    inline Light::LightList::const_iterator findLight(I64 GUID) const {
-        return std::find_if(std::begin(_lights), std::end(_lights),
+    inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
+        return std::find_if(std::begin(_lights[to_uint(type)]), std::end(_lights[to_uint(type)]),
                             [&GUID](Light* const light) {
                                 return (light && light->getGUID() == GUID);
                             });
@@ -113,10 +111,11 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     ~LightManager();
 
   private:
-    Light::LightList _lights;
+    std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;
     bool _init;
     bool _previewShadowMaps;
     bool _shadowMapsEnabled;
+    U32 _activeLightCount;
     vec3<F32> _ambientLight;
     mat4<F32> _viewMatrixCache;
 

@@ -136,9 +136,9 @@ const bool SHOW_MESSAGE_BOX = false;
 };  // namespace Assert
 
 namespace Lighting {
-/// How many lights total to use in the application (4 should be enough)
-const unsigned int MAX_LIGHTS_PER_SCENE = 4;
-/// How many lights (in order as passed to the shader for the node) should cast
+/// Number of lights in the current view allowed to affect the scene
+const unsigned int MAX_LIGHTS_IN_VIEW = 128;
+// How many lights (in order as passed to the shader for the node) should cast
 /// shadows
 const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
 /// Used for CSM or PSSM to determine the maximum number of frustum splits
