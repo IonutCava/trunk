@@ -32,10 +32,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _UPDATE_SYSTEM_H_
 #define _UPDATE_SYSTEM_H_
 
-#include <ECS.h>
+#include "ECSSystem.h"
+
 namespace Divide {
-    class UpdateSystem : public ECS::System<UpdateSystem> {
-        UpdateSystem();
+    class UpdateSystem : public ECSSystem<UpdateSystem> {
+        UpdateSystem(ECS::ECSEngine& parentEngine);
         virtual ~UpdateSystem();
 
         virtual void PreUpdate(F32 dt) override;

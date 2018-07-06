@@ -527,6 +527,7 @@
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\AnimationSystem.h" />
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\BoundsSystem.h" />
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSManager.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.h" />
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\RenderingSystem.h" />
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h" />
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\UpdateSystem.h" />

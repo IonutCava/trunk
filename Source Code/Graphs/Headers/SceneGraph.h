@@ -36,6 +36,10 @@
 #include "Scenes/Headers/SceneComponent.h"
 #include "Rendering/Headers/FrameListener.h"
 
+namespace ECS {
+    class ECSEngine;
+};
+
 namespace Divide {
 class Ray;
 class SceneState;
@@ -96,6 +100,26 @@ class SceneGraph : private NonCopyable,
 
     void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& selectionHits) const;
 
+    template<class... ARGS>
+    SceneGraphNode* createSceneGraphNode(ARGS&&... args) {
+        UniqueLock u_lock(_nodeCreateMutex);
+
+        ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(std::forward<ARGS>(args)...);
+        return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));
+    }
+
+    void destroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true) {
+        if (node) {
+            if (inPlace) {
+                GetEntityManager()->DestroyAndRemoveEntity(node->GetEntityID());
+            }
+            else {
+                GetEntityManager()->DestroyEntity(node->GetEntityID());
+            }
+            node = nullptr;
+        }
+    }
+
     // If this function returns true, the node was successfully removed (or queued for removal)
     bool removeNode(I64 guid);
     bool removeNode(SceneGraphNode* node);
@@ -110,6 +134,13 @@ class SceneGraph : private NonCopyable,
 
     const vectorImpl<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
 
+    ECS::ECSEngine& GetECSEngine() { return *_ecsEngine; }
+    const ECS::ECSEngine& GetECSEngine() const { return *_ecsEngine; }
+    ECS::EntityManager* GetEntityManager();
+    ECS::EntityManager* GetEntityManager() const;
+    ECS::ComponentManager* GetComponentManager();
+    ECS::ComponentManager* GetComponentManager() const;
+
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
     void onNodeAdd(SceneGraphNode& newNode);
@@ -121,6 +152,8 @@ class SceneGraph : private NonCopyable,
     bool frameEnded(const FrameEvent& evt);
 
    private:
+    std::unique_ptr<ECS::ECSEngine> _ecsEngine;
+
     bool _loadComplete;
     bool _octreeChanged;
     SceneRoot_ptr _rootNode;
@@ -131,6 +164,8 @@ class SceneGraph : private NonCopyable,
     vectorImpl<SceneGraphNode*> _orderedNodeList;
 
     std::array<vectorImpl<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
+
+    mutable std::mutex _nodeCreateMutex;
 };
 
 namespace Attorney {

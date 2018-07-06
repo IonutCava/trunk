@@ -41,8 +41,8 @@ namespace Divide {
 
     class ECSManager {
         public:
-            static void init();
-            static void destroy();
+            static void init(ECS::ECSEngine& engine);
+            static void destroy(ECS::ECSEngine& engine);
     };
 }; //namespace Divide
 

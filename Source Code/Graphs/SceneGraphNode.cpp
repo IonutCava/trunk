@@ -26,6 +26,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
                                const stringImpl& name,
                                U32 componentMask)
     : GUIDWrapper(),
+      ECS::Event::IEventListener(&sceneGraph.GetECSEngine()),
       _parent(nullptr),
       _frustPlaneCache(-1),
       _sceneGraph(sceneGraph),
@@ -99,7 +100,7 @@ SceneGraphNode::~SceneGraphNode()
 {
     // Bottom up
     for (U32 i = 0; i < getChildCount(); ++i) {
-        DestroySceneGraphNode(_children[i]);
+        parentGraph().destroySceneGraphNode(_children[i]);
     }
     _children.clear();
 
@@ -199,12 +200,12 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneNode_ptr& node, U32 component
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
-    SceneGraphNode* sceneGraphNode = CreateSceneGraphNode(_sceneGraph,
-                                                          physicsGroup,
-                                                          node,
-                                                          name.empty() ? node->getName()
-                                                                       : name,
-                                                          componentMask);
+    SceneGraphNode* sceneGraphNode = parentGraph().createSceneGraphNode(_sceneGraph,
+                                                                        physicsGroup,
+                                                                        node,
+                                                                        name.empty() ? node->getName()
+                                                                                     : name,
+                                                                        componentMask);
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
@@ -441,7 +442,7 @@ void SceneGraphNode::processDeleteQueue() {
     if (!_childrenPendingDeletion.empty()) {
         WriteLock w_lock(_childLock);
         for (vectorAlg::vecSize childIdx : _childrenPendingDeletion) {
-            DestroySceneGraphNode(_children[childIdx]);
+            parentGraph().destroySceneGraphNode(_children[childIdx]);
         }
         _children = erase_indices(_children, _childrenPendingDeletion);
 
@@ -579,6 +580,30 @@ void SceneGraphNode::invalidateRelationshipCache() {
             child.invalidateRelationshipCache();
         });
     }
+}
+
+ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
+    return parentGraph().GetECSEngine();
+}
+
+const ECS::ECSEngine& SceneGraphNode::GetECSEngine() const {
+    return parentGraph().GetECSEngine();
+}
+
+ECS::EntityManager* SceneGraphNode::GetEntityManager() {
+    return GetECSEngine().GetEntityManager();
+}
+
+ECS::EntityManager* SceneGraphNode::GetEntityManager() const {
+    return GetECSEngine().GetEntityManager();
+}
+
+ECS::ComponentManager* SceneGraphNode::GetComponentManager() {
+    return GetECSEngine().GetComponentManager();
+}
+
+ECS::ComponentManager* SceneGraphNode::GetComponentManager() const {
+    return GetECSEngine().GetComponentManager();
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&>& callback) {

@@ -4,7 +4,8 @@
 #include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
-    AnimationSystem::AnimationSystem()
+    AnimationSystem::AnimationSystem(ECS::ECSEngine& parentEngine)
+        : ECSSystem(parentEngine)
     {
 
     }
@@ -15,8 +16,8 @@ namespace Divide {
     }
 
     void AnimationSystem::PreUpdate(F32 dt) {
-        auto anim = ECS::ECS_Engine->GetComponentManager()->begin<AnimationComponent>();
-        auto animEnd = ECS::ECS_Engine->GetComponentManager()->end<AnimationComponent>();
+        auto anim = _engine.GetComponentManager()->begin<AnimationComponent>();
+        auto animEnd = _engine.GetComponentManager()->end<AnimationComponent>();
         for (;anim != animEnd; ++anim)
         {
             anim->update(Time::MillisecondsToMicroseconds(dt));

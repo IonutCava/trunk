@@ -32,13 +32,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SGN_COMPONENT_INL_
 
 #include "ECS/Events/Headers/EntityEvents.h"
+#include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
 
     template<typename T>
     SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name)
-      : EditorComponent(name),
-        _parentSGN(parentSGN)
+      : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),
+        _parentSGN(parentSGN),
+        _editorComponent(name)
     {
         RegisterEventCallbacks();
     }

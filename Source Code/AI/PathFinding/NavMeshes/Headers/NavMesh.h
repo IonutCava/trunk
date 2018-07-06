@@ -211,8 +211,9 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     std::atomic<bool> _building;
     /// A callback function to call after building is complete
     CreationCallback _loadCompleteClbk;
-    /// Data file to store this nav mesh in. (From engine executable dir.)
+    /// Data file to store this nav mesh in.
     stringImpl _fileName;
+    stringImpl _filePath;
     /// Configuration file
     stringImpl _configFile;
     /// NavMesh extents

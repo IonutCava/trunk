@@ -821,20 +821,20 @@ bool LoadSave::loadScene(Scene& activeScene) {
 
     const stringImpl& sceneName = activeScene.getName();
 
-    stringImpl path = Paths::g_saveLocation +  sceneName;
-    stringImpl savePath = path + "current_save.sav";
-    stringImpl bakSavePath = path + "save.bak";
+    stringImpl path = Paths::g_saveLocation +  sceneName + "/";
+    stringImpl saveFile = "current_save.sav";
+    stringImpl bakSaveFile = "save.bak";
 
-    std::ifstream src(savePath.c_str(), std::ios::binary);
+    std::ifstream src((path + saveFile).c_str(), std::ios::binary);
     if (src.eof() || src.fail())
     {
         src.close();
-        std::ifstream srcBak(bakSavePath.c_str(), std::ios::binary);
+        std::ifstream srcBak((path + bakSaveFile).c_str(), std::ios::binary);
         if(srcBak.eof() || srcBak.fail()) {
             srcBak.close();
             return true;
         } else {
-            std::ofstream dst(savePath.c_str(), std::ios::binary);
+            std::ofstream dst((path + saveFile).c_str(), std::ios::binary);
             dst << srcBak.rdbuf();
             dst.close();
             srcBak.close();
@@ -844,7 +844,7 @@ bool LoadSave::loadScene(Scene& activeScene) {
     }
 
     ByteBuffer save;
-    save.loadFromFile(savePath);
+    save.loadFromFile(path, saveFile);
 
     return Attorney::SceneLoadSave::load(activeScene, save);
 }
@@ -855,14 +855,14 @@ bool LoadSave::saveScene(const Scene& activeScene) {
     }
 
     const stringImpl& sceneName = activeScene.getName();
-    stringImpl path = Paths::g_saveLocation + sceneName;
-    stringImpl savePath = path + "current_save.sav";
-    stringImpl bakSavePath = path + "save.bak";
+    stringImpl path = Paths::g_saveLocation + sceneName + "/";
+    stringImpl saveFile = "current_save.sav";
+    stringImpl bakSaveFile = "save.bak";
 
-    std::ifstream src(savePath.c_str(), std::ios::binary);
+    std::ifstream src((path + saveFile).c_str(), std::ios::binary);
     if (!src.eof() && !src.fail())
     {
-        std::ofstream dst(bakSavePath.c_str(), std::ios::out | std::ios::binary);
+        std::ofstream dst((path + bakSaveFile).c_str(), std::ios::out | std::ios::binary);
         dst.clear();
         dst << src.rdbuf();
         dst.close();
@@ -871,7 +871,7 @@ bool LoadSave::saveScene(const Scene& activeScene) {
 
     ByteBuffer save;
     if (Attorney::SceneLoadSave::save(activeScene, save)) {
-        return save.dumpToFile(savePath);
+        return save.dumpToFile(path, saveFile);
     }
 
     return false;

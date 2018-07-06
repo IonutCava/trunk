@@ -32,15 +32,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ENTITY_EVENTS_H_
 #define _ENTITY_EVENTS_H_
 
-#include <ECS.h>
-
 namespace Divide {
 
     struct EntityPostLoad : public ECS::Event::Event<EntityPostLoad>
     {
         ECS::EntityId ownerID;
 
-        EntityPostLoad(ECS::EntityId id) : ownerID(id)
+        EntityPostLoad(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
         {}
     };
 
@@ -49,7 +47,7 @@ namespace Divide {
         ECS::EntityId ownerID;
         bool _state = false;
 
-        EntityActiveStateChange(ECS::EntityId id, bool state) : ownerID(id), _state(state)
+        EntityActiveStateChange(ECS::ECSEngine* engine, ECS::EntityId id, bool state) : Event(engine), ownerID(id), _state(state)
         {}
     };
 

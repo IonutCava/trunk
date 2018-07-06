@@ -243,7 +243,11 @@ namespace ECS { namespace Memory {
 				{
 					// note: no need to call d'tor since it was called already by 'delete'
 
+                    size_t objectCount = chunk->objects.size();
+
 					chunk->objects.remove((OBJECT_TYPE*)object);
+                    assert(chunk->objects.size() != objectCount && "Remove failed!");
+
 					chunk->allocator->free(object);
 					return;
 				}

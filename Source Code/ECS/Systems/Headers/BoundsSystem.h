@@ -32,11 +32,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _BOUNDS_SYSTEM_H_
 #define _BOUNDS_SYSTEM_H_
 
-#include <ECS.h>
+#include "ECSSystem.h"
+
 namespace Divide {
-    class BoundsSystem : public ECS::System<BoundsSystem> {
+    class BoundsSystem : public ECSSystem<BoundsSystem> {
        public:
-        BoundsSystem();
+        BoundsSystem(ECS::ECSEngine& parentEngine);
         virtual ~BoundsSystem();
 
         virtual void PreUpdate(F32 dt) override;

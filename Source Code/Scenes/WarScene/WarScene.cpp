@@ -155,6 +155,8 @@ void WarScene::debugDraw(const Camera& activeCamera, const RenderStagePass& stag
 }
 
 void WarScene::processTasks(const U64 deltaTimeUS) {
+    return;
+
     if (!_sceneReady) {
         return;
     }
@@ -264,6 +266,8 @@ namespace {
 };
 
 void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
+    return;
+
     if (!_sceneReady) {
         return;
     }
@@ -295,11 +299,11 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
         tComp->setPositionY((radius * 0.5f) * std::sin(phi) + initPos.y);
         tComp->rotateY(phi);*/
     }
-
+    
     if (!_aiManager->getNavMesh(_armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
         return;
     }
-
+    
     // renderState().drawDebugLines(true);
     vec3<F32> tempDestination;
     UColour redLine(255,0,0,128);
@@ -389,24 +393,21 @@ bool WarScene::load(const stringImpl& name) {
             currentName = "Cylinder_NW_" + to_stringImpl((I32)i);
             currentPos.first = -200 + 40 * i + 50;
             currentPos.second = -200 + 40 * i + 50;
-        }
-        else if (i >= 10 && i < 20) {
+        } else if (i >= 10 && i < 20) {
             baseNode = cylinder[2];
             currentMesh = cylinderMeshNE;
             currentName = "Cylinder_NE_" + to_stringImpl((I32)i);
             currentPos.first = 200 - 40 * (i % 10) - 50;
             currentPos.second = -200 + 40 * (i % 10) + 50;
             locationFlag = 1;
-        }
-        else if (i >= 20 && i < 30) {
+        } else if (i >= 20 && i < 30) {
             baseNode = cylinder[3];
             currentMesh = cylinderMeshSW;
             currentName = "Cylinder_SW_" + to_stringImpl((I32)i);
             currentPos.first = -200 + 40 * (i % 20) + 50;
             currentPos.second = 200 - 40 * (i % 20) - 50;
             locationFlag = 2;
-        }
-        else {
+        } else {
             baseNode = cylinder[4];
             currentMesh = cylinderMeshSE;
             currentName = "Cylinder_SE_" + to_stringImpl((I32)i);
@@ -420,17 +421,14 @@ bool WarScene::load(const stringImpl& name) {
         crtNode->usageContext(baseNode->usageContext());
         TransformComponent* tComp = crtNode->get<TransformComponent>();
         NavigationComponent* nComp = crtNode->get<NavigationComponent>();
-        nComp->navigationContext(
-            baseNode->get<NavigationComponent>()->navigationContext());
-        nComp->navigationDetailOverride(
-            baseNode->get<NavigationComponent>()
-            ->navMeshDetailOverride());
+        nComp->navigationContext(baseNode->get<NavigationComponent>()->navigationContext());
+        nComp->navigationDetailOverride(baseNode->get<NavigationComponent>()->navMeshDetailOverride());
 
         vec3<F32> position(to_F32(currentPos.first), -0.01f, to_F32(currentPos.second));
         tComp->setScale(baseNode->get<TransformComponent>()->getScale());
         tComp->setPosition(position);
 
-        {
+        /*{
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
             tempLight.setEnumValue(to_base(LightType::POINT));
             tempLight.setUserPtr(_lightPool);
@@ -471,7 +469,7 @@ bool WarScene::load(const stringImpl& name) {
             lightSGN->get<TransformComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
             lightSGN->get<TransformComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
-        }
+        }*/
     }
 
     SceneGraphNode* flag;
@@ -540,63 +538,68 @@ bool WarScene::load(const stringImpl& name) {
         printMessage(eventID, unitName);
     });
     
-    const U32 particleCount = Config::Build::IS_DEBUG_BUILD ? 4000 : 20000;
-    const F32 emitRate = particleCount / 4;
+    static const bool disableParticles = true;
 
-    std::shared_ptr<ParticleData> particles = 
-        std::make_shared<ParticleData>(platformContext().gfx(),
-                                       particleCount,
-                                       to_base(ParticleData::Properties::PROPERTIES_POS) |
-                                       to_base(ParticleData::Properties::PROPERTIES_VEL) |
-                                       to_base(ParticleData::Properties::PROPERTIES_ACC) |
-                                       to_base(ParticleData::Properties::PROPERTIES_COLOR) |
-                                       to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
-    particles->_textureFileName = "particle.DDS";
+    if (disableParticles) {
+        const U32 particleCount = Config::Build::IS_DEBUG_BUILD ? 4000 : 20000;
+        const F32 emitRate = particleCount / 4;
 
-    std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(platformContext().gfx(), emitRate);
+        std::shared_ptr<ParticleData> particles =
+            std::make_shared<ParticleData>(platformContext().gfx(),
+                particleCount,
+                to_base(ParticleData::Properties::PROPERTIES_POS) |
+                to_base(ParticleData::Properties::PROPERTIES_VEL) |
+                to_base(ParticleData::Properties::PROPERTIES_ACC) |
+                to_base(ParticleData::Properties::PROPERTIES_COLOR) |
+                to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
+        particles->_textureFileName = "particle.DDS";
 
-    std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
-    boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
-    particleSource->addGenerator(boxGenerator);
+        std::shared_ptr<ParticleSource> particleSource = std::make_shared<ParticleSource>(platformContext().gfx(), emitRate);
 
-    std::shared_ptr<ParticleColourGenerator> colGenerator = std::make_shared<ParticleColourGenerator>();
-    colGenerator->_minStartCol.set(Util::ToByteColour(FColour(0.7f, 0.4f, 0.4f, 1.0f)));
-    colGenerator->_maxStartCol.set(Util::ToByteColour(FColour(1.0f, 0.8f, 0.8f, 1.0f)));
-    colGenerator->_minEndCol.set(Util::ToByteColour(FColour(0.5f, 0.2f, 0.2f, 0.5f)));
-    colGenerator->_maxEndCol.set(Util::ToByteColour(FColour(0.7f, 0.5f, 0.5f, 0.75f)));
-    particleSource->addGenerator(colGenerator);
+        std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
+        boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
+        particleSource->addGenerator(boxGenerator);
 
-    std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
-    velGenerator->_minStartVel.set(-1.0f, 0.22f, -1.0f, 0.0f);
-    velGenerator->_maxStartVel.set(1.0f, 3.45f, 1.0f, 0.0f);
-    particleSource->addGenerator(velGenerator);
+        std::shared_ptr<ParticleColourGenerator> colGenerator = std::make_shared<ParticleColourGenerator>();
+        colGenerator->_minStartCol.set(Util::ToByteColour(FColour(0.7f, 0.4f, 0.4f, 1.0f)));
+        colGenerator->_maxStartCol.set(Util::ToByteColour(FColour(1.0f, 0.8f, 0.8f, 1.0f)));
+        colGenerator->_minEndCol.set(Util::ToByteColour(FColour(0.5f, 0.2f, 0.2f, 0.5f)));
+        colGenerator->_maxEndCol.set(Util::ToByteColour(FColour(0.7f, 0.5f, 0.5f, 0.75f)));
+        particleSource->addGenerator(colGenerator);
 
-    std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
-    timeGenerator->_minTime = 8.5f;
-    timeGenerator->_maxTime = 20.5f;
-    particleSource->addGenerator(timeGenerator);
+        std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
+        velGenerator->_minStartVel.set(-1.0f, 0.22f, -1.0f, 0.0f);
+        velGenerator->_maxStartVel.set(1.0f, 3.45f, 1.0f, 0.0f);
+        particleSource->addGenerator(velGenerator);
 
-    _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
-    SceneGraphNode* testSGN = _particleEmitter;
-    std::shared_ptr<ParticleEmitter> test = testSGN->getNode<ParticleEmitter>();
-    testSGN->get<TransformComponent>()->translateY(10);
-    test->setDrawImpostor(true);
-    test->enableEmitter(true);
-    test->addSource(particleSource);
-    boxGenerator->pos(vec4<F32>(testSGN->get<TransformComponent>()->getPosition()));
+        std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
+        timeGenerator->_minTime = 8.5f;
+        timeGenerator->_maxTime = 20.5f;
+        particleSource->addGenerator(timeGenerator);
 
-    std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(platformContext().gfx());
-    eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
-    test->addUpdater(eulerUpdater);
-    std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(platformContext().gfx());
-    floorUpdater->_bounceFactor = 0.65f;
-    test->addUpdater(floorUpdater);
-    test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(platformContext().gfx()));
-    test->addUpdater(std::make_shared<ParticleBasicColourUpdater>(platformContext().gfx()));
-    
+        /*_particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
+        SceneGraphNode* testSGN = _particleEmitter;
+        std::shared_ptr<ParticleEmitter> test = testSGN->getNode<ParticleEmitter>();
+        testSGN->get<TransformComponent>()->translateY(10);
+        test->setDrawImpostor(true);
+        test->enableEmitter(true);
+        test->addSource(particleSource);
+        boxGenerator->pos(vec4<F32>(testSGN->get<TransformComponent>()->getPosition()));
+
+        std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(platformContext().gfx());
+        eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
+        test->addUpdater(eulerUpdater);
+        std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(platformContext().gfx());
+        floorUpdater->_bounceFactor = 0.65f;
+        test->addUpdater(floorUpdater);
+        test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(platformContext().gfx()));
+        test->addUpdater(std::make_shared<ParticleBasicColourUpdater>(platformContext().gfx()));
+        */
+    }
+
     state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
 
-
+    /*
     for (U8 row = 0; row < 4; row++) {
         for (U8 col = 0; col < 4; col++) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
@@ -612,11 +615,14 @@ bool WarScene::load(const stringImpl& name) {
             _lightNodes.push_back(lightSGN);
         }
     }
-
+    */
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setHorizontalFoV(110);
 
-    _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
-    _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
+    static const bool disableEnvProbes = true;
+    if (disableEnvProbes) {
+        _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
+        _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
+    }
 
     _sceneReady = true;
     return loadState;

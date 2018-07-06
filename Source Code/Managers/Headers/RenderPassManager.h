@@ -32,7 +32,6 @@
 #ifndef _MANAGERS_RENDER_PASS_MANAGER_H_
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
-#include "Core/Headers/NonCopyable.h"
 #include "Core/Headers/KernelComponent.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"

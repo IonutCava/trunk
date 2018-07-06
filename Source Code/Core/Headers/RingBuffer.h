@@ -32,9 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORE_RING_BUFFER_H_
 #define _CORE_RING_BUFFER_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
-#include <atomic>
-
 namespace Divide {
 
 class RingBuffer {

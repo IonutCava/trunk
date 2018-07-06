@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SGN_COMPONENT_H_
 
 #include "EditorComponent.h"
+
 #include <ECS.h>
 
 namespace Divide {
@@ -61,7 +62,6 @@ struct EntityActiveStateChange;
 
 template <typename T>
 class SGNComponent : private NonCopyable,
-                     public EditorComponent,
                      public ECS::Component<T>,
                      protected ECS::Event::IEventListener
 {
@@ -72,12 +72,16 @@ class SGNComponent : private NonCopyable,
 
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
     
+    EditorComponent& getEditorComponent() { return _editorComponent; }
+    const EditorComponent& getEditorComponent() const { return _editorComponent; }
+
    protected:
     void RegisterEventCallbacks();
 
    protected:
     /// Pointer to the SGN owning this instance of AnimationComponent
     SceneGraphNode& _parentSGN;
+    EditorComponent _editorComponent;
 };
 
 };  // namespace Divide

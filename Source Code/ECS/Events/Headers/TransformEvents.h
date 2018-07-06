@@ -32,9 +32,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TRANSFORM_EVENTS_H_
 #define _TRANSFORM_EVENTS_H_
 
-#include "Core/TemplateLibraries/Headers/Vector.h"
-
 #include <ECS.h>
+
 namespace Divide {
 
     enum class TransformType : U32;
@@ -44,7 +43,7 @@ namespace Divide {
         ECS::EntityId ownerID;
         TransformType type;
 
-        TransformDirty(ECS::EntityId id, TransformType transformType) : ownerID(id), type(transformType)
+        TransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, TransformType transformType) : Event(engine), ownerID(id), type(transformType)
         {}
     };
 
@@ -52,7 +51,7 @@ namespace Divide {
     {
         ECS::EntityId ownerID;
 
-        TransformClean(ECS::EntityId id) : ownerID(id)
+        TransformClean(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
         {}
     };
 
@@ -61,7 +60,7 @@ namespace Divide {
         ECS::EntityId ownerID;
         TransformType type;
 
-        ParentTransformDirty(ECS::EntityId id, TransformType transformType) : ownerID(id), type(transformType)
+        ParentTransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, TransformType transformType) : Event(engine), ownerID(id), type(transformType)
         {}
     };
     
@@ -69,7 +68,7 @@ namespace Divide {
     {
         ECS::EntityId ownerID;
 
-        ParentTransformClean(ECS::EntityId id) : ownerID(id)
+        ParentTransformClean(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
         {}
     };
 };

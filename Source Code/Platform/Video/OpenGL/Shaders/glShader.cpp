@@ -98,7 +98,7 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-        ShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText + getName(), src);
+        ShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText, getName(), src);
     }
 
     _compiled = false;
@@ -184,7 +184,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& name,
                 DIVIDE_UNEXPECTED_CALL("Invalid shader include type");
             }
 
-            include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_U32(typeIndex)]);
+            include_string = ShaderProgram::shaderFileRead(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file);
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
                                  name.c_str(),

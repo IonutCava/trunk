@@ -8,8 +8,7 @@
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Geometry/Material/Headers/Material.h"
-
-#include <ECS.h>
+#include "ECS/Systems/Headers/ECSManager.h"
 
 namespace Divide {
 
@@ -27,17 +26,19 @@ SceneGraph::SceneGraph(Scene& parentScene)
       SceneComponent(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
+     _ecsEngine(new ECS::ECSEngine()),
      _rootNode(new SceneRoot(parentScene.resourceCache(), 1234))
 {
+    ECSManager::init(GetECSEngine());
+
     static const U32 rootMask = to_base(ComponentType::TRANSFORM) |
                                 to_base(ComponentType::BOUNDS);
 
     REGISTER_FRAME_LISTENER(this, 1);
-    _root = SceneGraphNode::CreateSceneGraphNode(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
+    _root = createSceneGraphNode(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
     _root->get<BoundsComponent>()->lockBBTransforms(true);
     Attorney::SceneNodeSceneGraph::postLoad(*_rootNode, *_root);
     onNodeAdd(*_root);
-    _allNodes.push_back(_root);
 
     U32 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
                          to_base(SceneNodeType::TYPE_LIGHT) |
@@ -56,13 +57,14 @@ SceneGraph::~SceneGraph()
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
     unload();
+    ECSManager::destroy(GetECSEngine());
 }
 
 void SceneGraph::unload()
 {
     idle();
 
-    SceneGraphNode::DestroySceneGraphNode(_root);
+    destroySceneGraphNode(_root);
     assert(_root == nullptr);
 }
 
@@ -153,7 +155,7 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
 
 void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
-    ECS::ECS_Engine->Update(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
+    GetECSEngine().Update(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
 
     // Gather all nodes in order
     _orderedNodeList.resize(0);
@@ -162,7 +164,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
         node->sceneUpdate(deltaTimeUS, sceneState);
     }
 
-    if (_loadComplete) {
+    if (_loadComplete && false) {
         CreateTask(parentScene().platformContext(),
             [this, deltaTimeUS](const Task& parentTask) mutable
             {
@@ -230,4 +232,19 @@ const vectorImpl<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type
     return _nodesByType[to_base(type)];
 }
 
+ECS::EntityManager* SceneGraph::GetEntityManager() {
+    return GetECSEngine().GetEntityManager();
+}
+
+ECS::EntityManager* SceneGraph::GetEntityManager() const {
+    return GetECSEngine().GetEntityManager();
+}
+
+ECS::ComponentManager* SceneGraph::GetComponentManager() {
+    return GetECSEngine().GetComponentManager();
+}
+
+ECS::ComponentManager* SceneGraph::GetComponentManager() const {
+    return GetECSEngine().GetComponentManager();
+}
 };

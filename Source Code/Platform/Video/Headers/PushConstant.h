@@ -32,7 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PUSH_CONSTANT_H_
 #define _PUSH_CONSTANT_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {

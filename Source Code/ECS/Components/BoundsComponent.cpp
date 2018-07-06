@@ -13,10 +13,10 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
      _lockBBTransforms(false)
 {
     RegisterEventCallback(&BoundsComponent::OnTransformDirty);
-    EditorComponent::registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX);
-    EditorComponent::registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX);
-    EditorComponent::registerField("BoundingSphere", &_boundingSphere, EditorComponentFieldType::BOUNDING_SPHERE);
-    EditorComponent::registerField("Lock BB Transform", &_lockBBTransforms, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::BOOL);
+    _editorComponent.registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX);
+    _editorComponent.registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX);
+    _editorComponent.registerField("BoundingSphere", &_boundingSphere, EditorComponentFieldType::BOUNDING_SPHERE);
+    _editorComponent.registerField("Lock BB Transform", &_lockBBTransforms, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::BOOL);
 }
 
 BoundsComponent::~BoundsComponent()
@@ -37,8 +37,8 @@ void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
 
 void BoundsComponent::update(const U64 deltaTimeUS) {
     if (_transformDirty) {
-        TransformComponent* tComp =
-            ECS::ECS_Engine->GetComponentManager()->GetComponent<TransformComponent>(GetOwner());
+        
+        TransformComponent* tComp = _parentSGN.GetComponentManager()->GetComponent<TransformComponent>(GetOwner());
         if (tComp) {
             _worldMatrix.set(tComp->getWorldMatrix());
             _boundingBoxDirty = true;

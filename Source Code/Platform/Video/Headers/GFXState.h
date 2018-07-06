@@ -33,8 +33,6 @@
 #define _HARDWARE_VIDEO_GFX_STATE_H_
 
 #include "Core/Math/Headers/MathVectors.h"
-#include "Core/Headers/NonCopyable.h"
-
 #include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {

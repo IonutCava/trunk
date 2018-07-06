@@ -58,6 +58,8 @@ struct TransformClean;
 
 class PropertyWindow;
 
+enum class PhysicsGroup : U32;
+
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
    public:
@@ -144,35 +146,17 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         return std::static_pointer_cast<T>(_node);
     }
 
-    template<class... ARGS>
-    static SceneGraphNode* CreateSceneGraphNode(ARGS&&... args) {
-        ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(std::forward<ARGS>(args)...);
-        return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));
-    }
+    ECS::ECSEngine& GetECSEngine();
+    const ECS::ECSEngine& GetECSEngine() const;
+    ECS::EntityManager* GetEntityManager();
+    ECS::EntityManager* GetEntityManager() const;
+    ECS::ComponentManager* GetComponentManager();
+    ECS::ComponentManager* GetComponentManager() const;
 
-    static void DestroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true) {
-        if (node) {
-            if (inPlace) {
-                GetEntityManager()->DestroyAndRemoveEntity(node->GetEntityID());
-            } else {
-                GetEntityManager()->DestroyEntity(node->GetEntityID());
-            }
-            node = nullptr;
-        }
-    }
-
-    inline static ECS::EntityManager* GetEntityManager() {
-        return ECS::ECS_Engine->GetEntityManager();
-    }
-
-    inline static ECS::ComponentManager* GetComponentManager() {
-        return ECS::ECS_Engine->GetComponentManager();
-    }
-    
     template<class E, class... ARGS>
-    static void SendEvent(ARGS&&... eventArgs)
+    void SendEvent(ARGS&&... eventArgs)
     {
-        ECS::ECS_Engine->SendEvent<E>(std::forward<ARGS>(eventArgs)...);
+        GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...);
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
@@ -376,7 +360,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     template<class T, class ...P>
     SGNComponent<T>* AddSGNComponent(P&&... param) {
         SGNComponent<T>* comp = static_cast<SGNComponent<T>*>(AddComponent<T>(std::forward<P>(param)...));
-        _components.emplace_back(static_cast<EditorComponent*>(comp));
+        _editorComponents.emplace_back(&comp->getEditorComponent());
         return comp;
     }
 
@@ -384,18 +368,18 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void RemoveSGNComponent() {
         SGNComponent* comp = static_cast<SGNComponent>(GetComponent<T>());
         if (comp) {
-            _components.erase(
-                std::remove_if(std::begin(_components), std::end(_components),
+            _editorComponents.erase(
+                std::remove_if(std::begin(_editorComponents), std::end(_editorComponents),
                                [comp](EditorComponent* editorComp)
-                               -> bool { return comp->getGUID() == editorComp->getGUID(); }),
-                std::end(_components));
+                               -> bool { return comp->getEditorComponent().getGUID() == editorComp->getGUID(); }),
+                std::end(_editorComponents));
             RemoveComponent<T>();
         }
     }
 
     void RemoveAllSGNComponents() {
         GetComponentManager()->RemoveAllComponents(GetEntityID());
-        _components.clear();
+        _editorComponents.clear();
     }
 
    private:
@@ -436,18 +420,18 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     vectorImpl<vectorAlg::vecSize> _childrenPendingDeletion;
 
     // ToDo: Remove this HORRIBLE hack -Ionut
-    vectorImpl<EditorComponent*> _components;
+    vectorImpl<EditorComponent*> _editorComponents;
 };
 
 namespace Attorney {
     class SceneGraphNodeEditor {
         private:
         static vectorImpl<EditorComponent*>& editorComponents(SceneGraphNode& node) {
-            return node._components;
+            return node._editorComponents;
         }
 
         static const vectorImpl<EditorComponent*>& editorComponents(const SceneGraphNode& node) {
-            return node._components;
+            return node._editorComponents;
         }
 
         friend class Divide::PropertyWindow;

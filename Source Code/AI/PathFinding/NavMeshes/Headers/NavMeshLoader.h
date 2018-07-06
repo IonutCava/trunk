@@ -138,9 +138,9 @@ enum class MeshDetailLevel : U32 {
 
 /// Load the input geometry from file (Wavefront OBJ format) and save it in
 /// 'outData'
-bool loadMeshFile(NavModelData& outData, const char* fileName);
+bool loadMeshFile(NavModelData& outData, const char* filepath, const char* fileName);
 /// Save the navigation input geometry in Wavefront OBJ format
-bool saveMeshFile(const NavModelData& inData, const char* filename);
+bool saveMeshFile(const NavModelData& inData, const char* filepath, const char* filename);
 /// Merge the data from two navigation geometry sources
 NavModelData mergeModels(NavModelData& a, NavModelData& b,
                          bool delOriginals = false);

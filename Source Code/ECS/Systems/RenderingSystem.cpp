@@ -4,7 +4,8 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
-    RenderingSystem::RenderingSystem()
+    RenderingSystem::RenderingSystem(ECS::ECSEngine& parentEngine)
+        : ECSSystem(parentEngine)
     {
 
     }
@@ -15,8 +16,8 @@ namespace Divide {
     }
 
     void RenderingSystem::PreUpdate(F32 dt) {
-        auto rComp = ECS::ECS_Engine->GetComponentManager()->begin<RenderingComponent>();
-        auto rCompEnd = ECS::ECS_Engine->GetComponentManager()->end<RenderingComponent>();
+        auto rComp = _engine.GetComponentManager()->begin<RenderingComponent>();
+        auto rCompEnd = _engine.GetComponentManager()->end<RenderingComponent>();
         for (;rComp != rCompEnd; ++rComp)
         {
             rComp->update(Time::MillisecondsToMicroseconds(dt));

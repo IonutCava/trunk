@@ -32,8 +32,6 @@
 	#define ECS_32BIT 1
 #endif
 
-#include "Platform/Headers/PlatformDataTypes.h"
-
 namespace ECS
 {
 

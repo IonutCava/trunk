@@ -92,7 +92,7 @@ namespace ECS
 		///-------------------------------------------------------------------------------------------------
 
 		template<class T, class... ARGS>
-		T* AddSystem(ARGS&&... systemArgs)
+		T* AddSystem(ECSEngine& engine, ARGS&&... systemArgs)
 		{
 			const u64 STID = T::STATIC_SYSTEM_TYPE_ID;
 
@@ -110,7 +110,7 @@ namespace ECS
 				((T*)pSystemMem)->m_SystemManagerInstance = this;
 
 				// create new system
-				system = new (pSystemMem)T(std::forward<ARGS>(systemArgs)...);
+				system = new (pSystemMem)T(engine, std::forward<ARGS>(systemArgs)...);
 				this->m_Systems[STID] = system;
 
 				LogInfo("System \'%s\' (%d bytes) created.", typeid(T).name(), sizeof(T));

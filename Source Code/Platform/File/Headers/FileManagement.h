@@ -33,10 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _PLATFORM_FILE_FILE_MANAGEMENT_H_
 
 #include "FileWithPath.h"
-#include "Core/TemplateLibraries/Headers/String.h"
-#include "Core/TemplateLibraries/Headers/Vector.h"
-#include "Platform/Headers/PlatformDataTypes.h"
-#include <regex>
 
 namespace Divide {
 
@@ -129,8 +125,8 @@ bool createFile(const char* filePathAndName, bool overwriteExisting);
 bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
 
 template<typename T /*requirement: has_assign<T> == true*/>
-bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType);
-bool writeFile(const stringImpl& filePath, const bufferPtr content, size_t length, FileType fileType);
+bool readFile(const stringImpl& filePath, const stringImpl& fileName, T& contentOut, FileType fileType);
+bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType);
 
 /// will add '.' automatically at the start of 'extension'
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension);

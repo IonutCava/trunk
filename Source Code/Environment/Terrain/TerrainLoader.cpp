@@ -305,9 +305,8 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
     vectorImpl<VertexBuffer::Vertex> testVerts;
 
-    stringImpl cacheLocation(Paths::g_cacheLocation + Paths::g_terrainCacheLocation + terrainRawFile + ".cache");
     ByteBuffer terrainCache;
-    if (terrainCache.loadFromFile(cacheLocation)) {
+    if (terrainCache.loadFromFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache")) {
         terrainCache >> terrain->_physicsVerts;
     }
 
@@ -322,7 +321,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
             // Read File Data
 
             vectorImpl<Byte> data;
-            readFile(terrainMapLocation + terrainRawFile, data, FileType::BINARY);
+            readFile(terrainMapLocation, terrainRawFile, data, FileType::BINARY);
             if (data.empty()) {
                 return false;
             }
@@ -452,7 +451,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
             }
         }
         terrainCache << terrain->_physicsVerts;
-        terrainCache.dumpToFile(cacheLocation);
+        terrainCache.dumpToFile(Paths::g_cacheLocation + Paths::g_terrainCacheLocation, terrainRawFile + ".cache");
     }
     
     F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");

@@ -6,9 +6,16 @@
 
 namespace Divide {
 
-bool writeFile(const stringImpl& filePath, const bufferPtr content, size_t length, FileType fileType) {
+bool writeFile(const stringImpl& filePath, const stringImpl& fileName, const bufferPtr content, size_t length, FileType fileType) {
+
     if (!filePath.empty() && content != nullptr && length > 0) {
-        std::ofstream outputFile(filePath.c_str(), fileType == FileType::BINARY
+        if (!pathExists(filePath.c_str())) {
+            if (!createDirectories(filePath.c_str())) {
+                return false;
+            }
+        }
+
+        std::ofstream outputFile((filePath + fileName).c_str(), fileType == FileType::BINARY
                                                              ? std::ios::out | std::ios::binary
                                                              : std::ios::out);
         outputFile.write(reinterpret_cast<Byte*>(content), length);

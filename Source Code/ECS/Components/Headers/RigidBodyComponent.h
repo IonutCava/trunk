@@ -37,16 +37,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 namespace Divide {
-    enum class PhysicsGroup : U32 {
-        GROUP_STATIC = 0,
-        GROUP_DYNAMIC,
-        GROUP_KINEMATIC,
-        GROUP_RAGDOL,
-        GROUP_VEHICLE,
-        GROUP_IGNORE,
-        GROUP_COUNT
-    };
-
     class PXDevice;
     
     class RigidBodyComponent : public SGNComponent<RigidBodyComponent> {

@@ -33,7 +33,6 @@
 #define _UTILITY_IMAGETOOLS_H
 
 #include "Core/Math/Headers/MathVectors.h"
-#include "Core/Headers/NonCopyable.h"
 #include <mutex>
 
 namespace Divide {

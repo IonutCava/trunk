@@ -78,10 +78,13 @@ namespace ECS
 
 
 		inline EntityManager* GetEntityManager() { return ECS_EntityManager; }
+        inline EntityManager* const GetEntityManager() const { return ECS_EntityManager; }
 
 		inline ComponentManager* GetComponentManager() { return ECS_ComponentManager; }
+        inline ComponentManager* GetComponentManager() const { return ECS_ComponentManager; }
 
 		inline SystemManager* GetSystemManager() { return ECS_SystemManager; }
+        inline SystemManager* GetSystemManager() const { return ECS_SystemManager; }
 
 		///-------------------------------------------------------------------------------------------------
 		/// Fn:	template<class E, class... ARGS> void ECSEngine::SendEvent(ARGS&&... eventArgs)
@@ -102,7 +105,7 @@ namespace ECS
 		template<class E, class... ARGS>
 		void SendEvent(ARGS&&... eventArgs)
 		{
-			ECS_EventHandler->Send<E>(std::forward<ARGS>(eventArgs)...);
+			ECS_EventHandler->Send<E>(this, std::forward<ARGS>(eventArgs)...);
 		}
 
 		///-------------------------------------------------------------------------------------------------

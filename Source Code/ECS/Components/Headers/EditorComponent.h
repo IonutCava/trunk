@@ -70,13 +70,11 @@ namespace Divide {
 
         inline const stringImpl& name() const { return _name; }
 
-      protected:
         void registerField(const stringImpl& name, 
                            void* data,
                            EditorComponentFieldType type,
                            GFX::PushConstantType basicType = GFX::PushConstantType::COUNT);
 
-      protected:
         inline vectorImpl<EditorComponentField>& fields() { return _fields; }
         inline const vectorImpl<EditorComponentField>& fields() const { return _fields; }
 

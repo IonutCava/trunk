@@ -37,13 +37,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 template<typename T>
-bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType) {
+bool readFile(const stringImpl& filePath, const stringImpl& fileName, T& contentOut, FileType fileType) {
     static_assert(std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value,
                   "Specified target container does not have a direct assignment operator!");
 
     size_t fileSize = 0;
-    if (!filePath.empty()) {
-        std::ifstream streamIn(filePath.c_str(),
+    if (!filePath.empty() && !fileName.empty() && pathExists(filePath.c_str())) {
+        std::ifstream streamIn((filePath + fileName).c_str(),
                                fileType == FileType::BINARY
                                          ? std::ios::in | std::ios::binary
                                          : std::ios::in);
@@ -66,10 +66,10 @@ bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType) {
 
 //Optimized variant for vectors
 template<>
-inline bool readFile(const stringImpl& filePath, vectorImpl<Byte>& contentOut, FileType fileType) {
+inline bool readFile(const stringImpl& filePath, const stringImpl& fileName, vectorImpl<Byte>& contentOut, FileType fileType) {
     size_t fileSize = 0;
-    if (!filePath.empty()) {
-        std::ifstream streamIn(filePath.c_str(),
+    if (!filePath.empty() && !fileName.empty() && pathExists(filePath.c_str())) {
+        std::ifstream streamIn((filePath + fileName).c_str(),
                                fileType == FileType::BINARY
                                          ? std::ios::in | std::ios::binary
                                          : std::ios::in);

@@ -183,9 +183,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool updateAll(const U64 deltaTimeUS);
     /// Queue a shaderProgram recompile request
     static bool recompileShaderProgram(const stringImpl& name);
-    static const stringImpl& shaderFileRead(const stringImpl& atomName, const stringImpl& location);
-    static void shaderFileRead(const stringImpl& filePath, bool buildVariant, stringImpl& sourceCodeOut);
-    static void shaderFileWrite(const stringImpl& atomName, const char* sourceCode);
+    static const stringImpl& shaderFileRead(const stringImpl& filePath, const stringImpl& atomName);
+    static void shaderFileRead(const stringImpl& filePath, const stringImpl& fileName, stringImpl& sourceCodeOut);
+    static void shaderFileWrite(const stringImpl& filePath, const stringImpl& fileName, const char* sourceCode);
     /// Remove a shaderProgram from the program cache
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache

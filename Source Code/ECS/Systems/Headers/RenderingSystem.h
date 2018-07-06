@@ -32,11 +32,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RENDERING_SYSTEM_H_
 #define _RENDERING_SYSTEM_H_
 
-#include <ECS.h>
+#include "ECSSystem.h"
+
 namespace Divide {
-    class RenderingSystem : public ECS::System<RenderingSystem> {
+    class RenderingSystem : public ECSSystem<RenderingSystem> {
         public:
-        RenderingSystem();
+        RenderingSystem(ECS::ECSEngine& parentEngine);
         virtual ~RenderingSystem();
 
         virtual void PreUpdate(F32 dt) override;

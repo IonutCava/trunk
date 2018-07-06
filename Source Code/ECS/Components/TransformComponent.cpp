@@ -12,31 +12,31 @@ namespace Divide {
         _parentDirty(true),
         _prevInterpValue(0.0)
     {
-        EditorComponent::registerField("Transform",
+        _editorComponent.registerField("Transform",
                                        &_transformInterface,
                                        EditorComponentFieldType::TRANSFORM);
 
 
         static mat2<F32> mata;
-        EditorComponent::registerField("TestMat2", &mata, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT2);
+        _editorComponent.registerField("TestMat2", &mata, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT2);
 
         static mat3<F32> matb;
-        EditorComponent::registerField("TestMat3", &matb, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT3);
+        _editorComponent.registerField("TestMat3", &matb, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT3);
 
         static mat4<F32> matc;
-        EditorComponent::registerField("TestMat4", &matc, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT4);
+        _editorComponent.registerField("TestMat4", &matc, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::MAT4);
 
         static mat2<I32> matd;
-        EditorComponent::registerField("TestMat2i", &matd, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT2);
+        _editorComponent.registerField("TestMat2i", &matd, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT2);
 
         static mat3<I32> mate;
-        EditorComponent::registerField("TestMat3i", &mate, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT3);
+        _editorComponent.registerField("TestMat3i", &mate, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT3);
 
         static mat4<I32> matf;
-        EditorComponent::registerField("TestMat4i", &matf, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT4);
+        _editorComponent.registerField("TestMat4i", &matf, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::IMAT4);
 
         static mat4<D64> matz;
-        EditorComponent::registerField("TestMat4d", &matz, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::DMAT4);
+        _editorComponent.registerField("TestMat4d", &matz, EditorComponentFieldType::PUSH_TYPE, GFX::PushConstantType::DMAT4);
     }
 
     TransformComponent::~TransformComponent()
@@ -101,7 +101,7 @@ namespace Divide {
         _transformUpdatedMask.setFlag(type);
         _dirty = true;
         _dirtyInterp = true;
-        ECS::ECS_Engine->SendEvent<TransformDirty>(GetOwner(), type);
+        _parentSGN.SendEvent<TransformDirty>(GetOwner(), type);
     }
 
     void TransformComponent::setPosition(const vec3<F32>& position) {
@@ -556,7 +556,7 @@ namespace Divide {
             _dirtyInterp = false;
         } else {
             _dirty = false;
-            ECS::ECS_Engine->SendEvent<TransformClean>(GetOwner());
+            _parentSGN.SendEvent<TransformClean>(GetOwner());
         }
     }
 }; //namespace

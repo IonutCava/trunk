@@ -83,14 +83,14 @@ I32 parseFace(char* row, I32* data, I32 n, I32 vcnt) {
     return j;
 }
 
-bool loadMeshFile(NavModelData& outData, const char* filename) {
+bool loadMeshFile(NavModelData& outData, const char* filepath, const char* filename) {
     STUBBED("ToDo: Rework load/save to properly use a ByteBuffer instead of this const char* hackery. -Ionut");
     char* buf = nullptr;
     char* srcEnd = nullptr;
 
     {
         ByteBuffer tempBuffer;
-        if (!tempBuffer.loadFromFile(filename)) {
+        if (!tempBuffer.loadFromFile(filepath, filename)) {
             return false;
         }
 
@@ -170,7 +170,7 @@ bool loadMeshFile(NavModelData& outData, const char* filename) {
     return true;
 }
 
-bool saveMeshFile(const NavModelData& inData, const char* filename) {
+bool saveMeshFile(const NavModelData& inData, const char* filepath, const char* filename) {
     if (!inData.getVertCount() || !inData.getTriCount())
         return false;
 
@@ -188,7 +188,7 @@ bool saveMeshFile(const NavModelData& inData, const char* filename) {
                   << (*(tp + 2) + 1) << "\n";
     }
 
-    return tempBuffer.dumpToFile(filename);
+    return tempBuffer.dumpToFile(filepath, filename);
 }
 
 NavModelData mergeModels(NavModelData& a,

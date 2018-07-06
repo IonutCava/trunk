@@ -35,8 +35,6 @@
 #ifndef UTIL_CRC_H_
 #define UTIL_CRC_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
-
 namespace Divide {
 namespace Util {
 class CRC32 {

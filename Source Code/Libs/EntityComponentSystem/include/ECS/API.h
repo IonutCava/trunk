@@ -117,11 +117,6 @@ namespace ECS
 	} // namespace ECS::Memory
 
 
-
-	class ECSEngine;
-
-	ECS_API extern ECSEngine*		ECS_Engine;
-
 	ECS_API void					Initialize();
 	ECS_API void					Terminate();
 

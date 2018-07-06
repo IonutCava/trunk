@@ -27,7 +27,7 @@ namespace Import {
     {
     }
 
-    bool ImportData::saveToFile(PlatformContext& context, const stringImpl& fileName) {
+    bool ImportData::saveToFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName) {
         ACKNOWLEDGE_UNUSED(context);
 
         ByteBuffer tempBuffer;
@@ -44,15 +44,15 @@ namespace Import {
             }
             tempBuffer << _hasAnimations;
             // Animations are handled by the SceneAnimator I/O
-            return tempBuffer.dumpToFile(fileName + "." + g_parsedAssetGeometryExt);
+            return tempBuffer.dumpToFile(path, fileName + "." + g_parsedAssetGeometryExt);
         }
 
         return false;
     }
 
-    bool ImportData::loadFromFile(PlatformContext& context, const stringImpl& fileName) {
+    bool ImportData::loadFromFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName) {
         ByteBuffer tempBuffer;
-        if (tempBuffer.loadFromFile(fileName + "." + g_parsedAssetGeometryExt)) {
+        if (tempBuffer.loadFromFile(path, fileName + "." + g_parsedAssetGeometryExt)) {
             U64 signature;
             tempBuffer >> signature;
             if (signature != _ID("BufferEntryPoint")) {
@@ -179,14 +179,14 @@ namespace Import {
         stringImpl path = dataOut._modelPath.substr(0, dataOut._modelPath.find_last_of('/'));
 
         bool success = false;
-        if (!dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation + modelName)) {
+        if (!dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, modelName)) {
             Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), modelName.c_str());
 
             DVDConverter converter(context, dataOut, dataOut._modelPath, success);
             if (success) {
                 dataOut._modelName = modelName;
                 dataOut._modelPath = path;
-                if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation + modelName)) {
+                if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, modelName)) {
                     Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), modelName.c_str());
                 } else {
                     Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), modelName.c_str());
@@ -215,20 +215,18 @@ namespace Import {
 
             ByteBuffer tempBuffer;
             animator.reset(new SceneAnimator());
-            if (tempBuffer.loadFromFile(Paths::g_cacheLocation + 
-                                        Paths::g_geometryCacheLocation +
-                                        dataIn._modelName + "." +
-                                        g_parsedAssetAnimationExt)) {
+            if (tempBuffer.loadFromFile(Paths::g_cacheLocation + Paths::g_geometryCacheLocation,
+                                        dataIn._modelName + "." + g_parsedAssetAnimationExt))
+            {
                 animator->load(context, tempBuffer);
             } else {
                 if (!dataIn._loadedFromFile) {
                     Attorney::SceneAnimatorMeshImporter::registerAnimations(*animator, dataIn._animations);
                     animator->init(context, dataIn._skeleton, dataIn._bones);
                     animator->save(context, tempBuffer);
-                    if (!tempBuffer.dumpToFile(Paths::g_cacheLocation + 
-                                               Paths::g_geometryCacheLocation +
-                                               dataIn._modelName + "." +
-                                               g_parsedAssetAnimationExt)) {
+                    if (!tempBuffer.dumpToFile(Paths::g_cacheLocation + Paths::g_geometryCacheLocation,
+                                               dataIn._modelName + "." + g_parsedAssetAnimationExt))
+                    {
                         //handle error
                         DIVIDE_UNEXPECTED_CALL();
                     }

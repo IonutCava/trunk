@@ -13,7 +13,9 @@
 
 #include "API.h"
 
-namespace ECS { namespace Event {
+namespace ECS {
+    class ECSEngine;
+    namespace Event {
 
 		using EventTypeId		= TypeID;
 		using EventTimestamp	= TimeStamp;
@@ -30,7 +32,7 @@ namespace ECS { namespace Event {
 
 		public:
 
-			IEvent(EventTypeId typeId);
+			IEvent(ECSEngine* engine, EventTypeId typeId);
 			 
 			// ACCESSOR
 			inline const EventTypeId	GetEventTypeID()	const { return this->m_TypeId; }

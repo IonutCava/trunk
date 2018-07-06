@@ -31,8 +31,8 @@ NavigationMesh::NavigationMesh(PlatformContext& context)
     path.append(par.getParam<stringImpl>(_ID("currentScene")));
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
-
-    _fileName = path + "/" + Paths::g_navMeshesLocation;
+    _filePath = path + "/" + Paths::g_navMeshesLocation;
+    
     _configFile = path + "/navMeshConfig.ini";
     _buildThreaded = true;
     _debugDraw = false;
@@ -303,7 +303,7 @@ bool NavigationMesh::generateMesh() {
     data.clear(false);
     data.setName(nodeName);
 
-    if (!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())) {
+    if (!NavigationMeshLoader::loadMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str())) {
         if (!NavigationMeshLoader::parse(_sgn->get<BoundsComponent>()->getBoundingBox(), data, *_sgn)) {
             Console::errorfn(Locale::get(_ID("ERROR_NAV_PARSE_FAILED")),
                              nodeName.c_str());
@@ -404,8 +404,7 @@ bool NavigationMesh::generateMesh() {
     data.isValid(true);
     save(*_sgn);
 
-    return NavigationMeshLoader::saveMeshFile(
-        data, geometrySaveFile.c_str());  // input geometry;
+    return NavigationMeshLoader::saveMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str());  // input geometry;
 }
 
 bool NavigationMesh::createNavigationQuery(U32 maxNodes) {
@@ -413,8 +412,7 @@ bool NavigationMesh::createNavigationQuery(U32 maxNodes) {
     return (_navQuery->init(_navMesh, maxNodes) == DT_SUCCESS);
 }
 
-bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
-                                    rcContextDivide* ctx) {
+bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data, rcContextDivide* ctx) {
     if (_fileName.empty()) {
         _fileName = data.getName();
     }
@@ -423,8 +421,7 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
     _heightField = rcAllocHeightfield();
 
     if (!_heightField) {
-        Console::errorfn(Locale::get(_ID("ERROR_NAV_OUT_OF_MEMORY")),
-                         "rcAllocHeightfield", _fileName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_NAV_OUT_OF_MEMORY")), "rcAllocHeightfield", _fileName.c_str());
         return false;
     }
 
@@ -439,16 +436,14 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
 
     if (!rcCreateHeightfield(ctx, *_heightField, cfg.width, cfg.height,
                              cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)) {
-        Console::errorfn(Locale::get(_ID("ERROR_NAV_HEIGHTFIELD")),
-                         _fileName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_NAV_HEIGHTFIELD")),  _fileName.c_str());
         return false;
     }
 
     U8* areas = MemoryManager_NEW U8[data.getTriCount()];
 
     if (!areas) {
-        Console::errorfn(Locale::get(_ID("ERROR_NAV_OUT_OF_MEMORY")),
-                         "areaFlag allocation", _fileName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_NAV_OUT_OF_MEMORY")), "areaFlag allocation", _fileName.c_str());
         return false;
     }
 
@@ -480,8 +475,7 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
     if (!_compactHeightField ||
         !rcBuildCompactHeightfield(ctx, cfg.walkableHeight, cfg.walkableClimb,
                                    *_heightField, *_compactHeightField)) {
-        Console::errorfn(Locale::get(_ID("ERROR_NAV_COMPACT_HEIGHTFIELD")),
-                         _fileName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_NAV_COMPACT_HEIGHTFIELD")), _fileName.c_str());
         return false;
     }
 
@@ -493,8 +487,7 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
     if (false) {
         if (!rcBuildRegionsMonotone(ctx, *_compactHeightField, cfg.borderSize,
                                     cfg.minRegionArea, cfg.mergeRegionArea)) {
-            Console::errorfn(Locale::get(_ID("ERROR_NAV_REGIONS")),
-                             _fileName.c_str());
+            Console::errorfn(Locale::get(_ID("ERROR_NAV_REGIONS")), _fileName.c_str());
             return false;
         }
     } else {
@@ -528,8 +521,7 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data,
         !rcBuildPolyMeshDetail(ctx, *_polyMesh, *_compactHeightField,
                                cfg.detailSampleDist, cfg.detailSampleMaxError,
                                *_polyMeshDetail)) {
-        Console::errorfn(Locale::get(_ID("ERROR_NAV_POLY_MESH_DETAIL")),
-                         _fileName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_NAV_POLY_MESH_DETAIL")), _fileName.c_str());
         return false;
     }
 
@@ -558,8 +550,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
 
     _tempNavMesh = dtAllocNavMesh();
     if (!_tempNavMesh) {
-        Console::errorfn(Locale::get(_ID("ERROR_NAV_DT_OUT_OF_MEMORY")),
-                         _fileName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_NAV_DT_OUT_OF_MEMORY")), _fileName.c_str());
         return false;
     }
 
@@ -663,7 +654,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     file.append(".nm");
 
     // Parse objects from level into RC-compatible format
-    FILE* fp = fopen(file.c_str(), "rb");
+    FILE* fp = fopen((_filePath + file).c_str(), "rb");
     if (!fp) {
         return false;
     }
@@ -735,7 +726,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
 
 
     // Save our NavigationMesh into a file to load from next time
-    FILE* fp = fopen(file.c_str(), "wb");
+    FILE* fp = fopen((_filePath + file).c_str(), "wb");
     if (!fp) {
         return false;
     }

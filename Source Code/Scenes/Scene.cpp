@@ -74,6 +74,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
       _pxScene(nullptr),
+      _sun(nullptr),
       _paramHandler(ParamHandler::instance())
 {
     _sceneTimerUS = 0UL;
@@ -818,14 +819,10 @@ bool Scene::loadResources(bool continueOnErrors) {
 }
 
 void Scene::postLoad() {
-    static stringImpl originalTitle = _context.app().windowManager().getActiveWindow().title();
-
     _sceneGraph->postLoad();
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
     initializeAI(true);
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
-
-    _context.app().windowManager().getActiveWindow().title(originalTitle + " - " + getName());
 }
 
 void Scene::postLoadMainThread() {
@@ -884,6 +881,9 @@ void Scene::onSetActive() {
 
     assert(_parent.getPlayers().empty());
     addPlayerInternal(false);
+
+    static stringImpl originalTitle = _context.app().windowManager().getActiveWindow().title();
+    _context.app().windowManager().getActiveWindow().title(originalTitle + " - " + getName());
 }
 
 void Scene::onRemoveActive() {

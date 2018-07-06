@@ -32,8 +32,6 @@
 #ifndef UTIL_STATE_TRACKER_H_
 #define UTIL_STATE_TRACKER_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
-
 namespace Divide {
 
 template <typename T>

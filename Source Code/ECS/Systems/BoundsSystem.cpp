@@ -6,7 +6,8 @@
 #include "ECS/Components/Headers/BoundsComponent.h"
 
 namespace Divide {
-    BoundsSystem::BoundsSystem()
+    BoundsSystem::BoundsSystem(ECS::ECSEngine& parentEngine)
+        : ECSSystem(parentEngine)
     {
 
     }
@@ -18,12 +19,16 @@ namespace Divide {
     }
 
     void BoundsSystem::PreUpdate(F32 dt) {
-        auto bComp = ECS::ECS_Engine->GetComponentManager()->begin<BoundsComponent>();
-        auto bCompEnd = ECS::ECS_Engine->GetComponentManager()->end<BoundsComponent>();
+        ECS::EntityManager* entityManager = _engine.GetEntityManager();
+
+        auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
+        auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
         for (;bComp != bCompEnd; ++bComp)
         {
-            SceneGraphNode* parent = 
-                static_cast<SceneGraphNode*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(bComp->GetOwner()));
+            const ECS::EntityId owner = bComp->GetOwner();
+            ECS::IEntity* entity = entityManager->GetEntity(owner);
+
+            SceneGraphNode* parent = static_cast<SceneGraphNode*>(entity);
 
             if (parent != nullptr) {
                 const SceneNode_ptr& node = parent->getNode();
@@ -44,8 +49,8 @@ namespace Divide {
     }
 
     void BoundsSystem::Update(F32 dt) {
-        auto bComp = ECS::ECS_Engine->GetComponentManager()->begin<BoundsComponent>();
-        auto bCompEnd = ECS::ECS_Engine->GetComponentManager()->end<BoundsComponent>();
+        auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
+        auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
         for (;bComp != bCompEnd; ++bComp)
         {
             bComp->update(Time::MillisecondsToMicroseconds(dt));

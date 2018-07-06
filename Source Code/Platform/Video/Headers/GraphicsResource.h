@@ -32,9 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GRAPHICS_RESOURCE_H_
 #define _GRAPHICS_RESOURCE_H_
 
-#include "Core/Headers/NonCopyable.h"
-#include "Platform/Headers/PlatformDataTypes.h"
-
 namespace Divide {
 
 class GFXDevice;

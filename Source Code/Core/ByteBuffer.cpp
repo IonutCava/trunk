@@ -53,17 +53,17 @@ void ByteBuffer::append(const Byte *src, size_t cnt) {
 }
 
 
-bool ByteBuffer::dumpToFile(const stringImpl& fileName) {
+bool ByteBuffer::dumpToFile(const stringImpl& path, const stringImpl& fileName) {
     if (!_storage.empty() && _storage.back() != BUFFER_FORMAT_VERSION) {
         append(BUFFER_FORMAT_VERSION);
     }
 
-    return writeFile(fileName, _storage.data(), _storage.size(), FileType::BINARY);
+    return writeFile(path, fileName, _storage.data(), _storage.size(), FileType::BINARY);
 }
 
-bool ByteBuffer::loadFromFile(const stringImpl& fileName) {
+bool ByteBuffer::loadFromFile(const stringImpl& path, const stringImpl& fileName) {
     clear();
-    if (readFile(fileName, _storage, FileType::BINARY)) {
+    if (readFile(path, fileName, _storage, FileType::BINARY)) {
         return _storage.back() == BUFFER_FORMAT_VERSION;
     }
 

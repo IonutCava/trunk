@@ -33,8 +33,6 @@
 #define _PHYSICS_SCENE_INTERFACE_H_
 
 #include "Scenes/Headers/SceneComponent.h"
-#include "Core/Headers/GUIDWrapper.h"
-#include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {
 

@@ -33,7 +33,6 @@
 #define _GL_SAMPLER_H_
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Core/Headers/NonCopyable.h"
 
 namespace Divide {
 

@@ -32,11 +32,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TRANSFORM_SYSTEM_H_
 #define _TRANSFORM_SYSTEM_H_
 
-#include <ECS.h>
+#include "ECSSystem.h"
+
 namespace Divide {
-    class TransformSystem : public ECS::System<TransformSystem>{
+    class TransformSystem : public ECSSystem<TransformSystem>{
       public:
-        TransformSystem();
+        TransformSystem(ECS::ECSEngine& parentEngine);
         virtual ~TransformSystem();
 
         virtual void PreUpdate(F32 dt) override;

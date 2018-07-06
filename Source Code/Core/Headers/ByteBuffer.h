@@ -108,8 +108,8 @@ class ByteBuffer {
 
     void put(size_t pos, const Byte *src, size_t cnt);
 
-    bool dumpToFile(const stringImpl& fileName);
-    bool loadFromFile(const stringImpl& fileName);
+    bool dumpToFile(const stringImpl& path, const stringImpl& fileName);
+    bool loadFromFile(const stringImpl& path, const stringImpl& fileName);
 
    private:
     /// limited for internal use because can "append" any unexpected type (like

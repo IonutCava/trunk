@@ -32,11 +32,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ANIMATION_SYSTEM_H_
 #define _ANIMATION_SYSTEM_H_
 
-#include <ECS.h>
+#include "ECSSystem.h"
+
 namespace Divide {
-    class AnimationSystem : public ECS::System<AnimationSystem> {
+    class AnimationSystem : public ECSSystem<AnimationSystem> {
       public:
-        AnimationSystem();
+        AnimationSystem(ECS::ECSEngine& parentEngine);
         virtual ~AnimationSystem();
 
         virtual void PreUpdate(F32 dt) override;

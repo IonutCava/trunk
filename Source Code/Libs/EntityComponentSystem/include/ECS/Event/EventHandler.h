@@ -102,7 +102,7 @@ namespace ECS { namespace Event {
 		}
 	
 		template<class E, class... ARGS>
-		void Send(ARGS&&... eventArgs)
+		void Send(ECSEngine* engine, ARGS&&... eventArgs)
 		{
 			// check if type of object is trivially copyable
 			static_assert(std::is_trivially_copyable<E>::value, "Event is not trivially copyable.");
@@ -114,7 +114,7 @@ namespace ECS { namespace Event {
 			// add new event to buffer and event storage
 			if (pMem != nullptr)
 			{
-				this->m_EventStorage.push_back(new (pMem)E(std::forward<ARGS>(eventArgs)...));
+				this->m_EventStorage.push_back(new (pMem)E(engine, std::forward<ARGS>(eventArgs)...));
 
 				LogInfo("\'%s\' event buffered.", typeid(E).name());
 			}

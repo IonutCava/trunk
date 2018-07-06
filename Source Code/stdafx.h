@@ -1,4 +1,3 @@
-
 /*
 Copyright (c) 2018 DIVIDE-Studio
 Copyright (c) 2009 Ionut Cava
@@ -162,14 +161,6 @@ typedef std::any AnyParam;
 #include <ConcurrentQueue/concurrentqueue.h>
 #include <ConcurrentQueue/blockingconcurrentqueue.h>
 
-#ifndef YES_IMGUIMINIGAMES
-#define YES_IMGUIMINIGAMES
-#endif
-#ifndef YES_IMGUIIMAGEEDITOR
-#define YES_IMGUIIMAGEEDITOR
-#endif
-#include <imgui.h>
-
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/Headers/ConditionalWait.h"
@@ -180,5 +171,15 @@ typedef std::any AnyParam;
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Core/TemplateLibraries/Headers/String.h"
+
+#ifndef YES_IMGUIMINIGAMES
+#define YES_IMGUIMINIGAMES
+#endif
+#ifndef YES_IMGUIIMAGEEDITOR
+#define YES_IMGUIIMAGEEDITOR
+#endif
+#include <imgui.h>
+
+//#include <ECS.h>
 
 #endif //_DIVIDE_PCH_

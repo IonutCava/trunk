@@ -143,12 +143,18 @@ bool glShaderProgram::update(const U64 deltaTimeUS) {
             glGetProgramBinary(_shaderProgramID, binaryLength, NULL, &_binaryFormat, binary);
             if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
-                stringImpl outFileName(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin + getName() + ".bin");
-                writeFile(outFileName, binary, (size_t)binaryLength, FileType::BINARY);
+                writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
+                          getName() + ".bin",
+                          binary,
+                          (size_t)binaryLength,
+                          FileType::BINARY);
                 // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
-                outFileName += ".fmt";
                 stringImpl binaryFormatStr = to_stringImpl(to_U32(_binaryFormat));
-                writeFile(outFileName, (bufferPtr)binaryFormatStr.c_str(), binaryFormatStr.size(), FileType::BINARY);
+                writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
+                          getName() + ".fmt",
+                          (bufferPtr)binaryFormatStr.c_str(),
+                          binaryFormatStr.size(),
+                          FileType::BINARY);
              }
             // delete our local code buffer
             MemoryManager::DELETE(binary);
@@ -327,17 +333,16 @@ bool glShaderProgram::loadFromBinary() {
         if (Config::USE_SHADER_BINARY && false) {
             // Only available for new programs
             assert(_shaderProgramIDTemp == 0);
-            stringImpl fileName(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin + _resourceName + ".bin");
             // Load the program's binary format from file
             vectorImpl<Byte> data;
-            bool fmtExists = readFile(fileName + ".fmt", data, FileType::BINARY);
+            bool fmtExists = readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, _resourceName + ".fmt", data, FileType::BINARY);
             if (fmtExists) {
                 _binaryFormat = *((GLenum const *)&data[0]);
             }
 
             if (fmtExists && _binaryFormat != GL_ZERO/* && _binaryFormat != GL_NONE*/) {
                 data.clear();
-                readFile(fileName, data, FileType::BINARY);
+                readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin, _resourceName + ".bin", data, FileType::BINARY);
                    // Allocate a new handle
                 _shaderProgramIDTemp = glCreateProgram();
                 // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
@@ -405,9 +410,8 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
     sourceCode.first = false;
 
     if (s_useShaderTextCache && !forceReParse) {
-        ShaderProgram::shaderFileRead(Paths::g_cacheLocation + 
-                                      Paths::Shaders::g_cacheLocationText + stageName,
-                                      true,
+        ShaderProgram::shaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                                      stageName,
                                       sourceCode.second);
     }
 

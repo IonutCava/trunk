@@ -116,8 +116,8 @@ namespace Divide {
             }
             ~ImportData();
 
-            bool saveToFile(PlatformContext& context, const stringImpl& fileName);
-            bool loadFromFile(PlatformContext& context, const stringImpl& fileName);
+            bool saveToFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName);
+            bool loadFromFile(PlatformContext& context, const stringImpl& path, const stringImpl& fileName);
 
             // Was it loaded from file, or just created?
             bool _loadedFromFile;

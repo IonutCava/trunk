@@ -32,8 +32,6 @@
 #ifndef _PLATFORM_TASK_POOL_H_
 #define _PLATFORM_TASK_POOL_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
-
 #include <Threadpool-Boost/include/threadpool.hpp>
 #include <Threadpool-c++11/Threadpool.hpp>
 

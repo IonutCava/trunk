@@ -1051,6 +1051,9 @@
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EditorComponent.h">
       <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

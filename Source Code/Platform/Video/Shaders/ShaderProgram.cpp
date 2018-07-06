@@ -161,8 +161,8 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     return state;
 }
 
-/// Open the file found at 'location' matching 'atomName' and return it's source code
-const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, const stringImpl& location) {
+/// Open the file found at 'filePath' matching 'atomName' and return it's source code
+const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& filePath, const stringImpl& atomName) {
     U64 atomNameHash = _ID_RT(atomName);
     // See if the atom was previously loaded and still in cache
     AtomMap::iterator it = _atoms.find(atomNameHash);
@@ -172,11 +172,11 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, cons
     }
 
     // If we forgot to specify an atom location, we have nothing to return
-    assert(!location.empty());
+    assert(!filePath.empty());
 
     // Open the atom file and add the code to the atom cache for future reference
     stringImpl output;
-    readFile(location + "/" + atomName, output, FileType::TEXT);
+    readFile(filePath, atomName, output, FileType::TEXT);
     std::pair<AtomMap::iterator, bool> result = hashAlg::insert(_atoms, atomNameHash, output);
 
     assert(result.second);
@@ -186,26 +186,24 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, cons
 }
 
 void ShaderProgram::shaderFileRead(const stringImpl& filePath,
-                                   bool buildVariant,
+                                   const stringImpl& fileName,
                                    stringImpl& sourceCodeOut) {
-    if (buildVariant) {
-        stringImpl variant = filePath;
-        if (Config::Build::IS_DEBUG_BUILD) {
-            variant.append(".debug");
-        } else if (Config::Build::IS_PROFILE_BUILD) {
-            variant.append(".profile");
-        } else {
-            variant.append(".release");
-        }
-        readFile(variant, sourceCodeOut, FileType::TEXT);
+    stringImpl variant = fileName;
+    if (Config::Build::IS_DEBUG_BUILD) {
+        variant.append(".debug");
+    } else if (Config::Build::IS_PROFILE_BUILD) {
+        variant.append(".profile");
     } else {
-        readFile(filePath, sourceCodeOut, FileType::TEXT);
+        variant.append(".release");
     }
+    readFile(filePath, variant, sourceCodeOut, FileType::TEXT);
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file
-void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sourceCode) {
-    stringImpl variant = atomName;
+void ShaderProgram::shaderFileWrite(const stringImpl& filePath,
+                                    const stringImpl& fileName,
+                                    const char* sourceCode) {
+    stringImpl variant = fileName;
     if (Config::Build::IS_DEBUG_BUILD) {
         variant.append(".debug");
     } else if (Config::Build::IS_PROFILE_BUILD) {
@@ -214,7 +212,11 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
         variant.append(".release");
     }
 
-    writeFile(variant, (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
+    writeFile(filePath,
+              variant,
+              (bufferPtr)sourceCode,
+              strlen(sourceCode),
+              FileType::TEXT);
 }
 
 void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
