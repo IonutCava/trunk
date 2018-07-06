@@ -79,15 +79,14 @@ namespace Divide {
 
         ~DescriptorSet();
 
-        //This needs a lot more work!
-        ShaderBufferList _shaderBuffers;
-        TextureDataContainer _textureData;
-
         bool merge(const DescriptorSet &other);
 
         bool operator==(const DescriptorSet &other) const;
         bool operator!=(const DescriptorSet &other) const;
 
+        //This needs a lot more work!
+        ShaderBufferList _shaderBuffers;
+        TextureDataContainer _textureData;
 
     private:
         template<typename T, size_t BlockSize>

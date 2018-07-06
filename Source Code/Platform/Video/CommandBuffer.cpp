@@ -9,6 +9,31 @@ namespace Divide {
 
 namespace GFX {
 
+DEFINE_POOL(BindPipelineCommand, 4096);
+DEFINE_POOL(SendPushConstantsCommand, 4096);
+DEFINE_POOL(DrawCommand, 4096);
+DEFINE_POOL(SetViewportCommand, 4096);
+DEFINE_POOL(BeginRenderPassCommand, 4096);
+DEFINE_POOL(EndRenderPassCommand, 4096);
+DEFINE_POOL(BeginPixelBufferCommand, 4096);
+DEFINE_POOL(EndPixelBufferCommand, 4096);
+DEFINE_POOL(BeginRenderSubPassCommand, 4096);
+DEFINE_POOL(EndRenderSubPassCommand, 4096);
+DEFINE_POOL(BlitRenderTargetCommand, 4096);
+DEFINE_POOL(SetScissorCommand, 4096);
+DEFINE_POOL(SetBlendCommand, 4096);
+DEFINE_POOL(SetCameraCommand, 4096);
+DEFINE_POOL(SetClipPlanesCommand, 4096);
+DEFINE_POOL(BindDescriptorSetsCommand, 4096);
+DEFINE_POOL(BeginDebugScopeCommand, 4096);
+DEFINE_POOL(EndDebugScopeCommand, 4096);
+DEFINE_POOL(DrawTextCommand, 4096);
+DEFINE_POOL(DrawIMGUICommand, 4096);
+DEFINE_POOL(DispatchComputeCommand, 4096);
+DEFINE_POOL(ReadAtomicCounterCommand, 4096);
+DEFINE_POOL(SwitchWindowCommand, 4096);
+DEFINE_POOL(ExternalCommand, 4096);
+
 CommandBuffer::CommandBuffer()
 {
 #if defined(USE_BOOST_POLY)

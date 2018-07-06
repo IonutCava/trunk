@@ -47,14 +47,8 @@ namespace Divide {
 
         template<typename U>
         inline typename std::enable_if<std::is_base_of<T, U>::value, void>::type
-        insert(size_t index, std::shared_ptr<U> cmd) {
+            insert(size_t index, const std::shared_ptr<U>& cmd) {
             _collection[index].push_back(cmd);
-        }
-
-        template<typename U>
-        inline typename std::enable_if<std::is_base_of<T, U>::value, void>::type
-            insert(size_t index, std::shared_ptr<const U> cmd) {
-            _collection[index].push_back(std::const_pointer_cast<U>(cmd));
         }
 
         inline T& get(size_t index, size_t entry) {

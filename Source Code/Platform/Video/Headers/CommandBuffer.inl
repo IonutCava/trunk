@@ -37,6 +37,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
+namespace {
+    template<typename T>
+    struct DeleteCommand {
+        DeleteCommand()
+        {
+        }
+
+        inline void operator()(T* res) {
+            WriteLock w_lock(T::s_PoolMutex);
+            T::s_Pool.deleteElement(res);
+        }
+    };
+};
+
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 CommandBuffer::add(const T* command) {
@@ -46,7 +60,12 @@ CommandBuffer::add(const T* command) {
     _commands.insert(*command);
     _commandOrder.emplace_back(type, _commands.size(getType(type)) - 1);
 #else
-    _commands.insert(static_cast<size_t>(type), std::shared_ptr<T>(new T(*command)));
+    {
+        WriteLock w_lock(T::s_PoolMutex);
+        std::shared_ptr<T> ptr(T::s_Pool.newElement(*command), DeleteCommand<T>());
+
+        _commands.insert(static_cast<size_t>(type), ptr);
+    }
     _commandOrder.emplace_back(type, _commands.size(static_cast<size_t>(type)) - 1);
 #endif
 }

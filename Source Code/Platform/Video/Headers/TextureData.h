@@ -41,54 +41,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <MemoryPool/C-11/MemoryPool.h>
 
 namespace Divide {
-class TextureData final : public Hashable {
+class TextureData {
 public:
-    TextureData() : TextureData(TextureType::TEXTURE_2D, 0u)
-    {
-    }
-
     TextureData(TextureType type, U32 handle)
       : _textureType(type),
-        _samplerHash(0),
-        _textureHandle(0)
-    {
-        setHandle(handle);
-    }
-
-    TextureData(const TextureData& other)
-      : _textureType(other._textureType),
-        _samplerHash(other._samplerHash),
-        _textureHandle(other._textureHandle)
+        _textureHandle(handle),
+        _samplerHash(0)
     {
     }
 
-    TextureData& operator=(const TextureData& other) {
-        _textureType = other._textureType;
-        _samplerHash = other._samplerHash;
-        _textureHandle = other._textureHandle;
+    TextureData() = default;
+    TextureData(const TextureData& other) = default;
+    TextureData& operator=(const TextureData& other) = default;
+    TextureData(TextureData&& other) = default;
+    TextureData & operator=(TextureData&& other) = default;
 
-        return *this;
-    }
-
-    inline void set(const TextureData& other) {
-        _textureHandle = other._textureHandle;
-        _textureType = other._textureType;
-        _samplerHash = other._samplerHash;
-    }
-
-    /// ID
-    inline const U32& getHandle() const {
-        return _textureHandle;
-    }
-
-    /// ID
-    inline void getHandle(U32& handle) const {
-        handle = getHandle();
-    }
-
-    inline void setHandle(U32 handle) {
-        _textureHandle = handle;
-    }
+    inline U32  getHandle()     const { return _textureHandle; }
+    inline void setHandle(U32 handle) { _textureHandle = handle; }
 
     inline bool operator==(const TextureData& other) const {
         return _textureType == other._textureType &&
@@ -101,15 +70,10 @@ public:
                _textureHandle != other._textureHandle ||
                _samplerHash != other._samplerHash;
     }
-
-    // No need to cache this as it should already be pretty fast
-    size_t getHash() const override;
-
-    TextureType _textureType;
-    size_t _samplerHash;
-private:
-    // Texture handle
-    U32  _textureHandle;
+    
+    size_t _samplerHash = 0;
+    U32 _textureHandle = 0u;
+    TextureType _textureType = TextureType::COUNT;
 };
 
 class TextureDataContainer {

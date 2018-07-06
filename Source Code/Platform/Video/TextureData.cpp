@@ -10,12 +10,15 @@
 
 namespace Divide {
 
-size_t TextureData::getHash() const {
-    Util::Hash_combine(_hash, to_U32(_textureType));
-    Util::Hash_combine(_hash, _samplerHash);
-    Util::Hash_combine(_hash, _textureHandle);
-    return _hash;
-}
+namespace {
+    size_t GetHash(TextureData data) {
+        size_t hash = 0;
+        Util::Hash_combine(hash, to_U32(data._textureType));
+        Util::Hash_combine(hash, data._samplerHash);
+        Util::Hash_combine(hash, data._textureHandle);
+        return hash;
+    }
+};
 
 TextureDataContainer::TextureDataContainer()
 {
@@ -87,12 +90,12 @@ bool TextureDataContainer::removeTexture(U8 binding) {
 }
 
 bool TextureDataContainer::removeTexture(const TextureData& data) {
-    size_t inputHash = data.getHash();
+    size_t inputHash = GetHash(data);
 
     vectorEASTL<eastl::pair<TextureData, U8>>::iterator it;
     it = eastl::find_if(eastl::begin(_textures), eastl::end(_textures),
                       [&inputHash](const eastl::pair<TextureData, U8>& entry) {
-                          return (entry.first.getHash() == inputHash);
+                          return (GetHash(entry.first) == inputHash);
                       });
 
     if (it != eastl::end(_textures)) {
