@@ -79,8 +79,8 @@ void GUI::update(const U64 deltaTime) {
     }
 
     _ceguiInput.update(deltaTime);
-    CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds(deltaTime));
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds(deltaTime));
+    CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
 
     if (_console) {
         _console->update(deltaTime);

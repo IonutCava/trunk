@@ -160,7 +160,7 @@ void PhysXSceneInterface::updateShape(PxShape* const shape, PhysXActor& actor){
 void PhysXSceneInterface::process(const U64 deltaTime){
     if(!_gScene) return;
 
-    _gScene->simulate(static_cast<physx::PxReal>(Time::MicrosecondsToMilliseconds(deltaTime)));
+    _gScene->simulate(Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTime));
 
     while(!_gScene->fetchResults()) idle();
 }

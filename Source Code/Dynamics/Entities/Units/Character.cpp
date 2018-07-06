@@ -29,7 +29,7 @@ Character::~Character()
 
 void Character::update(const U64 deltaTime) {
     if(_positionDirty){
-        _curPosition.lerp(_newPosition, Time::MicrosecondsToSeconds(deltaTime));
+        _curPosition.lerp(_newPosition, Time::MicrosecondsToSeconds<F32>(deltaTime));
         _positionDirty = false;
     }
 
@@ -37,7 +37,7 @@ void Character::update(const U64 deltaTime) {
         _newVelocity.y = 0.0f;
         _newVelocity.z *= -1.0f;
         _newVelocity.normalize();
-        _curVelocity.lerp(_newVelocity, Time::MicrosecondsToSeconds(deltaTime));
+        _curVelocity.lerp(_newVelocity, Time::MicrosecondsToSeconds<F32>(deltaTime));
         _velocityDirty = false;
     }
 }

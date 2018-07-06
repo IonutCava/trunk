@@ -30,7 +30,7 @@ namespace Time {
 
     void ProfileTimer::start() {
 #if defined(_DEBUG) || defined(_PROFILE)
-        _timer = Time::MicrosecondsToMilliseconds(ApplicationTimer::getInstance().getElapsedTime(true));
+        _timer = Time::MicrosecondsToMilliseconds<D32>(ApplicationTimer::getInstance().getElapsedTime(true));
 #endif
     }
 
@@ -41,7 +41,7 @@ namespace Time {
             return;
         }
 
-        _timer = Time::MicrosecondsToMilliseconds(ApplicationTimer::getInstance().getElapsedTime(true)) - _timer;
+        _timer = Time::MicrosecondsToMilliseconds<D32>(ApplicationTimer::getInstance().getElapsedTime(true)) - _timer;
         _timerAverage = _timerAverage + _timer;
         _timerCounter++;
 #endif

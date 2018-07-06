@@ -449,14 +449,14 @@ void Scene::removeTask(I64 taskGUID) {
 
 void Scene::processGUI( const U64 deltaTime ) {
     for ( U16 i = 0; i < _guiTimers.size(); ++i ) {
-        _guiTimers[i] += Time::MicrosecondsToMilliseconds( deltaTime );
+        _guiTimers[i] += Time::MicrosecondsToMilliseconds<D32>(deltaTime);
     }
 }
 
 
 void Scene::processTasks( const U64 deltaTime ) {
     for ( U16 i = 0; i < _taskTimers.size(); ++i ) {
-        _taskTimers[i] += Time::MicrosecondsToMilliseconds( deltaTime );
+        _taskTimers[i] += Time::MicrosecondsToMilliseconds<D32>( deltaTime );
     }
 }
 

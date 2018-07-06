@@ -186,7 +186,7 @@ void Kernel::mainLoopApp() {
 
 #if defined(_DEBUG) || defined(_PROFILE)  
     if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0){
-        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", Time::MicrosecondsToSeconds(GFX_DEVICE.getFrameDurationGPU()),
+        PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", Time::MicrosecondsToSeconds<F32>(GFX_DEVICE.getFrameDurationGPU()),
                                                    GFX_DEVICE.getDrawCallCount());
     }
 #endif

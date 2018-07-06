@@ -38,7 +38,7 @@ AnimationComponent::~AnimationComponent()
 void AnimationComponent::update(const U64 deltaTime) {
     SGNComponent::update(deltaTime);
     
-    D32 timeStamp = _playAnimations ? Time::MicrosecondsToSeconds(_elapsedTime) : 0.0;
+    D32 timeStamp = _playAnimations ? Time::MicrosecondsToSeconds<D32>(_elapsedTime) : 0.0;
 
     if ( DOUBLE_COMPARE( timeStamp, _currentTimeStamp ) ) {
         return;
