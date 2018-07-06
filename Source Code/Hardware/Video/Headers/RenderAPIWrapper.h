@@ -95,10 +95,7 @@ protected:
     ///Clear buffers,shaders, etc.
     virtual void flush() = 0;
 
-    virtual F32* lookAt(const mat4<F32>& viewMatrix) const = 0;
-   
     virtual void idle() = 0;
-    virtual void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) = 0;
 
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
@@ -122,16 +119,10 @@ protected:
     virtual void closeRenderingApi() = 0;
     virtual void initDevice(U32 targetFrameRate) = 0;
 
-    /*State Matrix Manipulation*/
-    virtual F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes) const = 0;
-    virtual F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) const = 0;
-    /*State Matrix Manipulation*/
-
     virtual void toggleRasterization(bool state) = 0;
     virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
     /*Object viewing*/
-    virtual void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) const = 0;
     virtual void updateClipPlanes() = 0;
     /*Object viewing*/
 

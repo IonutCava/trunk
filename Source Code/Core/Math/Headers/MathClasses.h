@@ -735,6 +735,43 @@ public:
         this->m[3][2] = -zAxis.dot(eye);
     }
 
+	void ortho(T left, T right, T bottom, T top, T zNear, T zFar ) {
+		identity();
+
+		m[0][0] = static_cast<T>(2) / (right - left);
+		m[1][1] = static_cast<T>(2) / (top - bottom);
+		m[2][2] = - T(2) / (zFar - zNear);
+		m[3][0] = - (right + left) / (right - left);
+		m[3][1] = - (top + bottom) / (top - bottom);
+		m[3][2] = - (zFar + zNear) / (zFar - zNear);
+	}
+
+	void perspective(T fovyRad, T aspect, T zNear,T zFar) {
+		assert(!IS_ZERO(aspect));
+		assert(zFar > zNear);
+
+		T tanHalfFovy = tan(fovyRad / static_cast<T>(2));
+
+		zero();
+
+		m[0][0] =    static_cast<T>(1) / (aspect * tanHalfFovy);
+		m[1][1] =    static_cast<T>(1) / (tanHalfFovy);
+		m[2][2] = - (zFar + zNear) / (zFar - zNear);
+		m[2][3] = - static_cast<T>(1);
+		m[3][2] = - (static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
+	}
+
+	void frustum(T left, T right, T bottom, T top, T nearVal, T farVal) {
+		zero();
+
+		m[0][0] = (static_cast<T>(2) * nearVal) / (right - left);
+		m[1][1] = (static_cast<T>(2) * nearVal) / (top - bottom);
+		m[2][0] = (right + left) / (right - left);
+		m[2][1] = (top + bottom) / (top - bottom);
+		m[2][2] = -(farVal + nearVal) / (farVal - nearVal);
+		m[2][3] = static_cast<T>(-1);
+		m[3][2] = -(static_cast<T>(2) * farVal * nearVal) / (farVal - nearVal);
+	}
 
     inline void reflect(T x,T y,T z,T w) {
         reflect(Plane<T>(x,y,z,w));

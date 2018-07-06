@@ -231,7 +231,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>false</OpenMPSupport>

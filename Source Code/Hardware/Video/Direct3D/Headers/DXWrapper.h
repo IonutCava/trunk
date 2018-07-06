@@ -50,12 +50,10 @@ protected:
     void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
-    F32* lookAt(const mat4<F32>& viewMatrix) const;
     void idle();
     void flush();
     void beginFrame();
     void endFrame();
-    void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
     inline FrameBuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
     inline GenericVertexData*  newGVD(const bool persistentMapped = false)   const { return New d3dGenericVertexData(persistentMapped); }
@@ -71,9 +69,9 @@ protected:
            bool                initShaders();
            bool                deInitShaders();
 
-    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes) const;
-    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) const;
-    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) const;
+    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
+    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
+    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
 
     void toggleRasterization(bool state);
 

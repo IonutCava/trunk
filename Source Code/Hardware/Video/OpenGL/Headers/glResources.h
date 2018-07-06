@@ -41,10 +41,6 @@ enum MATRIX_MODE;
 #include <glxew.h>
 #endif
 
-#ifndef GLM_FORCE_INLINE
-#define GLM_FORCE_INLINE
-#endif
-#include <glm.hpp>
 #include <GL/glfw3.h>
 #include "Utility/Headers/Vector.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
@@ -200,48 +196,17 @@ template<class T> class vec4;
 
 namespace Divide {
     namespace GLUtil {
-    /*----------- GLU overrides ------*/
-    typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
+        /*--------- Object Management-------*/
+        extern GLuint _invalidObjectID;
+        /*--------- Context Management -----*/
+        extern bool _applicationClosing;
+        extern bool _contextAvailable;
 
-    /*--------- Object Management-------*/
-    extern GLuint _invalidObjectID;
-    /*--------- Context Management -----*/
-    extern bool _applicationClosing;
-    extern bool _contextAvailable;
-
-    ///Main rendering window
-    extern GLFWwindow* _mainWindow;
-    ///Background thread for loading resources
-    extern GLFWwindow* _loaderWindow;
-     ///Matrix management
-    ///Current active matrix for push/pop operations: PROJECTION/VIEW/TEXTURE
-    extern MATRIX_MODE _currentMatrixMode;
-    ///Current view matrix. Changed only by LookAt call
-    extern matrixStack _viewMatrix;
-    ///Current projection matrix. Changed by Perspective and Ortho calls
-    extern matrixStack _projectionMatrix;
-    ///Current texture matrix. Multiply and change manually if needed
-    extern matrixStack _textureMatrix;
-    ///A cache value for anaglyph eye offset
-    extern GLfloat     _anaglyphIOD;
-
-    void _initStacks();
-    /*-----------------BEGIN: FIXED PIPELINE EMULATION -----------------------*/
-    inline void _matrixMode(const MATRIX_MODE& mode) { _currentMatrixMode = mode; }
-
-    GLfloat* _lookAt(const GLfloat* viewMatrix);
-    GLfloat* _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
-    GLfloat* _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear,  GLfloat zFar);
-    void _anaglyph(GLfloat IOD, GLdouble zNear, GLdouble zFar, GLfloat aspect, GLfloat fovy, bool rightFrustum = false);
-    void _pushMatrix();
-    void _popMatrix();
-    void _loadIdentity();
-    /*-----------------END: FIXED PIPELINE EMULATION -----------------------*/
-
-    /*-----------------Locals------------------------------------------------*/
-    extern glm::mat4   _identityMatrix;
-
-    }//GL
+        ///Main rendering window
+        extern GLFWwindow* _mainWindow;
+        ///Background thread for loading resources
+        extern GLFWwindow* _loaderWindow;
+    }//GLUtil
 }
 
 #ifdef GLEW_MX

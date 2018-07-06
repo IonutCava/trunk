@@ -7,8 +7,6 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Hardware/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
-#include <gtc/type_ptr.hpp>
-#include <gtc/matrix_transform.hpp>
 
 GLuint GL_API::_activeVAOId = GL_INVALID_INDEX;
 GLuint GL_API::_activeFBId  = GL_INVALID_INDEX;
@@ -59,78 +57,6 @@ void GL_API::togglePrimitiveRestart(bool state, bool smallIndices){
         _primitiveRestartEnabled = state;
         state ? glEnable(GL_PRIMITIVE_RESTART) : glDisable(GL_PRIMITIVE_RESTART);
     }
-}
-
-void GL_API::updateProjectionMatrix(){
-    DIVIDE_ASSERT(Divide::GLUtil::_contextAvailable, "GLStates error: attempted to modify the projection matrix from an invalid context!");
-
-    const size_t mat4Size = 16 * sizeof(GLfloat);
-
-    GLfloat matrixDataProjection[3 * 16];
-
-    _ViewProjectionCacheMatrix.set(glm::value_ptr(Divide::GLUtil::_projectionMatrix.top() * Divide::GLUtil::_viewMatrix.top()));
-
-    memcpy(matrixDataProjection, glm::value_ptr(Divide::GLUtil::_projectionMatrix.top()), mat4Size);
-    memcpy(matrixDataProjection + 16, glm::value_ptr(Divide::GLUtil::_viewMatrix.top()), mat4Size);
-    memcpy(matrixDataProjection + 32, _ViewProjectionCacheMatrix.mat, mat4Size);
-
-    GFX_DEVICE.updateProjMatrix(matrixDataProjection);
-}
-
-void GL_API::updateViewMatrix(){
-    DIVIDE_ASSERT(Divide::GLUtil::_contextAvailable, "GLStates error: attempted to modify the view matrix from an invalid context!");
-
-    const size_t mat4Size = 16 * sizeof(GLfloat);
-
-    GLfloat matrixDataView[2 * 16];
-
-    _ViewProjectionCacheMatrix.set(glm::value_ptr(Divide::GLUtil::_projectionMatrix.top() * Divide::GLUtil::_viewMatrix.top()));
-
-    memcpy(matrixDataView, glm::value_ptr(Divide::GLUtil::_viewMatrix.top()), mat4Size);
-    memcpy(matrixDataView + 16, _ViewProjectionCacheMatrix.mat, mat4Size);
-
-    GFX_DEVICE.updateViewMatrix(matrixDataView);
-}
-
-void GL_API::getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat) {
-    if (mode == VIEW_PROJECTION_MATRIX)          mat.set(_ViewProjectionCacheMatrix);
-    else if (mode == VIEW_MATRIX)                mat.set(glm::value_ptr(Divide::GLUtil::_viewMatrix.top()));
-    else if (mode == VIEW_INV_MATRIX)            mat.set(glm::value_ptr(glm::inverse(Divide::GLUtil::_viewMatrix.top())));
-    else if (mode == PROJECTION_MATRIX)          mat.set(glm::value_ptr(Divide::GLUtil::_projectionMatrix.top()));
-    else if (mode == PROJECTION_INV_MATRIX)      mat.set(glm::value_ptr(glm::inverse(Divide::GLUtil::_projectionMatrix.top())));
-    else if (mode == TEXTURE_MATRIX)             mat.set(glm::value_ptr(Divide::GLUtil::_textureMatrix.top()));
-    else if(mode == VIEW_PROJECTION_INV_MATRIX) _ViewProjectionCacheMatrix.inverse(mat);
-    else { DIVIDE_ASSERT(mode == -1, "GLStates error: attempted to query an invalid matrix target!"); }
-}
-
-void GL_API::lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView, bool lockProjection){
-    if(lockProjection){
-        Divide::GLUtil::_matrixMode(PROJECTION_MATRIX);
-        Divide::GLUtil::_pushMatrix();
-    }
-
-    if(lockView){
-        Divide::GLUtil::_matrixMode(VIEW_MATRIX);
-        Divide::GLUtil::_pushMatrix();
-    }
-
-    //This is such a cheap operation that no other checks are needed (even if we double set the VIEW_MATRIX)
-    Divide::GLUtil::_matrixMode(setCurrentMatrix);
-}
-
-void GL_API::releaseMatrices( const MATRIX_MODE& setCurrentMatrix, bool releaseView, bool releaseProjection){
-    if(releaseProjection){
-        Divide::GLUtil::_matrixMode(PROJECTION_MATRIX);
-        Divide::GLUtil::_popMatrix();
-    }
-
-    if(releaseView){
-        Divide::GLUtil::_matrixMode(VIEW_MATRIX);
-        Divide::GLUtil::_popMatrix();
-    }
-
-    //This is such a cheap operation that no other checks are needed (even if we double set the VIEW_MATRIX)
-    Divide::GLUtil::_matrixMode(setCurrentMatrix);
 }
 
 void GL_API::updateClipPlanes(){
@@ -257,25 +183,6 @@ void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint rende
         prevClearColor.set(r, g, b, a);
         glClearColor(r,g,b,a);
     }
-}
-
-GLfloat* GL_API::lookAt(const mat4<GLfloat>& viewMatrix) const {
-    return Divide::GLUtil::_lookAt(viewMatrix.mat); 
-}
-
-//Setting ortho projection:
-GLfloat* GL_API::setProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes) const {
-    return Divide::GLUtil::_ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
-}
-
-//Setting perspective projection:
-GLfloat* GL_API::setProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes) const {
-    return Divide::GLUtil::_perspective(FoV, aspectRatio, planes.x, planes.y);
-}
-
-//Setting anaglyph frustum for specified eye
-void GL_API::setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) const {
-    Divide::GLUtil::_anaglyph(camIOD, (GLdouble)zPlanes.x, (GLdouble)zPlanes.y, aspectRatio, verticalFoV, rightFrustum);
 }
 
 void GL_API::changeViewport(const vec4<I32>& newViewport) const {

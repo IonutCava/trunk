@@ -13,7 +13,6 @@
 #include "Hardware/Video/OpenGL/glsw/Headers/glsw.h"
 #include "Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include <glsl/glsl_optimizer.h>
-#include <gtc/type_ptr.hpp>
 #include <glim.h>
 
 #ifndef FONTSTASH_IMPLEMENTATION
@@ -139,7 +138,6 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 #endif
     
-    Divide::GLUtil::_initStacks();
     if(GFX_DEVICE.MSAAEnabled())
         glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.MSAASamples());
 

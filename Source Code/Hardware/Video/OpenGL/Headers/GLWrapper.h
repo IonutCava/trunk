@@ -76,8 +76,6 @@ protected:
     void idle();
     void flush();
 
-    void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
-
     FrameBuffer*        newFB(bool multisampled) const;
     VertexBuffer*       newVB(const PrimitiveType& type) const;
     PixelBuffer*        newPB(const PBType& type) const;
@@ -91,17 +89,6 @@ protected:
     inline Shader*        newShader(const std::string& name,const ShaderType& type, const bool optimise = false) const {return New glShader(name,type,optimise); }
            bool           initShaders();
            bool           deInitShaders();
-
-    void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true);
-    void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true);
-
-    GLfloat* lookAt(const mat4<GLfloat>& viewMatrix) const;
-    //Setting ortho projection:
-    GLfloat* GL_API::setProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes) const;
-    //Setting perspective projection:
-    GLfloat* GL_API::setProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes) const;
-    //Setting anaglyph frustum for specified eye
-    void setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) const;
 
     void updateClipPlanes();
 
@@ -156,8 +143,6 @@ public:
     static bool setActiveFB(GLuint id, const bool read = true, const bool write = true, const bool force = false);
     static bool setActiveTransformFeedback(GLuint id, const bool force = false);
     static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
-           void updateProjectionMatrix();
-           void updateViewMatrix();
            void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
 
     static bool bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID = 0);
@@ -207,7 +192,6 @@ private: //OpenGL specific:
     ///2D GUI-like text (bitmap fonts) go in this
     FontCache  _fonts;
 
-    mat4<F32> _ViewProjectionCacheMatrix;
     static glslopt_ctx* _GLSLOptContex;
     static GLuint _activeVAOId;
     static GLuint _activeFBId;

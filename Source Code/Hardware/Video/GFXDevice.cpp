@@ -47,7 +47,6 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _2DRendering = false;
    _loaderThread = nullptr;
    _matricesBuffer = nullptr;
-   _stateBlockDirty = false;
    _drawDebugAxis = false;
    _enablePostProcessing = false;
    _enableAnaglyph = false;
@@ -55,6 +54,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _clippingPlanesDirty = true;
    _isDepthPrePass = false;
    _previewDepthBuffer = false;
+    _stateBlockDirty = true;
    _renderer = nullptr;
    _rasterizationEnabled = true;
    _viewportUpdate = false;
@@ -380,7 +380,7 @@ I64 GFXDevice::setStateBlock(I64 stateBlockHash, bool forceUpdate) {
    
    I64 prevStateHash = _newStateBlockHash;
    if (_currentStateBlockHash == 0 || stateBlockHash != _currentStateBlockHash) {
-       _deviceStateDirty = _stateBlockDirty = true;
+       _stateBlockDirty = true;
        _newStateBlockHash = stateBlockHash;
        if(forceUpdate)  updateStates();//<there is no need to force a internal update of stateblocks if nothing changed
    } else {
@@ -462,6 +462,17 @@ void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUnifo
     _shaderManager.setMatricesDirty();
 }
        
+void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
+    if (mode == VIEW_PROJECTION_MATRIX)          mat.set(_viewProjectionMatrix);
+    else if (mode == VIEW_MATRIX)                mat.set(_viewMatrix);
+    else if (mode == VIEW_INV_MATRIX)            _viewMatrix.inverse(mat);
+    else if (mode == PROJECTION_MATRIX)          mat.set(_projectionMatrix);
+    else if (mode == PROJECTION_INV_MATRIX)      _projectionMatrix.inverse(mat);
+    else if (mode == TEXTURE_MATRIX)             mat.set(_textureMatrix);
+    else if(mode == VIEW_PROJECTION_INV_MATRIX) _viewProjectionMatrix.inverse(mat);
+    else { DIVIDE_ASSERT(mode == -1, "GFXDevice error: attempted to query an invalid matrix target!"); }
+}
+
 void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
      assert(mode == NORMAL_MATRIX /*|| mode == ... */);
      cleanMatrices();
@@ -491,14 +502,119 @@ void GFXDevice::cleanMatrices(){
 
     assert(!_worldMatrices.empty());
 
-    if (_VDirty) 	        _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
-    if (_VDirty || _PDirty) _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
-
     // we transpose the matrices when we use them in the shader
-    _WVCachedMatrix.set(_worldMatrices.top() * _viewCacheMatrix);
-    _WVPCachedMatrix.set(_worldMatrices.top() * _VPCachedMatrix);
+    _WVCachedMatrix.set(_worldMatrices.top() * _viewMatrix);
+    _WVPCachedMatrix.set(_worldMatrices.top() * _viewProjectionMatrix);
 
     _VDirty = _PDirty = _WDirty = false;
+}
+
+
+void GFXDevice::updateProjectionMatrix(){
+    const size_t mat4Size = 16 * sizeof(F32);
+
+    F32 matrixDataProjection[3 * 16];
+
+    _viewProjectionMatrix.set(_viewMatrix * _projectionMatrix);
+
+    memcpy(matrixDataProjection, _projectionMatrix.mat, mat4Size);
+    memcpy(matrixDataProjection + 16, _viewMatrix.mat, mat4Size);
+    memcpy(matrixDataProjection + 32, _viewProjectionMatrix.mat, mat4Size);
+
+    _matricesBuffer->UpdateData(0, 3 * mat4Size, matrixDataProjection);
+    _PDirty = true; 
+}
+
+void GFXDevice::updateViewMatrix(){
+    const size_t mat4Size = 16 * sizeof(F32);
+
+    F32 matrixDataView[2 * 16];
+
+    _viewProjectionMatrix.set(_viewMatrix * _projectionMatrix);
+
+    memcpy(matrixDataView, _viewMatrix.mat, mat4Size);
+    memcpy(matrixDataView + 16, _viewProjectionMatrix.mat, mat4Size);
+
+    _matricesBuffer->UpdateData(mat4Size, 2 * mat4Size, matrixDataView);
+    _VDirty = true;
+}
+
+F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix) {
+    _viewMatrix.set(viewMatrix);
+    updateViewMatrix();
+    return _viewMatrix.mat;
+}
+
+//Setting ortho projection:
+F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
+    _projectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
+    updateProjectionMatrix();
+    return _projectionMatrix.mat;
+}
+
+//Setting perspective projection:
+F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) {
+    _projectionMatrix.perspective(RADIANS(FoV), aspectRatio, planes.x, planes.y);
+    updateProjectionMatrix();
+    return _projectionMatrix.mat;
+}
+
+namespace {
+    ///Used for anaglyph rendering
+    struct CameraFrustum {
+        D32 leftfrustum;
+        D32 rightfrustum;
+        D32 bottomfrustum;
+        D32 topfrustum;
+        F32 modeltranslation;
+    } _leftCam, _rightCam;
+    F32  _anaglyphIOD = -0.01f;
+
+};
+//Setting anaglyph frustum for specified eye
+void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) {
+
+    F32 zNear = (F32)zPlanes.x;
+    F32 zFar = (F32)zPlanes.y;
+
+    if(!FLOAT_COMPARE(_anaglyphIOD,camIOD)){
+        static const D32 DTR = 0.0174532925;
+        static const D32 screenZ = 10.0;
+
+        //sets top of frustum based on fovy and near clipping plane
+        F32 top = zNear*tan(DTR * verticalFoV * 0.5f);
+        F32 right = aspectRatio*top;
+        //sets right of frustum based on aspect ratio
+        F32 frustumshift = (camIOD/2)*zNear/screenZ;
+
+        _leftCam.topfrustum = top;
+        _leftCam.bottomfrustum = -top;
+        _leftCam.leftfrustum = -right + frustumshift;
+        _leftCam.rightfrustum = right + frustumshift;
+        _leftCam.modeltranslation = camIOD/2;
+
+        _rightCam.topfrustum = top;
+        _rightCam.bottomfrustum = -top;
+        _rightCam.leftfrustum = -right - frustumshift;
+        _rightCam.rightfrustum = right - frustumshift;
+        _rightCam.modeltranslation = -camIOD/2;
+
+        _anaglyphIOD = camIOD;
+    }
+
+    CameraFrustum& tempCamera = rightFrustum ? _rightCam : _leftCam;
+
+    _projectionMatrix.frustum(tempCamera.leftfrustum,
+                              tempCamera.rightfrustum,
+                              tempCamera.bottomfrustum,
+                              tempCamera.topfrustum,
+                              zNear,
+                              zFar);
+
+    //translate to cancel parallax
+    _projectionMatrix.translate(tempCamera.modeltranslation, 0.0, 0.0);
+
+    updateProjectionMatrix();
 }
 
 void GFXDevice::toggle2D(bool state) {
@@ -556,20 +672,6 @@ void GFXDevice::postProcessingEnabled(const bool state) {
         _enablePostProcessing = state; 
         if(state) _postFX.idle();
     }
-}
-
-void GFXDevice::updateViewMatrix(const F32* viewMatrixData)  {
-    const size_t mat4Size = 16 * sizeof(F32);
-
-    _matricesBuffer->UpdateData(mat4Size, 2 * mat4Size, viewMatrixData);
-     _VDirty = true;
-}
-
-void GFXDevice::updateProjMatrix(const F32* projMatrixData)  { 
-    const size_t mat4Size = 16 * sizeof(F32);
-
-    _matricesBuffer->UpdateData(0, 3 * mat4Size, projMatrixData);
-    _PDirty = true; 
 }
 
 void GFXDevice::restoreViewport(){

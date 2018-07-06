@@ -50,6 +50,6 @@ bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
         GLint anisoLevel = std::min<I32>((GLint)descriptor.anisotropyLevel(), ParamHandler::getInstance().getParam<GLint>("rendering.anisotropicFilteringLevel"));
         glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
     }
-    //glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]));
+    //glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &vec4<F32>(0.0f).r));
     return true;
 }

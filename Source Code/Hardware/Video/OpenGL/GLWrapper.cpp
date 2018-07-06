@@ -23,8 +23,6 @@ GLuint64 GL_API::FRAME_DURATION_GPU = 0;
 GLuint GL_API::FRAME_COUNT = 0;
 
 #include <glim.h>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
 
 namespace IMPrimitiveValidation{
     inline bool zombieCountMatch(glIMPrimitive* const priv){
@@ -178,21 +176,15 @@ void GL_API::setupLineState(const mat4<F32>& mat, I64 drawStateHash, const bool 
     GFX_DEVICE.pushWorldMatrix(mat,true);
     SET_STATE_BLOCK(drawStateHash);
 
-    if(ortho){
+    if(ortho)
         GFX_DEVICE.setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
-        Divide::GLUtil::_matrixMode(VIEW_MATRIX);
-        Divide::GLUtil::_pushMatrix();
-        Divide::GLUtil::_loadIdentity();
-    }
 }
+
 
 void GL_API::releaseLineState(const bool ortho){
     GFX_DEVICE.popWorldMatrix();
-    if(ortho){
+    if(ortho)
         GFX_DEVICE.restoreViewport();
-        Divide::GLUtil::_matrixMode(VIEW_MATRIX);
-        Divide::GLUtil::_popMatrix();
-    }
 }
 
 void GL_API::drawDebugAxisInternal(const SceneRenderState& sceneRenderState){
@@ -220,9 +212,8 @@ void GL_API::drawDebugAxisInternal(const SceneRenderState& sceneRenderState){
         _axisColors.push_back(vec4<GLubyte>(0,0,255,255));
     }
 
-    const glm::mat4& viewMatrix = Divide::GLUtil::_viewMatrix.top();
     vec3<GLfloat> eyeVector = -(sceneRenderState.getCameraConst().getViewDir() * 2);
-    mat4<F32> offset(eyeVector, vec3<F32>(0.0f), vec3<F32>(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]));
+    mat4<F32> offset(eyeVector, vec3<F32>(0.0f), vec3<F32>(GFX_DEVICE._viewMatrix.m[0][1], GFX_DEVICE._viewMatrix.m[1][1], GFX_DEVICE._viewMatrix.m[2][1]));
     drawLines(_axisPointsA, _axisPointsB, _axisColors, offset, true, true);
 }
 

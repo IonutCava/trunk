@@ -223,7 +223,7 @@ public:
                           const RenderStage& renderStage = REFLECTION_STAGE);
 
     /// Matrix management 
-    inline void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)       {_api.getMatrix(mode, mat);}
+           void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
            void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat);
            void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
            void pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled);
@@ -282,18 +282,16 @@ protected:
 protected:
     friend class Camera;
 
-    inline F32* lookAt(const mat4<F32>& viewMatrix)	const { return _api.lookAt(viewMatrix); }
+    F32* lookAt(const mat4<F32>& viewMatrix);
     ///sets an ortho projection, updating any listeners if needed
-    inline F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes)    const { return _api.setProjection(rect, planes); }
+    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
     ///sets a perspective projection, updating any listeners if needed
-    inline F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) const { return _api.setProjection(FoV, aspectRatio, planes); }
+    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) ;
     ///sets the view frustum to either the left or right eye position for anaglyph rendering
-    inline void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) const {
-        _api.setAnaglyphFrustum(camIOD, zPlanes, aspectRatio, verticalFoV, rightFrustum); 
-    }
+    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
 
-    void updateViewMatrix(const F32* viewMatrixData);
-    void updateProjMatrix(const F32* projMatrixData);
+    void updateViewMatrix();
+    void updateProjectionMatrix();
 
 private:
 
@@ -310,7 +308,6 @@ private:
     PostFX&           _postFX;
     ShaderManager&    _shaderManager;
     RenderAPIWrapper& _api;
-    bool _deviceStateDirty;
     RenderStage _renderStage;
     U32  _prevShaderId,  _prevTextureId;
     I32  _stateExclusionMask;
@@ -340,11 +337,13 @@ protected:
     I64 _state2DRenderingHash;    //<Special render state for 2D rendering
     I64 _stateDepthOnlyRenderingHash;
     matrixStackW  _worldMatrices;
+    mat4<F32> _textureMatrix;
+    mat4<F32> _viewMatrix;
+    mat4<F32> _projectionMatrix;
+    mat4<F32> _viewProjectionMatrix;
     mat4<F32> _WVCachedMatrix;
     mat4<F32> _VPCachedMatrix;
     mat4<F32> _WVPCachedMatrix;
-    mat4<F32> _viewCacheMatrix;
-    mat4<F32> _projectionCacheMatrix;
     //The interpolation factor between the current and the last frame
     D32       _interpolationFactor;
     bool      _isUniformedScaled;

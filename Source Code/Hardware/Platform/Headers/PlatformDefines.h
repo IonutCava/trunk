@@ -184,9 +184,7 @@ inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return FLOAT_COMPARE_TOLERANCE(X, Y, 
 inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return DOUBLE_COMPARE_TOLERANCE(X, Y, EPSILON_D32); }
 
 inline void DIVIDE_ASSERT(const bool expression, const char* failMessage){
-#if defined(_DEBUG)
     assert(expression && failMessage);
-#endif
 }
 
 #if defined(NDEBUG)
@@ -243,6 +241,14 @@ typedef union {
 #	pragma warning(disable:4127) ///<Constant conditional expressions
 #elif defined(__GNUC__)
 //#	pragma GCC diagnostic ignored "-Wall"
+#endif
+
+#ifdef max
+#undef max
+#endif
+
+#ifdef min
+#undef min
 #endif
 
 #endif

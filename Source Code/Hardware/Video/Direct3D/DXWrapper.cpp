@@ -39,11 +39,6 @@ void DX_API::setMousePosition(U16 x, U16 y) const
 {
 }
 
-F32* DX_API::lookAt(const mat4<F32>& viewMatrix) const
-{
-    return nullptr;
-}
-
 void DX_API::beginFrame()
 {
 }
@@ -60,25 +55,21 @@ void DX_API::flush()
 {
 }
 
-void DX_API::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)
-{
-}
-
 void DX_API::toggleRasterization(bool state)
 {
 }
 
-F32* DX_API::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) const
+F32* DX_API::setProjection(const vec4<F32>& rect, const vec2<F32>& planes)
 {
     return nullptr;
 }
 
-F32* DX_API::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) const
+F32* DX_API::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes)
 {
     return nullptr;
 }
 
-void DX_API::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) const
+void DX_API::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum)
 {
 }
 

@@ -165,8 +165,8 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _zPlanesLoc          = this->cachedLoc("dvd_zPlanes");
     _sceneZPlanesLoc     = this->cachedLoc("dvd_sceneZPlanes");
     _screenDimensionLoc  = this->cachedLoc("screenDimension");
-    _fogColorLoc       = this->cachedLoc("fogColor");
-    _fogDensityLoc     = this->cachedLoc("fogDensity");
+    _fogColorLoc         = this->cachedLoc("fogColor");
+    _fogDensityLoc       = this->cachedLoc("fogDensity");
 
     _lodVertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD0");
     _lodVertLight[1] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD1");
