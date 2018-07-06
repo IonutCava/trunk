@@ -22,7 +22,8 @@ GOAPGoal::~GOAPGoal()
 }
 
 bool GOAPGoal::plan(const GOAPWorldState& worldState,
-                    const GOAPActionSet& actionSet) {
+                    const GOAPActionSet& actionSet)
+{
     _currentPlan = _planner.plan(worldState, *this, actionSet);
     std::reverse(std::begin(_currentPlan), std::end(_currentPlan));
     

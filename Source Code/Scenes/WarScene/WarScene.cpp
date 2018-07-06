@@ -468,7 +468,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     // Make the teams fight each other
     _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
     _faction[1]->addEnemyTeam(_faction[0]->getTeamID());
-
+    
     SceneGraphNode* soldierNode1 = _sceneGraph.findNode("Soldier1");
     SceneGraphNode* soldierNode2 = _sceneGraph.findNode("Soldier2");
     SceneGraphNode* soldierNode3 = _sceneGraph.findNode("Soldier3");
@@ -484,6 +484,18 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     SceneNode* currentMesh = nullptr;
     SceneGraphNode* currentNode = nullptr;
 
+    AI::GOAPPackage goapPackage;
+
+    goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
+                                        AI::GOAPValue(false));
+    goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
+                                        AI::GOAPValue(true));
+    goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
+                                        AI::GOAPValue(false));
+    goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::EnemyHasFlag),
+                                        AI::GOAPValue(false));
+    goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::Idling),
+                                        AI::GOAPValue(true));
 
     AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
     approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
@@ -530,7 +542,13 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                                AI::GOAPValue(true));
     idleAction.setEffect(AI::GOAPFact(AI::Fact::Idling),
                          AI::GOAPFact(true));
-
+    
+    goapPackage._actionSet.push_back(approachEnemyFlag);
+    goapPackage._actionSet.push_back(captureEnemyFlag);
+    goapPackage._actionSet.push_back(returnToBase);
+    goapPackage._actionSet.push_back(scoreEnemyFlag);
+    goapPackage._actionSet.push_back(idleAction);
+    
     AI::GOAPGoal captureFlag(
         "Capture enemy flag",
         to_uint(AI::WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG));
@@ -547,6 +565,10 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     AI::GOAPGoal idle("Idle", to_uint(AI::WarSceneOrder::WarOrder::ORDER_IDLE));
     idle.setVariable(AI::GOAPFact(AI::Fact::Idling),
                      AI::GOAPValue(true));
+
+    goapPackage._goalList.push_back(captureFlag);
+    goapPackage._goalList.push_back(scoreFlag);
+    goapPackage._goalList.push_back(idle);
 
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < 15; ++i) {
@@ -610,27 +632,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                 MemoryManager_NEW AI::WarSceneAISceneImpl(type);
 
             // GOAP
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
-                                            AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                                            AI::GOAPValue(true));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                            AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::EnemyHasFlag),
-                                            AI::GOAPValue(false));
-            brain->worldState().setVariable(AI::GOAPFact(AI::Fact::Idling),
-                                            AI::GOAPValue(true));
-
-            brain->registerAction(&approachEnemyFlag);
-            brain->registerAction(&captureEnemyFlag);
-            brain->registerAction(&returnToBase);
-            brain->registerAction(&scoreEnemyFlag);
-            brain->registerAction(&idleAction);
-
-            brain->registerGoal(scoreFlag);
-            brain->registerGoal(captureFlag);
-            brain->registerGoal(idle);
-
+            brain->registerGOAPPackage(goapPackage);
             aiSoldier->addAISceneImpl(brain);
             soldier = MemoryManager_NEW NPC(*currentNode, aiSoldier);
             soldier->setMovementSpeed(speed * 2);

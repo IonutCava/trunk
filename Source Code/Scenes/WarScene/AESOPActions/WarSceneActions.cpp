@@ -11,19 +11,18 @@ WarSceneAction::WarSceneAction(ActionType type, const stringImpl& name,
     : GOAPAction(stringAlg::fromBase(name), cost)
 {
     _type = type;
-    _parentScene = nullptr;
 }
 
 WarSceneAction::~WarSceneAction()
 {
 }
 
-bool WarSceneAction::preAction() const {
-    return Attorney::WarAISceneWarAction::preAction(*_parentScene, _type, this);
+bool WarSceneAction::preAction(WarSceneAISceneImpl& parentScene) const {
+    return Attorney::WarAISceneWarAction::preAction(parentScene, _type, this);
 }
 
-bool WarSceneAction::postAction() const {
-    return Attorney::WarAISceneWarAction::postAction(*_parentScene, _type, this);
+bool WarSceneAction::postAction(WarSceneAISceneImpl& parentScene) const {
+    return Attorney::WarAISceneWarAction::postAction(parentScene, _type, this);
 }
 
 Idle::Idle(const stringImpl& name, F32 cost)

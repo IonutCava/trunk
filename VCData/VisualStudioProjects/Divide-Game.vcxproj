@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AISceneImpl.cpp" />
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp" />
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\GOAPInterface.cpp" />
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp" />

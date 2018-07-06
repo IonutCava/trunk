@@ -43,8 +43,8 @@ namespace AI {
 typedef I32 GOAPFact;
 typedef bool GOAPValue;
 typedef goap::Action GOAPAction;
-typedef vectorImpl<const GOAPAction*> GOAPActionSet;
 typedef goap::WorldState GOAPWorldState;
+typedef vectorImpl<const GOAPAction*> GOAPActionSet;
 typedef vectorImpl<const GOAPAction*> GOAPPlan;
 
 inline const char* GOAPValueName(GOAPValue val) {
@@ -86,8 +86,10 @@ class GOAPGoal : public goap::WorldState {
     goap::Planner _planner;
     GOAPPlan _currentPlan;
 };
-};
 
+typedef vectorImpl<GOAPGoal> GOAPGoalList;
+
+}; // namespace AI
 };  // namespace Divide
 
 #endif

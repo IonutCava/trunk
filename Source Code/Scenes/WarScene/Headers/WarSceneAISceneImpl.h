@@ -138,6 +138,12 @@ class WarSceneOrder : public Order {
     void unlock() { Order::unlock(); }
 };
 
+struct GOAPPackage {
+    GOAPWorldState _worldState;
+    GOAPGoalList _goalList;
+    vectorImpl<WarSceneAction> _actionSet;
+};
+
 namespace Attorney {
     class WarAISceneWarAction;
 };
@@ -154,13 +160,13 @@ class WarSceneAISceneImpl : public AISceneImpl {
     WarSceneAISceneImpl(AIType type);
     ~WarSceneAISceneImpl();
 
+    void registerGOAPPackage(const GOAPPackage& package);
+
     void processData(const U64 deltaTime);
     void processInput(const U64 deltaTime);
     void update(const U64 deltaTime, NPC* unitRef = nullptr);
     void processMessage(AIEntity* sender, AIMsg msg,
                         const cdiggins::any& msg_content);
-    void registerAction(GOAPAction* const action);
-
     static void registerFlags(SceneGraphNode& flag1,
                               SceneGraphNode& flag2) {
         _globalWorkingMemory._flags[0].value(&flag1);
@@ -175,9 +181,9 @@ class WarSceneAISceneImpl : public AISceneImpl {
    private:
     void requestOrders();
     void updatePositions();
-    bool performAction(const GOAPAction* planStep);
+    bool performAction(const GOAPAction& planStep);
     bool performActionStep(GOAPAction::operationsIterator step);
-    bool printActionStats(const GOAPAction* planStep) const;
+    bool printActionStats(const GOAPAction& planStep) const;
     void printWorkingMemory() const;
     void initInternal();
 
@@ -190,6 +196,8 @@ class WarSceneAISceneImpl : public AISceneImpl {
     VisualSensor* _visualSensor;
     AudioSensor* _audioSensor;
     LocalWorkingMemory _localWorkingMemory;
+    /// Keep this in memory at this level
+    vectorImpl<WarSceneAction> _actionList;
     static GlobalWorkingMemory _globalWorkingMemory;
     mutable std::ofstream _WarAIOutputStream;
     static vec3<F32> _initialFlagPositions[2];

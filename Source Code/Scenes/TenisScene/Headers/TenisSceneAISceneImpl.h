@@ -60,7 +60,7 @@ class TenisSceneAISceneImpl : public AISceneImpl {
     F32 distanceToBall(const vec3<F32>& entityPosition,
                        const vec3<F32> ballPosition);
     bool performActionStep(GOAPAction::operationsIterator step) { return true; }
-    bool performAction(const GOAPAction* planStep) { return true; }
+    bool performAction(const GOAPAction& planStep) { return true; }
 
    private:
     SceneGraphNode* _target;

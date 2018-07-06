@@ -436,6 +436,9 @@
     <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Planner.cpp">
       <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AISceneImpl.cpp">
+      <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h">

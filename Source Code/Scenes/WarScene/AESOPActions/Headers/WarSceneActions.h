@@ -71,70 +71,45 @@ enum class ActionType : U32 {
     COUNT
 };
 
-namespace Attorney {
-    class WarSceneActionWarAIScene;
-};
-
 class WarSceneAISceneImpl;
 class WarSceneAction : public GOAPAction {
-    friend class Attorney::WarSceneActionWarAIScene;
-
    public:
-    inline ActionType actionType() const { return _type; }
-
-    bool preAction() const;
-    bool postAction() const;
-    virtual bool checkImplDependentCondition() const { return true; }
-
-   protected:
     WarSceneAction(ActionType type, const stringImpl& name, F32 cost = 1.0f);
     virtual ~WarSceneAction();
 
+    inline ActionType actionType() const { return _type; }
+
+    bool preAction(WarSceneAISceneImpl& parentScene) const;
+    bool postAction(WarSceneAISceneImpl& parentScene) const;
+    virtual bool checkImplDependentCondition() const { return true; }
+
    protected:
-    WarSceneAISceneImpl* _parentScene;
     ActionType _type;
 };
 
-namespace Attorney {
-class WarSceneActionWarAIScene {
-   private:
-    static void setParentAIScene(WarSceneAction& action,
-                                 Divide::AI::WarSceneAISceneImpl* const scene) {
-        action._parentScene = scene;
-    }
-
-    friend class Divide::AI::WarSceneAISceneImpl;
-};
-};  // namespace Attorney
-
 class Idle : public WarSceneAction {
-  public:
+   public:
     Idle(const stringImpl& name, F32 cost = 1.0f);
-    Idle(WarSceneAction const& other) : WarSceneAction(other) {}
 };
 
 class ApproachFlag : public WarSceneAction {
    public:
     ApproachFlag(const stringImpl& name, F32 cost = 1.0f);
-    ApproachFlag(WarSceneAction const& other) : WarSceneAction(other) {}
 };
 
 class CaptureFlag : public WarSceneAction {
    public:
     CaptureFlag(const stringImpl& name, F32 cost = 1.0f);
-    CaptureFlag(WarSceneAction const& other) : WarSceneAction(other) {}
 };
 
 class ReturnFlagHome : public WarSceneAction {
    public:
     ReturnFlagHome(const stringImpl& name, F32 cost = 1.0f);
-    ReturnFlagHome(WarSceneAction const& other) : WarSceneAction(other) {}
 };
 
 class ScoreFlag : public WarSceneAction {
    public:
     ScoreFlag(const stringImpl& name, F32 cost = 1.0f);
-    ScoreFlag(WarSceneAction const& other) : WarSceneAction(other) {}
 };
 
 };  // namespace AI

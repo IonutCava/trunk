@@ -34,38 +34,7 @@ WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
 
 WarSceneAISceneImpl::~WarSceneAISceneImpl()
 {
-    MemoryManager::DELETE_VECTOR(actionSetPtr());
     _WarAIOutputStream.close();
-}
-
-void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
-    WarSceneAction* const warAction = static_cast<WarSceneAction*>(action);
-    Attorney::WarSceneActionWarAIScene::setParentAIScene(*warAction, this);
-
-    switch (warAction->actionType()) {
-        case ActionType::ACTION_IDLE:
-            AISceneImpl::registerAction(
-                MemoryManager_NEW Idle(*warAction));
-            return;
-        case ActionType::ACTION_APPROACH_FLAG:
-            AISceneImpl::registerAction(
-                MemoryManager_NEW ApproachFlag(*warAction));
-            return;
-        case ActionType::ACTION_CAPTURE_FLAG:
-            AISceneImpl::registerAction(
-                MemoryManager_NEW CaptureFlag(*warAction));
-            return;
-        case ActionType::ACTION_SCORE_FLAG:
-            AISceneImpl::registerAction(
-                MemoryManager_NEW ScoreFlag(*warAction));
-            return;
-        case ActionType::ACTION_RETURN_FLAG_TO_BASE:
-            AISceneImpl::registerAction(
-                MemoryManager_NEW ReturnFlagHome(*warAction));
-            return;
-    };
-
-    AISceneImpl::registerAction(MemoryManager_NEW WarSceneAction(*warAction));
 }
 
 void WarSceneAISceneImpl::initInternal() {
@@ -366,7 +335,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
     };
 
     if (state) {
-        return warAction.postAction();
+        return warAction.postAction(*this);
     }
     return state;
 }
@@ -446,11 +415,8 @@ void WarSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
     }
 }
 
-bool WarSceneAISceneImpl::performAction(const GOAPAction* planStep) {
-    if (planStep == nullptr) {
-        return false;
-    }
-    return static_cast<const WarSceneAction*>(planStep)->preAction();
+bool WarSceneAISceneImpl::performAction(const GOAPAction& planStep) {
+    return static_cast<const WarSceneAction&>(planStep).preAction(*this);
 }
 
 bool WarSceneAISceneImpl::performActionStep(
@@ -468,8 +434,8 @@ bool WarSceneAISceneImpl::performActionStep(
     return true;
 }
 
-bool WarSceneAISceneImpl::printActionStats(const GOAPAction* planStep) const {
-    Console::printfn(_WarAIOutputStream, "Action [ %s ]", planStep->name().c_str());
+bool WarSceneAISceneImpl::printActionStats(const GOAPAction& planStep) const {
+    Console::printfn(_WarAIOutputStream, "Action [ %s ]", planStep.name().c_str());
     return true;
 }
 
@@ -490,7 +456,7 @@ void WarSceneAISceneImpl::printWorkingMemory() const {
         _globalWorkingMemory._teamFlagPosition[1].value().z);
     Console::printfn(_WarAIOutputStream, "        Has enemy flag: [ %s ]",
                      _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false");
-    for (std::pair<GOAPFact, GOAPValue> var : worldStateConst().vars_) {
+    for (std::pair<GOAPFact, GOAPValue> var : worldState().vars_) {
         Console::printfn(_WarAIOutputStream, "        World state fact [ %s ] : [ %s ]",
                          WarSceneFactName(var.first),
                          var.second ? "true" : "false");
@@ -498,5 +464,17 @@ void WarSceneAISceneImpl::printWorkingMemory() const {
     Console::printfn(_WarAIOutputStream,
         "--------------- Working memory state END ----------------------------");
 }
+
+void WarSceneAISceneImpl::registerGOAPPackage(const GOAPPackage& package) {
+    worldState() = package._worldState;
+    registerGoalList(package._goalList);
+    for (const WarSceneAction& action : package._actionSet) {
+        _actionList.push_back(action);
+    }
+    for (const WarSceneAction& action : _actionList) {
+        registerAction(action);
+    }
+}
+
 };  // namespace AI
 };  // namespace Divide

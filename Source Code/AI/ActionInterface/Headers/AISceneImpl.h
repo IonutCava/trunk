@@ -44,38 +44,27 @@ enum class AIMsg : U32;
 /// Provides a scene-level AI implementation
 class NOINITVTABLE AISceneImpl : private NonCopyable {
    public:
-    AISceneImpl() : _entity(nullptr), _activeGoal(nullptr), _currentStep(-1)
-    {
-        _init = false;
-    }
+    AISceneImpl();
+    virtual ~AISceneImpl();
+    virtual void addEntityRef(AIEntity* entity);
 
-    virtual ~AISceneImpl() { _goals.clear(); }
-
-    virtual void addEntityRef(AIEntity* entity) {
-        if (entity) {
-            _entity = entity;
-        }
-    }
-
+    inline void worldState(const GOAPWorldState& state) { _worldState = state; }
     inline GOAPWorldState& worldState() { return _worldState; }
-    inline const GOAPWorldState& worldStateConst() const { return _worldState; }
+    inline const GOAPWorldState& worldState() const { return _worldState; }
 
     /// Register a specific action.
     /// This only holds a reference to the action itself and does not create a
     /// local copy!
-    virtual void registerAction(GOAPAction* const action) {
-        _actionSet.push_back(action);
-    }
+    virtual void registerAction(const GOAPAction& action);
+    virtual void registerActionSet(const GOAPActionSet& actionSet);
     /// Register a specific action.
     /// This only holds a reference to the action itself and does not create a
     /// local copy!
-    virtual void registerGoal(const GOAPGoal& goal) { 
-        assert(!goal.vars_.empty());
-        _goals.push_back(goal); 
-    }
+    void registerGoal(const GOAPGoal& goal);
+    void registerGoalList(const GOAPGoalList& goalList);
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
-        vectorImpl<GOAPGoal>::iterator it;
+        GOAPGoalList::iterator it;
         it = std::find_if(std::begin(_goals), std::end(_goals),
                           [&goalName](const GOAPGoal& goal) -> bool {
                               return goal.getName().compare(goalName.c_str()) ==
@@ -89,12 +78,11 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
         return nullptr;
     }
 
-    inline const vectorImpl<GOAPGoal>& goalListConst() const { return _goals; }
+    inline const GOAPGoalList& goalList() const { return _goals; }
 
    protected:
     friend class AIEntity;
-    inline vectorImpl<GOAPGoal>& goalList() { return _goals; }
-    inline GOAPActionSet& actionSetPtr() { return _actionSet; }
+    inline GOAPGoalList& goalList() { return _goals; }
 
     inline void resetActiveGoals() {
         _activeGoals.clear();
@@ -176,7 +164,8 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         if (!plan.empty()) {
             _currentStep++;
-            if (!performAction(getActiveAction())) {
+            const GOAPAction* crtAction = getActiveAction();
+            if (crtAction && !performAction(*crtAction)) {
                 invalidateCurrentPlan();
                 return false;
             }
@@ -191,7 +180,7 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
         }
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         for (const GOAPAction* action : plan) {
-            if (!printActionStats(action)) {
+            if (!printActionStats(*action)) {
                 return false;
             }
         }
@@ -204,9 +193,7 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
     }
 
     inline const GOAPAction* getActiveAction() const {
-        if (_activeGoal == nullptr) {
-            return nullptr;
-        }
+        assert(_activeGoal != nullptr);
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         if (static_cast<U32>(_currentStep) >= plan.size()) {
             return nullptr;
@@ -219,8 +206,8 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
     inline const stringImpl& getPlanLog() const { return _planLog; }
 
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
-    virtual bool performAction(const GOAPAction* planStep) = 0;
-    virtual bool printActionStats(const GOAPAction* planStep) const {
+    virtual bool performAction(const GOAPAction& planStep) = 0;
+    virtual bool printActionStats(const GOAPAction& planStep) const {
         return true;
     }
     virtual void processData(const U64 deltaTime) = 0;
@@ -247,7 +234,7 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
     GOAPActionSet _actionSet;
     GOAPWorldState _worldState;
 
-    vectorImpl<GOAPGoal> _goals;
+    GOAPGoalList _goals;
     vectorImpl<GOAPGoal*> _activeGoals;
     std::atomic_bool _init;
 
