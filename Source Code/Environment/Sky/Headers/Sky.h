@@ -65,6 +65,7 @@ class Sky : public SceneNode {
                      SceneState& sceneState) override;
    private:
     bool load();
+    void AddRef() override;
 
    private:
     ShaderProgram* _skyShader;

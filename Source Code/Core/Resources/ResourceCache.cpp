@@ -6,6 +6,7 @@
 namespace Divide {
 
 ResourceCache::ResourceCache()
+    : _isReady(true)
 {
 }
 
@@ -16,6 +17,7 @@ ResourceCache::~ResourceCache() {
 }
 
 void ResourceCache::Destroy() {
+    _isReady = false;
     {
         ReadLock r_lock(_creationMutex);
         if (_resDB.empty()) {
@@ -41,6 +43,8 @@ void ResourceCache::Destroy() {
 }
 
 void ResourceCache::add(Resource* const res) {
+    assert(_isReady);
+
     const stringImpl& name = res->getName();
     DIVIDE_ASSERT(!name.empty(),
                   "ResourceCache add error: Invalid resource name!");
@@ -55,6 +59,8 @@ void ResourceCache::add(Resource* const res) {
 }
 
 Resource* ResourceCache::loadResource(const stringImpl& name) {
+    assert(_isReady);
+
     Resource* resource = find(name);
     if (resource) {
         WAIT_FOR_CONDITION(resource->getState() == ResourceState::RES_LOADED);
@@ -80,26 +86,40 @@ bool ResourceCache::remove(Resource* resource) {
         return false;
     }
 
+    bool state = true;
     stringImpl nameCpy(resource->getName());
+    
+    bool isEmpty = false;
     // If it's not in the resource database, it must've been created manually
-    ReadLock r_lock(_creationMutex);
-    if (_resDB.empty()) {
-        Console::errorfn(Locale::get(_ID("RESOURCE_CACHE_REMOVE_NO_DB")),
-                         nameCpy.c_str());
-        return false;
-    }
-    r_lock.unlock();
-    // If we can't remove it right now ...
-    if (removeInternal(resource)) {
-        WriteLock w_lock(_creationMutex);
-        _resDB.erase(_resDB.find(_ID_RT(nameCpy)));
-        w_lock.unlock();
-        MemoryManager::DELETE(resource);
+    if (_isReady) {
+        // We don't need to lock if we are shutting down
+        ReadLock r_lock(_creationMutex);
+        isEmpty = _resDB.empty();
     } else {
-        return false;
+        isEmpty = _resDB.empty();
     }
 
-    return true;
+    if (isEmpty) {
+        Console::errorfn(Locale::get(_ID("RESOURCE_CACHE_REMOVE_NO_DB")),  nameCpy.c_str());
+        state = false;
+    } else {
+        // If we can't remove it right now ...
+        if (removeInternal(resource)) {
+            if (_isReady) {
+                _creationMutex.lock_upgrade();
+            }
+            _resDB.erase(_resDB.find(_ID_RT(nameCpy)));
+            if (_isReady) {
+                _creationMutex.unlock_upgrade();
+            }
+
+            MemoryManager::DELETE(resource);
+        } else {
+            state = false;
+        }
+    }
+
+    return state;
 }
 
 bool ResourceCache::removeInternal(Resource* const resource) {

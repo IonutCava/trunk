@@ -16,7 +16,8 @@ namespace {
 };
 
 SceneGraph::SceneGraph(Scene& parentScene)
-    : FrameListener(),
+    : GUIDWrapper(),
+      FrameListener(),
      _parentScene(parentScene),
      _loadComplete(false),
      _octreeChanged(false),

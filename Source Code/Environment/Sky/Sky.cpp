@@ -36,6 +36,10 @@ Sky::~Sky()
     RemoveResource(_skybox);
 }
 
+void Sky::AddRef() {
+    TrackedObject::AddRef();
+}
+
 bool Sky::load() {
     if (_sky != nullptr) {
         return false;
@@ -60,6 +64,7 @@ bool Sky::load() {
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
     skyboxTextures.setThreadedLoading(false);
     _skybox = CreateResource<Texture>(skyboxTextures);
+    REGISTER_TRACKED_DEPENDENCY(_skybox);
 
     F32 radius = _diameter * 0.5f;
 
@@ -68,12 +73,15 @@ bool Sky::load() {
     skybox.setID(4); // resolution
     skybox.setEnumValue(to_uint(radius)); // radius
     _sky = CreateResource<Sphere3D>(skybox);
-    
+    _sky->renderState().setDrawState(false);
+
     ResourceDescriptor skyShaderDescriptor("sky.Display");
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
+    REGISTER_TRACKED_DEPENDENCY(_skyShader);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky.PrePass");
     _skyShaderPrePass = CreateResource<ShaderProgram>(skyShaderPrePassDescriptor);
+    REGISTER_TRACKED_DEPENDENCY(_skyShaderPrePass);
 
     assert(_skyShader && _skyShaderPrePass);
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
@@ -88,11 +96,8 @@ void Sky::postLoad(SceneGraphNode& sgn) {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    if (_sky == nullptr) {
-        load();
-    }
+    assert(_sky != nullptr);
 
-    _sky->renderState().setDrawState(false);
     sgn.addNode(*_sky, normalMask, PhysicsGroup::GROUP_IGNORE);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();

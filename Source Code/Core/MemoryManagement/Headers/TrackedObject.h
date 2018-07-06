@@ -47,9 +47,9 @@ namespace Divide {
 class TrackedObject : private NonCopyable, public GUIDWrapper {
    public:
     /// Increase reference count
-    void AddRef();
+    virtual void AddRef();
     /// Decrease reference count
-    bool SubRef();
+    virtual bool SubRef();
     /// How many references does this object belong to
     inline const long GetRef() const { return _refCount; }
     /// Add object dependency (dependent objects are ref counted with the parent

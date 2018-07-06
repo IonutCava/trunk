@@ -46,7 +46,7 @@ namespace Attorney {
     class SceneGraphSGN;
 };
 
-class SceneGraph : private NonCopyable, public FrameListener {
+class SceneGraph : private NonCopyable, public GUIDWrapper, public FrameListener {
     friend class Attorney::SceneGraphSGN;
    public:
     explicit SceneGraph(Scene& parentScene);
