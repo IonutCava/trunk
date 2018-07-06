@@ -81,6 +81,12 @@ class Editor : public PlatformContextComponent,
     friend class Attorney::EditorOutputWindow;
 
   public:
+    enum class Context : U8 {
+        Editor = 0,
+        Gizmo,
+        COUNT
+    };
+
     // Basically, the IMGUI default themes
     enum class Theme : U8 {
         IMGUI_Default = 0,
@@ -153,7 +159,12 @@ class Editor : public PlatformContextComponent,
     bool renderMinimal(const U64 deltaTime);
     bool renderFull(const U64 deltaTime);
     bool needInput();
+    bool hasSceneFocus();
+    bool hasSceneFocus(bool& gizmoFocus);
+    bool hasGizmoFocus();
     void checkPreviewRectState();
+    void checkPreviewRectState(bool gizmoFocus);
+    ImGuiIO& GetIO(U8 idx);
 
   protected: // window events
     bool OnClose();
@@ -204,10 +215,10 @@ class Editor : public PlatformContextComponent,
     DisplayWindow*    _mainWindow;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
-    ImGuiContext*     _imguiContext;
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 
+    std::array<ImGuiContext*, to_base(Context::COUNT)>     _imguiContext;
     std::array<vectorImpl<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
     vectorImpl<SceneGraphNode*> _selectedNodes;
 

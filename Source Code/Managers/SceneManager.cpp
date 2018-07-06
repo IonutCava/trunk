@@ -727,6 +727,9 @@ void SceneManager::onLostFocus() {
 
 void SceneManager::resetSelection(PlayerIndex idx) {
     Attorney::SceneManager::resetSelection(getActiveScene(), idx);
+    for (DELEGATE_CBK<void, U8, SceneGraphNode*>& cbk : _selectionChangeCallbacks) {
+        cbk(idx, nullptr);
+    }
 }
 
 void SceneManager::setSelected(PlayerIndex idx, SceneGraphNode& sgn) {

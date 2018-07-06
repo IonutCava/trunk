@@ -55,7 +55,6 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _currentLostFocusTheme(lostFocusTheme),
       _currentDimmedTheme(dimmedTheme),
       _mainWindow(nullptr),
-      _imguiContext(nullptr),
       _running(false),
       _sceneHovered(false),
       _sceneWasHovered(false),
@@ -69,6 +68,8 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
+    _imguiContext.fill(nullptr);
+
     _panelManager = std::make_unique<PanelManager>(context);
     _menuBar = std::make_unique<MenuBar>(context, true);
     _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
@@ -115,72 +116,77 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     }
     _activeWindowGUID = _mainWindow->getGUID();
 
-    _imguiContext = ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    unsigned char* pPixels;
-    int iWidth;
-    int iHeight;
-    io.Fonts->AddFontDefault();
-    io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
+    for (U8 i = 0; i < to_U8(Context::COUNT); ++i) {
+        _imguiContext[i] = i == 0 ? ImGui::CreateContext() : ImGui::CreateContext(GetIO(0).Fonts);
+        ImGui::SetCurrentContext(_imguiContext[i]);
 
-    SamplerDescriptor sampler;
-    sampler.setFilters(TextureFilter::LINEAR);
+        ImGuiIO& io = ImGui::GetIO();
+        if (i == 0) {
+            unsigned char* pPixels;
+            int iWidth;
+            int iHeight;
+            io.Fonts->AddFontDefault();
+            io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
 
-    TextureDescriptor descriptor(TextureType::TEXTURE_2D,
-                                 GFXImageFormat::RGBA8,
-                                 GFXDataFormat::UNSIGNED_BYTE);
-    descriptor.setSampler(sampler);
+            SamplerDescriptor sampler;
+            sampler.setFilters(TextureFilter::LINEAR);
 
-    ResourceDescriptor textureDescriptor("IMGUI_font_texture");
-    textureDescriptor.setThreadedLoading(false);
-    textureDescriptor.setFlag(true);
-    textureDescriptor.setPropertyDescriptor(descriptor);
+            TextureDescriptor descriptor(TextureType::TEXTURE_2D,
+                                         GFXImageFormat::RGBA8,
+                                         GFXDataFormat::UNSIGNED_BYTE);
+            descriptor.setSampler(sampler);
 
-    ResourceCache& parentCache = _context.kernel().resourceCache();
-    _fontTexture = CreateResource<Texture>(parentCache, textureDescriptor);
-    assert(_fontTexture);
+            ResourceDescriptor textureDescriptor("IMGUI_font_texture");
+            textureDescriptor.setThreadedLoading(false);
+            textureDescriptor.setFlag(true);
+            textureDescriptor.setPropertyDescriptor(descriptor);
 
-    Texture::TextureLoadInfo info;
-    _fontTexture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
+            ResourceCache& parentCache = _context.kernel().resourceCache();
+            _fontTexture = CreateResource<Texture>(parentCache, textureDescriptor);
+            assert(_fontTexture);
 
-    ResourceDescriptor shaderDescriptor("IMGUI");
-    shaderDescriptor.setThreadedLoading(false);
-    _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderDescriptor);
+            Texture::TextureLoadInfo info;
+            _fontTexture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
 
-    // Store our identifier
-    io.Fonts->TexID = (void *)(intptr_t)_fontTexture->getHandle();
-    io.Fonts->ClearInputData();
-    io.Fonts->ClearTexData();
+            ResourceDescriptor shaderDescriptor("IMGUI");
+            shaderDescriptor.setThreadedLoading(false);
+            _imguiProgram = CreateResource<ShaderProgram>(parentCache, shaderDescriptor);
 
-    
-    io.KeyMap[ImGuiKey_Tab] = Input::KeyCode::KC_TAB;
-    io.KeyMap[ImGuiKey_LeftArrow] = Input::KeyCode::KC_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow] = Input::KeyCode::KC_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow] = Input::KeyCode::KC_UP;
-    io.KeyMap[ImGuiKey_DownArrow] = Input::KeyCode::KC_DOWN;
-    io.KeyMap[ImGuiKey_PageUp] = Input::KeyCode::KC_PGUP;
-    io.KeyMap[ImGuiKey_PageDown] = Input::KeyCode::KC_PGDOWN;
-    io.KeyMap[ImGuiKey_Home] = Input::KeyCode::KC_HOME;
-    io.KeyMap[ImGuiKey_End] = Input::KeyCode::KC_END;
-    io.KeyMap[ImGuiKey_Delete] = Input::KeyCode::KC_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = Input::KeyCode::KC_BACK;
-    io.KeyMap[ImGuiKey_Enter] = Input::KeyCode::KC_RETURN;
-    io.KeyMap[ImGuiKey_Escape] = Input::KeyCode::KC_ESCAPE;
-    io.KeyMap[ImGuiKey_Space] = Input::KeyCode::KC_SPACE;
-    io.KeyMap[ImGuiKey_A] = Input::KeyCode::KC_A;
-    io.KeyMap[ImGuiKey_C] = Input::KeyCode::KC_C;
-    io.KeyMap[ImGuiKey_V] = Input::KeyCode::KC_V;
-    io.KeyMap[ImGuiKey_X] = Input::KeyCode::KC_X;
-    io.KeyMap[ImGuiKey_Y] = Input::KeyCode::KC_Y;
-    io.KeyMap[ImGuiKey_Z] = Input::KeyCode::KC_Z;
-    io.SetClipboardTextFn = SetClipboardText;
-    io.GetClipboardTextFn = GetClipboardText;
-    io.ClipboardUserData = nullptr;
-    io.RenderDrawListsFn = nullptr;
-    io.ImeWindowHandle = _mainWindow->handle()._handle;
-    io.DisplaySize = ImVec2((float)renderResolution.width, (float)renderResolution.height);
-    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+            // Store our identifier
+            io.Fonts->TexID = (void *)(intptr_t)_fontTexture->getHandle();
+            io.Fonts->ClearInputData();
+            io.Fonts->ClearTexData();
+        }
 
+        io.KeyMap[ImGuiKey_Tab] = Input::KeyCode::KC_TAB;
+        io.KeyMap[ImGuiKey_LeftArrow] = Input::KeyCode::KC_LEFT;
+        io.KeyMap[ImGuiKey_RightArrow] = Input::KeyCode::KC_RIGHT;
+        io.KeyMap[ImGuiKey_UpArrow] = Input::KeyCode::KC_UP;
+        io.KeyMap[ImGuiKey_DownArrow] = Input::KeyCode::KC_DOWN;
+        io.KeyMap[ImGuiKey_PageUp] = Input::KeyCode::KC_PGUP;
+        io.KeyMap[ImGuiKey_PageDown] = Input::KeyCode::KC_PGDOWN;
+        io.KeyMap[ImGuiKey_Home] = Input::KeyCode::KC_HOME;
+        io.KeyMap[ImGuiKey_End] = Input::KeyCode::KC_END;
+        io.KeyMap[ImGuiKey_Delete] = Input::KeyCode::KC_DELETE;
+        io.KeyMap[ImGuiKey_Backspace] = Input::KeyCode::KC_BACK;
+        io.KeyMap[ImGuiKey_Enter] = Input::KeyCode::KC_RETURN;
+        io.KeyMap[ImGuiKey_Escape] = Input::KeyCode::KC_ESCAPE;
+        io.KeyMap[ImGuiKey_Space] = Input::KeyCode::KC_SPACE;
+        io.KeyMap[ImGuiKey_A] = Input::KeyCode::KC_A;
+        io.KeyMap[ImGuiKey_C] = Input::KeyCode::KC_C;
+        io.KeyMap[ImGuiKey_V] = Input::KeyCode::KC_V;
+        io.KeyMap[ImGuiKey_X] = Input::KeyCode::KC_X;
+        io.KeyMap[ImGuiKey_Y] = Input::KeyCode::KC_Y;
+        io.KeyMap[ImGuiKey_Z] = Input::KeyCode::KC_Z;
+        io.SetClipboardTextFn = SetClipboardText;
+        io.GetClipboardTextFn = GetClipboardText;
+        io.ClipboardUserData = nullptr;
+        io.ImeWindowHandle = _mainWindow->handle()._handle;
+        io.DisplaySize = ImVec2((float)renderResolution.width, (float)renderResolution.height);
+        io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+    }
+
+    ImGui::SetCurrentContext(_imguiContext[to_base(Context::Editor)]);
     _panelManager->init(_mainWindow->getDrawableSize());
 
     ImGui::ResetStyle(imguiThemeMap[to_base(_currentTheme)]);
@@ -209,9 +215,12 @@ void Editor::close() {
     _fontTexture.reset();
     _imguiProgram.reset();
     _panelManager->destroy();
-    if (_imguiContext != nullptr) {
-        ImGui::DestroyContext();
-        _imguiContext = nullptr;
+    for (U8 i = 0; i < to_base(Context::COUNT); ++i) {
+        if (_imguiContext[i] != nullptr) {
+            ImGui::SetCurrentContext(_imguiContext[i]);
+            ImGui::DestroyContext(_imguiContext[i]);
+            _imguiContext[i] = nullptr;
+        }
     }
 }
 
@@ -231,13 +240,15 @@ bool Editor::shouldPauseSimulation() const {
 }
 
 void Editor::update(const U64 deltaTimeUS) {
-    if (!needInput()) {
-        return;
-    }
     Time::ScopedTimer timer(_editorUpdateTimer);
-    {
-        ImGuiIO& io = ImGui::GetIO();
+
+    for (U8 i = 0; i < to_U8(Context::COUNT); ++i) {
+        ImGuiIO& io = GetIO(i);
         io.DeltaTime = Time::MicrosecondsToSeconds<float>(deltaTimeUS);
+
+        if (!needInput()) {
+            continue;
+        }
 
         ToggleCursor(!io.MouseDrawCursor);
         if (io.MouseDrawCursor)
@@ -275,8 +286,6 @@ void Editor::update(const U64 deltaTimeUS) {
         if (io.WantMoveMouse) {
             context().app().windowManager().setCursorPosition((int)io.MousePos.x, (int)io.MousePos.y);
         }
-
-        //_scenePreviewRect = _platform
     }
 }
 
@@ -309,13 +318,15 @@ bool Editor::renderGizmos(const U64 deltaTime) {
         if (sgn != nullptr) {
             TransformComponent* const transform = sgn->get<TransformComponent>();
             if (transform != nullptr) {
-                const ImGuiIO& io = ImGui::GetIO();
                 const Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
                 const mat4<F32>& cameraView = camera->getViewMatrix();
                 const mat4<F32>& cameraProjection = camera->getProjectionMatrix();
-
                 mat4<F32> matrix(transform->getWorldMatrix());
 
+                ImGui::SetCurrentContext(_imguiContext[to_base(Context::Gizmo)]);
+                ImGui::NewFrame();
+                ImGuizmo::BeginFrame();
+                const ImGuiIO& io = GetIO(to_base(Context::Gizmo));
                 ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
                 ImGuizmo::Manipulate(cameraView,
@@ -330,6 +341,9 @@ bool Editor::renderGizmos(const U64 deltaTime) {
                 ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
                 values._orientation.fromEuler(euler);
                 transform->setTransform(values);
+
+                ImGui::Render();
+                renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID(), false);
 
                 return true;
             }
@@ -354,38 +368,25 @@ bool Editor::renderMinimal(const U64 deltaTime) {
 bool Editor::renderFull(const U64 deltaTime) {
     drawMenuBar();
     _panelManager->draw(deltaTime);
-    return renderMinimal(deltaTime);
+    renderMinimal(deltaTime);
+    return true;
 }
 
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
 
-    if (!_running) {
-    //    return true;
-    }
+    //if (!_running) {
+    //  return true;
+    //}
 
-    _gizmosVisible = false;
-    if (!_selectedNodes.empty()) {
-        SceneGraphNode* sgn = _selectedNodes.front();
-        if (sgn != nullptr) {
-
-            ImGui::NewFrame();
-            ImGuizmo::BeginFrame();
-            if (renderGizmos(evt._timeSinceLastFrameUS)) {
-                ImGui::Render();
-                renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID(), false);
-                _gizmosVisible = true;
-            }
-        }
-    }
-
+    _gizmosVisible = renderGizmos(evt._timeSinceLastFrameUS);
     return true;
 }
 
 bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     Time::ScopedTimer timer(_editorRenderTimer);
     {
+        ImGui::SetCurrentContext(_imguiContext[to_base(Context::Editor)]);
         ImGui::NewFrame();
-        ImGuizmo::BeginFrame();
     }
     
     if (!_running) {
@@ -595,10 +596,13 @@ bool Editor::toggleScenePreview(bool state) {
 }
 
 void Editor::checkPreviewRectState() {
-    bool hovered = ImGuizmo::IsOver();
-    if (!hovered) {
-        hovered = _scenePreviewRect.contains(ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
-    }
+    checkPreviewRectState(hasGizmoFocus());
+}
+
+void Editor::checkPreviewRectState(bool gizmoFocus) {
+    bool hovered = gizmoFocus ||
+                   _scenePreviewRect.contains(ImGui::GetIO().MousePos.x,
+                                              ImGui::GetIO().MousePos.y);
 
     if (_sceneWasHovered != hovered) {
         _sceneWasHovered = _sceneHovered;
@@ -614,7 +618,8 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
     if (idx == 0) {
         if (node == nullptr) {
             _selectedNodes.resize(0);
-        } else {
+        }
+        else {
             _selectedNodes.push_back(node);
         }
     }
@@ -622,11 +627,11 @@ void Editor::selectionChangeCallback(PlayerIndex idx, SceneGraphNode* node) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!needInput() || _scenePreviewFocused) {
+    if (!needInput()) {
         return false;
     }
 
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO& io = GetIO(hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor));
     io.KeysDown[key._key] = true;
 
     io.KeyCtrl = key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL;
@@ -634,18 +639,16 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
     io.KeyAlt = key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU;
     io.KeySuper = false;
 
-    
-    bool ret = ImGui::GetIO().WantCaptureKeyboard;
-    return ret;
+    return io.WantCaptureKeyboard;
 }
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!needInput() || _scenePreviewFocused) {
+    if (!needInput()) {
         return false;
     }
 
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO& io = GetIO(hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor));
     io.KeysDown[key._key] = false;
 
     if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
@@ -662,8 +665,7 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 
     io.KeySuper = false;
 
-    bool ret = ImGui::GetIO().WantCaptureKeyboard;
-    return ret;
+    return io.WantCaptureKeyboard;
 }
 
 /// Mouse moved: return true if input was consumed
@@ -672,32 +674,33 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
         return false;
     }
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.MousePos = ImVec2((float)arg.X(false).abs,
-                         (float)arg.Y(false).abs);
-    io.MouseWheel += (float)arg.Z(false).rel / 60.0f;
-
-    checkPreviewRectState();
-
-    if (_scenePreviewFocused) {
-        return false;
+    for (U8 i = 0; i < to_base(Context::COUNT); ++i) {
+        ImGuiIO& io = GetIO(i);
+        io.MousePos.x  = (float)arg.X(i == 1).abs;
+        io.MousePos.y  = (float)arg.Y(i == 1).abs;
+        io.MouseWheel += (float)arg.Z(i == 1).rel / 60.0f;
     }
 
-    return ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsUsing();
+    bool gizmoFocus = false;
+    bool sceneFocus = hasSceneFocus(gizmoFocus);
+    checkPreviewRectState(gizmoFocus);
+
+    return sceneFocus ? gizmoFocus : GetIO(to_base(Context::Editor)).WantCaptureMouse;
 }
 
 /// Mouse button pressed: return true if input was consumed
 bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
     ACKNOWLEDGE_UNUSED(arg);
 
-    if (!needInput() || _scenePreviewFocused) {
+    if (!needInput()) {
         return false;
     }
 
+    ImGui::SetCurrentContext(_imguiContext[hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor)]);
     ImGuiIO& io = ImGui::GetIO();
-    io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
 
-    return  ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver();
+    io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
+    return io.WantCaptureMouse || ImGuizmo::IsOver();
 }
 
 /// Mouse button released: return true if input was consumed
@@ -712,23 +715,17 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
         return false;
     }
 
+    ImGui::SetCurrentContext(_imguiContext[hasSceneFocus() ? to_U8(Context::Gizmo) : to_U8(Context::Editor)]);
     ImGuiIO& io = ImGui::GetIO();
+
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = false;
 
-    if (!_scenePreviewFocused) {
-        return  ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver();
-    }
-
-    return false;
+    return io.WantCaptureMouse || ImGuizmo::IsOver();
 }
 
 bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg, Input::JoystickButton button) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(button);
-
-    if (!needInput() || _scenePreviewFocused) {
-        return false;
-    }
 
     return false;
 }
@@ -737,20 +734,12 @@ bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg, Input::Joys
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(button);
 
-    if (!needInput() || _scenePreviewFocused) {
-        return false;
-    }
-
     return false;
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(axis);
-
-    if (!needInput() || _scenePreviewFocused) {
-        return false;
-    }
 
     return false;
 }
@@ -759,20 +748,12 @@ bool Editor::joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(pov);
 
-    if (!needInput() || _scenePreviewFocused) {
-        return false;
-    }
-
     return false;
 }
 
 bool Editor::joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(index);
-
-    if (!needInput() || _scenePreviewFocused) {
-        return false;
-    }
 
     return false;
 }
@@ -781,43 +762,34 @@ bool Editor::joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(index);
 
-    if (!needInput() || _scenePreviewFocused) {
-        return false;
-    }
-
     return false;
 }
 
 bool Editor::OnClose() {
-    if (!needInput()) {
-        return false;
-    }
-
-    return true;
+    return needInput();
 }
 
 void Editor::OnFocus(bool bHasFocus) {
-    if (!needInput()) {
-        return;
-    }
-
     ACKNOWLEDGE_UNUSED(bHasFocus);
 }
 
 void Editor::onSizeChange(const SizeChangeParams& params) {
     if (_mainWindow != nullptr) {
-        ImGuiIO& io = ImGui::GetIO();
-        if (params.isWindowResize) {
-            _panelManager->resize(params.width, params.height);
-        } else {
-            io.DisplaySize.x = (float)params.width;
-            io.DisplaySize.y = (float)params.height;
-        }
+        for (U8 i = 0; i < to_U8(Context::COUNT); ++i) {
+            ImGuiIO& io = GetIO(i);
 
-        vec2<U16> renderResolution = context().gfx().renderingResolution();
-        vec2<U16> display_size = _mainWindow->getDrawableSize();
-        io.DisplayFramebufferScale.x = params.width > 0 ? ((float)display_size.w / renderResolution.width) : 0;
-        io.DisplayFramebufferScale.y = params.height > 0 ? ((float)display_size.h / renderResolution.height) : 0;
+            if (params.isWindowResize && i == 0) {
+                _panelManager->resize(params.width, params.height);
+            } else {
+                io.DisplaySize.x = (float)params.width;
+                io.DisplaySize.y = (float)params.height;
+            }
+
+            vec2<U16> renderResolution = context().gfx().renderingResolution();
+            vec2<U16> display_size = _mainWindow->getDrawableSize();
+            io.DisplayFramebufferScale.x = params.width > 0 ? ((float)display_size.w / renderResolution.width) : 0;
+            io.DisplayFramebufferScale.y = params.height > 0 ? ((float)display_size.h / renderResolution.height) : 0;
+        }
     }
 }
 
@@ -831,8 +803,7 @@ void Editor::OnUTF8(const char* text) {
         return;
     }
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.AddInputCharactersUTF8(text);
+    GetIO(hasSceneFocus() ? to_base(Context::Gizmo) : to_base(Context::Editor)).AddInputCharactersUTF8(text);
 }
 
 void Editor::drawIMGUIDebug(const U64 deltaTime) {
@@ -861,6 +832,33 @@ void Editor::drawIMGUIDebug(const U64 deltaTime) {
 }
 
 bool Editor::needInput() {
-    return _running || showDebugWindow() || showSampleWindow() || _gizmosVisible;
+    return _running || _gizmosVisible || showDebugWindow() || showSampleWindow();
 }
+
+bool Editor::hasGizmoFocus() {
+    ImGuiContext* crtContext = ImGui::GetCurrentContext();
+    ImGui::SetCurrentContext(_imguiContext[to_base(Context::Gizmo)]);
+    bool imguizmoState = ImGuizmo::IsUsing();
+    if (imguizmoState) {
+        int a;
+        a = 5;
+    }
+    ImGui::SetCurrentContext(crtContext);
+    return imguizmoState;
+}
+
+bool Editor::hasSceneFocus(bool& gizmoFocus) {
+    gizmoFocus = hasGizmoFocus();
+    return _scenePreviewFocused || !_running || gizmoFocus;
+}
+
+bool Editor::hasSceneFocus() {
+    return _scenePreviewFocused || !_running || hasGizmoFocus();
+}
+
+ImGuiIO& Editor::GetIO(U8 idx) {
+    assert(idx < _imguiContext.size());
+    return _imguiContext[idx]->IO;
+}
+
 }; //namespace Divide
