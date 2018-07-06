@@ -423,7 +423,7 @@ private:
 
     ErrorCode createAPIInstance();
 
-    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, bool isOcclusionCullable);
+    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, const SceneRenderState& renderState, bool isOcclusionCullable);
 
 private:
     std::unique_ptr<RenderAPIWrapper> _api;

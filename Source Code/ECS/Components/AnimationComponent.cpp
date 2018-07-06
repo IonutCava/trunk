@@ -12,7 +12,7 @@ AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN)
       _playAnimations(true),
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
-      _currentAnimIndex(0),
+      _currentAnimIndex(-1),
       _previousFrameIndex(0),
       _previousAnimationIndex(-1)
 {
@@ -32,6 +32,10 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
     }
 
     _currentTimeStamp = _parentTimeStamp;
+
+    if (_playAnimations && _currentAnimIndex == -1) {
+        playAnimation(0);
+    }
 
     // Update Animations
     if (_playAnimations) {
@@ -67,12 +71,24 @@ bool AnimationComponent::playAnimation(const stringImpl& name) {
         return false;
     }
 
-    U32 animIndex = 0;
-    I32 oldIndex = _currentAnimIndex;
+    return playAnimation(_animator->animationID(name));
+}
 
-    if (_animator->animationID(name, animIndex)) {
-        _currentAnimIndex = animIndex;
+/// Select an animation by index
+bool AnimationComponent::playAnimation(I32 pAnimIndex) {
+    if (!_animator) {
+        return false;
     }
+
+    if (pAnimIndex >= to_I32(_animator->animations().size())) {
+        return false;  // no change, or the animations data is out of bounds
+    }
+
+    I32 oldIndex = _currentAnimIndex;
+    _currentAnimIndex = pAnimIndex;  // only set this after the checks for good
+                                     // data and the object was actually
+                                     // inserted
+
     if (_currentAnimIndex == -1) {
         _currentAnimIndex = 0;
     }
@@ -85,24 +101,6 @@ bool AnimationComponent::playAnimation(const stringImpl& name) {
     }
 
     return false;
-}
-
-/// Select an animation by index
-bool AnimationComponent::playAnimation(I32 pAnimIndex) {
-    if (!_animator) {
-        return false;
-    }
-
-    if (pAnimIndex >= to_I32(_animator->animations().size())) {
-        return false;  // no change, or the animations data is out of bounds
-    }
-    I32 oldIndex = _currentAnimIndex;
-    _currentAnimIndex = pAnimIndex;  // only set this after the checks for good
-                                     // data and the object was actually
-                                     // inserted
-    resetTimers();
-
-    return oldIndex != _currentAnimIndex;
 }
 
 /// Select next available animation

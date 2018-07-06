@@ -100,8 +100,7 @@ class Object3D : public SceneNode {
     }
     /// Use playAnimations() to toggle animation playback for the current object
     /// (and all subobjects) on or off
-    inline void playAnimations(const bool state) { _playAnimations = state; }
-    inline bool playAnimations() const { return _playAnimations; }
+    virtual void playAnimations(const SceneGraphNode& sgn, const bool state);
 
     inline void setGeometryPartitionID(size_t ID) {
         _geometryPartitionID = to_U16(ID);
@@ -150,7 +149,6 @@ class Object3D : public SceneNode {
                                    RenderPackage& pkgInOut) override;
    protected:
     GFXDevice& _context;
-    bool _playAnimations;
     U32 _geometryFlagMask;
     U16 _geometryPartitionID;
     ObjectType _geometryType;

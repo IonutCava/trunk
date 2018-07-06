@@ -71,13 +71,11 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
 /// Called from SceneGraph "sceneUpdate"
 void Mesh::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     if (getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
-        bool playAnimations = sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS) && _playAnimations;
-        sgn.forEachChild([playAnimations, deltaTimeUS](const SceneGraphNode& child) {
-            AnimationComponent* comp = child.get<AnimationComponent>();
+        sgn.forEachChild([deltaTimeUS](const SceneGraphNode& child) {
+            AnimationComponent* animComp = child.get<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
-            if (comp) {
-                comp->playAnimations(playAnimations && comp->playAnimations());
-                comp->incParentTimeStamp(deltaTimeUS);
+            if (animComp) {
+                animComp->incParentTimeStamp(deltaTimeUS);
             }
         });
     }

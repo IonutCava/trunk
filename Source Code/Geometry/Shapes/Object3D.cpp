@@ -30,7 +30,6 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descri
     _context(context),
     _geometryDirty(true),
     _buffer(nullptr),
-    _playAnimations(true),
     _geometryType(type),
     _geometryFlagMask(flagMask),
     _geometryPartitionID(0U)
@@ -237,6 +236,22 @@ vector<SceneGraphNode*> Object3D::filterByType(const vector<SceneGraphNode*>& no
     };
 
     return result;
+}
+
+void Object3D::playAnimations(const SceneGraphNode& sgn, const bool state) {
+    if (getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
+        AnimationComponent* animComp = sgn.get<AnimationComponent>();
+        if (animComp != nullptr) {
+            animComp->playAnimations(state);
+        }
+        sgn.forEachChild([state](const SceneGraphNode& child) {
+            AnimationComponent* animComp = child.get<AnimationComponent>();
+            // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
+            if (animComp != nullptr) {
+                animComp->playAnimations(state && animComp->playAnimations());
+            }
+        });
+    }
 }
 
 };

@@ -138,14 +138,12 @@ class SceneAnimator {
         return _animations[animationIndex]->name();
     }
 
-    inline bool animationID(const stringImpl& animationName, U32& ID) {
-        hashMap<U64, U32>::iterator itr =
-            _animationNameToID.find(_ID_RT(animationName));
+    inline I32 animationID(const stringImpl& animationName) {
+        hashMap<U64, U32>::iterator itr = _animationNameToID.find(_ID_RT(animationName));
         if (itr != std::end(_animationNameToID)) {
-            ID = itr->second;
-            return true;
+            return itr->second;
         }
-        return false;
+        return -1;
     }
     /// GetBoneTransform will return the matrix of the bone given its name and
     /// the time.

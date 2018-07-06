@@ -94,11 +94,10 @@ void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& p
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, bool isOcclusionCullable) {
+GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex, const Camera& camera, const SceneRenderState& renderState, bool isOcclusionCullable) {
     NodeData& dataOut = _matricesData[dataIndex];
 
     RenderingComponent* const renderable = node.get<RenderingComponent>();
-    AnimationComponent* const animComp   = node.get<AnimationComponent>();
     TransformComponent* const transform  = node.get<TransformComponent>();
 
     // Extract transform data (if available)
@@ -126,7 +125,12 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp ? animComp->boneCount() : 0);
+    if (renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS)) {
+        AnimationComponent* const animComp = node.get<AnimationComponent>();
+        dataOut._normalMatrixWV.element(0, 3) = to_F32(animComp && animComp->playAnimations() ? animComp->boneCount() : 0);
+    } else {
+        dataOut._normalMatrixWV.element(0, 3) = 0.0f;
+    }
     dataOut._normalMatrixWV.setRow(3, node.get<BoundsComponent>()->getBoundingSphere().asVec4());
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
@@ -184,7 +188,7 @@ void GFXDevice::buildDrawCommands(const BuildDrawCommandsParams& params)
                 if (params._refreshNodeData) {
                     Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, params._renderStagePass, cmdCount, nodeCount);
 
-                    processVisibleNode(*node, nodeCount, *params._camera, pkg.isOcclusionCullable());
+                    processVisibleNode(*node, nodeCount, *params._camera, *params._sceneRenderState, pkg.isOcclusionCullable());
 
                     for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
                         const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
