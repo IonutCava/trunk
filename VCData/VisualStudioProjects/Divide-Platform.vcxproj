@@ -159,7 +159,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLError.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLFWWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glIMPrimitive.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glLockManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glResources.cpp" />
@@ -167,6 +166,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glsw\bstrlib.c" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glsw\glsw.c" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\glShader.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\glShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Textures\glSamplerOject.cpp" />

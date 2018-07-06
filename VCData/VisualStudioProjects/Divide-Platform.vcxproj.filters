@@ -276,9 +276,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLError.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLFWWrapper.cpp">
-      <Filter>Video\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glIMPrimitive.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
@@ -410,6 +407,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesWindows.cpp">
       <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWrapper.cpp">
+      <Filter>Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
