@@ -52,6 +52,9 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
     defaultReflectionTexture(nullptr, 0);
     defaultRefractionTexture(nullptr, 0);
 
+    setShaderDefines(RenderStage::SHADOW, "SHADOW_PASS");
+    setShaderDefines(RenderPassType::DEPTH_PASS, "DEPTH_PASS");
+
     _operation = TextureOperation::NONE;
 
     /// Normal state for final rendering
@@ -199,7 +202,6 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
     return true;
 }
-
 
 
 void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
@@ -392,10 +394,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
     }
 
     if (depthPassShader && renderStagePass.stage() == RenderStage::SHADOW) {
-        setShaderDefines(renderStagePass, "SHADOW_PASS");
         shader += ".Shadow";
-    } else {
-        setShaderDefines(renderStagePass, "DEPTH_PASS");
     }
 
     // What kind of effects do we need?

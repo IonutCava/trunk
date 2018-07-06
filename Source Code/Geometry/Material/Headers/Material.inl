@@ -89,6 +89,18 @@ inline void Material::addShaderModifier(const stringImpl& shaderModifier) {
     }
 }
 
+inline void Material::setShaderDefines(RenderPassType passType, const stringImpl& shaderDefines) {
+    for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
+        setShaderDefines(RenderStagePass(static_cast<RenderStage>(i), passType), shaderDefines);
+    }
+}
+
+inline void Material::setShaderDefines(RenderStage renderStage, const stringImpl& shaderDefines) {
+    for (U8 i = 0; i < to_U8(RenderPassType::COUNT); ++i) {
+        setShaderDefines(RenderStagePass(renderStage, static_cast<RenderPassType>(i)), shaderDefines);
+    }
+}
+
 inline void Material::setShaderDefines(const RenderStagePass& renderStagePass, const stringImpl& shaderDefines) {
     vectorImpl<stringImpl>& defines = shaderInfo(renderStagePass)._shaderDefines;
     if (std::find(std::cbegin(defines), std::cend(defines), shaderDefines) == std::cend(defines)) {

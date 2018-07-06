@@ -184,6 +184,8 @@ class Material : public CachedResource {
     /// The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4
     ///#define MAX_SHADOW_CASTERS 2
+    void setShaderDefines(RenderPassType passType, const stringImpl& shaderDefines);
+    void setShaderDefines(RenderStage renderStage, const stringImpl& shaderDefines);
     void setShaderDefines(const RenderStagePass& renderStagePass, const stringImpl& shaderDefines);
 
     void setShaderDefines(const stringImpl& shaderDefines);

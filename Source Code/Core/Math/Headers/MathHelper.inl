@@ -235,6 +235,8 @@ template <typename T,
           typename Engine,
           typename Distribution>
 T Random(T min, T max) {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be randomized!");
+
     if (min > max) {
         std::swap(min, max);
     }
@@ -246,6 +248,8 @@ template <typename T,
           typename Engine,
           typename Distribution>
 T Random(T max) {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be randomized!");
+
     return Random<T, Engine, Distribution>(max < 0 ? std::numeric_limits<T>::min() : 0, max);
 }
 
@@ -253,6 +257,8 @@ template <typename T,
           typename Engine,
           typename Distribution>
 T Random() {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be randomized!");
+
     return Random<T, Engine, Distribution>(std::numeric_limits<T>::max());
 }
 
@@ -269,12 +275,23 @@ void SeedRandom(U32 seed) {
 /// Clamps value n between min and max
 template <typename T>
 void CLAMP(T& n, const T min, const T max) {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be clamped!");
     n = std::min(std::max(n, min), max);
 }
 
 template <typename T>
 T CLAMPED(const T& n, const T min, const T max) {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be clamped!");
+
     return std::min(std::max(n, min), max);
+}
+
+template <typename T>
+T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) {
+    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be mapped!");
+
+    D64 slope = 1.0 * (output_end - output_start) / (input_end - input_start);
+    return static_cast<T>(output_start + std::round(slope * (input - input_start)));
 }
 
 template<typename T>
