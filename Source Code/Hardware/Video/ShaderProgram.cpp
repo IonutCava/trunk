@@ -18,7 +18,7 @@ bool ShaderProgram::checkBinding(U32 newShaderProgramId){
 }
 
 ShaderProgram::~ShaderProgram(){
-	D_PRINT_FN("Removing shader program [ %s ]", getName().c_str());
+	D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
 	for_each(Shader* s, _shaders){
 		ShaderManager::getInstance().removeShader(s);
 	}

@@ -27,7 +27,7 @@ class SceneGraph  {
 	SceneGraph();
 
 	~SceneGraph(){
-		PRINT_FN("Deleting SceneGraph");
+		PRINT_FN(Locale::get("DELETE_SCENEGRAPH"));
 
 		_root->unload(); ///< Should recursivelly call unload on the entire scene graph
 		///Should recursivelly call delete on the entire scene graph

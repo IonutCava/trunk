@@ -44,8 +44,7 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
 	F32 waterDepth = GET_ACTIVE_SCENE()->getWaterDepth();
 	bb.set(vec3<F32>(-_farPlane,_waterLevel - waterDepth, -_farPlane),vec3<F32>(_farPlane, _waterLevel, _farPlane));
 	_planeSGN->getBoundingBox().Add(bb);
-	PRINT_FN("Water plane height placement: %f", bb.getMax().y);
-	PRINT_FN("Water plane depth level: %f", bb.getMin().y);
+	PRINT_FN(Locale::get("WATER_CREATE_DETAILS"), bb.getMax().y,bb.getMin().y);
 	bool state = SceneNode::computeBoundingBox(sgn);
 	_shader->bind();
 		_shader->Uniform("water_bb_min",bb.getMin());

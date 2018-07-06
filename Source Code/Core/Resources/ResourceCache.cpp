@@ -4,13 +4,13 @@
 
 ResourceCache::~ResourceCache(){
 	Destroy();
-	PRINT_FN("Deleting resource cache ...");
+	PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));
 }
 
 void ResourceCache::add(const std::string& name,Resource* const res){
 	UpgradableReadLock ur_lock(_creationMutex);
 	if(res == NULL) {
-		ERROR_FN("ResourceCache: Resource [ %s ] creation failed!",name.c_str());
+		ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_LOAD_RES"),name.c_str());
 		return;
 	}
 	UpgradeToWriteLock uw_lock(ur_lock);
@@ -24,9 +24,9 @@ Resource* ResourceCache::loadResource(const std::string& name){
 	if(res){
 		res = _resDB[name];
 		res->AddRef();
-		D_PRINT_FN("ResourceCache: returning resource [ %s ]. Ref count: %d",name.c_str(),res->getRefCount());
+		D_PRINT_FN(Locale::get("RESOURCE_CACHE_GET_RES_INC"),name.c_str(),res->getRefCount());
 	}else{
-		PRINT_FN("ResourceCache: loading resource [ %s ]",name.c_str());
+		PRINT_FN(Locale::get("RESOURCE_CAHCE_GET_RES"),name.c_str());
 	}
 
 	return res;
@@ -70,7 +70,7 @@ bool ResourceCache::remove(Resource* const resource,bool force){
 	std::string name(resource->getName());
 
 	if(name.empty()){
-		ERROR_FN("ResourceCache: Trying to remove resource with invalid name!");
+		ERROR_FN(Locale::get("ERROR_RESOURCE_CACHE_INVALID_NAME"));
 		return true; //delete pointer
 	}
 
@@ -78,19 +78,19 @@ bool ResourceCache::remove(Resource* const resource,bool force){
 		U32 refCount = resource->getRefCount();
 		if(refCount > 1 && !force) {
 			resource->SubRef();
-			D_PRINT_FN("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),refCount);
+			D_PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES_DEC"),name.c_str(),refCount);
 			return false; //do not delete pointer
 		}else{
-			PRINT_FN("Removing resource: [ %s ].",name.c_str());
+			PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES"),name.c_str());
 			if(resource->unload()){
 				return true;
 			}else{
-				ERROR_FN("Resource [ %s ] not unloaded succesfully!", name.c_str());
+				ERROR_FN(Locale::get("ERROR_RESOURCE_REM"), name.c_str());
 				return force;
 			}
 		}
 	}
 	
-	ERROR_FN("ResourceCache: resource [ %s ] not found in database!",name.c_str());
+	ERROR_FN(Locale::get("ERROR_RESOURCE_REM_NOT_FOUND"),name.c_str());
 	return force;
 }

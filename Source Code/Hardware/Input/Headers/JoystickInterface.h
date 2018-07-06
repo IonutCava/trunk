@@ -56,7 +56,7 @@ class JoystickInterface {
 	  {
 		//Create the stick
 		OIS::JoyStick* pJoy = (OIS::JoyStick*)pInputInterface->createInputObject( OIS::OISJoyStick, true );
-		PRINT_FN("Created buffered joystick # %d '%s' (Id='%d')",nJoyInd,pJoy->vendor(),pJoy->getID());
+		PRINT_FN(Locale::get("INPUT_CREATE_BUFF_JOY"),nJoyInd,pJoy->vendor(),pJoy->getID());
 		
 		// Check for FF, and if so, keep the joy and dump FF info
 		OIS::ForceFeedback* pFFDev = (OIS::ForceFeedback*)pJoy->queryInterface(OIS::Interface::ForceFeedback );
@@ -72,19 +72,19 @@ class JoystickInterface {
 		  _vecFFDev.push_back(pFFDev);
 		  
 		  // Dump FF supported effects and other info.
-		  PRINT_FN(" * Number of force feedback axes : %d", pFFDev->getFFAxesNumber());
+		  PRINT_FN(Locale::get("INPUT_JOY_NUM_FF_AXES"), pFFDev->getFFAxesNumber());
 		  const OIS::ForceFeedback::SupportedEffectList &lstFFEffects = 
 			pFFDev->getSupportedEffects();
 		  if (lstFFEffects.size() > 0)
 		  {
-			  PRINT_F(" * Supported effects :");
+			  PRINT_F(Locale::get("INPUT_JOY_SUPPORTED_EFFECTS"));
 			OIS::ForceFeedback::SupportedEffectList::const_iterator itFFEff;
 			for(itFFEff = lstFFEffects.begin(); itFFEff != lstFFEffects.end(); ++itFFEff)
 				PRINT_F(" %s",OIS::Effect::getEffectTypeName(itFFEff->second));
 			PRINT_F("\n");//Double new line - Ionut
 		  }
 		  else
-			  D_PRINT_FN("Warning: no supported effect found !");
+			  D_PRINT_FN(Locale::get("WARN_INPUT_NO_SUPPORTED_EFFECTS"));
 		}
 		/*else
 		{

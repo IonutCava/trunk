@@ -10,7 +10,7 @@
 #include "Hardware/Video/RenderStateBlock.h"
 
 Vegetation::~Vegetation(){
-	PRINT_FN("Destroying vegetation for terrain [ %s ] ...",_terrain->getNode<Terrain>()->getName().c_str());
+	PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getNode<Terrain>()->getName().c_str());
 	for(U8 i = 0; i < _grassVBO.size(); i++){
 		SAFE_DELETE(_grassVBO[i]);
 	}
@@ -22,7 +22,7 @@ Vegetation::~Vegetation(){
 
 	SAFE_DELETE(_grassStateBlock);
 
-	PRINT_FN("... destruction complete!");
+	PRINT_FN(Locale::get("UNLOAD_VEGETATION_END"));
 }
 
 void Vegetation::initialize(const std::string& grassShader,const std::string& terrainName)
@@ -75,7 +75,7 @@ void Vegetation::draw(bool drawInReflection){
 
 
 bool Vegetation::generateGrass(U32 index){
-	PRINT_FN("Generating Grass...[ %d ]", (U32)_grassDensity);
+	PRINT_FN(Locale::get("CREATE_GRASS_BEGIN"), (U32)_grassDensity);
 	assert(_map.data);
 	vec2<F32> pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
 	vec2<F32> pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
@@ -160,7 +160,7 @@ bool Vegetation::generateGrass(U32 index){
 		_grassShader->Uniform("scale", _grassSize);
 	_grassShader->unbind();
 
-	PRINT_FN("Generating Grass OK");
+	PRINT_FN(Locale::get("CREATE_GRASS_END"));
 	return ret;
 }
 
@@ -170,10 +170,10 @@ bool Vegetation::generateTrees(){
 	//<-- End unique position generation
 	std::vector<FileData>& DA = GET_ACTIVE_SCENE()->getVegetationDataArray();
 	if(DA.empty()){
-		ERROR_F("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
+		ERROR_FN(Locale::get("ERROR_CREATE_TREE_NO_GEOM"));
 		return true;
 	}
-	PRINT_F("Generating Vegetation... [ %f ]\n", _treeDensity);
+	PRINT_FN(Locale::get("CREATE_TREE_START"), _treeDensity);
 
 	for(U16 k=0; k<(U16)_treeDensity; k++) {
 		I16 map_x = (I16)random((F32)_map.w);
@@ -211,7 +211,7 @@ bool Vegetation::generateTrees(){
 	}
 	
 	positions.clear();
-	PRINT_F("Generating Vegetation OK\n");
+	PRINT_FN(Locale::get("CREATE_TREE_END"));
 	DA.empty();
 	return true;
 }

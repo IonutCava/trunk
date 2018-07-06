@@ -207,11 +207,11 @@ class EffectManager{
 	  // Print details about playable effects
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  D_PRINT_FN("InputInterface: The device can't play any effect of the test set");
+		  D_ERROR_FN(Locale::get("INPUT_EFFECT_TEST_FAIL"));
 	  }
 	  else
 	  {
-		  PRINT_FN("InputInterface: Selected device can play the following effects :");
+		  PRINT_FN(Locale::get("INPUT_DEVICE_EFFECT_SUPPORT"));
 		for (size_t nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); nEffIndInd++)
 			printEffect(_vecPlayableEffectInd[nEffIndInd]);
 		PRINT_FN("");
@@ -226,14 +226,14 @@ class EffectManager{
 	  // Nothing to do if no joystick currently selected
 	  if (!_pJoystickInterface->getCurrentFFDevice())
 	  {
-		  D_PRINT_FN("InputInterface: No Joystick selected.");  
+		  D_PRINT_FN(Locale::get("INPUT_NO_JOYSTICK_SELECTED"));  
 		return;
 	  }
 
 	  // Nothing to do if joystick cannot play any effect
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  D_PRINT_FN("InputInterface: No playable effects."); 
+		  D_PRINT_FN(Locale::get("INPUT_NO_PLAYABLE_EFFECTS")); 
 		return;
 	  }
 
@@ -270,7 +270,7 @@ class EffectManager{
 
     inline void printEffect(size_t nEffInd){
 
-		PRINT_FN("InputInterface: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
+		PRINT_FN(Locale::get("INPUT_PRINT_EFFECT"),nEffInd,_vecEffects[nEffInd]->getDescription());
 	}
 
     inline void printEffects(){
@@ -349,7 +349,7 @@ public:
 #endif
 
 	  _pInputInterface = OIS::InputManager::createInputSystem(pl);
-	  PRINT_FN("InputInterface: %s created.",_pInputInterface->inputSystemName().c_str());
+	  PRINT_FN(Locale::get("INPUT_CREATE_OK"),_pInputInterface->inputSystemName().c_str());
 
 	  // Create the event handler.
 	  _pEventHdlr = new EventHandler(this,kernel);
@@ -361,7 +361,7 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-		PRINT_F("Exception raised on keyboard creation: %s\n",ex.eText);
+		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_KB"),ex.eText);
 	  }
 
 	  try{
@@ -372,7 +372,7 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-			PRINT_F("Exception raised on joystick creation: %s\n",ex.eText);
+		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),ex.eText);
 	  }
 
 	  try{
@@ -385,15 +385,15 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-		PRINT_F("Exception raised on mouse creation: %s\n",ex.eText);
+		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_MOUSE"),ex.eText);
 	  }
 	  
 	  // Create the joystick manager.
 	  _pJoystickInterface = new JoystickInterface(_pInputInterface, _pEventHdlr);
 	  if( !_pJoystickInterface->wasFFDetected() )
 	  {
-		PRINT_F("InputInterface: No Force Feedback device detected.\n");
-		SAFE_DELETE(_pJoystickInterface);
+		  PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
+		  SAFE_DELETE(_pJoystickInterface);
 	  }
 	  else
 	  {	  // Create force feedback effect manager.

@@ -38,7 +38,7 @@ void Event::run(){
 		shouldEnd = _end;
 	}
 
-	PRINT_FN("EventManager: Deleting thread: %d", boost::this_thread::get_id());
+	PRINT_FN(Locale::get("EVENT_DELETE_THREAD"), boost::this_thread::get_id());
 	_end = false;
 }
 

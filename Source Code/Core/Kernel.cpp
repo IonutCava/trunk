@@ -59,6 +59,10 @@ void Kernel::Idle(){
 	GFX_DEVICE.idle();
 	PHYSICS_DEVICE.idle();
 	FrameListenerManager::getInstance().idle();
+	std::string pendingLanguage = ParamHandler::getInstance().getParam<std::string>("language");
+	if(pendingLanguage.compare(Locale::currentLanguage()) != 0){
+		Locale::changeLanguage(pendingLanguage);
+	}
 }
 
 void Kernel::MainLoopStatic(){
@@ -141,7 +145,7 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	std::string mem = par.getParam<std::string>("memFile");
 	if(mem.compare("none") == 0) mem = "mem.log";
 	Application::getInstance().setMemoryLogFile(mem);
-	PRINT_FN("Initializing the rendering interface");
+	PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
 	vec2<U16> resolution(par.getParam<I32>("resolutionWidth"),par.getParam<I32>("resolutionHeight"));
 	windowId = _GFX.initHardware(resolution);
 	if(windowId < 0){
@@ -149,12 +153,12 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 		return windowId;
 	}
 	_GFX.registerKernel(this);
-	PRINT_FN("Initializing the sound interface");
+	PRINT_FN(Locale::get("START_SOUND_INTERFACE"));
 	returnCode = _SFX.initHardware();
 	if(returnCode < 0){
 		return returnCode;
 	}
-	PRINT_FN("Initializing the physics interface");
+	PRINT_FN(Locale::get("START_PHYSICS_INTERFACE"));
 	returnCode =_PFX.initPhysics();
 	if(returnCode < 0) {
 		return returnCode;
@@ -163,24 +167,24 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	///Bind the kernel with the input interface
 	_inputInterface.initialize(this,par.getParam<std::string>("appTitle"));
 	///Load default material
-	PRINT_FN("Loading default material from XML");
+	PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
 	XML::loadMaterialXML(par.getParam<std::string>("scriptLocation")+"/defaultMaterial");
 	if(!_sceneMgr.load(startupScene, resolution, _camera)){       ///< Load the scene with a default camera
-		ERROR_FN("There was an error loading scene [ %s ]",startupScene.c_str());
+		ERROR_FN(Locale::get("ERROR_SCENE_LOAD"),startupScene.c_str());
 		return MISSING_SCENE_DATA;
 	}
-	PRINT_FN("Initial data loaded ...");
-	PRINT_FN("Creating AI entities ...");
+	PRINT_FN(Locale::get("INITIAL_DATA_LOADED"));
+	PRINT_FN(Locale::get("CREATE_AI_ENTITIES_START"));
 	///Start the AIManager thread
 	_loadAI = _sceneMgr.initializeAI(true);
-	PRINT_FN("AI Entities created ...");
+	PRINT_FN(Locale::get("CREATE_AI_ENTITIES_END"));
 	_GUI.cacheResolution(resolution);
 	_GUI.createConsole();
 	return windowId;
 }
 
 void Kernel::beginLogicLoop(){
-	PRINT_FN("Entering main rendering loop ...");
+	PRINT_FN(Locale::get("START_RENDER_LOOP"));
 	if(_loadAI){
 		_aiEvent->startEvent();
 	}
@@ -190,13 +194,13 @@ void Kernel::beginLogicLoop(){
 
 void Kernel::Shutdown(){
 	_keepAlive = false;
-	PRINT_FN("Shutting down graphical user interface ...");
+	PRINT_FN(Locale::get("STOP_GUI"));
 	_GUI.DestroyInstance(); ///Deactivate GUI
-	PRINT_FN("Closing physics interface!");
+	PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
 	_PFX.exitPhysics();
-	PRINT_FN("Closing post-processing interface!");
+	PRINT_FN(Locale::get("STOP_POST_FX"));
 	PostFX::getInstance().DestroyInstance();
-	PRINT_FN("Unloading scenes and shutting down the scene manager!");
+	PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
 	_sceneMgr.deinitializeAI(true);
 	///Shut down AIManager thread
 	if(_aiEvent.get()){
@@ -206,11 +210,11 @@ void Kernel::Shutdown(){
 	AIManager::getInstance().Destroy();
 	AIManager::getInstance().DestroyInstance();
 	_sceneMgr.DestroyInstance();
-	PRINT_FN("Emptying the resource cache ...");
+	PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
 	ResourceCache::getInstance().DestroyInstance();
-	PRINT_FN("Engine resources unloaded successfully!");
+	PRINT_FN(Locale::get("STOP_ENGINE_OK"));
 
-	PRINT_FN("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
+	PRINT_FN(Locale::get("STOP_HARDWARE"));
 	_SFX.closeAudioApi();
 	_SFX.DestroyInstance();
 	_GFX.closeRenderingApi();

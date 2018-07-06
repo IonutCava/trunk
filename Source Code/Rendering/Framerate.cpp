@@ -52,7 +52,7 @@ void Framerate::benchmark(){
 	//Average FPS
 	if(_count > 500){
 		_averageFps /= _count;
-		 PRINT_FN("Average FPS: %0.2f; Max FPS: %0.2f; Min FPS: %0.2f" , _averageFps,_maxFps,_minFps); 
+		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), _averageFps,_maxFps,_minFps); 
 		_count = 0;
 	}
 	++_count;

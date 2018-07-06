@@ -5,8 +5,8 @@ SceneManager::SceneManager() : _activeScene(NULL){
 }
 
 SceneManager::~SceneManager(){
-	PRINT_FN("Deleting Scene Manager ...");
-	PRINT_FN("Removing all scenes and destroying scene manager ...");
+	PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
+	PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
 	SceneMap::iterator& it = _sceneMap.begin();
 	for_each(SceneMap::value_type& it, _sceneMap){
 		it.second->unload();
@@ -16,7 +16,7 @@ SceneManager::~SceneManager(){
 }
 
 bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolution, Camera* const camera){
-	PRINT_FN("Loading scene data ...");
+	PRINT_FN(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
 	XML::loadScene(sceneName,*this);
 	if(!_activeScene){
 		return false;
@@ -24,7 +24,7 @@ bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolutio
 	cacheResolution(resolution);
 	_activeScene->preLoad();
 	_activeScene->loadXMLAssets(); 
-	PRINT_FN("Adding default camera ...");
+	PRINT_FN(Locale::get("SCENE_MANAGER_ADD_DEFAULT_CAMERA"));
 	_activeScene->updateCamera(camera);
 	return _activeScene->load(sceneName);
 }

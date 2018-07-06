@@ -25,7 +25,6 @@
 
 #include "core.h" 
 #include "NavigationMesh.h"
-#include "AI/PathFinding/Detour/Headers/DetourNavMeshQuery.h"
 
 namespace Navigation {
 

@@ -344,24 +344,6 @@
     <Filter Include="AI\PathFinding\Headers">
       <UniqueIdentifier>{cede592b-1b70-416e-baf9-223e356e30fb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AI\PathFinding\Detour">
-      <UniqueIdentifier>{60783ae9-51c3-4023-8711-cee8a8bfe5ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\Detour\Headers">
-      <UniqueIdentifier>{44dba906-f6e5-43c3-915a-e29c15fc1173}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\ReCast">
-      <UniqueIdentifier>{c2572417-20cd-4fd6-acab-136f3e3884ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\ReCast\Headers">
-      <UniqueIdentifier>{c5539767-06fb-41ed-8a8e-44d44ad25cfe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\DetourCrowd">
-      <UniqueIdentifier>{3b32240f-845c-4658-a8dc-338a81b3b2da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\DetourCrowd\Headers">
-      <UniqueIdentifier>{05d3d8be-6991-41ed-9120-5d27e0d879b9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\WarScene\Resources">
       <UniqueIdentifier>{49715622-a5ce-4611-aa69-f4076cbfca75}</UniqueIdentifier>
     </Filter>
@@ -427,6 +409,39 @@
     </Filter>
     <Filter Include="Hardware\Input\Headers">
       <UniqueIdentifier>{79e14772-bf5f-475e-bc57-c5a23ca84024}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS">
+      <UniqueIdentifier>{81a846ac-30cb-4a09-8e1e-26ae755f3bf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\ThreadPool">
+      <UniqueIdentifier>{90fceeca-06f8-4c5c-aa39-f20f6e3cd9d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\SimpleIni">
+      <UniqueIdentifier>{30850742-8d07-4482-98a8-e110c31c6813}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\SimpleIni\Header">
+      <UniqueIdentifier>{55c5f205-273a-4d17-ae42-772df49c9116}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\Detour">
+      <UniqueIdentifier>{60783ae9-51c3-4023-8711-cee8a8bfe5ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\Detour\Headers">
+      <UniqueIdentifier>{44dba906-f6e5-43c3-915a-e29c15fc1173}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\DetourCrowd">
+      <UniqueIdentifier>{3b32240f-845c-4658-a8dc-338a81b3b2da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\DetourCrowd\Headers">
+      <UniqueIdentifier>{05d3d8be-6991-41ed-9120-5d27e0d879b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\ReCast">
+      <UniqueIdentifier>{c2572417-20cd-4fd6-acab-136f3e3884ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\ReCast\Headers">
+      <UniqueIdentifier>{c5539767-06fb-41ed-8a8e-44d44ad25cfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Languages">
+      <UniqueIdentifier>{003c25a0-1e62-4590-abe3-fe1bd5b04614}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -755,72 +770,6 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp">
       <Filter>AI\PathFinding</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourAlloc.cpp">
-      <Filter>AI\PathFinding\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourCommon.cpp">
-      <Filter>AI\PathFinding\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMesh.cpp">
-      <Filter>AI\PathFinding\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshBuilder.cpp">
-      <Filter>AI\PathFinding\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshQuery.cpp">
-      <Filter>AI\PathFinding\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNode.cpp">
-      <Filter>AI\PathFinding\Detour</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\Recast.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastAlloc.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastArea.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastContour.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastFilter.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastLayers.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMesh.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMeshDetail.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRasterization.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp">
-      <Filter>AI\PathFinding\ReCast</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourCrowd.cpp">
-      <Filter>AI\PathFinding\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourLocalBoundary.cpp">
-      <Filter>AI\PathFinding\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourObstacleAvoidance.cpp">
-      <Filter>AI\PathFinding\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathCorridor.cpp">
-      <Filter>AI\PathFinding\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathQueue.cpp">
-      <Filter>AI\PathFinding\DetourCrowd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourProximityGrid.cpp">
-      <Filter>AI\PathFinding\DetourCrowd</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\GenericShape.cpp">
       <Filter>Geometry\Shapes</Filter>
     </ClCompile>
@@ -922,6 +871,78 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Utility\Localization.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.c">
+      <Filter>LIBS\SimpleIni</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\Recast.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastAlloc.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastArea.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastContour.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastFilter.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastLayers.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMesh.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMeshDetail.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRasterization.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRegion.cpp">
+      <Filter>LIBS\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourCrowd.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourLocalBoundary.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourObstacleAvoidance.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathCorridor.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathQueue.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourProximityGrid.cpp">
+      <Filter>LIBS\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourAlloc.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourCommon.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMesh.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshBuilder.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshQuery.cpp">
+      <Filter>LIBS\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNode.cpp">
+      <Filter>LIBS\Detour</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1342,57 +1363,6 @@
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h">
       <Filter>AI\PathFinding\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAlloc.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAssert.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourCommon.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMesh.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshBuilder.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshQuery.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNode.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourStatus.h">
-      <Filter>AI\PathFinding\Detour\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\Recast.h">
-      <Filter>AI\PathFinding\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h">
-      <Filter>AI\PathFinding\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h">
-      <Filter>AI\PathFinding\ReCast\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourCrowd.h">
-      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourLocalBoundary.h">
-      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourObstacleAvoidance.h">
-      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathCorridor.h">
-      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathQueue.h">
-      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourProximityGrid.h">
-      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\GenericShape.h">
       <Filter>Geometry\Shapes\Headers</Filter>
     </ClInclude>
@@ -1478,6 +1448,72 @@
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h">
       <Filter>Scenes\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\includes\threadpool.hpp">
+      <Filter>LIBS\ThreadPool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\SimpleIni.h">
+      <Filter>LIBS\SimpleIni\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.h">
+      <Filter>LIBS\SimpleIni\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\Recast.h">
+      <Filter>LIBS\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAlloc.h">
+      <Filter>LIBS\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAssert.h">
+      <Filter>LIBS\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourCrowd.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourLocalBoundary.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourObstacleAvoidance.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathCorridor.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathQueue.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourProximityGrid.h">
+      <Filter>LIBS\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAlloc.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAssert.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourCommon.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMesh.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshBuilder.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshQuery.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNode.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourStatus.h">
+      <Filter>LIBS\Detour\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
@@ -1551,6 +1587,9 @@
     </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert">
       <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\localisation\enGB.ini">
+      <Filter>Languages</Filter>
     </None>
   </ItemGroup>
 </Project>

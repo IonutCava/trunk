@@ -88,7 +88,7 @@ void GLCheckError(const std::string& File, U32 Line,char* operation) {
         ss << File.substr(File.find_last_of("\\/") + 1) << " (" << Line << ") : "
            << Error << ", " 
 		   << Desc;
-        ERROR_FN("An internal OpenGL call failed on call [ %s ]: [ %s ]",operation, ss.str().c_str());
+		ERROR_FN(Locale::get("ERROR_GENERIC_GL"),operation, ss.str().c_str());
 	}
 }
 
@@ -123,7 +123,9 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	//Check for errors and print if any (They happen more than anyone thinks)
 	//Bad drivers, old video card, corrupt GPU, anything can throw an error
 	if (GLEW_OK != err){
-		ERROR_FN("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
+		ERROR_FN(Locale::get("ERROR_GFX_DEVICE"),glewGetErrorString(err));
+		PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
+		PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));;
 		//No need to continue, as switching to DX should be set before launching the application!
 		return GLEW_INIT_ERROR;
 	}
@@ -142,9 +144,9 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	//Time to select our shaders.
 	//We do not support OpenGL version lower than 2.0;
 	if(major < 2){
-		ERROR_FN("Your current hardware does not support the OpenGL 2.0 extension set!");
-		PRINT_FN("Try switching to DX (version 9.0c required) or upgrade hardware.");
-		PRINT_FN("Application will now exit!");
+		ERROR_FN(Locale::get("ERROR_OPENGL_NOT_SUPPORTED"));
+		PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
+		PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));
 		return GLEW_OLD_HARDWARE;
 	}else if(major == 2){
 		//If we do start a 2.0 context, use only basic shaders
@@ -187,13 +189,13 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 		}
 	}
 	//Print all of the OpenGL functionality info to the console
-	PRINT_FN("Max GLSL fragment uniform components supported: %d",max_frag_uniform);
-	PRINT_FN("Max GLSL fragment varying floats supported: %d",max_varying_floats);
-	PRINT_FN("Max GLSL vertex uniform components supported: %d",max_vertex_uniform);
-	PRINT_FN("Max GLSL vertex attributes supported: %d",max_vertex_attrib);
-	PRINT_FN("Max Combined Texture Units supported: %d",max_texture_units); 
-	PRINT_FN("Hardware acceleration up to OpenGL %d.%d supported!",major,minor);
-	PRINT_FN("GLSL version supported: [ %s ]",glslVersionSupported);
+	PRINT_FN(Locale::get("GL_MAX_UNIFORM"),max_frag_uniform);
+	PRINT_FN(Locale::get("GL_MAX_FRAG_VARYING"),max_varying_floats);
+	PRINT_FN(Locale::get("GL_MAX_VERT_UNIFORM"),max_vertex_uniform);
+	PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),max_vertex_attrib);
+	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"),max_texture_units); 
+	PRINT_FN(Locale::get("GL_MAX_VERSION"),major,minor);
+	PRINT_FN(Locale::get("GL_GLSL_SUPPORT"),glslVersionSupported);
 	GL_ENUM_TABLE::fill();
 	//Set the clear color to a nice blue
 	glClearColor(0.1f,0.1f,0.8f,1);
@@ -214,7 +216,7 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	glutDisplayFunc(Kernel::MainLoopStatic);
 	glutIdleFunc(Kernel::Idle);
 	//That's it. Everything should be ready for draw calls
-	PRINT_FN("OpenGL rendering system initialized!");
+	PRINT_FN(Locale::get("START_OGL_API_OK"));
 	
 /*  //The following code should enable vSync
 	int (*SwapInterval)(int);
@@ -655,7 +657,7 @@ void GL_API::renderModel(Object3D* const model){
 			break;
 		//We should never enter the default case!
 		default:
-			ERROR_FN("GLWrapper: Invalid Object3D type received for object: [ %s ]",model->getName().c_str());
+			ERROR_FN(Locale::get("ERROR_GL_INVALID_OBJECT_TYPE"),model->getName().c_str());
 			b_continue = false;
 			break;
 	}

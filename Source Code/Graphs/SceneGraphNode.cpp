@@ -53,7 +53,7 @@ bool SceneGraphNode::unload(){
 	}
 	//Some debug output ...
 	if(!_silentDispose && getParent() && _node){
-		PRINT_FN("Removing: %s (%s)",_node->getName().c_str(), getName().c_str());
+		PRINT_FN(Locale::get("REMOVE_SCENEGRAPH_NODE"),_node->getName().c_str(), getName().c_str());
 	}
 	//if not root
 	if(getParent()){
@@ -63,7 +63,7 @@ bool SceneGraphNode::unload(){
 	return true;
 }
 
-//Print's out the SceneGraph structure to the Console
+///Prints out the SceneGraph structure to the Console
 void SceneGraphNode::print(){
 	//Starting from the current node
 	SceneGraphNode* parent = this;
@@ -89,7 +89,7 @@ void SceneGraphNode::print(){
 		}
 	}
 	//Print our current node's information
-	PRINT_FN("%s (Resource: %s, Material: %s (Shader: %s) )", getName().c_str(),_node->getName().c_str(),material.c_str(),shader.c_str());
+	PRINT_FN(Locale::get("PRINT_SCENEGRAPH_NODE"), getName().c_str(),_node->getName().c_str(),material.c_str(),shader.c_str());
 	//Repeat for each child, but prefix it with the appropriate number of dashes
 	//Based on our ancestor counting earlier
 	for_each(NodeChildren::value_type& it, _children){

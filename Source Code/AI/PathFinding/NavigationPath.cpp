@@ -100,13 +100,13 @@ namespace Navigation {
       dtPolyRef startRef, endRef;
 
       if(dtStatusFailed(_query->findNearestPoly(from, extents, &_filter, &startRef, start)))  {
-         ERROR_FN("No NavMesh polygon near visit point (%g, %g, %g) of NavPath", start.x, start.y, start.z);
+		  ERROR_FN(Locale::get("ERROR_NAV_NO_POLY_NEAR_POINTS"), start.x, start.y, start.z);
          return false;
       }
 
       if(dtStatusFailed(_query->findNearestPoly(to, extents, &_filter, &endRef, end)))
       {
-         ERROR_FN("No NavMesh polygon near visit point (%g, %g, %g) of NavPath", end.x, end.y, end.z);
+		  ERROR_FN(Locale::get("ERROR_NAV_NO_POLY_NEAR_POINTS"), end.x, end.y, end.z);
          return false;
       }
 

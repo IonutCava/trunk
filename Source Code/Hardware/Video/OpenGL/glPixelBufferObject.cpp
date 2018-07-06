@@ -65,7 +65,7 @@ void glPixelBufferObject::Unbind(U8 unit) const
 bool glPixelBufferObject::Create(U16 width, U16 height)
 {
 	Destroy();
-	PRINT_FN("Generating pixelbuffer of dimmensions [%d x %d]",width,height);
+	PRINT_FN(Locale::get("GL_PBO_GEN"),width,height);
 	_width = width;
 	_height = height;
 	U32 size = _width * _height * 4/*channels*/;

@@ -37,10 +37,10 @@ void SDL_API::playSound(AudioDescriptor* sound){
 	Mix_Volume(sound->getChannel(),sound->getVolume());
 
 	if(_chunk == NULL)
-		ERROR_FN("SFXDevice: Can't load sound [ %s ] with SDL!" ,sound->getName().c_str());
+		ERROR_FN(Locale::get("ERROR_SDL_LOAD_SOUND") ,sound->getName().c_str());
 
 	if(Mix_PlayChannel( sound->getChannel(), _chunk, sound->isLooping() ? -1 : 0 ) == -1){
-		ERROR_FN("SFXDevice: Can't play sound [ %s ] with SDL! Error: %s" ,sound->getName().c_str(),Mix_GetError());
+		ERROR_FN(Locale::get("ERROR_SDL_CANT_PLAY") ,sound->getName().c_str(),Mix_GetError());
 	}
 	
 }

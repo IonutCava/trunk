@@ -9,7 +9,7 @@ using namespace physx;
 bool PhysXSceneInterface::init(){
 	//Create the scene
 	if(!PhysX::getInstance().getSDK()){
-		ERROR_FN("PhysX SDK not initialized!");
+		ERROR_FN(Locale::get("ERROR_PHYSX_SDK"));
 		return false;
 	}
 	PxSceneDesc sceneDesc(PhysX::getInstance().getSDK()->getTolerancesScale());
@@ -17,7 +17,7 @@ bool PhysXSceneInterface::init(){
 	if(!sceneDesc.cpuDispatcher) {
 		PxDefaultCpuDispatcher* mCpuDispatcher = PxDefaultCpuDispatcherCreate(1);
 		if(!mCpuDispatcher){
-			ERROR_FN("PhysX Scene Interface: PxDefaultCpuDispatcherCreate failed!");
+			ERROR_FN(Locale::get("ERROR_PHYSX_INTERFACE_CPU_DISPATCH"));
 		}
 		 sceneDesc.cpuDispatcher = mCpuDispatcher;
 	}
@@ -27,7 +27,7 @@ bool PhysXSceneInterface::init(){
 
 	_gScene = PhysX::getInstance().getSDK()->createScene(sceneDesc);
 	if (!_gScene){
-		ERROR_FN("PhysX Scene Interface: error creating scene!");
+		ERROR_FN(Locale::get("ERROR_PHYSX_INTERFACE_CREATE_SCENE"));
 		return false;
 	}
 
@@ -38,7 +38,7 @@ bool PhysXSceneInterface::init(){
 }
 
 bool PhysXSceneInterface::exit(){
-	D_PRINT_FN("Shuting down PhysXSceneInterface");
+	D_PRINT_FN(Locale::get("STOP_PHYSX_SCENE_INTERFACE"));
 	return true;
 }
 
@@ -47,7 +47,7 @@ void PhysXSceneInterface::idle(){
 
 void PhysXSceneInterface::release(){
 	if(!_gScene){
-		ERROR_FN("PhysX: trying to close invalid scene!");
+		ERROR_FN(Locale::get("ERROR_PHYSX_CLOSE_INVALID_INTERFACE"));
 		return;
 	}
 	_gScene->release();

@@ -21,11 +21,11 @@ glShader::glShader(const std::string& name, SHADER_TYPE type) : Shader(name, typ
 	}
 	case TESSELATION_SHADER : {
 		_shader = NULL; 
-		ERROR_FN("GLSL: Tesselation not yet implemented"); 
+		ERROR_FN(Locale::get("WARN_GLSL_NO_TESSELATION")); 
 		break;
 	}
 	default:
-		ERROR_FN("GLSL: Unknown shader type received: %d",type);
+		ERROR_FN(Locale::get("ERROR_GLSL_UNKNOWN_SHADER_TYPE"),type);
 		break;
   }
 }
@@ -36,7 +36,7 @@ glShader::~glShader(){
 
 bool glShader::load(const std::string& source){
 	if(source.empty()){
-		ERROR_FN("GLSL Manager: Shader [ %s ] not found!",getName().c_str());
+		ERROR_FN(Locale::get("ERROR_GLSL_SHADER_NOT_FOUND"),getName().c_str());
 		return false;
 	}
 	std::string parsedSource = preprocessIncludes(source,getName(),0);
@@ -58,16 +58,16 @@ void glShader::validate() {
 	glGetShaderInfoLog(_shader, BUFFER_SIZE, &length, buffer);
 	glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
 	if(status == GL_FALSE){
-		ERROR_FN("[GLSL Manager] Validating shader [ %s ]: %s", _name.c_str(),buffer);
+		ERROR_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),buffer);
 	}else{
-		D_PRINT_FN("[GLSL Manager] Validating shader [ %s ]: %s", _name.c_str(),buffer);
+		D_PRINT_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),buffer);
 	}
 }
 
 std::string glShader::preprocessIncludes( const std::string& source, const std::string& filename, int level /*= 0 */ ){
 
 	if(level > 32){
-		ERROR_FN("glShader: Header inclusion depth limit reached, might be caused by cyclic header inclusion");
+		ERROR_FN(Locale::get("ERROR_GLSL_INCLUD_LIMIT"));
 	}
 
 	static const boost::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
@@ -98,9 +98,7 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
 			ParamHandler& par = ParamHandler::getInstance();
 			include_string = ShaderManager::getInstance().shaderFileRead(include_file,par.getParam<std::string>("assetsLocation") + "/" + par.getParam<std::string>("shaderLocation")+"/GLSL/"+loc);
 			if(include_string.empty()){
-				std::stringstream str;
-				str <<  getName() <<"(" << line_number << ") : fatal error: cannot open include file " << include_file;
-				ERROR_FN("glShader: %s",str.str());
+				ERROR_FN(Locale::get("ERROR_GLSL_NO_INCLUDE_FILE"),getName().c_str(), line_number, include_file.c_str());
 			}
 			output << preprocessIncludes(include_string, include_file, level + 1) << std::endl;
 		}else{

@@ -27,7 +27,7 @@ void FrameListenerManager::removeFrameListener(FrameListener* listener){
 	if(it != _listeners.end()){
 		_removedListeners.insert(std::make_pair(it->second->getName(),it->second));
 	}else{
-		ERROR_FN("FrameListener: Trying to remove non-existant listener [ %s ]", listener->getName().c_str());
+		ERROR_FN(Locale::get("ERROR_FRAME_LISTENER_REMOVE"), listener->getName().c_str());
 	}
 }
 

@@ -19,8 +19,6 @@ void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
 	VisualSensor* visualSensor = dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
 	if(visualSensor){
 		_initialPosition = visualSensor->getSpatialPosition();
-	}else{
-		PRINT_FN("HERE");
 	}
 }
 

@@ -8,7 +8,7 @@
 
 I8 DX_API::initHardware(const vec2<U16>& resolution){
 
-	PRINT_FN("Initializing Direct3D rendering API! ");
+	PRINT_FN(Locale::get("START_D3D_API"));
 	D3D_ENUM_TABLE::fill();
 	return DX_INIT_ERROR;
 }
@@ -128,7 +128,7 @@ void DX_API::renderModel(Object3D* const model)
 			break;
 		//We should never enter the default case!
 		default:
-			ERROR_FN("GLWrapper: Invalid Object3D type received for object: [ %s ]",model->getName().c_str());
+			ERROR_FN("ERROR_D3D_INVALID_OBJECT_TYPE",model->getName().c_str());
 			b_continue = false;
 			break;
 	}

@@ -158,7 +158,7 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader){
 			_shaderRef = static_cast<ShaderProgram* >(FindResource(_shader));
 			return _shaderRef;
 		}else{
-			PRINT_FN("Replacing shader [ %s ] with shader  [ %s ]",_shader.c_str(),shader.c_str());
+			PRINT_FN(Locale::get("REPLACE_SHADER"),_shader.c_str(),shader.c_str());
 		}
 	}
 

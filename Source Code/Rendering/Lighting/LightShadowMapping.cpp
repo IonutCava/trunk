@@ -9,7 +9,7 @@
 void Light::setShadowMappingCallback(boost::function0<void> callback) {
 	///Only if we have a valid callback;
 	if(callback.empty()) {
-		ERROR_FN("Setting invalid shadow casting callback for light [ %d ]", _id);
+		ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _id);
 		return;
 	}
 	///The higher the shadow detail level, the bigger depth buffers we have
@@ -21,7 +21,7 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 	///If this is the first call, create depth maps;
 	if(_depthMaps.empty()){
 		///Create the FBO's
-		PRINT_FN("Creating the Frame Buffer Objects for Shadow Mapping for Light [ %d ]", _id);
+		PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FBO"), _id);
 		for(U8 i = 0; i < 3; i++){
 			_depthMaps.push_back(GFX_DEVICE.newFBO());
 		}
@@ -29,7 +29,7 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 	}
 	if(_resolutionFactor != resolutionFactor || firstPass){
 		///Initialize the FBO's with a variable resolution
-		PRINT_FN("Initializing the Frame Buffer Objects for Shadow Mapping for Light [ %d ]", _id);
+		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _id);
 		_depthMaps[0]->Create(FBO_2D_DEPTH,2048/resolutionFactor,2048/resolutionFactor);
 		_depthMaps[1]->Create(FBO_2D_DEPTH,1024/resolutionFactor,1024/resolutionFactor);
 		_depthMaps[2]->Create(FBO_2D_DEPTH,512/resolutionFactor,512/resolutionFactor);

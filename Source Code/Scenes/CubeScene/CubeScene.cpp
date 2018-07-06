@@ -248,9 +248,9 @@ bool CubeScene::loadResources(bool continueOnErrors){
 	return true;
 }
 
-bool CubeScene::unload()
-{
-	PRINT_FN("Deleting Deferred Rendering RenderTarget!");
+bool CubeScene::unload(){
+
+	PRINT_FN(Locale::get("DEFERRED_RT_DELETE"));
 	RemoveResource(_renderQuad);
 	return Scene::unload();
 }

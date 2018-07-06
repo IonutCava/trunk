@@ -36,7 +36,7 @@ bool LightManager::addLight(Light* const light){
 	}
 	LightMap::iterator& it = _lights.find(light->getId());
 	if(it != _lights.end()){
-		ERROR_FN("LightManager: Light with ID: %d already exists in light map",light->getId());
+		ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"),light->getId());
 		return false;
 	}
 
@@ -48,7 +48,7 @@ bool LightManager::removeLight(U32 lightId){
 	LightMap::iterator it = _lights.find(lightId);
 
 	if(it == _lights.end()){
-		ERROR_FN("LightManager: Could not remove light with ID: %d",lightId);
+		ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"),lightId);
 		return false;
 	}
 

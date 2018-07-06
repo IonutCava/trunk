@@ -208,14 +208,14 @@ namespace Navigation {
 		hf = rcAllocHeightfield();
 
 		if(!hf || !rcCreateHeightfield(ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)){
-			ERROR_FN("Could not generate rcHeightField for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_HEIGHTFIELD"), _fileName.c_str());
 			return false;
 		}
 
 		U8* areas = New U8[data.getTriCount()];
 
 		if (!areas){
-			ERROR_FN("Out of memory (area flags) for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), _fileName.c_str());
 			return false;
 		}
 
@@ -246,18 +246,18 @@ namespace Navigation {
 
 		chf = rcAllocCompactHeightfield();
 		if(!chf || !rcBuildCompactHeightfield(ctx, cfg.walkableHeight, cfg.walkableClimb, *hf, *chf)){
-			ERROR_FN("Could not generate rcCompactHeightField for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_COMPACT_HEIGHTFIELD"), _fileName.c_str());
 			return false;
 		}
 
 		if(!rcErodeWalkableArea(ctx, cfg.walkableRadius, *chf))	{
-			ERROR_FN("Could not erode walkable area for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_WALKABLE"), _fileName.c_str());
 			return false;
 		}
 
 		if(false){
 			if(!rcBuildRegionsMonotone(ctx, *chf, cfg.borderSize, cfg.minRegionArea, cfg.mergeRegionArea)){
-				ERROR_FN("Could not build regions for NavigationMesh %s", _fileName.c_str());
+				ERROR_FN(Locale::get("ERROR_NAV_REGIONS"), _fileName.c_str());
 				return false;
 			}
 		}else{
@@ -269,19 +269,19 @@ namespace Navigation {
 
 		cs = rcAllocContourSet();
 		if(!cs || !rcBuildContours(ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cs)){
-			ERROR_FN("Could not construct rcContourSet for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_COUNTOUR"), _fileName.c_str());
 			return false;
 		}
 
 		pm = rcAllocPolyMesh();
 		if(!pm || !rcBuildPolyMesh(ctx, *cs, cfg.maxVertsPerPoly, *pm))	{
-			ERROR_FN("Could not construct rcPolyMesh for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_POLY_MESH"), _fileName.c_str());
 			return false;
 		}
 
 		pmd = rcAllocPolyMeshDetail();
 		if(!pmd || !rcBuildPolyMeshDetail(ctx, *pm, *chf, cfg.detailSampleDist, cfg.detailSampleMaxError, *pmd)){
-			ERROR_FN("Could not construct rcPolyMeshDetail for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_POLY_MESH_DETAIL"), _fileName.c_str());
 			return false;
 		}
 		return true;
@@ -291,19 +291,19 @@ namespace Navigation {
 		U8 *tileData = NULL;
 		I32 tileDataSize = 0;
 		if(!dtCreateNavMeshData(&params, &tileData, &tileDataSize)){
-			ERROR_FN("Could not construct NavMeshData for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_MESH_DATA"), _fileName.c_str());
 			return false;
 		}
 
 		tnm = dtAllocNavMesh();
 		if(!tnm){
-			ERROR_FN("Out of memory allocating dtNavMesh for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_DT_OUT_OF_MEMORY"), _fileName.c_str());
 			return false;
 		}
 
 		dtStatus s = tnm->init(tileData, tileDataSize, DT_TILE_FREE_DATA);
 		if(dtStatusFailed(s)){
-			ERROR_FN("Could not initialise dtNavMesh for NavigationMesh %s", _fileName.c_str());
+			ERROR_FN(Locale::get("ERROR_NAV_DT_INIT"), _fileName.c_str());
 			return false;
 		}
 

@@ -89,7 +89,7 @@ void SceneNode::setMaterial(Material* m){
 	if(m){ //If we need to update the material
 		if(_material){ //If we had an old material
 			if(_material->getMaterialId().i != m->getMaterialId().i){ //if the old material isn't the same as the new one
-				PRINT_FN("Replacing material [ %s ] with material  [ %s ]",_material->getName().c_str(),m->getName().c_str());
+				PRINT_FN(Locale::get("REPLACE_MATERIAL"),_material->getName().c_str(),m->getName().c_str());
 				RemoveResource(_material);			//remove the old material
 				UNREGISTER_TRACKED_DEPENDENCY(_material);
 			}

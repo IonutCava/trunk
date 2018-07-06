@@ -21,7 +21,7 @@ I32 main(I32 argc, char **argv){
 	Application::getInstance().Deinitialize();  
 	///When the application is deleted, the last kernel used gets deleted as well
 	Application::getInstance().DestroyInstance();  
-	PRINT_FN("Application shutdown successfull!");
+	PRINT_FN(Locale::get("STOP_APPLICATION"));
 	return NO_ERR;
 }
 

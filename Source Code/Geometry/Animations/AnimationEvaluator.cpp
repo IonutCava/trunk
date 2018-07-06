@@ -10,7 +10,7 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 	_duration = pAnim->mDuration;
 	_name = pAnim->mName.data;
 
-	D_PRINT_FN("Creating Animation named: [ %s ]", _name.c_str());
+	D_PRINT_FN(Locale::get("CREATE_ANIMATION_BEGIN"),_name.c_str());
 
 	_channels.resize(pAnim->mNumChannels);
 	for( U32 a = 0; a < pAnim->mNumChannels; a++){		
@@ -25,7 +25,7 @@ AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
 
 	_lastPositions.resize( pAnim->mNumChannels, vec3<U32>( 0, 0, 0));
 
-	D_PRINT_FN("Finished Creating Animation named: [ %s ] ", _name.c_str());
+	D_PRINT_FN(Locale::get("CREATE_ANIMATION_END"), _name.c_str());
 }
 
 U32 AnimEvaluator::GetFrameIndexAt(D32 ptime){
@@ -59,7 +59,7 @@ void AnimEvaluator::Evaluate( D32 pTime, unordered_map<std::string, Bone*>& bone
 		unordered_map<std::string, Bone*>::iterator bonenode = bones.find(channel->_name);
 
 		if(bonenode == bones.end()) { 
-			D_PRINT_FN("did not find the bone node [ %s ]",channel->_name.c_str());
+			D_ERROR_FN(Locale::get("ERROR_BONE_FIND"),channel->_name.c_str());
 			continue;
 		}
 

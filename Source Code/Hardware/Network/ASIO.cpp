@@ -45,13 +45,13 @@ void ASIO::HandlePongOpCode(WorldPacket& p){
 void ASIO::HandleDisconnectOpCode(WorldPacket& p){
 	U8 code;
 	p >> code;
-	PRINT_FN("CLOSING");
+	PRINT_FN(Locale::get("ASIO_CLOSE"));
 	if(code == 0) ASIO::getInstance().close();
 	// else handleError(code);
 }
 
 void ASIO::HandleGeometryAppendOpCode(WorldPacket& p){
-	PRINT_FN("ASIO: received  [SMSG_GEOMETRY_APPEND]");
+	PRINT_FN(Locale::get("ASIO_PAK_REC_GEOM_APPEND"));
 	U8 size;
 	p >> size;
 	std::vector<FileData> patch;

@@ -37,7 +37,7 @@ Mesh* DVDConverter::load(const std::string& file){
 
 
 	if( !_aiScenePointer){
-		ERROR_FN("DVDFile::load( %s ): %s", file.c_str(), importer.GetErrorString());
+		ERROR_FN(Locale::get("ERROR_IMORTER_FILE"), file.c_str(), importer.GetErrorString());
 		return false;
 	}
 	for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
@@ -113,7 +113,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 	bool processTangents = true;
 	if(!source->mTangents){
         processTangents = false;
-		PRINT_FN("DVDConverter: SubMesh [ %s ] does not have tangent & biTangent data!", tempSubMesh->getName().c_str());
+		PRINT_FN(Locale::get("SUBMESH_NO_TANGENT"), tempSubMesh->getName().c_str());
 	}
 
 	for(U32 j = 0; j < source->mNumVertices; j++){
@@ -214,7 +214,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		tempColorVec4.b = diffuse.b;
 		tempColorVec4.a = diffuse.a;
 	}else{
-		D_PRINT_FN("Material [ %s ] does not have a diffuse color", materialName.c_str());
+		D_PRINT_FN(Locale::get("MATERIAL_NO_DIFFUSE"), materialName.c_str());
 	}
 	tempMaterial->setDiffuse(tempColorVec4);
 		
@@ -229,7 +229,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		tempColorVec4.b = ambient.b;
 		tempColorVec4.a = ambient.a;
 	}else{
-		D_PRINT_FN("Material [ %s ] does not have an ambient color", materialName.c_str());
+		D_PRINT_FN(Locale::get("MATERIAL_NO_AMBIENT"), materialName.c_str());
 	}
 	tempMaterial->setAmbient(tempColorVec4);
 		
@@ -244,7 +244,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 		tempColorVec4.b = specular.b;
 		tempColorVec4.a = specular.a;
 	}else{
-		D_PRINT_FN("Material [ %s ] does not have a specular color", materialName.c_str());
+		D_PRINT_FN(Locale::get("MATERIAL_NO_SPECULAR"), materialName.c_str());
 	}
 	tempMaterial->setSpecular(tempColorVec4);
 

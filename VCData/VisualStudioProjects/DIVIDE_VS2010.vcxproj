@@ -59,7 +59,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -92,7 +92,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code/Libs\packages;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -118,31 +118,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourCrowd.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourLocalBoundary.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourObstacleAvoidance.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathCorridor.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathQueue.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourProximityGrid.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourAlloc.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourCommon.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshBuilder.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshQuery.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNode.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\Recast.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastAlloc.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastArea.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastContour.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastFilter.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastLayers.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMeshDetail.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRasterization.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
@@ -214,6 +192,29 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderGenerator.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderProgram.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.c" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourCrowd.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourLocalBoundary.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourObstacleAvoidance.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathCorridor.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\DetourCrowd\DetourProximityGrid.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourAlloc.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourCommon.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshBuilder.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNavMeshQuery.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\Detour\DetourNode.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\Recast.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastAlloc.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastArea.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastContour.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastFilter.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastLayers.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastMeshDetail.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRasterization.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\packages\ReCast\RecastRegion.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp" />
@@ -242,6 +243,7 @@
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Event.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\Localization.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
@@ -285,28 +287,11 @@
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourCrowd.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourLocalBoundary.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourObstacleAvoidance.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathCorridor.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathQueue.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourProximityGrid.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAlloc.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAssert.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourCommon.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMesh.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshBuilder.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshQuery.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNode.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourStatus.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\Recast.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h" />
     <ClInclude Include="..\..\Source Code\core.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\SmartPointer.h" />
@@ -371,6 +356,26 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderGenerator.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderProgram.h" />
+    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.h" />
+    <ClInclude Include="..\..\Source Code\Libs\includes\simpleini\SimpleIni.h" />
+    <ClInclude Include="..\..\Source Code\Libs\includes\threadpool.hpp" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourCrowd.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourLocalBoundary.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourObstacleAvoidance.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathCorridor.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathQueue.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourProximityGrid.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAlloc.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourAssert.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourCommon.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMesh.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshBuilder.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshQuery.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourNode.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\Detour\Headers\DetourStatus.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\Recast.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAlloc.h" />
+    <ClInclude Include="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAssert.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
@@ -405,6 +410,8 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Event.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\XMLParser.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />
@@ -498,6 +505,7 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert" />
     <None Include="..\..\assets\shaders\GLSL\water.glsl" />
+    <None Include="..\..\localisation\enGB.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

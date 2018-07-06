@@ -53,7 +53,7 @@ public:
 
 	std::string& getVariable(const std::string& name) {
 		std::string& var = _variables.find(name)->second;
-		if(var.empty()) ERROR_FN("TerrainDescriptor: Accessing inexistent variable [ %s ]",name.c_str());
+		if(var.empty()) ERROR_FN(Locale::get("ERROR_TERRAIN_DESCRIPTOR_MISSING_VAR"),name.c_str());
 		return var;
 
 	}

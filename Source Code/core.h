@@ -67,40 +67,21 @@ void operator delete(void * pxData ,char* zFile, int nLine);
 #include <typeinfo.h>
 #include <time.h>
 
-#if defined(UNORDERED_MAP_IMP) && UNORDERED_MAP_IMP == 0
-
-#include <boost/unordered_map.hpp>
-#include <boost/foreach.hpp>
-#define unordered_map boost::unordered_map
-#define for_each         BOOST_FOREACH
-#define reverse_for_each BOOST_REVERSE_FOREACH
-
-#else
-
-#include <unordered_map>
-#include <algorithm>
-#define unordered_map std::tr1::unordered_map
-///ToDo: fix these 3 to use std::for_each and lambda expressions
-#include <boost/foreach.hpp>
-#define for_each BOOST_FOREACH 
-#define reverse_for_each BOOST_REVERSE_FOREACH
-
-
-#endif
-#define tuple_get_impl  std::tr1::get
-#define make_tuple_impl std::tr1::make_tuple
-#define tuple_impl      std::tr1::tuple
-
-//#define tuple_get_impl  std::get
-//#define make_tuple_impl std::make_tuple
-//#define tuple_impl std::tuple
-
 #include <boost/function.hpp>                  //For callbacks and delegates
 #include "Hardware/Platform/PlatformDefines.h" //For data types
 #include "Hardware/Platform/Mutex.h"           //For multi-threading
 #include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
 #include "Rendering/Headers/Framerate.h"       //For time management
 #include "Core/Headers/Console.h"              //For printing to the standard output
+#include "Utility/Headers/Localization.h"      //For language parsing
+#include "Utility/Headers/UnorderedMap.h"      //For language parsing
+
+#define tuple_get_impl  std::tr1::get
+#define make_tuple_impl std::tr1::make_tuple
+#define tuple_impl      std::tr1::tuple
+//#define tuple_get_impl  std::get
+//#define make_tuple_impl std::make_tuple
+//#define tuple_impl std::tuple
 
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
 
@@ -116,7 +97,6 @@ inline void CLAMP(T& n, T min, T max){
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
 
-
 enum ERROR_CODES {
 	NO_ERR = 0,
 	MISSING_SCENE_DATA = -1,
@@ -128,7 +108,8 @@ enum ERROR_CODES {
 	FMOD_AUDIO_INIT_ERROR = -7,
 	OAL_INIT_ERROR = -8,
 	PHYSX_INIT_ERROR = -9,
-	PHYSX_EXTENSION_ERROR = -10
+	PHYSX_EXTENSION_ERROR = -10,
+	NO_LANGUAGE_INI = -11
 };
 
 #endif

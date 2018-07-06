@@ -19,9 +19,9 @@
 #include <float.h>
 #include <string.h>
 #include "Headers/DetourLocalBoundary.h"
-#include "AI/PathFinding/Detour/Headers/DetourNavMeshQuery.h"
-#include "AI/PathFinding/Detour/Headers/DetourCommon.h"
-#include "AI/PathFinding/Detour/Headers/DetourAssert.h"
+#include <Detour/Headers/DetourNavMeshQuery.h>
+#include <Detour/Headers/DetourCommon.h>
+#include <Detour/Headers/DetourAssert.h>
 
 
 dtLocalBoundary::dtLocalBoundary() :

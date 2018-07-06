@@ -42,7 +42,7 @@ bool Sky::load() {
 	_skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 	assert(_skyShader);
 	//_sky->getGeometryVBO()->setShaderProgram(_skyShader);
-	PRINT_FN("Generated sky cubemap and sun OK!");
+	PRINT_FN(Locale::get("CREATE_SKY_RES_OK"));
 	///The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
 	addToDrawExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
 

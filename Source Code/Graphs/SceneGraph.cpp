@@ -40,7 +40,7 @@ void SceneGraph::render(){
 }
 
 void SceneGraph::print(){
-	PRINT_FN("SceneGraph: ");
+	PRINT_FN(Locale::get("SCENEGRAPH_TITLE"));
 	Console::getInstance().toggleTimeStamps(false);
 	boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
 	_root->print();

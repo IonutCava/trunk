@@ -35,7 +35,7 @@ void GFXDevice::setApi(RENDER_API api){
 	case None:
 	case GFX_RENDER_API_PLACEHOLDER: ///< Placeholder
 		///Ionut: OpenGL 4.0 and DX 11 in another life maybe :)
-		ERROR_FN("Invalid Render API selected!")
+		ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API"));
 		break;
 	};
 	_api.setId(api);
@@ -247,7 +247,7 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
 	}
 	///Only use cube map FBO's
 	if(cubeMap.getType() != FBO_CUBE_COLOR){
-		ERROR_FN("GFXDevice: trying to generate cubemap in invalid FBO type!");
+		ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FBO_CUBEMAP"));
 		return;
 	}
 	///Get some global vars

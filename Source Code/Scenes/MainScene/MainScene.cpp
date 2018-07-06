@@ -122,9 +122,7 @@ bool MainScene::load(const std::string& name){
 		SceneGraphNode* terrainNode = _sceneGraph->findNode(_terrainInfoArray[i]->getVariable("terrainName"));
 		if(terrainNode){ //We might have an unloaded terrain in the Array, and thus, not present in the graph
 			Terrain* tempTerrain = terrainNode->getNode<Terrain>();
-			D_PRINT_FN("Found terrain:  %s!", tempTerrain->getName().c_str());
 			if(terrainNode->isActive()){
-				D_PRINT_FN("Previous found terrain is active!");
 				_visibleTerrains.push_back(tempTerrain);
 				if(computeWaterHeight){
 					F32 tempMin = terrainNode->getBoundingBox().getMin().y;
@@ -132,7 +130,7 @@ bool MainScene::load(const std::string& name){
 				}
 			}
 		}else{
-			ERROR_FN("Could not find terrain [ %s ] in scene graph!", _terrainInfoArray[i]->getVariable("terrainName"));
+			ERROR_FN(Locale::get("ERROR_MISSING_TERRAIN"), _terrainInfoArray[i]->getVariable("terrainName"));
 		}
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
@@ -240,7 +238,7 @@ bool MainScene::loadResources(bool continueOnErrors){
 	beepSound.setFlag(false);
 	_backgroundMusic["generalTheme"] = CreateResource<AudioDescriptor>(backgroundMusic);
 	_beep = CreateResource<AudioDescriptor>(beepSound);
-	PRINT_FN("Scene resources loaded OK");
+
 	return true;
 }
 

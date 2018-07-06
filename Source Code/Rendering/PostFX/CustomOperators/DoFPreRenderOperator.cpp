@@ -34,7 +34,7 @@ void DoFPreRenderOperator::operation(){
 	if(!_enabled) return;
 	if(!_renderQuad) return;
 	if(_inputFBO.empty() || _inputFBO.size() != 2){
-		ERROR_FN("DoF Operator - no input FBO");
+		ERROR_FN(Locale::get("ERROR_DOF_INPUT_FBO"));
 	}
 	GFXDevice& gfx = GFX_DEVICE;
 	ParamHandler& par = ParamHandler::getInstance();

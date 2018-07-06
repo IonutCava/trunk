@@ -17,9 +17,9 @@
 //
 
 #include "Headers/DetourObstacleAvoidance.h"
-#include "AI/PathFinding/Detour/Headers/DetourCommon.h"
-#include "AI/PathFinding/Detour/Headers/DetourAlloc.h"
-#include "AI/PathFinding/Detour/Headers/DetourAssert.h"
+#include <Detour/Headers/DetourCommon.h>
+#include <Detour/Headers/DetourAlloc.h>
+#include <Detour/Headers/DetourAssert.h>
 #include <string.h>
 #include <math.h>
 #include <float.h>

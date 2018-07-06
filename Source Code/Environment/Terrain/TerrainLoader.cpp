@@ -81,7 +81,7 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 									_terrainHeight,
 									 d, t, id,alpha);
 
-	D_PRINT_FN("Terrain width: %d and height: %d",_terrainWidth, _terrainHeight);
+	D_PRINT_FN(Locale::get("TERRAIN_INFO"),_terrainWidth, _terrainHeight);
 	assert(data);
 	U32 heightmapWidth  = _terrainWidth;
 	U32 heightmapHeight = _terrainHeight;

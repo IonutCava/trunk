@@ -285,7 +285,7 @@ namespace Navigation {
 
 	NavModelData NavigationMeshLoader::parseTerrainData(BoundingBox box, SceneNode* set/* = NULL*/, I32* count/* = NULL*/){
 		if(set->getType() != TYPE_TERRAIN){
-			PRINT_FN("WARNING! Tried to parse node [ %s ] as terrain for NavigationMesh generation!",set->getName().c_str());
+			PRINT_FN(Locale::get("WARN_NAV_PARSE_TERRAIN"),set->getName().c_str());
 			NavModelData data;
 			data.clear(true);
 			return data;
@@ -295,7 +295,7 @@ namespace Navigation {
 
 	NavModelData NavigationMeshLoader::parseStaticObjects(BoundingBox box, SceneNode* set/* = NULL*/, I32* count/* = NULL*/){
 		if(set->getType() != TYPE_WATER || set->getType() == TYPE_TERRAIN || set->getType() == TYPE_OBJECT3D){
-			PRINT_FN("WARNING! Tried to parse node [ %s ] as static object for NavigationMesh generation!",set->getName().c_str());
+			PRINT_FN(Locale::get("WARN_NAV_PARSE_STATIC"),set->getName().c_str());
 			NavModelData data;
 			data.clear(true);
 			return data;
@@ -305,7 +305,7 @@ namespace Navigation {
 
 	NavModelData NavigationMeshLoader::parseDynamicObjects(BoundingBox box, SceneNode* set/* = NULL*/, I32* count/* = NULL*/){
 		if(set->getType() != TYPE_OBJECT3D || set->getType() == TYPE_TERRAIN || set->getType() == TYPE_WATER){
-			PRINT_FN("WARNING! Tried to parse node [ %s ] as terrain for NavigationMesh generation!",set->getName().c_str());
+			PRINT_FN(Locale::get("WARN_NAV_PARSE_DYNAMIC"),set->getName().c_str());
 			NavModelData data;
 			data.clear(true);
 			return data;
@@ -343,7 +343,7 @@ namespace Navigation {
 		std::vector<vec3<F32> > vertexVector;
 		std::vector<vec3<I32> > faceVector;
 
-		PRINT_FN("WARNING! NavigationMesh Generation is not yet implemented!");
+		PRINT_FN(Locale::get("WARN_NAV_INCOMPLETE"));
 
 		return data;
 	}

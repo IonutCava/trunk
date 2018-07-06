@@ -63,12 +63,12 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
 		}
 	}
 
-	D_PRINT_FN("Finished loading animations with [ %d ] bones", _bones.size());
+	D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
 
 }
 
 void SceneAnimator::ExtractAnimations(const aiScene* pScene){
-	D_PRINT_FN("Extracting Animations ... ");
+	D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_BEGIN"));
 	for(size_t i(0); i< pScene->mNumAnimations; i++){
 		if(pScene->mAnimations[i]->mDuration > 0.0f){
 			_animations.push_back(AnimEvaluator(pScene->mAnimations[i]) );// add the animations

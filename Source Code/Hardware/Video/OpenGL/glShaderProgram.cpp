@@ -34,9 +34,9 @@ void glShaderProgram::validate() {
 	glGetProgramiv(_shaderProgramId, GL_VALIDATE_STATUS, &status);
 	// ToDo: Problem with AMD(ATI) cards. GLSL validation errors about multiple samplers to same uniform, but they still work. Fix that. -Ionut
 	if (status == GL_FALSE){
-		ERROR_FN("[GLSL Manager] Validating program [ %s ]: %s", getName().c_str(), buffer);
+		ERROR_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), buffer);
 	}else{
-		D_PRINT_FN("[GLSL Manager] Validating program [ %s ]: %s", getName().c_str(),buffer);
+		D_PRINT_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(),buffer);
 	}
 }
 
@@ -106,7 +106,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 				//Load our shader and save it in the manager in case a new Shader Program needs it
 				s = ShaderManager::getInstance().loadShader(vertexShader,vs,VERTEX_SHADER);
 			}else{
-				ERROR_FN("ShaderProgram: %s",glswGetError());
+				ERROR_FN("[GLSL]  %s",glswGetError());
 			}
 		}
 		///If the vertex shader loaded ok
@@ -115,7 +115,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 			attachShader(s);
 			///same goes for every other shader type
 		}else{
-			ERROR_FN("Could not load shader [ %s ]",vertexShader.c_str());
+			ERROR_FN(Locale::get("ERROR_GLSL_SHADER_LOAD"),vertexShader.c_str());
 		}
 		///Load the Fragment Shader
 		s = ShaderManager::getInstance().findShader(fragmentShader);
@@ -124,13 +124,13 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 			if(fs != NULL){
 				s = ShaderManager::getInstance().loadShader(fragmentShader,fs,FRAGMENT_SHADER);
 			}else{
-				ERROR_FN("ShaderProgram: %s",glswGetError());
+				ERROR_FN("[GLSL] %s",glswGetError());
 			}
 		}
 		if(s){
 			attachShader(s);
 		}else{
-			ERROR_FN("Could not load shader [ %s ]",fragmentShader.c_str());
+			ERROR_FN(Locale::get("ERROR_GLSL_SHADER_LOAD"),fragmentShader.c_str());
 		}
 		///Load the Geometry Shader
 		s = ShaderManager::getInstance().findShader(geometryShader);
@@ -140,13 +140,13 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 				s = ShaderManager::getInstance().loadShader(geometryShader,gs,GEOMETRY_SHADER);
 			}else{
 				///Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
-				D_ERROR_FN("ShaderProgram: %s", glswGetError());
+				D_ERROR_FN("[GLSL] %s", glswGetError());
 			}
 		}
 		if(s){
 			attachShader(s);
 		}else{
-			D_ERROR_FN("Could not load shader [ %s ]",geometryShader.c_str());
+			D_ERROR_FN(Locale::get("ERROR_GLSL_SHADER_LOAD"),geometryShader.c_str());
 		}
 
 		///Load the Tessellation Shader
@@ -157,13 +157,13 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 				s = ShaderManager::getInstance().loadShader(tessellationShader,ts,TESSELATION_SHADER);
 			}else{
 				///Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
-				D_ERROR_FN("ShaderProgram: %s", glswGetError());
+				D_ERROR_FN("[GLSL] %s", glswGetError());
 			}
 		}
 		if(s){
 			attachShader(s);
 		}else{
-			D_ERROR_FN("Could not load shader [ %s ]",tessellationShader.c_str());
+			D_ERROR_FN(Locale::get("ERROR_GLSL_SHADER_LOAD"),tessellationShader.c_str());
 		}
 
 		///Link and validate shaders into this program and update state
@@ -196,7 +196,7 @@ I32 glShaderProgram::getUniformLocation(const std::string& name){
 ///If we did not, ask the GPU to give us the variables address and save it for later use
 I32 glShaderProgram::cachedLoc(const std::string& name,bool uniform){
 	const char* locationName = name.c_str();
-	if(!_bound) ERROR_FN("glShaderProgram: attempted to change shader param [ %s ] in unbound shader", name.c_str());
+	if(!_bound) ERROR_FN(Locale::get("ERROR_GLSL_CHANGE_UNBOUND"), name.c_str());
 	if(_shaderVars.find(name) != _shaderVars.end()){
 		return _shaderVars[name];
 	}
@@ -211,7 +211,7 @@ I32 glShaderProgram::cachedLoc(const std::string& name,bool uniform){
 }
 
 void glShaderProgram::link(){
-	D_PRINT_FN("Linking shader [ %s ]",getName().c_str());
+	D_PRINT_FN(Locale::get("GLSL_LINK_PROGRAM"),getName().c_str());
 	GLCheck(glLinkProgram(_shaderProgramId));
 	_compiled = true;
 }

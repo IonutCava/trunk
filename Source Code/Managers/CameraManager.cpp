@@ -5,8 +5,8 @@ CameraManager::CameraManager() : _camera(NULL) {
 }
 
 CameraManager::~CameraManager() {
-	PRINT_FN("Deleting Camera Pool ...");
-	PRINT_FN("Removing all cameras and destroying the camera pool ...");
+	PRINT_FN(Locale::get("CAMERA_MANAGER_DELETE"));
+	PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
 	CameraPool::iterator& it = _cameraPool.begin();
 	for_each(CameraPool::value_type& it, _cameraPool){
 		it.second->unload();
@@ -39,7 +39,7 @@ void CameraManager::setActiveCamera(const std::string& name) {
 
 void CameraManager::addNewCamera(const std::string& cameraName, Camera* const camera){
 	if(camera == NULL) {
-		ERROR_FN("CameraManare: Camera [ %s ] creation failed!",cameraName.c_str());
+		ERROR_FN(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),cameraName.c_str());
 		return;
 	}
 	_cameraPool.insert(make_pair(cameraName,camera));

@@ -28,7 +28,7 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
 	if(!_createdFBO){
 		if(!build()){
 			/// Something wrong. Exit application!
-			ERROR_FN("Could not create reflection FBO!");
+			ERROR_FN(Locale::get("ERROR_REFLECTOR_INIT_FBO"));
 			return false;
 		}
 	}
@@ -44,7 +44,7 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
 }
 
 bool Reflector::build(){
-	PRINT_FN("Creating FBO [ %d x %d ]for reflector",_resolution.x,_resolution.y );
+	PRINT_FN(Locale::get("REFLECTOR_INIT_FBO"),_resolution.x,_resolution.y );
 	_reflectedTexture = GFX_DEVICE.newFBO();
 	if(!_reflectedTexture->Create(FBO_2D_COLOR, _resolution.x, _resolution.y)){
 		return false;

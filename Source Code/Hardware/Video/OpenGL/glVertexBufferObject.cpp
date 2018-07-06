@@ -45,7 +45,7 @@ bool glVertexBufferObject::Refresh(){
 	if(!_dataPosition.empty()) {
 		nSizePosition = _dataPosition.size()*sizeof(vec3<F32>);
 	}else {
-		ERROR_F("No position data !\n");
+		ERROR_FN(Locale::get("ERROR_VBO_POSITION"));
 		return false;
 	}
 
@@ -173,7 +173,7 @@ bool glVertexBufferObject::CreateInternal() {
 	_weightsDirty   = true;
 	/// Validate buffer creation
 	if(!_VBOid) {
-		ERROR_FN( "Init VBO failed!");
+		ERROR_FN(Locale::get("ERROR_VBO_INIT"));
 		_created = false;
 	}else {
 		/// calling refresh updates all stored information and sends it to the GPU

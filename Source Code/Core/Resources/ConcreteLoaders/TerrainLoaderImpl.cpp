@@ -17,7 +17,7 @@ template<>
 bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& name) {
 
 	std::vector<TerrainDescriptor*>& terrains = GET_ACTIVE_SCENE()->getTerrainInfoArray();
-	PRINT_FN("Loading terrain [ %s ]",name.c_str());
+	PRINT_FN(Locale::get("TERRAIN_LOAD_START"),name.c_str());
 
 	TerrainDescriptor* terrain = NULL;
 	for(U8 i = 0; i < terrains.size(); i++)
@@ -64,10 +64,10 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
 	res->loadVisualResources();
 
 	if(res->loadThreadedResources(terrain)){
-		PRINT_FN("Loading Terrain [ %s ] OK", name.c_str());
+		PRINT_FN(Locale::get("TERRAIN_LOAD_END"), name.c_str());
 		return res->setInitialData(name);
 	}
 	
-	ERROR_FN("Error loading terrain [ %s ]", name.c_str());
+	ERROR_FN(Locale::get("ERROR_TERRAIN_LOAD"), name.c_str());
 	return false;
 }

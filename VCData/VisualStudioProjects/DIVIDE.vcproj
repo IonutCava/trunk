@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code\Libs\includes\MultiModalInput&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PxTask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\packages&quot;;&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code\Libs\includes\MultiModalInput&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PxTask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _DEBUG; FREEGLUT_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -124,7 +124,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code\Libs\includes\MultiModalInput&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PxTask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\packages&quot;;&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code\Libs\includes\MultiModalInput&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PxTask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _SCL_SECURE=0; FREEGLUT_STATIC"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -757,6 +757,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Utility\Localization.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Utility\XMLParser.cpp"
 				>
 			</File>
@@ -777,6 +781,14 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Utility\Headers\ImageTools.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Localization.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\UnorderedMap.h"
 					>
 				</File>
 				<File
@@ -2059,187 +2071,227 @@
 						>
 					</File>
 				</Filter>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="LIBS"
+			>
+			<Filter
+				Name="SimpleINI"
+				>
+				<File
+					RelativePath="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.c"
+					>
+				</File>
 				<Filter
-					Name="ReCast"
+					Name="Headers"
 					>
 					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Recast.cpp"
+						RelativePath="..\..\Source Code\Libs\includes\simpleini\ConvertUTF.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastAlloc.cpp"
+						RelativePath="..\..\Source Code\Libs\includes\simpleini\SimpleIni.h"
 						>
 					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastArea.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastContour.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastFilter.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastLayers.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastMesh.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastMeshDetail.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastRasterization.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp"
-						>
-					</File>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Headers\Recast.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="Detour"
-					>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourAlloc.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourCommon.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNavMesh.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshBuilder.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshQuery.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNode.cpp"
-						>
-					</File>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAlloc.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAssert.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourCommon.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMesh.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshBuilder.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshQuery.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNode.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourStatus.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="DetourCrowd"
-					>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourCrowd.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourLocalBoundary.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourObstacleAvoidance.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathCorridor.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathQueue.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourProximityGrid.cpp"
-						>
-					</File>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourCrowd.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourLocalBoundary.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourObstacleAvoidance.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathCorridor.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathQueue.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourProximityGrid.h"
-							>
-						</File>
-					</Filter>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="ThreadPool"
+				>
+				<File
+					RelativePath="..\..\Source Code\Libs\includes\threadpool.hpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Detour"
+				>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\Detour\DetourAlloc.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\Detour\DetourCommon.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\Detour\DetourNavMesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\Detour\DetourNavMeshBuilder.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\Detour\DetourNavMeshQuery.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\Detour\DetourNode.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourAlloc.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourAssert.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourCommon.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMesh.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshBuilder.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourNavMeshQuery.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourNode.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\Detour\Headers\DetourStatus.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="DetourCrowd"
+				>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\DetourCrowd.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\DetourLocalBoundary.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\DetourObstacleAvoidance.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathCorridor.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\DetourPathQueue.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\DetourProximityGrid.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourCrowd.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourLocalBoundary.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourObstacleAvoidance.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathCorridor.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourPathQueue.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\DetourCrowd\Headers\DetourProximityGrid.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="ReCast"
+				>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\Recast.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastAlloc.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastArea.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastContour.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastFilter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastLayers.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastMesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastMeshDetail.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastRasterization.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Libs\packages\ReCast\RecastRegion.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\ReCast\Headers\Recast.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAlloc.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Libs\packages\ReCast\Headers\RecastAssert.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Languages"
+			>
+			<File
+				RelativePath="..\..\localisation\enGB.ini"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath="..\..\Source Code\config.h"

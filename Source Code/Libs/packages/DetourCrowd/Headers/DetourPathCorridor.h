@@ -19,7 +19,7 @@
 #ifndef DETOUTPATHCORRIDOR_H
 #define DETOUTPATHCORRIDOR_H
 
-#include "AI/PathFinding/Detour/Headers/DetourNavMeshQuery.h"
+#include <Detour/Headers/DetourNavMeshQuery.h>
 
 /// Represents a dynamic polygon corridor used to plan agent movement.
 /// @ingroup crowd, detour

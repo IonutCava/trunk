@@ -39,7 +39,7 @@ bool Texture::LoadFile(U32 target, const std::string& name){
 	ImageTools::OpenImage(name,img,_hasTransparency);
 	/// validate data
 	if(!img.data) {
-		ERROR_FN("Texture: Unable to load texture [ %s ]", name.c_str());
+		ERROR_FN(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
 		///Missing texture fallback
 		ParamHandler& par = ParamHandler::getInstance();
 		ImageTools::OpenImage(par.getParam<std::string>("assetsLocation")+"/"+

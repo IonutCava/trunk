@@ -12,7 +12,7 @@ namespace XML {
 	std::string loadScripts(const std::string& file){
 
 		ParamHandler &par = ParamHandler::getInstance();
-		PRINT_FN("XML: Loading Scripts!");
+		PRINT_FN(Locale::get("XML_LOAD_SCRIPTS"));
 		read_xml(file,pt);
 		std::string activeScene("MainScene");
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
@@ -30,8 +30,9 @@ namespace XML {
 	void loadConfig(const std::string& file) {
 		ParamHandler &par = ParamHandler::getInstance();
 		pt.clear();
-		PRINT_F("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
+		PRINT_FN(Locale::get("XML_LOAD_CONFIG"), file.c_str());
 		read_xml(file,pt);
+		par.setParam("locale",pt.get("language","enGB"));
 		par.setParam("logFile",pt.get("debug.logFile","none"));
 		par.setParam("memFile",pt.get("debug.memFile","none"));
 		par.setParam("groundPos", pt.get("runtime.groundPos",-2000.0f));
@@ -73,13 +74,13 @@ namespace XML {
 	void loadScene(const std::string& sceneName, SceneManager& sceneMgr) {
 		ParamHandler &par = ParamHandler::getInstance();
 		pt.clear();
-		PRINT_F("XML: Loading scene [ %s ]\n", sceneName.c_str());
+		PRINT_FN(Locale::get("XML_LOAD_SCENE"), sceneName.c_str());
 		std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" + 
 				                    par.getParam<std::string>("scenesLocation") + "/" + sceneName;
 		try{
 			read_xml(sceneLocation + ".xml", pt);
 		}catch(	boost::property_tree::xml_parser_error & e ){
-			ERROR_FN("Invalid Scene!. Could not find [ %s ]",sceneName.c_str());
+			ERROR_FN(Locale::get("ERROR_XML_INVALID_SCENE"),sceneName.c_str());
 			std::string error = e.what();
 			error += " [check error log!]";
 			throw error.c_str();
@@ -88,7 +89,7 @@ namespace XML {
 		Scene* scene = sceneMgr.createScene(sceneName);
 
 		if(!scene)	{
-			ERROR_FN("XML: Trying to load unsupported scene! Exiting ...");
+			ERROR_FN(Locale::get("ERROR_XML_LOAD_INVALID_SCENE"));
 			return;
 		}
 
@@ -115,7 +116,7 @@ namespace XML {
 	void loadTerrain(const std::string &file, Scene* const scene) {
 		U8 count = 0;
 		pt.clear();
-		PRINT_F("XML: Loading terrain: [ %s ]\n",file.c_str());
+		PRINT_FN(Locale::get("XML_LOAD_TERRAIN"),file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/"; 
@@ -158,13 +159,13 @@ namespace XML {
 			count++;
 			
 		}
-		PRINT_F("XML: Number of terrains to load: %d\n",count);
+		PRINT_FN(Locale::get("XML_TERRAIN_COUNT"),count);
 	}
 
 	void loadGeometry(const std::string &file, Scene* const scene) 	{
 
 		pt.clear();
-		PRINT_F("XML: Loading Geometry: [ %s ]\n",file.c_str());
+		PRINT_FN(Locale::get("XML_LOAD_GEOMETRY"),file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/";
@@ -273,7 +274,7 @@ namespace XML {
 			return NULL;
 		}
 		bool skip = false;
-		PRINT_FN("Loading material from XML file [ %s ]",matName.c_str());
+		PRINT_FN(Locale::get("XML_LOAD_MATERIAL"),matName.c_str());
 		read_xml(matName+".xml",pt);
 		std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());
 		if(FindResource(materialName)) skip = true;
@@ -555,7 +556,7 @@ namespace XML {
 		}else if (clampU.compare("REPEAT")){
 			wrapU = Texture::TextureWrap_Repeat;
 		}else{
-			ERROR_FN("Invalid U-map parameter for [ %s ]",textureName.c_str());
+			ERROR_FN(Locale::get("ERROR_XML_INVALID_U_PARAM"),textureName.c_str());
 		}
 		if(clampV.compare("WRAP")){
 			wrapV = Texture::TextureWrap_Wrap;
@@ -564,7 +565,7 @@ namespace XML {
 		}else if (clampV.compare("REPEAT")){
 			wrapV = Texture::TextureWrap_Repeat;
 		}else{
-			ERROR_FN("Invalid V-map parameter for [ %s ]",textureName.c_str());
+			ERROR_FN(Locale::get("ERROR_XML_INVALID_V_PARAM"),textureName.c_str());
 		}
 		if(clampW.compare("WRAP")){
 			wrapW = Texture::TextureWrap_Wrap;
@@ -573,7 +574,7 @@ namespace XML {
 		}else if (clampW.compare("REPEAT")){
 			wrapW = Texture::TextureWrap_Repeat;
 		}else{
-			ERROR_FN("Invalid W-map parameter for [ %s ]",textureName.c_str());
+			ERROR_FN(Locale::get("ERROR_XML_INVALID_W_PARAM"),textureName.c_str());
 		}
 
 		tex1->setTextureWrap(wrapU,wrapV,wrapW);
@@ -589,14 +590,14 @@ namespace XML {
 			}else if(minFilter.compare("NEAREST")){
 				minFilterValue = Texture::NEAREST_MIPMAP_NEAREST;
 			}else{
-			ERROR_FN("Invalid min filter parameter for [ %s ]",textureName.c_str());
+				ERROR_FN(Locale::get("ERROR_XML_INVALID_MIN_FILTER"),textureName.c_str());
 			}
 			if(magFilter.compare("LINEAR")){
 				magFilterValue = Texture::LINEAR_MIPMAP_LINEAR;
 			}else if(magFilter.compare("NEAREST")){
 				magFilterValue= Texture::NEAREST_MIPMAP_NEAREST;
 			}else{
-				ERROR_FN("Invalid mag filter parameter for [ %s ]",textureName.c_str());
+				ERROR_FN(Locale::get("ERROR_XML_INVALID_MAG_FILTER"),textureName.c_str());
 			}
 
 		}else{
@@ -605,14 +606,14 @@ namespace XML {
 			}else if(minFilter.compare("NEAREST")){
 				minFilterValue = Texture::NEAREST;
 			}else{
-				ERROR_FN("Invalid min filter parameter for [ %s ]",textureName.c_str());
+				ERROR_FN(Locale::get("ERROR_XML_INVALID_MIN_FILTER"),textureName.c_str());
 			}
 			if(magFilter.compare("LINEAR")){
 				magFilterValue = Texture::LINEAR;
 			}else if(magFilter.compare("NEAREST")){
 				magFilterValue = Texture::NEAREST;
 			}else{
-				ERROR_FN("Invalid mag filter parameter for [ %s ]",textureName.c_str());
+				ERROR_FN(Locale::get("ERROR_XML_INVALID_MAG_FILTER"),textureName.c_str());
 			}
 		}
 		tex1->setTextureFilters(minFilterValue,magFilterValue);

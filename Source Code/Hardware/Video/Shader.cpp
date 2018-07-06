@@ -7,5 +7,5 @@ Shader::Shader(const std::string& name, SHADER_TYPE type){
 }
 
 Shader::~Shader(){
-	D_PRINT_FN("Deleting Shader  [ %s ]",getName().c_str());
+	D_PRINT_FN(Locale::get("SHADER_DELETE"),getName().c_str());
 }

@@ -145,7 +145,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_F
 			format = GL_LUMINANCE_ALPHA;
 			break;
 	};
-	D_PRINT_FN("Generating framebuffer of dimmensions [%d x %d]",width,height);
+	D_PRINT_FN(Locale::get("GL_FBO_GEN"),width,height);
 	Destroy();
 	_width = width;
 	_height = height;
@@ -290,35 +290,35 @@ bool glFrameBufferObject::checkStatus()
         return true;
 
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-        ERROR_FN("Framebuffer incomplete: Attachment is NOT complete.");
+		ERROR_FN(Locale::get("ERROR_FBO_ATTACHMENT_INCOMPLETE"));
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-        ERROR_FN("Framebuffer incomplete: No image is attached to FBO.");
+        ERROR_FN(Locale::get("ERROR_FBO_NO_IMAGE"));
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-        ERROR_FN("Framebuffer incomplete: Attached images have different dimensions.");
+        ERROR_FN(Locale::get("ERROR_FBO_DIMENSIONS"));
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-        ERROR_FN("Framebuffer incomplete: Color attached images have different internal formats.");
+        ERROR_FN(Locale::get("ERROR_FBO_FORMAT"));
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-        ERROR_FN("Framebuffer incomplete: Draw buffer.");
+        ERROR_FN(Locale::get("ERROR_FBO_INCOMPLETE_DRAW_BUFFER"));
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-        ERROR_FN("Framebuffer incomplete: Read buffer.");
+        ERROR_FN(Locale::get("ERROR_FBO_INCOMPLETE_READ_BUFFER"));
         return false;
 
     case GL_FRAMEBUFFER_UNSUPPORTED:
-        ERROR_FN("Unsupported by FBO implementation.");
+        ERROR_FN(Locale::get("ERROR_FBO_UNSUPPORTED"));
         return false;
 
     default:
-        ERROR_FN("Unknow error.");
+        ERROR_FN(Locale::get("ERROR_UNKNOWN"));
         return false;
     }
 }

@@ -29,7 +29,7 @@ public:
 	virtual void Unbind(U16 slot);
 	virtual void Destroy() = 0;
 	virtual void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d) = 0;
-	virtual ~Texture() {D_PRINT_FN("Deleting texture  [ %s ]",getResourceLocation().c_str());}
+	virtual ~Texture() {}
 
 	enum TextureFilters{
 		LINEAR					= 0x0000,

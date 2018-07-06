@@ -19,7 +19,7 @@
 #ifndef DETOURNAVMESHBUILDER_H
 #define DETOURNAVMESHBUILDER_H
 
-#include "AI/PathFinding/Detour/Headers/DetourAlloc.h"
+#include <Detour/Headers/DetourAlloc.h>
 
 /// Represents the source data used to build an navigation mesh tile.
 /// @ingroup detour

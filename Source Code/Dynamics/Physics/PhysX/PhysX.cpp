@@ -8,17 +8,17 @@ PhysX::PhysX() : _currentScene(NULL), _gPhysicsSDK(NULL){}
 
 I8 PhysX::initPhysics(){
   _gDefaultFilterShader=physx::PxDefaultSimulationFilterShader;
-  PRINT_FN("Initializing the PhysX engine!");
+  PRINT_FN(Locale::get("START_PHYSX_API"));
   _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, _gDefaultAllocatorCallback, _gDefaultErrorCallback, PxTolerancesScale() );
    if(_gPhysicsSDK == NULL) {
-	   ERROR_FN("Error creating PhysX device!");
+	   ERROR_FN(Locale::get("ERROR_START_PHYSX_API"));
 	   return PHYSX_INIT_ERROR;
    }
    if(!PxInitExtensions(*_gPhysicsSDK)){
-	   ERROR_FN("PhysX: PxInitExtensions failed!");
+	   ERROR_FN(Locale::get("ERROR_EXTENSION_PHYSX_API"));
 	   return PHYSX_EXTENSION_ERROR;
    }
-  PRINT_FN("PhysX engine initialized!");
+   PRINT_FN(Locale::get("START_PHYSX_API_OK"));
 #ifdef _DEBUG
   PxExtensionVisualDebugger::connect(_gPhysicsSDK->getPvdConnectionManager(),"localhost",5425, 10000, true);
 #endif
@@ -27,7 +27,7 @@ I8 PhysX::initPhysics(){
 
 bool PhysX::exitPhysics(){
 	if(_gPhysicsSDK != NULL){
-		PRINT_FN("Stopping PhysX device!");
+		PRINT_FN(Locale::get("STOP_PHYSX_API"));
 		 PxCloseExtensions();
        _gPhysicsSDK->release();
 	}else{

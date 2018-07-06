@@ -21,7 +21,7 @@ namespace Navigation {
 			_waypoints.erase(wp->getID());
 			updateGraph();
 		}else{
-			PRINT_FN("WARNING! Waypoint [ %d ] not found in graph [ %d ]",wp->getID(), getID());
+			PRINT_FN(Locale::get("WARN_WAYPOINT_NOT_FOUND"),wp->getID(), getID());
 		}
 		
 	}

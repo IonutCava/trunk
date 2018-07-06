@@ -28,11 +28,13 @@
 #define _NAVIGATION_MESH_H_
 
 #include "core.h"
-#include "AI/PathFinding/ReCast/Headers/Recast.h"
-#include "AI/PathFinding/Detour/Headers/DetourNavMesh.h"
-#include "AI/PathFinding/Detour/Headers/DetourNavMeshBuilder.h"
 #include "Utility/Headers/Event.h"
 #include "NavigationMeshLoader.h" 
+
+#include <ReCast/Headers/Recast.h>
+#include <Detour/Headers/DetourNavMesh.h>
+#include <Detour/Headers/DetourNavMeshQuery.h>
+#include <Detour/Headers/DetourNavMeshBuilder.h>
 
 class SceneGraphNode;
 

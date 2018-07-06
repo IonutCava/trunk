@@ -23,7 +23,7 @@ void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,
 		std::string treeName(tempTree->getName()+ss.str());
 		ss.clear();
 		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
-		PRINT_FN("Added tree [ %s ]",treeNode->getName().c_str());
+		PRINT_FN(Locale::get("TREE_ADDED"),treeNode->getName().c_str());
 		Transform* treeTransform = treeNode->getTransform();
  		treeTransform->scale(scale * tree.scale);
 		treeTransform->rotateY(pos.w);
@@ -41,7 +41,7 @@ void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,
 		}
 		
 	}else{
-		ERROR_F("Can't add tree: %s\n",tree.ModelName.c_str());
+		ERROR_FN(Locale::get("ERROR_ADD_TREE"),tree.ModelName.c_str());
 	}
 }
 

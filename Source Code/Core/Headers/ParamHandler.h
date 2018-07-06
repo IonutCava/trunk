@@ -21,15 +21,24 @@
 #include "core.h"
 #include <boost/any.hpp>
 
-using boost::any_cast;
-
 DEFINE_SINGLETON (ParamHandler)
 typedef unordered_map<std::string, boost::any> ParamMap;
 
 public:
 
 	template <class T>	
-	T getParam(const std::string& name);
+	T getParam(const std::string& name){
+		ReadLock r_lock(_mutex);
+		ParamMap::iterator it = _params.find(name);
+		if(it != _params.end()){
+			try	{
+				return boost::any_cast<T>(it->second);
+			}catch(const boost::bad_any_cast &){
+				ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
+			}
+		}
+		return T(); ///integrals will be 0, string will be empty, etc;
+	}
 
 	void setParam(const std::string& name, const boost::any& value){
 		WriteLock w_lock(_mutex);
@@ -42,7 +51,7 @@ public:
 	inline void delParam(const std::string& name){
 		WriteLock w_lock(_mutex);
 		_params.erase(name); 
-		if(_logState) PRINT_FN("ParamHandler: Removed saved parameter [ %s ]", name.c_str());
+		if(_logState) PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
 	} 
 
 	inline void setDebugOutput(bool logState) {WriteLock w_lock(_mutex); _logState = logState;}

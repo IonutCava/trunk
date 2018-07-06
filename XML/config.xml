@@ -8,6 +8,8 @@
 	<memFile>mem.log</memFile>
 </debug>
 
+<language>enGB</language>
+
 <!-- RUNTIME: Values use by the application after loading is complete -->
 <runtime>
 	<!-- This value sets the y-position (height) of the "safety-net" for PhysX actors -->

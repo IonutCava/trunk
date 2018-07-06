@@ -72,7 +72,7 @@ PostFX::~PostFX(){
 }
 
 void PostFX::init(const vec2<U16>& resolution){
-	PRINT_FN("Initializing the post-processing interface");
+	PRINT_FN(Locale::get("START_POST_FX"));
 	ParamHandler& par = ParamHandler::getInstance();
 
 	_enablePostProcessing = par.getParam<bool>("postProcessing.enablePostFX");

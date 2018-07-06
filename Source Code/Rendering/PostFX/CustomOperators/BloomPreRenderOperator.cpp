@@ -40,7 +40,7 @@ void BloomPreRenderOperator::operation(){
 	if(!_enabled) return;
 	if(!_renderQuad) return;
 	if(_inputFBO.empty()){
-		ERROR_FN("Bloom Operator - no input FBO");
+		ERROR_FN(Locale::get("ERROR_BLOOM_INPUT_FBO"));
 	}
 	GFXDevice& gfx = GFX_DEVICE;
 	ParamHandler& par = ParamHandler::getInstance();

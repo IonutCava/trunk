@@ -15,12 +15,12 @@ Texture* ImplResourceLoader<Texture>::operator()(){
 	}else if (i == 1){
 		ptr = GFX_DEVICE.newTexture2D(_descriptor.getFlag());
 	}else{
-		ERROR_FN("TextureLoader: wrong number of files for cubemap texture: [ %s ]", _descriptor.getName().c_str());
+		ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT"), _descriptor.getName().c_str());
 		return NULL;
 	}
 
 	if(!load(ptr,_descriptor.getResourceLocation())){
-		ERROR_FN("TextureLoader: could not load texture file [ (%s)%s ]",_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
+		ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_FILE"),_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
 		return NULL;
 	}
 

@@ -18,10 +18,10 @@
 
 #include <string.h>
 #include "Headers/DetourPathCorridor.h"
-#include "AI/PathFinding/Detour/Headers/DetourNavMeshQuery.h"
-#include "AI/PathFinding/Detour/Headers/DetourCommon.h"
-#include "AI/PathFinding/Detour/Headers/DetourAssert.h"
-#include "AI/PathFinding/Detour/Headers/DetourAlloc.h"
+#include <Detour/Headers/DetourNavMeshQuery.h>
+#include <Detour/Headers/DetourCommon.h>
+#include <Detour/Headers/DetourAssert.h>
+#include <Detour/Headers/DetourAlloc.h>
 
 
 int dtMergeCorridorStartMoved(dtPolyRef* path, const int npath, const int maxPath,

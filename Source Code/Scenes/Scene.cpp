@@ -28,7 +28,7 @@ bool Scene::idle(){ //Called when application is idle
 			p << (*iter).ModelName;
 			ASIO::getInstance().sendPacket(p);
 			while(!loadModel(*iter)){
-				PRINT_FN("Waiting for file .. ");
+				PRINT_FN(Locale::get("AWAITING_FILE"));
 			}
 		}else{
 			std::vector<FileData>::iterator iter2;
@@ -86,7 +86,7 @@ bool Scene::loadModel(const FileData& data){
 	model.setFlag(true);
 	Mesh *thisObj = CreateResource<Mesh>(model);
 	if (!thisObj){
-		ERROR_FN("Scene: Error loading model [ %s ]",  data.ModelName.c_str());
+		ERROR_FN(Locale::get("ERROR_SCENE_LOAD_MODEL"),  data.ModelName.c_str());
 		return false;
 	}
 	SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj);
@@ -125,7 +125,7 @@ bool Scene::loadGeometry(const FileData& data){
 			dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
 			dynamic_cast<Text3D*>(thisObj)->getText() = data.data2;
 	}else{
-		ERROR_FN("Scene: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
+		ERROR_FN(Locale::get("ERROR_SCENE_UNSUPPORTED_GEOM"),data.ModelName.c_str());
 		return false;
 	}
 	Material* tempMaterial = XML::loadMaterial(data.ItemName+"_material");
@@ -169,7 +169,7 @@ SceneGraphNode* Scene::addGeometry(Object3D* const object){
 
 bool Scene::removeGeometry(SceneNode* node){
 	if(!node) {
-		ERROR_FN("Trying to delete NULL scene node!");
+		ERROR_FN(Locale::get("ERROR_SCENE_DELETE_NULL_NODE"));
 		return false;
 	}
 	SceneGraphNode* _graphNode = _sceneGraph->findNode(node->getName());
@@ -224,7 +224,7 @@ void Scene::clearLights(){
 }
 
 void Scene::clearEvents(){
-	PRINT_FN("Stopping all events ...");
+	PRINT_FN(Locale::get("STOP_SCENE_EVENTS"));
 	_events.clear();
 }
 
@@ -293,11 +293,11 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			deleteSelection();
 			break;
 		case OIS::KC_F2:{
-			D_PRINT_FN("Toggling Skeleton Visibility");
+			D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
 			toggleSkeletons();
 			}break;
 		case OIS::KC_B:{
-			D_PRINT_FN("Toggling Bounding Boxes");
+			D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
 			toggleBoundingBoxes();
 			}break;
 		case OIS::KC_ADD:
