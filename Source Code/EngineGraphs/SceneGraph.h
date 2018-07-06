@@ -20,9 +20,11 @@
 #include "SceneGraphNode.h"
 
 class SceneGraph  {
-public:
+	typedef unordered_map<std::string/*Shader Name*/, std::vector<SceneGraphNode*>/*Objects bound to this shader*/> object_shader_map;
+	public:
+	
 	SceneGraph(){
-		_root = new SceneGraphNode(new SceneRoot);
+		_root = New SceneGraphNode(New SceneRoot);
 	}
 
 	~SceneGraph(){
@@ -37,10 +39,12 @@ public:
 		return _root->findNode(name);
 	}
 	
-	void render() {	_root->render(); }
-
+	void render();
+	inline object_shader_map& getObjectShaderMap() {return _objectShaderMap;}
+	void print();
 private:
 	SceneGraphNode* _root;
+	 object_shader_map _objectShaderMap;
 	//SpatialHierarchyTree _spatialTree; //For HSR
 };
 #endif

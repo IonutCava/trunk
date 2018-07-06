@@ -73,6 +73,16 @@ enum Type
 	
 };
 
+enum Format
+{
+	_U8              = 0x0000,
+	_U16             = 0x0001,
+	_U32             = 0x0002,
+	_I8              = 0x0003,
+	_I16             = 0x0004,
+	_I32             = 0x0005
+};
+
 //Forward declarations
 class Object3D;
 class Text;
@@ -92,8 +102,7 @@ class Quad3D;
 class Text3D;
 class mat4;
 class Material;
-#include <iostream>
-#include <unordered_map>
+class SceneGraphNode;
 
 //Renderer Programming Interface
 class RenderAPIWrapper
@@ -106,11 +115,11 @@ protected:
 	
 	void setId(RenderAPI api) {_apiId = api;}
 	RenderAPI getId() { return _apiId;}
-	virtual void lookAt(const vec3& eye,const vec3& center,const vec3& up) = 0;
+	virtual void lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx = false, bool inverty = false) = 0;
 	virtual void idle() = 0;
-	virtual mat4 getModelViewMatrix() = 0;
-	virtual mat4 getProjectionMatrix() = 0;
-
+	virtual void getModelViewMatrix(mat4& mvMat) = 0;
+	virtual void getProjectionMatrix(mat4& projMat) = 0;
+	
 	virtual void resizeWindow(U16 w, U16 h) = 0;
 
 	virtual FrameBufferObject*  newFBO() = 0;
@@ -118,18 +127,12 @@ protected:
 	virtual PixelBufferObject*  newPBO() = 0;
 	virtual Texture2D*          newTexture2D(bool flipped = false) = 0;
 	virtual TextureCubemap*     newTextureCubemap(bool flipped = false) = 0;
-	virtual Shader* newShader(const char *vsFile, const char *fsFile) = 0;
-	virtual Shader* newShader() = 0;
+	virtual Shader*             newShader(const char *vsFile, const char *fsFile) = 0;
+	virtual Shader*             newShader() = 0;
 	
 	virtual void initHardware() = 0;
 	virtual void closeRenderingApi() = 0;
 	virtual void initDevice() = 0;
-
-	/*Geometry transformations*/
-	virtual void translate(const vec3& pos) = 0;
-	virtual void rotate(F32 angle,const vec3& weights) = 0;
-    virtual void scale(const vec3& scale) = 0;
-	/*Geometry transformations*/
 
 	/*Rendering States*/
 	virtual void clearBuffers(U8 buffer_mask) = 0;
@@ -138,11 +141,7 @@ protected:
 	/*Rendering States*/
 
 	/*State Matrix Manipulation*/
-	virtual void enable_MODELVIEW() = 0;
-	virtual void loadIdentityMatrix() = 0;
 	virtual void toggle2D(bool _2D) = 0;
-	virtual void setTextureMatrix(U16 slot, const mat4& transformMatrix) = 0;
-	virtual void restoreTextureMatrix(U16 slot) = 0;
 	virtual void setOrthoProjection(const vec4& rect, const vec2& planes) = 0;
 	/*State Matrix Manipulation*/
 
@@ -159,26 +158,30 @@ protected:
 	virtual void drawSphere3D(Sphere3D* const sphere) = 0;
 	virtual void drawQuad3D(Quad3D* const quad) = 0;
 	virtual void drawText3D(Text3D* const text) = 0;
+	virtual void drawBox3D(SceneGraphNode* node) = 0;
+	virtual void drawSphere3D(SceneGraphNode* node) = 0;
+	virtual void drawQuad3D(SceneGraphNode* node) = 0;
+	virtual void drawText3D(SceneGraphNode* node) = 0;
 	/*Primitives Rendering*/
 
 	/*Mesh Rendering*/
-	virtual void renderModel(Object3D* const model) = 0;
-	virtual void renderElements(Type t, U32 count, const void* first_element) = 0;
+	virtual void renderModel(SceneGraphNode* node) = 0;
+	virtual void renderElements(Type t, Format f, U32 count, const void* first_element) = 0;
 	/*Mesh Rendering*/
 
 	/*Color Management*/
 	virtual void setMaterial(Material* mat) = 0;
-	virtual void setColor(const vec4& v) = 0;
-	virtual void setColor(const vec3& v) = 0;
 	/*Color Management*/
 
 	/*Light Management*/
-	virtual void setLight(U8 slot, std::tr1::unordered_map<std::string,vec4>& properties) = 0;
+	virtual void setLight(U8 slot, unordered_map<std::string,vec4>& properties) = 0;
 	virtual void createLight(U8 slot) = 0;
-	virtual void setLightCameraMatrices(const vec3& lightVector) = 0;
-	virtual void restoreLightCameraMatrices() = 0;
+	virtual void setLightCameraMatrices(const vec3& lightVector, const vec3& lightTargetVector,bool directional = false) = 0;
+	virtual void restoreLightCameraMatrices(bool directional = false) = 0;
 	/*Light Management*/
 
+	virtual void setDepthMapRendering(bool state) = 0;
+	virtual void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax) = 0;
 	virtual void ignoreStateChanges(bool state) = 0;
 	virtual void toggleWireframe(bool state) = 0;
 	virtual ~RenderAPIWrapper(){};
@@ -191,7 +194,6 @@ public: //RenderAPIWrapper global
 
 private:
 	RenderAPI _apiId;
-
 protected:
 	RenderState _state;
 

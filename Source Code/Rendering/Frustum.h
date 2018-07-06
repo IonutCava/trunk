@@ -37,18 +37,20 @@ public:
 	I8  ContainsSphere(const vec3& center, F32 radius) const;
 
 
-	vec3& getEyePos()					{return _eyePos;}
-	mat4& getModelviewMatrix()			{return _modelViewMatrix;}
-	mat4& getModelviewInvMatrix()		{return _modelViewMatrixInv;}
-	mat4& getProjectionMatrix()			{return _projectionMatrix;}
-	mat4  getModelvieProjectionwMatrix(){return _projectionMatrix * _modelViewMatrix;}
+	inline       vec3& getEyePos()					          {return _eyePos;}
+	inline const mat4& getModelviewMatrix()		              {return _modelViewMatrix;}
+	inline const mat4& getModelviewInvMatrix() 		          {return _modelViewMatrixInv;}
+	inline const mat4& getProjectionMatrix()		 	      {return _projectionMatrix;}
+	inline const mat4& getModelViewProjectionMatrix()         {return _modelViewProjectionMatrix;}
+	inline const mat4& getInverseModelViewProjectionMatrix()  {return _inverseModelViewProjectionMatrix;}
 
 private:
 	vec3	_eyePos;
 	vec4	_frustumPlanes[6];	
 	mat4	_modelViewMatrix, _modelViewMatrixInv;	// Modelview Matrix and it's inverse
-	mat4	_projectionMatrix; 				// Projection Matrix
-	mat4	_modelViewProjectionMatrix;			// Modelview * Projection
+	mat4	_projectionMatrix; 				        // Projection Matrix
+	mat4	_modelViewProjectionMatrix;			    // Modelview * Projection
+	mat4    _inverseModelViewProjectionMatrix;       // Projection * inverse(ModelView)
 
 END_SINGLETON
 

@@ -4,37 +4,34 @@
 #include "Managers/SceneManager.h"
 #include "Managers/ResourceManager.h"
 #include "EngineGraphs/SceneGraph.h"
+typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
+void TerrainChunk::Load(U8 depth, ivec2 pos, ivec2 HMsize){
 
-void TerrainChunk::Load(U32 depth, ivec2 pos, ivec2 HMsize){
-
-	for(U32 i=0; i < TERRAIN_CHUNKS_LOD; i++)
+	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++)
 		ComputeIndicesArray(i, depth, pos, HMsize);
 }
 
 
-void TerrainChunk::addTree(const vec3& pos,F32 rotation,F32 scale, const std::string& tree_shader, const FileData& tree, SceneGraphNode* parentNode){
-	stringstream ss;
-	ss << "_" << parentNode->getChildren().size();
-	ResourceDescriptor model(tree.ItemName+ss.str());
+void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, SceneGraphNode* parentNode){
+	ResourceDescriptor model(tree.ItemName);
 	model.setResourceLocation(tree.ModelName);
-	Mesh* tempTree = ResourceManager::getInstance().LoadResource<Mesh>(model);
-
+	model.setFlag(true);
+	Mesh* tempTree = ResourceManager::getInstance().loadResource<Mesh>(model);
 	if(tempTree){
-		SceneGraphNode* treeGraphNode = parentNode->addNode(tempTree);
-		Transform* treeTransform = treeGraphNode->getNode()->getTransform();
-		Material*  treeMaterial = treeGraphNode->getNode()->getMaterial();
+		stringstream ss; ss << "_" << parentNode->getChildren().size();
+		std::string treeName(tempTree->getName()+ss.str());
+		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
+		Console::getInstance().printfn("Adding tree [ %s ]",treeName.c_str());
+		Transform* treeTransform = treeNode->getTransform();
  		treeTransform->scale(scale * tree.scale);
-		treeTransform->rotateY(rotation);
-		treeTransform->translate(pos);
-		treeMaterial->setShader(tree_shader);
-		_trees.push_back(tempTree->getName());
+		treeTransform->rotateY(pos.w);
+		treeTransform->translate(vec3(pos));
 	}else{
 		Console::getInstance().errorf("Can't add tree: %s\n",tree.ModelName.c_str());
 	}
-	ss.clear();
 }
 
-void TerrainChunk::ComputeIndicesArray(U32 lod, U32 depth, ivec2 pos, ivec2 HMsize){
+void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, ivec2 pos, ivec2 HMsize){
 
 	assert(lod < TERRAIN_CHUNKS_LOD);
 
@@ -43,8 +40,8 @@ void TerrainChunk::ComputeIndicesArray(U32 lod, U32 depth, ivec2 pos, ivec2 HMsi
 	U32 div = (U32)pow(2.0f, (F32)(depth+lod));
 	ivec2 vHeightmapDataSize = HMsize/(div) + ivec2(1,1);
 
-	U32 nHMWidth = (U32)vHeightmapDataSize.x;
-	U32 nHMHeight = (U32)vHeightmapDataSize.y;
+	U16 nHMWidth = (U16)vHeightmapDataSize.x;
+	U16 nHMHeight = (U16)vHeightmapDataSize.y;
 	U32 nHMOffsetX = (U32)vHeightmapDataPos.x;
 	U32 nHMOffsetY = (U32)vHeightmapDataPos.y;
 
@@ -57,9 +54,9 @@ void TerrainChunk::ComputeIndicesArray(U32 lod, U32 depth, ivec2 pos, ivec2 HMsi
 	_indice[lod].reserve( nIndice );
 
 
-	for(U32 j=0; j<(U32)nHMHeight-1; j++)
+	for(U16 j=0; j<nHMHeight-1; j++)
 	{
-		for(U32 i=0; i<(U32)nHMWidth; i++)
+		for(U16 i=0; i<nHMWidth; i++)
 		{
 			U32 id0 = (j*(offset) + nHMOffsetY+0)*(nHMTotalWidth)+(i*(offset) + nHMOffsetX+0);
 			U32 id1 = (j*(offset) + nHMOffsetY+(offset))*(nHMTotalWidth)+(i*(offset) + nHMOffsetX+0);
@@ -76,55 +73,31 @@ void TerrainChunk::Destroy(){
 
 	for(U8 i=0; i<TERRAIN_CHUNKS_LOD; i++)
 		_indice[i].clear();
-	_trees.clear();
-
 }
 
-void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawInReflection){
-
-	F32 treeVisibility = SceneManager::getInstance().getActiveScene()->getTreeVisibility();
-	SceneGraph* sceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
-	assert(lod < TERRAIN_CHUNKS_LOD);
-	for(U16 i = 0; i < _trees.size(); i++){
-		SceneGraphNode* currentTree = sceneGraph->findNode(_trees[i]);
-		assert(currentTree);
-		if(d > treeVisibility && !GFXDevice::getInstance().getDepthMapRendering())
-			currentTree->setActive(false);
-		else{
-			currentTree->restoreActive();
-			//ToDo: Fix upside-down object water rendering - Ionut
-			/*F32 yScale = currentTree->getNode<Mesh>()->getTransform()->getScale().y;
-			if( (drawInReflection && yScale > 0) || (!drawInReflection && yScale < 0) ) yScale = -yScale;
-			currentTree->getNode<Mesh>()->getTransform()->scaleY(yScale);*/
-
-				
-		}
-	}
-
-}
-
-int TerrainChunk::DrawGround(U32 lod, bool drawInReflection){
+int TerrainChunk::DrawGround(I8 lod, bool drawInReflection){
 
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod>0) lod--;
 
 	for(U32 j=0; j < _indOffsetH[lod]; j++){
-		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
+		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,_U32,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
 	}
 
 	return 1;
 }
 
-void  TerrainChunk::DrawGrass(U32 lod, F32 d, bool drawInReflection){
+void  TerrainChunk::DrawGrass(I8 lod, F32 d){
 
 	
 	F32 grassVisibility = SceneManager::getInstance().getActiveScene()->getGrassVisibility();
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
-	if(d > grassVisibility && !GFXDevice::getInstance().getDepthMapRendering()) return;
+	if(d > grassVisibility) { //if we go beyond grass visibility limit ...
+			return; // ... do not draw grass
+	}
 	
-	if(_grassIndice.size() > 0)
-	{
+	if(_grassIndice.size() > 0)	{
 		F32 ratio = 1.0f - (d / grassVisibility);
 		ratio *= 2.0f;
 		if(ratio > 1.0f) ratio = 1.0f;
@@ -133,7 +106,7 @@ void  TerrainChunk::DrawGrass(U32 lod, F32 d, bool drawInReflection){
 		indices_count -= indices_count%4; 
 
 		if(indices_count > 0)
-			GFXDevice::getInstance().renderElements(QUADS,indices_count, &(_grassIndice[0]));
+			GFXDevice::getInstance().renderElements(QUADS,_U32,indices_count, &(_grassIndice[0]));
 			
 	}
 

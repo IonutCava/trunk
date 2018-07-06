@@ -40,10 +40,15 @@ public:
 	Quad3D*	_renderQuad;
 	Shader* _anaglyphShader;
 	Shader* _postProcessingShader;
+	Shader* _blurShader;
+	Shader* _bloomShader;
+	Texture2D* _underwaterTexture;
 
 private:
 	void displaySceneWithoutAnaglyph(void);
 	void displaySceneWithAnaglyph(void);
+	void generateBloomTexture();
+	void generateDepthOfFieldTexture();
 	~PostFX();
 
 	bool _enablePostProcessing;

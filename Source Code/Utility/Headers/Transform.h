@@ -23,8 +23,7 @@
 class Transform
 {
 public:
-	Transform()
-	{
+	Transform()	{
 		_dirty = false;
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
@@ -34,8 +33,7 @@ public:
 	}
 
 	Transform(const Quaternion& orientation, const vec3& translation, const vec3& scale) : 
-			  _orientation(orientation), _translation(translation), _scale(scale)
-	{
+			  _orientation(orientation), _translation(translation), _scale(scale){
 		_dirty = true;
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
@@ -44,80 +42,70 @@ public:
 		_parentMatrix.identity();
 	}
 
-	void setPosition(const vec3& position) 
-	{
+	void setPosition(const vec3& position){
 		_translation = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 
-	void setPositionX(F32 position)
-	{
+	void setPositionX(F32 position){
 		_translation.x = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 
-	void setPositionY(F32 position)
-	{
+	void setPositionY(F32 position){
 		_translation.y = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 	
-	void setPositionZ(F32 position)
-	{
+	void setPositionZ(F32 position){
 		_translation.z = position;
 		_translationMatrix.identity();
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 
-	void translate(const vec3& position)    
-	{
+	void translate(const vec3& position){
 		_translation   += position;
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 
-	void translateX(const F32 positionX)
-	{
+	void translateX(const F32 positionX){
 		_translation.x += positionX;
 		_translationMatrix.translate(_translation); 
 		_dirty = true;
 	}
 
-	void translateY(const F32 positionY)
-	{
+	void translateY(const F32 positionY){
 		_translation.y += positionY;
 		_translationMatrix.translate(_translation); 
 		_dirty = true;
 	}
 
-	void translateZ(const F32 positionZ)
-	{
+	void translateZ(const F32 positionZ){
 		_translation.z += positionZ;
 		_translationMatrix.translate(_translation);
 		_dirty = true;
 	}
 
-	void scale(const vec3& scale)
-	{
+	void scale(const vec3& scale){
 		_scaleMatrix.scale(scale);
 		_scale = scale; 
 		_dirty = true;
 	}
 
-	void scale(const F32 scale){ this->scale(vec3(scale,scale,scale)); }
+	void scale(const F32 scale)  {this->scale(vec3(scale,scale,scale)); }
 	void scaleX(const F32 scale) {this->scale(vec3(scale,_scale.y,_scale.z));}
 	void scaleY(const F32 scale) {this->scale(vec3(_scale.x,scale,_scale.z));}
 	void scaleZ(const F32 scale) {this->scale(vec3(_scale.x,_scale.y,scale));}
 
-	void rotate(const vec3& axis, F32 degrees)
-	{
+	void rotate(const vec3& axis, F32 degrees){
 		_orientation.FromAxis(axis,degrees);
 		_rotationMatrix = _orientation.getMatrix();
 		_axis = axis;
@@ -125,44 +113,44 @@ public:
 		_dirty = true;
 	}
 
-	void rotateEuler(const vec3& euler)
-	{
+	void rotateEuler(const vec3& euler){
 		_orientation.FromEuler(euler);
 		_orientation.getAxisAngle(&_axis,&_angle,true);
 		_rotationMatrix = _orientation.getMatrix();
 		_dirty = true;
 	}
 
-	void rotateQuaternion(const Quaternion& quat)
-	{
+	void rotateQuaternion(const Quaternion& quat){
 		_orientation = quat; 
 		_rotationMatrix = _orientation.getMatrix();
 		_dirty = true;
 	}
 
-	void rotateX(F32 angle){_rotationMatrix.rotate_x(angle); _orientation.FromAxis(vec3(1,0,0),angle); _dirty = true;}
-	void rotateY(F32 angle){_rotationMatrix.rotate_y(angle); _orientation.FromAxis(vec3(1,0,0),angle); _dirty = true;}
-	void rotateZ(F32 angle){_rotationMatrix.rotate_z(angle); _orientation.FromAxis(vec3(1,0,0),angle); _dirty = true;}
+	void rotateX(F32 angle){this->rotate(vec3(1,0,0),angle);}
+	void rotateY(F32 angle){this->rotate(vec3(0,1,0),angle);}
+	void rotateZ(F32 angle){this->rotate(vec3(0,0,1),angle);}
 	
 
-	const mat4& getMatrix() {if(isDirty()) applyTransforms(); return _worldMatrix;}
-	const mat4& getParentMatrix() {return _parentMatrix;}
-	const mat4& getRotationMatrix() {return _orientation.getMatrix();}
-	const vec3& getPosition() {return _translation;}
-	const vec3& getScale() {return _scale;}
+	const mat4& getMatrix()            {this->applyTransforms(); return _worldMatrix;}
+	const mat4& getParentMatrix()      {return _parentMatrix;}
+	const mat4& getRotationMatrix()    {return _orientation.getMatrix();}
+	const vec3& getPosition()          {return _translation;}
+	const vec3& getScale()             {return _scale;}
 	const Quaternion& getOrientation() {return _orientation;}
 
 	void applyTransforms(){
-		_worldMatrix.identity();
-		_worldMatrix *= _translationMatrix;
-		_worldMatrix *= _rotationMatrix;
-		_worldMatrix *= _scaleMatrix;
-		clean();
+		if(isDirty()){
+			_worldMatrix.identity();
+			_worldMatrix *= _translationMatrix;
+			_worldMatrix *= _rotationMatrix;
+			_worldMatrix *= _scaleMatrix;
+			this->clean();
+		}
 	}
 
 	void setTransforms(const mat4& transform){
 		_worldMatrix = transform;
-		clean();
+		this->clean();
 	}
 
 	void setParentMatrix(const mat4& transform){
@@ -179,8 +167,9 @@ public:
 
 		return result;
 	}
-private:
+
 	bool isDirty() {return _dirty;}
+private:
 	void clean()   {_dirty = false;} 
 
 private:

@@ -24,6 +24,7 @@
 class Sphere3D;
 class Shader;
 class Texture;
+class SceneGraphNode;
 typedef Texture TextureCubemap;
 DEFINE_SINGLETON( Sky ) 
 
@@ -39,6 +40,7 @@ private:
 	TextureCubemap*	  _skybox;
 	vec3			  _sunVect,	_eyePos;
 	Sphere3D          *_sky,*_sun;
+	SceneGraphNode    *_skyNode, *_sunNode;
 	
 private:
 	Sky();

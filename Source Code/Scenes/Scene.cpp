@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "Managers/ResourceManager.h"
 #include "Managers/SceneManager.h" //Object selection
 #include "PhysX/PhysX.h"
 #include "ASIO.h"
@@ -26,10 +25,8 @@ bool Scene::clean(){ //Called when application is idle
 			WorldPacket p(CMSG_REQUEST_GEOMETRY);
 			p << (*iter).ModelName;
 			ASIO::getInstance().sendPacket(p);
-			while(!loadModel(*iter))
-			{
+			while(!loadModel(*iter)){
 				Console::getInstance().printfn("Waiting for file .. ");
-
 			}
 		}
 		else
@@ -56,7 +53,7 @@ bool Scene::clean(){ //Called when application is idle
 void Scene::addPatch(vector<FileData>& data){
 	/*for(vector<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
 	{
-		for(tr1::unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
+		for(unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
 			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
 			{
 				boost::mutex::scoped_lock l(_mutex);
@@ -85,24 +82,22 @@ void Scene::setInitialData(){
 
 bool Scene::loadModel(const FileData& data)
 {
-	if(data.type == PRIMITIVE) 
-		return loadGeometry(data);
+	if(data.type == PRIMITIVE)	return loadGeometry(data);
 
 	ResourceDescriptor model(data.ItemName);
 	model.setResourceLocation(data.ModelName);
-	Mesh *thisObj = ResourceManager::getInstance().LoadResource<Mesh>(model);
+	model.setFlag(true);
+	Mesh *thisObj = _resManager.loadResource<Mesh>(model);
 	if (!thisObj){
 		Console::getInstance().errorfn("SceneManager: Error loading model [ %s ]",  data.ModelName.c_str());
 		return false;
 	}
+	SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj);
 
-	thisObj->setResourceLocation(data.ModelName);	
-	thisObj->setName(data.ItemName);
-	thisObj->getTransform()->scale(data.scale);
-	thisObj->getTransform()->rotateEuler(data.orientation);
-	thisObj->getTransform()->translate(data.position);
-
-	_sceneGraph->getRoot()->addNode(thisObj);
+	meshNode->getTransform()->scale(data.scale);
+	meshNode->getTransform()->rotateEuler(data.orientation);
+	meshNode->getTransform()->translate(data.position);
+	
 	return true;
 }
 
@@ -112,17 +107,17 @@ bool Scene::loadGeometry(const FileData& data){
 	ResourceDescriptor item(data.ItemName);
 	item.setResourceLocation(data.ModelName);
 	if(data.ModelName.compare("Box3D") == 0) {
-			thisObj = ResourceManager::getInstance().LoadResource<Box3D>(item);
+			thisObj = _resManager.loadResource<Box3D>(item);
 			dynamic_cast<Box3D*>(thisObj)->getSize() = data.data;
 
 	} else if(data.ModelName.compare("Sphere3D") == 0) {
-			thisObj = ResourceManager::getInstance().LoadResource<Sphere3D>(item);
+			thisObj = _resManager.loadResource<Sphere3D>(item);
 			dynamic_cast<Sphere3D*>(thisObj)->getSize() = data.data;
 
 	} else if(data.ModelName.compare("Quad3D") == 0)	{
 			vec3 scale = data.scale;
 			vec3 position = data.position;
-			thisObj = ResourceManager::getInstance().LoadResource<Quad3D>(item);
+			thisObj = _resManager.loadResource<Quad3D>(item);
 			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_LEFT)     = vec3(scale.x/2-position.x,scale.y/2+position.y, scale.z/2 + position.z);
 			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_RIGHT)    = vec3(scale.x/2+position.x,scale.y/2+position.y, scale.z/2 + position.z);
 			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(scale.x/2-position.x,scale.y/2-position.y, scale.z/2 + position.z);
@@ -130,22 +125,21 @@ bool Scene::loadGeometry(const FileData& data){
 
 	} else if(data.ModelName.compare("Text3D") == 0) {
 		
-			thisObj = ResourceManager::getInstance().LoadResource<Text3D>(item);
+			thisObj =_resManager.loadResource<Text3D>(item);
 			dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
 			dynamic_cast<Text3D*>(thisObj)->getText() = data.data2;
 	}else{
 		Console::getInstance().errorfn("SCENEMANAGER: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
 		return false;
 	}
-	ResourceDescriptor tempMaterial(data.ItemName+"_material");
-	thisObj->setMaterial(ResourceManager::getInstance().LoadResource<Material>(tempMaterial));
+	ResourceDescriptor materialDescriptor(data.ItemName+"_material");
+	thisObj->setMaterial(ResourceManager::getInstance().loadResource<Material>(materialDescriptor));
 	thisObj->getMaterial()->setDiffuse(data.color);
 	thisObj->getMaterial()->setAmbient(data.color);
-	thisObj->getTransform()->scale(data.scale);
-	thisObj->getTransform()->rotateEuler(data.orientation);
-	thisObj->getTransform()->translate(data.position);
-
-	_sceneGraph->getRoot()->addNode(thisObj);
+	SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->addNode(thisObj);
+	thisObjSGN->getTransform()->scale(data.scale);
+	thisObjSGN->getTransform()->rotateEuler(data.orientation);
+	thisObjSGN->getTransform()->translate(data.position);
 
 	return true;
 }
@@ -156,23 +150,27 @@ bool Scene::addDefaultLight(){
 	stringstream ss; ss << oldSize;
 	ResourceDescriptor defaultLight("Default omni light "+ss.str());
 	defaultLight.setId(0);
-	Light* l = ResourceManager::getInstance().LoadResource<Light>(defaultLight);
-	_lights.push_back(l);
+	defaultLight.setResourceLocation("root");
+	Light* l = _resManager.loadResource<Light>(defaultLight);
 	_sceneGraph->getRoot()->addNode(l);
+	_lights.push_back(l);
 	if(_lights.size() > oldSize) return true;	
 	else return false;
-
 }
 
-void Scene::addGeometry(Object3D* const object){
-	_sceneGraph->getRoot()->addNode(object);
+SceneGraphNode* Scene::addGeometry(Object3D* const object){
+	return _sceneGraph->getRoot()->addNode(object);
 }
 
-bool Scene::removeGeometry(const std::string& name){
-	SceneGraphNode* node = _sceneGraph->findNode(name);
-	if(node){
-		delete node;
-		node = NULL;
+bool Scene::removeGeometry(SceneNode* node){
+	if(!node) {
+		Console::getInstance().errorfn("Trying to delete NULL scene node!");
+		return false;
+	}
+	SceneGraphNode* _graphNode = node->getSceneGraphNode();
+	if(_graphNode){
+		delete _graphNode;
+		_graphNode = NULL;
 		return true;
 	}
 	return false;
@@ -183,11 +181,13 @@ bool Scene::load(const std::string& name){
 	if(TerrainInfoArray.empty()) return true;
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
 		ResourceDescriptor terrain(TerrainInfoArray[i]->getVariable("terrainName"));
-		Terrain* temp = ResourceManager::getInstance().LoadResource<Terrain>(terrain);
-		root->addNode(temp);
+		Terrain* temp = _resManager.loadResource<Terrain>(terrain);
+		SceneGraphNode* terrainTemp = _sceneGraph->getRoot()->addNode(temp);
+		terrainTemp->useDefaultTransform(false);
+		terrainTemp->setTransform(NULL);
+		terrainTemp->setActive(TerrainInfoArray[i]->getActive());
 		temp->initializeVegetation(TerrainInfoArray[i]);
 	}
-
 	return true;
 }
 
@@ -204,7 +204,7 @@ bool Scene::unload(){
 		_deferredBuffer = NULL;
 	}
 	if(_deferredShader != NULL){
-		ResourceManager::getInstance().remove(_deferredShader);
+		RemoveResource(_deferredShader);
 	}
 	clearObjects();
 	clearLights();
@@ -213,7 +213,7 @@ bool Scene::unload(){
 
 void Scene::clearObjects(){
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
-		ResourceManager::getInstance().remove(TerrainInfoArray[i]);
+		RemoveResource(TerrainInfoArray[i]);
 	}
 	TerrainInfoArray.clear();
 	ModelDataArray.clear();
@@ -310,7 +310,7 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			Guardian::getInstance().RestartPhysX();
 			break;
 		case OIS::KC_N:
-			GFXDevice::getInstance().toggleWireframe();
+			_GFX.toggleWireframe();
 			break;
 		case OIS::KC_B:
 			SceneManager::getInstance().toggleBoundingBoxes();
@@ -358,6 +358,10 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 		case OIS::KC_UP:
 		case OIS::KC_DOWN:
 			Engine::getInstance().angleUD = 0.0f;
+			break;
+		case OIS::KC_F:
+			bool pdc = _paramHandler.getParam<bool>("enableDepthOfField");
+			_paramHandler.setParam("enableDepthOfField", !pdc); 
 			break;
 	}
 }

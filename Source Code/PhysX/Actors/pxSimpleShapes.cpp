@@ -88,11 +88,12 @@ void PhysX::DrawLowPlane(NxShape *plane)
 	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
-	D32 zFar = ParamHandler::getInstance().getParam<D32>("zFar");
+	F32 zFar = ParamHandler::getInstance().getParam<F32>("zFar");
 	Quad3D quad;
-	quad.getTransform()->scale(vec3(2.0f*zFar,0,2.0f*zFar));
-    quad.getTransform()->setPosition(vec3(pose.t.x,pose.t.y,pose.t.z));
-	GFXDevice::getInstance().drawQuad3D(&quad);
+	SceneGraphNode temp(&quad);
+	temp.getTransform()->scale(vec3(2.0f*zFar,0,2.0f*zFar));
+	temp.getTransform()->setPosition(vec3(pose.t.x,pose.t.y,pose.t.z));
+	GFXDevice::getInstance().drawQuad3D(&temp);
 	quad.unload();
 	delete orient;
 	orient = NULL;
@@ -107,8 +108,9 @@ void PhysX::DrawSphere(NxShape *sphere)
 	NxQuat temp(pose.M);
     orient[3] = orient[7] = orient[11] = 0.0f;  orient[15] = 1.0f;
 	Sphere3D visualSphere(1,9);
-	visualSphere.getTransform()->setTransforms(mat4(orient));
-	GFXDevice::getInstance().drawSphere3D(&visualSphere);
+	SceneGraphNode tempSGN(&visualSphere);
+	tempSGN.getTransform()->setTransforms(mat4(orient));
+	GFXDevice::getInstance().drawSphere3D(&tempSGN);
 	visualSphere.unload();
 	delete orient;
 	orient = NULL;
@@ -118,15 +120,15 @@ void PhysX::DrawBox(NxShape *box)
 {
 	NxMat34 pose = box->getActor().getGlobalPose();
 	F32 *orient = new F32[16];
-	GFXDevice::getInstance().setColor(vec3(0.3f,0.3f,0.8f));
 	BoundingBox *cube = (BoundingBox*)box->getActor().userData;
 	pose.M.getColumnMajorStride4(orient);
 	NxQuat temp(pose.M);
     orient[3] = orient[7] = orient[11] = 0.0f; orient[15] = 1.0f;
 	Box3D visualCube((cube->getMin()).distance( cube->getExtent()));
+	SceneGraphNode tempSGN(&visualCube);
 	visualCube.getMaterial()->setDiffuse(vec4(0.3f,0.3f,0.3f,1.0f));
-	visualCube.getTransform()->setTransforms(mat4(orient));
-	GFXDevice::getInstance().drawBox3D(&visualCube);
+	tempSGN.getTransform()->setTransforms(mat4(orient));
+	GFXDevice::getInstance().drawBox3D(&tempSGN);
 	visualCube.unload();
 	delete orient;
 	orient = NULL;

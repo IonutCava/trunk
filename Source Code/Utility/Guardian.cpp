@@ -82,6 +82,8 @@ void Guardian::TerminateApplication()
 	Console::getInstance().printfn("Destroying scene manager ...");
 	SceneManager::getInstance().DestroyInstance();
 	Console::getInstance().printfn("Deleting resource manager ...");
+	
+	ResourceManager::getInstance().Destroy();
 	ResourceManager::getInstance().DestroyInstance();
 	Console::getInstance().printfn("Closing hardware interface(GFX,SFX,input,network) engine ...");
 	GFXDevice::getInstance().DestroyInstance();

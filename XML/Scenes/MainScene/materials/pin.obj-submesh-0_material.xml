@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<material>
+	<name>pin.obj-submesh-0_material</name>
+	<ambient r="0.09999999" g="0.09999999" b="0.09999999" a="1"/>
+	<diffuse r="0.4353" g="0" b="0" a="1"/>
+	<specular r="0" g="0" b="0" a="1"/>
+	<shininess v="50"/>
+	<emissive r="0" g="0" b="0"/>
+</material>
+<diffuseTexture1>
+	<file>Assets/models/../texturi/..\texturi\branch.png</file>
+	<MapU>CLAMP</MapU>
+	<MapV>CLAMP</MapV>
+	<minFilter>LINEAR</minFilter>
+	<magFilter>LINEAR</magFilter>
+	<mipFilter>true</mipFilter>
+</diffuseTexture1>
+<shader>
+	<pixelShader>lighting.frag</pixelShader>
+	<vertexShader>terrain_tree.vert</vertexShader>
+</shader>

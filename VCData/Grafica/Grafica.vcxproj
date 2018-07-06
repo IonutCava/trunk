@@ -39,10 +39,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</EmbedManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)..\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</EmbedManifest>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -51,11 +51,13 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_VC100_dbg</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)_VC100</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)../Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)../Source Code;$(EngineLibraries)\boost;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)../Source Code/Libs\includes\networking;$(OutDir)../Source Code/Libs\includes;$(EngineLibraries)\physx\include;$(EngineLibraries)\physx\include\PhysXLoader;$(EngineLibraries)\physx\include\Physics;$(EngineLibraries)\physx\include\NxCharacter;$(EngineLibraries)\physx\include\Foundation;$(EngineLibraries)\physx\include\Cooking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include;$(EngineLibraries)\physx\include\PhysXLoader;$(EngineLibraries)\physx\include\Physics;$(EngineLibraries)\physx\include\NxCharacter;$(EngineLibraries)\physx\include\Foundation;$(EngineLibraries)\physx\include\Cooking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -71,12 +73,15 @@
       <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>glew32d.lib;glu32.lib;opengl32.lib;DevIL.lib;PhysXloader.lib;PhysXCooking.lib;PhysXCore.lib;ILU.lib;ILUT.lib;assimpd.lib;DIVIDE-NetworkingD.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
-      <OutputFile>$(OutDir)../$(ProjectName)_VC100_dbg.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)../Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
+      <ProgramDatabaseFile>$(ProjectDir)Debug\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>$(OutputPath)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -85,7 +90,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)../Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)../Source Code;$(EngineLibraries)\boost;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)../Source Code/Libs\includes\networking;$(OutDir)../Source Code/Libs\includes;$(EngineLibraries)\physx\include;$(EngineLibraries)\physx\include\PhysXLoader;$(EngineLibraries)\physx\include\Physics;$(EngineLibraries)\physx\include\NxCharacter;$(EngineLibraries)\physx\include\Foundation;$(EngineLibraries)\physx\include\Cooking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include;$(EngineLibraries)\physx\include\PhysXLoader;$(EngineLibraries)\physx\include\Physics;$(EngineLibraries)\physx\include\NxCharacter;$(EngineLibraries)\physx\include\Foundation;$(EngineLibraries)\physx\include\Cooking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -98,16 +103,21 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;PhysXloader.lib;PhysXCooking.lib;PhysXCore.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)../$(ProjectName)_VC100.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)../Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
+      <ProgramDatabaseFile>$(ProjectDir)Release\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>$(OutputPath)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\EngineGraphs\SceneGraph.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\common.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
@@ -119,6 +129,7 @@
     <ClCompile Include="..\..\Source Code\Importer\DVDConverter.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
     <ClCompile Include="..\..\Source Code\Vegetation\Vegetation.cpp" />
     <ClCompile Include="..\..\Source Code\Terrain\Quadtree.cpp" />
     <ClCompile Include="..\..\Source Code\Terrain\QuadtreeNode.cpp" />
@@ -194,6 +205,7 @@
     <ClInclude Include="..\..\Source Code\Importer\DVDConverter.h" />
     <ClInclude Include="..\..\Source Code\GUI\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\GuiFlash.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\PostFX.h" />
     <ClInclude Include="..\..\Source Code\Vegetation\Vegetation.h" />
     <ClInclude Include="..\..\Source Code\Terrain\Quadtree.h" />
     <ClInclude Include="..\..\Source Code\Terrain\QuadtreeNode.h" />
@@ -295,6 +307,8 @@
     <ClInclude Include="..\..\Source Code\SceneList.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\assets\shaders\anaglyph.frag" />
+    <None Include="..\..\assets\shaders\anaglyph.vert" />
     <None Include="..\..\assets\shaders\DeferredShadingPass1.frag" />
     <None Include="..\..\assets\shaders\DeferredShadingPass1.vert" />
     <None Include="..\..\assets\shaders\DeferredShadingPass1_bump.frag" />
@@ -306,6 +320,8 @@
     <None Include="..\..\assets\shaders\lighting.vert" />
     <None Include="..\..\assets\shaders\OBJ.frag" />
     <None Include="..\..\assets\shaders\OBJ.vert" />
+    <None Include="..\..\assets\shaders\postProcessing.frag" />
+    <None Include="..\..\assets\shaders\postProcessing.vert" />
     <None Include="..\..\assets\shaders\sky.frag" />
     <None Include="..\..\assets\shaders\sky.vert" />
     <None Include="..\..\assets\shaders\terrain_grass.frag" />

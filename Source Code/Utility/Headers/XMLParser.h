@@ -17,7 +17,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-
+class Material;
+class Texture;
 namespace XML
 {
 
@@ -29,7 +30,10 @@ namespace XML
 	void loadScene(const std::string& sceneName);
 	void loadGeometry(const std::string& file);
 	void loadTerrain(const std::string& file);
-	
+	Material* loadMaterial(const std::string &file);
+	void dumpMaterial(Material* const mat);
 	//ToDo: ....... Add more
 
+	Material* loadMaterialXML(const std::string &location);
+	Texture*  loadTextureXML(const std::string& textureName);
 }

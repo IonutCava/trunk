@@ -11,6 +11,7 @@
 #include "Managers/CameraManager.h"
 #include "Sky.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Geometry/Predefined/Quad3D.h"
 
 #define COORD(x,y,w)	((y)*(w)+(x))
 
@@ -19,12 +20,10 @@ Terrain::Terrain() : SceneNode(){
 	_terrainWidth = 0;
 	_terrainHeight = 0;
 	_groundVBO = NULL;
-	_terrainShader = ResourceManager::getInstance().LoadResource<Shader>(ResourceDescriptor("terrain_ground"));
 	_terrainQuadtree = New Quadtree();
-	_depthMapFBO[0] = GFXDevice::getInstance().newFBO();
-	_depthMapFBO[1] = GFXDevice::getInstance().newFBO();
-	_terrainMaterial = NULL;
 	_loaded = false;
+	_plane = NULL;
+	_drawInReflection = false;
 }
 
 
@@ -42,12 +41,11 @@ bool Terrain::unload(){
 		_groundVBO = NULL;		
 	}
 	for(U8 i = 0; i < _terrainTextures.size(); i++){
-		ResourceManager::getInstance().remove(_terrainTextures[i]);
+		RemoveResource(_terrainTextures[i]);
 	}
 	_terrainTextures.clear();
-	ResourceManager::getInstance().remove(_terrainDiffuseMap);
-	ResourceManager::getInstance().remove(_terrainShader);
-	ResourceManager::getInstance().remove(_terrainMaterial);
+	RemoveResource(_terrainDiffuseMap);
+
 	if(_veg != NULL){
 		delete _veg;
 		_veg = NULL;
@@ -71,8 +69,7 @@ void Terrain::terrainSetParameters(const vec3& pos,const vec2& scale){
 	//    |          |           |         \/            /_______________________________\
 	//    |_________\/___________|
 
-	_boundingBox.setMin(vec3(-pos.x-300, pos.y, -pos.z-300));
-	_boundingBox.setMax(vec3( pos.x+300, pos.y+40, pos.z+300));
+	_boundingBox.set(vec3(-pos.x-300, pos.y, -pos.z-300),vec3( pos.x+300, pos.y+40, pos.z+300));
 
 	_boundingBox.Multiply(vec3(terrainScaleFactor,1,terrainScaleFactor));
 	_boundingBox.MultiplyMax(vec3(1,_terrainHeightScaleFactor,1));
@@ -92,37 +89,29 @@ bool Terrain::load(const string& name){
 	U32 chunkSize = 16;
 	ResourceDescriptor textureNormalMap("Terrain Normal Map");
 	textureNormalMap.setResourceLocation(terrain->getVariable("normalMap"));
-	//textureNormalMap.setFlag(true);
 	ResourceDescriptor textureRedTexture("Terrain Red Texture");
 	textureRedTexture.setResourceLocation(terrain->getVariable("redTexture"));
-	//textureRedTexture.setFlag(true);
 	ResourceDescriptor textureGreenTexture("Terrain Green Texture");
 	textureGreenTexture.setResourceLocation(terrain->getVariable("greenTexture"));
-	//textureGreenTexture.setFlag(true);
 	ResourceDescriptor textureBlueTexture("Terrain Blue Texture");
 	textureBlueTexture.setResourceLocation(terrain->getVariable("blueTexture"));
-	//textureBlueTexture.setFlag(true);
-	//alphaTexture is a special case. See bellow -Ionut
 	string alphaTextureFile = terrain->getVariable("alphaTexture");
 	ResourceDescriptor textureWaterCaustics("Terrain Water Caustics");
 	textureWaterCaustics.setResourceLocation(terrain->getVariable("waterCaustics"));
-	//textureWaterCaustics.setFlag(true);
 	ResourceDescriptor textureTextureMap("Terrain Texture Map");
 	textureTextureMap.setResourceLocation(terrain->getVariable("textureMap"));
-	//textureTextureMap.setFlag(true);
-
-	_terrainDiffuseMap = ResourceManager::getInstance().LoadResource<Texture>(textureTextureMap);
-	_terrainTextures.push_back(ResourceManager::getInstance().LoadResource<Texture>(textureNormalMap));
-	_terrainTextures.push_back(ResourceManager::getInstance().LoadResource<Texture>(textureWaterCaustics));
-	_terrainTextures.push_back(ResourceManager::getInstance().LoadResource<Texture>(textureRedTexture));
-	_terrainTextures.push_back(ResourceManager::getInstance().LoadResource<Texture>(textureGreenTexture));
-	_terrainTextures.push_back(ResourceManager::getInstance().LoadResource<Texture>(textureBlueTexture));
+  	_terrainDiffuseMap = ResourceManager::getInstance().loadResource<Texture>(textureTextureMap);
+	_terrainDiffuseMap->setTextureWrap(true,true);
+	_terrainTextures.push_back(ResourceManager::getInstance().loadResource<Texture>(textureNormalMap));
+	_terrainTextures.push_back(ResourceManager::getInstance().loadResource<Texture>(textureWaterCaustics));
+	_terrainTextures.push_back(ResourceManager::getInstance().loadResource<Texture>(textureRedTexture));
+	_terrainTextures.push_back(ResourceManager::getInstance().loadResource<Texture>(textureGreenTexture));
+	_terrainTextures.push_back(ResourceManager::getInstance().loadResource<Texture>(textureBlueTexture));
 	if(alphaTextureFile.compare(ParamHandler::getInstance().getParam<string>("assetsLocation") + "/none") != 0){
 		_alphaTexturePresent = true;
 		ResourceDescriptor textureAlphaTexture("Terrain Alpha Texture");
 		textureAlphaTexture.setResourceLocation(alphaTextureFile);
-		//textureAlphaTexture.setFlag(true);
-		_terrainTextures.push_back(ResourceManager::getInstance().LoadResource<Texture>(textureAlphaTexture));
+		_terrainTextures.push_back(ResourceManager::getInstance().loadResource<Texture>(textureAlphaTexture));
 	}
 	
 	_groundVBO = GFXDevice::getInstance().newVBO();
@@ -131,8 +120,8 @@ bool Terrain::load(const string& name){
 	std::vector<vec3>&		tTangent	= _groundVBO->getTangent();
 
 	U8 d;
-	U32 t;
-	U8* data = ImageTools::OpenImage(terrain->getVariable("heightmap"), _terrainWidth, _terrainHeight, d, t);
+	U32 t, id;
+	U8* data = ImageTools::OpenImage(terrain->getVariable("heightmap"), _terrainWidth, _terrainHeight, d, t, id);
 	Console::getInstance().printfn("Terrain width: %d and height: %d",_terrainWidth, _terrainHeight);
 	assert(data!=NULL);
 
@@ -145,7 +134,6 @@ bool Terrain::load(const string& name){
 	tPosition.resize(_terrainWidth*_terrainHeight);
 	tNormal.resize(_terrainWidth*_terrainHeight);
 	tTangent.resize(_terrainWidth*_terrainHeight);
-
 	for(U32 j=0; j < _terrainHeight; j++) {
 		for(U32 i=0; i < _terrainWidth; i++) {
 
@@ -158,7 +146,7 @@ bool Terrain::load(const string& name){
 								j<nIMGHeight? j : j-1,
 								nIMGWidth);
 
-			F32 h = (F32)(data[idxIMG*d + 0] + data[idxIMG*d + 1] + data[idxIMG*d + 2])/3;
+			F32 h = (F32)(data[idxIMG*d + 0] + data[idxIMG*d + 1] + data[idxIMG*d + 2])/3.0f;
 
 			tPosition[idxHM].y = (_boundingBox.getMin().y + ((F32)h) * 
 				                 (_boundingBox.getMax().y - _boundingBox.getMin().y)/(255)) * _terrainHeightScaleFactor;
@@ -169,11 +157,13 @@ bool Terrain::load(const string& name){
 	data = NULL;
 	U32 offset = 2;
 
+
+			
 	for(U32 j=offset; j < _terrainHeight-offset; j++) {
 		for(U32 i=offset; i < _terrainWidth-offset; i++) {
 
 			U32 idx = COORD(i,j,_terrainWidth);
-
+			
 			vec3 vU = tPosition[COORD(i+offset, j+0, _terrainWidth)] - tPosition[COORD(i-offset, j+0, _terrainWidth)];
 			vec3 vV = tPosition[COORD(i+0, j+offset, _terrainWidth)] - tPosition[COORD(i+0, j-offset, _terrainWidth)];
 
@@ -192,9 +182,9 @@ bool Terrain::load(const string& name){
 			tNormal[idx0] = tNormal[idx1];
 			tTangent[idx0] = tTangent[idx1];
 
-			idx0 = COORD(i,	_terrainHeight-1-j,		_terrainWidth);
-			idx1 = COORD(i,	_terrainHeight-1-offset,	_terrainWidth);
-
+			idx0 = COORD(i,	_terrainHeight-1-j,		 _terrainWidth);
+			idx1 = COORD(i,	_terrainHeight-1-offset, _terrainWidth);
+	
 			tNormal[idx0] = tNormal[idx1];
 			tTangent[idx0] = tTangent[idx1];
 		}
@@ -222,35 +212,55 @@ bool Terrain::load(const string& name){
 
 	
 	if(_loaded){
-		Console::getInstance().printfn("Loading Terrain OK");
-		setActive(terrain->getActive());
-		computeBoundingBox();
-		ResourceDescriptor terrainMaterial("terrainMaterial");
-		_terrainMaterial = ResourceManager::getInstance().LoadResource<Material>(terrainMaterial);
-		_terrainMaterial->setDiffuse(vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		_terrainMaterial->setSpecular(vec4(1.0f, 1.0f, 1.0f, 1.0f));
-		_terrainMaterial->setShininess(50.0f);
+		ResourceDescriptor infinitePlane("infinitePlane");
+		infinitePlane.setFlag(true); //No default material
+		_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
+		_plane = ResourceManager::getInstance().loadResource<Quad3D>(infinitePlane);
+		F32 depth = SceneManager::getInstance().getActiveScene()->getWaterDepth();
+		F32 height = SceneManager::getInstance().getActiveScene()->getWaterLevel()- depth;
+		_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
+		const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 
-		_terrainShader->bind();
-			_terrainShader->Uniform("alphaTexture", _alphaTexturePresent);
-			_terrainShader->Uniform("detail_scale", 200.0f);
-			_terrainShader->Uniform("diffuse_scale", 200.0f);
-			_terrainShader->Uniform("parallax_factor",0.2f);
-			_terrainShader->Uniform("bbox_min", _boundingBox.getMin());
-			_terrainShader->Uniform("bbox_max", _boundingBox.getMax());
-			_terrainShader->Uniform("fog_color", vec3(0.7f, 0.7f, 0.9f));
-			_terrainShader->Uniform("depth_map_size", 512);
-		_terrainShader->unbind();
+		_plane->getCorner(Quad3D::TOP_LEFT)     = vec3(eyePos.x - _farPlane, height, eyePos.z - _farPlane);
+		_plane->getCorner(Quad3D::TOP_RIGHT)    = vec3(eyePos.x + _farPlane, height, eyePos.z - _farPlane);
+		_plane->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(eyePos.x - _farPlane, height, eyePos.z + _farPlane);
+		_plane->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(eyePos.x + _farPlane, height, eyePos.z + _farPlane);
+		computeBoundingBox(NULL);
+		ResourceDescriptor terrainMaterial("terrainMaterial");
+		setMaterial(ResourceManager::getInstance().loadResource<Material>(terrainMaterial));
+		getMaterial()->setDiffuse(vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		getMaterial()->setSpecular(vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		getMaterial()->setShininess(50.0f);
+		getMaterial()->setShader("terrain_ground");
+		Console::getInstance().printfn("Loading Terrain OK");
 	}else{
 		Console::getInstance().errorfn("Loading Terrain NOT OK");
-		setActive(false);
 	}
 	return _loaded;
 }
 
-bool Terrain::computeBoundingBox(){
-	_terrainQuadtree->computeBoundingBox(_groundVBO->getPosition());
-	return true;
+void Terrain::postLoad(SceneGraphNode* node){
+	
+	if(!_loaded) node->setActive(false);
+	_planeSGN = node->addNode(_plane);
+	_plane->computeBoundingBox(_planeSGN);
+	_plane->setRenderState(false);
+	_planeTransform = _planeSGN->getTransform();
+	node->getBoundingBox() = _boundingBox;
+	Shader* s = getMaterial()->getShader();
+	s->bind();
+		s->Uniform("alphaTexture", _alphaTexturePresent);
+		s->Uniform("detail_scale", 120.0f);
+		s->Uniform("diffuse_scale", 70.0f);
+		s->Uniform("bbox_min", _boundingBox.getMin());
+		s->Uniform("bbox_max", _boundingBox.getMax());
+	s->unbind();
+	_node = node;
+	SceneNode::computeBoundingBox(node);
+}
+
+bool Terrain::computeBoundingBox(SceneGraphNode* node){
+	return _terrainQuadtree->computeBoundingBox(_groundVBO->getPosition());
 }
 
 void Terrain::initializeVegetation(TerrainDescriptor* terrain) {	
@@ -261,12 +271,12 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 	grassBillboard2.setResourceLocation(terrain->getVariable("grassBillboard2"));
 	ResourceDescriptor grassBillboard3("Grass Billboard 3");
 	grassBillboard3.setResourceLocation(terrain->getVariable("grassBillboard3"));
-	//ResourceDescriptor grassBillboard4("Grass Billboard 1");
+	//ResourceDescriptor grassBillboard4("Grass Billboard 4");
 	//grassBillboard4.setResourceLocation(terrain->getVariable("grassBillboard4"));
-	grass.push_back(ResourceManager::getInstance().LoadResource<Texture2D>(grassBillboard1));
-	grass.push_back(ResourceManager::getInstance().LoadResource<Texture2D>(grassBillboard2));
-	grass.push_back(ResourceManager::getInstance().LoadResource<Texture2D>(grassBillboard3));
-	//grass.push_back(ResourceManager::getInstance().LoadResource<Texture2D>(grassBillboard4));
+	grass.push_back(ResourceManager::getInstance().loadResource<Texture2D>(grassBillboard1));
+	grass.push_back(ResourceManager::getInstance().loadResource<Texture2D>(grassBillboard2));
+	grass.push_back(ResourceManager::getInstance().loadResource<Texture2D>(grassBillboard3));
+	//grass.push_back(ResourceManager::getInstance().loadResource<Texture2D>(grassBillboard4));
 	addVegetation(New Vegetation(3, terrain->getGrassDensity(),
 			                        terrain->getGrassScale(),
 								    terrain->getTreeDensity(),
@@ -277,6 +287,73 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 	toggleVegetation(true);
 	 _veg->initialize(_grassShader,_name);
 }
+
+void Terrain::prepareMaterial(){
+}
+
+void Terrain::releaseMaterial(){
+}
+
+void Terrain::render(SceneGraphNode* node){
+	_veg->draw(_drawInReflection);
+
+	if(GFXDevice::getInstance().getDepthMapRendering()) return;
+	Shader* terrainShader = getMaterial()->getShader();
+	_terrainDiffuseMap->Bind(0);
+	_terrainTextures[0]->Bind(1); //Normal Map
+	_terrainTextures[1]->Bind(2); //Water Caustics
+	_terrainTextures[2]->Bind(3); //AlphaMap: RED
+	_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
+	_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
+	if(_alphaTexturePresent) _terrainTextures[5]->Bind(6); //AlphaMap: Alpha
+
+	terrainShader->bind();
+
+		terrainShader->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
+		terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
+		terrainShader->Uniform("time", GETTIME());
+		terrainShader->Uniform("lightProjectionMatrix",GFXDevice::getInstance().getLightProjectionMatrix());
+		terrainShader->UniformTexture("texDiffuseMap", 0);
+		terrainShader->UniformTexture("texNormalHeightMap", 1);
+		terrainShader->UniformTexture("texWaterCaustics", 2);
+		terrainShader->UniformTexture("texDiffuse0", 3);
+		terrainShader->UniformTexture("texDiffuse1", 4);
+		terrainShader->UniformTexture("texDiffuse2", 5);
+		if(_alphaTexturePresent) terrainShader->UniformTexture("texDiffuse3",6);
+		drawGround();
+		drawInfinitePlain();
+
+	terrainShader->unbind();
+
+	if(_alphaTexturePresent) _terrainTextures[5]->Unbind(6);
+	_terrainTextures[4]->Unbind(5);
+	_terrainTextures[3]->Unbind(4);
+	_terrainTextures[2]->Unbind(3);
+	_terrainTextures[1]->Unbind(2);
+	_terrainTextures[0]->Unbind(1);
+	_terrainDiffuseMap->Unbind(0);
+
+}
+
+
+void Terrain::drawInfinitePlain(){
+	if(_drawInReflection) return;
+	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
+	_planeTransform->setPositionX(eyePos.x);
+	_planeTransform->setPositionZ(eyePos.z);
+	_planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),_planeTransform->getMatrix());
+	GFXDevice::getInstance().drawQuad3D(_planeSGN);
+
+
+}
+
+void Terrain::drawGround() const{
+	assert(_groundVBO);
+	_groundVBO->Enable();
+		_terrainQuadtree->DrawGround(_drawInReflection);
+	_groundVBO->Disable();
+}
+
 
 vec3 Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
 	if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f) return vec3(0.0f, 0.0f, 0.0f);
@@ -330,74 +407,3 @@ vec3 Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
 			+ (_groundVBO->getTangent()[ COORD(posI.x,  posI.y+1,_terrainWidth) ])  * (1.0f-posD.x) *       posD.y
 			+ (_groundVBO->getTangent()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ])  *       posD.x  *       posD.y;
 }
-
-
-
-void Terrain::render(){
-	if(!_active) return;
-
-	_veg->draw(_drawInReflection);
-
-	GFXDevice::getInstance().setMaterial(_terrainMaterial);
-
-	RenderState old = GFXDevice::getInstance().getActiveRenderState();
-	RenderState s(true,true,true,true);
-	GFXDevice::getInstance().setRenderState(s);
-
-	GFXDevice::getInstance().setTextureMatrix(0,_sunModelviewProj); //Add sun projection matrix to the normal map for parallax rendering
-
-	_terrainDiffuseMap->Bind(0);
-	_depthMapFBO[0]->Bind(1);
-	_depthMapFBO[1]->Bind(2);
-	_terrainTextures[0]->Bind(3); //Normal Map
-	_terrainTextures[1]->Bind(4); //Water Caustics
-	_terrainTextures[2]->Bind(5); //AlphaMap: RED
-	_terrainTextures[3]->Bind(6); //AlphaMap: GREEN
-	_terrainTextures[4]->Bind(7); //AlphaMap: BLUE
-	if(_alphaTexturePresent) _terrainTextures[5]->Bind(8); //AlphaMap: Alpha
-
-	_terrainShader->bind();	
-
-		_terrainShader->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
-		_terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
-		_terrainShader->Uniform("time", GETTIME());
-
-		_terrainShader->UniformTexture("texDiffuseMap", 0);
-		_terrainShader->UniformTexture("texDepthMapFromLight0", 1);
-		_terrainShader->UniformTexture("texDepthMapFromLight1", 2);
-		_terrainShader->UniformTexture("texNormalHeightMap", 3);
-		_terrainShader->UniformTexture("texWaterCaustics", 4);
-		_terrainShader->UniformTexture("texDiffuse0", 5);
-		_terrainShader->UniformTexture("texDiffuse1", 6);
-		_terrainShader->UniformTexture("texDiffuse2", 7);
-		if(_alphaTexturePresent) _terrainShader->UniformTexture("texDiffuse3",8);
-		
-			drawGround(_drawInReflection);
-			
-	_terrainShader->unbind();
-
-	if(_alphaTexturePresent) _terrainTextures[5]->Unbind(8);
-	_terrainTextures[4]->Unbind(7);
-	_terrainTextures[3]->Unbind(6);
-	_terrainTextures[2]->Unbind(5);
-	_terrainTextures[1]->Unbind(4);
-	_terrainTextures[0]->Unbind(3);
-	_depthMapFBO[1]->Unbind(2);
-	_depthMapFBO[0]->Unbind(1);
-	_terrainDiffuseMap->Unbind(0);
-
-	GFXDevice::getInstance().restoreTextureMatrix(0);
-	
-	GFXDevice::getInstance().setRenderState(old);
-}
-
-
-
-void Terrain::drawGround(bool drawInReflection) const{
-	assert(_groundVBO);
-
-	_groundVBO->Enable();
-		_terrainQuadtree->DrawGround(drawInReflection);
-	_groundVBO->Disable();
-}
-

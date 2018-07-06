@@ -101,15 +101,15 @@ void glTexture::Destroy()
 }
 
 void glTexture::Bind() const {
-	
 	glBindTexture(_type, _handle);
 }
 
-void glTexture::Bind(U16 slot)  {
+void glTexture::Bind(U16 unit)  {
 	if(_bound) return; //If it's already bound on any slot, including this one
-	glActiveTexture(GL_TEXTURE0+slot);
+	glActiveTexture(GL_TEXTURE0+unit);
 	glEnable(_type);
 	glBindTexture(_type, _handle);
+
 	_bound = true;
 }
 
@@ -117,11 +117,10 @@ void glTexture::Unbind() const {
 	glBindTexture(_type, 0);
 }
 
-void glTexture::Unbind(U16 slot) {
+void glTexture::Unbind(U16 unit) {
 
-	glActiveTexture(GL_TEXTURE0+slot);
+	glActiveTexture(GL_TEXTURE0+unit);
 	glBindTexture(_type, 0);
-	//glPopAttrib();//RenderState
 	_bound = false;
 }
 

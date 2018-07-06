@@ -25,51 +25,50 @@
 #include "Utility/Headers/Console.h"
 
 class SceneNode : public Resource {
+	friend class SceneGraphNode;
 public:
 	SceneNode() : Resource(),
-				 _transform(NULL),
 				 _material(NULL),
 				 _renderState(true),
-				_noDefaultMaterial(false),
-				_noDefaultTransform(false){}
+				_noDefaultMaterial(false){}
 	SceneNode(std::string name) : Resource(name),
-								  _transform(NULL),
 								  _material(NULL),
 								  _renderState(true),
-								  _noDefaultMaterial(false),
-								  _noDefaultTransform(false){}
-	SceneNode(const SceneNode& old);
+								  _noDefaultMaterial(false){}
+
 	virtual ~SceneNode() {}
 	/*Rendering/Processing*/
-	virtual void render() = 0; //Sounds are played, geometry is displayed etc.
+	virtual void render(SceneGraphNode* node) = 0; //Sounds are played, geometry is displayed etc.
 			void setRenderState(bool state) {_renderState = state;}
 			bool getRenderState() {return _renderState;}
 	/*//Rendering/Processing*/	
 
-	virtual	bool        unload();
-	inline  const		BoundingBox&    	getOriginalBoundingBox()		  {return _originalBB;}
-	virtual inline		BoundingBox&		getBoundingBox();
-			void		setTransform(Transform* t);
-		    Transform*  const getTransform();
-			void		setOriginalBoundingBox(BoundingBox& originalBB){_originalBB = originalBB;}
-			void		setMaterial(Material* m);
-			void		clearMaterials();
-		    Material*	getMaterial();
+	virtual	bool			unload();
 
-	virtual	bool    computeBoundingBox() {return true;}
-	virtual void    drawBBox();
+	virtual bool	        isInView(bool distanceCheck,BoundingBox& boundingBox);
+    virtual	void			setMaterial(Material* m);
+			void			clearMaterials();
+		    Material*		getMaterial();
+	virtual	void            prepareMaterial();
+	virtual	void            releaseMaterial();
+			SceneGraphNode* getSceneGraphNode();
+	virtual	bool    computeBoundingBox(SceneGraphNode* node);
+	virtual void    onDraw();
+	virtual void    postLoad(SceneGraphNode* node) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
-	void    useDefaultTransform(bool state) {_noDefaultTransform = !state;}
-private:
-	//_originalBB is a copy of the initialy calculate BB for transformation
-	//it should be copied in every computeBoungingBox call;
-	BoundingBox _originalBB; 
-	Material*	_material;				   
-	Transform*	_transform;
-	bool		_renderState,_noDefaultMaterial,_noDefaultTransform;
+	
 
-protected:
-	BoundingBox	 _boundingBox;
+	inline	void	setSelected(bool state)  {_selected = state;}
+	inline	bool    isSelected()			 {return _selected;}
+	virtual void    createCopy();
+	virtual void    removeCopy();
+private:
+	
+	Material*	_material;				   
+
+	bool		_renderState,_noDefaultMaterial;
+	bool        _selected;
+
 };
 
 #endif

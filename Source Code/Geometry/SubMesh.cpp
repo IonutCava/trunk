@@ -1,18 +1,18 @@
 #include "SubMesh.h"
 #include "Managers/ResourceManager.h"
 
-bool SubMesh::computeBoundingBox(){
-	_boundingBox.setMin(vec3(100000.0f, 100000.0f, 100000.0f));
-	_boundingBox.setMax(vec3(-100000.0f, -100000.0f, -100000.0f));
+
+bool SubMesh::computeBoundingBox(SceneGraphNode* node){
+	BoundingBox& bb = node->getBoundingBox();
+	bb.set(vec3(100000.0f, 100000.0f, 100000.0f),vec3(-100000.0f, -100000.0f, -100000.0f));
 
 	std::vector<vec3>&	tPosition	= _geometry->getPosition();
 
 	for(U32 i=0; i < tPosition.size(); i++){
-		_boundingBox.Add( tPosition[i] );
+		bb.Add( tPosition[i] );
 	}
-	setOriginalBoundingBox(_boundingBox);
-	_boundingBox.isComputed() = true;
-	return true;
+
+	return SceneNode::computeBoundingBox(node);
 }
 
 

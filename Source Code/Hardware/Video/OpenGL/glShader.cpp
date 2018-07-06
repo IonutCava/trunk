@@ -29,8 +29,9 @@ void glShader::validateProgram(U16 program) {
 	Console::getInstance().printfn("GLSL Manager: Validating program:  %s ", buffer);
 	I32 status;
 	glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
-	if (status == GL_FALSE)
-		Console::getInstance().errorfn("GLSL Manager: Error validating shader [ %d ]", program);
+// ToDo: Problem with AMD(ATI) cards. GLSL validation errors about multiple samplers to same uniform, but they still work. Fix that. -Ionut
+//	if (status == GL_FALSE)
+//		Console::getInstance().errorfn("GLSL Manager: Error validating shader [ %d ]", program);
 }
 
 
@@ -79,7 +80,7 @@ I8 glShader::shaderFileWrite(char *fn, char *s) {
 	return(status);
 }
 
-glShader::glShader(const char *vsFile, const char *fsFile)  : _loaded(false), _bound(false)  {
+glShader::glShader(const char *vsFile, const char *fsFile)  : Shader(), _loaded(false), _bound(false)  {
     init(vsFile, fsFile);
 }
 
@@ -109,25 +110,52 @@ bool glShader::load(const string& name)
 				string shaderFile2 = name.substr(pos+1, name.length());
 				string extension1(shaderFile1.substr(shaderFile1.length()- 5, shaderFile1.length()));
 				string extension2(shaderFile2.substr(shaderFile2.length()- 5, shaderFile2.length()));
-				if(extension1.compare(".frag") == 0 && extension2.compare(".vert") == 0)
+
+				if(extension1.compare(".frag") == 0 && extension2.compare(".vert") == 0){
 					init(shaderFile2,shaderFile1);
-				else if(extension1.compare(".frag") == 0 && extension2.compare(".vert") == 0)
+					_fragName = shaderFile1;
+					_vertName = shaderFile2;
+				}
+				else if(extension1.compare(".vert") == 0 && extension2.compare(".frag") == 0){
 					init(shaderFile1,shaderFile2);
-				else
+					_fragName = shaderFile2;
+					_vertName = shaderFile1;
+				}
+				else{
 					Console::getInstance().errorfn("GLSL: could not load shaders: %s",name.c_str());
+				}
 			}
 			else
 			{
 				string extension(name.substr(name.length()- 5, name.length()));
-				if(extension.compare(".frag") == 0) loadFragOnly(name);
-				else if(extension.compare(".vert") == 0) loadVertOnly(name);
-				else init(name+".vert",name+".frag");
+				if(extension.compare(".frag") == 0) {
+					_fragName = name;
+					_vertName = "none";
+					loadFragOnly(_fragName);
+					
+				}
+				else if(extension.compare(".vert") == 0){
+					_fragName = "none";
+					_vertName = name;
+					loadVertOnly(_vertName);
+					
+				}
+				else{
+					_fragName = name+".frag";
+					_vertName = name+".vert";
+					init(_vertName,_fragName);
+					
+				}
+			
 			}
 		}
 		else
 			init(name+".vert",name+".frag");
 
 		_loaded = true;
+	}
+	if(_loaded){
+		Shader::load(name);
 	}
 	return _loaded;
 }

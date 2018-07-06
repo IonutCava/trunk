@@ -32,12 +32,10 @@ public:
 	  TEXTURE_BUMP = 1,
 	  TEXTURE_SECOND = 2
   };
-typedef std::tr1::unordered_map<TextureUsage, Texture2D*> textureMap;
+typedef unordered_map<TextureUsage, Texture2D*> textureMap;
 
 public:
   Material();
-  Material(const Material& old);
-  Material& operator=(const Material& old);
   ~Material();
 
   bool load(const std::string& name) {_name = name; return true;}
@@ -45,32 +43,34 @@ public:
   inline U8              getTextureCount() {return _textures.size();}
   Texture2D*	 const   getTexture(TextureUsage textureUsage);
   inline Shader* const   getShader()   {return _shader;}
-
+  inline bool            isDirty() {return _dirty;}
   void setTexture(TextureUsage textureUsage, Texture2D* texture);
   void setShader(const std::string& shader);
 
   void setAmbient(const vec4& value) {_ambient = value; _materialMatrix.setCol(0,value);}
   void setDiffuse(const vec4& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
   void setSpecular(const vec4& value) {_specular = value; _materialMatrix.setCol(2,value);}
-  void setEmmisive(const vec4& value) {_emmissive = value; _materialMatrix.setCol(3,vec4(_shininess,value.x,value.y,value.z));}
-  void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emmissive.x,_emmissive.y,_emmissive.z));}
+  void setEmissive(const vec3& value) {_emissive = value; _materialMatrix.setCol(3,vec4(_shininess,value.x,value.y,value.z));}
+  void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
 
-  mat4& getMaterialMatrix() {return _materialMatrix;}
+  inline mat4& getMaterialMatrix() {return _materialMatrix;}
 
   void computeLightShaders(); //Set shaders;
-  void skipComputeLightShaders();
-
+  void createCopy();
+  void removeCopy();
+  void dumpToXML();
 private:
   vec4 _diffuse;           /* diffuse component */
   vec4 _ambient;           /* ambient component */
   vec4 _specular;          /* specular component */
-  vec4 _emmissive;         /* emmissive component */
+  vec3 _emissive;          /* emissive component */
   F32 _shininess;          /* specular exponent */
-  mat4    _materialMatrix; /* all properties bundled togheter */
+  mat4 _materialMatrix; /* all properties bundled togheter */
 
   textureMap _textures;
   Shader* _shader;
   bool _computedLightShaders;
+  bool _dirty;
 };
 
 #endif

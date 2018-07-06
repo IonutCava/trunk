@@ -17,7 +17,8 @@
 
 #ifndef _WRAPPER_GL_H_
 #define _WRAPPER_GL_H_
-//#include "Utility/Headers/Singleton.h"
+
+
 #include "EngineGraphs/SceneNode.h"
 #include "../RenderAPIWrapper.h"
 
@@ -26,21 +27,27 @@
 #include "glPixelBufferObject.h"
 #include "glShader.h"
 #include "glTexture.h"
+#define CHECK_OPENGL_ERROR( cmd ) \
+	cmd; \
+	 { GLenum  error; \
+		 while ( (error = glGetError()) != GL_NO_ERROR) { \
+			 Console::getInstance().errorfn( "[%s:%d] '%s' failed with error %s", __FILE__, __LINE__, #cmd, gluErrorString(error) ); \
+		 }}
 
 DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
-
+	typedef unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
 private:
-	GL_API() : RenderAPIWrapper() {}
+	GL_API() : RenderAPIWrapper(), _windowId(0) {}
 
 	void initHardware();
 	void closeRenderingApi();
 	void initDevice();
 	void resizeWindow(U16 w, U16 h);
-	void lookAt(const vec3& eye,const vec3& center,const vec3& up);
+	void lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx = false, bool inverty = false);
 	void idle();
 
-    mat4 getModelViewMatrix();
-	mat4 getProjectionMatrix();
+    void getModelViewMatrix(mat4& mvMat);
+	void getProjectionMatrix(mat4& projMat);
 
 	FrameBufferObject*  newFBO(){return New glFrameBufferObject(); }
 	VertexBufferObject* newVBO(){return New glVertexBufferObject(); }
@@ -54,19 +61,11 @@ private:
 
 	typedef void (*callback)();	void glCommand(callback f){f();}
 
-	void translate(const vec3& pos);
-	void rotate(F32 angle,const vec3& weights);
-    void scale(const vec3& scale);
-
 	void clearBuffers(U8 buffer_mask);
 	void swapBuffers();
 	void enableFog(F32 density, F32* color);
 
-	void enable_MODELVIEW();
-	void loadIdentityMatrix();
 	void toggle2D(bool _2D);
-	void setTextureMatrix(U16 slot, const mat4& transformMatrix);
-	void restoreTextureMatrix(U16 slot);
 	void setOrthoProjection(const vec4& rect, const vec2& planes);
 
 	void drawTextToScreen(Text*);
@@ -75,35 +74,38 @@ private:
 	void drawFlash(GuiFlash* flash);
 
 	void drawBox3D(vec3 min, vec3 max);
-    void drawBox3D(Box3D* const box);
+	void drawBox3D(Box3D* const box);
 	void drawSphere3D(Sphere3D* const sphere);
 	void drawQuad3D(Quad3D* const quad);
 	void drawText3D(Text3D* const text);
+    void drawBox3D(SceneGraphNode* node);
+	void drawSphere3D(SceneGraphNode* node);
+	void drawQuad3D(SceneGraphNode* node);
+	void drawText3D(SceneGraphNode* node);
 
-	void renderModel(Object3D* const model);
-	void renderElements(Type t, U32 count, const void* first_element);
+	void renderModel(SceneGraphNode* node);
+	void renderElements(Type t, Format f, U32 count, const void* first_element);
 	
 	void setMaterial(Material* mat);
-	void setColor(const vec4& color);
-	void setColor(const vec3& color);
 
-	void setLight(U8 slot, std::tr1::unordered_map<std::string,vec4>& properties);
+	void setLight(U8 slot, unordered_map<std::string,vec4>& properties);
 	void createLight(U8 slot);
-	void setLightCameraMatrices(const vec3& lightVector);
-	void restoreLightCameraMatrices();
+	void setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool directional = false);
+	void restoreLightCameraMatrices(bool directional = false);
 
 	void toggleWireframe(bool state);
 
+	void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax);
+
 	void setRenderState(RenderState& state);
 	void ignoreStateChanges(bool state);
+
+	void setDepthMapRendering(bool state);
 private: //OpenGL specific:
 
-	void pushMatrix();
-	void popMatrix();
-	void prepareMaterial(SceneNode* model, Material* mat,Shader* prevShader = NULL);
-	void releaseMaterial(Material* mat,Shader* prevShader = NULL);
-	void setObjectState(SceneNode* const model);
-	void releaseObjectState(SceneNode* const model);
+	void setObjectState(Transform* const transform);
+	void releaseObjectState();
+	U8 _windowId;
 
 END_SINGLETON
 

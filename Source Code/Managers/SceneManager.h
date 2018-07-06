@@ -30,32 +30,32 @@ public:
 	void setActiveScene(Scene* scene) {if(_scene) delete _scene; _scene = scene;}
 
 	/*Base Scene Operations*/
-	void render() {_scene->render();}
-	void preRender() {_scene->preRender();}
-	bool load(const std::string& name) {_scene->setInitialData(); return _scene->load(name);}
-	bool unload() {return _scene->unload();}
-	void processInput(){_scene->processInput();}
-	void processEvents(F32 time){_scene->processEvents(time);}
+	inline void render() {_scene->render();}
+	inline void preRender() {_scene->preRender();}
+	inline bool load(const std::string& name) {_scene->setInitialData(); return _scene->load(name);}
+	inline bool unload() {return _scene->unload();}
+	inline void processInput(){_scene->processInput();}
+	inline void processEvents(F32 time){_scene->processEvents(time);}
 	/*Base Scene Operations*/
 
-	//inline std::tr1::unordered_map<std::string, Object3D* >& getGeometryArray(){return _scene->getGeometryArray();}
+	//inline unordered_map<std::string, Object3D* >& getGeometryArray(){return _scene->getGeometryArray();}
 	inline std::vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
 	inline std::vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
-
+	inline std::vector<Light*>& getLights(){return _scene->getLights();}
 	//U32 getNumberOfObjects(){return _scene->getNumberOfObjects();}
-    U32 getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
+    inline U32 getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
    
 	Scene* findScene(const std::string& name);
 
-	void addModel(FileData& model){_scene->addModel(model);}
-	void addTerrain(TerrainDescriptor* ter) {_scene->addTerrain(ter);}
+	inline void addModel(FileData& model){_scene->addModel(model);}
+	inline void addTerrain(TerrainDescriptor* ter) {_scene->addTerrain(ter);}
 	void toggleBoundingBoxes();
-	void addPatch(std::vector<FileData>& data){_scene->addPatch(data);}
+	inline void addPatch(std::vector<FileData>& data){_scene->addPatch(data);}
 	
 	void findSelection(U32 x, U32 y);
 	void deleteSelection();
 
-	void clean(){_scene->clean();}
+	inline void clean(){_scene->clean();}
 
 private:
 

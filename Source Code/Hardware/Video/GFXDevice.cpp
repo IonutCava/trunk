@@ -37,41 +37,37 @@ void GFXDevice::setApi(RenderAPI api)
 	_api.setId(api);
 }
 
-void GFXDevice::resizeWindow(U16 w, U16 h)
-{
+void GFXDevice::resizeWindow(U16 w, U16 h){
 	Engine::getInstance().setWindowWidth(w);
     Engine::getInstance().setWindowHeight(h);
 	_api.resizeWindow(w,h);
 	PostFX::getInstance().reshapeFBO(w, h);
 }
 
-void GFXDevice::renderModel(Object3D* const model)
-{
+void GFXDevice::renderModel(SceneGraphNode* node){
+	Object3D* model = node->getNode<Object3D>();
 	if(!model) return;
-	if(!model->getVisibility()) return;
 	if(model->shouldDelete()){
-		SceneGraph* activeSceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
-		SceneGraphNode* modelNode = activeSceneGraph->findNode(model->getName());
-		delete modelNode;
-		modelNode = NULL;
+		delete node;
+		node = NULL;
 		return;
 	}
 	switch(model->getType())
 	{
 		case BOX_3D:
-			drawBox3D(dynamic_cast<Box3D*>(model));
+			drawBox3D(node);
 			break;
 		case SPHERE_3D:
-			drawSphere3D(dynamic_cast<Sphere3D*>(model));
+			drawSphere3D(node);
 			break;
 		case QUAD_3D:
-			drawQuad3D(dynamic_cast<Quad3D*>(model));
+			drawQuad3D(node);
 			break;
 		case TEXT_3D:
-			drawText3D(dynamic_cast<Text3D*>(model));
+			drawText3D(node);
 			break;
-		case MESH:
-			_api.renderModel(dynamic_cast<Mesh*>(model));
+		case SUBMESH:
+			_api.renderModel(node);
 			break;
 		default:
 			break;
@@ -84,21 +80,3 @@ void GFXDevice::toggleWireframe(bool state)
 	_api.toggleWireframe(_wireframeMode);
 }
 
-// takes a screen shot and saves it to a TGA image
-void GFXDevice::Screenshot(char *filename, U16 xmin,U16 ymin, U16 xmax, U16 ymax)
-{
-	// compute width and heidth of the image
-	U16 w = xmax - xmin;
-	U16 h = ymax - ymin;
-
-	// allocate memory for the pixels
-	U8 *imageData = new U8[w * h * 4];
-
-	// read the pixels from the frame buffer
-	//glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
-
-	// save the image 
-	TextureManager::getInstance().SaveSeries(filename,w,h,32,imageData);
-	delete[] imageData;
-	imageData = NULL;
-}

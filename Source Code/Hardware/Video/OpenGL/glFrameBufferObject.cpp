@@ -146,7 +146,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height)
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_RENDERBUFFER, _normalBufferHandle);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, _depthBufferHandle);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,width, height);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER, _depthBufferHandle);
 	
 		glGenTextures(1, &textureId);
@@ -201,7 +201,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height)
 		}
 		for(U8 i=0; i<nFrames; i++){
 			if(type==FBO_2D_DEPTH)
-				glTexImage2D(eTarget+i, 0, GL_DEPTH_COMPONENT24, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+				glTexImage2D(eTarget+i, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 			else
 				glTexImage2D(eTarget+i, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		}
@@ -214,7 +214,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height)
 				// Depth buffer
 				glGenRenderbuffers(1, &_depthBufferHandle);
 				glBindRenderbuffer(GL_RENDERBUFFER, _depthBufferHandle);
-				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, _width, _height);
+				glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height);
 				// atasarea frame bufferului de depth buffer
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBufferHandle);
 			}

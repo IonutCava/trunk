@@ -24,7 +24,7 @@
 class glShader : public Shader
 {
 public:
-	glShader() : _loaded(false), _bound(false) {};
+	glShader() : Shader(), _loaded(false), _bound(false) {};
 	glShader(const char *vsFile, const char *fsFile);
 	~glShader();
 	

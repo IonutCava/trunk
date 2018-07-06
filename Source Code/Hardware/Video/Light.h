@@ -25,21 +25,23 @@ class Sphere3D;
 class Light : public SceneNode{
 
 public:
-	Light(U8 slot, F32 radius = 1.0f); 
+	Light(U8 slot, F32 radius = 0.1f); 
 	~Light();
-	void update();
+	void onDraw();
 	void setLightProperties(const std::string& name, vec4 values);
-	vec4& getDiffuseColor() {return _lightProperties["diffuse"];}
-	vec4& getPosition() {return  _lightProperties["position"];}
-	F32&  getRadius()   {return _radius;}
-	Sphere3D* getImpostor() {return _light;}
-	void      toggleImpostor(bool state) {_drawImpostor = state;}
+inline vec4& getDiffuseColor() {return _lightProperties["diffuse"];}
+inline vec4& getPosition() {return  _lightProperties["position"];}
+inline F32   getRadius()   {return _radius;}
+inline void  setRadius(F32 radius) {_radius = radius;}
+inline Sphere3D* getImpostor() {return _light;}
+inline void      toggleImpostor(bool state) {_drawImpostor = state;}
 	void  getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height);
-	void  render();
+	void  render(SceneGraphNode* node);
 	bool load(const std::string& name);
 	bool unload();
+	void postLoad(SceneGraphNode* node);	
 private:
-	std::tr1::unordered_map<std::string,vec4> _lightProperties;
+	unordered_map<std::string,vec4> _lightProperties;
 	U8 _slot;
 	F32 _radius;
 	Sphere3D *_light; //Used for debug rendering -Ionut

@@ -6,6 +6,7 @@ varying vec3 vVertexMV;
 varying vec3 vNormalMV;
 varying vec3 vPixToLightMV;
 varying vec3 vLightDirMV;
+varying vec4 vVertexFromLightView;
 
 //Textures
 uniform int textureCount;
@@ -15,7 +16,6 @@ uniform sampler2D texBump;
 
 //Material properties
 uniform mat4 material;
-
 
 #define MODE_PHONG		0
 #define MODE_BUMP		1
@@ -31,8 +31,8 @@ uniform float tile_factor;
 // SHADOW MAPPING //
 uniform int depth_map_size;
 uniform int enable_shadow_mapping;	// 0->no  1->shadow mapping  2->shadow mapping + projected texture
-uniform sampler2DShadow texDepthMapFromLight;
-//uniform sampler2D texDiffuseProjected;
+uniform sampler2DShadow texDepthMapFromLight0;
+uniform sampler2D texDiffuseProjected;
 #define Z_TEST_SIGMA 0.0001
 ////////////////////
 
@@ -40,7 +40,7 @@ uniform sampler2DShadow texDepthMapFromLight;
 #define LIGHT_OMNIDIRECTIONAL	1.0
 #define LIGHT_SPOT				2.0
 
-//float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap);
+float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap);
 vec4  Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN);
 vec4  NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParallax);
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB);
@@ -51,23 +51,23 @@ void main (void)
 	gl_FragDepth = gl_FragCoord.z;
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
 	
-	vec4 colorOut = vec4(1.0, 0.0, 0.0, 1.0);
+	vec4 color = vec4(1.0, 0.0, 0.0, 1.0);
 
 
 	if(mode == MODE_PHONG)
-		colorOut = Phong(gl_TexCoord[0].st*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
+		color = Phong(gl_TexCoord[0].st*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
 
 	else if(mode == MODE_RELIEF)
-		colorOut = ReliefMapping(gl_TexCoord[0].st*tile_factor);
+		color = ReliefMapping(gl_TexCoord[0].st*tile_factor);
 		
 	else if(mode == MODE_BUMP)
-		colorOut = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, false);
+		color = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, false);
 	
 	else if(mode == MODE_PARALLAX)
-		colorOut = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
+		color = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
 
 
-	gl_FragColor = colorOut;
+	gl_FragColor = color;
 
 }
 
@@ -199,26 +199,26 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	//float shininess = material[3].x;
 	//vec4 emmissive = vec4(material[3].xyx,1.0f);
 	
-//// ECLAIRAGE :
 
 	float iDiffuse = max(dot(L, N), 0.0);	// Intensité diffuse
 	float iSpecular = pow(clamp(dot(reflect(-L, N), V), 0.0, 1.0), material[3].x );
 	
 	
-	//vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
-	//vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * iDiffuse;	
-	//vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular;	
-	
 	vec4 cAmbient = gl_LightSource[0].ambient * material[0];
 	vec4 cDiffuse = gl_LightSource[0].diffuse * material[1] * iDiffuse;	
 	vec4 cSpecular = gl_LightSource[0].specular * material[2] * iSpecular;	
-	
+	vec4 base = vec4(1.0,1.0,1.0,1.0);
 	if(textureCount > 0){
-		vec4 base = texture2D(texDiffuse0, uv);	// Couleur diffuse
-		if(textureCount == 2) base += texture2D(texDiffuse1, uv);
-		
+		base = texture2D(texDiffuse0, uv);	// Couleur diffuse
+		if(base.a < 0.4) discard;
+	
 		cAmbient *= base;
 		cDiffuse *= base;
+		if(textureCount > 1){
+			vec4 base2 = texture2D(texDiffuse1, uv);
+			cAmbient *= base2;
+			cDiffuse *= base2;
+		} 
 	}
 
 
@@ -236,18 +236,19 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 		else
 		{
 			// Shadow mapping :
-			//if(enable_shadow_mapping != 0) {
-			//	vec3 vPixPosInDepthMap;
-			//	float shadow = ShadowMapping(gl_TexCoord[1], vPixPosInDepthMap);
-			//	cDiffuse = (shadow) * cDiffuse;
-			//	cSpecular = (shadow) * cSpecular;
-			//	
-			//	// Texture projection :
-			//	if(enable_shadow_mapping == 2) {
-			//		vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
-			//		base.xyz = mix(base.xyz, cProjected.xyz, shadow/2.0);
-			//	}
-			//}
+			if(enable_shadow_mapping != 0) {
+				vec3 vPixPosInDepthMap;
+				float shadow = ShadowMapping(vVertexFromLightView, vPixPosInDepthMap);
+				cDiffuse = (shadow) * cDiffuse;
+				cSpecular = (shadow) * cSpecular;
+				
+				// Texture projection :
+				if(enable_shadow_mapping == 2) {
+					vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
+					base.xyz = mix(base.xyz, cProjected.xyz, shadow/2.0);
+				}
+
+			}
 		}
 	}
 	// Si c'est pas une lumière SPOT
@@ -255,11 +256,11 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	{
 
 	}
-	vec4 colorOut = cAmbient + (cDiffuse + cSpecular) * att;
+	vec4 color = cAmbient + (cDiffuse + cSpecular) * att;
 	
-	return colorOut;	
+	return color;	
 }
-/*
+
 float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 {
 	float fShadow = 0.0;
@@ -274,7 +275,7 @@ float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 	vPixPosInDepthMap = (vPixPosInDepthMap + 1.0) * 0.5;					// de l'intervale [-1 1] à [0 1]
 	
 	
-	vec4 vDepthMapColor; = shadow2D(texDepthMapFromLight, vPixPosInDepthMap);
+	vec4 vDepthMapColor = shadow2D(texDepthMapFromLight0, vPixPosInDepthMap);
 
 	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z)
 	{
@@ -287,7 +288,7 @@ float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 			{
 				vec2 offset = tOffset[i] / (float(depth_map_size));
 				// Couleur du pixel sur la depth map
-				vec4 vDepthMapColor = shadow2D(texDepthMapFromLight, vPixPosInDepthMap + vec3(offset.s, offset.t, 0.0));
+				vec4 vDepthMapColor = shadow2D(texDepthMapFromLight0, vPixPosInDepthMap + vec3(offset.s, offset.t, 0.0));
 		
 				if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z) {
 					fShadow += 0.0;
@@ -307,7 +308,6 @@ float ShadowMapping(vec4 vVertexFromLightView, out vec3 vPixPosInDepthMap)
 	return fShadow;
 }
 
-*/
 
 
 

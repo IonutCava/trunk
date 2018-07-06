@@ -22,20 +22,20 @@
 class BoundingBox
 {
 public:
-	BoundingBox() 
-	{
+	BoundingBox() {
 		_min.reset();
 		_max.reset();
 		_computed = false;
 		_visibility = false;
+		_dirty = true;
 	}
 
-	BoundingBox(const vec3& __min, const vec3& __max)
-	{
-		_min=__min;
-		_max=__max;
+	BoundingBox(const vec3& min, const vec3& max){
+		_min = min;
+		_max = max;
 		_computed = false;
 		_visibility = false;
+		_dirty = true;
 	}
 
 	inline bool ContainsPoint(const vec3& point) const	{
@@ -95,6 +95,7 @@ public:
 		if(v.y < _min.y)	_min.y = v.y;
 		if(v.z > _max.z)	_max.z = v.z;
 		if(v.z < _min.z)	_min.z = v.z;
+		_dirty = true;
 	};
 
 	inline void Add(const BoundingBox& bb)	{
@@ -104,16 +105,19 @@ public:
 		if(bb._min.y < _min.y)	_min.y = bb._min.y;
 		if(bb._max.z > _max.z)	_max.z = bb._max.z;
 		if(bb._min.z < _min.z)	_min.z = bb._min.z;
+		_dirty = true;
 	}
 
 	inline void Translate(const vec3& v) {
 		_min += v;
 		_max += v;
+		_dirty = true;
 	}
 
 	inline void Multiply(F32 factor){
 		_min *= factor;
 		_max *= factor;
+		_dirty = true;
 	}
 
 	inline void Multiply(const vec3& v){
@@ -123,17 +127,20 @@ public:
 		_max.x *= v.x;
 		_max.y *= v.y;
 		_max.z *= v.z;
+		_dirty = true;
 	}
 
 	inline void MultiplyMax(const vec3& v){
 		_max.x *= v.x;
 		_max.y *= v.y;
 		_max.z *= v.z;
+		_dirty = true;
 	}
 	inline void MultiplyMin(const vec3& v){
 		_min.x *= v.x;
 		_min.y *= v.y;
 		_min.z *= v.z;
+		_dirty = true;
 	}
 
 	bool ComputePoints()  const
@@ -153,14 +160,13 @@ public:
 		return true;
 	}
 
-	void Transform(const BoundingBox& originalBB, const mat4& mat)
-	{
+	void Transform(const BoundingBox& initialBoundingBox, const mat4& mat){
 		if(_oldMatrix == mat) return;
 		else _oldMatrix = mat;
 
 		F32 a, b;
-		vec3 old_min = originalBB.getMin();
-		vec3 old_max = originalBB.getMax();
+		vec3 old_min = initialBoundingBox.getMin();
+		vec3 old_max = initialBoundingBox.getMax();
 		_min = _max =  vec3(mat[12],mat[13],mat[14]);
 
 		for (U8 i = 0; i < 3; ++i)
@@ -179,7 +185,7 @@ public:
 				}
 			}
 		}
-		
+		_dirty = true;
 	}
 
 
@@ -188,26 +194,40 @@ public:
 
 	inline vec3  getMin()	     const	{return _min;}
 	inline vec3  getMax()		 const	{return _max;}
-	inline vec3  getCenter()     const	{return (_max+_min)/2.0f;}
-	inline vec3  getExtent()     const  {return (_max-_min);}
-	inline vec3  getHalfExtent() const  {return getExtent()/2.0f;}
 
-		 //vec3* getPoints()     const  {return points;}
+	inline vec3  getCenter()  {
+		if(_dirty){
+			_center = (_max+_min)/2.0f;
+			_dirty = false;
+		}
+		return _center;
+	}
+
+	inline vec3  getExtent()  {
+		if(_dirty){
+			_extent = (_max-_min);
+			_dirty = false;
+		}
+		return _extent;
+	}
+
+	inline vec3  getHalfExtent()   {return getExtent()/2.0f;}
+
 		   F32   getWidth()  const {return _max.x - _min.x;}
 		   F32   getHeight() const {return _max.y - _min.y;}
 		   F32   getDepth()  const {return _max.z - _min.z;}
 	
 
-	void setVisibility(bool visibility) {_visibility = visibility;}
-	void setMin(const vec3& min)			    {_min = min;}
-	void setMax(const vec3& max)			    {_max = max;}
-	void set(const vec3& min, const vec3& max)  {_min = min; _max = max;}
+	inline void setVisibility(bool visibility) {_visibility = visibility;}
+	inline void setMin(const vec3& min)			    {_min = min; _dirty = true;}
+	inline void setMax(const vec3& max)			    {_max = max; _dirty = true;}
+	inline void set(const vec3& min, const vec3& max)  {_min = min; _max = max; _dirty = true;}
 
 
 private:
-	bool _computed, _visibility;
-	//vec3* points;
+	bool _computed, _visibility,_dirty;
 	vec3 _min, _max;
+	vec3 _center, _extent;
 	mat4 _oldMatrix;
 };
 

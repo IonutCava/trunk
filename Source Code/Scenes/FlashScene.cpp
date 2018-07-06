@@ -8,12 +8,9 @@ void FlashScene::render()
 {
 	
 	RenderState s(true,true,true,true);
-	GFXDevice::getInstance().setRenderState(s);
+	_GFX.setRenderState(s);
 
 	_sceneGraph->render();
-
-	GUI::getInstance().draw();
-	
 }
 
 

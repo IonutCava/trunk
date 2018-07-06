@@ -4,8 +4,9 @@
 #include "Terrain/TerrainChunk.h"
 #include "Terrain/Terrain.h"
 #include "Managers/SceneManager.h"
+#include "Managers/CameraManager.h"
 
-void QuadtreeNode::Build(U32 depth,		
+void QuadtreeNode::Build(U8 depth,		
 						 ivec2 pos,					
 						 ivec2 HMsize,				
 						 U32 minHMSize)	
@@ -23,7 +24,7 @@ void QuadtreeNode::Build(U32 depth,
 	if((U32)max(newsize.x, newsize.y) < minHMSize)
 	{
 		
-		_terrainChunk = new TerrainChunk();
+		_terrainChunk = New TerrainChunk();
 		_terrainChunk->Load(depth, pos, HMsize);
 
 		
@@ -73,12 +74,6 @@ bool QuadtreeNode::computeBoundingBox(const std::vector<vec3>& vertices){
 		_boundingBox.setMin(vec3(_boundingBox.getMin().x, tempMin,_boundingBox.getMin().z));
 		_boundingBox.setMax(vec3(_boundingBox.getMax().x, tempMax,_boundingBox.getMax().z));
 
-		for(U16 i = 0; i < _terrainChunk->getTreeArraySize(); i++){
-			SceneGraphNode* node = sceneGraph->findNode(_terrainChunk->getTreeArrayElement(i));
-			assert(node);
-			SceneNode* tree = node->getNode<SceneNode>();
-			_boundingBox.Add(tree->getBoundingBox());
-		}
 	}
 
 
@@ -97,8 +92,7 @@ bool QuadtreeNode::computeBoundingBox(const std::vector<vec3>& vertices){
 }
 
 
-void QuadtreeNode::Destroy()
-{
+void QuadtreeNode::Destroy(){
 	if(_children != NULL) {
 		delete [] _children;
 		_children = NULL;
@@ -109,48 +103,18 @@ void QuadtreeNode::Destroy()
 	}
 }
 //ToDo: Change vegetaion rendering and generation! -Ionut
-void QuadtreeNode::DrawGrass(bool drawInReflection)
-{
+void QuadtreeNode::DrawGrass(){
 	if(!_children) {
 		assert(_terrainChunk);
 		if( _LOD>=0 ){
-			vec3 vEyeToChunk = this->getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
-			_camDistance = vEyeToChunk.length();
-			U32 lod = 0;
-			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
-			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
-			_LOD = lod;
-			_terrainChunk->DrawGrass( (U32)_LOD, _camDistance,drawInReflection );
+			_terrainChunk->DrawGrass(_LOD, _camDistance);
 		}else
 			return;
 	}
 	else {
 		if( _LOD>=0 )
-			for(int i=0; i<4; i++)
-				_children[i].DrawGrass(drawInReflection);
-		return;		
-	}
-}
-
-void QuadtreeNode::DrawTrees(bool drawInReflection)
-{
-	if(!_children) {
-		assert(_terrainChunk);
-		if( _LOD>=0 ){
-			vec3 vEyeToChunk = this->getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
-			_camDistance = vEyeToChunk.length();
-			U32 lod = 0;
-			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
-			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
-			_LOD = lod;
-			_terrainChunk->DrawTrees(drawInReflection ? TERRAIN_CHUNKS_LOD-1 : (U8)_LOD , _camDistance );
-		}else
-			return;
-	}
-	else {
-		if( _LOD>=0 )
-			for(int i=0; i<4; i++)
-				_children[i].DrawTrees(drawInReflection);
+			for(I8 i=0; i<4; i++)
+				_children[i].DrawGrass();
 		return;		
 	}
 }
@@ -209,7 +173,7 @@ void QuadtreeNode::DrawGround(I32 options)
 			
 			vec3 vEyeToChunk = this->getBoundingBox().getCenter() - pFrust.getEyePos();
 			_camDistance = vEyeToChunk.length();
-			U32 lod = 0;
+			I8 lod = 0;
 			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
 			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
 			_LOD = lod;

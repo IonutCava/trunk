@@ -17,8 +17,8 @@
 
 #ifndef _RESOURCE_MANAGER_H
 #define _RESOURCE_MANAGER_H
-//#define LoadResource<X>(Y) ResourceManager::getInstance().LoadResource<X>(Y);
-//#define RemoveResource(X)  ResourceManager::getInstance().remove(x);
+//#define loadResource<X>(Y) ResourceManager::getInstance().loadResource<X>(Y);
+//#define RemoveResource(X)  RemoveResource(x);
 
 #include "Managers/Manager.h" 
 #include "Utility/Headers/Singleton.h" 
@@ -30,12 +30,13 @@ DEFINE_SINGLETON_EXT1( ResourceManager,Manager )
 
 public:
 	template<class T>
-	T* LoadResource(const ResourceDescriptor& descriptor);
+	T* loadResource(const ResourceDescriptor& descriptor);
 	template<class T>
-	void remove(T*& res);
+	void removeResource(T*& res,bool force = false);
 protected:
-	Resource* LoadResource(const std::string& name);
+	Resource* loadResource(const std::string& name);
 
+	~ResourceManager();
 END_SINGLETON
 
 #endif

@@ -4,10 +4,12 @@
 #include <assimp.hpp>      // C++ importer interface
 #include <aiPostProcess.h> // Post processing flags
 #include "Managers/ResourceManager.h"
+#include "Utility/Headers/XMLParser.h"
+
 using namespace std;
 
 Mesh* DVDConverter::load(const string& file){	
-	Mesh* tempMesh = new Mesh();
+	Mesh* tempMesh = New Mesh();
 	_fileLocation = file;
 	_modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
 	tempMesh->setName(_modelName);
@@ -24,6 +26,7 @@ Mesh* DVDConverter::load(const string& file){
 			   aiProcess_FindInstances            | // search for instanced meshes and remove them by references to one master
 			   aiProcess_LimitBoneWeights         | // limit bone weights to 4 per vertex
 			   aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
+			   aiProcess_OptimizeGraph            | // Nodes with no animations, bones, lights or cameras assigned are collapsed and joined.
 			   0;
 	bool removeLinesAndPoints = true;
 	Assimp::Importer importer;
@@ -34,7 +37,7 @@ Mesh* DVDConverter::load(const string& file){
 
 	scene = importer.ReadFile( file, _ppsteps                    |
 								aiProcess_Triangulate            |
-								aiProcess_SplitLargeMeshes		 |
+								aiProcess_SplitLargeMeshes	     |
 								aiProcess_SortByPType            |
 								aiProcess_GenSmoothNormals);
 
@@ -56,7 +59,7 @@ Mesh* DVDConverter::load(const string& file){
 		if(s && m) {
 			s->getGeometryVBO()->Create();
 			s->setMaterial(m);
-			tempMesh->addSubMesh(s);
+			tempMesh->addSubMesh(s->getName());
 		}
 			
 	}
@@ -67,6 +70,7 @@ Mesh* DVDConverter::load(const string& file){
 
 SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 	string temp;
+	bool skip = false;
 	char a;
 	for(U16 j = 0; j < source->mName.length; j++){
 		a = source->mName.data[j];
@@ -76,10 +80,18 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 	if(temp.empty()){
 		char number[3];
 		sprintf(number,"%d",count);
-		temp = _fileLocation+"-submesh-"+number;
+		temp = _fileLocation.substr(_fileLocation.rfind("/")+1,_fileLocation.length())+"-submesh-"+number;
 	}
 
-	SubMesh* tempSubMesh = new SubMesh(temp); 
+	//Submesh is created as a resource when added to the scenegraph
+	ResourceDescriptor submeshdesc(temp);
+	submeshdesc.setFlag(true);
+	SubMesh* tempSubMesh = ResourceManager::getInstance().loadResource<SubMesh>(submeshdesc);
+
+	if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
+		Console::getInstance().printfn("SubMesh geometry [ %s ] already exists. Skipping creation ...",temp.c_str());
+		return tempSubMesh;
+	}
 	temp.clear();
 
 	tempSubMesh->getGeometryVBO()->getPosition().reserve(source->mNumVertices);
@@ -144,8 +156,14 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 
 Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& materialName){
 
+	Material* tempMaterial = XML::loadMaterial(materialName);
+	if(tempMaterial) return tempMaterial;
+	bool skip = false;
 	ResourceDescriptor tempMaterialDescriptor(materialName);
-	Material* tempMaterial = ResourceManager::getInstance().LoadResource<Material>(tempMaterialDescriptor);
+	if(ResourceManager::getInstance().find(materialName)) skip = true;
+	tempMaterial = ResourceManager::getInstance().loadResource<Material>(tempMaterialDescriptor);
+
+	if(skip) return tempMaterial;
 
 	aiReturn result = AI_SUCCESS; 
 	aiString tName; aiTextureMapping mapping; U32 uvInd;
@@ -186,7 +204,7 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		tempColorVec4.g = tempColor.g;
 		tempColorVec4.b = tempColor.b;
 	}
-	tempMaterial->setEmmisive(tempColorVec4);
+	tempMaterial->setEmissive(tempColorVec4);
 
 
 	F32 shininess = 0,strength = 0;
@@ -217,7 +235,7 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(pathName + "../texturi/"+img_name);
 			texture.setFlag(true);
-			tempMaterial->setTexture(item,ResourceManager::getInstance().LoadResource<Texture2D>(texture));
+			tempMaterial->setTexture(item,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif
 
 		tName.Clear();
@@ -234,8 +252,9 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(pathName + "../texturi/"+img_name);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().LoadResource<Texture2D>(texture));
+			tempMaterial->setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif
 	}//endif
+
 	return tempMaterial;
 }

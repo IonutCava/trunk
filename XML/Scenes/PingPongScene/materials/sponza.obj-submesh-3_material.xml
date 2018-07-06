@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<material>
+	<name>sponza.obj-submesh-3_material</name>
+	<ambient r="0" g="0" b="0" a="1"/>
+	<diffuse r="0.7843" g="0.7843" b="0.7843" a="1"/>
+	<specular r="0" g="0" b="0" a="1"/>
+	<shininess v="50"/>
+	<emissive r="0" g="0" b="0"/>
+</material>
+<shader>
+	<pixelShader>lighting.frag</pixelShader>
+	<vertexShader>lighting.vert</vertexShader>
+</shader>

@@ -23,9 +23,8 @@
 class Shader : public Resource{
 
 public:
-	
     virtual void init(const std::string &vsFile, const std::string &fsFile) = 0;
-
+	virtual bool load(const std::string& name);
     virtual bool loadVertOnly(const std::string& name) = 0;
 	virtual bool loadFragOnly(const std::string& name) = 0;
 
@@ -46,16 +45,21 @@ public:
 	//Legacy
 	virtual void Uniform(I32 location, const vec4& value) = 0;
 	virtual ~Shader(){}
+	inline const std::string& getFragName() {return _fragName;}
+	inline const std::string& getVertName() {return _vertName;}
+	virtual void createCopy() {incRefCount();}
+	virtual void removeCopy() {decRefCount();}
 
 protected:
 	virtual char* shaderFileRead(const std::string &fn) = 0;
 	virtual I8   shaderFileWrite(char *fn, char *s) = 0;
-
+	Shader() : Resource() {}
 protected:
 	U32 _shaderId;
 	U32 _shaderVP;
 	U32 _shaderFP;
-	
+	std::string _fragName, _vertName;
+
 };
 
 

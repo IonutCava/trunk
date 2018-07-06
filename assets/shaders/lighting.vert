@@ -1,16 +1,20 @@
-
-
-varying vec4 vPixToLightTBN[1];	// Vecteur du pixel courant à la lumière
-varying vec3 vPixToEyeTBN;		// Vecteur du pixel courant à l'oeil
+varying vec4 vPixToLightTBN[1];	
+varying vec3 vPixToEyeTBN;		
 varying vec3 vVertexMV;
 varying vec3 vNormalMV;
 varying vec3 vPixToLightMV;
 varying vec3 vLightDirMV;
+varying vec4 vVertexFromLightView;
 
 // SHADOW MAPPING //
 uniform int enable_shadow_mapping;
+ 
 ////////////////////
 
+uniform mat4 transformMatrix;
+uniform mat4 parentTransformMatrix;
+uniform mat4 modelViewInvMatrix;
+uniform mat4 lightProjectionMatrix;
 
 #define MODE_PHONG		0
 #define MODE_BUMP		1
@@ -35,17 +39,17 @@ void main(void)
 	
 	vNormalMV = n;
 	
-	vec4 vLightPosMV = gl_LightSource[0].position;		// Position (ou direction) de la lumière dans la MV
-	vVertexMV = vec3(gl_ModelViewMatrix * gl_Vertex);	// Position du vertex dans la MV
+	vec4 vLightPosMV = gl_LightSource[0].position;	
+	vVertexMV = vec3(gl_ModelViewMatrix * gl_Vertex);	
 	
 	vec3 tmpVec;
 
 
 
 	if(vLightPosMV.w == LIGHT_DIRECTIONAL)
-		tmpVec = -vLightPosMV.xyz;					// Lumière directionelle
+		tmpVec = -vLightPosMV.xyz;					
 	else
-		tmpVec = vLightPosMV.xyz - vVertexMV.xyz;	// Lumière ponctuelle
+		tmpVec = vLightPosMV.xyz - vVertexMV.xyz;	
 
 	vPixToLightMV = tmpVec;
 /*
@@ -89,8 +93,8 @@ void main(void)
 		// pos a subit les transformations + la caméra
 		vec4 pos = gl_ModelViewMatrix * gl_Vertex;
 		// on multiplie par la matrice inverse de la caméra : pos a seulement subit les transformations
-		pos = gl_TextureMatrix[0] * pos;
+		pos = modelViewInvMatrix * pos;
 		// on multiplie par la matrice de la lumière : position du Vertex dans le repère de la lumière
-		gl_TexCoord[1] = gl_TextureMatrix[1] * pos;
+		vVertexFromLightView = lightProjectionMatrix * pos;
 	}
 }

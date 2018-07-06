@@ -16,3 +16,6 @@ bool Texture::LoadFile(U32 target, const std::string& name)
 	return true;
 }
 
+void Texture::resize(U16 width, U16 height){
+	_img.resize(width,height);
+}

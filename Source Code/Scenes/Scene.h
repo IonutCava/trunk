@@ -28,9 +28,11 @@
 #include "Importer/DVDConverter.h"
 #include "Terrain/TerrainDescriptor.h"
 #include "Hardware/Video/Light.h"
+#include "Utility/Headers/ParamHandler.h"
+#include "Managers/ResourceManager.h"
 
 typedef std::tr1::shared_ptr<Event> Event_ptr;
-typedef std::tr1::unordered_map<std::string, Object3D*> Name_Object_map;
+typedef unordered_map<std::string, Object3D*> Name_Object_map;
 class SceneGraph;
 class Scene : public Resource
 {
@@ -38,6 +40,8 @@ class Scene : public Resource
 public:
 	Scene() :  Resource(),
 	  _GFX(GFXDevice::getInstance()),
+	  _resManager(ResourceManager::getInstance()),
+	  _paramHandler(ParamHandler::getInstance()),
 	  _drawBB(false),
 	  _drawObjects(true),
 	  _lightTexture(NULL),
@@ -47,16 +51,28 @@ public:
 	  {
 		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
-		  _sceneGraph = new SceneGraph();
+		  _sceneGraph = New SceneGraph();
+		  _depthMap[0] = NULL;
+		  _depthMap[1] = NULL;
 	  };
 
-	virtual ~Scene() {};
-	void addGeometry(Object3D* const object);
+	virtual ~Scene() {
+		if(_depthMap[0]){
+			delete _depthMap[0];
+			_depthMap[0] = NULL;
+		}
+		if(_depthMap[1]){
+			delete _depthMap[1];
+			_depthMap[1] = NULL;
+		}
+	};
+	SceneGraphNode* addGeometry(Object3D* const object);
 	void addModel(Mesh* const model);
-	bool removeGeometry(const std::string& name);
+	bool removeGeometry(SceneNode* node);
 
 	virtual bool unload();
-
+	virtual void createCopy(){} //tough one ...
+	virtual void removeCopy(){}
 	virtual void render() = 0;
 	virtual void preRender() = 0;
 	virtual bool load(const std::string& name);
@@ -64,20 +80,21 @@ public:
 	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
-	F32& getWindSpeed(){return _windSpeed;}
-	F32& getWindDirX(){return _windDirX;}
-	F32& getWindDirZ(){return _windDirZ;}
-	F32&  getGrassVisibility()		    {return _grassVisibility;}
-	F32&  getTreeVisibility()		    {return _treeVisibility;}
-	F32&  getGeneralVisibility()	  	{return _generalVisibility;}
-	F32&  getWaterLevel()               {return _waterHeight;}
-	F32&  getWaterDepth()               {return _waterDepth;}
+	inline F32& getWindSpeed(){return _windSpeed;}
+	inline F32& getWindDirX(){return _windDirX;}
+	inline F32& getWindDirZ(){return _windDirZ;}
+	inline F32&  getGrassVisibility()		    {return _grassVisibility;}
+	inline F32&  getTreeVisibility()		    {return _treeVisibility;}
+	inline F32&  getGeneralVisibility()	  	{return _generalVisibility;}
+	inline F32&  getWaterLevel()               {return _waterHeight;}
+	inline F32&  getWaterDepth()               {return _waterDepth;}
 
-   //U32 getNumberOfObjects(){return GeometryArray.size();}
-   U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
-   std::vector<TerrainDescriptor*>& getTerrainInfoArray(){return TerrainInfoArray;}
-   inline Shader*                                         getDeferredShaders() {return _deferredShader;}
-   //inline std::tr1::unordered_map<std::string,Object3D*>& getGeometryArray(){return GeometryArray;}
+   
+   inline U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
+   inline std::vector<TerrainDescriptor*>& getTerrainInfoArray() {return TerrainInfoArray;}
+   inline Shader*                           getDeferredShaders() {return _deferredShader;}
+   
+   inline FrameBufferObject* getDepthMap(I32 index){return _depthMap[std::min(std::abs(index),2)];}
 
    inline std::vector<FileData>& getModelDataArray() {return ModelDataArray;}
    inline std::vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
@@ -86,22 +103,24 @@ public:
    inline std::vector<Event_ptr>& getEvents() {return _events;}
 
    inline SceneGraph* getSceneGraph()	{return _sceneGraph;}
-   void   addLight(Light* lightItem) {_lights.push_back(lightItem);}
-   void   addEvent(Event_ptr eventItem) {_events.push_back(eventItem);}
+   inline void   addLight(Light* lightItem) {_lights.push_back(lightItem);}
+   inline void   addEvent(Event_ptr eventItem) {_events.push_back(eventItem);}
 
-   void addModel(FileData& model) {ModelDataArray.push_back(model);}
-   void addTerrain(TerrainDescriptor* ter) {TerrainInfoArray.push_back(ter);}
+   inline void addModel(FileData& model) {ModelDataArray.push_back(model);}
+   inline void addTerrain(TerrainDescriptor* ter) {TerrainInfoArray.push_back(ter);}
    void addPatch(std::vector<FileData>& data);
    bool clean();
 
-   bool drawBBox() {return _drawBB;}
-   void drawBBox(bool visibility) {_drawBB = visibility;}
-   bool drawObjects() {return _drawObjects;}
-   void drawObjects(bool visibility) {_drawObjects=visibility;}
+   inline bool drawBBox() {return _drawBB;}
+   inline void drawBBox(bool visibility) {_drawBB = visibility;}
+   inline bool drawObjects() {return _drawObjects;}
+   inline void drawObjects(bool visibility) {_drawObjects=visibility;}
 
 protected:
 
 	GFXDevice& _GFX;
+	ResourceManager& _resManager;
+	ParamHandler& _paramHandler;
 
 	/*Name_Object_map GeometryArray;
 	Name_Object_map::iterator GeometryIterator;*/
@@ -126,6 +145,7 @@ protected:
 	SceneGraph*        _sceneGraph;
 	F32			       _grassVisibility,_treeVisibility,_generalVisibility,
 				 	   _windSpeed,_windDirX, _windDirZ, _waterHeight, _waterDepth;
+	FrameBufferObject *_depthMap[2];
 private: 
 	std::vector<Event_ptr> _events;
 	std::vector<Light*> _lights;

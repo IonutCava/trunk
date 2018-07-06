@@ -69,22 +69,16 @@ void Camera::Refresh()
 }
 
 
-void Camera::RenderLookAt(bool inverty, F32 planey) {
-	if(inverty){
+void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
+	if(inverty){							 
 		GFXDevice::getInstance().lookAt(vec3(vEye.x,2.0f*planey-vEye.y,vEye.z),
 										vec3(vCenter.x,2.0f*planey-vCenter.y,vCenter.z),
-										vec3(-vUp.x,-vUp.y,-vUp.z));
+										vec3(-vUp.x,-vUp.y,-vUp.z),invertx);
 	}else{
 		GFXDevice::getInstance().lookAt(vEye,vCenter,vUp);
 	}
 
 	Frustum::getInstance().Extract(vEye);
-}
-
-
-void Camera::ScaleScene(const vec3& scaleFactor){
-	GFXDevice::getInstance().loadIdentityMatrix();
-	GFXDevice::getInstance().scale(scaleFactor);
 }
 
 void Camera::PlayerMoveForward(F32 factor)	{	
@@ -143,8 +137,6 @@ void Camera::RenderLookAtToCubeMap(const vec3& eye, U8 nFace)
 
 	setEye( eye );
 
-	GFXDevice::getInstance().enable_MODELVIEW();
-	GFXDevice::getInstance().loadIdentityMatrix();
 	GFXDevice::getInstance().lookAt(eye,TabCenter[nFace],TabUp[nFace]);
 	Frustum::getInstance().Extract(eye);
 }

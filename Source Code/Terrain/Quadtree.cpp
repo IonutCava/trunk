@@ -6,21 +6,13 @@ void Quadtree::DrawGround(bool drawInReflection) {
 	assert(_root);
 	int options = CHUNK_BIT_TESTCHILDREN;
 	if(drawInReflection)	options |= CHUNK_BIT_WATERREFLECTION;
-	if(GFXDevice::getInstance().getDepthMapRendering()) options |= CHUNK_BIT_DEPTHMAP;
-	_root->DrawGround(options);
-	//_root->DrawBBox();
+	_root->DrawGround(drawInReflection);
 }
 
-void Quadtree::DrawGrass(bool drawInReflection)
+void Quadtree::DrawGrass()
 {
 	assert(_root);
-	_root->DrawGrass(drawInReflection);
-}
-
-void Quadtree::DrawTrees(bool drawInReflection)
-{
-	assert(_root);
-	_root->DrawTrees(drawInReflection);
+	_root->DrawGrass();
 }
 
 void Quadtree::DrawBBox() {

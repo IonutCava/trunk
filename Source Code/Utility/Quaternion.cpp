@@ -7,9 +7,9 @@
 void Quaternion::normalize(){
 	_dirty = true;
 	// Don't normalize if we don't have to
-	float mag2 = _w * _w + _x * _x + _y * _y + _z * _z;
+	F32 mag2 = _w * _w + _x * _x + _y * _y + _z * _z;
 	if (  mag2!=0.f && (fabs(mag2 - 1.0f) > TOLERANCE)) {
-		float mag = sqrt(mag2);
+		D32 mag = Util::square_root(mag2);
 		_w /= mag;
 		_x /= mag;
 		_y /= mag;
@@ -50,9 +50,9 @@ vec3 Quaternion::operator* (const vec3 &vec) const{
 }
 
 // Convert from Axis Angle
-void Quaternion::FromAxis(const vec3 &v, float angle){
+void Quaternion::FromAxis(const vec3 &v, F32 angle){
 	_dirty = true;
-	float sinAngle;
+	F32 sinAngle;
 	angle = RADIANS(angle);
 	angle *= 0.5f;
 	vec3 vn(v);
@@ -68,22 +68,22 @@ void Quaternion::FromAxis(const vec3 &v, float angle){
 }
 
 // Convert from Euler Angles
-void Quaternion::FromEuler(float pitch, float yaw, float roll){
+void Quaternion::FromEuler(F32 pitch, F32 yaw, F32 roll){
 	_dirty = true;
 	// Basically we create 3 Quaternions, one for pitch, one for yaw, one for roll
 	// and multiply those together.
 	// the calculation below does the same, just shorter
  
-	float p = pitch * M_PIDIV180 / 2.0;
-	float y = yaw * M_PIDIV180 / 2.0;
-	float r = roll * M_PIDIV180 / 2.0;
+	F32 p = pitch * M_PIDIV180 / 2.0;
+	F32 y = yaw * M_PIDIV180 / 2.0;
+	F32 r = roll * M_PIDIV180 / 2.0;
  
-	float sinp = sin(p);
-	float siny = sin(y);
-	float sinr = sin(r);
-	float cosp = cos(p);
-	float cosy = cos(y);
-	float cosr = cos(r);
+	F32 sinp = sin(p);
+	F32 siny = sin(y);
+	F32 sinr = sin(r);
+	F32 cosp = cos(p);
+	F32 cosy = cos(y);
+	F32 cosr = cos(r);
  
 	this->_x = sinr * cosp * cosy - cosr * sinp * siny;
 	this->_y = cosr * sinp * cosy + sinr * cosp * siny;
@@ -116,8 +116,8 @@ mat4& Quaternion::getMatrix(){
 }
 
 // Convert to Axis/Angles
-void Quaternion::getAxisAngle(vec3 *axis, float *angle,bool inDegrees){
-	float scale = sqrt(_x * _x + _y * _y + _z * _z);
+void Quaternion::getAxisAngle(vec3 *axis, F32 *angle,bool inDegrees){
+	F32 scale = Util::square_root(_x * _x + _y * _y + _z * _z);
 	axis->x = _x / scale;
 	axis->y = _y / scale;
 	axis->z = _z / scale;

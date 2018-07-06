@@ -55,7 +55,8 @@ public:
 
 	virtual bool load(const std::string& name) {return true;}
 	virtual bool unload() {return true;}
-
+	virtual void createCopy() {incRefCount();}
+	virtual void removeCopy() {decRefCount();}
 public:
 	void SaveCamera();
 	void RestoreCamera();
@@ -100,11 +101,9 @@ public:
 	void TranslateStrafe(F32 factor);	
 	void MoveAnaglyph(F32 factor);
 
-	void RenderLookAt(bool inverty=false, F32 planey=0.0f);
+	void RenderLookAt(bool invertx = false, bool inverty=false, F32 planey=0.0f);
 
 	void RenderLookAtToCubeMap(const vec3& eye, U8 nFace);
-	
-	void ScaleScene(const vec3& scaleFactor);
 };
 #endif
 

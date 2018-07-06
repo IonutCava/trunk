@@ -36,37 +36,25 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 
 class Mesh : public Object3D
 {
-
+	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
 public:
 	Mesh() : Object3D(MESH) {}
-	/*Mesh(const vec3& position,const vec3& scale,const vec3& orientation,Material* mat)
-		: Object3D(position,scale,orientation,mat,MESH) {}*/
-	Mesh(const Mesh& old);
 
-	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
-	
-	bool optimizeSubMeshes();
-	
-	inline std::vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
-	inline SubMesh*				    getSubMesh(const std::string& name);
+	inline void addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
-	bool				getVisibility();
-	void				onDraw();
+	bool computeBoundingBox(SceneGraphNode* node);
+	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
 
 	bool load(const std::string& file);
-	bool unload();
 	bool clean();
-
-protected:
-	bool isInView();
-	bool computeBoundingBox();
-	void computeLightShaders();
-
+	void postLoad(SceneGraphNode* node);
+	void render(SceneGraphNode* node){};
+	void createCopy();
+	void removeCopy();
 protected:
 	
-	bool							  _visibleToNetwork, _loaded;
-	std::vector<SubMesh* >		      _subMeshes;
-	std::vector<SubMesh* >::iterator  _subMeshIterator;
+	bool						 _visibleToNetwork, _loaded;
+	std::vector<std::string >	 _subMeshes;
 };
 
 #endif

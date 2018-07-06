@@ -115,6 +115,9 @@
     <Filter Include="EngineGraphs">
       <UniqueIdentifier>{77e67816-9a2f-4029-a8df-932b08135ff3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\PostFX">
+      <UniqueIdentifier>{27807888-106c-4639-bf00-14abbb10d310}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\common.cpp">
@@ -319,6 +322,15 @@
       <Filter>EngineGraphs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\main.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp">
+      <Filter>Rendering\PostFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\EngineGraphs\SceneGraph.cpp">
+      <Filter>EngineGraphs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\common.h">
@@ -406,9 +418,6 @@
       <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\MathClasses.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\MathHelper.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\ParamHandler.h">
@@ -655,6 +664,12 @@
     <ClInclude Include="..\..\Source Code\resource.h" />
     <ClInclude Include="..\..\Source Code\readme.h" />
     <ClInclude Include="..\..\Source Code\config.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\PostFX.h">
+      <Filter>Rendering\PostFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\MathHelper.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\DeferredShadingPass1.frag">
@@ -724,6 +739,18 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\assets\shaders\water.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\anaglyph.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\anaglyph.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\postProcessing.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\postProcessing.vert">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

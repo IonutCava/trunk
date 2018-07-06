@@ -16,15 +16,17 @@
 	<simSpeed>1</simSpeed>
 	<windowWidth>1024</windowWidth>
 	<windowHeight>768</windowHeight>
+	<zNear>0.175</zNear>
+	<zFar>1200.0</zFar>
+	<verticalFOV>60</verticalFOV>
 </runtime>	
 
 <rendering>
-	<enablePostFX>false</enablePostFX>
-	<enable3D>true</enable3D>
+	<enablePostFX>true</enablePostFX>
+	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>
 	<enableNoise>false</enableNoise>
 	<enableDepthOfField>false</enableDepthOfField>
-	<enableBloom>false</enableBloom>
-	<enableBlur>false</enableBlud>
+	<enableBloom>true</enableBloom>
 </rendering>
     

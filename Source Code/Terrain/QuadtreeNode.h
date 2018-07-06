@@ -37,17 +37,16 @@ class Terrain;
 class QuadtreeNode {
 public:
 	//fonction recursive de traitement des noeuds
-	void Build(U32 depth, ivec2 pos, ivec2 HMsize, U32 minHMSize);
+	void Build(U8 depth, ivec2 pos, ivec2 HMsize, U32 minHMSize);
 	bool computeBoundingBox(const std::vector<vec3>& vertices);
 	void Destroy();
 
 	void DrawGround(I32 options);
-	void DrawGrass(bool drawInReflection);
-	void DrawTrees(bool drawInReflection);
+	void DrawGrass();
 	void DrawBBox();
 
 	inline bool isALeaf() const							{return _children==0;}
-	inline const BoundingBox&	getBoundingBox()		{return _boundingBox;}
+	inline BoundingBox&	getBoundingBox()         		{return _boundingBox;}
 	inline void setBoundingBox(const BoundingBox& bbox)	{_boundingBox = bbox;}
 	inline QuadtreeNode*	getChildren()				{return _children;}
 	inline TerrainChunk*	getChunk()					{return _terrainChunk;}
@@ -56,7 +55,7 @@ public:
 	~QuadtreeNode() {Destroy();}
 
 private:
-	I32				_LOD;				// LOD level
+	I8				_LOD;				// LOD level
 	F32			    _camDistance;		// Distance to camera
 	BoundingBox		_boundingBox;		// Node BoundingBox
 	QuadtreeNode*	_children;			// Node children

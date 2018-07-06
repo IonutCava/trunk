@@ -26,8 +26,10 @@ class Terrain;
 class Shader;
 class Texture;
 typedef Texture Texture2D;
-class Vegetation
-{
+class FrameBufferObject;
+class SceneGraphNode;
+
+class Vegetation{
 public:
 	Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, std::vector<Texture2D*>& grassBillboards): 
 	  _billboardCount(billboardCount),
@@ -43,13 +45,13 @@ public:
 	  }
 	~Vegetation();
 	void initialize(const std::string& grassShader, const std::string& terrainName);
-	void toggleRendering(bool state){_render = state;}
+	inline void toggleRendering(bool state){_render = state;}
 	void draw(bool drawInReflection);
 
 private:
 	//variables
 	bool _render, _success ;                      //Toggle vegetation rendering On/Off
-	Terrain* _terrain;
+	SceneGraphNode* _terrain;
 	D32 _grassDensity, _treeDensity;
 	U16 _billboardCount;          //Vegetation cumulated density
 	F32 _grassSize,_grassScale, _treeScale;
@@ -60,14 +62,8 @@ private:
 
 	bool generateTrees();			   //True = Everything OK, False = Error. Check _errorCode
 	bool generateGrass(U32 index);     //index = current grass type (billboard, vbo etc)
-	inline std::vector<U32>&		getGrassIndiceArray()		{return _grassIndice;}
 
 	std::vector<VertexBufferObject*>	_grassVBO;
-	std::vector<U32>					_grassIndice;
-	
-		
-	void DrawGrass(U8 index,bool drawInReflection);
-	void DrawTrees(bool drawInReflection);
 };
 
 #endif

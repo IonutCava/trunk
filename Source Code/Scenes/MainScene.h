@@ -21,8 +21,7 @@
 #include "Scene.h"
 #include "Hardware/Video/FrameBufferObject.h"
 class WaterPlane;
-class MainScene : public Scene
-{
+class MainScene : public Scene{
 
 public:
 	/*General Scene Requirement*/
@@ -37,10 +36,7 @@ public:
 private:
 	/*Specific Scene Requirement*/
 	void renderEnvironment(bool waterReflection, bool depthMap);
-	void restoreLightCameraMatrices();
-	void setLightCameraMatrices();
 	bool updateLights();
-	bool disableLights();
 	void processInput();
 	void processEvents(F32 time);
 	void test(boost::any a, CallbackParam b);
@@ -52,11 +48,9 @@ private:
 
 private:
 	
-	FrameBufferObject*     _skyFBO,*_depthMap[2];
 	vec2 _sunAngle;
 	vec4 _sunVector,_sunColor;
 	F32  _sun_cosy;
-	mat4 _sunModelviewProj;
 	F32 angleLR,angleUD,moveFB,moveLR;
 	vec2 _prevMouse;
 	bool _mousePressed;

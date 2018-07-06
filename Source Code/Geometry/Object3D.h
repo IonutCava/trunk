@@ -22,7 +22,7 @@
 #include "Utility/Headers/BaseClasses.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "EngineGraphs/SceneNode.h"
-
+#include "EngineGraphs/SceneGraphNode.h"
 enum PrimitiveType
 {
 	OBJECT_3D,
@@ -41,49 +41,26 @@ class Object3D : public SceneNode
 {
 public:
 	Object3D(PrimitiveType type = OBJECT_3D) : SceneNode(),
-											  _selected(false),
 											  _update(false),
-											  _render(true),
-											  _computedLightShaders(false),
 											  _geometryType(type)
 
 	{}
 
 	Object3D(const std::string& name, PrimitiveType type = OBJECT_3D) : SceneNode(name),
-																		_selected(false),
 																	    _update(false),
-																		_render(true),
-																		_computedLightShaders(false),
 																		_geometryType(type)
 	{}
 
-/*	Object3D(const vec3& position,const vec3& scale,
-			 const vec3& orientation,Material* mat,
-			 PrimitiveType type = OBJECT_3D) : SceneNode(),
-		         							   _selected(false),
-										       _render(true),
-										       _computedLightShaders(false),
-											   _noDefaultMaterial(false),
-											   _geometryType(type)
-	{
-		//Quaternion rotation; rotation.FromEuler(orientation);
-		//_transform = New Transform(rotation, position,scale);
-	}
-*/
-	Object3D(const Object3D& old);
 	virtual ~Object3D(){};
 
-	
+
+	virtual void						postLoad(SceneGraphNode* node) {}	
 	inline  PrimitiveType               getType()       const {return _geometryType;}
-	virtual inline  bool                getVisibility() const {return _render;}
-	inline	bool                        isSelected()	      {return _selected;}
-			
-	void			setSelected(bool state)					        {_selected = state;}
-	virtual							 void    onDraw();
-	virtual							 void    render();
+	
+	virtual		void    render(SceneGraphNode* node);
 	
 protected:
-	bool						 _selected,_update, _render, _drawBB,_computedLightShaders;
+	bool						 _update;
 	PrimitiveType				_geometryType;
 };
 

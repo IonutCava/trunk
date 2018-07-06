@@ -1,8 +1,5 @@
 varying vec3 vertex;
 varying vec3 vertexMV;
-
-uniform vec3 fog_color;
-
 uniform samplerCube texSky;
 uniform bool enable_sun;
 uniform vec3 sun_vector;

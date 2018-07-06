@@ -23,15 +23,15 @@
 
 class Manager{
 protected:
-	typedef std::tr1::unordered_map<std::string, Resource*> ResourceMap;
-	std::tr1::unordered_map<std::string,I32> _refCounts;
+	typedef unordered_map<std::string, Resource*> ResourceMap;
 	ResourceMap _resDB;
+	ResourceMap::iterator _resDBiter;
 
 public: 
 	void add(const std::string& name, Resource* res);
 	Resource* find(const std::string& name);
 	//If we crash here due to an invalid name, the problem lies with the resource, not the manager
-	bool remove(Resource* res,bool force = false);
+	virtual bool remove(Resource* res,bool force = false);
 	void Destroy();
 	virtual ~Manager() {Destroy();} //Deleting any manager, will destroy it first
 };

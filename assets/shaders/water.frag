@@ -4,8 +4,6 @@ uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;
 uniform float water_shininess;
-uniform float transparency;
-uniform vec3 fog_color;
 
 uniform sampler2D texWaterReflection;
 uniform sampler2D texWaterNoiseNM;
@@ -13,6 +11,7 @@ uniform sampler2D texWaterNoiseNM;
 varying vec3 vPixToLight;
 varying vec3 vPixToEye;	
 varying vec4 vPosition;
+varying vec4 vVertexFromLightView;
 
 // SHADOW MAPPING //
 uniform sampler2DShadow texDepthMapFromLight0;
@@ -20,7 +19,7 @@ uniform sampler2DShadow texDepthMapFromLight1;
 #define Z_TEST_SIGMA 0.0001
 ////////////////////
 
-float ShadowMapping(vec4 vVertexFromLightView);
+float ShadowMapping();
 
 float Fresnel(vec3 incident, vec3 normal, float bias, float power);
 
@@ -49,8 +48,9 @@ void main (void)
 	
 	gl_FragColor += gl_LightSource[0].specular * iSpecular;
 	gl_FragColor = clamp(gl_FragColor, vec4(0.0, 0.0, 0.0, 0.0),  vec4(1.0, 1.0, 1.0, 1.0));
+	
 	// SHADOW MAPPING
-	float shadow = ShadowMapping( gl_TexCoord[1] );
+	float shadow = ShadowMapping();
 	shadow = shadow * 0.5 + 0.5;
 	gl_FragColor *= shadow;
 
@@ -67,7 +67,7 @@ float Fresnel(vec3 incident, vec3 normal, float bias, float power)
 }
 
 
-float ShadowMapping(vec4 vVertexFromLightView)
+float ShadowMapping()
 {
 	float fShadow = 0.0;
 						

@@ -25,8 +25,6 @@ Light::~Light(){
 }
 
 bool Light::unload(){
-	if(_light != NULL)
-		ResourceManager::getInstance().remove(_light); //Deleted by SceneGraph??
 	_lightProperties.empty();
 	return SceneNode::unload();
 }
@@ -34,26 +32,33 @@ bool Light::unload(){
 bool Light::load(const std::string& name){
 	setName(name);
 	ResourceDescriptor light(getName()+"_impostor");
-	_light = ResourceManager::getInstance().LoadResource<Sphere3D>(light);
+	light.setFlag(true);
+	_light = ResourceManager::getInstance().loadResource<Sphere3D>(light);
 	_light->getResolution() = 8;
 	_light->getSize() = _radius;
-	ResourceDescriptor lightMat(getName()+"_impostor"+"_material");
-	Material *lightImpostorMaterial = ResourceManager::getInstance().LoadResource<Material>(lightMat);
-	_light->setMaterial(lightImpostorMaterial);
+	ResourceDescriptor materialDescriptor(getName()+"_impostor"+"_material");
+	_light->setMaterial(ResourceManager::getInstance().loadResource<Material>(materialDescriptor));
 	return true;
 }
 
-void Light::update(){
-	_light->getTransform()->setPosition(_lightProperties["position"]);
-	_light->getSize() = _radius;
+void Light::postLoad(SceneGraphNode* node) {
+		_light->setRenderState(false);
+		node->addNode(_light);
+}	
+
+void Light::onDraw(){
+	GFXDevice& gfx = GFXDevice::getInstance();
+	if(_drawImpostor){
+		_light->getSceneGraphNode()->getTransform()->setPosition(_lightProperties["position"]);
+	}
 	_light->getMaterial()->setDiffuse(getDiffuseColor());
 	_light->getMaterial()->setAmbient(getDiffuseColor());
-	if(!GFXDevice::getInstance().getDeferredShading())
-		GFXDevice::getInstance().setLight(_slot,_lightProperties);
+	if(!gfx.getDeferredShading())
+		gfx.setLight(_slot,_lightProperties);
 }
 
 void Light::setLightProperties(const std::string& name, vec4 values){
-	std::tr1::unordered_map<std::string,vec4>::iterator it = _lightProperties.find(name);
+	unordered_map<std::string,vec4>::iterator it = _lightProperties.find(name);
 	if (it != _lightProperties.end())
 		_lightProperties[name] = values;
 
@@ -61,8 +66,18 @@ void Light::setLightProperties(const std::string& name, vec4 values){
 		_lightProperties["spotDirection"] = values;
 }
 
-void Light::render(){
-	if(_drawImpostor) _light->render();
+void Light::render(SceneGraphNode* node){
+	if(_drawImpostor){
+		GFXDevice& gfx = GFXDevice::getInstance();
+		gfx.ignoreStateChanges(true);
+		RenderState old = gfx.getActiveRenderState();
+		RenderState s(old);
+		s.lightingEnabled() = false;
+		gfx.setRenderState(s);
+		_light->render(node);
+		gfx.setRenderState(old);
+		gfx.ignoreStateChanges(false);
+	}
 }
 
 
@@ -71,13 +86,13 @@ void Light::getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height)
 	ParamHandler& par =  ParamHandler::getInstance();
 
 	Frustum::getInstance().Extract(CameraManager::getInstance().getActiveCamera()->getEye());
-	mat4& cameraViewMatrix = Frustum::getInstance().getModelviewMatrix();
+	mat4 cameraViewMatrix = Frustum::getInstance().getModelviewMatrix();
 	U16 windowWidth = Engine::getInstance().getWindowDimensions().x;
 	U16 windowHeight = Engine::getInstance().getWindowDimensions().y;
 	F32 left=-1.0f;	F32 right=1.0f;
 	F32 bottom=-1.0f; F32 top=1.0f;
 	vec3 l=cameraViewMatrix*vec3(_lightProperties["position"]);
-	F32 halfNearPlaneHeight=par.getParam<D32>("zNear")*(F32)tan(D32(par.getParam<F32>("FOV")*M_PI/360));
+	F32 halfNearPlaneHeight=par.getParam<F32>("zNear")*(F32)tan(D32(par.getParam<F32>("verticalFOV")*M_PI/360));
 	F32 halfNearPlaneWidth=halfNearPlaneHeight*par.getParam<F32>("aspectRatio");
 
 
@@ -92,7 +107,7 @@ void Light::getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height)
 	//If d>0, solve the quadratic to get the normal to the plane
 	if(d>0.0f)
 	{
-		F32 rootD=(F32)sqrt(d);
+		F32 rootD=(F32)Util::square_root(d);
 
 		//Loop through the 2 solutions
 		for(U8 i=0; i<2; ++i)
@@ -127,7 +142,7 @@ void Light::getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height)
 
 			//Calculate where the plane meets the near plane
 			//divide by the width to give a value in [-1, 1] for values on the screen
-			F32 screenX=normal.z * par.getParam<D32>("zNear") / (normal.x*halfNearPlaneWidth);
+			F32 screenX=normal.z * par.getParam<F32>("zNear") / (normal.x*halfNearPlaneWidth);
 			
 			//If this is a left bounding value (p.x<l.x) and is further right than the
 			//current value, update
@@ -151,7 +166,7 @@ void Light::getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height)
 	//If d>0, solve the quadratic to get the normal to the plane
 	if(d>0.0f)
 	{
-		F32 rootD=(F32)sqrt(d);
+		F32 rootD=(F32)Util::square_root(d);
 
 		//Loop through the 2 solutions
 		for(U8 i=0; i<2; ++i)
@@ -186,7 +201,7 @@ void Light::getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height)
 
 			//Calculate where the plane meets the near plane
 			//divide by the height to give a value in [-1, 1] for values on the screen
-			F32 screenY=normal.z * par.getParam<D32>("zNear") / (normal.y*halfNearPlaneHeight);
+			F32 screenY=normal.z * par.getParam<F32>("zNear") / (normal.y*halfNearPlaneHeight);
 			
 			//If this is a bottom bounding value (p.y<l.y) and is further up than the
 			//current value, update

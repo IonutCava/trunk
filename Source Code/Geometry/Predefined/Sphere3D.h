@@ -33,11 +33,9 @@ public:
 	F32&			  getSize()       {return _size;}
 	U8&			      getResolution() {return _resolution;}
 
-	virtual bool computeBoundingBox(){
-		_boundingBox.set(vec3(- _size,- _size,- _size), vec3( _size, _size, _size));
-		_boundingBox.isComputed() = true;
-		setOriginalBoundingBox(_boundingBox);
-		return true;
+	virtual bool computeBoundingBox(SceneGraphNode* node){
+		node->getBoundingBox().set(vec3(- _size,- _size,- _size), vec3( _size, _size, _size));
+		return SceneNode::computeBoundingBox(node);
 	}
 
 protected:

@@ -31,8 +31,7 @@ public:
 	void Destroy();
 
 	void DrawGround(bool drawInReflection);
-	void DrawGrass(bool drawInReflection);
-	void DrawTrees(bool drawInReflection);
+	void DrawGrass();
 	void DrawBBox();
 
 	QuadtreeNode*	FindLeaf(vec2& pos);

@@ -15,21 +15,25 @@ Sky::Sky()
 	
    	string location = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/";
 	ResourceDescriptor skybox("SkyBox");
-	skybox.setFlag(true); //no materials;
-	_sky = ResourceManager::getInstance().LoadResource<Sphere3D>(skybox);
+	skybox.setFlag(true); //no default material;
+	_sky = ResourceManager::getInstance().loadResource<Sphere3D>(skybox);
 	_sky->getResolution() = 4;
+	_skyNode = SceneManager::getInstance().getActiveScene()->getSceneGraph()->getRoot()->addNode(_sky);
+	_sky->setRenderState(false);
 	ResourceDescriptor sun("Sun");
 	sun.setFlag(true);
-	_sun = ResourceManager::getInstance().LoadResource<Sphere3D>(sun);
+	_sun = ResourceManager::getInstance().loadResource<Sphere3D>(sun);
 	_sun->getResolution() = 16;
 	_sun->getSize() = 0.1f;
+	_sunNode = SceneManager::getInstance().getActiveScene()->getSceneGraph()->getRoot()->addNode(_sun);
+	_sun->setRenderState(false);
 	ResourceDescriptor skyboxTextures("SkyboxTextures");
 	skyboxTextures.setResourceLocation(location+"skybox_2.jpg "+ location+"skybox_1.jpg "+
 								       location+"skybox_5.jpg "+ location+"skybox_6.jpg "+ 
 									   location+"skybox_3.jpg "+ location+"skybox_4.jpg");
 
-	_skybox =  ResourceManager::getInstance().LoadResource<TextureCubemap>(skyboxTextures);
-	_skyShader = ResourceManager::getInstance().LoadResource<Shader>(ResourceDescriptor("sky"));
+	_skybox =  ResourceManager::getInstance().loadResource<TextureCubemap>(skyboxTextures);
+	_skyShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("sky"));
 	assert(_skyShader);
 	Console::getInstance().printfn("Generated sky cubemap and sun OK!");
 	_init = true;
@@ -37,10 +41,8 @@ Sky::Sky()
 
 Sky::~Sky()
 {
-	ResourceManager::getInstance().remove(_sky);
-	ResourceManager::getInstance().remove(_sun);
-	ResourceManager::getInstance().remove(_skyShader);
-	ResourceManager::getInstance().remove(_skybox);
+	RemoveResource(_skyShader);
+	RemoveResource(_skybox);
 }
 
 void Sky::draw() const
@@ -61,11 +63,14 @@ void Sky::setParams(const vec3& eyePos, const vec3& sunVect, bool invert, bool d
 
 void Sky::drawSkyAndSun() const
 {
-	_sky->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
-	_sky->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
+	_skyNode->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
+	_skyNode->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
 
-	RenderState old = GFXDevice::getInstance().getActiveRenderState();
+	GFXDevice::getInstance().ignoreStateChanges(true);
+
 	RenderState s(false,false,false,true);
+	GFXDevice::getInstance().setRenderState(s);
+
 	_skybox->Bind(0);
 	_skyShader->bind();
 	{
@@ -73,46 +78,51 @@ void Sky::drawSkyAndSun() const
 		_skyShader->Uniform("enable_sun", true);
 		_skyShader->Uniform("sun_vector", _sunVect);
 
-		GFXDevice::getInstance().setRenderState(s);
-		GFXDevice::getInstance().drawSphere3D(_sky);
-		GFXDevice::getInstance().setRenderState(old);
+		GFXDevice::getInstance().drawSphere3D(_skyNode);
+		
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
+	GFXDevice::getInstance().ignoreStateChanges(false);
 	
 }
 
 void Sky::drawSky() const
 {
-	_sky->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
-	_sky->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
-	RenderState old = GFXDevice::getInstance().getActiveRenderState();
+	_skyNode->getTransform()->setPosition(vec3(_eyePos.x,_eyePos.y,_eyePos.z));
+	_skyNode->getTransform()->scale(vec3(1.0f, _invert ? -1.0f : 1.0f, 1.0f));
+	GFXDevice::getInstance().ignoreStateChanges(true);
+
 	RenderState s(false,false,false,true);
-	
+	GFXDevice::getInstance().setRenderState(s);
+
 	_skybox->Bind(0);
 	_skyShader->bind();
 	{
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", false);
 
-		GFXDevice::getInstance().setRenderState(s);
-		GFXDevice::getInstance().drawSphere3D(_sky);
-		GFXDevice::getInstance().setRenderState(old);
+		GFXDevice::getInstance().drawSphere3D(_skyNode);
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
+
+	GFXDevice::getInstance().ignoreStateChanges(false);
 
 }
 
 void Sky::drawSun() const
 {
 	_sun->getMaterial()->setDiffuse(SceneManager::getInstance().getActiveScene()->getLights()[0]->getDiffuseColor());
-	_sun->getTransform()->setPosition(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
-	RenderState old = GFXDevice::getInstance().getActiveRenderState();
-	RenderState s(false,false,false,false);
+	_sunNode->getTransform()->setPosition(vec3(_eyePos.x-_sunVect.x,_eyePos.y-_sunVect.y,_eyePos.z-_sunVect.z));
+	
+	GFXDevice::getInstance().ignoreStateChanges(true);
+	RenderState s(false,false,false,true);
 	GFXDevice::getInstance().setRenderState(s);
-	GFXDevice::getInstance().drawSphere3D(_sun);
-	GFXDevice::getInstance().setRenderState(old);
+
+	GFXDevice::getInstance().drawSphere3D(_sunNode);
+
+	GFXDevice::getInstance().ignoreStateChanges(false);
 }
 
 

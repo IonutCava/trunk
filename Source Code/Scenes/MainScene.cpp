@@ -1,7 +1,4 @@
 #include "MainScene.h"
-
-#include "Utility/Headers/ParamHandler.h"
-#include "Managers/ResourceManager.h"
 #include "Managers/CameraManager.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
@@ -14,10 +11,6 @@ using namespace std;
 
 bool MainScene::updateLights(){
 
-	RenderState activeRenderState = GFXDevice::getInstance().getActiveRenderState();
-	activeRenderState.lightingEnabled() = true;
-	GFXDevice::getInstance().setRenderState(activeRenderState);
-
 	_sun_cosy = cosf(_sunAngle.y);
 	_sunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + _sun_cosy * 0.75f);
@@ -26,37 +19,31 @@ bool MainScene::updateLights(){
 	getLights()[0]->setLightProperties(string("ambient"),_white);
 	getLights()[0]->setLightProperties(string("diffuse"),_sunColor);
 	getLights()[0]->setLightProperties(string("specular"),_sunColor);
-	getLights()[0]->update();
+	getLights()[0]->onDraw(); //Force update between render passes
 	return true;
 }
 
-bool MainScene::disableLights(){
-	RenderState activeRenderState = GFXDevice::getInstance().getActiveRenderState();
-	activeRenderState.lightingEnabled() = false;
-	GFXDevice::getInstance().setRenderState(activeRenderState);
-	return true;
-}
-
-void MainScene::preRender()
-{
-	ResourceManager& res = ResourceManager::getInstance();
+void MainScene::preRender(){
 	Sky &sky = Sky::getInstance();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	ParamHandler &par = ParamHandler::getInstance();
 	vec3 eye_pos = cam->getEye();
 	vec3 sun_pos = eye_pos - vec3(_sunVector);
-	D32 zNear = par.getParam<D32>("zNear");
-	D32 zFar = par.getParam<D32>("zFar");
+	F32 zNear = _paramHandler.getParam<F32>("zNear");
+	F32 zFar = _paramHandler.getParam<F32>("zFar");
 	vec2 zPlanes(zNear,zFar);
 	D32 tabOrtho[2] = {20.0, 100.0};
-	GFXDevice::getInstance().setLightCameraMatrices(_sunVector);
+	
+	vec3 lightPos(eye_pos.x - 500*_sunVector.x,	
+				  eye_pos.y - 500*_sunVector.y,
+				  eye_pos.z - 500*_sunVector.z);
+	
+	_GFX.setLightCameraMatrices(lightPos,eye_pos,true);
 
 	//SHADOW MAPPING
-	GFXDevice::getInstance().setDepthMapRendering(true);
-	
+	_GFX.setDepthMapRendering(true);
 
 	for(U8 i=0; i<2; i++){
-		GFXDevice::getInstance().setOrthoProjection(vec4(-tabOrtho[i], tabOrtho[i], -tabOrtho[i], tabOrtho[i]),zPlanes);
+		_GFX.setOrthoProjection(vec4(-tabOrtho[i], tabOrtho[i], -tabOrtho[i], tabOrtho[i]),zPlanes);
 		Frustum::getInstance().Extract(sun_pos);
 	
 		_depthMap[i]->Begin();
@@ -64,82 +51,69 @@ void MainScene::preRender()
 			renderEnvironment(false, true);
 		_depthMap[i]->End();
 
-		for(U8 j = 0; j < _visibleTerrains.size(); j++){
-			_visibleTerrains[j]->setDepthMap(i,_depthMap[i]);
-		}
 	}
 
-	GFXDevice::getInstance().setOrthoProjection(vec4(-1.0f,1.0f,-1.0f,1.0f),zPlanes);
+	_GFX.setOrthoProjection(vec4(-1.0f,1.0f,-1.0f,1.0f),zPlanes);
 	Frustum::getInstance().Extract(sun_pos);
-	_sunModelviewProj = Frustum::getInstance().getModelvieProjectionwMatrix();
+	_GFX.setLightProjectionMatrix(Frustum::getInstance().getModelViewProjectionMatrix());
 
-	GFXDevice::getInstance().restoreLightCameraMatrices();
+	_GFX.setDepthMapRendering(false);
+	_GFX.restoreLightCameraMatrices(true);
+	
 	Frustum::getInstance().Extract(eye_pos);
-	GFXDevice::getInstance().setDepthMapRendering(false);
+	
 	//SHADOW MAPPING
 
 	//WATER REFLECTION
 	if(_water != NULL){
-		_skyFBO->Begin();
+		_water->getReflectionFBO()->Begin();
 			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			renderEnvironment(true,false);
-		_skyFBO->End();
-
-		FrameBufferObject* fbo[] = {_skyFBO,_depthMap[0],_depthMap[1]};
-		_water->setFBO(fbo);
-		_water->setWaterTextureProjectionMatrix(_sunModelviewProj);
+		_water->getReflectionFBO()->End();
 	}
 	//WATER REFLECTION
+	for(U8 i = 0; i < _visibleTerrains.size(); i++){
+		_visibleTerrains[i]->getMaterial()->setAmbient(_sunColor/1.5f);
+	}
 }
 
 void MainScene::render(){
-	_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 	renderEnvironment(false,false);
-
-	GUI::getInstance().draw();
-	
+	//renderEnvironment(true,false);
 }
 
 void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
 	Sky &sky = Sky::getInstance();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	ParamHandler &par = ParamHandler::getInstance();
+	_GFX.ignoreStateChanges(true);
 
-	const vec3& eye_pos = cam->getEye();
-	GFXDevice::getInstance().ignoreStateChanges(true);
 	if(!depthMap){
-		updateLights();
-
-		if(eye_pos.y < getWaterLevel()){
+		if(cam->getEye().y < getWaterLevel()){
 			waterReflection = false;
-			par.setParam("underwater",true);
+			_paramHandler.setParam("underwater",true);
 		}
 		else{
-			par.setParam("underwater",false);
+			_paramHandler.setParam("underwater",false);
 		}
 
-		sky.setParams(eye_pos,vec3(_sunVector),waterReflection,true,true);
+		sky.setParams(cam->getEye(),vec3(_sunVector),waterReflection,true,true);
 		sky.draw();
-		if(waterReflection){
-			RenderState activeState = GFXDevice::getInstance().getActiveRenderState();
-			activeState.cullingEnabled() = false;
-			GFXDevice::getInstance().setRenderState(activeState);
-			cam->ScaleScene(vec3(-1,1,1));
-			cam->RenderLookAt(true,getWaterLevel());
-		}
-		
-	}else{
-		disableLights();
-	}
 
-	_waterGraphNode->setActive(!waterReflection && !depthMap); //Do not render water for shadowmaping and water texturing passes;
-	for(U8 i = 0; i < _visibleTerrains.size(); i++){
-		_visibleTerrains[i]->setActive(!depthMap);//Disable terrain rendering ...
-		_visibleTerrains[i]->getVegetation()->draw(waterReflection); //... but draw the vegetation and then ...
+		if(waterReflection){
+			RenderState s = _GFX.getActiveRenderState();
+			s.cullingEnabled() = false;
+			_GFX.setRenderState(s);
+			cam->RenderLookAt(true,true,getWaterLevel());
+			
+		}
+		updateLights();
 	}
-	
+	for(U8 i = 0; i < _visibleTerrains.size(); i++){
+		_visibleTerrains[i]->setRenderingOptions(waterReflection);
+	}
+	_waterGraphNode->setActive(!waterReflection && !depthMap);
 	_sceneGraph->render(); //render the rest of the stuff
-	GFXDevice::getInstance().ignoreStateChanges(false);
+	_GFX.ignoreStateChanges(false);
 }
 
 void MainScene::processInput(){
@@ -196,12 +170,11 @@ void MainScene::processEvents(F32 time)
 
 bool MainScene::load(const string& name){
 	bool state = false;
+	 _mousePressed = false;
 	state = Scene::load(name);
 	bool computeWaterHeight = false;
 	if(getWaterLevel() == RAND_MAX) computeWaterHeight = true;
 	addDefaultLight();
-	getLights()[0]->toggleImpostor(false);
-	_sunModelviewProj.identity();
 	state = loadResources(true);	
 	state = loadEvents(true);
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
@@ -210,30 +183,28 @@ bool MainScene::load(const string& name){
 			Console::getInstance().printf("Found terrain: ");
 			Terrain* tempTerrain = terrainNode->getNode<Terrain>();
 			Console::getInstance().printfn(" %s!", tempTerrain->getName().c_str());
-			if(tempTerrain->isActive()){
+			if(terrainNode->isActive()){
 				Console::getInstance().printfn("Previous found terrain is active!");
 				_visibleTerrains.push_back(tempTerrain);
 				if(computeWaterHeight){
-					F32 tempMin = tempTerrain->getBoundingBox().getMin().y;
+					F32 tempMin = terrainNode->getBoundingBox().getMin().y;
 					if(_waterHeight > tempMin) _waterHeight = tempMin;
 				}
 			}
 		}
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
-	_water = ResourceManager::getInstance().LoadResource<WaterPlane>(infiniteWater);
-	_water->setParams(50.0f,50,0.1f,0.5f);
+	_water = _resManager.loadResource<WaterPlane>(infiniteWater);
+	_water->setParams(50.0f,10,0.1f,0.5f);
 	_waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
-	if(computeWaterHeight)	_waterHeight -= 75;
-	
 	return state;
 }
 
 bool MainScene::unload(){
 	SFXDevice::getInstance().stopMusic();
 	SFXDevice::getInstance().stopAllSounds();
-	ResourceManager::getInstance().remove(_backgroundMusic);
-	ResourceManager::getInstance().remove(_beep);
+	RemoveResource(_backgroundMusic);
+	RemoveResource(_beep);
 	Sky::getInstance().DestroyInstance();
 	return Scene::unload();
 }
@@ -245,7 +216,7 @@ void MainScene::test(boost::any a, CallbackParam b){
 	SceneGraphNode* boxNode = _sceneGraph->findNode("box");
 	Object3D* box = NULL;
 	if(boxNode) box = boxNode->getNode<Object3D>();
-	if(box) pos = box->getTransform()->getPosition();
+	if(box) pos = boxNode->getTransform()->getPosition();
 
 	if(!_switchAB)
 	{
@@ -274,7 +245,7 @@ void MainScene::test(boost::any a, CallbackParam b){
 			}
 		}
 	}
-	if(box)	box->getTransform()->setPosition(pos);
+	if(box)	boxNode->getTransform()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors)
@@ -302,13 +273,11 @@ bool MainScene::loadResources(bool continueOnErrors)
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time
 
-	Console::getInstance().printfn("Creating Frame Buffer Objects for water reflections and Shadow Mapping");
-	_skyFBO = GFXDevice::getInstance().newFBO();
-	_depthMap[0] = GFXDevice::getInstance().newFBO();
-	_depthMap[1] = GFXDevice::getInstance().newFBO();
+	Console::getInstance().printfn("Creating Frame Buffer Objects for Shadow Mapping");
+	_depthMap[0] = _GFX.newFBO();
+	_depthMap[1] = _GFX.newFBO();
 	
-	Console::getInstance().printfn("Initializing Frame Buffer Objects for water reflections and Shadow Mapping");
-	_skyFBO->Create(FrameBufferObject::FBO_2D_COLOR, 2048, 2048);
+	Console::getInstance().printfn("Initializing Frame Buffer Objects for Shadow Mapping");
 	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	
@@ -319,17 +288,17 @@ bool MainScene::loadResources(bool continueOnErrors)
 							0.0f );
 
 
-	Event_ptr boxMove(new Event(30,true,false,boost::bind(&MainScene::test,this,string("test"),TYPE_STRING)));
+	Event_ptr boxMove(New Event(30,true,false,boost::bind(&MainScene::test,this,string("test"),TYPE_STRING)));
 	addEvent(boxMove);
 	ResourceDescriptor backgroundMusic("background music");
-	backgroundMusic.setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/music/background_music.ogg");
+	backgroundMusic.setResourceLocation(_paramHandler.getParam<string>("assetsLocation")+"/music/background_music.ogg");
 	backgroundMusic.setFlag(true);
 
 	ResourceDescriptor beepSound("beep sound");
-	beepSound.setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/sounds/beep.wav");
+	beepSound.setResourceLocation(_paramHandler.getParam<string>("assetsLocation")+"/sounds/beep.wav");
 	beepSound.setFlag(false);
-	_backgroundMusic = ResourceManager::getInstance().LoadResource<AudioDescriptor>(backgroundMusic);
-	_beep = ResourceManager::getInstance().LoadResource<AudioDescriptor>(beepSound);
+	_backgroundMusic = _resManager.loadResource<AudioDescriptor>(backgroundMusic);
+	_beep = _resManager.loadResource<AudioDescriptor>(beepSound);
 	//SFXDevice::getInstance().playMusic(_backgroundMusic);
 	Console::getInstance().printfn("Scene resources loaded OK");
 	return true;
@@ -373,6 +342,9 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key)
 			break;
 		case OIS::KC_X:
 			SFXDevice::getInstance().playSound(_beep);
+			break;
+		case OIS::KC_F1:
+			_sceneGraph->print();
 			break;
 		default:
 			break;

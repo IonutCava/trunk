@@ -37,6 +37,7 @@ public :
 		}
 	}
 
+
 protected :
 	Singleton() {}
 	~Singleton() {}

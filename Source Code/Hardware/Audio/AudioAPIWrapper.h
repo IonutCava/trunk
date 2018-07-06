@@ -38,9 +38,6 @@ enum AudioAPI
 };
 
 
-#include <iostream>
-#include <unordered_map>
-
 //Audio Programming Interface
 class AudioAPIWrapper
 {

@@ -119,12 +119,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
-				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _SCL_SECURE=0"
 				StringPooling="true"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -625,6 +625,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\Hardware\Video\ShaderHandler.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\Hardware\Video\ShaderHandler.h"
 					>
 				</File>
@@ -803,14 +807,6 @@
 			</File>
 			<File
 				RelativePath="..\..\Source Code\Managers\SceneManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Managers\TextureManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Managers\TextureManager.h"
 				>
 			</File>
 		</Filter>
@@ -1114,10 +1110,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\assets\shaders\terrain_tree.frag"
-				>
-			</File>
-			<File
 				RelativePath="..\..\assets\shaders\terrain_tree.vert"
 				>
 			</File>
@@ -1141,6 +1133,10 @@
 		<Filter
 			Name="EngineGraphs"
 			>
+			<File
+				RelativePath="..\..\Source Code\EngineGraphs\SceneGraph.cpp"
+				>
+			</File>
 			<File
 				RelativePath="..\..\Source Code\EngineGraphs\SceneGraph.h"
 				>

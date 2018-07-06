@@ -19,6 +19,7 @@
 #define BASE_CLASS_H_
 
 #include "resource.h"
+
 class ResourceDescriptor{
 public:
 	ResourceDescriptor(const std::string& name = "default", 
@@ -45,10 +46,13 @@ private:
 	U32         _id;
 };
 
+class Resource;
+typedef unordered_map<std::string, Resource* > ResourceDependencyMap;
 class Resource{
+	friend class Manager;
 public:
-	Resource() : _shouldDelete(false), _name("default"){}
-	Resource(std::string name) : _shouldDelete(false), _name(name){}
+	Resource() : _shouldDelete(false), _name("default"),_refCount(1){}
+	Resource(std::string name) : _shouldDelete(false), _name(name),_refCount(1){}
 	virtual ~Resource() {}
 
 	/*Loading/Unloading*/
@@ -60,6 +64,8 @@ public:
 	virtual void scheduleDeletion(){_shouldDelete = true;}
 	virtual void cancelDeletion(){_shouldDelete = false;}
 	virtual bool shouldDelete(){return _shouldDelete;}
+	virtual void createCopy() = 0;
+	virtual void removeCopy() = 0;
 	/*//Garbage Collection*/
 
 	/*ID management*/
@@ -69,7 +75,16 @@ public:
 	const std::string& getResourceLocation() {return _resourceLocation;}
 	void setResourceLocation(const std::string& resourceLocation) {_resourceLocation = resourceLocation;}
 	/*//ID management*/
-	
+	U32   getRefCount(){return _refCount;}
+
+private:  // emphasize the following members are private
+      Resource( const Resource& );
+      const Resource& operator=( const Resource& );
+	  U32 _refCount;
+protected:
+	void incRefCount(){_refCount++;}
+	void decRefCount(){_refCount--;}
+
 protected:
 	bool		 _shouldDelete;
 	std::string	 _name;

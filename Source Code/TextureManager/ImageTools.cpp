@@ -10,7 +10,7 @@ using namespace std;
 
 namespace ImageTools {
 
-U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t,bool flip)
+U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t, U32& ilTexture,bool flip)
 {
 
 	char head[70];
@@ -54,10 +54,11 @@ U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t,bool flip
 		fclose(f);
 	}
 	t = 0;
+	ilTexture = 0;
 	return img;
 }
 
-U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,bool flip)
+U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool flip)
 {
 	static bool first = true;
 
@@ -65,17 +66,21 @@ U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,bool fl
 	if(first) {
 		first = false;
 		ilInit();
-	}
-	if(flip) ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-	else ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
-		ilEnable(IL_ORIGIN_SET);
 		ilEnable(IL_TYPE_SET);
 		ilTypeFunc(IL_UNSIGNED_BYTE);
-	//}
+	}
 
+	if(flip) {
+		ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+		ilEnable(IL_ORIGIN_SET);
+	}
+	else{
+		ilOriginFunc(IL_ORIGIN_UPPER_LEFT);
+		ilEnable(IL_ORIGIN_SET);
+	}
 	
 
-    ILuint ilTexture;
+    
     ilGenImages(1, &ilTexture);
     ilBindImage(ilTexture);
 
@@ -105,19 +110,21 @@ U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,bool fl
 }
 
 
-U8* OpenImage(const string& filename, U16& w, U16& h, U8& d, U32& t,bool flip)
+U8* OpenImage(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool flip)
 {
 	if(filename.find(".ppm") != string::npos)
-		return OpenImagePPM(filename, w, h, d,t,flip);
+		return OpenImagePPM(filename, w, h, d,t,ilTexture,flip);
 	else 
-		return OpenImageDevIL(filename,w,h,d,t,flip);
+		return OpenImageDevIL(filename,w,h,d,t,ilTexture,flip);
 	return NULL;
 }
 
 void OpenImage(const string& filename, ImageData& img)
 {
+	
 	img.name = filename;
-	img.data = OpenImage(filename, img.w, img.h, img.d, img.type,img._flip);
+	img.data = OpenImage(filename, img.w, img.h, img.d, img.type,img.ilTexture,img._flip);
+
 }
 
 
@@ -135,5 +142,11 @@ ivec3 ImageData::getColor(U16 x, U16 y) const
 	return ivec3( data[idx+0], data[idx+1], data[idx+2]);
 }
 
+void ImageData::resize(U16 width, U16 height){
+	ilBindImage(ilTexture);
+	iluImageParameter(ILU_FILTER,ILU_SCALE_BELL);
+	iluScale(width,height,d);
+	ilBindImage(0);
+}
 }
 

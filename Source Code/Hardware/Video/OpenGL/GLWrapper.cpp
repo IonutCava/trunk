@@ -2,6 +2,7 @@
 
 #include "GLWrapper.h"
 #include "Rendering/common.h"
+#include "Rendering/Frustum.h"
 #include "Utility/Headers/Guardian.h"
 #include "GUI/GUI.h"
 #include "GUI/GuiFlash.h"
@@ -29,10 +30,11 @@ void GL_API::initHardware(){
     glutInit(&argc, argv);
 	//glutInitContextVersion(3,3);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowSize(Engine::getInstance().getWindowDimensions().width,Engine::getInstance().getWindowDimensions().height);
 	glutInitWindowPosition(10,50);
-	Engine::getInstance().setMainWindowId(glutCreateWindow("DIVIDE Engine"));
+	_windowId = glutCreateWindow("DIVIDE Engine");
+	Engine::getInstance().setMainWindowId(_windowId);
 	U32 err = glewInit();
 	if (GLEW_OK != err){
 		Console::getInstance().errorfn("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
@@ -40,13 +42,16 @@ void GL_API::initHardware(){
 	}
 
 
-	I32 major = 0, minor = 0, max_frag_uniform = 0, max_varying_floats = 0,max_vertex_uniform = 0, max_vertex_attrib = 0;
+	I32 major = 0, minor = 0, max_frag_uniform = 0, max_varying_floats = 0;
+	I32 max_vertex_uniform = 0, max_vertex_attrib = 0,max_texture_units = 0;
+
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
     glGetIntegerv(GL_MINOR_VERSION, &minor);
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &max_frag_uniform);
 	glGetIntegerv(GL_MAX_VARYING_FLOATS, &max_varying_floats);
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform);
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units);
 
 	if(major < 2){
 		Console::getInstance().errorfn("Your current hardware does not support the OpenGL 2.0 extension set!");
@@ -58,14 +63,15 @@ void GL_API::initHardware(){
 	Console::getInstance().printfn("Max GLSL fragment varying floats supported: %d",max_varying_floats);
 	Console::getInstance().printfn("Max GLSL vertex uniform components supported: %d",max_vertex_uniform);
 	Console::getInstance().printfn("Max GLSL vertex attributes supported: %d",max_vertex_attrib);
+	Console::getInstance().printfn("Max Combined Texture Units supported: %d",max_texture_units); 
 	Console::getInstance().printfn("Hardware acceleration up to OpenGL %d.%d supported!",major,minor);
 	
 	glClearColor(0.1f,0.1f,0.8f,0.2f);
-	glDepthFunc(GL_LEQUAL); 
     glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL); 
 	glShadeModel(GL_SMOOTH);
-	glEnable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
+	RenderState s(true,false,false,true);
+	setRenderState(s);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
@@ -98,25 +104,21 @@ SwapInterval(0);
 */
 }
 
-void GL_API::closeRenderingApi()
-{
+void GL_API::closeRenderingApi(){
 	glutLeaveMainLoop();
-	glutDestroyWindow(Engine::getInstance().getMainWindowId());
+	glutDestroyWindow(_windowId);
 }
 
-void GL_API::resizeWindow(U16 w, U16 h)
-{
-	D32 zNear  = 0.01f;
-	D32 zFar   = 7000.0f;
-	F32 fov    = 60;
-	F32 ratio = 1.0f * w / h;
+void GL_API::resizeWindow(U16 w, U16 h){
+
+	F32 zNear  = ParamHandler::getInstance().getParam<F32>("zNear");
+	F32 zFar   = ParamHandler::getInstance().getParam<F32>("zFar");
+	F32 fov    = ParamHandler::getInstance().getParam<F32>("verticalFOV");
+	F32 ratio  = ParamHandler::getInstance().getParam<F32>("aspectRatio");
 	F32 x=0.0f,y=1.75f,z=5.0f;
 	F32 lx=0.0f,ly=0.0f,lz=-1.0f;
 
-	ParamHandler::getInstance().setParam("zNear",zNear);
-	ParamHandler::getInstance().setParam("zFar",zFar);
-	ParamHandler::getInstance().setParam("FOV",fov);
-	ParamHandler::getInstance().setParam("aspectRatio",ratio);
+
 
 	// Reset the coordinate system before modifying
 	glMatrixMode( GL_PROJECTION );
@@ -135,47 +137,31 @@ void GL_API::resizeWindow(U16 w, U16 h)
 			0.0f,1.0f,0.0f);
 }
 
-void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up)
+void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx, bool inverty)
 {
-		gluLookAt(	eye.x,		eye.y,		eye.z,
-					center.x,	center.y,	center.z,
-					up.x,		up.y,		up.z	);
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
+	if(invertx){
+		glScalef(-1.0f,1.0f,1.0f);
+	}
+	gluLookAt(	eye.x,		eye.y,		eye.z,
+				center.x,	center.y,	center.z,
+				up.x,		up.y,		up.z	);
 }
 
 void GL_API::idle()
 {
-	glutSetWindow(Engine::getInstance().getMainWindowId()); 
+	glutSetWindow(_windowId); 
 	glutPostRedisplay();
 }
 
-
-mat4 GL_API::getProjectionMatrix()
-{
-	mat4 projection;
-	glGetFloatv( GL_PROJECTION_MATRIX, projection.mat );	
-	return projection;
+//ToDo: convert to OpenGL 3.3 and GLSL 1.5 standards. No more matrix queries to GPU - Ionut
+void GL_API::getProjectionMatrix(mat4& projMat){
+	glGetFloatv( GL_PROJECTION_MATRIX, projMat.mat );	
 }
 
-mat4 GL_API::getModelViewMatrix()
-{
-	mat4 modelview;
-	glGetFloatv( GL_MODELVIEW_MATRIX, modelview.mat );	
-	return modelview;
-}
-
-void GL_API::translate(const vec3& pos)
-{
-	glTranslatef(pos.x,pos.y,pos.z);
-}
-
-void GL_API::rotate(F32 angle, const vec3& weights)
-{
-	glRotatef(angle,weights.x,weights.y,weights.z);
-}
-
-void GL_API::scale(const vec3& scale)
-{
-	glScalef(scale.x,scale.y,scale.z);
+void GL_API::getModelViewMatrix(mat4& mvMat){
+	glGetFloatv( GL_MODELVIEW_MATRIX, mvMat.mat );	
 }
 
 void GL_API::clearBuffers(U8 buffer_mask)
@@ -208,39 +194,6 @@ void GL_API::enableFog(F32 density, F32* color)
 	glEnable(GL_FOG);
 }
 
-void GL_API::pushMatrix()
-{
-	glPushMatrix();
-}
-
-void GL_API::popMatrix()
-{
-	glPopMatrix();
-}
-
-void GL_API::enable_MODELVIEW()
-{
-	glMatrixMode( GL_MODELVIEW );
-}
-
-void GL_API::loadIdentityMatrix(){
-	glLoadIdentity();
-}
-
-void GL_API::setTextureMatrix(U16 slot, const mat4& transformMatrix){
-	glMatrixMode(GL_TEXTURE);
-	glActiveTexture(GL_TEXTURE0+slot);
-	glLoadMatrixf( transformMatrix );
-	glMatrixMode(GL_MODELVIEW);
-}
-
-void GL_API::restoreTextureMatrix(U16 slot){
-	glMatrixMode(GL_TEXTURE);
-	glActiveTexture(GL_TEXTURE0+slot);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-}
-
 void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -249,17 +202,17 @@ void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
 }
 
 void GL_API::drawTextToScreen(Text* text){
-	pushMatrix();
-		glLoadIdentity();
-		glColor3f(text->_color.x,text->_color.y,text->_color.z);
-		glRasterPos2f(text->getPosition().x,text->getPosition().y);
+	glPushMatrix();
+	glLoadIdentity();
+	glColor3f(text->_color.x,text->_color.y,text->_color.z);
+	glRasterPos2f(text->getPosition().x,text->getPosition().y);
 		
 #ifdef USE_FREEGLUT
 		glutBitmapString(text->_font, (U8*)(text->_text.c_str()));
 #else
 		//nothing yet
 #endif
-	popMatrix();
+	glPopMatrix();
 }
 
 void GL_API::drawCharacterToScreen(void* font,char text)
@@ -281,19 +234,21 @@ void GL_API::drawButton(Button* b)
 
 	F32 fontx;
 	F32 fonty;
-	Text *t = NULL;
+	Text *t = NULL;	
 
 	if(b)
 	{
+		glPushAttrib(GL_COLOR_BUFFER_BIT);
 		/*
 		 *	We will indicate that the mouse cursor is over the button by changing its
 		 *	colour.
 		 */
 		if(!b->isVisible()) return;
-		if (b->_highlight) 
+		if (b->_highlight) {
 			glColor3f(b->_color.r + 0.1f,b->_color.g + 0.1f,b->_color.b + 0.2f);
-		else 
+		}else {
 			glColor3f(b->_color.r,b->_color.g,b->_color.b);
+		}
 
 		/*
 		 *	draw background for the button.
@@ -313,10 +268,11 @@ void GL_API::drawButton(Button* b)
 		/*
 		 *	The colours for the outline are reversed when the button. 
 		 */
-		if (b->_pressed && b->isActive()) 
+		if (b->_pressed && b->isActive()) {
 			glColor3f((b->_color.r + 0.1f)/2.0f,(b->_color.g+ 0.1f)/2.0f,(b->_color.b+ 0.1f)/2.0f);
-		else 
+		}else {
 			glColor3f(b->_color.r + 0.1f,b->_color.g+ 0.1f,b->_color.b+ 0.1f);
+		}
 
 		glBegin(GL_LINE_STRIP);
 			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
@@ -324,10 +280,11 @@ void GL_API::drawButton(Button* b)
 			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
 		glEnd();
 
-		if (b->_pressed) 
+		if(b->_pressed) {
 			glColor3f(0.8f,0.8f,0.8f);
-		else 
+		}else {
 			glColor3f(0.4f,0.4f,0.4f);
+		}
 
 		glBegin(GL_LINE_STRIP);
 			glVertex2f( b->getPosition().x     , b->getPosition().y+b->_dimensions.y );
@@ -351,20 +308,36 @@ void GL_API::drawButton(Button* b)
 		/*
 		 *	If the cursor is currently over the button we offset the text string and draw a shadow
 		 */
-		if(b->_highlight)
-		{
-			if(t) delete t;
-			t = new Text(string("1"),b->_text,vec3(fontx,fonty,0),GLUT_BITMAP_HELVETICA_10,vec3(0,0,0));
+		if(!t){/* delete t;*/
+			t = New Text(string("1"),b->_text,vec2(fontx,fonty),GLUT_BITMAP_HELVETICA_10,vec3(0,0,0));
+		}
+		t->_text = b->_text;
+		if(b->_highlight){
 			fontx--;
 			fonty--;
+			t->_color = vec3(0,0,0);
+		}else{
+			t->_color = vec3(1,1,1);
 		}
-		if(t) delete t;
-		t = new Text(string("1"),b->_text,vec3(fontx,fonty,0),GLUT_BITMAP_HELVETICA_10,vec3(1,1,1));
+		
+		t->setPosition(vec2(fontx,fonty));
 		drawTextToScreen(t);
+		glPopAttrib();
 	}
 	delete t;
 	t = NULL;
 
+}
+void GL_API::setDepthMapRendering(bool state) {
+	if(state){
+		//glCullFace(GL_FRONT);
+		if(_state.lightingEnabled()) glDisable(GL_LIGHTING);
+		if(!_state.cullingEnabled()) glEnable(GL_CULL_FACE);
+	}else{
+		//glCullFace(GL_BACK);
+		if(_state.lightingEnabled()) glEnable(GL_LIGHTING);
+		if(!_state.cullingEnabled()) glDisable(GL_CULL_FACE);
+	}
 }
 
 void GL_API::setRenderState(RenderState& state){
@@ -376,100 +349,34 @@ void GL_API::setRenderState(RenderState& state){
 
 void GL_API::ignoreStateChanges(bool state){
 	if(state){
-		glPushAttrib(GL_ENABLE_BIT);
+		glPushAttrib(GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_COLOR_BUFFER_BIT);
+		//glPushAttrib(GL_ALL_ATTRIB_BITS);
 	}else{
 		glPopAttrib();
 	}
 }
 
-//ToDo: Sort meshes by material!!!!! - Ionut
-//Maybe create custom materials and manually assign them to submeshes?
-//Bind once, draw all meshes affected by material, unbind?
-void GL_API::prepareMaterial(SceneNode* model, Material* mat, Shader* prevShader){
-	if(!mat) return;
-	Shader* s = mat->getShader();
-	F32 windX = SceneManager::getInstance().getActiveScene()->getWindDirX();
-	F32 windZ = SceneManager::getInstance().getActiveScene()->getWindDirX();
-	F32 windS = SceneManager::getInstance().getActiveScene()->getWindSpeed();
-	Texture2D* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
-	Texture2D* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
-	Texture2D* secondTexture = mat->getTexture(Material::TEXTURE_SECOND);
-	U8 count = 0;
-	if(baseTexture){
-		baseTexture->Bind(0);
-		count++;
-	}
-	if(bumpTexture)	bumpTexture->Bind(1);
-	
-	if(secondTexture){
-		secondTexture->Bind(2);
-		count++;
-	}
-	setMaterial(mat);
-
-	if(s) {
-		//Console::getInstance().printfn("Model [ %s ] uses shader [ %s ]",model->getName().c_str(), s->getName().c_str());
-		if(prevShader){ //If we specified a previous shader
-			if(s->getName().compare(prevShader->getName()) != 0) //Only bind/unbind if we have a new shader;
-				s->bind();
-		}else{
-			s->bind();
-		}
-		if(model->getTransform()){
-			s->Uniform("scale",model->getTransform()->getScale());
-		}else{
-			s->Uniform("scale",vec3(1,1,1));
-		}
-		s->Uniform("material",mat->getMaterialMatrix());
-		if(baseTexture){
-			s->UniformTexture("texDiffuse0",0);
-		}
-
-		if(!GFXDevice::getInstance().getDeferredShading()){
-			if(bumpTexture){
-				s->UniformTexture("texBump",1);
-				s->Uniform("mode", 1);
-			}else{
-				s->Uniform("mode", 0);
-			}
-			if(secondTexture){
-				s->UniformTexture("texDiffuse1",2);
-			}
-			s->Uniform("textureCount",count);
-			s->Uniform("enable_shadow_mapping", 0);
-			s->Uniform("tile_factor", 1.0f);
-		}
-
-		s->Uniform("time", GETTIME());
-		s->Uniform("windDirectionX", windX);
-		s->Uniform("windDirectionZ", windZ);
-		s->Uniform("windSpeed", windS);
+void GL_API::setObjectState(Transform* const transform){
+	glPushMatrix();
+	if(transform){
+		glMultMatrixf(transform->getMatrix());
+		glMultMatrixf(transform->getParentMatrix());
 	}
 }
 
-void GL_API::releaseMaterial(Material* mat, Shader* prevShader){
-	if(!mat) return;
-	Shader* s = mat->getShader();
-	Texture2D* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
-	Texture2D* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
-	Texture2D* secondTexture = mat->getTexture(Material::TEXTURE_SECOND);
-
-	if(s)
-		if(prevShader){ //If we specified a previous shader
-			if(s->getName().compare(prevShader->getName()) != 0) //Only bind/unbind if we have a new shader;
-				s->unbind();
-		}else{
-			s->unbind();
-		}
-
-	if(secondTexture) secondTexture->Unbind(2);
-	if(bumpTexture) bumpTexture->Unbind(1);
-	if(baseTexture) baseTexture->Unbind(0);
-
+void GL_API::releaseObjectState(){
+	glPopMatrix();
 }
 
-void GL_API::drawBox3D(vec3 min, vec3 max)
-{
+void GL_API::setMaterial(Material* mat){
+	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1));
+	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0));
+	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2));
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,mat->getMaterialMatrix().getCol(3).x);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f));
+}
+ 
+void GL_API::drawBox3D(vec3 min, vec3 max){
 
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( min.x, min.y, min.z );
@@ -497,113 +404,125 @@ void GL_API::drawBox3D(vec3 min, vec3 max)
 	glEnd();
 
 }
+void GL_API::drawBox3D(Box3D* const box){
+	SceneGraphNode temp(box);
+	temp.useDefaultTransform(false);
+	drawBox3D(&temp);
+}
 
-void GL_API::drawBox3D(Box3D* const model)
-{
-	setObjectState(model);
+void GL_API::drawSphere3D(Sphere3D* const sphere){
+	SceneGraphNode temp(sphere);
+	temp.useDefaultTransform(false);
+	drawSphere3D(&temp);
+}
+
+void GL_API::drawQuad3D(Quad3D* const quad){
+	SceneGraphNode temp(quad);
+	temp.useDefaultTransform(false);
+	drawQuad3D(&temp);
+	
+}
+
+void GL_API::drawText3D(Text3D* const text){
+	SceneGraphNode temp(text);
+	temp.useDefaultTransform(false);
+	drawText3D(&temp);
+}
+
+void GL_API::drawBox3D(SceneGraphNode* node){
+	Box3D* model = dynamic_cast<Box3D*>(node->getNode<Object3D>());
+	setObjectState(node->getTransform());
 
 	glutSolidCube(model->getSize());
 
-	popMatrix();
+	releaseObjectState();
 
 }
 
-void GL_API::drawSphere3D(Sphere3D* const model)
-{
-	setObjectState(model);
+void GL_API::drawSphere3D(SceneGraphNode* node){
+	Sphere3D* model = dynamic_cast<Sphere3D*>(node->getNode<Object3D>());
+	setObjectState(node->getTransform());
 	
 	glutSolidSphere(model->getSize(), model->getResolution(),model->getResolution());
 
-	releaseObjectState(model);
+	releaseObjectState();
 
 }
-void GL_API::setObjectState(SceneNode* const model){
-	pushMatrix();
-	if(model->getTransform()){
-		glMultMatrixf(model->getTransform()->getMatrix());
-		glMultMatrixf(model->getTransform()->getParentMatrix());
-	}
 
-	prepareMaterial(model, model->getMaterial());
-}
+void GL_API::drawQuad3D(SceneGraphNode* node){
+	Quad3D* model = dynamic_cast<Quad3D*>(node->getNode<Object3D>());
 
-void GL_API::releaseObjectState(SceneNode* const model){
-	releaseMaterial(model->getMaterial());
-	popMatrix();
-}
-
-void GL_API::drawQuad3D(Quad3D* const model)
-{
-	setObjectState(model);
+	setObjectState(node->getTransform());
 
 	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
 								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
 		glNormal3f(0.0f, 1.0f, 0.0f);
 		glMultiTexCoord2f(GL_TEXTURE0, 0, 0);
-		glVertex3f(model->getCorner(Quad3D::TOP_LEFT).x, model->getCorner(Quad3D::TOP_LEFT).y, model->getCorner(Quad3D::TOP_LEFT).z);
+		glVertex3fv(&model->getCorner(Quad3D::TOP_LEFT)[0]);
 		glMultiTexCoord2f(GL_TEXTURE0, 1, 0);
-		glVertex3f(model->getCorner(Quad3D::TOP_RIGHT).x, model->getCorner(Quad3D::TOP_RIGHT).y, model->getCorner(Quad3D::TOP_RIGHT).z);
+		glVertex3fv(&model->getCorner(Quad3D::TOP_RIGHT)[0]);
 		glMultiTexCoord2f(GL_TEXTURE0, 0, 1);
-		glVertex3f(model->getCorner(Quad3D::BOTTOM_LEFT).x, model->getCorner(Quad3D::BOTTOM_LEFT).y, model->getCorner(Quad3D::BOTTOM_LEFT).z);
+		glVertex3fv(&model->getCorner(Quad3D::BOTTOM_LEFT)[0]);
 		glMultiTexCoord2f(GL_TEXTURE0, 1, 1);
-		glVertex3f(model->getCorner(Quad3D::BOTTOM_RIGHT).x, model->getCorner(Quad3D::BOTTOM_RIGHT).y, model->getCorner(Quad3D::BOTTOM_RIGHT).z);
+		glVertex3fv(&model->getCorner(Quad3D::BOTTOM_RIGHT)[0]);
 	glEnd();
 
-	releaseObjectState(model);
+	releaseObjectState();
 
 }
 
-void GL_API::drawText3D(Text3D* const model)
-{
-	setObjectState(model);
+void GL_API::drawText3D(SceneGraphNode* node){
+	Text3D* model = dynamic_cast<Text3D*>(node->getNode<Object3D>());
+
+	setObjectState(node->getTransform());
 
 	glPushAttrib(GL_ENABLE_BIT);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(model->getWidth());
-	setMaterial(model->getMaterial());
+
 	glutStrokeString(model->getFont(), (const U8*)model->getText().c_str());
 	glPopAttrib();
 
-	releaseObjectState(model);
+	releaseObjectState();
 
 }
 
-void GL_API::renderModel(Object3D* const model)
-{
-	Mesh* tempModel = dynamic_cast<Mesh*>(model);
+void GL_API::renderModel(SceneGraphNode* node){
 
-	pushMatrix();
-	//ToDo: Per submesh transforms!!!!!!!!!!!!!!!!!!! - Ionut
-	if(tempModel->getTransform()){
-		glMultMatrixf(tempModel->getTransform()->getMatrix());
-	}
-	if(model->getTransform()){
-		glMultMatrixf(model->getTransform()->getParentMatrix());
-	}
-	Shader* prevShader = NULL;
-
-	for(vector<SubMesh* >::iterator subMeshIterator = tempModel->getSubMeshes().begin(); 
-		subMeshIterator != tempModel->getSubMeshes().end(); 
-		++subMeshIterator)	{
-
-		SubMesh *s = (*subMeshIterator);
-		prepareMaterial(s, s->getMaterial(), prevShader);
-
-		s->getGeometryVBO()->Enable();
-			glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
-		s->getGeometryVBO()->Disable();
-
-		releaseMaterial(s->getMaterial(), prevShader);
-		prevShader = s->getMaterial()->getShader();
-		
-	}
-	popMatrix();
+	SubMesh* s = dynamic_cast<SubMesh*>(node->getNode<Object3D>());
+	setObjectState(node->getTransform());
+	s->getGeometryVBO()->Enable();
+		renderElements(TRIANGLES,_U32,s->getIndices().size(), &(s->getIndices()[0]));
+	s->getGeometryVBO()->Disable();
+	releaseObjectState();
 }
 
-void GL_API::renderElements(Type t, U32 count, const void* first_element){
-	glDrawElements(t, count, GL_UNSIGNED_INT, first_element );
+void GL_API::renderElements(Type t, Format f, U32 count, const void* first_element){
+	U32 format = 0;
+	switch(f){
+		case _I8:
+			format = GL_BYTE;
+			break;
+		case _I16:
+			format = GL_SHORT;
+			break;
+		case _I32:
+			format = GL_INT;
+			break;
+		case _U8:
+			format = GL_UNSIGNED_BYTE;
+			break;
+		case _U16:
+			format = GL_UNSIGNED_SHORT;
+			break;
+		default:
+		case _U32:
+			format = GL_UNSIGNED_INT;
+			break;
+	}
+	glDrawElements(t, count, format, first_element );
 }
 
 void GL_API::toggle2D(bool _2D){
@@ -614,6 +533,7 @@ void GL_API::toggle2D(bool _2D){
 		F32 height = Engine::getInstance().getWindowDimensions().height;
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
+		if(GFXDevice::getInstance().getDepthMapRendering()) glCullFace(GL_BACK);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
@@ -630,28 +550,10 @@ void GL_API::toggle2D(bool _2D){
 		glPopMatrix(); //2 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
-		glEnable(GL_LIGHTING);
+		if(_state.lightingEnabled()) glEnable(GL_LIGHTING);
+		if(GFXDevice::getInstance().getDepthMapRendering()) glCullFace(GL_FRONT);
 		glEnable(GL_DEPTH_TEST);
 	}
-}
-
-void GL_API::setMaterial(Material* mat)
-{
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1));
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0));
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2));
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,mat->getMaterialMatrix().getCol(3).x);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f));
-}
-
-void GL_API::setColor(const vec4& color)
-{
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
-}
-
-void GL_API::setColor(const vec3& color)
-{
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
 }
 
 
@@ -662,22 +564,26 @@ void GL_API::initDevice()
 	glutMainLoop();
 }
 
-void GL_API::setLight(U8 slot, tr1::unordered_map<string,vec4>& properties){
-	if(!_state.lightingEnabled()) return;
-	glEnable(GL_LIGHT0+slot);
+void GL_API::setLight(U8 slot, unordered_map<string,vec4>& properties){
+	if(_state.lightingEnabled()){
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0+slot);
+	}
 	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties["position"]);
 	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties["ambient"]);
 	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  properties["diffuse"]);
 	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, properties["specular"]);
-
+	
 	if( properties.size() == 5)	glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties["spotDirection"]);
-
+	if(!_state.lightingEnabled()) glDisable(GL_LIGHTING);
 }
 
 void GL_API::createLight(U8 slot)
 {
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0+slot);
+	if(_state.lightingEnabled()){
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0+slot);
+	}
 }
 
 void GL_API::toggleWireframe(bool state)
@@ -688,25 +594,110 @@ void GL_API::toggleWireframe(bool state)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void GL_API::setLightCameraMatrices(const vec3& lightVector)
-{
-	vec3 eye = CameraManager::getInstance().getActiveCamera()->getEye();
+void GL_API::setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool directional){
+	if(!directional){
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		gluPerspective(90.0, 1.0, ParamHandler::getInstance().getParam<F32>("zNear"),ParamHandler::getInstance().getParam<F32>("zFar"));
+	}
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	gluLookAt(	eye.x - 500*lightVector.x,		eye.y - 500*lightVector.y,		eye.z - 500*lightVector.z,
-				eye.x,							eye.y,							eye.z,
-				0.0,							1.0,							0.0	);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
+	gluLookAt(	lightPosVector.x,		lightPosVector.y,		lightPosVector.z,
+				lightTargetVector.x,	lightTargetVector.y,	lightTargetVector.z,
+				0.0,					1.0,					0.0	);
+
+	if(directional){
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+	}
+
 }
 
 
-void GL_API::restoreLightCameraMatrices()
-{
+void GL_API::restoreLightCameraMatrices(bool directional){
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+}
+
+void GL_API::Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax){
+	// compute width and heidth of the image
+	U16 w = xmax - xmin;
+	U16 h = ymax - ymin;
+
+	// allocate memory for the pixels
+	U8 *imageData = new U8[w * h * 4];
+
+	// read the pixels from the frame buffer
+	glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
+
+
+//---------------SAVE SERIES-----------------------//
+	static I8 savedImages=0;
+	char *newFilename;
+	
+// compute the new filename by adding the 
+// series number and the extension
+	newFilename = new char[strlen(filename)+8];
+
+	sprintf_s(newFilename,strlen(filename)+8,"%s%d.tga",filename,savedImages);
+//----------------SAVE IMAGE----------------------------//
+	U8 cGarbage = 0, type = 2 ,mode = 4,aux;
+	I16 iGarbage = 0;
+	I32 i;
+	FILE *file;
+	U8 pixelDepth = 32;
+// open file and check for errors
+	file = fopen(newFilename, "wb");
+	if (file == NULL) {
+		Console::getInstance().errorfn("Can't save screenshot to file [ %s ]",newFilename);
+		return;
+	}
+// write the header
+	fwrite(&cGarbage, sizeof(U8), 1, file);
+	fwrite(&cGarbage, sizeof(U8), 1, file);
+
+	fwrite(&type, sizeof(U8), 1, file);
+
+	fwrite(&iGarbage, sizeof(I16), 1, file);
+	fwrite(&iGarbage, sizeof(I16), 1, file);
+	fwrite(&cGarbage, sizeof(U8), 1, file);
+	fwrite(&iGarbage, sizeof(I16), 1, file);
+	fwrite(&iGarbage, sizeof(I16), 1, file);
+
+	fwrite(&w, sizeof(I16), 1, file);
+	fwrite(&h, sizeof(I16), 1, file);
+	fwrite(&pixelDepth, sizeof(U8), 1, file);
+
+	fwrite(&cGarbage, sizeof(U8), 1, file);
+
+
+	for (i=0; i < w * h * mode ; i+= mode) {
+		aux = imageData[i];
+		imageData[i] = imageData[i+2];
+		imageData[i+2] = aux;
+	}
+
+	fwrite(imageData, sizeof(U8), 
+			w * h * mode, file);
+	fclose(file);
+
+	// release the memory
+	delete imageData;
+	imageData = NULL;
+
+//----------------SAVE IMAGE----------------------------//
+
+//increase the counter
+	savedImages++;
+	delete[] newFilename;
+	newFilename = NULL;
+
+//---------------SAVE SERIES-----------------------//
+	delete[] imageData;
+	imageData = NULL;
 }

@@ -23,13 +23,6 @@ class Shader;
 class Quad3D : public Object3D
 {
 public:
-	Quad3D(const vec3& topLeft,const  vec3& topRight,
-		   const  vec3& bottomLeft,const  vec3& bottomRight) :  Object3D(QUAD_3D),
-															   _tl(topLeft),
-		    												   _tr(topRight),
-															   _bl(bottomLeft),
-															   _br(bottomRight)
-															   {}
 	Quad3D() :  Object3D(QUAD_3D),
 			   _tl(vec3(1,1,0)),
 			   _tr(vec3(-1,0,0)),
@@ -57,12 +50,9 @@ public:
 		return _tl; //default returns top left corner. Why? Don't care ... seems like a good idea. - Ionut
 	}
 	
-	virtual bool computeBoundingBox() {
-		_boundingBox.setMin(_bl);
-		_boundingBox.setMax(_tr);
-		_boundingBox.isComputed() = true;
-		setOriginalBoundingBox(_boundingBox);
-		return true;
+	virtual bool computeBoundingBox(SceneGraphNode* node) {
+		node->getBoundingBox().set(_bl,_tr);
+		return SceneNode::computeBoundingBox(node);
 	}
 
 public: 

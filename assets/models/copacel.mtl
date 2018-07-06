@@ -12,7 +12,7 @@ newmtl Blatt1
 	Kd 1.0000 1.0000 1.0000
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\Erle1.tga
+	map_Kd ..\texturi\Erle1.png
      
 newmtl Stamm
 	Ns 30.0000
@@ -25,7 +25,7 @@ newmtl Stamm
 	Kd 1.0000 1.0000 1.0000
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\Erle2.tga
+	map_Kd ..\texturi\Erle2.png
 
 newmtl Blatt2
 	Ns 30.0000
@@ -38,4 +38,4 @@ newmtl Blatt2
 	Kd 1.0000 1.0000 1.0000
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\Erle3.tga
+	map_Kd ..\texturi\Erle3.png

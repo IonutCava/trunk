@@ -127,6 +127,5 @@ void DebugRenderer::renderData(const NxDebugRenderable& data) const
 		pColorList = NULL;
 	}
 	glEnable(GL_LIGHTING);
-	GFXDevice::getInstance().setColor(vec4(1.0f,1.0f,1.0f,1.0f));
 }
 

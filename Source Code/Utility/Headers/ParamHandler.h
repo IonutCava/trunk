@@ -25,7 +25,7 @@
 using boost::any_cast;
 
 DEFINE_SINGLETON (ParamHandler)
-	typedef std::tr1::unordered_map<std::string, boost::any> ParamMap;
+typedef unordered_map<std::string, boost::any> ParamMap;
 public:
 
 	template <class T>	
@@ -44,16 +44,16 @@ public:
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
-			try
-			{
+		if(it != _params.end()){
+			try	{
 				F32 temp = any_cast<F32>(it->second);
 				return temp;
-			}
-			catch(const boost::bad_any_cast &)
-			{
-				return getParam<D32>(name); //Float and double are interchangable;
+			}catch(const boost::bad_any_cast &){
+				try{
+					return getParam<D32>(name); //Float and double are interchangable;
+				}catch(const boost::bad_any_cast &){
+					return 0;
+				}
 				
 			}
 		}
@@ -65,15 +65,15 @@ public:
 	{
 		boost::mutex::scoped_lock  lock(mutex_);
 		ParamMap::iterator it = _params.find(name);
-		if(it != _params.end())
-		{
-			try
-			{
+		if(it != _params.end())	{
+			try{
 				return any_cast<D32>(it->second);
-			}
-			catch(const boost::bad_any_cast &)
-			{
-				return getParam<F32>(name);
+			}catch(const boost::bad_any_cast &){
+				try{
+					return getParam<F32>(name);
+				}catch(const boost::bad_any_cast &){
+					return 0;
+				}
 			}
 		}
 		else return 0;

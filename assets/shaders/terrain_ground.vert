@@ -2,11 +2,11 @@ varying vec4 vPixToLightTBN;
 varying vec3 vPixToEyeTBN;
 varying vec3 vPosition;
 varying vec3 vPositionNormalized;
-
+varying vec4 vVertexFromLightView;
 
 uniform vec3 bbox_min;
 uniform vec3 bbox_max;
-
+uniform mat4 lightProjectionMatrix;
 				
 void main(void)
 {
@@ -44,7 +44,7 @@ void main(void)
 	
 	
 	// on multiplie par la matrice de la lumière : position du Vertex dans le repère de la lumière
-	gl_TexCoord[1].xy = vec2(gl_TextureMatrix[0] * gl_Vertex);	
+	vVertexFromLightView = lightProjectionMatrix * gl_Vertex;	
 	
 }
 

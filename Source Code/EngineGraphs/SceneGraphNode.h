@@ -19,53 +19,100 @@
 #define _SCENE_GRAPH_NODE_H_
 
 #include "SceneNode.h"
+#include "Hardware/Video/GFXDevice.h"
+
+class SceneGraph;
 class SceneRoot : public SceneNode{
 public:
-	SceneRoot() : SceneNode("root"){}
-	void render() {return;}
+	SceneRoot() : SceneNode("root"){useDefaultMaterial(false);}
+	void render(SceneGraphNode* node) {return;}
 
-	bool load(const std::string& name) {return true;}
+	bool load(const std::string& name) {;return true;}
+	void postLoad(SceneGraphNode* node) {};	
 	bool unload() {return true;}
-
-	bool computeBoundingBox(){return true;}
+	void onDraw() {};
+	bool computeBoundingBox(SceneGraphNode* node){return true;}
+	void createCopy(){}
+	void removeCopy(){}
+};
+//Each render state could be attributed to any number of SceneGraphNodes.
+//After sorting by shader, we start rendring each VisualNodePropertie's parents as long as they are visible
+class VisualNodeProperties{
+	RenderState& getRenderState() {return _s;}
+	void         addParent(SceneGraphNode* node) {_parents.push_back(node);}
+	void         removeParent(const std::string& name);
+private:
+	RenderState _s;
+	std::vector<SceneGraphNode*> _parents;
 };
 
-
 class SceneGraphNode{
-	typedef std::tr1::unordered_map<std::string, SceneGraphNode*> NodeChildren;
-
+	typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
 public:
-	SceneGraphNode(SceneNode* node) : _node(node), 
-									  _parent(NULL),
-									  _grandParent(NULL),
-									  _wasActive(true),
-									  _active(true){}
+
+	SceneGraphNode(SceneNode* node);
+
 	~SceneGraphNode();
 	bool unload();
 	void render();
+	void print();
+	void updateTransformsAndBounds();
+	void updateVisualInformation();
+/*Node Management*/
+template<class T>
+       T*                     getNode();
+inline SceneNode*             getNode() {return _node;}
+       SceneGraphNode*        addNode(SceneNode* node,const std::string& name = "");
+	   SceneGraphNode*        findNode(const std::string& name);
+const  std::string&           getName(){return _name;}
+/*Node Management*/
 
-	SceneGraphNode* addNode(SceneNode* node);
+/*Parent <-> Children*/
+inline       SceneGraphNode*  getParent(){return _parent;}
+inline       SceneGraphNode*  getGrandParent(){return _grandParent;}
+inline       NodeChildren&    getChildren() {return _children;}
+inline       void             setParent(SceneGraphNode* parent) {_parent = parent;}
+inline       void             setGrandParent(SceneGraphNode* grandParent) {_grandParent = grandParent;}
+/*Parent <-> Children*/
 
-	SceneGraphNode* findNode(const std::string& name);
-	SceneGraphNode* getParent(){return _parent;}
-	SceneGraphNode* getGrandParent(){return _grandParent;}
-	inline NodeChildren& getChildren() {return _children;}
+/*Bounding Box Management*/
+inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){_initialBoundingBox = initialBoundingBox;}
+inline const BoundingBox&     getInitialBoundingBox()		  {return _initialBoundingBox;}
+inline       BoundingBox&	  getBoundingBox()                {return _boundingBox;}
+/*Bounding Box Management*/
 
-	void setParent(SceneGraphNode* parent) {_parent = parent;}
-	void setGrandParent(SceneGraphNode* grandParent) {_grandParent = grandParent;}
+/*Transform management*/
+inline       void			  setTransform(Transform* t) { if(_transform) delete _transform; _transform = t;}
+			 Transform*		  getTransform();
+inline       void             useDefaultTransform(bool state) {_noDefaultTransform = !state;}
+/*Transform management*/
 
-	SceneNode* getNode() {return _node;}
+/*Node State*/
+inline   	 void             setActive(bool state) {_wasActive = _active; _active = state;}
+inline       bool             isActive() {return _active;}
+inline       void             restoreActive() {_active = _wasActive;}
+/*Node State*/
 
-	void setActive(bool state) {_wasActive = _active; _active = state;}
-	void restoreActive() {_active = _wasActive;}
-	template<class T>
-	T* getNode();
+inline       U32              getChildQueue() {return _childQueue;}
+inline       void             incChildQueue() {_childQueue++;}
+inline       void             decChildQueue() {_childQueue--;}
+
+private:
+	inline void setName(const std::string& name){_name = name;}
 
 private:
 	SceneNode* _node;
 	NodeChildren _children;
 	SceneGraphNode *_parent, *_grandParent;
-	bool _active, _wasActive;
+	bool _active, _wasActive,_noDefaultTransform,_inView, _sorted;
+
+	//_initialBoundingBox is a copy of the initialy calculate BB for transformation
+	//it should be copied in every computeBoungingBox call;
+	BoundingBox _initialBoundingBox, _boundingBox; 
+	Transform*	_transform;
+	SceneGraph* _sceneGraph;
+	U32 _childQueue,_updateTimer;
+	std::string _name;
 };
 
 #endif

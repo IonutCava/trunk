@@ -1,6 +1,7 @@
 #include "SceneManager.h"
 #include "Managers/CameraManager.h"
 #include "Rendering/common.h"
+#include "Rendering/Frustum.h"
 #include "SceneList.h"
 #include "Utility/Headers/ParamHandler.h"
 
@@ -27,19 +28,19 @@ Scene* SceneManager::findScene(const string& name)
 
 void SceneManager::toggleBoundingBoxes()
 {
-	if(_scene->drawBBox() && _scene->drawObjects())
+	if(!_scene->drawBBox() && _scene->drawObjects())
 	{
-		_scene->drawBBox(false);
+		_scene->drawBBox(true);
 		_scene->drawObjects(true);
 	}
-	else if (!_scene->drawBBox() && _scene->drawObjects())
+	else if (_scene->drawBBox() && _scene->drawObjects())
 	{
 		_scene->drawBBox(true);
 		_scene->drawObjects(false);
 	}
 	else
 	{
-		_scene->drawBBox(true);
+		_scene->drawBBox(false);
 		_scene->drawObjects(true);
 	}
 }
@@ -65,7 +66,7 @@ void SceneManager::findSelection(U32 x, U32 y)
     vec3 point;
         //the untransformed ray will be put here
 
-    F32 point_dist = par.getParam<D32>("zFar");
+    F32 point_dist = par.getParam<F32>("zFar");
         //it'll be put this far on the Z plane
 
     vec3 camera_origin;
@@ -96,7 +97,7 @@ void SceneManager::findSelection(U32 x, U32 y)
     //Next we make an openGL call to grab our MODELVIEW_MATRIX -
     //This is the matrix that rasters 3d points to 2d space - which is
     //kinda what we're doing, in reverse
-	mat4 temp = GFXDevice::getInstance().getModelViewMatrix();
+	mat4 temp = Frustum::getInstance().getModelviewMatrix();
 	
     //Some folks would then invert the matrix - I invert the results.
 
@@ -139,12 +140,12 @@ void SceneManager::findSelection(U32 x, U32 y)
 	//ToDo: fix this!!!!! -Ionut
 	/*Ray r(origin,dir);
 	_currentSelection = NULL;
-	for(tr1::unordered_map<string, Object3D* >::iterator it = getGeometryArray().begin(); 
+	for(unordered_map<string, Object3D* >::iterator it = getGeometryArray().begin(); 
 													 it != getGeometryArray().end(); it++){
 		assert(it->second != NULL);
 		(it->second)->setSelected(false);
 		
-		if((it->second)->getBoundingBox().intersect(r,par.getParam<D32>("zNear"),par.getParam<D32>("zFar")/2.0f)){
+		if((it->second)->getBoundingBox().intersect(r,par.getParam<F32>("zNear"),par.getParam<F32>("zFar")/2.0f)){
 			(it->second)->setSelected(true);
 			_currentSelection = it->second;
 			break;

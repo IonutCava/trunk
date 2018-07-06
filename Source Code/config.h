@@ -26,10 +26,10 @@
 * - 
 ***************************************************************************************************************/
 
-//Edit the maximum number of concurrent threads that this application may start.
-//Default 2: Rendering + PhysX
+//Edit the maximum number of concurrent threads that this application may start excluding events.
+//Default 5: Rendering + Update + A.I. + Networking + PhysX
 #ifndef THREAD_LIMIT
-#define THREAD_LIMIT 2
+#define THREAD_LIMIT 5
 #endif
 
 //Comment this out to show the debug console
@@ -51,4 +51,22 @@
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+
+//Use SSE functions for math calculations: usefull for release
+#ifndef USE_MATH_SSE
+#define USE_MATH_SSE
+#endif
+
+//Use boost or std::tr1 unordered_map
+#ifndef UNORDERED_MAP
+#define UNORDERED_MAP BOOST
+//#define UNORDERED_MAP TR1
+#endif
+
+//Use boost or std foreach
+#ifndef FOR_EACH_IMPLEMENTATION
+#define FOR_EACH_IMPLEMENTATION BOOST
+//ToDo: Define a macro for this using lambda expressions. Not supported in VS2008 - Ionut
+//#define FOR_EACH_IMPLEMENTATION STD 
 #endif

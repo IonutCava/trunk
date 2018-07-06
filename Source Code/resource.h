@@ -57,7 +57,22 @@
 #include <deque>
 #include <list>
 #include <time.h>
+#if defined UNORDERED_MAP == BOOST
+#include <boost/unordered_map.hpp>
+#include <boost/foreach.hpp>
+#define unordered_map boost::unordered_map
+#define foreach         BOOST_FOREACH
+#define reverse_foreach BOOST_REVERSE_FOREACH
+#else
 #include <unordered_map>
+#include <algorithm>
+#define unordered_map std::tr1::unordered_map
+//ToDo: fix these 3 to use std::for_each and lambda expressions
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH 
+#define reverse_foreach BOOST_REVERSE_FOREACH
+#endif
+
 #include "Utility/Headers/MathClasses.h"
 #include "Utility/Headers/Console.h"
 #include "Rendering/Framerate.h" //For time management
@@ -71,5 +86,5 @@ void operator delete(void * pxData ,char* zFile, int nLine);
 
 #define New new NEW_PARAM
 #define PNew(macroparam) new (macroparam PLACEMENTNEW_PARAM)
-
+#define RemoveResource(res) ResourceManager::getInstance().removeResource(res);
 #endif

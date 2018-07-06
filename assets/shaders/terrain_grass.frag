@@ -2,13 +2,12 @@ uniform sampler2D texDiffuse;
 
 
 // SHADOW MAPPING //
-uniform int depth_map_size;
 uniform sampler2DShadow texDepthMapFromLight0;
 uniform sampler2DShadow texDepthMapFromLight1;
 #define Z_TEST_SIGMA 0.0001
 ////////////////////
 
-//float ShadowMapping(vec4 vVertexFromLightView);
+float ShadowMapping(vec4 vVertexFromLightView);
 
 void main (void)
 {
@@ -17,10 +16,14 @@ void main (void)
 	
 	vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
 	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * gl_Color;
-	
-//	float shadow = ShadowMapping(gl_TexCoord[1]);
-	
 	gl_FragColor = cAmbient * cBase + cDiffuse * cBase;
+	
+	// SHADOW MAPPING
+	float shadow = ShadowMapping(gl_TexCoord[1]);
+	shadow = shadow * 0.5 + 0.5;
+	gl_FragColor *= shadow;
+
+	
 	gl_FragColor.a = gl_Color.a;
 }
 

@@ -41,38 +41,25 @@ class SubMesh : public Object3D
 
 public:
 	SubMesh(const std::string& name) : Object3D(name,SUBMESH),
-								      _geometry(GFXDevice::getInstance().newVBO())
-									 {}
+		_geometry(GFXDevice::getInstance().newVBO()){}
 
 
-	SubMesh(const SubMesh& old) : Object3D(old),
-								 _render(old._render),_vboPositionOffset(old._vboPositionOffset){
-		_geometry = GFXDevice::getInstance().newVBO();
-		*_geometry = *(old._geometry);
-		_indices.reserve(old._indices.size());
-		for(U32 i = 0; i < old._indices.size(); i++)
-			_indices.push_back(old._indices[i]);
-	}
-	~SubMesh() {
+
+	~SubMesh(){
 		if(_geometry != NULL) {
 			delete _geometry;
 			_geometry = NULL;
 		}
 	}
-	bool load(const std::string& name) { computeBoundingBox(); return true;}
+	bool load(const std::string& name) {return true;}
 	bool unload();
-
+	bool computeBoundingBox(SceneGraphNode* node);
 	inline VertexBufferObject* getGeometryVBO() {return _geometry;    } 
 	inline std::vector<U32>&   getIndices()     {return _indices;     }
-
-private:
-	bool computeBoundingBox();
-
 private:
 	bool _visibleToNetwork, _render;
 	VertexBufferObject*     _geometry;
 	std::vector<U32>        _indices;
-	U32                     _vboPositionOffset;
 };
 
 #endif

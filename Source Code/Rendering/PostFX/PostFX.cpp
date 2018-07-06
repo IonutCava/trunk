@@ -9,7 +9,7 @@
 
 PostFX::~PostFX(){
 	ParamHandler& par = ParamHandler::getInstance();
-	ResourceManager::getInstance().remove(_renderQuad);
+	RemoveResource(_underwaterTexture);
 	if(_screenFBO){
 		delete _screenFBO;
 		_screenFBO = NULL;
@@ -18,11 +18,13 @@ PostFX::~PostFX(){
 		delete _depthFBO;
 		_depthFBO = NULL;
 	}
-	
+	if(_renderQuad){
+		RemoveResource(_renderQuad);
+	}
 	if(_enablePostProcessing){
-		ResourceManager::getInstance().remove(_postProcessingShader);
+		RemoveResource(_postProcessingShader);
 		if(_enableAnaglyph){
-			ResourceManager::getInstance().remove(_anaglyphShader);
+			RemoveResource(_anaglyphShader);
 			if(_anaglyphFBO[0]){
 				delete _anaglyphFBO[0];
 				_anaglyphFBO[0] = NULL;
@@ -41,6 +43,8 @@ PostFX::~PostFX(){
 				delete _tempBloomFBO;
 				_tempBloomFBO = NULL;
 			}
+			RemoveResource(_bloomShader);
+			RemoveResource(_blurShader);
 		}
 		if(_enableDOF){
 			if(_depthOfFieldFBO){
@@ -51,58 +55,82 @@ PostFX::~PostFX(){
 				delete _tempDepthOfFieldFBO;
 				_tempDepthOfFieldFBO = NULL;
 			}
+			if(_blurShader){
+				RemoveResource(_blurShader);
+			}
 		}
+		if(_enableNoise){
+			RemoveResource(_noise);
+			RemoveResource(_screenBorder);
+		}
+
 	}
 }
 
 void PostFX::init(){
 	ParamHandler& par = ParamHandler::getInstance();
+	GFXDevice& gfx = GFXDevice::getInstance();
 	_enablePostProcessing = par.getParam<bool>("enablePostFX");
 	_enableAnaglyph = par.getParam<bool>("enable3D");
 	_enableBloom = par.getParam<bool>("enableBloom");
 	_enableDOF = par.getParam<bool>("enableDepthOfField");
 	_enableNoise = par.getParam<bool>("enableNoise");
-
+	_bloomShader = NULL;
+	_blurShader = NULL;
 	if(_enablePostProcessing){
-		_postProcessingShader = ResourceManager::getInstance().LoadResource<Shader>(ResourceDescriptor("postProcessing"));
+		_postProcessingShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("postProcessing"));
 		if(_enableAnaglyph){
-			_anaglyphFBO[0] = GFXDevice::getInstance().newFBO();
-			_anaglyphFBO[1] = GFXDevice::getInstance().newFBO();
-			_anaglyphShader = ResourceManager::getInstance().LoadResource<Shader>(ResourceDescriptor("anaglyph"));
+			_anaglyphFBO[0] = gfx.newFBO();
+			_anaglyphFBO[1] = gfx.newFBO();
+			_anaglyphShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("anaglyph"));
 			_eyeOffset = par.getParam<F32>("anaglyphOffset");
 		}
 		if(_enableBloom){
-			_bloomFBO = GFXDevice::getInstance().newFBO();
-			_tempBloomFBO = GFXDevice::getInstance().newFBO();
+			_bloomFBO = gfx.newFBO();
+			_tempBloomFBO = gfx.newFBO();
+			_bloomShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("bright"));
+			_blurShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("blur"));
 		}
 		if(_enableDOF){
-			_depthOfFieldFBO = GFXDevice::getInstance().newFBO();
-			_tempDepthOfFieldFBO = GFXDevice::getInstance().newFBO();
+			_depthOfFieldFBO = gfx.newFBO();
+			_tempDepthOfFieldFBO = gfx.newFBO();
+			if(!_blurShader){
+				_blurShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("blur"));
+			}
+		}
+		if(_enableNoise){
+			ResourceDescriptor noiseTexture("noieTexture");
+			ResourceDescriptor borderTexture("borderTexture");
+			noiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//bruit_gaussien.jpg");
+			borderTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//vignette.jpeg");
+			_noise = ResourceManager::getInstance().loadResource<Texture>(noiseTexture);
+			_screenBorder = ResourceManager::getInstance().loadResource<Texture>(borderTexture);
 		}
 	}
-	_screenFBO = GFXDevice::getInstance().newFBO();
-	 _depthFBO = GFXDevice::getInstance().newFBO();
+	_screenFBO = gfx.newFBO();
+	 _depthFBO = gfx.newFBO();
 
 		
 
 	F32 width = Engine::getInstance().getWindowDimensions().width;
 	F32 height = Engine::getInstance().getWindowDimensions().height;
 	ResourceDescriptor mrt("PostFX RenderQuad");
-	_renderQuad = ResourceManager::getInstance().LoadResource<Quad3D>(mrt);
+	mrt.setFlag(true); //No default Material;
+	_renderQuad = ResourceManager::getInstance().loadResource<Quad3D>(mrt);
 	assert(_renderQuad != NULL);
 	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
 	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
-	_renderQuad->setMaterial(NULL);
-	_renderQuad->useDefaultMaterial(false);
-	_renderQuad->setTransform(NULL);
-	_renderQuad->useDefaultTransform(false);
-
+	ResourceDescriptor textureWaterCaustics("Underwater Caustics");
+	textureWaterCaustics.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
+	_underwaterTexture = ResourceManager::getInstance().loadResource<Texture>(textureWaterCaustics);
 	_timer = 0;
 	_tickInterval = 1.0f/24.0f;
 	_randomNoiseCoefficient = 0;
 	_randomFlashCoefficient = 0;
+	par.setParam("enableDepthOfField", false); //enable using keyboard;
+	PostFX::getInstance().reshapeFBO(Engine::getInstance().getWindowDimensions().width, Engine::getInstance().getWindowDimensions().height);
 }
 
 void PostFX::reshapeFBO(I32 width , I32 height){
@@ -128,19 +156,17 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 }
 
 void PostFX::displaySceneWithAnaglyph(void){
-
+	GFXDevice& gfx = GFXDevice::getInstance();
 	CameraManager::getInstance().getActiveCamera()->SaveCamera();
 	F32 _eyePos[2] = {_eyeOffset/2, -_eyeOffset};
 
 	for(I32 i=0; i<2; i++){
-		GFXDevice::getInstance().enable_MODELVIEW();
-		GFXDevice::getInstance().loadIdentityMatrix();
 		CameraManager::getInstance().getActiveCamera()->MoveAnaglyph(_eyePos[i]);
 		CameraManager::getInstance().getActiveCamera()->RenderLookAt();
 
 		_anaglyphFBO[i]->Begin();
 		
-			GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			SceneManager::getInstance().render();
 		
 		_anaglyphFBO[i]->End();
@@ -156,9 +182,9 @@ void PostFX::displaySceneWithAnaglyph(void){
 
 		_anaglyphShader->UniformTexture("texLeftEye", 0);
 		_anaglyphShader->UniformTexture("texRightEye", 1);
-		GFXDevice::getInstance().toggle2D(true);
-		GFXDevice::getInstance().drawQuad3D(_renderQuad);
-		GFXDevice::getInstance().toggle2D(false);
+		gfx.toggle2D(true);
+		gfx.drawQuad3D(_renderQuad);
+		gfx.toggle2D(false);
 		_anaglyphFBO[1]->Unbind(1);
 		_anaglyphFBO[0]->Unbind(0);
 	}
@@ -168,11 +194,100 @@ void PostFX::displaySceneWithAnaglyph(void){
 
 void PostFX::displaySceneWithoutAnaglyph(void){
 
-	if(_enablePostProcessing){
-	}
-	GFXDevice::getInstance().enable_MODELVIEW();
-	GFXDevice::getInstance().loadIdentityMatrix();
 	CameraManager::getInstance().getActiveCamera()->RenderLookAt();
+	ParamHandler& par = ParamHandler::getInstance();
+	GFXDevice& gfx = GFXDevice::getInstance();
+	bool underwater = par.getParam<bool>("underwater");
+	_enableDOF = par.getParam<bool>("enableDepthOfField");
+
+	if(!_enableDOF){
+		_screenFBO->Begin();
+			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			SceneManager::getInstance().render();
+		_screenFBO->End();
+	}else{
+		_depthFBO->Begin();
+			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			SceneManager::getInstance().render();
+		_depthFBO->End();
+		_screenFBO->Begin();
+			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			SceneManager::getInstance().render();
+		_screenFBO->End();
+	}
+	if(_enableBloom){
+		generateBloomTexture();
+	}
+
+	if(_enableDOF){
+		generateDepthOfFieldTexture();
+	}
+
+	I32 id = 0;
+	_postProcessingShader->bind();
+		if(!_enableDOF)	{
+			_screenFBO->Bind(id);
+		}else{
+			_depthOfFieldFBO->Bind(id);
+		}
+		
+		_postProcessingShader->UniformTexture("texScreen", id++);
+		_postProcessingShader->Uniform("enable_bloom",_enableBloom);
+		_postProcessingShader->Uniform("enable_vignette",_enableNoise);
+		_postProcessingShader->Uniform("enable_noise",_enableNoise);
+		_postProcessingShader->Uniform("enable_pdc",_enableDOF);
+		_postProcessingShader->Uniform("enable_underwater",underwater);	
+
+		if(underwater){
+			_underwaterTexture->Bind(id);
+			_postProcessingShader->UniformTexture("texWaterNoiseNM", id++);
+			_postProcessingShader->Uniform("screnWidth", Engine::getInstance().getWindowDimensions().width);
+			_postProcessingShader->Uniform("screnHeight", Engine::getInstance().getWindowDimensions().height);
+			_postProcessingShader->Uniform("noise_tile", 0.05f);
+			_postProcessingShader->Uniform("noise_factor", 0.02f);
+			_postProcessingShader->Uniform("time", GETMSTIME());
+		}
+			
+		if(_enableBloom){
+			_bloomFBO->Bind(id);
+			_postProcessingShader->UniformTexture("texBloom", id++);
+			_postProcessingShader->Uniform("bloom_factor", 4.0f);
+		}
+
+		if(_enableNoise){
+			_noise->Bind(id);
+			_postProcessingShader->UniformTexture("texBruit", id++);
+
+			_postProcessingShader->Uniform("randomCoeffNoise", _randomNoiseCoefficient);
+			_postProcessingShader->Uniform("randomCoeffFlash", _randomFlashCoefficient);
+			_screenBorder->Bind(id);
+			_postProcessingShader->UniformTexture("texVignette", id++);
+		}
+
+		gfx.toggle2D(true);
+		gfx.drawQuad3D(_renderQuad);
+		gfx.toggle2D(false);
+
+		if(_enableNoise){
+			_screenBorder->Unbind(--id);
+			_noise->Unbind(--id);
+		}
+
+		if(_enableBloom){
+			_bloomFBO->Unbind(--id);
+		}
+
+		if(underwater){
+			_underwaterTexture->Unbind(--id);
+		}
+
+		if(!_enableDOF)	{
+			_screenFBO->Unbind(--id);
+		}else{
+			_depthOfFieldFBO->Unbind(--id);
+		}
+		
+	_postProcessingShader->unbind();
 	
 }
 
@@ -186,9 +301,8 @@ void PostFX::render(){
 			displaySceneWithoutAnaglyph();
 		}
 	}else{
-		GFXDevice::getInstance().enable_MODELVIEW();
-		GFXDevice::getInstance().loadIdentityMatrix();
 		CameraManager::getInstance().getActiveCamera()->RenderLookAt();
+		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 		SceneManager::getInstance().render();
 	}
 
@@ -200,7 +314,8 @@ void PostFX::idle(){
 				_timer += GETMSTIME();
 				if(_timer > _tickInterval ){
 					_timer = 0;
-					_randomNoiseCoefficient = (float)random(1000)/1000.0f;
+					_randomNoiseCoefficient = (F32)random(1000)/1000.0f;
+					_randomFlashCoefficient = (F32)random(1000)/1000.0f;
 				}
 		}
 	}
@@ -208,4 +323,124 @@ void PostFX::idle(){
 
 
 
+void PostFX::generateBloomTexture(){
+	GFXDevice& gfx = GFXDevice::getInstance();
+	_bloomFBO->Begin();
+		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 
+		_bloomShader->bind();
+
+			_screenFBO->Bind(0);
+
+				_bloomShader->UniformTexture("texScreen", 0);
+				_bloomShader->Uniform("threshold", 0.95f);
+				gfx.toggle2D(true);
+				gfx.drawQuad3D(_renderQuad);
+				gfx.toggle2D(false);
+
+			_screenFBO->Unbind(0);
+
+		_bloomShader->unbind();
+
+	_bloomFBO->End();
+
+
+	// ON BLUR LES SOURCES LUMINEUSES HORIZONTALEMENT
+	_tempBloomFBO->Begin();
+	
+		gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+
+		_blurShader->bind();
+		
+			_bloomFBO->Bind(0);
+				_blurShader->UniformTexture("texScreen", 0);
+				_blurShader->Uniform("size", vec2((F32)_bloomFBO->getWidth(), (F32)_bloomFBO->getHeight()));
+				_blurShader->Uniform("horizontal", true);
+				_blurShader->Uniform("kernel_size", 10);
+				gfx.toggle2D(true);
+				gfx.drawQuad3D(_renderQuad);
+				gfx.toggle2D(false);
+			_bloomFBO->Unbind(0);
+		
+		_blurShader->unbind();
+		
+	_tempBloomFBO->End();
+
+
+	// ON BLUR LES SOURCES LUMINEUSES VERTICALEMENT
+	_bloomFBO->Begin();
+	
+		gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+
+		_blurShader->bind();
+		
+			_tempBloomFBO->Bind(0);
+				_blurShader->UniformTexture("texScreen", 0);
+				_blurShader->Uniform("size", vec2((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
+				_blurShader->Uniform("horizontal", false);
+				gfx.toggle2D(true);
+				gfx.drawQuad3D(_renderQuad);
+				gfx.toggle2D(false);
+			_tempBloomFBO->Unbind(0);
+		
+		_blurShader->unbind();
+		
+	_bloomFBO->End();
+}
+
+void PostFX::generateDepthOfFieldTexture(){
+	GFXDevice& gfx = GFXDevice::getInstance();
+
+	_tempDepthOfFieldFBO->Begin();
+	
+		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+
+		_blurShader->bind();
+
+			_screenFBO->Bind(0);
+			_depthFBO->Bind(1);
+
+			_blurShader->Uniform("screenWidth", Engine::getInstance().getWindowDimensions().width);
+			_blurShader->Uniform("screenHeight", Engine::getInstance().getWindowDimensions().height);
+			_blurShader->Uniform("bHorizontal", false);
+			_blurShader->UniformTexture("texScreen", 0);
+			_blurShader->UniformTexture("texDepth",1);
+		
+			gfx.toggle2D(true);
+			gfx.drawQuad3D(_renderQuad);
+			gfx.toggle2D(false);
+				
+			_depthFBO->Unbind(1);
+			_screenFBO->Unbind(0);
+		
+		_blurShader->unbind();
+				
+	
+	_tempDepthOfFieldFBO->End();
+
+	_depthOfFieldFBO->Begin();
+	
+		gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+
+		_blurShader->bind();
+				
+			_tempDepthOfFieldFBO->Bind(0);
+			_depthFBO->Bind(1);
+
+			_blurShader->Uniform("screenWidth", Engine::getInstance().getWindowDimensions().width);
+			_blurShader->Uniform("screenHeight", Engine::getInstance().getWindowDimensions().height);
+			_blurShader->Uniform("bHorizontal", true);
+			_blurShader->UniformTexture("texScreen", 0);
+			_blurShader->UniformTexture("texDepth",1);
+					
+			gfx.toggle2D(true);
+			gfx.drawQuad3D(_renderQuad);
+			gfx.toggle2D(false);
+				
+			_depthFBO->Unbind(1);
+			_tempDepthOfFieldFBO->Unbind(0);
+				
+		_blurShader->unbind();
+				
+	_depthOfFieldFBO->End();
+}

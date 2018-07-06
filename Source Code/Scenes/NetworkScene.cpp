@@ -12,14 +12,11 @@ using namespace std;
 void NetworkScene::render()
 {
 	RenderState s(true,true,true,true);
-	GFXDevice::getInstance().setRenderState(s);
+	_GFX.setRenderState(s);
 
 	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 
 	_sceneGraph->render();
-
-	GUI::getInstance().draw();
-	
 }
 
 void NetworkScene::preRender()
@@ -32,7 +29,6 @@ void NetworkScene::preRender()
 	getLights()[0]->setLightProperties(string("ambient"),_white);
 	getLights()[0]->setLightProperties(string("diffuse"),vSunColor);
 	getLights()[0]->setLightProperties(string("specular"),vSunColor);
-	getLights()[0]->update();
 
 	Sky::getInstance().setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,false);
 	Sky::getInstance().draw();
@@ -56,7 +52,6 @@ void NetworkScene::processInput()
 
 void NetworkScene::processEvents(F32 time)
 {
-	ParamHandler& par = ParamHandler::getInstance();
 	F32 FpsDisplay = 0.3f;
 	F32 TimeDisplay = 0.01f;
 	F32 ServerPing = 1.0f;
@@ -76,8 +71,8 @@ void NetworkScene::processEvents(F32 time)
 
 	if (time - _eventTimers[2] >= ServerPing)
 	{
-		GUI::getInstance().modifyText("statusText", (char*)par.getParam<string>("asioStatus").c_str());
-		GUI::getInstance().modifyText("serverMessage",(char*)par.getParam<string>("serverResponse").c_str());
+		GUI::getInstance().modifyText("statusText", (char*)_paramHandler.getParam<string>("asioStatus").c_str());
+		GUI::getInstance().modifyText("serverMessage",(char*)_paramHandler.getParam<string>("serverResponse").c_str());
 		_eventTimers[2] += ServerPing;
 	}
 
@@ -102,13 +97,12 @@ void NetworkScene::checkPatches()
 
 bool NetworkScene::load(const string& name)
 {
-	ParamHandler& par = ParamHandler::getInstance();
-	GFXDevice::getInstance().resizeWindow(640,384);
-	ASIO::getInstance().init(par.getParam<string>("serverAddress"),string("443"));
+	_GFX.resizeWindow(640,384);
+	ASIO::getInstance().init(_paramHandler.getParam<string>("serverAddress"),string("443"));
 
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
 	bool state = loadResources(true);
-	ParamHandler::getInstance().setParam("serverResponse",string("waiting"));
+	_paramHandler.setParam("serverResponse",string("waiting"));
 	addDefaultLight();
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3(0,30,-30));
 	return state;
@@ -128,9 +122,8 @@ void NetworkScene::test()
 
 void NetworkScene::connect()
 {
-	ParamHandler& par = ParamHandler::getInstance();
 	GUI::getInstance().modifyText("statusText",(char*)string("Connecting to server ...").c_str());
-	ASIO::getInstance().connect(par.getParam<string>("serverAddress"),string("433"));
+	ASIO::getInstance().connect(_paramHandler.getParam<string>("serverAddress"),string("433"));
 }
 
 void NetworkScene::disconnect()
@@ -149,7 +142,6 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 							0.0f );
 
 	GUI& gui = GUI::getInstance();
-	ParamHandler& par = ParamHandler::getInstance();
 
 	gui.addText("fpsDisplay",           //Unique ID
 		                       vec3(60,60,0),          //Position

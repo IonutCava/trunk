@@ -33,7 +33,7 @@ Engine::Engine() :
 	//BEGIN CONSTRUCTOR
 	 angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 	 mainWindowId = -1;
-	 _camera = new FreeFlyCamera();
+	 _camera = New FreeFlyCamera();
 	 CameraManager::getInstance().add("defaultCamera",_camera);
 	 //END CONSTRUCTOR
 }
@@ -49,32 +49,26 @@ void Engine::DrawSceneStatic()
 
 void Engine::DrawScene()
 {
-
-	_GFX.enable_MODELVIEW();
-	_GFX.loadIdentityMatrix();
 	_camera->RenderLookAt();
-	
-	if(_px.getScene() != NULL)
-	{
+	foreach(Light* light, _scene.getLights()){
+		light->onDraw();
+	}
+
+	if(_px.getScene() != NULL){
 		_px.GetPhysicsResults();
 		if (_px.getWireFrameData())
 			_px.getDebugRenderer()->renderData(*(_px.getScene()->getDebugRenderable()));
 		_px.StartPhysics();
 	}
 	
-
-	std::vector<Light*> & lights = _scene.getActiveScene()->getLights();
-	for(U8 i = 0; i < lights.size(); i++)
-		lights[i]->update();
-
 	_scene.preRender();
 	PostFX::getInstance().render();
+	GUI::getInstance().draw();
 	_scene.processInput();
 	_scene.processEvents(abs(GETTIME()));
 }
 
-void Engine::Initialize()
-{    
+void Engine::Initialize(){    
 	ResourceManager& res = ResourceManager::getInstance();
 	_GFX.setApi(OpenGL32);
 	_GFX.initHardware();

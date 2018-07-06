@@ -38,7 +38,6 @@ public:
 	inline std::vector<U32> getTextureHandle() const	{return _textureId;} 
 	inline U16 getWidth() const			{return _width;}
 	inline U16 getHeight() const		{return _height;}
-
 	virtual ~FrameBufferObject(){};
 
 protected:

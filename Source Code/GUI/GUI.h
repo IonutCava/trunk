@@ -44,26 +44,26 @@ struct GuiEvent
 };
 
 
-class GuiElement
-{
+class GuiElement{
 	typedef GuiElement Parent;
 	friend class GUI;
 
 public:
 	GuiElement(){_name = "defaultGuiControl";_visible = true;}
 	virtual ~GuiElement(){}
-	const std::string& getName() const {return _name;}
-	const vec2&   getPosition()  const {return _position;}
-	const GuiType getGuiType()   const {return _guiType;}
+	inline const std::string& getName() const {return _name;}
+	inline const vec2&   getPosition()  const {return _position;}
+	inline void  setPosition(vec2& pos)        {_position = pos;}
+	inline const GuiType getGuiType()   const {return _guiType;}
 
-	const bool isActive()  const {return _active;}
-	const bool isVisible() const {return _visible;}
+	inline const bool isActive()  const {return _active;}
+	inline const bool isVisible() const {return _visible;}
 
-	void    setName(const std::string& name) {_name = name;}
-	void    setVisible(bool visible)		 {_visible = visible;}
-	void    setActive(bool active)			 {_active = active;}
+	inline void    setName(const std::string& name) {_name = name;}
+	inline void    setVisible(bool visible)		    {_visible = visible;}
+	inline void    setActive(bool active)			{_active = active;}
 
-	void    addChildElement(GuiElement* child)    {}
+	inline void    addChildElement(GuiElement* child)    {}
 
 	virtual void onResize(const vec2& newSize){_position -= newSize;}
 
@@ -90,7 +90,7 @@ class Text : public GuiElement
 {
 friend class GUI;
 public:
-	Text(const std::string& id,std::string& text,const vec2& position, void* font,const vec3& color) :
+	Text(const std::string& id,std::string& text,const vec2& position, void* font,const vec3& color) : GuiElement(),
 	  _text(text),
 	  _font(font),
 	  _color(color){_position = position; _guiType = GUI_TEXT;};
@@ -114,7 +114,7 @@ class Button : public GuiElement
 
 friend class GUI;
 public:
-	Button(const std::string& id,std::string& text,const vec2& position,const vec2& dimensions,const vec3& color/*, Texture2D& image*/,ButtonCallback callback) :
+	Button(const std::string& id,std::string& text,const vec2& position,const vec2& dimensions,const vec3& color/*, Texture2D& image*/,ButtonCallback callback)  : GuiElement(),
 		_text(text),
 		_dimensions(dimensions),
 		_color(color),
@@ -146,7 +146,7 @@ class InputText : public GuiElement
 {
 friend class GUI;
 public:
-	InputText(){}
+	InputText() : GuiElement() {}
 };
 
 enum Font
@@ -164,7 +164,7 @@ enum Font
 
 
 DEFINE_SINGLETON( GUI )
-
+	typedef unordered_map<std::string,GuiElement*> guiMap;
 public:
 	void draw();
 	void close();
@@ -184,9 +184,8 @@ private:
 	void drawText();
 	void drawButtons();
 
-	std::tr1::unordered_map<std::string,GuiElement*> _guiStack;
-	std::tr1::unordered_map<std::string, GuiElement*>::iterator _guiStackIterator;
-	std::pair<std::tr1::unordered_map<std::string, GuiElement*>::iterator, bool > _resultGuiElement;
+	guiMap _guiStack;
+	std::pair<unordered_map<std::string, GuiElement*>::iterator, bool > _resultGuiElement;
 
 END_SINGLETON
 #endif

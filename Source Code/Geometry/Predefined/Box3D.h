@@ -27,12 +27,10 @@ public:
 
 	F32&         getSize()    {return _size;}
 
-	virtual bool computeBoundingBox(){
-		_boundingBox.set(vec3(-_size,-_size,-_size),vec3(_size,_size,_size));
-		_boundingBox.Multiply(0.5f);
-		_boundingBox.isComputed() = true;
-		setOriginalBoundingBox(_boundingBox);
-		return true;
+	virtual bool computeBoundingBox(SceneGraphNode* node){
+		node->getBoundingBox().set(vec3(-_size,-_size,-_size),vec3(_size,_size,_size));
+		node->getBoundingBox().Multiply(0.5f);
+		return SceneNode::computeBoundingBox(node);
 	}
 private:
 	F32 _size;

@@ -22,6 +22,7 @@ void Console::printCopyrightNotice(){
 	std::cout << "E-mail: ionut.cava@divide-studio.com | Website: http://wwww.divide-studio.com" << std::endl;
 	std::cout << "-------------------------------------------------------------------------------" << std::endl;
 	std::cout << std::endl;
+	_timestamps = true;
 }
 
 void Console::printfn(char* format, ...){
@@ -89,10 +90,11 @@ void Console::errorf(char* format, ...){
 }
 
 void Console::output(const std::string& output){
-#ifdef SHOW_LOG_TIMESTAMPS
-	std::cout << "[ " << std::setprecision(4) << GETTIME() << " ] " << output;
-#else
-	std::cout << output;
-#endif
+	boost::mutex::scoped_lock  lock(io_mutex);
+	if(_timestamps){
+		std::cout << "[ " << std::setprecision(4) << GETTIME() << " ] " << output;
+	}else{
+		std::cout << output;
+	}
 	//GUI::getInstance().printConsole(output);
 }

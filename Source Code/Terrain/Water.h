@@ -31,23 +31,28 @@ class WaterPlane : public SceneNode
 public:
 	WaterPlane();
 	~WaterPlane(){}
-	void render();
-	void setFBO(FrameBufferObject* fbo[3]);
+	void render(SceneGraphNode* node);
 	bool load(const std::string& name);
 	bool unload();
 
 	void setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency);
-	void setWaterTextureProjectionMatrix(const mat4& matrix) {_projectionMatrix = matrix;}
 	inline Quad3D*     getQuad()    {return _plane;}
-	bool computeBoundingBox() {return getQuad()->getBoundingBox().isComputed();}
+	inline FrameBufferObject* getReflectionFBO(){return _reflectionFBO;}
+	bool   isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
+	void   postLoad(SceneGraphNode* node);
+	void   prepareMaterial();
+	void   releaseMaterial();
+private:
+	bool computeBoundingBox(SceneGraphNode* node);
+
 private:
 	Quad3D*			   _plane;
 	Texture2D*		   _texture;
 	Shader*		  	   _shader;
-	mat4               _projectionMatrix;
-	F32  _maxViewDistance;
-	FrameBufferObject* _fbo[3];
-	vec3 _waterMinDepth;
-	vec3 _waterMaxDepth;
+	F32				   _farPlane;
+	FrameBufferObject* _reflectionFBO;
+	Transform*         _planeTransform;
+	SceneGraphNode*    _node;
+	SceneGraphNode*    _planeSGN;
 };
 #endif

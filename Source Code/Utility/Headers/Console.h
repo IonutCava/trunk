@@ -4,7 +4,7 @@
 #include "resource.h"
 #include "Utility/Headers/Singleton.h" 
 #include <stdarg.h>
-
+#include <boost/thread.hpp>
 DEFINE_SINGLETON(Console)
 
 public:
@@ -13,10 +13,11 @@ public:
 	void printf(char* format, ...);
 	void errorfn(char* format, ...);
 	void errorf(char* format, ...);
-
+	void toggleTimeStamps(bool state){_timestamps = state;}
 private:
 	void output(const std::string& text);
-
+	boost::mutex io_mutex;
+	bool _timestamps;
 END_SINGLETON
 
 #endif

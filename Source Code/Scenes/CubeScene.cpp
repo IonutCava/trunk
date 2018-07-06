@@ -4,43 +4,12 @@
 #include "PhysX/PhysX.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Quad3D.h"
-#include "Managers/ResourceManager.h"
 using namespace std;
 
-void CubeScene::render()
-{
-	RenderState s(true,true,false,true);
-	GFXDevice::getInstance().setRenderState(s);
-	vec3 camPosition = CameraManager::getInstance().getActiveCamera()->getEye();
-
-	U8 index = 0;
-	F32* pixels = (F32*)_lightTexture->Begin();
-	for(U8 row=0; row<3; row++)
-		for(U8 col=0; col < getLights().size()/3; col++){
-			U8 i = row*10+col;
-			//Light Position																										
-			pixels[index + 0]  = getLights()[i]->getPosition().x;		
-			pixels[index + 1]  = getLights()[i]->getPosition().y;		
-			pixels[index + 2]  = getLights()[i]->getPosition().z;		
-			//Light Color
-			pixels[index + 3]  = getLights()[i]->getDiffuseColor().r;					
-			pixels[index + 4]  = getLights()[i]->getDiffuseColor().g;											
-			pixels[index + 5]  = getLights()[i]->getDiffuseColor().b;
-			index += 6;
-		}
-		_lightTexture->End();
-
-	//Pass 1
-	//Draw the geometry, saving parameters into the buffer
-	_deferredBuffer->Begin();
-		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-		_sceneGraph->render();
-		GUI::getInstance().draw();
-	_deferredBuffer->End();
-	
+void CubeScene::render(){
 	//Pass 2
 	//Draw a 2D fullscreen quad that has the lighting shader applied to it and all generated textures bound to that shader
-	GFXDevice::getInstance().toggle2D(true);
+	
 	_deferredShader->bind();
 		_deferredBuffer->Bind(0,0);
 		_deferredBuffer->Bind(1,1);
@@ -52,18 +21,17 @@ void CubeScene::render()
 			_deferredShader->UniformTexture("tImage2",2);
 			_deferredShader->UniformTexture("lightTexture",3);
 			_deferredShader->UniformTexture("lightCount",getLights().size());
-			_deferredShader->Uniform("cameraPosition",camPosition);
-
-			GFXDevice::getInstance().drawQuad3D(_renderQuad);
+			_deferredShader->Uniform("cameraPosition",CameraManager::getInstance().getActiveCamera()->getEye());
+			_GFX.toggle2D(true);
+			_GFX.drawQuad3D(_renderQuad);
+			_GFX.toggle2D(false);
 
 		_lightTexture->Unbind(3);
 		_deferredBuffer->Unbind(2);
 		_deferredBuffer->Unbind(1);
 		_deferredBuffer->Unbind(0);
 	_deferredShader->unbind();
-	GFXDevice::getInstance().toggle2D(false);
-
-
+	
 }
 
 void CubeScene::processEvents(F32 time)
@@ -102,10 +70,10 @@ void CubeScene::preRender()
 
 	i >= 180 ? j = -1 : j = 1;
 
-	Object3D* cutia1 = _sceneGraph->findNode("Cutia1")->getNode<Object3D>();
-	Object3D* hellotext = _sceneGraph->findNode("HelloText")->getNode<Object3D>();
-	Object3D* bila = _sceneGraph->findNode("Bila")->getNode<Object3D>();
-	Object3D* dwarf = _sceneGraph->findNode("dwarf")->getNode<Object3D>();
+	SceneGraphNode* cutia1 = _sceneGraph->findNode("Cutia1");
+	SceneGraphNode* hellotext = _sceneGraph->findNode("HelloText");
+	SceneGraphNode* bila = _sceneGraph->findNode("Bila");
+	SceneGraphNode* dwarf = _sceneGraph->findNode("dwarf");
 	cutia1->getTransform()->rotateEuler(vec3(0.3f*i, 0.6f*i,0));
 	hellotext->getTransform()->rotate(vec3(0.6f,0.2f,0.4f),i);
 	bila->getTransform()->translateY(j*0.25f);
@@ -113,6 +81,31 @@ void CubeScene::preRender()
 
 	if(PhysX::getInstance().getScene() != NULL)	
 		PhysX::getInstance().UpdateActors();
+
+	U8 index = 0;
+	F32* pixels = (F32*)_lightTexture->Begin();
+	for(U8 row=0; row<3; row++)
+		for(U8 col=0; col < getLights().size()/3; col++){
+			U8 i = row*10+col;
+			//Light Position																										
+			pixels[index + 0]  = getLights()[i]->getPosition().x;		
+			pixels[index + 1]  = getLights()[i]->getPosition().y;		
+			pixels[index + 2]  = getLights()[i]->getPosition().z;		
+			//Light Color
+			pixels[index + 3]  = getLights()[i]->getDiffuseColor().r;					
+			pixels[index + 4]  = getLights()[i]->getDiffuseColor().g;											
+			pixels[index + 5]  = getLights()[i]->getDiffuseColor().b;
+			index += 6;
+		}
+		_lightTexture->End();
+	//Pass 1
+	//Draw the geometry, saving parameters into the buffer
+	_deferredBuffer->Begin();
+		_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		RenderState s(false,false,false,true);
+		_GFX.setRenderState(s);
+		_sceneGraph->render();
+	_deferredBuffer->End();
 } 
 
 void CubeScene::processInput()
@@ -144,24 +137,25 @@ bool CubeScene::loadResources(bool continueOnErrors)
 {
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 
-	GFXDevice::getInstance().setDeferredShading(true);
-	_deferredBuffer = GFXDevice::getInstance().newFBO();
-	_lightTexture = GFXDevice::getInstance().newPBO();
+	_GFX.setDeferredShading(true);
+	_deferredBuffer = _GFX.newFBO();
+	_lightTexture = _GFX.newPBO();
 	//30 lights? >:)
+	
 	for(U8 row=0; row<3; row++)
 		for(U8 col=0; col < 10; col++){
 			U8 lightId = (U8)(row*10+col);
 			stringstream ss; ss << (U32)lightId;
 			ResourceDescriptor tempLight("Light Deferred " + ss.str());
 			tempLight.setId(lightId);
-			Light* light = ResourceManager::getInstance().LoadResource<Light>(tempLight);
-			/*SceneGraphNode* lightNode = */_sceneGraph->getRoot()->addNode(light);
-			//lightNode->addNode(static_cast<SceneNode*>(light->getImpostor()));
+			Light* light = _resManager.loadResource<Light>(tempLight);
+			light->toggleImpostor(true);
+			_sceneGraph->getRoot()->addNode(light);
 			getLights().push_back(light);
 	}
-
+	addDefaultLight();
 	ResourceDescriptor deferred("DeferredShadingPass2");
-	_deferredShader = ResourceManager::getInstance().LoadResource<Shader>(deferred);
+	_deferredShader = _resManager.loadResource<Shader>(deferred);
 
 	_deferredBuffer->Create(FrameBufferObject::FBO_2D_DEFERRED,Engine::getInstance().getWindowDimensions().x,Engine::getInstance().getWindowDimensions().y);
 	_lightTexture->Create(2,getLights().size());
@@ -169,16 +163,14 @@ bool CubeScene::loadResources(bool continueOnErrors)
 	F32 width = Engine::getInstance().getWindowDimensions().width;
 	F32 height = Engine::getInstance().getWindowDimensions().height;
 	ResourceDescriptor mrt("MRT RenderQuad");
-	_renderQuad = ResourceManager::getInstance().LoadResource<Quad3D>(mrt);
+	mrt.setFlag(true); //no default material
+	_renderQuad = _resManager.loadResource<Quad3D>(mrt);
 	assert(_renderQuad != NULL);
 	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
 	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
 	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
-	_renderQuad->setMaterial(NULL);
-	_renderQuad->useDefaultMaterial(false);
-	_renderQuad->setTransform(NULL);
-	_renderQuad->useDefaultTransform(false);
+
 	_eventTimers.push_back(0.0f);
 	return true;
 }
@@ -186,7 +178,7 @@ bool CubeScene::loadResources(bool continueOnErrors)
 bool CubeScene::unload()
 {
 	Console::getInstance().printfn("Deleting Deferred Rendering RenderTarget!");
-	ResourceManager::getInstance().remove(_renderQuad);
+	RemoveResource(_renderQuad);
 	return Scene::unload();
 }
 

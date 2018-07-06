@@ -47,8 +47,8 @@ NxReal PhysX::UpdateTime()
 {
     NxReal deltaTime;
 #ifndef LINUX
-    static __int64 gTime,gLastTime;
-    __int64 freq;
+    static _I64 gTime,gLastTime;
+    _I64 freq;
     QueryPerformanceCounter((LARGE_INTEGER *)&gTime);  // Get current count
     QueryPerformanceFrequency((LARGE_INTEGER *)&freq); // Get processor freq
     deltaTime = (NxReal)(gTime - gLastTime)/(NxReal)freq;
@@ -444,7 +444,6 @@ void PhysX::DrawObjects(NxShape *obj)
     orient[15] = 1.0f;
     //glMultMatrixf(&(orient[0]));
 	//GFXDevice::getInstance().renderModel((Mesh*)obj->getActor().userData);
-	//GFXDevice::getInstance().popMatrix();
 	GFXDevice::getInstance().setRenderState(old);
 	delete orient;
 	orient = NULL;
