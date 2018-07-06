@@ -48,4 +48,26 @@ void PushConstants::clear() {
     _data.clear();
 }
 
+bool PushConstants::merge(const PushConstants& other) {
+    const vectorImpl<GFX::PushConstant>& ourConstants = _data;
+    const vectorImpl<GFX::PushConstant>& otherConstants = other._data;
+
+    // Check stage
+    for (const GFX::PushConstant& ourConstant : ourConstants) {
+        for (const GFX::PushConstant& otherConstant : otherConstants) {
+            // If we have the same binding, but different data, merging isn't possible
+            if (ourConstant._bindingHash == otherConstant._bindingHash &&
+                 (ourConstant._flag != otherConstant._flag ||
+                  ourConstant._buffer != otherConstant._buffer))
+            {
+                return false;
+            }
+        }
+    }
+
+    // Merge stage
+    insert_unique(_data, other._data);
+
+    return true;
+}
 }; //namespace Divide

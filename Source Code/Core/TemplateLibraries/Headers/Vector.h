@@ -55,29 +55,42 @@
 #include "STLVector.h"
 #endif  // defined(VECTOR_IMP)
 
-template< typename T, typename Pred >
-typename vectorImpl<T>::iterator insert_sorted(vectorImpl<T>& vec, T const& item, Pred pred)
+template< typename T, typename Pred, typename A>
+typename vectorImpl<T, A>::iterator insert_sorted(vectorImpl<T, A>& vec, T const& item, Pred pred)
 {
     return vec.insert(std::upper_bound(std::begin(vec), std::end(vec), item, pred), item);
 }
 
-template<typename T>
-void pop_front(vectorImpl<T>& vec)
+template<typename T, typename A>
+void insert_unique(vectorImpl<T, A>& target, const vectorImpl<T, A>& source)
+{
+    std::for_each(std::cbegin(source), std::cend(source),
+        [&target](T const& item) {
+        if (std::find(std::cbegin(target), std::cend(target), item) != std::cend(target))
+        {
+            target.push_back(item);
+        }
+    });
+}
+
+
+template<typename T, typename A>
+void pop_front(vectorImpl<T, A>& vec)
 {
     assert(!vec.empty());
     vec.erase(std::begin(vec));
 }
 
-template<typename T>
-void unchecked_copy(vectorImpl<T>& dst, const vectorImpl<T>& src)
+template<typename T, typename A>
+void unchecked_copy(vectorImpl<T, A>& dst, const vectorImpl<T, A>& src)
 {
     dst.resize(src.size());
     memcpy(dst.data(), src.data(), src.size() * sizeof(T));
 }
 
-template<typename T, typename U>
-vectorImpl<T> convert(const vectorImpl<U>& data) {
-    return vectorImpl<T>(std::cbegin(data), std::cend(data));
+template<typename T, typename U, typename A>
+vectorImpl<T, A> convert(const vectorImpl<U, A>& data) {
+    return vectorImpl<T, A>(std::cbegin(data), std::cend(data));
 }
 
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices

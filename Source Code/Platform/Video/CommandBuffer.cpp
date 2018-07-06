@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/CommandBuffer.h"
+#include "Core/Headers/Console.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 
 namespace Divide {
 namespace GFX {
@@ -84,9 +86,47 @@ CommandBuffer::~CommandBuffer()
 
 void CommandBuffer::batch() {
     clean();
+
+    std::array<std::shared_ptr<Command>, to_base(GFX::CommandType::COUNT)> prevCommands;
+    CommandData::iterator it;
+
+    bool tryMerge = true;
+
+    while (tryMerge) {
+        prevCommands.fill(nullptr);
+        tryMerge = false;
+        bool skip = false;
+        for (it = std::begin(_data); it != std::cend(_data);) {
+            skip = false;
+
+            const std::shared_ptr<Command>& cmd = *it;
+            if (resetMerge(cmd->_type)) {
+                prevCommands.fill(nullptr);
+            }
+
+            std::shared_ptr<Command>& prevCommand = prevCommands[to_U16(cmd->_type)];
+
+            if (prevCommand != nullptr && prevCommand->_type == cmd->_type) {
+                if (tryMergeCommands(prevCommand, cmd)) {
+                    it = _data.erase(it);
+                    skip = true;
+                    tryMerge = true;
+                }
+            }
+            if (!skip) {
+                prevCommand = cmd;
+                ++it;
+            }
+        }
+    }
+    
     // If we don't have any actual work to do, clear everything
     bool hasWork = false;
     for (const std::shared_ptr<Command>& cmd : _data) {
+        if (hasWork) {
+            break;
+        }
+
         switch (cmd->_type) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear the RT
@@ -122,47 +162,6 @@ void CommandBuffer::batch() {
         _data.clear();
         return;
     }
-    /*auto batch = [](GenericDrawCommand& previousIDC,
-    GenericDrawCommand& currentIDC)  -> bool {
-    if (previousIDC.compatible(currentIDC) &&
-    // Batchable commands must share the same buffer
-    previousIDC.sourceBuffer()->getGUID() == currentIDC.sourceBuffer()->getGUID())
-    {
-    U32 prevCount = previousIDC.drawCount();
-    if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
-    return false;
-    }
-    // If the rendering commands are batchable, increase the draw count for the previous one
-    previousIDC.drawCount(to_U16(prevCount + currentIDC.drawCount()));
-    // And set the current command's draw count to zero so it gets removed from the list later on
-    currentIDC.drawCount(0);
-
-    return true;
-    }
-
-    return false;
-    };
-
-
-    vectorAlg::vecSize previousCommandIndex = 0;
-    vectorAlg::vecSize currentCommandIndex = 1;
-    const vectorAlg::vecSize commandCount = commands.size();
-    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-    GenericDrawCommand& previousCommand = commands[previousCommandIndex];
-    GenericDrawCommand& currentCommand = commands[currentCommandIndex];
-    if (!batch(previousCommand, currentCommand))
-    {
-    previousCommandIndex = currentCommandIndex;
-    }
-    }
-
-    commands.erase(std::remove_if(std::begin(commands),
-    std::end(commands),
-    [](const GenericDrawCommand& cmd) -> bool {
-    return cmd.drawCount() == 0;
-    }),
-    std::end(commands));
-    */
 }
 
 void CommandBuffer::clean() {
@@ -170,29 +169,90 @@ void CommandBuffer::clean() {
         return;
     }
 
-    for (const std::shared_ptr<Command>& cmd : _data) {
-        if (cmd->_type == CommandType::DRAW_COMMANDS) {
-            vectorImpl<GenericDrawCommand>& cmds = static_cast<DrawCommand*>(cmd.get())->_drawCommands;
+    bool skip = false;
+    const Pipeline* prevPipeline = nullptr;
+    DescriptorSet prevDescriptorSet;
 
-            cmds.erase(std::remove_if(std::begin(cmds),
-                                      std::end(cmds),
-                                      [](const GenericDrawCommand& cmd) -> bool {
-                return cmd.drawCount() == 0;
-            }),
-                       std::end(cmds));
+    CommandData::iterator it;
+    for (it = std::begin(_data); it != std::cend(_data);) {
+        skip = false;
+        const std::shared_ptr<Command>& cmd = *it;
+
+        switch (cmd->_type) {
+            case CommandType::DRAW_COMMANDS :
+            {
+                vectorImpl<GenericDrawCommand>& cmds = static_cast<DrawCommand*>(cmd.get())->_drawCommands;
+
+                cmds.erase(std::remove_if(std::begin(cmds),
+                                          std::end(cmds),
+                                          [](const GenericDrawCommand& cmd) -> bool {
+                                              return cmd.drawCount() == 0;
+                                          }),
+                           std::end(cmds));
+
+                if (cmds.empty()) {
+                    it = _data.erase(it);
+                    skip = true;
+                }
+            } break;
+            case CommandType::BIND_PIPELINE : {
+                const Pipeline* pipeline = static_cast<BindPipelineCommand*>(cmd.get())->_pipeline;
+                // If the current pipeline is identical to the previous one, remove it
+                if (prevPipeline != nullptr && *prevPipeline == *pipeline) {
+                    it = _data.erase(it);
+                    skip = true;
+                }
+                prevPipeline = pipeline;
+            }break;
+            case GFX::CommandType::SEND_PUSH_CONSTANTS: {
+                PushConstants& constants = static_cast<SendPushConstantsCommand*>(cmd.get())->_constants;
+                if (constants.data().empty()) {
+                    it = _data.erase(it);
+                    skip = true;
+                }
+            }break;
+            case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+                const DescriptorSet& set = static_cast<BindDescriptorSetsCommand*>(cmd.get())->_set;
+                if (prevDescriptorSet == set) {
+                    it = _data.erase(it);
+                    skip = true;
+                }
+                prevDescriptorSet = set;
+            }break;
+            case GFX::CommandType::DRAW_TEXT: {
+                const TextElementBatch& batch = static_cast<DrawTextCommand*>(cmd.get())->_batch;
+                bool hasText = !batch._data.empty();
+                if (hasText) {
+                    hasText = false;
+                    for (const TextElement& element : batch()) {
+                        hasText = hasText || !element.text().empty();
+                    }
+                }
+                if (!hasText) {
+                    it = _data.erase(it);
+                    skip = true;
+                }
+            }break;
+            case GFX::CommandType::BEGIN_RENDER_PASS:
+            case GFX::CommandType::END_RENDER_PASS:
+            case GFX::CommandType::BEGIN_RENDER_SUB_PASS:
+            case GFX::CommandType::END_RENDER_SUB_PASS:
+            case GFX::CommandType::BEGIN_DEBUG_SCOPE:
+            case GFX::CommandType::END_DEBUG_SCOPE:
+            case GFX::CommandType::BEGIN_PIXEL_BUFFER:
+            case GFX::CommandType::END_PIXEL_BUFFER:
+            case GFX::CommandType::DISPATCH_COMPUTE:
+            case GFX::CommandType::DRAW_IMGUI:
+            case GFX::CommandType::BLIT_RT:
+            case GFX::CommandType::SWITCH_WINDOW: {
+            }break;
+        };
+
+
+        if (!skip) {
+            ++it;
         }
     }
-
-    _data.erase(std::remove_if(std::begin(_data),
-                               std::end(_data),
-                               [](const std::shared_ptr<Command>& cmd) -> bool {
-                                  if (cmd->_type == CommandType::DRAW_COMMANDS) {
-                                      return static_cast<DrawCommand*>(cmd.get())->_drawCommands.empty();
-                                  }
-                                  return false;
-                              }),
-                std::end(_data));
-
 
     // Remove redundant pipeline changes
     vectorAlg::vecSize size = _data.size();
@@ -291,13 +351,87 @@ bool CommandBuffer::validate() const {
         if (needsDescriptorSets) {
             valid = hasDescriptorSets && valid;
         }
-        if (!valid) {
-            int a;
-            a = 6;
-        }
     }
 
     return valid;
+}
+
+bool CommandBuffer::tryMergeCommands(std::shared_ptr<GFX::Command>& prevCommand, const std::shared_ptr<GFX::Command>& crtCommand) const {
+    assert(prevCommand != nullptr && crtCommand != nullptr && prevCommand->_type == crtCommand->_type);
+    switch (crtCommand->_type) {
+        case GFX::CommandType::DRAW_COMMANDS : {
+            DrawCommand* crtDrawCommand = static_cast<DrawCommand*>(crtCommand.get());
+            DrawCommand* prevDrawCommand = static_cast<DrawCommand*>(prevCommand.get());
+
+            prevDrawCommand->_drawCommands.insert(std::cend(prevDrawCommand->_drawCommands),
+                                                  std::cbegin(crtDrawCommand->_drawCommands),
+                                                  std::cend(crtDrawCommand->_drawCommands));
+
+            auto batch = [](GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC)  -> bool {
+                if (previousIDC.compatible(currentIDC) &&
+                    // Batchable commands must share the same buffer
+                    previousIDC.sourceBuffer()->getGUID() == currentIDC.sourceBuffer()->getGUID())
+                    {
+                        U32 prevCount = previousIDC.drawCount();
+                        if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
+                            return false;
+                        }
+                        // If the rendering commands are batchable, increase the draw count for the previous one
+                        previousIDC.drawCount(to_U16(prevCount + currentIDC.drawCount()));
+                        // And set the current command's draw count to zero so it gets removed from the list later on
+                        currentIDC.drawCount(0);
+
+                        return true;
+                    }
+
+                return false;
+            };
+
+            
+            vectorImpl<GenericDrawCommand>& commands = prevDrawCommand->_drawCommands;
+            vectorAlg::vecSize previousCommandIndex = 0;
+            vectorAlg::vecSize currentCommandIndex = 1;
+            const vectorAlg::vecSize commandCount = commands.size();
+            for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+                GenericDrawCommand& previousCommand = commands[previousCommandIndex];
+                GenericDrawCommand& currentCommand = commands[currentCommandIndex];
+                if (!batch(previousCommand, currentCommand))
+                {
+                    previousCommandIndex = currentCommandIndex;
+                }
+            }
+
+            commands.erase(std::remove_if(std::begin(commands),
+                                          std::end(commands),
+                                          [](const GenericDrawCommand& cmd) -> bool {
+                                              return cmd.drawCount() == 0;
+                                          }),
+                          std::end(commands));
+            return true;
+        }break;
+
+        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+            BindDescriptorSetsCommand* crtBindCommand = static_cast<BindDescriptorSetsCommand*>(crtCommand.get());
+            BindDescriptorSetsCommand* prevBindCommand = static_cast<BindDescriptorSetsCommand*>(prevCommand.get());
+            return prevBindCommand->_set.merge(crtBindCommand->_set);
+
+        } break;
+
+        case GFX::CommandType::SEND_PUSH_CONSTANTS: {
+            SendPushConstantsCommand* crtPushConstants = static_cast<SendPushConstantsCommand*>(crtCommand.get());
+            SendPushConstantsCommand* prevPushConstants = static_cast<SendPushConstantsCommand*>(prevCommand.get());
+            return prevPushConstants->_constants.merge(crtPushConstants->_constants);
+        } break;
+        
+    };
+
+    return false;
+}
+
+bool CommandBuffer::resetMerge(GFX::CommandType type) const {
+    return type != GFX::CommandType::DRAW_COMMANDS &&
+           type != GFX::CommandType::BIND_DESCRIPTOR_SETS &&
+           type != GFX::CommandType::SEND_PUSH_CONSTANTS;
 }
 
 void CommandBuffer::toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtIndent, stringImpl& out) const {

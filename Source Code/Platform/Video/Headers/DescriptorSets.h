@@ -111,6 +111,49 @@ namespace Divide {
         //This needs a lot more work!
         ShaderBufferList _shaderBuffers;
         TextureDataContainer _textureData;
+
+
+        inline bool operator==(const DescriptorSet &other) const {
+            return _shaderBuffers == other._shaderBuffers &&
+                   _textureData == other._textureData;
+        }
+
+        inline bool operator!=(const DescriptorSet &other) const {
+            return _shaderBuffers != other._shaderBuffers ||
+                   _textureData != other._textureData;
+        }
+
+        inline bool merge(const DescriptorSet &other) {
+            // Check stage
+            for (const ShaderBufferBinding& ourBinding : _shaderBuffers) {
+                for (const ShaderBufferBinding& otherBinding : other._shaderBuffers) {
+                    // Make sure the bindings are different
+                    if (ourBinding._binding == otherBinding._binding) {
+                        return false;
+                    }
+                }
+            }
+            auto ourTextureData = _textureData.textures();
+            auto otherTextureData = other._textureData.textures();
+
+            for (const std::pair<TextureData, U8>& ourTexture : ourTextureData) {
+                for (const std::pair<TextureData, U8>& otherTexture : otherTextureData) {
+                    // Make sure the bindings are different
+                    if (ourTexture.second == otherTexture.second && ourTexture.first != otherTexture.first) {
+                        return false;
+                    }
+                }
+            }
+
+            // Merge stage
+            _shaderBuffers.insert(std::cend(_shaderBuffers),
+                                  std::cbegin(other._shaderBuffers),
+                                  std::cend(other._shaderBuffers));
+
+            // The incoming texture data is either identical or new at this point, so only insert unique items
+            insert_unique(_textureData.textures(), other._textureData.textures());
+            return true;
+        }
     };
 }; //namespace Divide
 

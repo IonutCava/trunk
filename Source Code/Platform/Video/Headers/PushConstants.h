@@ -98,7 +98,8 @@ class PushConstants {
 
     inline const vectorImpl<GFX::PushConstant>& data() const { return _data; }
 
-  
+    bool merge(const PushConstants& other);
+
   protected:
     vectorImpl<GFX::PushConstant> _data;
 };

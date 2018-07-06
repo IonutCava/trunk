@@ -124,8 +124,16 @@ class TextureDataContainer {
       const vectorImplFast<std::pair<TextureData, U8>>& textures() const;
       void clear(bool clearMemory = false);
 
+      inline bool operator==(const TextureDataContainer &other) const {
+          return _textures == other._textures;
+      }
+
+      inline bool operator!=(const TextureDataContainer &other) const {
+          return _textures != other._textures;
+      }
+
     private:
-    vectorImplFast<std::pair<TextureData, U8 /*binding*/>> _textures;
+      vectorImplFast<std::pair<TextureData, U8 /*binding*/>> _textures;
 };
 
 }; //namespace Divide

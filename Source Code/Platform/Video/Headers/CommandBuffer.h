@@ -58,6 +58,8 @@ class CommandBuffer {
 
     void batch();
 
+    // Return true if merge is successful
+    bool tryMergeCommands(std::shared_ptr<GFX::Command>& prevCommand, const std::shared_ptr<GFX::Command>& crtCommand) const;
     inline vectorImplFast<std::shared_ptr<Command>>& operator()();
     inline const vectorImplFast<std::shared_ptr<Command>>& operator()() const;
 
@@ -70,11 +72,12 @@ class CommandBuffer {
 
   protected:
     void toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtIndent, stringImpl& out) const;
-
+    bool resetMerge(GFX::CommandType type) const;
   protected:
     size_t _index = 0;
 
-    vectorImplFast<std::shared_ptr<Command>> _data;
+    typedef vectorImplFast<std::shared_ptr<Command>> CommandData;
+    CommandData _data;
 };
 
 void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd);
