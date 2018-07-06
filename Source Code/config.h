@@ -61,8 +61,6 @@ namespace Config {
     const unsigned int MAX_VISIBLE_NODES = 2048;
     /// How many clip planes should the shaders us
     const unsigned int MAX_CLIP_PLANES = 6;
-    /// How many render targets might get used in the application. Only used for caching reasons
-    const unsigned int MAX_RENDER_TARGETS = 128;
     /// Generic index value used to separate primitives within the same vertex buffer
     const unsigned int PRIMITIVE_RESTART_INDEX_L = (unsigned int)(1 << 31);
     const unsigned int PRIMITIVE_RESTART_INDEX_S = (unsigned int)(1 << 15);

@@ -162,14 +162,18 @@ static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 
 template<typename T>
-inline bool IS_ZERO( T X ) { return X == 0; }
+inline bool IS_IN_RANGE_INCLUSIVE( T x, T min, T max ) { return x >= min && x <= max; }
+template<typename T>
+inline bool IS_IN_RANGE_EXCLUSIVE( T x, T min, T max ) { return x > min && x < max; }
+template<typename T>
+inline bool IS_ZERO( T X )   { return X == 0; }
 template<>
-inline bool IS_ZERO(F32 X) { return  (std::fabs(X) < EPSILON_F32); }
+inline bool IS_ZERO( F32 X)  { return  (std::fabs(X) < EPSILON_F32); }
 template<>
-inline bool IS_ZERO(D32 X) { return  (std::fabs(X) < EPSILON_D32); }
+inline bool IS_ZERO( D32 X ) { return  (std::fabs(X) < EPSILON_D32); }
 
 template<typename T>
-inline bool IS_TOLERANCE(T X, T TOLERANCE )      { return ( std::abs( X ) < TOLERANCE ); }
+inline bool IS_TOLERANCE( T X, T TOLERANCE )      { return ( std::abs( X ) < TOLERANCE ); }
 template<>
 inline bool IS_TOLERANCE( F32 X, F32 TOLERANCE ) { return ( std::fabs( X ) < TOLERANCE ); }
 template<>
@@ -185,9 +189,13 @@ inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return DOUBLE_COMPARE_TOLERANCE(X, Y,
 bool preAssert( const bool expression, const char* failMessage );
 /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
 inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
-	if ( preAssert( expression, failMessage ) ) {
+#   if defined(_DEBUG)
+	if ( preAssert( expression, failMessage ) )
+#   endif
+    {
 		assert( expression && failMessage );
 	}
+
 	return expression;
 }
 

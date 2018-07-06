@@ -343,11 +343,11 @@ class ByteBuffer
 
             for(I32 i = 0; i < 8; ++i)
             {
-                if(guidmark & (((U8)1) << i))
+                if(guidmark & (static_cast<U8>(1) << i))
                 {
                     U8 bit;
                     (*this) >> bit;
-                    guid |= (U64)(bit << (i * 8));
+                    guid |= (static_cast<U64>(bit) << (i * 8));
                 }
             }
 

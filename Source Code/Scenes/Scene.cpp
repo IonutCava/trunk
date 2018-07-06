@@ -60,21 +60,21 @@ bool Scene::frameEnded() {
 }
 
 bool Scene::idle() { //Called when application is idle
+    if (!_modelDataArray.empty()) {
+        loadXMLAssets(true);
+    }
+
     if ( _sceneGraph ) {
         if ( _sceneGraph->getRoot()->getChildren().empty() ) {
             return false;
         }
         _sceneGraph->idle();
-    }
-
-    if ( !_modelDataArray.empty() ) {
-        loadXMLAssets( true );
-    }
-
-    if ( _cookCollisionMeshesScheduled && checkLoadFlag() ) {
-        if ( GFX_DEVICE.getFrameCount() > 1 ) {
-            _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh( _name );
-            _cookCollisionMeshesScheduled = false;
+    
+        if ( _cookCollisionMeshesScheduled && checkLoadFlag() ) {
+            if ( GFX_DEVICE.getFrameCount() > 1 ) {
+                _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh( _name );
+                _cookCollisionMeshesScheduled = false;
+            }
         }
     }
     return true;

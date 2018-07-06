@@ -340,8 +340,6 @@ bool GL_API::setActiveProgram(glShaderProgram* const program) {
 
 /// Change the clear color
 void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-    DIVIDE_ASSERT(0 < Config::MAX_RENDER_TARGETS, 
-                  "GLStates error: invalid render target ID. Increase Config::MAX_RENDER_TARGETS!");
     // Prevent setting the clear color to the exact same value again
     if ( _prevClearColor != vec4<F32>( r, g, b, a ) ) {
         // Remember the current clear color for this target for future reference

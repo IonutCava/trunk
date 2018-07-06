@@ -480,7 +480,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
         // if we have a name and an extension
         if(!img_name.substr(img_name.find_first_of(".")).empty()){
             // Load the texture resource
-			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
 				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
 					  					   aiTextureMapModeTable[mode[1]],
 										   aiTextureMapModeTable[mode[2]]);
@@ -515,7 +517,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
         stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if (img_name.rfind('.') != stringImpl::npos) {
-			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
 				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
 										   aiTextureMapModeTable[mode[1]],
 										   aiTextureMapModeTable[mode[2]]);
@@ -538,7 +542,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
         stringImpl pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
         if (img_name.rfind('.') !=  stringImpl::npos) {
-			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
 				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
 					   					   aiTextureMapModeTable[mode[1]],
 										   aiTextureMapModeTable[mode[2]]);
@@ -562,7 +568,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
         if(img_name.rfind('.') !=  stringImpl::npos) {
-			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
 				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
 										   aiTextureMapModeTable[mode[1]],
 										   aiTextureMapModeTable[mode[2]]);
@@ -601,7 +609,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 		path = par.getParam<stringImpl>("assetsLocation") + "/" + par.getParam<stringImpl>("defaultTextureLocation") + "/" + path;
 
         if (img_name.rfind('.') !=  stringImpl::npos) {
-			if (mode[0] != _aiTextureMapMode_Force32Bit) {
+            if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) ) {
 				textureSampler.setWrapMode(aiTextureMapModeTable[mode[0]],
 										   aiTextureMapModeTable[mode[1]],
 										   aiTextureMapModeTable[mode[2]]);

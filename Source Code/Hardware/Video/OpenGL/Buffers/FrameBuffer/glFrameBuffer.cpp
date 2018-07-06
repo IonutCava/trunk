@@ -439,6 +439,9 @@ void glFramebuffer::End() {
 }
 
 void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) {
+    DIVIDE_ASSERT(slot != TextureDescriptor::AttachmentType_PLACEHOLDER, 
+                  "glFrameBuffer::DrawToLayer Error: invalid slot received!");
+
     GLuint textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]->getTextureType()];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY && 

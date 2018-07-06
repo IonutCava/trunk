@@ -147,7 +147,7 @@ void LightGrid::build(const vec2<U16>& tileSize, const vec2<U16>& resolution, co
                 for (U32 x = l.x; x < u.x; ++x) {
                     if (!m_minMaxGridValid || testDepthBounds(gridMinMaxZPtr[y * m_gridDim.x + x], light)) {
                         // store reversely into next free slot
-                        U32 offset = GRID_OFFSETS(x, y) - 1;
+                        offset = GRID_OFFSETS(x, y) - 1;
                         data[offset] = lightId;
                         GRID_OFFSETS(x, y) = offset;
                     }

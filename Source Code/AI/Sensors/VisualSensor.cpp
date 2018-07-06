@@ -38,6 +38,7 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* const n
         }
     } else {
         NodeContainer& newContainer = _nodeContainerMap[containerID];
+
         hashAlg::emplace(newContainer, node->getGUID(), node);
 		node->registerDeletionCallback(DELEGATE_BIND(&VisualSensor::unfollowSceneGraphNode, 
                                                      this, 
