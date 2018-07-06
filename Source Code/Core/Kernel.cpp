@@ -94,7 +94,6 @@ TaskHandle Kernel::AddTask(I64 jobIdentifier,
 }
 
 void Kernel::idle() {
-    Console::flush();
     GFX_DEVICE.idle();
     PHYSICS_DEVICE.idle();
     SceneManager::getInstance().idle();

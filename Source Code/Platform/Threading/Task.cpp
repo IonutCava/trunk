@@ -7,6 +7,11 @@
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {
+
+namespace {
+    const bool g_DebugTaskStartStop = false;
+};
+
 Task::Task(ThreadPool& tp) : GUIDWrapper(),
                              _tp(tp),
                              _jobIdentifier(-1),
@@ -112,8 +117,9 @@ void Task::waitForChildren(bool yeld, I64 timeout) {
 
 void Task::run() {
     waitForChildren(true, -1L);
-
-    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
+    if (g_DebugTaskStartStop) {
+        Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
+    }
 
     if (!Application::getInstance().ShutdownRequested()) {
 
@@ -130,7 +136,9 @@ void Task::run() {
         _parentTask->_childTaskCount -= 1;
     }
 
-    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
+    if (g_DebugTaskStartStop) {
+        Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
+    }
 
     _done = true;
 

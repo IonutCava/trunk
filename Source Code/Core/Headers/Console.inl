@@ -34,59 +34,98 @@
 
 namespace Divide {
 template <typename... Args>
-const char* Console::d_printfn(const char* format, Args&&... args) {
+void Console::d_printfn(const char* format, Args&&... args) {
 #ifdef _DEBUG
-    return printfn(format, std::forward<Args>(args)...);
-#else
-    return "";
+    printfn(format, std::forward<Args>(args)...);
 #endif
 }
 
 template <typename... Args>
-const char* Console::d_printf(const char* format, Args&&... args) {
+void Console::d_printf(const char* format, Args&&... args) {
 #ifdef _DEBUG
-    return printf(format, std::forward<Args>(args)...);
-#else
-    return "";
+    printf(format, std::forward<Args>(args)...);
 #endif
 }
 
 template <typename... Args>
-const char* Console::d_errorfn(const char* format, Args&&... args) {
+void Console::d_errorfn(const char* format, Args&&... args) {
 #ifdef _DEBUG
-    return errorfn(format, std::forward<Args>(args)...);
-#else
-    return "";
+    errorfn(format, std::forward<Args>(args)...);
 #endif
 }
 
 template <typename... Args>
-const char* Console::d_errorf(const char* format, Args&&... args) {
+void Console::d_errorf(const char* format, Args&&... args) {
 #ifdef _DEBUG
-    return errorf(format, std::forward<Args>(args)...);
-#else
-    return "";
+    errorf(format, std::forward<Args>(args)...);
 #endif
 }
 
 template <typename... Args>
-const char* Console::printfn(const char* format, Args&&... args) {
-    return output(formatText(format, std::forward<Args>(args)...), true, false);
+void Console::printfn(const char* format, Args&&... args) {
+    output(formatText(format, std::forward<Args>(args)...), true, false);
 }
 
 template <typename... Args>
-const char* Console::printf(const char* format, Args&&... args) {
-    return output(formatText(format, std::forward<Args>(args)...), false, false);
+void Console::printf(const char* format, Args&&... args) {
+    output(formatText(format, std::forward<Args>(args)...), false, false);
 }
 
 template <typename... Args>
-const char* Console::errorfn(const char* format, Args&&... args) {
-    return output(formatText(format, std::forward<Args>(args)...), true, true);
+void Console::errorfn(const char* format, Args&&... args) {
+    output(formatText(format, std::forward<Args>(args)...), true, true);
 }
 
 template <typename... Args>
-const char* Console::errorf(const char* format, Args&&... args) {
+void Console::errorf(const char* format, Args&&... args) {
     return output(formatText(format, std::forward<Args>(args)...), false, true);
+}
+template <typename... Args>
+void Console::printfn(std::ofstream& outStream, const char* format, Args&&... args) {
+    output(outStream, formatText(format, std::forward<Args>(args)...), true, false);
+}
+
+template <typename... Args>
+void Console::printf(std::ofstream& outStream, const char* format, Args&&... args) {
+    output(outStream, formatText(format, std::forward<Args>(args)...), false, false);
+}
+
+template <typename... Args>
+void Console::errorfn(std::ofstream& outStream, const char* format, Args&&... args) {
+    output(formatText(format, std::forward<Args>(args)...), true, true);
+}
+
+template <typename... Args>
+void Console::errorf(std::ofstream& outStream, const char* format, Args&&... args) {
+    output(outStream, formatText(format, std::forward<Args>(args)...), false, true);
+}
+
+template <typename... Args>
+void Console::d_printfn(std::ofstream& outStream, const char* format, Args&&... args) {
+#ifdef _DEBUG
+    printfn(outStream, format, std::forward<Args>(args)...);
+#endif
+}
+
+template <typename... Args>
+void Console::d_printf(std::ofstream& outStream, const char* format, Args&&... args) {
+#ifdef _DEBUG
+    printf(outStream, format, std::forward<Args>(args)...);
+#endif
+}
+
+template <typename... Args>
+void Console::d_errorfn(std::ofstream& outStream, const char* format, Args&&... args) {
+#ifdef _DEBUG
+    errorfn(outStream, format, std::forward<Args>(args)...);
+#endif
+}
+
+template <typename... Args>
+void Console::d_errorf(std::ofstream& outStream, const char* format, Args&&... args) {
+#ifdef _DEBUG
+    errorf(outStream, format, std::forward<Args>(args)...);
+#endif
 }
 
 };

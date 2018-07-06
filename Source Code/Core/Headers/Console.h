@@ -33,13 +33,13 @@
 #define _CORE_CONSOLE_H_
 
 #include "Core/Headers/NonCopyable.h"
-#include "Core/TemplateLibraries/Headers/String.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 #include <mutex>
 #include <functional>
 #include <atomic>
 #include <fstream>
-#include <boost/lockfree/stack.hpp>
+#include <ConcurrentQueue/blockingconcurrentqueue.h>
 
 namespace Divide {
 
@@ -54,7 +54,7 @@ class Console : private NonCopyable {
         {
         }
 
-        std::string _text;
+        stringImpl _text;
         bool _error;
     };
 
@@ -65,22 +65,39 @@ class Console : private NonCopyable {
     static void printCopyrightNotice();
 
     template <typename... T>
-    inline static const char* printfn(const char* format, T&&... args);
+    inline static void printfn(const char* format, T&&... args);
     template <typename... T>
-    inline static const char* printf(const char* format, T&&... args);
+    inline static void printf(const char* format, T&&... args);
     template <typename... T>
-    inline static const char* errorfn(const char* format, T&&... args);
+    inline static void errorfn(const char* format, T&&... args);
     template <typename... T>
-    inline static const char* errorf(const char* format, T&&... args);
+    inline static void errorf(const char* format, T&&... args);
 
     template <typename... T>
-    inline static const char* d_printfn(const char* format, T&&... args);
+    inline static void d_printfn(const char* format, T&&... args);
     template <typename... T>
-    inline static const char* d_printf(const char* format, T&&... args);
+    inline static void d_printf(const char* format, T&&... args);
     template <typename... T>
-    inline static const char* d_errorfn(const char* format, T&&... args);
+    inline static void d_errorfn(const char* format, T&&... args);
     template <typename... T>
-    inline static const char* d_errorf(const char* format, T&&... args);
+    inline static void d_errorf(const char* format, T&&... args);
+    
+    template <typename... T>
+    inline static void printfn(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void printf(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void errorfn(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void errorf(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void d_printfn(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void d_printf(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void d_errorfn(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void d_errorf(std::ofstream& outStream, const char* format, T&&... args);
 
     static bool timeStampsEnabled() { return _timestamps; }
     static void toggleTimeStamps(const bool state) { _timestamps = state; }
@@ -95,7 +112,9 @@ class Console : private NonCopyable {
 
    protected:
     static const char* formatText(const char* format, ...);
-    static const char* output(const char* text, const bool newline, const bool error);
+    static void output(const char* text, const bool newline, const bool error);
+    static void output(std::ostream& outStream, const char* text, const bool newline, const bool error);
+    static void decorate(std::ostream& outStream, const char* text, const bool newline, const bool error);
     static void outThread();
 
    private:
@@ -104,7 +123,7 @@ class Console : private NonCopyable {
     static bool _threadID;
     static std::atomic_bool _running;
     static std::thread _printThread;
-    static boost::lockfree::stack<OutputEntry> _outputBuffer;
+    static moodycamel::BlockingConcurrentQueue<OutputEntry> _outputBuffer;
 };
 
 };  // namespace Divide

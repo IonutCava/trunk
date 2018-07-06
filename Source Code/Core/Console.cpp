@@ -16,7 +16,7 @@ std::thread Console::_printThread;
 std::atomic_bool Console::_running;
 Console::consolePrintCallback Console::_guiConsoleCallback;
 
-boost::lockfree::stack<Console::OutputEntry> Console::_outputBuffer(MAX_CONSOLE_ENTRIES);
+moodycamel::BlockingConcurrentQueue<Console::OutputEntry> Console::_outputBuffer(MAX_CONSOLE_ENTRIES);
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
@@ -65,15 +65,7 @@ const char* Console::formatText(const char* format, ...) {
     return textBuffer;
 }
 
-const char* Console::output(const char* text, const bool newline, const bool error) {
-    if (_guiConsoleCallback) {
-        _guiConsoleCallback(text, error);
-    }
-
-    OutputEntry entry;
-    entry._error = error;
-
-    std::stringstream outStream;
+void Console::decorate(std::ostream& outStream, const char* text, const bool newline, const bool error) {
     if (_timestamps) {
         outStream << "[ " << std::internal
                           << std::setw(9)
@@ -87,23 +79,38 @@ const char* Console::output(const char* text, const bool newline, const bool err
         outStream << "[ " << std::this_thread::get_id() << " ] ";
     }
 
-    entry._text.append(outStream.str());
-    entry._text = (error ? " Error: " : "");
-    entry._text.append(text);
-    entry._text.append(newline ? "\n" : "");
+    outStream << (error ? " Error: " : "");
+    outStream << text;
+    outStream << (newline ? "\n" : "");
+}
 
-    WAIT_FOR_CONDITION(_outputBuffer.push(entry));
+void Console::output(std::ostream& outStream, const char* text, const bool newline, const bool error) {
+    decorate(outStream, text, newline, error);
+}
 
-    return entry._text.c_str();
+void Console::output(const char* text, const bool newline, const bool error) {
+    if (_guiConsoleCallback) {
+        _guiConsoleCallback(text, error);
+    }
+
+    std::stringstream outStream;
+    decorate(outStream, text, newline, error);
+
+    OutputEntry entry;
+    entry._error = error;
+    entry._text = outStream.str();
+
+    //moodycamel::ProducerToken ptok(_outputBuffer);
+    WAIT_FOR_CONDITION(_outputBuffer.enqueue(/*ptok, */entry));
 }
 
 void Console::outThread() {
+    //moodycamel::ConsumerToken ctok(_outputBuffer);
     while (_running) {
         OutputEntry entry;
-        while (_outputBuffer.pop(entry)) {
-            std::ostream& outStream = entry._error ? std::cerr : std::cout;
-            outStream << entry._text.c_str();
-        }
+        _outputBuffer.wait_dequeue(/*ctok, */entry);
+        std::ostream& outStream = entry._error ? std::cerr : std::cout;
+        outStream << entry._text.c_str();
     }
 }
 
@@ -114,6 +121,10 @@ void Console::start() {
 
 void Console::stop() {
     _running = false;
+
+    OutputEntry entry;
+    entry._text = "------------------------------------------";
+    _outputBuffer.enqueue(entry);
     _printThread.join();
 
     std::cerr << std::flush;
