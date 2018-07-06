@@ -48,18 +48,20 @@ class glPixelBuffer : public PixelBuffer {
 
     void Destroy();
 
-    void* Begin(GLubyte nFace = 0) const;
+    void* Begin() const;
     void End() const;
 
     void Bind(GLubyte unit = 0) const;
 
-    void updatePixels(const GLfloat* const pixels);
+    void updatePixels(const GLfloat* const pixels, GLuint pixelCount);
 
    private:
     bool checkStatus();
     size_t sizeOf(GLenum dataType) const;
 
    private:
+    GLuint _bufferSize;
+    GLuint _dataSizeBytes;
     GLenum _dataType;
     GLenum _format;
     GLenum _internalFormat;

@@ -155,8 +155,8 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
 
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
-    par.setParam<I32>("rendering.maxTextureSlots",
-                      GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
+    _maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
+    par.setParam<I32>("rendering.maxTextureSlots", _maxTextureUnits);
     // Maximum number of color attachments per framebuffer
     par.setParam<I32>("rendering.maxRenderTargetOutputs",
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));

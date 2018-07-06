@@ -43,13 +43,17 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
     glGenTextures(1, &gl->tex);
     glGenVertexArrays(1, &gl->glfons_vaoID);
     glGenBuffers(1, &gl->glfons_vboID);
-    if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) return 0;
+    if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) {
+        return 0;
+    }
     gl->width = width;
-    gl->height = width;
-    Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
-    glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(GL_R8), gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(GL_LINEAR));
-    Divide::GL_API::unbindTexture(0, GL_TEXTURE_2D);
+    gl->height = height;
+    gl45ext::glTextureImage2DEXT(gl->tex, GL_TEXTURE_2D, 0,
+                                 static_cast<GLint>(GL_R8), gl->width,
+                                 gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+    gl45ext::glTextureParameteriEXT(gl->tex, GL_TEXTURE_2D,
+                                    GL_TEXTURE_MIN_FILTER,
+                                    static_cast<GLint>(GL_LINEAR));
     return 1;
 }
 
@@ -59,19 +63,23 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
     int w = rect[2] - rect[0];
     int h = rect[3] - rect[1];
 
-    if (gl->tex == 0) return;
-    Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
+    if (gl->tex == 0) {
+        return;
+    }
+
     Divide::GL_API::setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, rect[0], rect[1], w, h, GL_RED, GL_UNSIGNED_BYTE, data);
-    Divide::GL_API::unbindTexture(0, GL_TEXTURE_2D);
+    gl45ext::glTextureSubImage2DEXT(gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1],
+                                    w, h, GL_RED, GL_UNSIGNED_BYTE, data);
 }
 
 static void glfons__renderDraw(void* userPtr, const float* verts, const float* tcoords, const unsigned char* colors, int nverts)
 {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
-    if (gl->tex == 0) return;
-
+    if (gl->tex == 0) {
+        return;
+    }
     Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
+
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
 

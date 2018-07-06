@@ -217,12 +217,24 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static bool setPixelUnpackAlignment(GLint unpackAlignment = 1,
                                         GLint rowLength = 0, GLint skipRows = 0,
                                         GLint skipPixels = 0);
-    /// Bind a texture specified by a GL handle and GL type to the specified unit
+    /// Bind a texture specified by a GL handle and GL type to the specified
+    /// unit
     /// using the sampler object defined by hash value
     static bool bindTexture(GLuint unit, GLuint handle, GLenum type,
                             size_t samplerHash = 0);
-    /// Bind the sampler object described by the hash value to the specified unit
+    /// Bind multiple textures specified by an array of handles and an offset
+    /// unit
+    static bool bindTextures(GLuint unitOffset, GLuint textureCount,
+                             GLuint* textureHandles, GLenum* types,
+                             GLuint* samplerHandles);
+
+    /// Bind the sampler object described by the hash value to the specified
+    /// unit
     static bool bindSampler(GLuint unit, size_t samplerHash);
+    /// Bind multiple samplers described by the array of hash values to the
+    /// consecutive texture units starting from the specified offset
+    static bool bindSamplers(GLuint unitOffset, GLuint samplerCount,
+                             GLuint* samplerHandles);
     /// Bind the default texture handle (0) to the specified unit and set it to the
     /// specified type
     static bool unbindTexture(GLuint unit, GLenum type) {
@@ -253,6 +265,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Used to render points (e.g. to render full screen quads with geometry
     /// shaders)
     GLuint _pointDummyVAO;
+    /// Number of available texture units
+    static GLint _maxTextureUnits;
     /// Used to store all of the indirect draw commands
     static GLuint _indirectDrawBuffer;
     /// A cache of all fonts used

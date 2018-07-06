@@ -10,6 +10,7 @@
 namespace Divide {
 
 /// The following static variables are used to remember the current OpenGL state
+GLint GL_API::_maxTextureUnits = 0;
 GLuint GL_API::_indirectDrawBuffer = 0;
 GLint GL_API::_activePackUnpackAlignments[] = {1, 1};
 GLint GL_API::_activePackUnpackRowLength[] = {0, 0};
@@ -187,6 +188,29 @@ bool GL_API::setActiveTextureUnit(GLuint unit) {
     return true;
 }
 
+bool GL_API::bindSamplers(GLuint unitOffset, GLuint samplerCount,
+                          GLuint* samplerHandles) {
+    if (samplerCount > 0 &&
+        unitOffset + samplerCount < static_cast<GLuint>(GL_API::_maxTextureUnits)) {
+        GLuint offset = static_cast<GLuint>(GL_TEXTURE0)+unitOffset;
+        glBindSamplers(offset, samplerCount, samplerHandles);
+
+        if (!samplerHandles) {
+            for (GLuint i = 0; i < samplerCount; ++i) {
+                _samplerBoundMap.erase(_samplerBoundMap.find(offset + i));
+            }
+        } else {
+            for (GLuint i = 0; i < samplerCount; ++i) {
+                _samplerBoundMap[offset + i] = samplerHandles[i];
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 /// Bind the sampler object described by the hash value to the specified unit
 bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
     samplerBoundMapDef::iterator it = _samplerBoundMap.find(unit);
@@ -209,15 +233,40 @@ bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
     return true;
 }
 
-/// Bind a texture specified by a GL handle and GL type to the specified unit
+bool GL_API::bindTextures(GLuint unitOffset, GLuint textureCount,
+                          GLuint* textureHandles, GLenum* types,
+                          GLuint* samplerHandles) {
+    if (textureCount > 0 &&
+        unitOffset + textureCount < static_cast<GLuint>(GL_API::_maxTextureUnits)) {
+        GLuint offset = static_cast<GLuint>(GL_TEXTURE0) + unitOffset;
+        GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
+        glBindTextures(offset, textureCount, textureHandles);
+
+        if (!textureHandles) {
+            for (GLuint i = 0; i < textureCount; ++i) {
+                _textureBoundMap.erase(_textureBoundMap.find(offset + i));
+            }
+        } else {
+            for (GLuint i = 0; i < textureCount; ++i) {
+                std::pair<GLuint, GLenum>& currentMapping =
+                    _textureBoundMap[offset + i];
+                currentMapping.first = textureHandles[i];
+                currentMapping.second = types[i];
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+// Bind a texture specified by a GL handle and GL type to the specified unit
 /// using the sampler object defined by hash value
 bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type,
                          size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
-    DIVIDE_ASSERT(
-        unit < static_cast<GLuint>(ParamHandler::getInstance().getParam<I32>(
-                   "rendering.maxTextureSlots", 16)),
+    DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::_maxTextureUnits),
         "GLStates error: invalid texture unit specified as a texture binding "
         "slot!");
     // Bind the sampler object first, as we may just require a sampler update
@@ -225,18 +274,19 @@ bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type,
     GL_API::bindSampler(unit, samplerHash);
     // Prevent double bind only for the texture
     std::pair<GLuint, GLenum>& currentMapping = _textureBoundMap[unit];
-    if (currentMapping.first == handle && currentMapping.second == type) {
-        return false;
+    if (currentMapping.first != handle || currentMapping.second != type) {
+        // Remember the new binding state for future reference
+        currentMapping.first = handle;
+        currentMapping.second = type;
+        // Switch the texture unit to the one requested
+        /*GL_API::setActiveTextureUnit(unit);
+        // Bind the texture to the current unit
+        glBindTexture(type, handle);*/
+        gl45ext::glBindMultiTextureEXT(GL_TEXTURE0 + unit, type, handle);
+        return true;
     }
-    // Remember the new binding state for future reference
-    currentMapping.first = handle;
-    currentMapping.second = type;
-    // Switch the texture unit to the one requested
-    GL_API::setActiveTextureUnit(unit);
-    // Bind the texture to the current unit
-    glBindTexture(type, handle);
 
-    return true;
+    return false;
 }
 
 /// Switch the current framebuffer by binding it as either a R/W buffer, read

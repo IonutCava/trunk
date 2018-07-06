@@ -50,12 +50,12 @@ class d3dPixelBuffer : public PixelBuffer {
 
     void Destroy(){};
 
-    void* Begin(U8 nFace = 0) const { return 0; };
+    void* Begin() const { return 0; };
     void End() const {}
 
     void Bind(U8 unit = 0) const {}
 
-    void updatePixels(const F32* const pixels) {}
+    void updatePixels(const F32* const pixels, U32 pixelCount) {}
 
    private:
     bool checkStatus() { return true; }
