@@ -32,7 +32,7 @@
 #ifndef _CORE_KERNEL_H_
 #define _CORE_KERNEL_H_
 
-#include "TaskPool.h"
+#include "EngineTaskPool.h"
 #include "Core/Headers/Application.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 

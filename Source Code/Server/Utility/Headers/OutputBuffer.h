@@ -1,7 +1,7 @@
 #ifndef _OUTPUT_BUFFER_H_
 #define _OUTPUT_BUFFER_H_
 
-#include "Server/Headers/resource.h"
+#include <streambuf>
 
 //------------------------------------------------------------------------------
 namespace Divide {

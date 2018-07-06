@@ -1,28 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug2017|x64">
-      <Configuration>Debug2017</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugClang|x64">
-      <Configuration>DebugClang</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Profile2017|x64">
-      <Configuration>Profile2017</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Profile|x64">
       <Configuration>Profile</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release2017|x64">
-      <Configuration>Release2017</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
@@ -44,12 +28,6 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
@@ -62,28 +40,10 @@
     <PlatformToolset>v141</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
-    <UseOfMfc>false</UseOfMfc>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141_clang_c2</PlatformToolset>
-    <UseOfMfc>false</UseOfMfc>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Profile2017|x64'">
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
@@ -92,83 +52,42 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)_Engine\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">$(Configuration)_Engine\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">$(Configuration)_Engine\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</EmbedManifest>
-    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">true</EmbedManifest>
-    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">true</EmbedManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)_Engine\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">$(Configuration)_Engine\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(Configuration)_Engine\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</EmbedManifest>
-    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">true</EmbedManifest>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</EmbedManifest>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" />
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" />
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectName)_d</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">$(ProjectName)_d</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">$(ProjectName)_d</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectName)</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">$(ProjectName)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(ProjectName)_p</TargetName>
     <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</RunCodeAnalysis>
-    <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">false</RunCodeAnalysis>
     <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</RunCodeAnalysis>
     <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</RunCodeAnalysis>
-    <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">false</RunCodeAnalysis>
-    <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">false</RunCodeAnalysis>
     <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</EnableManagedIncrementalBuild>
-    <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">true</EnableManagedIncrementalBuild>
     <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</EnableManagedIncrementalBuild>
     <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</EnableManagedIncrementalBuild>
-    <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">true</EnableManagedIncrementalBuild>
-    <EnableManagedIncrementalBuild Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">true</EnableManagedIncrementalBuild>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</CodeAnalysisIgnoreGeneratedCode>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">true</LinkIncremental>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -191,7 +110,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <CompileAs>CompileAsCpp</CompileAs>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
@@ -204,120 +123,6 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <FloatingPointExceptions>true</FloatingPointExceptions>
-    </ClCompile>
-    <ProjectReference>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-    </ProjectReference>
-    <Link>
-      <AdditionalDependencies>Divide-Platform_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;Divide-Game_d.lib;IL_d.lib;ILU_d.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL2.lib;SDL2_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre.lib;libexpat_d.lib;freetype.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ShowProgress>NotSet</ShowProgress>
-      <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\sdl\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\cegui-deps\lib\static;$(EngineLibraries)\physx\lib\win64</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <Profile>true</Profile>
-      <LinkStatus>
-      </LinkStatus>
-    </Link>
-    <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <Verbose>false</Verbose>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
-      <MinimalRebuild>false</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <OpenMPSupport>true</OpenMPSupport>
-      <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <EnablePREfast>false</EnablePREfast>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>true</StringPooling>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <SDLCheck>false</SDLCheck>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
-    </ClCompile>
-    <ProjectReference>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-    </ProjectReference>
-    <Link>
-      <AdditionalDependencies>Divide-Platform_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;Divide-Game_d.lib;IL_d.lib;ILU_d.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL2.lib;SDL2_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre.lib;libexpat_d.lib;freetype.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ShowProgress>NotSet</ShowProgress>
-      <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\sdl\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\cegui-deps\lib\static;$(EngineLibraries)\physx\lib\win64</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <Profile>true</Profile>
-      <LinkStatus>
-      </LinkStatus>
-    </Link>
-    <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_d$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <Verbose>false</Verbose>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
-      <MinimalRebuild>false</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <OpenMPSupport>true</OpenMPSupport>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
-      <DebugInformationFormat>FullDebug</DebugInformationFormat>
-      <EnablePREfast>false</EnablePREfast>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>true</StringPooling>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ExceptionHandling>Enabled</ExceptionHandling>
-      <SDLCheck>false</SDLCheck>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
-      <CLanguageStandard>c99</CLanguageStandard>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -361,62 +166,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <SDLCheck>false</SDLCheck>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>Divide-Platform.lib;Divide-Networking.lib;Divide-ReCast.lib;Divide-Game.lib;IL.lib;ILU.lib;SDL2.lib;SDL2_mixer.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;libexpat.lib;freetype.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;pcre.lib;lua.lib;zlib.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\sdl\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\cegui-deps\lib\static;$(EngineLibraries)\physx\lib\win64</AdditionalLibraryDirectories>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <IgnoreSpecificDefaultLibraries>
-      </IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <Profile>false</Profile>
-      <ProgramDatabaseFile>
-      </ProgramDatabaseFile>
-      <ShowProgress>NotSet</ShowProgress>
-      <LinkStatus>
-      </LinkStatus>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-    </Link>
-    <Lib>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <Verbose>false</Verbose>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">
-    <ClCompile>
-      <Optimization>Full</Optimization>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
-      <MinimalRebuild>false</MinimalRebuild>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
-      <OpenMPSupport>true</OpenMPSupport>
-      <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <EnablePREfast>false</EnablePREfast>
-      <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -472,7 +222,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <OmitFramePointers>
       </OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -502,46 +252,13 @@
       <Verbose>false</Verbose>
     </Lib>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile2017|x64'">
-    <Link>
-      <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
-    </Link>
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Core\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Configuration.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\EngineTaskPool.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
     <ClCompile Include="..\..\Source Code\Core\PlatformContext.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\StringHelper.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Time\ApplicationTimer.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Time\FrameRateHandler.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Time\ProfileTimer.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\XMLEntryData.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimator.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimatorFileIO.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationEvaluator.cpp" />
@@ -575,9 +292,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysicsAPIWrapper.cpp" />
@@ -620,14 +334,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\Localization.cpp" />
-    <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Application.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Material\Material.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Importer\DVDConverter.cpp" />
@@ -640,43 +346,13 @@
     <ClCompile Include="..\..\Source Code\engineMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\Core\Debugging\Headers\DebugInterface.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Configuration.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\EngineTaskPool.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\KernelComponent.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\StringHelper.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\WindowManager.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\XMLEntryData.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Line.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathUtil.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\TransformInterface.h" />
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h" />
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h" />
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceDescriptor.h" />
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceLoader.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\BoostVector.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLVector.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\HashMap.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLString.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLVector.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\String.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\TemplateAllocator.h" />
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\Vector.h" />
-    <ClInclude Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.h" />
-    <ClInclude Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.h" />
-    <ClInclude Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.h" />
-    <ClCompile Include="..\..\Source Code\Core\XMLEntryData.cpp" />
     <ClInclude Include="..\..\Source Code\engineMain.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\SceneAnimator.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />
@@ -710,10 +386,6 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIMessageBox.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIText.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h" />
-    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h" />
-    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h" />
@@ -758,24 +430,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPass.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Colours.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\MemoryTracker.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\StateTracker.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\TextLabel.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\XMLParser.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\ParamHandler.h" />
-    <ClInclude Include="..\..\Source Code\Core\Headers\Singleton.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathMatrices.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathHelper.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Quaternion.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Ray.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h" />
@@ -789,25 +443,11 @@
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNode.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\Octree.h" />
-    <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\readme.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />
     <None Include="..\..\Source Code\Core\Headers\Application.inl" />
-    <None Include="..\..\Source Code\Core\Headers\Console.inl" />
-    <None Include="..\..\Source Code\Core\Headers\ParamHandler.inl" />
-    <None Include="..\..\Source Code\Core\Headers\StringHelper.inl" />
-    <None Include="..\..\Source Code\Core\Headers\WindowManager.inl" />
-    <None Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.inl" />
-    <None Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.inl" />
-    <None Include="..\..\Source Code\Core\Math\Headers\MathHelper.inl" />
-    <None Include="..\..\Source Code\Core\Math\Headers\MathMatrices.inl" />
-    <None Include="..\..\Source Code\Core\Math\Headers\Quaternion.inl" />
-    <None Include="..\..\Source Code\Core\Math\Headers\Transform.inl" />
-    <None Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.inl" />
-    <None Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.inl" />
-    <None Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

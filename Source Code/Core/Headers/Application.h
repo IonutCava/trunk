@@ -33,40 +33,10 @@
 #define _CORE_APPLICATION_H_
 
 #include "WindowManager.h"
+#include "ErrorCodes.h"
 #include <thread>
 
 namespace Divide {
-
-enum class ErrorCode : I32 {
-    NO_ERR = 0,
-    MISSING_SCENE_DATA = -1,
-    MISSING_SCENE_LOAD_CALL = -2,
-    CPU_NOT_SUPPORTED = -3,
-    GFX_NOT_SUPPORTED = -4,
-    GFX_NON_SPECIFIED = -5,
-    SFX_NON_SPECIFIED = -6,
-    PFX_NON_SPECIFIED = -7,
-    WINDOW_INIT_ERROR = -8,
-    SDL_WINDOW_INIT_ERROR = -9,
-    FONT_INIT_ERROR = -10,
-    GLBINGING_INIT_ERROR = -11,
-    GLSL_INIT_ERROR = -12,
-    GL_OLD_HARDWARE = -13,
-    DX_INIT_ERROR = -14,
-    DX_OLD_HARDWARE = -15,
-    OGL_OLD_HARDWARE = -16,
-    SDL_AUDIO_INIT_ERROR = -17,
-    SDL_AUDIO_MIX_INIT_ERROR = -18,
-    FMOD_AUDIO_INIT_ERROR = -19,
-    OAL_INIT_ERROR = -20,
-    OCL_INIT_ERROR = -21,
-    PHYSX_INIT_ERROR = -22,
-    PHYSX_EXTENSION_ERROR = -23,
-    NO_LANGUAGE_INI = -24,
-    NOT_ENOUGH_RAM = -25,
-    PLATFORM_INIT_ERROR = -26,
-    PLATFORM_CLOSE_ERROR = -27,
-};
 
 class Task;
 class Kernel;

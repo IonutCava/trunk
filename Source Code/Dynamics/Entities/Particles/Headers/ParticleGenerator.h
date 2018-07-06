@@ -34,7 +34,7 @@
 
 #include "ParticleData.h"
 #include "Core/Math/Headers/Quaternion.h"
-#include "Core/Headers/TaskPool.h"
+#include "Core/Headers/EngineTaskPool.h"
 
 namespace Divide {
 

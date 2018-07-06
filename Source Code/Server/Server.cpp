@@ -2,6 +2,7 @@
 
 // TODO: make this scene independent! -Ionut
 #include "Scenes/NetworkScene/Headers/tcp_session_impl.h"
+#include "Utility/Headers/MemoryTracker.h"
 
 #include <iostream>
 
@@ -9,9 +10,18 @@ using namespace boost::asio;
 
 namespace Divide {
 
-Server::Server() {}
+bool MemoryManager::MemoryTracker::Ready = false;
+bool MemoryManager::MemoryTracker::LogAllAllocations = false;
+MemoryManager::MemoryTracker MemoryManager::AllocTracer;
+void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
+}
 
-Server::~Server() {
+Server::Server()
+{
+}
+
+Server::~Server()
+{
     acceptor_->close();
     delete acceptor_;
 }

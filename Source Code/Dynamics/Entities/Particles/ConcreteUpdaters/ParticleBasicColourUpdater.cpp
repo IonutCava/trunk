@@ -1,5 +1,5 @@
 #include "Headers/ParticleBasicColourUpdater.h"
-#include "Core/Headers/TaskPool.h"
+#include "Core/Headers/EngineTaskPool.h"
 
 namespace Divide {
 

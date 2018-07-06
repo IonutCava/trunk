@@ -35,7 +35,6 @@
 #include "GUIInterface.h"
 #include "Core/Headers/KernelComponent.h"
 #include "Core/Math/Headers/MathMatrices.h"
-#include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
@@ -54,8 +53,10 @@ const static char* DROID_SERIF_ITALIC = "DroidSerif-Italic.ttf";
 const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
 };
 
+class GUIEditor;
 class GUIConsole;
 class GUIElement;
+class ResourceCache;
 class PlatformContext;
 class RenderStateBlock;
 

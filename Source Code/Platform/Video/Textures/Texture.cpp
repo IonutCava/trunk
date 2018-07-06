@@ -1,7 +1,7 @@
 #include "Headers/Texture.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Headers/TaskPool.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"

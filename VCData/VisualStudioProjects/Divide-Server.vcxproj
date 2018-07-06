@@ -1,28 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug2017|x64">
-      <Configuration>Debug2017</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="DebugClang|x64">
-      <Configuration>DebugClang</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Profile2017|x64">
-      <Configuration>Profile2017</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Profile|x64">
       <Configuration>Profile</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release2017|x64">
-      <Configuration>Release2017</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
@@ -31,12 +15,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\Allocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\DataTypes.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\Fault.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\stl_allocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\xallocator.h" />
-    <ClInclude Include="..\..\Source Code\Server\Headers\resource.h" />
     <ClInclude Include="..\..\Source Code\Server\Headers\Server.h" />
     <ClInclude Include="..\..\Source Code\Server\Scenes\NetworkScene\Headers\tcp_session_impl.h" />
     <ClInclude Include="..\..\Source Code\Server\Utility\Headers\DataTypes.h" />
@@ -45,9 +23,6 @@
     <ClInclude Include="..\..\Source Code\Server\Utility\Headers\XMLParser.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Allocator\Fault.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp" />
     <ClCompile Include="..\..\Source Code\Server\main.cpp" />
     <ClCompile Include="..\..\Source Code\Server\Scenes\NetworkScene\tcp_session_impl.cpp" />
     <ClCompile Include="..\..\Source Code\Server\Server.cpp" />
@@ -68,12 +43,6 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
@@ -85,26 +54,10 @@
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141_clang_c2</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Profile2017|x64'">
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
@@ -113,66 +66,34 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">$(SolutionDir)..\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">$(SolutionDir)..\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)_Server\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">$(Configuration)_Server\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">$(Configuration)_Server\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">$(SolutionDir)..\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)_Server\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">$(Configuration)_Server\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(Configuration)_Server\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'" />
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" />
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectName)_d</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">$(ProjectName)_d</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</CodeAnalysisIgnoreGeneratedCode>
     <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisIgnoreGeneratedCode Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">false</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <TargetName>$(ProjectName)_profile</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -207,91 +128,7 @@
       <FloatingPointExceptions>true</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Divide-Networking_d.lib;Divide-Platform_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\vc14win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(TargetPath)</OutputFile>
-      <ShowProgress>NotSet</ShowProgress>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug2017|x64'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <MinimalRebuild>false</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>true</StringPooling>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <OpenMPSupport>true</OpenMPSupport>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <SDLCheck>false</SDLCheck>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>Divide-Networking_d.lib;Divide-Platform_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\vc14win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>$(TargetPath)</OutputFile>
-      <ShowProgress>NotSet</ShowProgress>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugClang|x64'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <MinimalRebuild>false</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
-      <DebugInformationFormat>FullDebug</DebugInformationFormat>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>true</StringPooling>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <OpenMPSupport>true</OpenMPSupport>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <ExceptionHandling>Enabled</ExceptionHandling>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <SDLCheck>false</SDLCheck>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
-      <CLanguageStandard>c99</CLanguageStandard>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>Divide-Networking_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Networking_d.lib;Divide-Platform_d.lib;Divide-Core_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\vc14win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(TargetPath)</OutputFile>
@@ -329,44 +166,7 @@
       <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Divide-Networking.lib;Divide-Platform.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\vc14win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OutputFile>$(TargetPath)</OutputFile>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release2017|x64'">
-    <ClCompile>
-      <Optimization>Full</Optimization>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)..\Source Code\Server\;$(SolutionDir)..\Source Code\Hardware\Network\;$(EngineLibraries)\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
-      <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
-      <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <StringPooling>true</StringPooling>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <OpenMPSupport>true</OpenMPSupport>
-      <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
-      <SDLCheck>false</SDLCheck>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <OmitFramePointers>true</OmitFramePointers>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>Divide-Networking.lib;Divide-Platform.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Networking.lib;Divide-Platform.lib;Divide-Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\vc14win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
@@ -403,17 +203,12 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Divide-Networking_p.lib;Divide-Platform_p.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Networking_p.lib;Divide-Platform_p.lib;Divide-Core_p.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\vc14win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OutputFile>$(TargetPath)</OutputFile>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile2017|x64'">
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\vc14win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

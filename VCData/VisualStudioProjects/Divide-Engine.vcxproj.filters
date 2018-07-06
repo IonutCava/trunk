@@ -26,24 +26,6 @@
     <Filter Include="GUI\Headers">
       <UniqueIdentifier>{1d65baba-d46e-479e-8527-be2c0aa3b390}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utility">
-      <UniqueIdentifier>{3131ccd9-bbc1-4163-a22e-dd99e6ad7c09}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\Headers">
-      <UniqueIdentifier>{1dfef9b6-5176-4d80-92e8-de46f389745e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core">
-      <UniqueIdentifier>{24b0b040-2405-4a19-93ef-e4da386b87e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Headers">
-      <UniqueIdentifier>{0abbdaed-37f0-4bfe-b296-132c3ad45c08}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Math">
-      <UniqueIdentifier>{e53a0b6a-e43a-44ee-bfdb-ca13e9ea2a7c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Math\Headers">
-      <UniqueIdentifier>{4bdd4d4c-1ac5-4118-bf8e-55d85840e432}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Managers">
       <UniqueIdentifier>{50410db4-6ff3-4f30-85e5-99293c2ad55a}</UniqueIdentifier>
     </Filter>
@@ -104,15 +86,6 @@
     <Filter Include="Rendering\RenderPass\Headers">
       <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\Resources">
-      <UniqueIdentifier>{a27eb18b-f72b-43c4-beb1-ab4290cac23d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Resources\Headers">
-      <UniqueIdentifier>{a5a2423f-742c-40d1-8d76-3da61c7ac931}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Resources\ConcreteLoaders">
-      <UniqueIdentifier>{15778bdd-402a-40b2-98a6-a2b2e3459b3f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Languages">
       <UniqueIdentifier>{003c25a0-1e62-4590-abe3-fe1bd5b04614}</UniqueIdentifier>
     </Filter>
@@ -121,12 +94,6 @@
     </Filter>
     <Filter Include="Rendering\Lighting\ShadowMapping\Headers">
       <UniqueIdentifier>{6c8cc4bb-491f-4049-8f9e-fb56b3ff9fdb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Math\BoundingVolumes">
-      <UniqueIdentifier>{1064502b-7982-4eb3-ae27-71a6eb2de08b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Math\BoundingVolumes\Headers">
-      <UniqueIdentifier>{eac76e15-e963-4180-9ceb-58070627d139}</UniqueIdentifier>
     </Filter>
     <Filter Include="GUI\CEGUIAddons">
       <UniqueIdentifier>{4be1cd0d-9f4a-4a71-809a-789dee5399f8}</UniqueIdentifier>
@@ -158,38 +125,11 @@
     <Filter Include="Physics\PhysX\Headers">
       <UniqueIdentifier>{719e71b7-3874-4e2f-a0f7-0cefea42350d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\TemplateLibraries">
-      <UniqueIdentifier>{9759e5b8-1ccd-41fe-8b74-442041decd05}</UniqueIdentifier>
+    <Filter Include="Core">
+      <UniqueIdentifier>{47180c1f-f1e5-4dd9-816a-4efbe4849728}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core\TemplateLibraries\Headers">
-      <UniqueIdentifier>{cd131efd-52a5-4103-b68c-68ba4aa2e949}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\SimpleINI">
-      <UniqueIdentifier>{07bed289-d6c4-4c25-8c7e-bf329d76084b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\SimpleINI\Headers">
-      <UniqueIdentifier>{8c424791-e813-4a15-b2e0-4e799739e503}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\NV_DDS">
-      <UniqueIdentifier>{27dd2825-0c2c-4c63-be19-c8a3f0275d4b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\NV_DDS\Headers">
-      <UniqueIdentifier>{6fda3074-f21e-477a-8743-cf03399bde56}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Debugging">
-      <UniqueIdentifier>{55113eed-d2ca-4640-9c2c-085a4d929175}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Debugging\Headers">
-      <UniqueIdentifier>{9e585dcf-3be2-4a02-a1fe-66fe32f8c4d0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Time">
-      <UniqueIdentifier>{38f53a31-886a-4d53-ae31-6dc5e83082c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Time\Headers">
-      <UniqueIdentifier>{d63c0442-ae1a-42dd-a163-022eae7bc207}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\ArenaAllocator">
-      <UniqueIdentifier>{6289e84f-e6cd-4611-9119-15316985f68d}</UniqueIdentifier>
+    <Filter Include="Core\Headers">
+      <UniqueIdentifier>{9d7c54fa-183d-4a1e-a5ed-c9a1dfbb7d16}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -198,18 +138,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp">
       <Filter>Rendering\PostFX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Application.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Console.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp">
       <Filter>Managers</Filter>
@@ -250,17 +178,11 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\CRC.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationEvaluator.cpp">
       <Filter>Geometry\Animations</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationUtils.cpp">
       <Filter>Geometry\Animations</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp">
-      <Filter>Core\Math</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp">
       <Filter>GUI</Filter>
@@ -274,53 +196,8 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp">
-      <Filter>Core\Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\AudioDescriptorLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\LightLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MaterialLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\MeshLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Quad3DLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ShaderProgramLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Sphere3DLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp">
-      <Filter>Core\Resources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Kernel.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\Localization.cpp">
-      <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp">
       <Filter>Rendering\Lighting</Filter>
@@ -370,14 +247,8 @@
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp">
       <Filter>GUI\CEGUIAddons</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIConsoleCommandParser.cpp">
       <Filter>GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp">
-      <Filter>Core\Math</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp">
       <Filter>Rendering\Camera</Filter>
@@ -393,12 +264,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\OrbitCamera.cpp">
       <Filter>Rendering\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp">
-      <Filter>Core\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp">
-      <Filter>Core\Resources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp">
       <Filter>Rendering\RenderPass</Filter>
@@ -427,12 +292,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
@@ -452,12 +311,6 @@
       <Filter>Physics\PhysX</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\engineMain.cpp" />
-    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp">
-      <Filter>Core\Math\BoundingVolumes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp">
-      <Filter>Core\Math\BoundingVolumes</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Physics\PXDevice.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
@@ -466,12 +319,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimatorFileIO.cpp">
       <Filter>Geometry\Animations</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp">
-      <Filter>Utility\SimpleINI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Importer\MeshImporter.cpp">
       <Filter>Geometry\Importer</Filter>
@@ -497,26 +344,8 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\RagdollComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp">
-      <Filter>Utility\NV_DDS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp">
-      <Filter>Core\Debugging</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\SGNRelationshipCache.cpp">
       <Filter>Graphs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Time\ApplicationTimer.cpp">
-      <Filter>Core\Time</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Time\ProfileTimer.cpp">
-      <Filter>Core\Time</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Time\FrameRateHandler.cpp">
-      <Filter>Core\Time</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Physics\PhysX\pxShapeScaling.cpp">
       <Filter>Physics\PhysX</Filter>
@@ -536,9 +365,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderOperator.cpp">
       <Filter>Rendering\PostFX</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\EnvironmentProbe.cpp">
       <Filter>Rendering\Lighting</Filter>
     </ClCompile>
@@ -554,25 +380,28 @@
     <ClCompile Include="..\..\Source Code\Rendering\Camera\CameraPool.cpp">
       <Filter>Rendering\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp">
-      <Filter>Core\ArenaAllocator</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Renderer.cpp">
       <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\PlatformContext.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\Components\UnitComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Configuration.cpp">
+    <ClCompile Include="..\..\Source Code\Core\Kernel.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Application.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\XMLEntryData.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\StringHelper.cpp">
+    <ClCompile Include="..\..\Source Code\Core\PlatformContext.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Configuration.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\EngineTaskPool.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -594,36 +423,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h">
       <Filter>Rendering\PostFX\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\XMLParser.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\Application.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\Console.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\ParamHandler.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\Singleton.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathHelper.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Quaternion.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Ray.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h">
-      <Filter>Core\Math\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h">
       <Filter>Geometry\Material\Headers</Filter>
@@ -665,7 +464,6 @@
       <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\readme.h" />
-    <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
@@ -680,9 +478,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h">
       <Filter>Rendering\RenderPass\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h">
-      <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h">
       <Filter>Geometry\Animations\Headers</Filter>
@@ -708,26 +503,8 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIText.h">
       <Filter>GUI\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h">
-      <Filter>Core\Resources\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceDescriptor.h">
-      <Filter>Core\Resources\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceLoader.h">
-      <Filter>Core\Resources\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h">
-      <Filter>Core\Resources\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h">
-      <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h">
       <Filter>Rendering\Lighting\Headers</Filter>
@@ -768,17 +545,8 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h">
-      <Filter>Core\Math\BoundingVolumes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h">
-      <Filter>Core\Math\BoundingVolumes\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h">
       <Filter>GUI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
-      <Filter>Core\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsole.h">
       <Filter>GUI\Headers</Filter>
@@ -786,26 +554,14 @@
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsoleCommandParser.h">
       <Filter>GUI\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ScriptedCamera.h">
       <Filter>Rendering\Camera\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h">
       <Filter>Rendering\RenderPass\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\TextLabel.h">
-      <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\AnimationComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
@@ -828,9 +584,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\Headers\ClipRegion.h">
       <Filter>Rendering\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\StateTracker.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
@@ -840,20 +593,8 @@
     <ClInclude Include="..\..\Source Code\Rendering\Headers\FrameListener.h">
       <Filter>Rendering\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\MemoryTracker.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathMatrices.h">
-      <Filter>Core\Math\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\PhysX.h">
       <Filter>Physics\PhysX\Headers</Filter>
@@ -871,41 +612,8 @@
       <Filter>Physics\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\engineMain.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathUtil.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\SceneAnimator.h">
       <Filter>Geometry\Animations\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\WindowManager.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\HashMap.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\Vector.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\BoostVector.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLVector.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLVector.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h">
-      <Filter>Utility\SimpleINI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h">
-      <Filter>Utility\SimpleINI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\String.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLString.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\MeshImporter.h">
       <Filter>Geometry\Importer\Headers</Filter>
@@ -931,38 +639,14 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RagdollComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h">
-      <Filter>Utility\NV_DDS\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Debugging\Headers\DebugInterface.h">
-      <Filter>Core\Debugging\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Line.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SGNRelationshipCache.h">
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.h">
-      <Filter>Core\Time\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.h">
-      <Filter>Core\Time\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.h">
-      <Filter>Core\Time\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\pxShapeScaling.h">
       <Filter>Physics\PhysX\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\TransformInterface.h">
-      <Filter>Core\Math\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsAsset.h">
       <Filter>Physics\Headers</Filter>
@@ -976,15 +660,6 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIInterface.h">
       <Filter>GUI\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Colours.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\TemplateAllocator.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\GUIDWrapper.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\EnvironmentProbe.h">
       <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
@@ -997,10 +672,16 @@
     <ClInclude Include="..\..\Source Code\Rendering\Headers\TiledForwardShadingRenderer.h">
       <Filter>Rendering\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h">
-      <Filter>Core\ArenaAllocator</Filter>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\UnitComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h">
+    <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\Application.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\Configuration.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\KernelComponent.h">
@@ -1009,16 +690,10 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\PlatformContext.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\UnitComponent.h">
-      <Filter>Graphs\Components\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\Configuration.h">
-      <Filter>Core\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\XMLEntryData.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Headers\StringHelper.h">
+    <ClInclude Include="..\..\Source Code\Core\Headers\EngineTaskPool.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1027,45 +702,6 @@
       <Filter>Languages</Filter>
     </None>
     <None Include="..\..\Source Code\Core\Headers\Application.inl">
-      <Filter>Core\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Headers\ParamHandler.inl">
-      <Filter>Core\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.inl">
-      <Filter>Core\Math\BoundingVolumes\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.inl">
-      <Filter>Core\Math\BoundingVolumes\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Math\Headers\MathHelper.inl">
-      <Filter>Core\Math\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Headers\Console.inl">
-      <Filter>Core\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Math\Headers\Quaternion.inl">
-      <Filter>Core\Math\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Headers\WindowManager.inl">
-      <Filter>Core\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Math\Headers\MathMatrices.inl">
-      <Filter>Core\Math\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.inl">
-      <Filter>Core\Time\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.inl">
-      <Filter>Core\Time\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.inl">
-      <Filter>Core\Time\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Math\Headers\Transform.inl">
-      <Filter>Core\Math\Headers</Filter>
-    </None>
-    <None Include="..\..\Source Code\Core\Headers\StringHelper.inl">
       <Filter>Core\Headers</Filter>
     </None>
   </ItemGroup>

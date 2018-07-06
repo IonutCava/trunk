@@ -37,6 +37,9 @@ static const char* DEFAULT_LANG = "enGB";
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
+
+enum class ErrorCode : I32;
+
 namespace Locale {
 /// Each string key in the map matches a key in the language ini file
 /// each string value in the map matches the value in the ini file for the given key
@@ -46,7 +49,7 @@ static hashMapImpl<U64, stringImpl> g_languageTable;
 /// Default language can be set at compile time
 static stringImpl g_localeFile = DEFAULT_LANG;
 /// Reset everything and load the specified language file.
-bool init(const stringImpl& newLanguage = DEFAULT_LANG);
+ErrorCode init(const stringImpl& newLanguage = DEFAULT_LANG);
 /// clear the language table
 void clear();
 /// Altough the language can be set at compile time, in-game options may support

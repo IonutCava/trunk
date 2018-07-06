@@ -60,9 +60,8 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
     // Don't log parameter requests
     ParamHandler::instance().setDebugOutput(false);
     // Read language table
-    if (!Locale::init()) {
-        err = errorCode();
-    } else {
+    err = Locale::init();
+    if (err == ErrorCode::NO_ERR) {
         // Print a copyright notice in the log file
         Console::printCopyrightNotice();
         Console::toggleTimeStamps(true);
@@ -78,6 +77,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 
     // failed to start, so cleanup
     if (err != ErrorCode::NO_ERR) {
+        throwError(err);
         stop();
     } else {
         warmup();

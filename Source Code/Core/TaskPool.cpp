@@ -1,5 +1,4 @@
 #include "Headers/TaskPool.h"
-#include "Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
 
 namespace Divide {
@@ -168,21 +167,8 @@ void TaskPool::nameThreadpoolWorkers(const char* name, ThreadPool& pool) {
     pool.wait();
 }
 
-TaskHandle GetTaskHandle(I64 taskGUID) {
-    return GetTaskHandle(Application::instance()
-                                     .kernel()
-                                     .taskPool(),
-                         taskGUID);
-}
-
 TaskHandle GetTaskHandle(TaskPool& pool, I64 taskGUID) {
     return pool.getTaskHandle(taskGUID);
-}
-
-TaskHandle CreateTask(const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                      const DELEGATE_CBK<>& onCompletionFunction)
-{
-    return CreateTask(-1, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
@@ -190,21 +176,6 @@ TaskHandle CreateTask(TaskPool& pool,
                    const DELEGATE_CBK<>& onCompletionFunction)
 {
     return CreateTask(pool, -1, threadedFunction, onCompletionFunction);
-}
-
-/**
-* @brief Creates a new Task that runs in a separate thread
-* @param jobIdentifier A unique identifier that gets reset when the job finishes.
-*                      Used to check if the local task handle is still valid
-* @param threadedFunction The callback function to call in a separate thread = the job to execute
-* @param onCompletionFunction The callback function to call when the thread finishes
-*/
-TaskHandle CreateTask(I64 jobIdentifier,
-                      const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                      const DELEGATE_CBK<>& onCompletionFunction)
-{
-    TaskPool& pool = Application::instance().kernel().taskPool();
-    return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
@@ -223,25 +194,10 @@ TaskHandle CreateTask(TaskPool& pool,
     return handle;
 }
 
-void WaitForAllTasks(bool yeld, bool flushCallbacks, bool foceClear) {
-    TaskPool& pool = Application::instance().kernel().taskPool();
-    WaitForAllTasks(pool, yeld, flushCallbacks, foceClear);
-}
-
 void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks, bool foceClear) {
     pool.waitForAllTasks(yeld, flushCallbacks, foceClear);
 }
 
-TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
-                        U32 count,
-                        U32 partitionSize,
-                        Task::TaskPriority priority,
-                        U32 taskFlags,
-                        bool waitForResult)
-{
-    TaskPool& pool = Application::instance().kernel().taskPool();
-    return parallel_for(pool, cbk, count, partitionSize, priority, taskFlags, waitForResult);
-}
 
 TaskHandle parallel_for(TaskPool& pool, 
                         const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,

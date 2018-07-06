@@ -1,6 +1,6 @@
 #include "Headers/Localization.h"
 
-#include "Core/Headers/Application.h"
+#include "Core/Headers/ErrorCodes.h"
 #include <SimpleINI/include/SimpleIni.h>
 
 namespace Divide {
@@ -10,7 +10,7 @@ static CSimpleIni g_languageFile;
 /// Is everything loaded and ready for use?
 static bool g_initialized = false;
 
-bool init(const stringImpl& newLanguage) {
+ErrorCode init(const stringImpl& newLanguage) {
     clear();
 
     g_localeFile = newLanguage;
@@ -21,8 +21,7 @@ bool init(const stringImpl& newLanguage) {
     stringImpl file = "localisation/" + g_localeFile + ".ini";
 
     if (g_languageFile.LoadFile(file.c_str()) != SI_OK) {
-        Application::instance().throwError(ErrorCode::NO_LANGUAGE_INI);
-        return false;
+        return ErrorCode::NO_LANGUAGE_INI;
     }
 
     // Load all key-value pairs for the "language" section
@@ -41,7 +40,7 @@ bool init(const stringImpl& newLanguage) {
     }
 
     g_initialized = true;
-    return true;
+    return ErrorCode::NO_ERR;
 }
 
 void clear() {
