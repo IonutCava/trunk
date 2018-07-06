@@ -126,7 +126,6 @@ class SceneGraphNode : public GUIDWrapper,
     inline std::shared_ptr<T> getNode() const {
         static_assert(std::is_base_of<SceneNode, T>::value,
                       "SceneGraphNode::getNode error: Invalid target node type!");
-        assert(_node != nullptr);
         return std::static_pointer_cast<T>(_node);
     }
     /// Add node increments the node's ref counter if the node was already added

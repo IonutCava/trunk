@@ -44,7 +44,7 @@ class TaskPool {
     
     bool init(U32 threadCount);
     void flushCallbackQueue();
-    void waitForAllTasks(bool yeld, bool flushCallbacks);
+    void waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear = false);
 
     TaskHandle getTaskHandle(I64 taskGUID);
     Task& getAvailableTask();

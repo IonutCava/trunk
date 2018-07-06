@@ -35,6 +35,10 @@
 namespace Divide {
 namespace Time {
 
+inline void  ApplicationTimer::resetFPSCounter() {
+    _frameRateHandler.reset();
+}
+
 inline F32 ApplicationTimer::getFps() const {
     return _frameRateHandler.frameRate();
 }

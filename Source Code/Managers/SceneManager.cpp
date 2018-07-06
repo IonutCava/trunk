@@ -2,6 +2,7 @@
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/ScenePool.h"
 #include "Scenes/Headers/SceneShaderData.h"
 #include "Core/Time/Headers/ProfileTimer.h"
@@ -222,6 +223,8 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
             }
 
             _renderPassCuller->clear();
+
+            Time::ApplicationTimer::instance().resetFPSCounter();
             
         })._task->startTask(threaded ? Task::TaskPriority::HIGH
                                      : Task::TaskPriority::REALTIME_WITH_CALLBACK,

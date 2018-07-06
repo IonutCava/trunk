@@ -520,7 +520,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
-
+    _taskPool.waitForAllTasks(true, true, true);
     // release the scene
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     SceneManager::destroyInstance();

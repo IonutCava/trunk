@@ -18,7 +18,7 @@ ApplicationTimer::ApplicationTimer()
 {
     _startupTicks = getCurrentTicksInternal();
     _frameDelay = _startupTicks;
-    _frameRateHandler.init(_targetFrameRate, 0);
+    _frameRateHandler.init(_targetFrameRate);
 }
 
 ApplicationTimer::~ApplicationTimer()

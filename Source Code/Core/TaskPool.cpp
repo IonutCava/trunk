@@ -52,7 +52,7 @@ void TaskPool::flushCallbackQueue()
     }
 }
 
-void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks) {
+void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) {
     bool finished = false;
     while (!finished) {
         finished = true;
@@ -69,6 +69,10 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks) {
     if (flushCallbacks) {
         flushCallbackQueue();
     }
+
+    _mainTaskPool.clear();
+    WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
+    _mainTaskPool.wait(0);
 }
 
 void TaskPool::setTaskCallback(const TaskHandle& handle,

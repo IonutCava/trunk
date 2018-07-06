@@ -34,6 +34,16 @@
 
 namespace Divide {
 
+namespace {
+    /// How many frames of delay do we allow between the current read and write queries
+    /// The longer the delay, the better the performance but the more out of sync the results
+    const U32 g_performanceQueryRingLength = 2;
+    /// Number of queries
+    const U32 g_performanceQueryCount = 1;
+    /// ID of the frame duration query
+    const U32 g_performanceQueryFrameDurationIndex = 0;
+};
+
 GL_API::GL_API()
     : RenderAPIWrapper(),
       _prevSizeNode(0),
@@ -42,8 +52,6 @@ GL_API::GL_API()
       _prevWidthString(0),
       _lineWidthLimit(1),
       _dummyVAO(0),
-      _queryBackBuffer(0),
-      _queryFrontBuffer(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
@@ -55,10 +63,16 @@ GL_API::GL_API()
     _fontCache.second = -1;
     _samplerBoundMap.fill(0);
     _textureBoundMap.fill(std::make_pair(0, GL_NONE));
+
+    _hardwareQueries.reserve(g_performanceQueryCount);
+    for (U32 i = 0; i < g_performanceQueryCount; ++i) {
+        _hardwareQueries.emplace_back(MemoryManager_NEW glHardwareQueryRing(g_performanceQueryRingLength));
+    }
 }
 
 GL_API::~GL_API()
 {
+    MemoryManager::DELETE_VECTOR(_hardwareQueries);
 }
 
 /// FontStash library initialization
@@ -77,8 +91,9 @@ void GL_API::deleteFonsContext() {
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame() {
 // Start a duration query in debug builds
-#ifdef _DEBUG
-    glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0].getID());
+#if defined(ENABLE_GPU_VALIDATION)
+    glBeginQuery(GL_TIME_ELAPSED, _hardwareQueries[g_performanceQueryFrameDurationIndex]->writeQuery().getID());
+    _hardwareQueries[g_performanceQueryFrameDurationIndex]->incQueue();
 #endif
     // Clear our buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
@@ -102,18 +117,17 @@ void GL_API::endFrame(bool swapBuffers) {
     }
 
     // End the timing query started in beginFrame() in debug builds
-#ifdef _DEBUG
+#if defined(ENABLE_GPU_VALIDATION)
     glEndQuery(GL_TIME_ELAPSED);
-    // Swap query objects. The current time will be available after 4 frames
-    _queryBackBuffer = GFX_DEVICE.getFrameCount() % PERFORMANCE_COUNTER_BUFFERS;
-    _queryFrontBuffer = (_queryBackBuffer + 1)  % PERFORMANCE_COUNTER_BUFFERS;
 #endif
 }
 
 GLuint64 GL_API::getFrameDurationGPU() {
-#ifdef _DEBUG
-    // The returned results are 4 frames old!
-    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0].getID(), GL_QUERY_RESULT, &FRAME_DURATION_GPU);
+#if defined(ENABLE_GPU_VALIDATION)
+    // The returned results are 'g_performanceQueryFrameDurationIndex' frames old!
+    glGetQueryObjectui64v(_hardwareQueries[g_performanceQueryFrameDurationIndex]->readQuery().getID(),
+                          GL_QUERY_RESULT,
+                          &FRAME_DURATION_GPU);
 #endif
 
     return FRAME_DURATION_GPU;

@@ -105,7 +105,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// checked every 20 ms
     void syncToThread(std::thread::id threadID) override;
     /// Return the time it took to render a single frame (in nanoseconds). Only
-    /// works in debug builds
+    /// works in GPU validation builds
     GLuint64 getFrameDurationGPU() override;
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
@@ -258,16 +258,8 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static bool _primitiveRestartEnabled;
     /// Current state of all available clipping planes
     std::array<bool, Config::MAX_CLIP_PLANES> _activeClipPlanes;
-    /// Performance counters: front x 2 and back x 2
-    static const GLint PERFORMANCE_COUNTER_BUFFERS = 4;
-    /// Number of queries
-    static const GLint PERFORMANCE_COUNTERS = 1;
-    /// Unique handle for every query object
-    glHardwareQuery _queryID[PERFORMANCE_COUNTER_BUFFERS][PERFORMANCE_COUNTERS];
-    /// Current query ID used for writing to
-    GLuint _queryBackBuffer;
-    /// Current query ID used for reading from
-    GLuint _queryFrontBuffer;
+    /// Hardware query objects used for performance measurements
+    vectorImpl<glHardwareQueryRing*> _hardwareQueries;
     /// Duration in nanoseconds to render a frame
     GLuint64 FRAME_DURATION_GPU;
     /// FontStash's context

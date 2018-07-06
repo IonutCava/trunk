@@ -88,6 +88,18 @@ protected:
     U32 _queryID;
 };
 
+class glHardwareQueryRing : public RingBuffer {
+  public:
+    glHardwareQueryRing(U32 queueLength);
+
+    glHardwareQuery& readQuery();
+    glHardwareQuery& writeQuery();
+
+    void initQueries();
+  protected:
+    vectorImpl<glHardwareQuery> _queries;
+};
+
 struct ImageBindSettings {
     GLuint _texture;
     GLint  _level;

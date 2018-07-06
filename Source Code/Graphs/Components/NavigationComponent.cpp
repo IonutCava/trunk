@@ -12,8 +12,7 @@ NavigationComponent::NavigationComponent(SceneGraphNode& parentSGN)
 
 NavigationComponent::~NavigationComponent() {}
 
-void NavigationComponent::navigationContext(
-    const NavigationContext& newContext) {
+void NavigationComponent::navigationContext(const NavigationContext& newContext) {
     _navigationContext = newContext;
     
     U32 childCount = _parentSGN.getChildCount();

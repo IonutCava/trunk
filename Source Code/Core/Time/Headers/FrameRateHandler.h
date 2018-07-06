@@ -42,7 +42,8 @@ public:
     ~FrameRateHandler();
 
     void tick(const U64 deltaTime);
-    void init(U32 targetFrameRate, const U64 startTime);
+    void init(U32 targetFrameRate);
+    void reset();
 
     F32 minFrameRate() const;
     F32 maxFrameRate() const;
@@ -51,6 +52,7 @@ public:
     F32 averageFrameRate() const;
 
 private:
+    U32 _targetFrameRate;
     F32 _fps;
     U32 _frameCount;
 

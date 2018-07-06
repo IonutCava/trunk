@@ -10,7 +10,8 @@ FrameRateHandler::FrameRateHandler() : _fps(0.0f),
     _averageFpsCount(0UL),
     _minFPS(0.0f),
     _maxFPS(0.0f),
-    _tickTimeStamp(0UL)
+    _tickTimeStamp(0UL),
+    _targetFrameRate(0)
 {
 }
 
@@ -18,14 +19,18 @@ FrameRateHandler::~FrameRateHandler()
 {
 }
 
-void FrameRateHandler::init(U32 targetFrameRate, const U64 startTime)
+void FrameRateHandler::init(U32 targetFrameRate)
 {
-    _tickTimeStamp = startTime;
-    _fps = to_float(targetFrameRate) * 0.5f;
+    _targetFrameRate = targetFrameRate;
+    reset();  
+}
+
+void FrameRateHandler::reset() {
+    _fps = to_float(_targetFrameRate) * 0.5f;
     _frameCount = 0;
     _averageFps = 0.0f;
     _averageFpsCount = 0;
-
+    _tickTimeStamp = 0;
     _minFPS = _maxFPS = _fps;
 }
 

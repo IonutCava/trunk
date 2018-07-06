@@ -52,6 +52,7 @@ DEFINE_SINGLETON(ApplicationTimer)
   public:
     void update();
 
+    void resetFPSCounter();
     F32 getFps() const;
     F32 getFrameTime() const;
     F32 getSpeedfactor() const;

@@ -284,28 +284,13 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
-#ifdef _DEBUG
+#if defined(ENABLE_GPU_VALIDATION)
     // We have multiple counter buffers, and each can be multi-buffered
     // (currently, only double-buffered, front and back)
     // to avoid pipeline stalls
-    for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
-        for (U8 j = 0; j < PERFORMANCE_COUNTERS; ++j) {
-            _queryID[i][j].create();
-            DIVIDE_ASSERT(_queryID[i][j].getID() != 0,
-                "GLFWWrapper error: Invalid performance counter query ID!");
-            // Initialize an initial time query as it solves certain issues with
-            // consecutive queries later
-            glBeginQuery(GL_TIME_ELAPSED, _queryID[i][j].getID());
-            glEndQuery(GL_TIME_ELAPSED);
-            // Wait until the results are available
-            GLint stopTimerAvailable = 0;
-            while (!stopTimerAvailable) {
-                glGetQueryObjectiv(_queryID[i][j].getID(), GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
-            }
-        }
+    for (glHardwareQueryRing* queryRing : _hardwareQueries) {
+        queryRing->initQueries();
     }
-
-    _queryBackBuffer = PERFORMANCE_COUNTER_BUFFERS - 1;
 #endif
     
     // Once OpenGL is ready for rendering, init CEGUI
@@ -316,7 +301,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
     glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
 
-    // Preare shader headers and various shader related states
+    // Prepare shader headers and various shader related states
     if (initShaders()) {
         // That's it. Everything should be ready for draw calls
         Console::printfn(Locale::get(_ID("START_OGL_API_OK")));

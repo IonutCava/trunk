@@ -57,11 +57,11 @@ void PreRenderBatch::init(RenderTarget* renderTarget) {
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     lumaSampler.toggleMipMaps(true);
-
     TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D,
                                      GFXImageFormat::RED16F,
                                      GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
+    lumaDescriptor.toggleAutomaticMipMapGeneration(false);
     _currentLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
 
     lumaSampler.setFilters(TextureFilter::LINEAR);
