@@ -4,7 +4,6 @@
 
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
-#include <glsl/glsl_optimizer.h>
 #include <regex>
 
 namespace Divide {
@@ -54,30 +53,6 @@ bool glShader::load(const stringImpl& source) {
     stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
     Util::Trim(parsedSource);
 
-#if !defined(_DEBUG)
-
-    if ((_type == ShaderType::FRAGMENT || _type == ShaderType::VERTEX) &&
-        _optimise) {
-        glslopt_ctx* ctx = GL_API::getInstance().getGLSLOptContext();
-        DIVIDE_ASSERT(ctx != nullptr,
-                      "glShader error: Invalid shader optimization context!");
-        glslopt_shader_type shaderType =
-            (_type == ShaderType::FRAGMENT ? kGlslOptShaderFragment
-                                           : kGlslOptShaderVertex);
-        glslopt_shader* shader =
-            glslopt_optimize(ctx, shaderType, parsedSource.c_str(), 0);
-        if (glslopt_get_status(shader)) {
-            parsedSource = glslopt_get_output(shader);
-        } else {
-            stringImpl errorLog("\n -- ");
-            errorLog.append(glslopt_get_log(shader));
-            Console::errorfn(Locale::get("ERROR_GLSL_OPTIMISE"),
-                             getName().c_str(), errorLog.c_str());
-        }
-        glslopt_shader_delete(shader);
-    }
-
-#endif
     const char* src = parsedSource.c_str();
     GLsizei sourceLength = (GLsizei)parsedSource.length();
     glShaderSource(_shader, 1, &src, &sourceLength);

@@ -103,9 +103,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
         return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_CUBE_MAP, flipped);
     }
 
-    inline ShaderProgram* newShaderProgram(
-        const bool optimise = false) const override {
-        return MemoryManager_NEW d3dShaderProgram(optimise);
+    inline ShaderProgram* newShaderProgram() const override {
+        return MemoryManager_NEW d3dShaderProgram();
     }
 
     inline Shader* newShader(const stringImpl& name, const ShaderType& type,

@@ -45,7 +45,7 @@ namespace Attorney {
 class glShaderProgram : public ShaderProgram {
     friend class Attorney::GLAPIShaderProgram;
    public:
-    glShaderProgram(const bool optimise = false);
+    glShaderProgram();
     ~glShaderProgram();
 
     /// Make sure this program is ready for deletion

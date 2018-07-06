@@ -38,7 +38,7 @@ namespace Divide {
 
 class d3dShaderProgram : public ShaderProgram {
    public:
-    d3dShaderProgram(const bool optimise = false) : ShaderProgram(optimise) {}
+    d3dShaderProgram() : ShaderProgram() {}
 
     ~d3dShaderProgram() {}
 

@@ -370,9 +370,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->newTextureCubemap(flipped);
     }
 
-    inline ShaderProgram* newShaderProgram(
-        const bool optimise = false) const override {
-        return _api->newShaderProgram(optimise);
+    inline ShaderProgram* newShaderProgram() const override {
+        return _api->newShaderProgram();
     }
 
     inline Shader* newShader(const stringImpl& name, const ShaderType& type,

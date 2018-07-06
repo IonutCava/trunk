@@ -166,7 +166,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glsw\bstrlib.c" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glsw\glsw.c" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\GLWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWindowWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\glShader.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Shaders\glShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Textures\glSamplerOject.cpp" />

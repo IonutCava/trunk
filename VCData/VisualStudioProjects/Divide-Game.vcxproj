@@ -374,7 +374,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Divide-Platform_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;Divide-Engine_d.lib;IL_d.lib;ILU_d.lib;SILLY_d.lib;jpeg_d.lib;libpng_d.lib;libmng_d.lib;libtiff_d.lib;SDL2.lib;SDL2_mixer.lib;SDL2main.lib;zlib.lib;assimp_d.lib;glu32.lib;opengl32.lib;glfw3_d.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre_d.lib;expat_d.lib;freetype_d.lib;CEGUIBase-0_Static_d.lib;CEGUISILLYImageCodec_Static_d.lib;CEGUICoreWindowRendererSet_Static_d.lib;CEGUIExpatParser_Static_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Platform_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;Divide-Engine_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ShowProgress>LinkVerbose</ShowProgress>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
@@ -443,7 +443,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Divide-Platform.lib;Divide-Networking.lib;Divide-ReCast.lib;Divide-Engine.lib;IL.lib;ILU.lib;SILLY.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL2.lib;SDL2_mixer.lib;SDL2main.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase-0_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUICoreWindowRendererSet_Static.lib;CEGUIExpatParser_Static.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Platform.lib;Divide-Networking.lib;Divide-ReCast.lib;Divide-Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
@@ -510,7 +510,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Divide-Platform_p.lib;Divide-Networking_p.lib;Divide-ReCast_p.lib;Divide-Engine_p.lib;IL.lib;ILU.lib;SILLY.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL2.lib;SDL2_mixer.lib;SDL2main.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase-0_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUICoreWindowRendererSet_Static.lib;CEGUIExpatParser_Static.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Platform_p.lib;Divide-Networking_p.lib;Divide-ReCast_p.lib;Divide-Engine_p.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
     </Link>

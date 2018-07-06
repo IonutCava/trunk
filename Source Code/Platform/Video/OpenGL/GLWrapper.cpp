@@ -24,7 +24,6 @@
 #endif
 
 #include <sdl/include/SDL_video.h>
-#include <glsl/glsl_optimizer.h>
 
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
@@ -44,7 +43,6 @@ GL_API::GL_API()
       _pointDummyVAO(0),
       _GUIGLrenderer(nullptr),
       _fonsContext(nullptr),
-      _GLSLOptContex(nullptr),
       _enableCEGUIRendering(false),
       _crtWindowType(WindowType::COUNT)
 {
@@ -457,13 +455,6 @@ bool GL_API::initShaders() {
     appendToShaderHeader(ShaderType::COUNT, "#include \"nodeDataInput.cmn\"",
                          lineOffsets);
     lineOffsets[to_const_uint(ShaderType::COUNT)] += 41;
-    // Create an optimisation context used for post-processing shaders
-    // (using Aras Pranckevičius's glsl-optimizer:
-    // https://github.com/aras-p/glsl-optimizer )
-    _GLSLOptContex =
-        glslopt_initialize(GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES
-                               ? kGlslTargetOpenGLES30
-                               : kGlslTargetOpenGL);
 
     Attorney::GLAPIShaderProgram::setGlobalLineOffset(
         lineOffsets[to_uint(ShaderType::COUNT)]);
@@ -489,13 +480,11 @@ bool GL_API::initShaders() {
         ShaderType::COMPUTE, lineOffsets[to_uint(ShaderType::COMPUTE)]);
 
     // Check initialization status for GLSL and glsl-optimizer
-    return (glswState == 1 && _GLSLOptContex != nullptr);
+    return glswState == 1;
 }
 
 /// Revert everything that was set up in "initShaders()"
 bool GL_API::deInitShaders() {
-    // Delete the glsl-optimizer context
-    glslopt_cleanup(_GLSLOptContex);
     // Shutdown GLSW
     return (glswShutdown() == 1);
 }
@@ -743,8 +732,8 @@ Texture* GL_API::newTextureCubemap(const bool flipped) const {
 
 /// Create and return a new shader program (optionally, post load optimised).
 /// The callee is responsible for it's deletion!
-ShaderProgram* GL_API::newShaderProgram(const bool optimise) const {
-    return MemoryManager_NEW glShaderProgram(optimise);
+ShaderProgram* GL_API::newShaderProgram() const {
+    return MemoryManager_NEW glShaderProgram();
 }
 
 /// Create and return a new shader of the specified type by loading the

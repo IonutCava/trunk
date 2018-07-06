@@ -7,17 +7,6 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
-// We are actually importing GL specific libraries in code mainly for
-// maintenance reasons
-// We can easily adjust them as needed. Same thing with PhysX libs
-#ifdef _DEBUG
-#pragma comment(lib, "CEGUIOpenGLRenderer-0_Static_d.lib")
-#pragma comment(lib, "glbindingd.lib")
-#else  //_DEBUG
-#pragma comment(lib, "CEGUIOpenGLRenderer-0_Static.lib")
-#pragma comment(lib, "glbinding.lib")
-#endif  //_DEBUG
-
 #include <glim.h>
 
 namespace Divide {

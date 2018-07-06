@@ -116,9 +116,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Create and return a new cube texture (optionally, flipped vertically). The
     /// callee is responsible for it's deletion!
     Texture* newTextureCubemap(const bool flipped = false) const override;
-    /// Create and return a new shader program (optionally, post load optimised).
+    /// Create and return a new shader program.
     /// The callee is responsible for it's deletion!
-    ShaderProgram* newShaderProgram(const bool optimise = false) const override;
+    ShaderProgram* newShaderProgram() const override;
     /// Create and return a new shader of the specified type by loading the
     /// specified name (optionally, post load optimised).
     /// The callee is responsible for it's deletion!
@@ -179,8 +179,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void clearStates(const bool skipTextures,
                      const bool skipBuffers,
                      const bool skipScissor);
-    /// Return the glsl optimisation context (created by the glsl-optimizer library)
-    inline glslopt_ctx* getGLSLOptContext() const { return _GLSLOptContex; }
     void uploadDrawCommands(const DrawCommandList& drawCommands,
                             U32 commandCount) const override;
 
@@ -295,8 +293,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     typedef hashMapImpl<stringImpl, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
-    /// Optimisation context for shaders (used for post-load optimisation)
-    glslopt_ctx* _GLSLOptContex;
     /// Current active vertex array object's handle
     static GLuint _activeVAOID;
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current

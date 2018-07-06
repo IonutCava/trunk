@@ -48,24 +48,6 @@
 #include < pvd/PxVisualDebugger.h >
 // PhysX includes //
 
-// PhysX libraries
-#ifdef _DEBUG
-#pragma comment(lib, "PhysXProfileSDKDEBUG.lib")
-#pragma comment(lib, "PhysX3CookingDEBUG_x64.lib")
-#pragma comment(lib, "PhysX3DEBUG_x64.lib")
-#pragma comment(lib, "PhysX3CommonDEBUG_x64.lib")
-#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib")
-#else
-#pragma comment(lib, "PhysXProfileSDKCHECKED.lib")
-#pragma comment(lib, "PhysX3CookingCHECKED_x64.lib")
-#pragma comment(lib, "PhysX3CHECKED_x64.lib")
-#pragma comment(lib, "PhysX3CommonCHECKED_x64.lib")
-#pragma comment(lib, "PhysX3ExtensionsCHECKED.lib")
-#pragma comment(lib, "PhysXVisualDebuggerSDKCHECKED.lib")
-#endif
-// PhysX libraries //
-
 #include "Physics/Headers/PhysicsAPIWrapper.h"
 
 #define MAX_ACTOR_QUEUE 30

@@ -8,11 +8,6 @@
 #include <iostream>
 #include <stdio.h>
 
-#ifdef WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-#endif
-
 namespace NS_GLIM
 {
     using namespace std;

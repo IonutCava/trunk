@@ -408,7 +408,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Platform\PlatformDefinesWindows.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWrapper.cpp">
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\SDLWindowWrapper.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>

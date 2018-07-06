@@ -344,8 +344,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual Texture* newTextureArray(const bool flipped = false) const = 0;
     virtual Texture* newTexture2D(const bool flipped = false) const = 0;
     virtual Texture* newTextureCubemap(const bool flipped = false) const = 0;
-    virtual ShaderProgram* newShaderProgram(
-        const bool optimise = false) const = 0;
+    virtual ShaderProgram* newShaderProgram() const = 0;
     virtual Shader* newShader(const stringImpl& name, const ShaderType& type,
                               const bool optimise = false) const = 0;
     virtual bool initShaders() = 0;

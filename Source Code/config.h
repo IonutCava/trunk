@@ -38,8 +38,8 @@
 * - Enable/Disable SSE support
 * - Set renderer options
 ***************************************************************************************************************/
-#ifndef _CONFIG_HEADER_
-#define _CONFIG_HEADER_
+#ifndef _DIVIDE_CONFIG_H_
+#define _DIVIDE_CONFIG_H_
 
 namespace Divide {
 namespace Config {
@@ -207,4 +207,4 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 /// Enable move semantings in EASTL libraries
 #define EA_COMPILER_HAS_MOVE_SEMANTICS
 
-#endif  //_CONFIG_HEADER
+#endif  //_DIVIDE_CONFIG_H_

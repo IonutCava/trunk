@@ -255,7 +255,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     I32 operator!=(const ShaderProgram& _v) { return !(*this == _v); }
 
    protected:
-    ShaderProgram(const bool optimise = false);
+    ShaderProgram();
 
     template <typename T>
     friend class ImplResourceLoader;
@@ -264,7 +264,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     const vectorImpl<U32>& getAvailableFunctions(ShaderType type) const;
 
    protected:
-    bool _optimise;
     bool _dirty;
     std::atomic_bool _linked;
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected

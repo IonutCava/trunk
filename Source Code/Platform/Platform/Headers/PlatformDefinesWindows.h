@@ -35,10 +35,6 @@
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct
 
-//#pragma warning(disable : 4103)  //< Boost alignment shouts
-//#pragma warning(disable : 4244)
-//#pragma warning(disable : 4996)  //< strcpy
-
 /// Reduce Build time on Windows Platform
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1

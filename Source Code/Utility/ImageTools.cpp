@@ -11,8 +11,10 @@
 
 namespace Divide {
 namespace ImageTools {
-inline GFXImageFormat textureFormatDevIL(ILint format) {
-    switch (format) {
+
+namespace {
+    inline GFXImageFormat textureFormatDevIL(ILint format) {
+        switch (format) {
         case IL_RGB:
             return GFXImageFormat::RGB;
         case IL_ALPHA:
@@ -27,11 +29,11 @@ inline GFXImageFormat textureFormatDevIL(ILint format) {
             return GFXImageFormat::LUMINANCE;
         case IL_LUMINANCE_ALPHA:
             return GFXImageFormat::LUMINANCE_ALPHA;
-    };
+        };
 
-    return GFXImageFormat::RGB;
-}
-
+        return GFXImageFormat::RGB;
+    }
+};
 
 ImageData::ImageData()
    : _flip(false),
@@ -51,8 +53,7 @@ void ImageData::throwLoadError(const stringImpl& fileName) {
                      fileName.c_str());
     ILenum error;
     while ((error = ilGetError()) != IL_NO_ERROR) {
-        Console::errorfn(Locale::get("ERROR_IMAGETOOLS_DEVIL"),
-                         iluErrorString(error));
+        Console::errorfn(Locale::get("ERROR_IMAGETOOLS_DEVIL"), error);
     }
 }
 

@@ -12,8 +12,8 @@ namespace Divide {
 
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
-glShaderProgram::glShaderProgram(const bool optimise)
-    : ShaderProgram(optimise),
+glShaderProgram::glShaderProgram()
+    : ShaderProgram(),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),

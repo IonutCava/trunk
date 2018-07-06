@@ -70,8 +70,6 @@ class NOINITVTABLE Shader : public TrackedObject {
    protected:
     stringImpl _name;
     ShaderType _type;
-    /// Use a pre-compile optimisation parser
-    bool _optimise;
     /// The API dependent object handle. Not thread-safe!
     U32 _shader;
     std::atomic_bool _compiled;

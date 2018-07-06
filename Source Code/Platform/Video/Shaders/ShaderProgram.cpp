@@ -12,9 +12,8 @@
 
 namespace Divide {
 
-ShaderProgram::ShaderProgram(const bool optimise)
+ShaderProgram::ShaderProgram()
     : HardwareResource("temp_shader_program"),
-      _optimise(optimise),
       _dirty(true),
       _outputCount(0),
       _elapsedTime(0ULL),
