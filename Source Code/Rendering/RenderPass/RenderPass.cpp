@@ -67,15 +67,12 @@ RenderPass::~RenderPass()
 {
 }
 
-void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
+void RenderPass::render(SceneRenderState& renderState) {
     GFXDevice& GFX = GFX_DEVICE;
-    if (anaglyph && !GFX.anaglyphEnabled()) {
-        return;
-    }
 
     U32 idx = 0;
     for (RenderStage stageFlag : _stageFlags) {
-        preRender(renderState, anaglyph, idx);
+        preRender(renderState, idx);
         Renderer& renderer = SceneManager::instance().getRenderer();
 
         bool refreshNodeData = idx == 0;
@@ -119,23 +116,16 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
             } break;
         };
 
-        postRender(renderState, anaglyph, idx);
+        postRender(renderState, idx);
         idx++;
     }
 }
 
-bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pass) {
+bool RenderPass::preRender(SceneRenderState& renderState, U32 pass) {
     GFXDevice& GFX = GFX_DEVICE;
     GFX.setRenderStage(_stageFlags[pass]);
 
-    Camera& currentCamera = renderState.getCameraMgr().getActiveCamera();
-    // Anaglyph rendering
-    if (anaglyph != currentCamera.isAnaglyph()) {
-        currentCamera.setAnaglyph(anaglyph);
-    }
-    GFXDevice::RenderTargetID target = anaglyph ? GFXDevice::RenderTargetID::ANAGLYPH
-                                                : GFXDevice::RenderTargetID::SCREEN;
-    currentCamera.renderLookAt();
+    renderState.getCameraMgr().getActiveCamera().renderLookAt();
 
     bool bindShadowMaps = false;
     switch (_stageFlags[pass]) {
@@ -149,7 +139,8 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             if (_useZPrePass) {
                 GFX.toggleDepthWrites(false);
             }
-            GFX.getRenderTarget(target)._buffer->begin(_useZPrePass ? _noDepthClear : Framebuffer::defaultPolicy());
+            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_useZPrePass ? _noDepthClear
+                                                                                               : Framebuffer::defaultPolicy());
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -157,7 +148,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(target)._buffer->begin(_depthOnly);
+            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_depthOnly);
         } break;
     };
     
@@ -168,7 +159,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
     return true;
 }
 
-bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pass) {
+bool RenderPass::postRender(SceneRenderState& renderState, U32 pass) {
     GFXDevice& GFX = GFX_DEVICE;
 
     RenderQueue& renderQueue = RenderPassManager::instance().getQueue();
@@ -176,12 +167,10 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
 
     Attorney::SceneRenderPass::debugDraw(SceneManager::instance().getActiveScene(), _stageFlags[pass]);
 
-    GFXDevice::RenderTargetID target = anaglyph ? GFXDevice::RenderTargetID::ANAGLYPH
-                                                : GFXDevice::RenderTargetID::SCREEN;
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY:
         case RenderStage::Z_PRE_PASS: {
-            GFXDevice::RenderTarget& renderTarget = GFX.getRenderTarget(target);
+            GFXDevice::RenderTarget& renderTarget = GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN);
             renderTarget._buffer->end();
 
             if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {

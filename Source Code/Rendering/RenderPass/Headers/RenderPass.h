@@ -48,7 +48,7 @@ class RenderPass {
     RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags);
     ~RenderPass();
 
-    void render(SceneRenderState& renderState, bool anaglyph);
+    void render(SceneRenderState& renderState);
     inline U8 sortKey() const { return _sortKey; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
     inline const stringImpl& getName() const { return _name; }
@@ -61,8 +61,8 @@ class RenderPass {
     }
 
    protected:
-    bool preRender(SceneRenderState& renderState, bool anaglyph, U32 pass);
-    bool postRender(SceneRenderState& renderState, bool anaglyph, U32 pass);
+    bool preRender(SceneRenderState& renderState, U32 pass);
+    bool postRender(SceneRenderState& renderState, U32 pass);
 
    private:
     U8 _sortKey;

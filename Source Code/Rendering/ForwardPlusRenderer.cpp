@@ -39,9 +39,7 @@ void ForwardPlusRenderer::preRender() {
     LightManager& lightMgr = LightManager::instance();
     lightMgr.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
 
-    GFX_DEVICE.getRenderTarget(GFX_DEVICE.anaglyphEnabled() 
-                                 ? GFXDevice::RenderTargetID::ANAGLYPH 
-                                 : GFXDevice::RenderTargetID::SCREEN)._buffer
+    GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer
         ->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
                TextureDescriptor::AttachmentType::Depth);
 

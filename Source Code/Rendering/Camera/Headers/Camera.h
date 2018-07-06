@@ -61,13 +61,6 @@ class Camera : public Resource {
     /// it
     /// to the rendering API
     void renderLookAtReflected(const Plane<F32>& reflectionPlane);
-    /// Creates the appropriate eye offset and frustum depending on the desired
-    /// eye.
-    /// This method does not calls "renderLookAt"
-    /// rightEye = false => left eye's frustum+view; rightEye = true => right
-    /// eye's frustum + view.
-    void setAnaglyph(bool state);
-    bool isAnaglyph();
     /// Moves the camera by the specified offsets in each direction
     virtual void move(F32 dx, F32 dy, F32 dz);
     /// Global rotations are applied relative to the world axis, not the
@@ -166,8 +159,6 @@ class Camera : public Resource {
     inline void moveUp(F32 factor) {
         move(0.0f, factor, 0.0f);
     }
-    /// Anaglyph rendering: Set intra-ocular distance
-    inline void setIOD(F32 distance) { _camIOD = distance; }
 
     inline void setEye(F32 x, F32 y, F32 z) {
         _eye.set(x, y, z);
@@ -386,12 +377,10 @@ class Camera : public Resource {
     F32 _cameraMoveSpeed;
     F32 _cameraTurnSpeed;
     F32 _cameraZoomSpeed;
-    F32 _camIOD;
     CameraType _type;
 
     vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _listeners;
     bool _isActive;
-    bool _anaglyphPass;
     bool _projectionDirty;
     bool _viewMatrixDirty;
     bool _viewMatrixLocked;

@@ -19,18 +19,6 @@ namespace Divide {
 
 std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
 
-namespace {
-/// Used for %anaglyph rendering
-struct CameraFrustum {
-    D64 leftfrustum;
-    D64 rightfrustum;
-    D64 bottomfrustum;
-    D64 topfrustum;
-    F32 modeltranslation;
-} _leftCam, _rightCam;
-F32 _anaglyphIOD = -0.01f;
-};
-
 GFXDevice::GFXDevice()
     : _api(nullptr), 
     _renderStage(RenderStage::DISPLAY),
@@ -69,7 +57,6 @@ GFXDevice::GFXDevice()
     // Booleans
     _2DRendering = false;
     _drawDebugAxis = false;
-    _enableAnaglyph = false;
     _viewportUpdate = false;
     _rasterizationEnabled = true;
     _zWriteEnabled = true;
@@ -486,61 +473,6 @@ F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,  const vec2<F32>& planes
     return data._ProjectionMatrix.mat;
 }
 
-/// Calculate a frustum for the requested eye (left-right frustum) for anaglyph
-/// rendering
-void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
-                                   F32 aspectRatio, F32 verticalFoV,
-                                   bool rightFrustum) {
-    // Only update frustum values if the interocular distance changed from the
-    // previous request
-    if (!COMPARE(_anaglyphIOD, camIOD)) {
-        static const F32 DTR = 0.0174532925f;
-        static const F32 screenZ = 10.0f;
-
-        // Sets top of frustum based on FoV-Y and near clipping plane
-        F32 top = zPlanes.x * std::tan(DTR * verticalFoV * 0.5f);
-        F32 right = aspectRatio * top;
-        // Sets right of frustum based on aspect ratio
-        F32 frustumshift = (camIOD / 2) * zPlanes.x / screenZ;
-
-        _leftCam.topfrustum = top;
-        _leftCam.bottomfrustum = -top;
-        _leftCam.leftfrustum = -right + frustumshift;
-        _leftCam.rightfrustum = right + frustumshift;
-        _leftCam.modeltranslation = camIOD / 2;
-
-        _rightCam.topfrustum = top;
-        _rightCam.bottomfrustum = -top;
-        _rightCam.leftfrustum = -right - frustumshift;
-        _rightCam.rightfrustum = right - frustumshift;
-        _rightCam.modeltranslation = -camIOD / 2;
-
-        _anaglyphIOD = camIOD;
-    }
-    // Set a camera for the requested eye's frustum
-    CameraFrustum& tempCam = rightFrustum ? _rightCam : _leftCam;
-    // Update the GPU data buffer with the proper projection data based on the
-    // eye camera's frustum
-    GPUBlock::GPUData& data = _gpuBlock._data;
-
-    data._ProjectionMatrix.frustum(to_float(tempCam.leftfrustum),
-                                   to_float(tempCam.rightfrustum),
-                                   to_float(tempCam.bottomfrustum),
-                                   to_float(tempCam.topfrustum),
-                                   zPlanes.x,
-                                   zPlanes.y);
-
-    // Translate the matrix to cancel parallax
-    data._ProjectionMatrix.translate(tempCam.modeltranslation, 0.0f, 0.0f);
-
-    data._ZPlanesCombined.xy(zPlanes);
-
-    data._ViewProjectionMatrix.set(data._ViewMatrix * data._ProjectionMatrix);
-    computeFrustumPlanes();
-
-    _gpuBlock._updated = true;
-}
-
 void GFXDevice::computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
     // Get world-space coordinates for clip-space bounds.
     vec4<F32> lbn(invViewProj * vec4<F32>(-1, -1, -1, 1));
@@ -690,8 +622,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 void GFXDevice::constructHIZ() {
     // The depth buffer's resolution should be equal to the screen's resolution
-    Framebuffer* screenTarget = _renderTarget[anaglyphEnabled() ? to_const_uint(RenderTargetID::ANAGLYPH)
-                                                                : to_const_uint(RenderTargetID::SCREEN)]._buffer;
+    Framebuffer* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer;
     vec2<U16> resolution = screenTarget->getResolution();
     // Bind the depth texture to the first texture unit
     screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),

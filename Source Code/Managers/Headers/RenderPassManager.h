@@ -45,7 +45,7 @@ DEFINE_SINGLETON(RenderPassManager)
 
   public:
     /// Call every renderqueue's render function in order
-    void render(SceneRenderState& sceneRenderState, bool anaglyph = false);
+    void render(SceneRenderState& sceneRenderState);
     /// Add a new pass that will run once for each of the RenderStages specified
     RenderPass& addRenderPass(const stringImpl& renderPassName, 
                               U8 orderKey,

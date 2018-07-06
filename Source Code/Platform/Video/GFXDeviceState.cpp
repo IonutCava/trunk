@@ -142,7 +142,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer = newFB(true);
-    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer = newFB(true);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -177,15 +176,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
-
-    // If we enabled anaglyph rendering, we need a second target, identical to the screen target
-    // used to render the scene at an offset
-    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
-    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
-
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -263,8 +253,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     Texture* hizTexture = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     hizTexture->lockAutomaticMipMapGeneration(true);
-    hizTexture = _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    hizTexture->lockAutomaticMipMapGeneration(true);
+
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }

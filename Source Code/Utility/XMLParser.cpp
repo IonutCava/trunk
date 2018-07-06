@@ -256,7 +256,6 @@ void loadConfig(const stringImpl &file) {
         par.setParam(_ID("rendering.enableShadows"), true);
     }
 
-    GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D", false));
     par.setParam(_ID("rendering.MSAAsampless"),
                  std::max(pt.get<I32>("rendering.MSAAsamples", 0), 0));
     par.setParam(_ID("rendering.PostAASamples"),

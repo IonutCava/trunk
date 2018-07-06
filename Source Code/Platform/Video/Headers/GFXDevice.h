@@ -213,7 +213,6 @@ DEFINE_SINGLETON(GFXDevice)
 
    enum class RenderTargetID : U32 {
        SCREEN = 0,
-       ANAGLYPH = 1,
        COUNT
    };
 
@@ -385,11 +384,6 @@ DEFINE_SINGLETON(GFXDevice)
     /// 2D rendering enabled
     inline bool is2DRendering() const { return _2DRendering; }
 
-    /// Anaglyph rendering state
-    inline bool anaglyphEnabled() const { return _enableAnaglyph; }
-
-    inline void anaglyphEnabled(const bool state) { _enableAnaglyph = state; }
-
     /// returns the standard state block
     inline U32 getDefaultStateBlock(bool noDepth) const {
         return (noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash);
@@ -516,15 +510,10 @@ DEFINE_SINGLETON(GFXDevice)
     F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
     /// sets a perspective projection, updating any listeners if needed
     F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
-    /// sets the view frustum to either the left or right eye position for anaglyph
-    /// rendering
-    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio,
-                            F32 verticalFoV, bool rightFrustum = false);
 
     void onCameraUpdate(Camera& camera);
 
     void flushDisplay();
-    void flushAnaglyph();
 
    protected:
     friend class SceneManager;
@@ -600,7 +589,6 @@ DEFINE_SINGLETON(GFXDevice)
     /// The interpolation factor between the current and the last frame
     D64 _interpolationFactor;
     PlaneList _clippingPlanes;
-    bool _enableAnaglyph;
     bool _2DRendering;
     bool _rasterizationEnabled;
     bool _zWriteEnabled;
@@ -683,10 +671,6 @@ namespace Attorney {
 
         static void flushDisplay() {
             GFXDevice::instance().flushDisplay();
-        }
-
-        static void flushAnaglyph() {
-            GFXDevice::instance().flushAnaglyph();
         }
 
         static void onChangeWindowSize(U16 w, U16 h) {

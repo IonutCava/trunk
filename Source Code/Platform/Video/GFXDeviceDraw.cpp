@@ -327,9 +327,7 @@ void GFXDevice::occlusionCull(U32 pass) {
     getCommandBuffer(currentStage, pass).bind(ShaderBufferLocation::GPU_COMMANDS);
     getCommandBuffer(currentStage, pass).bindAtomicCounter();
 
-    Framebuffer* screenTarget = _renderTarget[anaglyphEnabled()
-                                               ? to_const_uint(RenderTargetID::ANAGLYPH)
-                                               : to_const_uint(RenderTargetID::SCREEN)]._buffer;
+    Framebuffer* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer;
 
     screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), TextureDescriptor::AttachmentType::Depth);
 
@@ -583,16 +581,8 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
 }
 
 void GFXDevice::flushDisplay() {
-    _displayShader->Uniform("anaglyphEnabled", anaglyphEnabled());
     getRenderTarget(RenderTargetID::SCREEN)._buffer->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    getRenderTarget(RenderTargetID::ANAGLYPH)._buffer->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1));
     drawTriangle(getDefaultStateBlock(true), _displayShader);
-}
-
-void GFXDevice::flushAnaglyph() {
-    Framebuffer* anaglyph = getRenderTarget(RenderTargetID::ANAGLYPH)._buffer;
-    Framebuffer* screen = getRenderTarget(RenderTargetID::SCREEN)._buffer;
-    anaglyph->blitFrom(screen);
 }
 
 };

@@ -333,17 +333,9 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
         return false;
     }
 
-    RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState(), false);
-    //PostFX::instance().apply();
+    RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState());
+    PostFX::instance().apply();
 
-    if (_GFX.anaglyphEnabled()) {
-        // Save previous screen render target as left eye.
-        // Render right eye
-        Attorney::GFXDeviceKernel::flushAnaglyph();
-        RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState(), true);
-        PostFX::instance().apply();
-    }
-    
     Attorney::GFXDeviceKernel::flushDisplay();
 
     frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_START, evt);

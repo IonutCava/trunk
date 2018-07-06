@@ -13,9 +13,9 @@ RenderPassManager::~RenderPassManager()
     _renderPasses.clear();
 }
 
-void RenderPassManager::render(SceneRenderState& sceneRenderState, bool anaglyph) {
+void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     for (RenderPass& rp : _renderPasses) {
-        rp.render(sceneRenderState, anaglyph);
+        rp.render(sceneRenderState);
     }
 }
 
