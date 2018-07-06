@@ -17,10 +17,6 @@
 
 namespace Divide {
 
-namespace {
-    constexpr bool g_MultithreadedCommandGeneration = false;
-};
-
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
       _context(context),
@@ -48,10 +44,10 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
             &renderTarsk,
             [&rp, &buf, &sceneRenderState](const Task& parentTask) {
                 rp->render(sceneRenderState, buf);
-            }).startTask(g_MultithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+            }).startTask(Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
     }
 
-    renderTarsk.startTask(g_MultithreadedCommandGeneration ? TaskPriority::DONT_CARE : TaskPriority::REALTIME).wait();
+    renderTarsk.startTask(Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME).wait();
 
     
     //ToDo: Maybe handle this differently?

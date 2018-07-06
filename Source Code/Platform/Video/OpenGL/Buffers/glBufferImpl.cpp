@@ -56,8 +56,9 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
                                                                     : GL_STREAM_DRAW;
     }
 
-    bool usePersistentMapping = !Config::Profile::DISABLE_PERSISTENT_BUFFER && 
-                                _alignedSize > g_persistentMapSizeThreshold;
+    bool usePersistentMapping = !Config::Profile::DISABLE_PERSISTENT_BUFFER &&  // For debugging
+                                !Config::USE_THREADED_COMMAND_GENERATION &&     // For ease-of-use
+                                _alignedSize > g_persistentMapSizeThreshold;    // Driver might be faster?
 
     if (!usePersistentMapping) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);

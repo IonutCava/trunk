@@ -275,13 +275,14 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 }
 
 U32 GFXDevice::getLastCullCount() const {
-    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
+    /*const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
 
     U32 cullCount = bufferData._cmdBuffer->getAtomicCounter();
     if (cullCount > 0) {
         bufferData._cmdBuffer->resetAtomicCounter();
     }
-    return cullCount;
+    return cullCount;*/
+    return 0u;
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const {

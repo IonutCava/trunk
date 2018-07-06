@@ -85,6 +85,8 @@ constexpr unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
 constexpr unsigned int MAX_POOLED_TASKS = 16384;
 /// Toggle multi-threaded resource loading on or off
 constexpr bool USE_GPU_THREADED_LOADING = true;
+/// Toggle multi-threaded command generation
+constexpr bool USE_THREADED_COMMAND_GENERATION = true;
 /// Run all threaded tasks in a serial fashion. (used to debug multi-threaded related bugs)
 constexpr bool USE_SINGLE_THREADED_TASK_POOLS = false;
 /// Maximum number of instances of a single mesh with a single draw call
