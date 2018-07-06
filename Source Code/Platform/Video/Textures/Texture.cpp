@@ -193,7 +193,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
             }
         };
 
-        parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize)
+        parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize);
     }
 
     Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY")),
