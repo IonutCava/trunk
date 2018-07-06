@@ -161,7 +161,6 @@ DEFINE_SINGLETON(LightManager)
     std::array<LightPropertiesArray, to_const_uint(LightType::COUNT)> _lightProperties;
     std::array<Light::ShadowProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightShadowProperties;
     std::array<Light*, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _shadowCastingLights;
-    vectorImpl<std::future<void>> _lightSortingTasks;
 END_SINGLETON
 
 };  // namespace Divide

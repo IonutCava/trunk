@@ -1,5 +1,6 @@
 #include "Headers/RenderPassCuller.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -74,7 +75,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 {
     VisibleNodeList& nodeCache = getNodeCache(stage);
     nodeCache.resize(0);
-
+    Kernel& kernel = Application::getInstance().getKernel();
     const SceneRenderState& renderState = sceneState.renderState();
     if (renderState.drawGeometry()) {
         _cullingFunction = cullingFunction;
@@ -85,25 +86,22 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         _perThreadNodeList.resize(childCount);
         const Camera& camera = renderState.getCameraConst();
         F32 cullMaxDistance = sceneState.generalVisibility();
-        std::launch launchPolicy = async ? std::launch::async | std::launch::deferred :
-                                           std::launch::deferred;
-
-        _cullingTasks.resize(childCount);
+        TaskHandle cullTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
         for (U32 i = 0; i < childCount; ++i) {
             const SceneGraphNode& child = root.getChild(i, childCount);
-            _cullingTasks[i] = std::async(launchPolicy, 
-                                          &RenderPassCuller::frustumCullNode, this, 
-                                          std::cref(child),
-                                          std::cref(camera),
-                                          stage,
-                                          cullMaxDistance,
-                                          i,
-                                          true);
+            cullTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderPassCuller::frustumCullNode,
+                                                               this,
+                                                               std::placeholders::_1,
+                                                               std::cref(child),
+                                                               std::cref(camera),
+                                                               stage,
+                                                               cullMaxDistance,
+                                                               i,
+                                                               true)
+                                                 )._task);
         }
-
-        for (std::future<void>& task : _cullingTasks) {
-            task.get();
-        }
+        cullTask.startTask(Task::TaskPriority::MAX);
+        cullTask.wait();
 
         for (VisibleNodeList& nodeList : _perThreadNodeList) {
             for (VisibleNode& ptr : nodeList) {
@@ -115,7 +113,8 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullNode(const SceneGraphNode& currentNode,
+void RenderPassCuller::frustumCullNode(bool stopRequested, 
+                                       const SceneGraphNode& currentNode,
                                        const Camera& currentCamera,
                                        RenderStage currentStage,
                                        F32 cullMaxDistance,
@@ -136,13 +135,14 @@ void RenderPassCuller::frustumCullNode(const SceneGraphNode& currentNode,
                 !_cullingFunction(currentNode) &&
                 !currentNode.cullNode(currentCamera, cullMaxDistance, currentStage, collisionResult);
 
-    if (isVisible) {
+    if (isVisible && !stopRequested) {
         vectorAlg::emplace_back(nodes, 0, currentNode.shared_from_this());
         if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
             // Parent node intersects the view, so check children
             U32 childCount = currentNode.getChildCount();
             for (U32 i = 0; i < childCount; ++i) {
-                frustumCullNode(currentNode.getChild(i, childCount),
+                frustumCullNode(stopRequested,
+                                currentNode.getChild(i, childCount),
                                 currentCamera,
                                 currentStage,
                                 cullMaxDistance,

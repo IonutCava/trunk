@@ -76,7 +76,6 @@ class RenderQueue {
 
   private:
     RenderBinArray _renderBins;
-    vectorImpl<std::future<void>> _sortingTasks;
 };
 
 };  // namespace Divide

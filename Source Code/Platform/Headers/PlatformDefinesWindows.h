@@ -38,6 +38,10 @@
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct
 
+#ifndef USE_VLD
+//#define USE_VLD
+#endif
+
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif //_CRT_SECURE_NO_WARNINGS

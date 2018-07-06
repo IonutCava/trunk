@@ -282,7 +282,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
                                       std::placeholders::_1,
                                       stringImpl("test"),
                                       CallbackParam::TYPE_STRING)));
-    boxMove._task->startTask();
+    boxMove.startTask();
     registerTask(boxMove);
 
     ResourceDescriptor backgroundMusic("background music");

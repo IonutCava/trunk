@@ -102,7 +102,7 @@ class RenderBin {
 
     ~RenderBin() {}
 
-    void sort(RenderStage renderStage);
+    void sort(bool stopRequested, RenderStage renderStage);
     void populateRenderQueue(RenderStage renderStage);
     void postRender(const SceneRenderState& renderState, RenderStage renderStage);
     void refresh();

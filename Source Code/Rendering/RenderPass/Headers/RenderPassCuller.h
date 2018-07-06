@@ -74,7 +74,8 @@ class RenderPassCuller {
    protected:
 
     // return true if the node is not currently visible
-    void frustumCullNode(const SceneGraphNode& node,
+    void frustumCullNode(bool stopRequested,
+                         const SceneGraphNode& node,
                          const Camera& currentCamera,
                          RenderStage currentStage,
                          F32 cullMaxDistance,
@@ -87,7 +88,6 @@ class RenderPassCuller {
     U32 stageToCacheIndex(RenderStage stage) const;
    protected:
     CullingFunction _cullingFunction;
-    vectorImpl<std::future<void>> _cullingTasks;
     vectorImpl<VisibleNodeList> _perThreadNodeList;
     std::array<VisibleNodeList, to_const_uint(RenderStage::COUNT)> _visibleNodes;
 };

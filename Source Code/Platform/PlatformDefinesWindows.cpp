@@ -7,6 +7,9 @@
 
 #include "Headers/PlatformDefines.h"
 #include <iostream>
+#if defined(USE_VLD)
+#include <vld.h>
+#endif
 
 // We are actually importing GL specific libraries in code mainly for
 // maintenance reasons
@@ -149,6 +152,14 @@ namespace Divide {
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
         info._windowHandle = wmInfo.info.win.window;
+    }
+
+    bool PlatformInit() {
+        return true;
+    }
+
+    bool PlatformClose() {
+        return true;
     }
 
     bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {

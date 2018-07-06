@@ -316,7 +316,7 @@ vec4<U8> ImageData::getColor(I32 x, I32 y, U32 mipLevel) const {
 }
 
 void ImageData::getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
-    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8.0f);
+    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     r = _data[mipLevel]._data[idx + 0];
     g = _data[mipLevel]._data[idx + 1];
     b = _data[mipLevel]._data[idx + 2];

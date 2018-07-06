@@ -95,11 +95,11 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     bool reset();
 
     void addChildTask(Task* task) {
-        /*
         _childTasks.push_back(task);
+        _childTaskCount += 1;
         task->_parentTask = this;
-        */
     }
+
    protected:
     void run();
 
@@ -113,12 +113,10 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     
     TaskPriority _priority;
     ThreadPool& _tp;
-    /*
+
     Task* _parentTask;
     vectorImpl<Task*> _childTasks;
     std::atomic<I64> _childTaskCount;
-    */
-
 };
 
 // A task object may be used for multiple jobs
@@ -127,6 +125,22 @@ struct TaskHandle {
         : _task(task),
           _jobIdentifier(id)
     {
+    }
+
+    inline void startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE) {
+        _task->startTask(prio);
+    }
+
+    inline bool isFinished() const {
+        return _task->isFinished();
+    }
+
+    inline void addChildTask(Task* task) {
+        _task->addChildTask(task);
+    }
+
+    inline void wait() {
+        WAIT_FOR_CONDITION(isFinished());
     }
 
     Task* _task;

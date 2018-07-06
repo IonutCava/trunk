@@ -691,7 +691,7 @@ void Scene::clearTasks() {
     for (TaskHandle& task : _tasks) {
         if (task._task->jobIdentifier() == task._jobIdentifier) {
             task._task->stopTask();
-            WAIT_FOR_CONDITION(task._task->isFinished());
+            task.wait();
         }
     }
 
@@ -704,7 +704,7 @@ void Scene::removeTask(I64 jobIdentifier) {
         if ((*it)._task->jobIdentifier() == jobIdentifier) {
             (*it)._task->stopTask();
             _tasks.erase(it);
-            WAIT_FOR_CONDITION((*it)._task->isFinished());
+            (*it).wait();
             return;
         }
     }

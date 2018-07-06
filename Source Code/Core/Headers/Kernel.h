@@ -201,7 +201,7 @@ namespace Attorney {
         }
 
         static bool setCursorPosition(Kernel& kernel, I32 x, I32 y) {
-            kernel.setCursorPosition(x, y);
+            return kernel.setCursorPosition(x, y);
         }
 
         static void onChangeWindowSize(Kernel& kernel, U16 w, U16 h) {

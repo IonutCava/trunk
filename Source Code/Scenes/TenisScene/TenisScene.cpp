@@ -90,7 +90,7 @@ void TenisScene::startGame() {
                                                     std::placeholders::_1,
                                                     rand() % 5,
                                                     CallbackParam::TYPE_INTEGER)));
-    newGame._task->startTask(Task::TaskPriority::HIGH);
+    newGame.startTask(Task::TaskPriority::HIGH);
     registerTask(newGame);
 }
 

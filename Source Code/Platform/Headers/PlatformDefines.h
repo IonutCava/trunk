@@ -232,6 +232,9 @@ struct SysInfo;
 
 extern void getWindowHandle(void* window, SysInfo& info);
 
+
+bool PlatformInit();
+bool PlatformClose();
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>

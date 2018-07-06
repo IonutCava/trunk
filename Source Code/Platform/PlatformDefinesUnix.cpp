@@ -25,6 +25,13 @@ int _vscprintf (const char * format, va_list pargs) {
 }
 
 namespace Divide {
+    bool PlatformInit() {
+        return true;
+    }
+
+    bool PlatformClose() {
+        return true;
+    }
 
     bool CheckMemory(const unsigned int physicalRAMNeeded, SysInfo& info) {
         long pages = sysconf(_SC_PHYS_PAGES);

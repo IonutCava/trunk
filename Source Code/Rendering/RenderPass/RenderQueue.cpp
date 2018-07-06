@@ -1,5 +1,6 @@
 #include "Headers/RenderQueue.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -143,19 +144,15 @@ void RenderQueue::sort(RenderStage renderStage) {
         }
     }
 
-    _sortingTasks.resize(0);
+    Kernel& kernel = Application::getInstance().getKernel();
+    TaskHandle sortTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin != nullptr) {
-            vectorAlg::emplace_back(_sortingTasks, 
-                std::async(std::launch::async | std::launch::deferred,
-                           &RenderBin::sort, renderBin, renderStage));
+            sortTask.addChildTask(kernel.AddTask(DELEGATE_BIND(&RenderBin::sort, renderBin, std::placeholders::_1, renderStage))._task);
         }
     }
-
-    for (std::future<void>& task : _sortingTasks) {
-        task.get();
-    }
-
+    sortTask.startTask(Task::TaskPriority::MAX);
+    sortTask.wait();
 }
 
 void RenderQueue::refresh() {

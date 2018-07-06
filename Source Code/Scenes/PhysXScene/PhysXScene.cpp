@@ -69,14 +69,14 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     cbks.second = [this]() {
         Kernel& kernel = Application::getInstance().getKernel();
         TaskHandle e(kernel.AddTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_uint(Random(5, 20)))));
-        e._task->startTask();
+        e.startTask();
         registerTask(e);
     };
     _input->addKeyMapping(Input::KeyCode::KC_3, cbks);
     cbks.second = [this]() {
         Kernel& kernel = Application::getInstance().getKernel();
         TaskHandle e(kernel.AddTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_uint(Random(5, 10)))));
-        e._task->startTask();
+        e.startTask();
         registerTask(e);
     };
     _input->addKeyMapping(Input::KeyCode::KC_4, cbks);

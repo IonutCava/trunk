@@ -126,7 +126,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     Application::getInstance().getKernel()
                               .AddTask(DELEGATE_BIND(&Vegetation::generateGrass, this, std::placeholders::_1),
                                        DELEGATE_BIND(&Vegetation::uploadGrassData, this))
-                              ._task->startTask(Task::TaskPriority::LOW);
+                              .startTask(Task::TaskPriority::LOW);
     setState(ResourceState::RES_LOADED);
 }
 

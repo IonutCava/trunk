@@ -72,7 +72,7 @@ void NavigationMesh::stopThreadedBuild() {
         assert(buildThread._task);
         if (buildThread._task->jobIdentifier() == getGUID()) {
             buildThread._task->stopTask();
-            WAIT_FOR_CONDITION(buildThread._task->isFinished());
+            buildThread.wait();
         }
     }
 }
@@ -185,7 +185,7 @@ bool NavigationMesh::buildThreaded() {
     Application::getInstance().getKernel()
                               .AddTask(getGUID(),
                                        DELEGATE_BIND(&NavigationMesh::buildInternal, this, std::placeholders::_1))
-                              ._task->startTask(Task::TaskPriority::HIGH);
+                              .startTask(Task::TaskPriority::HIGH);
     return true;
 }
 

@@ -82,7 +82,7 @@ RenderBin::RenderBin(RenderBinType rbType,
     }
 }
 
-void RenderBin::sort(RenderStage renderStage) {
+void RenderBin::sort(bool stopRequested, RenderStage renderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:

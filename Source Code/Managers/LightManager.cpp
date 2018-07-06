@@ -283,10 +283,11 @@ Light* LightManager::getLight(I64 lightGUID, LightType type) {
 
 void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     // Sort all lights (Sort in parallel by type)   
-    _lightSortingTasks.resize(0);
+    Kernel& kernel = Application::getInstance().getKernel();
+    TaskHandle cullTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
     for (Light::LightList& lights : _lights) {
-        _lightSortingTasks.push_back(std::async(std::launch::async | std::launch::deferred,
-            [&eyePos](Light::LightList& lights) mutable
+        cullTask.addChildTask(kernel.AddTask(
+            [&eyePos, &lights](bool stopRequested) mutable
             {
                 std::sort(std::begin(lights), std::end(lights),
                           [&eyePos](Light* a, Light* b) -> bool
@@ -294,13 +295,12 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
                     return a->getPosition().distanceSquared(eyePos) <
                            b->getPosition().distanceSquared(eyePos);
                 });
-            }, std::ref(lights))
+            })._task
         );
     }
 
-    for (std::future<void>& task : _lightSortingTasks) {
-        task.get();
-    }
+    cullTask.startTask(Task::TaskPriority::HIGH);
+    cullTask.wait();
 
     vec3<F32> tempColor;
     // Create and upload light data for current pass

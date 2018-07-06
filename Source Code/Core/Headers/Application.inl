@@ -40,6 +40,13 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case ErrorCode::NO_ERR: {
             return "Unknown error";
         };
+        case ErrorCode::PLATFORM_CLOSE_ERROR: {
+            return "Could not deinitialize target platform!";
+        };
+
+        case ErrorCode::PLATFORM_INIT_ERROR: {
+            return "Could not initialize target platform!";
+        };
         case ErrorCode::MISSING_SCENE_DATA: {
             return "Invalid Scene Data. SceneManager failed to load the "
                    "specified scene";

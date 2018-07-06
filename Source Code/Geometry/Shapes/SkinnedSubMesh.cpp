@@ -116,7 +116,7 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
                                                               
                 Application::getInstance().getKernel()
                                            .AddTask(buildBB, builBBComplete)
-                                           ._task->startTask(Task::TaskPriority::DONT_CARE);
+                                           .startTask(Task::TaskPriority::DONT_CARE);
 
             } else {
                 buildBoundingBoxesForAnim(false, animationIndex, animComp);

@@ -15,10 +15,8 @@ Task::Task(ThreadPool& tp) : GUIDWrapper(),
                              _jobIdentifier(-1),
                              _priority(TaskPriority::DONT_CARE)
 {
-    /*
     _parentTask = nullptr;
     _childTaskCount = 0;
-    */
     _done = true;
     _stopRequested = false;
 }
@@ -32,12 +30,9 @@ Task::Task(const Task& old) : GUIDWrapper(old),
     _callback = old._callback;
     _onCompletionCbk = old._onCompletionCbk;
     _priority = old._priority;
-
-    /*
-    _childTaskCount = old._childTaskCount;
+    _childTaskCount.store(old._childTaskCount);
     _parentTask = old._parentTask;
-    _childTasks.insert(std::cent(_childTasks), std::cbegin(old._childTasks), std::cend(old._childTasks));
-    */
+    _childTasks.insert(std::cend(_childTasks), std::cbegin(old._childTasks), std::cend(old._childTasks));
 }
 
 Task::~Task()
@@ -62,51 +57,39 @@ bool Task::reset() {
     _onCompletionCbk = DELEGATE_CBK_PARAM<I64>();
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
-    /*
     _parentTask = nullptr;
     _childTasks.clear();
     _childTaskCount = 0;
-    */
+
     return wasNeeded;
 }
 
 void Task::startTask(TaskPriority priority) {
+    _done = false;
     _priority = priority;
 
-    /*
-    if (!_childTasks.empty()) {
+    if (_childTaskCount != 0) {
         for (Task* child : _childTasks){
-            child.startTask(priority);
+            child->startTask(priority);
         }
     } else {
-    */
-        if (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this))))
-        {
+        if (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
             Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
-            /*
-            if (_parentTask != nullptr) {
-               _parentTask._childTaskCount = _parentTaskCount + 1;
-            }
-            */
         }
-    /*
     }
-    */
 }
 
 void Task::stopTask() {
-    /*
     for (Task* child : _childTasks){
-        child.stopTask();
+        child->stopTask();
     }
-    */
+
     _stopRequested = true;
 }
 
 void Task::run() {
     Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
 
-    _done = !_callback;
     if (!Application::getInstance().ShutdownRequested()) {
 
         if (_callback) {
@@ -117,14 +100,10 @@ void Task::run() {
             _onCompletionCbk(getGUID());
         }
 
-        /*
-        if (_parentTask != nullptr) {
-            _parentTask._childTaskCount = _parentTask._childTaskCount - 1;
-            if (_parentTask._childTaskCount == 0) {
-                _parentTask.startTask(_parentTask._priority);
-            }
-        }
-        */
+    }
+
+    if (_parentTask != nullptr && (_parentTask->_childTaskCount -= 1) == 0) {
+        _parentTask->startTask(_parentTask->_priority);
     }
 
     Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());

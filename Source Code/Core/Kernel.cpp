@@ -103,8 +103,6 @@ TaskHandle Kernel::AddTask(I64 jobIdentifier,
                            const DELEGATE_CBK_PARAM<bool>& threadedFunction,
                            const DELEGATE_CBK<>& onCompletionFunction) {
 
-    assert(threadedFunction);
-
     Task& freeTask = _tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
     if (freeTask.reset()) {
         _threadedCallbackFunctions.erase(freeTask.getGUID());
@@ -150,8 +148,7 @@ void Kernel::idle() {
     I64 taskGUID = -1;
     if (_threadedCallbackBuffer.pop(taskGUID)) {
         CallbackFunctions::const_iterator it = _threadedCallbackFunctions.find(taskGUID);
-        assert(it != std::end(_threadedCallbackFunctions));
-        if (it->second) {
+        if(it != std::end(_threadedCallbackFunctions) && it->second) {
             it->second();
         }
     }
@@ -408,8 +405,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread so how many threads do we allocate for tasks?
     // That's up to the programmer to decide for each app.
-    // We add the A.I. thread in the same pool as it's a task. 
-    // ReCast should also use this thread.
     U32 threadCount = HARDWARE_THREAD_COUNT();
     if (threadCount <= 2) {
         return ErrorCode::CPU_NOT_SUPPORTED;

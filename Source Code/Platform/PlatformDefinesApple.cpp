@@ -14,6 +14,14 @@ void  malloc_free(void*& ptr) {
 }
 
 namespace Divide {
+    bool PlatformInit() {
+        return true;
+    }
+
+    bool PlatformClose() {
+        return true;
+    }
+
     bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {
         I32 mib[2] = { CTL_HW, HW_MEMSIZE };
         U32 namelen = sizeof(mib) / sizeof(mib[0]);

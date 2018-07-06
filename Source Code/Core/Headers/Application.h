@@ -62,7 +62,9 @@ enum class ErrorCode : I32 {
     PHYSX_INIT_ERROR = -21,
     PHYSX_EXTENSION_ERROR = -22,
     NO_LANGUAGE_INI = -23,
-    NOT_ENOUGH_RAM = -24
+    NOT_ENOUGH_RAM = -24,
+    PLATFORM_INIT_ERROR = -25,
+    PLATFORM_CLOSE_ERROR = -26
 };
 
 class Kernel;
