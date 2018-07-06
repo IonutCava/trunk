@@ -7,7 +7,7 @@
 namespace Divide {
 
 namespace Paths {
-
+    stringImpl g_exePath;
     stringImpl g_assetsLocation;
     stringImpl g_shadersLocation;
     stringImpl g_texturesLocation;
@@ -63,7 +63,8 @@ namespace Paths {
     std::regex g_includePattern;
     std::regex g_usePattern;
 
-    void initPaths() {
+    void initPaths(const SysInfo& info) {
+        g_exePath = info._pathAndFilename._path + "/";
         g_assetsLocation = "assets/";
         g_shadersLocation = "shaders/";
         g_texturesLocation = "textures/";

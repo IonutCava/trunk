@@ -27,11 +27,11 @@ int _vscprintf (const char * format, va_list pargs) {
 
 namespace Divide {
 
-    bool PlatformInit(int argc, char** argv) {
-        return PlatformPostInit();
+    ErrorCode PlatformInitImpl(int argc, char** argv) {
+        return ErrorCode::NO_ERR;
     }
 
-    bool PlatformClose() {
+    bool PlatformCloseImpl() {
         return true;
     }
 

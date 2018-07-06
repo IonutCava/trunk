@@ -56,9 +56,8 @@ Engine::~Engine()
 bool Engine::init(int argc, char** argv) {
     ErrorCode err = ErrorCode::NO_ERR;
 
-    if (!PlatformInit(argc, argv)) {
-        err = ErrorCode::PLATFORM_INIT_ERROR;
-    } else {
+    err = PlatformInit(argc, argv);
+    if (err == ErrorCode::NO_ERR) {
         // Start our application based on XML configuration.
         // If it fails to start, it should automatically clear up all of its data
         err = _app->start("main.xml", argc, argv);

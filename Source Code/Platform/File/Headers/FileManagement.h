@@ -42,6 +42,7 @@ namespace Divide {
 
 class PlatformContext;
 namespace Paths {
+    extern stringImpl g_exePath;
     extern stringImpl g_assetsLocation;
     extern stringImpl g_shadersLocation;
     extern stringImpl g_texturesLocation;
@@ -98,13 +99,14 @@ namespace Paths {
     // use command regex pattern
     extern std::regex g_usePattern;
 
-    void initPaths();
+    void initPaths(const SysInfo& info);
     void updatePaths(const PlatformContext& context);
 };
 
 
-bool fileExists(const char* filePath);
-bool createFile(const char* filePath, bool overwriteExisting);
+bool pathExists(const char* filePath);
+bool fileExists(const char* filePathAndName);
+bool createFile(const char* filePathAndName, bool overwriteExisting);
 
 template<typename T /*requirement: has_assign<T> == true*/>
 bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType);

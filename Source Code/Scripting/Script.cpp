@@ -143,7 +143,7 @@ void Script::extractAtoms() {
 }
 
 void Script::handleOutput(const std::string &msg) {
-    Console::printfn(Locale::get(_ID("CONSOLE_SCRIPT_OUTPUT")), msg.c_str());
+    Console::printfn(Locale::get(_ID("SCRIPT_CONSOLE_OUTPUT")), msg.c_str());
 }
 
 void Script::onScriptModify(const char* script, FileUpdateEvent& evt) {
@@ -162,6 +162,12 @@ void Script::onScriptModify(const char* script, FileUpdateEvent& evt) {
         it->compile();
         it->extractAtoms();
     }
+}
+
+void Script::caughtException(const char* message, bool isEvalException) const {
+    Console::printfn(Locale::get(isEvalException ? _ID("SCRIPT_EVAL_EXCEPTION")
+                                                 : _ID("SCRIPT_OTHER_EXCEPTION")),
+                     message);
 }
 
 }; //namespace Divide

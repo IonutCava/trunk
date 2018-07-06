@@ -162,11 +162,11 @@ namespace Divide {
         info._windowHandle = wmInfo.info.win.window;
     }
 
-    bool PlatformInit(int argc, char** argv) {
-        return PlatformPostInit(argc, argv);
+    ErrorCode PlatformInitImpl(int argc, char** argv) {
+        return ErrorCode::NO_ERR;
     }
 
-    bool PlatformClose() {
+    bool PlatformCloseImpl() {
         return true;
     }
 

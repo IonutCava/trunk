@@ -32,6 +32,8 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
+#include "Core/Headers/ErrorCodes.h"
+
 #ifdef _DEBUG
 
 #define STUBBED(x)                                  \
@@ -115,11 +117,15 @@ FileWithPath getExecutableLocation(char* argv0);
 
 bool createDirectories(const char* path);
 
-bool PlatformInit(int argc, char** argv);
+ErrorCode PlatformInit(int argc, char** argv);
 bool PlatformClose();
 bool GetAvailableMemory(SysInfo& info);
 
-bool PlatformPostInit(int argc, char** argv);
+ErrorCode PlatformPreInit(int argc, char** argv);
+ErrorCode PlatformPostInit(int argc, char** argv);
+
+ErrorCode PlatformInitImpl(int argc, char** argv);
+bool PlatformCloseImpl();
 
 template <typename T>
 struct synchronized {

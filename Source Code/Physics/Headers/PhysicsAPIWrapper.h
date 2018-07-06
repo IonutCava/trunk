@@ -53,7 +53,8 @@ class PhysicsSceneInterface;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
-enum class ErrorCode : I32;
+enum class ErrorCode;
+
 class NOINITVTABLE PhysicsAPIWrapper {
    protected:
     friend class PXDevice;

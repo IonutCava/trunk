@@ -71,6 +71,7 @@ protected:
     void bootstrap();
     void extractAtoms();
     void preprocessIncludes(const stringImpl& source, I32 level /*= 0 */);
+    void caughtException(const char* message, bool isEvalException) const;
 
 protected:
     static void handleOutput(const std::string& msg);

@@ -57,7 +57,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -71,7 +71,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -85,7 +85,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -235,7 +235,8 @@
       </AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
-      <Command>$(OutDir)Test-Engine_d.exe nopause</Command>
+      <Command>cd $(OutDir)
+$(OutDir)Test-Engine_d.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_v140|x64'">
@@ -336,7 +337,8 @@
       </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>$(OutDir)Test-Engine.exe nopause</Command>
+      <Command>cd $(OutDir)
+$(OutDir)Test-Engine.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_v140|x64'">
@@ -426,7 +428,8 @@
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>
     </Lib>
     <PostBuildEvent>
-      <Command>$(OutDir)Test-Engine_p.exe nopause</Command>
+      <Command>cd $(OutDir)
+$(OutDir)Test-Engine_p.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile_v140|x64'">

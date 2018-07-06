@@ -41,30 +41,22 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 
     _isInitialized = true;
     ErrorCode err = ErrorCode::NO_ERR;
-    Console::start();
     ParamHandler::createInstance();
     Time::ApplicationTimer::createInstance();
     // Don't log parameter requests
     ParamHandler::instance().setDebugOutput(false);
-    // Read language table
-    err = Locale::init();
-    if (err == ErrorCode::NO_ERR) {
-        // Print a copyright notice in the log file
-        Console::printCopyrightNotice();
-        Console::toggleTimeStamps(true);
-        Console::togglethreadID(true);
-        Console::printfn(Locale::get(_ID("START_APPLICATION")));
-        for (U8 i = 1; i < argc; ++i) {
-            Console::printfn(Locale::get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
-            Console::printfn(" -- %s", argv[i]);
-        }
-        // Create a new kernel
-        assert(_kernel == nullptr);
-        _kernel = MemoryManager_NEW Kernel(argc, argv, *this);
 
-        // and load it via an XML file config
-        err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
+    Console::printfn(Locale::get(_ID("START_APPLICATION")));
+    for (U8 i = 1; i < argc; ++i) {
+        Console::printfn(Locale::get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
+        Console::printfn(" -- %s", argv[i]);
     }
+    // Create a new kernel
+    assert(_kernel == nullptr);
+    _kernel = MemoryManager_NEW Kernel(argc, argv, *this);
+
+    // and load it via an XML file config
+    err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
 
     // failed to start, so cleanup
     if (err != ErrorCode::NO_ERR) {
@@ -107,9 +99,7 @@ void Application::stop() {
         ParamHandler::destroyInstance();
         MemoryManager::DELETE(_kernel);
         Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
-        Locale::clear();
         Time::ApplicationTimer::destroyInstance();
-        Console::stop();
         _isInitialized = false;
     }
 }

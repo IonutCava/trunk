@@ -30,19 +30,32 @@ FileWithPath splitPathToNameAndLocation(const stringImpl& input) {
     };
 }
 
-bool fileExists(const char* filePath) {
-    return std::ifstream(filePath).good();
+//ref: https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
+bool pathExists(const char* filePath) {
+    struct stat info;
+
+    if (stat(filePath, &info) != 0) {
+        return false;
+    } else if (info.st_mode & S_IFDIR) {
+        return true;
+    }
+
+    return false;
 }
 
-bool createFile(const char* filePath, bool overwriteExisting) {
-    if (overwriteExisting && fileExists(filePath)) {
-        return std::ifstream(filePath, std::fstream::in | std::fstream::trunc).good();
+bool fileExists(const char* filePathAndName) {
+    return std::ifstream(filePathAndName).good();
+}
+
+bool createFile(const char* filePathAndName, bool overwriteExisting) {
+    if (overwriteExisting && fileExists(filePathAndName)) {
+        return std::ifstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
     }
 
     const SysInfo& systemInfo = const_sysInfo();
-    createDirectories((systemInfo._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePath)._path).c_str());
+    createDirectories((systemInfo._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
 
-    return std::ifstream(filePath, std::fstream::in).good();
+    return std::ifstream(filePathAndName, std::fstream::in).good();
 
 }
 

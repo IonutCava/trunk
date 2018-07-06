@@ -43,6 +43,7 @@ bool                    isMainThread();
 const std::thread::id&  mainThreadID();
 // Can only be called once! The first registered thread is the main thread
 void mainThreadID(const std::thread::id& threadID);
+bool resetMainThreadID();
 
 }; //namespace Runtime
 }; // namespace Divide

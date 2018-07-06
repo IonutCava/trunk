@@ -51,7 +51,7 @@ typedef std::array<vec2<U16>, to_base(WindowType::COUNT)> ResolutionByType;
 
 class WindowManager;
 class PlatformContext;
-enum class ErrorCode : I32;
+enum class ErrorCode;
 // Platform specific window
 class DisplayWindow : public GUIDWrapper {
 

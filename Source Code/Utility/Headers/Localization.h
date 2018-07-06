@@ -32,8 +32,6 @@
 #ifndef _LOCALE_H_
 #define _LOCALE_H_
 
-static const char* DEFAULT_LANG = "enGB";
-
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -42,22 +40,30 @@ enum class ErrorCode : I32;
 enum class FileUpdateEvent : U8;
 
 namespace Locale {
-    namespace detail {
-        /// Is everything loaded and ready for use?
-        static bool s_initialized = false;
-        /// Default language can be set at compile time
-        static stringImpl s_localeFile = DEFAULT_LANG;
+static const char* DEFAULT_LANG = "enGB";
+constexpr char* g_languageFileExtension = ".ini";
 
-        /// Each string key in the map matches a key in the language ini file
-        /// each string value in the map matches the value in the ini file for the given key
-        /// Basicly, the hashMapImpl is a direct copy of the [language] section of the
-        /// give ini file
-        static hashMapImpl<U64, stringImpl> s_languageTable;
-        static vectorImpl<DELEGATE_CBK<void, const char* /*new language*/>> s_languageChangeCallbacks;
+class LanguageData {
+public:
+    typedef vectorImpl<DELEGATE_CBK<void, const char* /*new language*/>> LangCallbacks;
+public:
+    LanguageData();
+    ~LanguageData();
 
-        /// Callback for external file changes. 
-        void onLanguageFileModify(const char* languageFile, FileUpdateEvent evt);
-    }; //detail
+    void changeLanguage(const stringImpl& newLanguage);
+
+    const char* get(U64 key, const char* defaultValue);
+    void add(U64 key, const char* value);
+
+    void addLanguageChangeCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
+
+private:
+    /// Each string key in the map matches a key in the language ini file
+    /// each string value in the map matches the value in the ini file for the given key
+    /// Basicly, the hashMapImpl is a direct copy of the [language] section of the give ini file
+    hashMapImpl<U64, stringImpl> _languageTable;
+    LangCallbacks _languageChangeCallbacks;
+};
 
 /// Reset everything and load the specified language file.
 ErrorCode init(const stringImpl& newLanguage = DEFAULT_LANG);
@@ -71,9 +77,8 @@ void changeLanguage(const stringImpl& newLanguage);
 /// Add a function to be called on each language change
 void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
 /// Query the current language code to detect changes
-inline const stringImpl& currentLanguage() { return detail::s_localeFile; }
-/// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the
-/// language key we want
+const stringImpl& currentLanguage();
+/// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
 const char* get(U64 key, const char* defaultValue);
 const char* get(U64 key);

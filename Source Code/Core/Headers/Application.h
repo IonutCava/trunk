@@ -33,7 +33,6 @@
 #define _CORE_APPLICATION_H_
 
 #include "WindowManager.h"
-#include "ErrorCodes.h"
 
 namespace Divide {
 

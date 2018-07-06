@@ -40,7 +40,7 @@ namespace std {
 
 namespace Divide {
 
-enum class ErrorCode : I32;
+enum class ErrorCode;
 
 template <typename T>
 class vec4;

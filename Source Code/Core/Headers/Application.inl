@@ -36,10 +36,12 @@ namespace Divide {
 
 inline const char* getErrorCodeName(ErrorCode code) {
     switch (code) {
-        default:
-        case ErrorCode::NO_ERR: {
-            return "Unknown error";
+        default: {
+            return "Unknown error.";
         };
+        case ErrorCode::NO_ERR: {
+            return "No error.";
+        }
         case ErrorCode::PLATFORM_CLOSE_ERROR: {
             return "Could not deinitialize target platform!";
         };
@@ -103,8 +105,8 @@ inline const char* getErrorCodeName(ErrorCode code) {
                    "features required";
         };
         case ErrorCode::OGL_OLD_HARDWARE: {
-        	return "Current hardware does not support the minimum Opengl "
-        	       "features required or the maximum supported version is too old"; 
+            return "Current hardware does not support the minimum Opengl "
+                   "features required or the maximum supported version is too old"; 
         };
         case ErrorCode::SDL_AUDIO_INIT_ERROR: {
             return "SDL Audio library failed to initialize";
@@ -132,6 +134,9 @@ inline const char* getErrorCodeName(ErrorCode code) {
         };
         case ErrorCode::NOT_ENOUGH_RAM: {
             return "Insufficient physical RAM available to run the application!";
+        };
+        case ErrorCode::WRONG_WORKING_DIRECTORY: {
+            return "Wrong working directory specified! All paths are relative based on the executable's location.";
         };
     };
 }

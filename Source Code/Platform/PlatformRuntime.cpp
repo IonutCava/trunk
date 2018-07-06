@@ -6,6 +6,7 @@ namespace Divide {
 namespace Runtime {
 
 namespace detail {
+    bool g_idSet = false;
     std::thread::id g_mainThreadID;
 };
 
@@ -18,11 +19,15 @@ const std::thread::id&  mainThreadID() {
 }
 
 void mainThreadID(const std::thread::id& threadID) {
-    static bool idSet = false;
-    assert(!idSet);
+    assert(!detail::g_idSet);
 
     detail::g_mainThreadID = threadID;
-    idSet = true;
+    detail::g_idSet = true;
+}
+
+bool resetMainThreadID() {
+    detail::g_idSet = false;
+    return true;
 }
 
 }; //namespace Runtime

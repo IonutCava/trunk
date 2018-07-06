@@ -35,6 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //Using: https://github.com/cppocl/cppocl
 #include <Test.hpp>
 
-void PreparePlatform();
+bool PreparePlatform();
 
 #endif //_DEFINES_H_

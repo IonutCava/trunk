@@ -18,7 +18,7 @@ std::thread Console::_printThread;
 //std::condition_variable Console::_entryEnqueCV;
 //std::mutex Console::_entryEnqueMutex;
 //std::atomic_bool Console::_entryAdded;
-std::atomic_bool Console::_running;
+std::atomic_bool Console::_running = false;
 Console::ConsolePrintCallback Console::_guiConsoleCallback;
 
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
@@ -117,29 +117,28 @@ void Console::outThread() {
                 _guiConsoleCallback(entry._text.c_str(), entry._error);
             }
         } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            std::this_thread::yield();
         }
     }
+    std::cout << "------------------------------------------" << std::endl;
+    std::cout << std::endl << std::endl << std::endl;
+    std::cerr << std::flush;
+    std::cout << std::flush;
 }
 
 void Console::start() {
-    _running = true;
-    _printThread = std::thread(&Console::outThread);
-    setThreadName(&_printThread, "CONSOLE_OUT_THREAD");
+    if (!_running) {
+        _printThread = std::thread(&Console::outThread);
+        setThreadName(&_printThread, "CONSOLE_OUT_THREAD");
+        _running = true;
+    }
 }
 
 void Console::stop() {
-    _running = false;
-
-    OutputEntry entry;
-    entry._text = "------------------------------------------";
-
-    //std::unique_lock<std::mutex> lk(_entryEnqueMutex);
-    _outputBuffer.enqueue(entry);
-    //_entryEnqueCV.notify_one();
-    _printThread.join();
-
-    std::cerr << std::flush;
-    std::cout << std::flush;
+    if (_running) {
+        _enabled = false;
+        _running = false;
+        _printThread.join();
+    }
 }
 };

@@ -41,16 +41,13 @@ inline void Script::addGlobal(const T& var, const char* name, bool asConst, bool
     if (overwrite) {
         if (asConst) {
             _script->set_global_const(chaiscript::const_var(var), name);
-        }
-        else {
+        } else {
             _script->set_global(chaiscript::var(var), name); // global non-const, overwrites existing object
         }
-    }
-    else {
+    } else {
         if (asConst) {
             _script->add(chaiscript::const_var(var), name); // copied in and made const
-        }
-        else {
+        } else {
             _script->add(chaiscript::var(var), name); // copied in
         }
     }
@@ -69,13 +66,23 @@ inline void Script::registerFunction(const Func& function, const char* functionN
 template<typename T>
 inline T Script::eval() {
     assert(!_scriptSource.empty());
-    return _script->eval<T>(_scriptSource);
+    try {
+        return _script->eval<T>(_scriptSource);
+    } catch (const chaiscript::exception::eval_error &e) {
+        caughtException(e.pretty_print().c_str(), true);
+    }
+
+    return {};
 }
 
 template<>
 inline void Script::eval() {
     assert(!_scriptSource.empty());
-    _script->eval(_scriptSource);
+    try {
+        _script->eval(_scriptSource);
+    } catch (const chaiscript::exception::eval_error &e) {
+        caughtException(e.pretty_print().c_str(), true);
+    }
 }
 
 }; //namespace Divide

@@ -14,6 +14,7 @@
 #include <Allocator/xallocator.h>
 #endif
 
+#include "Utility/Headers/Localization.h"
 #include "Utility/Headers/MemoryTracker.h"
 
 #include "Platform/File/Headers/FileManagement.h"
@@ -22,6 +23,15 @@ namespace Divide {
 
 namespace {
     SysInfo g_sysInfo;
+
+    bool hasArgument(int argc, char** argv, const char* arg) {
+        for (int i = 0; i < argc; ++i) {
+            if (_strcmpi(argv[i], arg) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 namespace MemoryManager {
@@ -50,13 +60,58 @@ const SysInfo& const_sysInfo() {
     return g_sysInfo;
 }
 
-bool PlatformPostInit(int argc, char** argv) {
+ErrorCode PlatformPreInit(int argc, char** argv) {
+    InitSysInfo(sysInfo(), argc, argv);
+    return ErrorCode::NO_ERR;
+}
+
+ErrorCode PlatformPostInit(int argc, char** argv) {
     Runtime::mainThreadID(std::this_thread::get_id());
     SeedRandom();
-    Paths::initPaths();
-    InitSysInfo(sysInfo(), argc, argv);
+    Paths::initPaths(sysInfo());
 
-    return true;
+    ErrorCode err = ErrorCode::NO_ERR;
+    if (pathExists((Paths::g_exePath + Paths::g_assetsLocation).c_str())) {
+        // Read language table
+        err = Locale::init();
+        if (err == ErrorCode::NO_ERR) {
+            Console::start();
+            // Print a copyright notice in the log file
+            if (!hasArgument(argc, argv, "disableCopyright")) {
+                Console::printCopyrightNotice();
+            }
+            Console::toggleTimeStamps(true);
+            Console::togglethreadID(true);
+        }
+    } else {
+        err = ErrorCode::WRONG_WORKING_DIRECTORY;
+    }
+
+    return err;
+}
+
+
+ErrorCode PlatformInit(int argc, char** argv) {
+    ErrorCode err = ErrorCode::NO_ERR;
+    err = PlatformPreInit(argc, argv);
+    if (err == ErrorCode::NO_ERR) {
+        err = PlatformInitImpl(argc, argv);
+        if (err == ErrorCode::NO_ERR) {
+            err = PlatformPostInit(argc, argv);
+        }
+    }
+
+    return err;
+}
+
+bool PlatformClose() {
+    Runtime::resetMainThreadID();
+    if (PlatformCloseImpl()) {
+        Console::stop();
+        Locale::clear();
+    }
+
+    return false;
 }
 
 void InitSysInfo(SysInfo& info, I32 argc, char** argv) {

@@ -32,10 +32,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORE_ERROR_CODES_H_
 #define _CORE_ERROR_CODES_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
-
 namespace Divide {
-    enum class ErrorCode : I32 {
+    enum class ErrorCode {
         NO_ERR = 0,
         MISSING_SCENE_DATA = -1,
         MISSING_SCENE_LOAD_CALL = -2,
@@ -62,8 +60,9 @@ namespace Divide {
         PHYSX_EXTENSION_ERROR = -23,
         NO_LANGUAGE_INI = -24,
         NOT_ENOUGH_RAM = -25,
-        PLATFORM_INIT_ERROR = -26,
-        PLATFORM_CLOSE_ERROR = -27,
+        WRONG_WORKING_DIRECTORY = -26,
+        PLATFORM_INIT_ERROR = -27,
+        PLATFORM_CLOSE_ERROR = -28,
     };
 };
 

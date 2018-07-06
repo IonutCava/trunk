@@ -6,12 +6,18 @@
 
 #include <iostream>
 
-void PreparePlatform() {
-    static bool s_platformInit = false;
-    if (!s_platformInit) {
-        Divide::PlatformInit(0, nullptr);
-        s_platformInit = true;
+bool PreparePlatform() {
+    static Divide::ErrorCode err = Divide::ErrorCode::PLATFORM_INIT_ERROR;
+    if (err != Divide::ErrorCode::NO_ERR) {
+        Divide::PlatformClose();
+        vectorImpl<char*> args = { "disableCopyright" };
+        err = Divide::PlatformInit(static_cast<int>(args.size()), args.data());
+        if (err != Divide::ErrorCode::NO_ERR) {
+            std::cout << "Platform error code: " << static_cast<int>(err) << std::endl;
+        }
     }
+
+    return err == Divide::ErrorCode::NO_ERR;
 }
 
 int main(int argc, char **argv) {
@@ -27,6 +33,8 @@ int main(int argc, char **argv) {
     } else {
         std::cout << "No errors detected!" << std::endl;
     }
+
+    Divide::PlatformClose();
 
     if (argc == 1) {
         system("pause");
