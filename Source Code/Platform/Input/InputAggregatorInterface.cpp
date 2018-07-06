@@ -2,6 +2,7 @@
 
 #include "Headers/InputAggregatorInterface.h"
 #include "Core/Math/Headers/MathVectors.h"
+#include "Platform/Headers/DisplayWindow.h"
 
 namespace Divide {
 namespace Input {
@@ -11,58 +12,63 @@ InputEvent::InputEvent(U8 deviceIndex)
 {
 }
 
-MouseEvent::MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg)
+MouseEvent::MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg, const DisplayWindow& parentWindow)
     : InputEvent(deviceIndex),
       _event(arg),
-      _warp(false),
-      _rect(-1)
+      _parentWindow(parentWindow)
 {
 }
 
-OIS::Axis MouseEvent::X(bool warped) const {
-    if (_warp && warped) {
-        D64 slope = 0.0;
-        OIS::Axis newX = _event.state.X;
-        newX.abs = MAP(newX.abs, _rect.x, _rect.z, 0, _event.state.width, slope);
+OIS::Axis MouseEvent::X(bool warped, bool viewportRelative) const {
+    D64 slope = 0.0;
+    OIS::Axis newX = _event.state.X;
+    if (_parentWindow.warp() && warped) {
+        const vec4<I32>& rect = _parentWindow.warpRect();
+        newX.abs = MAP(newX.abs, rect.x, rect.z, 0, _event.state.width, slope);
         newX.rel = static_cast<int>(std::round(newX.rel * slope));
-        return newX;
     }
-    return _event.state.X;
+
+    if (viewportRelative) {
+        const vec4<I32>& rect = _parentWindow.renderingViewport();
+        newX.abs = MAP(newX.abs, 0, _event.state.width, rect.x, rect.z, slope);
+        newX.rel = static_cast<int>(std::round(newX.rel * slope));
+    }
+
+    return newX;
 }
 
-OIS::Axis MouseEvent::Y(bool warped) const {
-    if (_warp && warped) {
-        D64 slope = 0.0;
-        OIS::Axis newY = _event.state.Y;
-        newY.abs = MAP(newY.abs, _rect.y, _rect.w, 0, _event.state.height, slope);
+OIS::Axis MouseEvent::Y(bool warped, bool viewportRelative) const {
+    D64 slope = 0.0;
+    OIS::Axis newY = _event.state.Y;
+
+    if (_parentWindow.warp() && warped) {
+        const vec4<I32>& rect = _parentWindow.warpRect();
+        newY.abs = MAP(newY.abs, rect.y, rect.w, 0, _event.state.height, slope);
         newY.rel = static_cast<int>(std::round(newY.rel * slope));
-        return newY;
     }
 
-    return _event.state.Y;
+    if (viewportRelative) {
+        const vec4<I32>& rect = _parentWindow.renderingViewport();
+        newY.abs = MAP(newY.abs, 0, _event.state.height, rect.y, rect.w, slope);
+        newY.rel = static_cast<int>(std::round(newY.rel * slope));
+    }
+
+    return newY;
 }
 
-OIS::Axis MouseEvent::Z(bool warped) const {
-    /*if (_warp && warped) {
-        OIS::Axis newZ = _event.state.Z;
-        return newZ;
-    }*/
+OIS::Axis MouseEvent::Z(bool warped, bool viewportRelative) const {
+    ACKNOWLEDGE_UNUSED(warped);
+    ACKNOWLEDGE_UNUSED(viewportRelative);
+
     return _event.state.Z;
 }
 
-vec3<I32> MouseEvent::relativePos(bool warped) const {
-    return vec3<I32>(X(warped).rel, Y(warped).rel, Z(warped).rel);
+vec3<I32> MouseEvent::relativePos(bool warped, bool viewportRelative) const {
+    return vec3<I32>(X(warped, viewportRelative).rel, Y(warped, viewportRelative).rel, Z(warped, viewportRelative).rel);
 }
 
-vec3<I32> MouseEvent::absolutePos(bool warped) const {
-    return vec3<I32>(X(warped).abs, Y(warped).abs, Z(warped).abs);
-}
-
-void MouseEvent::warp(bool state, const vec4<I32>& rect) {
-    _warp = state;
-    if (_warp) {
-        _rect.set(rect);
-    }
+vec3<I32> MouseEvent::absolutePos(bool warped, bool viewportRelative) const {
+    return vec3<I32>(X(warped, viewportRelative).abs, Y(warped, viewportRelative).abs, Z(warped, viewportRelative).abs);
 }
 
 JoystickData::JoystickData() 

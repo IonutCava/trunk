@@ -456,7 +456,11 @@ void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
         newHeight = tempHeight;
         bottom = to_I32((h - newHeight) * 0.5f);
     }
-    setBaseViewport(vec4<I32>(left, bottom, newWidth, newHeight));
+
+    vec4<I32> renderingViewport(left, bottom, newWidth, newHeight);
+    WindowManager& winManager = _parent.platformContext().app().windowManager();
+    winManager.getActiveWindow().renderingViewport(renderingViewport);
+    setBaseViewport(renderingViewport);
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it

@@ -154,6 +154,10 @@ namespace Divide {
     inline const vec4<I32>& DisplayWindow::warpRect() const {
         return _warpRect;
     }
+
+    inline const vec4<I32>& DisplayWindow::renderingViewport() const {
+        return _renderingViewport;
+    }
 }; //namespace Divide
 
 #endif //_DISPLAY_WINDOW_INL_

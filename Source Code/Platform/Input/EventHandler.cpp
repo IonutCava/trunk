@@ -83,11 +83,8 @@ bool EventHandler::mouseMoved(const MouseEvent &arg) {
 }
 
 bool EventHandler::mouseMoved(const OIS::MouseEvent &arg) {
-    MouseEvent moveEvent(to_U8(arg.device->getID()), arg);
     DisplayWindow& parentWindow = Attorney::InputInterfaceEvent::parentWindow(*_pApplication);
-    if (parentWindow.warp()) {
-        moveEvent.warp(parentWindow.warp(), parentWindow.warpRect());
-    }
+    MouseEvent moveEvent(to_U8(arg.device->getID()), arg, parentWindow);
 
     return mouseMoved(moveEvent);
 }
@@ -97,11 +94,8 @@ bool EventHandler::mouseButtonPressed(const MouseEvent &arg, MouseButton id) {
 }
 
 bool EventHandler::mousePressed(const OIS::MouseEvent& arg, OIS::MouseButtonID id) {
-    MouseEvent pressEvent(to_U8(arg.device->getID()), arg);
     DisplayWindow& parentWindow = Attorney::InputInterfaceEvent::parentWindow(*_pApplication);
-    if (parentWindow.warp()) {
-        pressEvent.warp(parentWindow.warp(), parentWindow.warpRect());
-    }
+    MouseEvent pressEvent(to_U8(arg.device->getID()), arg, parentWindow);
 
     return mouseButtonPressed(pressEvent, id);
 }
@@ -111,11 +105,8 @@ bool EventHandler::mouseButtonReleased(const MouseEvent &arg, MouseButton id) {
 }
 
 bool EventHandler::mouseReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID id) {
-    MouseEvent releaseEvent(to_U8(arg.device->getID()), arg);
     DisplayWindow& parentWindow = Attorney::InputInterfaceEvent::parentWindow(*_pApplication);
-    if (parentWindow.warp()) {
-        releaseEvent.warp(parentWindow.warp(), parentWindow.warpRect());
-    }
+    MouseEvent releaseEvent(to_U8(arg.device->getID()), arg, parentWindow);
 
     return mouseButtonReleased(releaseEvent, id);
 }

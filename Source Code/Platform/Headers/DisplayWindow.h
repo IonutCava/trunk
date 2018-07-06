@@ -193,6 +193,9 @@ public:
     inline const vec4<I32>& warpRect() const;
     void warp(bool state, const vec4<I32>& rect = vec4<I32>(-1));
 
+    inline const vec4<I32>& renderingViewport() const;
+    void renderingViewport(const vec4<I32>& viewport);
+
 private:
     void restore();
     /// Internally change window size
@@ -249,6 +252,7 @@ private:
 
     bool _warp;
     vec4<I32> _warpRect;
+    vec4<I32> _renderingViewport;
 
     U8 _opacity;
     vec2<I32> _windowPosition;

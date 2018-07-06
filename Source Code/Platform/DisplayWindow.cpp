@@ -524,4 +524,8 @@ void DisplayWindow::warp(bool state, const vec4<I32>& rect) {
     }
 }
 
+void DisplayWindow::renderingViewport(const vec4<I32>& viewport) {
+    _renderingViewport.set(viewport);
+}
+
 }; //namespace Divide

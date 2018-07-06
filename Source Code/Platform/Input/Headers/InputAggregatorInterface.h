@@ -36,6 +36,8 @@
 #include <OIS.h>
 
 namespace Divide {
+
+class DisplayWindow;
 namespace Input {
 /// Points to the position of said joystick in the vector
 enum class Joystick : U32 {
@@ -72,22 +74,18 @@ struct InputEvent {
 };
 
 struct MouseEvent : public InputEvent {
-    explicit MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg);
+    explicit MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg, const DisplayWindow& parentWindow);
 
-    OIS::Axis X(bool warped = true) const;
-    OIS::Axis Y(bool warped = true) const;
-    OIS::Axis Z(bool warped = true) const;
+    OIS::Axis X(bool warped = true, bool viewportRelative = false) const;
+    OIS::Axis Y(bool warped = true, bool viewportRelative = false) const;
+    OIS::Axis Z(bool warped = true, bool viewportRelative = false) const;
 
-    vec3<I32> relativePos(bool warped = true) const;
-    vec3<I32> absolutePos(bool warped = true) const;
+    vec3<I32> relativePos(bool warped = true, bool viewportRelative = false) const;
+    vec3<I32> absolutePos(bool warped = true, bool viewportRelative = false) const;
 
-    void warp(bool state, const vec4<I32>& rect = vec4<I32>(-1));
-
-    
  private:
-    bool _warp;
-    vec4<I32> _rect;
     const OIS::MouseEvent& _event;
+    const DisplayWindow& _parentWindow;
 };
 
 struct JoystickEvent : public InputEvent {
