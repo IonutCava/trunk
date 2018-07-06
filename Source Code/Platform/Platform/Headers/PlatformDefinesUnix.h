@@ -49,7 +49,14 @@
 #include <sys/time.h>
 #include <limits>
 #include <X11/Xlib.h>
-void checkX11Events();
+
+#ifdef None
+#undef None
+#endif //None
+
+#ifdef Success
+#undef Success
+#endif //Success
 
 namespace Divide {
     struct SysInfo {
@@ -74,15 +81,15 @@ typedef timeval TimeValue;
 namespace std {
 // TEMPLATE FUNCTIONS cbegin AND cend
 template<class _Container>
-auto inline cbegin(const _Container& _Cont) -> decltype(_STD begin(_Cont))
+auto inline cbegin(const _Container& _Cont) -> decltype(::std::begin(_Cont))
 {	// get beginning of sequence
-    return (_STD begin(_Cont));
+    return (::std::begin(_Cont));
 }
 
 template<class _Container>
-auto inline cend(const _Container& _Cont) -> decltype(_STD end(_Cont))
+auto inline cend(const _Container& _Cont) -> decltype(::std::end(_Cont))
 {	// get end of sequence
-    return (_STD end(_Cont));
+    return (::std::end(_Cont));
 }
 
 // TEMPLATE FUNCTIONS rbegin AND rend
@@ -138,15 +145,15 @@ reverse_iterator<const _Elem *> rend(initializer_list<_Elem> _Ilist)
 
 // TEMPLATE FUNCTIONS crbegin AND crend
 template<class _Container>
-auto inline crbegin(const _Container& _Cont) -> decltype(_STD rbegin(_Cont))
+auto inline crbegin(const _Container& _Cont) -> decltype(::std::rbegin(_Cont))
 {	// get beginning of reversed sequence
-    return (_STD rbegin(_Cont));
+    return (::std::rbegin(_Cont));
 }
 
 template<class _Container>
-auto inline crend(const _Container& _Cont) -> decltype(_STD rend(_Cont))
+auto inline crend(const _Container& _Cont) -> decltype(::std::rend(_Cont))
 {	// get end of reversed sequence
-    return (_STD rend(_Cont));
+    return (::std::rend(_Cont));
 }
 
 }; //namespace std

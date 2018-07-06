@@ -379,6 +379,9 @@ U32 HARDWARE_THREAD_COUNT();
 
 };  // namespace Divide
 
+void* malloc_aligned(const size_t size, size_t alignment);
+void  malloc_free(void*& ptr);
+
 void* operator new[](size_t size, const char* pName, Divide::I32 flags,
                      Divide::U32 debugFlags, const char* file,
                      Divide::I32 line);

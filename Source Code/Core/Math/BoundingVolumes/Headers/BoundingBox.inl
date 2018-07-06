@@ -203,7 +203,7 @@ inline const vec3<F32>* BoundingBox::getPoints() const {
 }
 
 inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const {
-    return std::sqrtf(nearestDistanceFromPointSquared(pos));
+    return std::sqrt(nearestDistanceFromPointSquared(pos));
 }
 
 inline void BoundingBox::ComputePoints() const {

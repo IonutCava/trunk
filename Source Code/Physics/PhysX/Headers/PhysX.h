@@ -79,10 +79,12 @@ class PhysXActor : public PhysicsAsset {
 
 class PxDefaultAllocator : public physx::PxAllocatorCallback {
     void* allocate(size_t size, const char*, const char*, int) {
-        return _aligned_malloc(size, 16);
+    	return malloc_aligned(size, 16);
     }
 
-    void deallocate(void* ptr) { _aligned_free(ptr); }
+    void deallocate(void* ptr) {
+    	malloc_free(ptr);
+    }
 };
 
 class SceneGraphNode;

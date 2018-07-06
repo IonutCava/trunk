@@ -197,8 +197,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     inline void addRestartIndex() {
         _primitiveRestartEnabled = true;
-        addIndex(usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L
-                                    : Config::PRIMITIVE_RESTART_INDEX_S);
+        if (usesLargeIndices()) {
+        	addIndex<U32>(Config::PRIMITIVE_RESTART_INDEX_L);
+        } else {
+            addIndex<U16>(Config::PRIMITIVE_RESTART_INDEX_S);
+        }
     }
 
     inline void addPosition(const vec3<F32>& pos) {

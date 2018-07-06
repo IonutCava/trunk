@@ -224,26 +224,6 @@ class SceneGraphNode : public GUIDWrapper,
         assert(false && "INVALID COMPONENT");
         return nullptr;
     }
-    template <>
-    inline AnimationComponent* getComponent() const {
-        return static_cast<AnimationComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::ANIMATION)].get());
-    }
-    template <>
-    inline NavigationComponent* getComponent() const {
-        return static_cast<NavigationComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::NAVIGATION)].get());
-    }
-    template <>
-    inline PhysicsComponent* getComponent() const {
-        return static_cast<PhysicsComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::PHYSICS)].get());
-    }
-    template <>
-    inline RenderingComponent* getComponent() const {
-        return static_cast<RenderingComponent*>(
-            _components[to_uint(SGNComponent::ComponentType::RENDERING)].get());
-    }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
@@ -322,5 +302,26 @@ class SceneGraphNode : public GUIDWrapper,
 
     mutable SharedLock _childrenLock;
 };
+
+template <>
+inline AnimationComponent* SceneGraphNode::getComponent() const {
+	return static_cast<AnimationComponent*>(
+		_components[to_uint(SGNComponent::ComponentType::ANIMATION)].get());
+}
+template <>
+inline NavigationComponent* SceneGraphNode::getComponent() const {
+	return static_cast<NavigationComponent*>(
+		_components[to_uint(SGNComponent::ComponentType::NAVIGATION)].get());
+}
+template <>
+inline PhysicsComponent* SceneGraphNode::getComponent() const {
+	return static_cast<PhysicsComponent*>(
+		_components[to_uint(SGNComponent::ComponentType::PHYSICS)].get());
+}
+template <>
+inline RenderingComponent* SceneGraphNode::getComponent() const {
+	return static_cast<RenderingComponent*>(
+		_components[to_uint(SGNComponent::ComponentType::RENDERING)].get());
+}
 };  // namespace Divide
 #endif

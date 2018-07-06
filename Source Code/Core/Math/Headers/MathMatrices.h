@@ -36,8 +36,8 @@
  * vec4 : added methods : set, reset, compare
  ***************************************************************************
  */
-/*
-/*
+ /*
+ *
  * MathLibrary
  * Copyright (c) 2011 NoLimitsDesigns
  * All rights reserved.
@@ -113,9 +113,9 @@ smasherprog@gmail.com or visit www.nolimitsdesigns.com
 
 namespace Divide {
 
-/******************************/ /**
- /* mat3
- /*********************************/
+/*********************************
+ * mat3
+ *********************************/
 template <typename T>
 class mat3 {
    public:
@@ -479,8 +479,8 @@ class mat3 {
 };
 
 /***************
-/* mat4
-/***************/
+ * mat4
+ ***************/
 template <typename T>
 class mat4 {
    public:

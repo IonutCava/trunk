@@ -48,20 +48,6 @@ DEFINE_SINGLETON(InputInterface)
   public:
     ErrorCode init(Kernel& kernel);
 
-    #if defined OIS_LINUX_PLATFORM
-
-    // This is just here to show that you still receive x11 events,
-    // as the lib only needs mouse/key events
-    void checkX11Events() {
-        XEvent event;
-
-        // Poll x11 for events
-        while (XPending(_pXDisp) > 0) {
-            XNextEvent(_pXDisp, &event);
-        }
-    }
-    #endif
-
     U8 update(const U64 deltaTime);
     void terminate();
 

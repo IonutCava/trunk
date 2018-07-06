@@ -78,6 +78,13 @@ namespace {
     static LARGE_INTEGER g_time;
 }
 
+void* malloc_aligned(const size_t size, size_t alignment) {
+    return _aligned_malloc(size, alignment);
+}
+
+void  malloc_free(void*& ptr) {
+	_aligned_free(ptr);
+}
 namespace Divide {
     void getWindowHandle(void* window, SysInfo& info) {
         SDL_SysWMinfo wmInfo;

@@ -2,6 +2,14 @@
 
 #include <SDL_syswm.h>
 
+void* malloc_aligned(const size_t size, size_t alignment) {
+	return malloc(size);
+}
+
+void  malloc_free(void*& ptr) {
+	free(ptr);
+}
+
 namespace Divide {
     bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info) {
         I32 mib[2] = { CTL_HW, HW_MEMSIZE };

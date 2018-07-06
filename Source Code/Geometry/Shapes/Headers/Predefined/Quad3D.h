@@ -66,7 +66,7 @@ class Quad3D : public Object3D {
         U8 indiceCount = doubleSided ? 12 : 6;
         for (U8 i = 0; i < indiceCount; i++) {
             // CCW draw order
-            getGeometryVB()->addIndex(indices[i]);
+            getGeometryVB()->addIndex<U16>(indices[i]);
             //  v0----v1
             //   |    |
             //   |    |

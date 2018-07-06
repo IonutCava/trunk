@@ -73,9 +73,9 @@ class mat4;
 template <typename T>
 class Quaternion;
 /***********************************************************************
-/* vec2 -  A 2-tuple used to represent things like a vector in 2D space,
-/* a point in 2D space or just 2 values linked together
-/***********************************************************************/
+ * vec2 -  A 2-tuple used to represent things like a vector in 2D space,
+ * a point in 2D space or just 2 values linked together
+ ***********************************************************************/
 template <typename T>
 class vec2 {
    public:
@@ -287,9 +287,9 @@ inline T Dot(const vec2<T> &a, const vec2<T> &b);
 template <typename T>
 inline vec2<T> operator*(T fl, const vec2<T> &v);
 /***********************************************************************
-/* vec3 -  A 3-tuple used to represent things like a vector in 3D space,
-/* a point in 3D space or just 3 values linked together
-/***********************************************************************/
+ * vec3 -  A 3-tuple used to represent things like a vector in 3D space,
+ * a point in 3D space or just 3 values linked together
+ ***********************************************************************/
 template <typename T>
 class vec3 {
    public:
@@ -539,10 +539,10 @@ inline vec3<T> Inverse(const vec3<T> &v);
 template <typename T>
 inline vec3<T> operator*(T fl, const vec3<T> &v);
 /*************************************************************************************
-/* vec4 -  A 4-tuple used to represent things like a vector in 4D space
+ * vec4 -  A 4-tuple used to represent things like a vector in 4D space
 (w-component)
-/* or just 4 values linked together
-/************************************************************************************/
+ * or just 4 values linked together
+ ************************************************************************************/
 template <typename T>
 class vec4 {
    public:
