@@ -97,9 +97,9 @@ struct IndirectDrawCommand {
 
 struct GenericDrawCommand {
    private:
-    U8 _queryID;
     U8 _lodIndex;
     U16 _drawCount;
+    U32 _queryID;
     bool _locked;
     bool _drawToBuffer;
     bool _renderWireframe;
@@ -129,7 +129,7 @@ struct GenericDrawCommand {
         _lodIndex = lod;
     }
 
-    inline void queryID(U8 queryID) {
+    inline void queryID(U32 queryID) {
         assert(!_locked);
         _queryID = queryID;
     }
@@ -190,7 +190,7 @@ struct GenericDrawCommand {
     }
 
     inline U8 LoD() const { return _lodIndex; }
-    inline U8 queryID() const { return _queryID; }
+    inline U32 queryID() const { return _queryID; }
     inline U32 drawID() const { return _cmd.baseInstance; }
     inline U16 drawCount() const { return _drawCount; }
     inline size_t stateHash() const { return _stateHash; }
@@ -334,6 +334,21 @@ class VertexBuffer;
 class ShaderBuffer;
 class ShaderProgram;
 
+class HardwareQuery {
+public:
+    HardwareQuery() : _enabled(false) {}
+
+    virtual ~HardwareQuery() {}
+    virtual void create() = 0;
+    virtual void destroy() = 0;
+
+    inline bool enabled() const { return _enabled; }
+    inline void enabled(bool state) { _enabled = state; }
+
+protected:
+    bool _enabled;
+};
+
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper {
    protected:
@@ -353,8 +368,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual ShaderBuffer* newSB(const stringImpl& bufferName,
                                 const bool unbound = false,
                                 const bool persistentMapped = true) const = 0;
-    virtual GenericVertexData* newGVD(
-        const bool persistentMapped = false) const = 0;
+    virtual GenericVertexData* newGVD(const bool persistentMapped = false) const = 0;
     virtual PixelBuffer* newPB(const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
     virtual Texture* newTextureArray() const = 0;
     virtual Texture* newTexture2D() const = 0;
@@ -362,6 +376,8 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual ShaderProgram* newShaderProgram() const = 0;
     virtual Shader* newShader(const stringImpl& name, const ShaderType& type,
                               const bool optimise = false) const = 0;
+    virtual HardwareQuery* newHardwareQuery() const = 0;
+
     virtual bool initShaders() = 0;
     virtual bool deInitShaders() = 0;
 
@@ -373,7 +389,7 @@ class NOINITVTABLE RenderAPIWrapper {
                           const vec2<F32>& relativeOffset) = 0;
 
     virtual void updateClipPlanes() = 0;
-    virtual U64 getFrameDurationGPU() = 0;
+    virtual U64  getFrameDurationGPU() = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock,
                                     RenderStateBlock* const oldBlock) const = 0;
 

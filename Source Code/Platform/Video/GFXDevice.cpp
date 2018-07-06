@@ -59,7 +59,6 @@ GFXDevice::GFXDevice()
     _viewportUpdate = false;
     _rasterizationEnabled = true;
     _enablePostProcessing = false;
-    _useIndirectCommands = false;
     _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = true;
     _buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)] = true;
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;

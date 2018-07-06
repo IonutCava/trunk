@@ -112,6 +112,23 @@ inline const mat4<F32>& GFXDevice::getMatrix(const MATRIX_MODE& mode) {
     getMatrix(mode, _mat4Cache);
     return _mat4Cache;
 }
+
+inline void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
+    processCommand(cmd, false);
+}
+
+inline void GFXDevice::submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+    processCommands(cmds, false);
+}
+
+inline void GFXDevice::submitIndirectRenderCommand(const GenericDrawCommand& cmd) {
+    processCommand(cmd, true);
+}
+
+inline void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+    processCommands(cmds, true);
+}
+
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE \
     RenderPassManager::getInstance().getLastTotalBinSize(0)

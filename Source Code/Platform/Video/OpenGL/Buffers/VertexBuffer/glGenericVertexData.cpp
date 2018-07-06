@@ -182,8 +182,8 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer,
 
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::Draw(const GenericDrawCommand& command,
-                               bool useCmdBuffer,
-                               bool skipBind) {
+                               std::shared_ptr<HardwareQuery> hardwareQuery,
+                               bool useCmdBuffer) {
     // Get the OpenGL specific command from the generic one
     const IndirectDrawCommand& cmd = command.cmd();
     // Instance count can be generated programmatically, so make sure it's valid

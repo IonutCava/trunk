@@ -59,8 +59,9 @@ class d3dGenericVertexData : public GenericVertexData {
 
    protected:
     friend class GFXDevice;
-    void Draw(const GenericDrawCommand& command, bool useCmdBuffer = false,
-              bool skipBind = false) {}
+    void Draw(const GenericDrawCommand& command, 
+              std::shared_ptr<HardwareQuery> hardwareQuery,
+              bool useCmdBuffer = false) {}
 };
 
 };  // namespace Divide

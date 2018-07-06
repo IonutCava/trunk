@@ -4,7 +4,7 @@
 namespace Divide {
 namespace GFX {
 
-    ScopedRasterizer::ScopedRasterizer(bool state) {
+ScopedRasterizer::ScopedRasterizer(bool state) {
     _rasterizerState = GFX_DEVICE.rasterizationState();
     GFX_DEVICE.toggleRasterization(state);
 }

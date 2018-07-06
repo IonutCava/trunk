@@ -231,48 +231,64 @@ bool glVertexArray::CreateInternal() {
 
 /// Render the current buffer data using the specified command
 void glVertexArray::Draw(const GenericDrawCommand& command,
-                         bool useCmdBuffer,
-                         bool skipBind) {
+                         std::shared_ptr<HardwareQuery> hardwareQuery,
+                         bool useCmdBuffer) {
     DIVIDE_ASSERT(command.primitiveType() != PrimitiveType::COUNT,
                   "glVertexArray error: Draw command's type is not valid!");
-    // Instance count can be generated programmatically, so we need to make sure
-    // it's valid
+    // Instance count can be generated programmatically,
+    // so we need to make sure it's valid
     if (command.cmd().primCount == 0) {
         return;
     }
-    // There are cases when re-binding the buffer isn't needed (e.g. tight
-    // loops)
-    if (!skipBind) {
-        // Make sure the buffer is current
-        if (!SetActive()) {
-            return;
-        }
+    // Make sure the buffer is current
+    if (!SetActive()) {
+        return;
     }
     // Process the actual draw command
-    if (!Config::Profile::DISABLE_DRAWS) {
-        bufferPtr offset = (bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
-        if (!useCmdBuffer) {
-            GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-            offset = (bufferPtr)(&command.cmd());
-        }
+    if (Config::Profile::DISABLE_DRAWS) {
+        return;
+    }
 
-        U16 drawCount = command.drawCount();
+    bool generateOccQuery = false;
+    glHardwareQuery* query = static_cast<glHardwareQuery*>(hardwareQuery.get());
+    if (!query->enabled()) {
+        query->enabled(true);
+        generateOccQuery = true;
+        glBeginQuery(GL_ANY_SAMPLES_PASSED, query->getID());
+    } else {
+        //glBeginConditionalRender(query->getID(), GL_QUERY_BY_REGION_WAIT);
+    }
+
+    bufferPtr offset = (bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
+    if (!useCmdBuffer) {
+        GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+        offset = (bufferPtr)(&command.cmd());
+    }
+
+    U16 drawCount = command.drawCount();
+    if (command.renderGeometry()) {
         GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
-        if (command.renderGeometry()) {
-            // Submit the draw command
-            if (drawCount > 1) {
-                glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, 0);
-            } else {
-                glDrawElementsIndirect(mode, _formatInternal, offset);
-            }
-            // Always update draw call counter after draw calls
-            GFX_DEVICE.registerDrawCall();
+        // Submit the draw command
+        if (drawCount > 1) {
+            glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, 0);
+        } else {
+            glDrawElementsIndirect(mode, _formatInternal, offset);
         }
+        // Always update draw call counter after draw calls
+        GFX_DEVICE.registerDrawCall();
+    }
+
+    if (generateOccQuery) {
+        glEndQuery(GL_ANY_SAMPLES_PASSED);
+    } else {
+        //glEndConditionalRender();
+        query->enabled(false);
 
         if (command.renderWireframe()) {
             if (drawCount > 1) {
                 glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, 0);
-            } else {
+            }
+            else {
                 glDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset);
             }
             // Always update draw call counter after draw calls

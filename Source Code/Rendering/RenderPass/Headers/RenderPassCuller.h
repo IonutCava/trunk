@@ -75,8 +75,6 @@ class RenderPassCuller {
     VisibleNodeCache& cullSpecial(
         RenderPassCuller::VisibleNodeCache& inputNodes,
         const std::function<bool(const RenderableNode&)>& cullingFunction);
-    VisibleNodeCache& occlusionCull(
-        RenderPassCuller::VisibleNodeCache& inputNodes);
     void refresh();
 
    protected:

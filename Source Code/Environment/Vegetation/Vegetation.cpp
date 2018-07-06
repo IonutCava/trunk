@@ -412,25 +412,17 @@ void Vegetation::getDrawCommands(SceneGraphNode& sgn,
     U32 queryID = getQueryID();
     // gpuCull();
 
-    U32 instanceCount = buffer->GetFeedbackPrimitiveCount(static_cast<U8>(queryID));
-    if (instanceCount == 0) {
-        return;
-    }
-    buffer->getDrawAttribDescriptor(posLocation)
-        .offset(_instanceCountGrass * queryID);
-    buffer->getDrawAttribDescriptor(scaleLocation)
-        .offset(_instanceCountGrass * queryID);
-    buffer->getDrawAttribDescriptor(instLocation)
-        .offset(_instanceCountGrass * queryID);
+    buffer->getDrawAttribDescriptor(posLocation).offset(_instanceCountGrass * queryID);
+    buffer->getDrawAttribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
+    buffer->getDrawAttribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
-    RenderingComponent* const renderable =
-        sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
     _renderDrawCommand.renderGeometry(renderable->renderGeometry());
     _renderDrawCommand.renderWireframe(renderable->renderWireframe());
     _renderDrawCommand.stateHash(_grassStateBlockHash);
-    _renderDrawCommand.primCount(instanceCount);
+    _renderDrawCommand.primCount(buffer->GetFeedbackPrimitiveCount(static_cast<U8>(queryID)));
     _renderDrawCommand.LoD(1);
     _renderDrawCommand.shaderProgram(renderable->getDrawShader(renderStage));
     _renderDrawCommand.sourceBuffer(buffer);

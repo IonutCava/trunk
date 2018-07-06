@@ -46,6 +46,14 @@
 
 namespace Divide {
 
+class d3dHardwareQuery : public HardwareQuery {
+public:
+    d3dHardwareQuery() : HardwareQuery() {}
+    ~d3dHardwareQuery() {}
+    void create() {}
+    void destroy() {}
+};
+
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
   protected:
     DX_API() : RenderAPIWrapper() {}
@@ -108,6 +116,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     inline Shader* newShader(const stringImpl& name, const ShaderType& type,
                              const bool optimise = false) const override {
         return MemoryManager_NEW d3dShader(name, type, optimise);
+    }
+
+    inline HardwareQuery* newHardwareQuery() const override {
+        return MemoryManager_NEW d3dHardwareQuery();
     }
 
     bool initShaders() override;

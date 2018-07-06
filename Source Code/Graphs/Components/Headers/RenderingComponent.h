@@ -136,10 +136,11 @@ class RenderingComponent : public SGNComponent {
     /// Called after the parent node was rendered
     void postDraw(const SceneRenderState& sceneRenderState,
                   RenderStage renderStage);
-    vectorImpl<GenericDrawCommand>& getDrawCommands(
-        SceneRenderState& sceneRenderState,
-        RenderStage renderStage);
-
+    vectorImpl<GenericDrawCommand>& getDrawCommands(SceneRenderState& sceneRenderState,
+                                                    RenderStage renderStage);
+    bool getImpostorDrawCommand(SceneRenderState& sceneRenderState,
+                                RenderStage renderStage,
+                                GenericDrawCommand& commandOut);
     inline void drawOrder(U32 index) { _drawOrder = index; }
 
    protected:
@@ -177,6 +178,13 @@ class RenderingCompGFXDevice {
         RenderingComponent& renderable, SceneRenderState& sceneRenderState,
         RenderStage renderStage) {
         return renderable.getDrawCommands(sceneRenderState, renderStage);
+    }
+
+    static bool getImpostorDrawCommand(
+        RenderingComponent& renderable, SceneRenderState& sceneRenderState,
+        RenderStage renderStage, GenericDrawCommand& commandOut) {
+
+        return renderable.getImpostorDrawCommand(sceneRenderState, renderStage, commandOut);
     }
 
     static bool canDraw(RenderingComponent& renderable,

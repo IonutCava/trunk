@@ -446,24 +446,23 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // (currently, only double-buffered, front and back)
     // to avoid pipeline stalls
     for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
-        glGenQueries(PERFORMANCE_COUNTERS, _queryID[i]);
-        DIVIDE_ASSERT(
-            _queryID[i][0] != 0,
-            "GLFWWrapper error: Invalid performance counter query ID!");
+        for (U8 j = 0; j < PERFORMANCE_COUNTERS; ++j) {
+            _queryID[i][j].create();
+            DIVIDE_ASSERT(_queryID[i][j].getID() != 0,
+                "GLFWWrapper error: Invalid performance counter query ID!");
+            // Initialize an initial time query as it solves certain issues with
+            // consecutive queries later
+            glBeginQuery(GL_TIME_ELAPSED, _queryID[i][j].getID());
+            glEndQuery(GL_TIME_ELAPSED);
+            // Wait until the results are available
+            GLint stopTimerAvailable = 0;
+            while (!stopTimerAvailable) {
+                glGetQueryObjectiv(_queryID[i][j].getID(), GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
+            }
+        }
     }
 
-    _queryBackBuffer = 4;
-    // Initialize an initial time query as it solves certain issues with
-    // consecutive queries later
-    glBeginQuery(GL_TIME_ELAPSED, _queryID[0][0]);
-    glEndQuery(GL_TIME_ELAPSED);
-    // Wait until the results are available
-    GLint stopTimerAvailable = 0;
-    while (!stopTimerAvailable) {
-        glGetQueryObjectiv(_queryID[0][0],
-                           GL_QUERY_RESULT_AVAILABLE,
-                           &stopTimerAvailable);
-    }
+    _queryBackBuffer = PERFORMANCE_COUNTER_BUFFERS - 1;
 #endif
 
     // Once OpenGL is ready for rendering, init CEGUI

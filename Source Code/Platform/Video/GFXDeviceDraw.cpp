@@ -105,29 +105,48 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     return false;
 }
 
-void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
-    _useIndirectCommands = false;
-    processCommand(cmd);
+void OcclusionQueryHelper::registerDrawIDForNode(I64 nodeGUID, U32 drawID) {
+    assert(drawID < _queries.size());
+
+    _nodeDrawID[nodeGUID] = drawID;
+    _drawIDNode[drawID] = nodeGUID;
 }
 
-void GFXDevice::submitRenderCommands(
-    const vectorImpl<GenericDrawCommand>& cmds) {
-    _useIndirectCommands = false;
-    processCommands(cmds);
+std::shared_ptr<HardwareQuery> OcclusionQueryHelper::getQueryForDrawID(U32 drawID) {
+    assert(drawID < _queries.size());
+    return _queries[drawID];
 }
 
-void GFXDevice::submitIndirectRenderCommand(const GenericDrawCommand& cmd) {
-    _useIndirectCommands = true;
-    processCommand(cmd);
+void OcclusionQueryHelper::updateDrawIDForNode(I64 nodeGUID, U32 newDrawID) {
+    // Get old draw ID for current node
+    U32 lastDrawID = _nodeDrawID[nodeGUID];
+    // Get old GUID for the new drawID
+    I64 oldGUID = _drawIDNode[newDrawID];
+    // Update to new draw ID
+    _nodeDrawID[nodeGUID] = newDrawID;
+    // Update the old node
+    _nodeDrawID[oldGUID] = lastDrawID;
+
+    _drawIDNode[newDrawID] = nodeGUID;
+    _drawIDNode[lastDrawID] = oldGUID;
 }
 
-void GFXDevice::submitIndirectRenderCommands(
-    const vectorImpl<GenericDrawCommand>& cmds) {
-    _useIndirectCommands = true;
-    processCommands(cmds);
+void OcclusionQueryHelper::batchDrawID(U32 previousDrawID, U32 currentDrawID) {
+    _nodeDrawID[_drawIDNode[currentDrawID]] = previousDrawID;
 }
 
-void GFXDevice::processCommand(const GenericDrawCommand& cmd) {
+void OcclusionQueryHelper::init() {
+    for (std::shared_ptr<HardwareQuery>& query : _queries) {
+        query.reset(GFX_DEVICE.newHardwareQuery());
+        query->create();
+    }
+}
+
+void OcclusionQueryHelper::deinit() {
+    _queries.fill(nullptr);
+}
+
+void GFXDevice::processCommand(const GenericDrawCommand& cmd, bool useIndirectRender) {
     /// Submit a single draw command
     DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr,
                   "GFXDevice error: Invalid vertex buffer submitted!");
@@ -135,16 +154,16 @@ void GFXDevice::processCommand(const GenericDrawCommand& cmd) {
     // be 0, so skip draw
     if (setBufferData(cmd)) {
         // Same rules about pre-processing the draw command apply
-        cmd.sourceBuffer()->Draw(cmd, _useIndirectCommands);
+        cmd.sourceBuffer()->Draw(cmd, _occlusionHelper.getQueryForDrawID(cmd.drawID()), useIndirectRender);
     }
 }
 
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain
 /// or batched meshes)
-void GFXDevice::processCommands(const vectorImpl<GenericDrawCommand>& cmds) {
+void GFXDevice::processCommands(const vectorImpl<GenericDrawCommand>& cmds, bool useIndirectRender) {
     for (const GenericDrawCommand& cmd : cmds) {
         // Data validation is handled in the single command version
-        processCommand(cmd);
+        processCommand(cmd, useIndirectRender);
     }
 }
 
@@ -160,10 +179,15 @@ void GFXDevice::flushRenderQueue() {
             vectorAlg::vecSize previousCommandIndex = 0;
             vectorAlg::vecSize currentCommandIndex = 1;
             for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-                if (!batchCommands(drawCommands[previousCommandIndex], 
-                                   drawCommands[currentCommandIndex]))
+                GenericDrawCommand& previousCommand = drawCommands[previousCommandIndex];
+                GenericDrawCommand& currentCommand = drawCommands[currentCommandIndex];
+                if (!batchCommands(previousCommand, currentCommand))
                 {
                     previousCommandIndex = currentCommandIndex;
+                }
+                else
+                {
+                    _occlusionHelper.batchDrawID(previousCommand.drawID(), currentCommand.drawID());
                 }
             }
             drawCommands.erase(
@@ -253,7 +277,8 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
 
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                                   SceneRenderState& sceneRenderState,
-                                  bool refreshNodeData) {
+                                  bool refreshNodeData,
+                                  bool impostorPass) {
     Time::ScopedTimer timer(*_commandBuildTimer);
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
@@ -273,6 +298,12 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     U32 lastNodeCount = 1;
     _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
 
+    GenericDrawCommand tempCommand;
+    RenderStateBlock cullingState;
+    cullingState.setZReadWrite(true, false);
+    cullingState.setColorWrites(false, false, false, false);
+    cullingState.setCullMode(CullMode::NONE);
+    size_t cullingStateHash = cullingState.getHash();
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     std::for_each(
@@ -281,27 +312,46 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
             SceneGraphNode& nodeRef = *node._visibleNode;
 
-            vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-                Attorney::RenderingCompGFXDevice::getDrawCommands(
+            if (impostorPass) {
+                
+                if (Attorney::RenderingCompGFXDevice::getImpostorDrawCommand(
+                    *nodeRef.getComponent<RenderingComponent>(),
+                    sceneRenderState, currentStage, tempCommand)) {
+                    tempCommand.drawID(lastNodeCount);
+                    tempCommand.stateHash(cullingStateHash);
+                    _drawCommandsCache[lastCmdCount++].set(tempCommand.cmd());
+                    if (refreshNodeData) {
+                        processVisibleNode(node, _matricesData[lastNodeCount]);
+                    }
+
+                    _occlusionHelper.registerDrawIDForNode(nodeRef.getGUID(), lastNodeCount);
+
+                    lastNodeCount += 1;
+                }
+
+            } else {
+                vectorImpl<GenericDrawCommand>& nodeDrawCommands =
+                    Attorney::RenderingCompGFXDevice::getDrawCommands(
                     *nodeRef.getComponent<RenderingComponent>(),
                     sceneRenderState, currentStage);
 
-            if (!nodeDrawCommands.empty()) {
-                for (GenericDrawCommand& cmd : nodeDrawCommands) {
-                    cmd.drawID(lastNodeCount);
-                    cmd.renderWireframe(cmd.renderWireframe() ||
-                                        sceneRenderState.drawWireframe());
-                    // Extract the specific rendering commands from the draw
-                    // commands
-                    // Rendering commands are stored in GPU memory. Draw
-                    // commands are not.
-                    _drawCommandsCache[lastCmdCount++].set(cmd.cmd());
-                }
-                if (refreshNodeData) {
-                    processVisibleNode(node, _matricesData[lastNodeCount]);
-                }
+                if (!nodeDrawCommands.empty()) {
+                    for (GenericDrawCommand& cmd : nodeDrawCommands) {
+                        cmd.drawID(lastNodeCount);
+                        cmd.renderWireframe(cmd.renderWireframe() ||
+                            sceneRenderState.drawWireframe());
+                        // Extract the specific rendering commands from the draw commands
+                        // Rendering commands are stored in GPU memory. Draw commands are not.
+                        _drawCommandsCache[lastCmdCount++].set(cmd.cmd());
+                    }
+                    if (refreshNodeData) {
+                        processVisibleNode(node, _matricesData[lastNodeCount]);
+                    }
 
-                lastNodeCount += 1;
+                    _occlusionHelper.updateDrawIDForNode(nodeRef.getGUID(), lastNodeCount);
+                    lastNodeCount += 1;
+
+                }
             }
         });
 
@@ -338,6 +388,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);
+
         return true;
     }
 

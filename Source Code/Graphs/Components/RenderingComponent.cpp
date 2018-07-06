@@ -414,8 +414,10 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                                      : RenderStage::DISPLAY));
 }
 
-vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
-    SceneRenderState& sceneRenderState, RenderStage renderStage) {
+vectorImpl<GenericDrawCommand>&
+RenderingComponent::getDrawCommands(SceneRenderState& sceneRenderState,
+                                    RenderStage renderStage) {
+
     _renderData._drawCommands.clear();
     if (canDraw(sceneRenderState, renderStage) &&
         preDraw(sceneRenderState, renderStage))
@@ -428,6 +430,27 @@ vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
     }
 
     return _renderData._drawCommands;
+}
+
+bool RenderingComponent::getImpostorDrawCommand(SceneRenderState& sceneRenderState,
+                                                RenderStage renderStage,
+                                                GenericDrawCommand& commandOut){
+    if (canDraw(sceneRenderState, renderStage) &&
+        preDraw(sceneRenderState, renderStage))
+    {
+        commandOut.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+        commandOut.sourceBuffer(getImpostor()->getGeometryVB());
+        commandOut.renderGeometry(renderGeometry());
+        commandOut.renderWireframe(renderWireframe());
+        commandOut.LoD(lodLevel());
+        commandOut.stateHash(getDrawStateHash(renderStage));
+        commandOut.shaderProgram(getDrawShader(renderStage));
+        commandOut.indexCount(14);
+        commandOut.firstIndex(0);
+        return true;
+    }
+
+    return false;
 }
 
 void RenderingComponent::inViewCallback() {

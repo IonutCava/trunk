@@ -40,64 +40,86 @@ namespace Divide {
 class Box3D : public Object3D {
    public:
     Box3D(const vec3<F32>& size) : Object3D(ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE) {
-        vec3<F32> vertices[] = {
-            vec3<F32>(-1.0, -1.0, 1.0),  vec3<F32>(1.0, -1.0, 1.0),
-            vec3<F32>(-1.0, 1.0, 1.0),   vec3<F32>(1.0, 1.0, 1.0),
-            vec3<F32>(-1.0, -1.0, -1.0), vec3<F32>(1.0, -1.0, -1.0),
-            vec3<F32>(-1.0, 1.0, -1.0),  vec3<F32>(1.0, 1.0, -1.0)};
+        static const vec3<F32> vertices[] = {
+            vec3<F32>(-1.0f, -1.0f,  1.0f),
+            vec3<F32>( 1.0f, -1.0f,  1.0f),
+            vec3<F32>(-1.0f,  1.0f,  1.0f),
+            vec3<F32>( 1.0f,  1.0f,  1.0f),
+            vec3<F32>(-1.0f, -1.0f, -1.0f),
+            vec3<F32>( 1.0f, -1.0f, -1.0f),
+            vec3<F32>(-1.0f,  1.0f, -1.0f),
+            vec3<F32>( 1.0f,  1.0f, -1.0f)
+        };
 
-        vec3<F32> normals[] = {vec3<F32>(-1, -1, 1),  vec3<F32>(1, -1, 1),
-                               vec3<F32>(-1, 1, 1),   vec3<F32>(1, 1, 1),
-                               vec3<F32>(-1, -1, -1), vec3<F32>(1, -1, -1),
-                               vec3<F32>(-1, 1, -1),  vec3<F32>(1, 1, -1)};
+        static const vec3<F32> normals[] = {
+            vec3<F32>(-1.0f, -1.0f,  1.0f),
+            vec3<F32>( 1.0f, -1.0f,  1.0f),
+            vec3<F32>(-1.0f,  1.0f,  1.0f),
+            vec3<F32>( 1.0f,  1.0f,  1.0f),
+            vec3<F32>(-1.0f, -1.0f, -1.0f),
+            vec3<F32>( 1.0f, -1.0f, -1.0f),
+            vec3<F32>(-1.0f,  1.0f, -1.0f),
+            vec3<F32>( 1.0f,  1.0f, -1.0f)
+        };
 
-        U16 indices[] = {0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1};
+        static const U16 indices[] = {
+            0, 1, 2,
+            3, 7, 1,
+            5, 4, 7,
+            6, 2, 4,
+            0, 1
+        };
 
         _halfExtent.set(size / 2);
 
-        getGeometryVB()->reservePositionCount(8);
-        getGeometryVB()->reserveNormalCount(8);
+        VertexBuffer* vb = getGeometryVB();
+
+        vb->reservePositionCount(8);
+        vb->reserveNormalCount(8);
 
         for (U8 i = 0; i < 8; i++) {
-            getGeometryVB()->addPosition(vertices[i] * _halfExtent);
-            getGeometryVB()->addNormal(normals[i]);
+            vb->addPosition(vertices[i] * _halfExtent);
+            vb->addNormal(normals[i]);
         }
 
         for (U8 i = 0; i < 14; i++) {
-            getGeometryVB()->addIndex(indices[i]);
+            vb->addIndex(indices[i]);
         }
 
-        getGeometryVB()->Create();
+        vb->Create();
     }
 
     inline void setHalfExtent(const vec3<F32> halfExtent) {
-        vec3<F32> vertices[] = {
-            vec3<F32>(-1.0, -1.0, 1.0),
-            vec3<F32>(1.0, -1.0, 1.0),
-            vec3<F32>(-1.0, 1.0, 1.0),
-            vec3<F32>(1.0, 1.0, 1.0),
-            vec3<F32>(-1.0, -1.0, -1.0),
-            vec3<F32>(1.0, -1.0, -1.0),
-            vec3<F32>(-1.0, 1.0, -1.0),
-            vec3<F32>(1.0, 1.0, -1.0)
+        static const vec3<F32> vertices[] = {
+            vec3<F32>(-1.0f, -1.0f,  1.0f),
+            vec3<F32>( 1.0f, -1.0f,  1.0f),
+            vec3<F32>(-1.0f,  1.0f,  1.0f),
+            vec3<F32>( 1.0f,  1.0f,  1.0f),
+            vec3<F32>(-1.0f, -1.0f, -1.0f),
+            vec3<F32>( 1.0f, -1.0f, -1.0f),
+            vec3<F32>(-1.0f,  1.0f, -1.0f),
+            vec3<F32>( 1.0f,  1.0f, -1.0f)
         };
 
         _halfExtent = halfExtent;
 
+        VertexBuffer* vb = getGeometryVB();
         for (U8 i = 0; i < 8; ++i) {
-            getGeometryVB()->modifyPositionValue(i, vertices[i] * _halfExtent);
+            vb->modifyPositionValue(i, vertices[i] * _halfExtent);
         }
 
-        getGeometryVB()->queueRefresh();
+        vb->queueRefresh();
         
     }
 
-    inline void fromPoints(const std::array<vec3<F32>, 8>& points, 
+    inline void fromPoints(const std::array<vec3<F32>, 8>& points,
                            const vec3<F32>& halfExtent) {
-         for (U8 i = 0; i < 8; ++i) {
-            getGeometryVB()->modifyPositionValue(i, points[i]);
-         }
-         getGeometryVB()->queueRefresh();
+
+        VertexBuffer* vb = getGeometryVB();
+        for (U8 i = 0; i < 8; ++i) {
+            vb->modifyPositionValue(i, points[i]);
+        }
+        vb->queueRefresh();
         _halfExtent = halfExtent;
     }
 

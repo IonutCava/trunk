@@ -44,8 +44,9 @@ class d3dVertexBuffer : public VertexBuffer {
 
     bool SetActive() { return true; }
 
-    void Draw(const GenericDrawCommand& command, bool useCmdBuffer = false,
-              bool skipBind = false){};
+    void Draw(const GenericDrawCommand& command,
+              std::shared_ptr<HardwareQuery> hardwareQuery,
+              bool useCmdBuffer = false){};
 
     bool queueRefresh() { return Refresh(); }
 

@@ -83,8 +83,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual bool SetActive() = 0;
 
     virtual void Draw(const GenericDrawCommand& command,
-                      bool useCmdBuffer = false,
-                      bool skipBind = false) = 0;
+                      std::shared_ptr<HardwareQuery> hardwareQuery,
+                      bool useCmdBuffer = false) = 0;
 
     inline void setLODCount(const U8 LODcount) { _LODcount = LODcount; }
 

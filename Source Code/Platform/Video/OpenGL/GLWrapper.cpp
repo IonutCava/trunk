@@ -33,6 +33,28 @@
 
 namespace Divide {
 
+glHardwareQuery::glHardwareQuery() : HardwareQuery(),
+                                     _queryID(0)
+{
+}
+
+glHardwareQuery::~glHardwareQuery()
+{
+    destroy();
+}
+
+void glHardwareQuery::create() {
+    destroy();
+    glGenQueries(1, &_queryID);
+}
+
+void glHardwareQuery::destroy() {
+    if (_queryID != 0) {
+        glDeleteQueries(1, &_queryID);
+    }
+    _queryID = 0;
+}
+
 GL_API::GL_API()
     : RenderAPIWrapper(),
       _crtWindowType(WindowType::COUNT),
@@ -52,12 +74,6 @@ GL_API::GL_API()
 {
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0;
-    // Initial values for performance queries
-    for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
-        for (U8 j = 0; j < PERFORMANCE_COUNTERS; ++j) {
-            _queryID[i][j] = 0;
-        }
-    }
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
@@ -88,7 +104,7 @@ void GL_API::beginFrame() {
     }
 // Start a duration query in debug builds
 #ifdef _DEBUG
-    glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]);
+    glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0].getID());
 #endif
     // Restore the clear color (in case it changed)
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
@@ -122,16 +138,15 @@ void GL_API::endFrame() {
 #ifdef _DEBUG
     glEndQuery(GL_TIME_ELAPSED);
     // Swap query objects. The current time will be available after 4 frames
-    _queryBackBuffer = GFX_DEVICE.getFrameCount() % 4;
-    _queryFrontBuffer = 3 - _queryBackBuffer;
+    _queryBackBuffer = GFX_DEVICE.getFrameCount() % PERFORMANCE_COUNTER_BUFFERS;
+    _queryFrontBuffer = (_queryBackBuffer + 1)  % PERFORMANCE_COUNTER_BUFFERS;
 #endif
 }
 
 GLuint64 GL_API::getFrameDurationGPU() {
 #ifdef _DEBUG
     // The returned results are 4 frames old!
-    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT,
-                          &FRAME_DURATION_GPU);
+    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0].getID(), GL_QUERY_RESULT, &FRAME_DURATION_GPU);
 #endif
 
     return FRAME_DURATION_GPU;
@@ -747,4 +762,9 @@ Shader* GL_API::newShader(const stringImpl& name, const ShaderType& type,
                           const bool optimise) const {
     return MemoryManager_NEW glShader(name, type, optimise);
 }
+
+HardwareQuery* GL_API::newHardwareQuery() const {
+    return MemoryManager_NEW glHardwareQuery();
+}
+
 };

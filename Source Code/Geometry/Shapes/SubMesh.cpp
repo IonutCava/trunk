@@ -58,9 +58,7 @@ void SubMesh::getDrawCommands(SceneGraphNode& sgn,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_parentMesh != nullptr);
 
-    RenderingComponent* const renderable =
-        sgn.getComponent<RenderingComponent>();
-    assert(renderable != nullptr);
+    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
 
     _drawCmd.renderGeometry(renderable->renderGeometry());
     _drawCmd.renderWireframe(renderable->renderWireframe());
@@ -68,12 +66,6 @@ void SubMesh::getDrawCommands(SceneGraphNode& sgn,
     _drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
     _drawCmd.shaderProgram(renderable->getDrawShader(renderStage));
     _drawCmd.sourceBuffer(_parentMesh->getGeometryVB());
-    //render impostor example
-    {
-        _drawCmd.sourceBuffer(sgn.getComponent<RenderingComponent>()->getImpostor()->getGeometryVB());
-        _drawCmd.indexCount(8);
-        _drawCmd.firstIndex(0);
-    }
     drawCommandsOut.push_back(_drawCmd);
 }
 };

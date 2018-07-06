@@ -50,6 +50,19 @@ namespace CEGUI {
 namespace Divide {
     enum class WindowType : U32;
 
+class glHardwareQuery : public HardwareQuery {
+public:
+    glHardwareQuery();
+    ~glHardwareQuery();
+
+    void create();
+    void destroy();
+    inline U32 getID() const { return _queryID; }
+
+private:
+    U32 _queryID;
+};
+
 /// OpenGL implementation of the RenderAPIWrapper
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     friend class glShader;
@@ -124,6 +137,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// The callee is responsible for it's deletion!
     Shader* newShader(const stringImpl& name, const ShaderType& type,
                       const bool optimise = false) const override;
+    /// Return a new OpenGL hardware query
+    HardwareQuery* newHardwareQuery() const override;
     /// Enable or disable rasterization (useful for transform feedback)
     inline void toggleRasterization(bool state) override {
         state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD);
@@ -328,7 +343,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Number of queries
     static const GLint PERFORMANCE_COUNTERS = 1;
     /// Unique handle for every query object
-    GLuint _queryID[PERFORMANCE_COUNTER_BUFFERS][PERFORMANCE_COUNTERS];
+    glHardwareQuery _queryID[PERFORMANCE_COUNTER_BUFFERS][PERFORMANCE_COUNTERS];
     /// Current query ID used for writing to
     GLuint _queryBackBuffer;
     /// Current query ID used for reading from

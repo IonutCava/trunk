@@ -68,8 +68,8 @@ class glVertexArray : public VertexBuffer {
    protected:
     friend class GFXDevice;
     void Draw(const GenericDrawCommand& commands,
-              bool useCmdBuffer = false,
-              bool skipBind = false);
+              std::shared_ptr<HardwareQuery> hardwareQuery,
+              bool useCmdBuffer = false);
 
    protected:
     /// If we have a shader, we create a VAO, if not, we use simple VB + IB. If

@@ -72,6 +72,24 @@ namespace Attorney {
     class GFXDeviceRenderStateBlock;
 };
 
+class OcclusionQueryHelper {
+public:
+    void init();
+    void deinit();
+    void registerDrawIDForNode(I64 nodeGUID, U32 drawID);
+    void updateDrawIDForNode(I64 nodeGUID, U32 newDrawID);
+    void batchDrawID(U32 previousDrawID, U32 currentDrawID);
+
+    std::shared_ptr<HardwareQuery> getQueryForDrawID(U32 drawID);
+
+private:
+    hashMapImpl<I64 /*node GUID*/, U32 /*draw ID*/> _nodeDrawID;
+    hashMapImpl<U32 /*draw ID*/, I64 /*node GUID*/> _drawIDNode;
+    hashMapImpl<U32 /*draw ID*/, U32 /*occlusion query*/> _occlusionQueries;
+    std::array<std::shared_ptr<HardwareQuery>, 1024> _queries;
+};
+
+
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
@@ -187,6 +205,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void toggleRasterization(bool state) override;
     /// Query rasterization state
     inline bool rasterizationState();
+
+    inline void submitRenderCommand(const GenericDrawCommand& cmd);
+    inline void submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
+    inline void submitIndirectRenderCommand(const GenericDrawCommand& cmd);
+    inline void submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
     /**
      *@brief Returns an immediate mode emulation buffer that can be used to
      *construct geometry in a vertex by vertex manner.
@@ -210,10 +233,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
-    void submitRenderCommand(const GenericDrawCommand& cmd);
-    void submitRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
-    void submitIndirectRenderCommand(const GenericDrawCommand& cmd);
-    void submitIndirectRenderCommands(const vectorImpl<GenericDrawCommand>& cmds);
     void addToRenderQueue(const RenderPackage& package);
     void flushRenderQueue();
     /// Sets the current render stage.
@@ -385,6 +404,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->newSB(bufferName, unbound, persistentMapped);
     }
 
+    inline HardwareQuery* newHardwareQuery() const override {
+        return _api->newHardwareQuery();
+    }
+
     inline U64 getFrameDurationGPU() override {
         return _api->getFrameDurationGPU();
     }
@@ -439,7 +462,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     friend class SceneManager;
     void buildDrawCommands(VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
-                           bool refreshNodeData);
+                           bool refreshNodeData,
+                           bool impostorPass);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
 
@@ -449,8 +473,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
-    void processCommand(const GenericDrawCommand& cmd);
-    void processCommands(const vectorImpl<GenericDrawCommand>& cmds);
+    void processCommand(const GenericDrawCommand& cmd,
+                        bool useIndirectRender);
+    void processCommands(const vectorImpl<GenericDrawCommand>& cmds,
+                         bool useIndirectRender);
     /// returns false if there was an invalid state detected that could prevent
     /// rendering
     bool setBufferData(const GenericDrawCommand& cmd);
@@ -517,7 +543,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     bool _enableAnaglyph;
     bool _2DRendering;
     bool _rasterizationEnabled;
-    bool _useIndirectCommands;
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS;
     U32 FRAME_DRAW_CALLS_PREV;
@@ -555,7 +580,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
     GenericDrawCommand _defaultDrawCmd;
-
+    OcclusionQueryHelper _occlusionHelper;
 END_SINGLETON
 
 namespace Attorney {
