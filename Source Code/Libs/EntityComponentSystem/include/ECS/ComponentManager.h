@@ -81,7 +81,7 @@ namespace ECS
 		ComponentManager(const ComponentManager&) = delete;
 		ComponentManager& operator=(ComponentManager&) = delete;
 
-		using ComponentContainerRegistry = std::unordered_map<ComponentTypeId, IComponentContainer*>;
+		using ComponentContainerRegistry = eastl::unordered_map<ComponentTypeId, IComponentContainer*>;
 
 		ComponentContainerRegistry m_ComponentContainerRegistry;
 
@@ -106,10 +106,10 @@ namespace ECS
 			return cc;
 		}
 
-		using ComponentLookupTable = std::vector<IComponent*>;
+		using ComponentLookupTable = eastl::vector<IComponent*>;
 		ComponentLookupTable	m_ComponentLUT;
 
-		using EntityComponentMap = std::vector<std::vector<ComponentId>>;
+		using EntityComponentMap = eastl::vector<eastl::vector<ComponentId>>;
 		EntityComponentMap		m_EntityComponentMap;
 
 
@@ -151,7 +151,7 @@ namespace ECS
 		T* AddComponent(const EntityId entityId, ARGS&&... args)
 		{
 			// hash operator for hashing entity and component ids
-			static constexpr std::hash<ComponentId> ENTITY_COMPONENT_ID_HASHER { std::hash<ComponentId>() };
+			static constexpr eastl::hash<ComponentId> ENTITY_COMPONENT_ID_HASHER { eastl::hash<ComponentId>() };
 
 			const ComponentTypeId CTID	= T::STATIC_COMPONENT_TYPE_ID;
 

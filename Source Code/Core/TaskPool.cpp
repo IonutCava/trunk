@@ -35,7 +35,6 @@ bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
 #if defined(USE_BOOST_ASIO_THREADPOOL)
     _mainTaskPool = std::make_unique<boost::asio::thread_pool>(_workerThreadCount);
 #else
-    STUBBED("ToDo: Modify ThreadPool class to use a boost lockfree queue. -Ionut");
     _mainTaskPool = std::make_unique<ThreadPool>(_workerThreadCount);
 #endif
     _stopRequested.store(false);
@@ -87,6 +86,7 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
             std::this_thread::yield();
         }
     }
+
     if (flushCallbacks) {
         flushCallbackQueue();
     }

@@ -12,6 +12,9 @@
 #include "SystemManager.h"
 #include "ISystem.h"
 
+
+#include <EASTL/map.h>
+
 namespace ECS
 {
 	SystemManager::SystemManager()
@@ -98,7 +101,7 @@ namespace ECS
 	void SystemManager::UpdateSystemWorkOrder()
 	{
 		// depth-first-search function
-		static const std::function<void(SystemTypeId, std::vector<int>&, const std::vector<std::vector<bool>>&, std::vector<SystemTypeId>&)> DFS = [&](SystemTypeId vertex, std::vector<int>& VERTEX_STATE, const std::vector<std::vector<bool>>& EDGES, std::vector<SystemTypeId>& output)
+		static const std::function<void(SystemTypeId, eastl::vector<int>&, const eastl::vector<eastl::vector<bool>>&, eastl::vector<SystemTypeId>&)> DFS = [&](SystemTypeId vertex, eastl::vector<int>& VERTEX_STATE, const eastl::vector<eastl::vector<bool>>& EDGES, eastl::vector<SystemTypeId>& output)
 		{
 			VERTEX_STATE[vertex] = 1; // visited
 
@@ -116,13 +119,13 @@ namespace ECS
 
 
 		// create index array
-		std::vector<int> INDICES(NUM_SYSTEMS);
+        eastl::vector<int> INDICES(NUM_SYSTEMS);
 		for (int i = 0; i < NUM_SYSTEMS; ++i)
 			INDICES[i] = i;
 
 		// determine vertex-groups
-		std::vector<std::vector<SystemTypeId>>	VERTEX_GROUPS;
-		std::vector<SystemPriority>				GROUP_PRIORITY;
+        eastl::vector<eastl::vector<SystemTypeId>>	VERTEX_GROUPS;
+        eastl::vector<SystemPriority>				GROUP_PRIORITY;
 
 		while (INDICES.empty() == false)
 		{
@@ -132,8 +135,8 @@ namespace ECS
 			if (index == -1)
 				continue;
 
-			std::vector<SystemTypeId> group;
-			std::vector<SystemTypeId> member;
+            eastl::vector<SystemTypeId> group;
+            eastl::vector<SystemTypeId> member;
 
 			SystemPriority groupPriority = LOWEST_SYSTEM_PRIORITY;
 			member.push_back(index);
@@ -166,16 +169,16 @@ namespace ECS
 		const size_t NUM_VERTEX_GROUPS = VERTEX_GROUPS.size();
 
 		// do a topological sort on groups w.r.t. to groups priority!
-		std::vector<int> vertex_states(NUM_SYSTEMS, 0);
+        eastl::vector<int> vertex_states(NUM_SYSTEMS, 0);
 
-		std::multimap<SystemPriority, std::vector<SystemTypeId>> VERTEX_GROUPS_SORTED;
+        eastl::multimap<SystemPriority, eastl::vector<SystemTypeId>> VERTEX_GROUPS_SORTED;
 
 
 		for (int i = 0; i < NUM_VERTEX_GROUPS; ++i)
 		{
 			auto g = VERTEX_GROUPS[i];
 
-			std::vector<SystemTypeId> order;
+            eastl::vector<SystemTypeId> order;
 
 			for (int j = 0; j < g.size(); ++j)
 			{
@@ -183,10 +186,10 @@ namespace ECS
 					DFS(g[j], vertex_states, this->m_SystemDependencyMatrix, order);
 			}
 
-			std::reverse(order.begin(), order.end());
+            eastl::reverse(order.begin(), order.end());
 			
 			// note: MAX - PRIORITY will frce the correct sorting behaviour in multimap (by default a multimap sorts int values from low to high)
-			VERTEX_GROUPS_SORTED.insert(std::pair<SystemPriority, std::vector<SystemTypeId>>(static_cast<SystemPriority>(std::numeric_limits<SystemPriority>::max() - GROUP_PRIORITY[i]), order));
+			VERTEX_GROUPS_SORTED.insert(eastl::pair<SystemPriority, eastl::vector<SystemTypeId>>(static_cast<SystemPriority>(std::numeric_limits<SystemPriority>::max() - GROUP_PRIORITY[i]), order));
 		}
 
 

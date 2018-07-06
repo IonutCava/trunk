@@ -23,7 +23,7 @@
 
 namespace ECS
 {
-	using SystemWorkStateMask	= std::vector<bool>;
+	using SystemWorkStateMask	= eastl::vector<bool>;
 
 
 	class ECS_API SystemManager : Memory::GlobalMemoryUser
@@ -34,12 +34,12 @@ namespace ECS
 
 	private:
 
-		using SystemDependencyMatrix = std::vector<std::vector<bool>>;
+		using SystemDependencyMatrix = eastl::vector<eastl::vector<bool>>;
 
-		using SystemRegistry	= std::unordered_map<u64, ISystem*>;
+		using SystemRegistry	= eastl::unordered_map<u64, ISystem*>;
 		using SystemAllocator	= Memory::Allocator::LinearAllocator;
 
-		using SystemWorkOrder	= std::vector<ISystem*>;
+		using SystemWorkOrder	= eastl::vector<ISystem*>;
 
 		SystemAllocator*		m_SystemAllocator;
 
@@ -344,7 +344,7 @@ namespace ECS
 		{
 			SystemWorkStateMask mask(this->m_SystemWorkOrder.size(), false);
 
-			std::list<ISystem*> AS = { activeSystems... };
+            eastl::list<ISystem*> AS = { activeSystems... };
 			for (auto s : AS)
 			{
 				for (int i = 0; i < this->m_SystemWorkOrder.size(); ++i)

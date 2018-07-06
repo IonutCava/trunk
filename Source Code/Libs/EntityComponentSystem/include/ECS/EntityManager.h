@@ -94,10 +94,10 @@ namespace ECS
 
 		}; // EntityContainer
 
-		using EntityRegistry = std::unordered_map<EntityTypeId, IEntityContainer*>;
+		using EntityRegistry = eastl::unordered_map<EntityTypeId, IEntityContainer*>;
 		EntityRegistry m_EntityRegistry;
 
-		using PendingDestroyedEntities = std::vector<EntityId>;
+		using PendingDestroyedEntities = eastl::vector<EntityId>;
 		PendingDestroyedEntities m_PendingDestroyedEntities;
 		size_t m_NumPendingDestroyedEntities;
 

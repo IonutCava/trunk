@@ -11,6 +11,7 @@
 #include "API.h"
 #include "Memory/Allocator/PoolAllocator.h"
 
+#include <EASTL/list.h>
 
 namespace ECS { namespace Memory {
 
@@ -27,7 +28,7 @@ namespace ECS { namespace Memory {
 	public:
 
 		using Allocator  = Memory::Allocator::PoolAllocator;
-		using ObjectList = std::list<OBJECT_TYPE*>;
+		using ObjectList = eastl::list<OBJECT_TYPE*>;
 
 		
 
@@ -62,7 +63,7 @@ namespace ECS { namespace Memory {
 
 		}; // class EntityMemoryChunk
 
-		using MemoryChunks = std::list<MemoryChunk*>;
+		using MemoryChunks = eastl::list<MemoryChunk*>;
 
 		///-------------------------------------------------------------------------------------------------
 		/// Class:	iterator
@@ -74,7 +75,7 @@ namespace ECS { namespace Memory {
 		/// Date:	24/09/2017
 		///-------------------------------------------------------------------------------------------------
 
-		class iterator : public std::iterator<std::forward_iterator_tag, OBJECT_TYPE>
+		class iterator : public eastl::iterator<eastl::forward_iterator_tag, OBJECT_TYPE>
 		{
 			typename MemoryChunks::iterator	m_CurrentChunk;
 			typename MemoryChunks::iterator	m_End;
@@ -95,7 +96,7 @@ namespace ECS { namespace Memory {
 					}
 					else
 					{
-						m_CurrentObject = (*std::prev(m_End))->objects.end();
+						m_CurrentObject = (*eastl::prev(m_End))->objects.end();
 					}
 				}
 				
