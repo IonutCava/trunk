@@ -481,8 +481,7 @@ namespace NS_GLIM
         case GLIM_ENUM::GLIM_LINES:
             {
                 ++m_uiPrimitiveVertex;
-                const unsigned int uiIndex = m_Data.AddVertex (x, y, z);
-                m_Data.m_IndexBuffer_Lines.push_back (uiIndex);
+                m_Data.m_IndexBuffer_Lines.push_back (m_Data.AddVertex(x, y, z));
             }
             break;
 

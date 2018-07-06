@@ -131,9 +131,9 @@ void RenderQueue::populateRenderQueues(RenderStage renderStage) {
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             populateTask.addChildTask(CreateTask(DELEGATE_BIND(&RenderBin::populateRenderQueue,
-                                                            renderBin,
-                                                            std::placeholders::_1,
-                                                            renderStage))._task)->startTask(Task::TaskPriority::HIGH);      
+                                                               renderBin,
+                                                               std::placeholders::_1,
+                                                               renderStage))._task)->startTask(Task::TaskPriority::HIGH);      
         }
     }
     populateTask.startTask(Task::TaskPriority::MAX);

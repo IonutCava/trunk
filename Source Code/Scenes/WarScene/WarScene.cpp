@@ -682,14 +682,15 @@ void WarScene::toggleCamera() {
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
+    Camera* defaultCam = renderState().getCameraMgr().findCamera(_ID("defaultCamera"));
     // Add a first person camera
     Camera* cam = renderState().getCameraMgr().createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
-    cam->fromCamera(renderState().getCameraConst());
+    cam->fromCamera(*defaultCam);
     cam->setMoveSpeedFactor(10.0f);
     cam->setTurnSpeedFactor(10.0f);
     // Add a third person camera
     cam = renderState().getCameraMgr().createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
-    cam->fromCamera(renderState().getCameraConst());
+    cam->fromCamera(*defaultCam);
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);
 

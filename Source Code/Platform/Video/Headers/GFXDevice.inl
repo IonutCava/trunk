@@ -40,6 +40,10 @@ namespace Divide {
 #define GFX_HIZ_CULL_COUNT \
     GFX_DEVICE.getLastCullCount()
 
+inline void GFXDevice::GPUBlock::updateFrustumPlanes() {
+    GFXDevice::computeFrustumPlanes(_viewProjMatrixInv, _data._frustumPlanes);
+}
+
 inline F32 GFXDevice::GPUBlock::GPUData::aspectRatio() const {
     return _cameraPosition.w;
 }
@@ -290,9 +294,7 @@ GFXDevice::resetClipPlanes() {
 }
 /// Alternative to the normal version of getMatrix
 inline mat4<F32> GFXDevice::getMatrix(const MATRIX& mode) const {
-    mat4<F32> ret;
-    getMatrix(mode, ret);
-    return ret;
+    return getMatrixInternal(mode);
 }
 
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain or batched meshes)

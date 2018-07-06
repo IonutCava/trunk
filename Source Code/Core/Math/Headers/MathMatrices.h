@@ -653,6 +653,10 @@ extern mat2<F32> MAT2_BIAS;
 extern mat3<F32> MAT3_BIAS;
 extern mat4<F32> MAT4_BIAS;
 
+extern mat2<F32> MAT2_IDENTITY;
+extern mat3<F32> MAT3_IDENTITY;
+extern mat4<F32> MAT4_IDENTITY;
+
 };  // namespace Divide
 
 #endif //_MATH_MATRICES_H_

@@ -343,12 +343,7 @@ class Camera : public Resource {
    protected:
     virtual void lookAtInternal();
     virtual bool updateViewMatrix();
-    virtual void updateProjection(bool force = false);
-
-    inline void updateMatrices() {
-        updateViewMatrix();
-        updateProjection();
-    }
+    virtual void updateProjection(bool updateGPU = true);
 
    protected:
     SET_DELETE_HASHMAP_FRIEND

@@ -436,8 +436,7 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
 
     // set the pointer for position last
     glEnableVertexAttribArray(m_VertAttribLocation);
-    glVertexAttribPointer(m_VertAttribLocation, 3, GL_FLOAT, GL_FALSE, 0,
-                          BUFFER_OFFSET(0));
+    glVertexAttribPointer(m_VertAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 }
 
 void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
@@ -474,9 +473,10 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
 
     m_bufferData.resize(0);
     m_bufferData.reserve(bufferSize);
-    m_bufferData.insert(std::end(m_bufferData), std::begin(m_PositionData),
-                        std::end(m_PositionData));
-    m_PositionData.clear();
+    m_bufferData.insert(std::end(m_bufferData),
+                        std::cbegin(m_PositionData),
+                        std::cend(m_PositionData));
+    m_PositionData.resize(0);
 
     unsigned int uiOffset = uiVertices * sizeof(Glim4ByteData) * 3;
 
@@ -484,14 +484,14 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
     for (it = std::begin(m_Attributes); it != itend; ++it) {
         GlimArrayData& data = it->second;
         m_bufferData.insert(std::end(m_bufferData),
-                            std::begin(data.m_ArrayData),
-                            std::end(data.m_ArrayData));
-        const unsigned int uiAttributeSize =
-            (unsigned int)(data.m_ArrayData.size()) *
-            sizeof(Glim4ByteData);  // already includes the number of vertices
+                            std::cbegin(data.m_ArrayData),
+                            std::cend(data.m_ArrayData));
 
+        // already includes the number of vertices
+        const unsigned int uiAttributeSize = (unsigned int)(data.m_ArrayData.size()) *
+                                             sizeof(Glim4ByteData);  
         // free the temporary buffer in RAM
-        data.m_ArrayData.clear();
+        data.m_ArrayData.resize(0);
         data.m_uiBufferStride = uiAttributeSize / uiVertices;
         // store the buffer offset for later use
         data.m_uiBufferOffset = uiOffset;
@@ -513,37 +513,41 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
 
     // upload the index buffer for the points
     if (m_uiPointElements > 0) {
+        glInvalidateBufferData(m_uiElementBufferID_Points);
         glNamedBufferData(m_uiElementBufferID_Points,
                           m_uiPointElements * sizeof(unsigned int),
                           m_IndexBuffer_Points.data(),
-                          GL_STATIC_DRAW);
+                          GL_STREAM_DRAW);
         m_IndexBuffer_Points.clear();
     }
 
     // upload the index buffer for the lines
     if (m_uiLineElements > 0) {
+        glInvalidateBufferData(m_uiElementBufferID_Lines);
         glNamedBufferData(m_uiElementBufferID_Lines,
                           m_uiLineElements * sizeof(unsigned int),
                           m_IndexBuffer_Lines.data(),
-                          GL_STATIC_DRAW);
+                          GL_STREAM_DRAW);
         m_IndexBuffer_Lines.clear();
     }
 
     // upload the index buffer for the triangles
     if (m_uiTriangleElements > 0) {
+        glInvalidateBufferData(m_uiElementBufferID_Triangles);
         glNamedBufferData(m_uiElementBufferID_Triangles,
                           m_uiTriangleElements * sizeof(unsigned int),
                           m_IndexBuffer_Triangles.data(),
-                          GL_STATIC_DRAW);
+                          GL_STREAM_DRAW);
         m_IndexBuffer_Triangles.clear();
     }
 
     // upload the index buffer for the wireframe
     if (m_uiWireframeElements > 0) {
+        glInvalidateBufferData(m_uiElementBufferID_Wireframe);
         glNamedBufferData(m_uiElementBufferID_Wireframe,
                           m_uiWireframeElements * sizeof(unsigned int),
                           m_IndexBuffer_Wireframe.data(),
-                          GL_STATIC_DRAW);
+                          GL_STREAM_DRAW);
         m_IndexBuffer_Wireframe.clear();
     }
 }

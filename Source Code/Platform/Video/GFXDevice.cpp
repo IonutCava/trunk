@@ -358,28 +358,60 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it
-void GFXDevice::getMatrix(const MATRIX& mode, mat4<F32>& mat) const{
+void GFXDevice::getMatrix(const MATRIX& mode, mat4<F32>& mat) const {
+    mat.set(getMatrixInternal(mode));
+}
+
+mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) {
     // The matrix names are self-explanatory
-    if (mode == MATRIX::VIEW_PROJECTION) {
-        mat.set(_gpuBlock._data._ViewProjectionMatrix);
-    } else if (mode == MATRIX::VIEW) {
-        mat.set(_gpuBlock._data._ViewMatrix);
-    } else if (mode == MATRIX::PROJECTION) {
-        mat.set(_gpuBlock._data._ProjectionMatrix);
-    } else if (mode == MATRIX::TEXTURE) {
-        mat.identity();
-        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
-    } else if (mode == MATRIX::VIEW_INV) {
-        _gpuBlock._data._ViewMatrix.getInverse(mat);
-    } else if (mode == MATRIX::PROJECTION_INV) {
-        _gpuBlock._data._ProjectionMatrix.getInverse(mat);
-    } else if (mode == MATRIX::VIEW_PROJECTION_INV) {
-        _gpuBlock._data._ViewProjectionMatrix.getInverse(mat);
-    } else {
-        DIVIDE_ASSERT(
-            false,
-            "GFXDevice error: attempted to query an invalid matrix target!");
-    }
+    switch (mode) {
+        case  MATRIX::VIEW_PROJECTION:
+            return _gpuBlock._data._ViewProjectionMatrix;
+        case MATRIX::VIEW:
+            return _gpuBlock._data._ViewMatrix;
+        case MATRIX::PROJECTION:
+            return _gpuBlock._data._ProjectionMatrix;
+        case MATRIX::VIEW_INV: 
+            return _gpuBlock.viewMatrixInv();
+        case MATRIX::PROJECTION_INV:
+            return _gpuBlock.projectionMatrixInv();
+        case MATRIX::VIEW_PROJECTION_INV:
+            return _gpuBlock.viewProjectionMatrixInv();
+        case MATRIX::TEXTURE:
+            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
+            break;
+        default:
+            DIVIDE_ASSERT(false, "GFXDevice error: attempted to query an invalid matrix target!");
+            break;
+    };
+    
+    return MAT4_IDENTITY;
+}
+
+const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
+    // The matrix names are self-explanatory
+    switch (mode) {
+        case  MATRIX::VIEW_PROJECTION:
+            return _gpuBlock._data._ViewProjectionMatrix;
+        case MATRIX::VIEW:
+            return _gpuBlock._data._ViewMatrix;
+        case MATRIX::PROJECTION:
+            return _gpuBlock._data._ProjectionMatrix;
+        case MATRIX::VIEW_INV:
+            return _gpuBlock.viewMatrixInv();
+        case MATRIX::PROJECTION_INV:
+            return _gpuBlock.projectionMatrixInv();
+        case MATRIX::VIEW_PROJECTION_INV:
+            return _gpuBlock.viewProjectionMatrixInv();
+        case MATRIX::TEXTURE:
+            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
+            break;
+        default:
+            DIVIDE_ASSERT(false, "GFXDevice error: attempted to query an invalid matrix target!");
+            break;
+    };
+
+    return MAT4_IDENTITY;
 }
 
 /// Update the internal GPU data buffer with the clip plane values
@@ -417,9 +449,7 @@ F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
     }
 
     if (updated) {
-        mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
-        computeFrustumPlanes();
-        _gpuBlock._updated = true;
+        _gpuBlock.update(true);
     }
 
     return data._ViewMatrix.mat;
@@ -431,14 +461,9 @@ F32* GFXDevice::setProjection(const vec4<F32>& rect, const vec2<F32>& planes) {
     GPUBlock::GPUData& data = _gpuBlock._data;
 
     data._ProjectionMatrix.ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
-
     data._ZPlanesCombined.xy(planes);
 
-    mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
-
-    computeFrustumPlanes();
-
-    _gpuBlock._updated = true;
+    _gpuBlock.update(false);
 
     return data._ProjectionMatrix.mat;
 }
@@ -456,56 +481,9 @@ F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,  const vec2<F32>& planes
     data._cameraPosition.w = aspectRatio;
     data._renderProperties.z = FoV;
     data._renderProperties.w = std::tan(FoV * 0.5f);
-    mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
-    computeFrustumPlanes();
-    _gpuBlock._updated = true;
+    _gpuBlock.update(false);    
 
     return data._ProjectionMatrix.mat;
-}
-
-void GFXDevice::computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
-    // Get world-space coordinates for clip-space bounds.
-    vec4<F32> lbn(invViewProj * vec4<F32>(-1, -1, -1, 1));
-    vec4<F32> ltn(invViewProj * vec4<F32>(-1, 1, -1, 1));
-    vec4<F32> lbf(invViewProj * vec4<F32>(-1, -1, 1, 1));
-    vec4<F32> rbn(invViewProj * vec4<F32>(1, -1, -1, 1));
-    vec4<F32> rtn(invViewProj * vec4<F32>(1, 1, -1, 1));
-    vec4<F32> rbf(invViewProj * vec4<F32>(1, -1, 1, 1));
-    vec4<F32> rtf(invViewProj * vec4<F32>(1, 1, 1, 1));
-
-    vec3<F32> lbn_pos(lbn.xyz() / lbn.w);
-    vec3<F32> ltn_pos(ltn.xyz() / ltn.w);
-    vec3<F32> lbf_pos(lbf.xyz() / lbf.w);
-    vec3<F32> rbn_pos(rbn.xyz() / rbn.w);
-    vec3<F32> rtn_pos(rtn.xyz() / rtn.w);
-    vec3<F32> rbf_pos(rbf.xyz() / rbf.w);
-    vec3<F32> rtf_pos(rtf.xyz() / rtf.w);
-
-    // Get plane equations for all sides of frustum.
-    vec3<F32> left_normal(Cross(lbf_pos - lbn_pos, ltn_pos - lbn_pos));
-    left_normal.normalize();
-    vec3<F32> right_normal(Cross(rtn_pos - rbn_pos, rbf_pos - rbn_pos));
-    right_normal.normalize();
-    vec3<F32> top_normal(Cross(ltn_pos - rtn_pos, rtf_pos - rtn_pos));
-    top_normal.normalize();
-    vec3<F32> bottom_normal(Cross(rbf_pos - rbn_pos, lbn_pos - rbn_pos));
-    bottom_normal.normalize();
-    vec3<F32> near_normal(Cross(ltn_pos - lbn_pos, rbn_pos - lbn_pos));
-    near_normal.normalize();
-    vec3<F32> far_normal(Cross(rtf_pos - rbf_pos, lbf_pos - rbf_pos));
-    far_normal.normalize();
-
-    planesOut[0].set(left_normal, -Dot(left_normal, lbn_pos)); // Left
-    planesOut[1].set(right_normal, -Dot(right_normal, rbn_pos)); // Right
-    planesOut[2].set(near_normal, -Dot(near_normal, lbn_pos)); // Near
-    planesOut[3].set(far_normal, -Dot(far_normal, lbf_pos)); // Far
-    planesOut[4].set(top_normal, -Dot(top_normal, ltn_pos)); // Top
-    planesOut[5].set(bottom_normal, -Dot(bottom_normal, lbn_pos)); // Bottom
-}
-
-void GFXDevice::computeFrustumPlanes() {
-    computeFrustumPlanes(getMatrix(MATRIX::VIEW_PROJECTION_INV), _gpuBlock._data._frustumPlanes);
-    _gpuBlock._updated = true;
 }
 
 /// Enable or disable 2D rendering mode 
@@ -586,6 +564,22 @@ void GFXDevice::onCameraUpdate(Camera& camera) {
     } else {
         _axisGizmo->paused(true);
     }
+}
+
+void GFXDevice::onCameraChange(Camera& camera) {
+    GPUBlock::GPUData& data = _gpuBlock._data;
+
+    const mat4<F32>& projectionMatrix = camera.getProjectionMatrix();
+    const vec2<F32>& planes = camera.getZPlanes();
+    F32 aspectRatio = camera.getAspectRatio();
+    F32 FoV = camera.getVerticalFoV();
+
+    data._ProjectionMatrix.set(projectionMatrix);
+    data._ZPlanesCombined.xy(planes);
+    data._cameraPosition.w = aspectRatio;
+    data._renderProperties.z = FoV;
+    data._renderProperties.w = std::tan(FoV * 0.5f);
+    _gpuBlock.update(false);
 }
 
 /// Depending on the context, either immediately call the function, or pass it
@@ -722,4 +716,51 @@ void GFXDevice::Screenshot(const stringImpl& filename) {
     MemoryManager::DELETE_ARRAY(imageData);
 }
 
+void GFXDevice::computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
+    static const vec4<F32> unitVecs[] = { vec4<F32>(-1, -1, -1, 1),
+                                          vec4<F32>(-1 , 1, -1, 1),
+                                          vec4<F32>(-1, -1,  1, 1),
+                                          vec4<F32>( 1, -1, -1, 1),
+                                          vec4<F32>( 1,  1, -1, 1),
+                                          vec4<F32>( 1, -1,  1, 1),
+                                          vec4<F32>( 1,  1,  1, 1) };
+
+    // Get world-space coordinates for clip-space bounds.
+    vec4<F32> lbn(invViewProj * unitVecs[0]);
+    vec4<F32> ltn(invViewProj * unitVecs[1]);
+    vec4<F32> lbf(invViewProj * unitVecs[2]);
+    vec4<F32> rbn(invViewProj * unitVecs[3]);
+    vec4<F32> rtn(invViewProj * unitVecs[4]);
+    vec4<F32> rbf(invViewProj * unitVecs[5]);
+    vec4<F32> rtf(invViewProj * unitVecs[6]);
+
+    vec3<F32> lbn_pos(lbn.xyz() / lbn.w);
+    vec3<F32> ltn_pos(ltn.xyz() / ltn.w);
+    vec3<F32> lbf_pos(lbf.xyz() / lbf.w);
+    vec3<F32> rbn_pos(rbn.xyz() / rbn.w);
+    vec3<F32> rtn_pos(rtn.xyz() / rtn.w);
+    vec3<F32> rbf_pos(rbf.xyz() / rbf.w);
+    vec3<F32> rtf_pos(rtf.xyz() / rtf.w);
+
+    // Get plane equations for all sides of frustum.
+    vec3<F32> left_normal(Cross(lbf_pos - lbn_pos, ltn_pos - lbn_pos));
+    left_normal.normalize();
+    vec3<F32> right_normal(Cross(rtn_pos - rbn_pos, rbf_pos - rbn_pos));
+    right_normal.normalize();
+    vec3<F32> top_normal(Cross(ltn_pos - rtn_pos, rtf_pos - rtn_pos));
+    top_normal.normalize();
+    vec3<F32> bottom_normal(Cross(rbf_pos - rbn_pos, lbn_pos - rbn_pos));
+    bottom_normal.normalize();
+    vec3<F32> near_normal(Cross(ltn_pos - lbn_pos, rbn_pos - lbn_pos));
+    near_normal.normalize();
+    vec3<F32> far_normal(Cross(rtf_pos - rbf_pos, lbf_pos - rbf_pos));
+    far_normal.normalize();
+
+    planesOut[0].set(left_normal,   -Dot(left_normal, lbn_pos));   // Left
+    planesOut[1].set(right_normal,  -Dot(right_normal, rbn_pos));  // Right
+    planesOut[2].set(near_normal,   -Dot(near_normal, lbn_pos));   // Near
+    planesOut[3].set(far_normal,    -Dot(far_normal, lbf_pos));    // Far
+    planesOut[4].set(top_normal,    -Dot(top_normal, ltn_pos));    // Top
+    planesOut[5].set(bottom_normal, -Dot(bottom_normal, lbn_pos)); // Bottom
+}
 };

@@ -200,6 +200,7 @@ DEFINE_SINGLETON(GFXDevice)
 
    struct GPUBlock {
        GPUBlock() : _updated(true),
+                    _frustumDirty(true),
                     _data(GPUData())
        {
        }
@@ -241,7 +242,35 @@ DEFINE_SINGLETON(GFXDevice)
 
         } _data;
 
+        inline void update(bool viewMatrixUpdate) {
+            mat4<F32>::Multiply(_data._ViewMatrix, _data._ProjectionMatrix, _data._ViewProjectionMatrix);
+            if (viewMatrixUpdate) {
+                _data._ViewMatrix.getInverse(_viewMatrixInv);
+            }
+            if (!viewMatrixUpdate) {
+                _data._ProjectionMatrix.getInverse(_projMatrixInv);
+            }
+            _data._ViewProjectionMatrix.getInverse(_viewProjMatrixInv);
+            updateFrustumPlanes();
+            _updated = true;
+        }
+
+        inline void updateFrustumPlanes();
+
+        inline mat4<F32>& viewMatrixInv() { return _viewMatrixInv; }
+        inline mat4<F32>& projectionMatrixInv() { return _projMatrixInv; }
+        inline mat4<F32>& viewProjectionMatrixInv() { return _viewProjMatrixInv; }
+
+        inline const mat4<F32>& viewMatrixInv() const { return _viewMatrixInv; }
+        inline const mat4<F32>& projectionMatrixInv() const { return _projMatrixInv; }
+        inline const mat4<F32>& viewProjectionMatrixInv() const { return _viewProjMatrixInv; }
+
         bool _updated;
+       private:
+           bool _frustumDirty;
+           mat4<F32> _viewMatrixInv;
+           mat4<F32> _projMatrixInv;
+           mat4<F32> _viewProjMatrixInv;
    };
 
   public:  // GPU interface
@@ -462,11 +491,9 @@ DEFINE_SINGLETON(GFXDevice)
 
     void drawDebugAxis(const SceneRenderState& sceneRenderState);
 
-    void computeFrustumPlanes();
-    void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
-
     void onChangeResolution(U16 w, U16 h);
 
+    static void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
   protected:
     friend class Camera;
 
@@ -477,6 +504,7 @@ DEFINE_SINGLETON(GFXDevice)
     F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
 
     void onCameraUpdate(Camera& camera);
+    void onCameraChange(Camera& camera);
 
     void flushDisplay();
 
@@ -518,6 +546,9 @@ DEFINE_SINGLETON(GFXDevice)
 
     RenderTarget& activeRenderTarget();
     const RenderTarget& activeRenderTarget() const;
+
+    mat4<F32>& getMatrixInternal(const MATRIX& mode);
+    const mat4<F32>& getMatrixInternal(const MATRIX& mode) const;
 
   private:
     Camera* _cubeCamera;
@@ -630,6 +661,10 @@ namespace Attorney {
     private:
         static void onCameraUpdate(Camera& camera) {
             GFXDevice::instance().onCameraUpdate(camera);
+        }
+
+        static void onCameraChange(Camera& camera) {
+            GFXDevice::instance().onCameraChange(camera);
         }
 
         static void flushDisplay() {
