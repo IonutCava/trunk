@@ -42,24 +42,24 @@ class d3dGenericVertexData : public GenericVertexData {
         : GenericVertexData(persistentMapped) {}
     ~d3dGenericVertexData() {}
 
-    void Create(U8 numBuffers = 1, U8 numQueries = 1) {}
+    void create(U8 numBuffers = 1, U8 numQueries = 1) {}
 
-    void SetIndexBuffer(const vectorImpl<U32>& indices, bool dynamic,
-                        bool stream) {}
+    void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) {}
+    void updateIndexBuffer(const vectorImpl<U32>& indices) {}
 
-    void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize,
+    void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
                    U8 sizeFactor, void* data, bool dynamic, bool stream,
                    bool persistentMapped = false) {}
-    void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
+    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                  size_t elementCount) {}
-    void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
+    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
                       void* data) {}
-    void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {}
-    U32 GetFeedbackPrimitiveCount(U8 queryID) { return 0; }
+    void setFeedbackBuffer(U32 buffer, U32 bindPoint) {}
+    U32 getFeedbackPrimitiveCount(U8 queryID) { return 0; }
 
    protected:
     friend class GFXDevice;
-    void Draw(const GenericDrawCommand& command,
+    void draw(const GenericDrawCommand& command,
               bool useCmdBuffer = false) {}
 };
 

@@ -35,6 +35,7 @@ REGISTER_SCENE(WarScene);
 namespace {
     static vec2<F32> g_sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
     static bool g_direction = false;
+    U64 elapsedGameTimeUs = 0;
 };
 
 WarScene::WarScene()
@@ -60,6 +61,10 @@ WarScene::WarScene()
     });
 
     _targetLines = GFX_DEVICE.getOrCreatePrimitive(false);
+
+    _timeLimitMinutes = 3;
+    _scoreLimit = 5;
+    _elapsedGameTime = 0;
 }
 
 WarScene::~WarScene()
@@ -94,12 +99,32 @@ void WarScene::processGUI(const U64 deltaTime) {
                 _GUI->modifyText("entityState", entity->toString().c_str());
             }
         }
-
-            _GUI->modifyText("scoreDisplay", "Score: A -  %d B - %d", 
-                AI::WarSceneAIProcessor::getScore(0),
-                AI::WarSceneAIProcessor::getScore(1));
-        _guiTimers[1] = 0.0;
     }
+
+    if (_guiTimers[2] >= 66) {
+        U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+        U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
+        U32 elapsedTimeMilliseconds = Time::MicrosecondsToMilliseconds<U32>(_elapsedGameTime) % 1000;
+
+
+        U32 limitTimeMinutes = _timeLimitMinutes;
+        U32 limitTimeSeconds = 0;
+        U32 limitTimeMilliseconds = 0;
+
+        _GUI->modifyText("scoreDisplay", "Score: A -  %d B - %d [Limit: %d]\nElapsed game time [ %d:%d:%d / %d:%d:%d]",
+            AI::WarSceneAIProcessor::getScore(0),
+            AI::WarSceneAIProcessor::getScore(1),
+            _scoreLimit,
+            elapsedTimeMinutes,
+            elapsedTimeSeconds,
+            elapsedTimeMilliseconds,
+            limitTimeMinutes,
+            limitTimeSeconds,
+            limitTimeMilliseconds);
+
+        _guiTimers[2] = 0.0;
+    }
+
     Scene::processGUI(deltaTime);
 }
 
@@ -114,11 +139,11 @@ void WarScene::processTasks(const U64 deltaTime) {
 
     if (_taskTimers[0] >= SunTimer) {
         if (!g_direction) {
-            g_sunAngle.y += 0.005f;
-            g_sunAngle.x += 0.005f;
+            //g_sunAngle.y += 0.005f;
+            //g_sunAngle.x += 0.005f;
         } else {
-            g_sunAngle.y -= 0.005f;
-            g_sunAngle.x -= 0.005f;
+            //g_sunAngle.y -= 0.005f;
+            //g_sunAngle.x -= 0.005f;
         }
 
         if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
@@ -192,6 +217,10 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         }
     }
     GFX_DEVICE.drawLines(*_targetLines, paths, mat4<F32>(), vec4<I32>());
+
+    if (!AI::AIManager::getInstance().updatePaused()) {
+        _elapsedGameTime += deltaTime;
+    }
 }
 
 bool WarScene::load(const stringImpl& name, GUI* const gui) {
@@ -283,39 +312,55 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         pComp->setPosition(
             vec3<F32>(to_float(currentPos.first), -0.01f, to_float(currentPos.second)));
     }
-    SceneGraphNode_ptr baseFlagNode = cylinder[1];
-    _flag[0] = _sceneGraph->getRoot()->addNode(*cylinderMeshNW, "Team1Flag");
+
+    SceneGraphNode_ptr flag;
+    flag = _sceneGraph->findNode("flag").lock();
+    RenderingComponent* const renderable = std::begin(flag->getChildren())->second->getComponent<RenderingComponent>();
+    renderable->getMaterialInstance()->setDoubleSided(true);
+    Material* mat = std::begin(flag->getChildren())->second->getNode()->getMaterialTpl();
+    mat->setDoubleSided(true);
+    mat->setAmbient(vec4<F32>(0.01f));
+    flag->setActive(false);
+    SceneNode* flagNode = flag->getNode();
+
+    _flag[0] = _sceneGraph->getRoot()->addNode(*flagNode, "Team1Flag");
 
     SceneGraphNode_ptr flag0(_flag[0].lock());
     flag0->setSelectable(false);
-    flag0->usageContext(baseFlagNode->usageContext());
+    flag0->usageContext(flag->usageContext());
     PhysicsComponent* flagPComp = flag0->getComponent<PhysicsComponent>();
     NavigationComponent* flagNComp =
         flag0->getComponent<NavigationComponent>();
+    RenderingComponent* flagRComp =
+        std::begin(flag0->getChildren())->second->getComponent<RenderingComponent>();
+
     flagPComp->physicsGroup(
-        baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
-    flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    flagPComp->setScale(
-        baseFlagNode->getComponent<PhysicsComponent>()->getScale() *
-        vec3<F32>(0.05f, 2.1f, 0.05f));
+        flag->getComponent<PhysicsComponent>()->physicsGroup());
+    flagPComp->setScale(flag->getComponent<PhysicsComponent>()->getScale());
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
-    _flag[1] = _sceneGraph->getRoot()->addNode(*cylinderMeshNW, "Team2Flag");
+    flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
+    
+    flagRComp->getMaterialInstance()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
 
+    _flag[1] = _sceneGraph->getRoot()->addNode(*flagNode, "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
     flag1->setSelectable(false);
-    flag1->usageContext(baseFlagNode->usageContext());
+    flag1->usageContext(flag->usageContext());
 
     flagPComp = flag1->getComponent<PhysicsComponent>();
     flagNComp = flag1->getComponent<NavigationComponent>();
+    flagRComp = std::begin(flag1->getChildren())->second->getComponent<RenderingComponent>();
 
     flagPComp->physicsGroup(
-        baseFlagNode->getComponent<PhysicsComponent>()->physicsGroup());
-    flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    flagPComp->setScale(
-        baseFlagNode->getComponent<PhysicsComponent>()->getScale() *
-        vec3<F32>(0.05f, 2.1f, 0.05f));
+        flag->getComponent<PhysicsComponent>()->physicsGroup());
+
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
+    flagPComp->setScale(flag->getComponent<PhysicsComponent>()->getScale());
+
+    flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
+
+    flagRComp->getMaterialInstance()->setDiffuse(vec4<F32>(1.0f, 0.0f, 0.0f, 1.0f));
 
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
@@ -324,7 +369,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     });
     
 #ifdef _DEBUG
-    const U32 particleCount = 200;
+    const U32 particleCount = 2000;
 #else
     const U32 particleCount = 20000;
 #endif
@@ -342,29 +387,29 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
 
     std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
-    boxGenerator->_maxStartPosOffset.set(2.0f, 2.0f, 2.0f, 1.0f);
+    boxGenerator->_maxStartPosOffset.set(1.0f, 1.0f, 1.0f, 1.0f);
     particleSource->addGenerator(boxGenerator);
 
     std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
     colGenerator->_minStartCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f)));
     colGenerator->_maxStartCol.set(Util::ToByteColor(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f)));
-    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.0f, 0.6f, 0.0f)));
+    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.2f, 0.6f, 0.0f)));
     colGenerator->_maxEndCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.5f, 1.0f, 0.0f)));
     particleSource->addGenerator(colGenerator);
 
     std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
-    velGenerator->_minStartVel.set(-0.05f, 0.22f, -0.05f, 0.0f);
-    velGenerator->_maxStartVel.set(0.05f, 0.45f, 0.05f, 0.0f);
+    velGenerator->_minStartVel.set(-0.25f, 0.22f, -0.25f, 0.0f);
+    velGenerator->_maxStartVel.set(1.05f, 5.45f, 1.05f, 0.0f);
     particleSource->addGenerator(velGenerator);
 
     std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
     timeGenerator->_minTime = 2.5f;
-    timeGenerator->_maxTime = 5.5f;
+    timeGenerator->_maxTime = 8.5f;
     particleSource->addGenerator(timeGenerator);
 
-    //SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
+    SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
 
-/*    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
+    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
@@ -372,19 +417,19 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     boxGenerator->_pos.set(testSGN->getComponent<PhysicsComponent>()->getPosition());
 
     std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
-    eulerUpdater->_globalAcceleration.set(0.0f, -15.0f, 0.0f, 0.0f);
+    eulerUpdater->_globalAcceleration.set(0.0f, -12.0f, 0.0f);
     test->addUpdater(eulerUpdater);
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
     test->addUpdater(std::make_shared<ParticleFloorUpdater>());
-    */
+    
     state().generalVisibility(state().generalVisibility() * 2);
 
     Application::getInstance()
         .getKernel()
         .getCameraMgr()
         .getActiveCamera()
-        ->setHorizontalFoV(135);
+        ->setHorizontalFoV(110);
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = DELEGATE_BIND(&WarScene::toggleCamera, this);
@@ -437,22 +482,17 @@ bool WarScene::loadResources(bool continueOnErrors) {
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
                     DELEGATE_BIND(&WarScene::startSimulation, this));
 
-    _GUI->addText("scoreDisplay", 
-                  vec2<I32>(60, 135),  // Position
-                  Font::DIVIDE_DEFAULT,  // Font
-                  vec3<F32>(1.0f, 0.0f, 1.0f),  // Color
-                  "Score: A -  %s B - %s", 0);  // Text and arguments
     _GUI->addText("fpsDisplay",  // Unique ID
                   vec2<I32>(60, 63),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                  "FPS: %s", 0);  // Text and arguments
+                 "fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f);  // Text and arguments
     _GUI->addText("RenderBinCount",
                   vec2<I32>(60, 83),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f, 0.2f, 0.2f),
                   "Number of items in Render Bin: %d", 0);
-    _GUI->addText("camPosition", vec2<I32>(60, 113),
+    _GUI->addText("camPosition", vec2<I32>(60, 103),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.2f, 0.8f, 0.2f),
                   "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | "
@@ -462,7 +502,14 @@ bool WarScene::loadResources(bool continueOnErrors) {
                   renderState().getCamera().getEye().z,
                   renderState().getCamera().getEuler().pitch,
                   renderState().getCamera().getEuler().yaw);
-    _GUI->addText("entityState", vec2<I32>(60, 123), Font::DIVIDE_DEFAULT,
+
+    _GUI->addText("scoreDisplay",
+        vec2<I32>(60, 123),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec3<F32>(1.0f, 0.0f, 1.0f),  // Color
+        "Score: A -  %d B - %d", 0, 0);  // Text and arguments
+
+    _GUI->addText("entityState", vec2<I32>(60, 143), Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.0f, 0.0f, 0.0f),
                   "");
 
@@ -482,6 +529,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
 
     _guiTimers.push_back(0.0);  // Fps
     _guiTimers.push_back(0.0);  // AI info
+    _guiTimers.push_back(0.0);  // Game info
     _taskTimers.push_back(0.0); // Sun animation
     _taskTimers.push_back(0.0); // animation team 1
     _taskTimers.push_back(0.0); // animation team 2

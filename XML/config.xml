@@ -19,7 +19,7 @@
 	<windowedMode>true</windowedMode>
 	<windowResizable>false</windowResizable>
 	<!-- toggle Vsync on or off. This can be overridden by the display driver! -->
-	<enableVSync>true</enableVSync>
+	<enableVSync>false</enableVSync>
 	<!-- splash screen dimensions -->
 	<splashScreenSize w="400" h="300"/>
 	<!-- rendering resolution -->
@@ -44,16 +44,16 @@
 <rendering>
 	<!-- detail level: low = 0, medium = 1, high = 2 -->
 	<detailLevel>2</detailLevel>
-	<FXAAsamples>0</FXAAsamples>
+	<FXAAsamples>8</FXAAsamples>
 	<MSAAsamples>0</MSAAsamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- detail level: off = 0, low = 1 (no blurring, 512x512 base resolution), medium = 2 (blurring, 512x512 base resolution) -->
 	<!--               high = 3 (blurring, 1024x1024 base resolution), ultra = 4 (blurring, 2048x2048 base resolution) -->
-	<shadowDetailLevel>0</shadowDetailLevel>
-	<enableFog>false</enableFog>
-	<fogDensity>0.0040</fogDensity>
+	<shadowDetailLevel>3</shadowDetailLevel>
+	<enableFog>true</enableFog>
+	<fogDensity>3</fogDensity>
 	<fogColor r="0.5" g="0.5" b="0.55"/>
-	<enablePostFX>false</enablePostFX>
+	<enablePostFX>true</enablePostFX>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>
 	<enableNoise>false</enableNoise>

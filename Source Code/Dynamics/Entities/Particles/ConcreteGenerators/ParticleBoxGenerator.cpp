@@ -9,11 +9,11 @@ void ParticleBoxGenerator::generate(const U64 deltaTime, ParticleData *p,
                                  startIndex, endIndex),
         "ParticleBoxGenerator::generate error: Invalid Range!");
 
-    vec4<F32> posMin(_pos.xyz() - _maxStartPosOffset.xyz());
-    vec4<F32> posMax(_pos.xyz() + _maxStartPosOffset.xyz());
+    vec3<F32> posMin(_pos.xyz() - _maxStartPosOffset.xyz());
+    vec3<F32> posMax(_pos.xyz() + _maxStartPosOffset.xyz());
 
     for (U32 i = startIndex; i < endIndex; ++i) {
-        p->_position[i].set(Random(posMin, posMax));
+        p->_position[i].xyz(Random(posMin, posMax));
     }
 }
 };

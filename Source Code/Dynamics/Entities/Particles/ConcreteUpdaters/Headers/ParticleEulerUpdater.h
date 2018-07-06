@@ -38,7 +38,7 @@ namespace Divide {
 
 class ParticleEulerUpdater : public ParticleUpdater {
    public:
-    vec4<F32> _globalAcceleration;
+    vec3<F32> _globalAcceleration;
 
    public:
     ParticleEulerUpdater() {}

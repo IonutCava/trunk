@@ -7,11 +7,22 @@
 	<item>cylinderSE</item>
 	<item>cylinderSW</item>
 	<item>cylinderC</item>
+	<item>flag</item>
 </geometry>
 
 <primitives>
 	<item>Ground_placeholder</item>
 </primitives>
+
+<flag>
+	<model>models/flag_obj.obj</model>
+	<scale x="0.01" y="0.01" z="0.01" />
+	<position x="0" y="0" z="0" />
+	<orientation x="0" y="0" z="0" />
+	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>false</addToNavigation>
+</flag>
 
 <Soldier1>
 	<model>models/dwarf.x</model>

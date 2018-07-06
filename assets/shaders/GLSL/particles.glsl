@@ -9,10 +9,10 @@ out vec4 particleColor;
 // Values that stay constant for the whole mesh.
 uniform vec3 CameraRight_worldspace;
 uniform vec3 CameraUp_worldspace;
-uniform float spriteSize = 1.0f;
 
 void main()
 {
+    float spriteSize = particleNormalData.w;
     vec3 vertexPosition_worldspace = particleNormalData.xyz + 
                                      (CameraRight_worldspace * (inVertexData.x * spriteSize)) +
                                      (CameraUp_worldspace * (inVertexData.y * spriteSize));

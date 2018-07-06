@@ -100,7 +100,7 @@ void GFXDevice::processCommand(const GenericDrawCommand& cmd, bool useIndirectRe
     // be 0, so skip draw
     if (setBufferData(cmd)) {
         // Same rules about pre-processing the draw command apply
-        cmd.sourceBuffer()->Draw(cmd, useIndirectRender);
+        cmd.sourceBuffer()->draw(cmd, useIndirectRender);
     }
 }
 

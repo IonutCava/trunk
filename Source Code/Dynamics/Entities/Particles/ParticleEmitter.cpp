@@ -36,8 +36,8 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     DIVIDE_ASSERT(_particleGPUBuffer == nullptr,
                   "ParticleEmitter::initData error: Double initData detected!");
 
-    _particleGPUBuffer = GFX_DEVICE.newGVD(true);
-    _particleGPUBuffer->Create(3);
+    _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/false);
+    _particleGPUBuffer->create(3);
 
     // Not using Quad3D to improve performance
     static F32 particleQuad[] = {
@@ -47,7 +47,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
          0.5f,  0.5f, 0.0f,
     };
 
-    _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false,
+    _particleGPUBuffer->setBuffer(0, 12, sizeof(F32), 1, particleQuad, false,
                                   false);
     _particleGPUBuffer->getDrawAttribDescriptor(
                             to_uint(
@@ -66,13 +66,10 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     ResourceDescriptor particleShaderDescriptor("particles");
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
     _particleShader->Uniform("hasTexture", _particleTexture != nullptr);
-    _particleShader->Uniform("spriteSize", 1.0f);
     REGISTER_TRACKED_DEPENDENCY(_particleShader);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
-    _particleDepthShader =
-        CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
-    _particleDepthShader->Uniform("spriteSize", 1.0f);
+    _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
 
     _impostor =
@@ -94,20 +91,20 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     U32 particleCount = _particles->totalCount();
 
-    _particleGPUBuffer->SetBuffer(1, particleCount * 3, 4 * sizeof(F32), 1,
+    _particleGPUBuffer->setBuffer(1, particleCount * 3, 4 * sizeof(F32), 1,
                                   NULL, true, true, /*true*/ false);
-    _particleGPUBuffer->SetBuffer(2, particleCount * 3, 4 * sizeof(U8), 1, NULL,
+    _particleGPUBuffer->setBuffer(2, particleCount * 3, 4 * sizeof(U8), 1, NULL,
                                   true, true, /*true*/ false);
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
-        .set(1, 1, 4, false, 0, 0, GFXDataFormat::FLOAT_32);
+        .set(1, 1, 4, false, 4 * sizeof(F32), 0, GFXDataFormat::FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(
                             to_uint(AttribLocation::VERTEX_COLOR))
-        .set(2, 1, 4, true, 0, 0, GFXDataFormat::UNSIGNED_BYTE);
+        .set(2, 1, 4, true, 4 * sizeof(U8), 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
         // Distance to camera (squared)
-        _particles->_position[i].w = -1.0f;
+        _particles->_misc[i].w = -1.0f;
         _particles->_alive[i] = false;
     }
 
@@ -247,18 +244,16 @@ void ParticleEmitter::uploadToGPU() {
     U32 writeOffset = _writeOffset * to_uint(_particles->totalCount());
     U32 readOffset = _readOffset * to_uint(_particles->totalCount());
 
-    _particleGPUBuffer->SetIndexBuffer(_particles->getSortedIndices(), true,
-                                       true);
-    _particleGPUBuffer->UpdateBuffer(1, _particles->aliveCount(), writeOffset,
-                                     _particles->_position.data());
-    _particleGPUBuffer->UpdateBuffer(2, _particles->aliveCount(), writeOffset,
+    _particleGPUBuffer->updateBuffer(1, _particles->aliveCount(), writeOffset,
+                                     _particles->_renderingPositions.data());
+    _particleGPUBuffer->updateBuffer(2, _particles->aliveCount(), writeOffset,
                                      _particles->_color.data());
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
-        .set(1, 1, 4, false, 0, readOffset, GFXDataFormat::FLOAT_32);
+        .set(1, 1, 4, false, 4 * sizeof(F32), readOffset, GFXDataFormat::FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(
                             to_uint(AttribLocation::VERTEX_COLOR))
-        .set(2, 1, 4, true, 0, readOffset, GFXDataFormat::UNSIGNED_BYTE);
+        .set(2, 1, 4, true, 4 * sizeof(U8), readOffset, GFXDataFormat::UNSIGNED_BYTE);
 
     _writeOffset = (_writeOffset + 1) % 3;
     _readOffset = (_readOffset + 1) % 3;
@@ -269,13 +264,13 @@ void ParticleEmitter::uploadToGPU() {
 /// The onDraw call will emit particles
 bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              RenderStage currentStage) {
-    if (!_enabled) {
-        return false;
+    if (_enabled) {
+        _particles->sort();
+        uploadToGPU();
+        return true;
     }
-    _particles->sort();
-    uploadToGPU();
 
-    return true;
+    return false;
 }
 
 /// Pre-process particles
@@ -304,8 +299,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     U32 count = _particles->totalCount();
     U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
     for (U32 i = 0; i < count; ++i) {
-        _particles->_position[i].w =
-            _particles->_position[i].xyz().distance(eyePos);
+        _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
+        _particles->_position[i].w = 1.0f;
         _particles->_acceleration[i].set(0.0f);
         _particles->lodLevel(lodLevel);
     }

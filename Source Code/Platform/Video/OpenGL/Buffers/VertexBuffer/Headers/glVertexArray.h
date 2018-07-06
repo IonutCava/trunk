@@ -53,10 +53,10 @@ class glVertexArray : public VertexBuffer {
     glVertexArray();
     ~glVertexArray();
 
-    bool Create(bool staticDraw = true);
-    void Destroy();
+    bool create(bool staticDraw = true);
+    void destroy();
 
-    virtual bool SetActive();
+    virtual bool setActive();
 
     /// Never call Refresh() just queue it and the data will update before
     /// drawing
@@ -67,17 +67,17 @@ class glVertexArray : public VertexBuffer {
 
    protected:
     friend class GFXDevice;
-    void Draw(const GenericDrawCommand& commands,
+    void draw(const GenericDrawCommand& commands,
               bool useCmdBuffer = false);
 
    protected:
     /// If we have a shader, we create a VAO, if not, we use simple VB + IB. If
     /// that fails, use VA
-    bool Refresh();
+    bool refresh();
     /// Internally create the VB
-    bool CreateInternal();
+    bool createInternal();
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
-    void Upload_VB_Attributes();
+    void uploadVBAttributes();
     /// Integrity checks
     void checkStatus();
 

@@ -67,22 +67,22 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
           _currentPartitionIndex(0),
           _largeIndices(false)
     {
-        Reset();
+        reset();
     }
 
     virtual ~VertexBuffer()
     {
         _LODcount = 1;
-        Reset();
+        reset();
     }
 
-    virtual bool Create(bool staticDraw = true) = 0;
-    virtual void Destroy() = 0;
+    virtual bool create(bool staticDraw = true) = 0;
+    virtual void destroy() = 0;
     /// Some engine elements, like physics or some geometry shading techniques
     /// require a triangle list.
-    virtual bool SetActive() = 0;
+    virtual bool setActive() = 0;
 
-    virtual void Draw(const GenericDrawCommand& command,
+    virtual void draw(const GenericDrawCommand& command,
                       bool useCmdBuffer = false) = 0;
 
     inline void setLODCount(const U8 LODcount) { _LODcount = LODcount; }
@@ -308,7 +308,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return getPartitionOffset(static_cast<U16>(_partitions.size() - 1));
     }
 
-    inline void Reset() {
+    inline void reset() {
         _created = false;
         _primitiveRestartEnabled = false;
         _partitions.clear();
@@ -334,8 +334,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     virtual void checkStatus() = 0;
-    virtual bool Refresh() = 0;
-    virtual bool CreateInternal() = 0;
+    virtual bool refresh() = 0;
+    virtual bool createInternal() = 0;
 
     inline void setMinMaxPosition(const vec3<F32>& pos) {
         vec3<F32>& min = _minPosition[_currentPartitionIndex];

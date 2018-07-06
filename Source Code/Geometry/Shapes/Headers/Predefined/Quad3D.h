@@ -75,7 +75,7 @@ class Quad3D : public Object3D {
 
         computeTangents();
 
-        getGeometryVB()->Create();
+        getGeometryVB()->create();
     }
 
     enum class CornerLocation : U32 {

@@ -37,14 +37,14 @@
 namespace Divide {
 class ParticleVelocityFromPositionGenerator : public ParticleGenerator {
    public:
-    vec4<F32> _offset;
+    vec3<F32> _offset;
     F32 _minScale;
     F32 _maxScale;
 
    public:
     ParticleVelocityFromPositionGenerator() : _minScale(0.0), _maxScale(0.0) {}
 
-    ParticleVelocityFromPositionGenerator(const vec4<F32>& offset, F32 minScale,
+    ParticleVelocityFromPositionGenerator(const vec3<F32>& offset, F32 minScale,
                                           F32 maxScale)
         : _offset(offset), _minScale(minScale), _maxScale(maxScale) {}
     virtual void generate(const U64 deltaTime, ParticleData* p, U32 startIndex,

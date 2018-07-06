@@ -5,15 +5,13 @@ namespace Divide {
 namespace {
 
 struct IndexComp {
-    IndexComp(ParticleData& refData) : _refData(refData) {}
+    IndexComp(ParticleData& refData) : _refData(refData._misc) {}
 
     inline bool operator()(const U32& indexA, const U32& indexB) {
-        F32 distA = _refData._misc[indexA].w;
-        F32 distB = _refData._misc[indexB].w;
-        return distA < distB;
+        return _refData[indexA].w > _refData[indexB].w;
     }
 
-    ParticleData& _refData;
+    vectorImpl<vec4<F32>>& _refData;
 };
 };
 
@@ -91,13 +89,22 @@ void ParticleData::wake(U32 index) {
 void ParticleData::sort() {
     U32 count = aliveCount();
 
+    if (count == 0) {
+        return;
+    }
+
     _indices.resize(count);
+    _renderingPositions.resize(count);
 
     for (U32 i = 0; i < count; ++i) {
         _indices[i] = i;
     }
 
     std::sort(std::begin(_indices), std::end(_indices), IndexComp(*this));
+
+    for (U32 i = 0; i < count; ++i) {
+        _renderingPositions[i].set(_position[_indices[i]]);
+    }
 }
 
 void ParticleData::swapData(U32 indexA, U32 indexB) {

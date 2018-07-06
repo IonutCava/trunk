@@ -385,13 +385,13 @@ class vec3 {
     operator T *() { return this->_v; }
     operator const T *() const { return this->_v; }
 
-    /// GLSL like accessors
-    inline vec2<T> rg() const { return vec2<T>(this->r, this->g); }
-    inline vec2<T> xy() const { return this->rg(); }
-    inline vec2<T> rb() const { return vec2<T>(this->r, this->b); }
-    inline vec2<T> xz() const { return this->rb(); }
-    inline vec2<T> gb() const { return vec2<T>(this->g, this->b); }
-    inline vec2<T> yz() const { return this->gb(); }
+    /// GLSL like accessors (const to prevent erroneous usage like .xy() += n)
+    inline const vec2<T> rg() const { return vec2<T>(this->r, this->g); }
+    inline const vec2<T> xy() const { return this->rg(); }
+    inline const vec2<T> rb() const { return vec2<T>(this->r, this->b); }
+    inline const vec2<T> xz() const { return this->rb(); }
+    inline const vec2<T> gb() const { return vec2<T>(this->g, this->b); }
+    inline const vec2<T> yz() const { return this->gb(); }
 
     inline void rg(const vec2<T> &rg) { this->set(rg); }
     inline void xy(const vec2<T> &xy) { this->set(xy); }
@@ -602,9 +602,11 @@ class vec4 {
         return vec4(this->x * _f, this->y * _f, this->z * _f, this->w * _f);
     }
     const vec4 operator/(T _f) const {
-        if (IS_ZERO(_f)) return *this;
-        _f = 1.0f / _f;
-        return (*this) * _f;
+        if (IS_ZERO(_f)) {
+            return *this;
+        }
+
+        return (*this) * (1.0f / _f);
     }
     const vec4 operator-() const { return vec4(-x, -y, -z, -w); }
     const vec4 operator+(const vec4 &v) const {
@@ -651,27 +653,27 @@ class vec4 {
     T &operator[](I32 i) { return this->_v[i]; }
     const T &operator[](I32 _i) const { return this->_v[_i]; }
 
-    /// GLSL like accessors
-    inline vec2<T> rg() const { return vec2<T>(this->r, this->g); }
-    inline vec2<T> xy() const { return this->rg(); }
-    inline vec2<T> rb() const { return vec2<T>(this->r, this->b); }
-    inline vec2<T> xz() const { return this->rb(); }
-    inline vec2<T> gb() const { return vec2<T>(this->g, this->b); }
-    inline vec2<T> yz() const { return this->gb(); }
-    inline vec2<T> ra() const { return vec2<T>(this->r, this->a); }
-    inline vec2<T> xw() const { return this->ra(); }
-    inline vec2<T> ga() const { return vec2<T>(this->g, this->a); }
-    inline vec2<T> yw() const { return this->ga(); }
-    inline vec2<T> ba() const { return vec2<T>(this->b, this->a); }
-    inline vec2<T> zw() const { return this->ba(); }
-    inline vec3<T> rgb() const { return vec3<T>(this->r, this->g, this->b); }
-    inline vec3<T> xyz() const { return this->rgb(); }
-    inline vec3<T> bgr() const { return vec3<T>(this->b, this->g, this->r); }
-    inline vec3<T> zyx() const { return this->bgr(); }
-    inline vec3<T> rga() const { return vec3<T>(this->r, this->g, this->a); }
-    inline vec3<T> xyw() const { return this->rga(); }
-    inline vec3<T> gba() const { return vec3<T>(this->g, this->b, this->a); }
-    inline vec3<T> yzw() const { return this->gba(); }
+    /// GLSL like accessors (const to prevent erroneous usage like .xyz() += n)
+    inline const vec2<T> rg() const { return vec2<T>(this->r, this->g); }
+    inline const vec2<T> xy() const { return this->rg(); }
+    inline const vec2<T> rb() const { return vec2<T>(this->r, this->b); }
+    inline const vec2<T> xz() const { return this->rb(); }
+    inline const vec2<T> gb() const { return vec2<T>(this->g, this->b); }
+    inline const vec2<T> yz() const { return this->gb(); }
+    inline const vec2<T> ra() const { return vec2<T>(this->r, this->a); }
+    inline const vec2<T> xw() const { return this->ra(); }
+    inline const vec2<T> ga() const { return vec2<T>(this->g, this->a); }
+    inline const vec2<T> yw() const { return this->ga(); }
+    inline const vec2<T> ba() const { return vec2<T>(this->b, this->a); }
+    inline const vec2<T> zw() const { return this->ba(); }
+    inline const vec3<T> rgb() const { return vec3<T>(this->r, this->g, this->b); }
+    inline const vec3<T> xyz() const { return this->rgb(); }
+    inline const vec3<T> bgr() const { return vec3<T>(this->b, this->g, this->r); }
+    inline const vec3<T> zyx() const { return this->bgr(); }
+    inline const vec3<T> rga() const { return vec3<T>(this->r, this->g, this->a); }
+    inline const vec3<T> xyw() const { return this->rga(); }
+    inline const vec3<T> gba() const { return vec3<T>(this->g, this->b, this->a); }
+    inline const vec3<T> yzw() const { return this->gba(); }
 
     inline void rg(const vec2<T> &rg) { this->set(rg); }
     inline void xy(const vec2<T> &xy) { this->set(xy); }

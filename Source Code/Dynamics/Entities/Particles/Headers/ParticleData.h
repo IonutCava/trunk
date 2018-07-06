@@ -51,6 +51,7 @@ class ParticleData {
     vectorImpl<U32> _indices;
     /// x,y,z = position; w = size
     vectorImpl<vec4<F32>> _position;
+    vectorImpl<vec4<F32>> _renderingPositions;
     /// x,y,z = _velocity; w = angle;
     vectorImpl<vec4<F32>> _velocity;
     /// x,y,z = _acceleration; w = weight;

@@ -408,7 +408,7 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
     }
 
     scene->state().fogDescriptor()._fogDensity =
-        par.getParam<F32>("rendering.sceneState.fogDensity");
+        par.getParam<F32>("rendering.sceneState.fogDensity") / 1000.0f;
     scene->state().fogDescriptor()._fogColor.set(
         par.getParam<F32>("rendering.sceneState.fogColor.r"),
         par.getParam<F32>("rendering.sceneState.fogColor.g"),

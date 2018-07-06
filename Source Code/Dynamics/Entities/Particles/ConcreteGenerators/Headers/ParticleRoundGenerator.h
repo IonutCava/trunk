@@ -37,14 +37,14 @@
 namespace Divide {
 class ParticleRoundGenerator : public ParticleGenerator {
    public:
-    vec4<F32> _center;
+    vec3<F32> _center;
     F32 _radX;
     F32 _radY;
 
    public:
     ParticleRoundGenerator() : _radX(0.0f), _radY(0.0f) {}
 
-    ParticleRoundGenerator(const vec4<F32> &center, F32 radX, F32 radY)
+    ParticleRoundGenerator(const vec3<F32> &center, F32 radX, F32 radY)
         : _center(center), _radX(radX), _radY(radY) {}
 
     virtual void generate(const U64 deltaTime, ParticleData *p, U32 startIndex,

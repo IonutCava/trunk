@@ -23,11 +23,11 @@ glVertexArray::glVertexArray()
 }
 
 glVertexArray::~glVertexArray() {
-    Destroy();
+    destroy();
 }
 
 /// Delete buffer
-void glVertexArray::Destroy() {
+void glVertexArray::destroy() {
     GLUtil::freeBuffer(_IBid);
     GLUtil::freeBuffer(_VBid);
     if (_VAOid > 0)
@@ -36,7 +36,7 @@ void glVertexArray::Destroy() {
 }
 
 /// Create a dynamic or static VB
-bool glVertexArray::Create(bool staticDraw) {
+bool glVertexArray::create(bool staticDraw) {
     // If we want a dynamic buffer, then we are doing something outdated, such
     // as software skinning, or software water rendering
     if (!staticDraw) {
@@ -55,7 +55,7 @@ bool glVertexArray::Create(bool staticDraw) {
 }
 
 /// Update internal data based on construction method (dynamic/static)
-bool glVertexArray::Refresh() {
+bool glVertexArray::refresh() {
     // Dynamic LOD elements (such as terrain) need dynamic indices
     // We can manually override index usage (again, used by the Terrain
     // rendering system)
@@ -186,7 +186,7 @@ bool glVertexArray::Refresh() {
         glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
     }
     // Set vertex attribute pointers
-    Upload_VB_Attributes();
+    uploadVBAttributes();
     // Validate the buffer
     checkStatus();
     // Possibly clear client-side buffer for all non-required attributes?
@@ -197,7 +197,7 @@ bool glVertexArray::Refresh() {
 
 /// This method creates the initial VAO and VB OpenGL objects and queues a
 /// Refresh call
-bool glVertexArray::CreateInternal() {
+bool glVertexArray::createInternal() {
     // Avoid double create calls
     DIVIDE_ASSERT(!_created,
                   "glVertexArray error: Attempted to double create a VB");
@@ -228,7 +228,7 @@ bool glVertexArray::CreateInternal() {
 }
 
 /// Render the current buffer data using the specified command
-void glVertexArray::Draw(const GenericDrawCommand& command,
+void glVertexArray::draw(const GenericDrawCommand& command,
                          bool useCmdBuffer) {
     // Process the actual draw command
     if (Config::Profile::DISABLE_DRAWS) {
@@ -243,7 +243,7 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
         return;
     }
     // Make sure the buffer is current
-    if (!SetActive()) {
+    if (!setActive()) {
         return;
     }
   
@@ -280,17 +280,17 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
 }
 
 /// Set the current buffer as active
-bool glVertexArray::SetActive() {
+bool glVertexArray::setActive() {
     // Make sure we have valid data (buffer creation is deferred to the first
     // activate call)
     if (!_created) {
-        if (!CreateInternal()) {
+        if (!createInternal()) {
             return false;
         }
     }
     // Check if we have a refresh request queued up
     if (_refreshQueued) {
-        if (!Refresh()) {
+        if (!refresh()) {
             return false;
         }
     }
@@ -306,7 +306,7 @@ bool glVertexArray::SetActive() {
 }
 
 /// Activate and set all of the required vertex attributes.
-void glVertexArray::Upload_VB_Attributes() {
+void glVertexArray::uploadVBAttributes() {
     // Bind the current VAO to save our attributes
     GL_API::setActiveVAO(_VAOid);
     // Bind the the vertex buffer and index buffer

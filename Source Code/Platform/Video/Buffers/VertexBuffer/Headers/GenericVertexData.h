@@ -155,28 +155,28 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface {
         _attributeMapFdbk.clear();
     }
 
-    virtual void SetIndexBuffer(const vectorImpl<U32>& indices, bool dynamic,
-                                bool stream) = 0;
-    virtual void Create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
-    virtual void SetFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
+    virtual void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) = 0;
+    virtual void updateIndexBuffer(const vectorImpl<U32>& indices) = 0;
+    virtual void create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
+    virtual void setFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
 
-    virtual void Draw(const GenericDrawCommand& command,
+    virtual void draw(const GenericDrawCommand& command,
                       bool useCmdBuffer = false) = 0;
 
     /// When reading and writing to the same buffer, we use a round-robin
     /// approach and
     /// offset the reading and writing to multiple copies of the data
-    virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize,
+    virtual void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
                            U8 sizeFactor, void* data, bool dynamic, bool stream,
                            bool persistentMapped = false) = 0;
 
-    virtual void UpdateBuffer(U32 buffer, U32 elementCount,
+    virtual void updateBuffer(U32 buffer, U32 elementCount,
                               U32 elementCountOffset, void* data) = 0;
 
-    virtual void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
+    virtual void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                          size_t elementCount) = 0;
 
-    virtual U32 GetFeedbackPrimitiveCount(U8 queryID) = 0;
+    virtual U32 getFeedbackPrimitiveCount(U8 queryID) = 0;
     /// Just before we render the frame
     virtual bool frameStarted(const FrameEvent& evt) { return true; }
 

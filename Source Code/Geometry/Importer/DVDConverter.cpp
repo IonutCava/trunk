@@ -218,7 +218,7 @@ Mesh* DVDConverter::load(const stringImpl& file) {
     assert(tempMesh != nullptr);
 
     tempMesh->renderState().setDrawState(true);
-    tempMesh->getGeometryVB()->Create();
+    tempMesh->getGeometryVB()->create();
 
     elapsed = Time::ElapsedMilliseconds(true) - start;
     Console::d_printfn(Locale::get("PARSE_MESH_TIME"), _modelName.c_str(),

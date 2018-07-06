@@ -51,23 +51,23 @@ class glGenericVertexData : public GenericVertexData {
     glGenericVertexData(bool persistentMapped);
     ~glGenericVertexData();
 
-    void Create(U8 numBuffers = 1, U8 numQueries = 1);
-    U32 GetFeedbackPrimitiveCount(U8 queryID);
+    void create(U8 numBuffers = 1, U8 numQueries = 1);
+    U32 getFeedbackPrimitiveCount(U8 queryID);
 
-    void SetIndexBuffer(const vectorImpl<U32>& indices, bool dynamic,
-                        bool stream);
+    void setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream);
+    void updateIndexBuffer(const vectorImpl<U32>& indices);
 
-    void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize,
+    void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
                    U8 sizeFactor, void* data, bool dynamic, bool stream,
                    bool persistentMapped = false);
 
-    void UpdateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
+    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
                       void* data);
 
-    void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
+    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                  size_t elementCount);
 
-    inline void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {
+    inline void setFeedbackBuffer(U32 buffer, U32 bindPoint) {
         if (!isFeedbackBuffer(buffer)) {
             _feedbackBuffers.push_back(_bufferObjects[buffer]);
             _fdbkBindPoints.push_back(bindPoint);
@@ -80,12 +80,12 @@ class glGenericVertexData : public GenericVertexData {
 
    protected:
     friend class GFXDevice;
-    void Draw(const GenericDrawCommand& command,
+    void draw(const GenericDrawCommand& command,
               bool useCmdBuffer = false);
 
    protected:
-    void SetAttributes(bool feedbackPass);
-    void SetAttributeInternal(AttributeDescriptor& descriptor);
+    void setAttributes(bool feedbackPass);
+    void setAttributeInternal(AttributeDescriptor& descriptor);
 
     inline bool isFeedbackBuffer(U32 index) {
         for (U32 handle : _feedbackBuffers)
@@ -106,6 +106,8 @@ class glGenericVertexData : public GenericVertexData {
 
    private:
     GLuint _indexBuffer;
+    GLuint _indexBufferSize;
+    GLenum _indexBufferUsage;
     GLuint _transformFeedback;
     GLuint _numQueries;
     bool* _bufferSet;

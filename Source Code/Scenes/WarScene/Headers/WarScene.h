@@ -73,6 +73,9 @@ class WarScene : public Scene {
     GUIMessageBox* _infoBox;
 
    private:  // Game
+    U32  _timeLimitMinutes;
+    U32  _scoreLimit;
+    U64  _elapsedGameTime;
     bool _sceneReady;
     bool _resetUnits;
     U64 _lastNavMeshBuildTime;

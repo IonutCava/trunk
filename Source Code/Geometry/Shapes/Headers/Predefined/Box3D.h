@@ -86,7 +86,7 @@ class Box3D : public Object3D {
             vb->addIndex(indices[i]);
         }
 
-        vb->Create();
+        vb->create();
     }
 
     inline void setHalfExtent(const vec3<F32> halfExtent) {

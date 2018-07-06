@@ -11,10 +11,9 @@ void ParticleRoundGenerator::generate(const U64 deltaTime, ParticleData *p,
 
     for (U32 i = startIndex; i < endIndex; i++) {
         F32 ang = Random(0.0f, to_float(M_2PI));
-        p->_position[i].set(_center + vec4<F32>(_radX * std::sin(ang),
+        p->_position[i].xyz(_center + vec3<F32>(_radX * std::sin(ang),
                                                 _radY * std::cos(ang), 
-                                                0.0f,
-                                                1.0f));
+                                                0.0f));
     }
 }
 };

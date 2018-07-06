@@ -13,8 +13,8 @@ void ParticleVelocityFromPositionGenerator::generate(const U64 deltaTime,
         "Range!");
 
     for (U32 i = startIndex; i < endIndex; ++i) {
-        p->_velocity[i].set(Random(_minScale, _maxScale) *
-                            (p->_position[i] - _offset));
+        p->_velocity[i].xyz(Random(_minScale, _maxScale) *
+                            (p->_position[i].xyz() - _offset));
     }
 }
 };

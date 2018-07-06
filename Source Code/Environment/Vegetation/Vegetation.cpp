@@ -240,24 +240,24 @@ void Vegetation::uploadGrassData() {
     for (U8 i = 0; i < 2; ++i) {
         GenericVertexData* buffer = _grassGPUBuffer[i];
 
-        buffer->Create(static_cast<U8>(BufferUsage::COUNT), 3);
+        buffer->create(static_cast<U8>(BufferUsage::COUNT), 3);
         // position culled will be generated using transform feedback using
         // shader output 'posLocation'
         // writing to buffer "CulledPositionBuffer"
-        buffer->SetFeedbackBuffer(to_uint(BufferUsage::CulledPositionBuffer), 0);
-        buffer->SetFeedbackBuffer(to_uint(BufferUsage::CulledSizeBuffer), 1);
-        buffer->SetFeedbackBuffer(to_uint(BufferUsage::CulledInstanceBuffer), 2);
+        buffer->setFeedbackBuffer(to_uint(BufferUsage::CulledPositionBuffer), 0);
+        buffer->setFeedbackBuffer(to_uint(BufferUsage::CulledSizeBuffer), 1);
+        buffer->setFeedbackBuffer(to_uint(BufferUsage::CulledInstanceBuffer), 2);
 
-        buffer->SetBuffer(to_uint(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
+        buffer->setBuffer(to_uint(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
                           sizeof(vec4<F32>), 3, &_grassPositions[0], false,
                           false);
-        buffer->SetBuffer(to_uint(BufferUsage::UnculledSizeBuffer), _instanceCountGrass,
+        buffer->setBuffer(to_uint(BufferUsage::UnculledSizeBuffer), _instanceCountGrass,
                           sizeof(F32), 3, &_grassScales[0], false, false);
-        buffer->SetBuffer(to_uint(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,
+        buffer->setBuffer(to_uint(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,
                           sizeof(vec4<F32>), 3, NULL, true, false);
-        buffer->SetBuffer(to_uint(BufferUsage::CulledSizeBuffer), _instanceCountGrass * 3,
+        buffer->setBuffer(to_uint(BufferUsage::CulledSizeBuffer), _instanceCountGrass * 3,
                           sizeof(F32), 3, NULL, true, false);
-        buffer->SetBuffer(to_uint(BufferUsage::CulledInstanceBuffer), _instanceCountGrass * 3,
+        buffer->setBuffer(to_uint(BufferUsage::CulledInstanceBuffer), _instanceCountGrass * 3,
                           sizeof(I32), 3, NULL, true, false);
 
         buffer->getDrawAttribDescriptor(posLocation)
@@ -379,13 +379,13 @@ void Vegetation::gpuCull() {
         GFX::ScopedRasterizer scoped2D(false);
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
             ->Bind(0, TextureDescriptor::AttachmentType::Depth);
-        buffer->BindFeedbackBufferRange(to_uint(BufferUsage::CulledPositionBuffer),
+        buffer->bindFeedbackBufferRange(to_uint(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
-        buffer->BindFeedbackBufferRange(to_uint(BufferUsage::CulledSizeBuffer),
+        buffer->bindFeedbackBufferRange(to_uint(BufferUsage::CulledSizeBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
-        buffer->BindFeedbackBufferRange(to_uint(BufferUsage::CulledInstanceBuffer),
+        buffer->bindFeedbackBufferRange(to_uint(BufferUsage::CulledInstanceBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
 
@@ -423,7 +423,7 @@ void Vegetation::getDrawCommands(SceneGraphNode& sgn,
     _renderDrawCommand.renderGeometry(renderable->renderGeometry());
     _renderDrawCommand.renderWireframe(renderable->renderWireframe());
     _renderDrawCommand.stateHash(_grassStateBlockHash);
-    _renderDrawCommand.cmd().primCount = buffer->GetFeedbackPrimitiveCount(static_cast<U8>(queryID));
+    _renderDrawCommand.cmd().primCount = buffer->getFeedbackPrimitiveCount(static_cast<U8>(queryID));
     _renderDrawCommand.LoD(1);
     _renderDrawCommand.shaderProgram(renderable->getDrawShader(renderStage));
     _renderDrawCommand.sourceBuffer(buffer);

@@ -23,6 +23,8 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
 {
     _numQueries = 0;
     _indexBuffer = 0;
+    _indexBufferSize = 0;
+    _indexBufferUsage = GL_NONE;
     _currentReadQuery = 0;
     _transformFeedback = 0;
     _currentWriteQuery = 0;
@@ -68,7 +70,7 @@ glGenericVertexData::~glGenericVertexData() {
         }
     }
     GLUtil::freeBuffer(_indexBuffer);
-
+    _indexBufferSize = 0;
     // Delete the rest of the data
     MemoryManager::DELETE_ARRAY(_prevResult);
     MemoryManager::DELETE_ARRAY(_bufferSet);
@@ -88,7 +90,7 @@ glGenericVertexData::~glGenericVertexData() {
 
 /// Create the specified number of buffers and queries and attach them to this
 /// vertex data container
-void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
+void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Prevent double create
     DIVIDE_ASSERT(
         _bufferObjects.empty(),
@@ -165,7 +167,7 @@ bool glGenericVertexData::frameStarted(const FrameEvent& evt) {
 /// Bind a specific range of the transform feedback buffer for writing
 /// (specified in the number of elements to offset by and the number of elements
 /// to be written)
-void glGenericVertexData::BindFeedbackBufferRange(U32 buffer,
+void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
                                                   U32 elementCountOffset,
                                                   size_t elementCount) {
     // Only feedback buffers can be used with this method
@@ -181,7 +183,7 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer,
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
-void glGenericVertexData::Draw(const GenericDrawCommand& command,
+void glGenericVertexData::draw(const GenericDrawCommand& command,
                                bool useCmdBuffer) {
     // Get the OpenGL specific command from the generic one
     const IndirectDrawCommand& cmd = command.cmd();
@@ -196,7 +198,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     GL_API::setActiveVAO(_vertexArray[to_uint(
         feedbackActive ? GVDUsage::FDBCK : GVDUsage::DRAW)]);
     // Update vertex attributes if needed (e.g. if offsets changed)
-    SetAttributes(feedbackActive);
+    setAttributes(feedbackActive);
 
     // Activate transform feedback if needed
     if (feedbackActive) {
@@ -268,20 +270,20 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     }
 }
 
-void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
-                                         bool dynamic,
-                                         bool stream) {
-    bool addBuffer = !indices.empty();
+void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream) {
+    if (indicesCount > 0) {
+        DIVIDE_ASSERT(_indexBuffer == 0,
+            "glGenericVertexData::SetIndexBuffer error: Tried to double create index buffer!");
 
-    if (addBuffer) {
-        GLenum mask = dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
-                              : GL_STATIC_DRAW;
-        if (_indexBuffer == 0) {
-            // Generate an "Index Buffer Object"
-            GLUtil::createAndAllocBuffer(
-                static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), mask,
-                _indexBuffer, (bufferPtr)(indices.data()));
-        }
+        _indexBufferUsage = dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
+                                    : GL_STATIC_DRAW;
+        // Generate an "Index Buffer Object"
+        GLUtil::createAndAllocBuffer(
+                static_cast<GLsizeiptr>(indicesCount * sizeof(GLuint)),
+                _indexBufferUsage,
+                _indexBuffer,
+                NULL);
+        _indexBufferSize = indicesCount;
         // Assert if the IB creation failed
         DIVIDE_ASSERT(_indexBuffer != 0, Locale::get("ERROR_IB_INIT"));
     } else {
@@ -289,8 +291,26 @@ void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
     }
 }
 
+void glGenericVertexData::updateIndexBuffer(const vectorImpl<U32>& indices) {
+    DIVIDE_ASSERT(!indices.empty() && _indexBufferSize >= to_uint(indices.size()),
+        "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
+
+    DIVIDE_ASSERT(_indexBuffer != 0,
+        "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
+
+    glNamedBufferData(_indexBuffer,
+                      static_cast<GLsizeiptr>(_indexBufferSize * sizeof(GLuint)),
+                      NULL,
+                      _indexBufferUsage);
+
+    glNamedBufferSubData(_indexBuffer, 
+        0, 
+        static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)),
+        (bufferPtr)(indices.data()));
+}
+
 /// Specify the structure and data of the given buffer
-void glGenericVertexData::SetBuffer(U32 buffer,
+void glGenericVertexData::setBuffer(U32 buffer,
                                     U32 elementCount,
                                     size_t elementSize,
                                     U8 sizeFactor,
@@ -362,7 +382,7 @@ void glGenericVertexData::SetBuffer(U32 buffer,
 
 /// Update the elementCount worth of data contained in the buffer starting from
 /// elementCountOffset size offset
-void glGenericVertexData::UpdateBuffer(U32 buffer,
+void glGenericVertexData::updateBuffer(U32 buffer,
                                        U32 elementCount,
                                        U32 elementCountOffset,
                                        void* data) {
@@ -403,17 +423,17 @@ void glGenericVertexData::UpdateBuffer(U32 buffer,
 
 /// Update the appropriate attributes (either for drawing or for transform
 /// feedback)
-void glGenericVertexData::SetAttributes(bool feedbackPass) {
+void glGenericVertexData::setAttributes(bool feedbackPass) {
     // Get the appropriate list of attributes
     attributeMap& map = feedbackPass ? _attributeMapFdbk : _attributeMapDraw;
     // And update them in turn
     for (attributeMap::value_type& it : map) {
-        SetAttributeInternal(it.second);
+        setAttributeInternal(it.second);
     }
 }
 
 /// Update internal attribute data
-void glGenericVertexData::SetAttributeInternal(
+void glGenericVertexData::setAttributeInternal(
     AttributeDescriptor& descriptor) {
     DIVIDE_ASSERT(_elementSize[descriptor.bufferIndex()] != 0,
                   "glGenericVertexData error: attribute's parent buffer has an "
@@ -471,7 +491,7 @@ void glGenericVertexData::SetAttributeInternal(
 
 /// Return the number of primitives written to a transform feedback buffer that
 /// used the specified query ID
-U32 glGenericVertexData::GetFeedbackPrimitiveCount(U8 queryID) {
+U32 glGenericVertexData::getFeedbackPrimitiveCount(U8 queryID) {
     DIVIDE_ASSERT(queryID < _numQueries && !_bufferObjects.empty(),
                   "glGenericVertexData error: Current object isn't ready for "
                   "query processing!");

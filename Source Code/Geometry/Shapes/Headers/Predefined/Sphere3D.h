@@ -100,7 +100,7 @@ class Sphere3D : public Object3D {
    private:
     // SuperBible stuff
     void createSphere(U32 slices, U32 stacks) {
-        getGeometryVB()->Reset();
+        getGeometryVB()->reset();
         F32 drho = to_float(M_PI) / stacks;
         F32 dtheta = 2.0f * to_float(M_PI) / slices;
         F32 ds = 1.0f / slices;
@@ -158,7 +158,7 @@ class Sphere3D : public Object3D {
                 indiceLimits.y = getGeometryVB()->getIndex(i);
         }
 
-        getGeometryVB()->Create();
+        getGeometryVB()->create();
     }
 
    protected:

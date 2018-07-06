@@ -25,6 +25,7 @@ void WarScene::registerPoint(U8 teamID) {
     AI::WarSceneAIProcessor::reset();
     AI::WarSceneAIProcessor::incrementScore(teamID);
     AI::WarSceneAIProcessor::registerFlags(_flag[0].lock(), _flag[1].lock());
+    _elapsedGameTime = 0;
 }
 
 bool WarScene::initializeAI(bool continueOnErrors) {

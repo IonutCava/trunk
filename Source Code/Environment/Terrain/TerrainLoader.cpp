@@ -454,7 +454,7 @@ bool TerrainLoader::loadThreadedResources(
             groundVB->modifyTangentValue(idx0, normalData[idx1]);
         }
     }
-    groundVB->Create();
+    groundVB->create();
     Attorney::TerrainLoader::buildQuadtree(*terrain);
     initializeVegetation(terrain, terrainDescriptor);
     Console::printfn(Locale::get("TERRAIN_LOAD_END"),

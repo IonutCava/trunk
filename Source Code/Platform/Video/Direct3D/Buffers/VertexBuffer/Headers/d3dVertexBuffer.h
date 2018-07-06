@@ -38,23 +38,23 @@ namespace Divide {
 
 class d3dVertexBuffer : public VertexBuffer {
    public:
-    bool Create(bool staticDraw = true) { return true; }
+    bool create(bool staticDraw = true) { return true; }
 
-    void Destroy() {}
+    void destroy() {}
 
-    bool SetActive() { return true; }
+    bool setActive() { return true; }
 
-    void Draw(const GenericDrawCommand& command,
+    void draw(const GenericDrawCommand& command,
               bool useCmdBuffer = false){};
 
-    bool queueRefresh() { return Refresh(); }
+    bool queueRefresh() { return refresh(); }
 
     d3dVertexBuffer() : VertexBuffer() {}
-    ~d3dVertexBuffer() { Destroy(); }
+    ~d3dVertexBuffer() { destroy(); }
 
    private:
-    bool CreateInternal() { return true; }
-    bool Refresh() { return true; }
+    bool createInternal() { return true; }
+    bool refresh() { return true; }
     void checkStatus() {}
 };
 
