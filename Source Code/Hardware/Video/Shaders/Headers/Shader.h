@@ -30,27 +30,44 @@
 
 
 class ShaderProgram;
-class Shader : public TrackedObject{
+/// Shader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
+/// It can be used simultaneously in multiple programs/pipelines
+class Shader : public TrackedObject {
 public:
+
+    /// The shader's name is the period-separated list of properties, type is the render stage this shader is used for
     Shader(const std::string& name,const ShaderType& type, const bool optimise = false);
+    /// The shader is deleted only by the ShaderManager when no shader programs are referencing it
     virtual ~Shader();
 
-    virtual bool load(const std::string& name) = 0;
-    virtual bool compile() = 0; //<from text source to GPU code
+    /// Shader's API specific handle
     inline       U32          getShaderId() const {return _shader;}
+    /// The pipeline stage this shader is used for
     inline const ShaderType   getType()     const {return _type;}
+    /// The shader's name is a period-separated list of strings used to define the main shader file and the properties to load
     inline const std::string& getName()     const {return _name;}
-           void  addParentProgram(ShaderProgram* const shaderProgram);
-           void  removeParentProgram(ShaderProgram* const shaderProgram);
+    
+    /// Register the given shader program with this shader
+    void  addParentProgram(ShaderProgram* const shaderProgram);
+    /// Unregister the given shader program from this shader
+    void  removeParentProgram(ShaderProgram* const shaderProgram);
+
+    /// API dependent loading
+    virtual bool load(const std::string& name) = 0;
+    /// API conversion from text source to binary
+    virtual bool compile() = 0; 
+    /// API dependent validation
     virtual void validate() = 0;
 
 protected:
-    vectorImpl<ShaderProgram* > _parentShaderPrograms;
     std::string _name;
-    U32 _shader;//<not thread-safe. Make sure assignment is protected with a mutex or something
+    ShaderType  _type;
+    /// Use a pre-compile optimisation parser
+    bool _optimise;
+    /// The API dependent object handle. Not thread-safe!
+    U32  _shader;
     boost::atomic_bool _compiled;
-    bool _optimise;//< Use a pre-compile optimisation parser
-    ShaderType _type;
+    vectorImpl<ShaderProgram* > _parentShaderPrograms;
 };
 
 #endif

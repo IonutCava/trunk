@@ -3,9 +3,9 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 //Max number of frames before an unused primitive is deleted (default: 180 - 3 seconds at 60 fps)
 const I32 IM_MAX_FRAMES_ZOMBIE_COUNT = 180;

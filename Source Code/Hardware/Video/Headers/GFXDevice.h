@@ -166,7 +166,8 @@ public:
     void drawGUIElement(GUIElement* guiElement);
     void submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd);
     void submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds);
-    void setBufferData(const GenericDrawCommand& cmd);
+    /// returns false if there was an invalid state detected that could prevent rendering
+    bool setBufferData(const GenericDrawCommand& cmd);
 
     inline I32 getDrawID(I64 drawIDIndex) {
         assert(_sgnToDrawIDMap.find(drawIDIndex) != _sgnToDrawIDMap.end());
@@ -271,8 +272,8 @@ public:
 
     inline const mat4<F32>& getMatrix(const MATRIX_MODE& mode)  { getMatrix(mode, _mat4Cache); return _mat4Cache; }
     
-    inline U64  getFrameDurationGPU()      const { return _api.getFrameDurationGPU(); }
-    inline void togglePreviewDepthBuffer()       { _previewDepthBuffer = !_previewDepthBuffer; }
+    inline U64  getFrameDurationGPU()      { return _api.getFrameDurationGPU(); }
+    inline void togglePreviewDepthBuffer() { _previewDepthBuffer = !_previewDepthBuffer; }
 
     inline bool MSAAEnabled() const { return _MSAASamples > 0; }
     inline U8   MSAASamples() const { return _MSAASamples; }

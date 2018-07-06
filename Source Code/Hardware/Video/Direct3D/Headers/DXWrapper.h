@@ -84,7 +84,7 @@ protected:
 
     void createLoaderThread();
 
-    U64 getFrameDurationGPU() const { return 0; }
+    U64 getFrameDurationGPU() { return 0; }
 
     void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) const;
 

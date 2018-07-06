@@ -1,4 +1,4 @@
-#include "Headers/glImmediateModeEmulation.h"
+#include "Headers/glIMPrimitive.h"
 #include "Headers/glResources.h"
 #include "Headers/GLWrapper.h"
 #include "Hardware/Video/Headers/GFXDevice.h"

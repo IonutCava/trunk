@@ -1,9 +1,10 @@
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Application.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "Managers/Headers/ShaderManager.h"
-#include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/Application.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
+
 #include <boost/algorithm/string.hpp>
 
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){

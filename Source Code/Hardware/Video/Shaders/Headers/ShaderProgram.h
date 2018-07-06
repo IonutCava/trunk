@@ -41,7 +41,7 @@ public:
     virtual bool bind();
     virtual void unbind(bool resetActiveProgram = true);
     virtual U8   update(const U64 deltaTime);
-
+    virtual bool unload() { return true; }
     ///Attributes
     inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
     inline void Attribute(const std::string& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
@@ -73,7 +73,7 @@ public:
     virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
     virtual void SetSubroutine(ShaderType type, U32 index) const = 0;
     virtual U32  GetSubroutineIndex(ShaderType type, const std::string& name) const = 0;
-    virtual U32  GetSubroutineUniformIndex(ShaderType type, const std::string& name) const = 0;
+    virtual U32  GetSubroutineUniformLocation(ShaderType type, const std::string& name) const = 0;
     virtual U32  GetSubroutineUniformCount(ShaderType type) const = 0;
     ///Attribute+Uniform+UniformTexture implementation
     virtual void Attribute(I32 location, D32 value) const = 0;
@@ -109,7 +109,8 @@ public:
     inline U32  getId()   const { return _shaderProgramId; }
     ///Currently active
     inline bool isBound() const {return _bound;}
-
+    ///Is the shader ready for drawing?
+    virtual bool isValid() const = 0;
     //calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
            void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
     //calling refresh will force an update on default shader uniforms

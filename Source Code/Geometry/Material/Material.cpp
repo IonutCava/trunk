@@ -1,9 +1,9 @@
 #include "Headers/Material.h"
 
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 bool Material::_shaderQueueLocked = false;
 bool Material::_serializeShaderLoad = false;

@@ -134,7 +134,7 @@ flat in int OrigData3[1];
 
 flat in int objectVisible[1];
 
-out vec4 outVertexData;
+out vec4 outData0;
 out float outData1;
 flat out int outData2;
 
@@ -146,7 +146,7 @@ void main() {
     // only emit primitive if the object is visible 
     if (objectVisible[0] == 1)  {
         //atomicCounterIncrement(primitiveCount[queryId]);
-        outVertexData = OrigData[0];
+        outData0 = OrigData[0];
         outData1 = OrigData2[0];
         outData2 = OrigData3[0];
         EmitVertex();

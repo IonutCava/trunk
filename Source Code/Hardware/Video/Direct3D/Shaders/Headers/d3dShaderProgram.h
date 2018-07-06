@@ -33,13 +33,15 @@ public:
     bool unload(){unbind(); return true;}
     bool bind(){return false;}
     void unbind(bool resetActiveProgram = true){}
+
+    bool isValid() const { return false; }
     void attachShader(Shader* const shader,const bool refresh = false){}
     void detachShader(Shader* const shader) {}
     //Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {}
     void SetSubroutine(ShaderType type, U32 index) const {}
     U32  GetSubroutineIndex(ShaderType type, const std::string& name) const { return 0; }
-    U32  GetSubroutineUniformIndex(ShaderType type, const std::string& name) const { return 0; }
+    U32  GetSubroutineUniformLocation(ShaderType type, const std::string& name) const { return 0; }
     U32  GetSubroutineUniformCount(ShaderType type) const { return 0; }
     //Attributes
     void Attribute(I32 location, D32 value) const {}

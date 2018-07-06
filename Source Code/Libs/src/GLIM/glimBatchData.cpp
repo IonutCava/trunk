@@ -395,7 +395,7 @@ namespace NS_GLIM
             if (iAttributeArray < 0)
                 continue;
 
-            assert(m_VertAttribLocation != iAttributeArray);
+            assert(m_VertAttribLocation != (U32)iAttributeArray);
             assert(BUFFER_OFFSET (it->second.m_uiBufferOffset) != BUFFER_OFFSET(0));
 
             glEnableVertexAttribArray (iAttributeArray);

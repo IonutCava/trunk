@@ -1,14 +1,14 @@
 #include "Headers/ShaderProgram.h"
 
-#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/LightManager.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Application.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
                                                     _activeCamera(nullptr),
@@ -105,19 +105,22 @@ U8 ShaderProgram::update(const U64 deltaTime){
 bool ShaderProgram::generateHWResource(const std::string& name){
     _name = name;
 
-    if (!HardwareResource::generateHWResource(name))
+    if (!HardwareResource::generateHWResource(name)) {
         return false;
+    }
 
     HardwareResource::threadedLoad(name);
 
     DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
 
-    _timeLoc             = this->cachedLoc("dvd_time");
-    _enableFogLoc        = this->cachedLoc("dvd_enableFog");
-    _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
-    _invScreenDimension  = this->cachedLoc("dvd_invScreenDimension");
-    _fogColorLoc         = this->cachedLoc("fogColor");
-    _fogDensityLoc       = this->cachedLoc("fogDensity");
+    if (_linked) {
+        _timeLoc             = this->cachedLoc("dvd_time");
+        _enableFogLoc        = this->cachedLoc("dvd_enableFog");
+        _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
+        _invScreenDimension  = this->cachedLoc("dvd_invScreenDimension");
+        _fogColorLoc         = this->cachedLoc("fogColor");
+        _fogDensityLoc       = this->cachedLoc("fogDensity");
+    }
 
     _dirty = true;
 
@@ -126,6 +129,7 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 
 bool ShaderProgram::bind(){
     _bound = _wasBound = true;
+
     return _shaderProgramId != 0;
 }
 

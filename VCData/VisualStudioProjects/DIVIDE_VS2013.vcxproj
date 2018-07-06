@@ -476,7 +476,6 @@
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\FirstPersonCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\FreeFlyCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Frustum.cpp" />
@@ -637,7 +636,6 @@
     <ClInclude Include="..\..\Source Code\Libs\src\Aesop\include\AesopWorldState.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h" />
-    <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h" />

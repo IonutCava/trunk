@@ -42,7 +42,7 @@ namespace Divide {
     namespace GLUtil {
 
         /*-----------Object Management----*/
-        GLuint _invalidObjectID = std::numeric_limits<U32>::max();
+        GLuint _invalidObjectID = GL_INVALID_INDEX;
         GLFWwindow* _mainWindow     = nullptr;
         GLFWwindow* _loaderWindow   = nullptr;
 

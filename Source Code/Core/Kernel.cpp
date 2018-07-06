@@ -8,13 +8,13 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/Headers/ForwardRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
@@ -116,7 +116,7 @@ void Kernel::idle(){
     }
 }
 
-void Kernel::mainLoopApp(){
+void Kernel::mainLoopApp() {
     if(!_keepAlive) {
         // exiting the rendering loop will return us to the last control point (i.e. Kernel::runLogicLoop)
         Application::getInstance().mainLoopActive(false);

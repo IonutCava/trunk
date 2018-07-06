@@ -2,8 +2,8 @@
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 

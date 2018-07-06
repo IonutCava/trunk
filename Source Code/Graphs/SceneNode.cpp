@@ -2,11 +2,11 @@
 
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 {

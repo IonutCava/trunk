@@ -185,7 +185,7 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     if(Config::Profile::USE_2x2_TEXTURES)
         _width = _height = 2;
 
-    GL_API::setActiveFB(_framebufferHandle, true, true);
+    GL_API::setActiveFB(_framebufferHandle, Framebuffer::FB_READ_WRITE);
 
     _colorBuffers.resize(0);
 
@@ -215,7 +215,7 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
 
     glClear(_clearBufferMask);
 
-    GL_API::setActiveFB(0, true, true);
+    GL_API::setActiveFB(0, Framebuffer::FB_READ_WRITE);
 
     return true;
 }
@@ -252,9 +252,9 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB, TextureDescriptor::Attachment
     if (_resolveBuffer && (inputFB->getGUID() != _resolveBuffer->getGUID())) // prevent stack overflow
         input->resolve();
 
-    GLuint previousFB = GL_API::getActiveFB();
-    GL_API::setActiveFB(input->_framebufferHandle, true, false);
-    GL_API::setActiveFB(this->_framebufferHandle, false, true);
+    GLuint previousFB = GL_API::getActiveFB(Framebuffer::FB_READ_WRITE);
+    GL_API::setActiveFB(input->_framebufferHandle, Framebuffer::FB_READ_ONLY);
+    GL_API::setActiveFB(this->_framebufferHandle,  Framebuffer::FB_WRITE_ONLY);
 
     if (blitColor && _hasColor){
         glDrawBuffer(this->_colorBuffers[0]);
@@ -272,7 +272,7 @@ void glFramebuffer::BlitFrom(Framebuffer* inputFB, TextureDescriptor::Attachment
     if (blitDepth && _hasDepth)
         glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0, this->_width, this->_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-    GL_API::setActiveFB(previousFB, true, true);
+    GL_API::setActiveFB(previousFB, Framebuffer::FB_READ_WRITE);
 }
 
 void glFramebuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
@@ -293,7 +293,7 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
         _viewportChanged = true;
     }
 
-    GL_API::setActiveFB(_framebufferHandle, false, true);
+    GL_API::setActiveFB(_framebufferHandle, Framebuffer::FB_WRITE_ONLY);
     // this is checked so it isn't called twice on the GPU
     GL_API::clearColor(_clearColor, _framebufferHandle);
     if (_clearBuffersState && drawPolicy._clearBuffersOnBind)   {
@@ -323,7 +323,7 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
 void glFramebuffer::End() {
     DIVIDE_ASSERT(glFramebuffer::_bufferBound, "glFramebuffer error: End() called without a previous call to Begin()");
 
-    GL_API::setActiveFB(0, true, true);
+    GL_API::setActiveFB(0, Framebuffer::FB_READ_WRITE);
     if (_viewportChanged){
         GFX_DEVICE.restoreViewport();
         _viewportChanged = false;
@@ -384,7 +384,7 @@ void glFramebuffer::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, 
         resolve();
         _resolveBuffer->ReadData(rect, imageFormat, dataType, outData);
     }else{
-        GL_API::setActiveFB(_framebufferHandle, true, false);
+        GL_API::setActiveFB(_framebufferHandle, Framebuffer::FB_READ_ONLY);
         glReadPixels(rect.x, rect.y, rect.z, rect.w, glImageFormatTable[imageFormat], glDataFormat[dataType], outData);
     }
 }

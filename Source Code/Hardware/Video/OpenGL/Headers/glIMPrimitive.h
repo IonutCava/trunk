@@ -24,7 +24,7 @@
 #define _GL_IM_EMULATION_H_
 
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
-#include "Hardware/Video/Headers/ImmediateModeEmulation.h"
+#include "Hardware/Video/Headers/IMPrimitive.h"
 
 namespace NS_GLIM {
     class GLIM_BATCH;

@@ -536,9 +536,6 @@
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\Reflector.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
@@ -1070,9 +1067,6 @@
       <Filter>Rendering\PostFX\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h">
-      <Filter>Managers\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h">

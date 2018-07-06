@@ -4,33 +4,45 @@
 #include "Utility/Headers/Localization.h"
 
 Shader::Shader(const std::string& name, const ShaderType& type,const bool optimise) : _shader(std::numeric_limits<U32>::max()),
-																					  _name(name),
-																				      _type(type),
-																					  _compiled(false),
-																					  _optimise(optimise)
+                                                                                      _name(name),
+                                                                                      _type(type),
+                                                                                      _compiled(false),
+                                                                                      _optimise(optimise)
 {
 }
 
-Shader::~Shader(){
-	D_PRINT_FN(Locale::get("SHADER_DELETE"),getName().c_str());
-	for(ShaderProgram* shaderPtr : _parentShaderPrograms){
-		shaderPtr->detachShader(this);
-	}
-	_parentShaderPrograms.clear();
+Shader::~Shader()
+{
+    D_PRINT_FN(Locale::get("SHADER_DELETE"),getName().c_str());
+    // never delete a shader if it's still in use by a program
+    assert(_parentShaderPrograms.empty());
 }
 
-void Shader::addParentProgram(ShaderProgram* const shaderProgram){
-	_parentShaderPrograms.push_back(shaderProgram);
+/// Register the given shader program with this shader
+void Shader::addParentProgram(ShaderProgram* const shaderProgram) {
+    // simple, handle-base check
+    U32 parentShaderID = shaderProgram->getId();
+    vectorImpl<ShaderProgram* >::iterator it;
+    it = std::find_if(_parentShaderPrograms.begin(), _parentShaderPrograms.end(), [&parentShaderID](ShaderProgram const* sp) { 
+                                                                                        return sp->getId() == parentShaderID; 
+                                                                                    });
+    // assert if we register the same shaderProgram with the same shader multiple times
+    assert(it == _parentShaderPrograms.end());
+    // actually register the shader
+    _parentShaderPrograms.push_back(shaderProgram);
 }
 
-void Shader::removeParentProgram(ShaderProgram* const shaderProgram){
-   vectorImpl<ShaderProgram* >::iterator it;
+/// Unregister the given shader program from this shader
+void Shader::removeParentProgram(ShaderProgram* const shaderProgram) {
+    // program matching works like in 'addParentProgram'
+    U32 parentShaderID = shaderProgram->getId();
 
-   for ( it = _parentShaderPrograms.begin(); it != _parentShaderPrograms.end(); ){
-	    if( (*it)->getId() ==  shaderProgram->getId()){
-			it = _parentShaderPrograms.erase(it);
-		}else{
-			++it;
-		}
-   }
+    vectorImpl<ShaderProgram* >::iterator it;
+    it = std::find_if(_parentShaderPrograms.begin(), _parentShaderPrograms.end(), [&parentShaderID](ShaderProgram const* sp) { 
+                                                                                        return sp->getId() == parentShaderID; 
+                                                                                    });
+    // assert if the specified shader program wasn't registered
+    assert(it != _parentShaderPrograms.end());
+    // actually unregister the shader
+    _parentShaderPrograms.erase(it);
 }

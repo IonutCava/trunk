@@ -1,33 +1,17 @@
-#include "Headers/GLWrapper.h"
-#include "Headers/glImmediateModeEmulation.h"
-
-#include "Graphs/Headers/SceneGraph.h"
-#include "Scenes/Headers/SceneState.h"
-
-#include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUIText.h"
-
-#include "Core/Headers/ParamHandler.h"
-#include "Core/Math/Headers/Transform.h"
-#include "Core/Resources/Headers/ResourceCache.h"
-
-#include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Headers/SubMesh.h"
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+﻿#include "Headers/GLWrapper.h"
+#include "Headers/glIMPrimitive.h"
 
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/OpenGL/glsw/Headers/glsw.h"
-
 #include "Hardware/Video/OpenGL/Buffers/Framebuffer/Headers/glFramebuffer.h"
 #include "Hardware/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
 #include "Hardware/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 
-#include <glsl/glsl_optimizer.h>
+#include "GUI/Headers/GUIText.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Geometry/Material/Headers/Material.h"
 
 #ifndef GLFONTSTASH_IMPLEMENTATION
 #define GLFONTSTASH_IMPLEMENTATION
@@ -35,10 +19,8 @@
 #include "Text/Headers/fontstash.h"
 #include "Text/Headers/glfontstash.h"
 #endif
+#include <glsl/glsl_optimizer.h>
 
-GLuint64 GL_API::FRAME_DURATION_GPU = 0;
-
-#include <glim.h>
 
 GL_API::GL_API() : RenderAPIWrapper(),
                    _prevWidthNode(0),
@@ -47,16 +29,20 @@ GL_API::GL_API() : RenderAPIWrapper(),
                    _prevSizeString(0),
                    _lineWidthLimit(1),
                    _pointDummyVAO(0),
-                   _fonsContext(nullptr)
+                   _fonsContext(nullptr),
+                   _GLSLOptContex(nullptr)
 {
+    // Only updated in Debug builds
+    FRAME_DURATION_GPU = 0;
+    // Atomic boolean use to signal the loading thread to stop
     _closeLoadingThread = false;
-
+    // Initial values for performance queries
     for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
         for (U8 j = 0; j < PERFORMANCE_COUNTERS; ++j) {
             _queryID[i][j] = 0;
         }
     }
-
+    // All clip planes are disabled at first (default OpenGL state)
     for (U8 index = 0; index < Config::MAX_CLIP_PLANES; ++index) {
         _activeClipPlanes[index] = false;
     }
@@ -66,68 +52,77 @@ GL_API::~GL_API()
 {
 }
 
+/// FontStash library initialization
 void GL_API::createFonsContext() {
+    // 512x512 atlas with bottom-left origin
     _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
 }
 
+/// FontStash library deinitialization
 void GL_API::deleteFonsContext() {
     glfonsDelete(_fonsContext);
     _fonsContext = nullptr;
 }
 
+/// Prepare the GPU for rendering a frame
 void GL_API::beginFrame() {
-
-#ifdef _DEBUG
-    GLuint queryId = _queryID[_queryBackBuffer][0];
-    glBeginQuery(GL_TIME_ELAPSED, queryId);
-#endif
-
+    // Start a duration query in debug builds
+#   ifdef _DEBUG
+        glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]);
+#   endif
+    // Restore the clear color (in case it changed)
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE(), 0);
+    // Clear our buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT/* | GL_STENCIL_BUFFER_BIT*/);
+    // Clears are registered as draw calls by most software, so we do the same to stay in sync with third party software
     GFX_DEVICE.registerDrawCall();
 }
 
+/// Finish rendering the current frame
 void GL_API::endFrame() {
-
-    //unbind all states (shaders, textures, buffers)
+    // Revert back to the default OpenGL states
     clearStates(false, false, false);
-
+    // Swap buffers
     glfwSwapBuffers(Divide::GLUtil::_mainWindow);
+    // Poll for new events
     glfwPollEvents();
-
-#ifdef _DEBUG
-    glEndQuery(GL_TIME_ELAPSED);
-
-    GLuint query = GFX_DEVICE.getFrameCount() % 4;
-    
-    _queryBackBuffer = query;
-    _queryFrontBuffer = 3 - _queryBackBuffer;
-    
-#endif
+    // End the timing query started in beginFrame() in debug builds
+#   ifdef _DEBUG
+        glEndQuery(GL_TIME_ELAPSED);
+        // Swap query objects. The current time will be available after 4 frames
+        _queryBackBuffer   = GFX_DEVICE.getFrameCount() % 4;
+        _queryFrontBuffer = 3 - _queryBackBuffer;
+#   endif
 }
 
-bool GL_API::initShaders(){
-    //Init glsw library
+/// Prepare our shader loading system
+bool GL_API::initShaders() {
+    // Initialize GLSW
     GLint glswState = glswInit();
-    glswAddDirectiveToken("","#version 430 core\n/*�Copyright 2009-2014 DIVIDE-Studio�*/");
-#if defined(_DEBUG)
-    glswAddDirectiveToken("", "#define _DEBUG");
-#elif defined(_PROFILE)
-    glswAddDirectiveToken("", "#define _PROFILE");
-#else
-    glswAddDirectiveToken("", "#define _RELEASE");
-#endif
+    // Add our engine specific defines and various code pieces to every GLSL shader
+    // Add version as the first shader statement, followed by copyright notice
+    glswAddDirectiveToken("","#version 430 core\n/*“Copyright 2009-2014 DIVIDE-Studio”*/");
 
+    // Add current build environment information to the shaders
+#   if defined(_DEBUG)
+        glswAddDirectiveToken("", "#define _DEBUG");
+#   elif defined(_PROFILE)
+        glswAddDirectiveToken("", "#define _PROFILE");
+#   else
+        glswAddDirectiveToken("", "#define _RELEASE");
+#   endif
+
+    // Shader stage level reflection system. A shader stage must know what stage it's used for
     glswAddDirectiveToken("Vertex",   "#define VERT_SHADER");
     glswAddDirectiveToken("Geometry", "#define GEOM_SHADER");
     glswAddDirectiveToken("Fragment", "#define FRAG_SHADER");
     glswAddDirectiveToken("TessellationE", "#define TESS_EVAL_SHADER");
     glswAddDirectiveToken("TessellationC", "#define TESS_CTRL_SHADER");
     glswAddDirectiveToken("Compute",  "#define COMPUTE_SHADER");
-
+    // This line gets replaced in every shader at load with the custom list of defines specified by the material
     glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
-
-    if (getGPUVendor() == GPU_VENDOR_NVIDIA) { //nVidia specific
+    // Add some nVidia specific pragma directives
+    if (getGPUVendor() == GPU_VENDOR_NVIDIA) {
         glswAddDirectiveToken("","//#pragma optionNV(fastmath on)");
         glswAddDirectiveToken("","//#pragma optionNV(fastprecision on)");
         glswAddDirectiveToken("","//#pragma optionNV(inline all)");
@@ -135,7 +130,7 @@ bool GL_API::initShaders(){
         glswAddDirectiveToken("","//#pragma optionNV(strict on)");
         glswAddDirectiveToken("","//#pragma optionNV(unroll all)");
     }
-
+    // Try to sync engine specific data and values with GLSL
     glswAddDirectiveToken("", std::string("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
     glswAddDirectiveToken("", std::string("const uint MAX_SPLITS_PER_LIGHT = " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";").c_str());
@@ -160,6 +155,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Vertex", std::string("#define VARYING out").c_str());
     glswAddDirectiveToken("Vertex", std::string("const uint MAX_BONE_COUNT_PER_NODE = " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE) + ";").c_str());
     glswAddDirectiveToken("Vertex", std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
+    // Vertex data has a fixed format
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION)    + ") in vec3  inVertexData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_COLOR_LOCATION)       + ") in vec4  inColorData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_NORMAL_LOCATION)      + ") in vec3  inNormalData;").c_str());
@@ -168,126 +164,182 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BITANGENT_LOCATION)   + ") in vec3  inBiTangentData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
-
+    // GPU specific data, such as GFXDevice's main uniform block and clipping planes are defined in an external file included in every shader
     glswAddDirectiveToken("", std::string("#include \"nodeDataInput.cmn\"").c_str());
-
+    // After we finish with all of the defines, add all of the custom uniform variables defined by each material
     glswAddDirectiveToken("", "//__CUSTOM_UNIFORMS__");
-
-    GL_API::_GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES ? kGlslTargetOpenGLES30 : kGlslTargetOpenGL);
-
-    return glswState == 1 && GL_API::_GLSLOptContex != nullptr;
+    // Create an optimisation context used for post-processing shaders (using Aras Pranckevičius's glsl-optimizer: https://github.com/aras-p/glsl-optimizer )
+    _GLSLOptContex = glslopt_initialize(GFX_DEVICE.getApi() == OpenGLES ? kGlslTargetOpenGLES30 : kGlslTargetOpenGL);
+    // Check initialization status for GLSL and glsl-optimizer
+    return (glswState == 1 && _GLSLOptContex != nullptr);
 }
 
+/// Revert everything that was set up in "initShaders()"
 bool GL_API::deInitShaders() {
+    // Delete the glsl-optimizer context
     glslopt_cleanup(_GLSLOptContex);
-    //Shut down glsw and clean memory
-    return (glswShutdown() == 1);
+    // Shutdown GLSW
+    return (glswShutdown() == GL_TRUE);
 }
 
+/// Try to find the requested font in the font cache. Load on cache miss.
 I32 GL_API::getFont(const std::string& fontName) {
+    // Search for the requested font by name
     const FontCache::const_iterator& it = _fonts.find(fontName);
-    if(it == _fonts.end()){
+    // If we failed to find it, it wasn't loaded yet
+    if (it == _fonts.end()) {
+        // Fonts are stored in the general asset directory
         std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
+        // In the GUI subfolder
         fontPath += "GUI/";
+        // In the fonts subfolder
         fontPath += "fonts/";
         fontPath += fontName;
+        // We use FontStash to load the font file
         I32 tempFont = fonsAddFont(_fonsContext, fontName.c_str(), fontPath.c_str());
-
+        // If the font is invalid, inform the user, but map it anyway, to avoid loading an invalid font file on every request
         if (tempFont == FONS_INVALID) {
             ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName.c_str());
         }
+        // Save the font in the font cache
         _fonts.insert(std::make_pair(fontName, tempFont));
+        // Return the font
         return tempFont;
     }
-    
+    // We found the font in cache, so return it
     return it->second;
 }
 
+/// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash) with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
+    // Retrieve the font from the font cache
     I32 font = getFont(textLabel._font);
+    // The font may be invalid, so skip this text label
     if (font == FONS_INVALID) {
         return;
     }
+    // See FontStash documentation for the following block
+    {
+        fonsClearState(_fonsContext);
+        fonsSetSize(_fonsContext, textLabel._height);
+        fonsSetFont(_fonsContext, font);
+        F32 lh = 0;
+        fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
+        fonsSetColor(_fonsContext, textLabel._color.r * 255, textLabel._color.g * 255, textLabel._color.b * 255, textLabel._color.a * 255);
 
-    F32 lh = 0;
-    fonsClearState(_fonsContext);
-    fonsSetSize(_fonsContext, textLabel._height);
-    fonsSetFont(_fonsContext, font);
-    fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
-    fonsSetColor(_fonsContext, textLabel._color.r * 255, textLabel._color.g * 255, textLabel._color.b * 255, textLabel._color.a * 255);
+        if (textLabel._blurAmount > 0.01f) {
+            fonsSetBlur(_fonsContext, textLabel._blurAmount );
+        }
 
-    if (textLabel._blurAmount > 0.01f) {
-        fonsSetBlur(_fonsContext, textLabel._blurAmount );
+        if (textLabel._spacing > 0.01f) {
+            fonsSetBlur(_fonsContext, textLabel._spacing );
+        }
+
+        if (textLabel._alignFlag != 0) {
+            fonsSetAlign(_fonsContext, textLabel._alignFlag);
+        }
+
+        fonsDrawText(_fonsContext, position.x, _cachedResolution.y - (position.y + lh), textLabel._text.c_str(), nullptr);
     }
-
-    if (textLabel._spacing > 0.01f) {
-        fonsSetBlur(_fonsContext, textLabel._spacing );
-    }
-
-    if (textLabel._alignFlag != 0) {
-        fonsSetAlign(_fonsContext, textLabel._alignFlag);
-    }
-
-    fonsDrawText(_fonsContext, position.x, _cachedResolution.y - (position.y + lh), textLabel._text.c_str(), nullptr);
+    // Register each label rendered as a draw call
     GFX_DEVICE.registerDrawCall();
 }
 
+/// Rendering points is universally useful, so we have a function, and a VAO, dedicated to this process
 void GL_API::drawPoints(GLuint numPoints) {
     GL_API::setActiveVAO(_pointDummyVAO);
     glDrawArrays(GL_POINTS, 0, numPoints);
     GFX_DEVICE.registerDrawCall();
 }
 
+/// Verify if we have a sampler object created and available for the given descriptor
+size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
+    // Get the descriptor's hash value
+    size_t hashValue = descriptor.getHash();
+    // Try to find the hash value in the sampler object map
+    samplerObjectMap::iterator it = _samplerMap.find(hashValue);
+    // If we fail to find it, we need to create a new sampler object
+    if (it == _samplerMap.end()) {
+        // Create and store the newly created sample object. GL_API is responsible for deleting these!
+        _samplerMap.insert(std::make_pair(hashValue, New glSamplerObject(descriptor)));
+    }
+    // Return the sampler object's hash value
+    return hashValue;
+}
+
+/// Return the OpenGL sampler object's handle for the given hash value
+GLuint GL_API::getSamplerHandle(size_t samplerHash) {
+    // If the hash value is 0, we assume the code is trying to unbind a sampler object
+    if (samplerHash == 0) {
+        return 0;
+    }
+    // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
+    samplerObjectMap::iterator it = _samplerMap.find(samplerHash);
+    if (it == _samplerMap.end()) {
+        ERROR_FN(Locale::get("ERROR_NO_SAMPLER_OBJECT_FOUND"), samplerHash);
+        return 0;
+    }
+    // Return the OpenGL handle for the sampler object matching the specified hash value
+    return it->second->getObjectHandle();
+}
+
+/// Create and return a new IM emulation primitive. The callee is responsible for it's deletion!
 IMPrimitive* GL_API::newIMP() const {
     return New glIMPrimitive();
 }
 
-/// Creates a new frame buffer
+/// Create and return a new framebuffer. The callee is responsible for it's deletion!
 Framebuffer* GL_API::newFB(bool multisampled) const {
-    // if MSAA is disabled, this will be a simple color / depth buffer
-    // if we requested a MSFB and msaa is enabled, create a resolve buffer
-    // and create our FB adding the resolve buffer as it's child
-    // else, return a regular frame buffer
+    // If MSAA is disabled, this will be a simple color / depth buffer
+    // If we requested a MultiSampledFramebuffer and MSAA is enabled, we also allocate a resolve framebuffer
+    // We set the resolve framebuffer as the requested framebuffer's child. 
+    // The framebuffer is responsible for deleting it's own resolve child!
      return New glFramebuffer((multisampled && GFX_DEVICE.MSAAEnabled()) ? New glFramebuffer() : nullptr);
 }
 
+/// Create and return a new vertex array (VAO + VB + IB). The callee is responsible for it's deletion!
 VertexBuffer* GL_API::newVB() const {
     return New glVertexArray();
 }
 
+/// Create and return a new pixel buffer using the requested format. The callee is responsible for it's deletion!
 PixelBuffer* GL_API::newPB(const PBType& type) const {
     return New glPixelBuffer(type);
 }
 
+/// Create and return a new generic vertex data object and, optionally set it as persistently mapped. The callee is responsible for it's deletion!
 GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
     return New glGenericVertexData(persistentMapped);
 }
 
+/// Create and return a new shader buffer. The callee is responsible for it's deletion!
+/// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false or a 'Shader Storage Block Object' otherwise
 ShaderBuffer* GL_API::newSB(const bool unbound, const bool persistentMapped) const {
+    // The shader buffer can also be persistently mapped, if requested
     return New glUniformBuffer(unbound, persistentMapped);
 }
 
-size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor){
-    size_t hashValue = descriptor.getHash();
-
-    samplerObjectMap::iterator it = _samplerMap.find(hashValue);
-
-    if (it == _samplerMap.end()) {
-        _samplerMap.insert(std::make_pair(hashValue, New glSamplerObject(descriptor)));
-    }
-
-    return hashValue;
+/// Create and return a new texture array (optionally, flipped vertically). The callee is responsible for it's deletion!
+Texture* GL_API::newTextureArray(const bool flipped) const {
+    return New glTexture(TEXTURE_2D_ARRAY, flipped); 
 }
 
-GLuint GL_API::getSamplerHandle(size_t samplerHash) {
-    if (samplerHash == 0) {
-        return 0;
-    }
+/// Create and return a new 2D texture (optionally, flipped vertically). The callee is responsible for it's deletion!
+Texture* GL_API::newTexture2D(const bool flipped) const {
+    return New glTexture(TEXTURE_2D, flipped);
+}
 
-    samplerObjectMap::iterator it = _samplerMap.find(samplerHash);
-    if (it == _samplerMap.end()) {
-        return 0;
-    }
+/// Create and return a new cube texture (optionally, flipped vertically). The callee is responsible for it's deletion!
+Texture* GL_API::newTextureCubemap(const bool flipped) const {
+    return New glTexture(TEXTURE_CUBE_MAP, flipped);
+}
 
-    return it->second->getObjectHandle();
+/// Create and return a new shader program (optionally, post load optimised). The callee is responsible for it's deletion!
+ShaderProgram* GL_API::newShaderProgram(const bool optimise) const {
+    return New glShaderProgram(optimise); 
+}
+
+/// Create and return a new shader of the specified type by loading the specified name (optionally, post load optimised). The callee is responsible for it's deletion!
+Shader* GL_API::newShader(const std::string& name, const ShaderType& type, const bool optimise) const {
+    return New glShader(name,type,optimise);
 }

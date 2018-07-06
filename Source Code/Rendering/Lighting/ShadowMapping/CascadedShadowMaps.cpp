@@ -7,12 +7,12 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"
 
-#include "Managers/Headers/ShaderManager.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Headers/ImmediateModeEmulation.h"
+#include "Hardware/Video/Headers/IMPrimitive.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 

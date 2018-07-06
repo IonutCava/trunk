@@ -5,7 +5,7 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <glsl/glsl_optimizer.h>
-#include "Managers/Headers/ShaderManager.h"
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
 
 #define _COMPILE_SHADER_OUTPUT_IN_RELEASE
@@ -39,7 +39,7 @@ bool glShader::load(const std::string& source){
 #ifdef NDEBUG
 
     if((_type == FRAGMENT_SHADER || _type == VERTEX_SHADER) && _optimise){
-        glslopt_ctx* ctx = GL_API::getGLSLOptContext();
+        glslopt_ctx* ctx = GL_API::getInstance().getGLSLOptContext();
         DIVIDE_ASSERT(ctx != nullptr, "glShader error: Invalid shader optimization context!");
         glslopt_shader_type shaderType = (_type == FRAGMENT_SHADER ? kGlslOptShaderFragment : kGlslOptShaderVertex);
         glslopt_shader* shader = glslopt_optimize (ctx, shaderType, parsedSource.c_str(), 0);
@@ -63,7 +63,9 @@ bool glShader::load(const std::string& source){
 }
 
 bool glShader::compile(){
-    if(_compiled) return true;
+    if (_compiled) {
+        return true;
+    }
 
     glCompileShader(_shader);
 

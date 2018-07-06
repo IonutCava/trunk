@@ -44,6 +44,12 @@ public:
         }
     };
 
+    enum FramebufferUsage {
+        FB_READ_WRITE = 0,
+        FB_READ_ONLY  = 1,
+        FB_WRITE_ONLY = 2
+    };
+
     inline static FramebufferTarget& defaultPolicy() { static FramebufferTarget _defaultPolicy; return _defaultPolicy; }
 
     inline Texture* GetAttachment(TextureDescriptor::AttachmentType slot) const { return _attachmentTexture[slot]; }

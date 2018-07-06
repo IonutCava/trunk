@@ -261,9 +261,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h">
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h">
-      <Filter>Video\OpenGL\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h">
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
@@ -304,9 +301,6 @@
       <Filter>Video\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h">
@@ -444,15 +438,21 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\VertexDataInterface.h">
       <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderManager.h">
+      <Filter>Video\Shaders\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glIMPrimitive.h">
+      <Filter>Video\OpenGL\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\IMPrimitive.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp">
       <Filter>Audio\sdl_mixer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp">
-      <Filter>Video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp">
       <Filter>Video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\RenderStateBlock.cpp">
@@ -465,9 +465,6 @@
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp">
-      <Filter>Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp">
@@ -589,6 +586,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glResources.cpp">
       <Filter>Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderManager.cpp">
+      <Filter>Video\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glIMPrimitive.cpp">
+      <Filter>Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\IMPrimitive.cpp">
+      <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

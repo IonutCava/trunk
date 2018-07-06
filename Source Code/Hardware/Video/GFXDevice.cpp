@@ -10,7 +10,6 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Utility/Headers/ImageTools.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
@@ -23,6 +22,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
 #include "Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 #ifdef FORCE_NV_OPTIMUS_HIGHPERFORMANCE
 extern "C" {
@@ -72,10 +73,13 @@ GFXDevice::~GFXDevice()
 {
 }
 
-void GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
+bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     DIVIDE_ASSERT(cmd._shaderProgram && cmd._shaderProgram->getId() != 0, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
 
-    cmd._shaderProgram->bind();
+    if (!cmd._shaderProgram->bind()) {
+        return false;
+    }
+
     cmd._shaderProgram->Uniform("lodLevel", (I32)cmd._lodIndex);
     
     DIVIDE_ASSERT(cmd._drawID < (I32)_matricesData.size(), "GFXDevice error: Invalid draw ID encountered!");
@@ -83,6 +87,8 @@ void GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, std::max(cmd._drawID, 0), 1);
         
     setStateBlock(cmd._stateHash);
+
+    return true;
 }
 
 void GFXDevice::drawPoints(U32 numPoints, size_t stateHash) {
@@ -94,8 +100,9 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash) {
     _defaultDrawCmd.setStateHash(stateHash);
     _defaultDrawCmd.setShaderProgram(activeShaderProgram());
 
-    setBufferData(_defaultDrawCmd);
-    drawPoints(numPoints); 
+    if (setBufferData(_defaultDrawCmd) ){
+        drawPoints(numPoints); 
+    }
 }
 
 void GFXDevice::drawGUIElement(GUIElement* guiElement) {
@@ -124,12 +131,9 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement) {
 void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd) {
     assert(buffer != nullptr);
 
-    if (cmd._cmd.instanceCount == 0) {
-        return;
+    if (cmd._cmd.instanceCount != 0 && setBufferData(cmd)) {
+        buffer->Draw(cmd);
     }
-
-    setBufferData(cmd);
-    buffer->Draw(cmd);
 }
 
 void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds) {

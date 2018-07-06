@@ -343,7 +343,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\Headers\d3dTexture.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice-Inl.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\IMPrimitive.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIWrapper.h" />
@@ -357,7 +357,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glIMPrimitive.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h" />
@@ -369,6 +369,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Text\Headers\stb_truetype.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\Shader.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderManager.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\Texture.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\TextureDescriptor.h" />
@@ -398,7 +399,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDeviceDebug.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDeviceState.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\IMPrimitive.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\Framebuffer\glFramebuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\glBufferLockManager.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />
@@ -408,7 +409,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glIMPrimitive.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c" />
@@ -421,6 +422,7 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\RenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\Shader.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderManager.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Textures\Texture.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\GLIM\glimBatch.cpp" />

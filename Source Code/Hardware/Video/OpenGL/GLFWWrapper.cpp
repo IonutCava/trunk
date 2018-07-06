@@ -1,21 +1,14 @@
-﻿#include "Headers/glImmediateModeEmulation.h"
+﻿#include "Headers/GLWrapper.h"
 
 #include "GUI/Headers/GUI.h"
-#include "Core/Headers/Kernel.h"
 #include "core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/ShaderManager.h"
-#include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "Core/Resources/Headers/ResourceCache.h"
-#include "Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include <glim.h>
 
 #include <CEGUI/CEGUI.h>
 
-glslopt_ctx* GL_API::_GLSLOptContex = nullptr;
-
-// Let's try and create a valid OpenGL context taking in account the specified resolution and command line arguments
+/// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GL_ENUM_TABLE::fill();
@@ -242,23 +235,23 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
     glGenVertexArrays(1, &_pointDummyVAO);
 
     // In debug, we also have various performance counters to profile GPU rendering operations
-#ifdef _DEBUG
-    // We have multiple counter buffers, and each can be multi-buffered (currently, only double-buffered, front and back) to avoid pipeline stalls
-    for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
-        glGenQueries(PERFORMANCE_COUNTERS, _queryID[i]);
-        DIVIDE_ASSERT(_queryID[i][0] != 0, "GLFWWrapper error: Invalid performance counter query ID!");
-    }
+#   ifdef _DEBUG
+        // We have multiple counter buffers, and each can be multi-buffered (currently, only double-buffered, front and back) to avoid pipeline stalls
+        for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
+            glGenQueries(PERFORMANCE_COUNTERS, _queryID[i]);
+            DIVIDE_ASSERT(_queryID[i][0] != 0, "GLFWWrapper error: Invalid performance counter query ID!");
+        }
 
-    _queryBackBuffer = 4;
-    // Initialize an initial time query as it solves certain issues with consecutive queries later
-    glBeginQuery(GL_TIME_ELAPSED, _queryID[0][0]);
-    glEndQuery(GL_TIME_ELAPSED);
-    // Wait until the results are available
-    GLint stopTimerAvailable = 0;
-    while (!stopTimerAvailable) {
-        glGetQueryObjectiv(_queryID[0][0], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
-    }
-#endif
+        _queryBackBuffer = 4;
+        // Initialize an initial time query as it solves certain issues with consecutive queries later
+        glBeginQuery(GL_TIME_ELAPSED, _queryID[0][0]);
+        glEndQuery(GL_TIME_ELAPSED);
+        // Wait until the results are available
+        GLint stopTimerAvailable = 0;
+        while (!stopTimerAvailable) {
+            glGetQueryObjectiv(_queryID[0][0], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
+        }
+#   endif
 
     // That's it. Everything should be ready for draw calls
     PRINT_FN(Locale::get("START_OGL_API_OK"));
@@ -318,15 +311,16 @@ void GL_API::createLoaderThread() {
     assert(Divide::GLUtil::_loaderWindow != nullptr);
     glfwMakeContextCurrent(Divide::GLUtil::_loaderWindow);
 
-#ifdef GLEW_MX
-    Divide::GLUtil::initGlew();
-    // Enable OpenGL debug callbacks for this context as well
-#   if defined(_DEBUG) || defined(_PROFILE)
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    // Debug callback in a separate thread requires a flag to distinguish it from the main thread's callbacks
-    glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (void*)(1));
+#   ifdef GLEW_MX
+        Divide::GLUtil::initGlew();
+        // Enable OpenGL debug callbacks for this context as well
+#      if defined(_DEBUG) || defined(_PROFILE)
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+            // Debug callback in a separate thread requires a flag to distinguish it from the main thread's callbacks
+            glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (void*)(1));
+#      endif
 #   endif
-#endif
+
     // This will be our target container for new items pulled from the queue
     DELEGATE_CBK callback;
 

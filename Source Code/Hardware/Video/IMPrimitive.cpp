@@ -1,4 +1,4 @@
-#include "Headers/ImmediateModeEmulation.h"
+#include "Headers/IMPrimitive.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
 IMPrimitive::IMPrimitive() : GUIDWrapper(),

@@ -3,13 +3,14 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/ShaderManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh creation
 
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+
+#include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr)
 {
