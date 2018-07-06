@@ -271,6 +271,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Platform\Headers\ByteBuffer.h">
       <Filter>Platform\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Compute\Headers\OpenCLInterface.h">
+      <Filter>Compute\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -455,6 +458,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Platform\ByteBuffer.cpp">
       <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Compute\OpenCLInterface.cpp">
+      <Filter>Compute</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -703,6 +709,15 @@
     </Filter>
     <Filter Include="Threading\ThreadPool\Headers\threadpool\detail">
       <UniqueIdentifier>{a205ee33-6098-4f11-b36a-d54e67db176b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compute">
+      <UniqueIdentifier>{19c1619b-b62f-4590-8118-8472d2ffcfc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compute\Kernels">
+      <UniqueIdentifier>{b4098088-bf91-4fb0-a090-7b387445e1d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Compute\Headers">
+      <UniqueIdentifier>{47affca7-a836-4486-94e4-82ce928d8d2e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

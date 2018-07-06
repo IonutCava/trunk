@@ -11,6 +11,7 @@
 #pragma comment(lib, "OpenAL32.lib")
 #pragma comment(lib, "SDL2_mixer.lib")
 #pragma comment(lib, "Winmm.lib")
+#pragma comment(lib, "OpenCL.lib")
 
 #ifdef _DEBUG
 #pragma comment(lib, "DbgHelp.lib")
@@ -56,7 +57,6 @@
 #pragma comment(lib, "SILLY.lib")
 #pragma comment(lib, "pcre.lib")
 #pragma comment(lib, "expat.lib")
-
 #pragma comment(lib, "CEGUIOpenGLRenderer-0_Static.lib")
 #pragma comment(lib, "CEGUIBase-0_Static.lib")
 #pragma comment(lib, "CEGUISILLYImageCodec_Static.lib")

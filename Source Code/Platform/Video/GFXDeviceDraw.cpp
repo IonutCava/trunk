@@ -197,6 +197,10 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
     mat4<F32>& modelMatrix = dataOut._matrix[0];
     mat4<F32>& normalMatrix = dataOut._matrix[1];
 
+    //https://github.com/lilleyse/Mass-Occlusion-Culling
+    const BoundingSphere& boundingSphere = nodeRef.getBoundingSphereConst();
+    dataOut._boundingSphere.set(boundingSphere.getCenter(), boundingSphere.getRadius());
+
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {

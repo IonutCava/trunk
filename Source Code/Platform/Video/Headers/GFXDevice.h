@@ -90,6 +90,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
             mat4<F32> _matrix[4];
             F32       _data[4 * 4 * 4];
         };
+        vec4<F32> _boundingSphere;
 
         NodeData()
         {
@@ -97,6 +98,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
             _matrix[1].identity();
             _matrix[2].zero();
             _matrix[3].zero();
+            _boundingSphere.reset();
         }
 
         void set(const NodeData& other);

@@ -37,6 +37,7 @@ namespace Divide {
 inline void 
 GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
     memcpy(_data, other._data, 4 * 4 * 4 * sizeof(F32));
+    _boundingSphere.set(other._boundingSphere);
 }
 
 inline void 

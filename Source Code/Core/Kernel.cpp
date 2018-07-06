@@ -14,10 +14,11 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Physics/Headers/PXDevice.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
+#include "Platform/Compute/Headers/OpenCLInterface.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
-#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {
 
@@ -58,6 +59,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     // General light management and rendering (individual lights are handled by each scene)
     // Unloading the lights is a scene level responsibility
     LightManager::createInstance();
+    OpenCLInterface::getInstance().init();
     _cameraMgr.reset(new CameraManager(this));  // Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
@@ -592,6 +594,7 @@ void Kernel::shutdown() {
     _PFX.closePhysicsAPI();
     PXDevice::destroyInstance();
     Console::printfn(Locale::get("STOP_HARDWARE"));
+    OpenCLInterface::getInstance().deinit();
     _SFX.closeAudioAPI();
     _GFX.closeRenderingAPI();
     _mainTaskPool.wait();

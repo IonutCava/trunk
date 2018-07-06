@@ -5,6 +5,7 @@ flat VARYING uint dvd_drawID;
 
 struct NodeData {
     mat4 _matrix[4];
+    vec4 _boundingSphere;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
@@ -14,6 +15,7 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 
 #define dvd_WorldMatrix   dvd_Matrices[dvd_drawID]._matrix[0]
 #define dvd_NormalMatrix  mat3(dvd_Matrices[dvd_drawID]._matrix[1])
+#define dvd_SphereBounds  dvd_Matrices[dvd_drawID]._boundingSphere;
 
 #if defined(VERT_SHADER)
 #define dvd_boneCount     uint(dvd_Matrices[dvd_drawID]._matrix[1][3][2])
