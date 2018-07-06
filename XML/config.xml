@@ -70,14 +70,14 @@
   </postFX>
   
   <shadowMapping>
-    <enabled>false</enabled>
-    <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per slice -->
-    <shadowMapResolution>512</shadowMapResolution>
+    <enabled>true</enabled>
+    <!-- Will be rounded up to the next POW_2. Cube/Dual paraboloid will be 1/2 resolution per face/slice -->
+    <shadowMapResolution>1024</shadowMapResolution>
     <MSAAsamples>4</MSAAsamples>
     <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
     <enableBlurring>true</enableBlurring>
   </shadowMapping>
-</rendering>  
+</rendering>
 
 <title>DIVIDE Framework - (C) Ionut Cava 2018</title>
 <defaultTextureLocation>textures</defaultTextureLocation>

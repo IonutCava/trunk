@@ -57,7 +57,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
         parentTimer->addChildTimer(*_flushCommandBufferTimer);
     }
 
-    TaskPriority priority = Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+    TaskPriority priority = (false && Config::USE_THREADED_COMMAND_GENERATION) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle renderTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());

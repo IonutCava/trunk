@@ -101,7 +101,7 @@ class LightPool : public SceneComponent {
     }
 
     bool clear();
-    inline Light::LightList& getLights(LightType type) { return _lights[to_U32(type)]; }
+    inline Light::LightList& getLights(LightType type) { ReadLock r_lock(_lightLock);  return _lights[to_U32(type)]; }
     Light* getLight(I64 lightGUID, LightType type);
 
     void prepareLightData(RenderStage stage,
@@ -136,16 +136,20 @@ class LightPool : public SceneComponent {
         };
     }
     
-  private:
+  protected:
     typedef vectorEASTL<LightProperties> LightPropertiesVec;
     typedef vectorEASTL<Light::ShadowProperties> LightShadowProperties;
-    typedef vectorFast<Light*> LightVec;
+    typedef vector<Light*> LightVec;
 
-  protected:
     friend class SceneManager;
     bool generateShadowMaps(SceneRenderState& sceneRenderState, const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
+        ReadLock r_lock(_lightLock);
+        return findLightLocked(GUID, type);
+    }
+
+    inline Light::LightList::const_iterator findLightLocked(I64 GUID, LightType type) const {
         return std::find_if(std::begin(_lights[to_U32(type)]), std::end(_lights[to_U32(type)]),
                             [&GUID](Light* const light) {
                                 return (light && light->getGUID() == GUID);
@@ -160,10 +164,6 @@ class LightPool : public SceneComponent {
       void uploadLightBuffers(const vec3<F32>& eyePos, U8 stageIndex);
 
   private:
-    typedef vectorEASTL<LightProperties> LightPropertiesVec;
-    typedef vectorEASTL<Light::ShadowProperties> LightShadowProperties;
-    typedef vectorFast<Light*> LightVec;
-
     std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
     std::array<LightVec, to_base(RenderStage::COUNT)> _sortedLights;
     std::array<LightPropertiesVec, to_base(RenderStage::COUNT)> _sortedLightProperties;
@@ -178,6 +178,7 @@ class LightPool : public SceneComponent {
 
     GFXDevice& _context;
 
+    mutable SharedLock _lightLock;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_base(LightType::COUNT)> _lights;
     bool _init;

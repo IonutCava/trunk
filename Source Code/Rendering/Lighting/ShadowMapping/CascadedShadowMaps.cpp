@@ -139,7 +139,7 @@ void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     vector<vec2<F32>> blurSizes(_numSplits);
     blurSizes[0].set(1.0f / g_shadowSettings.shadowMapResolution);
     for (U8 i = 1; i < _numSplits; ++i) {
-        blurSizes[i].set(blurSizes[i - 1]/* * 0.5f*/);
+        blurSizes[i].set(blurSizes[i - 1] * 0.5f);
     }
 
     _blurDepthMapConstants.set("blurSizes", GFX::PushConstantType::VEC2, blurSizes);
