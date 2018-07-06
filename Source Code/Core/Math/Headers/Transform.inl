@@ -224,6 +224,10 @@ inline void Transform::getOrientation(Quaternion<F32>& quatOut) const {
     quatOut.set(_transformValues._orientation);
 }
 
+inline bool Transform::isUniformScale() const {
+    return _transformValues._scale.isUniform();
+}
+
 inline void Transform::clone(Transform* const transform) {
     _dirty = true;
     _rebuildMatrix = true;

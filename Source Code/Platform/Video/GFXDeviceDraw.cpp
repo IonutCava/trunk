@@ -102,7 +102,11 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        dataOut._worldMatrix.set(transform->getWorldMatrix(getFrameInterpolationFactor()));
+        if (Config::USE_FIXED_TIMESTEP) {
+            dataOut._worldMatrix.set(transform->getWorldMatrix(getFrameInterpolationFactor()));
+        } else {
+            dataOut._worldMatrix.set(transform->getWorldMatrix());
+        }
 
         dataOut._normalMatrixWV.set(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {

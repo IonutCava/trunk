@@ -192,11 +192,11 @@ namespace Divide {
         TransformStack  _transformStack;
         Transform       _transformInterface;
 
-        D64 _prevInterpValue;
-
+        bool _uniformScaled;
         std::atomic_bool _worldMatrixDirty;
+        std::atomic_bool _worldMatrixInterpDirty;
         mat4<F32> _worldMatrix;
-
+        
         mutable SharedLock _lock;
     };
 

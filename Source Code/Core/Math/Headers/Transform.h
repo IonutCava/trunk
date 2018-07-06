@@ -77,6 +77,8 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     void getScale(vec3<F32>& scaleOut) const override;
     void getPosition(vec3<F32>& posOut) const override;
     void getOrientation(Quaternion<F32>& quatOut) const override;
+    
+    bool isUniformScale() const;
 
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt

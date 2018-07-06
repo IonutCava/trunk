@@ -7,7 +7,7 @@
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
       : SGNComponent(parentSGN, "TRANSFORM"),
-        _prevInterpValue(0.0),
+        _uniformScaled(false),
         _transformUpdatedMask(to_base(TransformType::WORLD_TRANSFORMS))
     {
         _editorComponent.registerField("Transform",
@@ -56,7 +56,6 @@ namespace Divide {
         }
         
         _worldMatrixDirty = true;
-        _prevInterpValue = 0.0;
 
         WriteLock r_lock(_lock);
         SetBit(_transformUpdatedMask, TransformType::ALL);
@@ -91,7 +90,6 @@ namespace Divide {
 
     void TransformComponent::PostUpdate(const U64 deltaTimeUS) {
         updateWorldMatrix();
-        _prevInterpValue = -1.0;
         SGNComponent<TransformComponent>::PostUpdate(deltaTimeUS);
     }
 
@@ -128,6 +126,7 @@ namespace Divide {
         {
             WriteLock w_lock(_lock);
             _transformInterface.setScale(scale);
+            _uniformScaled = scale.isUniform();
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -218,6 +217,7 @@ namespace Divide {
         {
             WriteLock w_lock(_lock);
             _transformInterface.setScaleX(ammount);
+            _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -227,6 +227,7 @@ namespace Divide {
         {
             WriteLock w_lock(_lock);
             _transformInterface.setScaleY(ammount);
+            _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -236,6 +237,7 @@ namespace Divide {
         {
             WriteLock w_lock(_lock);
             _transformInterface.setScaleZ(ammount);
+            _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -245,6 +247,7 @@ namespace Divide {
         {
             WriteLock w_lock(_lock);
             _transformInterface.scaleX(scale);
+            _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -254,6 +257,7 @@ namespace Divide {
         {
             WriteLock w_lock(_lock);
             _transformInterface.scaleY(scale);
+            _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -263,6 +267,7 @@ namespace Divide {
         {
             WriteLock w_lock(_lock);
             _transformInterface.scaleZ(scale);
+            _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
@@ -547,7 +552,7 @@ namespace Divide {
     }
 
     bool TransformComponent::isUniformScaled() const {
-        return getLocalScale().isUniform();
+        return _uniformScaled;
     }
 
     bool TransformComponent::save(ByteBuffer& outputBuffer) const {

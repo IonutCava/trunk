@@ -349,7 +349,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     D64 interpolationFactor = 1.0;
     if (Config::USE_FIXED_TIMESTEP && !_timingData.freezeTime()) {
         interpolationFactor = static_cast<D64>(_timingData.currentTimeUS() + deltaTimeUS - _timingData.nextGameTickUS()) / deltaTimeUS;
-        assert(interpolationFactor <= 1.0 && interpolationFactor > 0.0);
+        CLAMP(interpolationFactor, 0.0, 1.0);
     }
 
     GFXDevice::setFrameInterpolationFactor(interpolationFactor);
