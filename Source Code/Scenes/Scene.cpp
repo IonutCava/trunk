@@ -430,8 +430,16 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     cbks.first = [this]() {state().moveLR(SceneState::MoveDirection::POSITIVE);};
     _input->addKeyMapping(Input::KeyCode::KC_D, cbks);
 
-    cbks.first = [this]() { state().roll(SceneState::MoveDirection::POSITIVE); };
-    cbks.second = [this]() {state().roll(SceneState::MoveDirection::NONE); };
+    cbks.first = [this]()  {
+        if (_input->getKeyState(Input::KeyCode::KC_LCONTROL) == SceneInput::InputState::PRESSED) {
+            Application::getInstance().RequestShutdown();
+        } else {
+            state().roll(SceneState::MoveDirection::POSITIVE);
+        }
+    };
+    cbks.second = [this]() { 
+        state().roll(SceneState::MoveDirection::NONE); 
+    };
     _input->addKeyMapping(Input::KeyCode::KC_Q, cbks);
     cbks.first = [this]() { state().roll(SceneState::MoveDirection::NEGATIVE); };
     _input->addKeyMapping(Input::KeyCode::KC_E, cbks);
@@ -502,6 +510,14 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     cbks.second =
         DELEGATE_BIND(&GFXDevice::Screenshot, &GFX_DEVICE, "screenshot_");
     _input->addKeyMapping(Input::KeyCode::KC_SYSRQ, cbks);
+
+
+    cbks.second = [this]() {
+        if (_input->getKeyState(Input::KeyCode::KC_LMENU) == SceneInput::InputState::PRESSED) {
+            GFX_DEVICE.toggleFullScreen(!Application::getInstance().isFullScreen());
+        }
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_RETURN, cbks);
     _loadComplete = true;
     return _loadComplete;
 }

@@ -257,6 +257,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void restoreViewport();
     void setViewport(const vec4<I32>& viewport);
+    /// Enable or disable fullscreen rendering
+    void toggleFullScreen(const bool state);
     void changeResolution(U16 w, U16 h) override;
     bool loadInContext(const CurrentContext& context,
                        const DELEGATE_CBK<>& callback);
@@ -329,7 +331,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
 
   public:  // Direct API calls
-    inline void setWindowPos(U16 w, U16 h) const { _api->setWindowPos(w, h); }
+    inline void setWindowPos(U16 w, U16 h) { 
+        _prevCachedWindowPosition.set(_cachedWindowPosition);
+        _api->setWindowPos(w, h); 
+        _cachedWindowPosition.set(w, h);
+    }
 
     /// Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool initShaders() override { return _api->initShaders(); }
@@ -398,7 +404,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->makeTextureResident(textureData);
     }
 
-    inline void setCursorPosition(U16 x, U16 y) const override {
+    inline void setCursorPosition(U16 x, U16 y) override {
         _api->setCursorPosition(x, y);
     }
 
@@ -550,6 +556,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
     GenericDrawCommand _defaultDrawCmd;
+
+    /// Current window resolution
+    vec2<U16> _cachedWindowPosition;
+    vec2<U16> _prevCachedWindowPosition;
 END_SINGLETON
 
 namespace Attorney {

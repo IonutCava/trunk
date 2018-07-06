@@ -68,7 +68,9 @@ DEFINE_SINGLETON(InputInterface)
     void terminate();
 
     inline void stop() { _bMustStop = true; }
-    inline JoystickInterface* getJoystickInterface() { return _pJoystickInterface; }
+    inline JoystickInterface* getJoystickInterface() { 
+        return _pJoystickInterface; 
+    }
     inline EffectManager& getEffectManager() { return *_pEffectMgr; }
     inline OIS::Keyboard& getKeyboard() const { return *_pKeyboard; }
     inline OIS::Mouse& getMouse() const { return *_pMouse; }

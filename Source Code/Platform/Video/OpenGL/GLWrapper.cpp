@@ -11,6 +11,7 @@
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "GUI/Headers/GUIText.h"
+#include "core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/LightManager.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -557,19 +558,19 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
         if (textLabel._alignFlag != 0) {
             fonsSetAlign(_fonsContext, textLabel._alignFlag);
         }
-
+        const vec2<U16>& cachedResolution = Application::getInstance().getResolution();
         if (textLabel._multiLine) {
             lines.clear();
             lines = Util::Split(textLabel.text(), '\n');
             vectorAlg::vecSize lineCount = lines.size();
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
                 fonsDrawText(_fonsContext, position.x,
-                    _cachedResolution.y - (position.y + (lh * (1 + i))),
+                    cachedResolution.y - (position.y + (lh * (1 + i))),
                     lines[i].c_str(), nullptr);
             }
         } else {
                 fonsDrawText(_fonsContext, position.x,
-                    _cachedResolution.y - (position.y + lh),
+                    cachedResolution.y - (position.y + lh),
                     textLabel.text().c_str(), nullptr);
         }
     }

@@ -75,9 +75,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Revert everything that was set up in "initShaders()"
     bool deInitShaders() override;
     /// Window positioning is handled by GLFW
-    void setWindowPos(GLushort w, GLushort h) const override;
+    void setWindowPos(GLushort w, GLushort h) override;
     /// Mouse positioning is handled by GLFW
-    void setCursorPosition(GLushort x, GLushort y) const override;
+    void setCursorPosition(GLushort x, GLushort y) override;
     /// Prepare the GPU for rendering a frame
     void beginFrame() override;
     /// Finish rendering the current frame
@@ -255,6 +255,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static GLuint getSamplerHandle(size_t samplerHash);
 
   private:
+    ErrorCode createMainWindow(const vec2<GLushort>& resolution, bool decorated);
+    ErrorCode destroyMainWindow();
     /// FontStash library initialization
     void createFonsContext();
     /// FontStash library deinitialization
@@ -274,8 +276,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     GLfloat _prevWidthNode;
     /// The previous plain text string's line width
     GLfloat _prevWidthString;
-    /// Current window resolution
-    vec2<GLushort> _cachedResolution;
     /// Line width limit (hardware upper limit)
     GLint _lineWidthLimit;
     /// Used to render points (e.g. to render full screen quads with geometry

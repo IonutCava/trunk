@@ -113,6 +113,10 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface,
 EffectManager::~EffectManager() { MemoryManager::DELETE_VECTOR(_vecEffects); }
 
 void EffectManager::updateActiveEffects() {
+    if (_vecEffects.empty()) {
+        return;
+    }
+
     vectorImpl<VariableEffect*>::iterator iterEffs;
     ;
     for (iterEffs = std::begin(_vecEffects); iterEffs != std::end(_vecEffects);

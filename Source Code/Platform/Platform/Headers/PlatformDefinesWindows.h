@@ -60,12 +60,16 @@ LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 namespace Divide {
     struct SysInfo {
         SysInfo() : _windowHandle(0),
-                    _availableRam(0)
+                    _availableRam(0),
+                    _systemResolutionWidth(0),
+                    _systemResolutionHeight(0)
         {
         }
 
         HWND _windowHandle;
         size_t _availableRam;
+        int _systemResolutionWidth;
+        int _systemResolutionHeight;
     };
 
     typedef LONGLONG TimeValue;

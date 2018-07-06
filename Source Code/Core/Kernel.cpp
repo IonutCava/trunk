@@ -389,6 +389,7 @@ void Kernel::firstLoop() {
         par.setParam("rendering.enableShadows", true);
         mainLoopApp();
     }
+    mainLoopApp();
     GFX_DEVICE.setWindowPos(10, 60);
     par.setParam("freezeGUITime", false);
     par.setParam("freezeLoopTime", false);
@@ -444,6 +445,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get("START_RENDER_INTERFACE"));
+    Application::getInstance().isFullScreen(
+        !ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
     vec2<U16> resolution = _APP.getResolution();
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
     ErrorCode initError =
@@ -584,8 +587,6 @@ void Kernel::updateResolutionCallback(I32 w, I32 h) {
     GUI::getInstance().onResize(newResolution);
     // minimized
     _renderingPaused = (w == 0 || h == 0);
-    APP.isFullScreen(
-        !ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
     if (APP.mainLoopActive()) {
         // Update light manager so that all shadow maps and other render targets
         // match our needs

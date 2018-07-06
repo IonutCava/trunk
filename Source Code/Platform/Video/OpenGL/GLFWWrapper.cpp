@@ -15,6 +15,92 @@
 
 namespace Divide {
 
+ErrorCode GL_API::createMainWindow(const vec2<GLushort>& resolution, bool decorated) {
+
+#if defined(_DEBUG) || defined(_GLDEBUG_IN_RELEASE)
+    // OpenGL error handling is available in any build configurations if the
+    // proper defines are in place.
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
+    glfwWindowHint(GLFW_DECORATED, decorated);
+    // Debug context also ensures more robust GLFW stress testing
+#if defined(_DEBUG)
+    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);
+#endif
+
+#endif
+    // Toggle multi-sampling if requested. This options requires a
+    // client-restart, sadly.
+    glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.gpuState().MSAAEnabled()
+        ? GFX_DEVICE.gpuState().MSAASamples()
+        : 0);
+    // I REALLY think re-sizable windows are a bad idea. Increase the resolution
+    // instead of messing up render targets
+    glfwWindowHint(GLFW_RESIZABLE, false);
+    // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
+    glfwWindowHint(GLFW_RED_BITS, 8);
+    glfwWindowHint(GLFW_GREEN_BITS, 8);
+    glfwWindowHint(GLFW_BLUE_BITS, 8);
+    glfwWindowHint(GLFW_ALPHA_BITS, 8);
+    glfwWindowHint(GLFW_STENCIL_BITS, 8);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
+
+    // OpenGL ES is not yet supported, but when added, it will need to mirror
+    // OpenGL functionality 1-to-1
+    if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES) {
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    }
+    else {
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+#ifdef GL_VERSION_4_5
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+#else
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+#endif
+    }
+    // Open an OpenGL window; resolution and windowed mode is specified in the
+    // external XML files
+    GLUtil::_mainWindow =
+        glfwCreateWindow(resolution.width, resolution.height,
+            ParamHandler::getInstance().getParam<stringImpl>("appTitle", "Divide").c_str(),
+            Application::getInstance().isFullScreen() ? glfwGetPrimaryMonitor() : nullptr,
+            nullptr);
+
+    // Check if we have a valid window
+    if (!GLUtil::_mainWindow) {
+        glfwTerminate();
+        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
+            Locale::get("ERROR_GL_OLD_VERSION"));
+        Console::printfn(Locale::get("WARN_SWITCH_D3D"));
+        Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
+        return ErrorCode::GLFW_WINDOW_INIT_ERROR;
+    }
+
+    SysInfo& systemInfo = Application::getInstance().getSysInfo();
+    // Bind the window close request received from GLFW with our custom callback
+    glfwSetWindowCloseCallback(GLUtil::_mainWindow,
+                               GLUtil::glfw_close_callback);
+    // Bind the window close request received from GLFW with our custom callback
+    getWindowHandle(GLUtil::_mainWindow, systemInfo);
+    // The application window will hold the main rendering context
+    glfwMakeContextCurrent(GLUtil::_mainWindow);
+    // Bind our focus change callback to GLFW's internal wiring
+    glfwSetWindowFocusCallback(GLUtil::_mainWindow,
+                               GLUtil::glfw_focus_callback);
+    const GLFWvidmode* desktopMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    systemInfo._systemResolutionWidth = desktopMode->width;
+    systemInfo._systemResolutionHeight = desktopMode->height;
+
+    return ErrorCode::NO_ERR;
+}
+
+ErrorCode GL_API::destroyMainWindow() {
+    glfwDestroyWindow(GLUtil::_mainWindow);
+    return ErrorCode::NO_ERR;
+}
+
 /// Try and create a valid OpenGL context taking in account the specified
 /// resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
@@ -32,82 +118,13 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     if (!glfwInit()) {
         return ErrorCode::GLFW_INIT_ERROR;
     }
-
-#if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
-    // OpenGL error handling is available in any build configurations if the
-    // proper defines are in place.
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
-// Debug context also ensures more robust GLFW stress testing
-#if defined(_DEBUG)
-    glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);
-#endif
-
-#endif
-    // Toggle multi-sampling if requested. This options requires a
-    // client-restart, sadly.
-    glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.gpuState().MSAAEnabled()
-                                     ? GFX_DEVICE.gpuState().MSAASamples()
-                                     : 0);
-
-    // I REALLY think re-sizable windows are a bad idea. Increase the resolution
-    // instead of messing up render targets
-    glfwWindowHint(GLFW_RESIZABLE,
-                   par.getParam<bool>("runtime.allowWindowResize", false));
-    // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
-    glfwWindowHint(GLFW_RED_BITS, 8);
-    glfwWindowHint(GLFW_GREEN_BITS, 8);
-    glfwWindowHint(GLFW_BLUE_BITS, 8);
-    glfwWindowHint(GLFW_ALPHA_BITS, 8);
-    glfwWindowHint(GLFW_STENCIL_BITS, 8);
-    glfwWindowHint(GLFW_DEPTH_BITS, 24);
-
-    // OpenGL ES is not yet supported, but when added, it will need to mirror
-    // OpenGL functionality 1-to-1
-    if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES) {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    } else {
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-#ifdef GL_VERSION_4_5
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-#else
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-#endif
+    ErrorCode windowState = createMainWindow(resolution, false);
+    if (windowState != ErrorCode::NO_ERR) {
+        return windowState;
     }
 
-    // Open an OpenGL window; resolution and windowed mode is specified in the
-    // external XML files
-    GLUtil::_mainWindow =
-        glfwCreateWindow(resolution.width, resolution.height,
-                         par.getParam<stringImpl>("appTitle", "Divide").c_str(),
-                         par.getParam<bool>("runtime.windowedMode", true)
-                             ? nullptr
-                             : glfwGetPrimaryMonitor(),
-                         nullptr);
-    // Check if we have a valid window
-    if (!GLUtil::_mainWindow) {
-        glfwTerminate();
-        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
-                         Locale::get("ERROR_GL_OLD_VERSION"));
-        Console::printfn(Locale::get("WARN_SWITCH_D3D"));
-        Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
-        return ErrorCode::GLFW_WINDOW_INIT_ERROR;
-    }
-
-    getWindowHandle(GLUtil::_mainWindow, Application::getInstance().getSysInfo());
-
-    // The application window will hold the main rendering context
-    glfwMakeContextCurrent(GLUtil::_mainWindow);
-    // Init OpenGL Bidnings for main context
+    // Init OpenGL Bindings for main context
     glbinding::Binding::initialize(false);
-    // Bind the window close request received from GLFW with our custom callback
-    glfwSetWindowCloseCallback(GLUtil::_mainWindow,
-                               GLUtil::glfw_close_callback);
-    // Bind our focus change callback to GLFW's internal wiring
-    glfwSetWindowFocusCallback(GLUtil::_mainWindow,
-                               GLUtil::glfw_focus_callback);
 
     // We also create a loader thread in the background with its own GL context.
     // To do this with GLFW, we'll create a second, invisible, window
@@ -136,8 +153,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
 // OpenGL has a nifty error callback system, available in every build
 // configuration if required
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
-    // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the
-    // IDE
+    // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // hardwire our debug callback function with OpenGL's implementation
@@ -403,7 +419,7 @@ void GL_API::closeRenderingAPI() {
     }
     // Destroy application windows and close GLFW
     glfwDestroyWindow(GLUtil::_loaderWindow);
-    glfwDestroyWindow(GLUtil::_mainWindow);
+    destroyMainWindow();
     glfwTerminate();
 }
 
@@ -411,16 +427,15 @@ void GL_API::closeRenderingAPI() {
 /// resolution cache
 void GL_API::changeResolution(GLushort w, GLushort h) {
     glfwSetWindowSize(GLUtil::_mainWindow, w, h);
-    _cachedResolution.set(w, h);
 }
 
 /// Window positioning is handled by GLFW
-void GL_API::setWindowPos(GLushort w, GLushort h) const {
+void GL_API::setWindowPos(GLushort w, GLushort h) {
     glfwSetWindowPos(GLUtil::_mainWindow, w, h);
 }
 
 /// Mouse positioning is handled by GLFW
-void GL_API::setCursorPosition(GLushort x, GLushort y) const {
+void GL_API::setCursorPosition(GLushort x, GLushort y) {
     glfwSetCursorPos(GLUtil::_mainWindow, (GLdouble)x, (GLdouble)y);
 }
 

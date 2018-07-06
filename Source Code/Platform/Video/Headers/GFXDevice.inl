@@ -40,7 +40,9 @@ inline bool GFXDevice::isDepthStage() const {
 }
 
 /// Query rasterization state
-inline bool GFXDevice::rasterizationState() { return _rasterizationEnabled; }
+inline bool GFXDevice::rasterizationState() { 
+    return _rasterizationEnabled; 
+}
 
 /// Toggle hardware rasterization on or off.
 inline void GFXDevice::toggleRasterization(bool state) {

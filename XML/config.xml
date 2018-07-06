@@ -19,7 +19,6 @@
 	<resolutionWidth>1280</resolutionWidth>
 	<resolutionHeight>720</resolutionHeight>
 	<windowedMode>true</windowedMode>
-	<allowWindowResize>false</allowWindowResize>
 	<enableVSync>true</enableVSync>
 	<zNear>0.25</zNear>
 	<zFar>500.0</zFar>

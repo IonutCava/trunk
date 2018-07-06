@@ -281,8 +281,6 @@ void loadConfig(const std::string &file) {
                          pt.get("runtime.resolutionHeight", 768));
     par.setParam("runtime.windowedMode",
                  pt.get("rendering.windowedMode", true));
-    par.setParam("runtime.allowWindowResize",
-                 pt.get("runtime.allowWindowResize", false));
     par.setParam("runtime.enableVSync", pt.get("runtime.enableVSync", false));
     par.setParam("runtime.groundPos",
                  pt.get("runtime.groundPos",

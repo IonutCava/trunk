@@ -25,7 +25,7 @@ namespace GLUtil {
 
 /*-----------Object Management----*/
 GLuint _invalidObjectID = GL_INVALID_INDEX;
-GLFWwindow* _mainWindow = nullptr;
+GLFWwindow* _mainWindow= nullptr;
 GLFWwindow* _loaderWindow = nullptr;
 
 /// this may not seem very efficient (or useful) but it saves a lot of

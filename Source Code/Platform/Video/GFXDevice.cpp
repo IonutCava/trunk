@@ -240,6 +240,21 @@ const RenderStateBlock& GFXDevice::getRenderStateBlock(size_t renderStateBlockHa
     return *it->second;
 }
 
+void GFXDevice::toggleFullScreen(const bool state) {
+    Application::getInstance().isFullScreen(state);
+    ParamHandler::getInstance().setParam("runtime.windowedMode", state);
+
+    if (state) {
+        const SysInfo& systemInfo = Application::getInstance().getSysInfo();
+        changeResolution(systemInfo._systemResolutionWidth, systemInfo._systemResolutionHeight);
+        setWindowPos(0, 0);
+    } else {
+        const vec2<U16>& prevResolution = Application::getInstance().getPreviousResolution();
+        changeResolution(prevResolution.width, prevResolution.height);
+        setWindowPos(_prevCachedWindowPosition.x, _prevCachedWindowPosition.y);
+    }
+}
+
 /// The main entry point for any resolution change request
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates

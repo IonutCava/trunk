@@ -38,9 +38,9 @@ bool DX_API::makeTextureResident(const TextureData& textureData) {
     return true;
 }
 
-void DX_API::setWindowPos(U16 w, U16 h) const {}
+void DX_API::setWindowPos(U16 w, U16 h) {}
 
-void DX_API::setCursorPosition(U16 x, U16 y) const {}
+void DX_API::setCursorPosition(U16 x, U16 y) {}
 
 void DX_API::beginFrame() {}
 

@@ -83,7 +83,6 @@ ErrorCode InputInterface::init(Kernel& kernel) {
         }
         if (!_pJoystickInterface->wasFFDetected()) {
             Console::printfn(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
-            MemoryManager::DELETE(_pJoystickInterface);
         } else {
             // Create force feedback effect manager.
             _pEffectMgr.reset(
@@ -146,7 +145,7 @@ U8 InputInterface::update(const U64 deltaTime) {
         }
 
         // This fires off buffered events for each joystick we have
-        if (_pJoystickInterface != nullptr) {
+        if (_pEffectMgr != nullptr) {
             _pJoystickInterface->captureEvents();
             // Update currently selected effects if time has come to.
             if (!nEffectUpdateCnt) {
