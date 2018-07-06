@@ -41,6 +41,7 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
     } else if (type == GL_DEBUG_TYPE_OTHER) {
         gl_type = "Other";
     }
+    bool isError = true;
     // Translate message severity
     const char* gl_severity = "Unknown Severity";
     if (severity == GL_DEBUG_SEVERITY_HIGH) {
@@ -49,14 +50,23 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
         gl_severity = "Medium";
     } else if (severity == GL_DEBUG_SEVERITY_LOW) {
         gl_severity = "Low";
+    } else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+        gl_severity = "Info";
+        isError = false;
     }
+
+    stringImpl msg(Util::StringFormat(Locale::get("ERROR_GENERIC_GL_DEBUG"),
+                                      userParam == nullptr
+                                                 ? " [Main Thread] "
+                                                 : " [Loader Thread] ",
+                                      gl_source,
+                                      gl_type,
+                                      id,
+                                      gl_severity,
+                                      message));
+
     // Print the message and the details
-    Console::errorfn(
-        Locale::get("ERROR_GENERIC_GL_DEBUG"),
-        userParam == nullptr
-            ? " [Main Thread] "
-            : " [Loader Thread] ",
-        gl_source, gl_type, id, gl_severity, message);
+    isError ? Console::errorfn(msg.c_str()) : Console::printfn(msg.c_str());
 }
 }  // namespace GLUtil
 }  // namespace Divide

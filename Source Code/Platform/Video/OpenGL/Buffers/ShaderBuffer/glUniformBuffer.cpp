@@ -65,6 +65,11 @@ void glUniformBuffer::destroy() {
         glInvalidateBufferData(_UBOid);
     }
     GLUtil::freeBuffer(_UBOid, _mappedBuffer);
+
+    for (AtomicCounter& counter : _atomicCounters) {
+        glDeleteBuffers(1, &counter._handle);
+    }
+    _atomicCounters.clear();
 }
 
 void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
@@ -161,8 +166,7 @@ void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
 
     GLuint atomicsBuffer;
     glCreateBuffers(1, &atomicsBuffer);
-    glNamedBufferData(atomicsBuffer, sizeof(GLuint) * sizeFactor, data.data(), GL_DYNAMIC_COPY);
-
+    glNamedBufferData(atomicsBuffer, sizeof(GLuint) * sizeFactor, data.data(), GL_DYNAMIC_READ);
     _atomicCounters.push_back({atomicsBuffer, sizeFactor, 0, 1 % sizeFactor});
 }
 
@@ -182,7 +186,9 @@ void glUniformBuffer::bindAtomicCounter(U32 counterIndex, U32 bindIndex) {
         return;
     }
     AtomicCounter& counter = _atomicCounters.at(counterIndex);
-    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, bindIndex, counter._handle);
+    glBindBufferRange(GL_ATOMIC_COUNTER_BUFFER, bindIndex, counter._handle, counter._writeHead * sizeof(GLuint), sizeof(GLuint));
+    counter._writeHead = (counter._writeHead + 1) % counter._sizeFactor;
+    counter._readHead = (counter._readHead + 1) % counter._sizeFactor;
 }
 
 void glUniformBuffer::resetAtomicCounter(U32 counterIndex) {
@@ -191,7 +197,7 @@ void glUniformBuffer::resetAtomicCounter(U32 counterIndex) {
     }
     AtomicCounter& counter = _atomicCounters.at(counterIndex);
     vectorImpl<GLuint> data(counter._sizeFactor, 0);
-    glNamedBufferSubData(counter._handle, 0, sizeof(GLuint) * counter._sizeFactor, data.data());
+    glNamedBufferSubData(counter._handle, counter._readHead * sizeof(GLuint), sizeof(GLuint), data.data());
 }
 
 void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,

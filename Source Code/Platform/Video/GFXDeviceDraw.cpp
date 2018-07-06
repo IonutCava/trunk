@@ -377,7 +377,8 @@ void GFXDevice::occlusionCull() {
     _indirectCommandBuffer->bindAtomicCounter();
     _HIZCullProgram->DispatchCompute((_lastCommandCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     _HIZCullProgram->SetMemoryBarrier();
-    if (_indirectCommandBuffer->getAtomicCounter() > 0) {
+    _lastCullCount = _indirectCommandBuffer->getAtomicCounter();
+    if (_lastCullCount > 0) {
         _indirectCommandBuffer->resetAtomicCounter();
     }
 }

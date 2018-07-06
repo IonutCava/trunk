@@ -82,8 +82,9 @@ void WarScene::processGUI(const U64 deltaTime) {
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
                          Time::ApplicationTimer::getInstance().getFps(),
                          Time::ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d",
-                         GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d. Number of HiZ culled items: %d",
+                         GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT);
+
         _GUI->modifyText("camPosition",
                          "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: "
                          "%5.2f | Yaw: %5.2f]",

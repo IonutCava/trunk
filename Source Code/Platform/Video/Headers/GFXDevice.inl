@@ -250,7 +250,8 @@ inline void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDraw
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE \
     RenderPassManager::getInstance().getLastTotalBinSize(0)
-
+#define GFX_HIZ_CULL_COUNT \
+    GFX_DEVICE.getLastCullCount()
 };  // namespace Divide
 
 #endif

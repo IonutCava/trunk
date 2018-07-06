@@ -87,8 +87,8 @@ void MainScene::processGUI(const U64 deltaTime) {
         _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]",
                          state().cameraUnderwater() ? "true" : "false",
                          state().waterLevel());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d",
-                         GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d. Number of HiZ culled items: %d",
+                          GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT);
         _guiTimers[0] = 0.0;
     }
 

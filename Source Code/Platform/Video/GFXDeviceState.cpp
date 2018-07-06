@@ -78,7 +78,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _indirectCommandBuffer.reset(newSB("dvd_GPUCmds", 1, true, false, BufferUpdateFrequency::OFTEN));
     _indirectCommandBuffer->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
 #if defined(_DEBUG)
-    _indirectCommandBuffer->addAtomicCounter();
+    _indirectCommandBuffer->addAtomicCounter(3);
 #endif
     registerCommandBuffer(*_indirectCommandBuffer);
     // Resize our window to the target resolution

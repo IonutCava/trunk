@@ -262,7 +262,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // nVidia flushes a lot of useful info about buffer allocations and shader
     // recompiles due to state and what now, but those aren't needed until that's
     // what's actually causing the bottlenecks
-    U32 nvidiaBufferErrors[] = { 131185, 131218 };
+    /*U32 nvidiaBufferErrors[] = { 131185, 131218 };
     // Disable shader compiler errors (shader class handles that)
     glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
         GL_DONT_CARE, 0, nullptr, GL_FALSE);
@@ -272,7 +272,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
         GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
     // Shader will be recompiled nVidia error
     glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
-        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+        GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);*/
 #endif
     // Vsync is toggled on or off via the external config file
     SDL_GL_SetSwapInterval(par.getParam<bool>("runtime.enableVSync", false) ? 1 : 0);

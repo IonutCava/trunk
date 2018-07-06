@@ -30,8 +30,8 @@ void PhysXScene::processGUI(const U64 deltaTime) {
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
                          Time::ApplicationTimer::getInstance().getFps(),
                          Time::ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d",
-                         GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d. Number of HiZ culled items: %d",
+                         GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT);
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
