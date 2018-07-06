@@ -235,8 +235,10 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Te
     constant._binding = "dvd_numEntities";
     constant._values = { cmdCount };
 
+    PushConstants constants(constant);
+
     _HIZCullProgram->bind();
-    _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1, PushConstants(constant));
+    _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1, constants);
     _HIZCullProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::COUNTER);
 }
 
