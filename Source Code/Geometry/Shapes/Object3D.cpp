@@ -66,11 +66,11 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-bool Object3D::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
-    return onDraw(currentStage);
+bool Object3D::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
+    return onRender(currentStage);
 }
 
-bool Object3D::onDraw(RenderStage currentStage) {
+bool Object3D::onRender(RenderStage currentStage) {
     return getState() == ResourceState::RES_LOADED;
 }
 

@@ -20,7 +20,7 @@ Trigger::~Trigger()
 {
 }
 
-bool Trigger::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+bool Trigger::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     if (!_drawImpostor) {
         return true;
     }

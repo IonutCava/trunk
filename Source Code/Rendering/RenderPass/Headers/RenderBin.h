@@ -100,19 +100,16 @@ class RenderBin {
     RenderBin(RenderBinType rbType,
               RenderingOrder::List renderOrder);
 
-    virtual ~RenderBin() {}
+    ~RenderBin() {}
 
-    virtual void sort(RenderStage renderStage);
-    virtual void preRender(RenderStage renderStage);
-    virtual void render(const SceneRenderState& renderState,
-                        RenderStage renderStage);
-    virtual void postRender(const SceneRenderState& renderState,
-                            RenderStage renderStage);
-    virtual void refresh();
+    void sort(RenderStage renderStage);
+    void populateRenderQueue(RenderStage renderStage);
+    void postRender(const SceneRenderState& renderState, RenderStage renderStage);
+    void refresh();
 
-    virtual void addNodeToBin(const SceneGraphNode& sgn,
-                              RenderStage stage,
-                              const vec3<F32>& eyePos);
+    void addNodeToBin(const SceneGraphNode& sgn,
+                      RenderStage stage,
+                      const vec3<F32>& eyePos);
 
     inline const RenderBinItem& getItem(U16 index) const {
         assert(index < _renderBinStack.size());
@@ -126,11 +123,10 @@ class RenderBin {
     inline void binIndex(U32 index) { _binIndex = index; }
 
    private:
-    bool isTranslucent() const;
-
-   private:
     // mutable SharedLock _renderBinGetMutex;
     U32 _binIndex;
+    U32 _binPropertyMask;
+    I32 _renderQueueIndex;
     RenderBinType _rbType;
     RenderBinStack _renderBinStack;
     RenderingOrder::List _renderOrder;

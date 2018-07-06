@@ -69,9 +69,17 @@ RenderBin::RenderBin(RenderBinType rbType,
                      RenderingOrder::List renderOrder)
     : _binIndex(0),
       _rbType(rbType),
+      _binPropertyMask(0),
+      _renderQueueIndex(-1),
       _renderOrder(renderOrder)
 {
     _renderBinStack.reserve(125);
+
+    if(_rbType != +RenderBinType::RBT_OPAQUE &&  _rbType != +RenderBinType::RBT_TERRAIN)  {
+        SetBit(_binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
+    } else {
+        ClearBit(_binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
+    }
 }
 
 void RenderBin::sort(RenderStage renderStage) {
@@ -139,33 +147,29 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
                             *renderable);
 }
 
-void RenderBin::preRender(RenderStage renderStage) {}
-
-void RenderBin::render(const SceneRenderState& renderState,  RenderStage renderStage) {
+void RenderBin::populateRenderQueue(RenderStage renderStage) {
     GFXDevice& gfx = GFX_DEVICE;
-    U32 binPropertyMask = 0;
-    isTranslucent() ? SetBit(binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT))
-                    : ClearBit(binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
+
+    _renderQueueIndex = gfx.reserveRenderQueue();
+
+    if (_renderQueueIndex == -1) {
+        return;
+    }
 
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
-        gfx.addToRenderQueue(binPropertyMask,
+        gfx.addToRenderQueue(_renderQueueIndex,
                              Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
-                     
-    gfx.flushRenderQueue();
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage) {
+    if (_renderQueueIndex == -1) {
+        return;
+    }
+
     for (const RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::postDraw(*item._renderable, renderState, renderStage);
+        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStage);
     }
 }
-
-// This may change per bin in the future
-bool RenderBin::isTranslucent() const {
-    return _rbType != +RenderBinType::RBT_OPAQUE &&
-           _rbType != +RenderBinType::RBT_TERRAIN;
-}
-
 };

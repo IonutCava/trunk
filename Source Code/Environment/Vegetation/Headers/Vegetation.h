@@ -87,7 +87,7 @@ class Vegetation : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    bool onDraw(SceneGraphNode& sgn, RenderStage renderStage)  override;
+    bool onRender(SceneGraphNode& sgn, RenderStage renderStage)  override;
 
     void gpuCull();
 

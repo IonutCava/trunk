@@ -52,7 +52,7 @@ class SGNComponent : private NonCopyable {
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);
     virtual ~SGNComponent();
 
-    virtual bool onDraw(RenderStage currentStage) { return true; }
+    virtual bool onRender(RenderStage currentStage) { return true; }
     virtual void update(const U64 deltaTime) {
         _deltaTime = deltaTime;
         _elapsedTime += deltaTime;

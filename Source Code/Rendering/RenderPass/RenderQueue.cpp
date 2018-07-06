@@ -118,17 +118,15 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, c
     }
 }
 
-void RenderQueue::render(SceneRenderState& renderState,
-                         RenderStage renderStage) {
+void RenderQueue::populateRenderQueues(RenderStage renderStage) {
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin != nullptr) {
-            renderBin->render(renderState, renderStage);
+            renderBin->populateRenderQueue(renderStage);
         }
     }
 }
 
-void RenderQueue::postRender(SceneRenderState& renderState,
-                             RenderStage renderStage) {
+void RenderQueue::postRender(SceneRenderState& renderState, RenderStage renderStage) {
     for (RenderBin* renderBin : _renderBins) {
         if (renderBin != nullptr) {
             renderBin->postRender(renderState, renderStage);

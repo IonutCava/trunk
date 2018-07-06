@@ -428,7 +428,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
     for (std::unique_ptr<SGNComponent>& comp : _components) {
-        if (comp && !comp->onDraw(renderStage)) {
+        if (comp && !comp->onRender(renderStage)) {
             return false;
         }
     }

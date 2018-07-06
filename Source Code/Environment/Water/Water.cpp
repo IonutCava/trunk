@@ -151,7 +151,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     }
 }
 
-bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+bool WaterPlane::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     const Quaternion<F32>& orientation =
         sgn.getComponent<PhysicsComponent>()->getOrientation();
     if (!_orientation.compare(orientation)) {
@@ -159,7 +159,7 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
         updatePlaneEquation();
     }
 
-    return _plane->onDraw(currentStage);
+    return _plane->onRender(currentStage);
 }
 
 bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,

@@ -165,7 +165,7 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
     return Object3D::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
-void Terrain::postDraw(SceneGraphNode& sgn) const {
+void Terrain::postRender(SceneGraphNode& sgn) const {
     if (_drawBBoxes) {
         _terrainQuadtree.drawBBox();
     }

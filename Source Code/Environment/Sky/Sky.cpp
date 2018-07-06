@@ -128,8 +128,8 @@ void Sky::sceneUpdate(const U64 deltaTime,
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
-    return _sky->onDraw(sgn, currentStage);
+bool Sky::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
+    return _sky->onRender(sgn, currentStage);
 }
 
 bool Sky::getDrawCommands(SceneGraphNode& sgn,

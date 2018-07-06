@@ -95,7 +95,7 @@ bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
     return true;
 }
 
-void SceneNode::postDraw(SceneGraphNode& sgn) const {
+void SceneNode::postRender(SceneGraphNode& sgn) const {
 }
 
 };

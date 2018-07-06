@@ -186,7 +186,7 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
     }
 }
 
-bool RenderingComponent::onDraw(RenderStage currentStage) {
+bool RenderingComponent::onRender(RenderStage currentStage) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
 
@@ -202,7 +202,7 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
         pkg._textureData.push_back(texture);
     }
 
-    return _parentSGN.getNode()->onDraw(_parentSGN, currentStage);
+    return _parentSGN.getNode()->onRender(_parentSGN, currentStage);
 }
 
 void RenderingComponent::renderGeometry(const bool state) {
@@ -345,7 +345,7 @@ bool RenderingComponent::preDraw(const SceneRenderState& renderState,
 }
 
 /// Called after the current node was rendered
-void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
+void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
     
     if (renderStage != RenderStage::DISPLAY) {
         return;
@@ -453,7 +453,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, Rend
         }
     }
 
-    node->postDraw(_parentSGN);
+    node->postRender(_parentSGN);
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,

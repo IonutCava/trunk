@@ -128,7 +128,7 @@ void Light::computeBoundingBox() {
     _boundingBox.second = true;
 }
 
-bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     if (!_drawImpostor) {
         return true;
     }

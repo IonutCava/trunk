@@ -47,7 +47,7 @@ class WaterPlane : public SceneNode, public Reflector {
     /// Resource inherited "unload"
     bool unload() override;
     /// General SceneNode stuff
-    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) override;
+    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) override;
 
     bool getDrawState(RenderStage currentStage);
 

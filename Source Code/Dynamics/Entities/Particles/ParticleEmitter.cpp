@@ -231,7 +231,7 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
 }
 
 /// The onDraw call will emit particles
-bool ParticleEmitter::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+bool ParticleEmitter::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     return _enabled &&  getAliveParticleCount() > 0;
 }
 

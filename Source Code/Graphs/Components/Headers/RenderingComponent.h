@@ -63,7 +63,7 @@ class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompSceneNode;
 
    public:
-    bool onDraw(RenderStage currentStage) override;
+    bool onRender(RenderStage currentStage) override;
     void update(const U64 deltaTime) override;
 
     void renderGeometry(const bool state);
@@ -130,8 +130,8 @@ class RenderingComponent : public SGNComponent {
                  RenderStage renderStage) const;
 
     /// Called after the parent node was rendered
-    void postDraw(const SceneRenderState& sceneRenderState,
-                  RenderStage renderStage);
+    void postRender(const SceneRenderState& sceneRenderState,
+                    RenderStage renderStage);
 
     GFXDevice::RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState,
                                              RenderStage renderStage);
@@ -228,10 +228,10 @@ class RenderingCompRenderBin {
         return renderable._renderData[to_uint(renderStage)];
     }
 
-    static void postDraw(RenderingComponent& renderable,
-                         const SceneRenderState& sceneRenderState,
-                         RenderStage renderStage) {
-        renderable.postDraw(sceneRenderState, renderStage);
+    static void postRender(RenderingComponent& renderable,
+                           const SceneRenderState& sceneRenderState,
+                           RenderStage renderStage) {
+        renderable.postRender(sceneRenderState, renderStage);
     }
 
     static void drawOrder(RenderingComponent& renderable, U32 index) {

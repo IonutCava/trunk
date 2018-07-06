@@ -297,7 +297,8 @@ DEFINE_SINGLETON(GFXDevice)
     void drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram);
 
     void addToRenderQueue(U32 binPropertyMask, const RenderPackage& package);
-    void flushRenderQueue();
+    void flushRenderQueues();
+    I32  reserveRenderQueue();
 
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
@@ -635,7 +636,7 @@ DEFINE_SINGLETON(GFXDevice)
     std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_const_uint(RenderStage::COUNT) - 1> _lastNodeCount;
 
-    RenderQueue _renderQueue;
+    vectorImpl<RenderQueue> _renderQueues;
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     typedef std::array<std::unique_ptr<ShaderBuffer>, MAX_PASSES_PER_STAGE> RenderStageBuffer;

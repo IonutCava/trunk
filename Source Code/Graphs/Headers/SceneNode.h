@@ -84,7 +84,7 @@ class NOINITVTABLE SceneNode : public Resource {
     /// updates)
     /// If the node isn't ready for rendering and should be skipped this frame,
     /// the return value is false
-    virtual bool onDraw(SceneGraphNode& sgn,
+    virtual bool onRender(SceneGraphNode& sgn,
                         RenderStage currentStage) = 0;
     virtual bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
@@ -101,7 +101,7 @@ class NOINITVTABLE SceneNode : public Resource {
     virtual void setMaterialTpl(Material* const m);
     Material* const getMaterialTpl();
 
-    virtual void postDraw(SceneGraphNode& sgn) const;
+    virtual void postRender(SceneGraphNode& sgn) const;
 
     inline void setType(const SceneNodeType& type) { _type = type; }
     inline const SceneNodeType& getType() const { return _type; }

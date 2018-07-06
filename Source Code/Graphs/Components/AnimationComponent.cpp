@@ -116,7 +116,7 @@ const vectorImpl<Line>& AnimationComponent::skeletonLines() const {
     return  _animator.skeletonLines(_currentAnimIndex, animTimeStamp);
 }
 
-bool AnimationComponent::onDraw(RenderStage currentStage) {
+bool AnimationComponent::onRender(RenderStage currentStage) {
     if (!_playAnimations) {
         return true;
     }

@@ -75,10 +75,10 @@ class Object3D : public SceneNode {
 
     virtual void postLoad(SceneGraphNode& sgn);
 
-    virtual bool onDraw(SceneGraphNode& sgn,
+    virtual bool onRender(SceneGraphNode& sgn,
                         RenderStage currentStage);
 
-    virtual bool onDraw(RenderStage currentStage);
+    virtual bool onRender(RenderStage currentStage);
 
     inline bool hasFlag(ObjectFlag flag) const {
         return BitCompare(getFlagMask(), to_uint(flag));

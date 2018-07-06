@@ -49,7 +49,7 @@ class Sky : public SceneNode {
     Sky(const stringImpl& name);
     ~Sky();
 
-    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) override;
+    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) override;
     void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor);
 
    protected:

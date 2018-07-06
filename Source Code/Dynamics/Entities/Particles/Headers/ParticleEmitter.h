@@ -50,7 +50,7 @@ class ParticleEmitter : public SceneNode {
     ~ParticleEmitter();
 
     /// Dummy function from SceneNode;
-    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage);
+    bool onRender(SceneGraphNode& sgn, RenderStage currentStage);
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) { _enabled = state; }

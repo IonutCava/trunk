@@ -103,51 +103,54 @@ void GFXDevice::submitCommand(const GenericDrawCommand& cmd, bool useIndirectRen
     }
 }
 
-void GFXDevice::flushRenderQueue() {
-    if (_renderQueue.empty()) {
-        return;
-    }
-
+void GFXDevice::flushRenderQueues() {
     uploadGPUBlock();
 
-    U32 queueSize = _renderQueue.size();
-    for (U32 idx = 0; idx < queueSize; ++idx) {
-        RenderPackage& package = _renderQueue.getPackage(idx);
-        vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
-        vectorAlg::vecSize commandCount = drawCommands.size();
-        if (commandCount > 0) {
-            vectorAlg::vecSize previousCommandIndex = 0;
-            vectorAlg::vecSize currentCommandIndex = 1;
-            for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-                GenericDrawCommand& previousCommand = drawCommands[previousCommandIndex];
-                GenericDrawCommand& currentCommand = drawCommands[currentCommandIndex];
-                if (!batchCommands(previousCommand, currentCommand))
-                {
-                    previousCommandIndex = currentCommandIndex;
-                }
-            }
-            for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                it._buffer->bindRange(it._slot, it._range.x, it._range.y);
-            }
-
-            _api->makeTexturesResident(package._textureData);
-            submitCommands(package._drawCommands, true);
+    for (RenderQueue& renderQueue : _renderQueues) {
+        if (renderQueue.empty()) {
+            return;
         }
-    }
 
-    _renderQueue.clear();
+        U32 queueSize = renderQueue.size();
+        for (U32 idx = 0; idx < queueSize; ++idx) {
+            RenderPackage& package = renderQueue.getPackage(idx);
+            vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
+            vectorAlg::vecSize commandCount = drawCommands.size();
+            if (commandCount > 0) {
+                vectorAlg::vecSize previousCommandIndex = 0;
+                vectorAlg::vecSize currentCommandIndex = 1;
+                for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+                    GenericDrawCommand& previousCommand = drawCommands[previousCommandIndex];
+                    GenericDrawCommand& currentCommand = drawCommands[currentCommandIndex];
+                    if (!batchCommands(previousCommand, currentCommand))
+                    {
+                        previousCommandIndex = currentCommandIndex;
+                    }
+                }
+                for (ShaderBufferList::value_type& it : package._shaderBuffers) {
+                    it._buffer->bindRange(it._slot, it._range.x, it._range.y);
+                }
+
+                _api->makeTexturesResident(package._textureData);
+                submitCommands(package._drawCommands, true);
+            }
+        }
+
+        renderQueue.clear();
+    }
 }
 
-void GFXDevice::addToRenderQueue(U32 binPropertyMask, const RenderPackage& package) {
+void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
+    assert(_renderQueues.size() > queueIndex);
+
     if (!package.isRenderable()) {
         return;
     }
 
-    bool isTranslucent = BitCompare(binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
-    ACKNOWLEDGE_UNUSED(isTranslucent);
+    RenderQueue& queue = _renderQueues[queueIndex];
 
-    if (!_renderQueue.empty()) {
-        RenderPackage& previous = _renderQueue.back();
+    if (!queue.empty()) {
+        RenderPackage& previous = queue.back();
 
         if (previous.isCompatible(package)) {
             previous._drawCommands.insert(std::cend(previous._drawCommands),
@@ -156,9 +159,21 @@ void GFXDevice::addToRenderQueue(U32 binPropertyMask, const RenderPackage& packa
             return;
         }
     } else {
-        _renderQueue.resize(RenderPassManager::getInstance().getQueue().getRenderQueueStackSize());
+        queue.resize(RenderPassManager::getInstance().getQueue().getRenderQueueStackSize());
     }
-    _renderQueue.push_back(package);
+    queue.push_back(package);
+}
+
+I32 GFXDevice::reserveRenderQueue() {
+    I32 queueCount = to_int(_renderQueues.size());
+    for (I32 i = 0; i < queueCount; ++i) {
+        if (_renderQueues[i].empty()) {
+            return i;
+        }
+    }
+
+    _renderQueues.emplace_back();
+    return queueCount;
 }
 
 /// Prepare the list of visible nodes for rendering

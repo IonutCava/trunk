@@ -68,14 +68,14 @@ class Sphere3D : public Object3D {
         _dirty = true;
     }
 
-    bool onDraw(RenderStage currentStage) {
+    bool onRender(RenderStage currentStage) {
         clean();
-        return Object3D::onDraw(currentStage);
+        return Object3D::onRender(currentStage);
     }
 
-    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) {
         clean();
-        return Object3D::onDraw(sgn, currentStage);
+        return Object3D::onRender(sgn, currentStage);
     }
 
    protected:

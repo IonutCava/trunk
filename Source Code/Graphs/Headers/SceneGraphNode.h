@@ -55,7 +55,7 @@ class SceneRoot : public SceneNode {
         _boundingBox.second = false;
     }
 
-    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) {
         return true;
     }
 
@@ -78,7 +78,7 @@ class SceneTransform : public SceneNode {
         setState(ResourceState::RES_SPECIAL);
     }
 
-    bool onDraw(RenderStage currentStage) { return true; }
+    bool onRender(RenderStage currentStage) { return true; }
 
     void postLoad(SceneGraphNode& sgn) { return; }
     bool unload() { return true; }

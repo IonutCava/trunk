@@ -112,7 +112,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         // Submit the render call. We do not support instancing yet!
         prim->render(prim->forceWireframe(), 1);
         registerDrawCall();
-        // Call any "postDraw" function the primitive may have attached
+        // Call any "postRender" function the primitive may have attached
         prim->resetStates();
         if (prim->_canZombify) {
             prim->paused(true);

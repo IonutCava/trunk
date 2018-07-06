@@ -420,7 +420,7 @@ bool Vegetation::getDrawCommands(SceneGraphNode& sgn,
     return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
-bool Vegetation::onDraw(SceneGraphNode& sgn, RenderStage renderStage) {
+bool Vegetation::onRender(SceneGraphNode& sgn, RenderStage renderStage) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
              _terrainChunk->getLoD() > 0 ||

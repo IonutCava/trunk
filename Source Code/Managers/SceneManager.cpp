@@ -334,8 +334,10 @@ void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U
     SceneRenderState& renderState = _activeScene->renderState();
     if (renderState.drawGeometry()) {
         RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
-        renderQueue.render(renderState, stage);
+        renderQueue.populateRenderQueues(stage);
     }
+
+    GFX_DEVICE.flushRenderQueues();
 }
 
 Renderer& SceneManager::getRenderer() const {

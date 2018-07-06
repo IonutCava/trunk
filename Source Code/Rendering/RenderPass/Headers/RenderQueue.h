@@ -49,7 +49,7 @@ class RenderQueue {
     RenderQueue();
     ~RenderQueue();
 
-    void render(SceneRenderState& renderState, RenderStage renderStage);
+    void populateRenderQueues(RenderStage renderStage);
     void postRender(SceneRenderState& renderState, RenderStage renderStage);
     void sort(RenderStage renderStage);
     void refresh();
