@@ -583,7 +583,9 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
 
             U32 offset = commandOffset();
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME));
+                bool renderWireframe = cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME) ||
+                                       sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
+                cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME, renderWireframe);
                 cmd.commandOffset(offset++);
                 cmd.cmd().baseInstance = commandIndex();
                 cmd.LoD(_lodLevel);

@@ -86,6 +86,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Textures\Headers\d3dTexture.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXRTPool.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXState.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Shaders\d3dShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Textures\d3dTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GenericCommandPool.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\GenericDrawCommand.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXDevice.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceDebug.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXDeviceDraw.cpp" />

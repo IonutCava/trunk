@@ -5,6 +5,7 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
@@ -371,7 +372,7 @@ void Vegetation::gpuCull() {
                                         _instanceCountGrass);
 
         _cullDrawCommand.cmd().primCount = _instanceCountGrass;
-        _cullDrawCommand.setRasterizerState(false);
+        _cullDrawCommand.enableOption(GenericDrawCommand::RenderOptions::RENDER_NO_RASTERIZE);
         _cullDrawCommand.drawToBuffer(to_ubyte(queryID));
         _cullDrawCommand.shaderProgram(_cullShader);
         _cullDrawCommand.sourceBuffer(buffer);

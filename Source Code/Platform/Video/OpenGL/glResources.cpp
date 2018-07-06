@@ -441,13 +441,13 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     DIVIDE_ASSERT(drawCommand.primitiveType() != PrimitiveType::COUNT,
                   "GLUtil::submitRenderCommand error: Draw command's type is not valid!");
     
-    GL_API::toggleRasterization(!drawCommand.rasterizerDisabled());
+    GL_API::toggleRasterization(!drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_NO_RASTERIZE));
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    if (drawCommand.renderGeometry()) {
+    if (drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
         GLenum mode = glPrimitiveTypeTable[to_uint(drawCommand.primitiveType())];
         submitRenderCommand(drawCommand, mode, useIndirectBuffer, internalFormat, indexBuffer);
     }
-    if (drawCommand.renderWireframe()) {
+    if (drawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
         submitRenderCommand(drawCommand, GL_LINE_LOOP, useIndirectBuffer, internalFormat, indexBuffer);
     }
 }

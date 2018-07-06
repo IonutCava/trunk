@@ -96,10 +96,10 @@ void GFXDevice::submitCommand(const GenericDrawCommand& cmd, bool useIndirectRen
         DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
         // Same rules about pre-processing the draw command apply
         cmd.sourceBuffer()->draw(cmd, useIndirectRender);
-        if (cmd.renderGeometry()) {
+        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
             registerDrawCall();
         }
-        if (cmd.renderWireframe()) {
+        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
             registerDrawCall();
         }
     }
@@ -385,10 +385,10 @@ void GFXDevice::draw(const GenericDrawCommand& cmd) {
     if (setBufferData(cmd)) {
         uploadGPUBlock();
         _api->draw(cmd);
-        if (cmd.renderGeometry()) {
+        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
             registerDrawCall();
         }
-        if (cmd.renderWireframe()) {
+        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
             registerDrawCall();
         }
     }

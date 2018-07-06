@@ -42,7 +42,7 @@ namespace Divide {
 class Camera;
 class Material;
 class ShaderBuffer;
-struct GenericDrawCommand;
+class GenericDrawCommand;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 

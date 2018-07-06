@@ -32,10 +32,9 @@
 #ifndef _RENDER_API_H_
 #define _RENDER_API_H_
 
-#include "config.h"
-
+#include "RenderAPIEnums.h"
+#include "GenericDrawCommand.h"
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 
 #include <thread>
 
@@ -50,6 +49,7 @@ class Object3D;
 class TextLabel;
 class Transform;
 class GUIElement;
+class RenderStateBlock;
 class SceneRenderState;
 enum class ErrorCode : I32;
 
@@ -84,217 +84,6 @@ enum class RenderAPI : U32 {
     COUNT
 };
 
-struct IndirectDrawCommand {
-    IndirectDrawCommand()
-        : indexCount(0),
-          primCount(1),
-          firstIndex(0),
-          baseVertex(0),
-          baseInstance(0)
-    {
-    }
-
-    U32 indexCount;    // 4  bytes
-    U32 primCount;     // 8  bytes
-    U32 firstIndex;    // 12 bytes
-    U32 baseVertex;    // 20 bytes
-    U32 baseInstance;  // 24 bytes
-
-    inline void set(const IndirectDrawCommand& other) {
-        indexCount = other.indexCount;
-        primCount = other.primCount;
-        firstIndex = other.firstIndex;
-        baseVertex = other.baseVertex;
-        baseInstance = other.baseInstance;
-    }
-
-    bool operator==(const IndirectDrawCommand &other) const {
-        return  indexCount == other.indexCount &&
-                primCount == other.primCount &&
-                firstIndex == other.firstIndex &&
-                baseVertex == other.baseVertex &&
-                baseInstance == other.baseInstance;
-    }
-};
-
-struct GenericDrawCommand {
-   public:
-    enum class RenderOptions : U32 {
-        RENDER_GEOMETRY = toBit(1),
-        RENDER_WIREFRAME = toBit(2),
-        RENDER_BOUNDS_AABB = toBit(3),
-        RENDER_BOUNDS_SPHERE = toBit(4),
-        RENDER_NO_RASTERIZE = toBit(5),
-        COUNT = 5
-    };
-
-   private:
-    // state hash is not size_t to avoid any platform specific awkward typedefing
-    IndirectDrawCommand _cmd;           // 64 bytes
-    U64 _stateHash;                     // 44 bytes
-    ShaderProgram* _shaderProgram;      // 36 bytes
-    VertexDataInterface* _sourceBuffer; // 28 bytes
-    PrimitiveType _type;                // 20 bytes
-    U32 _commandOffset;                 // 16 bytes
-    U32 _renderOptions;                 // 12 bytes
-    U16 _drawCount;                     // 4  bytes
-    U8 _drawToBuffer;                   // 2  bytes
-    U8 _lodIndex;                       // 1  bytes
-
-   public:
-
-    inline void drawCount(U16 count) { 
-        _drawCount = count; 
-    }
-
-    inline void LoD(U8 lod) {
-        _lodIndex = lod;
-    }
-
-    inline void stateHash(size_t hashValue) {
-        _stateHash = static_cast<U64>(hashValue);
-    }
-
-    inline void drawToBuffer(U8 index) {
-        _drawToBuffer = index;
-    }
-
-    inline void renderMask(U32 mask) {
-        _renderOptions = mask;
-    }
-    
-    inline void renderWireframe(bool state) {
-        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME))
-              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME));
-    }
-
-    inline void renderGeometry(bool state) {
-        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY))
-              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
-    }
-
-    inline void renderBoundsAABB(bool state) {
-        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB))
-              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB));
-    }
-
-    inline void renderBoundsSphere(bool state) {
-        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE))
-              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE));
-    }
-
-    inline void setRasterizerState(bool state) {
-        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_NO_RASTERIZE))
-              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_NO_RASTERIZE));
-    }
-
-    inline void shaderProgram(const ShaderProgram_ptr& program) {
-        _shaderProgram = program.get();
-    }
-
-    inline void sourceBuffer(VertexDataInterface* const sourceBuffer) {
-        _sourceBuffer = sourceBuffer;
-    }
-
-    inline void primitiveType(PrimitiveType type) {
-        _type = type;
-    }
-
-    inline void commandOffset(U32 offset) {
-        _commandOffset = offset;
-    }
-
-    inline U8 LoD() const { return _lodIndex; }
-    inline U16 drawCount() const { return _drawCount; }
-    inline size_t stateHash() const { return static_cast<size_t>(_stateHash); }
-    inline U8  drawToBuffer() const { return _drawToBuffer; }
-    inline U32 commandOffset() const { return _commandOffset; }
-
-    inline bool renderWireframe() const {
-        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME));
-    }
-
-    inline bool renderGeometry() const {
-        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
-    }
-
-    inline bool renderBoundsAABB() const {
-        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_AABB));
-    }
-
-    inline bool renderBoundsSphere() const {
-        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS_SPHERE));
-    }
-
-    inline bool rasterizerDisabled() const {
-        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_NO_RASTERIZE));
-    }
-
-    inline const IndirectDrawCommand& cmd() const {
-        return _cmd;
-    }
-
-    inline IndirectDrawCommand& cmd() {
-        return _cmd;
-    }
-
-    inline ShaderProgram* shaderProgram() const { return _shaderProgram; }
-    inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
-    inline PrimitiveType primitiveType() const { return _type; }
-
-    GenericDrawCommand()
-        : GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 0)
-    {
-    }
-
-    GenericDrawCommand(PrimitiveType type,
-                       U32 firstIndex,
-                       U32 indexCount,
-                       U32 primCount = 1)
-        : _lodIndex(0),
-          _drawCount(1),
-          _drawToBuffer(0),
-          _stateHash(0),
-    	  _type(type),
-          _commandOffset(0),
-          _shaderProgram(nullptr),
-          _sourceBuffer(nullptr)
-    {
-        SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
-        _cmd.indexCount = indexCount;
-        _cmd.firstIndex = firstIndex;
-        _cmd.primCount = primCount;
-
-        static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
-        static_assert(sizeof(GenericDrawCommand) == 64, "Size of GenericDrawCommand is incorrect!");
-    }
-
-    inline void set(const GenericDrawCommand& base) {
-        _cmd.set(base._cmd);
-        _lodIndex = base._lodIndex;
-        _drawCount = base._drawCount;
-        _drawToBuffer = base._drawToBuffer;
-        _renderOptions = base._renderOptions;
-        _stateHash = base._stateHash;
-        _type = base._type;
-        _shaderProgram = base._shaderProgram;
-        _sourceBuffer = base._sourceBuffer;
-        _commandOffset = base._commandOffset;
-    }
-
-    inline void reset() {
-        set(GenericDrawCommand());
-    }
-
-    inline bool compatible(const GenericDrawCommand& other) const {
-        return _lodIndex == other._lodIndex &&
-               _drawToBuffer == other._drawToBuffer &&
-               _renderOptions == other._renderOptions &&
-               _stateHash == other._stateHash && _type == other._type &&
-               (_shaderProgram != nullptr) == (other._shaderProgram != nullptr) &&
-               (_sourceBuffer != nullptr) == (other._sourceBuffer != nullptr);
-    }
-};
 
 class TextureData {
     public:
