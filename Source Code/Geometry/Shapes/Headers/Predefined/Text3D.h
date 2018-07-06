@@ -66,11 +66,11 @@ class Text3D : public Object3D {
         setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
-    inline void updateBoundsInternal() override {
+    inline void updateBoundsInternal(SceneGraphNode& sgn) override {
         vec3<F32> min(-_width * 2, 0, -_width * 0.5f);
         vec3<F32> max(_width * 1.5f * _text.length() * 10, _width * _text.length() * 1.5f, _width * 0.5f);
         _boundingBox.set(min, max);
-        Object3D::updateBoundsInternal();
+        Object3D::updateBoundsInternal(sgn);
     }
 
    private:

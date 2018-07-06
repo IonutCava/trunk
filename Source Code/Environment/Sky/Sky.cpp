@@ -9,22 +9,15 @@
 
 namespace Divide {
 
-Sky::Sky(const stringImpl& name)
+Sky::Sky(const stringImpl& name, U32 diameter)
     : SceneNode(name, SceneNodeType::TYPE_SKY),
       _sky(nullptr),
       _skyShader(nullptr),
       _skyShaderPrePass(nullptr),
-      _skybox(nullptr)
+      _skybox(nullptr),
+      _farPlane(to_float(diameter * 0.5f))
 {
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
-
-    _farPlane = 2.0f *
-        GET_ACTIVE_SCENE()
-        .state()
-        .renderState()
-        .getCameraConst()
-        .getZPlanes()
-        .y;
 
     // Generate a render state
     RenderStateBlock skyboxRenderState;

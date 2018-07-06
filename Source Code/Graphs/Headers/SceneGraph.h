@@ -49,7 +49,7 @@ namespace Attorney {
 class SceneGraph : private NonCopyable, public FrameListener {
     friend class Attorney::SceneGraphSGN;
    public:
-    SceneGraph();
+    explicit SceneGraph(Scene& parentScene);
     ~SceneGraph();
 
     void unload();
@@ -73,6 +73,15 @@ class SceneGraph : private NonCopyable, public FrameListener {
     inline const Octree& getOctree() const {
         return *_octree;
     }
+
+    inline Scene& parentScene() {
+        return _parentScene;
+    }
+
+    inline const Scene& parentScene() const {
+        return _parentScene;
+    }
+
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 
@@ -100,6 +109,7 @@ class SceneGraph : private NonCopyable, public FrameListener {
    private:
     bool _loadComplete;
     bool _octreeChanged;
+    Scene& _parentScene;
     SceneRoot* _rootNode;
     SceneGraphNode_ptr _root;
     std::shared_ptr<Octree> _octree;

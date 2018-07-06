@@ -360,8 +360,6 @@ void Kernel::warmup() {
 
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
     _timingData._nextGameTick = Time::ElapsedMicroseconds();
-    // lock the scene
-    GET_ACTIVE_SCENE().state().runningState(true);
     _timingData._keepAlive = true;
 
     ParamHandler& par = ParamHandler::instance();
@@ -535,10 +533,9 @@ void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
 
     // release the scene
-    GET_ACTIVE_SCENE().state().runningState(false);
+    _sceneMgr.unloadCurrentScene();
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     GUI::destroyInstance();  /// Deactivate GUI
-    _sceneMgr.unloadCurrentScene();
     SceneManager::destroyInstance();
     _cameraMgr.reset(nullptr);
     LightManager::destroyInstance();

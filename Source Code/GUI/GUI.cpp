@@ -239,8 +239,7 @@ void GUI::onChangeResolution(U16 w, U16 h) {
 }
 
 void GUI::selectionChangeCallback(Scene* const activeScene) {
-    GUIEditor::instance().Handle_ChangeSelection(
-        activeScene->getCurrentSelection());
+    GUIEditor::instance().Handle_ChangeSelection(activeScene->getCurrentSelection());
 }
 
 void GUI::setCursorPosition(I32 x, I32 y) const {

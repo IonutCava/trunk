@@ -59,6 +59,8 @@ Scene::Scene(const stringImpl& name)
     _sceneTimer = 0UL;
     _input.reset(new SceneInput(*this));
 
+    _sceneGraph.reset(new SceneGraph(*this));
+
 #ifdef _DEBUG
 
     RenderStateBlock primitiveDescriptor;
@@ -89,11 +91,11 @@ bool Scene::idle() {  // Called when application is idle
         loadXMLAssets(true);
     }
 
-    if (!_sceneGraph.getRoot().hasChildren()) {
+    if (!_sceneGraph->getRoot().hasChildren()) {
         return false;
     }
 
-    _sceneGraph.idle();
+    _sceneGraph->idle();
 
     Attorney::SceneRenderStateScene::playAnimations(
         renderState(),
@@ -101,9 +103,7 @@ bool Scene::idle() {  // Called when application is idle
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
-            _sceneGraph.getRoot()
-                .get<PhysicsComponent>()
-                ->cookCollisionMesh(_name);
+            _sceneGraph->getRoot().get<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
     }
@@ -150,12 +150,12 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode_ptr meshNode =
-        _sceneGraph.getRoot().addNode(*thisObj,
-                                      normalMask,
-                                      data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
-                                                                             : PhysicsGroup::GROUP_DYNAMIC
-                                                        : PhysicsGroup::GROUP_IGNORE,
-                                      data.ItemName);
+        _sceneGraph->getRoot().addNode(*thisObj,
+                                       normalMask,
+                                       data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+                                                                              : PhysicsGroup::GROUP_DYNAMIC
+                                                         : PhysicsGroup::GROUP_IGNORE,
+                                       data.ItemName);
     meshNode->get<RenderingComponent>()->castsShadows(
         data.castsShadows);
     meshNode->get<RenderingComponent>()->receivesShadows(
@@ -230,11 +230,11 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().addNode(*thisObj,
-                                                                  normalMask,
-                                                                  data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
-                                                                                                         : PhysicsGroup::GROUP_DYNAMIC
-                                                                                    : PhysicsGroup::GROUP_IGNORE);
+    SceneGraphNode_ptr thisObjSGN = _sceneGraph->getRoot().addNode(*thisObj,
+                                                                   normalMask,
+                                                                   data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+                                                                                                          : PhysicsGroup::GROUP_DYNAMIC
+                                                                                     : PhysicsGroup::GROUP_IGNORE);
     thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
@@ -323,14 +323,17 @@ void Scene::toggleFlashlight() {
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColor(DefaultColors::WHITE());
-        _flashLight = _sceneGraph.getRoot().addNode(*tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
+        _flashLight = _sceneGraph->getRoot().addNode(*tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
     }
 
     _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
 }
 
 SceneGraphNode_ptr Scene::addSky() {
-    Sky* skyItem = CreateResource<Sky>(ResourceDescriptor("Default Sky"));
+    ResourceDescriptor skyDescriptor("Default Sky");
+    skyDescriptor.setID(to_uint(std::floor(renderState().getCameraConst().getZPlanes().y * 2)));
+
+    Sky* skyItem = CreateResource<Sky>(skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
     return addSky(*skyItem);
 }
@@ -341,7 +344,7 @@ SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-     SceneGraphNode_ptr skyNode = _sceneGraph.getRoot().addNode(skyItem, normalMask, PhysicsGroup::GROUP_IGNORE);
+     SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(skyItem, normalMask, PhysicsGroup::GROUP_IGNORE);
      skyNode->lockVisibility(true);
      return skyNode;
 }
@@ -350,7 +353,7 @@ U16 Scene::registerInputActions() {
     _input->flushCache();
 
     auto none = [](InputParams param) {};
-    auto deleteSelection = [this](InputParams param) { _sceneGraph.deleteNode(_currentSelection, false); };
+    auto deleteSelection = [this](InputParams param) { _sceneGraph->deleteNode(_currentSelection, false); };
     auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = renderState().getCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
@@ -559,21 +562,26 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
                                         _sceneState.fogDescriptor()._fogColor);
 
     loadXMLAssets();
-    SceneGraphNode& root = _sceneGraph.getRoot();
+    SceneGraphNode& root = _sceneGraph->getRoot();
     // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
+            terrain.setPropertyDescriptor(*terrainInfo);
             Terrain* temp = CreateResource<Terrain>(terrain);
+
             SceneGraphNode_ptr terrainTemp = root.addNode(*temp, normalMask, PhysicsGroup::GROUP_STATIC);
             terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+            _terrainList.push_back(terrainTemp->getName());
 
-            NavigationComponent* nComp =
-                terrainTemp->get<NavigationComponent>();
+            NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
             nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+            MemoryManager::DELETE(terrainInfo);
         }
     }
+    _terrainInfoArray.clear();
+
     // Camera position is overridden in the scene's XML configuration file
     if (ParamHandler::instance().getParam<bool>(
         _ID("options.cameraStartPositionOverride"))) {
@@ -616,7 +624,7 @@ bool Scene::unload() {
 }
 
 void Scene::postLoad() {
-    _sceneGraph.postLoad();
+    _sceneGraph->postLoad();
 }
 
 PhysicsSceneInterface* Scene::createPhysicsImplementation() {
@@ -651,17 +659,12 @@ bool Scene::deinitializeAI(bool continueOnErrors) {
 }
 
 void Scene::clearObjects() {
-    for (U8 i = 0; i < _terrainInfoArray.size(); ++i) {
-        RemoveResource(_terrainInfoArray[i]);
-    }
-    _terrainInfoArray.clear();
-
     while (!_modelDataArray.empty()) {
         _modelDataArray.pop();
     }
     _vegetationDataArray.clear();
 
-    _sceneGraph.unload();
+    _sceneGraph->unload();
 }
 
 bool Scene::updateCameraControls() {
@@ -702,7 +705,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     updateSceneStateInternal(deltaTime);
     state().cameraUnderwater(renderState().getCamera().getEye().y <
                              state().waterLevel());
-    _sceneGraph.sceneUpdate(deltaTime, _sceneState);
+    _sceneGraph->sceneUpdate(deltaTime, _sceneState);
     findHoverTarget();
     SceneGraphNode_ptr flashLight = _flashLight.lock();
 
@@ -763,20 +766,6 @@ void Scene::processTasks(const U64 deltaTime) {
     for (U16 i = 0; i < _taskTimers.size(); ++i) {
         _taskTimers[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
     }
-}
-
-TerrainDescriptor* Scene::getTerrainInfo(const stringImpl& terrainName) {
-    for (U8 i = 0; i < _terrainInfoArray.size(); i++) {
-        if (terrainName.compare(
-                _terrainInfoArray[i]->getVariable("terrainName")) == 0) {
-            return _terrainInfoArray[i];
-        }
-    }
-
-    DIVIDE_ASSERT(
-        false,
-        "Scene error: INVALID TERRAIN NAME FOR INFO LOOKUP");  // not found;
-    return _terrainInfoArray[0];
 }
 
 void Scene::debugDraw(RenderStage stage) {

@@ -402,9 +402,6 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp">
       <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainDescriptorLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp">
       <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>

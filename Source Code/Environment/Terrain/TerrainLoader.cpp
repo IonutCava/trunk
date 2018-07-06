@@ -11,7 +11,7 @@
 namespace Divide {
 
 bool TerrainLoader::loadTerrain(Terrain* terrain,
-                                TerrainDescriptor* terrainDescriptor) {
+                                const TerrainDescriptor* terrainDescriptor) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
 
     Attorney::TerrainLoader::setUnderwaterDiffuseScale(
@@ -222,32 +222,9 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     return loadThreadedResources(terrain, terrainDescriptor);
 }
 
-bool TerrainLoader::loadThreadedResources(
-    Terrain* terrain, TerrainDescriptor* terrainDescriptor) {
+bool TerrainLoader::loadThreadedResources(Terrain* terrain, const TerrainDescriptor* terrainDescriptor) {
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true);  // No default material
-    F32& farPlane = Attorney::TerrainLoader::farPlane(*terrain);
-    Quad3D& plane = *CreateResource<Quad3D>(infinitePlane);
-    // our bottom plane is placed at the bottom of our water entity
-    F32 height = GET_ACTIVE_SCENE().state().waterLevel() -
-                 GET_ACTIVE_SCENE().state().waterDepth();
-    farPlane = 2.0f *
-               GET_ACTIVE_SCENE()
-                   .state()
-                   .renderState()
-                   .getCameraConst()
-                   .getZPlanes()
-                   .y;
-    plane.setCorner(Quad3D::CornerLocation::TOP_LEFT,
-                    vec3<F32>(-farPlane * 1.5f, height, -farPlane * 1.5f));
-    plane.setCorner(Quad3D::CornerLocation::TOP_RIGHT,
-                    vec3<F32>(farPlane * 1.5f, height, -farPlane * 1.5f));
-    plane.setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
-                    vec3<F32>(-farPlane * 1.5f, height, farPlane * 1.5f));
-    plane.setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
-                    vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));
-    
-    Attorney::TerrainLoader::plane(*terrain, &plane);
 
     vec2<F32>& terrainScaleFactor =
         Attorney::TerrainLoader::scaleFactor(*terrain);
@@ -466,13 +443,28 @@ bool TerrainLoader::loadThreadedResources(
     groundVB->create();
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::buildQuadtree(*terrain);
+
+
+    F32& farPlane = Attorney::TerrainLoader::farPlane(*terrain);
+    Quad3D& plane = *CreateResource<Quad3D>(infinitePlane);
+    // our bottom plane is placed at the bottom of our water entity
+    F32 height = bMin.y + yOffset;
+    farPlane = 2.0f * terrainBB.getWidth();
+
+    plane.setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(-farPlane * 1.5f, height, -farPlane * 1.5f));
+    plane.setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(farPlane * 1.5f, height, -farPlane * 1.5f));
+    plane.setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(-farPlane * 1.5f, height, farPlane * 1.5f));
+    plane.setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));
+
+    Attorney::TerrainLoader::plane(*terrain, &plane);
+
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")),
                      terrain->getName().c_str());
     return true;
 }
 
 void TerrainLoader::initializeVegetation(Terrain* terrain,
-                                         TerrainDescriptor* terrainDescriptor) {
+                                         const TerrainDescriptor* terrainDescriptor) {
     U8 textureCount = 0;
     stringImpl textureLocation;
 
@@ -517,7 +509,7 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
     VegetationDetails& vegDetails =
         Attorney::TerrainLoader::vegetationDetails(*terrain);
     vegDetails.billboardCount = textureCount;
-    vegDetails.name = terrainDescriptor->getName() + "_grass";
+    vegDetails.name = terrain->getName() + "_grass";
     vegDetails.grassDensity = terrainDescriptor->getGrassDensity();
     vegDetails.grassScale = terrainDescriptor->getGrassScale();
     vegDetails.treeDensity = terrainDescriptor->getTreeDensity();

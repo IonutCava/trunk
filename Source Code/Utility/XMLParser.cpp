@@ -510,8 +510,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
             continue;
         }
         // Load the rest of the terrain
-        TerrainDescriptor *ter = CreateResource<TerrainDescriptor>(
-            ResourceDescriptor((name + "_descriptor").c_str()));
+        TerrainDescriptor *ter = MemoryManager_NEW TerrainDescriptor((name + "_descriptor").c_str());
         ter->addVariable("terrainName", name.c_str());
         ter->addVariable("heightmap",
                          assetLocation + pt.get<stringImpl>(name + ".heightmap"));

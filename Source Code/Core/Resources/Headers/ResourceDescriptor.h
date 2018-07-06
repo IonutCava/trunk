@@ -43,7 +43,9 @@ class NOINITVTABLE PropertyDescriptor {
     enum class DescriptorType : U32 {
         DESCRIPTOR_TEXTURE = 0,
         DESCRIPTOR_SAMPLER = 1,
-        DESCRIPTOR_PARTICLE = 2
+        DESCRIPTOR_PARTICLE = 2,
+        DESCRIPTOR_TERRAIN_INFO = 3,
+        DESCRIPTOR_COUNT
     };
 
     explicit PropertyDescriptor(const DescriptorType& type) : _type(type) {}
@@ -113,8 +115,7 @@ class ResourceDescriptor {
 
     template <typename T>
     inline void setPropertyDescriptor(const T& descriptor) {
-        MemoryManager::SAFE_UPDATE(_propertyDescriptor,
-                                   MemoryManager_NEW T(descriptor));
+        MemoryManager::SAFE_UPDATE(_propertyDescriptor, MemoryManager_NEW T(descriptor));
     }
 
    private:

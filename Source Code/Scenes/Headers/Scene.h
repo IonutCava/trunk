@@ -117,7 +117,7 @@ class Scene : public Resource {
     inline const SceneRenderState& renderState() const { return _sceneState.renderState(); }
     inline SceneInput& input() { return *_input; }
 
-    inline SceneGraph& getSceneGraph() { return _sceneGraph; }
+    inline SceneGraph& getSceneGraph() { return *_sceneGraph; }
     void registerTask(const TaskHandle& taskItem);
     void clearTasks();
     void removeTask(I64 jobIdentifier);
@@ -154,7 +154,6 @@ class Scene : public Resource {
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
 
-    TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() {
         return _vegetationDataArray;
     }
@@ -235,7 +234,7 @@ class Scene : public Resource {
        GFXDevice& _GFX;
        GUI* _GUI;
        ParamHandler& _paramHandler;
-       SceneGraph _sceneGraph;
+       std::unique_ptr<SceneGraph> _sceneGraph;
 
        U64 _sceneTimer;
        vectorImpl<D64> _taskTimers;
@@ -243,6 +242,8 @@ class Scene : public Resource {
        /// Datablocks for models,vegetation,terrains,tasks etc
        FileDataStack _modelDataArray;
        vectorImpl<FileData> _vegetationDataArray;
+
+       vectorImpl<stringImpl> _terrainList;
        vectorImpl<TerrainDescriptor*> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection

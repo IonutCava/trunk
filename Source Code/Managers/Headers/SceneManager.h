@@ -111,6 +111,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     vectorImpl<stringImpl> sceneNameList() const;
 
     inline Scene& getActiveScene() { return *_activeScene; }
+
     void setActiveScene(Scene& scene);
 
     bool init(GUI* const gui);
@@ -217,7 +218,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool _processInput;
     /// Pointer to the currently active scene
     Scene* _activeScene;
-
     std::unique_ptr<Scene> _defaultScene;
     /// Pointer to the GUI interface
     GUI* _GUI;
@@ -255,14 +255,9 @@ class SceneManagerKernel {
 };
 };  // namespace Attorney
 
-/// Return a pointer to the currently active scene
-inline Scene& GET_ACTIVE_SCENE() {
-    return SceneManager::instance().getActiveScene();
-}
-
 /// Return a pointer to the currently active scene's scenegraph
 inline SceneGraph& GET_ACTIVE_SCENEGRAPH() {
-    return GET_ACTIVE_SCENE().getSceneGraph();
+    return SceneManager::instance().getActiveScene().getSceneGraph();
 }
 
 };  // namespace Divide

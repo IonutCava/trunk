@@ -55,8 +55,8 @@ class TerrainChunk {
    public:
     TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode);
     ~TerrainChunk();
-    void Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,
-              const vec2<U32>& HMsize, Terrain* const terrain);
+
+    void load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize);
 
     vec3<U32> getBufferOffsetAndSize(I8 targetLoD) const;
 
@@ -68,6 +68,8 @@ class TerrainChunk {
     }
 
     U8 getLoD() const;
+
+    F32 waterHeight() const;
 
    protected:
     Vegetation* const getVegetation() const { return _vegetation; }
@@ -85,10 +87,12 @@ class TerrainChunk {
     F32 _yOffset;
     F32 _sizeX;
     F32 _sizeY;
+    F32 _waterHeight;
     vec2<F32> _heightBounds;  //< 0 = minHeight, 1 = maxHeight
     VertexBuffer* _terrainVB;
     QuadtreeNode* _parentNode;
     Vegetation* _vegetation;
+    Terrain* _parentTerrain;
     static U32 _chunkID;
 };
 

@@ -41,7 +41,7 @@ class TerrainDescriptor;
 class TerrainLoader : private NonCopyable {
    public:
     static bool loadTerrain(Terrain* terrain,
-                            TerrainDescriptor* terrainDescriptor);
+                            const TerrainDescriptor* terrainDescriptor);
 
    protected:
     static bool Save(const char* fileName);
@@ -52,9 +52,9 @@ class TerrainLoader : private NonCopyable {
     ~TerrainLoader() {}
 
     static bool loadThreadedResources(Terrain* terrain,
-                                      TerrainDescriptor* terrainDescriptor);
+                                      const TerrainDescriptor* terrainDescriptor);
     static void initializeVegetation(Terrain* terrain,
-                                     TerrainDescriptor* terrainDescriptor);
+                                     const TerrainDescriptor* terrainDescriptor);
 };
 
 };  // namespace Divide

@@ -209,7 +209,6 @@ class SceneState {
     SceneState()
         : _cameraUnderwater(false), 
           _cameraUpdated(false),
-          _isRunning(false),
           _cameraLockedToMouse(false)
     {
         resetMovement();
@@ -262,9 +261,6 @@ class SceneState {
     inline void waterDepth(F32 depth) { _waterDepth = depth; }
     inline F32  waterDepth()    const { return _waterDepth; }
 
-    inline void runningState(bool state) { _isRunning = state; }
-    inline bool runningState()     const { return _isRunning; }
-    
     inline void cameraUnderwater(bool state) { _cameraUnderwater = state; }
     inline bool cameraUnderwater()     const { return _cameraUnderwater; }
 
@@ -318,7 +314,6 @@ protected:
     /// saves all the rendering information for the scene
     /// (camera position, light info, draw states)
     SceneRenderState _renderState;
-    bool _isRunning;
     F32 _grassVisibility;
     F32 _treeVisibility;
     F32 _generalVisibility;

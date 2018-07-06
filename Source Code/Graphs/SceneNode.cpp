@@ -52,7 +52,7 @@ void SceneNode::sceneUpdate(const U64 deltaTime,
 {
     bool bbUpdated = getFlag(UpdateFlag::BOUNDS_CHANGED);
     if (bbUpdated) {
-        updateBoundsInternal();
+        updateBoundsInternal(sgn);
         for (SceneGraphNode_wptr nodeWptr : _sgnParents) {
             if (!nodeWptr.expired() && bbUpdated) {
                 BoundsComponent* bComp = sgn.get<BoundsComponent>();
@@ -65,7 +65,7 @@ void SceneNode::sceneUpdate(const U64 deltaTime,
     }
 }
 
-void SceneNode::updateBoundsInternal() {
+void SceneNode::updateBoundsInternal(SceneGraphNode& sgn) {
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
@@ -75,7 +75,7 @@ void SceneNode::postLoad(SceneGraphNode& sgn) {
 
     _sgnParents.push_back(sgn.shared_from_this());
 
-    updateBoundsInternal();
+    updateBoundsInternal(sgn);
 
     sgn.get<BoundsComponent>()->onBoundsChange(_boundingBox);
     sgn.postLoad();

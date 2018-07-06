@@ -46,7 +46,7 @@ enum class RenderStage : U32;
 
 class Sky : public SceneNode {
    public:
-    Sky(const stringImpl& name);
+    Sky(const stringImpl& name, U32 diameter);
     ~Sky();
 
     bool onRender(SceneGraphNode& sgn, RenderStage currentStage) override;

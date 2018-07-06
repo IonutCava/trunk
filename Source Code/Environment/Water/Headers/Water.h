@@ -104,7 +104,7 @@ class WaterPlane : public SceneNode, public Reflector {
     inline const Plane<F32>& getRefractionPlane() { return _refractionPlane; }
 
    private:
-    void updateBoundsInternal() override;
+    void updateBoundsInternal(SceneGraphNode& sgn) override;
 
    private:
     /// the hw clip-plane index for the water

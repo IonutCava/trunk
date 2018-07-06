@@ -113,15 +113,14 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
+    _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.965f);
     _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
-    for (U8 i = 0; i < _terrainInfoArray.size(); i++) {
-        SceneGraphNode_ptr terrainNode(_sceneGraph.findNode(
-            _terrainInfoArray[i]->getVariable("terrainName")).lock());
+    for (U8 i = 0; i < _terrainList.size(); i++) {
+        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(_terrainList[i]).lock());
         if (terrainNode) {  // We might have an unloaded terrain in the Array,
                             // and thus, not present in the graph
             Terrain* tempTerrain = terrainNode->getNode<Terrain>();
@@ -130,8 +129,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
                 _visibleTerrains.push_back(terrainNode);
             }
         } else {
-            Console::errorfn(Locale::get(_ID("ERROR_MISSING_TERRAIN")),
-                             _terrainInfoArray[i]->getVariable("terrainName").c_str());
+            Console::errorfn(Locale::get(_ID("ERROR_MISSING_TERRAIN")), _terrainList[i].c_str());
         }
     }
 
@@ -144,7 +142,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
-    _waterGraphNode = _sceneGraph.getRoot().addNode(*_water, normalMask);
+    _waterGraphNode = _sceneGraph->getRoot().addNode(*_water, normalMask);
     SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
@@ -224,7 +222,7 @@ void MainScene::test(const std::atomic_bool& stopRequested, cdiggins::any a, Cal
     while (!stopRequested) {
         static bool switchAB = false;
         vec3<F32> pos;
-        SceneGraphNode_ptr boxNode(_sceneGraph.findNode("box").lock());
+        SceneGraphNode_ptr boxNode(_sceneGraph->findNode("box").lock());
 
         Object3D* box = nullptr;
         if (boxNode) {

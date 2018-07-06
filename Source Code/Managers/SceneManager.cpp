@@ -108,31 +108,32 @@ bool SceneManager::init(GUI* const gui) {
 Scene* SceneManager::load(stringImpl sceneName) {
     bool loadDefaultScene = sceneName.empty();
 
-    Scene *scene = _defaultScene.get();
+    Scene* loadingScene = _defaultScene.get();
     if (loadDefaultScene) {
         sceneName = "defaultScene";
     } else {
-        scene = createScene(sceneName);
+        loadingScene = createScene(sceneName);
     }
 
     ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
-    if (!scene) {
+    if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
-        return false;
+        return nullptr;
     }
+
     if (!loadDefaultScene) {
-        XML::loadScene(sceneName, scene);
+        XML::loadScene(sceneName, loadingScene);
     }
 
-    bool state = Attorney::SceneManager::load(*scene, sceneName, _GUI);
+    bool state = Attorney::SceneManager::load(*loadingScene, sceneName, _GUI);
     if (state) {
-        state = LoadSave::loadScene(*scene);
+        state = LoadSave::loadScene(*loadingScene);
     }
     if (state) {
-        Attorney::SceneManager::postLoad(*scene);
+        Attorney::SceneManager::postLoad(*loadingScene);
     }
 
-    return state ? scene : nullptr;
+    return state ? loadingScene : nullptr;
 }
 
 void SceneManager::setActiveScene(Scene& scene) {

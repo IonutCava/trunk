@@ -81,7 +81,7 @@ class Mesh : public Object3D {
     virtual void sceneUpdate(const U64 deltaTime,
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
-    void updateBoundsInternal() override;
+    void updateBoundsInternal(SceneGraphNode& sgn) override;
 
    protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;

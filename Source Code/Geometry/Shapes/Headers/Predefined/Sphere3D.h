@@ -146,10 +146,10 @@ class Sphere3D : public Object3D {
         setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
-    inline void updateBoundsInternal() override {
+    inline void updateBoundsInternal(SceneGraphNode& sgn) override {
         // add some depth padding for collision and nav meshes
         _boundingBox.set(vec3<F32>(-_radius), vec3<F32>(_radius));
-        Object3D::updateBoundsInternal();
+        Object3D::updateBoundsInternal(sgn);
     }
 
    protected:

@@ -84,7 +84,6 @@ void Terrain::buildQuadtree() {
 
         ShaderProgram* const drawShader = mat->getShaderInfo(stage).getProgram();
 
-        drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE().state().waterLevel());
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
@@ -114,6 +113,7 @@ void Terrain::sceneUpdate(const U64 deltaTime,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
     _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
+    _waterHeight = sgn.parentGraph().parentScene().state().waterLevel();
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
@@ -135,6 +135,7 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
     cmd.shaderProgram(renderable->getDrawShader(renderStage));
     cmd.sourceBuffer(getGeometryVB());
         
+    cmd.shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
     vectorImpl<vec3<U32>> chunkData;
     chunkData.reserve(_terrainQuadtree.getChunkCount());
     _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);

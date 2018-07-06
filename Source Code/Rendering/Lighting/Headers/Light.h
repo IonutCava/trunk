@@ -148,7 +148,7 @@ class Light : public SceneNode {
     /// SceneNode concrete implementations
     bool unload() override;
 
-    void updateBoundsInternal();
+    void updateBoundsInternal(SceneGraphNode& sgn);
 
     void sceneUpdate(const U64 deltaTime,
                      SceneGraphNode& sgn,

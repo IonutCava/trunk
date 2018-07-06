@@ -32,26 +32,37 @@
 #ifndef _TERRAIN_DESCRIPTOR_H_
 #define _TERRAIN_DESCRIPTOR_H_
 
-#include "Core/Resources/Headers/Resource.h"
+#include "Core/Resources/Headers/ResourceDescriptor.h"
 
 namespace Divide {
 
-class TerrainDescriptor : public Resource {
+class TerrainDescriptor : public PropertyDescriptor {
    public:
     explicit TerrainDescriptor(const stringImpl& name)
-        : Resource(name),
-          _active(false),
-          _is16Bit(false),
-          _grassDensity(0.0f),
-          _chunkSize(0),
-          _treeScale(1.0f),
-          _grassScale(1.0f),
-          _treeDensity(0.0f),
-          _textureLayers(1) {}
+        : PropertyDescriptor(PropertyDescriptor::DescriptorType::DESCRIPTOR_TERRAIN_INFO)
+    {
+        setDefaultValues();
+    }
 
     ~TerrainDescriptor() { _variables.clear(); }
 
-    bool unload() { return true; }
+    TerrainDescriptor* clone() const {
+        return MemoryManager_NEW TerrainDescriptor(*this);
+    }
+
+    inline void setDefaultValues() {
+        _variables.clear();
+        _variablesf.clear();
+        _grassDensity = _treeDensity = 0.0f;
+        _grassScale = _treeScale = 1.0f;
+        _is16Bit = _active = false;
+        _chunkSize = 0;
+        _textureLayers = 1;
+        _position.reset();
+        _scale.set(1.0f);
+        _altitudeRange.set(0, 1);
+        _dimensions.set(1);
+    }
 
     void addVariable(const stringImpl& name, const stringImpl& value) {
         hashAlg::insert(_variables, std::make_pair(_ID_RT(name), value));
@@ -88,7 +99,7 @@ class TerrainDescriptor : public Resource {
     const vec3<F32>& getPosition() const { return _position; }
     const vec2<F32>& getScale() const { return _scale; }
 
-    stringImpl getVariable(const stringImpl& name) {
+    stringImpl getVariable(const stringImpl& name) const {
         hashMapImpl<ULL, stringImpl>::const_iterator it =
             _variables.find(_ID_RT(name));
         if (it != std::end(_variables)) {
@@ -97,7 +108,7 @@ class TerrainDescriptor : public Resource {
         return "";
     }
 
-    F32 getVariablef(const stringImpl& name) {
+    F32 getVariablef(const stringImpl& name) const {
         hashMapImpl<ULL, F32>::const_iterator it =
             _variablesf.find(_ID_RT(name));
         if (it != std::end(_variablesf)) {

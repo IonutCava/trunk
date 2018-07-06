@@ -11,6 +11,7 @@ WaterPlane::WaterPlane(const stringImpl& name)
     : SceneNode(name, SceneNodeType::TYPE_WATER),
       Reflector(ReflectorType::TYPE_WATER_SURFACE, vec2<U16>(1024, 1024)),
       _plane(nullptr),
+      _farPlane(100.0f),
       _waterLevel(0),
       _waterDepth(0),
       _refractionPlaneID(ClipPlaneIndex::COUNT),
@@ -21,7 +22,8 @@ WaterPlane::WaterPlane(const stringImpl& name)
       _dirty(true),
       _paramsDirty(true),
       _cameraUnderWater(false),
-      _cameraMgr(Application::instance().kernel().getCameraMgr()) {
+      _cameraMgr(Application::instance().kernel().getCameraMgr()) 
+{
     // Set water plane to be single-sided
     P32 quadMask;
     quadMask.i = 0;
@@ -33,23 +35,7 @@ WaterPlane::WaterPlane(const stringImpl& name)
     waterPlane.setFlag(true);  // No default material
     waterPlane.setBoolMask(quadMask);
     _plane = CreateResource<Quad3D>(waterPlane);
-    _farPlane = 2.0f *
-                GET_ACTIVE_SCENE()
-                    .state()
-                    .renderState()
-                    .getCameraConst()
-                    .getZPlanes()
-                    .y;
-    _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,
-                      vec3<F32>(-_farPlane * 1.5f, 0, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,
-                      vec3<F32>(_farPlane * 1.5f, 0, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
-                      vec3<F32>(-_farPlane * 1.5f, 0, _farPlane * 1.5f));
-    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
-                      vec3<F32>(_farPlane * 1.5f, 0, _farPlane * 1.5f));
-    _plane->setNormal(Quad3D::CornerLocation::CORNER_ALL, WORLD_Y_AXIS);
-    _plane->renderState().setDrawState(false);
+
     // The water doesn't cast shadows, doesn't need ambient occlusion and
     // doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
@@ -81,6 +67,24 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
+    _farPlane = 2.0f *
+        sgn.parentGraph()
+        .parentScene()
+        .state()
+        .renderState()
+        .getCameraConst()
+        .getZPlanes()
+        .y;
+    _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,
+        vec3<F32>(-_farPlane * 1.5f, 0, -_farPlane * 1.5f));
+    _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,
+        vec3<F32>(_farPlane * 1.5f, 0, -_farPlane * 1.5f));
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
+        vec3<F32>(-_farPlane * 1.5f, 0, _farPlane * 1.5f));
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
+        vec3<F32>(_farPlane * 1.5f, 0, _farPlane * 1.5f));
+    _plane->setNormal(Quad3D::CornerLocation::CORNER_ALL, WORLD_Y_AXIS);
+    _plane->renderState().setDrawState(false);
 
     sgn.addNode(*_plane, normalMask, PhysicsGroup::GROUP_STATIC);
 
@@ -99,8 +103,8 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
 
     U32 temp = 0;
     SceneGraphNode& planeSGN = sgn.getChild(0, temp);
-    _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
-    _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
+    _waterLevel = sgn.parentGraph().parentScene().state().waterLevel();
+    _waterDepth = sgn.parentGraph().parentScene().state().waterDepth();
     planeSGN.get<PhysicsComponent>()->setPositionY(_waterLevel);
     
     updatePlaneEquation();
@@ -108,16 +112,16 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void WaterPlane::updateBoundsInternal() {
-    _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
-    _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
+void WaterPlane::updateBoundsInternal(SceneGraphNode& sgn) {
+    _waterLevel = sgn.parentGraph().parentScene().state().waterLevel();
+    _waterDepth = sgn.parentGraph().parentScene().state().waterDepth();
     _boundingBox.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
                      vec3<F32>(_farPlane, _waterLevel, _farPlane));
     Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_1")), _boundingBox.getMax().y);
     Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_2")), _boundingBox.getMin().y);
     
     _dirty = true;
-    SceneNode::updateBoundsInternal();
+    SceneNode::updateBoundsInternal(sgn);
 }
 
 bool WaterPlane::unload() {

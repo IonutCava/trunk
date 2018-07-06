@@ -113,9 +113,9 @@ class Box3D : public Object3D {
         setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
-    inline void updateBoundsInternal() override {
+    inline void updateBoundsInternal(SceneGraphNode& sgn) override {
         _boundingBox.set(-_halfExtent * 0.5f, _halfExtent * 0.5f);
-        Object3D::updateBoundsInternal();
+        Object3D::updateBoundsInternal(sgn);
     }
 
    private:

@@ -11,7 +11,7 @@ DefaultScene::DefaultScene()
 
 bool DefaultScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
-    SceneGraphNode_wptr light = addLight(LightType::DIRECTIONAL, _sceneGraph.getRoot());
+    SceneGraphNode_wptr light = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
     // Add a light
     vec2<F32> sunAngle(0.0f, Angle::DegreesToRadians(45.0f));

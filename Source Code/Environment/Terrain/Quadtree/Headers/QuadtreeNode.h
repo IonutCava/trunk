@@ -85,10 +85,10 @@ class QuadtreeNode {
 
     inline BoundingBox& getBoundingBox() { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
-    inline TerrainChunk* getChunk() { return _terrainChunk; }
+    inline TerrainChunk* getChunk() { return _terrainChunk.get(); }
 
     inline QuadtreeNode* getChild(ChildPosition pos) const { return getChild(to_uint(pos)); }
-    inline QuadtreeNode* getChild(U32 index) const { return _children[index]; }
+    inline QuadtreeNode* getChild(U32 index) const { return _children[index].get(); }
 
     QuadtreeNode();
     ~QuadtreeNode();
@@ -105,8 +105,8 @@ class QuadtreeNode {
     I8 _LOD;                         ///< LOD level
     BoundingBox _boundingBox;        ///< Node BoundingBox
     BoundingSphere _boundingSphere;  ///< Node BoundingSphere
-    QuadtreeNode* _children[4];      ///< Node children
-    TerrainChunk* _terrainChunk;     ///< Terrain Chunk contained in node
+    std::unique_ptr<QuadtreeNode> _children[4];      ///< Node children
+    std::unique_ptr<TerrainChunk> _terrainChunk;     ///< Terrain Chunk contained in node
 };
 
 };  // namespace Divide

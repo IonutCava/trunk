@@ -263,6 +263,14 @@ class SceneGraphNode : public GUIDWrapper,
 
     void postLoad();
 
+    inline SceneGraph& parentGraph() {
+        return _sceneGraph;
+    }
+
+    inline const SceneGraph& parentGraph() const {
+        return _sceneGraph;
+    }
+
    protected:
     friend class RenderPassCuller;
     // Returns true if the node should be culled (is not visible for the current stage)

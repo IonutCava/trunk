@@ -58,10 +58,10 @@ void CubeScene::processInput(const U64 deltaTime) {
 
     g_i >= 180 ? g_j = -1 : g_j = 1;
 
-    SceneGraphNode_ptr cutia1(_sceneGraph.findNode("Cutia1").lock());
-    SceneGraphNode_ptr hellotext(_sceneGraph.findNode("HelloText").lock());
-    SceneGraphNode_ptr bila(_sceneGraph.findNode("Bila").lock());
-    SceneGraphNode_ptr dwarf(_sceneGraph.findNode("dwarf").lock());
+    SceneGraphNode_ptr cutia1(_sceneGraph->findNode("Cutia1").lock());
+    SceneGraphNode_ptr hellotext(_sceneGraph->findNode("HelloText").lock());
+    SceneGraphNode_ptr bila(_sceneGraph->findNode("Bila").lock());
+    SceneGraphNode_ptr dwarf(_sceneGraph->findNode("dwarf").lock());
 
     cutia1->get<PhysicsComponent>()->rotate(
         0.3f * g_i, 0.6f * g_i, 0);
@@ -94,7 +94,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);
-            _lightNodes.push_back(_sceneGraph.getRoot().addNode(*light, normalMask, PhysicsGroup::GROUP_IGNORE));
+            _lightNodes.push_back(_sceneGraph->getRoot().addNode(*light, normalMask, PhysicsGroup::GROUP_IGNORE));
         }
     }
 

@@ -145,6 +145,7 @@ class Terrain : public Object3D {
 
     vec2<F32> _terrainScaleFactor;
     F32 _farPlane;
+    F32 _waterHeight;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
     SceneGraphNode_wptr _vegetationGrassNode;
@@ -168,6 +169,11 @@ class TerrainChunk {
                                      Divide::TerrainChunk* const chunk) {
         terrain._terrainChunks.push_back(chunk);
     }
+
+    static F32 waterHeight(Terrain& terrain) {
+        return terrain._waterHeight; 
+    }
+
     friend class Divide::TerrainChunk;
 };
 

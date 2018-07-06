@@ -360,7 +360,7 @@ U32 ParticleEmitter::getAliveParticleCount() const {
     return _particles->aliveCount();
 }
 
-void ParticleEmitter::updateBoundsInternal() {
+void ParticleEmitter::updateBoundsInternal(SceneGraphNode& sgn) {
     U32 aliveCount = getAliveParticleCount();
     if (aliveCount > 2) {
 
@@ -380,7 +380,7 @@ void ParticleEmitter::updateBoundsInternal() {
         _boundingBox.set(VECTOR3_ZERO, VECTOR3_ZERO);
     }
 
-    SceneNode::updateBoundsInternal();
+    SceneNode::updateBoundsInternal(sgn);
 }
 
 };

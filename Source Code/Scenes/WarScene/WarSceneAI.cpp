@@ -90,7 +90,7 @@ void WarScene::checkGameCompletion() {
             for (U8 i = 0; i < 2; ++i) {
                 PhysicsComponent* flagPComp = _flag[i].lock()->get<PhysicsComponent>();
                 flagPComp->popTransforms();
-                _flag[i].lock()->setParent(_sceneGraph.getRoot());
+                _flag[i].lock()->setParent(_sceneGraph->getRoot());
                 flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
             }
             AI::WarSceneAIProcessor::reset();
@@ -106,7 +106,7 @@ void WarScene::registerPoint(U8 teamID, const stringImpl& unitName) {
         for (U8 i = 0; i < 2; ++i) {
             PhysicsComponent* flagPComp = _flag[i].lock()->get<PhysicsComponent>();
             WAIT_FOR_CONDITION(!flagPComp->popTransforms());
-            _flag[i].lock()->setParent(_sceneGraph.getRoot());
+            _flag[i].lock()->setParent(_sceneGraph->getRoot());
             flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
         }
         AI::WarSceneAIProcessor::reset();
@@ -135,9 +135,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
 
-    _sceneGraph.findNode("Soldier1").lock()->setActive(false);
-    _sceneGraph.findNode("Soldier2").lock()->setActive(false);
-    _sceneGraph.findNode("Soldier3").lock()->setActive(false);
+    _sceneGraph->findNode("Soldier1").lock()->setActive(false);
+    _sceneGraph->findNode("Soldier2").lock()->setActive(false);
+    _sceneGraph->findNode("Soldier3").lock()->setActive(false);
 
     return state;
 }
@@ -156,7 +156,7 @@ bool WarScene::removeUnits(bool removeNodesOnCall) {
 
     for (U8 i = 0; i < 2; ++i) {
         for (NPC* npc : _armyNPCs[i]) {
-            _sceneGraph.deleteNode(npc->getBoundNode(), removeNodesOnCall);
+            _sceneGraph->deleteNode(npc->getBoundNode(), removeNodesOnCall);
         }
     }
 
@@ -265,9 +265,9 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
 
-    SceneGraphNode_ptr lightNode(_sceneGraph.findNode("Soldier1").lock());
-    SceneGraphNode_ptr animalNode(_sceneGraph.findNode("Soldier2").lock());
-    SceneGraphNode_ptr heavyNode(_sceneGraph.findNode("Soldier3").lock());
+    SceneGraphNode_ptr lightNode(_sceneGraph->findNode("Soldier1").lock());
+    SceneGraphNode_ptr animalNode(_sceneGraph->findNode("Soldier2").lock());
+    SceneGraphNode_ptr heavyNode(_sceneGraph->findNode("Soldier3").lock());
 
     SceneNode* lightNodeMesh = lightNode->getNode();
     SceneNode* animalNodeMesh = animalNode->getNode();
@@ -286,7 +286,7 @@ bool WarScene::addUnits() {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    SceneGraphNode& root = _sceneGraph.getRoot();
+    SceneGraphNode& root = _sceneGraph->getRoot();
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < 15; ++i) {
 
@@ -450,12 +450,12 @@ void WarScene::startSimulation(I64 btnGUID) {
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh();
         navMesh->setFileName(getName());
 
-        if (!navMesh->load(_sceneGraph.getRoot())) {
+        if (!navMesh->load(_sceneGraph->getRoot())) {
             loadedFromFile = false;
             AI::AIEntity::PresetAgentRadius radius =
                 _army[0][0]->getAgentRadiusCategory();
             navMesh->build(
-                _sceneGraph.getRoot(),
+                _sceneGraph->getRoot(),
                 [&radius](AI::Navigation::NavigationMesh* navMesh) {
                 AI::AIManager::instance().toggleNavMeshDebugDraw(true);
                 AI::AIManager::instance().addNavMesh(radius, navMesh);

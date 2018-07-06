@@ -74,7 +74,7 @@ class ParticleEmitter : public SceneNode {
     U32 getAliveParticleCount() const;
 
    protected:
-    void updateBoundsInternal() override; 
+    void updateBoundsInternal(SceneGraphNode& sgn) override;
 
     void postLoad(SceneGraphNode& sgn)  override;
 

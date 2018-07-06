@@ -148,7 +148,7 @@ void PostFX::apply() {
 void PostFX::idle() {
     ParamHandler& par = ParamHandler::instance();
     // Update states
-    _underwater = GET_ACTIVE_SCENE().state().cameraUnderwater();
+    _underwater = SceneManager::instance().getActiveScene().state().cameraUnderwater();
     _enableNoise = par.getParam<bool>(_ID("postProcessing.enableNoise"));
     _enableVignette = par.getParam<bool>(_ID("postProcessing.enableVignette"));
 

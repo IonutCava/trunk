@@ -28,7 +28,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 }
 
-void Mesh::updateBoundsInternal() {
+void Mesh::updateBoundsInternal(SceneGraphNode& sgn) {
     _boundingBox.reset();
 }
 

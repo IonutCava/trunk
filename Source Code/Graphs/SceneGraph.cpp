@@ -15,10 +15,12 @@ namespace {
                           to_const_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 };
 
-SceneGraph::SceneGraph() : FrameListener(),
-                           _loadComplete(false),
-                           _octreeChanged(false),
-                           _rootNode(MemoryManager_NEW SceneRoot())
+SceneGraph::SceneGraph(Scene& parentScene)
+    : FrameListener(),
+     _parentScene(parentScene),
+     _loadComplete(false),
+     _octreeChanged(false),
+     _rootNode(MemoryManager_NEW SceneRoot())
 {
     static const U32 rootMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                 to_const_uint(SGNComponent::ComponentType::BOUNDS);
@@ -76,7 +78,7 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
         unregisterNode(guid, oldNode.usageContext());
     }
 
-    Attorney::SceneGraph::onNodeDestroy(GET_ACTIVE_SCENE(), oldNode);
+    Attorney::SceneGraph::onNodeDestroy(_parentScene, oldNode);
 
     _allNodes.erase(std::remove_if(std::begin(_allNodes), std::end(_allNodes),
                                    [guid](SceneGraphNode_wptr node)-> bool 

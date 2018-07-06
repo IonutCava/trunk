@@ -16,7 +16,10 @@ U32 TerrainChunk::_chunkID = 0;
 
 TerrainChunk::TerrainChunk(Terrain* const parentTerrain,
                            QuadtreeNode* const parentNode)
-    : _parentNode(parentNode), _vegetation(nullptr) {
+    : _parentNode(parentNode), 
+      _parentTerrain(parentTerrain),
+      _vegetation(nullptr)
+{
     _chunkID++;
     _xOffset = _yOffset = _sizeX = _sizeY = 0;
     _chunkIndOffset = 0;
@@ -46,8 +49,7 @@ TerrainChunk::~TerrainChunk() {
     _vegetation = nullptr;
 }
 
-void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,
-                        const vec2<U32>& HMsize, Terrain* const terrain) {
+void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize) {
     _chunkIndOffset = _terrainVB->getIndexCount();
 
     _xOffset = to_float(pos.x);
@@ -85,7 +87,7 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,
 
     _vegetation->initialize(this);
 
-    Attorney::TerrainChunk::registerTerrainChunk(*terrain, this);
+    Attorney::TerrainChunk::registerTerrainChunk(*_parentTerrain, this);
 }
 
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,
@@ -146,4 +148,9 @@ vec3<U32> TerrainChunk::getBufferOffsetAndSize(I8 targetLoD) const {
 
 
 U8 TerrainChunk::getLoD() const { return _parentNode->getLoD(); }
+
+F32 TerrainChunk::waterHeight() const {
+    return Attorney::TerrainChunk::waterHeight(*_parentTerrain);
+}
+
 };

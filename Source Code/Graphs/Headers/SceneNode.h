@@ -123,7 +123,7 @@ class NOINITVTABLE SceneNode : public Resource {
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
-    virtual void updateBoundsInternal();
+    virtual void updateBoundsInternal(SceneGraphNode& sgn);
 
     inline void setFlag(UpdateFlag flag) {
         _updateFlags[to_uint(flag)] = true;

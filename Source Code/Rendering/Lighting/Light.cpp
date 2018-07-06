@@ -107,7 +107,7 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sc
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Light::updateBoundsInternal() {
+void Light::updateBoundsInternal(SceneGraphNode& sgn) {
     if (_type == LightType::DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _positionAndRange.xyz() * 
@@ -122,7 +122,7 @@ void Light::updateBoundsInternal() {
     if (_type == LightType::SPOT) {
         _boundingBox.multiply(0.5f);
     }
-    SceneNode::updateBoundsInternal();
+    SceneNode::updateBoundsInternal(sgn);
 }
 
 bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {

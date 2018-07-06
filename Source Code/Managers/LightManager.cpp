@@ -177,7 +177,7 @@ bool LightManager::generateShadowMaps() {
     }
     ShadowMap::clearShadowMapBuffers();
     Time::ScopedTimer timer(_shadowPassTimer);
-    SceneRenderState& state = GET_ACTIVE_SCENE().renderState();
+    SceneRenderState& state = SceneManager::instance().getActiveScene().renderState();
     // generate shadowmaps for each light
     for (Light* light : _shadowCastingLights) {
         if (light != nullptr) {

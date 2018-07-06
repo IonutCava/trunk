@@ -161,11 +161,11 @@ class Quad3D : public Object3D {
         setFlag(UpdateFlag::BOUNDS_CHANGED);
     }
 
-    inline void updateBoundsInternal() override {
+    inline void updateBoundsInternal(SceneGraphNode& sgn) override {
         // add some depth padding for collision and nav meshes
         _boundingBox.setMax(getGeometryVB()->getPosition(1));
         _boundingBox.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
-        Object3D::updateBoundsInternal();
+        Object3D::updateBoundsInternal(sgn);
     }
 
 };
