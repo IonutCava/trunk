@@ -16,13 +16,13 @@ namespace Time {
 ApplicationTimer::ApplicationTimer()
     : _targetFrameRate(Config::TARGET_FRAME_RATE),
       _speedfactor(1.0f),
-      _elapsedTimeUs(0ULL),
       _init(false),
-      _benchmark(false)
+      _benchmark(false),
+      _elapsedTimeUs(0UL)
 {
-    _ticksPerSecond = 0;
-    _frameDelay = 0;
-    _startupTicks = 0;
+	assignTimeValue(_ticksPerSecond, 0UL);
+	assignTimeValue(_frameDelay, 0UL);
+	assignTimeValue(_startupTicks, 0UL);
 }
 
 ApplicationTimer::~ApplicationTimer()
@@ -50,7 +50,7 @@ void ApplicationTimer::init(U8 targetFrameRate) {
     _targetFrameRate = to_uint(targetFrameRate);
     getTicksPerSecond(_ticksPerSecond);
     getCurrentTime(_startupTicks);
-    _startupTicks = std::max(_startupTicks, 0LL);
+    assignTimeValue(_startupTicks, std::max(getUsTimeValue(_startupTicks), 0UL));
     _frameDelay = _startupTicks;
     _init = true;
 }
@@ -62,15 +62,15 @@ TimeValue ApplicationTimer::getCurrentTicksInternal() const {
 }
 
 U64 ApplicationTimer::getElapsedTimeInternal(TimeValue currentTicks) const {
-    return Time::SecondsToMicroseconds(currentTicks - _startupTicks) / _ticksPerSecond;
+    return Time::SecondsToMicroseconds(getUsTimeValue(currentTicks) - getUsTimeValue(_startupTicks)) / getUsTimeValue(_ticksPerSecond);
 }
 
 void ApplicationTimer::update(U32 frameCount) {
     TimeValue currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
-    _speedfactor = to_float((currentTicks - _frameDelay) / 
-                   (_ticksPerSecond / to_float(_targetFrameRate)));
+    _speedfactor = to_float((getUsTimeValue(currentTicks) - getUsTimeValue(_frameDelay)) /
+                   (getUsTimeValue(_ticksPerSecond) / to_float(_targetFrameRate)));
 
     CLAMP<F32>(_speedfactor, 0.0f, 1.0f);
 

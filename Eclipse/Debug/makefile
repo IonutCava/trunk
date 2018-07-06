@@ -101,7 +101,6 @@ RM := rm -rf
 -include Core/subdir.mk
 -include AI/Sensors/subdir.mk
 -include AI/PathFinding/Waypoints/subdir.mk
--include AI/PathFinding/NavMeshes/DetourTileCache/subdir.mk
 -include AI/PathFinding/NavMeshes/subdir.mk
 -include AI/PathFinding/subdir.mk
 -include AI/ActionInterface/subdir.mk

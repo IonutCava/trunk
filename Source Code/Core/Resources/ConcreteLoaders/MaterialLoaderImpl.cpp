@@ -5,6 +5,9 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(Material)
+
+template<>
 Material* ImplResourceLoader<Material>::operator()() {
     Material* ptr = MemoryManager_NEW Material();
     assert(ptr != nullptr);
@@ -24,5 +27,4 @@ Material* ImplResourceLoader<Material>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(Material)
 };

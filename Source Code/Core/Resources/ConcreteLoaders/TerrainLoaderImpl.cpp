@@ -7,15 +7,6 @@
 
 namespace Divide {
 
-Terrain* ImplResourceLoader<Terrain>::operator()() {
-    Terrain* ptr = MemoryManager_NEW Terrain();
-    if (!load(ptr, _descriptor.getName())) {
-        MemoryManager::DELETE(ptr);
-    }
-
-    return ptr;
-}
-
 template <>
 bool ImplResourceLoader<Terrain>::load(Terrain* const res,
                                        const stringImpl& name) {
@@ -31,4 +22,15 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res,
     }
     return true;
 }
+
+template<>
+Terrain* ImplResourceLoader<Terrain>::operator()() {
+    Terrain* ptr = MemoryManager_NEW Terrain();
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
+    }
+
+    return ptr;
+}
+
 };

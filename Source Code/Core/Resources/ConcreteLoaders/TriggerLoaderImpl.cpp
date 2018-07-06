@@ -4,6 +4,9 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(Trigger)
+
+template<>
 Trigger* ImplResourceLoader<Trigger>::operator()() {
     Trigger* ptr = MemoryManager_NEW Trigger();
 
@@ -16,5 +19,4 @@ Trigger* ImplResourceLoader<Trigger>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(Trigger)
 };

@@ -4,6 +4,9 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(ParticleEmitter)
+
+template<>
 ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()() {
     ParticleEmitter* ptr = MemoryManager_NEW ParticleEmitter();
 
@@ -15,5 +18,4 @@ ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(ParticleEmitter)
 };

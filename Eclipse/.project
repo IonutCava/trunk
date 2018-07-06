@@ -1086,11 +1086,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Geometry/Shapes/Object3D.cpp</locationURI>
 		</link>
 		<link>
-			<name>Geometry/Shapes/SkinnedMesh.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Geometry/Shapes/SkinnedMesh.cpp</locationURI>
-		</link>
-		<link>
 			<name>Geometry/Shapes/SkinnedSubMesh.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Geometry/Shapes/SkinnedSubMesh.cpp</locationURI>
@@ -2571,11 +2566,6 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Geometry/Shapes/Headers/SkinnedMesh.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Geometry/Shapes/Headers/SkinnedMesh.h</locationURI>
-		</link>
-		<link>
 			<name>Geometry/Shapes/Headers/SkinnedSubMesh.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Geometry/Shapes/Headers/SkinnedSubMesh.h</locationURI>
@@ -3289,11 +3279,6 @@
 			<name>Server/Utility/Headers/XMLParser.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Server/Utility/Headers/XMLParser.h</locationURI>
-		</link>
-		<link>
-			<name>AI/PathFinding/NavMeshes/DetourTileCache/DivideTileCache.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/AI/PathFinding/NavMeshes/DetourTileCache/DivideTileCache.cpp</locationURI>
 		</link>
 		<link>
 			<name>AI/PathFinding/NavMeshes/DetourTileCache/Headers</name>

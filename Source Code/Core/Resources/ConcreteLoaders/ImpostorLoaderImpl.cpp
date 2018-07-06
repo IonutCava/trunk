@@ -5,6 +5,8 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(Impostor)
+
 template <>
 Impostor* ImplResourceLoader<Impostor>::operator()() {
     Impostor* ptr = MemoryManager_NEW Impostor(_descriptor.getName(), 1.0f);
@@ -25,5 +27,4 @@ Impostor* ImplResourceLoader<Impostor>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(Impostor)
 };

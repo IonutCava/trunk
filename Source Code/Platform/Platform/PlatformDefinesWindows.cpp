@@ -126,6 +126,26 @@ namespace Divide {
         timeOut = g_time.QuadPart;
     }
 
+    void addTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.QuadPart += value;
+    }
+
+    void subtractTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.QuadPart -= value;
+    }
+
+    void divideTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.QuadPart /= value;
+    }
+
+    void assignTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.QuadPart = value;
+    }
+
+    U64 getUsTimeValue(const TimeValue& timeIn) {
+    	return timeIn.QuadPart;
+    }
+
 }; //namespace Divide
 
 #endif //defined(_WIN32)

@@ -33,10 +33,25 @@ namespace Divide {
         ticksPerSecond = 1;
     }
 
-    void getCurrentTime(TimeValue& timeOut) {
-        gettimeofday(&timeOut, nullptr);
+    void addTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.tv_usec += static_cast<long int>(value);
     }
 
+    void subtractTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.tv_usec -= static_cast<long int>(value);
+    }
+
+    void divideTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.tv_usec /= static_cast<long int>(value);
+    }
+
+    void assignTimeValue(TimeValue& timeInOut, const U64 value) {
+    	timeInOut.tv_usec = static_cast<long int>(value);
+    }
+
+    U64 getUsTimeValue(const TimeValue& timeIn) {
+    	return static_cast<U64>(timeIn.tv_usec);
+    }
 }; //namespace Divide
 
 #endif //defined(_UNIX)

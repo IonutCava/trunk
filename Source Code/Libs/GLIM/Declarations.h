@@ -12,6 +12,7 @@
 #endif
 
 #include <string>
+#include <stdexcept>
 
 namespace NS_GLIM
 {

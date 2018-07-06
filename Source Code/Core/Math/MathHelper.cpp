@@ -2,6 +2,7 @@
 #include "Headers/Quaternion.h"
 
 #include <boost/thread/tss.hpp>
+#include <cstdarg>
 
 namespace Divide {
 namespace Util {

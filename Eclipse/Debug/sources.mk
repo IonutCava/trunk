@@ -118,7 +118,6 @@ Core/Math/BoundingVolumes \
 AI/Sensors \
 AI/PathFinding/Waypoints \
 AI/PathFinding/NavMeshes \
-AI/PathFinding/NavMeshes/DetourTileCache \
 AI/PathFinding \
 AI/ActionInterface \
 AI \

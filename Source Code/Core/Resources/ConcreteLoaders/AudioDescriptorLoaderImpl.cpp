@@ -4,6 +4,8 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(AudioDescriptor)
+
 template <>
 AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()() {
     AudioDescriptor* ptr =
@@ -19,5 +21,4 @@ AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(AudioDescriptor)
 };

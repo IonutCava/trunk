@@ -4,6 +4,9 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(TerrainDescriptor)
+
+template<>
 TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()() {
     TerrainDescriptor* ptr = MemoryManager_NEW TerrainDescriptor();
     if (!load(ptr, _descriptor.getName())) {
@@ -13,5 +16,4 @@ TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(TerrainDescriptor)
 };

@@ -5,6 +5,9 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(Mesh)
+
+template<>
 Mesh* ImplResourceLoader<Mesh>::operator()() {
     Mesh* ptr =
         DVDConverter::getInstance().load(_descriptor.getResourceLocation());
@@ -21,5 +24,4 @@ Mesh* ImplResourceLoader<Mesh>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(Mesh)
 };

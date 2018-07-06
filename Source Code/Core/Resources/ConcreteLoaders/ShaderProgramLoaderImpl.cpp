@@ -7,6 +7,9 @@
 
 namespace Divide {
 
+DEFAULT_HW_LOADER_IMPL(ShaderProgram)
+
+template<>
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     ParamHandler& par = ParamHandler::getInstance();
     ShaderProgram* ptr = GFX_DEVICE.newShaderProgram();
@@ -45,5 +48,4 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     return ptr;
 }
 
-DEFAULT_HW_LOADER_IMPL(ShaderProgram)
 };

@@ -7,7 +7,7 @@
 #include "Utility/Headers/MemoryTracker.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
-#include <sdl/include/SDL.h>
+#include <SDL.h>
 
 namespace Divide {
 

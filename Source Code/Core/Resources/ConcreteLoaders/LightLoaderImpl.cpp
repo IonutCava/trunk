@@ -6,6 +6,9 @@
 
 namespace Divide {
 
+DEFAULT_LOADER_IMPL(Light)
+
+template<>
 Light* ImplResourceLoader<Light>::operator()() {
     Light* ptr = nullptr;
     // descriptor ID is not the same as light ID. This is the light's slot!!
@@ -32,5 +35,4 @@ Light* ImplResourceLoader<Light>::operator()() {
     return ptr;
 }
 
-DEFAULT_LOADER_IMPL(Light)
 };

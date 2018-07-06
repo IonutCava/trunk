@@ -6,16 +6,6 @@
 
 namespace Divide {
 
-WaterPlane* ImplResourceLoader<WaterPlane>::operator()() {
-    WaterPlane* ptr = MemoryManager_NEW WaterPlane();
-
-    if (!load(ptr, _descriptor.getName())) {
-        MemoryManager::DELETE(ptr);
-    }
-
-    return ptr;
-}
-
 template <>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
                                           const stringImpl& name) {
@@ -69,4 +59,16 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
 
     return true;
 }
+
+template<>
+WaterPlane* ImplResourceLoader<WaterPlane>::operator()() {
+    WaterPlane* ptr = MemoryManager_NEW WaterPlane();
+
+    if (!load(ptr, _descriptor.getName())) {
+        MemoryManager::DELETE(ptr);
+    }
+
+    return ptr;
+}
+
 };

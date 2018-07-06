@@ -151,7 +151,14 @@ D32 to_double(const T value) {
 }
 
 struct SysInfo;
+
+void addTimeValue(TimeValue& timeInOut, const U64 value);
+void subtractTimeValue(TimeValue& timeInOut, const U64 value);
+void divideTimeValue(TimeValue& timeInOut, const U64 value);
+void assignTimeValue(TimeValue& timeInOut, const U64 value);
+U64 getUsTimeValue(const TimeValue& timeIn);
 void getCurrentTime(TimeValue& timeOut);
+
 void getTicksPerSecond(TimeValue& ticksPerSecond);
 void getWindowHandle(void* window, SysInfo& info);
 TimeValue getTickDifference(const TimeValue& end, const TimeValue& begin);
@@ -565,3 +572,4 @@ inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
 };  // namespace Divide
 
 #endif
+

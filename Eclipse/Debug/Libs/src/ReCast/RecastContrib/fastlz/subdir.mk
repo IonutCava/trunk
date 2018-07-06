@@ -4,7 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-/home/ionut/Custom/Divide/trunk/Source\ Code/Libs/src/ReCast/RecastContrib/fastlz/fastlz.c 
+/fastlz.c 
 
 OBJS += \
 ./Libs/src/ReCast/RecastContrib/fastlz/fastlz.o 
@@ -14,7 +14,7 @@ C_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Libs/src/ReCast/RecastContrib/fastlz/fastlz.o: /home/ionut/Custom/Divide/trunk/Source\ Code/Libs/src/ReCast/RecastContrib/fastlz/fastlz.c
+Libs/src/ReCast/RecastContrib/fastlz/fastlz.o: /fastlz.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
 	gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"

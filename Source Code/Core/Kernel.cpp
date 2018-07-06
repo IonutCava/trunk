@@ -259,9 +259,11 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     _GFX.setInterpolation(Config::USE_FIXED_TIMESTEP ? interpolationFactor : 1.0);
     
     // Get input events
-    _APP.getWindowManager().hasFocus()
-        ? _input.update(_currentTimeDelta)
-        : _sceneMgr.onLostFocus();
+    if (_APP.getWindowManager().hasFocus()) {
+        _input.update(_currentTimeDelta);
+    } else {
+        _sceneMgr.onLostFocus();
+    }
     // Update physics - uses own timestep implementation
     _PFX.update(_freezeLoopTime ? 0ULL : _currentTimeDelta);
     // Update the graphical user interface

@@ -85,8 +85,24 @@ inline bool isfinite(T val) {
 	return std::isfinite(val);
 }
 
+inline void fopen_s (FILE ** file,  const char * filename, const char * mode ) {
+	*file = fopen(filename, mode);
+}
+
+inline int vsprintf_s(char * s, unsigned int maxlen, const char * format, va_list arg) {
+	return vsprintf(s, format, arg);
+}
+
 inline int vsnprintf_s(char * s, unsigned long maxlen, const char * format, va_list arg) {
     return vsnprintf(s, maxlen, format, arg);
+}
+
+inline int _vscprintf(const char *format, va_list argptr) {
+    return(vsnprintf(0, 0, format, argptr));
+}
+
+inline int _vscwprintf(const wchar_t *format, va_list argptr) {
+    return(vswprintf(0, 0, format, argptr));
 }
 
 // HACK FOR MISSING C++1y features:

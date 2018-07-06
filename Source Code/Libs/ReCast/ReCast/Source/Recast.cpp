@@ -60,7 +60,7 @@ void rcContext::log(const rcLogCategory category, const char* format, ...)
     char msg[MSG_SIZE];
     va_list ap;
     va_start(ap, format);
-    int len = vsnprintf_s(msg, MSG_SIZE, format, ap);
+    int len = vsnprintf(msg, MSG_SIZE, format, ap);
     if (len >= MSG_SIZE)
     {
         len = MSG_SIZE-1;

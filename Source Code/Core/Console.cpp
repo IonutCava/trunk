@@ -9,7 +9,7 @@
 
 namespace Divide {
 
-std::atomic<int> Console::_bufferEntryCount = 0;
+std::atomic<int> Console::_bufferEntryCount;
 bool Console::_timestamps = false;
 std::mutex Console::io_mutex;
 Console::consolePrintCallback Console::_guiConsoleCallback;

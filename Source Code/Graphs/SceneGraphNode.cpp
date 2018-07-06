@@ -155,7 +155,7 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, const stringImpl& na
     STUBBED("SceneGraphNode: This add/create node system is an ugly HACK "
             "so it should probably be removed soon! -Ionut")
 
-    if (Attorney::SceneNodeGraph::hasSGNParent(node)) {
+    if (Attorney::SceneNodeSceneGraph::hasSGNParent(node)) {
         node.AddRef();
     }
 
@@ -176,7 +176,7 @@ SceneGraphNode_ptr SceneGraphNode::createNode(SceneNode& node, const stringImpl&
     // Do all the post load operations on the SceneNode
     // Pass a reference to the newly created SceneGraphNode in case we need
     // transforms or bounding boxes
-    Attorney::SceneNodeGraph::postLoad(node, *sceneGraphNode);
+    Attorney::SceneNodeSceneGraph::postLoad(node, *sceneGraphNode);
     // return the newly created node
     return sceneGraphNode;
 }
@@ -304,9 +304,9 @@ void SceneGraphNode::onCameraUpdate(Camera& camera) {
     }
     r_lock.unlock();
 
-    Attorney::SceneNodeGraph::onCameraUpdate(*_node,
-                                             *this,
-                                             camera);
+    Attorney::SceneNodeSceneGraph::onCameraUpdate(*_node,
+                                                  *this,
+                                                  camera);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
@@ -362,7 +362,10 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     getComponent<PhysicsComponent>()->transformUpdated(false);
 
-    Attorney::SceneNodeGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
+    Attorney::SceneNodeSceneGraph::sceneUpdate(*_node,
+    		                                   deltaTime,
+    		                                   *this,
+    		                                   sceneState);
 
     if (_shouldDelete) {
         GET_ACTIVE_SCENEGRAPH().deleteNode(shared_from_this(), false);
@@ -396,7 +399,7 @@ bool SceneGraphNode::canDraw(const SceneRenderState& sceneRenderState,
         return false;
     }
 
-    return Attorney::SceneNodeGraph::isInView(
+    return Attorney::SceneNodeSceneGraph::isInView(
         *getNode(), sceneRenderState, *this,
         currentStage != RenderStage::SHADOW);
 }

@@ -1,4 +1,4 @@
-#include "Headers/GuiFlash.h"
+#include "Headers/GUIFlash.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
