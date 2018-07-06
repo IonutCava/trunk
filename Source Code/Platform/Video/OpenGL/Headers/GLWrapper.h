@@ -138,7 +138,7 @@ protected:
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
 
     bool makeTexturesResident(const TextureDataContainer& textureData);
-    bool makeTextureResident(const TextureData& textureData);
+    bool makeTextureResident(const TextureData& textureData, U8 binding);
 
 public:
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.

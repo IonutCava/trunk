@@ -225,12 +225,10 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     shaderBuffer._range.set(0, bufferData._cmdBuffer->getPrimitiveCount());
     shaderBuffer._atomicCounter.first = true;
     
-    TextureData data = depthBuffer->getData();
-    data.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
-
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._shaderBuffers.push_back(shaderBuffer);
-    bindDescriptorSetsCmd._set._textureData.addTexture(data);
+    bindDescriptorSetsCmd._set._textureData.addTexture(depthBuffer->getData(),
+                                                       to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
     
     U32 cmdCount = bufferData._lastCommandCount;
@@ -300,10 +298,9 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
 
     RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
-    texData.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.addTexture(texData);
+    bindDescriptorSetsCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::BindDescriptorSets(buffer, bindDescriptorSetsCmd);
     
     GFX::SetViewportCommand viewportCommand;

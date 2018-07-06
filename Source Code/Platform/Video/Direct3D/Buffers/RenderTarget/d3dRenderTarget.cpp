@@ -16,8 +16,6 @@ d3dRenderTarget::~d3dRenderTarget()
 
 bool d3dRenderTarget::resize(U16 width, U16 height) { return true; }
 
-void d3dRenderTarget::bind(U8 unit, RTAttachmentType type, U8 index) {}
-
 void d3dRenderTarget::drawToLayer(RTAttachmentType type,
                                   U8 index,
                                   U16 layer,

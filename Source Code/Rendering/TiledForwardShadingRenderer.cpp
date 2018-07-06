@@ -58,10 +58,9 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 
     TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-    data.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.addTexture(data);
+    bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;

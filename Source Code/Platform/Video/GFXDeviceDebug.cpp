@@ -128,8 +128,6 @@ void GFXDevice::renderDebugViews() {
             for (U8 j = 0; j < columnCount; ++j) {
                 DebugView& view = *_debugViews[viewIndex];
                 pipelineDesc._shaderProgram = view._shader;
-                TextureData textureData = view._texture->getData();
-                textureData.setBinding(view._textureBindSlot);
 
                 bindPipeline._pipeline = newPipeline(pipelineDesc);
                 GFX::BindPipeline(buffer, bindPipeline);
@@ -141,7 +139,8 @@ void GFXDevice::renderDebugViews() {
                 GFX::SetViewPort(buffer, setViewport);
 
                 bindDescriptorSets._set._textureData.clear();
-                bindDescriptorSets._set._textureData.addTexture(textureData);
+                bindDescriptorSets._set._textureData.addTexture(view._texture->getData(),
+                                                                view._textureBindSlot);
                 GFX::BindDescriptorSets(buffer, bindDescriptorSets);
 
                 GFX::AddDrawCommands(buffer, drawCommand);

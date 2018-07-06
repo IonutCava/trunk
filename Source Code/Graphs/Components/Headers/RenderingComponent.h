@@ -144,7 +144,8 @@ class RenderingComponent : public SGNComponent {
 
     void rebuildMaterial();
 
-    void registerTextureDependency(const TextureData& additionalTexture);
+    void registerTextureDependency(const TextureData& additionalTexture, U8 binding);
+    void removeTextureDependency(U8 binding);
     void removeTextureDependency(const TextureData& additionalTexture);
 
     inline void setReflectionAndRefractionType(ReflectorType type) { _reflectorType = type; }

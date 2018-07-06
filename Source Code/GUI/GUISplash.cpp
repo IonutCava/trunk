@@ -62,11 +62,9 @@ void GUISplash::render(GFXDevice& context) {
     viewportCommand._viewport.set(0, 0, _dimensions.width, _dimensions.height);
     GFX::SetViewPort(buffer, viewportCommand);
 
-    TextureData texData = _splashImage->getData();
-    texData.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
-
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(texData);
+    descriptorSetCmd._set._textureData.addTexture(_splashImage->getData(),
+                                                  to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::BindDescriptorSets(buffer, descriptorSetCmd);
 
     GenericDrawCommand triangleCmd;

@@ -1102,17 +1102,17 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
             GL_API::bindTextures(offset, (GLuint)handles.size(), handles.data(), samplers.data());
         }
     }
-    for (const TextureData& data : textureData.textures()) {
-        makeTextureResident(data);
+    for (auto data : textureData.textures()) {
+        makeTextureResident(data.first, data.second);
     }
 
     return true;
 }
 
-bool GL_API::makeTextureResident(const TextureData& textureData) {
+bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
     return bindTexture(
-        static_cast<GLushort>(textureData.getHandleLow()),
-        textureData.getHandleHigh(),
+        static_cast<GLushort>(binding),
+        textureData.getHandle(),
         textureData._samplerHash);
 }
 

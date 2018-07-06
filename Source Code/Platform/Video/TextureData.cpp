@@ -25,7 +25,7 @@ TextureDataContainer::~TextureDataContainer()
 }
 
 void TextureDataContainer::set(const TextureDataContainer& other) {
-    const vectorImpl<TextureData>& otherTextures = other.textures();
+    const vectorImpl<std::pair<TextureData, U8>>& otherTextures = other.textures();
     _textures.resize(0);
     _textures.reserve(otherTextures.size());
     _textures.insert(std::begin(_textures),
@@ -33,12 +33,16 @@ void TextureDataContainer::set(const TextureDataContainer& other) {
                      std::end(otherTextures));
 }
 
-bool TextureDataContainer::addTexture(const TextureData& data) {
+bool TextureDataContainer::addTexture(const std::pair<TextureData, U8 /*binding*/>& textureEntry) {
+    return addTexture(textureEntry.first, textureEntry.second);
+}
+
+bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
     if (Config::Build::IS_DEBUG_BUILD) {
         if (std::find_if(std::cbegin(_textures),
                          std::cend(_textures),
-                         [&data](const TextureData& textureData) {
-                               return (textureData.getHandleLow() == data.getHandleLow());
+                         [&binding](const std::pair<TextureData, U8>& textureData) {
+                               return (textureData.second == binding);
                           }) != std::cend(_textures))
         {
             Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_DATA_CONTAINER_CONFLICT")));
@@ -46,17 +50,32 @@ bool TextureDataContainer::addTexture(const TextureData& data) {
         }
     }
 
-    _textures.push_back(data);
+    _textures.emplace_back(data, binding);
     return true;
+}
+
+bool TextureDataContainer::removeTexture(U8 binding) {
+    vectorImpl<std::pair<TextureData, U8>>::iterator it;
+    it = std::find_if(std::begin(_textures), std::end(_textures),
+                      [&binding](const std::pair<TextureData, U8>& entry) {
+        return (entry.second == binding);
+    });
+
+    if (it != std::end(_textures)) {
+        _textures.erase(it);
+        return true;
+    }
+
+    return false;
 }
 
 bool TextureDataContainer::removeTexture(const TextureData& data) {
     size_t inputHash = data.getHash();
 
-    vectorImpl<TextureData>::iterator it;
+    vectorImpl<std::pair<TextureData, U8>>::iterator it;
     it = std::find_if(std::begin(_textures), std::end(_textures),
-                      [&inputHash](const TextureData& textureData) {
-                          return (textureData.getHash() == inputHash);
+                      [&inputHash](const std::pair<TextureData, U8>& entry) {
+                          return (entry.first.getHash() == inputHash);
                       });
 
     if (it != std::end(_textures)) {
@@ -67,11 +86,11 @@ bool TextureDataContainer::removeTexture(const TextureData& data) {
     return false;
 }
 
-vectorImpl<TextureData>& TextureDataContainer::textures() {
+vectorImpl<std::pair<TextureData, U8>>& TextureDataContainer::textures() {
     return _textures;
 }
 
-const vectorImpl<TextureData>& TextureDataContainer::textures() const {
+const vectorImpl<std::pair<TextureData, U8>>& TextureDataContainer::textures() const {
     return _textures;
 }
 

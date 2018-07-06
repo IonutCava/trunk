@@ -66,10 +66,6 @@ class glFramebuffer : public RenderTarget,
 
     void setMipLevel(U16 writeLevel) override;
 
-    void bind(U8 unit,
-              RTAttachmentType type,
-              U8 index) override;
-
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,
                   GFXDataFormat dataType,

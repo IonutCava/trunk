@@ -53,8 +53,6 @@ class glPixelBuffer : public PixelBuffer {
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
                 GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) override;
 
-    void bind(GLubyte unit = 0) const  override;
-
     void updatePixels(const GLfloat* const pixels, GLuint pixelCount)  override;
 
    protected:

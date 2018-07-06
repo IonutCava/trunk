@@ -145,14 +145,13 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     //_debugOperator = hdrBatch[0];
 }
 
-TextureData PreRenderBatch::getOutput(U32 binding) {
+TextureData PreRenderBatch::getOutput() {
     TextureData ret;
     if (_debugOperator != nullptr) {
         ret = _debugOperator->getDebugOutput();
     } else {
         ret = _postFXOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
     }
-    ret.setBinding(binding);
     return ret;
 }
 
@@ -187,13 +186,11 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     triangleCmd.drawCount(1);
 
     TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
 
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
         TextureData data1 = _previousLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        data1.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT1));
 
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = _currentLuminance._targetID;
@@ -204,8 +201,8 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
         GFX::BindPipeline(buffer, pipelineCmd);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.addTexture(data0);
-        descriptorSetCmd._set._textureData.addTexture(data1);
+        descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
         GFX::BindDescriptorSets(buffer, descriptorSetCmd);
 
         GFX::DrawCommand drawCmd;
@@ -236,12 +233,11 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(data0);
+    descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
     if (_adaptiveExposureControl) {
         TextureData data1 = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        data1.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT1));
-        descriptorSetCmd._set._textureData.addTexture(data1);
+        descriptorSetCmd._set._textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     }
     GFX::BindDescriptorSets(buffer, descriptorSetCmd);
 

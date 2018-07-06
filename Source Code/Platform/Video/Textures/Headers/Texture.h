@@ -72,8 +72,6 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
 
     virtual ~Texture();
 
-    /// Bind the texture to the specified texture unit
-    virtual void bind(U8 slot) = 0;
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
     /// Change the texture's mip levels. This can be called at any time
@@ -103,12 +101,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     }
 
     inline TextureData getData() const {
-        TextureData ret;
-        ret.setHandleLow(_textureData.getHandleLow());
-        ret.setHandleHigh(_textureData.getHandleHigh());
-        ret._textureType = _descriptor.type();
-        ret._samplerHash = _descriptor.getSampler().getHash();
-        return ret;
+        return _textureData;
     }
 
     /// Set/Get the number of layers (used by texture arrays)
@@ -124,7 +117,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.max; }
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
-    inline U32 getHandle() const { return _textureData.getHandleHigh(); }
+    inline U32 getHandle() const { return _textureData.getHandle(); }
     /// If the texture has an alpha channel and at least one pixel is translucent, return true
     inline bool hasTranslucency() const { return _hasTranslucency; }
     /// If the texture has an alpha channel and at least on pixel is fully transparent and

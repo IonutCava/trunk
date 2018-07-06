@@ -236,8 +236,12 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture) {
-    _textureDependencies.addTexture(additionalTexture);
+void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture, U8 binding) {
+    _textureDependencies.addTexture(additionalTexture, binding);
+}
+
+void RenderingComponent::removeTextureDependency(U8 binding) {
+    _textureDependencies.removeTexture(binding);
 }
 
 void RenderingComponent::removeTextureDependency(const TextureData& additionalTexture) {
@@ -256,7 +260,7 @@ bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
         mat->getTextureData(set._textureData);
     }
 
-    for (const TextureData& texture : _textureDependencies.textures()) {
+    for (auto texture : _textureDependencies.textures()) {
         set._textureData.addTexture(texture);
     }
 

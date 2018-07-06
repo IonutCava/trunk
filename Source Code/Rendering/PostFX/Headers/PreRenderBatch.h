@@ -18,7 +18,7 @@ class PreRenderBatch {
     void execute(const FilterStack& stack, GFX::CommandBuffer& buffer);
     void reshape(U16 width, U16 height);
 
-    TextureData getOutput(U32 binding);
+    TextureData getOutput();
 
     RenderTargetHandle inputRT() const;
     RenderTargetHandle& outputRT();

@@ -46,8 +46,6 @@ class d3dPixelBuffer : public PixelBuffer {
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
                 GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) override;
 
-    void bind(U8 unit = 0) const override;
-
     void updatePixels(const F32* const pixels, U32 pixelCount) override;
 };
 

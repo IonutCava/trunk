@@ -198,15 +198,13 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
             
             // Bind the depth buffers
             TextureData depthBufferTextureData = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
-            depthBufferTextureData.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
-            bindDescriptorSets._set._textureData.addTexture(depthBufferTextureData);
+            bindDescriptorSets._set._textureData.addTexture(depthBufferTextureData, to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             const RTAttachment& velocityAttachment = target.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
             if (velocityAttachment.used()) {
                 const Texture_ptr& prevDepthTexture = _context.getPrevDepthBuffer();
                 TextureData prevDepthData = (prevDepthTexture ? prevDepthTexture->getData() : depthBufferTextureData);
-                prevDepthData.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH_PREV));
-                bindDescriptorSets._set._textureData.addTexture(prevDepthData);
+                bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
             }
 
             GFX::BindDescriptorSets(buffer, bindDescriptorSets);
@@ -323,11 +321,10 @@ GFX::CommandBuffer RenderPassManager::woitPass(const PassParams& params, const R
         GFX::BindPipeline(buffer, bindPipelineCmd);
         TextureData accum = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
         TextureData revealage = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
-        accum.setHandleLow(0);
-        revealage.setHandleLow(1);
+
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.addTexture(accum);
-        descriptorSetCmd._set._textureData.addTexture(revealage);
+        descriptorSetCmd._set._textureData.addTexture(accum, 0u);
+        descriptorSetCmd._set._textureData.addTexture(revealage, 1u);
         GFX::BindDescriptorSets(buffer, descriptorSetCmd);
         GFX::AddDrawCommands(buffer, drawCmd);
         GFX::EndRenderPass(buffer, endRenderPassCompCmd);

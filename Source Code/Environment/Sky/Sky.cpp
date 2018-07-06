@@ -95,9 +95,8 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {
         renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
-        TextureData skyTextureData = _skybox->getData();
-        skyTextureData.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT0));
-        renderable->registerTextureDependency(skyTextureData);
+        renderable->registerTextureDependency(_skybox->getData(),
+                                              to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
 
     SceneNode::postLoad(sgn);

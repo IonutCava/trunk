@@ -112,10 +112,6 @@ void glPixelBuffer::end() const {
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
-void glPixelBuffer::bind(GLubyte unit) const {
-    GL_API::bindTexture(unit, _textureID);
-}
-
 bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
                            GFXImageFormat internalFormatEnum,
                            GFXImageFormat formatEnum,

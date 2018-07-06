@@ -529,12 +529,10 @@ bool Material::removeCustomTexture(U8 bindslot) {
 
 void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
-    U32 slotValue = to_U32(slot);
+    U8 slotValue = to_U8(slot);
     Texture_ptr& crtTexture = _textures[slotValue];
     if (crtTexture) {
-        TextureData data = crtTexture->getData();
-        data.setHandleLow(slotValue);
-        container.addTexture(data);
+        container.addTexture(crtTexture->getData(), slotValue);
     }
 }
 
@@ -557,9 +555,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
 
     for (const ExternalTexture& tex : _externalTextures) {
         if (!depthstage || (depthstage && tex._activeForDepth)) {
-            TextureData data = tex._texture->getData();
-            data.setHandleLow(to_U32(tex._bindSlot));
-            textureData.addTexture(data);
+            textureData.addTexture(tex._texture->getData(), to_U8(tex._bindSlot));
         }
     }
 }

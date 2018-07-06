@@ -327,13 +327,6 @@ const RTAttachment& glFramebuffer::getAttachment(RTAttachmentType type, U8 index
     return RenderTarget::getAttachment(type, index);
 }
 
-void glFramebuffer::bind(U8 unit, RTAttachmentType type, U8 index) {
-    const RTAttachment& attachment = getAttachment(type, index);
-    if (attachment.used()) {
-        attachment.texture()->bind(unit);
-    }
-}
-
 void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments) {
     const RTDrawMask& mask = drawPolicy.drawMask();
 

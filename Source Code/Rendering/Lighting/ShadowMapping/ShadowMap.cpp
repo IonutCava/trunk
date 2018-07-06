@@ -174,8 +174,7 @@ void ShadowMap::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInO
 
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
         TextureData data = context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).getAttachment(attachment, 0).texture()->getData();
-        data.setBinding(bindSlot);
-        descriptorSetCmd._set._textureData.addTexture(data);
+        descriptorSetCmd._set._textureData.addTexture(data, bindSlot);
     }
     GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 }

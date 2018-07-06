@@ -188,9 +188,8 @@ bool ParticleEmitter::unload() {
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     if (_particleTexture) {
-        TextureData particleTextureData = _particleTexture->getData();
-        particleTextureData.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT0));
-        sgn.get<RenderingComponent>()->registerTextureDependency(particleTextureData);
+        sgn.get<RenderingComponent>()->registerTextureDependency(_particleTexture->getData(),
+                                                                 to_U8(ShaderProgram::TextureUsage::UNIT0));
     }
 
     setFlag(UpdateFlag::BOUNDS_CHANGED);

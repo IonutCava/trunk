@@ -323,7 +323,6 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         //_cullShader->SetSubroutine(VERTEX,
         //_instanceRoutineIdx[HI_Z_CULL]);
 
-        _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).bind(0, RTAttachmentType::Depth, 0);
         buffer->bindFeedbackBufferRange(to_base(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
@@ -344,6 +343,12 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         buffer->incQueryQueue();
 
         GFX::CommandBuffer cmdBuffer;
+
+        Texture_ptr depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
+        GFX::BindDescriptorSets(cmdBuffer, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
         pipelineCmd._pipeline = _context.newPipeline(pipeDesc);

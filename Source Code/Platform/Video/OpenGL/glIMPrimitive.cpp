@@ -86,12 +86,6 @@ void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
 
     setupStates();
 
-    // Check if any texture is present
-    if (_texture != nullptr) {
-        // And bind it to the first diffuse texture slot
-        _texture->bind(to_U8(ShaderProgram::TextureUsage::UNIT0));
-    }
-
     _imInterface->RenderBatchInstanced(cmd.cmd().primCount,
                                        cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
 
@@ -121,6 +115,13 @@ GFX::CommandBuffer glIMPrimitive::toCommandBuffer() const {
         GFX::SendPushConstantsCommand pushConstantsCommand;
         pushConstantsCommand._constants = pushConstants;
         GFX::SendPushConstants(buffer, pushConstantsCommand);
+
+        if (_texture) {
+            GFX::BindDescriptorSetsCommand descriptorSetCmd;
+            descriptorSetCmd._set._textureData.addTexture(_texture->getData(),
+                                                          to_U8(ShaderProgram::TextureUsage::UNIT0));
+            GFX::BindDescriptorSets(buffer, descriptorSetCmd);
+        }
 
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);

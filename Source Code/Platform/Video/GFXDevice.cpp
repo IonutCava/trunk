@@ -644,10 +644,6 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
         return;
     }
 
-    TextureData texData = depth->getData();
-    texData.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
-
-
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = to_I32(depthBuffer._index);
     beginDebugScopeCmd._scopeName = "Construct Hi-Z";
@@ -663,7 +659,8 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     GFX::BindPipeline(cmdBufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(texData);
+    descriptorSetCmd._set._textureData.addTexture(depth->getData(),
+                                                  to_U8(ShaderProgram::TextureUsage::DEPTH));
     GFX::BindDescriptorSets(cmdBufferInOut, descriptorSetCmd);
 
     GFX::SetViewportCommand viewportCommand;

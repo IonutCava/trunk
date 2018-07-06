@@ -72,6 +72,7 @@ void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
     pipelineDescriptor._shaderProgram = (_useSMAA ? _smaa : _fxaa);
+
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
@@ -82,9 +83,8 @@ void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::BlitRenderTarget(bufferInOut, blitRTCommand);
 
     TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.addTexture(data0);
+    descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
     GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 
     // Apply FXAA/SMAA to the specified render target

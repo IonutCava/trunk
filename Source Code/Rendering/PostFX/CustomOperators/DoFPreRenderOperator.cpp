@@ -45,20 +45,41 @@ void DoFPreRenderOperator::reshape(U16 width, U16 height) {
 
 void DoFPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Copy current screen
-    /*
-    RenderTarget* screen = &_parent.inputRT();
-    _samplerCopy._rt->blitFrom(screen);
-    _samplerCopy._rt->bind(to_base(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);  // screenFB
-    screen->bind(to_base(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Depth, 0);  // depthFB
-        
-    screen->begin(_screenOnlyDraw);
-        GenericDrawCommand triangleCmd;
-        triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
-        triangleCmd.drawCount(1);
-        triangleCmd.stateHash(_context.get2DStateBlock());
-        triangleCmd.shaderProgram(_dofShader);
-        _context.draw(triangleCmd);
-    screen->end();
-    */
+    GFX::BlitRenderTargetCommand blitRTCommand;
+    blitRTCommand._source = _parent.inputRT()._targetID;
+    blitRTCommand._destination = _samplerCopy._targetID;
+    GFX::BlitRenderTarget(bufferInOut, blitRTCommand);
+
+    TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    TextureData depthData = _parent.inputRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
+
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
+    pipelineDescriptor._shaderProgram = _dofShader;
+
+    GenericDrawCommand pointsCmd;
+    pointsCmd.primitiveType(PrimitiveType::API_POINTS);
+    pointsCmd.drawCount(1);
+
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.addTexture(depthData, to_U8(ShaderProgram::TextureUsage::UNIT1));
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = _parent.inputRT()._targetID;
+    beginRenderPassCmd._descriptor = _screenOnlyDraw;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(pointsCmd);
+    GFX::AddDrawCommands(bufferInOut, drawCmd);
+
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 }
 };

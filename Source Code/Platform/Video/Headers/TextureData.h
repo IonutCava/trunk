@@ -38,17 +38,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 class TextureData {
 public:
-    TextureData() : TextureData(TextureType::TEXTURE_2D, 0, 0)
+    TextureData() : TextureData(TextureType::TEXTURE_2D, 0u)
     {
     }
 
-    TextureData(TextureType type, U32 handle, U8 slot)
+    TextureData(TextureType type, U32 handle)
       : _textureType(type),
         _samplerHash(0),
         _textureHandle(0)
     {
-        setHandleHigh(handle);
-        setHandleLow(to_U32(slot));
+        setHandle(handle);
     }
 
     TextureData(const TextureData& other)
@@ -72,50 +71,18 @@ public:
         _samplerHash = other._samplerHash;
     }
 
-    inline void setID(U32 handle) {
-        setHandleHigh(handle);
-    }
-
-    inline void setBinding(U32 binding) {
-        setHandleLow(binding);
+    /// ID
+    inline U32 getHandle() const {
+        return _textureHandle;
     }
 
     /// ID
-    inline void setHandleHigh(U32 handle) {
-        _textureHandle = (U64)handle << 32 | getHandleLow();
+    inline void getHandle(U32& handle) const {
+        handle = getHandle();
     }
 
-    /// ID
-    inline U32 getHandleHigh() const {
-        return to_U32(_textureHandle >> 32);
-    }
-
-    /// ID
-    inline void getHandleHigh(U32& handle) const {
-        handle = getHandleHigh();
-    }
-
-    /// Slot
-    inline void setHandleLow(U32 handle) {
-        _textureHandle |= handle;
-    }
-
-    /// Slot
-    inline U32 getHandleLow() const {
-        return to_U32(_textureHandle);
-    }
-
-    /// Slot
-    inline void getHandleLow(U32& handle) const {
-        handle = getHandleLow();
-    }
-
-    inline void setHandle(U64 handle) {
+    inline void setHandle(U32 handle) {
         _textureHandle = handle;
-    }
-
-    inline void getHandle(U64& handle) const {
-        handle = _textureHandle;
     }
 
     // No need to cache this as it should already be pretty fast
@@ -124,8 +91,8 @@ public:
     TextureType _textureType;
     size_t _samplerHash;
 private:
-    // High: texture handle  Low: slot
-    U64  _textureHandle;
+    // Texture handle
+    U32  _textureHandle;
 };
 
 class TextureDataContainer {
@@ -134,15 +101,17 @@ class TextureDataContainer {
       ~TextureDataContainer();
 
       void set(const TextureDataContainer& other);
-      bool addTexture(const TextureData& data);
+      bool addTexture(const TextureData& data, U8 binding);
+      bool addTexture(const std::pair<TextureData, U8 /*binding*/>& textureEntry);
+      bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
-      vectorImpl<TextureData>& textures();
-      const vectorImpl<TextureData>& textures() const;
+      vectorImpl<std::pair<TextureData, U8>>& textures();
+      const vectorImpl<std::pair<TextureData, U8>>& textures() const;
       void clear(bool clearMemory = false);
 
     private:
-      vectorImpl<TextureData> _textures;
+      vectorImpl<std::pair<TextureData, U8 /*binding*/>> _textures;
 };
 
 }; //namespace Divide

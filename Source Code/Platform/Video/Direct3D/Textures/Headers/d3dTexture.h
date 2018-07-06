@@ -50,8 +50,6 @@ class d3dTexture final : public Texture {
 
     bool unload() override { return Texture::unload(); }
 
-    void bind(U8 unit) override {}
-    
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override {};
 
     void setMipMapRange(U16 base = 0, U16 max = 1000) override { Texture::setMipMapRange(base, max); }
