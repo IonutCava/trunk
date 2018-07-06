@@ -224,8 +224,8 @@ void ParticleEmitter::prepareForRender(RenderStage renderStage, const Camera& cr
     const vec3<F32>& eyePos = crtCamera.getEye();
     U32 aliveCount = getAliveParticleCount();
 
-    vectorImplAligned<vec4<F32>>& misc = _particles->_misc;
-    vectorImplAligned<vec4<F32>>& pos = _particles->_position;
+    vectorImplBest<vec4<F32>>& misc = _particles->_misc;
+    vectorImplBest<vec4<F32>>& pos = _particles->_position;
 
     auto updateDistToCamera = [&eyePos, &misc, &pos](const Task& parent, U32 start, U32 end) {
         for (U32 i = start; i < end; ++i) {

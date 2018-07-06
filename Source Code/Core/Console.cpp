@@ -93,7 +93,7 @@ void Console::output(std::ostream& outStream, const char* text, const bool newli
 
 void Console::output(const char* text, const bool newline, const bool error) {
     if (_enabled) {
-        stringstreamImplAligned outStream;
+        stringstreamImplBest outStream;
         decorate(outStream, text, newline, error);
 
         OutputEntry entry;

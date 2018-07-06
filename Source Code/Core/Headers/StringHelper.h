@@ -48,8 +48,7 @@ namespace Divide {
         template<class FwdIt, class Compare = std::less<typename std::iterator_traits<FwdIt>::value_type>>
         void insertion_sort(FwdIt first, FwdIt last, Compare cmp = Compare());
 
-        bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b);
-
+        bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b);
 
         /// http://stackoverflow.com/questions/236129/split-a-string-in-c
         vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter);

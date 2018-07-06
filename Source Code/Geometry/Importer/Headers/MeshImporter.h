@@ -96,7 +96,7 @@ namespace Divide {
             U32 _boneCount;
             U32 _partitionOffset;
             vec3<F32> _minPos, _maxPos;
-            vectorImplAligned<vec3<U32>> _triangles;
+            vectorImplBest<vec3<U32>> _triangles;
             MaterialData _material;
         };
 

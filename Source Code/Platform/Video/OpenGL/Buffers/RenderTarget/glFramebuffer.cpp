@@ -127,11 +127,11 @@ void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachm
         textureAttachment.setThreadedLoading(false);
         textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
         textureAttachment.setEnumValue(to_uint(texDescriptor._type));
+        textureAttachment.setID(texDescriptor._layerCount);
         Texture_ptr tex = CreateResource<Texture>(_context.parent().resourceCache(), textureAttachment);
         assert(tex);
         Texture::TextureLoadInfo info;
         info._type = texDescriptor._type;
-        tex->setNumLayers(texDescriptor._layerCount);
         tex->lockAutomaticMipMapGeneration(!texDescriptor.automaticMipMapGeneration());
         tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), mipLevel);
         attachment->setTexture(tex);

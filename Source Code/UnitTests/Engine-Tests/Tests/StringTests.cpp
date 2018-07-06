@@ -91,8 +91,8 @@ TEST(TestFilePathSplit) {
     const stringImpl result2("/path/path2/path4/");
 
     FileWithPath fileResult = splitPathToNameAndLocation(input);
-    CHECK_EQUAL(result._path, result1);
-    CHECK_EQUAL(result._fileName, result22);
+    CHECK_EQUAL(fileResult._path, result2);
+    CHECK_EQUAL(fileResult._fileName, result1);
 }
 
 TEST(TestStringTrim) {
@@ -165,7 +165,7 @@ TEST(TestStringAllocator)
 {
     const char* input = "TEST test TEST";
     stringImpl input1(input);
-    stringImplAligned input2(input);
+    stringImplFast input2(input);
     for( U8 i = 0; i < input1.size(); ++i) {
         CHECK_EQUAL(input1[i], input2[i]);
     }
@@ -174,8 +174,8 @@ TEST(TestStringAllocator)
 TEST(TestStringStream)
 {
     stringImpl result1;
-    stringImplAligned result2;
-    stringstreamImplAligned s;
+    stringImplFast result2;
+    stringstreamImplFast s;
     const char* input = "TEST-test-TEST";
     s << input;
     s >> result1;
@@ -183,7 +183,7 @@ TEST(TestStringStream)
     s.clear();
     s << input;
     s >> result2;
-    CHECK_EQUAL(result2, stringImplAligned(input));
+    CHECK_EQUAL(result2, stringImplFast(input));
 }
 
 }; //namespace Divide

@@ -20,9 +20,6 @@
 #define _BYTEBUFFER_H
 
 #include "ByteConverter.h"
-#include <vector>
-#include <list>
-#include <map>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -306,7 +303,7 @@ class ByteBuffer {
 
    protected:
     size_t _rpos, _wpos;
-    std::vector<U8> _storage;
+    vectorImpl<U8> _storage;
 };
 
 template <typename T>

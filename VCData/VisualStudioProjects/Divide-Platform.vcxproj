@@ -165,7 +165,8 @@
     <ClCompile Include="..\..\Source Code\Platform\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Compute\OpenCLInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\DisplayWindow.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\File\FileManagement.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\File\FileManagementFunctions.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\File\FileManagementPaths.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EffectManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Input\EventHandler.cpp" />

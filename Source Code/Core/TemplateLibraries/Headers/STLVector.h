@@ -38,10 +38,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace vectorAlg = std;
 
 template <typename Type>
-using vectorImpl = vectorAlg::vector<Type, dvd_allocator<Type>>;
+using vectorImplFast = vectorAlg::vector<Type, dvd_allocator<Type>>;
 
 template <typename Type>
-using vectorImplAligned = vectorAlg::vector<Type>;
+using vectorImpl = vectorAlg::vector<Type>;
+
+#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
+template <typename Type>
+using vectorImplBest = vectorImplFast<Type>;
+#else
+template <typename Type>
+using vectorImplBest = vectorImpl<Type>;
+#endif
 
 namespace std {
     typedef size_t vecSize;
@@ -55,23 +63,19 @@ namespace std {
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImpl<T>& inputVector,
-        Args&&... args) {
+    inline void emplace_back(vectorImpl<T>& inputVector, Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }
 
-#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
     template <typename T>
-    inline void shrinkToFit(vectorImplAligned<T>& inputVector) {
+    inline void shrinkToFit(vectorImplFast<T>& inputVector) {
         inputVector.shrink_to_fit();
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImplAligned<T>& inputVector,
-        Args&&... args) {
+    inline void emplace_back(vectorImplFast<T>& inputVector, Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }
-#endif
 
 };
 

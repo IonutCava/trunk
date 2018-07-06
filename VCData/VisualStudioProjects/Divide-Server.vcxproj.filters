@@ -73,8 +73,6 @@
     <ClCompile Include="..\..\Source Code\Server\Utility\Patch.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\ByteBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator.cpp">
       <Filter>Utility\Allocator</Filter>
     </ClCompile>

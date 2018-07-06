@@ -66,7 +66,7 @@ stringImpl StringFormat(const char *const format, ...) {
     return stringImpl(temp.data(), length);
 }
 
-bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {
+bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
     if (a.length() == b.length()) {
         return std::equal(std::cbegin(b),
             std::cend(b),

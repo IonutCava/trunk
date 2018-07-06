@@ -102,9 +102,9 @@ class glShaderProgram final : public ShaderProgram {
     inline void Uniform(const char* ext, const vectorImpl<F32>& values) override;
     inline void Uniform(const char* ext, const vectorImpl<vec2<F32>>& values) override;
     inline void Uniform(const char* ext, const vectorImpl<vec3<F32>>& values) override;
-    inline void Uniform(const char* ext, const vectorImplAligned<vec4<F32>>& values) override;
+    inline void Uniform(const char* ext, const vectorImplBest<vec4<F32>>& values) override;
     inline void Uniform(const char* ext, const vectorImpl<mat3<F32>>& values, bool transpose = false) override;
-    inline void Uniform(const char* ext, const vectorImplAligned<mat4<F32>>& values, bool transpose = false) override;
+    inline void Uniform(const char* ext, const vectorImplBest<mat4<F32>>& values, bool transpose = false) override;
 
     void Uniform(I32 location, U32 value) override;
     void Uniform(I32 location, I32 value) override;
@@ -121,12 +121,12 @@ class glShaderProgram final : public ShaderProgram {
     void Uniform(I32 location, const vectorImpl<F32>& values) override;
     void Uniform(I32 location, const vectorImpl<vec2<F32>>& values) override;
     void Uniform(I32 location, const vectorImpl<vec3<F32>>& values) override;
-    void Uniform(I32 location, const vectorImplAligned<vec4<F32>>& values) override;
+    void Uniform(I32 location, const vectorImplBest<vec4<F32>>& values) override;
     void Uniform(I32 location,
                  const vectorImpl<mat3<F32>>& values,
                  bool transpose = false) override;
     void Uniform(I32 location,
-                 const vectorImplAligned<mat4<F32>>& values,
+                 const vectorImplBest<mat4<F32>>& values,
                  bool transpose = false) override;
 
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;

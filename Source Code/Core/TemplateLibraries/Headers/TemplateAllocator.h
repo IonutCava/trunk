@@ -33,14 +33,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TEMPLATE_ALLOCATOR_H_
 
 #include "config.h"
-#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
+
 #include <Allocator/stl_allocator.h>
-    template <typename Type>
-    using dvd_allocator = stl_allocator<Type>;
-#else
-#include <memory>
-    template <typename Type>
-    using dvd_allocator = std::allocator<Type>;
-#endif
+template <typename Type>
+using dvd_allocator = stl_allocator<Type>;
+
 
 #endif //_TEMPLATE_ALLOCATOR_H_

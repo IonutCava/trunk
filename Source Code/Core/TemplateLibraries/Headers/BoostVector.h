@@ -38,10 +38,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace vectorAlg = boost;
 
 template<typename Type>
-using vectorImpl = boost::container::vector<Type, dvd_allocator<Type>>;
+using vectorImplFast = boost::container::vector<Type, dvd_allocator<Type>>;
 
 template <typename Type>
-using vectorImplAligned = boost::container::vector<Type>;
+using vectorImpl = boost::container::vector<Type>;
 
 namespace boost {
     typedef size_t vecSize;
@@ -57,12 +57,12 @@ namespace boost {
     }
 
     template<typename T>
-    inline void shrinkToFit(vectorImplAligned<T>& inputVector) {
+    inline void shrinkToFit(vectorImplFast<T>& inputVector) {
         inputVector.shrink_to_fit();
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImplAligned<T>& inputVector, Args&&... args) {
+    inline void emplace_back(vectorImplFast<T>& inputVector, Args&&... args) {
         inputVector.emplace_back(std::forward<Args>(args)...);
     }
 

@@ -155,7 +155,7 @@ bool Object3D::computeTriangleList(bool force) {
         vec3<U32> curTriangle;
         _geometryTriangles.reserve(indiceCount / 2);
         if (largeIndices) {
-            const vectorImplAligned<U32>& indices = geometry->getIndices<U32>();
+            const vectorImplBest<U32>& indices = geometry->getIndices<U32>();
             for (U32 i = indiceStart; i < indiceEnd; i++) {
                 curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
                 // Check for correct winding
@@ -164,7 +164,7 @@ bool Object3D::computeTriangleList(bool force) {
                 _geometryTriangles.push_back(curTriangle);
             }
         } else {
-            const vectorImplAligned<U16>& indices = geometry->getIndices<U16>();
+            const vectorImplBest<U16>& indices = geometry->getIndices<U16>();
             for (U32 i = indiceStart; i < indiceEnd; i++) {
                 curTriangle.set(indices[i - 2], indices[i - 1], indices[i]);
                 // Check for correct winding
@@ -177,14 +177,14 @@ bool Object3D::computeTriangleList(bool force) {
         indiceCount /= 3;
         _geometryTriangles.reserve(indiceCount);
         if (largeIndices) {
-            const vectorImplAligned<U32>& indices = geometry->getIndices<U32>();
+            const vectorImplBest<U32>& indices = geometry->getIndices<U32>();
             for (U32 i = 0; i < indiceCount; i++) {
                 _geometryTriangles.push_back(vec3<U32>(indices[i * 3 + 0],
                                                        indices[i * 3 + 1],
                                                        indices[i * 3 + 2]));
             }
         } else {
-            const vectorImplAligned<U16>& indices = geometry->getIndices<U16>();
+            const vectorImplBest<U16>& indices = geometry->getIndices<U16>();
             for (U32 i = 0; i < indiceCount; i++) {
                 _geometryTriangles.push_back(vec3<U32>(indices[i * 3 + 0],
                                                        indices[i * 3 + 1],

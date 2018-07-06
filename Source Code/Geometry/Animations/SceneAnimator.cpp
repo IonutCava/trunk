@@ -68,7 +68,7 @@ bool SceneAnimator::init(PlatformContext& context) {
 
     D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
     mat4<F32> rotationmat;
-    vectorImplAligned<mat4<F32> > vec;
+    vectorImplBest<mat4<F32> > vec;
     vectorAlg::vecSize animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
@@ -82,7 +82,7 @@ bool SceneAnimator::init(PlatformContext& context) {
             dt += timestep;
             calculate((I32)i, dt);
             crtAnimation->transforms().push_back(vec);
-            vectorImplAligned<mat4<F32> >& trans = crtAnimation->transforms().back();
+            vectorImplBest<mat4<F32> >& trans = crtAnimation->transforms().back();
             if (Config::USE_OPENGL_RENDERING) {
                 for (I32 a = 0; a < _skeletonDepthCache; ++a) {
                     Bone* bone = _bones[a];

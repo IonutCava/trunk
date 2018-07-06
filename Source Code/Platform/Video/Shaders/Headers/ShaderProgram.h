@@ -119,9 +119,9 @@ class NOINITVTABLE ShaderProgram : public Resource,
     virtual void Uniform(const char* ext, const vectorImpl<F32>& values) = 0;
     virtual void Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) = 0;
     virtual void Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) = 0;
-    virtual void Uniform(const char* ext, const vectorImplAligned<vec4<F32> >& values) = 0;
+    virtual void Uniform(const char* ext, const vectorImplBest<vec4<F32> >& values) = 0;
     virtual void Uniform(const char* ext, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) = 0;
-    virtual void Uniform(const char* ext, const vectorImplAligned<mat4<F32> >& values, bool rowMajor = false) = 0;
+    virtual void Uniform(const char* ext, const vectorImplBest<mat4<F32> >& values, bool rowMajor = false) = 0;
 
     inline void Uniform(const char* ext, TextureUsage slot) {
         Uniform(ext, to_int(slot));
@@ -161,12 +161,12 @@ class NOINITVTABLE ShaderProgram : public Resource,
     virtual void Uniform(I32 location,
                          const vectorImpl<vec3<F32> >& values) = 0;
     virtual void Uniform(I32 location,
-                         const vectorImplAligned<vec4<F32> >& values) = 0;
+                         const vectorImplBest<vec4<F32> >& values) = 0;
     virtual void Uniform(I32 location,
                          const vectorImpl<mat3<F32> >& values,
                          bool rowMajor = false) = 0;
     virtual void Uniform(I32 location,
-                         const vectorImplAligned<mat4<F32> >& values,
+                         const vectorImplBest<mat4<F32> >& values,
                          bool rowMajor = false) = 0;
 
     virtual void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) = 0;

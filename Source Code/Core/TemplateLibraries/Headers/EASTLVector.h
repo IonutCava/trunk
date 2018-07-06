@@ -40,10 +40,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace vectorAlg = eastl;
 
 template <typename Type>
-using vectorImpl = vectorAlg::vector<Type, dvd_allocator<Type>>;
+using vectorImplFast = vectorAlg::vector<Type, dvd_allocator<Type>>;
 
 template <typename Type>
-using vectorImplAligned = vectorAlg::vector<Type>;
+using vectorImpl = vectorAlg::vector<Type>;
 
 namespace eastl {
     typedef eastl_size_t vecSize;
@@ -60,13 +60,12 @@ namespace eastl {
     }
 
     template <typename T>
-    inline void shrinkToFit(vectorImplAligned<T>& inputVector) {
+    inline void shrinkToFit(vectorImplFast<T>& inputVector) {
         inputVector.set_capacity(inputVector.size() * sizeof(T));
     }
 
     template <typename T, class... Args>
-    inline void emplace_back(vectorImplAligned<T>& inputVector,
-        Args&&... args) {
+    inline void emplace_back(vectorImplFast<T>& inputVector, Args&&... args) {
         new (inputVector.push_back_uninitialized()) T(std::forward<Args>(args)...);
     }
 

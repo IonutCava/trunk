@@ -50,23 +50,23 @@ class ParticleData {
         COUNT
     };
     /// helper array used for sorting
-    vectorImplAligned<std::pair<U32, F32>> _indices;
-    vectorImplAligned<vec4<F32>> _renderingPositions;
-    vectorImplAligned<vec4<U8>>  _renderingColours;
+    vectorImplBest<std::pair<U32, F32>> _indices;
+    vectorImplBest<vec4<F32>> _renderingPositions;
+    vectorImplBest<vec4<U8>>  _renderingColours;
     /// x,y,z = position; w = size
-    vectorImplAligned<vec4<F32>> _position;
+    vectorImplBest<vec4<F32>> _position;
     /// x,y,z = _velocity; w = angle;
-    vectorImplAligned<vec4<F32>> _velocity;
+    vectorImplBest<vec4<F32>> _velocity;
     /// x,y,z = _acceleration; w = weight;
-    vectorImplAligned<vec4<F32>> _acceleration;
+    vectorImplBest<vec4<F32>> _acceleration;
     /// x = time; y = interpolation; z = 1 / time;  w = distance to camera sq;
-    vectorImplAligned<vec4<F32>> _misc;
+    vectorImplBest<vec4<F32>> _misc;
     /// r,g,b,a = colour and transparency
-    vectorImplAligned<vec4<F32>> _colour;
+    vectorImplBest<vec4<F32>> _colour;
     /// r,g,b,a = colour and transparency
-    vectorImplAligned<vec4<F32>> _startColour;
+    vectorImplBest<vec4<F32>> _startColour;
     /// r,g,b,a = colour and transparency
-    vectorImplAligned<vec4<F32>> _endColour;
+    vectorImplBest<vec4<F32>> _endColour;
     /// Location of the texture file. Leave blank for colour only
     stringImpl _textureFileName;
 

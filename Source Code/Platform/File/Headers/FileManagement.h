@@ -41,44 +41,44 @@ namespace Divide {
 
 class PlatformContext;
 namespace Paths {
-    extern stringImplAligned g_assetsLocation;
-    extern stringImplAligned g_shadersLocation;
-    extern stringImplAligned g_texturesLocation;
-    extern stringImplAligned g_imagesLocation;
-    extern stringImplAligned g_materialsLocation;
-    extern stringImplAligned g_soundsLocation;
-    extern stringImplAligned g_xmlDataLocation;
-    extern stringImplAligned g_navMeshesLocation;
-    extern stringImplAligned g_scenesLocation;
-    extern stringImplAligned g_saveLocation;
-    extern stringImplAligned g_GUILocation;
-    extern stringImplAligned g_FontsPath;
+    extern stringImpl g_assetsLocation;
+    extern stringImpl g_shadersLocation;
+    extern stringImpl g_texturesLocation;
+    extern stringImpl g_imagesLocation;
+    extern stringImpl g_materialsLocation;
+    extern stringImpl g_soundsLocation;
+    extern stringImpl g_xmlDataLocation;
+    extern stringImpl g_navMeshesLocation;
+    extern stringImpl g_scenesLocation;
+    extern stringImpl g_saveLocation;
+    extern stringImpl g_GUILocation;
+    extern stringImpl g_FontsPath;
 
     namespace Shaders {
-        extern stringImplAligned g_CacheLocation;
-        extern stringImplAligned g_CacheLocationText;
-        extern stringImplAligned g_CacheLocationBin;
+        extern stringImpl g_CacheLocation;
+        extern stringImpl g_CacheLocationText;
+        extern stringImpl g_CacheLocationBin;
 
         namespace GLSL {
             // these must match the last 4 characters of the atom file
-            extern stringImplAligned g_fragAtomExt;
-            extern stringImplAligned g_vertAtomExt;
-            extern stringImplAligned g_geomAtomExt;
-            extern stringImplAligned g_tescAtomExt;
-            extern stringImplAligned g_teseAtomExt;
-            extern stringImplAligned g_compAtomExt;
-            extern stringImplAligned g_comnAtomExt;
+            extern stringImpl g_fragAtomExt;
+            extern stringImpl g_vertAtomExt;
+            extern stringImpl g_geomAtomExt;
+            extern stringImpl g_tescAtomExt;
+            extern stringImpl g_teseAtomExt;
+            extern stringImpl g_compAtomExt;
+            extern stringImpl g_comnAtomExt;
 
             // Shader subfolder name that contains shader files for OpenGL
-            extern stringImplAligned g_parentShaderLoc;
+            extern stringImpl g_parentShaderLoc;
             // Atom folder names in parent shader folder
-            extern stringImplAligned g_fragAtomLoc;
-            extern stringImplAligned g_vertAtomLoc;
-            extern stringImplAligned g_geomAtomLoc;
-            extern stringImplAligned g_tescAtomLoc;
-            extern stringImplAligned g_teseAtomLoc;
-            extern stringImplAligned g_compAtomLoc;
-            extern stringImplAligned g_comnAtomLoc;
+            extern stringImpl g_fragAtomLoc;
+            extern stringImpl g_vertAtomLoc;
+            extern stringImpl g_geomAtomLoc;
+            extern stringImpl g_tescAtomLoc;
+            extern stringImpl g_teseAtomLoc;
+            extern stringImpl g_compAtomLoc;
+            extern stringImpl g_comnAtomLoc;
         }; //namespace GLSL
         namespace HLSL {
 
@@ -110,6 +110,8 @@ bool createFile(const char* filePath, bool overwriteExisting);
 bool readFile(const stringImpl& filePath, stringImpl& contentOut, FileType fileType);
 bool readFile(const stringImpl& filePath, vectorImpl<U8>& contentOut, FileType fileType);
 bool readFile(const stringImpl& filePath, vectorImpl<Byte>& contentOut, FileType fileType);
+bool readFile(const stringImpl& filePath, vectorImplFast<U8>& contentOut, FileType fileType);
+bool readFile(const stringImpl& filePath, vectorImplFast<Byte>& contentOut, FileType fileType);
 
 bool writeFile(const stringImpl& filePath, const char* content, FileType fileType);
 bool writeFile(const stringImpl& filePath, const char* content, size_t length, FileType fileType);
@@ -117,6 +119,10 @@ bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, FileTy
 bool writeFile(const stringImpl& filePath, const vectorImpl<U8>& content, size_t length, FileType fileType);
 bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, FileType fileType);
 bool writeFile(const stringImpl& filePath, const vectorImpl<Byte>& content, size_t length, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImplFast<U8>& content, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImplFast<U8>& content, size_t length, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImplFast<Byte>& content, FileType fileType);
+bool writeFile(const stringImpl& filePath, const vectorImplFast<Byte>& content, size_t length, FileType fileType);
 
 /// will add '.' automatically at the start of 'extension'
 bool hasExtension(const stringImpl& filePath, const stringImpl& extension);

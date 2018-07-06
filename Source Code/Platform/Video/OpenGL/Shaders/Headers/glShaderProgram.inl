@@ -317,7 +317,7 @@ void glShaderProgram::Uniform(const char* ext, const vectorImpl<vec3<F32> >& val
     Uniform(getUniformLocation(ext), values);
 }
 
-void glShaderProgram::Uniform(const char* ext, const vectorImplAligned<vec4<F32> >& values) {
+void glShaderProgram::Uniform(const char* ext, const vectorImplBest<vec4<F32> >& values) {
     Uniform(getUniformLocation(ext), values);
 }
 
@@ -325,7 +325,7 @@ void glShaderProgram::Uniform(const char* ext, const vectorImpl<mat3<F32> >& val
     Uniform(getUniformLocation(ext), values, transpose);
 }
 
-void glShaderProgram::Uniform(const char* ext, const vectorImplAligned<mat4<F32> >& values, bool transpose) {
+void glShaderProgram::Uniform(const char* ext, const vectorImplBest<mat4<F32> >& values, bool transpose) {
     Uniform(getUniformLocation(ext), values, transpose);
 }
 

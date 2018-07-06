@@ -58,7 +58,7 @@ public:
     bool _customShader;
     ShaderProgram_ptr _shaderRef;
     stringImpl _shader;
-    vectorImplAligned<stringImpl> _shaderDefines;
+    vectorImpl<stringImpl> _shaderDefines;
 
 private:
     std::atomic<BuildStage> _shaderCompStage;

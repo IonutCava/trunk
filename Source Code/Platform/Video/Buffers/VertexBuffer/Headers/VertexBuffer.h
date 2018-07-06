@@ -170,7 +170,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     template<typename T>
-    const vectorImplAligned<T>& getIndices() const {
+    const vectorImplBest<T>& getIndices() const {
         static_assert(false, "VertexBuffer::getIndices error: Need valid index data type!");
     }
 
@@ -389,8 +389,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     vectorImpl<std::pair<U32, U32> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should
     /// provide the indices
-    vectorImplAligned<U32> _hardwareIndicesL;
-    vectorImplAligned<U16> _hardwareIndicesS;
+    vectorImplBest<U32> _hardwareIndicesL;
+    vectorImplBest<U16> _hardwareIndicesS;
     vectorImpl<Vertex> _data;
     /// Cache system to update only required data
     std::array<bool, to_const_uint(VertexAttribute::COUNT)> _attribDirty;
@@ -398,12 +398,12 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 };
 
 template<>
-inline const vectorImplAligned<U32>& VertexBuffer::getIndices<U32>() const {
+inline const vectorImplBest<U32>& VertexBuffer::getIndices<U32>() const {
     return _hardwareIndicesL;
 }
 
 template<>
-inline const vectorImplAligned<U16>& VertexBuffer::getIndices<U16>() const {
+inline const vectorImplBest<U16>& VertexBuffer::getIndices<U16>() const {
     return _hardwareIndicesS;
 }
 };  // namespace Divide

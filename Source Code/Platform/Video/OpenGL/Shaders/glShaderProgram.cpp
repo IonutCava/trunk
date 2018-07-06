@@ -778,7 +778,7 @@ void glShaderProgram::Uniform(GLint location,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vectorImplAligned<vec4<F32> >& values) {
+void glShaderProgram::Uniform(GLint location, const vectorImplBest<vec4<F32> >& values) {
     if (values.empty() || location == -1) {
         return;
     }
@@ -802,7 +802,7 @@ void glShaderProgram::Uniform(GLint location,
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location,
-                              const vectorImplAligned<mat4<F32> >& values,
+                              const vectorImplBest<mat4<F32> >& values,
                               bool transpose) {
     if (values.empty() || location == -1) {
         return;

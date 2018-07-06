@@ -591,7 +591,10 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\RTAttachmentPool.cpp">
       <Filter>Video\Buffers\RenderTarget</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\File\FileManagement.cpp">
+    <ClCompile Include="..\..\Source Code\Platform\File\FileManagementPaths.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\File\FileManagementFunctions.cpp">
       <Filter>File</Filter>
     </ClCompile>
   </ItemGroup>

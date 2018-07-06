@@ -68,12 +68,11 @@ class AnimationComponent : public SGNComponent {
     inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
     I32 frameCount(U32 animationID) const;
 
-    inline const vectorImplAligned<mat4<F32> >& transformsByIndex(U32 index) const {
+    inline const vectorImplBest<mat4<F32> >& transformsByIndex(U32 index) const {
         return transformsByIndex(_currentAnimIndex, index);
     }
 
-    const vectorImplAligned<mat4<F32> >& transformsByIndex(U32 animationID,
-                                                           U32 index) const;
+    const vectorImplBest<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
 
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
