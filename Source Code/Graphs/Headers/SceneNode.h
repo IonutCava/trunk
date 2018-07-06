@@ -107,9 +107,6 @@ public:
     inline U8   getLODcount()   const {return _LODcount;}
     inline U8   getCurrentLOD() const {return (_lodLevel < (_LODcount-1) ? _lodLevel : (_LODcount-1));}
 
-    inline bool  isSelectable()                 const {return _isSelectable;}
-    inline void  setSelectable(const bool state)      {_isSelectable = state;}
-
 protected:
     ShaderProgram*        _customShader;
     ///The various states needed for rendering
@@ -124,7 +121,6 @@ private:
     //mutable SharedLock _materialLock;
     Material*	  _material;
     bool          _refreshMaterialData;
-    bool          _isSelectable;
     SceneNodeType _type;
     char   _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
 };

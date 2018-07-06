@@ -92,7 +92,7 @@ void GL_API::setLight(Light* const light){
       return;
     }
 
-    U32 offset = slot * sizeof(light->getProperties());
+    GLuint offset = slot * sizeof(light->getProperties());
     _uniformBufferObjects[Lights_UBO]->ChangeSubData(offset,
                                                      sizeof(light->getProperties()),
                                                      (const GLvoid*)(&(light->getProperties())));
@@ -123,14 +123,14 @@ void GL_API::setLight(Light* const light){
 
 void GL_API::updateProjectionMatrix(){
     if(!Divide::GL::_contextAvailable) return;
-    size_t mat4Size = 16 * sizeof(F32);
+    size_t mat4Size = 16 * sizeof(GLfloat);
     //Not using sizeof(glm::mat4) to make it easier to drop GLM if needed (not that I would) and use my own mat4 matrices for this
     _uniformBufferObjects[Matrices_UBO]->ChangeSubData(0, mat4Size, glm::value_ptr(Divide::GL::_projectionMatrix.top()));
 }
 
 void GL_API::updateViewMatrix(){
     if(!Divide::GL::_contextAvailable) return;
-    size_t mat4Size = 16 * sizeof(F32);
+    size_t mat4Size = 16 * sizeof(GLfloat);
     _uniformBufferObjects[Matrices_UBO]->ChangeSubData(mat4Size, mat4Size, glm::value_ptr(Divide::GL::_viewMatrix.top()));
 }
 
@@ -138,10 +138,10 @@ void GL_API::updateViewMatrix(){
 // -set the current matrix to GL_MODELVIEW
 // -reset it to identity
 
-void GL_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up){
-    vec3<F32> viewDirection(eye-target);
+void GL_API::lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up){
+    vec3<GLfloat> viewDirection(eye-target);
 
-    Divide::GL::_LookAt(glm::value_ptr(glm::lookAt(glm::vec3(eye.x, eye.y, eye.z),
+    Divide::GL::_lookAt(glm::value_ptr(glm::lookAt(glm::vec3(eye.x, eye.y, eye.z),
                                                    glm::vec3(target.x, target.y, target.z),
                                                    glm::vec3(up.x, up.y, up.z))),
                         normalize(viewDirection));
@@ -197,7 +197,7 @@ void GL_API::setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const vec
     Divide::GL::_matrixMode(VIEW_MATRIX);
 }
 
-void GL_API::setAnaglyphFrustum(F32 camIOD, bool rightFrustum){
+void GL_API::setAnaglyphFrustum(GLfloat camIOD, bool rightFrustum){
     ParamHandler& par = ParamHandler::getInstance();
     const vec2<GLfloat>& zPlanes = Frustum::getInstance().getZPlanes();
     GLfloat fov    = par.getParam<GLfloat>("runtime.verticalFOV");
@@ -242,8 +242,8 @@ void GL_API::setActiveVAO(GLuint id,const bool force){
 }
 
 void GL_API::setActiveProgram(glShaderProgram* const program,const bool force){
-    U32 newProgramId = (program != NULL) ? program->getId() : 0;
-    U32 oldProgramId = (_activeShaderProgram != NULL) ? _activeShaderProgram->getId() : 0;
+    GLuint newProgramId = (program != NULL) ? program->getId() : 0;
+    GLuint oldProgramId = (_activeShaderProgram != NULL) ? _activeShaderProgram->getId() : 0;
     if(oldProgramId == newProgramId && !force)
         return; //<prevent double bind
 
@@ -268,11 +268,11 @@ static bool popViewport = false;
 void GL_API::restoreViewport(){
     if(popViewport)
         Divide::GL::_viewport.pop();
-    const vec4<U32>& prevViewport = Divide::GL::_viewport.top();
+    const vec4<GLuint>& prevViewport = Divide::GL::_viewport.top();
     GLCheck(glViewport(prevViewport.x, prevViewport.y, prevViewport.z, prevViewport.w));
 }
 
-vec4<U32> GL_API::setViewport(const vec4<U32>& viewport, bool force){
+vec4<GLuint> GL_API::setViewport(const vec4<GLuint>& viewport, bool force){
     bool updateGL = !viewport.compare(Divide::GL::_viewport.top());
     popViewport = !force;
     if(force)

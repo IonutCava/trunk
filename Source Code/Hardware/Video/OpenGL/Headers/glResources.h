@@ -247,8 +247,8 @@ namespace Divide {
 
     /*----------- GLU overrides ------*/
     typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
-    typedef std::stack<vec3<F32>, vectorImpl<vec3<F32> > > vector3Stack;
-    typedef std::stack<vec4<U32>, vectorImpl<vec4<U32> > > viewportStack;
+    typedef std::stack<vec3<GLfloat>, vectorImpl<vec3<GLfloat> > > vector3Stack;
+    typedef std::stack<vec4<GLuint>, vectorImpl<vec4<GLuint> > > viewportStack;
 
     /*--------- Object Management-------*/
     extern GLuint _invalidObjectID;
@@ -289,7 +289,8 @@ namespace Divide {
     /*-----------------BEGIN: FIXED PIPELINE EMULATION -----------------------*/
     inline void _matrixMode(const MATRIX_MODE& mode) { _currentMatrixMode = mode; }
 
-    void _LookAt(const GLfloat* viewMatrix, const vec3<F32>& viewDirection);
+    void _unproject(const vec3<GLfloat>& windowCoords, vec3<GLfloat>& objCoords); 
+    void _lookAt(const GLfloat* viewMatrix, const vec3<GLfloat>& viewDirection);
     void _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
     void _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear,  GLfloat zFar);
     void _anaglyph(GLfloat IOD, GLdouble zNear, GLdouble zFar, GLfloat aspect, GLfloat fovy, bool rightFrustum = false);

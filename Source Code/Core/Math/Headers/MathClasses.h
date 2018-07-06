@@ -439,16 +439,16 @@ public:
     }
 
     vec3<T> operator*(const vec3<T> &v) const {
-        return vec3<T>(this->mat[0] * v[0] + this->mat[4] * v[1] + this->mat[8]  * v[2] + this->mat[12],
-                       this->mat[1] * v[0] + this->mat[5] * v[1] + this->mat[9]  * v[2] + this->mat[13],
-                       this->mat[2] * v[0] + this->mat[6] * v[1] + this->mat[10] * v[2] + this->mat[14]);
+        return vec3<T>(this->mat[0] * v.x + this->mat[4] * v.y + this->mat[8]  * v.z + this->mat[12],
+                       this->mat[1] * v.x + this->mat[5] * v.y + this->mat[9]  * v.z + this->mat[13],
+                       this->mat[2] * v.x + this->mat[6] * v.y + this->mat[10] * v.z + this->mat[14]);
     }
 
     vec4<T> operator*(const vec4<T> &v) const {
-        return vec4<T>(this->mat[0] * v[0] + this->mat[4] * v[1] + this->mat[8]  * v[2] + this->mat[12] * v[3],
-                       this->mat[1] * v[0] + this->mat[5] * v[1] + this->mat[9]  * v[2] + this->mat[13] * v[3],
-                       this->mat[2] * v[0] + this->mat[6] * v[1] + this->mat[10] * v[2] + this->mat[14] * v[3],
-                       this->mat[3] * v[0] + this->mat[7] * v[1] + this->mat[11] * v[2] + this->mat[15] * v[3]);
+        return vec4<T>(this->mat[0] * v.x + this->mat[4] * v.y + this->mat[8]  * v.z + this->mat[12] * v.w,
+                       this->mat[1] * v.x + this->mat[5] * v.y + this->mat[9]  * v.z + this->mat[13] * v.w,
+                       this->mat[2] * v.x + this->mat[6] * v.y + this->mat[10] * v.z + this->mat[14] * v.w,
+                       this->mat[3] * v.x + this->mat[7] * v.y + this->mat[11] * v.z + this->mat[15] * v.w);
     }
 
     mat4<T> operator*(T f) const {
@@ -597,6 +597,7 @@ public:
 
     inline T det(void)             const { return Mat4::det(this->mat); }
     inline void inverse(mat4& ret) const { Mat4::Inverse(this->mat,ret.mat); }
+    inline void inverse()                { mat4 ret; this->inverse(ret); this->set(ret.mat);}
 
     inline void zero() {
         this->mat[0] = 0.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;

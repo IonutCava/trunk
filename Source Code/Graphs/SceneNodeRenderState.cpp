@@ -11,7 +11,7 @@ RenderStateBlock* SceneNodeRenderState::getDepthStateBlock(){
 		RenderStateBlockDescriptor depthDesc;
 		/// Cull back faces for shadow rendering
 		depthDesc.setCullMode(CULL_MODE_CCW);
-		depthDesc._zBias = 1.0f;
+		depthDesc._zBias = 1.1f;
 		depthDesc.setColorWrites(false,false,false,true);
 		_depthStateBlock = GFX_DEVICE.createStateBlock(depthDesc);
 	}

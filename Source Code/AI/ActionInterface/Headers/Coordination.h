@@ -25,31 +25,42 @@
 
 #include "core.h"
 
+namespace Navigation{
+    class DivideDtCrowd;
+};
 class AIEntity;
 class AICoordination {
+   const static int maxAgentRadiusCount = 3;
 public:
-	typedef Unordered_map<I64, AIEntity*> teamMap;
-	typedef Unordered_map<AIEntity*, F32 > memberVariable;
-	AICoordination(U32 id);
+    typedef Unordered_map<I64, AIEntity*> teamMap;
+    typedef Unordered_map<AIEntity*, F32 > memberVariable;
 
-	bool addTeamMember(AIEntity* entity);
-	bool removeTeamMember(AIEntity* entity);
-	bool addEnemyTeam(teamMap& enemyTeam);
+    AICoordination(U32 id);
+    ~AICoordination();
 
-	inline void setTeamID(U32 value) { _teamID = value; }
+    bool addTeamMember(AIEntity* entity);
+    bool removeTeamMember(AIEntity* entity);
+    bool addEnemyTeam(teamMap& enemyTeam);
+    void resetNavMeshes();
 
-	inline U32      getTeamID() const {return _teamID;}
-	inline teamMap& getTeam()         {return _team;}
-	inline teamMap& getEnemyTeam()    {return _enemyTeam;}
+    inline void setTeamID(U32 value) { _teamID = value; }
 
-	inline memberVariable&  getMemberVariable()    {return _memberVariable;}
+    inline U32      getTeamID() const {return _teamID;}
+    inline teamMap& getTeam()         {return _team;}
+    inline teamMap& getEnemyTeam()    {return _enemyTeam;}
+
+    inline const Navigation::DivideDtCrowd& getCrowd(U16 radiusIndex = 0)   const {return *_teamCrowd[radiusIndex];}
+    inline       Navigation::DivideDtCrowd* getCrowdPtr(U16 radiusIndex = 0) const {return _teamCrowd[radiusIndex];}
+    inline memberVariable&  getMemberVariable()    {return _memberVariable;}
+   
 private:
-	U32 _teamID;
-	teamMap _team;
-	teamMap _enemyTeam;
-	/// Container with data per team member. For example a map of distances
-	memberVariable _memberVariable;
-	mutable SharedLock _updateMutex;
+    U32 _teamID;
+    teamMap _team;
+    teamMap _enemyTeam;
+    Navigation::DivideDtCrowd* _teamCrowd[maxAgentRadiusCount];
+    /// Container with data per team member. For example a map of distances
+    memberVariable _memberVariable;
+    mutable SharedLock _updateMutex;
 };
 
 #endif

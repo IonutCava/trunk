@@ -13,7 +13,6 @@ SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
                                            _material(NULL),
                                            _customShader(NULL),
                                            _refreshMaterialData(true),
-                                           _isSelectable(false),
                                            _type(type),
                                            _lodLevel(0),
                                            _LODcount(1), ///<Defaults to 1 LOD level
@@ -25,7 +24,6 @@ SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resour
                                                              _material(NULL),
                                                              _customShader(NULL),
                                                              _refreshMaterialData(true),
-                                                             _isSelectable(false),
                                                              _type(type),
                                                              _lodLevel(0),
                                                              _LODcount(1), ///<Defaults to 1 LOD level
@@ -166,7 +164,8 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
     s->Uniform("material",_material->getMaterialMatrix());
     s->Uniform("opacity", _material->getOpacityValue());
-    s->Uniform("textureCount",_material->getTextureCount());
+    s->Uniform("textureCount", _material->getTextureCount());
+    s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
 
     if(lightMgr.shadowMappingEnabled()){
         s->Uniform("worldHalfExtent", activeScene->getSceneGraph()->getRoot()->getBoundingBox().getWidth() * 0.5f);

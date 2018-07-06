@@ -56,6 +56,13 @@ class TerrainDescriptor;
 class PhysicsSceneInterface;
 class Scene : public Resource{
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
+#ifdef _DEBUG
+    enum DebugLines{
+        DEBUG_LINE_RAY_PICK = 0,
+        DEBUG_LINE_OBJECT_TO_TARGET = 1,
+        DEBUG_LINE_PLACEHOLDER
+    };
+#endif
 public:
 
     Scene();
@@ -96,7 +103,7 @@ public:
     }
 
     ///Object picking
-    void findSelection(const vec3<F32>& camOrigin, U32 x, U32 y);
+    void findSelection(F32 mouseX, F32 mouseY);
     void deleteSelection();
 
     ///call this function if you want to use a more complex rendering callback other than "SceneGraph::render()"
@@ -207,13 +214,18 @@ public: //Input
     virtual void onJoystickButtonUp(const OIS::JoyStickEvent& key, I8 button){}
     virtual void sliderMoved( const OIS::JoyStickEvent &arg, I8 index){}
     virtual void vector3Moved( const OIS::JoyStickEvent &arg, I8 index){}
-    virtual void onMouseMove(const OIS::MouseEvent& key){}
+    virtual void onMouseMove(const OIS::MouseEvent& key);
     virtual void onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button);
     virtual void onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button);
 
 protected: //Input
     vec2<F32> _previousMousePos;
     bool _mousePressed[8];
+#ifdef _DEBUG
+    std::vector<vec3<F32> > _pointsA[DEBUG_LINE_PLACEHOLDER];
+    std::vector<vec3<F32> > _pointsB[DEBUG_LINE_PLACEHOLDER];
+    std::vector<vec4<U8>  > _colors[DEBUG_LINE_PLACEHOLDER];
+#endif
 };
 
 ///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name

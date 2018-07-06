@@ -154,6 +154,8 @@ namespace Navigation {
         inline I32 getNbAgents()    const { return _activeAgents; }
         /// Get the navigation mesh associated with this crowd
         inline const NavigationMesh& getNavMesh() {return *_recast;}
+        /// Change the navigation mesh for this crowd
+        inline void setNavMesh(NavigationMesh* navMesh) {_recast = navMesh;}
         /// The maximum number of agents that are allowed in this crowd.
         inline I32 getMaxNbAgents() const { return _crowd->getAgentCount(); }
         /// Get all (active) agents in this crowd.

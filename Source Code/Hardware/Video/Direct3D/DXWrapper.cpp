@@ -15,7 +15,7 @@ I8 DX_API::initHardware(const vec2<U16>& resolution, I32 argc, char **argv){
     return DX_INIT_ERROR;
 }
 
-void DX_API::exitRenderLoop(const bool killCommand)
+void DX_API::exitRenderLoop(bool killCommand)
 {
 }
 
@@ -29,6 +29,11 @@ void DX_API::changeResolution(U16 w, U16 h)
 
 void DX_API::setWindowPos(U16 w, U16 h) const
 {
+}
+
+vec3<F32> DX_API::unproject(const vec3<F32>& windowCoord)  const 
+{
+    return vec3<F32>();
 }
 
 void DX_API::setMousePosition(D32 x, D32 y) const

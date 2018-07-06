@@ -45,6 +45,7 @@ public:
     void destroyEntity(U32 guid);
     ///Add a nav mesh
     bool addNavMesh(Navigation::NavigationMesh* const navMesh);
+    Navigation::NavigationMesh* getNavMesh(U16 index) const {return (index >= _navMeshes.size() ? NULL : _navMeshes[index]);}
     ///Remove a nav mesh
     void destroyNavMesh(Navigation::NavigationMesh* const navMesh);
  

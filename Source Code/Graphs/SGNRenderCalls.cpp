@@ -75,6 +75,13 @@ void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
     _boundingSphere.fromBoundingBox(_boundingBox);
 }
 
+void SceneGraphNode::setSelected(bool state) {
+    _selected = state;
+     for_each(NodeChildren::value_type& it, _children){
+        it.second->setSelected(_selected);
+    }
+}
+
 ///Another resource hungry subroutine
 ///After all bounding boxes and transforms have been updated,
 ///perform Frustum Culling on the entire scene.
@@ -138,10 +145,4 @@ void SceneGraphNode::sceneUpdate(const U32 sceneTime, SceneState& sceneState) {
 
     if(_shouldDelete)
         GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
-}
-
-void SceneGraphNode::setSelected(const bool state) {
-    _selected = state;
-    WriteLock w_lock(_queryLock);
-    _boundingBox.setVisibility(_selected);
 }

@@ -21,10 +21,8 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
     _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
     //Enable all matrix uploads by default (note: projection and view matrices are ALWAYS uploaded)
-    _matrixMask.b.b0 = 1;
-    _matrixMask.b.b1 = 1;
-    _matrixMask.b.b2 = 1;
-    _matrixMask.b.b3 = 1;
+    _matrixMask.b.b0 = _matrixMask.b.b1 = _matrixMask.b.b2 = _matrixMask.b.b3 = 1;
+
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 }
 
@@ -96,7 +94,9 @@ void ShaderProgram::setMatrixMask(const bool uploadNormals,
 }
 
 void ShaderProgram::threadedLoad(const std::string& name){
-    if(ShaderProgram::generateHWResource(name)) HardwareResource::threadedLoad(name);
+    if(ShaderProgram::generateHWResource(name)) 
+        HardwareResource::threadedLoad(name);
+
     tick(0);
 }
 
@@ -108,7 +108,8 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 void ShaderProgram::bind(){
     _bound = true;
     _wasBound = true;
-    if(_shaderProgramId == 0) return;
+    if(_shaderProgramId == 0) 
+        return;
 
     //Apply global shader values valid throughout current render call:
     this->Uniform("dvd_time", static_cast<F32>(GETMSTIME()));
@@ -118,26 +119,26 @@ void ShaderProgram::bind(){
 void ShaderProgram::uploadModelMatrices(){
     GFXDevice& GFX = GFX_DEVICE;
     /*Get and upload matrix data*/
-    if(_matrixMask.b.b0){
+    if(_matrixMask.b.b0 && this->getUniformLocation("dvd_NormalMatrix") != -1 ){
         GFX.getMatrix(NORMAL_MATRIX,_cachedNormalMatrix);
         this->Uniform("dvd_NormalMatrix",_cachedNormalMatrix);
     }
-    if(_matrixMask.b.b1){
+    if(_matrixMask.b.b1 && this->getUniformLocation("dvd_ModelMatrix") != -1){
         GFX.getMatrix(MODEL_MATRIX,_cachedMatrix);
         this->Uniform("dvd_ModelMatrix",_cachedMatrix);
     }
-    if(_matrixMask.b.b2){
+    if(_matrixMask.b.b2 && this->getUniformLocation("dvd_ModelViewMatrix") != -1){
         GFX.getMatrix(MV_MATRIX,_cachedMatrix);
         this->Uniform("dvd_ModelViewMatrix",_cachedMatrix);
     }
-    if(_matrixMask.b.b3){
+    if(_matrixMask.b.b3 && this->getUniformLocation("dvd_ModelViewProjectionMatrix") != -1){
         GFX.getMatrix(MVP_MATRIX,_cachedMatrix);
         this->Uniform("dvd_ModelViewProjectionMatrix",_cachedMatrix);
     }
-
-    GFX.getMatrix(MV_INV_MATRIX,_cachedMatrix);
-    this->Uniform("dvd_ModelViewMatrixInverse",_cachedMatrix);
-
+    if(this->getUniformLocation("dvd_ModelViewMatrixInverse") != -1){
+        GFX.getMatrix(MV_INV_MATRIX,_cachedMatrix);
+        this->Uniform("dvd_ModelViewMatrixInverse",_cachedMatrix);
+    }
     /*Get and upload clip plane data*/
     if(GFX_DEVICE.clippingPlanesDirty()){
         GFX_DEVICE.updateClipPlanes();
@@ -205,7 +206,10 @@ void ShaderProgram::recompile(const bool vertex,
 {
     _compiled = false;
     _wasBound = _bound;
-    if(_wasBound) unbind();
+
+    if(_wasBound) 
+        unbind();
+
     //update refresh tags
     _refreshVert = vertex;
     _refreshFrag = fragment;
@@ -215,5 +219,7 @@ void ShaderProgram::recompile(const bool vertex,
     generateHWResource(getName());
     //clear refresh tags
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
-    if(_wasBound) bind();
+
+    if(_wasBound)
+        bind();
 }

@@ -24,13 +24,11 @@
 #define _PLAYER_H_
 
 #include "Character.h"
-namespace Navigation {
-    class DivideDtCrowd;
-}
+
 /// User controlled Unit
 class Player : public Character {
 public:
-    Player(SceneGraphNode* const node, Navigation::DivideDtCrowd* detourCrowd = NULL);
+    Player(SceneGraphNode* const node);
     ~Player();
 
     /// Do not allow or allow the user again to control this player

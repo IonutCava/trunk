@@ -3,90 +3,41 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Headers/Frustum.h"
 
-void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
-    F32 value_fov = tan(RADIANS(_paramHandler.getParam<F32>("runtime.verticalFOV")) * 0.5f);
-    F32 value_aspect = _paramHandler.getParam<F32>("runtime.aspectRatio");
-    F32 half_resolution_width = renderState()._cachedResolution.width * 0.5f;
-    F32 half_resolution_height = renderState()._cachedResolution.height * 0.5f;
+struct selectionQueueDistanceFrontToBack{
+    bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
+        const vec3<F32>& eye = Frustum::getInstance().getEyePos();
+        F32 dist_a = a->getBoundingBoxConst().nearestDistanceFromPoint(eye);
+        F32 dist_b = b->getBoundingBoxConst().nearestDistanceFromPoint(eye);
+        return dist_a > dist_b;
+    }
+};
 
-    //mathematical handling of the difference between
-    //your mouse position and the 'center' of the window
-    F32 modifier_x, modifier_y;
+static vectorImpl<SceneGraphNode* > _sceneSelectionCandidates;
+void Scene::findSelection(F32 mouseX, F32 mouseY){
+    const vec2<F32>& zPlanes = Frustum::getInstance().getZPlanes();
+    mouseY = renderState().cachedResolution().height - mouseY - 1;
+    vec3<F32> startRay = GFX_DEVICE.unproject(vec3<F32>(mouseX, mouseY, 0.0f));
+    vec3<F32> endRay   = GFX_DEVICE.unproject(vec3<F32>(mouseX, mouseY, 1.0f));
 
-     F32 point_dist = _paramHandler.getParam<F32>("runtime.zFar");
-        //it'll be put this far on the Z plane
-
-    vec3<F32> camera_origin;
-        //this is where the camera sits, in 3dspace
-
-    vec3<F32> point_xformed;
-        //this is the transformed point
-
-    vec3<F32> final_point;
-    vec4<F32> color(0.0, 1.0, 0.0, 1.0);
-
-    //These lines are the biggest part of this function.
-    //This is where the mouse position is turned into a mathematical
-    //'relative' of 3d space. The conversion to an actual point
-    modifier_x = value_fov * (( 1.0f - x / half_resolution_width ) * ( value_aspect ) );
-    modifier_y = value_fov * -( 1.0f - y / half_resolution_height );
-
-    //These 3 take our modifier_x/y values and our 'casting' distance
-    //to throw out a point in space that lies on the point_dist plane.
-    //If we were using completely untransformed, untranslated space,
-    //this would be fine - but we're not :)
-    //the untransformed ray will be put here
-    vec3<F32> point(modifier_x * point_dist, modifier_y * point_dist, point_dist);
-
-    //Next we make a call to grab our MODELVIEW_MATRIX -
-    //This is the matrix that rasters 3d points to 2d space - which is
-    //kinda what we're doing, in reverse
-    mat4<GLfloat> temp;
-    GFX_DEVICE.getMatrix(VIEW_MATRIX,temp);
-    //Some folks would then invert the matrix - I invert the results.
-
-    //First, to get the camera_origin, we transform the 12, 13, 14
-    //slots of our pulledMatrix - this gets us the actual viewing
-    //position we are 'sitting' at when the function is called
-    camera_origin.x = -(
-        temp.mat[0] * temp.mat[12] +
-        temp.mat[1] * temp.mat[13] +
-        temp.mat[2] * temp.mat[14]);
-    camera_origin.y = -(
-        temp.mat[4] * temp.mat[12] +
-        temp.mat[5] * temp.mat[13] +
-        temp.mat[6] * temp.mat[14]);
-    camera_origin.z = -(
-        temp.mat[8] * temp.mat[12] +
-        temp.mat[9] * temp.mat[13] +
-        temp.mat[10] * temp.mat[14]);
-
-    //Second, we transform the position we generated earlier - the '3d'
-    //mouse position - by our viewing matrix.
-    point_xformed.x = -(
-        temp.mat[0] * point[0] +
-        temp.mat[1] * point[1] +
-        temp.mat[2] * point[2]);
-    point_xformed.y = -(
-        temp.mat[4] * point[0] +
-        temp.mat[5] * point[1] +
-        temp.mat[6] * point[2]);
-    point_xformed.z = -(
-        temp.mat[8] * point[0] +
-        temp.mat[9] * point[1] +
-        temp.mat[10] * point[2]);
-
-    final_point = point_xformed + camera_origin;
-
-    vec3<F32> origin(camOrigin);
-    vec3<F32> dir = origin.direction(final_point);
-
-    Ray r(origin,dir);
-    SceneGraphNode* previousSelection = _currentSelection;
-    _currentSelection = _sceneGraph->Intersect(r,Frustum::getInstance().getZPlanes().x,
-                                                 Frustum::getInstance().getZPlanes().y/2.0f);
-    if(previousSelection) previousSelection->setSelected(false);
+    // deselect old node
+    if(_currentSelection) _currentSelection->setSelected(false);
+    // see if we select another one
+    _sceneSelectionCandidates.clear();
+    // Cast the picking ray and find items between the nearPlane (with a small offset) and limit the range to half of the far plane
+    _sceneGraph->Intersect(Ray(startRay, startRay.direction(endRay)), zPlanes.x + 0.5f, zPlanes.y * 0.5f, _sceneSelectionCandidates); 
+    if(!_sceneSelectionCandidates.empty()){
+        std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), selectionQueueDistanceFrontToBack());
+        _currentSelection = _sceneSelectionCandidates[0];
+    }else{
+        _currentSelection = NULL;
+    }
+     // set it's state to selected
     if(_currentSelection) _currentSelection->setSelected(true);
+#ifdef _DEBUG
+    _pointsA[DEBUG_LINE_RAY_PICK].push_back(startRay);
+    _pointsB[DEBUG_LINE_RAY_PICK].push_back(endRay);
+    _colors[DEBUG_LINE_RAY_PICK].push_back(vec4<U8>(0,255,0,255));
+#endif
 }
 
 void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
@@ -95,6 +46,14 @@ void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID butto
 
 void Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = false;
+    if(button == OIS::MB_Left){
+        findSelection(key.state.X.abs, key.state.Y.abs);
+    }
+}
+  
+void Scene::onMouseMove(const OIS::MouseEvent& key){ 
+    _previousMousePos.x = key.state.X.abs;
+    _previousMousePos.y = key.state.Y.abs;
 }
 
 void Scene::onKeyDown(const OIS::KeyEvent& key){
@@ -129,9 +88,21 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
             D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
             renderState().toggleBoundingBoxes();
             }break;
-        case OIS::KC_F8:
+        case OIS::KC_F7:
             _paramHandler.setParam("postProcessing.enablePostFX",!_paramHandler.getParam<bool>("postProcessing.enablePostFX"));
             break;
+        case OIS::KC_F8:
+            renderState().drawDebugLines(!renderState()._debugDrawLines);
+            break;
+        case OIS::KC_F9:{
+#ifdef _DEBUG
+            for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i) {
+                _pointsA[i].clear();
+                _pointsB[i].clear();
+                _colors[i].clear();
+            }
+#endif
+            }break;
         case OIS::KC_F10:
             LightManager::getInstance().togglePreviewShadowMaps();
             break;

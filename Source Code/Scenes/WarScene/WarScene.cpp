@@ -99,7 +99,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
     AIEntity* aiSoldier = NULL;
     SceneGraphNode* soldierMesh = _sceneGraph->findNode("Soldier1");
     if(soldierMesh){
-        soldierMesh->getNode<SceneNode>()->setSelectable(true);
+        soldierMesh->setSelectable(true);
         AIEntity* aiSoldier = New AIEntity("Soldier1");
         aiSoldier->attachNode(soldierMesh);
         aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
@@ -110,7 +110,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
     }
     soldierMesh = _sceneGraph->findNode("Soldier2");
     if(soldierMesh){
-        soldierMesh->getNode<SceneNode>()->setSelectable(true);
+        soldierMesh->setSelectable(true);
         aiSoldier = New AIEntity("Soldier2");
         aiSoldier->attachNode(soldierMesh);
         aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
@@ -121,7 +121,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
     }
     soldierMesh = _sceneGraph->findNode("Soldier3");
     if(soldierMesh){
-        soldierMesh->getNode<SceneNode>()->setSelectable(true);
+        soldierMesh->setSelectable(true);
     }
     //----------------------- AI controlled units ---------------------//
     for(U8 i = 0; i < _army1.size(); i++){
@@ -256,15 +256,11 @@ void WarScene::onMouseMove(const OIS::MouseEvent& key){
         else 	                                             state()._angleUD =  0;
     }
 
-    _previousMousePos.x = key.state.X.abs;
-    _previousMousePos.y = key.state.Y.abs;
+    Scene::onMouseMove(key);
 }
 
 void WarScene::onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID button){
     Scene::onMouseClickDown(key,button);
-    if(_mousePressed[OIS::MB_Left]){
-        findSelection(renderState().getCamera().getEye(), _previousMousePos.x, _previousMousePos.y);
-    }
 }
 
 void WarScene::onMouseClickUp(const OIS::MouseEvent& key, OIS::MouseButtonID button){

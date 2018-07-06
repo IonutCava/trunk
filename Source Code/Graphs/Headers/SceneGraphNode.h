@@ -96,12 +96,14 @@ public:
     ///Find a node in the graph based on the SceneGraphNode's name
     ///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
     SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false);
-    ///Find the graph node whom's bounding box intersects the given ray
-    SceneGraphNode* Intersect(const Ray& ray, F32 start, F32 end);
+    ///Find the graph nodes whom's bounding boxes intersects the given ray
+    void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
 
     ///Selection helper functions
-            void setSelected(const bool state);
-    inline 	bool isSelected()	               const {return _selected;}
+            void setSelected(bool state);
+    inline 	bool isSelected()	         const {return _selected;}
+    inline bool  isSelectable()                 const {return _isSelectable;}
+    inline void  setSelectable(const bool state)      {_isSelectable = state;}
 
     const  std::string& getName() const {return _name;}
     /*Node Management*/
@@ -127,8 +129,9 @@ public:
     }
 
            const BoundingBox&     getBoundingBoxTransformed();
-    inline       BoundingBox&     getBoundingBox()         {ReadLock r_lock(_queryLock); return _boundingBox;}
-    inline const BoundingBox&     getInitialBoundingBox()  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
+    inline       BoundingBox&     getBoundingBox()               {ReadLock r_lock(_queryLock); return _boundingBox;}
+    inline const BoundingBox&     getBoundingBoxConst()   const  {ReadLock r_lock(_queryLock); return _boundingBox;}
+    inline const BoundingBox&     getInitialBoundingBox() const  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
 
     vectorImpl<BoundingBox >& getBBoxes(vectorImpl<BoundingBox >& boxes );
     inline   void             updateBB(const bool state)        { _updateBB = state;}
@@ -191,6 +194,7 @@ private:
     //Used to skip certain BB's (sky, ligts, etc);
     U32 _bbAddExclusionList;
     bool _selected;
+    bool _isSelectable;
     bool _wasActive;
     bool _noDefaultTransform;
     bool _inView;

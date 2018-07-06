@@ -3,6 +3,31 @@
 #include "Core/Math/Headers/MathHelper.h"
 #include "Utility/Headers/Localization.h"
 
+#if defined(_DEBUG) || defined(_PROFILE)
+ProfileTimer::ProfileTimer() : _init(false), _timer(0)
+{
+
+}
+
+ProfileTimer::~ProfileTimer()
+{
+    SAFE_DELETE(_name);
+}
+
+void ProfileTimer::start(){
+    _timer = Framerate::getInstance().getElapsedTime();
+}
+
+void ProfileTimer::stop(){
+    _timer = Framerate::getInstance().getElapsedTime() - _timer;
+}
+
+void ProfileTimer::create(const char* name){
+    _name = strdup(name);
+    _init = true;
+}
+#endif
+
 ///No need for init to be threadsafe
 void Framerate::Init(U8 targetFrameRate) {
     assert(!_init);//<prevent double init

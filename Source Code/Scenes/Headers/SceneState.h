@@ -50,17 +50,19 @@ public:
     SceneRenderState(): _drawBB(false),
                         _drawSkeletons(false),
                         _drawObjects(true),
+                        _debugDrawLines(false),
                         _camera(NULL),
                         _shadowMapResolutionFactor(1)
     {
     }
 
-    inline bool drawBBox()               const {return _drawBB;}
-    inline bool drawSkeletons()          const {return  _drawSkeletons;}
-    inline bool drawObjects()            const {return _drawObjects;}
-    inline void drawBBox(bool visibility)      {_drawBB = visibility;}
-    inline void drawSkeletons(bool visibility) {_drawSkeletons = visibility;}
-    inline void drawObjects(bool visibility)   {_drawObjects=visibility;}
+    inline bool drawBBox()                const {return _drawBB;}
+    inline bool drawSkeletons()           const {return  _drawSkeletons;}
+    inline bool drawObjects()             const {return _drawObjects;}
+    inline void drawBBox(bool visibility)       {_drawBB = visibility;}
+    inline void drawSkeletons(bool visibility)  {_drawSkeletons = visibility;}
+    inline void drawObjects(bool visibility)    {_drawObjects = visibility;}
+    inline void drawDebugLines(bool visibility) {_debugDrawLines = visibility;}
     ///Render skeletons for animated geometry
     inline void toggleSkeletons() { drawSkeletons(!drawSkeletons()); }
     ///Show/hide bounding boxes
@@ -94,6 +96,7 @@ protected:
     bool _drawBB;
     bool _drawObjects;
     bool _drawSkeletons;
+    bool _debugDrawLines;
     Camera*  _camera;
     ///cached resolution
     vec2<U16> _cachedResolution;

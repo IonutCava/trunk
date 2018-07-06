@@ -112,15 +112,17 @@ public:
     inline void setFixedYawAxis( bool useFixed, const vec3<F32>& fixedAxis = WORLD_Y_AXIS) { _yawFixed = useFixed; _fixedYawAxis = fixedAxis; }
 
     // Getter methods.
-    inline F32 getMouseSensitivity()      const {return _mouseSensitivity;}
-    inline F32 getMoveSpeedFactor()       const {return _moveSpeedFactor;}
-    inline F32 getTurnSpeedFactor()       const {return _turnSpeedFactor;}
-    inline const CameraType& getType()	  const {return _type; }
-    inline const vec3<F32>&  getEye()     const {return _eye;}
-    inline const vec3<F32>&  getViewDir() const {return _viewDir;}
-    inline const vec3<F32>&  getEuler()   const {return _euler;}
-    inline const vec3<F32>&  getTarget()  const {return _target;}
-
+    inline F32 getMouseSensitivity()         const {return _mouseSensitivity;}
+    inline F32 getMoveSpeedFactor()          const {return _moveSpeedFactor;}
+    inline F32 getTurnSpeedFactor()          const {return _turnSpeedFactor;}
+    inline const CameraType& getType()	     const {return _type; }
+    inline const vec3<F32>&  getEye()        const {return _eye;}
+    inline const vec3<F32>&  getViewDir()    const {return _viewDir;}
+    inline const vec3<F32>&  getUpDir()      const {return _yAxis;}
+    inline const vec3<F32>&  getRightDir()   const {return _xAxis;}
+    inline const vec3<F32>&  getEuler()      const {return _euler;}
+    inline const vec3<F32>&  getTarget()     const {return _target;}
+    inline const mat4<F32>&  getViewMatrix()       {updateViewMatrix(); return _viewMatrix;}
     ///Nothing really to unload
     virtual bool unload() {return true;}
     ///Add an event listener called after every RenderLookAt or RenderLookAtCube call

@@ -37,7 +37,7 @@
 
 class Ray {
 	public:
-		Ray(vec3<F32> &o, vec3<F32> &d) {
+		Ray(const vec3<F32> &o, const vec3<F32> &d) {
 			origin = o;
 			direction = d;
 			inv_direction = vec3<F32>(1/d.x, 1/d.y, 1/d.z);

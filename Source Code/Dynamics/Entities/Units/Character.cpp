@@ -7,17 +7,13 @@
 
 static const D32 DESTINATION_RADIUS = 1 * 1;
 
-Character::Character(CharacterType type, SceneGraphNode* const node,
-                     Navigation::DivideDtCrowd* detourCrowd) : Unit(Unit::UNIT_TYPE_CHARACTER, node),
+Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit::UNIT_TYPE_CHARACTER, node),
                                                                        _type(type),
                                                                        _agent(NULL),
-                                                                       _detourCrowd(detourCrowd),
                                                                        _agentID(-1),
                                                                        _stopped(false),
                                                                        _agentControlled(true)
 {
-    if(_detourCrowd)
-        _destination = _detourCrowd->getLastDestination();
     _lookingDirection.set(1,0,0);
 }
 
@@ -27,6 +23,12 @@ Character::~Character()
         _detourCrowd->removeAgent(getAgentID());
     _agentID = -1;
     _agent = NULL;
+}
+
+void Character::resetCrowd(Navigation::DivideDtCrowd* const crowd){
+    _detourCrowd = crowd;
+    if(_detourCrowd)
+        _destination = _detourCrowd->getLastDestination();
 }
 
 D32 Character::getAgentHeight() const {

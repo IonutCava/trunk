@@ -74,6 +74,13 @@ void Scene::updateCameras(){
 }
 
 void Scene::postRender(){
+#ifdef _DEBUG
+    if(renderState()._debugDrawLines) {
+        for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i)
+            if(!_pointsA[i].empty())
+                GFX_DEVICE.drawLines(_pointsA[i], _pointsB[i], _colors[i], mat4<F32>(),  false,  false);
+    }
+#endif
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data){

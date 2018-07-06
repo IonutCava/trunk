@@ -78,13 +78,14 @@ public:
         CHARACTER_TYPE_PLACEHOLDER
     };
 
-    Character(CharacterType type, SceneGraphNode* const node, Navigation::DivideDtCrowd* detourCrowd = NULL);
+    Character(CharacterType type, SceneGraphNode* const node);
     ~Character();
     /// Set unit type
     inline void setCharacterType(CharacterType type)      {_type = type;}
     /// Get unit type
     inline CharacterType getCharacterType()		   const  {return _type;}
-
+    /// Set the crowd object
+    void   resetCrowd(Navigation::DivideDtCrowd* const crowd = NULL);
     /// The height of the agent for this character.
     virtual D32 getAgentHeight() const;
     /// The radius of the agent for this character.

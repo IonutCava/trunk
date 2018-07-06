@@ -5,6 +5,7 @@ in vec4 _vertexMV;
 
 uniform mat4  material;
 uniform float opacity;
+uniform int   isSelected;
 
 #ifndef SKIP_TEXTURES
 #include "texturing.frag"
@@ -43,6 +44,8 @@ vec4 Phong(in vec2 texCoord, in vec3 normal){
     phong_loop(texCoord, normalize(normal), materialProp);
     //Add global ambient value
     materialProp.ambient += dvd_lightAmbient * material[0];
+    //Add selection ambient value
+    materialProp.ambient = mix(materialProp.ambient, vec4(1.0), isSelected);
 #ifndef SKIP_TEXTURES
     materialProp.ambient *= tBase;
     materialProp.diffuse *= tBase;

@@ -139,6 +139,8 @@ protected:
     virtual void changeResolution(U16 w, U16 h) = 0;
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
+    ///Unproject the give windows space coords to object space (use z - to determine depth [0,1])
+    virtual vec3<F32> unproject(const vec3<F32>& windowCoord) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
     virtual void setMousePosition(D32 x, D32 y) const = 0;
     virtual FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR) = 0;
@@ -152,7 +154,7 @@ protected:
     virtual bool                deInitShaders() = 0;
 
     virtual I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv) = 0;
-    virtual void exitRenderLoop(const bool killCommand = false) = 0;
+    virtual void exitRenderLoop(bool killCommand = false) = 0;
     virtual void closeRenderingApi() = 0;
     virtual void initDevice(U32 targetFrameRate) = 0;
 

@@ -37,12 +37,13 @@ enum MATRIX_MODE{
 
 ///Compund matrices or sub-matrices
 enum EXTENDED_MATRIX{
-    MODEL_MATRIX  = 0, //<Current model matrix. Changed for each render call, mainly
-    MV_MATRIX     = 1, //<ModelView matrix : ViewMatrix * ModelMatrix (as per OpenGL standards: name is backwards)
-    MV_INV_MATRIX = 2, //<ModelViewInverse matrix: (ViewMatrix * ModelMatrix)^-1
-    MVP_MATRIX    = 4, //<ModelViewProjection matrix: ProjectionMatrix * ViewMatrix * ModelMatrix
-    NORMAL_MATRIX = 5, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * ModelMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*ModelMatrix)
-    BIAS_MATRIX   = 6  //<Bias matrix - scales and biases coordinates from [-1,1] to [0,1]
+    MODEL_MATRIX   = 0, //<Current model matrix. Changed for each render call, mainly
+    MV_MATRIX      = 1, //<ModelView matrix : ViewMatrix * ModelMatrix (as per OpenGL standards: name is backwards)
+    MV_INV_MATRIX  = 2, //<ModelViewInverse matrix: (ViewMatrix * ModelMatrix)^-1
+    MVP_MATRIX     = 4, //<ModelViewProjection matrix: ProjectionMatrix * ViewMatrix * ModelMatrix
+    MVP_INV_MATRIX = 5, //<ModelViewProjection matrix's invers: inverse (MVP_MATRIX)
+    NORMAL_MATRIX  = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * ModelMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*ModelMatrix)
+    BIAS_MATRIX    = 7  //<Bias matrix - scales and biases coordinates from [-1,1] to [0,1]
 };
 
 ///Using multiple threads for streaming and issuing API specific construction commands to the rendering API will

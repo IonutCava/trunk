@@ -101,4 +101,24 @@ protected:
 END_SINGLETON
 
 #define FRAME_SPEED_FACTOR  Framerate::getInstance().getSpeedfactor()
-#endif
+
+#if defined(_DEBUG) || defined(_PROFILE)
+class ProfileTimer {
+public:
+    ProfileTimer();
+    ~ProfileTimer();
+
+    void create(const char* name);
+    void start();
+    void stop();
+    inline U32  get()  const {return _timer;}
+    inline bool init() const {return _init;}
+
+protected:
+    char*              _name;
+    boost::atomic_bool _init;
+    boost::atomic_uint _timer;
+};
+#endif //_DEBUG
+
+#endif //_FRAMERATE_H_

@@ -34,7 +34,7 @@ I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
 }
 
 I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
-    const vectorImpl<vec3<F32>>& tCorners = bbox.getPoints();
+    const vec3<F32> *tCorners = bbox.getPoints();
 
     I32 iTotalIn = 0;
     I32 iInCount = 8;

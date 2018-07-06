@@ -37,7 +37,7 @@ public:
     {
         _min.set(100000.0f, 100000.0f, 100000.0f);
         _max.set(-100000.0f, -100000.0f, -100000.0f);
-        _points.resize(8, vec3<F32>());
+        _points = new vec3<F32>[8];
     }
 
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max) : GUIDWrapper(),
@@ -47,7 +47,12 @@ public:
                                                               _min(min),
                                                               _max(max)
     {
-        _points.resize(8, vec3<F32>());
+        _points = new vec3<F32>[8];
+    }
+
+    ~BoundingBox()
+    {
+        SAFE_DELETE_ARRAY(_points);
     }
 
     BoundingBox(const BoundingBox& b) : GUIDWrapper() {
@@ -59,11 +64,9 @@ public:
         this->_center = b._center;
         this->_extent = b._extent;
         this->_oldMatrix = b._oldMatrix;
-        this->_points.clear();
+        this->_points = new vec3<F32>[8];
         this->_pointsDirty = true;
-        for(U8 i = 0; i < 8; i++){
-            this->_points.push_back(b._points[i]);
-        }
+        memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
     }
 
     void operator=(const BoundingBox& b){
@@ -75,11 +78,8 @@ public:
         this->_center = b._center;
         this->_extent = b._extent;
         this->_oldMatrix = b._oldMatrix;
-        this->_points.clear();
         this->_pointsDirty = true;
-        for(U8 i = 0; i < 8; i++){
-            this->_points.push_back(b._points[i]);
-        }
+        memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
     }
 
     inline bool ContainsPoint(const vec3<F32>& point) const	{
@@ -87,7 +87,7 @@ public:
         return (point.x>=_min.x && point.y>=_min.y &&
                 point.z>=_min.z && point.x<=_max.x &&
                 point.y<=_max.y && point.z<=_max.z);
-    };
+    }
 
     inline bool  Collision(const BoundingBox& AABB2) {
         //ReadLock r_lock(_lock);
@@ -114,33 +114,27 @@ public:
     /// Optimized method
     inline bool Intersect(const Ray &r, F32 t0, F32 t1) const {
         //ReadLock r_lock(_lock);
-
-        F32 t_min, t_max, ty_min, ty_max, tz_min, tz_max;
         vec3<F32> bounds[] = {_min, _max};
 
-        t_min = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;
-        t_max = (bounds[1-r.sign[0]].x - r.origin.x) * r.inv_direction.x;
-        ty_min = (bounds[r.sign[1]].y - r.origin.y) * r.inv_direction.y;
-        ty_max = (bounds[1-r.sign[1]].y - r.origin.y) * r.inv_direction.y;
+        F32 t_min  = (bounds[r.sign[0]].x - r.origin.x)   * r.inv_direction.x;
+        F32 t_max  = (bounds[1-r.sign[0]].x - r.origin.x) * r.inv_direction.x;
+        F32 ty_min = (bounds[r.sign[1]].y - r.origin.y)   * r.inv_direction.y;
+        F32 ty_max = (bounds[1-r.sign[1]].y - r.origin.y) * r.inv_direction.y;
 
         if ( (t_min > ty_max) || (ty_min > t_max) )
             return false;
 
-        if (ty_min > t_min)
-            t_min = ty_min;
-        if (ty_max < t_max)
-            t_max = ty_max;
+        if (ty_min > t_min) t_min = ty_min;
+        if (ty_max < t_max) t_max = ty_max;
 
-        tz_min = (bounds[r.sign[2]].z - r.origin.z) * r.inv_direction.z;
-        tz_max = (bounds[1-r.sign[2]].z - r.origin.z) * r.inv_direction.z;
+        F32 tz_min = (bounds[r.sign[2]].z - r.origin.z) * r.inv_direction.z;
+        F32 tz_max = (bounds[1-r.sign[2]].z - r.origin.z) * r.inv_direction.z;
 
         if ( (t_min > tz_max) || (tz_min > t_max) )
             return false;
 
-        if (tz_min > t_min)
-            t_min = tz_min;
-        if (tz_max < t_max)
-            t_max = tz_max;
+        if (tz_min > t_min) t_min = tz_min;
+        if (tz_max < t_max) t_max = tz_max;
 
         return ( (t_min < t1) && (t_max > t0) );
     }
@@ -324,7 +318,7 @@ public:
         _pointsDirty = true;
     }
 
-    inline const vectorImpl<vec3<F32> >& getPoints() const {
+    inline const vec3<F32>* getPoints() const {
         ComputePoints();
         return _points;
     }
@@ -363,7 +357,7 @@ private:
 
     // This is is very limited in scope so mutable should be ok
     mutable bool _pointsDirty;
-    mutable vectorImpl<vec3<F32> > _points;
+    mutable vec3<F32> *_points;
     //mutable SharedLock _lock;
 };
 

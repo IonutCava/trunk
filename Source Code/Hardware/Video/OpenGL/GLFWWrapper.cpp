@@ -118,7 +118,7 @@ namespace Divide{
 }
 
 //Let's try and create a  valid OpenGL context.
-GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **argv){
+GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char **argv){
     ParamHandler& par = ParamHandler::getInstance();
 
     glfwSetErrorCallback(Divide::GL::glfw_error_callback);
@@ -132,14 +132,14 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
     Divide::GL::_initStacks();
 
     //So, if someone selected High detail level, try to use pure 3.x API
-    _msaaSamples = par.getParam<U8>("rendering.FSAAsamples",2);
-    _useMSAA = (par.getParam<U8>("rendering.FSAAmethod",FS_MSAA) == FS_MSAA ||
-                par.getParam<U8>("rendering.FSAAmethod",FS_MSAA) == FS_MSwFXAA);
+    _msaaSamples = par.getParam<GLubyte>("rendering.FSAAsamples",2);
+    _useMSAA = (par.getParam<GLubyte>("rendering.FSAAmethod",FS_MSAA) == FS_MSAA ||
+                par.getParam<GLubyte>("rendering.FSAAmethod",FS_MSAA) == FS_MSwFXAA);
 
     if(_msaaSamples > 1 && _useMSAA)	glfwWindowHint(GLFW_SAMPLES, _msaaSamples);
 
     if(par.getParam<bool>("runtime.overrideRefreshRate",false)){
-        //glfwWindowHint(GLFW_REFRESH_RATE,par.getParam<U8>("runtime.targetRefreshRate",75));
+        //glfwWindowHint(GLFW_REFRESH_RATE,par.getParam<GLubyte>("runtime.targetRefreshRate",75));
     }
 
     glfwWindowHint(GLFW_RESIZABLE,par.getParam<bool>("runtime.allowWindowResize",false));
@@ -212,8 +212,8 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
 
     const GLFWvidmode* return_struct = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-    I32 height = return_struct->height;
-    I32 width = return_struct->width;
+    GLint height = return_struct->height;
+    GLint width = return_struct->width;
     glfwSetWindowPos(Divide::GL::_mainWindow, (width - resolution.width)*0.5f,(height - resolution.height)*0.5f);
 
 #if defined( OS_WINDOWS )
@@ -264,7 +264,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
     par.setParam("shaderDetailToken",par.getParam<GLubyte>("rendering.detailLevel"));
     par.setParam("GFX_DEVICE.maxTextureCombinedUnits",max_texture_units);
     //Cap max aniso to what the hardware supports
-    if(maxAnisotrophy < par.getParam<U8>("rendering.anisotropicFilteringLevel",1)){
+    if(maxAnisotrophy < par.getParam<GLubyte>("rendering.anisotropicFilteringLevel",1)){
         par.setParam("rendering.anisotropicFilteringLevel",maxAnisotrophy);
     }
     //Time to select our shaders.
@@ -313,7 +313,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
     GLCheck(glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST));
 
     //MipMap detail
-    switch(par.getParam<U8>("rendering.mipMapDetailLevel", 2)){
+    switch(par.getParam<GLubyte>("rendering.mipMapDetailLevel", 2)){
         case 0: glHint (GL_GENERATE_MIPMAP_HINT, GL_FASTEST); break;
         case 1: glHint (GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE); break;
         default:
@@ -321,7 +321,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
     }
 
     glfwSwapInterval(par.getParam<bool>("runtime.enableVSync",false) ? 1 : 0);
-    I32 numberOfDisplayModes;
+    GLint numberOfDisplayModes;
     const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &numberOfDisplayModes );
     if(modes) PRINT_FN(Locale::get("AVAILABLE_VIDEO_MODES"),numberOfDisplayModes);
 
@@ -335,7 +335,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
     _uniformBufferObjects.resize(UBO_PLACEHOLDER,NULL);
     _uniformBufferObjects[Matrices_UBO] = New glUniformBufferObject();
     _uniformBufferObjects[Matrices_UBO]->Create(Matrices_UBO, true,true);
-    _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2 * 16, sizeof(F32)); //View and Projection 2 x 16 float values
+    _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(2 * 16, sizeof(GLfloat)); //View and Projection 2 x 16 float values
     _uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
     _uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
     _uniformBufferObjects[Lights_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE_NODE, sizeof(LightProperties)); //Usually less or equal to 4
@@ -382,7 +382,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, I32 argc, char **a
     return 0;
 }
 
-void GL_API::exitRenderLoop(const bool killCommand) {
+void GL_API::exitRenderLoop(bool killCommand) {
     Divide::GL::_applicationClosing = true;
     glfwSetWindowShouldClose(Divide::GL::_mainWindow,true);
     glfwSetWindowShouldClose(Divide::GL::_loaderWindow,true);
@@ -410,7 +410,7 @@ void GL_API::closeRenderingApi(){
     for_each(glIMPrimitive* priv, _glimInterfaces){
         SAFE_DELETE(priv);
     }
-    for(U8 i = 0; i < UBO_PLACEHOLDER; i++){
+    for(GLubyte i = 0; i < UBO_PLACEHOLDER; i++){
         SAFE_DELETE(_uniformBufferObjects[i]);
     }
 
@@ -435,7 +435,7 @@ void GL_API::initDevice(GLuint targetFrameRate){
 
 bool GL_API::initShaders(){
     //Init glsw library
-    I32 glswState = glswInit();
+    GLint glswState = glswInit();
     glswAddDirectiveToken("","#version 130\n/*“Copyright 2009-2013 DIVIDE-Studio”*/");
     glswAddDirectiveToken("Fragment","#extension GL_EXT_texture_array : require");
     glswAddDirectiveToken("","#extension GL_ARB_uniform_buffer_object : require");
@@ -478,7 +478,7 @@ bool GL_API::deInitShaders(){
     return (glswShutdown() == 1);
 }
 
-void GL_API::changeResolutionInternal(U16 w, U16 h){
+void GL_API::changeResolutionInternal(GLushort w, GLushort h){
     glfwSetWindowSize(Divide::GL::_mainWindow,w,h);
 
     ParamHandler& par = ParamHandler::getInstance();
@@ -486,12 +486,12 @@ void GL_API::changeResolutionInternal(U16 w, U16 h){
     GLfloat zFar   = par.getParam<GLfloat>("runtime.zFar");
     GLfloat fov    = par.getParam<GLfloat>("runtime.verticalFOV");
     GLfloat ratio  = par.getParam<GLfloat>("runtime.aspectRatio");
-
+    par.setParam("runtime.horizontalFOV", Util::yfov_to_xfov((GLfloat)fov, ratio));
     // Reset the coordinate system before modifying
     Divide::GL::_matrixMode(PROJECTION_MATRIX);
     Divide::GL::_loadIdentity();
     // Set the viewport to be the entire window
-    GL_API::setViewport(vec4<U32>(0,0,w,h),true);
+    GL_API::setViewport(vec4<GLuint>(0,0,w,h),true);
     // Set the clipping volume
     Divide::GL::_perspective(fov,ratio,zNear,zFar);
 
@@ -510,8 +510,14 @@ void GL_API::setWindowPos(GLushort w, GLushort h) const {
     glfwSetWindowPos(Divide::GL::_mainWindow,w,h);
 }
 
-void GL_API::setMousePosition(D32 x, D32 y) const {
+void GL_API::setMousePosition(GLdouble x, GLdouble y) const {
     glfwSetCursorPos(Divide::GL::_mainWindow,x,y);
+}
+
+vec3<GLfloat> GL_API::unproject(const vec3<GLfloat>& windowCoord) const {
+    vec3<GLfloat> coords;
+    Divide::GL::_unproject(windowCoord, coords);
+    return coords;
 }
 
 void GL_API::idle(){

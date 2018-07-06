@@ -55,13 +55,11 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
    }
 
    if(SHOULD_TOGGLE(_zBias)){
-      if (_descriptor._zBias == 0){
+      if (IS_ZERO(_descriptor._zBias)){
          GLCheck(glDisable(GL_POLYGON_OFFSET_FILL));
       } else {
-         GLfloat units  = _descriptor._zUnits;
-         GLfloat factor = _descriptor._zBias;
          GLCheck(glEnable(GL_POLYGON_OFFSET_FILL));
-         GLCheck(glPolygonOffset( factor, units));
+         GLCheck(glPolygonOffset( _descriptor._zBias, _descriptor._zUnits));
       }
    }
 

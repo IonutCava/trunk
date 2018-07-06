@@ -41,6 +41,6 @@ void SceneGraph::sceneUpdate(const U32 sceneTime, SceneState& sceneState){
     _root->sceneUpdate(sceneTime, sceneState);
 }
 
-SceneGraphNode* SceneGraph::Intersect(const Ray& ray, F32 start, F32 end){
-    return _root->Intersect(ray,start,end);
+void SceneGraph::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
+    _root->Intersect(ray,start,end,selectionHits); 
 }

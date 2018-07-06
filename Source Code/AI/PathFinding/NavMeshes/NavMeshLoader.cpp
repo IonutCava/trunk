@@ -355,8 +355,7 @@ namespace Navigation {
                     addTriangle(&outData, triangles[i], currentTriangleIndexOffset, areType);
                 }
             }else if(level == DETAIL_BOUNDINGBOX ) {
-                const vectorImpl<vec3<F32> >& vertices = box.getPoints();
-                if(vertices.empty()) return false;
+                const vec3<F32>* vertices = box.getPoints();
 
                 for(U32 i = 0; i < 8; i++){
                     addVertex(&outData, vertices[i]);

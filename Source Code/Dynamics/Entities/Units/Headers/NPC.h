@@ -25,15 +25,12 @@
 
 #include "Character.h"
 class AIEntity;
-namespace Navigation {
-    class DivideDtCrowd;
-}
 /// NPC base class. Every character in the game is an NPC by default except the Player
 class NPC : public Character {
 public:
     /// NPC's don't need AI by default
-    NPC(SceneGraphNode* const node, Navigation::DivideDtCrowd* detourCrowd = NULL);
-    NPC(AIEntity* const aiEntity, Navigation::DivideDtCrowd* detourCrowd = NULL);
+    NPC(SceneGraphNode* const node);
+    NPC(AIEntity* const aiEntity);
     ~NPC();
 
 protected:

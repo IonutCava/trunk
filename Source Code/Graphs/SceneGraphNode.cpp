@@ -18,6 +18,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _wasActive(true),
                                                   _active(true),
                                                   _selected(false),
+                                                  _isSelectable(false),
                                                   _noDefaultTransform(false),
                                                   _inView(true),
                                                   _sorted(false),
@@ -25,13 +26,13 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _updateBB(true),
                                                   _shouldDelete(false),
                                                   _isReady(false),
+                                                  _overrideNavMeshDetail(false),
                                                   _updateTimer(GETMSTIME()),
                                                   _childQueue(0),
                                                   _bbAddExclusionList(0),
                                                   _usageContext(NODE_DYNAMIC),
                                                   _navigationContext(NODE_IGNORE),
-                                                  _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
-                                                  _overrideNavMeshDetail(false)
+                                                  _physicsCollisionGroup(NODE_COLLIDE_IGNORE)
 {
     _animationTransforms.clear();
 }
@@ -243,28 +244,19 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
     return NULL;
 }
 
-SceneGraphNode* SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end){
-    //Null return value as default
-    SceneGraphNode* returnValue = NULL;
+void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
 
-    if(_node->isSelectable()){
+    if(isSelectable()){
         ReadLock r_lock(_queryLock);
         if(_boundingBox.Intersect(ray,start,end)){
-            return this;
+            selectionHits.push_back(this);
         }
         r_lock.unlock();
     }
 
     for_each(NodeChildren::value_type& it, _children){
-        returnValue = it.second->Intersect(ray,start,end);
-        if(returnValue != NULL){
-            // if it is not NULL it is the node we are looking for
-            // so just pass it through
-            return returnValue;
-        }
+        it.second->Intersect(ray,start,end,selectionHits);
     }
-
-    return returnValue;
 }
 
 //This updates the SceneGraphNode's transform by deleting the old one first

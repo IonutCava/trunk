@@ -66,7 +66,7 @@ public:
 
     void idle();
 
-    SceneGraphNode* Intersect(const Ray& ray, F32 start, F32 end);
+    void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
     void addToDeletionQueue(SceneGraphNode* node) {_pendingDeletionNodes.push_back(node);}
 
 private:

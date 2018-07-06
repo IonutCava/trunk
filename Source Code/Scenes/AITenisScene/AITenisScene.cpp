@@ -268,6 +268,11 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
     _aiPlayer3->attachNode(_sceneGraph->findNode("Player3"));
     _aiPlayer4->attachNode(_sceneGraph->findNode("Player4"));
 
+    _aiPlayer1->getBoundNode()->setSelectable(true);
+    _aiPlayer2->getBoundNode()->setSelectable(true);
+    _aiPlayer3->getBoundNode()->setSelectable(true);
+    _aiPlayer4->getBoundNode()->setSelectable(true);
+
     _aiPlayer1->addSensor(VISUAL_SENSOR,New VisualSensor());
     _aiPlayer2->addSensor(VISUAL_SENSOR,New VisualSensor());
     _aiPlayer3->addSensor(VISUAL_SENSOR,New VisualSensor());
@@ -348,7 +353,7 @@ bool AITenisScene::loadResources(bool continueOnErrors){
     _ball->getMaterial()->setAmbient(vec4<F32>(0.5f,0.5f,0.5f,1.0f));
     _ball->getMaterial()->setShininess(0.2f);
     _ball->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
-
+    _ballSGN->setSelectable(true);
     GUIElement* btn = GUI::getInstance().addButton("Serve", "Serve",
                                                    vec2<I32>(renderState().cachedResolution().width-220,60),
                                                    vec2<U32>(100,25),
@@ -436,8 +441,7 @@ void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
         else 			                                     state()._angleUD =  0;
     }
 
-    _previousMousePos.x = key.state.X.abs;
-    _previousMousePos.y = key.state.Y.abs;
+    Scene::onMouseMove(key);
 }
 
 void AITenisScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){

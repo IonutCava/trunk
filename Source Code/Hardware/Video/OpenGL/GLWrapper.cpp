@@ -131,32 +131,32 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
 
     priv->beginBatch();
 
-    vec4<U8> color(0,0,255,255);
+    vec4<GLubyte> color(0,0,255,255);
     priv->attribute4ub("inColorData", color);
 
     priv->begin(LINE_LOOP);
-        priv->vertex( vec3<F32>(min.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, min.y, max.z) );
+        priv->vertex( vec3<GLfloat>(min.x, min.y, min.z) );
+        priv->vertex( vec3<GLfloat>(max.x, min.y, min.z) );
+        priv->vertex( vec3<GLfloat>(max.x, min.y, max.z) );
+        priv->vertex( vec3<GLfloat>(min.x, min.y, max.z) );
     priv->end();
 
     priv->begin(LINE_LOOP);
-        priv->vertex( vec3<F32>(min.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, max.y, max.z) );
+        priv->vertex( vec3<GLfloat>(min.x, max.y, min.z) );
+        priv->vertex( vec3<GLfloat>(max.x, max.y, min.z) );
+        priv->vertex( vec3<GLfloat>(max.x, max.y, max.z) );
+        priv->vertex( vec3<GLfloat>(min.x, max.y, max.z) );
     priv->end();
 
     priv->begin(LINES);
-        priv->vertex( vec3<F32>(min.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(min.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, max.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, min.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, max.y, max.z) );
+        priv->vertex( vec3<GLfloat>(min.x, min.y, min.z) );
+        priv->vertex( vec3<GLfloat>(min.x, max.y, min.z) );
+        priv->vertex( vec3<GLfloat>(max.x, min.y, min.z) );
+        priv->vertex( vec3<GLfloat>(max.x, max.y, min.z) );
+        priv->vertex( vec3<GLfloat>(max.x, min.y, max.z) );
+        priv->vertex( vec3<GLfloat>(max.x, max.y, max.z) );
+        priv->vertex( vec3<GLfloat>(min.x, min.y, max.z) );
+        priv->vertex( vec3<GLfloat>(min.x, max.y, max.z) );
     priv->end();
 
     priv->endBatch();
@@ -196,21 +196,21 @@ void GL_API::drawDebugAxisInternal(){
         //Red X-axis
         _pointsA.push_back(ORG);
         _pointsB.push_back(XP);
-        _colors.push_back(vec4<U8>(255,0,0,255));
+        _colors.push_back(vec4<GLubyte>(255,0,0,255));
 
         //Green Y-axis
         _pointsA.push_back(ORG);
         _pointsB.push_back(YP);
-        _colors.push_back(vec4<U8>(0,255,0,255));
+        _colors.push_back(vec4<GLubyte>(0,255,0,255));
 
         //Blue Z-axis
         _pointsA.push_back(ORG);
         _pointsB.push_back(ZP);
-        _colors.push_back(vec4<U8>(0,0,255,255));
+        _colors.push_back(vec4<GLubyte>(0,0,255,255));
         axisData = true;
     }
 
-    vec3<F32> eyeVector = - (Divide::GL::_currentViewDirection.top() * 2);
+    vec3<GLfloat> eyeVector = - (Divide::GL::_currentViewDirection.top() * 2);
     const glm::mat4& viewMatrix = Divide::GL::_viewMatrix.top();
 
     drawLines(_pointsA, _pointsB, _colors,
@@ -245,11 +245,11 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
     }
     priv->beginBatch();
 
-    vec4<U8> color(255,0,0,255);
+    vec4<GLubyte> color(255,0,0,255);
     priv->attribute4ub("inColorData", color);
 
     priv->begin(LINES);
-    vec3<F32> vertA, vertB;
+    vec3<GLfloat> vertA, vertB;
     for(GLushort i = 0; i < pointsA.size(); i++){
         color.set(colors[i].r, colors[i].g, colors[i].b,colors[i].a);
         vertA.set(pointsA[i].x,pointsA[i].y,pointsA[i].z);
@@ -263,7 +263,7 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
     priv->endBatch();
 }
 
-void GL_API::drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize){
+void GL_API::drawText(const std::string& text, const GLint width, const std::string& fontName, const GLfloat fontSize){
     FTFont* font = getFont(fontName);
     if(!font) return;
     if(!FLOAT_COMPARE(_prevSizeNode,fontSize)){
@@ -279,7 +279,7 @@ void GL_API::drawText(const std::string& text, const I32 width, const std::strin
     font->Render(text.c_str());
 }
 
-void GL_API::drawText(const std::string& text, const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize){
+void GL_API::drawText(const std::string& text, const GLint width, const vec2<GLint> position, const std::string& fontName, const GLfloat fontSize){
     FTFont* font = getFont(fontName);
     if(!font) return;
 
@@ -295,7 +295,7 @@ void GL_API::drawText(const std::string& text, const I32 width, const vec2<I32> 
         _prevWidthString = width;
     }
 
-    F32 y = _cachedResolution.height - position.y;
+    GLfloat y = _cachedResolution.height - position.y;
     if(!FLOAT_COMPARE(_prevPointString->X(),position.x)){
         _prevPointString->X(position.x);
     }
@@ -368,5 +368,5 @@ void GL_API::Screenshot(char *filename, const vec4<GLfloat>& rect){
     // read the pixels from the frame buffer
     GLCheck(glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid*)imageData));
     //save to file
-    ImageTools::SaveSeries(filename,vec2<U16>(w,h),32,imageData);
+    ImageTools::SaveSeries(filename,vec2<GLushort>(w,h),32,imageData);
 }

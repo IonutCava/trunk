@@ -56,13 +56,13 @@ public:
 
     inline I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv){return _api.initHardware(resolution,argc,argv);}
 
-    inline void registerKernel(Kernel* const kernel)     {_kernel = kernel;}
-    inline void initDevice(U32 targetFrameRate)          {_api.initDevice(targetFrameRate);}
-    inline void changeResolution(U16 w, U16 h)           {_api.changeResolution(w,h);}
-    inline void setWindowPos(U16 w, U16 h)      const    {_api.setWindowPos(w,h);}
-
-    inline void exitRenderLoop(const bool killCommand = false) {_api.exitRenderLoop(killCommand);}
-           void closeRenderingApi();
+    inline void      registerKernel(Kernel* const kernel)           {_kernel = kernel;}
+    inline void      initDevice(U32 targetFrameRate)                {_api.initDevice(targetFrameRate);}
+    inline void      changeResolution(U16 w, U16 h)                 {_api.changeResolution(w,h);}
+    inline void      setWindowPos(U16 w, U16 h)               const {_api.setWindowPos(w,h);}
+    inline vec3<F32> unproject(const vec3<F32>& windowCoord)  const {return _api.unproject(windowCoord); }
+    inline void      exitRenderLoop(bool killCommand = false)       {_api.exitRenderLoop(killCommand);}
+           void      closeRenderingApi();
 
     inline void beginFrame() {_api.beginFrame();}
     inline void endFrame()   {_api.endFrame();  }

@@ -45,7 +45,7 @@ struct glslopt_ctx;
 ///Ugliest hack in the book, but it's needed for "deferred" immediate mode
 typedef struct
 {
-  F32 mat[16];
+  GLfloat mat[16];
 } OffsetMatrix;
 
 DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
@@ -68,20 +68,20 @@ private:
     {
     }
 
-    void exitRenderLoop(const bool killCommand = false);
+    void exitRenderLoop(bool killCommand = false);
 
-    GLbyte initHardware(const vec2<GLushort>& resolution, I32 argc, char **argv);
+    GLbyte initHardware(const vec2<GLushort>& resolution, GLint argc, char **argv);
     void closeRenderingApi();
     void initDevice(GLuint targetFrameRate);
     inline void changeResolution(GLushort w, GLushort h) {changeResolutionInternal(w,h);}
     ///Change the window's position
-    void setWindowPos(U16 w, U16 h) const;
-    void setMousePosition(D32 x, D32 y) const;
+    void      setWindowPos(GLushort w, GLushort h) const;
+    void      setMousePosition(GLdouble x, GLdouble y) const;
+    vec3<GLfloat> unproject(const vec3<GLfloat>& windowCoord) const;
+    void lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
 
-    void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
-
-    inline void lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection) {
-        Divide::GL::_LookAt(viewMatrix.mat, viewDirection);
+    inline void lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection) {
+        Divide::GL::_lookAt(viewMatrix.mat, viewDirection);
     }
 
     void beginFrame();
@@ -110,14 +110,14 @@ private:
 
     void setOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
     void setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const vec2<GLfloat>& planes);
-    void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false);
+    void setAnaglyphFrustum(GLfloat camIOD, bool rightFrustum = false);
     void updateClipPlanes();
 
     void toggle2D(bool state);
 
     void debugDraw();
-    void drawText(const std::string& text, const I32 width, const std::string& fontName, const F32 fontSize);
-    void drawText(const std::string& text, const I32 width, const vec2<I32> position, const std::string& fontName, const F32 fontSize);
+    void drawText(const std::string& text, const GLint width, const std::string& fontName, const GLfloat fontSize);
+    void drawText(const std::string& text, const GLint width, const vec2<GLint> position, const std::string& fontName, const GLfloat fontSize);
     void drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset);
     void drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
                    const vectorImpl<vec3<GLfloat> >& pointsB,
@@ -153,9 +153,9 @@ protected:
     friend class glFrameBufferObject;
     friend class glDeferredBufferObject;
            static void restoreViewport();
-           static vec4<U32> setViewport(const vec4<U32>& viewport ,bool force = false);
+           static vec4<GLuint> setViewport(const vec4<GLuint>& viewport ,bool force = false);
            static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force = false);
-           inline static void clearColor(const vec4<F32>& color,bool force = false) {
+           inline static void clearColor(const vec4<GLfloat>& color,bool force = false) {
                clearColor(color.r,color.g,color.b,color.a,force);
            }
 protected:
@@ -190,7 +190,7 @@ private:
     void drawDebugAxisInternal();
     void setupLineStateViewPort(const OffsetMatrix& mat);
     void releaseLineStateViewPort();
-    void changeResolutionInternal(U16 w, U16 h);
+    void changeResolutionInternal(GLushort w, GLushort h);
 
 private: //OpenGL specific:
 
@@ -198,13 +198,13 @@ private: //OpenGL specific:
     ///The previous plain text string's relative position on screen
     FTPoint* _prevPointString;
     ///The previous Text3D node's font face size
-    F32 _prevSizeNode;
+    GLfloat _prevSizeNode;
     ///The previous plain text string's font face size
-    F32 _prevSizeString;
+    GLfloat _prevSizeString;
     ///The previous Text3D node's line width
-    F32 _prevWidthNode;
+    GLfloat _prevWidthNode;
     ///The previous plain text string's line width
-    F32 _prevWidthString;
+    GLfloat _prevWidthString;
     ///Window management:
     vec2<GLushort> _cachedResolution; ///<Current window resolution
     //Render state specific:

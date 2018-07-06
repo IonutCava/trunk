@@ -125,7 +125,9 @@ void Kernel::firstLoop(){
     //Skip one frame so all resources can be built while the splash screen is displayed
     mainLoopApp();
     Kernel::_applicationReady = true;
+#ifdef _DEBUG
     Framerate::getInstance().benchmark(true);
+#endif
     //Hide splash screen
     GFX_DEVICE.changeResolution(par.getParam<U16>("runtime.resolutionWidth"),
                                 par.getParam<U16>("runtime.resolutionHeight"));

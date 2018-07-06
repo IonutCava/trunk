@@ -38,7 +38,7 @@ Material::Material() : Resource(),
    RenderStateBlockDescriptor depthDescriptor;
    depthDescriptor.setCullMode(CULL_MODE_CCW);
    /// set a polygon offset
-   depthDescriptor._zBias = 1.0f;
+   depthDescriptor._zBias = 1.1f;
    /// ignore colors
    depthDescriptor.setColorWrites(false,false,false,true);
 

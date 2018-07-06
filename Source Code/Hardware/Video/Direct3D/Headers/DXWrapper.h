@@ -42,13 +42,14 @@ private:
     DX_API() : RenderAPIWrapper() {}
 
     I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv);
-    void exitRenderLoop(const bool killCommand = false);
+    void exitRenderLoop(bool killCommand = false);
     void closeRenderingApi();
     void initDevice(U32 targetFrameRate);
     void changeResolution(U16 w, U16 h);
     void setMousePosition(D32 x, D32 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
+    vec3<F32> unproject(const vec3<F32>& windowCoord) const;
     void lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection);
     void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
     void idle();

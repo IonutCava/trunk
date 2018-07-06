@@ -339,8 +339,7 @@ void MainScene::onMouseMove(const OIS::MouseEvent& key){
         else 			                                     state()._angleUD =  0;
     }
 
-    _previousMousePos.x = key.state.X.abs;
-    _previousMousePos.y = key.state.Y.abs;
+    Scene::onMouseMove(key);
 }
 
 void MainScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
