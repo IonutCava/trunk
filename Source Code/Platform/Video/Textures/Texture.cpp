@@ -39,6 +39,7 @@ bool Texture::load() {
                                       : CurrentContext::GFX_RENDERING_CTX,
         [&](const std::atomic_bool& stopRequested) {
             threadedLoad();
+            Resource::load();
         }
     );
 
@@ -105,8 +106,6 @@ void Texture::threadedLoad() {
             }
         }
     }
-
-    Resource::load();
 }
 
 bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {

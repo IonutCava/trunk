@@ -128,7 +128,7 @@ TEST(TestCharRemove) {
 
 TEST(TestRuntimeID) {
     const char* str = "TEST String garbagegarbagegarbage";
-    ULL input1 = _ID(str);
+    U64 input1 = _ID(str);
     CHECK_EQUAL(input1, _ID_RT(str));
     CHECK_EQUAL(_ID_RT(str), _ID_RT(stringImpl(str)));
     CHECK_EQUAL(input1, _ID_RT(stringImpl(str)));

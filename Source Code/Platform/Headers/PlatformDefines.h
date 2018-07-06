@@ -415,7 +415,7 @@ namespace std {
 template<typename T >
 std::unique_ptr<T> copy_unique(const std::unique_ptr<T>& source)
 {
-    return source ? make_unique<T>(*source) : nullptr;
+    return source ? std::make_unique<T>(*source) : nullptr;
 }
 
 //ref: http://stackoverflow.com/questions/14226952/partitioning-batch-chunk-a-container-into-equal-sized-pieces-using-std-algorithm

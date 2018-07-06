@@ -179,22 +179,22 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
         if (std::regex_search(line, matches, includePattern)) {
             include_file = matches[1].str().c_str();
 
-            I32 index = -1;
+            ShaderType typeIndex = ShaderType::COUNT;
             // switch will throw warnings due to promotion to int
             switch(_ID_RT(Util::GetTrailingCharacters(include_file, 4)))
             {
-                case _ID(fragAtomExt): index = to_const_int(ShaderType::FRAGMENT); break;
-                case _ID(vertAtomExt): index = to_const_int(ShaderType::VERTEX);  break;
-                case _ID(geomAtomExt): index = to_const_int(ShaderType::GEOMETRY); break;
-                case _ID(tescAtomExt): index = to_const_int(ShaderType::TESSELATION_CTRL); break;
-                case _ID(teseAtomExt): index = to_const_int(ShaderType::TESSELATION_EVAL); break;
-                case _ID(compAtomExt): index = to_const_int(ShaderType::COMPUTE); break;
-                case _ID(comnAtomExt): index = to_const_int(ShaderType::COUNT); break;
+                case _ID(fragAtomExt): typeIndex = ShaderType::FRAGMENT; break;
+                case _ID(vertAtomExt): typeIndex = ShaderType::VERTEX;  break;
+                case _ID(geomAtomExt): typeIndex = ShaderType::GEOMETRY; break;
+                case _ID(tescAtomExt): typeIndex = ShaderType::TESSELATION_CTRL; break;
+                case _ID(teseAtomExt): typeIndex = ShaderType::TESSELATION_EVAL; break;
+                case _ID(compAtomExt): typeIndex = ShaderType::COMPUTE; break;
+                case _ID(comnAtomExt): typeIndex = ShaderType::COUNT; break;
             };
 
             assert(index != -1);
 
-            include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[index]);
+            include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[to_uint(typeIndex)]);
 
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),

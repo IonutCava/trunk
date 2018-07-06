@@ -90,12 +90,14 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     sgn.addNode(_sky, normalMask, PhysicsGroup::GROUP_IGNORE);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
-    renderable->castsShadows(false);
+    if (renderable) {
+        renderable->castsShadows(false);
 
-    _skybox->flushTextureState();
-    TextureData skyTextureData = _skybox->getData();
-    skyTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
-    sgn.get<RenderingComponent>()->registerTextureDependency(skyTextureData);
+        _skybox->flushTextureState();
+        TextureData skyTextureData = _skybox->getData();
+        skyTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
+        renderable->registerTextureDependency(skyTextureData);
+    }
 
     SceneNode::postLoad(sgn);
 }

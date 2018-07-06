@@ -38,6 +38,8 @@ bool TextureDataContainer::addTexture(const TextureData& data) {
 
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_DATA_CONTAINER_CONFLICT")));
         return false;
+    } else {
+        _textures.push_back(data);
     }
 
     return true;
