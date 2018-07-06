@@ -43,7 +43,7 @@ class Frustum {
    protected:
     friend class Camera;
     Frustum(Camera& parentCamera);
-    void Extract();
+    void Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix);
 
    public:
     enum class FrustCollision : U32 {

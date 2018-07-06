@@ -70,8 +70,8 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) co
     return ret;
 }
 
-void Frustum::Extract() {
-    GFX_DEVICE.getMatrix(MATRIX::VIEW_PROJECTION, _viewProjectionMatrixCache);
+void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix) {
+    mat4<F32>::Multiply(viewMatrix, projectionMatrix, _viewProjectionMatrixCache);
 
     Plane<F32>& rightPlane = _frustumPlanes[0];
     Plane<F32>& leftPlane = _frustumPlanes[1];

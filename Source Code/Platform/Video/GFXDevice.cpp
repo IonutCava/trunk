@@ -409,6 +409,7 @@ F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
         data._ViewMatrix.set(viewMatrix);
         data._cameraPosition.xyz(eyePos);
         _gpuBlock.update(true);
+    }
 
     return _gpuBlock._data._ViewMatrix.mat;
 }

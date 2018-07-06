@@ -356,7 +356,7 @@ bool Camera::updateFrustum() {
         return false;
     }
 
-    _frustum->Extract();
+    _frustum->Extract(_viewMatrix, _projectionMatrix);
 
     _frustumDirty = false;
 
