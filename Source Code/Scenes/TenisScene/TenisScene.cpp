@@ -317,7 +317,7 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
         aiPlayer[i]->addSensor(AI::SensorType::VISUAL_SENSOR);
         aiPlayer[i]->setAIProcessor(MemoryManager_NEW AI::TenisSceneAIProcessor(_ballSGN, *_aiManager));
 
-        unitComp->setUnit(std::make_shared<NPC>(player[i], aiPlayer[i]));
+        unitComp->setUnit(std::make_shared<NPC>(aiPlayer[i]));
     }
 
     _team1 = MemoryManager_NEW AI::AITeam(1, *_aiManager);

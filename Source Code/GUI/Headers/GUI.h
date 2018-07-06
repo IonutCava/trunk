@@ -94,7 +94,7 @@ public:
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
-        return static_cast<T*>(getGUIElementImpl(sceneID, elementName));
+        return static_cast<T*>(getGUIElementImpl(sceneID, elementName, getTypeEnum<T>()));
     }
 
     template<typename T = GUIElement>
@@ -102,7 +102,7 @@ public:
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
-        return static_cast<T*>(getGUIElementImpl(sceneID, elementID));
+        return static_cast<T*>(getGUIElementImpl(sceneID, elementID, getTypeEnum<T>()));
     }
 
     /// Get a pointer to our console window
@@ -157,8 +157,8 @@ public:
     }
 
 protected:
-    GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName) const;
-    GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID) const;
+    GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;
+    GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const;
 
 protected:
     friend class SceneGUIElements;

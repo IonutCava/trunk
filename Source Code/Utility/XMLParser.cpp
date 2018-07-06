@@ -268,8 +268,8 @@ void loadConfig(PlatformContext& context, const stringImpl &file) {
                  std::max(pt.get<I32>("rendering.MSAAsamples", 0), 0));
     par.setParam(_ID("rendering.PostAASamples"),
                  std::max(pt.get<I32>("rendering.PostAASamples", 0), 0));
-    par.setParam(_ID("rendering.PostAAType"),
-                 pt.get("rendering.PostAAType", "FXAA"));
+    par.setParam(_ID("rendering.PostAAType"), 
+                 _ID(pt.get<std::string>("rendering.PostAAType", "FXAA").c_str()));
     par.setParam(_ID("GUI.CEGUI.ExtraStates"),
                  pt.get("GUI.CEGUI.ExtraStates", false));
     par.setParam(_ID("GUI.CEGUI.SkipRendering"),

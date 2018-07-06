@@ -36,8 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-static const U32 WINDOW_COUNT = 1;
-
 enum class WindowEvent : U32 {
     HIDDEN = 0,
     SHOWN = 1,
@@ -59,6 +57,7 @@ class GFXDevice;
 class WindowManager {
 public:
     WindowManager();
+    ~WindowManager();
 
     ErrorCode init(GFXDevice& context, 
                    RenderAPI api,
@@ -91,7 +90,7 @@ protected:
 protected:
     I32 _displayIndex;
     I64 _activeWindowGUID;
-    std::array<DisplayWindow, WINDOW_COUNT> _windows;
+    vectorImpl<DisplayWindow*> _windows;
 };
 }; //namespace Divide
 #endif //_CORE_WINDOW_MANAGER_H_

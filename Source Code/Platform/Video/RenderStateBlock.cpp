@@ -10,8 +10,7 @@ size_t RenderStateBlock::s_defaultCacheValue = 0;
 
 RenderStateBlock::RenderStateBlock()
     : GUIDWrapper(), 
-     _cachedHash(0),
-     _lockHash(false)
+     _cachedHash(0)
 {
     setDefaultValues();
     clean();
@@ -22,7 +21,6 @@ RenderStateBlock::RenderStateBlock()
 
 RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
     : GUIDWrapper(other),
-     _lockHash(false),
      _colourWrite(other._colourWrite),
      _blendEnable(other._blendEnable),
      _blendSrc(other._blendSrc),
@@ -48,7 +46,6 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
 }
 
 void RenderStateBlock::copy(const RenderStateBlock& other) {
-    _lockHash = false;
     _colourWrite = other._colourWrite;
     _blendEnable = other._blendEnable;
     _blendSrc = other._blendSrc;
@@ -113,9 +110,9 @@ void RenderStateBlock::setBlend(bool enable,
 }
 
 void RenderStateBlock::setColourWrites(bool red,
-                                      bool green,
-                                      bool blue,
-                                      bool alpha) {
+                                       bool green,
+                                       bool blue,
+                                       bool alpha) {
     _colourWrite.b[0] = red ? 1 : 0;
     _colourWrite.b[1] = green ? 1 : 0;
     _colourWrite.b[2] = blue ? 1 : 0;
@@ -167,56 +164,61 @@ void RenderStateBlock::setStencil(bool enable,
 }
 
 void RenderStateBlock::setDefaultValues() {
-    _lockHash = true;
-    setZBias(0.0f, 1.0f);
-    setZFunc();
-    setColourWrites(true, true, true, true);
-    setBlend(false, BlendProperty::ONE,
-             BlendProperty::ONE,
-             BlendOperation::ADD);
-    setZRead(true);
-    setCullMode(CullMode::CW);
-    setFillMode(FillMode::SOLID);
-    setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
-    setStencil(false);
+    _zBias = 0.0f;
+    _zUnits = 1.0f;
+    _zFunc = ComparisonFunction::LEQUAL;
+    _colourWrite.b[0] = _colourWrite.b[1] = _colourWrite.b[2] = _colourWrite.b[3] = 1;
+    _blendEnable = false;
+    _blendSrc = BlendProperty::ONE;
+    _blendDest = BlendProperty::ONE;
+    _blendOp = BlendOperation::ADD;
+    _zEnable = true;
+    _cullMode = CullMode::CW;
+    _cullEnabled = true;
+    _fillMode = FillMode::SOLID;
+    _stencilMask = 0xFFFFFFFF;
+    _stencilWriteMask = 0xFFFFFFFF;
+    _stencilEnable = false;
+    _stencilRef = 0;
+    _stencilFailOp = StencilOperation::KEEP;
+    _stencilZFailOp = StencilOperation::KEEP;
+    _stencilPassOp = StencilOperation::KEEP;
+    _stencilFunc = ComparisonFunction::NEVER;
     _cachedHash = s_defaultCacheValue;
-    _lockHash = false;
 }
 
 void RenderStateBlock::clean() {
-    if (!_lockHash) {
-        size_t previousCache = _cachedHash;
+    size_t previousCache = _cachedHash;
 
-        // Avoid small float rounding errors offsetting the general hash value
-        U32 zBias = to_uint(std::floor((_zBias * 1000.0f) + 0.5f));
-        U32 zUnits = to_uint(std::floor((_zUnits * 1000.0f) + 0.5f));
+    // Avoid small float rounding errors offsetting the general hash value
+    U32 zBias = to_uint(std::floor((_zBias * 1000.0f) + 0.5f));
+    U32 zUnits = to_uint(std::floor((_zUnits * 1000.0f) + 0.5f));
 
-        _cachedHash = 0;
-        Util::Hash_combine(_cachedHash, _colourWrite.i);
-        Util::Hash_combine(_cachedHash, _blendEnable);
-        Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
-        Util::Hash_combine(_cachedHash, to_uint(_blendDest));
-        Util::Hash_combine(_cachedHash, to_uint(_blendOp));
-        Util::Hash_combine(_cachedHash, to_uint(_cullMode));
-        Util::Hash_combine(_cachedHash, _cullEnabled);
-        Util::Hash_combine(_cachedHash, _zEnable);
-        Util::Hash_combine(_cachedHash, to_uint(_zFunc));
-        Util::Hash_combine(_cachedHash, zBias);
-        Util::Hash_combine(_cachedHash, zUnits);
-        Util::Hash_combine(_cachedHash, _stencilEnable);
-        Util::Hash_combine(_cachedHash, _stencilRef);
-        Util::Hash_combine(_cachedHash, _stencilMask);
-        Util::Hash_combine(_cachedHash, _stencilWriteMask);
-        Util::Hash_combine(_cachedHash, to_uint(_stencilFailOp));
-        Util::Hash_combine(_cachedHash, to_uint(_stencilZFailOp));
-        Util::Hash_combine(_cachedHash, to_uint(_stencilPassOp));
-        Util::Hash_combine(_cachedHash, to_uint(_stencilFunc));
-        Util::Hash_combine(_cachedHash, to_uint(_fillMode));
+    _cachedHash = 0;
+    Util::Hash_combine(_cachedHash, _colourWrite.i);
+    Util::Hash_combine(_cachedHash, _blendEnable);
+    Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
+    Util::Hash_combine(_cachedHash, to_uint(_blendDest));
+    Util::Hash_combine(_cachedHash, to_uint(_blendOp));
+    Util::Hash_combine(_cachedHash, to_uint(_cullMode));
+    Util::Hash_combine(_cachedHash, _cullEnabled);
+    Util::Hash_combine(_cachedHash, _zEnable);
+    Util::Hash_combine(_cachedHash, to_uint(_zFunc));
+    Util::Hash_combine(_cachedHash, zBias);
+    Util::Hash_combine(_cachedHash, zUnits);
+    Util::Hash_combine(_cachedHash, _stencilEnable);
+    Util::Hash_combine(_cachedHash, _stencilRef);
+    Util::Hash_combine(_cachedHash, _stencilMask);
+    Util::Hash_combine(_cachedHash, _stencilWriteMask);
+    Util::Hash_combine(_cachedHash, to_uint(_stencilFailOp));
+    Util::Hash_combine(_cachedHash, to_uint(_stencilZFailOp));
+    Util::Hash_combine(_cachedHash, to_uint(_stencilPassOp));
+    Util::Hash_combine(_cachedHash, to_uint(_stencilFunc));
+    Util::Hash_combine(_cachedHash, to_uint(_fillMode));
 
-        if (previousCache != _cachedHash) {
-            WriteLock w_lock(s_stateBlockMapMutex);
-            hashAlg::emplace(s_stateBlockMap, _cachedHash, *this);
-        }
+    if (previousCache != _cachedHash) {
+        WriteLock w_lock(s_stateBlockMapMutex);
+        hashAlg::emplace(s_stateBlockMap, _cachedHash, *this);
     }
 }
 

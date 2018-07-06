@@ -6,6 +6,18 @@
 
 namespace Divide {
 
+FrameListenerManager::FrameListenerManager()
+    : Singleton()
+{
+    for (EventTimeMap& map : _eventTimers) {
+        map.reserve(256);
+    }
+}
+
+FrameListenerManager::~FrameListenerManager()
+{
+}
+
 /// Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener,
                                                  U32 callOrder) {

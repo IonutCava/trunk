@@ -24,16 +24,19 @@ GUIInterface::GUIInterface(GUI& context, const vec2<U16>& resolution)
 
 GUIInterface::~GUIInterface()
 {
-    for (GUIMap::value_type& it : _guiElements) {
-        MemoryManager::DELETE(it.second.first);
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        for (GUIMap::value_type& it : _guiElements[i]) {
+            MemoryManager::DELETE(it.second.first);
+        }
     }
 }
 
 void GUIInterface::onChangeResolution(U16 w, U16 h) {
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        guiStackIterator.second.first->onChangeResolution(w, h);
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+            guiStackIterator.second.first->onChangeResolution(w, h);
+        }
     }
-
     _resolutionCache.set(w, h);
 }
 
@@ -41,34 +44,60 @@ void GUIInterface::onChangeResolution(U16 w, U16 h) {
 void GUIInterface::addElement(U64 id, GUIElement* element) {
     assert(Application::instance().isMainThread());
 
-    GUIMap::iterator it = _guiElements.find(id);
-    if (it != std::end(_guiElements)) {
+    U8 typeIndex = to_ubyte(element->getType());
+    GUIMap& targetMap = _guiElements[typeIndex];
+
+    GUIMap::iterator it = targetMap.find(id);
+    if (it != std::end(targetMap)) {
         MemoryManager::SAFE_UPDATE(it->second.first, element);
         it->second.second = element ? element->isVisible() : false;
     } else {
-        hashAlg::insert(_guiElements, std::make_pair(id, std::make_pair(element, element ? element->isVisible() : false)));
+        hashAlg::insert(targetMap, std::make_pair(id, std::make_pair(element, element ? element->isVisible() : false)));
     }
 }
 
-GUIElement* GUIInterface::getGUIElementImpl(U64 elementName) const {
+GUIElement* GUIInterface::getGUIElementImpl(U64 elementName, GUIType type) const {
     GUIElement* ret = nullptr;
-    GUIMap::const_iterator it = _guiElements.find(elementName);
-    if (it != std::cend(_guiElements)) {
-        ret = it->second.first;
+    if (type == GUIType::COUNT) {
+        for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+            GUIMap::const_iterator it = _guiElements[i].find(elementName);
+            if (it != std::cend(_guiElements[i])) {
+                ret = it->second.first;
+                break;
+            }
+        }
+    } else {
+        GUIMap::const_iterator it = _guiElements[to_uint(type)].find(elementName);
+        if (it != std::cend(_guiElements[to_uint(type)])) {
+            ret = it->second.first;
+        }
     }
-
-
     return ret;
 }
 
-GUIElement* GUIInterface::getGUIElementImpl(I64 elementID) const {
+GUIElement* GUIInterface::getGUIElementImpl(I64 elementID, GUIType type) const {
     GUIElement* ret = nullptr;
     GUIElement* element = nullptr;
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        element = guiStackIterator.second.first;
-        if (element->getGUID() == elementID) {
-            ret = element;
-            break;
+    if (type == GUIType::COUNT) {
+        for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+            for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+                element = guiStackIterator.second.first;
+                if (element->getGUID() == elementID) {
+                    ret = element;
+                    break;
+                }
+            }
+            if (ret != nullptr) {
+                break;
+            }
+        }
+    } else {
+        for (const GUIMap::value_type& guiStackIterator : _guiElements[to_uint(type)]) {
+            element = guiStackIterator.second.first;
+            if (element->getGUID() == elementID) {
+                ret = element;
+                break;
+            }
         }
     }
 
@@ -77,20 +106,26 @@ GUIElement* GUIInterface::getGUIElementImpl(I64 elementID) const {
 
 
 void GUIInterface::mouseMoved(const GUIEvent& event) {
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        guiStackIterator.second.first->mouseMoved(event);
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+            guiStackIterator.second.first->mouseMoved(event);
+        }
     }
 }
 
 void GUIInterface::onMouseUp(const GUIEvent& event) {
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        guiStackIterator.second.first->onMouseUp(event);
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+            guiStackIterator.second.first->onMouseUp(event);
+        }
     }
 }
 
 void GUIInterface::onMouseDown(const GUIEvent& event) {
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        guiStackIterator.second.first->onMouseDown(event);
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+            guiStackIterator.second.first->onMouseDown(event);
+        }
     }
 }
 
@@ -184,16 +219,13 @@ GUIFlash* GUIInterface::addFlash(U64 guiID,
 }
 
 GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text) {
-    GUIMap::iterator it = _guiElements.find(guiID);
+    GUIMap::iterator it = _guiElements[to_const_uint(GUIType::GUI_TEXT)].find(guiID);
 
-    if (it == std::cend(_guiElements)) {
+    if (it == std::cend(_guiElements[to_const_uint(GUIType::GUI_TEXT)])) {
         return nullptr;
     }
 
-    GUIElement* element = it->second.first;
-    assert(element->getType() == GUIType::GUI_TEXT);
-
-    GUIText* textElement = dynamic_cast<GUIText*>(element);
+    GUIText* textElement = static_cast<GUIText*>(it->second.first);
     assert(textElement != nullptr);
 
     textElement->text(text);

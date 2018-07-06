@@ -36,6 +36,7 @@
 #include "Core/Headers/KernelComponent.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {
 
@@ -89,6 +90,8 @@ private:
     GFXDevice& _context;
     // Some vector implementations are not move-awarem so use STL in this case
     vectorImpl<RenderPass*> _renderPasses;
+    vectorImpl<TaskHandle>  _renderCmdTasks;
+
     RenderQueue* _renderQueue;
 
 };

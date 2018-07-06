@@ -220,10 +220,12 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
 
 /// Tell the rendering API to set up our desired PoV
 void Camera::updateLookAt() {
-    updateViewMatrix();
-    updateProjection();
-    updateFrustum();
-    updateListeners();
+    bool viewMatrixUpdated = updateViewMatrix();
+    bool projMatrixUpdated = updateProjection();
+    bool frustumUpdated = updateFrustum();
+    if (viewMatrixUpdated || projMatrixUpdated || frustumUpdated) {
+        updateListeners();
+    }
 }
 
 void Camera::reflect(const Plane<F32>& reflectionPlane) {

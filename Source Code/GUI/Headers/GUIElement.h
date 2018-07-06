@@ -63,6 +63,29 @@ struct GUIEvent {
     U8 mouseClickCount;
 };
 
+template<typename T = GUIElement>
+GUIType getTypeEnum() {
+    static_assert(std::is_base_of<GUIElement, T>::value,
+        "getGuiElement error: Target is not a valid GUI item");
+
+    if (std::is_same<T, GUIText>::value) {
+        return GUIType::GUI_TEXT;
+    } else if (std::is_same < T, GUIButton>::value) {
+        return GUIType::GUI_BUTTON;
+    } else if (std::is_same < T, GUIFlash>::value) {
+        return GUIType::GUI_FLASH;
+    } else if (std::is_same < T, GUIConsole>::value) {
+        return GUIType::GUI_CONSOLE;
+    } else if (std::is_same < T, GUIMessageBox>::value) {
+        return GUIType::GUI_MESSAGE_BOX;
+    } 
+    //else if (std::is_same < T, GUIConfirmDialog::value) {
+    //    return GUIType::GUI_CONFIRM_DIALOG;
+    //}
+
+    return GUIType::COUNT;
+}
+
 class GFXDevice;
 class RenderStateBlock;
 class GUIElement : public GUIDWrapper {

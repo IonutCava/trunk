@@ -85,7 +85,6 @@ class RenderStateBlock : public GUIDWrapper {
     FillMode _fillMode;
 
     size_t _cachedHash;
-    bool _lockHash;
 
     static size_t s_defaultCacheValue;
 

@@ -6,18 +6,15 @@
 
 namespace Divide {
 
-Unit::Unit(UnitType type, SceneGraphNode_ptr node)
+Unit::Unit(UnitType type)
     : FrameListener(),
       _type(type),
-      _node(node),
       _moveSpeed(Metric::Base(1.0f)),
       _acceleration(Metric::Base(1.0f)),
       _moveTolerance(0.1f),
       _prevTime(0)
 {
     REGISTER_FRAME_LISTENER(this, 5);
-    _currentPosition =
-        _node.lock()->get<PhysicsComponent>()->getPosition();
 }
 
 Unit::~Unit()
@@ -25,6 +22,10 @@ Unit::~Unit()
     UNREGISTER_FRAME_LISTENER(this);
 }
 
+void Unit::setParentNode(SceneGraphNode_ptr node) {
+    _node = node;
+    _currentPosition = _node.lock()->get<PhysicsComponent>()->getPosition();
+}
 
 /// Pathfinding, collision detection, animation playback should all be
 /// controlled from here

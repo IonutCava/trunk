@@ -218,12 +218,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     ParamHandler& par = ParamHandler::instance();
     PostFX& postFX = PostFX::instance();
 
-    // Store our target z distances
-    _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
-        par.getParam<F32>(_ID("rendering.zNear")),
-        par.getParam<F32>(_ID("rendering.zFar"))));
-    _gpuBlock._needsUpload = true;
-
     // Register a 2D function used for previewing the depth buffer.
     if (Config::Build::IS_DEBUG_BUILD) {
         add2DRenderFunction(GUID_DELEGATE_CBK([this]() { previewDepthBuffer(); }), 0);
@@ -327,10 +321,6 @@ void GFXDevice::closeRenderingAPI() {
 /// the screen, so we try to do some processing
 void GFXDevice::idle() {
     static const Task idleTask;
-    // Update the zPlanes if needed
-    _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
-        ParamHandler::instance().getParam<F32>(_ID("rendering.zNear")),
-        ParamHandler::instance().getParam<F32>(_ID("rendering.zFar"))));
     _shaderComputeQueue->idle();
     // Pass the idle call to the post processing system
     PostFX::instance().idle();

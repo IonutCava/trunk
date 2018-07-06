@@ -11,7 +11,13 @@ namespace Divide {
 WindowManager::WindowManager() : _displayIndex(0),
                                  _activeWindowGUID(-1)
 {
+    _windows.emplace_back(MemoryManager_NEW DisplayWindow(*this));
     SDL_Init(SDL_INIT_VIDEO);
+}
+
+WindowManager::~WindowManager()
+{
+    MemoryManager::DELETE_VECTOR(_windows);
 }
 
 ErrorCode WindowManager::init(GFXDevice& context,
@@ -71,8 +77,8 @@ ErrorCode WindowManager::init(GFXDevice& context,
 }
 
 void WindowManager::close() {
-    for (DisplayWindow& window : _windows) {
-        window.destroyWindow();
+    for (DisplayWindow* window : _windows) {
+        window->destroyWindow();
     }
 
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -85,17 +91,17 @@ ErrorCode WindowManager::initWindow(U32 index,
                                     I32 targetDisplayIndex) {
     index = std::min(index, to_uint(_windows.size() - 1));
 
-    return _windows[index].init(windowFlags,
-                                startFullScreen ? WindowType::FULLSCREEN
-                                                : WindowType::WINDOW,
-                                initialResolutions);
+    return _windows[index]->init(windowFlags,
+                                 startFullScreen ? WindowType::FULLSCREEN
+                                                 : WindowType::WINDOW,
+                                 initialResolutions);
 }
 
 void WindowManager::setActiveWindow(U32 index) {
     index = std::min(index, to_uint(_windows.size() -1));
-    _activeWindowGUID = _windows[index].getGUID();
+    _activeWindowGUID = _windows[index]->getGUID();
     SysInfo& systemInfo = Application::instance().sysInfo();
-    getWindowHandle(_windows[index].getRawWindow(), systemInfo);
+    getWindowHandle(_windows[index]->getRawWindow(), systemInfo);
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) {
@@ -199,8 +205,8 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
             }
         } break;
         case WindowEvent::APP_LOOP: {
-            for (DisplayWindow& win : _windows) {
-                win.update();
+            for (DisplayWindow* win : _windows) {
+                win->update();
             }
         } break;
     };

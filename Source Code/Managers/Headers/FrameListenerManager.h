@@ -58,6 +58,9 @@ DEFINE_SINGLETON(FrameListenerManager)
     void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt);
 
   private:
+    FrameListenerManager();
+    ~FrameListenerManager();
+
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
     bool framePreRenderEnded(const FrameEvent& evt);

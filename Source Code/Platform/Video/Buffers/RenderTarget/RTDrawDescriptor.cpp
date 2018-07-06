@@ -108,4 +108,14 @@ bool RTDrawDescriptor::isEnabledState(State state) const {
     return BitCompare(_stateMask, to_uint(state));
 }
 
+bool RTDrawDescriptor::operator==(const RTDrawDescriptor& other) const {
+    return _stateMask == other._stateMask &&
+           _drawMask == other._drawMask;
+}
+
+bool RTDrawDescriptor::operator!=(const RTDrawDescriptor& other) const {
+    return _stateMask != other._stateMask ||
+           _drawMask != other._drawMask;
+}
+
 }; //namespace Divide

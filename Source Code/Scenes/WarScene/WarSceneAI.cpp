@@ -353,7 +353,7 @@ bool WarScene::addUnits() {
             // GOAP
             brain->registerGOAPPackage(goapPackages[to_uint(type)]);
             aiSoldier->setAIProcessor(brain);
-            std::shared_ptr<NPC> soldier = std::make_shared<NPC>(currentNode, aiSoldier);
+            std::shared_ptr<NPC> soldier = std::make_shared<NPC>(aiSoldier);
             soldier->setAttribute(to_const_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_const_uint(AI::UnitAttributes::DAMAGE), damage);
             soldier->setAttribute(to_const_uint(AI::UnitAttributes::ALIVE_FLAG), 1);

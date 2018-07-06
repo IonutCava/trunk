@@ -3,8 +3,8 @@
 
 namespace Divide {
 
-NPC::NPC(SceneGraphNode_ptr node, AI::AIEntity* const aiEntity)
-    : Character(Character::CharacterType::CHARACTER_TYPE_NPC, node),
+NPC::NPC(AI::AIEntity* const aiEntity)
+    : Character(Character::CharacterType::CHARACTER_TYPE_NPC),
       _aiUnit(aiEntity)
 {
     if (_aiUnit) {

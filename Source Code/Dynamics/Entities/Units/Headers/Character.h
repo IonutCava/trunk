@@ -87,7 +87,7 @@ class Character : public Unit {
         COUNT
     };
 
-    Character(CharacterType type, SceneGraphNode_ptr node);
+    Character(CharacterType type);
     virtual ~Character();
 
     /// Set unit type
@@ -133,6 +133,9 @@ class Character : public Unit {
     void playNextAnimation();
     void playPreviousAnimation();
     void pauseAnimation(bool state);
+
+   protected:
+    void setParentNode(SceneGraphNode_ptr node) override;
 
    private:
     CharacterType _type;

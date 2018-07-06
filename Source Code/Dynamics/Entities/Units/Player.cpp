@@ -4,14 +4,13 @@
 
 namespace Divide {
 
-Player::Player(SceneGraphNode_ptr node, U8 index)
-    : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER, node),
+Player::Player(U8 index)
+    : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER),
       _index(index)
 {
      _lockedControls = false;
 
-     _playerCam = Camera::createCamera(Util::StringFormat("%s_Cam", node->getName().c_str()),
-                                       Camera::CameraType::FREE_FLY);
+     _playerCam = Camera::createCamera(Util::StringFormat("Player_%d_Cam", getGUID()), Camera::CameraType::FREE_FLY);
 }
 
 Player::~Player()

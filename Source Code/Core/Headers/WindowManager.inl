@@ -43,23 +43,23 @@ inline void WindowManager::targetDisplay(I32 displayIndex) {
 }
 
 inline DisplayWindow& WindowManager::getWindow(I64 guid) {
-    for (DisplayWindow& win : _windows) {
-        if (win.getGUID() == guid) {
-            return win;
+    for (DisplayWindow* win : _windows) {
+        if (win->getGUID() == guid) {
+            return *win;
         }
     }
 
-    return _windows[0];
+    return *_windows.front();
 }
 
 inline const DisplayWindow& WindowManager::getWindow(I64 guid) const {
-    for (const DisplayWindow& win : _windows) {
-        if (win.getGUID() == guid) {
-            return win;
+    for (const DisplayWindow* win : _windows) {
+        if (win->getGUID() == guid) {
+            return *win;
         }
     }
 
-    return _windows[0];
+    return *_windows.front();
 }
 
 inline DisplayWindow& WindowManager::getActiveWindow() {

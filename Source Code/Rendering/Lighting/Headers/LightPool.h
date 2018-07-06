@@ -36,6 +36,7 @@
 
 #include "Scenes/Headers/SceneComponent.h"
 #include "Rendering/Lighting/Headers/Light.h"
+#include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {
 
@@ -158,6 +159,8 @@ class LightPool : public SceneComponent {
 
   private:
     GFXDevice& _context;
+
+    vectorImpl<TaskHandle> _lightCullTasks;
 
     std::array<bool, to_const_uint(LightType::COUNT)> _lightTypeState;
     std::array<Light::LightList, to_const_uint(LightType::COUNT)> _lights;

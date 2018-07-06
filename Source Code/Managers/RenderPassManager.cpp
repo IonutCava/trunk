@@ -36,22 +36,28 @@ void RenderPassManager::destroy() {
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     // Attempt to build draw commands in parallel
+
+
     TaskPool& pool = Application::instance().kernel().taskPool();
-    TaskHandle renderCommandTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
-    for (RenderPass* rp : _renderPasses)
+
+    U8 passCount = to_ubyte(_renderPasses.size());
+    _renderCmdTasks.clear();
+    _renderCmdTasks.reserve(passCount);
+
+    for (U8 i = 0; i < passCount; ++i)
     {
-        renderCommandTask.addChildTask(CreateTask(pool,
+        RenderPass* rp  =  _renderPasses[i];
+        _renderCmdTasks.emplace_back(CreateTask(pool,
             [rp](const Task& parentTask) mutable
             {
                 rp->generateDrawCommands();
-            })._task
-            )->startTask(Task::TaskPriority::HIGH);
+        }));
+        _renderCmdTasks[i].startTask(Task::TaskPriority::HIGH);
     }
-    
-    renderCommandTask.startTask(Task::TaskPriority::HIGH);
-    renderCommandTask.wait();
 
-    for (RenderPass* rp : _renderPasses) {
+    for (U8 i = 0; i < passCount; ++i) {
+        RenderPass* rp = _renderPasses[i];
+        _renderCmdTasks[i].wait();
         rp->render(sceneRenderState);
     }
 }

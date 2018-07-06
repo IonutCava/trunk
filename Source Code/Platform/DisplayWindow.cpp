@@ -7,8 +7,9 @@
 #include <SDL.h>
 
 namespace Divide {
-DisplayWindow::DisplayWindow()
+DisplayWindow::DisplayWindow(WindowManager& context)
  : GUIDWrapper(),
+   _context(context),
    _hasFocus(true),
    _minimized(false),
    _hidden(true),
@@ -43,15 +44,14 @@ ErrorCode DisplayWindow::destroyWindow() {
 ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, const ResolutionByType& initialResolutions) {
     ParamHandler& par = ParamHandler::instance();
     Application& app = Application::instance();
-    WindowManager& wManager = app.windowManager();
 
     _type = initialType;
 
     _windowDimensions = initialResolutions;
 
     _mainWindow = SDL_CreateWindow(par.getParam<stringImpl>(_ID("appTitle"), "Divide").c_str(),
-                                   SDL_WINDOWPOS_CENTERED_DISPLAY(wManager.targetDisplay()),
-                                   SDL_WINDOWPOS_CENTERED_DISPLAY(wManager.targetDisplay()),
+                                   SDL_WINDOWPOS_CENTERED_DISPLAY(_context.targetDisplay()),
+                                   SDL_WINDOWPOS_CENTERED_DISPLAY(_context.targetDisplay()),
                                    1,
                                    1,
                                    windowFlags);
@@ -73,9 +73,6 @@ ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, const Res
 }
 
 void DisplayWindow::update() {
-    Application& app = Application::instance();
-    WindowManager& wManager = app.windowManager();
-
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -83,20 +80,20 @@ void DisplayWindow::update() {
         {
         case SDL_QUIT: {
             SDL_HideWindow(_mainWindow);
-            app.RequestShutdown();
+            Application::instance().RequestShutdown();
         } break;
         case SDL_WINDOWEVENT: {
             switch (event.window.event) {
             case SDL_WINDOWEVENT_ENTER:
             case SDL_WINDOWEVENT_FOCUS_GAINED: {
-                wManager.handleWindowEvent(WindowEvent::GAINED_FOCUS,
+                _context.handleWindowEvent(WindowEvent::GAINED_FOCUS,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
             } break;
             case SDL_WINDOWEVENT_LEAVE:
             case SDL_WINDOWEVENT_FOCUS_LOST: {
-                wManager.handleWindowEvent(WindowEvent::LOST_FOCUS,
+                _context.handleWindowEvent(WindowEvent::LOST_FOCUS,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
@@ -109,13 +106,13 @@ void DisplayWindow::update() {
                 _externalResizeEvent = false;
             }break;
             case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                wManager.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
+                _context.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
             } break;
             case SDL_WINDOWEVENT_MOVED: {
-                wManager.handleWindowEvent(WindowEvent::MOVED,
+                _context.handleWindowEvent(WindowEvent::MOVED,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
@@ -128,31 +125,31 @@ void DisplayWindow::update() {
                 }
             } break;
             case SDL_WINDOWEVENT_SHOWN: {
-                wManager.handleWindowEvent(WindowEvent::SHOWN,
+                _context.handleWindowEvent(WindowEvent::SHOWN,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
             } break;
             case SDL_WINDOWEVENT_HIDDEN: {
-                wManager.handleWindowEvent(WindowEvent::HIDDEN,
+                _context.handleWindowEvent(WindowEvent::HIDDEN,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
             } break;
             case SDL_WINDOWEVENT_MINIMIZED: {
-                wManager.handleWindowEvent(WindowEvent::MAXIMIZED,
+                _context.handleWindowEvent(WindowEvent::MAXIMIZED,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
             } break;
             case SDL_WINDOWEVENT_MAXIMIZED: {
-                wManager.handleWindowEvent(WindowEvent::MAXIMIZED,
+                _context.handleWindowEvent(WindowEvent::MAXIMIZED,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
             } break;
             case SDL_WINDOWEVENT_RESTORED: {
-                wManager.handleWindowEvent(WindowEvent::RESTORED,
+                _context.handleWindowEvent(WindowEvent::RESTORED,
                     getGUID(),
                     event.window.data1,
                     event.window.data2);
@@ -169,8 +166,6 @@ void DisplayWindow::update() {
 }
 
 void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
-    WindowManager& winManager = Application::instance().windowManager();
-
     if (_externalResizeEvent && 
         (_type != WindowType::WINDOW &&
          _type != WindowType::SPLASH))
@@ -181,19 +176,19 @@ void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
     if (_type == WindowType::FULLSCREEN) {
         // Should never be true, but need to be sure
         SDL_DisplayMode mode, closestMode;
-        SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &mode);
+        SDL_GetCurrentDisplayMode(_context.targetDisplay(), &mode);
         mode.w = w;
         mode.h = h;
-        SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closestMode);
+        SDL_GetClosestDisplayMode(_context.targetDisplay(), &mode, &closestMode);
         SDL_SetWindowDisplayMode(_mainWindow, &closestMode);
     } else {
         if (_externalResizeEvent) {
             // Find a decent resolution close to our dragged dimensions
             SDL_DisplayMode mode, closestMode;
-            SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &mode);
+            SDL_GetCurrentDisplayMode(_context.targetDisplay(), &mode);
             mode.w = w;
             mode.h = h;
-            SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closestMode);
+            SDL_GetClosestDisplayMode(_context.targetDisplay(), &mode, &closestMode);
             w = to_ushort(closestMode.w);
             h = to_ushort(closestMode.h);
         }
@@ -211,10 +206,10 @@ void DisplayWindow::setPositionInternal(I32 w, I32 h) {
 /// Centering is also easier via SDL
 void DisplayWindow::centerWindowPosition() {
     _internalMoveEvent = true;
-    const WindowManager& winManager = Application::instance().windowManager();
+
     setPosition(type(),
-                SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()),
-                SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()));
+                SDL_WINDOWPOS_CENTERED_DISPLAY(_context.targetDisplay()),
+                SDL_WINDOWPOS_CENTERED_DISPLAY(_context.targetDisplay()));
 }
 
 /// Mouse positioning is handled by SDL

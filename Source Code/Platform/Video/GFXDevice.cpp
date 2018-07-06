@@ -394,6 +394,12 @@ void GFXDevice::updateViewportInternal(I32 x, I32 y, I32 width, I32 height) {
     updateViewportInternal(vec4<I32>(x, y, width, height));
 }
 
+void GFXDevice::setSceneZPlanes(const vec2<F32>& zPlanes) {
+    GFXShaderData::GPUData& data = _gpuBlock._data;
+    data._ZPlanesCombined.zw(zPlanes);
+    _gpuBlock._needsUpload = true;
+}
+
 void GFXDevice::renderFromCamera(Camera& camera) {
     Camera::activeCamera(&camera);
 

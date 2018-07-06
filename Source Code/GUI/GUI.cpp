@@ -100,19 +100,24 @@ void GUI::draw(GFXDevice& context) const {
 
     // global elements
     textBatch.resize(0);
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        GUIElement& element = *guiStackIterator.second.first;
-        // Skip hidden elements
-        if (element.isVisible()) {
-            // Cache text elements
-            if (element.getType() == GUIType::GUI_TEXT) {
-                GUIText& textElement = static_cast<GUIText&>(element);
-                if (!textElement.text().empty()) {
-                    textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
+
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        if (i != to_const_uint(GUIType::GUI_TEXT)) {
+            for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+                GUIElement& element = *guiStackIterator.second.first;
+                // Skip hidden elements
+                if (element.isVisible()) {
+                    element.draw(context);
                 }
-            } else {
-                element.draw(context);
             }
+        }
+    }
+
+    //cache text elements
+    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_const_uint(GUIType::GUI_TEXT)]) {
+        GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
+        if (!textElement.text().empty()) {
+            textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
         }
     }
 
@@ -297,10 +302,12 @@ void GUI::destroy() {
         {
             WriteLock w_lock(_guiStackLock);
             assert(_guiStack.empty());
-            for (GUIMap::value_type& it : _guiElements) {
-                MemoryManager::DELETE(it.second.first);
+            for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+                for (GUIMap::value_type& it : _guiElements[i]) {
+                    MemoryManager::DELETE(it.second.first);
+                }
+                _guiElements[i].clear();
             }
-            _guiElements.clear();
         }
 
         _defaultMsgBox = nullptr;
@@ -468,7 +475,7 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
 }
 
 
-GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName) const {
+GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {
     if (sceneID != 0) {
         ReadLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
@@ -476,13 +483,13 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName) const {
             return it->second->getGUIElement(elementName);
         }
     } else {
-        return GUIInterface::getGUIElement(elementName);
+        return GUIInterface::getGUIElementImpl(elementName, type);
     }
 
     return nullptr;
 }
 
-GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID) const {
+GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const {
     if (sceneID != 0) {
         ReadLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
@@ -490,7 +497,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID) const {
             return it->second->getGUIElement(elementID);
         }
     } else {
-        return GUIInterface::getGUIElement(elementID);
+        return GUIInterface::getGUIElementImpl(elementID, type);
     }
 
     return nullptr;

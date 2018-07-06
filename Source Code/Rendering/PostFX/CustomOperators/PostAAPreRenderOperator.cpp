@@ -10,7 +10,8 @@ namespace Divide {
 PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, ResourceCache& cache, RenderTarget* hdrTarget, RenderTarget* ldrTarget)
     : PreRenderOperator(context, cache, FilterType::FILTER_SS_ANTIALIASING, hdrTarget, ldrTarget),
       _useSMAA(false),
-      _postAASamples(0)
+      _postAASamples(0),
+      _idleCount(0)
 {
     _samplerCopy = _context.allocateRT("PostAA");
     _samplerCopy._rt->addAttachment(_ldrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0, false);
@@ -35,7 +36,12 @@ void PostAAPreRenderOperator::idle() {
         _postAASamples = samples;
         _fxaa->Uniform("dvd_qualityMultiplier", _postAASamples);
     }
-    _useSMAA = par.getParam<stringImpl>(_ID("rendering.PostAAType"), "FXAA").compare("SMAA") == 0;
+
+    if (_idleCount == 0) {
+        _useSMAA = par.getParam<U64>(_ID("rendering.PostAAType"), _ID("FXAA")) == _ID("SMAA");
+    }
+
+    _idleCount = (++_idleCount % 60);
 }
 
 void PostAAPreRenderOperator::reshape(U16 width, U16 height) {

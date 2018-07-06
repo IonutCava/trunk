@@ -40,7 +40,7 @@ namespace Divide {
 class Camera;
 class Player : public Character {
    public:
-    explicit Player(SceneGraphNode_ptr node, U8 index);
+    explicit Player(U8 index);
     ~Player();
 
     /// Do not allow or allow the user again to control this player

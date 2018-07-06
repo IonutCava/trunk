@@ -250,10 +250,12 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
 void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     // Sort all lights (Sort in parallel by type)
     TaskPool& pool = Application::instance().kernel().taskPool();
-    TaskHandle cullTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
-    for (Light::LightList& lights : _lights) {
+    _lightCullTasks.clear();
+    _lightCullTasks.reserve(to_const_uint(LightType::COUNT));
+    for (U8 i = 0; i < to_const_uint(LightType::COUNT); ++i) {
+        Light::LightList& lights = _lights[i];
         if (!lights.empty()) {
-            cullTask.addChildTask(CreateTask(pool,
+            _lightCullTasks.emplace_back(CreateTask(pool,
                 [&eyePos, &lights](const Task& parentTask) mutable
                 {
                     std::sort(std::begin(lights), std::end(lights),
@@ -262,13 +264,10 @@ void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32
                         return a->getPosition().distanceSquared(eyePos) <
                                b->getPosition().distanceSquared(eyePos);
                     });
-                })._task
-            )->startTask(Task::TaskPriority::HIGH);
+            }));
+            _lightCullTasks.back().startTask(Task::TaskPriority::HIGH);
         }
     }
-
-    cullTask.startTask(Task::TaskPriority::HIGH);
-    cullTask.wait();
 
     vec3<F32> tempColour;
     // Create and upload light data for current pass
@@ -276,7 +275,11 @@ void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32
     _shadowCastingLights.fill(nullptr);
     U32 totalLightCount = 0;
     U32 lightShadowPropertiesCount = 0;
-    for(Light::LightList& lights : _lights) {
+    for (U8 i = 0; i < to_const_uint(LightType::COUNT); ++i) {
+        Light::LightList& lights = _lights[i];
+        if (!lights.empty()) {
+            _lightCullTasks[i].wait();
+        }
         for (Light* light : lights) {
             LightType type = light->getLightType();
             U32 typeUint = to_uint(type);
@@ -320,7 +323,6 @@ void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32
             totalLightCount++;
             _activeLightCount[typeUint]++;
         }
-
     }
 
     // Passing 0 elements is fine (early out in the buffer code)

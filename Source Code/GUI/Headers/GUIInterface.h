@@ -59,7 +59,7 @@ public:
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
-        return static_cast<T*>(getGUIElementImpl(elementName));
+        return static_cast<T*>(getGUIElementImpl(elementName, getTypeEnum<T>()));
     }
 
     template<typename T = GUIElement>
@@ -67,7 +67,7 @@ public:
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
-        return static_cast<T*>(getGUIElementImpl(elementID));
+        return static_cast<T*>(getGUIElementImpl(elementID, getTypeEnum<T>()));
     }
 
     virtual GUIText* addText(U64 guiID,
@@ -103,13 +103,13 @@ public:
 
 protected:
     void addElement(U64 id, GUIElement* element);
-    virtual GUIElement* getGUIElementImpl(U64 elementName) const;
-    virtual GUIElement* getGUIElementImpl(I64 elementID) const;
+    virtual GUIElement* getGUIElementImpl(U64 elementName, GUIType type) const;
+    virtual GUIElement* getGUIElementImpl(I64 elementID, GUIType type) const;
 
 protected:
     GUI* _context;
 
-    GUIMap _guiElements;
+    std::array<GUIMap, to_const_uint(GUIType::COUNT)> _guiElements;
 
     vec2<U16> _resolutionCache;
 };

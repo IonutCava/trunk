@@ -63,6 +63,6 @@
 	<enableSSAO>false</enableSSAO>
 </rendering>  
 
-<title>DIVIDE Framework - (C) Ionut Cava 2015</title>
+<title>DIVIDE Framework - (C) Ionut Cava 2017</title>
 <defaultTextureLocation>textures</defaultTextureLocation>
 <defaultShadersLocation>shaders</defaultShadersLocation>

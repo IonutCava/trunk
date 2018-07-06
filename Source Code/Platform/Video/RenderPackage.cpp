@@ -111,16 +111,16 @@ const RenderPackage& RenderPackageQueue::getPackage(U32 idx) const {
 
 RenderPackage& RenderPackageQueue::getPackage(U32 idx) {
     assert(idx < Config::MAX_VISIBLE_NODES);
-    return _packages.at(idx);
+    return _packages[idx];
 }
 
 RenderPackage& RenderPackageQueue::back() {
-    return _packages.at(std::max(to_int(_currentCount) - 1, 0));
+    return _packages[std::max(to_int(_currentCount) - 1, 0)];
 }
 
 bool RenderPackageQueue::push_back(const RenderPackage& package) {
     if (_currentCount <= Config::MAX_VISIBLE_NODES) {
-        _packages.at(_currentCount++).set(package);
+        _packages[_currentCount++].set(package);
         return true;
     }
     return false;

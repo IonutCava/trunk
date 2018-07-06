@@ -213,6 +213,9 @@ public:  // GPU interface
     /// Returns true if the viewport was changed
     bool setViewport(const vec4<I32>& viewport);
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
+
+    void setSceneZPlanes(const vec2<F32>& zPlanes);
+
     /// Switch between fullscreen rendering
     void toggleFullScreen();
     void increaseResolution();

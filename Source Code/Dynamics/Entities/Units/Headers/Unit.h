@@ -37,12 +37,18 @@
 
 namespace Divide {
 
+class UnitComponent;
+namespace Attorney {
+    class UnitComponent;
+};
+
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// Unit interface
 class Unit : public FrameListener {
    public:
     typedef hashMapImpl<U32, I32> AttributeMap;
+    friend class Attorney::UnitComponent;
 
    public:
     /// Currently supported unit types
@@ -55,7 +61,7 @@ class Unit : public FrameListener {
         COUNT
     };
 
-    Unit(UnitType type, SceneGraphNode_ptr node);
+    Unit(UnitType type);
     virtual ~Unit();
 
     /// moveTo makes the unit follow a path from it's current position to the
@@ -112,6 +118,9 @@ class Unit : public FrameListener {
     virtual I32 getAttribute(U32 attributeID) const;
 
    protected:
+    virtual void setParentNode(SceneGraphNode_ptr node);
+
+   protected:
     /// Unit type
     UnitType _type;
     /// Movement speed (meters per second)
@@ -130,7 +139,15 @@ class Unit : public FrameListener {
     AttributeMap _attributes;
     mutable SharedLock _unitUpdateMutex;
 };
-
+namespace Attorney {
+    class UnitComponent {
+    private:
+        static void setParentNode(Unit& unit, SceneGraphNode_ptr node) {
+            unit.setParentNode(node);
+        }
+        friend class Divide::UnitComponent;
+    };
+};
 };  // namespace Divide
 
 #endif

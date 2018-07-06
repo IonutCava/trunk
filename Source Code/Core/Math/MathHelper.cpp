@@ -90,8 +90,8 @@ vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
 }
 
 stringImpl StringFormat(const char *const format, ...) {
-    auto temp = vectorImpl<char>{};
-    auto length = std::size_t{ 63 };
+    vectorImpl<char> temp;
+    std::size_t length = 63;
     std::va_list args;
     while (temp.size() <= length) {
         temp.resize(length + 1);
@@ -102,7 +102,7 @@ stringImpl StringFormat(const char *const format, ...) {
         length = static_cast<std::size_t>(status);
     }
 
-    return stringImpl{ temp.data(), length };
+    return stringImpl(temp.data(), length);
 }
 
 bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {

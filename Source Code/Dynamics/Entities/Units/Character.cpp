@@ -5,13 +5,22 @@
 
 namespace Divide {
 
-Character::Character(CharacterType type, SceneGraphNode_ptr node)
-    : Unit(Unit::UnitType::UNIT_TYPE_CHARACTER, node), _type(type) {
+Character::Character(CharacterType type)
+    : Unit(Unit::UnitType::UNIT_TYPE_CHARACTER), _type(type)
+{
     _positionDirty = false;
     _velocityDirty = false;
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();
+}
+
+Character::~Character()
+{
+}
+
+void Character::setParentNode(SceneGraphNode_ptr node) {
+    Unit::setParentNode(node);
     PhysicsComponent* const transform = node->get<PhysicsComponent>();
     if (transform) {
         _newPosition.set(transform->getPosition());
@@ -19,10 +28,6 @@ Character::Character(CharacterType type, SceneGraphNode_ptr node)
         _curPosition.set(_oldPosition);
         _positionDirty = true;
     }
-}
-
-Character::~Character()
-{
 }
 
 void Character::update(const U64 deltaTime) {
@@ -77,7 +82,9 @@ void Character::setVelocity(const vec3<F32>& newVelocity) {
     _velocityDirty = true;
 }
 
-vec3<F32> Character::getPosition() const { return _curPosition; }
+vec3<F32> Character::getPosition() const {
+    return _curPosition;
+}
 
 vec3<F32> Character::getLookingDirection() {
     SceneGraphNode_ptr node(getBoundNode().lock());
@@ -102,7 +109,6 @@ void Character::lookAt(const vec3<F32>& targetPos) {
             targetPos));
     _velocityDirty = true;
 }
-
 
 void Character::playAnimation(I32 index) {
     SceneGraphNode_ptr node(getBoundNode().lock());

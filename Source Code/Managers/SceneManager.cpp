@@ -294,18 +294,16 @@ void SceneManager::onChangeResolution(U16 w, U16 h) {
     par.setParam<F32>(_ID("rendering.aspectRatio"), aspectRatio);
 
     if (_init) {
+        F32 fov = par.getParam<F32>(_ID("rendering.verticalFOV"));
+        vec2<F32> zPlanes(par.getParam<F32>(_ID("rendering.zNear")),
+                          par.getParam<F32>(_ID("rendering.zFar")));
+
         for (const Player_ptr& player : getPlayers()) {
-            player->getCamera().setProjection(aspectRatio,
-                                              par.getParam<F32>(_ID("rendering.verticalFOV")),
-                                              vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
-                                                        par.getParam<F32>(_ID("rendering.zFar"))));
+            player->getCamera().setProjection(aspectRatio, fov, zPlanes);
         }
 
         Camera& baseCam = Attorney::SceneManager::baseCamera(getActiveScene());
-        baseCam.setProjection(aspectRatio,
-                              par.getParam<F32>(_ID("rendering.verticalFOV")),
-                              vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
-                                        par.getParam<F32>(_ID("rendering.zFar"))));
+        baseCam.setProjection(aspectRatio, fov, zPlanes);
     }
 }
 
@@ -325,7 +323,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_pt
         }
     }
 
-    Player_ptr player = std::make_shared<Player>(playerNode, to_ubyte(_players.size()));
+    Player_ptr player = std::make_shared<Player>(to_ubyte(_players.size()));
     player->getCamera().fromCamera(Attorney::SceneManager::baseCamera(parentScene));
     player->getCamera().setFixedYawAxis(true);
     playerNode->get<UnitComponent>()->setUnit(player);
@@ -471,7 +469,9 @@ Camera* SceneManager::getActiveCamera() const {
 
 void SceneManager::currentPlayerPass(U8 playerIndex) {
     _currentPlayerPass = playerIndex;
-    Camera::activeCamera(&getPlayers().at(_currentPlayerPass)->getCamera());
+    Camera& playerCam = getPlayers().at(_currentPlayerPass)->getCamera();
+    _platformContext->gfx().setSceneZPlanes(playerCam.getZPlanes());
+    Camera::activeCamera(&playerCam);
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), playerIndex);
 }
 

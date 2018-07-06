@@ -49,6 +49,7 @@ class PostAAPreRenderOperator : public PreRenderOperator {
     void reshape(U16 width, U16 height) override;
 
    private:
+    I32 _idleCount;
     bool _useSMAA;
     I32 _postAASamples;
     ShaderProgram_ptr _fxaa;

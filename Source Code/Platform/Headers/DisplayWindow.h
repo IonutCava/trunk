@@ -55,7 +55,7 @@ enum class ErrorCode : I32;
 class DisplayWindow : public GUIDWrapper {
 
 public:
-    DisplayWindow();
+    DisplayWindow(WindowManager& context);
     ~DisplayWindow();
     ErrorCode init(U32 windowFlags, WindowType initialType, const ResolutionByType& initialResolutions);
     void update();
@@ -104,6 +104,7 @@ private:
     void handleChangeWindowType(WindowType newWindowType);
 
 private:
+    WindowManager& _context;
     /// The current rendering window type
     WindowType _type;
     WindowType _previousType;

@@ -76,6 +76,9 @@ class RTDrawDescriptor {
     inline const RTDrawMask& drawMask() const { return _drawMask; }
     inline U32 stateMask() const { return _stateMask; }
 
+    bool operator==(const RTDrawDescriptor& other) const;
+    bool operator!=(const RTDrawDescriptor& other) const;
+
   protected:
     RTDrawMask _drawMask;
     U32 _stateMask;

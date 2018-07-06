@@ -29,36 +29,44 @@ SceneGUIElements::~SceneGUIElements()
 void SceneGUIElements::draw(GFXDevice& context) {
     static vectorImpl<GUITextBatchEntry> textBatch;
     textBatch.resize(0);
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        GUIElement& element = *guiStackIterator.second.first;
-        // Skip hidden elements
-        if (element.isVisible()) {
-            // Cache text elements
-            if (element.getType() == GUIType::GUI_TEXT) {
-                GUIText& textElement = static_cast<GUIText&>(element);
-                if (!textElement.text().empty()) {
-                    textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
+
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        if (i != to_const_uint(GUIType::GUI_TEXT)) {
+            for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+                GUIElement& element = *guiStackIterator.second.first;
+                // Skip hidden elements
+                if (element.isVisible()) {
+                    element.draw(context);
                 }
-            }
-            else {
-                element.draw(context);
             }
         }
     }
+
+    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_const_uint(GUIType::GUI_TEXT)]) {
+        GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
+        if (!textElement.text().empty()) {
+            textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
+        }
+    }
+
     if (!textBatch.empty()) {
         Attorney::GFXDeviceGUI::drawText(context, textBatch);
     }
 }
 
 void SceneGUIElements::onEnable() {
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        guiStackIterator.second.first->setVisible(guiStackIterator.second.second);
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+            guiStackIterator.second.first->setVisible(guiStackIterator.second.second);
+        }
     }
 }
 
 void SceneGUIElements::onDisable() {
-    for (const GUIMap::value_type& guiStackIterator : _guiElements) {
-        guiStackIterator.second.first->setVisible(false);
+    for (U8 i = 0; i < to_const_uint(GUIType::COUNT); ++i) {
+        for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
+            guiStackIterator.second.first->setVisible(false);
+        }
     }
 }
 
