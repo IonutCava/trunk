@@ -39,6 +39,7 @@ LightPool::LightPool(Scene& parentScene, GFXDevice& context)
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
      _shadowPassTimer(Time::ADD_TIMER("Shadow Pass Timer"))
 {
+    _activeLightCount.fill(0);
     _lightTypeState.fill(true);
     // NORMAL holds general info about the currently active
     // lights: position, colour, etc.
