@@ -60,7 +60,7 @@ class AudioDescriptor : public Resource {
         return true;
     }
 
-    inline const stringImpl& getAudioFile() const { 
+    inline stringImpl getAudioFile() const { 
         return getResourceLocation() + getResourceName();
     }
 
