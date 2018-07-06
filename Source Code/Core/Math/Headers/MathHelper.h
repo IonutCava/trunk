@@ -266,8 +266,10 @@ vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
                               vectorImpl<stringImpl>& elems);
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
 stringImpl& Ltrim(stringImpl& s);
+stringImpl Ltrim(const stringImpl& s);
 
 stringImpl& Rtrim(stringImpl& s);
+stringImpl Rtrim(const stringImpl& s);
 
 stringImpl& Trim(stringImpl& s);
 stringImpl  Trim(const stringImpl& s);

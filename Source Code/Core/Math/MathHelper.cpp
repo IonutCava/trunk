@@ -30,7 +30,8 @@ bool IsNumber(const stringImpl& s) {
 
 stringImpl GetTrailingCharacters(const stringImpl& input, size_t count) {
     size_t inputLength = input.length();
-    assert(count > 0 && count <= inputLength);
+    count = std::min(inputLength, count);
+    assert(count > 0);
     return input.substr(inputLength - count, inputLength);
 }
 

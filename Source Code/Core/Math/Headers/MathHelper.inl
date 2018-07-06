@@ -304,11 +304,21 @@ U ConvertData(const T& data) {
 }
 
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+inline stringImpl Ltrim(const stringImpl& s) {
+    stringImpl temp(s);
+    return Ltrim(temp);
+}
+
 inline stringImpl& Ltrim(stringImpl& s) {
     s.erase(std::begin(s),
             std::find_if(std::begin(s), std::end(s),
                          std::not1(std::ptr_fun<int, int>(std::isspace))));
     return s;
+}
+
+inline stringImpl Rtrim(const stringImpl& s) {
+    stringImpl temp(s);
+    return Rtrim(temp);
 }
 
 inline stringImpl& Rtrim(stringImpl& s) {

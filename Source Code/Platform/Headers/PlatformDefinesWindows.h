@@ -32,9 +32,6 @@
 #ifndef _PLATFORM_DEFINES_WINDOWS_H_
 #define _PLATFORM_DEFINES_WINDOWS_H_
 
-/// Comment this out to show the debug console
-#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
-
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct
 
