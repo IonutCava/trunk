@@ -192,10 +192,16 @@ bool QuadtreeNode::isInView(U32 options,
 }
 
 void QuadtreeNode::drawBBox() const {
-    IMPrimitive& prim =
-        GFX_DEVICE.drawBox3D(_boundingBox.getMin(), _boundingBox.getMax(),
-                             vec4<U8>(0, 128, 255, 255), 10.0f);
-    prim.name("QuadtreeNodeBoundingBox");
+    IMPrimitive* primitive = GFX_DEVICE.getOrCreatePrimitive();
+    primitive->name("QuadtreeNodeBoundingBox");
+    RenderStateBlockDescriptor primitiveDescriptor;
+    primitiveDescriptor.setLineWidth(4.0f);
+    primitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+    GFX_DEVICE.drawBox3D(*primitive, 
+                         _boundingBox.getMin(),
+                         _boundingBox.getMax(),
+                         vec4<U8>(0, 128, 255, 255));
+    
 
     if (!isALeaf()) {
         _children[to_uint(ChildPosition::CHILD_NW)]->drawBBox();

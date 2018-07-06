@@ -2,6 +2,7 @@
 #define _SCENE_NODE_RENDER_STATE_H_
 
 #include "Platform/Video/Headers/RenderStateBlock.h"
+
 namespace Divide {
 
 class SceneNodeRenderState {

@@ -31,10 +31,16 @@ void Quadtree::createDrawCommands(
 void Quadtree::drawBBox() const {
     assert(_root);
     _root->drawBBox();
-    IMPrimitive& prim = GFX_DEVICE.drawBox3D(_root->getBoundingBox().getMin(),
-                                             _root->getBoundingBox().getMax(),
-                                             vec4<U8>(0, 64, 255, 255), 8.0f);
-    prim.name("QuadtreeBoundingBox");
+    
+    IMPrimitive* primitive = GFX_DEVICE.getOrCreatePrimitive();
+    primitive->name("QuadtreeBoundingBox");
+    RenderStateBlockDescriptor primitiveDescriptor;
+    primitiveDescriptor.setLineWidth(8.0f);
+    primitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+    GFX_DEVICE.drawBox3D(*primitive,
+                         _root->getBoundingBox().getMin(),
+                         _root->getBoundingBox().getMax(),
+                         vec4<U8>(0, 64, 255, 255));
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {

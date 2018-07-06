@@ -7,7 +7,6 @@
 #include "Headers/NavMesh.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 namespace AI {

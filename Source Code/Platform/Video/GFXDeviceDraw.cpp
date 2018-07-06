@@ -365,24 +365,12 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
     }
 }
 
-IMPrimitive& GFXDevice::drawBox3D(const vec3<F32>& min,
-                                  const vec3<F32>& max,
-                                  const vec4<U8>& color,
-                                  F32 lineWidth) {
-    // Grab an available primitive
-    IMPrimitive* priv = getOrCreatePrimitive();
-    return drawBox3D(*priv, min, max, color, lineWidth);
-}
-
 /// Draw the outlines of a box defined by min and max as extents using the
 /// specified world matrix
-IMPrimitive& GFXDevice::drawBox3D(IMPrimitive& primitive,
-                                  const vec3<F32>& min, const vec3<F32>& max,
-                                  const vec4<U8>& color, F32 lineWidth) {
-    // Prepare it for rendering lines
-    primitive._hasLines = true;
-    primitive._lineWidth = lineWidth;
-    primitive.stateHash(_defaultStateBlockHash);
+void GFXDevice::drawBox3D(IMPrimitive& primitive,
+                          const vec3<F32>& min,
+                          const vec3<F32>& max,
+                          const vec4<U8>& color)  {
     // Create the object
     primitive.beginBatch(true, 16);
     // Set it's color
@@ -414,37 +402,18 @@ IMPrimitive& GFXDevice::drawBox3D(IMPrimitive& primitive,
     primitive.end();
     // Finish our object
     primitive.endBatch();
-
-    return primitive;
-}
-
-IMPrimitive& GFXDevice::drawLines(const vectorImpl<Line>& lines,
-                                  F32 lineWidth,
-                                  const mat4<F32>& globalOffset,
-                                  const vec4<I32>& viewport,
-                                  const bool inViewport,
-                                  const bool disableDepth) {
-    // Grab an available primitive
-    IMPrimitive* priv = getOrCreatePrimitive();
-    return drawLines(*priv, lines, lineWidth, globalOffset, viewport, inViewport,
-                     disableDepth);
 }
 
 /// Render a list of lines within the specified constraints
-IMPrimitive& GFXDevice::drawLines(IMPrimitive& primitive,
-                                  const vectorImpl<Line>& lines, F32 lineWidth,
-                                  const mat4<F32>& globalOffset,
-                                  const vec4<I32>& viewport,
-                                  const bool inViewport,
-                                  const bool disableDepth) {
+void GFXDevice::drawLines(IMPrimitive& primitive,
+                          const vectorImpl<Line>& lines,
+                          const mat4<F32>& globalOffset,
+                          const vec4<I32>& viewport,
+                          const bool inViewport) {
 
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (!lines.empty()) {
-        // Prepare it for line rendering
-        primitive._hasLines = true;
-        primitive._lineWidth = lineWidth;
-        primitive.stateHash(getDefaultStateBlock(disableDepth));
         // Set the world matrix
         primitive.worldMatrix(globalOffset);
         // If we need to render it into a specific viewport, set the pre and post
@@ -471,7 +440,6 @@ IMPrimitive& GFXDevice::drawLines(IMPrimitive& primitive,
         primitive.endBatch();
     }
 
-    return primitive;
 }
 
 };

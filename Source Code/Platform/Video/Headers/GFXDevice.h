@@ -185,10 +185,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void toggleRasterization(bool state) override;
     /// Query rasterization state
     inline bool rasterizationState();
-    /// Change the width of rendered lines to the specified value
-    inline void setLineWidth(F32 width) override;
-    /// Restore the width of rendered lines to the previously set value
-    inline void restoreLineWidth();
     void postProcessingEnabled(const bool state);
     /**
      *@brief Returns an immediate mode emulation buffer that can be used to
@@ -200,22 +196,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     IMPrimitive* getOrCreatePrimitive(bool allowPrimitiveRecycle = true);
 
     void debugDraw(const SceneRenderState& sceneRenderState);
-    IMPrimitive& drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
-                           const vec4<U8>& color, F32 lineWidth);
-    IMPrimitive& drawBox3D(IMPrimitive& primitive,
-                           const vec3<F32>& min, const vec3<F32>& max,
-                           const vec4<U8>& color, F32 lineWidth);
-    IMPrimitive& drawLines(const vectorImpl<Line>& lines, F32 lineWidth,
-                           const mat4<F32>& globalOffset,
-                           const vec4<I32>& viewport,  //<only for ortho mode
-                           const bool inViewport = false,
-                           const bool disableDepth = false);
-    IMPrimitive& drawLines(IMPrimitive& primitive,
-                           const vectorImpl<Line>& lines, F32 lineWidth,
-                           const mat4<F32>& globalOffset,
-                           const vec4<I32>& viewport,  //<only for ortho mode
-                           const bool inViewport = false,
-                           const bool disableDepth = false);
+    void drawBox3D(IMPrimitive& primitive,
+                   const vec3<F32>& min, const vec3<F32>& max,
+                   const vec4<U8>& color);
+    void drawLines(IMPrimitive& primitive,
+                   const vectorImpl<Line>& lines,
+                   const mat4<F32>& globalOffset,
+                   const vec4<I32>& viewport,  //<only for ortho mode
+                   const bool inViewport = false);
 
     void drawPoints(U32 numPoints, size_t stateHash,
                     ShaderProgram* const shaderProgram);
@@ -510,14 +498,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     size_t _currentStateBlockHash;
     size_t _previousStateBlockHash;
     size_t _defaultStateBlockHash;
-    size_t _defaultStateNoDepthHash;  //<The default render state buth with depth
-                                      //testing disabled
-    size_t _state2DRenderingHash;     //<Special render state for 2D rendering
+    /// The default render state buth with depth testing disabled
+    size_t _defaultStateNoDepthHash;  
+    /// Special render state for 2D rendering
+    size_t _state2DRenderingHash;     
     size_t _stateDepthOnlyRenderingHash;
     /// The interpolation factor between the current and the last frame
     D32 _interpolationFactor;
-    /// Line width management
-    F32 _previousLineWidth, _currentLineWidth;
     PlaneList _clippingPlanes;
     bool _enablePostProcessing;
     bool _enableAnaglyph;

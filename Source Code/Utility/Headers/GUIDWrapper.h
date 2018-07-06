@@ -50,7 +50,7 @@ class GUIDWrapper {
     inline I64 getGUID() const { return _GUID; }
 
    private:
-    void operator=(const GUIDWrapper& old) {}
+    void operator=(const GUIDWrapper& old) = delete;
 
    protected:
     const I64 _GUID;

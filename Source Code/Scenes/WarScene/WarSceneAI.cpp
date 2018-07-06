@@ -10,7 +10,7 @@
 namespace Divide {
 
 namespace {
-    static std::atomic_bool g_navMeshStarted;
+    static bool g_navMeshStarted = false;
 };
 
 void WarScene::registerPoint(U8 teamID) {
@@ -335,6 +335,7 @@ void WarScene::startSimulation() {
     }
 
     g_navMeshStarted = true;
+
     AI::AIManager::getInstance().pauseUpdate(true);
     _infoBox->setTitle("NavMesh state");
     _infoBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_INFO);
@@ -370,8 +371,8 @@ void WarScene::startSimulation() {
                 _army[0][0]->getAgentRadiusCategory(), navMesh);
 #ifdef _DEBUG
             navMesh->debugDraw(true);
-            renderState().drawDebugTargetLines(true);
 #endif
+            renderState().drawDebugTargetLines(true);
         }
 
         if (previousMesh) {

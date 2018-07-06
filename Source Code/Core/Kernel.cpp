@@ -16,7 +16,6 @@
 #include "Physics/Headers/PXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 

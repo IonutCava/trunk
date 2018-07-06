@@ -73,10 +73,6 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         setStateBlock(prim->stateHash());
         // Call any "onDraw" function the primitive may have attached
         prim->setupStates();
-        // If we are drawing lines, set the required width
-        if (prim->_hasLines) {
-            setLineWidth(prim->_lineWidth);
-        }
         // Check if any texture is present
         bool texture = (prim->_texture != nullptr);
         // And bind it to the first diffuse texture slot
@@ -89,10 +85,6 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         _imShader->Uniform("dvd_WorldMatrix", prim->worldMatrix());
         // Submit the render call. We do not support instancing yet!
         prim->render(prim->forceWireframe(), 1);
-        // Reset line width if needed
-        if (prim->_hasLines) {
-            restoreLineWidth();
-        }
         // Call any "postDraw" function the primitive may have attached
         prim->resetStates();
         // If this primitive is recyclable, clear it's inUse flag. It should be
@@ -117,13 +109,17 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
-    IMPrimitive& prim = drawLines(
-        _axisLines, 3.0f, offset * _gpuBlock._ViewMatrix.getInverse(),
-        vec4<I32>(
-            _renderTarget[to_uint(RenderTarget::SCREEN)]->getWidth() - 128, 0,
-            128, 128),
-        true, true);
+    U16 windowWidth = _renderTarget[to_uint(RenderTarget::SCREEN)]->getWidth();
 
-    prim.name("GFXDeviceAxisGizmo");
+    IMPrimitive* primitive = getOrCreatePrimitive();
+    primitive->name("GFXDeviceAxisGizmo");
+    RenderStateBlockDescriptor primitiveDescriptor(getStateBlockDescriptor(getDefaultStateBlock(true)));
+    primitiveDescriptor.setLineWidth(3.0f);
+    primitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+    drawLines(*primitive,
+              _axisLines,
+              offset * _gpuBlock._ViewMatrix.getInverse(),
+              vec4<I32>(windowWidth - 128, 0, 128, 128),
+              true);
 }
 };

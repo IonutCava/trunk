@@ -2,7 +2,6 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 

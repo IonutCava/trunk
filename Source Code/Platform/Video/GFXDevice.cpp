@@ -1,5 +1,4 @@
 #include "Headers/GFXDevice.h"
-#include "Headers/RenderStateBlock.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/ImageTools.h"
@@ -59,8 +58,6 @@ GFXDevice::GFXDevice()
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     // Floats
-    _currentLineWidth = 1.0;
-    _previousLineWidth = 1.0;
     _interpolationFactor = 1.0;
     // Booleans
     _2DRendering = false;
@@ -628,6 +625,7 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
         tempPriv = *it;
         // If we have a valid zombie, resurrect it
         tempPriv->clear();
+
     } else {
         // If we do not have a valid zombie, we create a new primitive
         tempPriv = newIMP();
@@ -667,7 +665,9 @@ void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
             vectorAlg::emplace_back(plotLines, *(it), *(it++), color);
         }
 
-        drawLines(plotLines, 1.0f, mat4<F32>(), vec4<I32>(), false, false);
+        IMPrimitive* primitive = GFX_DEVICE.getOrCreatePrimitive();
+        primitive->name("3DGraphPrimitive");
+        drawLines(*primitive, plotLines, mat4<F32>(), vec4<I32>(), false);
     }
 }
 

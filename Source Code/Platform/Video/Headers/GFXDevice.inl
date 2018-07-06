@@ -39,14 +39,6 @@ inline bool GFXDevice::isDepthStage() const {
            getRenderStage() == RenderStage::Z_PRE_PASS;
 }
 
-/// Change the width of rendered lines to the specified value
-inline void GFXDevice::setLineWidth(F32 width) {
-    _previousLineWidth = _currentLineWidth;
-    _currentLineWidth = width;
-    _api->setLineWidth(width);
-}
-/// Restore the width of rendered lines to the previously set value
-inline void GFXDevice::restoreLineWidth() { setLineWidth(_previousLineWidth); }
 /// Query rasterization state
 inline bool GFXDevice::rasterizationState() { return _rasterizationEnabled; }
 

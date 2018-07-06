@@ -54,6 +54,7 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
     /// Rasterizer
     CullMode _cullMode;
     bool _cullEnabled;
+    F32 _lineWidth;
 
     /// Depth
     bool _zEnable;
@@ -74,18 +75,20 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
 
     FillMode _fillMode;
 
-   private:
     size_t _cachedHash;
     bool _lockHash;
 
+  private:
+    void operator=(const RenderStateBlockDescriptor& b) = delete;
     void clean();
 
    public:
     RenderStateBlockDescriptor();
+    RenderStateBlockDescriptor(const RenderStateBlockDescriptor& b);
 
     void setDefaultValues();
-    void fromDescriptor(const RenderStateBlockDescriptor& descriptor);
-
+    
+    void setLineWidth(F32 width);
     void setFillMode(FillMode mode);
     void setZBias(F32 zBias, F32 zUnits);
     void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
@@ -115,7 +118,6 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
     void setColorWrites(bool red, bool green, bool blue, bool alpha);
 
     inline size_t getHash() const { return _cachedHash; }
-    inline I64 getGUID() const { return getGUID(); }
 
     bool operator==(RenderStateBlockDescriptor& RSBD) const {
         return getHash() == RSBD.getHash();

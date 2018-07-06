@@ -16,7 +16,6 @@
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 

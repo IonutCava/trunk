@@ -57,13 +57,25 @@ Scene::Scene()
     _sceneTimer = 0UL;
     _sceneGraph.reset(MemoryManager_NEW SceneGraph());
     _input.reset(MemoryManager_NEW SceneInput(*this));
+
 #ifdef _DEBUG
+
+    RenderStateBlockDescriptor primitiveDescriptor;
+    primitiveDescriptor.setLineWidth(3.0f);
+
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)] =
         GFX_DEVICE.getOrCreatePrimitive(false);
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]->name("LinesObjectToTarget");
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]->name(
+        "LinesObjectToTarget");
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]
+        ->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
+
     _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)] =
         GFX_DEVICE.getOrCreatePrimitive(false);
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->name("LinesRayPick");
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->name(
+        "LinesRayPick");
+    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->stateHash(
+        GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
 #endif
 }
 
@@ -121,21 +133,22 @@ void Scene::postRender() {
         U32 linePickIdx = to_uint(DebugLines::DEBUG_LINE_RAY_PICK);
         if (!_lines[linePickIdx].empty()) {
             GFX_DEVICE.drawLines(*_linesPrimitive[linePickIdx],
-                                 _lines[linePickIdx], 3.0f, mat4<F32>(),
-                                 vec4<I32>(), false, false);
+                                 _lines[linePickIdx], mat4<F32>(), vec4<I32>(),
+                                 false);
         }
     }
     U32 lineTargetIdx = to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET);
     if (!_lines[lineTargetIdx].empty() &&
         renderState().drawDebugTargetLines()) {
         GFX_DEVICE.drawLines(*_linesPrimitive[lineTargetIdx],
-                             _lines[lineTargetIdx], 3.0f, mat4<F32>(),
-                             vec4<I32>(), false, false);
+                             _lines[lineTargetIdx], mat4<F32>(), vec4<I32>(),
+                             false);
     }
 #endif
 }
 
-void Scene::addPatch(vectorImpl<FileData>& data) {}
+void Scene::addPatch(vectorImpl<FileData>& data) {
+}
 
 void Scene::loadXMLAssets(bool singleStep) {
     while (!_modelDataArray.empty()) {
@@ -630,7 +643,7 @@ void Scene::deleteSelection() {
 void Scene::onLostFocus() {
     state().resetMovement();
 #ifndef _DEBUG
-    _paramHandler.setParam("freezeLoopTime", true);
+    //_paramHandler.setParam("freezeLoopTime", true);
 #endif
 }
 

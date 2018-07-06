@@ -48,8 +48,6 @@ void DX_API::endFrame() {}
 
 void DX_API::toggleRasterization(bool state) {}
 
-void DX_API::setLineWidth(F32 width) {}
-
 void DX_API::updateClipPlanes() {}
 
 void DX_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {}

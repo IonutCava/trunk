@@ -3,7 +3,6 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Core/Headers/Console.h"

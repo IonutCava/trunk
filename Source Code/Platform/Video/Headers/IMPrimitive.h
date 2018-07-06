@@ -142,9 +142,7 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
 
     ShaderProgram* _drawShader;
     Texture* _texture;
-    bool _hasLines;
     bool _canZombify;
-    F32 _lineWidth;
 
    protected:
     // render in wireframe mode

@@ -32,8 +32,8 @@
 #ifndef _RENDER_API_H_
 #define _RENDER_API_H_
 
-#include "RenderAPIEnums.h"
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 
@@ -314,8 +314,6 @@ class Framebuffer;
 class VertexBuffer;
 class ShaderBuffer;
 class ShaderProgram;
-class RenderStateBlock;
-class RenderStateBlockDescriptor;
 
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper {
@@ -356,7 +354,6 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual void closeRenderingAPI() = 0;
 
     virtual void toggleRasterization(bool state) = 0;
-    virtual void setLineWidth(F32 width) = 0;
     virtual void drawText(const TextLabel& textLabel,
                           const vec2<I32>& position) = 0;
 

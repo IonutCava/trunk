@@ -28,12 +28,21 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _renderData._textureData.reserve(ParamHandler::getInstance().getParam<I32>(
         "rendering.maxTextureSlots", 16));
 
+
+    // Prepare it for rendering lines
+    RenderStateBlockDescriptor primitiveDescriptor;
+    primitiveDescriptor.setLineWidth(4.0f);
+
     _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingBoxPrimitive->name("BoundingBox_" + _parentSGN.getName());
+    _boundingBoxPrimitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
 
     if (_nodeSkinned) {
+        primitiveDescriptor.setLineWidth(2.0f);
+        primitiveDescriptor.setZReadWrite(false, true);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
         _skeletonPrimitive->name("Skeleton_" + _parentSGN.getName());
+        _skeletonPrimitive->stateHash(GFX_DEVICE.getOrCreateStateBlock(primitiveDescriptor));
     }
 #ifdef _DEBUG
     // Red X-axis
@@ -47,10 +56,11 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
         Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
     _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
     // Prepare it for line rendering
-    _axisGizmo->_hasLines = true;
-    _axisGizmo->_lineWidth = 5.0f;
+    size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
+    RenderStateBlockDescriptor stateBlockDescriptor(GFX_DEVICE.getStateBlockDescriptor(noDepthStateBlock));
+    stateBlockDescriptor.setLineWidth(5.0f);
     _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
-    _axisGizmo->stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+    _axisGizmo->stateHash(GFX_DEVICE.getOrCreateStateBlock(stateBlockDescriptor));
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
     _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2);
@@ -258,7 +268,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
         GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive, bb.getMin(), bb.getMax(),
-                             vec4<U8>(0, 0, 255, 255), 4.0f);
+                             vec4<U8>(0, 0, 255, 255));
         node->postDrawBoundingBox(_parentSGN);
     }
     
@@ -276,10 +286,10 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->paused(false);
-                GFX_DEVICE.drawLines(*_skeletonPrimitive, skeletonLines, 2.0f,
-                    _parentSGN.getComponent<PhysicsComponent>()
-                    ->getWorldMatrix(),
-                    vec4<I32>(), false, true);
+                GFX_DEVICE.drawLines(*_skeletonPrimitive, skeletonLines,
+                                     _parentSGN.getComponent<PhysicsComponent>()
+                                         ->getWorldMatrix(),
+                                     vec4<I32>(), false);
 
                 parentStates.setTrackedValue(
                     StateTracker<bool>::State::SKELETON_RENDERED, true);

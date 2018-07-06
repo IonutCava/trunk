@@ -4,39 +4,40 @@
 namespace Divide {
 
 RenderStateBlockDescriptor::RenderStateBlockDescriptor()
-    : GUIDWrapper(), _cachedHash(0), _lockHash(false) {
+    : GUIDWrapper(), 
+    _cachedHash(0),
+    _lockHash(false)
+{
     setDefaultValues();
 }
 
-void RenderStateBlockDescriptor::fromDescriptor(
-    const RenderStateBlockDescriptor& descriptor) {
-    setCullMode(descriptor._cullMode);
-
-    setBlend(descriptor._blendEnable, descriptor._blendSrc,
-             descriptor._blendDest, descriptor._blendOp);
-
-    setColorWrites(
-        descriptor._colorWrite.b[0] > 0, descriptor._colorWrite.b[1] > 0,
-        descriptor._colorWrite.b[2] > 0, descriptor._colorWrite.b[3] > 0);
-
-    setZReadWrite(descriptor._zEnable, descriptor._zWriteEnable);
-
-    _zFunc = descriptor._zFunc;
-    _zBias = descriptor._zBias;
-    _zUnits = descriptor._zUnits;
-
-    _stencilEnable = descriptor._stencilEnable;
-    _stencilFailOp = descriptor._stencilFailOp;
-    _stencilZFailOp = descriptor._stencilZFailOp;
-    _stencilPassOp = descriptor._stencilPassOp;
-    _stencilFunc = descriptor._stencilFunc;
-    _stencilRef = descriptor._stencilRef;
-    _stencilMask = descriptor._stencilMask;
-    _stencilWriteMask = descriptor._stencilWriteMask;
-
-    _fillMode = descriptor._fillMode;
-
-    clean();
+RenderStateBlockDescriptor::RenderStateBlockDescriptor(const RenderStateBlockDescriptor& other)
+    : GUIDWrapper(other),
+     _lockHash(false),
+     _colorWrite(other._colorWrite),
+     _blendEnable(other._blendEnable),
+     _blendSrc(other._blendSrc),
+     _blendDest(other._blendDest),
+     _blendOp(other._blendOp),
+     _cullMode(other._cullMode),
+     _cullEnabled(other._cullEnabled),
+     _lineWidth(other._lineWidth),
+     _zEnable(other._zEnable),
+     _zWriteEnable(other._zWriteEnable),
+     _zFunc(other._zFunc),
+     _zBias(other._zBias),
+     _zUnits(other._zUnits),
+     _stencilEnable(other._stencilEnable),
+     _stencilRef(other._stencilRef),
+     _stencilMask(other._stencilMask),
+     _stencilWriteMask(other._stencilWriteMask),
+     _stencilFailOp(other._stencilFailOp),
+     _stencilZFailOp(other._stencilZFailOp),
+     _stencilPassOp(other._stencilPassOp),
+     _stencilFunc(other._stencilFunc),
+     _fillMode(other._fillMode),
+     _cachedHash(other._cachedHash)
+{
 }
 
 void RenderStateBlockDescriptor::flipCullMode() {
@@ -74,7 +75,14 @@ void RenderStateBlockDescriptor::setZReadWrite(bool read, bool write) {
     clean();
 }
 
-void RenderStateBlockDescriptor::setBlend(bool enable, BlendProperty src,
+void RenderStateBlockDescriptor::setLineWidth(F32 width) {
+    _lineWidth = width;
+
+    clean();
+}
+
+void RenderStateBlockDescriptor::setBlend(bool enable,
+                                          BlendProperty src,
                                           BlendProperty dest,
                                           BlendOperation op) {
     _blendEnable = enable;
@@ -85,7 +93,9 @@ void RenderStateBlockDescriptor::setBlend(bool enable, BlendProperty src,
     clean();
 }
 
-void RenderStateBlockDescriptor::setColorWrites(bool red, bool green, bool blue,
+void RenderStateBlockDescriptor::setColorWrites(bool red,
+                                                bool green,
+                                                bool blue,
                                                 bool alpha) {
     _colorWrite.b[0] = red ? 1 : 0;
     _colorWrite.b[1] = green ? 1 : 0;
@@ -121,7 +131,8 @@ void RenderStateBlockDescriptor::setStencilReadWriteMask(U32 read, U32 write) {
     clean();
 }
 
-void RenderStateBlockDescriptor::setStencil(bool enable, U32 stencilRef,
+void RenderStateBlockDescriptor::setStencil(bool enable,
+                                            U32 stencilRef,
                                             StencilOperation stencilFailOp,
                                             StencilOperation stencilZFailOp,
                                             StencilOperation stencilPassOp,
@@ -149,6 +160,7 @@ void RenderStateBlockDescriptor::setDefaultValues() {
     setFillMode(FillMode::SOLID);
     setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
     setStencil(false);
+    setLineWidth(1.0f);
     _lockHash = false;
 
     clean();
@@ -165,6 +177,7 @@ void RenderStateBlockDescriptor::clean() {
     Util::Hash_combine(_cachedHash, _blendSrc);
     Util::Hash_combine(_cachedHash, _blendDest);
     Util::Hash_combine(_cachedHash, _blendOp);
+    Util::Hash_combine(_cachedHash, _lineWidth);
     Util::Hash_combine(_cachedHash, _cullMode);
     Util::Hash_combine(_cachedHash, _cullEnabled);
     Util::Hash_combine(_cachedHash, _zEnable);

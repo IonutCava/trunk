@@ -4,7 +4,6 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 

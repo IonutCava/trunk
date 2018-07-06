@@ -1,5 +1,4 @@
 #include "Headers/GUIElement.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {

@@ -10,7 +10,6 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {

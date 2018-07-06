@@ -11,7 +11,6 @@
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {

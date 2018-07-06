@@ -30,7 +30,6 @@ GL_API::GL_API()
     : RenderAPIWrapper(),
       _prevWidthNode(0),
       _prevWidthString(0),
-      _prevLineWidth(0),
       _prevSizeNode(0),
       _prevSizeString(0),
       _lineWidthLimit(1),

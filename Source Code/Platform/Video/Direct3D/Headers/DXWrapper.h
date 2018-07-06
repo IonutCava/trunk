@@ -117,7 +117,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     bool deInitShaders() override;
 
     void toggleRasterization(bool state) override;
-    void setLineWidth(F32 width) override;
 
     void drawText(const TextLabel& textLabel, const vec2<I32>& position) override;
     void drawPoints(U32 numPoints) override;

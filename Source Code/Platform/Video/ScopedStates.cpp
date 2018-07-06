@@ -3,11 +3,8 @@
 
 namespace Divide {
 namespace GFX {
-ScopedLineWidth::ScopedLineWidth(F32 width) { GFX_DEVICE.setLineWidth(width); }
 
-ScopedLineWidth::~ScopedLineWidth() { GFX_DEVICE.restoreLineWidth(); }
-
-ScopedRasterizer::ScopedRasterizer(bool state) {
+    ScopedRasterizer::ScopedRasterizer(bool state) {
     _rasterizerState = GFX_DEVICE.rasterizationState();
     GFX_DEVICE.toggleRasterization(state);
 }

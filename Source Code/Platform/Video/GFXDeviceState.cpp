@@ -59,6 +59,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // Create general purpose render state blocks
     RenderStateBlockDescriptor defaultStateDescriptor;
     _defaultStateBlockHash = getOrCreateStateBlock(defaultStateDescriptor);
+
     RenderStateBlockDescriptor defaultStateDescriptorNoDepth;
     defaultStateDescriptorNoDepth.setZReadWrite(false, true);
     _defaultStateNoDepthHash =

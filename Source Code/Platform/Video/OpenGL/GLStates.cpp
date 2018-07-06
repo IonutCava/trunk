@@ -526,7 +526,10 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     if (!oldDescriptor || oldDescriptor->_zEnable != newDescriptor._zEnable) {
         toggle(newDescriptor._zEnable, GL_DEPTH_TEST);
     }
-    
+    // Check line width
+    if (!oldDescriptor || FLOAT_COMPARE(oldDescriptor->_lineWidth, newDescriptor._lineWidth)) {
+        glLineWidth(std::min(newDescriptor._lineWidth, (GLfloat)_lineWidthLimit));
+    }
     // Check separate blend functions
     if (!oldDescriptor ||
         oldDescriptor->_blendSrc != newDescriptor._blendSrc ||
@@ -587,7 +590,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
             GLUtil::glStencilOpTable[to_uint(newDescriptor._stencilPassOp)]);
     }
     // Check and set polygon offset
-    if (!oldDescriptor || oldDescriptor->_zBias != newDescriptor._zBias) {
+    if (!oldDescriptor || FLOAT_COMPARE(oldDescriptor->_zBias, newDescriptor._zBias)) {
         if (IS_ZERO(newDescriptor._zBias)) {
             glDisable(GL_POLYGON_OFFSET_FILL);
         } else {
@@ -595,6 +598,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
             glPolygonOffset(newDescriptor._zBias, newDescriptor._zUnits);
         }
     }
+
     // Check and set color mask
     if (!oldDescriptor || oldDescriptor->_colorWrite.i != newDescriptor._colorWrite.i) {
         glColorMask(

@@ -38,11 +38,6 @@
 
 namespace Divide {
 namespace GFX {
-class ScopedLineWidth : private NonCopyable {
-   public:
-    explicit ScopedLineWidth(F32 width);
-    ~ScopedLineWidth();
-};
 
 class ScopedRasterizer : private NonCopyable {
    public:
