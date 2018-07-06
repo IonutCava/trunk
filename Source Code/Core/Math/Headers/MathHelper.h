@@ -239,7 +239,7 @@ void PlotFloatEvents(const stringImpl& eventName,
 
 /// a la Boost
 template <typename T>
-void Hash_combine(U32& seed, const T& v);
+void Hash_combine(size_t& seed, const T& v);
 
 void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search,
                           const stringImpl& replace);
@@ -342,7 +342,7 @@ namespace std {
     struct hash<array<T, N> >
     {
         typedef array<T, N> argument_type;
-        typedef unsigned int result_type;
+        typedef size_t result_type;
 
         result_type operator()(const argument_type& a) const
         {

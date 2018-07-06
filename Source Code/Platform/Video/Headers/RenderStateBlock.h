@@ -71,7 +71,7 @@ class RenderStateBlock : public GUIDWrapper {
 
     FillMode _fillMode;
 
-    U32 _cachedHash;
+    size_t _cachedHash;
     bool _lockHash;
 
   private:
@@ -172,7 +172,7 @@ class RenderStateBlock : public GUIDWrapper {
     inline FillMode fillMode() const {
         return _fillMode;
     }
-    inline U32 getHash() const {
+    inline size_t getHash() const {
         return _cachedHash;
     }
     bool operator==(RenderStateBlock& RSBD) const {

@@ -277,12 +277,12 @@ U16 PingPongScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
 
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&PingPongScene::serveBall, this));
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall();});
     actions._onReleaseAction = actionID;
-    _input->addJoystickMapping(0, actions);
+    _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, 0), actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, [this]() {
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeFly = !_freeFly;
         if (!_freeFly)
             renderState().getCameraMgr().pushActiveCamera(_paddleCam);

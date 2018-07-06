@@ -322,6 +322,19 @@ void loadConfig(const stringImpl &file) {
                  pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
 }
 
+void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
+    actions._onPressAction = attributes.get<U16>("actionDown", 0u);
+    actions._onReleaseAction = attributes.get<U16>("actionUp", 0u);
+    actions._onLCtrlPressAction = attributes.get<U16>("actionLCtrlDown", 0u);
+    actions._onLCtrlReleaseAction = attributes.get<U16>("actionLCtrlUp", 0u);
+    actions._onRCtrlPressAction = attributes.get<U16>("actionRCtrlDown", 0u);
+    actions._onRCtrlReleaseAction = attributes.get<U16>("actionRCtrlUp", 0u);
+    actions._onLAltPressAction = attributes.get<U16>("actionLAltDown", 0u);
+    actions._onLAltReleaseAction = attributes.get<U16>("actionLAtlUp", 0u);
+    actions._onRAltPressAction = attributes.get<U16>("actionRAltDown", 0u);
+    actions._onRAltReleaseAction = attributes.get<U16>("actionRAltUp", 0u);
+}
+
 void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     ParamHandler &par = ParamHandler::instance();
 
@@ -329,36 +342,59 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
     Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
     read_xml(par.getParam<std::string>(_ID("scriptLocation")) + "/" + file.c_str(), pt);
 
-    std::string name;
-    ptree::iterator itActions;
     for(const ptree::value_type & f : pt.get_child("actions", empty_ptree()))
     {
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
-        U16 id = attributes.get<U16>("id", 0);
-        name = attributes.get<std::string>("name", "");
-        
+        scene->input().actionList()
+                      .getInputAction(attributes.get<U16>("id", 0))
+                      .displayName(attributes.get<std::string>("name", "").c_str());
     }
 
-    Input::KeyCode key;
     PressReleaseActions actions;
-    ptree::iterator itKeys;
     for (const ptree::value_type & f : pt.get_child("keys", empty_ptree()))
     {
-        key = Input::InputInterface::keyCodeByName(f.second.data().c_str());
+        if (f.first.compare("<xmlcomment>") == 0) {
+            continue;
+        }
 
         const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
-        actions._onPressAction = attributes.get<U16>("actionDown",0u);
-        actions._onReleaseAction = attributes.get<U16>("actionUp", 0u);
-        actions._onLCtrlPressAction = attributes.get<U16>("actionLCtrlDown", 0u);
-        actions._onLCtrlReleaseAction = attributes.get<U16>("actionLCtrlUp", 0u);
-        actions._onRCtrlPressAction = attributes.get<U16>("actionRCtrlDown", 0u);
-        actions._onRCtrlReleaseAction = attributes.get<U16>("actionRCtrlUp", 0u);
-        actions._onLAltPressAction = attributes.get<U16>("actionLAltDown", 0u);
-        actions._onLAltReleaseAction = attributes.get<U16>("actionLAtlUp", 0u);
-        actions._onRAltPressAction = attributes.get<U16>("actionRAltDown", 0u);
-        actions._onRAltReleaseAction = attributes.get<U16>("actionRAltUp", 0u);
+        populatePressRelease(actions, attributes);
 
+        Input::KeyCode key = Input::InputInterface::keyCodeByName(f.second.data().c_str());
         scene->input().addKeyMapping(key, actions);
+    }
+
+    for (const ptree::value_type & f : pt.get_child("mouseButtons", empty_ptree()))
+    {
+        if (f.first.compare("<xmlcomment>") == 0) {
+            continue;
+        }
+
+        const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+        populatePressRelease(actions, attributes);
+
+        Input::MouseButton btn = Input::InputInterface::mouseButtonByName(f.second.data().c_str());
+
+        scene->input().addMouseMapping(btn, actions);
+    }
+
+    const std::string label("joystickButtons.joystick");
+    for (U32 i = 0 ; i < to_const_uint(Input::Joystick::COUNT); ++i) {
+        Input::Joystick joystick = static_cast<Input::Joystick>(i);
+        
+        for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), empty_ptree()))
+        {
+            if (f.first.compare("<xmlcomment>") == 0) {
+                continue;
+            }
+
+            const ptree & attributes = f.second.get_child("<xmlattr>", empty_ptree());
+            populatePressRelease(actions, attributes);
+
+            Input::JoystickElement element = Input::InputInterface::joystickElementByName(f.second.data().c_str());
+
+            scene->input().addJoystickMapping(joystick, element, actions);
+        }
     }
 }
 

@@ -83,7 +83,7 @@ DEFINE_SINGLETON(GFXDevice)
     friend class Attorney::GFXDeviceRenderer;
     friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
-    typedef hashMapImpl<U32, RenderStateBlock> RenderStateMap;
+    typedef hashMapImpl<size_t, RenderStateBlock> RenderStateMap;
     typedef std::stack<vec4<I32>> ViewportStack;
 
     struct NodeData {
@@ -289,8 +289,8 @@ DEFINE_SINGLETON(GFXDevice)
                    const vectorImpl<Line>& lines,
                    const vec4<I32>& viewport,  //<only for ortho mode
                    const bool inViewport = false);
-    void drawPoints(U32 numPoints, U32 stateHash, ShaderProgram* const shaderProgram);
-    void drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram);
+    void drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const shaderProgram);
+    void drawTriangle(size_t stateHash, ShaderProgram* const shaderProgram);
 
     void addToRenderQueue(U32 queueIndex, const RenderPackage& package);
     void flushRenderQueues();
@@ -314,7 +314,7 @@ DEFINE_SINGLETON(GFXDevice)
     inline void resetClipPlanes();
     /// Retrieve a state block by hash value.
     /// If the hash value doesn't exist in the state block map, return the default state block
-    const RenderStateBlock& getRenderStateBlock(U32 renderStateBlockHash) const;
+    const RenderStateBlock& getRenderStateBlock(size_t renderStateBlockHash) const;
 
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
@@ -385,7 +385,7 @@ DEFINE_SINGLETON(GFXDevice)
     inline bool is2DRendering() const { return _2DRendering; }
 
     /// returns the standard state block
-    inline U32 getDefaultStateBlock(bool noDepth) const {
+    inline size_t getDefaultStateBlock(bool noDepth) const {
         return (noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash);
     }
 
@@ -488,7 +488,7 @@ DEFINE_SINGLETON(GFXDevice)
     }
 
     inline void drawText(const TextLabel& text,
-                         U32 stateHash,
+                         size_t stateHash,
                          const vec2<F32>& position) {
         uploadGPUBlock();
         setStateBlock(stateHash);
@@ -543,7 +543,7 @@ DEFINE_SINGLETON(GFXDevice)
     bool registerRenderStateBlock(const RenderStateBlock& stateBlock);
 
     /// Sets the current state block to the one passed as a param
-    U32 setStateBlock(U32 stateBlockHash);
+    size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
     NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex);
@@ -578,14 +578,14 @@ DEFINE_SINGLETON(GFXDevice)
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
-    U32 _currentStateBlockHash;
-    U32 _previousStateBlockHash;
-    U32 _defaultStateBlockHash;
+    size_t _currentStateBlockHash;
+    size_t _previousStateBlockHash;
+    size_t _defaultStateBlockHash;
     /// The default render state buth with depth testing disabled
-    U32 _defaultStateNoDepthHash;
+    size_t _defaultStateNoDepthHash;
     /// Special render state for 2D rendering
-    U32 _state2DRenderingHash;
-    U32 _stateDepthOnlyRenderingHash;
+    size_t _state2DRenderingHash;
+    size_t _stateDepthOnlyRenderingHash;
     /// The interpolation factor between the current and the last frame
     D64 _interpolationFactor;
     PlaneList _clippingPlanes;
@@ -645,7 +645,7 @@ namespace Attorney {
     class GFXDeviceGUI {
     private:
         static void drawText(const TextLabel& text,
-                             U32 stateHash,
+                             size_t stateHash,
                              const vec2<F32>& position) {
             return GFXDevice::instance().drawText(text, stateHash, position);
         }

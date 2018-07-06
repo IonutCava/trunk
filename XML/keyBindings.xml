@@ -44,6 +44,8 @@
 <action id="37" name="release camera from mouse"/>
 <action id="38" name="renderer debug view"/>
 <action id="39" name="shutdown"/>
+<action id="40" name="pov navigation"/>
+<action id="41" name="axis navigation"/>
 </actions>
 
 <!--
@@ -84,11 +86,32 @@
 <key actionUp="39">T</key>
 </keys>
 
+<!-- Only a single mouse is supported (and a maximum of 8 buttons)! -->
 <mouseButtons>
+<!-- Allowed mouse button names: LEFT, RIGHT, MIDDLE, 3, 4, 5, 6, 7 -->
 <button actionUp="35">LEFT</button>
 <button actionDown="36" actionUp="37">RIGHT</button>
 </mouseButtons>
 
+<!-- A maximum of 4 devices -->
 <joystickButtons>
+<!-- Allowed joystick elements: POV, AXIS, SLIDER, VECTOR, BUTTON_n (where n is any value from 0 to 125, eg. BUTTON_46) -->
+<!-- For POV, AXIS, VECTOR and SLIDER, actionDown and actionUp will be set to the same action in this order:
+ action(Mod)Up = action(Mod)Down 
+    iff actionModDown exists else
+ action(Mod)Down = action(Mod)Up-->
+<joystick1>
+<button actionDown="40">POV</button>
+<button actionDown="41">AXIS</button>
+<button actionUp="29">BUTTON_0</button>
+<button actionUp="30">BUTTON_1</button>
+<button actionUp="33">BUTTON_2</button>
+</joystick1>
+<joystick2>
+</joystick2>
+<joystick3>
+</joystick3>
+<joystick4>
+</joystick4>
 </joystickButtons>
 

@@ -53,7 +53,7 @@ struct JoystickData {
     }
     JoystickData(I32 deadZone, I32 max) 
         : _deadZone(deadZone),
-         _max(max)
+          _max(max)
     {
     }
     I32 _deadZone;
@@ -76,7 +76,48 @@ struct KeyEvent {
     bool _pressed;
     U32 _text;
 
-    KeyEvent() : _key(static_cast<KeyCode>(0)), _pressed(false), _text(0) {}
+    KeyEvent()
+        : _key(static_cast<KeyCode>(0)),
+          _pressed(false),
+          _text(0)
+    {
+    }
+};
+
+enum class JoystickElementType : U32 {
+    POV_MOVE = 0,
+    AXIS_MOVE,
+    SLIDER_MOVE,
+    VECTOR_MOVE,
+    BUTTON_PRESS,
+    COUNT
+};
+
+struct JoystickElement {
+    JoystickElement(JoystickElementType elementType)
+        : JoystickElement(elementType, -1)
+    {
+    }
+
+    JoystickElement(JoystickElementType elementType, I8 data)
+        : _type(elementType),
+          _data(data)
+    {
+    }
+
+    JoystickElementType _type;
+    I8 _data; //< e.g. button index
+
+    bool operator==(const JoystickElement &other) const
+    {
+        return (_type == other._type && _data == other._data);
+    }
+};
+
+enum class InputState : U32 {
+    PRESSED = 0,
+    RELEASED,
+    COUNT
 };
 
 class NOINITVTABLE InputAggregatorInterface {
@@ -100,4 +141,5 @@ class NOINITVTABLE InputAggregatorInterface {
 
 };  // namespace Input
 };  // namespace Divide
+
 #endif

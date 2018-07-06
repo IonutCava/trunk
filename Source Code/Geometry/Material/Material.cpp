@@ -178,7 +178,7 @@ void Material::update(const U64 deltaTime) {
     clean();
 }
 
-U32 Material::getRenderStateBlock(RenderStage currentStage, I32 variant) {
+size_t Material::getRenderStateBlock(RenderStage currentStage, I32 variant) {
     assert(variant >= 0 && variant < _defaultRenderStates[to_uint(currentStage)].size());
     return _defaultRenderStates[to_uint(currentStage)][variant];
 }
@@ -642,7 +642,7 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     if (_doubleSided) {
         for (U32 index = 0; index < to_const_uint(RenderStage::COUNT); ++index) {
             for (U8 variant = 0; variant < _defaultRenderStates[index].size(); ++variant) {
-                U32 hash = _defaultRenderStates[index][variant];
+                size_t hash = _defaultRenderStates[index][variant];
                 RenderStateBlock descriptor(GFX_DEVICE.getRenderStateBlock(hash));
                 descriptor.setCullMode(CullMode::NONE);
                 if (!_translucencySource.empty()) {

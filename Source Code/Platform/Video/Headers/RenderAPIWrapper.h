@@ -125,7 +125,7 @@ struct GenericDrawCommand {
     U16 _drawCount;
     U32 _renderOptions;
     U32 _drawToBuffer;
-    U32 _stateHash;
+    size_t _stateHash;
     U32 _commandOffset;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
@@ -142,7 +142,7 @@ struct GenericDrawCommand {
         _lodIndex = lod;
     }
 
-    inline void stateHash(U32 hashValue) {
+    inline void stateHash(size_t hashValue) {
         _stateHash = hashValue;
     }
 
@@ -183,7 +183,7 @@ struct GenericDrawCommand {
 
     inline U8 LoD() const { return _lodIndex; }
     inline U16 drawCount() const { return _drawCount; }
-    inline U32 stateHash() const { return _stateHash; }
+    inline size_t stateHash() const { return _stateHash; }
     inline U32 drawToBuffer() const { return _drawToBuffer; }
     inline U32 commandOffset() const { return _commandOffset; }
 
@@ -309,8 +309,8 @@ class TextureData {
     }
 
     // No need to cache this as it should already be pretty fast
-    inline U32 getHash() const {
-        U32 hash = 0;
+    inline size_t getHash() const {
+        size_t hash = 0;
         Util::Hash_combine(hash, to_uint(_textureType));
         Util::Hash_combine(hash, _samplerHash);
         Util::Hash_combine(hash, _textureHandle);
@@ -318,7 +318,7 @@ class TextureData {
     }
 
     TextureType _textureType;
-    U32 _samplerHash;
+    size_t _samplerHash;
 private:
     U64  _textureHandle;
 };

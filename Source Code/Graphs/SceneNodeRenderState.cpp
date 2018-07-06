@@ -5,7 +5,7 @@ namespace Divide {
 
 SceneNodeRenderState::~SceneNodeRenderState() {}
 
-U32 SceneNodeRenderState::getDepthStateBlock() {
+size_t SceneNodeRenderState::getDepthStateBlock() {
     if (_depthStateBlockHash == 0) {
         RenderStateBlock depthDesc;
         depthDesc.setColorWrites(false, false, false, false);
@@ -15,7 +15,7 @@ U32 SceneNodeRenderState::getDepthStateBlock() {
     return _depthStateBlockHash;
 }
 
-U32 SceneNodeRenderState::getShadowStateBlock() {
+size_t SceneNodeRenderState::getShadowStateBlock() {
     if (_shadowStateBlockHash == 0) {
         RenderStateBlock depthDesc;
         /// Cull back faces for shadow rendering

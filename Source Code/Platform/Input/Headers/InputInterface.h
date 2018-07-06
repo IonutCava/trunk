@@ -81,6 +81,13 @@ DEFINE_SINGLETON(InputInterface)
     }
 
     static KeyCode keyCodeByName(const stringImpl& keyName);
+    static MouseButton mouseButtonByName(const stringImpl& buttonName);
+    static JoystickElement joystickElementByName(const stringImpl& elementName);
+
+    Joystick joystick(I32 deviceID) const;
+    InputState getKeyState(KeyCode keyCode) const;
+    InputState getMouseButtonState(MouseButton button) const;
+    InputState getJoystickeButtonState(Input::Joystick device, JoystickButton button) const;
 
   protected:
     inline KeyEvent& getKeyRef(U32 index) { return _keys[index]; }
@@ -110,6 +117,7 @@ DEFINE_SINGLETON(InputInterface)
     OIS::Mouse* _pMouse;
     /// multiple joystick support
     vectorImpl<OIS::JoyStick*> _pJoysticks;
+    hashMapImpl<I32, Joystick> _joystickIdToEntry;
 
     JoystickInterface* _pJoystickInterface;
     std::unique_ptr<EffectManager> _pEffectMgr;

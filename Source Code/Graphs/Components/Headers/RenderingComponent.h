@@ -92,7 +92,7 @@ class RenderingComponent : public SGNComponent {
 
     ShaderProgram* const getDrawShader(RenderStage renderStage = RenderStage::DISPLAY);
 
-    U32 getDrawStateHash(RenderStage renderStage);
+    size_t getDrawStateHash(RenderStage renderStage);
 
     void getMaterialColorMatrix(mat4<F32>& matOut) const;
 

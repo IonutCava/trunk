@@ -155,7 +155,7 @@ void RenderStateBlock::clean() {
     if (_lockHash) {
         return;
     }
-    U32 previousCache = _cachedHash;
+    size_t previousCache = _cachedHash;
 
     // Avoid small float rounding errors offsetting the general hash value
     U32 zBias = to_uint(floor((_zBias * 1000.0) + 0.5));

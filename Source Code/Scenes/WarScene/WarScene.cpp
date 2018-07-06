@@ -621,12 +621,12 @@ U16 WarScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_2, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, []() {DIVIDE_ASSERT(false, "Test Assert"); });
+    _input->actionList().registerInputAction(actionID, [](InputParams param) {DIVIDE_ASSERT(false, "Test Assert"); });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_5, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, []() {
+    _input->actionList().registerInputAction(actionID, [](InputParams param) {
         LightManager& lightMgr = LightManager::instance();
         /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
         bool dir = lightMgr.lightTypeEnabled(LightType::DIRECTIONAL);

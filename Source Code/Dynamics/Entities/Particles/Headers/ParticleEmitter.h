@@ -102,8 +102,8 @@ class ParticleEmitter : public SceneNode {
 
     GenericVertexData* _particleGPUBuffer;
 
-    U32 _particleStateBlockHash;
-    U32 _particleStateBlockHashDepth;
+    size_t _particleStateBlockHash;
+    size_t _particleStateBlockHashDepth;
     U64 _lastUpdateTimer;
 
     std::atomic_bool _updating;

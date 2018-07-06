@@ -350,9 +350,9 @@ SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
 U16 Scene::registerInputActions() {
     _input->flushCache();
 
-    auto none = []() {};
-    auto deleteSelection = [this]() { _sceneGraph.deleteNode(_currentSelection, false); };
-    auto increaseCameraSpeed = [this](){   
+    auto none = [](InputParams param) {};
+    auto deleteSelection = [this](InputParams param) { _sceneGraph.deleteNode(_currentSelection, false); };
+    auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = renderState().getCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
@@ -360,7 +360,7 @@ U16 Scene::registerInputActions() {
             cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() + 1.0f);
         }
     };
-    auto decreaseCameraSpeed = [this]() {
+    auto decreaseCameraSpeed = [this](InputParams param) {
         Camera& cam = renderState().getCamera();
         F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
@@ -368,54 +368,131 @@ U16 Scene::registerInputActions() {
             cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
         }
     };
-    auto increaseResolution = []() {GFX_DEVICE.increaseResolution();};
-    auto decreaseResolution = []() {GFX_DEVICE.decreaseResolution();};
-    auto moveForward = [this]() {state().moveFB(SceneState::MoveDirection::POSITIVE);};
-    auto moveBackwards = [this]() {state().moveFB(SceneState::MoveDirection::NEGATIVE);};
-    auto stopMoveFWDBCK = [this]() {state().moveFB(SceneState::MoveDirection::NONE);};
-    auto strafeLeft = [this]() {state().moveLR(SceneState::MoveDirection::NEGATIVE);};
-    auto strafeRight = [this]() {state().moveLR(SceneState::MoveDirection::POSITIVE);};
-    auto stopStrafeLeftRight = [this]() {state().moveLR(SceneState::MoveDirection::NONE);};
-    auto rollCCW = [this]() {state().roll(SceneState::MoveDirection::POSITIVE);};
-    auto rollCW = [this]() {state().roll(SceneState::MoveDirection::NEGATIVE);};
-    auto stopRollCCWCW = [this]() {state().roll(SceneState::MoveDirection::NONE);};
-    auto turnLeft = [this]() { state().angleLR(SceneState::MoveDirection::POSITIVE);};
-    auto turnRight = [this]() { state().angleLR(SceneState::MoveDirection::NEGATIVE);};
-    auto stopTurnLeftRight = [this]() { state().angleLR(SceneState::MoveDirection::NONE);};
-    auto turnUp = [this]() {state().angleUD(SceneState::MoveDirection::POSITIVE);};
-    auto turnDown = [this]() {state().angleUD(SceneState::MoveDirection::NEGATIVE);};
-    auto stopTurnUpDown = [this]() {state().angleUD(SceneState::MoveDirection::NONE);};
-    auto togglePauseState = [](){
+    auto increaseResolution = [](InputParams param) {GFX_DEVICE.increaseResolution();};
+    auto decreaseResolution = [](InputParams param) {GFX_DEVICE.decreaseResolution();};
+    auto moveForward = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::POSITIVE);};
+    auto moveBackwards = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NEGATIVE);};
+    auto stopMoveFWDBCK = [this](InputParams param) {state().moveFB(SceneState::MoveDirection::NONE);};
+    auto strafeLeft = [this](InputParams param) {state().moveLR(SceneState::MoveDirection::NEGATIVE);};
+    auto strafeRight = [this](InputParams param) {state().moveLR(SceneState::MoveDirection::POSITIVE);};
+    auto stopStrafeLeftRight = [this](InputParams param) {state().moveLR(SceneState::MoveDirection::NONE);};
+    auto rollCCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::POSITIVE);};
+    auto rollCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::NEGATIVE);};
+    auto stopRollCCWCW = [this](InputParams param) {state().roll(SceneState::MoveDirection::NONE);};
+    auto turnLeft = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::POSITIVE);};
+    auto turnRight = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::NEGATIVE);};
+    auto stopTurnLeftRight = [this](InputParams param) { state().angleLR(SceneState::MoveDirection::NONE);};
+    auto turnUp = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::POSITIVE);};
+    auto turnDown = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::NEGATIVE);};
+    auto stopTurnUpDown = [this](InputParams param) {state().angleUD(SceneState::MoveDirection::NONE);};
+    auto togglePauseState = [](InputParams param){
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID("freezeLoopTime"), !par.getParam(_ID("freezeLoopTime"), false));
     };
-    auto toggleDepthOfField = []() {
+    auto toggleDepthOfField = [](InputParams param) {
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID("postProcessing.enableDepthOfField"), !par.getParam(_ID("postProcessing.enableDepthOfField"), false));
     };
-    auto toggleBloom = []() {
+    auto toggleBloom = [](InputParams param) {
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID("postProcessing.enableBloom"), !par.getParam(_ID("postProcessing.enableBloom"), false));
     };
-    auto toggleSkeletonRendering = [this]() {renderState().toggleSkeletons();};
-    auto toggleAxisLineRendering = [this]() {renderState().toggleAxisLines();};
-    auto toggleWireframeRendering = [this]() {renderState().toggleWireframe();};
-    auto toggleGeometryRendering = [this]() { renderState().toggleGeometry();};
-    auto toggleDebugLines = [this]() {renderState().toggleDebugLines();};
-    auto toggleBoundingBoxRendering = [this]() {renderState().toggleBoundingBoxes();};
-    auto toggleShadowMapDepthBufferPreview = []() {
+    auto toggleSkeletonRendering = [this](InputParams param) {renderState().toggleSkeletons();};
+    auto toggleAxisLineRendering = [this](InputParams param) {renderState().toggleAxisLines();};
+    auto toggleWireframeRendering = [this](InputParams param) {renderState().toggleWireframe();};
+    auto toggleGeometryRendering = [this](InputParams param) { renderState().toggleGeometry();};
+    auto toggleDebugLines = [this](InputParams param) {renderState().toggleDebugLines();};
+    auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleBoundingBoxes();};
+    auto toggleShadowMapDepthBufferPreview = [](InputParams param) {
         ParamHandler& par = ParamHandler::instance();
         LightManager::instance().togglePreviewShadowMaps();
         par.setParam<bool>(
             _ID("rendering.previewDepthBuffer"),
             !par.getParam<bool>(_ID("rendering.previewDepthBuffer"), false));
     };
-    auto takeScreenshot = DELEGATE_BIND(&GFXDevice::Screenshot, &GFX_DEVICE, "screenshot_");
-    auto toggleFullScreen = []() {GFX_DEVICE.toggleFullScreen(); };
-    auto toggleFlashLight = [this]() {toggleFlashlight(); };
-    auto toggleOctreeRegionRendering = [this]() {renderState().drawOctreeRegions(!renderState().drawOctreeRegions());};
-    auto rendererDebugView = []() {SceneManager::instance().getRenderer().toggleDebugView();};
-    auto shutdown = []() {Application::instance().RequestShutdown();};
+    auto takeScreenshot = [](InputParams param) { GFX_DEVICE.Screenshot("screenshot_"); };
+    auto toggleFullScreen = [](InputParams param) { GFX_DEVICE.toggleFullScreen(); };
+    auto toggleFlashLight = [this](InputParams param) {toggleFlashlight(); };
+    auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().drawOctreeRegions(!renderState().drawOctreeRegions());};
+    auto select = [this](InputParams  param) {findSelection(); };
+    auto lockCameraToMouse = [this](InputParams  param) {state().cameraLockedToMouse(true); };
+    auto releaseCameraFromMouse = [this](InputParams  param) {
+        state().cameraLockedToMouse(false);
+        state().angleLR(SceneState::MoveDirection::NONE);
+        state().angleUD(SceneState::MoveDirection::NONE);
+    };
+    auto rendererDebugView = [](InputParams param) {SceneManager::instance().getRenderer().toggleDebugView();};
+    auto shutdown = [](InputParams param) {Application::instance().RequestShutdown();};
+    auto povNavigation = [this](InputParams param) {
+        if (param._var[0] & OIS::Pov::North) {  // Going up
+            state().moveFB(SceneState::MoveDirection::POSITIVE);
+        }
+        if (param._var[0] & OIS::Pov::South) {  // Going down
+            state().moveFB(SceneState::MoveDirection::NEGATIVE);
+        }
+        if (param._var[0] & OIS::Pov::East) {  // Going right
+            state().moveLR(SceneState::MoveDirection::POSITIVE);
+        }
+        if (param._var[0] & OIS::Pov::West) {  // Going left
+            state().moveLR(SceneState::MoveDirection::NEGATIVE);
+        }
+        if (param._var[0] == OIS::Pov::Centered) {  // stopped/centered out
+            state().moveLR(SceneState::MoveDirection::NONE);
+            state().moveFB(SceneState::MoveDirection::NONE);
+        }
+    };
+
+    auto axisNavigation = [this](InputParams param) {
+        I32 axis = param._var[2];
+        Input::Joystick joystick = static_cast<Input::Joystick>(param._var[3]);
+
+        Input::JoystickInterface* joyInterface = nullptr;
+        joyInterface = Input::InputInterface::instance().getJoystickInterface();
+        
+        const Input::JoystickData& joyData = joyInterface->getJoystickData(joystick);
+        I32 deadZone = joyData._deadZone;
+        I32 axisABS = std::min(param._var[0], joyData._max);
+
+        switch (axis) {
+            case 0: {
+                if (axisABS > deadZone) {
+                    state().angleUD(SceneState::MoveDirection::POSITIVE);
+                } else if (axisABS < -deadZone) {
+                    state().angleUD(SceneState::MoveDirection::NEGATIVE);
+                } else {
+                    state().angleUD(SceneState::MoveDirection::NONE);
+                }
+            } break;
+            case 1: {
+                if (axisABS > deadZone) {
+                    state().angleLR(SceneState::MoveDirection::POSITIVE);
+                } else if (axisABS < -deadZone) {
+                    state().angleLR(SceneState::MoveDirection::NEGATIVE);
+                } else {
+                    state().angleLR(SceneState::MoveDirection::NONE);
+                }
+            } break;
+
+            case 2: {
+                if (axisABS < -deadZone) {
+                    state().moveFB(SceneState::MoveDirection::POSITIVE);
+                } else if (axisABS > deadZone) {
+                    state().moveFB(SceneState::MoveDirection::NEGATIVE);
+                } else {
+                    state().moveFB(SceneState::MoveDirection::NONE);
+                }
+            } break;
+            case 3: {
+                if (axisABS < -deadZone) {
+                    state().moveLR(SceneState::MoveDirection::NEGATIVE);
+                } else if (axisABS > deadZone) {
+                    state().moveLR(SceneState::MoveDirection::POSITIVE);
+                } else {
+                    state().moveLR(SceneState::MoveDirection::NONE);
+                }
+            } break;
+        }
+    };
 
     U16 actionID = 0;
     InputActionList& actions = _input->actionList();
@@ -454,49 +531,19 @@ U16 Scene::registerInputActions() {
     actions.registerInputAction(actionID++, toggleFullScreen);
     actions.registerInputAction(actionID++, toggleFlashLight);
     actions.registerInputAction(actionID++, toggleOctreeRegionRendering);
-    actions.registerInputAction(actionID++, [this]() {findSelection();});
-    actions.registerInputAction(actionID++, [this]() {state().cameraLockedToMouse(true);});
-    actions.registerInputAction(actionID++, [this]() {state().cameraLockedToMouse(false);});
+    actions.registerInputAction(actionID++, select);
+    actions.registerInputAction(actionID++, lockCameraToMouse);
+    actions.registerInputAction(actionID++, releaseCameraFromMouse);
     actions.registerInputAction(actionID++, rendererDebugView);
     actions.registerInputAction(actionID++, shutdown);
+    actions.registerInputAction(actionID++, povNavigation);
+    actions.registerInputAction(actionID++, axisNavigation);
 
     return actionID;
 }
 
 void Scene::loadKeyBindings() {
     XML::loadDefaultKeybindings("keyBindings.xml", this);
-
-    /// Input
-    /*_input->addMouseMapping(Input::MouseButton::MB_Left, PressReleaseActions(0u, 35u));
-    _input->addMouseMapping(Input::MouseButton::MB_Right, PressReleaseActions(36u, 37u));
-    _input->addKeyMapping(Input::KeyCode::KC_END, PressReleaseActions(0u, 1u));
-    _input->addKeyMapping(Input::KeyCode::KC_ADD, PressReleaseActions(2u, 0u, 0u, 4u));
-    _input->addKeyMapping(Input::KeyCode::KC_SUBTRACT, PressReleaseActions(3u, 0u, 0u, 5u));
-    _input->addKeyMapping(Input::KeyCode::KC_W, PressReleaseActions(6u, 8u));
-    _input->addKeyMapping(Input::KeyCode::KC_S, PressReleaseActions(7u, 8u));
-    _input->addKeyMapping(Input::KeyCode::KC_A, PressReleaseActions(9u, 11u));
-    _input->addKeyMapping(Input::KeyCode::KC_D, PressReleaseActions(10u, 11u));
-    _input->addKeyMapping(Input::KeyCode::KC_Q, PressReleaseActions(12u, 14u, 0u, 39u));
-    _input->addKeyMapping(Input::KeyCode::KC_E, PressReleaseActions(13u, 14u));
-    _input->addKeyMapping(Input::KeyCode::KC_LEFT, PressReleaseActions(15u, 17u));
-    _input->addKeyMapping(Input::KeyCode::KC_RIGHT, PressReleaseActions(16u, 17u));
-    _input->addKeyMapping(Input::KeyCode::KC_UP, PressReleaseActions(18u, 20u));
-    _input->addKeyMapping(Input::KeyCode::KC_DOWN, PressReleaseActions(19u, 20u));
-    _input->addKeyMapping(Input::KeyCode::KC_P, PressReleaseActions(0u, 21u));
-    _input->addKeyMapping(Input::KeyCode::KC_F2, PressReleaseActions(0u, 22u));
-    _input->addKeyMapping(Input::KeyCode::KC_F3, PressReleaseActions(0u, 23u));
-    _input->addKeyMapping(Input::KeyCode::KC_F4, PressReleaseActions(0u, 24u));
-    _input->addKeyMapping(Input::KeyCode::KC_F5, PressReleaseActions(0u, 25u));
-    _input->addKeyMapping(Input::KeyCode::KC_F6, PressReleaseActions(0u, 26u));
-    _input->addKeyMapping(Input::KeyCode::KC_F7, PressReleaseActions(0u, 27u));
-    _input->addKeyMapping(Input::KeyCode::KC_F8, PressReleaseActions(0u, 28u));
-    _input->addKeyMapping(Input::KeyCode::KC_B, PressReleaseActions(0u, 29u));
-    _input->addKeyMapping(Input::KeyCode::KC_F10, PressReleaseActions(0u, 30u));
-    _input->addKeyMapping(Input::KeyCode::KC_SYSRQ, PressReleaseActions(0u, 31u));
-    _input->addKeyMapping(Input::KeyCode::KC_RETURN, PressReleaseActions(0u, 0u, 0u, 0u, 0u, 0u, 0u, 32u));
-    _input->addKeyMapping(Input::KeyCode::KC_F, PressReleaseActions(0u, 33u));
-    _input->addKeyMapping(Input::KeyCode::KC_Y, PressReleaseActions(0u, 34u));
-    _input->addKeyMapping(Input::KeyCode::KC_T, PressReleaseActions(0u, 39u));*/
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {

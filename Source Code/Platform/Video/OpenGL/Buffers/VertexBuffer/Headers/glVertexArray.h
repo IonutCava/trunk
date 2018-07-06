@@ -88,8 +88,8 @@ class glVertexArray : public VertexBuffer {
     /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
     std::pair<bufferPtr, size_t> getMinimalData();
 
-    static GLuint getVao(U32 hash);
-    static void setVao(U32 hash, GLuint id);
+    static GLuint getVao(size_t hash);
+    static void setVao(size_t hash, GLuint id);
     static void clearVaos();
 
     static void cleanup();
@@ -112,9 +112,9 @@ class glVertexArray : public VertexBuffer {
     typedef std::array<GLuint, to_const_uint(VertexAttribute::COUNT)> AttribValues;
     AttribValues _attributeOffset;
 
-    std::array<U32, to_const_uint(RenderStage::COUNT)> _vaoHashes;
+    std::array<size_t, to_const_uint(RenderStage::COUNT)> _vaoHashes;
     std::array<GLuint, to_const_uint(RenderStage::COUNT)> _vaoCaches;
-    typedef hashMapImpl<U32, GLuint> VAOMap;
+    typedef hashMapImpl<size_t, GLuint> VAOMap;
     static VAOMap _VAOMap;
 
     static vec3<U32> _currentBindConfig;

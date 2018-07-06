@@ -252,7 +252,7 @@ void CascadedShadowMaps::previewShadowMaps(U32 rowIndex) {
 
     const vec4<I32> viewport = getViewportForRow(rowIndex);
 
-    U32 stateHash = GFX_DEVICE.getDefaultStateBlock(true);
+    size_t stateHash = GFX_DEVICE.getDefaultStateBlock(true);
     getDepthMap()->bind();
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i + _arrayOffset);

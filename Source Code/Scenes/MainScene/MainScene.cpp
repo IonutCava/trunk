@@ -164,13 +164,13 @@ U16 MainScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
 
-    _input->actionList().registerInputAction(actionID, [this]() {SFX_DEVICE.playSound(_beep);});
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {SFX_DEVICE.playSound(_beep);});
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_X, actions);
     actionID++;
     
 
-    _input->actionList().registerInputAction(actionID, [this]() {
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _musicPlaying = !_musicPlaying;
         if (_musicPlaying) {
             SceneState::MusicPlaylist::const_iterator it;
@@ -188,12 +188,12 @@ U16 MainScene::registerInputActions() {
     actionID++;
 
 
-    _input->actionList().registerInputAction(actionID, [this]() { _water->togglePreviewReflection(); });
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) { _water->togglePreviewReflection(); });
     actions._onReleaseAction = actionID;
     _input->addKeyMapping(Input::KeyCode::KC_R, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, [this]() {
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeflyCamera = !_freeflyCamera;
         renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f
             : 10.0f);
@@ -202,7 +202,7 @@ U16 MainScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, [this]() {
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         for (SceneGraphNode_wptr ter : _visibleTerrains) {
             ter.lock()->getNode<Terrain>()->toggleBoundingBoxes();
         }

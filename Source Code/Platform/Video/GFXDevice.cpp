@@ -233,7 +233,7 @@ void GFXDevice::generateDualParaboloidMap(Framebuffer& targetBuffer,
 /// If the stateBlock doesn't exist in the state block map, add it for future reference
 bool GFXDevice::registerRenderStateBlock(const RenderStateBlock& descriptor) {
     // Each combination of render states has a unique hash value
-    U32 hashValue = descriptor.getHash();
+    size_t hashValue = descriptor.getHash();
     // Find the corresponding render state block
     // Create a new one if none are found. The GFXDevice class is
     // responsible for deleting these!
@@ -244,7 +244,7 @@ bool GFXDevice::registerRenderStateBlock(const RenderStateBlock& descriptor) {
 }
 
 /// Activate the render state block described by the specified hash value (0 == default state block)
-U32 GFXDevice::setStateBlock(U32 stateBlockHash) {
+size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
     // Passing 0 is a perfectly acceptable way of enabling the default render state block
     if (stateBlockHash == 0) {
         stateBlockHash = _defaultStateBlockHash;
@@ -272,7 +272,7 @@ U32 GFXDevice::setStateBlock(U32 stateBlockHash) {
 }
 
 /// Return the the render state block defined by the specified hash value.
-const RenderStateBlock& GFXDevice::getRenderStateBlock(U32 renderStateBlockHash) const {
+const RenderStateBlock& GFXDevice::getRenderStateBlock(size_t renderStateBlockHash) const {
     // Find the render state block associated with the received hash value
     RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
     // Assert if it doesn't exist. Avoids programming errors.
@@ -522,7 +522,7 @@ void GFXDevice::computeFrustumPlanes() {
 /// (orthographic projection, no depth reads)
 void GFXDevice::toggle2D(bool state) {
     // Remember the previous state hash
-    static U32 previousStateBlockHash = 0;
+    static size_t previousStateBlockHash = 0;
     // Prevent double 2D toggle to the same state (e.g. in a loop)
     if (state == _2DRendering) {
         return;

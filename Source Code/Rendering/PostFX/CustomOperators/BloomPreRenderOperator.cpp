@@ -70,7 +70,7 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
 
 // Order: luminance calc -> bloom -> tonemap
 void BloomPreRenderOperator::execute() {
-    U32 defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
+    size_t defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
 
      // Step 1: generate bloom
     _hdrTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); //screen

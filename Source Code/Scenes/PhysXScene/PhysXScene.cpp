@@ -59,7 +59,7 @@ U16 PhysXScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
 
-    _input->actionList().registerInputAction(actionID, [this]() {
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         if (!_hasGroundPlane) {
             assert(false);
             // register ground plane
@@ -70,7 +70,7 @@ U16 PhysXScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_1, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, [this](){
+    _input->actionList().registerInputAction(actionID, [this](InputParams param){
         // Create Box
     });
     actions._onReleaseAction = actionID;
@@ -78,7 +78,7 @@ U16 PhysXScene::registerInputActions() {
     actionID++;
 
 
-    _input->actionList().registerInputAction(actionID, [this]() {
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_uint(Random(5, 20)))));
         e.startTask();
         registerTask(e);
@@ -87,7 +87,7 @@ U16 PhysXScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_3, actions);
     actionID++;
 
-    _input->actionList().registerInputAction(actionID, [this]() {
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createStack, this, std::placeholders::_1, to_uint(Random(5, 10)))));
         e.startTask();
         registerTask(e);

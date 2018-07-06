@@ -36,6 +36,35 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+struct InputParams {
+    InputParams()
+        : InputParams(-1)
+    {
+    }
+
+    InputParams(I32 var1)
+        : InputParams(var1, -1)
+    {
+    }
+
+    InputParams(I32 var1, I32 var2)
+        : InputParams(var1, var2, -1)
+    {
+    }
+
+    InputParams(I32 var1, I32 var2, I32 var3)
+        : InputParams(var1, var2, var3, -1)
+    {
+    }
+
+    InputParams(I32 var1, I32 var2, I32 var3, I32 var4)
+        : _var{ var1, var2, var3, var4 }
+    {
+    }
+
+    I32 _var[4];
+};
+
 struct PressReleaseActions {
     PressReleaseActions();
     PressReleaseActions(U16 onPressAction,
@@ -79,15 +108,28 @@ struct PressReleaseActions {
     }
 };
 
+struct InputAction {
+    InputAction();
+    InputAction(DELEGATE_CBK_PARAM<InputParams>& action);
+
+    DELEGATE_CBK_PARAM<InputParams> _action;
+    // This will be usefull for menus and the like (defined in XML)
+    stringImpl _displayName;
+
+    void displayName(const stringImpl& name);
+};
+
 class InputActionList {
    public:
     InputActionList();
 
-    bool registerInputAction(U16 id, DELEGATE_CBK<> action);
-    DELEGATE_CBK<> getInputAction(U16 id) const;
+    bool registerInputAction(U16 id, DELEGATE_CBK_PARAM<InputParams> action);
+    InputAction& getInputAction(U16 id);
+    const InputAction& getInputAction(U16 id) const;
 
    protected:
-    hashMapImpl<U16 /*actionID*/, DELEGATE_CBK<> /*action*/> _inputActions;
+    hashMapImpl<U16 /*actionID*/, InputAction> _inputActions;
+    InputAction _noOPAction;
 };
 
 }; //namespace Divide

@@ -155,7 +155,7 @@ class Terrain : public Object3D {
     SamplerDescriptor* _normalSampler;
 
     vectorImpl<TerrainChunk*> _terrainChunks;
-    std::array<U32, to_const_uint(RenderStage::COUNT)> _terrainStateHash;
+    std::array<size_t, to_const_uint(RenderStage::COUNT)> _terrainStateHash;
 };
 
 namespace Attorney {
@@ -192,9 +192,9 @@ class TerrainLoader {
     }
 
     static void setRenderStateHashes(Terrain& terrain,
-                                     U32 normalStateHash,
-                                     U32 reflectionStateHash,
-                                     U32 depthStateHash) {
+                                     size_t normalStateHash,
+                                     size_t reflectionStateHash,
+                                     size_t depthStateHash) {
         terrain._terrainStateHash[to_const_uint(RenderStage::DISPLAY)] = normalStateHash;
         terrain._terrainStateHash[to_const_uint(RenderStage::Z_PRE_PASS)] = normalStateHash;
         terrain._terrainStateHash[to_const_uint(RenderStage::REFLECTION)] = reflectionStateHash;

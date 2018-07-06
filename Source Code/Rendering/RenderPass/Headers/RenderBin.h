@@ -53,12 +53,11 @@ struct RenderBinItem {
     RenderingComponent* _renderable;
     I32 _sortKeyA;
     I32 _sortKeyB;
-    U32 _stateHash;
+    size_t _stateHash;
     F32 _distanceToCameraSq;
 
     RenderBinItem() : _sortKeyA(-1), _sortKeyB(-1), _stateHash(0), _distanceToCameraSq(-1.0f), _renderable(nullptr) {}
-    RenderBinItem(RenderStage currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq,
-                  RenderingComponent& renderable);
+    RenderBinItem(RenderStage currentStage, I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, RenderingComponent& renderable);
 };
 
 struct RenderingOrder {

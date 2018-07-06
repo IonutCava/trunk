@@ -40,66 +40,61 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
 
     // Create the event handler.
     _pEventHdlr = MemoryManager_NEW EventHandler(this, kernel);
-    DIVIDE_ASSERT(_pEventHdlr != nullptr,
-                  "InputInterface error: EventHandler allocation failed!");
+    DIVIDE_ASSERT(_pEventHdlr != nullptr, "InputInterface error: EventHandler allocation failed!");
 
-    try {
+    if (_pInputInterface->getNumberOfDevices(OIS::OISKeyboard) > 0) {
         // Create a simple keyboard
-        _pKeyboard = static_cast<OIS::Keyboard*>(
-            _pInputInterface->createInputObject(OIS::OISKeyboard, true));
+        _pKeyboard = static_cast<OIS::Keyboard*>( _pInputInterface->createInputObject(OIS::OISKeyboard, true));
         _pKeyboard->setEventCallback(_pEventHdlr);
-    } catch (OIS::Exception& ex) {
-        Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_KB")), ex.eText);
+    } else {
+        Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_KB")), "No keyboards detected");
+    }
+
+
+    if (_pInputInterface->getNumberOfDevices(OIS::OISMouse) > 0) {
+        _pMouse = static_cast<OIS::Mouse*>(_pInputInterface->createInputObject(OIS::OISMouse, true));
+        _pMouse->setEventCallback(_pEventHdlr);
+
+        const OIS::MouseState& ms = _pMouse->getMouseState();  // width and height are mutable
+        ms.width = inputAreaDimensions.width;
+        ms.height = inputAreaDimensions.height;
+    } else {
+        Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_MOUSE")), "No mice detected");
     }
 
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
-    I32 numJoysticks =
-        std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick),
-                 to_int(Joystick::COUNT));
+    I32 numJoysticks = std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick), to_int(Joystick::COUNT));
 
     if (numJoysticks > 0) {
+        U32 entryNum = to_const_uint(Joystick::JOYSTICK_1);
+
         _pJoysticks.resize(numJoysticks);
-        try {
-            for (vectorImpl<OIS::JoyStick*>::iterator it =
-                     std::begin(_pJoysticks);
-                 it != std::end(_pJoysticks); ++it) {
-                (*it) = static_cast<OIS::JoyStick*>(
-                    _pInputInterface->createInputObject(OIS::OISJoyStick,
-                                                        true));
-                (*it)->setEventCallback(_pEventHdlr);
-            }
-        } catch (OIS::Exception& ex) {
-            Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_JOYSTICK")), ex.eText);
+        vectorImpl<OIS::JoyStick*>::iterator it;
+        for (it =  std::begin(_pJoysticks);  it != std::end(_pJoysticks); ++it) {
+            (*it) = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject(OIS::OISJoyStick, true));
+            (*it)->setEventCallback(_pEventHdlr);
+
+            _joystickIdToEntry[(*it)->getID()] = static_cast<Joystick>(entryNum++);
         }
 
         // Create the joystick manager.
-        _pJoystickInterface =
-            MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
+        _pJoystickInterface = MemoryManager_NEW JoystickInterface(_pInputInterface, _pEventHdlr);
 
-        vectorAlg::vecSize joystickCount = _pJoysticks.size();
-        for (vectorAlg::vecSize i = 0; i < joystickCount; ++i) {
+        for (I32 i = 0; i < numJoysticks; ++i) {
             I32 max = _pJoysticks[i]->MAX_AXIS - 4000;
             _pJoystickInterface->setJoystickData(static_cast<Joystick>(i), JoystickData(max / 10, max));
         }
+
         if (!_pJoystickInterface->wasFFDetected()) {
             Console::printfn(Locale::get(_ID("WARN_INPUT_NO_FORCE_FEEDBACK")));
         } else {
             // Create force feedback effect manager.
-            _pEffectMgr.reset(
-                new EffectManager(_pJoystickInterface, _nEffectUpdateFreq));
+            _pEffectMgr.reset(new EffectManager(_pJoystickInterface, _nEffectUpdateFreq));
             // Initialize the event handler.
             _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr.get());
         }
-    }
-
-    try {
-        _pMouse = static_cast<OIS::Mouse*>(_pInputInterface->createInputObject(OIS::OISMouse, true));
-        _pMouse->setEventCallback(_pEventHdlr);
-        const OIS::MouseState& ms = _pMouse->getMouseState();  // width and height are mutable
-        ms.width = inputAreaDimensions.width;
-        ms.height = inputAreaDimensions.height;
-    } catch (OIS::Exception& ex) {
-        Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_MOUSE")), ex.eText);
+    } else {
+        Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_JOYSTICK")), "No joystick / gamepad devices detected!");
     }
 
     _bIsInitialized = true;
@@ -171,6 +166,92 @@ void InputInterface::terminate() {
     }
 
     MemoryManager::DELETE(_pEventHdlr);
+}
+
+InputState InputInterface::getKeyState(KeyCode keyCode) const {
+    if (_pKeyboard != nullptr) {
+        return _pKeyboard->isKeyDown(keyCode) ? InputState::PRESSED 
+                                              : InputState::RELEASED;
+    }
+
+    return InputState::COUNT;
+}
+
+InputState InputInterface::getMouseButtonState(MouseButton button) const {
+    if (_pMouse != nullptr) {
+        return _pMouse->getMouseState().buttonDown(button) ? InputState::PRESSED
+                                                           : InputState::RELEASED;
+    }
+
+    return InputState::COUNT;
+}
+
+InputState InputInterface::getJoystickeButtonState(Input::Joystick device, JoystickButton button) const {
+    for (hashMapImpl<I32, Joystick>::value_type it : _joystickIdToEntry) {
+        if (it.second == device) {
+            for (OIS::JoyStick* deviceIt : _pJoysticks) {
+                if (deviceIt->getID() == it.first) {
+                    const OIS::JoyStickState& joyState = deviceIt->getJoyStickState();
+                    return joyState.mButtons[button] ? InputState::PRESSED
+                                                     : InputState::RELEASED;
+                }
+                assert(false && "Invalid joystick entry detected!");
+            }
+        }
+    }
+    return InputState::COUNT;
+}
+
+Joystick InputInterface::joystick(I32 deviceID) const {
+    hashMapImpl<I32, Joystick>::const_iterator it = _joystickIdToEntry.find(deviceID);
+    if (it != std::cend(_joystickIdToEntry)) {
+        return it->second;
+    }
+
+    return Joystick::COUNT;
+}
+
+
+MouseButton  InputInterface::mouseButtonByName(const stringImpl& buttonName) {
+    if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Left")) {
+        return MouseButton::MB_Left;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Right")) {
+        return MouseButton::MB_Right;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Middle")) {
+        return MouseButton::MB_Middle;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button3")) {
+        return MouseButton::MB_Button3;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button4")) {
+        return MouseButton::MB_Button4;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button5")) {
+        return MouseButton::MB_Button5;
+    } else if (Util::CompareIgnoreCase("MB_" + buttonName, "MB_Button6")) {
+        return MouseButton::MB_Button6;
+    }//else if (Util::CompareIgnoreCase(buttonName, "MB_Button7")) {
+     //}
+
+    return MouseButton::MB_Button7;
+}
+
+JoystickElement  InputInterface::joystickElementByName(const stringImpl& elementName) {
+    if (Util::CompareIgnoreCase(elementName, "POV")) {
+        return JoystickElement(JoystickElementType::POV_MOVE);
+    } else if (Util::CompareIgnoreCase(elementName, "AXIS")) {
+        return JoystickElement(JoystickElementType::AXIS_MOVE);
+    } else if (Util::CompareIgnoreCase(elementName, "SLIDER")) {
+        return JoystickElement(JoystickElementType::SLIDER_MOVE);
+    } else if (Util::CompareIgnoreCase(elementName, "VECTOR")) {
+        return JoystickElement(JoystickElementType::VECTOR_MOVE);
+    } else {
+        vectorImpl<stringImpl> buttonElements = Util::Split(elementName, '_');
+        assert(buttonElements.size() == 2 && "Invalid joystick element name!");
+        assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
+
+        I32 buttonId = Util::ConvertData<I32, std::string>(buttonElements[1].c_str());
+        return JoystickElement(JoystickElementType::BUTTON_PRESS, buttonId);
+    }
+
+    return JoystickElement(JoystickElementType::COUNT);
 }
 
 KeyCode InputInterface::keyCodeByName(const stringImpl& name) {

@@ -30,13 +30,12 @@ void glVertexArray::cleanup() {
 }
 
 
-GLuint glVertexArray::getVao(U32 hash) {
+GLuint glVertexArray::getVao(size_t hash) {
     VAOMap::const_iterator result = _VAOMap.find(hash);
-    return result != std::end(_VAOMap) ? result->second
-                                       : 0;
+    return result != std::end(_VAOMap) ? result->second  : 0;
 }
 
-void glVertexArray::setVao(U32 hash, GLuint id) {
+void glVertexArray::setVao(size_t hash, GLuint id) {
     std::pair<VAOMap::const_iterator, bool> result =
         hashAlg::emplace(_VAOMap, hash, id);
     assert(result.second);
@@ -227,7 +226,7 @@ bool glVertexArray::refresh() {
         for (U8 j = 0; j < to_const_uint(VertexAttribute::COUNT); ++j) {
             stageUsage[j] = _useAttribute[j] && stageMask[j];
         }
-        U32 crtHash = std::hash<AttribFlags>()(stageUsage);
+        size_t crtHash = std::hash<AttribFlags>()(stageUsage);
         _vaoHashes[i] = crtHash;
         _vaoCaches[i] = getVao(crtHash);
         if (_vaoCaches[i] == 0) {

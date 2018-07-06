@@ -40,37 +40,45 @@ namespace Divide {
 // This is the callback equivalent of PressReleaseAction with IDs resolved
 struct PressReleaseActionCbks {
     // key only
-    DELEGATE_CBK<> _onPressAction;
-    DELEGATE_CBK<> _onReleaseAction;
+    DELEGATE_CBK_PARAM<InputParams> _onPressAction;
+    DELEGATE_CBK_PARAM<InputParams> _onReleaseAction;
 
-    DELEGATE_CBK<> _onLCtrlPressAction;
-    DELEGATE_CBK<> _onLCtrlReleaseAction;
-    DELEGATE_CBK<> _onRCtrlPressAction;
-    DELEGATE_CBK<> _onRCtrlReleaseAction;
+    DELEGATE_CBK_PARAM<InputParams> _onLCtrlPressAction;
+    DELEGATE_CBK_PARAM<InputParams> _onLCtrlReleaseAction;
+    DELEGATE_CBK_PARAM<InputParams> _onRCtrlPressAction;
+    DELEGATE_CBK_PARAM<InputParams> _onRCtrlReleaseAction;
 
-    DELEGATE_CBK<> _onLAltPressAction;
-    DELEGATE_CBK<> _onLAltReleaseAction;
-    DELEGATE_CBK<> _onRAltPressAction;
-    DELEGATE_CBK<> _onRAltReleaseAction;
+    DELEGATE_CBK_PARAM<InputParams> _onLAltPressAction;
+    DELEGATE_CBK_PARAM<InputParams> _onLAltReleaseAction;
+    DELEGATE_CBK_PARAM<InputParams> _onRAltPressAction;
+    DELEGATE_CBK_PARAM<InputParams> _onRAltReleaseAction;
 
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };
 
+class JoystickHasher
+{
+public:
+    size_t operator()(const Input::JoystickElement& k) const
+    {
+        size_t hash = 0;
+        Util::Hash_combine(hash, to_uint(k._type));
+        Util::Hash_combine(hash, k._data);
+        return hash;
+    }
+};
+
 class SceneInput : public Input::InputAggregatorInterface {
    public:
-    enum class InputState : U32 { PRESSED = 0, RELEASED = 1, COUNT };
-
     typedef hashMapImpl<Input::KeyCode, PressReleaseActionCbks, std::hash<I32>> KeyMapCache;
     typedef hashMapImpl<Input::MouseButton, PressReleaseActionCbks, std::hash<I32>> MouseMapCache;
-    typedef hashMapImpl<Input::JoystickButton, PressReleaseActionCbks> JoystickMapCache;
+    typedef hashMapImpl<Input::JoystickElement, PressReleaseActionCbks, JoystickHasher> JoystickMapCacheEntry;
+    typedef hashMapImpl<Input::Joystick, JoystickMapCacheEntry> JoystickMapCache;
 
     typedef hashMapImpl<Input::KeyCode, PressReleaseActions, std::hash<I32>> KeyMap;
     typedef hashMapImpl<Input::MouseButton, PressReleaseActions, std::hash<I32>> MouseMap;
-    typedef hashMapImpl<Input::JoystickButton, PressReleaseActions> JoystickMap;
-
-    typedef hashMapImpl<Input::KeyCode, InputState, std::hash<I32>> KeyState;
-    typedef hashMapImpl<Input::MouseButton, InputState, std::hash<I32>> MouseBtnState;
-    typedef hashMapImpl<Input::JoystickButton, InputState> JoystickBtnState;
+    typedef hashMapImpl<Input::JoystickElement, PressReleaseActions, JoystickHasher> JoystickMapEntry;
+    typedef hashMapImpl<Input::Joystick, JoystickMapEntry> JoystickMap;
 
     explicit SceneInput(Scene &parentScene);
 
@@ -116,20 +124,25 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     /// Returns false if the button is already assigned.
     /// Call removeJoystickMapping for the specified key first
-    bool addJoystickMapping(Input::JoystickButton button, PressReleaseActions btnCbks);
+    bool addJoystickMapping(Input::Joystick device, Input::JoystickElement element, PressReleaseActions btnCbks);
     /// Returns false if the button wasn't previously assigned
-    bool removeJoystickMapping(Input::JoystickButton button);
+    bool removeJoystickMapping(Input::Joystick device, Input::JoystickElement element);
     /// Returns true if the button has a valid mapping and sets the callback
     /// output to the mapping's function
-    bool getJoystickMapping(Input::JoystickButton button, PressReleaseActionCbks& btnCbksOut);
+    bool getJoystickMapping(Input::Joystick device, Input::JoystickElement element, PressReleaseActionCbks& btnCbksOut);
 
-    InputState getKeyState(Input::KeyCode key) const;
-    InputState getMouseButtonState(Input::MouseButton button) const;
-    InputState getJoystickButtonState(Input::JoystickButton button) const;
+    Input::InputState getKeyState(Input::KeyCode key) const;
+    Input::InputState getMouseButtonState(Input::MouseButton button) const;
+    Input::InputState getJoystickButtonState(Input::Joystick device, Input::JoystickButton button) const;
 
     InputActionList& actionList();
 
     void flushCache();
+
+   protected:
+       bool handleCallbacks(const PressReleaseActionCbks& cbks,
+                            const InputParams& params,
+                            bool onPress);
 
    private:
     Scene &_parentScene;
@@ -142,14 +155,11 @@ class SceneInput : public Input::InputAggregatorInterface {
     MouseMapCache _mouseMapCache;
     JoystickMapCache _joystickMapCache;
 
-    KeyState _keyStateMap;
-    MouseBtnState _mouseStateMap;
-    JoystickBtnState _joystickStateMap;
     vec2<I32> _mousePos;
 
     InputActionList _actionList;
-    vectorImpl<std::pair<Input::KeyCode, InputState>> _keyLog;
-    vectorImpl<std::tuple<Input::MouseButton, InputState, vec2<I32>>> _mouseBtnLog;
+    vectorImpl<std::pair<Input::KeyCode, Input::InputState>> _keyLog;
+    vectorImpl<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> _mouseBtnLog;
 };  // SceneInput
 
 };  // namespace Divide

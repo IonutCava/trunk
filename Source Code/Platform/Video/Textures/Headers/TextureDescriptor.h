@@ -154,8 +154,8 @@ class SamplerDescriptor : public PropertyDescriptor {
 
     inline void toggleSRGBColorSpace(const bool state) { _srgb = state; }
 
-    inline U32 getHash() const {
-        U32 hash = 0;
+    inline size_t getHash() const {
+        size_t hash = 0;
         Util::Hash_combine(hash, to_uint(_cmpFunc));
         Util::Hash_combine(hash, _useRefCompare);
         Util::Hash_combine(hash, _srgb);

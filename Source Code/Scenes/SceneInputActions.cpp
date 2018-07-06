@@ -36,29 +36,53 @@ PressReleaseActions::PressReleaseActions(U16 onPressAction,
 {
 }
 
-InputActionList::InputActionList()
+InputAction::InputAction()
 {
-  
 }
 
-bool InputActionList::registerInputAction(U16 id, DELEGATE_CBK<> action) {
+InputAction::InputAction(DELEGATE_CBK_PARAM<InputParams>& action)
+    : _action(action)
+{
+}
+
+void InputAction::displayName(const stringImpl& name) {
+    _displayName = name;
+}
+
+InputActionList::InputActionList()
+{
+    _noOPAction.displayName("no-op");
+}
+
+bool InputActionList::registerInputAction(U16 id, DELEGATE_CBK_PARAM<InputParams> action) {
     if (_inputActions.find(id) == std::cend(_inputActions)) {
-        hashAlg::emplace(_inputActions, id, action);
+        hashAlg::emplace(_inputActions, id, InputAction(action));
         return true;
     }
 
     return false;
 }
 
-DELEGATE_CBK<> InputActionList::getInputAction(U16 id) const {
-    hashMapImpl<U16, DELEGATE_CBK<>>::const_iterator it;
+InputAction& InputActionList::getInputAction(U16 id) {
+    hashMapImpl<U16, InputAction>::iterator it;
     it = _inputActions.find(id);
 
     if (it != std::cend(_inputActions)) {
         return it->second;
     }
 
-    return DELEGATE_CBK<>();
+    return _noOPAction;
+}
+
+const InputAction& InputActionList::getInputAction(U16 id) const {
+    hashMapImpl<U16, InputAction>::const_iterator it;
+    it = _inputActions.find(id);
+
+    if (it != std::cend(_inputActions)) {
+        return it->second;
+    }
+
+    return _noOPAction;
 }
 
 }; //namespace Divide

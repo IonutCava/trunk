@@ -170,7 +170,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     }
     /// Verify if we have a sampler object created and available for the given
     /// descriptor
-    static U32 getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
+    static size_t getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
     /// Clipping planes are only enabled/disabled if they differ from the current
     /// state
     void updateClipPlanes() override;
@@ -258,8 +258,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Bind a texture specified by a GL handle and GL type to the specified
     /// unit
     /// using the sampler object defined by hash value
-    static bool bindTexture(GLushort unit, GLuint handle, GLenum target,
-                            U32 samplerHash = 0);
+    static bool bindTexture(GLushort unit, GLuint handle, GLenum target, size_t samplerHash = 0);
     static bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
                                  bool layered, GLint layer, GLenum access,
                                  GLenum format);
@@ -271,13 +270,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
 
     /// Bind the sampler object described by the hash value to the specified
     /// unit
-    static bool bindSampler(GLushort unit, U32 samplerHash);
+    static bool bindSampler(GLushort unit, size_t samplerHash);
     /// Bind multiple samplers described by the array of hash values to the
     /// consecutive texture units starting from the specified offset
     static bool bindSamplers(GLushort unitOffset, GLuint samplerCount,
                              GLuint* samplerHandles);
     /// Return the OpenGL sampler object's handle for the given hash value
-    static GLuint getSamplerHandle(U32 samplerHash);
+    static GLuint getSamplerHandle(size_t samplerHash);
     /// Modify buffer bindings for a specific vao
     static bool bindActiveBuffer(GLuint vaoID,
                                  GLuint location,
@@ -361,10 +360,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static imageBoundMapDef _imageBoundMap;
 
     /// /*texture slot*/ /*sampler hash value*/
-    typedef std::array<U32, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
+    typedef std::array<size_t, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
     static samplerBoundMapDef _samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
-    typedef hashMapImpl<U32, glSamplerObject*> samplerObjectMap;
+    typedef hashMapImpl<size_t, glSamplerObject*> samplerObjectMap;
     static samplerObjectMap _samplerMap;
 
     typedef std::tuple<GLuint, GLuint, GLintptr, GLsizei> BufferBindingParams;
