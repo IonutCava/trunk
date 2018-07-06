@@ -26,6 +26,8 @@ bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
     for_each(childrenNodes::value_type& s, sgn->getChildren()){
         bb.Add(s.second->getBoundingBox());
     }
+    _maxBoundingBox.Add(bb);
+    _maxBoundingBox.setComputed(true);
     return SceneNode::computeBoundingBox(sgn);
 }
 
@@ -46,6 +48,7 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
         _subMeshRefMap.insert(std::make_pair(s->getId(), s));
         s->setParentMesh(this);
     }
+    _maxBoundingBox.reset();
     Object3D::postLoad(sgn);
 }
 

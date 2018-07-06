@@ -43,39 +43,36 @@ class SubMesh;
 class Mesh : public Object3D {
 public:
 
-	Mesh(ObjectFlag flag = OBJECT_FLAG_NONE) : Object3D(MESH,TRIANGLES,flag),
-											  _visibleToNetwork(true)
-	{
-	}
+    Mesh(ObjectFlag flag = OBJECT_FLAG_NONE) : Object3D(MESH,TRIANGLES,flag),
+                                              _visibleToNetwork(true)
+    {
+    }
 
-	virtual ~Mesh() {}
+    virtual ~Mesh() {}
 
-	bool computeBoundingBox(SceneGraphNode* const sgn);
-	virtual void updateTransform(SceneGraphNode* const sgn);
-	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+    bool computeBoundingBox(SceneGraphNode* const sgn);
+    virtual void updateTransform(SceneGraphNode* const sgn);
+    virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
-	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
-	virtual void postLoad(SceneGraphNode* const sgn);
-	virtual	void onDraw(const RenderStage& currentStage);
-	inline  void render(SceneGraphNode* const sgn){};
-	virtual void preFrameDrawEnd() {}
+    /// Called from SceneGraph "sceneUpdate"
+    virtual void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    virtual void postLoad(SceneGraphNode* const sgn);
+    virtual	void onDraw(const RenderStage& currentStage);
+    inline  void render(SceneGraphNode* const sgn){};
+    virtual void preFrameDrawEnd() {}
 
-	inline vectorImpl<std::string>&   getSubMeshes()   {return _subMeshes;}
-
-	inline void  addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
-
-protected:
-	void computeTangents(){}
+    inline void  addSubMesh(const std::string& subMesh) {_subMeshes.push_back(subMesh);}
+    inline const BoundingBox& getMaxBoundingBox() const { return _maxBoundingBox; }
 
 protected:
-	typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;
-	typedef Unordered_map<U32, SubMesh*> subMeshRefMap;
+    typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;
+    typedef Unordered_map<U32, SubMesh*> subMeshRefMap;
 
-	bool _visibleToNetwork;
+    bool _visibleToNetwork;
 
-	vectorImpl<std::string > _subMeshes;
-	subMeshRefMap            _subMeshRefMap;
+    vectorImpl<std::string > _subMeshes;
+    subMeshRefMap            _subMeshRefMap;
+    BoundingBox              _maxBoundingBox;
 };
 
 #endif

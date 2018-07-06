@@ -61,7 +61,7 @@ bool Scene::idle(){ //Called when application is idle
         loadXMLAssets(true);
 
     if(_cookCollisionMeshesScheduled){
-        if(SceneManager::getInstance().getFrameCount() > 2){
+        if(SceneManager::getInstance().getFrameCount() > 1){
             _sceneGraph->getRoot()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }

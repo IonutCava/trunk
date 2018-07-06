@@ -167,7 +167,6 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
             bb.setComputed(true);
             _bbsPerFrame[i] = bb;
         }
-
         _boundingBoxes.insert(std::make_pair(_currentAnimationID,_bbsPerFrame));
     }
 

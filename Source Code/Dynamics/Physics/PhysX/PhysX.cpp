@@ -4,6 +4,7 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
+#include "Geometry/Shapes/Headers/SkinnedMesh.h"
 #include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 #include <Samples/PxToolkit/include/PxToolkit.h>
@@ -46,8 +47,8 @@ I8 PhysX::initPhysics(U8 targetFrameRate) {
     bool recordMemoryAllocations = false;
 
 #ifdef _DEBUG
-    bool recordMemoryAllocations = true;
-   _zoneManager = &PxProfileZoneManager::createProfileZoneManager(_foundation);
+    recordMemoryAllocations = true;
+    _zoneManager = &PxProfileZoneManager::createProfileZoneManager(_foundation);
     assert(_zoneManager != NULL);
 #endif
 
@@ -76,6 +77,12 @@ I8 PhysX::initPhysics(U8 targetFrameRate) {
     if(!PxInitExtensions(*_gPhysicsSDK)){
         ERROR_FN(Locale::get("ERROR_EXTENSION_PHYSX_API"));
         return PHYSX_EXTENSION_ERROR;
+    }
+    
+    if(!_cooking){
+        PxCookingParams cookparams;
+        cookparams.targetPlatform = PxPlatform::ePC;
+        _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, cookparams);
     }
 
     updateTimeStep(targetFrameRate);
@@ -157,7 +164,16 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
         fclose(fp);
         ok = (filesize != 0);
     }
-    
+
+    //if(group == GROUP_NON_COLLIDABLE)
+    //   return true;
+
+    bool isSkinnedMesh = sNode->getType() == Object3D::SUBMESH ? 
+                         (node->getParent()->getNode<Object3D>()->getFlag() == Object3D::OBJECT_FLAG_SKINNED) : 
+                         false;
+                       
+    //Disabled for now - Ionut
+    isSkinnedMesh = false;
     if(!ok){
         VertexBufferObject* nodeVBO = sNode->getGeometryVBO();
         if(nodeVBO->getPosition().empty())
@@ -169,35 +185,26 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
                 return false;
         }
 
-        PxTriangleMeshDesc meshDesc;
-        meshDesc.points.count     = nodeVBO->getPosition().size();
-        meshDesc.points.stride    = sizeof(vec3<F32>);
-        meshDesc.points.data      = &nodeVBO->getPosition()[0];
-        meshDesc.triangles.count  = nodeVBO->getTriangles().size();
-        meshDesc.triangles.stride = 3*sizeof(U32);
-        meshDesc.triangles.data   = &nodeVBO->getTriangles()[0];
-
-        if(!_cooking){
-            PxCookingParams cookparams;
-            cookparams.targetPlatform = PxPlatform::ePC;
-            _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, cookparams);
-        }
-
         PxToolkit::FileOutputStream stream(nodeName.c_str());
-        bool status = _cooking->cookTriangleMesh(meshDesc, stream);
-        if(!status){
-            ERROR_FN(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
-            return false;
+        if(!isSkinnedMesh) {
+            PxTriangleMeshDesc meshDesc;
+            meshDesc.points.count     = nodeVBO->getPosition().size();
+            meshDesc.points.stride    = sizeof(vec3<F32>);
+            meshDesc.points.data      = &nodeVBO->getPosition()[0];
+            meshDesc.triangles.count  = nodeVBO->getTriangles().size();
+            meshDesc.triangles.stride = 3*sizeof(U32);
+            meshDesc.triangles.data   = &nodeVBO->getTriangles()[0];
+            //if(!nodeVBO->usesLargeIndices())
+                //meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
+
+            if(!_cooking->cookTriangleMesh(meshDesc, stream)){
+                ERROR_FN(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
+                return false;
+            }
         }
+
     }else{
         PRINT_FN(Locale::get("COLLISION_MESH_LOADED_FROM_FILE"), nodeName.c_str());
-    }
-    
-    PxToolkit::FileInputData stream(nodeName.c_str());
-    physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
-    if(!triangleMesh){
-        ERROR_FN(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
-        return false;
     }
     
     PhysXSceneInterface* targetScene = dynamic_cast<PhysXSceneInterface* >(_targetScene);
@@ -213,13 +220,6 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     assert(tempActor != NULL);
     assert(nodeTransform != NULL);
     tempActor->_transform = nodeTransform;
-
-    const vec3<F32>& scale = nodeTransform->getScale();
-    physx::PxTriangleMeshGeometry* geometry = New PxTriangleMeshGeometry(triangleMesh, 
-                                                                         PxMeshScale(PxVec3(scale.x,scale.y,scale.z),
-                                                                         PxQuat::createIdentity()));
-
-    static physx::PxMaterial* material = _gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f);
 
     if(!tempActor->_actor) {
         const vec3<F32>& position = nodeTransform->getPosition();
@@ -237,6 +237,28 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
         targetScene->addRigidActor(tempActor, false);
     }
     
+    physx::PxGeometry* geometry = NULL;
+    if(!isSkinnedMesh){
+        PxToolkit::FileInputData stream(nodeName.c_str());
+        physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
+        if(!triangleMesh){
+            ERROR_FN(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
+            return false;
+        }
+
+        const vec3<F32>& scale = nodeTransform->getScale();
+        geometry = New PxTriangleMeshGeometry(triangleMesh, 
+                                              PxMeshScale(PxVec3(scale.x,scale.y,scale.z),
+                                              PxQuat::createIdentity()));
+    }else{
+       const BoundingBox& maxBB = node->getBoundingBox();
+       geometry = New PxBoxGeometry(maxBB.getWidth(),maxBB.getHeight(),maxBB.getDepth());
+    }
+
+    assert(geometry != NULL);
+
+    static physx::PxMaterial* material = _gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f);
+
     tempActor->_actor->createShape(*geometry, *material);
     return true;
 };

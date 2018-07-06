@@ -299,18 +299,19 @@ void  SceneGraphNode::setNavigationDetailOverride(const bool detailOverride){
     }
 }
 
+#pragma message("ToDo: add terrain heightfield and water cooking support! -Ionut")
 void  SceneGraphNode::cookCollisionMesh(const std::string& sceneName) {
     SceneNodeType nodeType = _node->getType();
-    if(nodeType != TYPE_SKY)
+    if(nodeType != TYPE_SKY && nodeType != TYPE_WATER && nodeType != TYPE_TERRAIN)
         for_each(NodeChildren::value_type& it, _children){
             it.second->cookCollisionMesh(sceneName);
         }
 
-    if(!bitCompare(TYPE_WATER | TYPE_TERRAIN | TYPE_OBJECT3D, nodeType))
+    if(!bitCompare(/*TYPE_WATER | TYPE_TERRAIN | */TYPE_OBJECT3D, nodeType))
         return;
     
     if(nodeType == TYPE_OBJECT3D) {
-        if(bitCompare(Object3D::TEXT_3D | Object3D::FLYWEIGHT, dynamic_cast<Object3D*>(_node)->getType()))
+        if(bitCompare(Object3D::TEXT_3D | Object3D::MESH | Object3D::FLYWEIGHT, dynamic_cast<Object3D*>(_node)->getType()))
             return;
     }
 
