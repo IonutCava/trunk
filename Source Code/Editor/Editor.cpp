@@ -25,6 +25,8 @@ namespace Divide {
 namespace {
     bool show_test_window = true;
     bool show_another_window = false;
+    I32 window_opacity = 255;
+    I32 previous_window_opacity = 255;
 };
 
 Editor::Editor(PlatformContext& context)
@@ -48,7 +50,13 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
-
+    CLAMP(window_opacity, 0, 255);
+    if (window_opacity != previous_window_opacity) {
+        if (_mainWindow != nullptr) {
+            _mainWindow->opacity(to_U8(window_opacity));
+        }
+        previous_window_opacity = window_opacity;
+    }
 }
 
 bool Editor::init() {
@@ -238,6 +246,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
         static float f = 0.0f;
         ImGui::Text("Hello, world!");
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+        ImGui::SliderInt("Opacity", &window_opacity, 0, 255);
         ImGui::ColorEdit4("clear color", _mainWindow->clearColour()._v);
         if (ImGui::Button("Test Window")) show_test_window ^= 1;
         if (ImGui::Button("Another Window")) show_another_window ^= 1;

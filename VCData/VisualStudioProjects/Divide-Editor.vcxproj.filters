@@ -160,24 +160,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imgui_freetype\imgui_freetype.cpp">
-      <Filter>3rdParty/ImGUI\addons\imgui_freetype</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguibindings</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguicodeeditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguidatechooser</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidock\imguidock.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguidock</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguifilesystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
       <Filter>3rdParty/ImGUI\addons\imguifilesystem\minizip</Filter>
     </ClCompile>
@@ -186,66 +168,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.c">
       <Filter>3rdParty/ImGUI\addons\imguifilesystem\minizip</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguihelper</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguilistview</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguinodegrapheditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguipanelmanager\imguipanelmanager.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguipanelmanager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguistring</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguistyleserializer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitabwindow\imguitabwindow.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguitabwindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguitoolbar</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguivariouscontrols</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiemscriptenpersistentfolder.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguifreetype.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguipdfviewer.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisdf.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisqlite3.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.cpp">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c">
       <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
@@ -476,9 +398,6 @@
     </None>
     <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl">
       <Filter>3rdParty/ImGUI\addons</Filter>
-    </None>
-    <None Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguimodplug.cpp.inl">
-      <Filter>3rdParty/ImGUI\addons\imguiyesaddons</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -66,70 +66,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\ImguiExtras.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguidock\imguidock.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.c" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.c" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguipanelmanager\imguipanelmanager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitabwindow\imguitabwindow.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiemscriptenpersistentfolder.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguifreetype.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguipdfviewer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisdf.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisqlite3.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imgui_freetype\imgui_freetype.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
@@ -222,7 +164,6 @@
     <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\gen_spv.sh" />
     <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.frag" />
     <None Include="..\../Source Code/Libs/imgui\examples\vulkan_example\glsl_shader.vert" />
-    <None Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguimodplug.cpp.inl" />
     <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
