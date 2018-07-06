@@ -1,6 +1,6 @@
 #include "Headers/ParticleEmitter.h"
 
-#include "Core/Headers/Application.h"
+#include "Core/Headers/Kernel.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/ParamHandler.h"
@@ -32,6 +32,7 @@ ParticleEmitter::ParticleEmitter()
       _particleGPUBuffer(nullptr),
       _particleDepthShader(nullptr)
 {
+    _updating = false;
 }
 
 ParticleEmitter::~ParticleEmitter() { 
@@ -126,8 +127,8 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
         ResourceDescriptor texture(_particles->_textureFileName);
 
         texture.setResourceLocation(
-            ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/" +
-            ParamHandler::getInstance().getParam<stringImpl>("defaultTextureLocation") + "/" +
+            ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) + "/" +
+            ParamHandler::getInstance().getParam<stringImpl>(_ID("defaultTextureLocation")) + "/" +
             _particles->_textureFileName);
 
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
@@ -241,6 +242,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
     if (_enabled) {
+        WAIT_FOR_CONDITION(!_updating);
+        _updating = true;
         U32 aliveCount = getAliveParticleCount();
         bool validCount = aliveCount > 0;
         renderState().setDrawState(validCount);
@@ -276,20 +279,26 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         // const vec3<F32>& origin = transform->getPosition();
         // const Quaternion<F32>& orientation = transform->getOrientation();
 
-        // invalidateCache means that the existing particle data is no longer partially sorted
-        _particles->sort(true);
+        Application::getInstance().getKernel().AddTask(
+            [this](const std::atomic_bool& stopRequested) {
+                // invalidateCache means that the existing particle data is no longer partially sorted
+                _particles->sort(true);
+            },
+            [this, averageEmitRate]()
+            {
+                U32 aliveCount = to_uint(_particles->_renderingPositions.size());
+                _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
+                _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
+                _particleGPUBuffer->incQueue();
 
+                _boundingBox.reset();
 
-        aliveCount = to_uint(_particles->_renderingPositions.size());
-        _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
-        _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
-        _particleGPUBuffer->incQueue();
+                for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
+                    _boundingBox.add(_particles->_position[i]);
+                }
 
-        _boundingBox.reset();
-
-        for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
-            _boundingBox.add(_particles->_position[i]);
-        }
+                _updating = false;
+            })._task->startTask(Task::TaskPriority::REALTIME);
     }
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);

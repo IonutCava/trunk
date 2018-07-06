@@ -77,6 +77,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         vectorImpl<IntersectionRecord> getIntersection(const Frustum& frustum, U32 typeFilterMask) const;
         vectorImpl<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const;
 
+        size_t getTotalObjectCount() const;
         void updateIntersectionCache(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask);
         
         void handleIntersection(IntersectionRecord intersection) const;
@@ -97,9 +98,11 @@ class Octree : public std::enable_shared_from_this<Octree> {
         vectorImpl<SceneGraphNode_wptr> _movedObjects;
 
         vectorImpl<IntersectionRecord> _intersectionsCache;
-        static std::queue<SceneGraphNode_wptr> _pendingInsertion;
-        static bool _treeReady;
-        static bool _treeBuilt;
+
+        static vectorImpl<SceneGraphNode_wptr> s_intersectionsObjectCache;
+        static std::queue<SceneGraphNode_wptr> s_pendingInsertion;
+        static bool s_treeReady;
+        static bool s_treeBuilt;
 };
 
 };  // namespace Divide

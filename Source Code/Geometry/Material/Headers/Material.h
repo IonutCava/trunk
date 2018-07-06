@@ -137,7 +137,7 @@ class Material : public Resource, public FrameListener {
         ShaderProgram* _shaderRef;
         stringImpl _shader;
         RenderStage _stage;
-        ShaderCompilationStage _shaderCompStage;
+        std::atomic<ShaderCompilationStage> _shaderCompStage;
         vectorImpl<stringImpl> _shaderDefines;
 
         ShaderProgram* const getProgram() const;
@@ -162,7 +162,7 @@ class Material : public Resource, public FrameListener {
                 _shaderRef->AddRef();
             }
             _shader = other._shader;
-            _shaderCompStage = other._shaderCompStage;
+            _shaderCompStage.store(other._shaderCompStage);
             for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
                 for (U32 j = 0; j < to_const_uint(BumpMethod::COUNT); ++j) {
                     _shadingFunction[i][j] = other._shadingFunction[i][j];

@@ -102,7 +102,7 @@ void LightManager::init() {
     iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);
     stringImpl iconImageLocation =
         Util::StringFormat("%s/misc_images/lightIcons.png",
-            ParamHandler::getInstance().getParam<stringImpl>("assetsLocation").c_str());
+            ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
     iconImage.setResourceLocation(iconImageLocation);
     iconImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _lightIconsTexture = CreateResource<Texture>(iconImage);

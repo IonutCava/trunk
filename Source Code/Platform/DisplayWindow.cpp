@@ -44,7 +44,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, Resolutio
 
     _windowDimensions = initialResolutions;
 
-    _mainWindow = SDL_CreateWindow(par.getParam<stringImpl>("appTitle", "Divide").c_str(),
+    _mainWindow = SDL_CreateWindow(par.getParam<stringImpl>(_ID("appTitle"), "Divide").c_str(),
                                    SDL_WINDOWPOS_CENTERED_DISPLAY(wManager.targetDisplay()),
                                    SDL_WINDOWPOS_CENTERED_DISPLAY(wManager.targetDisplay()),
                                    1,

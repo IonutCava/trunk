@@ -53,8 +53,13 @@ class Ray {
     }
 
     Ray(const vec3<F32> &o, const vec3<F32> &d)
+        : origin(o),
+          direction(d),
+          inv_direction(1.0f / d.x, 1.0f / d.y, 1.0f / d.z),
+          sign{(inv_direction.x < 0.0f),
+               (inv_direction.y < 0.0f),
+               (inv_direction.z < 0.0f)}
     {
-        set(o, d);
     }
 
     Ray(const Ray &r)
@@ -62,9 +67,7 @@ class Ray {
         origin.set(r.origin);
         direction.set(r.direction);
         inv_direction.set(r.inv_direction);
-        sign[0] = r.sign[0];
-        sign[1] = r.sign[1];
-        sign[2] = r.sign[2];
+        memcpy(sign, r.sign, 3 * sizeof(I32));
     }
 
     inline void identity() {

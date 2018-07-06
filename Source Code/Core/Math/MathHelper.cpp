@@ -28,6 +28,12 @@ bool IsNumber(const stringImpl& s) {
     return false;
 }
 
+stringImpl GetTrailingCharacters(const stringImpl& input, size_t count) {
+    size_t inputLength = input.length();
+    assert(count > 0 && count <= inputLength);
+    return input.substr(inputLength - count, inputLength);
+}
+
 void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut) {
     std::ifstream inFile(filePath, std::ios::in);
 
@@ -112,6 +118,12 @@ bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {
     }
     
     return false;
+}
+
+
+bool HasExtension(const stringImpl& filePath, const stringImpl& extension) {
+    stringImpl ext("." + extension);
+    return CompareIgnoreCase(GetTrailingCharacters(filePath, ext.length()), ext);
 }
 
 void CStringRemoveChar(char* str, char charToRemove) {

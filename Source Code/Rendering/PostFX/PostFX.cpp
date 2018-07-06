@@ -46,8 +46,8 @@ void PostFX::init() {
     Console::printfn(Locale::get(_ID("START_POST_FX")));
     ParamHandler& par = ParamHandler::getInstance();
     _gfx = &GFX_DEVICE;
-    _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
-    _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
+    _enableNoise = par.getParam<bool>(_ID("postProcessing.enableNoise"));
+    _enableVignette = par.getParam<bool>(_ID("postProcessing.enableVignette"));
 
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);
@@ -80,21 +80,21 @@ void PostFX::init() {
     
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.setResourceLocation(
-        par.getParam<stringImpl>("assetsLocation") +
+        par.getParam<stringImpl>(_ID("assetsLocation")) +
         "/misc_images/terrain_water_NM.jpg");
     textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _underwaterTexture = CreateResource<Texture>(textureWaterCaustics);
 
      ResourceDescriptor noiseTexture("noiseTexture");
      noiseTexture.setResourceLocation(
-            par.getParam<stringImpl>("assetsLocation") +
+            par.getParam<stringImpl>(_ID("assetsLocation")) +
             "/misc_images//bruit_gaussien.jpg");
      noiseTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _noise = CreateResource<Texture>(noiseTexture);
 
      ResourceDescriptor borderTexture("borderTexture");
      borderTexture.setResourceLocation(
-            par.getParam<stringImpl>("assetsLocation") +
+            par.getParam<stringImpl>(_ID("assetsLocation")) +
             "/misc_images//vignette.jpeg");
      borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(borderTexture);

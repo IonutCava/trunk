@@ -287,13 +287,13 @@ bool MainScene::loadResources(bool continueOnErrors) {
 
     ResourceDescriptor backgroundMusic("background music");
     backgroundMusic.setResourceLocation(
-        _paramHandler.getParam<stringImpl>("assetsLocation") +
+        _paramHandler.getParam<stringImpl>(_ID("assetsLocation")) +
         "/music/background_music.ogg");
     backgroundMusic.setFlag(true);
 
     ResourceDescriptor beepSound("beep sound");
     beepSound.setResourceLocation(
-        _paramHandler.getParam<stringImpl>("assetsLocation") +
+        _paramHandler.getParam<stringImpl>(_ID("assetsLocation")) +
         "/sounds/beep.wav");
     beepSound.setFlag(false);
     hashAlg::emplace(state().backgroundMusic(), _ID("generalTheme"),

@@ -94,7 +94,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
         GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);*/
 #endif
     // Vsync is toggled on or off via the external config file
-    SDL_GL_SetSwapInterval(par.getParam<bool>("runtime.enableVSync", false) ? 1 : 0);
+    SDL_GL_SetSwapInterval(par.getParam<bool>(_ID("runtime.enableVSync"), false) ? 1 : 0);
         
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
@@ -141,7 +141,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
                      samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason,
     // override user set MSAA levels
-    I32 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
+    I32 msaaSamples = par.getParam<I32>(_ID("rendering.MSAAsampless"), 0);
     if (samplerBuffers == 0 || sampleCount == 0) {
         msaaSamples = 0;
     }
@@ -158,7 +158,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Maximum number of texture units we can address in shaders
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS")),
                      GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS),
-                     par.getParam<I32>("rendering.maxTextureSlots", 16));
+                     par.getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
     // Query shading language version support
     Console::printfn(Locale::get(_ID("GL_GLSL_SUPPORT")),
                      glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -254,7 +254,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     
     // Once OpenGL is ready for rendering, init CEGUI
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
-    _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
+    _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>(_ID("GUI.CEGUI.ExtraStates")));
     CEGUI::System::create(*_GUIGLrenderer);
 
     static const vec4<F32> clearColor = DefaultColors::DIVIDE_BLUE();

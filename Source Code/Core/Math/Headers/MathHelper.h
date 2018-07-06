@@ -242,6 +242,8 @@ void GetPermutations(const stringImpl& inputString,
 
 bool IsNumber(const stringImpl& s);
 
+stringImpl GetTrailingCharacters(const stringImpl& input, size_t count);
+
 template<class FwdIt, class Compare = std::less<typename std::iterator_traits<FwdIt>::value_type>>
 void insertion_sort(FwdIt first, FwdIt last, Compare cmp = Compare());
 
@@ -250,6 +252,10 @@ stringImpl ReadTextFile(const stringImpl& filePath);
 void WriteTextFile(const stringImpl& filePath, const stringImpl& content);
 
 bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b);
+
+/// will add '.' automatically at the start of 'extension'
+bool HasExtension(const stringImpl& filePath, const stringImpl& extension);
+
 // U = to data type, T = from data type
 template <typename U, typename T>
 U ConvertData(const T& data);

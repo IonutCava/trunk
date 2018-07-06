@@ -40,7 +40,7 @@ namespace Divide {
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */
-class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
+class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_from_this<Task> {
    public:
        enum class TaskPriority : U32 {
            DONT_CARE = 0,
@@ -54,16 +54,18 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
      * @brief Creates a new Task that runs in a separate thread
      * @param f The callback function (bool param will be true if the task receives a stop request)
      */
-    explicit Task(ThreadPool& tp);
+    Task();
     ~Task();
-
-    Task(const Task& old);
-
+    
     void startTask(TaskPriority priority = TaskPriority::DONT_CARE);
 
     void stopTask();
 
     void reset();
+
+    inline void setOwningPool(ThreadPool& pool) {
+        _tp = &pool;
+    }
 
     inline bool isRunning() const {
         return !_done;
@@ -71,10 +73,6 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
 
     inline I64 jobIdentifier() const {
         return _jobIdentifier;
-    }
-
-    inline void onCompletionCbk(const DELEGATE_CBK_PARAM<I64>& cbk) {
-        _onCompletionCbk = cbk;
     }
 
     inline void threadedCallback(const DELEGATE_CBK_PARAM<bool>& cbk, I64 jobIdentifier) {
@@ -103,10 +101,9 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     std::atomic<I64> _jobIdentifier;
 
     DELEGATE_CBK_PARAM<const std::atomic_bool&> _callback;
-    DELEGATE_CBK_PARAM<I64> _onCompletionCbk;
     
     TaskPriority _priority;
-    ThreadPool& _tp;
+    ThreadPool* _tp;
 
     Task* _parentTask;
     vectorImpl<Task*> _childTasks;

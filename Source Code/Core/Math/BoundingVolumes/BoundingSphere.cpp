@@ -59,8 +59,9 @@ bool BoundingSphere::containsPoint(const vec3<F32>& point) const {
 }
 
 bool BoundingSphere::collision(const BoundingSphere& sphere2) const {
-    return (this->_center.distance(sphere2._center) <=
-           (this->_radius + sphere2._radius));
+    I32 radiusSq = _radius + sphere2._radius;
+    radiusSq *= radiusSq;
+    return _center.distanceSquared(sphere2._center) <= radiusSq;
 }
 
 };  // namespace Divide

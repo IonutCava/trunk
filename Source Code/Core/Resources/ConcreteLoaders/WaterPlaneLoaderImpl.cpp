@@ -19,11 +19,11 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
     ResourceDescriptor waterTexture("waterTexture_" + name);
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
     waterTexture.setResourceLocation(
-        param.getParam<stringImpl>("assetsLocation") +
+        param.getParam<stringImpl>(_ID("assetsLocation")) +
         "/misc_images/terrain_water_NM.jpg");
     waterTexture.setPropertyDescriptor(defaultSampler);
     waterTextureDUDV.setResourceLocation(
-        param.getParam<stringImpl>("assetsLocation") +
+        param.getParam<stringImpl>(_ID("assetsLocation")) +
         "/misc_images/water_dudv.jpg");
     waterTextureDUDV.setPropertyDescriptor(defaultSampler);
 

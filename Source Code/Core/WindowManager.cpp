@@ -121,7 +121,7 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
 
         // Toggle multi-sampling if requested.
         // This options requires a client-restart, sadly.
-        I32 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
+        I32 msaaSamples = par.getParam<I32>(_ID("rendering.MSAAsampless"), 0);
         if (msaaSamples > 0) {
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples);
@@ -145,7 +145,7 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
 
     windowFlags |= SDL_WINDOW_HIDDEN;
     windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
-    if (par.getParam<bool>("runtime.windowResizable", true)) {
+    if (par.getParam<bool>(_ID("runtime.windowResizable"), true)) {
         windowFlags |= SDL_WINDOW_RESIZABLE;
     }
 

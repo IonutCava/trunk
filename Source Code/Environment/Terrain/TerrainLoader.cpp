@@ -266,9 +266,7 @@ bool TerrainLoader::loadThreadedResources(
     if (terrainDescriptor->is16Bit()) {
         assert(heightmapWidth != 0 && heightmapHeight != 0);
         // only raw files for 16 bit support
-        assert(terrainRawFile.substr(terrainRawFile.length() - 4,
-                                     terrainRawFile.length()).compare(".raw") ==
-               0);
+        assert(Util::HasExtension(terrainRawFile, "raw"));
         // Read File Data
         FILE* terrainFile = fopen(terrainRawFile.c_str(), "rb");
         assert(terrainFile);

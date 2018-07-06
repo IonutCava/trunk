@@ -52,6 +52,10 @@ class glShader : public Shader {
     stringImpl preprocessIncludes(const stringImpl& source,
                                   const stringImpl& filename,
                                   GLint level /*= 0 */);
+
+    private:
+    //extra entry for "common" location
+    static stringImpl shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT) + 1];
 };
 
 };  // namespace Divide

@@ -67,7 +67,7 @@ bool GUIEditor::init() {
         CEGUI::WindowManager::getSingletonPtr();
     // load the editor Window from the layout file
     const stringImpl &layoutFile =
-        ParamHandler::getInstance().getParam<stringImpl>("GUI.editorLayout");
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("GUI.editorLayout"));
     _editorWindow = pWindowManager->loadLayoutFromFile(layoutFile.c_str());
 
     if (_editorWindow) {

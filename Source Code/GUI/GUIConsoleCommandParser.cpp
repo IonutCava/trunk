@@ -135,18 +135,15 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
     stringImpl filename =
-        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/" + args;
     std::ifstream soundfile(filename);
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
         // still ...)
-        if (filename.substr(filename.length() - 4, filename.length())
-                    .compare(".wav") != 0 &&
-            filename.substr(filename.length() - 4, filename.length())
-                    .compare(".mp3") != 0 &&
-            filename.substr(filename.length() - 4, filename.length())
-                    .compare(".ogg") != 0) {
+        if (!Util::HasExtension(filename, "wav") &&
+            !Util::HasExtension(filename, "mp3") &&
+            !Util::HasExtension(filename, "ogg")) {
             Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FORMAT")));
             return;
         }
@@ -239,8 +236,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
         scale = to_float(atof(args2.c_str()));
     }
     stringImpl assetLocation(
-        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
-        "/");
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
 
     FileData model;
     model.ItemName = args1 + "_console" + args;

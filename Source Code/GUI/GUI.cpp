@@ -154,7 +154,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     }
     _resolutionCache.set(renderResolution);
 
-    _enableCEGUIRendering = !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
+    _enableCEGUIRendering = !(ParamHandler::getInstance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 #endif
@@ -162,7 +162,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     rp = static_cast<CEGUI::DefaultResourceProvider*>(
         CEGUI::System::getSingleton().getResourceProvider());
     CEGUI::String CEGUIInstallSharePath(
-        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation"));
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")));
     CEGUIInstallSharePath += "/GUI/";
     rp->setResourceGroupDirectory("schemes",
                                   CEGUIInstallSharePath + "schemes/");
@@ -199,7 +199,7 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     CEGUI::FontManager::getSingleton().createFromFile(
         "DejaVuSans-12-NoScale.font");
     _defaultGUIScheme =
-        ParamHandler::getInstance().getParam<stringImpl>("GUI.defaultScheme");
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("GUI.defaultScheme"));
     CEGUI::SchemeManager::getSingleton().createFromFile(_defaultGUIScheme + ".scheme");
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(

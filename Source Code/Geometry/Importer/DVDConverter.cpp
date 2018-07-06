@@ -400,8 +400,8 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     aiReturn result = AI_SUCCESS;
     // While we still have diffuse textures
 
-    stringImpl overridePath = par.getParam<stringImpl>("assetsLocation") + "/" +
-                              par.getParam<stringImpl>("defaultTextureLocation") + "/";
+    stringImpl overridePath(par.getParam<stringImpl>(_ID("assetsLocation")) + "/" +
+                            par.getParam<stringImpl>(_ID("defaultTextureLocation")) + "/");
 
     while (result == AI_SUCCESS) {
         // Load each one

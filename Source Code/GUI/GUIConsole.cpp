@@ -50,7 +50,7 @@ void GUIConsole::CreateCEGUIWindow() {
     }
     // load the console Window from the layout file
     const stringImpl& layoutFile =
-        ParamHandler::getInstance().getParam<stringImpl>("GUI.consoleLayout");
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("GUI.consoleLayout"));
     _consoleWindow =
         CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile);
 

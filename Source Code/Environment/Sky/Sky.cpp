@@ -48,7 +48,7 @@ bool Sky::load() {
         return false;
     }
     stringImpl location(
-        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/misc_images/");
 
     SamplerDescriptor skyboxSampler;

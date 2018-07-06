@@ -195,8 +195,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
-        ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
-        ParamHandler::getInstance().getParam<F32>("rendering.zFar")));
+        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zNear")),
+        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zFar"))));
     _gpuBlock._updated = true;
 
     // Create a separate loading thread that shares resources with the main

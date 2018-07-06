@@ -378,24 +378,24 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     }
     // Camera position is overridden in the scene's XML configuration file
     if (ParamHandler::getInstance().getParam<bool>(
-            "options.cameraStartPositionOverride")) {
+        _ID("options.cameraStartPositionOverride"))) {
         renderState().getCamera().setEye(vec3<F32>(
-            _paramHandler.getParam<F32>("options.cameraStartPosition.x"),
-            _paramHandler.getParam<F32>("options.cameraStartPosition.y"),
-            _paramHandler.getParam<F32>("options.cameraStartPosition.z")));
+            _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.x")),
+            _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.y")),
+            _paramHandler.getParam<F32>(_ID("options.cameraStartPosition.z"))));
         vec2<F32> camOrientation(
             _paramHandler.getParam<F32>(
-                "options.cameraStartOrientation.xOffsetDegrees"),
+                _ID("options.cameraStartOrientation.xOffsetDegrees")),
             _paramHandler.getParam<F32>(
-                "options.cameraStartOrientation.yOffsetDegrees"));
+                _ID("options.cameraStartOrientation.yOffsetDegrees")));
         renderState().getCamera().setGlobalRotation(camOrientation.y /*yaw*/,
                                                     camOrientation.x /*pitch*/);
     } else {
         renderState().getCamera().setEye(vec3<F32>(0, 50, 0));
     }
 
-    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.move"));
-    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.turn"));
+    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.move")));
+    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.turn")));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::getInstance(), this));
@@ -501,9 +501,9 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     cbks.second = []() {
         ParamHandler::getInstance().setParam(
-            "postProcessing.enableBloom",
+            _ID("postProcessing.enableBloom"),
             !ParamHandler::getInstance().getParam(
-                "postProcessing.enableBloom", false));
+                _ID("postProcessing.enableBloom"), false));
     };
     _input->addKeyMapping(Input::KeyCode::KC_F3, cbks);
 
@@ -591,7 +591,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
     // Initialize the physics scene
     PHYSICS_DEVICE.initScene();
     // Cook geometry
-    if (_paramHandler.getParam<bool>("options.autoCookPhysicsAssets")) {
+    if (_paramHandler.getParam<bool>(_ID("options.autoCookPhysicsAssets"))) {
         _cookCollisionMeshesScheduled = true;
     }
     return true;

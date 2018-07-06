@@ -20,9 +20,9 @@ NavigationMesh::NavigationMesh() : GUIDWrapper(),
                                    _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::getInstance();
-    stringImpl path(par.getParam<stringImpl>("scriptLocation") + "/" +
-                    par.getParam<stringImpl>("scenesLocation") + "/" +
-                    par.getParam<stringImpl>("currentScene"));
+    stringImpl path(par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
+                    par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
+                    par.getParam<stringImpl>(_ID("currentScene")));
 
     _debugDrawInterface.reset(new NavMeshDebugDraw());
 

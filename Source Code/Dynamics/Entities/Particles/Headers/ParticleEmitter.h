@@ -104,6 +104,7 @@ class ParticleEmitter : public SceneNode {
     U32 _particleStateBlockHash;
     U32 _particleStateBlockHashDepth;
 
+    std::atomic_bool _updating;
     ShaderProgram* _particleShader;
     ShaderProgram* _particleDepthShader;
     Texture* _particleTexture;

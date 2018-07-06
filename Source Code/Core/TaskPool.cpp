@@ -3,13 +3,13 @@
 namespace Divide {
 
 TaskPool::TaskPool() 
-    : _threadedCallbackBuffer(Config::MAX_POOLED_TASKS),
-      _tasksPool(vectorImpl<Task>(Config::MAX_POOLED_TASKS, Task(_mainTaskPool)))
+    : _threadedCallbackBuffer(Config::MAX_POOLED_TASKS)
 {
     assert(isPowerOfTwo(Config::MAX_POOLED_TASKS));
     _allocatedJobs = 0;
 
     for (Task& task : _tasksPool) {
+        task.setOwningPool(_mainTaskPool);
         hashAlg::emplace(_taskStates, task.getGUID(), false);
     }
 }
@@ -20,7 +20,6 @@ TaskPool::~TaskPool()
     WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
 
     _mainTaskPool.wait(0);
-    _tasksPool.clear();
     _taskStates.clear();
 }
 
@@ -33,7 +32,7 @@ bool TaskPool::init() {
         return false;;
     }
 
-    _mainTaskPool.size_controller().resize(std::max(threadCount - 1, 2U));
+    _mainTaskPool.size_controller().resize(std::max(threadCount + 1, 2U));
 
     return true;
 }
@@ -64,6 +63,7 @@ void TaskPool::taskCompleted(I64 onExitTaskID) {
     }
 
     WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(onExitTaskID));
+    // Signal main thread to execute callback
 }
 
 TaskHandle TaskPool::getTaskHandle(I64 taskGUID) {

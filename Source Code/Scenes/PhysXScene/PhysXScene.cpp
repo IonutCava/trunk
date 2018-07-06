@@ -81,8 +81,8 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     };
     _input->addKeyMapping(Input::KeyCode::KC_4, cbks);
     cbks.second = []() {
-        ParamHandler::getInstance().setParam("simSpeed",
-            IS_ZERO(ParamHandler::getInstance().getParam<F32>("simSpeed"))
+        ParamHandler::getInstance().setParam(_ID("simSpeed"),
+            IS_ZERO(ParamHandler::getInstance().getParam<F32>(_ID("simSpeed")))
                 ? 1.0f
                 : 0.0f);
         PHYSICS_DEVICE.updateTimeStep();
@@ -108,8 +108,8 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
     renderState().getCamera().setRotation(-45 /*yaw*/, 10 /*pitch*/);
     renderState().getCamera().setEye(vec3<F32>(0, 30, -40));
     renderState().getCamera().setFixedYawAxis(true);
-    ParamHandler::getInstance().setParam("rendering.enableFog", false);
-    ParamHandler::getInstance().setParam("postProcessing.bloomFactor", 0.1f);
+    ParamHandler::getInstance().setParam(_ID("rendering.enableFog"), false);
+    ParamHandler::getInstance().setParam(_ID("postProcessing.bloomFactor"), 0.1f);
     return true;
 }
 

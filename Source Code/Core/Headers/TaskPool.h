@@ -51,6 +51,8 @@ class TaskPool {
                          const DELEGATE_CBK<>& callback);
 
   private:
+    //ToDo: replace all friend class declarations with attorneys -Ionut;
+    friend class Task;
     void taskCompleted(I64 onExitTaskID);
 
   private:
@@ -64,7 +66,7 @@ class TaskPool {
 
     boost::lockfree::queue<I64> _threadedCallbackBuffer;
 
-    vectorImpl<Task> _tasksPool;
+    std::array<Task, Config::MAX_POOLED_TASKS> _tasksPool;
     std::atomic<U32> _allocatedJobs;
 };
 };

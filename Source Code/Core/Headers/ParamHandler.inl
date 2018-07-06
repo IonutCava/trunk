@@ -51,6 +51,7 @@ inline bool ParamHandler::isParam(const char* param) const {
 
 template <typename T>
 inline T ParamHandler::getParam(const char* name, T defaultValue) const {
+    STUBBED("Please don't use strings directly for indexing with the ParamHandler");
     return getParam<T>(_ID_RT(name));
 }
 
@@ -79,6 +80,7 @@ inline T ParamHandler::getParam(ULL nameID, T defaultValue) const {
 
 template <typename T>
 inline void ParamHandler::setParam(const char* name, const T& value) {
+    STUBBED("Please don't use strings directly for indexing with the ParamHandler");
     setParam<T>(_ID_RT(name), value);
 }
 

@@ -12,29 +12,15 @@ namespace {
     const bool g_DebugTaskStartStop = false;
 };
 
-Task::Task(ThreadPool& tp) : GUIDWrapper(),
-                             _tp(tp),
-                             _jobIdentifier(-1),
-                             _priority(TaskPriority::DONT_CARE)
+Task::Task() : GUIDWrapper(),
+               _tp(nullptr),
+               _jobIdentifier(-1),
+               _priority(TaskPriority::DONT_CARE)
 {
     _parentTask = nullptr;
     _childTaskCount = 0;
     _done = true;
     _stopRequested = false;
-}
-
-Task::Task(const Task& old) : GUIDWrapper(old),
-                              _tp(old._tp)
-{
-    _stopRequested.store(old._stopRequested);
-    _jobIdentifier.store(old._jobIdentifier);
-    _callback = old._callback;
-    _onCompletionCbk = old._onCompletionCbk;
-    _priority = old._priority;
-    _childTaskCount.store(old._childTaskCount);
-    _parentTask = old._parentTask;
-    _childTasks.insert(std::cend(_childTasks), std::cbegin(old._childTasks), std::cend(old._childTasks));
-    _done.store(old._done);
 }
 
 Task::~Task()
@@ -49,7 +35,6 @@ void Task::reset() {
 
     _stopRequested = false;
     _callback = DELEGATE_CBK_PARAM<bool>();
-    _onCompletionCbk = DELEGATE_CBK_PARAM<I64>();
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;
@@ -62,8 +47,8 @@ void Task::startTask(TaskPriority priority) {
 
     _done = false;
     _priority = priority;
-    if (priority != TaskPriority::REALTIME) {
-        while (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
+    if (priority != TaskPriority::REALTIME && _tp != nullptr) {
+        while (!_tp->schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
             Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
         }
     } else {
@@ -127,9 +112,8 @@ void Task::run() {
             _callback(_stopRequested);
         }
 
-        if (_onCompletionCbk) {
-            _onCompletionCbk(getGUID());
-        }
+        // task finished. Everything else is bookkeeping
+        _tp->taskCompleted(getGUID());
     }
 
     if (_parentTask != nullptr) {

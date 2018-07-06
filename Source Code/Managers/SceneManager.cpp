@@ -79,7 +79,7 @@ bool SceneManager::init(GUI* const gui) {
     // Load default material
     Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
     _defaultMaterial = XML::loadMaterialXML(
-        ParamHandler::getInstance().getParam<stringImpl>("scriptLocation") +
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("scriptLocation")) +
             "/defaultMaterial",
         false);
     _defaultMaterial->dumpToFile(false);

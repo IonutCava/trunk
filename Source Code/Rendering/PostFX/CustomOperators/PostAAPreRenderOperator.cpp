@@ -32,12 +32,12 @@ PostAAPreRenderOperator::~PostAAPreRenderOperator() {
 
 void PostAAPreRenderOperator::idle() {
     ParamHandler& par = ParamHandler::getInstance();
-    I32 samples= par.getParam<I32>("rendering.PostAASamples", 0);
+    I32 samples= par.getParam<I32>(_ID("rendering.PostAASamples"), 0);
     if (_postAASamples != samples) {
         _postAASamples = samples;
         _fxaa->Uniform("dvd_qualityMultiplier", _postAASamples);
     }
-    _useSMAA = par.getParam<stringImpl>("rendering.PostAAType", "FXAA").compare("SMAA") == 0;
+    _useSMAA = par.getParam<stringImpl>(_ID("rendering.PostAAType"), "FXAA").compare("SMAA") == 0;
 }
 
 void PostAAPreRenderOperator::reshape(U16 width, U16 height) {

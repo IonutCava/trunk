@@ -8,6 +8,32 @@
 
 namespace Divide {
 
+namespace {
+    // these must match the last 4 characters of the atom file
+    ULL fragAtomExt = _ID("frag");
+    ULL vertAtomExt = _ID("vert");
+    ULL geomAtomExt = _ID("geom");
+    ULL tescAtomExt = _ID("tesc");
+    ULL teseAtomExt = _ID("tese");
+    ULL compAtomExt = _ID(".cpt");
+    ULL comnAtomExt = _ID(".cmn");
+    // Shader subfolder name that contains shader files for OpenGL
+    const char* parentShaderLoc = "GLSL";
+    // Atom folder names in parent shader folder
+    const char* fragAtomLoc = "fragmentAtoms";
+    const char* vertAtomLoc = "vertexAtoms";
+    const char* geomAtomLoc = "geometryAtoms";
+    const char* tescAtomLoc = "tessellationCAtoms";
+    const char* teseAtomLoc = "tessellationEAtoms";
+    const char* compAtomLoc = "computeAtoms";
+    const char* comnAtomLoc = "common";
+    // include command regex pattern
+    const std::regex includePattern("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+
+};
+
+stringImpl glShader::shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT) + 1];
+
 glShader::glShader(GFXDevice& context,
                    const stringImpl& name,
                    const ShaderType& type,
@@ -37,6 +63,24 @@ glShader::glShader(GFXDevice& context,
             _shader = glCreateShader(GL_COMPUTE_SHADER);
             break;
     };
+
+    if (shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)].empty()) {
+        ParamHandler& par = ParamHandler::getInstance();
+        stringImpl locPrefix = par.getParam<stringImpl>(_ID("assetsLocation"), "assets") +
+                               "/" +
+                               par.getParam<stringImpl>(_ID("shaderLocation"), "shaders") +
+                               "/" + 
+                               parentShaderLoc +
+                               "/";
+
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::FRAGMENT)] = locPrefix + fragAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::VERTEX)] = locPrefix + vertAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::GEOMETRY)] = locPrefix + geomAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_CTRL)] = locPrefix + tescAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::TESSELATION_EVAL)] = locPrefix + teseAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::COMPUTE)] = locPrefix + compAtomLoc;
+        shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT)] = locPrefix + comnAtomLoc;
+    }
 }
 
 glShader::~glShader() {
@@ -106,54 +150,54 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
     }
 
-    static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
-    std::stringstream input, output;
-
-    input << source;
-
     size_t line_number = 1;
     std::smatch matches;
 
-    stringImpl line;
-    stringImpl include_file, include_string, loc;
-    ParamHandler& par = ParamHandler::getInstance();
-    stringImpl shaderAtomLocationPrefix(
-        par.getParam<stringImpl>(_ID("assetsLocation"), "assets") + "/" +
-        par.getParam<stringImpl>(_ID("shaderLocation"), "shaders") + "/GLSL/");
+    stringImpl output, line;
+    stringImpl include_file, include_string;
+    ShaderManager& sMgr = ShaderManager::getInstance();
+
+    std::istringstream input(source);
     while (std::getline(input, line)) {
-        if (std::regex_search(line, matches, re)) {
+        if (std::regex_search(line, matches, includePattern)) {
             include_file = matches[1].str();
 
-            if (include_file.find("frag") != stringImpl::npos) {
-                loc = "fragmentAtoms";
-            } else if (include_file.find("vert") != stringImpl::npos) {
-                loc = "vertexAtoms";
-            } else if (include_file.find("geom") != stringImpl::npos) {
-                loc = "geometryAtoms";
-            } else if (include_file.find("tesc") != stringImpl::npos) {
-                loc = "tessellationCAtoms";
-            } else if (include_file.find("tese") != stringImpl::npos) {
-                loc = "tessellationEAtoms";
-            } else if (include_file.find("cpt") != stringImpl::npos) {
-                loc = "computeAtoms";
-            } else if (include_file.find("cmn") != stringImpl::npos) {
-                loc = "common";
+            I32 index = -1;
+            // switch will throw warnings due to promotion to int
+            ULL extHash = _ID_RT(Util::GetTrailingCharacters(include_file, 4));
+            if (extHash == fragAtomExt) {
+                index = to_const_int(ShaderType::FRAGMENT);
+            } else if (extHash == vertAtomExt) {
+                index = to_const_int(ShaderType::VERTEX); 
+            } else if (extHash == geomAtomExt) {
+                index = to_const_int(ShaderType::GEOMETRY);
+            } else if (extHash == tescAtomExt) {
+                index = to_const_int(ShaderType::TESSELATION_CTRL);
+            } else if (extHash == teseAtomExt) {
+                index = to_const_int(ShaderType::TESSELATION_EVAL);
+            } else if (extHash == compAtomExt) {
+                index = to_const_int(ShaderType::COMPUTE);
+            } else if (extHash == comnAtomExt) {
+                index = to_const_int(ShaderType::COUNT);
             }
 
-            include_string = ShaderManager::getInstance().shaderFileRead(
-                include_file, shaderAtomLocationPrefix + loc);
+            assert(index != -1);
+
+            include_string = sMgr.shaderFileRead(include_file, shaderAtomLocationPrefix[index]);
 
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
                                  getName().c_str(), line_number,
                                  include_file.c_str());
             }
-            output << preprocessIncludes(include_string, include_file, level + 1) << "\n";
+            output.append(preprocessIncludes(include_string, include_file, level + 1));
         } else {
-            output << line << "\n";
+            output.append(line);
         }
+        output.append("\n");
         ++line_number;
     }
-    return output.str();
+
+    return output;
 }
 };

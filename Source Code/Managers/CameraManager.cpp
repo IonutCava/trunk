@@ -101,8 +101,7 @@ void CameraManager::addNewCamera(const stringImpl& cameraName,
         return;
     }
 
-    camera->setIOD(ParamHandler::getInstance().getParam<F32>(
-        "postProcessing.anaglyphOffset"));
+    camera->setIOD(ParamHandler::getInstance().getParam<F32>(_ID("postProcessing.anaglyphOffset")));
     camera->setName(cameraName);
 
     for (const DELEGATE_CBK_PARAM<Camera&>& listener : _updateCameralisteners) {

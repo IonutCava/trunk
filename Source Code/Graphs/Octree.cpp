@@ -8,9 +8,10 @@ namespace {
     const I32 MAX_LIFE_SPAN_LIMIT = 64;
 };
 
-bool Octree::_treeReady = false;
-bool Octree::_treeBuilt = false;
-std::queue<SceneGraphNode_wptr> Octree::_pendingInsertion;
+bool Octree::s_treeReady = false;
+bool Octree::s_treeBuilt = false;
+std::queue<SceneGraphNode_wptr> Octree::s_pendingInsertion;
+vectorImpl<SceneGraphNode_wptr> Octree::s_intersectionsObjectCache;
 
 Octree::Octree(U32 nodeMask)
     : _nodeMask(nodeMask),
@@ -41,7 +42,7 @@ Octree::~Octree()
 }
 
 void Octree::update(const U64 deltaTime) {
-    if (!_treeBuilt) {
+    if (!s_treeBuilt) {
         buildTree();
         return;
     }
@@ -132,8 +133,10 @@ void Octree::update(const U64 deltaTime) {
 
     // root node
     if (_parent == nullptr) {
-        vectorImpl<SceneGraphNode_wptr> temp;
-        updateIntersectionCache(temp, _nodeMask);
+        s_intersectionsObjectCache.resize(0);
+        s_intersectionsObjectCache.reserve(getTotalObjectCount());
+
+        updateIntersectionCache(s_intersectionsObjectCache, _nodeMask);
 
         for(IntersectionRecord ir : _intersectionsCache) {
             handleIntersection(ir);
@@ -147,8 +150,8 @@ bool Octree::addNode(SceneGraphNode_wptr node) {
         !BitCompare(_nodeMask, to_uint(nodePtr->getNode<>()->getType())) &&  // check for valid type
         !nodePtr->isChildOfType(_nodeMask, true)) // parent is valid type as well
     {
-        _pendingInsertion.push(node);
-        _treeReady = false;
+        s_pendingInsertion.push(node);
+        s_treeReady = false;
         return true;
     }
 
@@ -312,8 +315,8 @@ void Octree::buildTree() {
             }
         }
     }
-    _treeBuilt = true;
-    _treeReady = true;
+    s_treeBuilt = true;
+    s_treeReady = true;
 }
 
 std::shared_ptr<Octree>
@@ -407,20 +410,20 @@ void Octree::findEnclosingCube() {
 }
 
 void Octree::updateTree() {
-    if (!_treeBuilt) {
-        while (!_pendingInsertion.empty()) {
-            _objects.push_back(_pendingInsertion.front());
-            _pendingInsertion.pop();
+    if (!s_treeBuilt) {
+        while (!s_pendingInsertion.empty()) {
+            _objects.push_back(s_pendingInsertion.front());
+            s_pendingInsertion.pop();
         }
         buildTree();
 
     } else {
-        while (!_pendingInsertion.empty()) {
-            insert(_pendingInsertion.front());
-            _pendingInsertion.pop();
+        while (!s_pendingInsertion.empty()) {
+            insert(s_pendingInsertion.front());
+            s_pendingInsertion.pop();
         }
     }
-    _treeReady = true;
+    s_treeReady = true;
 }
 
 void Octree::getAllRegions(vectorImpl<BoundingBox>& regionsOut) const {
@@ -442,6 +445,17 @@ U8 Octree::activeNodes() const {
         }
     }
     return ret;
+}
+
+size_t Octree::getTotalObjectCount() const {
+    size_t count = _objects.size();
+    for (U8 i = 0; i < 8; ++i) {
+        if (_activeNodes[i]) {
+            assert(_childNodes[i]);
+            count += _childNodes[i]->getTotalObjectCount();
+        }
+    }
+    return count;
 }
 
 /// Gives you a list of all intersection records which intersect or are contained within the given frustum area
@@ -605,7 +619,7 @@ vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionR
 /// This gives you the first object encountered by the intersection ray
 IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
 {
-    if (!_treeReady) {
+    if (!s_treeReady) {
         updateTree();
     }
 
@@ -630,7 +644,7 @@ IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 s
 /// This gives you a list of all intersections, filtered by a specific type of object
 vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
 {
-    if (!_treeReady) {
+    if (!s_treeReady) {
         updateTree();
     }
 
@@ -640,7 +654,7 @@ vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionR
 /// This gives you a list of all objects which [intersect or are contained within] the given frustum and meet the given object type
 vectorImpl<IntersectionRecord> Octree::allIntersections(const Frustum& region, U32 typeFilterMask)
 {
-    if (!_treeReady) {
+    if (!s_treeReady) {
         updateTree();
     }
 

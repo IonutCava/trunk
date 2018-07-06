@@ -382,19 +382,19 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Load info from XML files
     stringImpl startupScene(XML::loadScripts(entryPoint));
     // Create mem log file
-    const stringImpl& mem = par.getParam<stringImpl>("memFile");
+    const stringImpl& mem = par.getParam<stringImpl>(_ID("memFile"));
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
     // Fulscreen is automatically calculated
     ResolutionByType initRes;
-    initRes[to_const_uint(WindowType::WINDOW)].set(par.getParam<I32>("runtime.windowWidth", 1024),
-                                                   par.getParam<I32>("runtime.windowHeight", 768));
-    initRes[to_const_uint(WindowType::SPLASH)].set(par.getParam<I32>("runtime.splashWidth", 400),
-                                                   par.getParam<I32>("runtime.splashHeight", 300));
+    initRes[to_const_uint(WindowType::WINDOW)].set(par.getParam<I32>(_ID("runtime.windowWidth"), 1024),
+                                                   par.getParam<I32>(_ID("runtime.windowHeight"), 768));
+    initRes[to_const_uint(WindowType::SPLASH)].set(par.getParam<I32>(_ID("runtime.splashWidth"), 400),
+                                                   par.getParam<I32>(_ID("runtime.splashHeight"), 300));
 
-    I32 targetDisplay = par.getParam<I32>("runtime.targetDisplay", 0);
-    bool startFullScreen = par.getParam<bool>("runtime.startFullScreen", true);
+    I32 targetDisplay = par.getParam<I32>(_ID("runtime.targetDisplay"), 0);
+    bool startFullScreen = par.getParam<bool>(_ID("runtime.startFullScreen"), true);
     WindowManager& winManager = _APP.getWindowManager();
 
     ErrorCode initError = winManager.init(_GFX.getAPI(), initRes, startFullScreen, targetDisplay);
@@ -428,9 +428,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _cameraMgr->pushActiveCamera(_cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY));
     _cameraMgr->getActiveCamera().setFixedYawAxis(true);
     _cameraMgr->getActiveCamera().setProjection(to_float(renderResolution.width) / to_float(renderResolution.height),
-                                                par.getParam<F32>("rendering.verticalFOV"),
-                                                vec2<F32>(par.getParam<F32>("rendering.zNear"),
-                                                          par.getParam<F32>("rendering.zFar")));
+                                                par.getParam<F32>(_ID("rendering.verticalFOV")),
+                                                vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
+                                                          par.getParam<F32>(_ID("rendering.zFar"))));
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
 
@@ -538,9 +538,9 @@ void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
     if (mainCamera) {
         const ParamHandler& par = ParamHandler::getInstance();
         mainCamera->setProjection(to_float(w) / to_float(h),
-                                  par.getParam<F32>("rendering.verticalFOV"),
-                                  vec2<F32>(par.getParam<F32>("rendering.zNear"),
-                                            par.getParam<F32>("rendering.zFar")));
+                                  par.getParam<F32>(_ID("rendering.verticalFOV")),
+                                  vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
+                                            par.getParam<F32>(_ID("rendering.zFar"))));
     }
 }
 

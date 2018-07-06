@@ -129,7 +129,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_MS: {
             glTextureStorage2DMultisample(
                 _textureData.getHandleHigh(), 
-                par.getParam<I32>("rendering.MSAAsampless", 0),
+                par.getParam<I32>(_ID("rendering.MSAAsampless"), 0),
                 glInternalFormat,
                 _width,
                 _height,
@@ -138,7 +138,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_ARRAY_MS: {
             glTextureStorage3DMultisample(
                 _textureData.getHandleHigh(),
-                par.getParam<I32>("rendering.MSAAsampless", 0),
+                par.getParam<I32>(_ID("rendering.MSAAsampless"), 0),
                 glInternalFormat,
                 _width,
                 _height,

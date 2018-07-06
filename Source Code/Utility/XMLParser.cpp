@@ -210,17 +210,17 @@ stringImpl loadScripts(const stringImpl &file) {
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
     read_xml(file, pt);
     stringImpl activeScene("MainScene");
-    par.setParam("testInt", 2);
-    par.setParam("testFloat", 3.2f);
-    par.setParam("scriptLocation",
+    par.setParam(_ID("testInt"), 2);
+    par.setParam(_ID("testFloat"), 3.2f);
+    par.setParam(_ID("scriptLocation"),
                  pt.get<stringImpl>("scriptLocation", "XML"));
-    par.setParam("assetsLocation", pt.get<stringImpl>("assets", "assets"));
-    par.setParam("scenesLocation",
+    par.setParam(_ID("assetsLocation"), pt.get<stringImpl>("assets", "assets"));
+    par.setParam(_ID("scenesLocation"),
                  pt.get<stringImpl>("scenesLocation", "Scenes"));
-    par.setParam("serverAddress", pt.get<stringImpl>("server", "127.0.0.1"));
-    loadConfig((par.getParam<stringImpl>("scriptLocation", "XML") + "/" +  
+    par.setParam(_ID("serverAddress"), pt.get<stringImpl>("server", "127.0.0.1"));
+    loadConfig((par.getParam<stringImpl>(_ID("scriptLocation"), "XML") + "/" +
                 pt.get("config", "config.xml")));
-    read_xml(par.getParam<stringImpl>("scriptLocation", "XML") + "/" +
+    read_xml(par.getParam<stringImpl>(_ID("scriptLocation"), "XML") + "/" +
                  pt.get("startupScene", "scenes.xml"),
              pt);
     activeScene = pt.get("StartupScene", activeScene);
@@ -233,83 +233,83 @@ void loadConfig(const stringImpl &file) {
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), file.c_str());
     read_xml(file, pt);
-    par.setParam("locale", pt.get("language", "enGB"));
-    par.setParam("logFile", pt.get("debug.logFile", "none"));
-    par.setParam("memFile", pt.get("debug.memFile", "none"));
-    par.setParam("simSpeed", pt.get("runtime.simSpeed", 1.0f));
-    par.setParam("appTitle", pt.get("title", "DIVIDE Framework"));
-    par.setParam("mesh.playAnimations", pt.get("debug.mesh.playAnimations", true));
-    par.setParam("defaultTextureLocation",
+    par.setParam(_ID("locale"), pt.get("language", "enGB"));
+    par.setParam(_ID("logFile"), pt.get("debug.logFile", "none"));
+    par.setParam(_ID("memFile"), pt.get("debug.memFile", "none"));
+    par.setParam(_ID("simSpeed"), pt.get("runtime.simSpeed", 1.0f));
+    par.setParam(_ID("appTitle"), pt.get("title", "DIVIDE Framework"));
+    par.setParam(_ID("mesh.playAnimations"), pt.get("debug.mesh.playAnimations", true));
+    par.setParam(_ID("defaultTextureLocation"),
                  pt.get("defaultTextureLocation", "textures/"));
-    par.setParam("shaderLocation",
+    par.setParam(_ID("shaderLocation"),
                  pt.get("defaultShadersLocation", "shaders/"));
 
     I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
     if (shadowDetailLevel <= 0) {
         GFX_DEVICE.shadowDetailLevel(RenderDetailLevel::LOW);
-        par.setParam("rendering.enableShadows", false);
+        par.setParam(_ID("rendering.enableShadows"), false);
     } else {
         GFX_DEVICE.shadowDetailLevel(
             static_cast<RenderDetailLevel>(std::min(shadowDetailLevel, 3) - 1));
-        par.setParam("rendering.enableShadows", true);
+        par.setParam(_ID("rendering.enableShadows"), true);
     }
 
     GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D", false));
-    par.setParam("rendering.MSAAsampless",
+    par.setParam(_ID("rendering.MSAAsampless"),
                  std::max(pt.get<I32>("rendering.MSAAsamples", 0), 0));
-    par.setParam("rendering.PostAASamples",
+    par.setParam(_ID("rendering.PostAASamples"),
                  std::max(pt.get<I32>("rendering.PostAASamples", 0), 0));
-    par.setParam("rendering.PostAAType",
+    par.setParam(_ID("rendering.PostAAType"),
                  pt.get("rendering.PostAAType", "FXAA"));
-    par.setParam("GUI.CEGUI.ExtraStates",
+    par.setParam(_ID("GUI.CEGUI.ExtraStates"),
                  pt.get("GUI.CEGUI.ExtraStates", false));
-    par.setParam("GUI.CEGUI.SkipRendering",
+    par.setParam(_ID("GUI.CEGUI.SkipRendering"),
                  pt.get("GUI.CEGUI.SkipRendering", false));
-    par.setParam("GUI.defaultScheme", pt.get("GUI.defaultGUIScheme", "GWEN"));
-    par.setParam("GUI.consoleLayout",
+    par.setParam(_ID("GUI.defaultScheme"), pt.get("GUI.defaultGUIScheme", "GWEN"));
+    par.setParam(_ID("GUI.consoleLayout"),
                  pt.get("GUI.consoleLayoutFile", "console.layout"));
-    par.setParam("GUI.editorLayout",
+    par.setParam(_ID("GUI.editorLayout"),
                  pt.get("GUI.editorLayoutFile", "editor.layout"));
     par.setParam(
-        "rendering.anisotropicFilteringLevel",
+        _ID("rendering.anisotropicFilteringLevel"),
         std::max(pt.get<I32>("rendering.anisotropicFilteringLevel", 1), 1));
-    par.setParam("rendering.shadowDetailLevel", shadowDetailLevel);
-    par.setParam("rendering.enableFog", pt.get("rendering.enableFog", true));
+    par.setParam(_ID("rendering.shadowDetailLevel"), shadowDetailLevel);
+    par.setParam(_ID("rendering.enableFog"), pt.get("rendering.enableFog", true));
 
-    par.setParam("runtime.targetDisplay", pt.get("runtime.targetDisplay", 0));
-    par.setParam("runtime.startFullScreen", !pt.get("rendering.windowedMode", true));
-    par.setParam("runtime.windowWidth", pt.get("runtime.resolution.<xmlattr>.w", 1024));
-    par.setParam("runtime.windowHeight", pt.get("runtime.resolution.<xmlattr>.h", 768));
-    par.setParam("runtime.splashWidth", pt.get("runtime.splashScreenSize.<xmlattr>.w", 400));
-    par.setParam("runtime.splashHeight", pt.get("runtime.splashScreenSize.<xmlattr>.h", 300));
+    par.setParam(_ID("runtime.targetDisplay"), pt.get("runtime.targetDisplay", 0));
+    par.setParam(_ID("runtime.startFullScreen"), !pt.get("rendering.windowedMode", true));
+    par.setParam(_ID("runtime.windowWidth"), pt.get("runtime.resolution.<xmlattr>.w", 1024));
+    par.setParam(_ID("runtime.windowHeight"), pt.get("runtime.resolution.<xmlattr>.h", 768));
+    par.setParam(_ID("runtime.splashWidth"), pt.get("runtime.splashScreenSize.<xmlattr>.w", 400));
+    par.setParam(_ID("runtime.splashHeight"), pt.get("runtime.splashScreenSize.<xmlattr>.h", 300));
 
-    par.setParam("runtime.windowResizable", pt.get("runtime.windowResizable", true));
-    par.setParam("runtime.enableVSync", pt.get("runtime.enableVSync", false));
-    par.setParam("postProcessing.anaglyphOffset",
+    par.setParam(_ID("runtime.windowResizable"), pt.get("runtime.windowResizable", true));
+    par.setParam(_ID("runtime.enableVSync"), pt.get("runtime.enableVSync", false));
+    par.setParam(_ID("postProcessing.anaglyphOffset"),
                  pt.get("rendering.anaglyphOffset", 0.16f));
-    par.setParam("postProcessing.enableNoise",
+    par.setParam(_ID("postProcessing.enableNoise"),
                  pt.get("rendering.enableNoise", false));
-    par.setParam("postProcessing.enableDepthOfField",
+    par.setParam(_ID("postProcessing.enableDepthOfField"),
                  pt.get("rendering.enableDepthOfField", false));
-    par.setParam("postProcessing.enableBloom",
+    par.setParam(_ID("postProcessing.enableBloom"),
                  pt.get("rendering.enableBloom", false));
-    par.setParam("postProcessing.enableSSAO",
+    par.setParam(_ID("postProcessing.enableSSAO"),
                  pt.get("rendering.enableSSAO", false));
-    par.setParam("postProcessing.bloomFactor",
+    par.setParam(_ID("postProcessing.bloomFactor"),
                  pt.get("rendering.bloomFactor", 0.4f));
-    par.setParam("rendering.verticalFOV", pt.get("runtime.verticalFOV", 60.0f));
-    par.setParam("rendering.zNear", pt.get("runtime.zNear", 0.1f));
-    par.setParam("rendering.zFar", pt.get("runtime.zFar", 700.0f));
+    par.setParam(_ID("rendering.verticalFOV"), pt.get("runtime.verticalFOV", 60.0f));
+    par.setParam(_ID("rendering.zNear"), pt.get("runtime.zNear", 0.1f));
+    par.setParam(_ID("rendering.zFar"), pt.get("runtime.zFar", 700.0f));
 
 
     // global fog values
-    par.setParam("rendering.sceneState.fogDensity",
+    par.setParam(_ID("rendering.sceneState.fogDensity"),
                  pt.get("rendering.fogDensity", 0.01f));
-    par.setParam("rendering.sceneState.fogColor.r",
+    par.setParam(_ID("rendering.sceneState.fogColor.r"),
                  pt.get<F32>("rendering.fogColor.<xmlattr>.r", 0.2f));
-    par.setParam("rendering.sceneState.fogColor.g",
+    par.setParam(_ID("rendering.sceneState.fogColor.g"),
                  pt.get<F32>("rendering.fogColor.<xmlattr>.g", 0.2f));
-    par.setParam("rendering.sceneState.fogColor.b",
+    par.setParam(_ID("rendering.sceneState.fogColor.b"),
                  pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
 }
 
@@ -318,8 +318,8 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
     pt.clear();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
     stringImpl sceneLocation(
-        par.getParam<stringImpl>("scriptLocation") + "/" +
-        par.getParam<stringImpl>("scenesLocation") + "/" + sceneName);
+        par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
+        par.getParam<stringImpl>(_ID("scenesLocation")) + "/" + sceneName);
     try {
         read_xml(sceneLocation + ".xml", pt);
     } catch (boost::property_tree::xml_parser_error &e) {
@@ -330,7 +330,7 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
         throw error.c_str();
     }
 
-    par.setParam("currentScene", sceneName);
+    par.setParam(_ID("currentScene"), sceneName);
     Scene *scene = sceneMgr.createScene(sceneName);
 
     if (!scene) {
@@ -353,61 +353,61 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
 
     if (boost::optional<ptree &> cameraPositionOverride =
             pt.get_child_optional("options.cameraStartPosition")) {
-        par.setParam("options.cameraStartPosition.x",
+        par.setParam(_ID("options.cameraStartPosition.x"),
                      pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
-        par.setParam("options.cameraStartPosition.y",
+        par.setParam(_ID("options.cameraStartPosition.y"),
                      pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
-        par.setParam("options.cameraStartPosition.z",
+        par.setParam(_ID("options.cameraStartPosition.z"),
                      pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
         par.setParam(
-            "options.cameraStartOrientation.xOffsetDegrees",
+            _ID("options.cameraStartOrientation.xOffsetDegrees"),
             pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",
                    0.0f));
         par.setParam(
-            "options.cameraStartOrientation.yOffsetDegrees",
+            _ID("options.cameraStartOrientation.yOffsetDegrees"),
             pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",
                    0.0f));
-        par.setParam("options.cameraStartPositionOverride", true);
+        par.setParam(_ID("options.cameraStartPositionOverride"), true);
     } else {
-        par.setParam("options.cameraStartPositionOverride", false);
+        par.setParam(_ID("options.cameraStartPositionOverride"), false);
     }
 
     if (boost::optional<ptree &> physicsCook =
             pt.get_child_optional("options.autoCookPhysicsAssets")) {
-        par.setParam("options.autoCookPhysicsAssets",
+        par.setParam(_ID("options.autoCookPhysicsAssets"),
                      pt.get<bool>("options.autoCookPhysicsAssets", false));
     } else {
-        par.setParam("options.autoCookPhysicsAssets", false);
+        par.setParam(_ID("options.autoCookPhysicsAssets"), false);
     }
 
     if (boost::optional<ptree &> cameraPositionOverride =
             pt.get_child_optional("options.cameraSpeed")) {
-        par.setParam("options.cameraSpeed.move",
+        par.setParam(_ID("options.cameraSpeed.move"),
                      pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
-        par.setParam("options.cameraSpeed.turn",
+        par.setParam(_ID("options.cameraSpeed.turn"),
                      pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
     } else {
-        par.setParam("options.cameraSpeed.move", 35.0f);
-        par.setParam("options.cameraSpeed.turn", 35.0f);
+        par.setParam(_ID("options.cameraSpeed.move"), 35.0f);
+        par.setParam(_ID("options.cameraSpeed.turn"), 35.0f);
     }
 
     if (boost::optional<ptree &> fog = pt.get_child_optional("fog")) {
-        par.setParam("rendering.sceneState.fogDensity",
+        par.setParam(_ID("rendering.sceneState.fogDensity"),
                      pt.get("fog.fogDensity", 0.01f));
-        par.setParam("rendering.sceneState.fogColor.r",
+        par.setParam(_ID("rendering.sceneState.fogColor.r"),
                      pt.get<F32>("fog.fogColor.<xmlattr>.r", 0.2f));
-        par.setParam("rendering.sceneState.fogColor.g",
+        par.setParam(_ID("rendering.sceneState.fogColor.g"),
                      pt.get<F32>("fog.fogColor.<xmlattr>.g", 0.2f));
-        par.setParam("rendering.sceneState.fogColor.b",
+        par.setParam(_ID("rendering.sceneState.fogColor.b"),
                      pt.get<F32>("fog.fogColor.<xmlattr>.b", 0.2f));
     }
 
     scene->state().fogDescriptor()._fogDensity =
-        par.getParam<F32>("rendering.sceneState.fogDensity") / 1000.0f;
+        par.getParam<F32>(_ID("rendering.sceneState.fogDensity")) / 1000.0f;
     scene->state().fogDescriptor()._fogColor.set(
-        par.getParam<F32>("rendering.sceneState.fogColor.r"),
-        par.getParam<F32>("rendering.sceneState.fogColor.g"),
-        par.getParam<F32>("rendering.sceneState.fogColor.b"));
+        par.getParam<F32>(_ID("rendering.sceneState.fogColor.r")),
+        par.getParam<F32>(_ID("rendering.sceneState.fogColor.g")),
+        par.getParam<F32>(_ID("rendering.sceneState.fogColor.b")));
 
     loadTerrain(sceneLocation + "/" + pt.get("terrain", "terrain.xml"), scene);
     loadGeometry(sceneLocation + "/" + pt.get("assets", "assets.xml"), scene);
@@ -421,7 +421,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
     ptree::iterator itTerrain;
     ptree::iterator itTexture;
     stringImpl assetLocation(
-        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/");
 
     for (itTerrain = std::begin(pt.get_child("terrainList"));
@@ -589,7 +589,7 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     read_xml(file, pt);
     ptree::iterator it;
     stringImpl assetLocation =
-        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
+        ParamHandler::getInstance().getParam<stringImpl>(_ID("assetsLocation")) +
         "/";
 
     if (boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
@@ -828,9 +828,9 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
 
 Material *loadMaterial(const stringImpl &file) {
     ParamHandler &par = ParamHandler::getInstance();
-    stringImpl location = par.getParam<stringImpl>("scriptLocation") + "/" +
-                          par.getParam<stringImpl>("scenesLocation") + "/" +
-                          par.getParam<stringImpl>("currentScene") +
+    stringImpl location = par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
+                          par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
+                          par.getParam<stringImpl>(_ID("currentScene")) +
                           "/materials/";
 
     return loadMaterialXML(location + file);
@@ -947,9 +947,9 @@ void dumpMaterial(Material &mat) {
     stringImpl file(mat.getName());
     file = file.substr(file.rfind("/") + 1, file.length());
 
-    stringImpl location(par.getParam<stringImpl>("scriptLocation") + "/" +
-                        par.getParam<stringImpl>("scenesLocation") + "/" +
-                        par.getParam<stringImpl>("currentScene") +
+    stringImpl location(par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
+                        par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
+                        par.getParam<stringImpl>(_ID("currentScene")) +
                         "/materials/");
 
     stringImpl fileLocation(
