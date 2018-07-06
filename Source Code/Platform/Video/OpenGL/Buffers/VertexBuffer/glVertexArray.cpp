@@ -317,6 +317,7 @@ bool glVertexArray::createInternal() {
         Console::errorfn(Locale::get(_ID("ERROR_VB_POSITION")));
         return false;
     }
+    VertexBuffer::createInternal();
 
     _formatInternal = GLUtil::glDataFormat[to_uint(_format)];
     // Generate an "Index Buffer Object"

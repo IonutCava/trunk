@@ -70,8 +70,7 @@ class Quad3D : public Object3D {
             //  v2----v3
         }
 
-        computeTangents();
-
+        getGeometryVB()->computeTangents();
         getGeometryVB()->create();
         computeBoundingBox();
     }

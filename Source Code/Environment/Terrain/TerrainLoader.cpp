@@ -42,6 +42,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         textureBlendMap.setResourceLocation(
             terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
         textureBlendMap.setPropertyDescriptor(blendMapSampler);
+        textureBlendMap.setEnumValue(to_uint(TextureType::TEXTURE_2D));
         textureLayer->setBlendMap(CreateResource<Texture>(textureBlendMap));
 
         arrayLocation.clear();
@@ -164,8 +165,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     terrainMaterial->setShaderDefines("COMPUTE_TBN");
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
-    terrainMaterial->setShaderDefines(
-        "MAX_TEXTURE_LAYERS " +
+    terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " +
         std::to_string(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +
                                       std::to_string(textureCount));
@@ -175,22 +175,17 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", RenderStage::Z_PRE_PASS, true);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
-    textureWaterCaustics.setResourceLocation(
-        terrainDescriptor->getVariable("waterCaustics"));
-    textureWaterCaustics.setPropertyDescriptor(
-        Attorney::TerrainLoader::getAlbedoSampler(*terrain));
-    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0,
-                                CreateResource<Texture>(textureWaterCaustics));
+    textureWaterCaustics.setResourceLocation(terrainDescriptor->getVariable("waterCaustics"));
+    textureWaterCaustics.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
+    textureWaterCaustics.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" +
                                                name);
-    underwaterAlbedoTexture.setResourceLocation(
-        terrainDescriptor->getVariable("underwaterAlbedoTexture"));
-    underwaterAlbedoTexture.setPropertyDescriptor(
-        Attorney::TerrainLoader::getAlbedoSampler(*terrain));
-    terrainMaterial->setTexture(
-        ShaderProgram::TextureUsage::UNIT1,
-        CreateResource<Texture>(underwaterAlbedoTexture));
+    underwaterAlbedoTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
+    underwaterAlbedoTexture.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
+    underwaterAlbedoTexture.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" +
                                                name);
@@ -198,9 +193,8 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(
         Attorney::TerrainLoader::getNormalSampler(*terrain));
-    terrainMaterial->setTexture(
-        ShaderProgram::TextureUsage::NORMALMAP,
-        CreateResource<Texture>(underwaterDetailTexture));
+    underwaterDetailTexture.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+    terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(underwaterDetailTexture));
 
     terrainMaterial->setShaderLoadThreaded(false);
     terrainMaterial->dumpToFile(false);
@@ -251,7 +245,7 @@ bool TerrainLoader::loadThreadedResources(
                     vec3<F32>(-farPlane * 1.5f, height, farPlane * 1.5f));
     plane.setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
                     vec3<F32>(farPlane * 1.5f, height, farPlane * 1.5f));
-
+    
     Attorney::TerrainLoader::plane(*terrain, &plane);
 
     vec2<F32>& terrainScaleFactor =
@@ -528,10 +522,12 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
     vegDetails.grassScale = terrainDescriptor->getGrassScale();
     vegDetails.treeDensity = terrainDescriptor->getTreeDensity();
     vegDetails.treeScale = terrainDescriptor->getTreeScale();
-    vegDetails.map = terrainDescriptor->getVariable("grassMap");
     vegDetails.grassBillboards = grassBillboardArray;
     vegDetails.grassShaderName = "grass";
     vegDetails.parentTerrain = terrain;
+
+    vegDetails.map.reset(new ImageTools::ImageData);
+    ImageTools::ImageDataInterface::CreateImageData(terrainDescriptor->getVariable("grassMap"), *vegDetails.map);
 }
 
 bool TerrainLoader::Save(const char* fileName) { return true; }

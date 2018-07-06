@@ -476,12 +476,15 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         _keepDataInMemory = state;
     }
 
+    virtual void computeNormals();
+    virtual void computeTangents();
+
    protected:
     static std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> _attribMaskPerStage;
 
     virtual void checkStatus() = 0;
     virtual bool refresh() = 0;
-    virtual bool createInternal() = 0;
+    virtual bool createInternal();
 
     inline bool keepData() const {
         return _keepDataInMemory;

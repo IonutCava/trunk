@@ -8,9 +8,10 @@ uniform sampler2DArray texNormalMaps[MAX_TEXTURE_LAYERS];
 uniform vec4 diffuseScale[MAX_TEXTURE_LAYERS];
 uniform vec4 detailScale[MAX_TEXTURE_LAYERS];
 
-uniform sampler2D texWaterCaustics;
-uniform sampler2D texUnderwaterAlbedo;
-uniform sampler2D texUnderwaterDetail;
+layout(binding = TEXTURE_UNIT0)     uniform sampler2D texWaterCaustics;
+layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
+
 uniform float underwaterDiffuseScale;
 
 vec4 getFinalColor1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {

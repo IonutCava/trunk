@@ -39,23 +39,23 @@ in vec2 _uv1;
 
 smooth in float _waterDepth;
 
-out vec4 _colorOut;
-
+layout(location = 0) out vec4 _colorOut;
+layout(location = 1) out vec3 _normalOut;
 //subroutine vec4 TerrainMappingType();
 
 //subroutine(TerrainMappingType) 
 vec4 computeLightInfoLOD1Frag() {
     vec4 color = vec4(0.0);
     getColorNormal(color);
-    return getPixelColor(VAR._texCoord, VAR._normalWV);
+    _normalOut = VAR._normalWV;
+    return getPixelColor(VAR._texCoord, _normalOut);
 }
 
 //subroutine(TerrainMappingType)
 vec4 computeLightInfoLOD0Frag() {
     vec4 color = vec4(0.0);
-    vec3 tbn = vec3(0.0);
-    getColorAndTBNNormal(color, tbn);
-    return getPixelColor(VAR._texCoord, tbn);
+    getColorAndTBNNormal(color, _normalOut);
+    return getPixelColor(VAR._texCoord, _normalOut);
 }
 
 
@@ -65,10 +65,9 @@ vec4 CausticsColor() {
 
 vec4 UnderwaterColor() {
     vec4 color = vec4(0.0);
-    vec3 tbn = vec3(0.0);
-    getColorAndTBNUnderwater(color, tbn);
 
-    return getPixelColor(VAR._texCoord, tbn);
+    getColorAndTBNUnderwater(color, _normalOut);
+    return getPixelColor(VAR._texCoord, _normalOut);
 }
 
 vec4 UnderwaterMappingRoutine(){

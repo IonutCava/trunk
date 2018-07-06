@@ -110,9 +110,6 @@ class Object3D : public SceneNode {
 
    protected:
     bool isPrimitive();
-
-    virtual void computeNormals();
-    virtual void computeTangents();
     /// Use a custom vertex buffer for this object (e.g., a submesh uses the
     /// mesh's vb)
     /// Please manually delete the old VB if available before replacing!

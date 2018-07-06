@@ -42,7 +42,7 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _readBuffer = 1;
     _writeBuffer = 0;
 
-    ImageTools::ImageDataInterface::CreateImageData(details.map, _map);
+    _map = details.map;
     _grassShaderName = details.grassShaderName;
     _grassGPUBuffer[0] = GFX_DEVICE.newGVD(false);
     _grassGPUBuffer[1] = GFX_DEVICE.newGVD(false);
@@ -85,7 +85,7 @@ Vegetation::~Vegetation()
 
 void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     assert(terrainChunk);
-    assert(_map.data() != nullptr);
+    assert(_map->data() != nullptr);
 
     _terrainChunk = terrainChunk;
 
@@ -432,12 +432,14 @@ void Vegetation::generateTrees() {
 }
 
 void Vegetation::generateGrass() {
+    return;
+
     const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
     const vec2<F32>& chunkSize = _terrainChunk->getOffsetAndSize().zw();
     const F32 waterLevel = GET_ACTIVE_SCENE().state().waterLevel() + 1.0f;
     const I32 currentCount = std::min((I32)_billboardCount, 4);
-    const U16 mapWidth = _map.dimensions().width;
-    const U16 mapHeight = _map.dimensions().height;
+    const U16 mapWidth = _map->dimensions().width;
+    const U16 mapHeight = _map->dimensions().height;
     const U32 grassElements = to_uint(_grassDensity * chunkSize.x * chunkSize.y);
 
     Console::printfn(Locale::get(_ID("CREATE_GRASS_BEGIN")), grassElements);
@@ -509,10 +511,10 @@ void Vegetation::generateGrass() {
                 F32 y = height + Random(densityFactor) + chunkPos.y;
                 CLAMP<F32>(x, 0.0f, to_float(mapWidth) - 1.0f);
                 CLAMP<F32>(y, 0.0f, to_float(mapHeight) - 1.0f);
-                F32 x_fac = x / _map.dimensions().width;
-                F32 y_fac = y / _map.dimensions().height;
+                F32 x_fac = x / _map->dimensions().width;
+                F32 y_fac = y / _map->dimensions().height;
 
-                I32 map_color = _map.getColor((U16)x, (U16)y)[index];
+                I32 map_color = _map->getColor((U16)x, (U16)y)[index];
                 if (map_color < 150) {
                     continue;
                 }

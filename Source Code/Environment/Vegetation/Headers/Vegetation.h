@@ -58,9 +58,9 @@ struct VegetationDetails {
     F32 grassScale;
     F32 treeDensity;
     F32 treeScale;
-    stringImpl map;
     stringImpl name;
     stringImpl grassShaderName;
+    std::shared_ptr<ImageTools::ImageData> map;
     Terrain* parentTerrain;
     Texture* grassBillboards;
 };
@@ -118,7 +118,7 @@ class Vegetation : public SceneNode {
     F32 _windX, _windZ, _windS, _time;
     U64 _stateRefreshInterval;
     U64 _stateRefreshIntervalBuffer;
-    ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
+    std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
     Texture* _grassBillboards;
     ShaderProgram* _cullShader;
     stringImpl _grassShaderName;

@@ -59,7 +59,10 @@ class d3dVertexBuffer : public VertexBuffer {
     }
 
    private:
-    bool createInternal() { return true; }
+    bool createInternal() { 
+        return VertexBuffer::createInternal();
+    }
+
     bool refresh() { return true; }
     void checkStatus() {}
 };

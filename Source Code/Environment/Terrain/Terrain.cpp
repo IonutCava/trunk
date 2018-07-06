@@ -81,9 +81,6 @@ void Terrain::buildQuadtree() {
         drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE().state().waterLevel());
         drawShader->Uniform("bbox_min", _boundingBox.first.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.first.getExtent());
-        drawShader->Uniform("texWaterCaustics", ShaderProgram::TextureUsage::UNIT0);
-        drawShader->Uniform("texUnderwaterAlbedo", ShaderProgram::TextureUsage::UNIT1);
-        drawShader->Uniform("texUnderwaterDetail", ShaderProgram::TextureUsage::NORMALMAP);
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
         U8 textureOffset = to_ubyte(ShaderProgram::TextureUsage::NORMALMAP) + 1;
@@ -94,22 +91,15 @@ void Terrain::buildQuadtree() {
             layerIndex = std::to_string(k);
             TerrainTextureLayer* textureLayer = _terrainTextures[k];
             drawShader->Uniform(("texBlend[" + layerIndex + "]").c_str(), layerOffset);
-            drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(),
-                                layerOffset + 1);
-            drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(),
-                                layerOffset + 2);
+            drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(), layerOffset + 1);
+            drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(), layerOffset + 2);
 
-            getMaterialTpl()->addCustomTexture(textureLayer->blendMap(),
-                                               layerOffset);
-            getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(),
-                                               layerOffset + 1);
-            getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(),
-                                               layerOffset + 2);
+            getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
+            getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
+            getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
 
-            drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(),
-                                textureLayer->getDiffuseScales());
-            drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(),
-                                textureLayer->getDetailScales());
+            drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(), textureLayer->getDiffuseScales());
+            drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(), textureLayer->getDetailScales());
         }
     }
 }

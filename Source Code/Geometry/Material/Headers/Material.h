@@ -128,10 +128,10 @@ class Material : public Resource {
             COMPUTED = 2,
             UNHANDLED = 3,
             PENDING = 4,
-            CUSTOM = 5,
             COUNT
         };
 
+        bool _customShader;
         ShaderProgram* _shaderRef;
         stringImpl _shader;
         RenderStage _stage;
@@ -144,6 +144,7 @@ class Material : public Resource {
 
         ShaderInfo()
         {
+            _customShader = false;
             _shaderRef = nullptr;
             _shader = "";
             _shaderCompStage = ShaderCompilationStage::UNHANDLED;
@@ -153,6 +154,7 @@ class Material : public Resource {
         }
 
         ShaderInfo& operator=(const ShaderInfo& other) {
+            _customShader = other._customShader;
             _shaderRef = other._shaderRef;
             if (_shaderRef != nullptr) {
                 _shaderRef->AddRef();

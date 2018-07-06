@@ -464,6 +464,9 @@
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesApple.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesUnix.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\PlatformDefinesWindows.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexBuffer.cpp">
+      <Filter>Video\Buffers\VertexBuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

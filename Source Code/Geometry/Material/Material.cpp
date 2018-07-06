@@ -203,8 +203,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 void Material::setShaderProgram(const stringImpl& shader,
                                 RenderStage renderStage,
                                 const bool computeOnAdd) {
-    _shaderInfo[to_uint(renderStage)]._shaderCompStage =
-        ShaderInfo::ShaderCompilationStage::CUSTOM;
+    _shaderInfo[to_uint(renderStage)]._customShader = true;
     setShaderProgramInternal(shader, renderStage, computeOnAdd);
 }
 
@@ -267,7 +266,7 @@ void Material::clean() {
 
 void Material::recomputeShaders() {
     for (ShaderInfo& info : _shaderInfo) {
-        if (info._shaderCompStage != ShaderInfo::ShaderCompilationStage::CUSTOM) {
+        if (!info._customShader) {
             info._shaderCompStage = ShaderInfo::ShaderCompilationStage::REQUESTED;
         }
     }
@@ -276,7 +275,7 @@ void Material::recomputeShaders() {
 bool Material::canDraw(RenderStage renderStage) {
     for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
         ShaderInfo& info = _shaderInfo[i];
-        if (info._shaderCompStage !=  ShaderInfo::ShaderCompilationStage::COMPUTED) {
+        if (info._shaderCompStage != ShaderInfo::ShaderCompilationStage::COMPUTED) {
             computeShader(static_cast<RenderStage>(i), false);
             return false;
         }
@@ -297,10 +296,8 @@ bool Material::computeShader(RenderStage renderStage,
         return false;
     }
 
-    if (info._shaderCompStage !=
-            ShaderInfo::ShaderCompilationStage::REQUESTED) {
-        return info._shaderCompStage ==
-               ShaderInfo::ShaderCompilationStage::COMPUTED;
+    if (info._shaderCompStage != ShaderInfo::ShaderCompilationStage::REQUESTED) {
+        return info._shaderCompStage == ShaderInfo::ShaderCompilationStage::COMPUTED;
     }
 
     U32 slot0 = to_uint(ShaderProgram::TextureUsage::UNIT0);

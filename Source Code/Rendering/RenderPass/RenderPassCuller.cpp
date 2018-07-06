@@ -134,7 +134,7 @@ void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, RenderStage c
         bool isVisible = !(currentStage == RenderStage::SHADOW &&
                            !currentNode.getComponent<RenderingComponent>()->castsShadows());
 
-        if (isVisible && currentNode.isActive() && !_cullingFunction(currentNode)) {
+        if (isVisible && child->isActive() && !_cullingFunction(*child)) {
             nodes.push_back(child);
             addAllChildren(*child, currentStage, nodes);
         }
