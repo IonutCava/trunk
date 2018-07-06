@@ -265,14 +265,13 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         // Generate and upload all lighting data
         LightManager::getInstance().updateAndUploadLightData(
             _gpuBlock._ViewMatrix);
-            _lastNodeCount = 1;
     }
     _renderQueue.reserve(nodeCount);
 
     _lastCmdCount = 0;
+    _lastNodeCount = 1;
     _drawCommandsCache[_lastCmdCount++].set(_defaultDrawCmd.cmd());
 
-    U32 drawID = 1;
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     for (VisibleNodeList::value_type& node : visibleNodes) {
@@ -283,17 +282,20 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
         if (!nodeDrawCommands.empty()) {
             for (GenericDrawCommand& cmd : nodeDrawCommands) {
-                cmd.drawID(drawID);
+                cmd.drawID(static_cast<U32>(_lastNodeCount));
+                cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
                 // Extract the specific rendering commands from the draw commands
                 // Rendering commands are stored in GPU memory. Draw commands are not.
                 _drawCommandsCache[_lastCmdCount++].set(cmd.cmd());
             }
+
             if (refreshNodeData) {
-               processVisibleNode(node, _matricesData[_lastNodeCount++]);
+               processVisibleNode(node, _matricesData[_lastNodeCount]);
             }
-            drawID += 1;
+            _lastNodeCount += 1;
         }
     }
+
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
 
     Time::STOP_TIMER(_commandBuildTimer);

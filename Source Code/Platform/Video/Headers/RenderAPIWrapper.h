@@ -102,6 +102,7 @@ struct GenericDrawCommand {
     U16 _drawCount;
     bool _drawToBuffer;
     bool _renderWireframe;
+    bool _renderGeometry;
     size_t _stateHash;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
@@ -148,6 +149,11 @@ struct GenericDrawCommand {
         _renderWireframe = state;
     }
 
+    inline void renderGeometry(bool state) {
+        assert(!_locked);
+        _renderGeometry = state;
+    }
+
     inline void primCount(U32 count) {
         assert(!_locked);
         _cmd.primCount = count;
@@ -185,6 +191,7 @@ struct GenericDrawCommand {
     inline size_t stateHash() const { return _stateHash; }
     inline bool drawToBuffer() const { return _drawToBuffer; }
     inline bool renderWireframe() const { return _renderWireframe; }
+    inline bool renderGeometry() const { return _renderGeometry; }
     inline U32 primCount() const { return _cmd.primCount; }
     inline U32 indexCount() const { return _cmd.count; }
 
@@ -208,6 +215,7 @@ struct GenericDrawCommand {
           _locked(false),
           _drawToBuffer(false),
           _renderWireframe(false),
+          _renderGeometry(true),
           _shaderProgram(nullptr),
           _sourceBuffer(nullptr)
     {
@@ -226,6 +234,7 @@ struct GenericDrawCommand {
         _drawCount = base._drawCount;
         _drawToBuffer = base._drawToBuffer;
         _renderWireframe = base._renderWireframe;
+        _renderGeometry = base._renderGeometry;
         _stateHash = base._stateHash;
         _type = base._type;
         _shaderProgram = base._shaderProgram;
@@ -236,6 +245,7 @@ struct GenericDrawCommand {
         return _queryID == other._queryID && _lodIndex == other._lodIndex &&
                _drawToBuffer == other._drawToBuffer &&
                _renderWireframe == other._renderWireframe &&
+               _renderGeometry == other._renderGeometry &&
                _stateHash == other._stateHash && _type == other._type &&
                (_shaderProgram != nullptr) ==
                    (other._shaderProgram != nullptr) &&

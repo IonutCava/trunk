@@ -112,10 +112,11 @@ bool SceneManager::framePreRenderStarted(const FrameEvent& evt) {
 
 bool SceneManager::frameEnded(const FrameEvent& evt) {
     _renderPassCuller->refresh();
-     RenderQueue::getInstance().refresh(true);
+
     if (_loadPreRenderComplete) {
         Material::unlockShaderQueue();
     }
+
     return Attorney::SceneManager::frameEnded(*_activeScene);
 }
 
@@ -143,7 +144,7 @@ void SceneManager::sortVisibleNodes(
     nodes._sorted = true;
 }
 
-void SceneManager::updateVisibleNodes() {
+void SceneManager::updateVisibleNodes(bool flushCache) {
     auto cullingFunction = [](SceneGraphNode* node) -> bool {
         if (node->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type =
@@ -154,6 +155,10 @@ void SceneManager::updateVisibleNodes() {
         return false;
     };
 
+    if (flushCache) {
+        _renderPassCuller->refresh();
+    }
+
     RenderQueue& queue = RenderQueue::getInstance();
     RenderPassCuller::VisibleNodeCache& nodes =
         _renderPassCuller->frustumCull(
@@ -161,6 +166,7 @@ void SceneManager::updateVisibleNodes() {
             cullingFunction);
 
     if (!nodes._locked) {
+        queue.refresh();
         vec3<F32> eyePos(_activeScene->renderState().getCameraConst().getEye());
         for (RenderPassCuller::RenderableNode& node : nodes._visibleNodes) {
             queue.addNodeToQueue(*node._visibleNode, eyePos);
@@ -176,28 +182,25 @@ void SceneManager::updateVisibleNodes() {
                                  !nodes._locked);
 }
 
-void SceneManager::renderVisibleNodes() {
-    updateVisibleNodes();
-    _renderPassManager->render(_activeScene->renderState(),
-                               _activeScene->getSceneGraph());
+void SceneManager::renderVisibleNodes(bool flushCache) {
+    updateVisibleNodes(flushCache);
+
+    if (!_activeScene->renderCallback()) {
+        _renderPassManager->render(_activeScene->renderState(),
+                                    _activeScene->getSceneGraph());
+    } else {
+        _activeScene->renderCallback();
+    }
 }
 
 void SceneManager::render(RenderStage stage, const Kernel& kernel) {
     assert(_activeScene != nullptr);
 
-    static DELEGATE_CBK<> renderFunction;
-    if (!renderFunction) {
-        if (!_activeScene->renderCallback()) {
-            renderFunction =
-                DELEGATE_BIND(&SceneManager::renderVisibleNodes, this);
-        } else {
-            renderFunction = _activeScene->renderCallback();
-        }
-    }
-
     _activeScene->renderState().getCamera().renderLookAt();
     Attorney::KernelScene::submitRenderCall(
-        kernel, stage, _activeScene->renderState(), renderFunction);
+        kernel, stage, _activeScene->renderState(),
+        DELEGATE_BIND(&SceneManager::renderVisibleNodes, this,
+                      (stage != RenderStage::DISPLAY)));
     Attorney::SceneManager::debugDraw(*_activeScene, stage);
 }
 

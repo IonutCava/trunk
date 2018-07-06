@@ -54,8 +54,7 @@ RenderPassCuller::VisibleNodeCache& RenderPassCuller::frustumCull(
     if (nodes._visibleNodes.empty()) {
         // No point in updating visual information if the scene disabled object
         // rendering or rendering of their bounding boxes
-        if (sceneState.renderState().objectState() !=
-            SceneRenderState::ObjectRenderState::NO_DRAW) {
+        if (sceneState.renderState().drawGeometry()) {
             cullSceneGraphCPU(nodes, currentNode, sceneState.renderState(),
                               cullingFunction);
             nodes._sorted = false;

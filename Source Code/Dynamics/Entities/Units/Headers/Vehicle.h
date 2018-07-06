@@ -50,7 +50,7 @@ class Vehicle : public Unit {
         /// Underwater vehicles
         VEHICLE_TYPE_UNDERWATER = toBit(4),
         /// For Future expansion
-        COUNT = toBit(10)
+        COUNT
     };
 
     Vehicle(SceneGraphNode& node);

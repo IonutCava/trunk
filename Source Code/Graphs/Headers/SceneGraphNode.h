@@ -308,7 +308,6 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
     U32 _instanceID;
     U32 _childQueue;
-    U32 _renderPasses;
     D32 _updateTimer;
     U64 _elapsedTime;  //< the total amount of time that passed since this node
                        //was created
@@ -317,6 +316,9 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     UsageContext _usageContext;
     std::array<std::unique_ptr<SGNComponent>,
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
+
+    std::array<U32, to_const_uint(RenderStage::COUNT)> _renderPasses;
+
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
     bool _firstDraw;
 

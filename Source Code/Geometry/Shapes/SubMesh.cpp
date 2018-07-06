@@ -61,6 +61,7 @@ void SubMesh::getDrawCommands(SceneGraphNode& sgn,
         sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
+    _drawCmd.renderGeometry(renderable->renderGeometry());
     _drawCmd.renderWireframe(renderable->renderWireframe());
     _drawCmd.LoD(renderable->lodLevel());
     _drawCmd.stateHash(renderable->getDrawStateHash(renderStage));

@@ -29,9 +29,9 @@ void RenderPass::render(const SceneRenderState& renderState,
 
     // Draw the entire queue;
     // Limited to 65536 (2^16) items per queue pass!
-    if (renderState.objectState() != SceneRenderState::ObjectRenderState::NO_DRAW) {
+    if (renderState.drawGeometry()) {
         if ((currentStage == RenderStage::DISPLAY ||
-            currentStage == RenderStage::REFLECTION) &&
+             currentStage == RenderStage::REFLECTION) &&
             renderBinCount > 0) {
             LightManager::getInstance().bindDepthMaps();
         }

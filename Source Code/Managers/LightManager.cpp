@@ -154,7 +154,7 @@ bool LightManager::removeLight(I64 lightGUID) {
 void LightManager::idle() {
     _shadowMapsEnabled =
         ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
-    _shadowMapsEnabled = false;
+
     s_shadowPassTimer->pause(!_shadowMapsEnabled);
 }
 
@@ -272,19 +272,20 @@ void LightManager::bindDepthMaps() {
     if (!_shadowMapsEnabled) {
         return;
     }
-    for (U8 i = 0;
-         i < std::min((U32)_lights.size(),
-                      Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
-         ++i) {
-        Light* lightLocal = getLight(i);
-        assert(lightLocal);
+    Light::LightList& lights = getLights();
 
-        if (!lightLocal->castsShadows()) {
-            continue;
-        }
-        ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
-        if (sm) {
-            sm->Bind(getShadowBindSlotOffset(lightLocal->getLightType()) + i);
+    U16 idx = 0;
+    for (Light* light : lights) {
+        if (light->castsShadows()) {
+            ShadowMap* sm = light->getShadowMapInfo()->getShadowMap();
+            DIVIDE_ASSERT(sm != nullptr,
+                "LightManager::bindDepthMaps error: Shadow casting light "
+                "with no shadow map found!");
+            sm->Bind(getShadowBindSlotOffset(light->getLightType()) + ++idx);
+
+            if (idx >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE) {
+                break;
+            }
         }
     }
 }

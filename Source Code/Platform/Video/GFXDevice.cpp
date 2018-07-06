@@ -52,7 +52,6 @@ GFXDevice::GFXDevice()
     // Integers
     _lastNodeCount = 0; 
     _lastCmdCount = 0;
-    _stateExclusionMask = 0;
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;

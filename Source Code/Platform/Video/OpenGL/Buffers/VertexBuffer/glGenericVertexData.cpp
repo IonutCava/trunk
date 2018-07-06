@@ -210,25 +210,40 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        GLenum type = command.renderWireframe()
-                          ? GL_LINE_LOOP
-                          : GLUtil::glPrimitiveTypeTable[to_uint(
-                                command.primitiveType())];
-
         bufferPtr offset =
             (bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
         if (!useCmdBuffer) {
             GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
             offset = (bufferPtr)(&command.cmd());
         }
+        if (command.renderGeometry()) {
+            if (_indexBuffer > 0) {
+                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+                glMultiDrawElementsIndirect(
+                    GLUtil::glPrimitiveTypeTable[to_uint(
+                        command.primitiveType())],
+                    GL_UNSIGNED_INT, offset, command.drawCount(), 0);
 
-        if (_indexBuffer > 0) {
-            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-            glMultiDrawElementsIndirect(type, GL_UNSIGNED_INT, offset,
-                                        command.drawCount(), 0);
+            } else {
+                glMultiDrawArraysIndirect(GLUtil::glPrimitiveTypeTable[to_uint(
+                                              command.primitiveType())],
+                                          offset, command.drawCount(), 0);
+            }
+            // Count the draw call
+            GFX_DEVICE.registerDrawCall();
+        }
 
-        } else {
-            glMultiDrawArraysIndirect(type, offset, command.drawCount(), 0);
+        if (command.renderWireframe()) {
+             if (_indexBuffer > 0) {
+                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+                glMultiDrawElementsIndirect(GL_LINE_LOOP, GL_UNSIGNED_INT,
+                                            offset, command.drawCount(), 0);
+            } else {
+                glMultiDrawArraysIndirect(GL_LINE_LOOP, offset,
+                                          command.drawCount(), 0);
+            }
+            // Count the draw call
+            GFX_DEVICE.registerDrawCall();
         }
     }
 
@@ -239,8 +254,6 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
         // Mark the current query as completed and ready to be retrieved
         _resultAvailable[_currentWriteQuery][command.queryID()] = true;
     }
-    // Count the draw call
-    GFX_DEVICE.registerDrawCall();
 }
 
 void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,

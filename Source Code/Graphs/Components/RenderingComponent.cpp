@@ -18,6 +18,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
+      _renderGeometry(true),
       _renderBoundingBox(false),
       _renderSkeleton(false),
       _materialInstance(materialInstance) {
@@ -129,6 +130,18 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
     return _parentSGN.getNode()->onDraw(_parentSGN, currentStage);
 }
 
+void RenderingComponent::renderGeometry(const bool state) {
+    _renderGeometry = state;
+    for (SceneGraphNode::NodeChildren::value_type& it :
+         _parentSGN.getChildren()) {
+        RenderingComponent* const renderable =
+            it.second->getComponent<RenderingComponent>();
+        if (renderable) {
+            renderable->renderGeometry(_renderGeometry);
+        }
+    }
+}
+
 void RenderingComponent::renderWireframe(const bool state) {
     _renderWireframe = state;
     for (SceneGraphNode::NodeChildren::value_type& it :
@@ -225,9 +238,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
 #endif
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
-    if (renderBoundingBox() ||
-        sceneRenderState.objectState() ==
-            SceneRenderState::ObjectRenderState::DRAW_BOUNDING_BOX) {
+    if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
         IMPrimitive& prim = GFX_DEVICE.drawBox3D(
             bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255), 4.0f);
@@ -236,7 +247,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
         node->postDrawBoundingBox(_parentSGN);
     }
 
-    if (_renderSkeleton) {
+    if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         bool skinned = _parentSGN.getNode<Object3D>()->isSkinned();
 

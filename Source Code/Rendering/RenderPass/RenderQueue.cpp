@@ -14,7 +14,7 @@
 
 namespace Divide {
 
-RenderQueue::RenderQueue() : _renderQueueLocked(false), _isSorted(false) {
+RenderQueue::RenderQueue() : _isSorted(false) {
     //_renderBins.reserve(RenderBin::COUNT);
 }
 
@@ -197,10 +197,6 @@ void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
 }
 
 void RenderQueue::sort(RenderStage renderStage) {
-    /*if(_renderQueueLocked && _isSorted) {
-        return;
-    }*/
-
     U32 index = 0;
     for (RenderBinMap::value_type& renderBin : _renderBins) {
         renderBin.second->sort(index, renderStage);
@@ -210,23 +206,11 @@ void RenderQueue::sort(RenderStage renderStage) {
     _isSorted = true;
 }
 
-void RenderQueue::refresh(bool force) {
-    if (_renderQueueLocked && !force) {
-        return;
-    }
+void RenderQueue::refresh() {
     for (RenderBinMap::value_type& renderBin : _renderBins) {
         renderBin.second->refresh();
     }
     _isSorted = false;
 }
 
-void RenderQueue::lock() { _renderQueueLocked = true; }
-
-void RenderQueue::unlock(bool resetNodes) {
-    _renderQueueLocked = false;
-
-    if (resetNodes) {
-        refresh();
-    }
-}
 };

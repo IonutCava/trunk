@@ -46,7 +46,7 @@ class Ammunition {
         /// Does not keep track of quantity
         AMMUNITION_TYPE_INFINITE = toBit(2),
         /// Place all ammo types above this
-        COUNT = toBit(10),
+        COUNT
     };
 
     Ammunition(AmmunitionType type);

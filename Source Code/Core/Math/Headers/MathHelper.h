@@ -65,7 +65,8 @@ I32 random(I32 max);
 template <typename T>
 T random(T min, T max);
 
-bool bitCompare(U32 bitMask, U32 bit);
+template<typename T>
+bool bitCompare(T bitMask, T bit);
 
 /// Clamps value n between min and max
 template <typename T>

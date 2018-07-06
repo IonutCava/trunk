@@ -20,16 +20,12 @@ class SceneNodeRenderState {
     inline void useDefaultMaterial(bool state) { _noDefaultMaterial = !state; }
     inline bool useDefaultMaterial() const { return !_noDefaultMaterial; }
     inline void setDrawState(bool state) { _drawState = state; }
-    bool getDrawState() const { return _drawState; }
+    inline bool getDrawState() const { return _drawState; }
+
     bool getDrawState(RenderStage currentStage) const;
-    void addToDrawExclusionMask(U32 stageMask);
-    void removeFromDrawExclusionMask(U32 stageMask);
-    inline void addToDrawExclusionMask(RenderStage stage) {
-        addToDrawExclusionMask(to_bitwise(to_uint(stage)));
-    }
-    inline void removeFromDrawExclusionMask(RenderStage stage) {
-        removeFromDrawExclusionMask(to_bitwise(to_uint(stage)));
-    }
+    void addToDrawExclusionMask(RenderStage stage);
+    void removeFromDrawExclusionMask(RenderStage stage);
+
     size_t getDepthStateBlock();
     size_t getShadowStateBlock();
 

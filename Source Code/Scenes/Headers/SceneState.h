@@ -68,34 +68,57 @@ class SceneRenderState {
 
    public:
     enum class GizmoState : U32 {
-        NO_GIZMO = toBit(0),
-        SCENE_GIZMO = toBit(1),
-        SELECTED_GIZMO = toBit(2),
+        NO_GIZMO = toBit(1),
+        SCENE_GIZMO = toBit(2),
+        SELECTED_GIZMO = toBit(3),
         ALL_GIZMO = SCENE_GIZMO | SELECTED_GIZMO
-    };
-
-    enum class ObjectRenderState : U32 {
-        NO_DRAW = toBit(0),
-        DRAW_OBJECT = toBit(1),
-        DRAW_BOUNDING_BOX = toBit(2),
-        DRAW_OBJECT_WITH_BOUNDING_BOX = DRAW_OBJECT | DRAW_BOUNDING_BOX
     };
 
     SceneRenderState();
 
+    /// Render wireframe for all scene geometry
+    void toggleWireframe();
     /// Render skeletons for animated geometry
     void toggleSkeletons();
     /// Show/hide bounding boxes and/or objects
     void toggleBoundingBoxes();
     /// Show/hide axis gizmos
     void toggleAxisLines();
+    /// Show/hide debug lines
+    void toggleDebugLines();
+    /// Show/hide geometry
+    void toggleGeometry();
 
-    inline void drawSkeletons(bool visibility) {
-        _drawSkeletons = visibility;
+    inline void drawGeometry(bool state) {
+        _drawGeometry = state;
+    }
+
+    inline bool drawGeometry() const {
+        return _drawGeometry;
+    }
+
+    inline void drawSkeletons(bool state) {
+        _drawSkeletons = state;
     }
 
     inline bool drawSkeletons() const {
         return _drawSkeletons;
+    }
+
+    inline void drawBoundingBoxes(bool state) {
+        _drawBoundingBoxes = state;
+    }
+
+    inline bool drawBoundingBoxes() const {
+        return _drawBoundingBoxes;
+    }
+
+    inline void drawWireframe(bool state) {
+        _drawWireframe = state;
+    }
+
+    inline bool drawWireframe() const {
+        return _drawWireframe;
     }
 
     inline void drawDebugLines(bool visibility) {
@@ -122,13 +145,6 @@ class SceneRenderState {
         return _gizmoState;
     }
 
-    inline void objectState(ObjectRenderState newState) {
-        _objectState = newState;
-    }
-
-    inline ObjectRenderState objectState() const {
-        return _objectState;
-    }
 
     inline CameraManager& getCameraMgr() {
         return *_cameraMgr;
@@ -162,13 +178,16 @@ class SceneRenderState {
 
    protected:
     bool _drawBB;
-    bool _drawObjects;
-    bool _drawSkeletons;
     bool _debugDrawLines;
     bool _debugDrawTargetLines;
     bool _playAnimations;
+
+    bool _drawGeometry;
+    bool _drawSkeletons;
+    bool _drawBoundingBoxes;
+    bool _drawWireframe;
+
     GizmoState _gizmoState;
-    ObjectRenderState _objectState;
     CameraManager* _cameraMgr;
     /// cached resolution
     vec2<U16> _cachedResolution;

@@ -54,9 +54,9 @@ class Object3D : public SceneNode {
     };
 
     enum class ObjectFlag : U32 {
-        OBJECT_FLAG_NONE = toBit(0),
-        OBJECT_FLAG_SKINNED = toBit(1),
-        OBJECT_FLAG_NO_VB = toBit(2),
+        OBJECT_FLAG_NONE = toBit(1),
+        OBJECT_FLAG_SKINNED = toBit(2),
+        OBJECT_FLAG_NO_VB = toBit(3),
         COUNT
     };
 

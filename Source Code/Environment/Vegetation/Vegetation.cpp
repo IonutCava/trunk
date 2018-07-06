@@ -426,6 +426,7 @@ void Vegetation::getDrawCommands(
         sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
+    _renderDrawCommand.renderGeometry(renderable->renderGeometry());
     _renderDrawCommand.renderWireframe(renderable->renderWireframe());
     _renderDrawCommand.stateHash(_grassStateBlockHash);
     _renderDrawCommand.primCount(instanceCount);

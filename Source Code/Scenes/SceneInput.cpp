@@ -208,26 +208,32 @@ bool Scene::onKeyUp(const Input::KeyEvent& key) {
                 !_paramHandler.getParam("freezeLoopTime", false));
         } break;
         case KeyCode::KC_F2: {
-            renderState().toggleSkeletons();
-        } break;
-        case KeyCode::KC_F3: {
             _paramHandler.setParam("postProcessing.enableDepthOfField",
                                    !_paramHandler.getParam<bool>(
                                        "postProcessing.enableDepthOfField"));
         } break;
-        case KeyCode::KC_F4: {
+        case KeyCode::KC_F3: {
             _paramHandler.setParam(
                 "postProcessing.enableBloom",
                 !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
         } break;
+        case KeyCode::KC_F4: {
+            renderState().toggleSkeletons();
+        } break;
         case KeyCode::KC_F5: {
             renderState().toggleAxisLines();
         } break;
-        case KeyCode::KC_B: {
-            renderState().toggleBoundingBoxes();
+        case KeyCode::KC_F6: {
+            renderState().toggleWireframe();
+        } break;
+        case KeyCode::KC_F7: {
+            renderState().toggleGeometry();
         } break;
         case KeyCode::KC_F8: {
-            renderState().drawDebugLines(!renderState().drawDebugLines());
+            renderState().toggleDebugLines();
+        } break;
+        case KeyCode::KC_B: {
+            renderState().toggleBoundingBoxes();
         } break;
 #ifdef _DEBUG
         case KeyCode::KC_F9: {
@@ -244,7 +250,7 @@ bool Scene::onKeyUp(const Input::KeyEvent& key) {
                 "rendering.previewDepthBuffer",
                 !param.getParam<bool>("rendering.previewDepthBuffer", false));
         } break;
-        case KeyCode::KC_F7: {
+        case KeyCode::KC_SYSRQ: {
             GFX_DEVICE.Screenshot("screenshot_");
         } break;
         case KeyCode::KC_W:

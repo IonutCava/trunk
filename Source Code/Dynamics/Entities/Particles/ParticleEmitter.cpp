@@ -202,8 +202,9 @@ void ParticleEmitter::getDrawCommands(
         return;
     }
 
-    _drawCommand.renderWireframe(
-        sgn.getComponent<RenderingComponent>()->renderWireframe());
+    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    _drawCommand.renderGeometry(renderable->renderGeometry());
+    _drawCommand.renderWireframe(renderable->renderWireframe());
     _drawCommand.stateHash(_particleStateBlockHash);
     _drawCommand.primCount(particleCount);
     _drawCommand.shaderProgram(renderStage == RenderStage::DISPLAY

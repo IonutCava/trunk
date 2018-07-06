@@ -427,13 +427,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default
     _GFX.setAPI(GFXDevice::RenderAPI::OpenGL);
-    _GFX.setStateChangeExclusionMask(
-        to_uint(SceneNodeType::TYPE_LIGHT) | 
-        to_uint(SceneNodeType::TYPE_TRIGGER) | 
-        to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) | 
-        to_uint(SceneNodeType::TYPE_SKY) |
-        to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) | 
-        to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
     // Target FPS is usually 60. So all movement is capped around that value
     Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     // Load info from XML files

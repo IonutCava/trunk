@@ -51,16 +51,23 @@ inline T random(T min, T max) {
 
 /// Clamps value n between min and max
 template <typename T>
-void CLAMP(T& n, T min, T max) {
+inline void CLAMP(T& n, T min, T max) {
     n = std::min(std::max(n, min), max);
 }
 
 template <typename T>
-T CLAMPED(const T& n, T min, T max) {
+inline T CLAMPED(const T& n, T min, T max) {
     return std::min(std::max(n, min), max);
 }
 
-inline bool bitCompare(U32 bitMask, U32 bit) {
+
+template<typename T>
+inline bool bitCompare(T bitMask, T bit) {
+    return bitCompare(to_uint(bitMask), to_uint(bit));
+}
+
+template<>
+inline bool bitCompare<U32>(U32 bitMask, U32 bit) {
     return ((bitMask & bit) == bit);
 }
 

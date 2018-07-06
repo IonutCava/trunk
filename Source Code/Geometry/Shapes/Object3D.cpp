@@ -66,6 +66,7 @@ void Object3D::getDrawCommands(
     VertexBuffer* const vb = getGeometryVB();
 
     GenericDrawCommand drawCmd;
+    drawCmd.renderGeometry(renderable->renderGeometry());
     drawCmd.renderWireframe(renderable->renderWireframe());
     drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
     drawCmd.shaderProgram(renderable->getDrawShader(renderStage));

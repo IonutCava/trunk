@@ -63,9 +63,9 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     void render(RenderStage stage, const Kernel& kernel);
     void postRender();
     // renders the visible nodes
-    void renderVisibleNodes();
+    void renderVisibleNodes(bool flushCache);
     // updates and culls the scene graph to generate visible nodes
-    void updateVisibleNodes();
+    void updateVisibleNodes(bool flushCache);
     inline void onLostFocus() { _activeScene->onLostFocus(); }
     inline void idle() { _activeScene->idle(); }
     bool unloadCurrentScene();

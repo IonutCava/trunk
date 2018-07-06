@@ -65,10 +65,12 @@ class RenderingComponent : public SGNComponent {
     bool onDraw(RenderStage currentStage);
     void update(const U64 deltaTime);
 
+    void renderGeometry(const bool state);
     void renderWireframe(const bool state);
     void renderBoundingBox(const bool state);
     void renderSkeleton(const bool state);
 
+    inline bool renderGeometry() const { return _renderGeometry; }
     inline bool renderWireframe() const { return _renderWireframe; }
     inline bool renderBoundingBox() const { return _renderBoundingBox; }
     inline bool renderSkeleton() const { return _renderSkeleton; }
@@ -136,6 +138,7 @@ class RenderingComponent : public SGNComponent {
     U32 _drawOrder;
     bool _castsShadows;
     bool _receiveShadows;
+    bool _renderGeometry;
     bool _renderWireframe;
     bool _renderBoundingBox;
     bool _renderSkeleton;

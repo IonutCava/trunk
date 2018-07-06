@@ -74,7 +74,6 @@ class Sky : public SceneNode {
     ShaderProgram* _skyShader;
     Texture* _skybox;
     Sphere3D* _sky;
-    U16 _exclusionMask;
     size_t _skyboxRenderStateHash;
     size_t _skyboxRenderStateReflectedHash;
 };

@@ -156,9 +156,9 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
         NavigationComponent::NavigationContext::NODE_IGNORE);
     // Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(
-        &SceneManager::renderVisibleNodes, &SceneManager::getInstance()));
+        &SceneManager::renderVisibleNodes, &SceneManager::getInstance(), true));
     _water->setRefractionCallback(DELEGATE_BIND(
-        &SceneManager::renderVisibleNodes, &SceneManager::getInstance()));
+        &SceneManager::renderVisibleNodes, &SceneManager::getInstance(), true));
 
     return loadState;
 }

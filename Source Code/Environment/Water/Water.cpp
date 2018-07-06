@@ -172,6 +172,7 @@ void WaterPlane::getDrawCommands(
         renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS : RenderStage::DISPLAY);
     drawShader->Uniform("underwater", _cameraUnderWater);
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 0);
+    cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(
         renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY));

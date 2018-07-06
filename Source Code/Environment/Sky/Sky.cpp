@@ -14,8 +14,8 @@ Sky::Sky(const stringImpl& name)
     : SceneNode(name, SceneNodeType::TYPE_SKY),
       _sky(nullptr),
       _skyShader(nullptr),
-      _skybox(nullptr),
-      _exclusionMask(0) {
+      _skybox(nullptr)
+{
     // The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't
     // have real "depth"
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
@@ -102,9 +102,12 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
                           RenderStage renderStage,
                           SceneRenderState& sceneRenderState,
                           vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+
+    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+
     GenericDrawCommand cmd;
-    cmd.renderWireframe(
-        sgn.getComponent<RenderingComponent>()->renderWireframe());
+    cmd.renderGeometry(renderable->renderGeometry());
+    cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(renderStage == RenderStage::REFLECTION
                       ? _skyboxRenderStateReflectedHash
                       : _skyboxRenderStateHash);

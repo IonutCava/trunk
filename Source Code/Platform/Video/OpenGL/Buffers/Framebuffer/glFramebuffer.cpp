@@ -155,7 +155,9 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
                     _framebufferHandle, attachPoint, tex->getHandle(), i);
                 _colorBuffers.push_back(attachPoint);
             }
-            _attOffset[slot] = _attOffset[slot - 1] + 6;
+            if (slot > 0) {
+                _attOffset[slot] = _attOffset[slot - 1] + 6;
+            }
         } else if (texDescriptor._layerCount > 1 && !_layeredRendering) {
             for (GLuint i = 0; i < texDescriptor._layerCount; ++i) {
                 GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
@@ -163,7 +165,9 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
                     _framebufferHandle, attachPoint, tex->getHandle(), 0, i);
                 _colorBuffers.push_back(attachPoint);
             }
-            _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
+            if (slot > 0) {
+                _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
+            }
             // If we require layered rendering, or have a non-layered /
             // non-cubemap texture, attach it to a single binding point
         } else {

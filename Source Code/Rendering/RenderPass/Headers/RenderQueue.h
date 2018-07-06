@@ -49,7 +49,7 @@ DEFINE_SINGLETON(RenderQueue)
   public:
     ///
     void sort(RenderStage renderStage);
-    void refresh(bool force = false);
+    void refresh();
     void addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize() const;
     SceneGraphNode& getItem(U16 renderBin, U16 index);
@@ -64,12 +64,6 @@ DEFINE_SINGLETON(RenderQueue)
     }
     inline bool isSorted() { return _isSorted; }
 
-  protected:
-    friend class RenderPassManager;
-    /// See lock/unlock functions in RenderPassManager for more details
-    void lock();
-    void unlock(bool resetNodes = false);
-
   private:
     RenderQueue();
     ~RenderQueue();
@@ -82,7 +76,6 @@ DEFINE_SINGLETON(RenderQueue)
     RenderBinMap _renderBins;
     RenderBinIDType _renderBinID;
     vectorImpl<RenderBin*> _sortedRenderBins;
-    bool _renderQueueLocked;
     bool _isSorted;
 
 END_SINGLETON

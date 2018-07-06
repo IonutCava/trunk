@@ -48,7 +48,7 @@ class Projectile {
         /// spells)
         PROJECTILE_TYPE_SLOW = toBit(2),
         /// Add new projectile types above
-        COUNT = toBit(10)
+        COUNT
     };
 
     enum class ProjectileProperty : U32 {
@@ -57,7 +57,7 @@ class Projectile {
         /// Projectile is affected by gravity (rockets, boulders, sniperbullets)
         PROJECTILE_PROPERTY_GRAVITY = toBit(2),
         /// Add new projectile properties above
-        COUNT = toBit(10)
+        COUNT
     };
 
     Projectile(ProjectileType type);

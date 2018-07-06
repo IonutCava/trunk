@@ -40,12 +40,12 @@ namespace Divide {
 class ParticleData {
    public:
     enum class Properties : U32 {
-        PROPERTIES_POS = toBit(0),
-        PROPERTIES_VEL = toBit(1),
-        PROPERTIES_ACC = toBit(2),
-        PROPERTIES_COLOR = toBit(3),
-        PROPERTIES_COLOR_TRANS = toBit(4),
-        COUNT = toBit(5)
+        PROPERTIES_POS = toBit(1),
+        PROPERTIES_VEL = toBit(2),
+        PROPERTIES_ACC = toBit(3),
+        PROPERTIES_COLOR = toBit(4),
+        PROPERTIES_COLOR_TRANS = toBit(5),
+        COUNT
     };
     /// helper array used for sorting
     vectorImpl<U32> _indices;

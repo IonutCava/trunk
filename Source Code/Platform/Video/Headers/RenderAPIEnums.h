@@ -86,7 +86,7 @@ enum class RenderStage : U32 {
     REFLECTION = 1,
     DISPLAY = 2,
     Z_PRE_PASS = 3,
-    COUNT = 4
+    COUNT
 };
 
 enum class ClipPlaneIndex : U32 {

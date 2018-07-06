@@ -186,6 +186,7 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
                   });
 
         for (GenericDrawCommand& cmd : tempCommands) {
+            cmd.renderGeometry(renderable->renderGeometry());
             cmd.renderWireframe(renderable->renderWireframe());
             cmd.stateHash(drawStateHash);
             cmd.shaderProgram(drawShader);
@@ -199,6 +200,7 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
          GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS) &&
         _planeInView) {
         GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 1);
+        cmd.renderGeometry(renderable->renderGeometry());
         cmd.renderWireframe(renderable->renderWireframe());
         cmd.stateHash(drawStateHash);
         cmd.shaderProgram(drawShader);

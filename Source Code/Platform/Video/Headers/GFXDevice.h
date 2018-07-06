@@ -288,16 +288,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& color);
     /// Renders the result of plotting the specified 3D graph
     void plot3DGraph(const Util::GraphPlot3D& plot3D, const vec4<U8>& color);
-    /// Some Scene Node Types are excluded from certain operations (lights
-    /// triggers, etc)
-    inline bool excludeFromStateChange(const SceneNodeType& currentType) {
-        return (_stateExclusionMask & to_int(currentType)) ==
-               to_int(currentType);
-    }
-
-    inline void setStateChangeExclusionMask(I32 stateMask) {
-        _stateExclusionMask = stateMask;
-    }
 
     /// Get the entire list of clipping planes
     inline const PlaneList& getClippingPlanes() const { return _clippingPlanes; }
@@ -487,7 +477,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     RenderAPIWrapper* _api;
     RenderStage _renderStage;
-    I32 _stateExclusionMask;
     bool _drawDebugAxis;
     bool _viewportUpdate;
     vectorImpl<Line> _axisLines;

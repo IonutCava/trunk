@@ -29,7 +29,6 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
 SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
     : GUIDWrapper(),
       _node(node),
-      _renderPasses(0),
       _elapsedTime(0ULL),
       _parent(nullptr),
       _loaded(true),
@@ -46,7 +45,8 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
       _updateTimer(Time::ElapsedMilliseconds()),
       _childQueue(0),
       _bbAddExclusionList(0),
-      _usageContext(UsageContext::NODE_DYNAMIC) {
+      _usageContext(UsageContext::NODE_DYNAMIC)
+{
     assert(_node != nullptr);
 
     setName(name);
@@ -67,6 +67,8 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
             *this));
+
+    _renderPasses.fill(0);
 }
 
 /// If we are destroying the current graph node
@@ -303,7 +305,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     if (_firstDraw) {
         _firstDraw = false;
-        _renderPasses = 1;
         if (getParent()) {
             if (getComponent<AnimationComponent>()) {
                 getComponent<AnimationComponent>()->resetTimers();
@@ -369,7 +370,7 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
         }
     }
 
-    return (_renderPasses++ >= 3);
+    return (_renderPasses[to_uint(renderStage)]++ >= 3);
 }
 
 void SceneGraphNode::setInView(const bool state) {

@@ -43,6 +43,7 @@
 #include <type_traits>
 #include <array>
 #include <memory>
+#include <bitset>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #if defined(OS_WINDOWS)
@@ -124,11 +125,13 @@ I32 to_int(const T value) {
 /// masks
 template<typename T>
 constexpr T toBit(T X) {
+    //static_assert(X > 0, "toBit(0) is currently disabled!");
     return 1 << X;
 }
 
 template<typename T>
 T to_bitwise(T X) {
+    assert(X > 0 && "to_bitwise(0) is currently disabled!");
     return 1 << X;
 }
 

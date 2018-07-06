@@ -46,7 +46,7 @@ class Weapon {
         /// ranged weapons (guns, bows etc)
         WEAPON_TYPE_RANGED = toBit(2),
         /// Place all weapon types above this
-        COUNT = toBit(10)
+        COUNT
     };
 
     enum class WeaponProperty : U32 {
@@ -55,7 +55,7 @@ class Weapon {
         /// this weapon does not us ammo
         WEAPON_PROPERTY_WITHOUT_AMMO = toBit(2),
         /// Place all weapon types above this
-        COUNT = toBit(10)
+        COUNT
     };
 
     Weapon(WeaponType type);
