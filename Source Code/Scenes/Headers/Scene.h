@@ -225,8 +225,8 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut);
 
     //Return true if input was consumed
-    bool mouseMoved(const Input::MouseEvent& arg);
-
+    virtual bool mouseMoved(const Input::MouseEvent& arg);
+    
     U8 getSceneIndexForPlayer(PlayerIndex idx) const;
     const Player_ptr& getPlayerForIndex(PlayerIndex idx) const;
 

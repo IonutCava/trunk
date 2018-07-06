@@ -818,10 +818,14 @@ bool Scene::loadResources(bool continueOnErrors) {
 }
 
 void Scene::postLoad() {
+    static stringImpl originalTitle = _context.app().windowManager().getActiveWindow().title();
+
     _sceneGraph->postLoad();
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
     initializeAI(true);
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
+
+    _context.app().windowManager().getActiveWindow().title(originalTitle + " - " + getName());
 }
 
 void Scene::postLoadMainThread() {
