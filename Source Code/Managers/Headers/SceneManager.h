@@ -22,6 +22,7 @@
 #include "Scenes/Headers/Scene.h"
 #include <boost/functional/factory.hpp>
 
+enum RenderStage;
 DEFINE_SINGLETON(SceneManager)
 
 public:
@@ -32,17 +33,19 @@ public:
 	inline void   setActiveScene(Scene* const scene) { SAFE_UPDATE(_activeScene, scene); }
 
 	/*Base Scene Operations*/
-	void render(RENDER_STAGE stage);
+	void render(const RenderStage& stage);
 	inline void idle()                                { _activeScene->idle(); }
-	//inline bool unload()                              { return _activeScene->unload(); }
+	//inline bool unload()                             { return _activeScene->unload(); }
 	bool load(const std::string& name, const vec2<U16>& resolution,  Camera* const camera);
+	///Check if the scene was loaded properly
+	inline bool checkLoadFlag()                       {return _activeScene->checkLoadFlag();}
 	///Create AI entities, teams, NPC's etc
 	inline bool initializeAI(bool continueOnErrors)   { return _activeScene->initializeAI(continueOnErrors); }
 	///Destroy all AI entities, teams, NPC's createa in "initializeAI"
 	///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
 	inline bool deinitializeAI(bool continueOnErrors) { return _activeScene->deinitializeAI(continueOnErrors); }
 	/// Update animations, network data, sounds, triggers etc.
-	inline void updateCamera(Camera* const camera)  { _activeScene->updateCamera(camera); }
+	inline void updateCamera(Camera* const camera)  { _activeScene->renderState()->updateCamera(camera); }
 	inline void updateSceneState(D32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
 	inline void preRender()                         { _activeScene->preRender(); }
 	///Gather input events and process them in the current scene
@@ -59,7 +62,7 @@ public:
 	}
 
 private:
-	typedef unordered_map<std::string, Scene*> SceneMap;
+	typedef Unordered_map<std::string, Scene*> SceneMap;
 
 	SceneManager();
 	~SceneManager();
@@ -69,7 +72,7 @@ private:
 	///Scene pool
 	SceneMap _sceneMap;
 	///Scene_Name -Scene_Factory table
-	unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
+	Unordered_map<std::string, boost::function<Scene*()> > _sceneFactory;
 
 END_SINGLETON
 

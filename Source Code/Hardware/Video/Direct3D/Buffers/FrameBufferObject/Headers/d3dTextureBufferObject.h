@@ -26,8 +26,7 @@ public:
 	d3dTextureBufferObject(bool cubeMap = false);
 	~d3dTextureBufferObject() {Destroy();}
 
-	bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8, 
-									   IMAGE_FORMATS formatEnum = RGBA) {return true;}
+	bool Create(U16 width, U16 height, U8 imageLayers = 0) {return true;}
 				
 	void Destroy() {}
 

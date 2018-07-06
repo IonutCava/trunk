@@ -1,5 +1,8 @@
 #include "Headers/SceneManager.h"
+
 #include "SceneList.h"
+#include "Rendering/Headers/Renderer.h"
+#include "Geometry/Importer/Headers/DVDConverter.h"
 
 SceneManager::SceneManager() : _activeScene(NULL){
 }
@@ -13,10 +16,16 @@ SceneManager::~SceneManager(){
 		SAFE_DELETE(it.second);
 	}
 	_sceneMap.clear();
+	///Destroy the model loader;
+	DVDConverter::getInstance().DestroyInstance();
 }
 
 bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolution, Camera* const camera){
 	PRINT_FN(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
+	//Initialize the model importer:
+	if(!DVDConverter::getInstance().init()){
+		return false;
+	}
 	XML::loadScene(sceneName,*this);
 	if(!_activeScene){
 		return false;
@@ -25,7 +34,7 @@ bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolutio
 	_activeScene->preLoad();
 	_activeScene->loadXMLAssets(); 
 	PRINT_FN(Locale::get("SCENE_MANAGER_ADD_DEFAULT_CAMERA"));
-	_activeScene->updateCamera(camera);
+	_activeScene->renderState()->updateCamera(camera);
 	return _activeScene->load(sceneName);
 }
 
@@ -42,8 +51,14 @@ Scene* SceneManager::createScene(const std::string& name){
 	return scene;
 }
 
-void SceneManager::render(RENDER_STAGE stage) {
+
+void SceneManager::render(const RenderStage& stage) {
 	GFX_DEVICE.setRenderStage(stage);
 	assert(_activeScene != NULL);
-	_activeScene->render();
+	if(_activeScene->renderCallback().empty()){
+		SceneGraph* sg = _activeScene->getSceneGraph();
+		GFX_DEVICE.render(boost::bind(&SceneGraph::update,sg),_activeScene->renderState());
+	}else{
+		GFX_DEVICE.render(_activeScene->renderCallback(),_activeScene->renderState());
+	}
 }

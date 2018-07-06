@@ -36,18 +36,21 @@ DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
 private:
 	DX_API() : RenderAPIWrapper() {}
 
-	I8   initHardware(const vec2<U16>& resolution);
+	I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv);
 	void exitRenderLoop(bool killCommand = false); 
 	void closeRenderingApi();
-	void initDevice(U32 targetFPS);
-	void changeResolution(U16 w, U16 h) {}
+	void initDevice(U32 targetFrameRate);
+	void changeResolution(U16 w, U16 h);
+	///Change the window size without reshaping window data
+	void setWindowSize(U16 w, U16 h);
+	///Change the window's position
+	void setWindowPos(U16 w, U16 h);
 	void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false);
 	void idle();
+	void flush();
+	void getMatrix(MATRIX_MODE mode, mat4<F32>& mat);
 
-	void getModelViewMatrix(mat4<F32>& mvMat);
-	void getProjectionMatrix(mat4<F32>& projMat);
-
-	inline FrameBufferObject*  newFBO(FBO_TYPE type)  {
+	inline FrameBufferObject*  newFBO(FBOType type)  {
 		switch(type){
 			case FBO_2D_DEFERRED:
 				return New d3dDeferredBufferObject(); 
@@ -62,13 +65,13 @@ private:
 	}
 
 	inline VertexBufferObject* newVBO()                                             {return New d3dVertexBufferObject();}
-	inline PixelBufferObject*  newPBO()                                             {return New d3dPixelBufferObject();}
+	inline PixelBufferObject*  newPBO(PBOType type)                                 {return New d3dPixelBufferObject(type);}
 	inline Texture2D*          newTexture2D(bool flipped = false)                   {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
 	inline TextureCubemap*     newTextureCubemap(bool flipped = false)              {return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
 	inline ShaderProgram*      newShaderProgram()                                   {return New d3dShaderProgram();}
-	inline Shader*             newShader(const std::string& name, SHADER_TYPE type) {return New d3dShader(name,type);}
+	inline Shader*             newShader(const std::string& name, ShaderType type)  {return New d3dShader(name,type);}
 	
-	void clearBuffers(U8 buffer_mask);
+	void clearBuffers(U16 buffer_mask);
 	void swapBuffers();
 	void enableFog(F32 density, F32* color);
 	
@@ -82,16 +85,14 @@ private:
 	void toggle2D(bool _2D);
 
 	void drawTextToScreen(GUIElement* const);
-	void drawCharacterToScreen(void* ,char);
 	void drawButton(GUIElement* const);
 	void drawFlash(GUIElement* const);
-	void drawConsole();
 
 	void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
-	void drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset);
+	void drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<vec3<F32> >& pointsB,const vectorImpl<vec4<F32> >& colors, const mat4<F32>& globalOffset);
 
 	void renderModel(Object3D* const model);
-	void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element);
+	void renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element);
 
 	void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback);
 
@@ -114,6 +115,7 @@ private:
 
 
 	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph);
+	bool loadInContext(const CurrentContext& context, boost::function0<void> callback);
 END_SINGLETON
 
 #endif

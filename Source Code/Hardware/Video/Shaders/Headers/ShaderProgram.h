@@ -21,7 +21,7 @@
 #include "Core/Resources/Headers/HardwareResource.h"
 
 class Shader;
-enum SHADER_TYPE;
+enum ShaderType;
 class ShaderProgram : public HardwareResource {
 
 public:
@@ -32,7 +32,7 @@ public:
 	inline U32 getId() { return _shaderProgramId; }
 
 	virtual void attachShader(Shader* shader) = 0;
-	std::vector<Shader* > getShaders(SHADER_TYPE type);
+	vectorImpl<Shader* > getShaders(ShaderType type);
 
 	///Attributes
 	virtual void Attribute(const std::string& ext, D32 value) = 0;
@@ -45,11 +45,15 @@ public:
 	virtual void Uniform(const std::string& ext, F32 value) = 0 ;
 	virtual void Uniform(const std::string& ext, const vec2<F32>& value) = 0;
 	virtual void Uniform(const std::string& ext, const vec2<I32>& value) = 0;
+	virtual void Uniform(const std::string& ext, const vec2<U16>& value) = 0;
 	virtual void Uniform(const std::string& ext, const vec3<F32>& value) = 0;
 	virtual void Uniform(const std::string& ext, const vec4<F32>& value) = 0;
 	virtual void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false) = 0;
 	virtual void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false) = 0;
-	virtual void Uniform(const std::string& ext, const std::vector<mat4<F32> >& values, bool rowMajor = false) = 0;
+	virtual void Uniform(const std::string& ext, const vectorImpl<I32 >& values) = 0;
+	virtual void Uniform(const std::string& ext, const vectorImpl<F32 >& values) = 0;
+	virtual void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) = 0;
+	
 	///Uniform Texture
 	virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
 
@@ -62,8 +66,10 @@ public:
 
 	inline bool isBound() {return _bound;}
 
+	inline void setDefinesList(const std::string& definesList) {_definesList = definesList;}
+
 protected:
-	ShaderProgram() : HardwareResource(), _compiled(false), _shaderProgramId(-1) {}
+	ShaderProgram() : HardwareResource(), _compiled(false), _shaderProgramId(-1), _maxCombinedTextureUnits(0) {}
 
 	virtual void validate() = 0;
 	virtual void link() = 0;
@@ -75,8 +81,11 @@ protected:
 protected:
 	bool _compiled;
 	bool _bound;
+	I32  _maxCombinedTextureUnits;
 	U32 _shaderProgramId;
-	std::vector<Shader* > _shaders;
+	///A list of preprocessor defines,comma separated, if needed
+	std::string _definesList;
+	vectorImpl<Shader* > _shaders;
 	static U32 _prevShaderProgramId;
 	static U32 _newShaderProgramId;
 };

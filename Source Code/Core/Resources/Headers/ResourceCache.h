@@ -19,7 +19,7 @@
 #define RESOURCE_MANAGER_H_
 
 #include "ResourceLoader.h"
-#include "ResourceDescriptor.h"
+#include "Hardware/Platform/Headers/Thread.h"
 
 ///Resource Cache responsibilities:
 /// - keep track of already loaded resources
@@ -48,8 +48,11 @@ public:
 	Resource* const find(const std::string& name);
 	bool scheduleDeletion(Resource* resource, bool force = false);
 	void add(const std::string& name, Resource* const resource);
+	bool load(Resource* const res, const std::string& name);
+	bool loadHW(Resource* const res, const std::string& name);
 
 protected:
+	ResourceCache();
 	~ResourceCache();
 	///Empty the entire cache of resources
 	void Destroy();
@@ -60,8 +63,9 @@ protected:
 	///multithreaded resource creation
 	Lock _creationMutex;
 
-	typedef unordered_map<std::string, Resource*> ResourceMap;
+	typedef Unordered_map<std::string, Resource*> ResourceMap;
 	ResourceMap _resDB;
+	boost::threadpool::pool* _loadingPool;
 
 
 

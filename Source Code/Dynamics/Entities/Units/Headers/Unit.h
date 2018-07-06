@@ -25,7 +25,7 @@ class SceneGraphNode;
 class Unit {
 public:
 	/// Currently supported unit types
-	enum UNIT_TYPE{
+	enum UnitType{
 		/// "Living beings"
 		UNIT_TYPE_CHARACTER,
 		/// e.g. Cars, planes, ships etc
@@ -34,7 +34,7 @@ public:
 		UNIT_TYPE_PLACEHOLDER
 	};
 
-	Unit(UNIT_TYPE type, SceneGraphNode* const node);
+	Unit(UnitType type, SceneGraphNode* const node);
 	~Unit();
 
 	/// moveTo makes the unit follow a path from it's current position to the targets position
@@ -59,13 +59,13 @@ public:
 	/// Get the units current movement tolerance
 	inline F32  getMovementTolerance()                      {return _moveTolerance;}
 	/// Set unit type
-	inline void setUnitType(UNIT_TYPE type) {_type = type;}
+	inline void setUnitType(UnitType type) {_type = type;}
 	/// Get unit type
-	inline UNIT_TYPE getUnitType()          {return _type;}
+	inline UnitType getUnitType()          {return _type;}
 
 private:
 	/// Unit type
-	UNIT_TYPE _type;
+	UnitType _type;
 	/// Movement speed
 	F32 _moveSpeed;
 	/// acceptable distance from target

@@ -23,7 +23,7 @@
 
 class d3dShader : public Shader{
 public:
-	d3dShader(const std::string& name, SHADER_TYPE type) : Shader(name,type) {}
+	d3dShader(const std::string& name, ShaderType type) : Shader(name,type) {}
 	~d3dShader(){}
 
 	bool load(const std::string& source){return true;}

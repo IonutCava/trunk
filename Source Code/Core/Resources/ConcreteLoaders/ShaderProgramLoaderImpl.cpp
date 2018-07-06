@@ -1,4 +1,5 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Headers/ParamHandler.h"
 
@@ -13,6 +14,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
 	else
 		ptr->setResourceLocation(_descriptor.getResourceLocation());
 
+	ptr->setDefinesList(_descriptor.getPropertyListString());
 	if(!ptr) return NULL;
 	if(!load(ptr,_descriptor.getName())) return NULL;
 

@@ -5,41 +5,28 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/AIManager.h"
 #include "Rendering/Headers/Frustum.h"
 #include "GUI/Headers/GUI.h"
 
 REGISTER_SCENE(AITenisScene);
 
-//begin copy-paste: randarea scenei
-void AITenisScene::render(){
-	Sky& sky = Sky::getInstance();
-
-	sky.setParams(_camera->getEye(),_sunVector,false,true,true);
-	sky.draw();
-
-	_sceneGraph->render();
-}
-//end copy-paste
-
 void AITenisScene::preRender(){
 	vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-	_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+	_sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
-							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
-							0.0f );
+							-sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-	LightManager::getInstance().getLight(0)->setLightProperties(LIGHT_POSITION,_sunVector);
-
+	//LightManager::getInstance().getLight(0)->setPosition(_sunvector);
+	getSkySGN(0)->getNode<Sky>()->setRenderingOptions(renderState()->getCamera()->getEye(),_sunvector);
 }
 
 void AITenisScene::processEvents(F32 time){
-	F32 FpsDisplay = 0.3f;
+	time /= 1000.0f;
+	F32 FpsDisplay = 0.5f; ///<half a second display
 	if (time - _eventTimers[0] >= FpsDisplay){
-		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
+		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f. FrameTime: %3.2f", Framerate::getInstance().getFps(),1000.0f/Framerate::getInstance().getFps());
 		GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
 		_eventTimers[0] += FpsDisplay;
 	}
@@ -210,38 +197,42 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 
 void AITenisScene::processInput(){
 	
-	if(_angleLR)	_camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor()/5);
-	if(_angleUD)	_camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor()/5);
-	if(_moveFB || _moveLR){
-		if(_moveFB) _camera->MoveForward(_moveFB * Framerate::getInstance().getSpeedfactor());
-		if(_moveLR) _camera->MoveStrafe(_moveLR * Framerate::getInstance().getSpeedfactor());
+	if(state()->_angleLR)	renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR/5);
+	if(state()->_angleUD)	renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR/5);
+	if(state()->_moveFB || state()->_moveLR){
+		if(state()->_moveFB) renderState()->getCamera()->MoveForward(state()->_moveFB * FRAME_SPEED_FACTOR);
+		if(state()->_moveLR) renderState()->getCamera()->MoveStrafe(state()->_moveLR * FRAME_SPEED_FACTOR);
 	}
 }
 
 bool AITenisScene::load(const std::string& name){
+	///Load scene resources
+	SCENE_LOAD(name,true,true);	
 
-	bool state = false;
 	//Add a light
 	Light* light = addDefaultLight();
-	light->setLightProperties(LIGHT_AMBIENT,_white);
-	light->setLightProperties(LIGHT_DIFFUSE,_white);
-	light->setLightProperties(LIGHT_SPECULAR,_white);
-												
-	///Load scene resources
-	state = loadResources(true);	
+	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
+	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
+	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
+	addDefaultSky();												
 	
+//	ResourceDescriptor tempLight1("Light omni");
+//	tempLight1.setId(0);
+//	tempLight1.setEnumValue(LIGHT_TYPE_POINT);
+//	light1 = CreateResource<Light>(tempLight1);
+//	addLight(light1);
+
 	//Position camera
-	_camera->RotateX(RADIANS(45));
-	_camera->RotateY(RADIANS(25));
-	_camera->setEye(vec3<F32>(14,5.5f,11.5f));
+	renderState()->getCamera()->RotateX(RADIANS(45));
+	renderState()->getCamera()->RotateY(RADIANS(25));
+	renderState()->getCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
 	
 	//------------------------ Load up game elements -----------------------------///
 	_net = _sceneGraph->findNode("Net");
 	_floor = _sceneGraph->findNode("Floor");
 	_floor->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
 
-	state = loadEvents(true);
-	return state;
+	return loadState;
 }
 
 bool AITenisScene::initializeAI(bool continueOnErrors){
@@ -326,8 +317,8 @@ bool AITenisScene::deinitializeAI(bool continueOnErrors){
 bool AITenisScene::loadResources(bool continueOnErrors){
 
 	///Create our ball
-	ResourceDescriptor minge("Tenis Ball");
-	_ball = CreateResource<Sphere3D>(minge);
+	ResourceDescriptor ballDescriptor("Tenis Ball");
+	_ball = CreateResource<Sphere3D>(ballDescriptor);
 	_ballSGN = addGeometry(_ball);
 	_ball->setResolution(16);
 	_ball->setRadius(0.3f);
@@ -337,59 +328,53 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 	_ball->getMaterial()->setShininess(0.2f);
 	_ball->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
 
-	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(_cachedResolution.width-220,
-															 _cachedResolution.height/1.1f),
+	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(renderState()->cachedResolution().width-220,
+															 renderState()->cachedResolution().height/1.1f),
 													     vec2<F32>(100,25),
 														 vec3<F32>(0.65f,0.65f,0.65f),
 														 boost::bind(&AITenisScene::startGame,this));
 
-	GUI::getInstance().addText("Team1Score",vec3<F32>(_cachedResolution.width - 250,
-												      _cachedResolution.height/1.3f, 0),
-											 BITMAP_8_BY_13,vec3<F32>(0,0.8f,0.8f), "Team 1 Score:: %d",0);
+	GUI::getInstance().addText("Team1Score",vec2<F32>(renderState()->cachedResolution().width - 250,
+												      renderState()->cachedResolution().height/1.3f),
+													  Font::DIVIDE_DEFAULT,vec3<F32>(0,0.8f,0.8f), "Team 1 Score: %d",0);
 
-	GUI::getInstance().addText("Team2Score",vec3<F32>(_cachedResolution.width - 250,
-													  _cachedResolution.height/1.5f, 0),
-								             BITMAP_8_BY_13,vec3<F32>(0.2f,0.8f,0), "Team 2 Score:: %d",0);
+	GUI::getInstance().addText("Team2Score",vec2<F32>(renderState()->cachedResolution().width - 250,
+													  renderState()->cachedResolution().height/1.5f),
+												      Font::DIVIDE_DEFAULT,vec3<F32>(0.2f,0.8f,0), "Team 2 Score: %d",0);
 
-	GUI::getInstance().addText("Message",vec3<F32>(_cachedResolution.width - 250,
-		                                           _cachedResolution.height/1.7f, 0),
-									   BITMAP_8_BY_13,vec3<F32>(0,1,0), "");
+	GUI::getInstance().addText("Message",vec2<F32>(renderState()->cachedResolution().width - 250,
+		                                           renderState()->cachedResolution().height/1.7f),
+												   Font::DIVIDE_DEFAULT,vec3<F32>(0,1,0), "");
 
 	GUI::getInstance().addText("fpsDisplay",              //Unique ID
-		                       vec3<F32>(60,60,0),        //Position
-							   BITMAP_8_BY_13,            //Font
+		                       vec2<F32>(60,60),          //Position
+							   Font::DIVIDE_DEFAULT,      //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),//Color
 							   "FPS: %s",0);              //Text and arguments
 
 	GUI::getInstance().addText("RenderBinCount",
-								vec3<F32>(60,70,0),
-								BITMAP_8_BY_13,
+								vec2<F32>(60,70),
+								Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 	_eventTimers.push_back(0.0f); //Fps
 	return true;
 }
 
-bool AITenisScene::unload(){
-	Sky::getInstance().DestroyInstance();
-	return Scene::unload();
-}
-
-
 void AITenisScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
 		case OIS::KC_W:
-			_moveFB = 0.25f;
+			state()->_moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			_moveLR = 0.25f;
+			state()->_moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			_moveFB = -0.25f;
+			state()->_moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			_moveLR = -0.25f;
+			state()->_moveLR = -0.25f;
 			break;
 		default:
 			break;
@@ -401,11 +386,11 @@ void AITenisScene::onKeyUp(const OIS::KeyEvent& key){
 	switch(key.key)	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			_moveFB = 0;
+			state()->_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			_moveLR = 0;
+			state()->_moveLR = 0;
 			break;
 		case OIS::KC_F1:
 			_sceneGraph->print();
@@ -419,18 +404,18 @@ void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
 
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
-			_angleLR = -0.15f;
+			state()->_angleLR = -0.15f;
 		else if(_prevMouse.x - key.state.X.abs < -1 )
-			_angleLR = 0.15f;
+			state()->_angleLR = 0.15f;
 		else
-			_angleLR = 0;
+			state()->_angleLR = 0;
 
 		if(_prevMouse.y - key.state.Y.abs > 1 )
-			_angleUD = -0.1f;
+			state()->_angleUD = -0.1f;
 		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			_angleUD = 0.1f;
+			state()->_angleUD = 0.1f;
 		else
-			_angleUD = 0;
+			state()->_angleUD = 0;
 	}
 	
 	_prevMouse.x = key.state.X.abs;
@@ -447,7 +432,7 @@ void AITenisScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID 
 	Scene::onMouseClickUp(key,button);
 	if(button == 0)	{
 		_mousePressed = false;
-		_angleUD = 0;
-		_angleLR = 0;
+		state()->_angleUD = 0;
+		state()->_angleLR = 0;
 	}
 }

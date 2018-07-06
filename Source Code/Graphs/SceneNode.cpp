@@ -1,65 +1,73 @@
 #include "Headers/SceneNode.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Mesh.h" 
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Managers/Headers/ShaderManager.h"
 
-SceneNode::SceneNode(SCENE_NODE_TYPE type) : Resource(),
-											 _material(NULL),
-											 _drawState(true),
-											 _noDefaultMaterial(false),
-											 _exclusionMask(0),
-											 _selected(false),
-											 _shadowStateBlock(NULL),
-											 _type(type)
+SceneNode::SceneNode(SceneNodeType type) : Resource(),
+										   _material(NULL),
+										   _selected(false),
+										   _type(type),
+										   _lodLevel(0),
+										   _LODcount(1), ///<Defaults to 1 LOD level
+										   _physicsAsset(NULL)
 {
 }
 
-SceneNode::SceneNode(std::string name, SCENE_NODE_TYPE type) : Resource(name),
-															   _material(NULL),
-															   _drawState(true),
-															   _noDefaultMaterial(false),
-															   _exclusionMask(0),
-															   _selected(false),
-															   _shadowStateBlock(NULL),
-															   _type(type)
+SceneNode::SceneNode(std::string name, SceneNodeType type) : Resource(name),
+															 _material(NULL),
+															 _selected(false),
+															 _type(type),
+															 _lodLevel(0),
+															 _LODcount(1), ///<Defaults to 1 LOD level
+															 _physicsAsset(NULL)
 {
 }
 
 SceneNode::~SceneNode() {
-	SAFE_DELETE(_shadowStateBlock);
+	SAFE_DELETE(_physicsAsset);
 }
 
 void SceneNode::onDraw(){
 	Material* mat = getMaterial();
 	if(mat){
-		mat->computeLightShaders();
+		mat->computeShader(false);
+		mat->computeShader(false,SHADOW_STAGE);
+	}
+}
+void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
+	///draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifcats
+	BoundingBox& bb = sgn->getBoundingBox();
+	///Draw the bounding box if it's always on or if the scene demands it
+	if(bb.getVisibility() || GET_ACTIVE_SCENE()->renderState()->drawBBox()){
+		drawBoundingBox(sgn);
 	}
 }
 
-void SceneNode::postDraw(){
-	//Nothing yet
-}
-
-bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
+bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere){
 
 	Frustum& frust = Frustum::getInstance();
 	Scene* activeScene = GET_ACTIVE_SCENE();
-	vec3<F32> center = boundingBox.getCenter();
-	F32 radius = (boundingBox.getMax()-center).length();	
+	vec3<F32> center = sphere.getCenter();
+	F32 radius = sphere.getRadius();	
 	F32 halfExtent = boundingBox.getHalfExtent().length();
+	vec3<F32> eyeToNode    = center - frust.getEyePos();
+	F32       cameraDistance = eyeToNode.length();
 
 	if(distanceCheck){
-		vec3<F32> vEyeToChunk = center - frust.getEyePos();
-		if((vEyeToChunk.length() + halfExtent) > activeScene->getGeneralVisibility()){
+		if((cameraDistance + halfExtent) > activeScene->state()->getGeneralVisibility()){
 			return false;
 		}
 	}
 
-	vec3<F32> eye = frust.getEyePos();
+	U8 lod = 0;
+	if(cameraDistance > SCENE_NODE_LOD0)		lod = 2;
+	else if(cameraDistance > SCENE_NODE_LOD1)	lod = 1;
+	_lodLevel = lod;
+
+    vec3<F32>& eye = frust.getEyePos();
 	if(!boundingBox.ContainsPoint(eye)){
 		I8 resSphereInFrustum = frust.ContainsSphere(center, radius);
 		switch(resSphereInFrustum) {
@@ -77,7 +85,7 @@ bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
 
 Material* SceneNode::getMaterial(){
 	if(_material == NULL){
-		if(!_noDefaultMaterial){
+		if(!_renderState._noDefaultMaterial){
 			ResourceDescriptor defaultMat("defaultMaterial");
 			_material = CreateResource<Material>(defaultMat);
 			REGISTER_TRACKED_DEPENDENCY(_material);
@@ -109,7 +117,7 @@ void SceneNode::clearMaterials(){
 	setMaterial(NULL);
 }
 
-void SceneNode::prepareMaterial(SceneGraphNode const* const sgn){
+void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	if(!_material/* || !sgn*/) return;
 	if(GFX_DEVICE.getRenderStage() == REFLECTION_STAGE){
 		SET_STATE_BLOCK(_material->getRenderState(REFLECTION_STAGE));
@@ -142,22 +150,6 @@ void SceneNode::prepareMaterial(SceneGraphNode const* const sgn){
 	
 
 	s->bind();
-
-	s->Uniform("hasAnimations",false);
-	s->Uniform("shadowPass", false);
-	/// For 3D objects
-	if(getType() == TYPE_OBJECT3D && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")){
-		Object3D* obj = dynamic_cast<Object3D* >(this);
-		/// For Mesh objects
-		if(obj->getType() == Object3D::SUBMESH){
-			/// Apply bone transforms
-			std::vector<mat4<F32> >& transforms = dynamic_cast<SubMesh* >(obj)->GetTransforms();
-			if(!transforms.empty()){
-				s->Uniform("hasAnimations",	true);	
-				s->Uniform("boneTransforms", transforms);
-			}
-		}
-	}
 	
 	if(baseTexture)   {
 		s->UniformTexture("texDiffuse0",0);
@@ -167,12 +159,13 @@ void SceneNode::prepareMaterial(SceneGraphNode const* const sgn){
 		s->UniformTexture("texDiffuse1",1);
 		s->Uniform("texDiffuse1Op", (I32)_material->getTextureOperation(Material::TEXTURE_SECOND));
 	}
-	if(bumpTexture){
+
+	if(bumpTexture && _material->getBumpMethod() != Material::BUMP_NONE){
 		s->UniformTexture("texBump",2);
-		s->Uniform("mode", 1);
-	}else{
-		s->Uniform("mode",0);
+		s->Uniform("parallax_factor", 1.f);
+		s->Uniform("relief_factor", 1.f);
 	}
+
 	if(opacityMap){
 		s->UniformTexture("opacityMap",3);
 		s->Uniform("hasOpacity", true);
@@ -188,16 +181,24 @@ void SceneNode::prepareMaterial(SceneGraphNode const* const sgn){
 	s->Uniform("material",_material->getMaterialMatrix());
 	s->Uniform("opacity", _material->getOpacityValue());
 	s->Uniform("textureCount",count);
-	s->Uniform("parallax_factor", 1.f);
-	s->Uniform("relief_factor", 1.f);
+	s->Uniform("bumpMapLightId",0);
 	if(LightManager::getInstance().shadowMappingEnabled()){
 		s->Uniform("enable_shadow_mapping",_material->getReceivesShadows());
+		s->Uniform("lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
+		s->Uniform("lightBleedBias", 0.001f);
 	}else{
-		s->Uniform("enable_shadow_mapping",0);
+		s->Uniform("enable_shadow_mapping",false);
 	}
-	s->Uniform("windDirectionX", activeScene->getWindDirX());
-	s->Uniform("windDirectionZ", activeScene->getWindDirZ());
-	s->Uniform("windSpeed", activeScene->getWindSpeed());
+	s->Uniform("light_count", LightManager::getInstance().getLightCountForCurrentNode());
+	vectorImpl<I32>& types = LightManager::getInstance().getLightTypesForCurrentNode();
+	s->Uniform("lightType",types);
+	s->Uniform("windDirection",vec2<F32>(activeScene->state()->getWindDirX(),activeScene->state()->getWindDirZ()));
+	s->Uniform("windSpeed", activeScene->state()->getWindSpeed());
+	setSpecialShaderConstants(s);
+}
+
+void SceneNode::setSpecialShaderConstants(ShaderProgram* const shader) {
+	shader->Uniform("hasAnimations",false);
 }
 
 void SceneNode::releaseMaterial(){
@@ -217,56 +218,31 @@ void SceneNode::releaseMaterial(){
 }
 
 void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
-	if(getType() != TYPE_OBJECT3D) return;
+	if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN) return;
 	/// general shadow descriptor for objects without material
 	if(!_material) { 
-		if(!_shadowStateBlock){
-			RenderStateBlockDescriptor shadowDesc;
-			/// Cull back faces for shadow rendering
-			shadowDesc.setCullMode(CULL_MODE_CCW);
-			shadowDesc._fixedLighting = false;
-			//shadowDesc._zBias = -0.0002f;
-			shadowDesc.setColorWrites(false,false,false,false);
-			_shadowStateBlock = GFX_DEVICE.createStateBlock(shadowDesc);
-		}
-		SET_STATE_BLOCK(_shadowStateBlock);
+		SET_STATE_BLOCK(_renderState.getShadowStateBlock());
 
 	}else{
 
 		SET_STATE_BLOCK(_material->getRenderState(SHADOW_STAGE));
 		GFX_DEVICE.setMaterial(_material);
-		ShaderProgram* s = _material->getShaderProgram();
+		ShaderProgram* s = _material->getShaderProgram(SHADOW_STAGE);
 
 		if(s){
 			Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
 
 			s->bind();
-			s->Uniform("mode", 0);
-			s->Uniform("shadowPass", true);
-		
+
 			if(opacityMap){
-				opacityMap->Bind(3);
-				s->UniformTexture("opacityMap",3);
+				opacityMap->Bind(0);
+				s->UniformTexture("opacityMap",0);
 				s->Uniform("hasOpacity", true);
 			}else{
 				s->Uniform("hasOpacity", false);
 			}
-			/// For 3D objects: Animate them so shadows are also updated
-			if(getType() == TYPE_OBJECT3D){
-				Object3D* obj = dynamic_cast<Object3D* >(this);
-				/// For Mesh objects
-				if(obj->getType() == Object3D::SUBMESH){
-					/// Apply bone transforms
-					std::vector<mat4<F32> >& transforms = dynamic_cast<SubMesh* >(obj)->GetTransforms();
-					if(transforms.empty()){
-						s->Uniform("hasAnimations",	false);	
-					}else{
-						///If we have transforms, use animations
-						s->Uniform("hasAnimations",	true);	
-						s->Uniform("boneTransforms", transforms);
-					}
-				}
-			}
+			s->Uniform("opacity", _material->getOpacityValue());
+			setSpecialShaderConstants(s);
 		}
 	}
 }
@@ -275,7 +251,7 @@ void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
 void SceneNode::releaseShadowMaterial(){
 	if(!_material) return;
 	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-	if(opacityMap) opacityMap->Unbind(3);
+	if(opacityMap) opacityMap->Unbind(0);
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
@@ -289,12 +265,8 @@ void SceneNode::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	sgn->updateBB(false);
 }
 
-void SceneNode::updateTransform(SceneGraphNode* const sgn) {
-}
-
 bool SceneNode::unload(){
 	clearMaterials();
-
 	return true;
 }
 
@@ -305,23 +277,6 @@ void SceneNode::drawBoundingBox(SceneGraphNode* const sgn){
 	if(tempTransform){
 		boundingBoxTransformMatrix = tempTransform->getGlobalMatrix();
 	}
-	///This is the only immediate mode draw call left in the rendering api's
+
 	GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),boundingBoxTransformMatrix);
-}
-
-void SceneNode::removeFromDrawExclusionMask(I32 stageMask) {
-	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
-	_exclusionMask &= ~stageMask;
-}
-
-void SceneNode::addToDrawExclusionMask(I32 stageMask) {
-	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
-	_exclusionMask |= static_cast<RENDER_STAGE>(stageMask);
-}
-
-bool SceneNode::getDrawState(RENDER_STAGE currentStage)  const {
-	return (_exclusionMask & currentStage) == currentStage ? false : true;
-}
-
-void SceneNode::sceneUpdate(D32 sceneTime){
 }

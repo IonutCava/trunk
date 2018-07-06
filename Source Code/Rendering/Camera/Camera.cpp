@@ -6,66 +6,93 @@
 
 void Camera::SaveCamera(){
 
-	tSaveVectors[0] = vEye;
-	tSaveVectors[1] = vCenter;
-	tSaveVectors[2] = vViewDir;
-	tSaveVectors[3] = vLeftDir;
-	tSaveVectors[4] = vUp;
+	_savedVectors[0] = _eye;
+	_savedVectors[1] = _center;
+	_savedVectors[2] = _view;
+	_savedVectors[3] = _left;
+	_savedVectors[4] = _up;
 
-	tSaveFloats[0] = fAngleX;
-	tSaveFloats[1] = fAngleY;
+	_savedFloats[0] = _angleX;
+	_savedFloats[1] = _angleY;
 
-	bSaved = true;
+	_saved = true;
 }
 
 void Camera::RestoreCamera() {
 
-	if(bSaved) {
-		vEye = tSaveVectors[0];
-		vCenter = tSaveVectors[1];
-		vViewDir = tSaveVectors[2];
-		vLeftDir = tSaveVectors[3];
-		vUp = tSaveVectors[4];
+	if(_saved) {
+		_eye    = _savedVectors[0];
+		_center = _savedVectors[1];
+		_view   = _savedVectors[2];
+		_left   = _savedVectors[3];
+		_up     = _savedVectors[4];
 
-		fAngleX = tSaveFloats[0];
-		fAngleY = tSaveFloats[1];
+		_angleX = _savedFloats[0];
+		_angleY = _savedFloats[1];
 	}
 
-	bSaved = false;
+	_saved = false;
 }
 
 
-Camera::Camera() : Resource() {
-
-	fAngleX	=	3.0f;
-	fAngleY	=	M_PI/2;
-
-	vUp			= vec3<F32>(0.0f, 1.0f, 0.0f);
-	vEye		= vec3<F32>(0.0f, 0.0f, 0.0f);
-	bSaved = false;
+Camera::Camera(CameraType type) : Resource(),
+				   _saved(false),
+				   _angleX(3.0f),
+				   _angleY(M_PI/2),
+				   _type(type)
+{
+	_up			= vec3<F32>(0.0f, 1.0f, 0.0f);
+	_eye		= vec3<F32>(0.0f, 0.0f, 0.0f);
+	_saved = false;
 	Refresh();
 }
 
 
 void Camera::Refresh() {	
 
-	switch(eType) {
+	switch(_type) {
 	case FREE_FLY:
-		vViewDir.x = cosf(fAngleX) * sinf(fAngleY);
-		vViewDir.y = cosf(fAngleY);
-		vViewDir.z = sinf(fAngleX) * sinf(fAngleY);
-		vCenter = vEye + vViewDir;
-		vLeftDir.cross(vUp, vViewDir);
-		vLeftDir.normalize();
+		_view.x = cosf(_angleX) * sinf(_angleY);
+		_view.y = cosf(_angleY);
+		_view.z = sinf(_angleX) * sinf(_angleY);
+		_center = _eye + _view;
+		_left.cross(_up, _view);
+		_left.normalize();
 		break;
 
 	case SCRIPTED:
-		vViewDir = vCenter - vEye;
-		vViewDir.normalize();
-		vLeftDir.cross(vUp, vViewDir);
-		vLeftDir.normalize();
+		_view = _center - _eye;
+		_view.normalize();
+		_left.cross(_up, _view);
+		_left.normalize();
 		break;
 	}
+}
+
+void Camera::MoveForward(F32 factor)	{	
+	_eye += _view * factor;
+	Refresh();
+}
+
+void Camera::TranslateForward(F32 factor)	{	
+	_eye += _view * factor;
+	Refresh();
+}
+
+void Camera::MoveStrafe(F32 factor)	{
+	_eye += _left * factor;
+	Refresh();
+}
+
+void Camera::TranslateStrafe(F32 factor)	{
+	_eye += _left * factor;
+	Refresh();
+}
+
+
+void Camera::MoveAnaglyph(F32 factor){
+	_eye += _left * factor;
+	_center += _left * factor;
 }
 
 ///Tell the rendering API to set up our desired PoV
@@ -73,47 +100,16 @@ void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
 	///Tell the Rendering API to draw from our desired PoV
 	if(inverty){							 
 		///If we need to flip the camera upside down (ex: for reflections)
-		GFX_DEVICE.lookAt(vec3<F32>(vEye.x,2.0f*planey-vEye.y,vEye.z),
-						  vec3<F32>(vCenter.x,2.0f*planey-vCenter.y,vCenter.z),
-						  vec3<F32>(-vUp.x,-vUp.y,-vUp.z),invertx);
+		GFX_DEVICE.lookAt(vec3<F32>(_eye.x,2.0f*planey-_eye.y,_eye.z),
+						  vec3<F32>(_center.x,2.0f*planey-_center.y,_center.z),
+						  vec3<F32>(-_up.x,-_up.y,-_up.z),invertx);
 	}else{
-		GFX_DEVICE.lookAt(vEye,vCenter,vUp);
+		GFX_DEVICE.lookAt(_eye,_center,_up);
 	}
 	///Extract the frustum associated with our current PoV
-	Frustum::getInstance().Extract(vEye);
+	Frustum::getInstance().Extract(_eye);
 	///Inform all listeners of a new event
     updateListeners();
-}
-
-void Camera::MoveForward(F32 factor)	{	
-	vEye += vViewDir * factor;
-
-	Refresh();
-}
-
-void Camera::TranslateForward(F32 factor)	{	
-	vEye += vViewDir * factor;
-
-	Refresh();
-}
-
-void Camera::MoveStrafe(F32 factor)	{
-	vEye += vLeftDir * factor;
-
-	Refresh();
-}
-
-void Camera::TranslateStrafe(F32 factor)	{
-	vEye += vLeftDir * factor;
-
-	Refresh();
-}
-
-
-void Camera::MoveAnaglyph(F32 factor){
-
-	vEye += vLeftDir * factor;
-	vCenter += vLeftDir * factor;
 }
 
 void Camera::RenderLookAtToCubeMap(const vec3<F32>& eye, U8 nFace){

@@ -1,22 +1,36 @@
 #include "Headers/DVDConverter.h"
 
+#include <assimp/types.h>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Geometry/Shapes/Headers/Mesh.h"
-#include "Geometry/Shapes/Headers/SubMesh.h"
+#include "Geometry/Shapes/Headers/SkinnedMesh.h"
+#include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Geometry/Animations/Headers/AnimationUtils.h"
 
-Mesh* DVDConverter::load(const std::string& file){	
 
-	Mesh* tempMesh = New Mesh();
-	_fileLocation = file;
-	_modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
-	tempMesh->setName(_modelName);
-	tempMesh->setResourceLocation(_fileLocation);
+DVDConverter::DVDConverter() : _loadcount(0), _init(false){
+
+}
+
+DVDConverter::~DVDConverter(){
+	SAFE_DELETE(importer);
+}
+
+bool DVDConverter::init(){
+	if(_init) {
+		ERROR_FN(Locale::get("ERROR_DOUBLE_IMPORTER_INIT"));
+		return false;
+	}
+	importer = New Assimp::Importer();
+	
+	bool removeLinesAndPoints = true;
+	importer->SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
+	importer->SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS , 1);
+	importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 	_ppsteps = aiProcess_TransformUVCoords        | // preprocess UV transformations (scaling, translation ...)
 			   aiProcess_FindInstances            | // search for instanced meshes and remove them by references to one master
 			   aiProcess_OptimizeMeshes	          | // join small meshes, if possible;
@@ -24,22 +38,28 @@ Mesh* DVDConverter::load(const std::string& file){
 			   aiProcessPreset_TargetRealtime_Quality |
 			   0;
 
-	bool removeLinesAndPoints = true;
-	Assimp::Importer importer;
-	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
-	importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS , 1);
-	importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
-
 	if(GFX_DEVICE.getApi() != OpenGL){
 		_ppsteps |= aiProcess_ConvertToLeftHanded;
 	}
-	_aiScenePointer = importer.ReadFile( file, _ppsteps );
+	_init = true;
+	return true;
+}
 
+Mesh* DVDConverter::load(const std::string& file){	
+	if(!_init){
+		ERROR_FN(Locale::get("ERROR_NO_INIT_IMPORTER_LOAD"));
+		return NULL;
+	}
+	_fileLocation = file;
+	_modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
+	
+	_aiScenePointer = importer->ReadFile( file, _ppsteps );
 
 	if( !_aiScenePointer){
-		ERROR_FN(Locale::get("ERROR_IMORTER_FILE"), file.c_str(), importer.GetErrorString());
+		ERROR_FN(Locale::get("ERROR_IMORTER_FILE"), file.c_str(), importer->GetErrorString());
 		return false;
 	}
+	Mesh* tempMesh = NULL;
 	for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
 		
 		//Skip points and lines ... for now -Ionut
@@ -49,63 +69,87 @@ Mesh* DVDConverter::load(const std::string& file){
 			_aiScenePointer->mMeshes[n]->mNumVertices == 0)
 				continue;
 
-		SubMesh* s = loadSubMeshGeometry(_aiScenePointer->mMeshes[n], n);
+		
 
-		if(s){
+		if(SubMesh* s = loadSubMeshGeometry(_aiScenePointer->mMeshes[n], n)){
+			bool skinnedSubMesh = (s->getFlag() == Object3D::PRIMITIVE_FLAG_SKINNED ? true : false);
+			if(!tempMesh){
+				tempMesh  = (skinnedSubMesh ? New SkinnedMesh() : New Mesh());
+				tempMesh->setName(_modelName);
+				tempMesh->setResourceLocation(_fileLocation);
+			}
+
 			if(s->getRefCount() == 1){
 				Material* m = loadSubMeshMaterial(_aiScenePointer->mMaterials[_aiScenePointer->mMeshes[n]->mMaterialIndex],
 												   std::string(s->getName()+ "_material"));
 				s->setMaterial(m);
-				m->setHardwareSkinning(s->_hasAnimations);
+				m->setHardwareSkinning(skinnedSubMesh);
 			}//else the Resource manager created a copy of the material
 			tempMesh->addSubMesh(s->getName());
 		}
 			
 	}
-	
-	tempMesh->setDrawState(true);
+	assert(tempMesh != NULL);
+	tempMesh->getSceneNodeRenderState().setDrawState(true);
+	_loadcount++; //< increment counter
 	return tempMesh;
 }
 
+///If we are loading a LOD variant of a submesh, find it first, append LOD geometry,
+///but do not return the mesh again as it will be duplicated in the Mesh parent object
+///instead, return NULL and mesh and material creation for this instance will be skipped.
 SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
+	///VERY IMPORTANT: default submesh, LOD0 should always be created first!!
+	///an assert is added in the LODn, where n >= 1, loading code to make sure the LOD0 submesh exists first
+	bool baseMeshLoading = false;
 
-	std::string temp;
-	char a;
+	std::string temp(source->mName.C_Str());
 
-	for(U16 j = 0; j < source->mName.length; j++){
-		a = source->mName.data[j];
-		temp += a;
-	}
-	
 	if(temp.empty()){
-		char number[3];
-		sprintf(number,"%d",count);
-		temp = _fileLocation.substr(_fileLocation.rfind("/")+1,_fileLocation.length())+"-submesh-"+number;
+		std::stringstream ss;
+		ss << _fileLocation.substr(_fileLocation.rfind("/")+1,_fileLocation.length());
+		ss << "-submesh-";
+		ss << (U32)count;
+		temp = ss.str();
 	}
-	//Submesh is created as a resource when added to the scenegraph
-	ResourceDescriptor submeshdesc(temp);
-	submeshdesc.setFlag(true);
-	submeshdesc.setId(count);
-	SubMesh* tempSubMesh = CreateResource<SubMesh>(submeshdesc);
 
-	if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
-		return tempSubMesh;
+	SubMesh* tempSubMesh = NULL;
+	bool skinned = source->HasBones();
+	if(temp.find(".LOD1") != std::string::npos || 
+		temp.find(".LOD2") != std::string::npos/* ||
+		temp.find(".LODn") != std::string::npos*/){ ///Add as many LOD levels as you please
+		tempSubMesh = dynamic_cast<SubMesh* >(FindResource(_fileLocation.substr(0,_fileLocation.rfind(".LOD"))));
+		assert(tempSubMesh != NULL);
+		tempSubMesh->incLODcount();
+	}else{
+		//Submesh is created as a resource when added to the scenegraph
+		ResourceDescriptor submeshdesc(temp);
+		submeshdesc.setFlag(true);
+		submeshdesc.setId(count);
+		if(skinned) 
+			submeshdesc.setEnumValue(Object3D::PRIMITIVE_FLAG_SKINNED); 
+		tempSubMesh = CreateResource<SubMesh>(submeshdesc);
+		///it may be already loaded
+		if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
+			return tempSubMesh;
+		}
+		baseMeshLoading = true;
 	}
-	temp.clear();
 
-	tempSubMesh->getGeometryVBO()->getPosition().reserve(source->mNumVertices);
+	tempSubMesh->getGeometryVBO()->reservePositionCount(source->mNumVertices);
 	tempSubMesh->getGeometryVBO()->getNormal().reserve(source->mNumVertices);
 	tempSubMesh->getGeometryVBO()->getTangent().reserve(source->mNumVertices);
 	tempSubMesh->getGeometryVBO()->getBiTangent().reserve(source->mNumVertices);
-	std::vector< std::vector<aiVertexWeight> >   weightsPerVertex(source->mNumVertices);
+	vectorImpl< vectorImpl<vertexWeight> >   weightsPerVertex(source->mNumVertices);
 
-	if(source->HasBones()){
+	if(skinned){
 		tempSubMesh->getGeometryVBO()->getBoneIndices().reserve(source->mNumVertices);
 		tempSubMesh->getGeometryVBO()->getBoneWeights().reserve(source->mNumVertices);	
-		for(U32 a = 0; a < source->mNumBones; a++){
+		assert(source->mNumBones < 256); ///<Fit in U8
+		for(U8 a = 0; a < source->mNumBones; a++){
 			const aiBone* bone = source->mBones[a];
 			for( U32 b = 0; b < bone->mNumWeights; b++){
-				weightsPerVertex[bone->mWeights[b].mVertexId].push_back(aiVertexWeight( a, bone->mWeights[b].mWeight));
+				weightsPerVertex[bone->mWeights[b].mVertexId].push_back(vertexWeight( a, bone->mWeights[b].mWeight));
 			}
 		}
 	}
@@ -113,35 +157,35 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 	bool processTangents = true;
 	if(!source->mTangents){
         processTangents = false;
-		PRINT_FN(Locale::get("SUBMESH_NO_TANGENT"), tempSubMesh->getName().c_str());
+		D_PRINT_FN(Locale::get("SUBMESH_NO_TANGENT"), tempSubMesh->getName().c_str());
 	}
 
+
 	for(U32 j = 0; j < source->mNumVertices; j++){
-			
-		tempSubMesh->getGeometryVBO()->getPosition().push_back(vec3<F32>(source->mVertices[j].x,
-															             source->mVertices[j].y,
-																	     source->mVertices[j].z));
+		tempSubMesh->getGeometryVBO()->addPosition(vec3<F32>(source->mVertices[j].x,
+															 source->mVertices[j].y,
+															 source->mVertices[j].z));
 		tempSubMesh->getGeometryVBO()->getNormal().push_back(vec3<F32>(source->mNormals[j].x,
-																       source->mNormals[j].y,
-																       source->mNormals[j].z));
+																      source->mNormals[j].y,
+																      source->mNormals[j].z));
 		if(processTangents){
 			tempSubMesh->getGeometryVBO()->getTangent().push_back(vec3<F32>(source->mTangents[j].x,
-																	        source->mTangents[j].y,
-																	        source->mTangents[j].z));
+																	       source->mTangents[j].y,
+																	       source->mTangents[j].z));
 			tempSubMesh->getGeometryVBO()->getBiTangent().push_back(vec3<F32>(source->mBitangents[j].x,
-																	          source->mBitangents[j].y,
-																		      source->mBitangents[j].z));
+																	         source->mBitangents[j].y,
+																		     source->mBitangents[j].z));
 		}
-
-		if( source->HasBones())	{
+		
+		if( skinned )	{
 			vec4<U8>  boneIndices( 0, 0, 0, 0 );
 			vec4<F32> boneWeights( 0, 0, 0, 0 );
 			assert( weightsPerVertex[j].size() <= 4);
 
 			for( U8 a = 0; a < weightsPerVertex[j].size(); a++){
 
-				boneIndices[a] = static_cast<U8>(weightsPerVertex[j][a].mVertexId);
-				boneWeights[a] = weightsPerVertex[j][a].mWeight;
+				boneIndices[a] = weightsPerVertex[j][a]._boneId;
+				boneWeights[a] = weightsPerVertex[j][a]._boneWeight;
 
 			}
 			tempSubMesh->getGeometryVBO()->getBoneIndices().push_back(boneIndices);
@@ -151,10 +195,9 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 
 
 	}//endfor
-
-	if(_aiScenePointer->HasAnimations() && source->HasBones()){
+	if(_aiScenePointer->HasAnimations() && skinned){
 		// create animator from current scene and current submesh pointer in that scene
-		tempSubMesh->createAnimatorFromScene(_aiScenePointer,count);
+		dynamic_cast<SkinnedSubMesh*>(tempSubMesh)->createAnimatorFromScene(_aiScenePointer,count);
 	}
 
 	if(source->mTextureCoords[0] != NULL){
@@ -177,11 +220,12 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 			tempSubMesh->getGeometryVBO()->getHWIndices().push_back(currentIndice);
 		}
 	}
-	tempSubMesh->getIndiceLimits().x = lowestInd;
-	tempSubMesh->getIndiceLimits().y = highestInd;
+	tempSubMesh->getGeometryVBO()->setIndiceLimits(vec2<U16>(lowestInd,highestInd), tempSubMesh->getLODcount() - 1);
 
-	return tempSubMesh;
-		 
+	if(baseMeshLoading)
+		return tempSubMesh;
+	else
+		return NULL;
 }
 
 /// Load the material for the current SubMesh
@@ -280,7 +324,9 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 	aiGetMaterialFloat(source,AI_MATKEY_SHININESS, &shininess);
 	/// Load shininess strength
 	aiGetMaterialFloat( source, AI_MATKEY_SHININESS_STRENGTH, &strength);
-	tempMaterial->setShininess(shininess * strength);
+	F32 finalValue = shininess * strength;
+	CLAMP<F32>(finalValue,0.0f,127.5f);
+	tempMaterial->setShininess(finalValue);
 
 	/// check if material is two sided
 	I32 two_sided = 0;
@@ -350,6 +396,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 			texture.setFlag(true);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
 			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOpToTextureOperation(op));
+			tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
 			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
 									   aiTextureMapModeToInternal(mode[1]),
 									   aiTextureMapModeToInternal(mode[2])); 
@@ -368,6 +415,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
 			texture.setFlag(true);
 			Texture2D* textureRes = CreateResource<Texture2D>(texture);
 			tempMaterial->setTexture(Material::TEXTURE_BUMP,textureRes,aiTextureOpToTextureOperation(op));
+			tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
 			textureRes->setTextureWrap(aiTextureMapModeToInternal(mode[0]),
 									   aiTextureMapModeToInternal(mode[1]),
 									   aiTextureMapModeToInternal(mode[2])); 
@@ -475,16 +523,16 @@ Material::ShadingMode DVDConverter::shadingModeInternal(I32 mode){
 	};
 }
 
-Texture::TextureWrap DVDConverter::aiTextureMapModeToInternal(aiTextureMapMode mode){
+TextureWrap DVDConverter::aiTextureMapModeToInternal(aiTextureMapMode mode){
 	switch(mode){
 		case aiTextureMapMode_Wrap:
-			return Texture::TextureWrap_Wrap;
+			return TEXTURE_REPEAT;
 		case aiTextureMapMode_Clamp:
-			return Texture::TextureWrap_Clamp;
+			return TEXTURE_CLAMP;
 		case aiTextureMapMode_Decal:
-			return Texture::TextureWrap_Decal;
+			return TEXTURE_DECAL;
 		default:
 		case aiTextureMapMode_Mirror:
-			return Texture::TextureWrap_Repeat;
+			return TEXTURE_REPEAT;
 	};
 }

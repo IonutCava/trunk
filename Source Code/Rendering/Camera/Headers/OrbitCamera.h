@@ -14,3 +14,18 @@
    You should have received a copy of the GNU Lesser General Public License
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef _ORBIT_CAMERA_H_
+#define _ORBIT_CAMERA_H_
+
+#include "Camera.h"
+///Fixed camera that orbits a certain point
+class OrbitCamera : public Camera {
+
+public:
+	OrbitCamera() : Camera(ORBIT)
+	{
+	}
+};
+
+#endif

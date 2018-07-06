@@ -14,7 +14,7 @@
    You should have received a copy of the GNU Lesser General Public License
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#pragma warning(disable:4103) ///<Boost alignment shouts
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -38,5 +38,6 @@ namespace XML {
 	///ToDo: ....... Add more
 
 	Material* loadMaterialXML(const std::string& location);
-	Texture*  loadTextureXML(const  std::string& textureName);
+	Texture*  loadTextureXML(const std::string& textureNode, const std::string& textureName);
+	void      saveTextureXML(const std::string& textureNode, unsigned int operation, Texture* texture);
 }

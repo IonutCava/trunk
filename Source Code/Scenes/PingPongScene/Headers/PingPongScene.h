@@ -37,12 +37,10 @@ public:
 	}
 
 	~PingPongScene() {}
-	void render();
 	void preRender();
 
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
-	bool unload();
 	void processInput();
 	void processEvents(F32 time);
 
@@ -56,10 +54,10 @@ private:
 	void serveBall();
 	void resetGame();
 private:
-	std::vector<F32> _eventTimers;
+	vectorImpl<F32> _eventTimers;
 	I8 _scor;
-	std::vector<std::string> _quotes;
-	vec4<F32> _sunVector;
+	vectorImpl<std::string> _quotes;
+	vec3<F32> _sunvector;
 	Sphere3D* _ball;
 	SceneGraphNode* _ballSGN;
 

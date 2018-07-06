@@ -28,7 +28,7 @@ namespace Navigation {
 
 	void WaypointGraph::updateGraph(){
 
-	   typedef unordered_map<U32, Waypoint*> wp;
+	   typedef Unordered_map<U32, Waypoint*> wp;
 	   _positions.clear();
 	   _rotations.clear();
 	   _times.clear();

@@ -4,7 +4,7 @@
 #include "Managers/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
 
-glShader::glShader(const std::string& name, SHADER_TYPE type) : Shader(name, type){
+glShader::glShader(const std::string& name, ShaderType type) : Shader(name, type){
   switch (type) {
     case VERTEX_SHADER : { 
 		_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -25,13 +25,13 @@ glShader::glShader(const std::string& name, SHADER_TYPE type) : Shader(name, typ
 		break;
 	}
 	default:
-		ERROR_FN(Locale::get("ERROR_GLSL_UNKNOWN_SHADER_TYPE"),type);
+		ERROR_FN(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),type);
 		break;
   }
 }
 
 glShader::~glShader(){
-	glDeleteShader(_shader);
+	GLCheck(glDeleteShader(_shader));
 }
 
 bool glShader::load(const std::string& source){
@@ -42,21 +42,21 @@ bool glShader::load(const std::string& source){
 	std::string parsedSource = preprocessIncludes(source,getName(),0);
 	ShaderManager::getInstance().shaderFileWrite((char*)(std::string("shaderCache/"+getName()).c_str()),(char*)parsedSource.c_str());
 	const char* c_str = parsedSource.c_str();
-	glShaderSource(_shader, 1, &c_str, 0);
-	glCompileShader(_shader);
+	GLCheck(glShaderSource(_shader, 1, &c_str, 0));
+	GLCheck(glCompileShader(_shader));
 	_compiled = true;
 	validate();
 	return true;
 }
 
 void glShader::validate() {
-	const U16 BUFFER_SIZE = 512;
+	const GLushort BUFFER_SIZE = 1024;
 	char buffer[BUFFER_SIZE];
 	memset(buffer, 0, BUFFER_SIZE);
-	I32 length = 0;
-    I32 status = 0;
-	glGetShaderInfoLog(_shader, BUFFER_SIZE, &length, buffer);
-	glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
+	GLint length = 0;
+    GLint status = 0;
+	GLCheck(glGetShaderInfoLog(_shader, BUFFER_SIZE, &length, buffer));
+	GLCheck(glGetShaderiv(_shader, GL_COMPILE_STATUS, &status));
 	if(status == GL_FALSE){
 		ERROR_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),buffer);
 	}else{

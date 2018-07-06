@@ -1,7 +1,7 @@
 #include "Headers/Reflector.h"
 #include "Hardware/Video/Headers/GFXDevice.h" 
 
-Reflector::Reflector(REFLECTOR_TYPE type, const vec2<U16>& resolution) : FrameListener(),
+Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameListener(),
 																	 _type(type),
 												 					 _resolution(resolution),
 																	 _updateTimer(0),
@@ -35,17 +35,27 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
 	///We should never have an invalid FBO
 	assert(_reflectedTexture != NULL);
 	/// mark ourselves as reflection target only if we do not wish to reflect ourself back
-	_updateSelf = _excludeSelfReflection;
+	_updateSelf = !_excludeSelfReflection;
 	/// generate reflection texture
 	updateReflection();
 	/// unmark from reflection target
-	_updateSelf = false;
+	_updateSelf = true;
 	return true;
 }
 
 bool Reflector::build(){
 	PRINT_FN(Locale::get("REFLECTOR_INIT_FBO"),_resolution.x,_resolution.y );
-	_reflectedTexture = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+    TextureDescriptor reflectionDescriptor(TEXTURE_2D, 
+								 	       RGBA,
+									       RGBA8,
+									       UNSIGNED_BYTE); ///Less precision for reflections
+
+	reflectionDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+	reflectionDescriptor._generateMipMaps = false; 
+	
+	_reflectedTexture = GFX_DEVICE.newFBO(FBO_2D_COLOR_MS);
+	_reflectedTexture->AddAttachment(reflectionDescriptor,TextureDescriptor::Color0);
+
 	if(!_reflectedTexture->Create(_resolution.x, _resolution.y)){
 		return false;
 	}

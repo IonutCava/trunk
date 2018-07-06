@@ -33,7 +33,6 @@ public:
 				  _mousePressed(false){}
 
 	/*General Scene Requirement*/
-	void render();
 	void preRender();
 	bool load(const std::string& name);
 	bool unload();
@@ -56,12 +55,12 @@ private:
 private:
 	
 	vec2<F32> _sunAngle;
-	vec4<F32> _sunVector,_sunColor;
+	vec4<F32> _sunvector,_sunColor;
 	F32  _sun_cosy;
-	vec2<I32> _prevMouse;
+	vec2<F32> _prevMouse;
 	bool _mousePressed;
 	AudioDescriptor* _beep;
-	std::vector<Terrain*> _visibleTerrains;
+	vectorImpl<Terrain*> _visibleTerrains;
 	WaterPlane* _water;
 	SceneGraphNode* _waterGraphNode;
 };

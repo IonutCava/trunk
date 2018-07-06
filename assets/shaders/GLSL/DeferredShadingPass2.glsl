@@ -1,11 +1,9 @@
 -- Vertex
 #include "vboInputData.vert"
-varying vec2 texCoord[2];
 
 void main( void ){
    computeData();
    gl_Position = gl_ModelViewProjectionMatrix * vertexData;
-   texCoord[0] = texCoordData;
 
    gl_FrontColor = vec4(1.0, 1.0, 1.0, 1.0);
 } 
@@ -19,7 +17,7 @@ uniform sampler2D lightTexture;
 uniform vec3 cameraPosition;
 uniform int lightCount;
 
-varying vec2 texCoord[2];
+varying vec2 _texCoord;
 
 
 void main( void )
@@ -28,9 +26,9 @@ void main( void )
    vec3 light = vec3(0,0,0);
    vec3 lightDir = vec3(0,0,0);
    vec3 vHalfVector = vec3(0,0,0);
-   vec4 image0 = texture2D( tImage0, texCoord[0] );
-   vec4 position = texture2D( tImage1, texCoord[0] );
-   vec4 normal = texture2D( tImage2, texCoord[0] );
+   vec4 image0 = texture( tImage0, _texCoord );
+   vec4 position = texture( tImage1, _texCoord );
+   vec4 normal = texture( tImage2, _texCoord );
    vec3 eyeDir = normalize(cameraPosition-position.xyz);
 
    float lightIntensity = 0;
@@ -40,14 +38,14 @@ void main( void )
    // Diffusive
 
    for(int i=0; i<lightCount; i++){
-      light = texture2D( lightTexture,vec2(0.01,i*0.99/lightCount) ).xyz;
+      light = texture( lightTexture,vec2(0.01,i*0.99/lightCount) ).xyz;
       lightDir = light - position.xyz ;
       float lightDistance = length(lightDir);
       lightDir /= lightDistance;
       lightIntensity = 1 / ( 1.0 + 0.00005 * lightDistance +
                                    0.00009 * pow(lightDistance,2));
 
-      vec3 lightColor = texture2D( lightTexture,
+      vec3 lightColor = texture( lightTexture,
                                    vec2(0.99,i*0.99/lightCount) ).xyz;
       vHalfVector = normalize(lightDir+eyeDir);
 

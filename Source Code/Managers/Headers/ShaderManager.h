@@ -21,19 +21,19 @@
 
 class Shader;
 class ShaderProgram;
-enum  SHADER_TYPE;
+enum  ShaderType;
 DEFINE_SINGLETON(ShaderManager)
 public:
 	void removeShader(Shader* s);
 	Shader* findShader(const std::string& name);
-	Shader* loadShader(const std::string& name, const std::string& location, SHADER_TYPE type);
+	Shader* loadShader(const std::string& name, const std::string& location, ShaderType type);
 	char*   shaderFileRead(const std::string &atomName, const std::string& location);
 	I8      shaderFileWrite(char *atomName, char *s);
 	bool    unbind();
 
 private:
-	unordered_map<std::string, Shader* > _shaders;
-	unordered_map<std::string, const char* > _atoms;
+	Unordered_map<std::string, Shader* > _shaders;
+	Unordered_map<std::string, const char* > _atoms;
 	ShaderProgram* _nullShader;
 
 private:

@@ -413,24 +413,6 @@
     <Filter Include="LIBS">
       <UniqueIdentifier>{81a846ac-30cb-4a09-8e1e-26ae755f3bf8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LIBS\Detour">
-      <UniqueIdentifier>{60783ae9-51c3-4023-8711-cee8a8bfe5ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\Detour\Headers">
-      <UniqueIdentifier>{44dba906-f6e5-43c3-915a-e29c15fc1173}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\DetourCrowd">
-      <UniqueIdentifier>{3b32240f-845c-4658-a8dc-338a81b3b2da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\DetourCrowd\Headers">
-      <UniqueIdentifier>{05d3d8be-6991-41ed-9120-5d27e0d879b9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\ReCast">
-      <UniqueIdentifier>{c2572417-20cd-4fd6-acab-136f3e3884ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LIBS\ReCast\Headers">
-      <UniqueIdentifier>{c5539767-06fb-41ed-8a8e-44d44ad25cfe}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Languages">
       <UniqueIdentifier>{003c25a0-1e62-4590-abe3-fe1bd5b04614}</UniqueIdentifier>
     </Filter>
@@ -562,6 +544,39 @@
     </Filter>
     <Filter Include="Hardware\Video\OpenGL\Textures\Headers">
       <UniqueIdentifier>{ff5a3b29-2f4c-4026-8c2a-f47435f3e885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\ReCast">
+      <UniqueIdentifier>{4e347357-c80a-4ff3-8682-64c51e5a883a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\Detour">
+      <UniqueIdentifier>{b9e8f7d4-ff0c-42f7-b758-ec2ebccfe69f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\DetourCrowd">
+      <UniqueIdentifier>{5b007094-ac76-4e8a-9fe7-3e5d8d2d40c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\ReCast\Headers">
+      <UniqueIdentifier>{b112621c-1d30-41f1-b165-8e0c694a04a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\DetourCrowd\Headers">
+      <UniqueIdentifier>{9ed3def3-68ed-4447-ab67-8529c6802cb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LIBS\Detour\Headers">
+      <UniqueIdentifier>{c08e44a2-2614-4a07-8811-8592f6fccf25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Lighting\ShadowMapping">
+      <UniqueIdentifier>{35bc9492-d1be-44e3-9f54-9491c8ddd917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Lighting\ShadowMapping\Headers">
+      <UniqueIdentifier>{6c8cc4bb-491f-4049-8f9e-fb56b3ff9fdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Math\BoundingVolumes">
+      <UniqueIdentifier>{1064502b-7982-4eb3-ae27-71a6eb2de08b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Math\BoundingVolumes\Headers">
+      <UniqueIdentifier>{eac76e15-e963-4180-9ceb-58070627d139}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\GLSL\geometryAtoms">
+      <UniqueIdentifier>{8034d24d-b5ab-4a01-b443-d74118655719}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -697,18 +712,12 @@
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\Coordination.cpp">
       <Filter>AI\ActionInterface</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\main.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp">
       <Filter>Graphs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp">
-      <Filter>Rendering\Lighting</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
@@ -837,9 +846,6 @@
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIButton.cpp">
-      <Filter>GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp">
@@ -971,14 +977,8 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp">
       <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\glPixelBufferObject.cpp">
       <Filter>Hardware\Video\OpenGL\Buffers\PixelBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShader.cpp">
       <Filter>Hardware\Video\OpenGL\Shaders</Filter>
@@ -997,15 +997,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dTextureBufferObject.cpp">
       <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp">
       <Filter>AI</Filter>
@@ -1076,6 +1067,114 @@
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRegion.cpp">
       <Filter>LIBS\ReCast</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\PointLight.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\SpotLight.cpp">
+      <Filter>Rendering\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\ParallelSplitShadowMaps.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\ShadowMap.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\SingleShadowMap.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedMesh.cpp">
+      <Filter>Geometry\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedSubMesh.cpp">
+      <Filter>Geometry\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\DeferredLightingRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\DeferredShadingRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\ForwardRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBin.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinDelegate.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinMesh.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinParticles.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinTranslucent.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\FXAAPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\FrameBufferObject.cpp">
+      <Filter>Hardware\Video\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthArrayBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glMSTextureBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureArrayBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\gluOverrides.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp">
+      <Filter>Hardware\Video\OpenGL\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -1125,9 +1224,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h">
       <Filter>Environment\Vegetation\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\BoundingBox.h">
-      <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\Event.h">
       <Filter>Utility\Headers</Filter>
@@ -1393,9 +1489,6 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIButton.h">
       <Filter>GUI\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsole.h">
-      <Filter>GUI\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIElement.h">
       <Filter>GUI\Headers</Filter>
     </ClInclude>
@@ -1565,14 +1658,8 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h">
       <Filter>Hardware\Video\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers\glPixelBufferObject.h">
       <Filter>Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h">
       <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
@@ -1591,15 +1678,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dTextureBufferObject.h">
       <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDeferredBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h">
       <Filter>AI\Headers</Filter>
@@ -1655,6 +1733,123 @@
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAssert.h">
       <Filter>LIBS\ReCast\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\PointLight.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\SpotLight.h">
+      <Filter>Rendering\Lighting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ParallelSplitShadowMaps.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\SingleShadowMap.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h">
+      <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedMesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredLightingRenderer.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredShadingRenderer.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\ForwardRenderer.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\Renderer.h">
+      <Filter>Rendering\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBin.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinDelegate.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinMesh.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinParticles.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinTranslucent.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPass.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h">
+      <Filter>Managers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h">
+      <Filter>Hardware\Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h">
+      <Filter>Core\Math\BoundingVolumes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h">
+      <Filter>Core\Math\BoundingVolumes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathFPU.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathSIMD.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Vector.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h">
+      <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\FXAAPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDeferredBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthArrayBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glMSTextureBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureArrayBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glUniformBufferObject.h">
+      <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\TextureDescriptor.h">
+      <Filter>Hardware\Video\Textures\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h">
+      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
@@ -1681,9 +1876,6 @@
     <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\README">
-      <Filter>shaders\GLSL</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\sky.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
@@ -1696,10 +1888,19 @@
     <None Include="..\..\assets\shaders\GLSL\terrain.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\tree.glsl">
+    <None Include="..\..\assets\shaders\GLSL\water.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\water.glsl">
+    <None Include="..\..\localisation\enGB.ini">
+      <Filter>Languages</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom">
+      <Filter>shaders\GLSL\geometryAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\FXAA.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
@@ -1708,10 +1909,31 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\fog.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting_noTexture.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag">
+      <Filter>shaders\GLSL\fragmentAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag">
@@ -1720,17 +1942,32 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
       <Filter>shaders\GLSL\fragmentAtoms</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\DepthOfField.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\depthPass.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\shadowPreviewDirectional.glsl">
+      <Filter>shaders\GLSL</Filter>
+    </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert">
       <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
       <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaultsBump.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
+    </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert">
       <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
-    <None Include="..\..\localisation\enGB.ini">
-      <Filter>Languages</Filter>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputDataBones.vert">
+      <Filter>shaders\GLSL\vertexAtoms</Filter>
     </None>
   </ItemGroup>
 </Project>

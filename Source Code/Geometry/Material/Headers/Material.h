@@ -21,18 +21,26 @@
 #include "core.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Resources/Headers/Resource.h"
-
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
 
 class Texture;
 class ShaderProgram;
 class RenderStateBlock;
 typedef Texture Texture2D;
 struct RenderStateBlockDescriptor;
-enum RENDER_STAGE;
-
+enum RenderStage;
+enum BlendProperty;
 class Material : public Resource{
 
 public:
+  enum BumpMethod{
+	  BUMP_NONE = 0,   //<Use phong
+	  BUMP_NORMAL = 1, //<Normal mapping
+	  BUMP_PARALLAX = 2,
+	  BUMP_RELIEF = 3,
+	  BUMP_PLACEHOLDER = 4
+  };
+
   enum TextureUsage{
 	  TEXTURE_BASE = 0,
 	  TEXTURE_BUMP = 1,
@@ -78,8 +86,8 @@ public:
 	SHADING_FRESNEL       = 0xa
 };
 
-typedef unordered_map<TextureUsage, Texture2D*> textureMap;
-typedef unordered_map<TextureUsage, TextureOperation> textureOperation;
+typedef Unordered_map<TextureUsage, Texture2D*> textureMap;
+typedef Unordered_map<TextureUsage, TextureOperation> textureOperation;
 
 public:
   Material();
@@ -94,28 +102,42 @@ public:
   inline void setEmissive(const vec3<F32>& value) {_emissive = value; _materialMatrix.setCol(3,vec4<F32>(_shininess,value.x,value.y,value.z));}
   inline void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4<F32>(value,_emissive.x,_emissive.y,_emissive.z));}
   inline void setOpacityValue(F32 value) {_opacity = value;}
-  inline void setCastsShadows(bool state) {_castsShadows = state;}
+  void setCastsShadows(bool state);
   inline void setReceivesShadows(bool state) {_receiveShadows = state;}
   inline void setShadingMode(ShadingMode mode) {_shadingMode = mode;}
   		 void setDoubleSided(bool state);
 		 void setTexture(TextureUsage textureUsage, Texture2D* const texture, TextureOperation op = TextureOperation_Replace);
-
-  ShaderProgram*    setShaderProgram(const std::string& shader);
-  RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, RENDER_STAGE renderStage);
+		 ///Set the desired bump mapping method. If force == true, the shader is updated immediately
+		 void setBumpMethod(BumpMethod newBumpMethod,bool force = false);
+		 void setBumpMethod(U32 newBumpMethod,bool force = false);
+		 ///Shader modifiers add tokens to the end of the shader name.
+		 ///Add as many tokens as needed but separate them with a ".". i.e: "Tree.NoWind.Glow"
+		 void addShaderModifier(const std::string& shaderModifier,bool force = false);
+		 ///Shader defines, separated by commas, are added to the generated shader
+		 ///The shader generator appends "#define " to the start of each define
+		 ///For example, to define max light count and max shadow casters add this string:
+		 ///"MAX_LIGHT_COUNT 4, MAX_SHADOW_CASTERS 2"
+		 ///The above strings becomes, in the shader:
+		 ///#define MAX_LIGHT COUNT 4
+		 ///#define MAX_SHADOW_CASTERS 2
+		 void addShaderDefines(const std::string& shaderDefines,bool force = false);
+		 ShaderProgram*    setShaderProgram(const std::string& shader,RenderStage renderStage = FINAL_STAGE);
+	     RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, RenderStage renderStage);
 
   inline mat4<F32>& getMaterialMatrix()  {return _materialMatrix;}
 
-         P32   getMaterialId();
+         P32   getMaterialId(RenderStage renderStage = FINAL_STAGE);
   inline bool  getCastsShadows()    {return _castsShadows;}
   inline bool  getReceivesShadows() {return _receiveShadows;}
   inline F32   getOpacityValue()    {return _opacity;}
   inline U8    getTextureCount()    {return _textures.size();}
-
+  inline U32                     getBumpMethod()                                {return _bumpMethodTable[_bumpMethod];}
   inline ShadingMode             getShadingMode()                               {return _shadingMode;}
-  inline RenderStateBlock*       getRenderState(RENDER_STAGE currentStage)      {return _defaultRenderStates[currentStage];}
+  inline RenderStateBlock*       getRenderState(RenderStage currentStage)       {return _defaultRenderStates[currentStage];}
   inline U32               const getTextureOperation(TextureUsage textureUsage) {return _textureOperationTable[_operations[textureUsage]];}
   inline Texture2D*	       const getTexture(TextureUsage textureUsage)          {return _textures[textureUsage];}
-  inline ShaderProgram*    const getShaderProgram()                             {return _shaderRef;}
+
+  inline ShaderProgram*    const getShaderProgram(RenderStage renderStage = FINAL_STAGE)      {return _shaderRef[renderStage];}
 
   inline bool isDirty()       {return _dirty;}
   inline bool isDoubleSided() {return _doubleSided;}
@@ -133,7 +155,7 @@ public:
 
   TextureOperation getTextureOperation(U32 op);
 
-  void computeLightShaders(); //Set shaders;
+  void computeShader(bool force = false, RenderStage renderStage = FINAL_STAGE); //Set shaders;
   inline void dumpToXML() {XML::dumpMaterial(this);}
 
 private:
@@ -145,28 +167,34 @@ private:
   F32 _opacity;			   /* material opacity value*/
   mat4<F32> _materialMatrix; /* all properties bundled togheter */
   ShadingMode _shadingMode;
-  std::string _shader; /*shader name*/
-  bool _computedLightShaders;
-  P32  _matId;
+  std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
+  vectorImpl<std::string > _shaderDefines; //<Add shader preprocessor defines;
   bool _dirty;
   bool _doubleSided;
   bool _castsShadows;
   bool _receiveShadows;
   bool _shaderProgramChanged; ///< Used for tracking VBO binding with shader
   bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
-  ShaderProgram* _shaderRef;
+  Unordered_map<RenderStage, ShaderProgram* > _shaderRef;
 
+  ///Unordered maps have a lot of overhead, so use _shader[0] for final_stage, _shader[1] for shadow_stage, etc
+  std::string _shader[2]; /*shader name*/
+  bool        _computedShader[2];
+  P32         _matId[2];
   /// use this map to add more render states mapped to a specific state
   /// 3 render state's: Normal, reflection and shadow
-  unordered_map<RENDER_STAGE, RenderStateBlock* > _defaultRenderStates;
+  Unordered_map<RenderStage, RenderStateBlock* > _defaultRenderStates;
   /// use this map to add textures to the material
   textureMap _textures;
   /// use the bellow map to define texture operation
   textureOperation _operations;
   /// Map texture operation to values the shader understands
   U32 _textureOperationTable[TextureOperation_PLACEHOLDER];
+  U32 _bumpMethodTable[BUMP_PLACEHOLDER];
 
   boost::mutex _materialMutex;
+
+  BumpMethod _bumpMethod;
 };
 
 #endif

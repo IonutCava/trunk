@@ -22,7 +22,7 @@
 #include "AI/Headers/AIEntity.h"
 
 DEFINE_SINGLETON(AIManager)
-	typedef unordered_map<U32, AIEntity*> AIEntityMap;
+	typedef Unordered_map<U32, AIEntity*> AIEntityMap;
 
 public:
 	U8 tick();

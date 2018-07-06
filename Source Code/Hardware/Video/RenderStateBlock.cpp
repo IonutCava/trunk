@@ -7,18 +7,18 @@ U32 RenderStateBlockDescriptor::getHash() const{
 RenderStateBlockDescriptor::RenderStateBlockDescriptor() : _hash(0),
 														   _blendDefined(false),
 														   _blendEnable(false),
-														   _blendSrc(BLEND_PROPERTY_One),
-														   _blendDest(BLEND_PROPERTY_One),
-														   _blendOp(BLEND_OPERATION_Add),
+														   _blendSrc(BLEND_PROPERTY_ONE),
+														   _blendDest(BLEND_PROPERTY_ONE),
+														   _blendOp(BLEND_OPERATION_ADD),
 														   _alphaBlendDefined(false),
 														   _alphaBlendEnable(false),
-														   _alphaBlendSrc(BLEND_PROPERTY_One),
-														   _alphaBlendDest(BLEND_PROPERTY_Zero),
-														   _alphaBlendOp(BLEND_OPERATION_Add),
+														   _alphaBlendSrc(BLEND_PROPERTY_ONE),
+														   _alphaBlendDest(BLEND_PROPERTY_ZERO),
+														   _alphaBlendOp(BLEND_OPERATION_ADD),
 														   _alphaDefined(false),
 														   _alphaTestEnable(false),
 														   _alphaTestRef(0),
-														   _alphaTestFunc(COMPARE_FUNC_GreaterEqual),
+														   _alphaTestFunc(CMP_FUNC_GEQUAL),
 														   _enableColorWrite(false),
 														   _writeRedChannel(true),
 														   _writeBlueChannel(true),
@@ -29,21 +29,21 @@ RenderStateBlockDescriptor::RenderStateBlockDescriptor() : _hash(0),
 														   _zDefined(false),
 														   _zEnable(true),
 														   _zWriteEnable(true),
-														   _zFunc(COMPARE_FUNC_LessEqual),
+														   _zFunc(CMP_FUNC_LEQUAL),
 														   _zBias(0),
-														   _zSlopeBias(0),
+														   _zUnits(4096.0f),
 														   _stencilDefined(false),
 														   _stencilEnable(false),
-														   _stencilFailOp(STENCIL_OPERATION_Keep),
-														   _stencilZFailOp(STENCIL_OPERATION_Keep),
-														   _stencilPassOp(STENCIL_OPERATION_Keep),
-														   _stencilFunc(COMPARE_FUNC_Never),
+														   _stencilFailOp(STENCIL_OPERATION_KEEP),
+														   _stencilZFailOp(STENCIL_OPERATION_KEEP),
+														   _stencilPassOp(STENCIL_OPERATION_KEEP),
+														   _stencilFunc(CMP_FUNC_NEVER),
 														   _stencilRef(0),
 														   _stencilMask(0xFFFFFFFF),
 														   _stencilWriteMask(0xFFFFFFFF),
 														   _fixedLighting(false),
 														   _vertexColorEnable(false),
-														   _fillMode(FILL_MODE_Solid)
+														   _fillMode(FILL_MODE_SOLID)
 {
 }
 
@@ -73,7 +73,7 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
 	   setZReadWrite(descriptor._zEnable,descriptor._zWriteEnable);
       _zFunc = descriptor._zFunc;
       _zBias = descriptor._zBias;
-      _zSlopeBias = descriptor._zSlopeBias;
+      _zUnits = descriptor._zUnits;
    }
 
    if (descriptor._stencilDefined)  {   
@@ -92,7 +92,7 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
    _fillMode = descriptor._fillMode;
 }
 
-void RenderStateBlockDescriptor::setCullMode( CULL_MODE mode ) { 
+void RenderStateBlockDescriptor::setCullMode( CullMode mode ) { 
    _cullDefined = true; 
    _cullMode = mode; 
 }
@@ -108,14 +108,14 @@ void RenderStateBlockDescriptor::setZReadWrite( bool read, bool write ) {
    _zWriteEnable = write;
 }
 
-void RenderStateBlockDescriptor::setAlphaTest( bool enable, COMPARE_FUNC function, I32 alphaRef ) { 
+void RenderStateBlockDescriptor::setAlphaTest( bool enable, ComparisonFunction function, I32 alphaRef ) { 
    _alphaDefined = true; 
    _alphaTestEnable = enable; 
    _alphaTestFunc = function; 
    _alphaTestRef = alphaRef; 
 }
 
-void RenderStateBlockDescriptor::setBlend( bool enable, BLEND_PROPERTY src, BLEND_PROPERTY dest, BLEND_OPERATION op ) { 
+void RenderStateBlockDescriptor::setBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) { 
    _blendDefined = true; 
    _blendEnable = enable; 
    _blendSrc = src; 
@@ -123,7 +123,7 @@ void RenderStateBlockDescriptor::setBlend( bool enable, BLEND_PROPERTY src, BLEN
    _blendOp = op;
 }
 
-void RenderStateBlockDescriptor::setAlphaBlend( bool enable, BLEND_PROPERTY src, BLEND_PROPERTY dest, BLEND_OPERATION op ) { 
+void RenderStateBlockDescriptor::setAlphaBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) { 
    _alphaBlendDefined = true; 
    _alphaBlendEnable = enable; 
    _alphaBlendSrc = src; 

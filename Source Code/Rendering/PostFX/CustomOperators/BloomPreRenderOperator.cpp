@@ -6,24 +6,34 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
-BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader, 
-											   Quad3D* target, 
+BloomPreRenderOperator::BloomPreRenderOperator(Quad3D* target, 
 											   FrameBufferObject* result, 
 											   const vec2<U16>& resolution) : PreRenderOperator(BLOOM_STAGE,target,resolution),
-																			 _blur(bloomShader),
-																	         _outputFBO(result)
+																			  _outputFBO(result)
 {
-	U16 width = _resolution.width;
-	U16 height = _resolution.height;
+	F32 width = _resolution.width;
+	F32 height = _resolution.height;
 	_tempBloomFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+
+	TextureDescriptor tempBloomDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
+	tempBloomDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+	tempBloomDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	_tempBloomFBO->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
 	_tempBloomFBO->Create(width/4,height/4);
+
+	TextureDescriptor outputBloomDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
+	outputBloomDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+	outputBloomDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	_outputFBO->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
 	_outputFBO->Create(width, height);
 	_bright = CreateResource<ShaderProgram>(ResourceDescriptor("bright"));
+	_blur = CreateResource<ShaderProgram>(ResourceDescriptor("blur"));
 
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator(){
 	RemoveResource(_bright);
+	RemoveResource(_blur);
 	SAFE_DELETE(_tempBloomFBO);
 }
 

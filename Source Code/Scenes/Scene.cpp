@@ -2,15 +2,37 @@
 
 #include <networking/ASIO.h>
 #include "GUI/Headers/GUI.h"
+
 #include "Utility/Headers/XMLParser.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Environment/Sky/Headers/Sky.h"
+
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
+
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+
+Scene::Scene() :  Resource(),
+			   _GFX(GFX_DEVICE),
+			   _loadComplete(false),
+			   _paramHandler(ParamHandler::getInstance()),
+			   _currentSelection(NULL),
+			   _sceneGraph(New SceneGraph()),
+			   _sceneState(New SceneState()),
+			   _sceneRenderState(New SceneRenderState())
+{
+	_sceneState->_fogColor = ParamHandler::getInstance().getParam<vec3<F32> >("rendering.fogColor");
+	_sceneState->_fogDensity = ParamHandler::getInstance().getParam<F32>("rendering.fogDensity");
+}
+
+Scene::~Scene() {
+	SAFE_DELETE(_sceneState);
+	SAFE_DELETE(_sceneRenderState);
+};
 
 bool Scene::idle(){ //Called when application is idle
 	if(_sceneGraph){
@@ -20,7 +42,7 @@ bool Scene::idle(){ //Called when application is idle
 
 	bool _updated = false;
 	if(!_pendingDataArray.empty())
-	for(std::vector<FileData>::iterator iter = _pendingDataArray.begin(); iter != _pendingDataArray.end(); ++iter) {
+	for(vectorImpl<FileData>::iterator iter = _pendingDataArray.begin(); iter != _pendingDataArray.end(); ++iter) {
 
 		if(!loadModel(*iter)){
 
@@ -31,7 +53,7 @@ bool Scene::idle(){ //Called when application is idle
 				PRINT_FN(Locale::get("AWAITING_FILE"));
 			}
 		}else{
-			std::vector<FileData>::iterator iter2;
+			vectorImpl<FileData>::iterator iter2;
 			for(iter2 = _modelDataArray.begin(); iter2 != _modelDataArray.end(); ++iter2)	{
 				if((*iter2).ItemName.compare((*iter).ItemName) == 0){
 					_modelDataArray.erase(iter2);
@@ -48,10 +70,10 @@ bool Scene::idle(){ //Called when application is idle
 	return true;
 }
 
-void Scene::addPatch(std::vector<FileData>& data){
-	/*for(vector<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
+void Scene::addPatch(vectorImpl<FileData>& data){
+	/*for(vectorImpl<FileData>::iterator iter = data.begin(); iter != data.end(); iter++)
 	{
-		for(unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
+		for(Unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
 			if((iter2->second)->getName().compare((*iter).ModelName) == 0)
 			{
 				_pendingDataArray.push_back(*iter);
@@ -64,7 +86,7 @@ void Scene::addPatch(std::vector<FileData>& data){
 
 
 void Scene::loadXMLAssets(){
-	for(std::vector<FileData>::iterator it = _modelDataArray.begin(); it != _modelDataArray.end();){
+	for(vectorImpl<FileData>::iterator it = _modelDataArray.begin(); it != _modelDataArray.end();){
 		//vegetation is loaded elsewhere
 		if((*it).type == VEGETATION){
 			_vegetationDataArray.push_back(*it);
@@ -120,8 +142,9 @@ bool Scene::loadGeometry(const FileData& data){
 			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_LEFT,vec3<F32>(0,0,0));
 			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_RIGHT,vec3<F32>(1,0,0));
 	} else if(data.ModelName.compare("Text3D") == 0) {
-		
-			thisObj =CreateResource<Text3D>(item);
+			///set font file
+			item.setResourceLocation(data.data3);
+			thisObj = CreateResource<Text3D>(item);
 			dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
 			dynamic_cast<Text3D*>(thisObj)->getText() = data.data2;
 	}else{
@@ -145,22 +168,29 @@ bool Scene::loadGeometry(const FileData& data){
 }
 
 void Scene::addLight(Light* const lightItem){
+	_sceneGraph->getRoot()->addNode(lightItem);
 	LightManager::getInstance().addLight(lightItem);
 }
 
 Light* Scene::addDefaultLight(){
 
 	std::stringstream ss; ss << LightManager::getInstance().getLights().size();
-	ResourceDescriptor defaultLight("Default omni light "+ss.str());
+	ResourceDescriptor defaultLight("Default directional light "+ss.str());
 	defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
 	defaultLight.setResourceLocation("root");
+	defaultLight.setEnumValue(LIGHT_TYPE_DIRECTIONAL);
 	Light* l = CreateResource<Light>(defaultLight);
-	l->setLightType(LIGHT_DIRECTIONAL);
-	_sceneGraph->getRoot()->addNode(l);
 	addLight(l);
 	vec4<F32> ambientColor(0.1f, 0.1f, 0.1f, 1.0f);
 	LightManager::getInstance().setAmbientLight(ambientColor);
 	return l;	
+}
+
+Sky* Scene::addDefaultSky(){
+	///Add skies (ToDo: from XML)
+	Sky* tempSky = New Sky("Default Sky");
+	_skiesSGN.push_back(_sceneGraph->getRoot()->addNode(tempSky));
+	return tempSky;
 }
 
 SceneGraphNode* Scene::addGeometry(Object3D* const object){
@@ -178,29 +208,41 @@ bool Scene::removeGeometry(SceneNode* node){
 
 }
 
+bool Scene::preLoad() {
+	_GFX.enableFog(_sceneState->_fogDensity,_sceneState->_fogColor);
+	_sceneRenderState->shadowMapResolutionFactor() = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");
+	return true;
+}
+
 bool Scene::load(const std::string& name){
 	SceneGraphNode* root = _sceneGraph->getRoot();
-	if(_terrainInfoArray.empty()) return true;
-	for(U8 i = 0; i < _terrainInfoArray.size(); i++){
-		ResourceDescriptor terrain(_terrainInfoArray[i]->getVariable("terrainName"));
-		Terrain* temp = CreateResource<Terrain>(terrain);
-		SceneGraphNode* terrainTemp = root->addNode(temp);
-		terrainTemp->useDefaultTransform(false);
-		terrainTemp->setTransform(NULL);
-		terrainTemp->setActive(_terrainInfoArray[i]->getActive());
-		temp->initializeVegetation(_terrainInfoArray[i]);
+	///Add terrain from XML
+	if(!_terrainInfoArray.empty()){
+		for(U8 i = 0; i < _terrainInfoArray.size(); i++){
+			ResourceDescriptor terrain(_terrainInfoArray[i]->getVariable("terrainName"));
+			Terrain* temp = CreateResource<Terrain>(terrain);
+			SceneGraphNode* terrainTemp = root->addNode(temp);
+			terrainTemp->useDefaultTransform(false);
+			terrainTemp->setTransform(NULL);
+			terrainTemp->setActive(_terrainInfoArray[i]->getActive());
+			temp->initializeVegetation(_terrainInfoArray[i],terrainTemp);
+		}
 	}
-	return true;
+	///Camera position is overriden in the scene's XML configuration file
+	if(ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride")){
+		renderState()->getCamera()->setEye(_paramHandler.getParam<vec3<F32> >("options.cameraStartPosition"));
+		vec2<F32>& camOrientation = _paramHandler.getParam<vec2<F32> >("options.cameraStartOrientation");
+		renderState()->getCamera()->RotateX(RADIANS(camOrientation.x));
+		renderState()->getCamera()->RotateY(RADIANS(camOrientation.y));
+	}else{
+		renderState()->getCamera()->setEye(vec3<F32>(0,50,0));
+	}
+	_loadComplete = true;
+	return _loadComplete;
 }
 
 bool Scene::unload(){
 	clearEvents();
-	SAFE_DELETE(_lightTexture);
-	SAFE_DELETE(_deferredBuffer);
-
-	if(_deferredShader != NULL){
-		RemoveResource(_deferredShader);
-	}
 	clearObjects();
 	clearLights();
 	return true;
@@ -210,6 +252,7 @@ void Scene::clearObjects(){
 	for(U8 i = 0; i < _terrainInfoArray.size(); i++){
 		RemoveResource(_terrainInfoArray[i]);
 	}
+	_skiesSGN.clear(); ///< Skies are cleared in the SceneGraph
 	_terrainInfoArray.clear();
 	_modelDataArray.clear();
 	_vegetationDataArray.clear();
@@ -278,27 +321,27 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 
 	switch(key.key){
 		case OIS::KC_LEFT : 
-			_angleLR = -(speedFactor/5);
+			state()->_angleLR = -(speedFactor/5);
 			break;
 		case OIS::KC_RIGHT : 
-			_angleLR = speedFactor/5;
+			state()->_angleLR = speedFactor/5;
 			break;
 		case OIS::KC_UP : 
-			_angleUD = -(speedFactor/5);
+			state()->_angleUD = -(speedFactor/5);
 			break;
 		case OIS::KC_DOWN : 
-			_angleUD = speedFactor/5;
+			state()->_angleUD = speedFactor/5;
 			break;
 		case OIS::KC_END:
 			deleteSelection();
 			break;
 		case OIS::KC_F2:{
 			D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));
-			toggleSkeletons();
+			renderState()->toggleSkeletons();
 			}break;
 		case OIS::KC_B:{
 			D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
-			toggleBoundingBoxes();
+			renderState()->toggleBoundingBoxes();
 			}break;
 		case OIS::KC_ADD:
 			if (speedFactor < 10)  speedFactor += 0.1f;
@@ -307,10 +350,10 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
 			break;
 		case OIS::KC_F10:
-			LightManager::getInstance().togglePreviewDepthMaps();
+			LightManager::getInstance().togglePreviewShadowMaps();
 			break;
 		case OIS::KC_F12:
-			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,_cachedResolution.x,_cachedResolution.y));
+			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,renderState()->_cachedResolution.x,renderState()->_cachedResolution.y));
 			break;
 		default:
 			break;
@@ -322,17 +365,14 @@ void Scene::onKeyUp(const OIS::KeyEvent& key){
 	switch( key.key ){
 		case OIS::KC_LEFT:
 		case OIS::KC_RIGHT:
-			_angleLR = 0.0f;
+			state()->_angleLR = 0.0f;
 			break;
 		case OIS::KC_UP:
 		case OIS::KC_DOWN:
-			_angleUD = 0.0f;
+			state()->_angleUD = 0.0f;
 			break;
 		case OIS::KC_F:
-			_paramHandler.setParam("enableDepthOfField", !_paramHandler.getParam<bool>("enableDepthOfField")); 
-			break;
-		case OIS::KC_GRAVE: ///tilde
-//			GUI::getInstance().toggleConsole();
+			_paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField")); 
 			break;
 		default:
 			break;
@@ -343,20 +383,20 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 
 	if(axis == 1){
 		if(key.state.mAxes[axis].abs > 0)
-			_angleLR = speedFactor/5;
+			state()->_angleLR = speedFactor/5;
 		else if(key.state.mAxes[axis].abs < 0)
-			_angleLR = -(speedFactor/5);
+			state()->_angleLR = -(speedFactor/5);
 		else
-			_angleLR = 0;
+			state()->_angleLR = 0;
 
 	}else if(axis == 0){
 
 		if(key.state.mAxes[axis].abs > 0)
-			_angleUD = speedFactor/5;
+			state()->_angleUD = speedFactor/5;
 		else if(key.state.mAxes[axis].abs < 0)
-			_angleUD = -(speedFactor/5);
+			state()->_angleUD = -(speedFactor/5);
 		else
-			_angleUD = 0;
+			state()->_angleUD = 0;
 	}
 }
 
@@ -366,9 +406,9 @@ void Scene::updateSceneState(D32 sceneTime){
 
 void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
     F32 value_fov = 0.7853f;    //this is 45 degrees converted to radians
-    F32 value_aspect = _paramHandler.getParam<F32>("aspectRatio");
-	F32 half_resolution_width = _cachedResolution.width / 2.0f;
-	F32 half_resolution_height = _cachedResolution.height / 2.0f;
+    F32 value_aspect = _paramHandler.getParam<F32>("runtime.aspectRatio");
+	F32 half_resolution_width = renderState()->_cachedResolution.width / 2.0f;
+	F32 half_resolution_height = renderState()->_cachedResolution.height / 2.0f;
 
     F32 modifier_x, modifier_y;
         //mathematical handling of the difference between
@@ -377,7 +417,7 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
     vec3<F32> point;
         //the untransformed ray will be put here
 
-    F32 point_dist = _paramHandler.getParam<F32>("zFar");
+    F32 point_dist = _paramHandler.getParam<F32>("runtime.zFar");
         //it'll be put this far on the Z plane
 
     vec3<F32> camera_origin;
@@ -449,8 +489,8 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
 	vec3<F32> dir = origin.direction(final_point);
 	
 	Ray r(origin,dir);
-	_currentSelection = _sceneGraph->Intersect(r,_paramHandler.getParam<F32>("zNear"),
-												 _paramHandler.getParam<F32>("zFar")/2.0f);
+	_currentSelection = _sceneGraph->Intersect(r,Frustum::getInstance().getZPlanes().x,
+												 Frustum::getInstance().getZPlanes().y/2.0f);
 
 }
 

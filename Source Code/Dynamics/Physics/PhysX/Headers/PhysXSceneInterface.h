@@ -46,8 +46,8 @@ protected:
 
 private:
 	physx::PxScene* _gScene;
-	std::vector<physx::PxRigidStatic* >  _sceneRigidStaticActors;
-	std::vector<physx::PxRigidDynamic* > _sceneRigidDynamicActors;
+	vectorImpl<physx::PxRigidStatic* > _sceneRigidStaticActors;
+	vectorImpl<physx::PxRigidDynamic* > _sceneRigidDynamicActors;
 	boost::mutex _creationMutex;
 };
 

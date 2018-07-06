@@ -24,21 +24,9 @@ class glDepthBufferObject : public glFrameBufferObject {
 
 public:
 
-	glDepthBufferObject();
+	glDepthBufferObject(/*bool cubeMap = false - alas, depth only cubemaps do not exist in GL ...*/);
 	~glDepthBufferObject() {Destroy();}
 
-	bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = DEPTH_COMPONENT24, 
-									   IMAGE_FORMATS formatEnum = DEPTH_COMPONENT);
-	void Destroy();
-
-	void Begin(U8 nFace=0) const;	
-	void End(U8 nFace=0) const;		
-
-	void Bind(U8 unit=0, U8 texture = 0);		
-	void Unbind(U8 unit=0);	
-
-private:
-	U32  _textureId;
 };
 
 #endif

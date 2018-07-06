@@ -1,6 +1,7 @@
 #include "Headers/Mesh.h"
 #include "Headers/SubMesh.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Core/Headers/ParamHandler.h"
 
 void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 	if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
@@ -42,9 +43,6 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 		///Hold a reference to the submesh by ID (used for animations)
 		_subMeshRefMap.insert(std::make_pair(s->getId(), s));
 		s->setParentMesh(this);
-		if(s->_hasAnimations){
-			_hasAnimations = true;
-		}
 	}
 	Object3D::postLoad(sgn);
 }
@@ -52,7 +50,6 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
 void Mesh::onDraw(){
 
 	if(!isLoaded()) return;
-	_playAnimations = ParamHandler::getInstance().getParam<bool>("mesh.playAnimations");
 	Object3D::onDraw();
 }
 
@@ -62,10 +59,5 @@ void Mesh::updateTransform(SceneGraphNode* const sgn){
 
 /// Called from SceneGraph "sceneUpdate"
 void Mesh::sceneUpdate(D32 sceneTime){
-	///sceneTime is in miliseconds. Convert to seconds
-	D32 timeIndex = sceneTime/1000.0;
-	for_each(subMeshRefMap::value_type& subMesh, _subMeshRefMap){
-		subMesh.second->updateAnimations(timeIndex);
-	}
 }
 

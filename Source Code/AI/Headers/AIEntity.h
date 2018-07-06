@@ -39,10 +39,10 @@ public:
 
 	SceneGraphNode* getBoundNode() {return _node;}
 	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
-	bool addSensor(SENSOR_TYPE type, Sensor* sensor);
+	bool addSensor(SensorType type, Sensor* sensor);
 	bool setComInterface() {SAFE_UPDATE(_comInterface, New CommunicationInterface(this)); return true;}
 	bool addActionProcessor(ActionList* actionProcessor);
-	Sensor* getSensor(SENSOR_TYPE type);
+	Sensor* getSensor(SensorType type);
 	CommunicationInterface* getCommunicationInterface() {return _comInterface;}
 	inline AICoordination* getTeam() {return _coordination; }
 	inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return -1; }
@@ -53,9 +53,9 @@ public:
 	///Add a friend to our team
 	bool addFriend(AIEntity* const friendEntity);
 
-	void sendMessage(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content);
-	void receiveMessage(AIEntity* sender, AI_MSG msg,const boost::any& msg_content);
-	void processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content);
+	void sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content);
+	void receiveMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
+	void processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content);
 	const std::string& getName() {return _name;}
 
 	inline void addUnitRef(NPC* const npc) {_unitRef = npc;}
@@ -71,7 +71,7 @@ private:
 	mutable Lock    _managerQueryMutex;
 
 	CommunicationInterface*             _comInterface;
-	unordered_map<SENSOR_TYPE, Sensor*> _sensorList;
+	Unordered_map<SensorType, Sensor*> _sensorList;
 	NPC* _unitRef;
 	
 };

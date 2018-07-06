@@ -2,7 +2,7 @@
 
 #include "core.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "Utility/Headers/BoundingBox.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 bool Frustum::ContainsPoint(const vec3<F32>& point) const {
    for(I8 p = 0; p < 6; p++)	
@@ -76,15 +76,13 @@ I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const {
 
 }
 
-
-
 void Frustum::Extract(const vec3<F32>& eye){
 
 	_eyePos = eye;
 	F32 t;
+	GFX_DEVICE.getMatrix(GFXDevice::MODEL_VIEW_MATRIX,_modelViewMatrix);
+	GFX_DEVICE.getMatrix(GFXDevice::PROJECTION_MATRIX,_projectionMatrix);
 
-	GFX_DEVICE.getModelViewMatrix(_modelViewMatrix);
-	GFX_DEVICE.getProjectionMatrix(_projectionMatrix);
 	_modelViewMatrix.inverse(_modelViewMatrixInv);						
 	_modelViewProjectionMatrix = _projectionMatrix * _modelViewMatrix;
 	_inverseModelViewProjectionMatrix = _projectionMatrix * _modelViewMatrixInv;
@@ -95,7 +93,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[0][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[12];
 
 	
-	t = Util::square_root_f( _frustumPlanes[0][0] * _frustumPlanes[0][0] + _frustumPlanes[0][1] * _frustumPlanes[0][1] + _frustumPlanes[0][2] * _frustumPlanes[0][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[0][0] * _frustumPlanes[0][0] + _frustumPlanes[0][1] * _frustumPlanes[0][1] + _frustumPlanes[0][2] * _frustumPlanes[0][2] );
 	_frustumPlanes[0][0] /= t;
 	_frustumPlanes[0][1] /= t;
 	_frustumPlanes[0][2] /= t;
@@ -108,7 +106,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[1][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[12];
 
 	
-	t = Util::square_root_f( _frustumPlanes[1][0] * _frustumPlanes[1][0] + _frustumPlanes[1][1] * _frustumPlanes[1][1] + _frustumPlanes[1][2] * _frustumPlanes[1][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[1][0] * _frustumPlanes[1][0] + _frustumPlanes[1][1] * _frustumPlanes[1][1] + _frustumPlanes[1][2] * _frustumPlanes[1][2] );
 	_frustumPlanes[1][0] /= t;
 	_frustumPlanes[1][1] /= t;
 	_frustumPlanes[1][2] /= t;
@@ -121,7 +119,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[2][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[13];
 
 	
-	t = Util::square_root_f( _frustumPlanes[2][0] * _frustumPlanes[2][0] + _frustumPlanes[2][1] * _frustumPlanes[2][1] + _frustumPlanes[2][2] * _frustumPlanes[2][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[2][0] * _frustumPlanes[2][0] + _frustumPlanes[2][1] * _frustumPlanes[2][1] + _frustumPlanes[2][2] * _frustumPlanes[2][2] );
 	_frustumPlanes[2][0] /= t;
 	_frustumPlanes[2][1] /= t;
 	_frustumPlanes[2][2] /= t;
@@ -134,7 +132,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[3][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[13];
 
 	
-	t = Util::square_root_f( _frustumPlanes[3][0] * _frustumPlanes[3][0] + _frustumPlanes[3][1] * _frustumPlanes[3][1] + _frustumPlanes[3][2] * _frustumPlanes[3][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[3][0] * _frustumPlanes[3][0] + _frustumPlanes[3][1] * _frustumPlanes[3][1] + _frustumPlanes[3][2] * _frustumPlanes[3][2] );
 	_frustumPlanes[3][0] /= t;
 	_frustumPlanes[3][1] /= t;
 	_frustumPlanes[3][2] /= t;
@@ -147,7 +145,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[4][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[14];
 
 	
-	t = Util::square_root_f( _frustumPlanes[4][0] * _frustumPlanes[4][0] + _frustumPlanes[4][1] * _frustumPlanes[4][1] + _frustumPlanes[4][2] * _frustumPlanes[4][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[4][0] * _frustumPlanes[4][0] + _frustumPlanes[4][1] * _frustumPlanes[4][1] + _frustumPlanes[4][2] * _frustumPlanes[4][2] );
 	_frustumPlanes[4][0] /= t;
 	_frustumPlanes[4][1] /= t;
 	_frustumPlanes[4][2] /= t;
@@ -160,7 +158,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[5][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[14];
 
 	
-	t = Util::square_root_f( _frustumPlanes[5][0] * _frustumPlanes[5][0] + _frustumPlanes[5][1] * _frustumPlanes[5][1] + _frustumPlanes[5][2] * _frustumPlanes[5][2] );
+	t = square_root_tpl<F32>( _frustumPlanes[5][0] * _frustumPlanes[5][0] + _frustumPlanes[5][1] * _frustumPlanes[5][1] + _frustumPlanes[5][2] * _frustumPlanes[5][2] );
 	_frustumPlanes[5][0] /= t;
 	_frustumPlanes[5][1] /= t;
 	_frustumPlanes[5][2] /= t;

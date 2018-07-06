@@ -21,15 +21,15 @@
 #include "core.h"
 #include <boost/any.hpp>
 
-enum AI_MSG;
+enum AIMsg;
 class AIEntity;
 class CommunicationInterface{
 
 public:
 	CommunicationInterface(AIEntity* entity) : _entity(entity) {}
 
-	bool sendMessageToEntity(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content);
-	bool receiveMessageFromEntity(AIEntity* sender, AI_MSG msg, const boost::any& msg_content);
+	bool sendMessageToEntity(AIEntity* receiver, AIMsg msg,const boost::any& msg_content);
+	bool receiveMessageFromEntity(AIEntity* sender, AIMsg msg, const boost::any& msg_content);
 
 private:
 	AIEntity* _entity;

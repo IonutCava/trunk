@@ -40,12 +40,12 @@ public:
 	void onDraw();
 	void render(SceneGraphNode* const sgn);
 	void postLoad(SceneGraphNode* const sgn);
-	void prepareMaterial(SceneGraphNode const* const sgn);
+	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
-	bool getDrawState(RENDER_STAGE currentStage)  const;
+	bool getDrawState(RenderStage currentStage)  const;
 
 	/// ToDo: check water visibility - Ionut
-	bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
+	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
 
 	void setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency);
 	inline Quad3D*     getQuad()    {return _plane;}
@@ -69,6 +69,7 @@ private:
 	bool computeBoundingBox(SceneGraphNode* const sgn);
 
 private:
+	U8                 _lightCount;
 	/// cached far plane value
 	F32				   _farPlane;
 	/// cached water level
@@ -82,6 +83,7 @@ private:
 	Transform*         _planeTransform;
 	SceneGraphNode*    _node;
 	SceneGraphNode*    _planeSGN;
+	bool               _reflectionRendering;
 };
 
 #endif

@@ -1,7 +1,6 @@
 #include "Headers/SceneGraphNode.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Water/Headers/Water.h"
-#include "Rendering/Lighting/Headers/Light.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 
 
@@ -36,7 +35,12 @@ SceneGraphNode::~SceneGraphNode(){
 
 }
 
-std::vector<BoundingBox >&  SceneGraphNode::getBBoxes(std::vector<BoundingBox >& boxes ){
+bool SceneGraphNode::computeBoundingSphere(){
+	_boundingSphere.fromBoundingBox(getBoundingBox());
+	return true;
+}
+
+vectorImpl<BoundingBox >&  SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ){
 	//Unload every sub node recursively
 	for_each(NodeChildren::value_type& it, _children){
 		it.second->getBBoxes(boxes);
@@ -77,7 +81,7 @@ void SceneGraphNode::print(){
 	//get out material's name
 	Material* mat = _node->getMaterial();
 	//Some strings to hold the names of our material and shader
-	std::string material("none"),shader("none");
+	std::string material("none"),shader("none"),depthShader("none");
 	//If we have a material
 	if(mat){
 		//Get the material's name
@@ -87,9 +91,17 @@ void SceneGraphNode::print(){
 			//Get the shader's name
 			shader = mat->getShaderProgram()->getName();
 		}
+		if(mat->getShaderProgram(SHADOW_STAGE)){
+			//Get the depth shader's name
+			depthShader = mat->getShaderProgram(SHADOW_STAGE)->getName();
+		}
 	}
 	//Print our current node's information
-	PRINT_FN(Locale::get("PRINT_SCENEGRAPH_NODE"), getName().c_str(),_node->getName().c_str(),material.c_str(),shader.c_str());
+		PRINT_FN(Locale::get("PRINT_SCENEGRAPH_NODE"), getName().c_str(),
+										               _node->getName().c_str(),
+													   material.c_str(),
+													   shader.c_str(),
+													   depthShader.c_str());
 	//Repeat for each child, but prefix it with the appropriate number of dashes
 	//Based on our ancestor counting earlier
 	for_each(NodeChildren::value_type& it, _children){
@@ -111,7 +123,7 @@ void SceneGraphNode::setParent(SceneGraphNode* parent) {
 	_parent = parent;
 	//Add ourselves in the new parent's children map
 	//Time to add it to the children map
-	std::pair<unordered_map<std::string, SceneGraphNode*>::iterator, bool > result;
+	std::pair<Unordered_map<std::string, SceneGraphNode*>::iterator, bool > result;
 	//Try and add it to the map
 	result = _parent->getChildren().insert(std::make_pair(getName(),this));
 	//If we had a collision (same name?)

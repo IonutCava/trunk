@@ -19,8 +19,8 @@
 #include "Waypoint.h"
 namespace Navigation {
 	class WaypointGraph {
-		typedef unordered_map<I32, Waypoint*> WaypointMap; 
-		//typedef unordered_map<I32, WaypointPath> PathMap;
+		typedef Unordered_map<I32, Waypoint*> WaypointMap; 
+		//typedef Unordered_map<I32, WaypointPath> PathMap;
 	public:
 		WaypointGraph();
 		~WaypointGraph();
@@ -41,9 +41,9 @@ namespace Navigation {
 		U32 _id;
 		bool _loop;
 
-		std::vector<vec3<F32> >         _positions;
-		std::vector<Quaternion<F32> >   _rotations;
-		std::vector<U32>                _times;
+		vectorImpl<vec3<F32> >         _positions;
+		vectorImpl<Quaternion<F32> >   _rotations;
+		vectorImpl<U32>                _times;
 	};
 };
 

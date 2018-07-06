@@ -20,12 +20,7 @@
 
 #include "JoystickInterface.h"
 #include "Core/Headers/Application.h"
-
 #if defined OIS_WIN32_PLATFORM
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  include "windows.h"
 #  ifdef min
 #    undef min
 #  endif
@@ -58,8 +53,8 @@ class EffectManager{
     // The joystick manager
     JoystickInterface* _pJoystickInterface;
 
-    // Vector to hold variable effects
-    std::vector<VariableEffect*> _vecEffects;
+    // vector to hold variable effects
+    vectorImpl<VariableEffect*> _vecEffects;
 
     // Selected effect
     I8 _nCurrEffectInd;
@@ -68,7 +63,7 @@ class EffectManager{
     U32 _nUpdateFreq;
 
 	// Indexes (in _vecEffects) of the variable effects that are playable by the selected joystick.
-	std::vector<size_t> _vecPlayableEffectInd;
+	vectorImpl<size_t> _vecPlayableEffectInd;
 
 
   public:
@@ -170,14 +165,14 @@ class EffectManager{
 
     ~EffectManager()
     {
-	  std::vector<VariableEffect*>::iterator iterEffs;
+	  vectorImpl<VariableEffect*>::iterator iterEffs;
 	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); ++iterEffs)
 		   SAFE_DELETE(*iterEffs);
 	  }
 
     void updateActiveEffects()
     {
-	  std::vector<VariableEffect*>::iterator iterEffs;
+	  vectorImpl<VariableEffect*>::iterator iterEffs;
 	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); ++iterEffs)
 		if ((*iterEffs)->isActive())
 		{
@@ -298,7 +293,7 @@ DEFINE_SINGLETON( InputInterface )
     bool               _bMustStop;
     bool               _bIsInitialized;
 
-    I8 _nStatus;
+    I16 _nStatus;
 
     // App. hart beat frequency.
     static const U8 _nHartBeatFreq = 20; // Hz
@@ -325,17 +320,15 @@ DEFINE_SINGLETON( InputInterface )
 	}
 
 public:
-	I8 initialize(Kernel* const kernel, const std::string& windowTitle)
+	U8 initialize(Kernel* const kernel, const std::string& windowTitle, size_t windowId = 0)
     {
 		if(_bIsInitialized)
 			return NO_ERR;
 		OIS::ParamList pl;
 #if defined OIS_WIN32_PLATFORM
 	  // Create OIS input manager
-		HWND hWnd = 0;
-		hWnd = FindWindow("FREEGLUT",windowTitle.c_str());
 		std::ostringstream wnd;
-		wnd << (size_t)hWnd;
+		wnd << windowId;
 		pl.insert(std::make_pair(std::string("WINDOW"), wnd.str() ));
 		pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND" )));
 		pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_NONEXCLUSIVE")));
@@ -368,6 +361,17 @@ public:
 			_pJoystick = (OIS::JoyStick*) _pInputInterface->createInputObject(OIS::OISJoyStick, true);
 			if(_pJoystick){
 				_pJoystick->setEventCallback( _pEventHdlr );
+				// Create the joystick manager.
+				_pJoystickInterface = new JoystickInterface(_pInputInterface, _pEventHdlr);
+				if( !_pJoystickInterface->wasFFDetected() )	{
+					PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
+					SAFE_DELETE(_pJoystickInterface);
+				}else{
+					// Create force feedback effect manager.
+					_pEffectMgr = new EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
+					// Initialize the event handler.
+					_pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
+				}
 			}
 	  }
 	  catch(OIS::Exception &ex)
@@ -386,20 +390,6 @@ public:
 	  catch(OIS::Exception &ex)
 	  {
 		  PRINT_FN(Locale::get("ERROR_INPUT_CREATE_MOUSE"),ex.eText);
-	  }
-	  
-	  // Create the joystick manager.
-	  _pJoystickInterface = new JoystickInterface(_pInputInterface, _pEventHdlr);
-	  if( !_pJoystickInterface->wasFFDetected() )
-	  {
-		  PRINT_FN(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
-		  SAFE_DELETE(_pJoystickInterface);
-	  }
-	  else
-	  {	  // Create force feedback effect manager.
-	      _pEffectMgr = new EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
-		  // Initialize the event handler.
-		  _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
 	  }
 
 	  _bIsInitialized = true;
@@ -423,7 +413,7 @@ public:
 	}
 #endif
 
-    I8 tick()
+    U8 tick()
     {
 	  const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
 	  U8 nEffectUpdateCnt = 0;

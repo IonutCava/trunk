@@ -7,27 +7,39 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 
-SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader, 
-											 Quad3D* target, 
+SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target, 
 											 FrameBufferObject* result,
 											 const vec2<U16>& resolution) : PreRenderOperator(SSAO_STAGE,target,resolution),
-																			_stage1Shader(SSAOShader),
 																		    _outputFBO(result)
 {
-	U16 width = _resolution.width;
-	U16 height = _resolution.height;
+	F32 width = _resolution.width;
+	F32 height = _resolution.height;
 	ParamHandler& par = ParamHandler::getInstance();
 	ResourceDescriptor colorNoiseTexture("noiseTexture");
 	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//noise.png");
 	_colorNoise = CreateResource<Texture>(colorNoiseTexture);
+
+	TextureDescriptor normalsDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
+	normalsDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+	normalsDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	_normalsFBO->AddAttachment(normalsDescriptor,TextureDescriptor::Color0);
+	_normalsFBO->toggleDepthWrites(false);
+
 	_normalsFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 	_normalsFBO->Create(width,height);
+
+	TextureDescriptor outputDescriptor(TEXTURE_2D, RGBA,RGBA8,FLOAT_32);
+	outputDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+	outputDescriptor._generateMipMaps = false; //it's a flat texture on a full screen quad. really?
+	_outputFBO->AddAttachment(outputDescriptor,TextureDescriptor::Color0);
 	_outputFBO->Create(width, height);
+	_stage1Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass1"));
 	_stage2Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
 
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator(){
+	RemoveResource(_stage1Shader);
 	RemoveResource(_stage2Shader);
 	RemoveResource(_colorNoise);
 	SAFE_DELETE(_normalsFBO);

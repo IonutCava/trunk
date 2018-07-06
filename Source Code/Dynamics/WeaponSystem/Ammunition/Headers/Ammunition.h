@@ -23,7 +23,7 @@
 class Ammunition {
 public:
 	/// Type of ammo defines it's properties
-	enum AMMUNITION_TYPE{
+	enum AmmunitionType{
 		/// Uses a counter to keep track of quantity
 		AMMUNITION_TYPE_DEPLETABLE = toBit(1),
 		/// Does not keep track of quantity
@@ -32,11 +32,11 @@ public:
 		AMMUNITION_TYPE_PLACEHOLDER = toBit(10),
 	};
 
-	Ammunition(AMMUNITION_TYPE type);
+	Ammunition(AmmunitionType type);
 	~Ammunition();
 
 private:
-	AMMUNITION_TYPE _type;
+	AmmunitionType _type;
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Dynamics/Entities/Triggers/Headers/Trigger.h"
 
 Trigger* ImplResourceLoader<Trigger>::operator()(){
@@ -7,7 +8,7 @@ Trigger* ImplResourceLoader<Trigger>::operator()(){
 
 	if(!ptr) return NULL;
 	if(!load(ptr,_descriptor.getName())) return NULL;
-	ptr->useDefaultMaterial(false);
+	ptr->getSceneNodeRenderState().useDefaultMaterial(false);
 	ptr->setMaterial(NULL);
 
 	return ptr;

@@ -24,25 +24,22 @@
 #define CEGUI_STATIC
 #endif 
 
-enum Font;
+class GUIElement;
 namespace CEGUI{
 	class Renderer;
 };
-class GUIElement;
-
 DEFINE_SINGLETON( GUI )
-	typedef unordered_map<std::string,GUIElement*> guiMap;
+	typedef Unordered_map<std::string,GUIElement*> guiMap;
 	typedef boost::function0<void> ButtonCallback;
 
 public:
 	void draw();
 	void close();
-	void addText(const std::string& id,const vec3<F32>& position, Font font,const vec3<F32>& color, char* format, ...);
+	void addText(const std::string& id,const vec2<F32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
 	void addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback);
 	void addFlash(const std::string& id, std::string movie, const vec2<F32>& position, const vec2<F32>& extent);
 	void modifyText(const std::string& id, char* format, ...);
-	void toggleConsole();
-	void createConsole();
+
 	void onResize(const vec2<U16>& newResolution);
 	void clickCheck();
 	void clickReleaseCheck();
@@ -55,7 +52,6 @@ public:
 	bool init();
 
 	bool bindRenderer(CEGUI::Renderer& renderer);
-
 private:
 	GUI();
 	~GUI();
@@ -64,7 +60,7 @@ private:
 	vec2<U16> _cachedResolution;
 
 	guiMap _guiStack;
-	std::pair<unordered_map<std::string, GUIElement*>::iterator, bool > _resultGuiElement;
+	std::pair<Unordered_map<std::string, GUIElement*>::iterator, bool > _resultGuiElement;
 
 END_SINGLETON
 #endif

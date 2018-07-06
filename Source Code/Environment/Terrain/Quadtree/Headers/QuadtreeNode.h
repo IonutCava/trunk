@@ -19,15 +19,15 @@
 #define _QUAD_TREE_NODE
 
 #include "core.h"
-#include "Utility/Headers/BoundingBox.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
-enum CHILD_POSITION{
+enum ChildPosition{
 	CHILD_NW = 0,
 	CHILD_NE = 1,
 	CHILD_SW = 2,
 	CHILD_SE = 3
 };
-enum CHUNK_BIT{
+enum ChunkBit{
 	CHUNK_BIT_TESTCHILDREN	  = toBit(1),
 	CHUNK_BIT_WATERREFLECTION = toBit(2),
 	CHUNK_BIT_DEPTHMAP		  = toBit(3)
@@ -41,11 +41,10 @@ class QuadtreeNode {
 public:
 	///recursive node building function
 	void Build(U8 depth, vec2<U32> pos, vec2<U32> HMsize, U32 minHMSize);
-	bool computeBoundingBox(const std::vector<vec3<F32> >& vertices);
+	bool computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
 	void Destroy();
 
-	inline ShaderProgram*     const     getParentShaderProgram()       {return _parentShaderProgram;}
-	inline void                         setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
+	inline void setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
 
 	void DrawGround(I32 options);
 	void DrawGrass();

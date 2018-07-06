@@ -5,35 +5,21 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/AIManager.h"
 #include "Rendering/Headers/Frustum.h"
-#include "GUI/Headers/GUI.h"
 
 REGISTER_SCENE(WarScene);
 
-//begin copy-paste: randarea scenei
-void WarScene::render(){
-	Sky& sky = Sky::getInstance();
-
-	sky.setParams(_camera->getEye(),_sunVector,false,true,true);
-	sky.draw();
-
-	_sceneGraph->render();
-}
-//end copy-paste
 
 void WarScene::preRender(){
 	vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-	_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+	_sunvector = vec3<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
-							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
-							0.0f );
+							-sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-	LightManager::getInstance().getLight(0)->setLightProperties(LIGHT_POSITION,_sunVector);
-
+	LightManager::getInstance().getLight(0)->setPosition(_sunvector);
+	getSkySGN(0)->getNode<Sky>()->setRenderingOptions(renderState()->getCamera()->getEye(),_sunvector);
 }
 
 void WarScene::processEvents(F32 time){
@@ -71,42 +57,39 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
 
 void WarScene::processInput(){
 
-	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
-	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
-	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR);
+	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR);
+	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR/5));
+	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
 }
 
 bool WarScene::load(const std::string& name){
-
-	bool state = false;
+	///Load scene resources
+	SCENE_LOAD(name,true,true);
 	//Add a light
 	Light* light = addDefaultLight();
-	light->setLightProperties(LIGHT_AMBIENT,_white);
-	light->setLightProperties(LIGHT_DIFFUSE,_white);
-	light->setLightProperties(LIGHT_SPECULAR,_white);
-												
-	//Load scene resources
-	state = loadResources(true);	
-	
+	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
+	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,WHITE());
+	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,WHITE());
+	//Add a skybox
+	addDefaultSky();								
 	//Position camera
-	_camera->RotateX(RADIANS(45));
-	_camera->RotateY(RADIANS(25));
-	_camera->setEye(vec3<F32>(14,5.5f,11.5f));
+	renderState()->getCamera()->RotateX(RADIANS(45));
+	renderState()->getCamera()->RotateY(RADIANS(25));
+	renderState()->getCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
+	//Create 2 AI teams
 	_faction1 = New AICoordination(1);
 	_faction2 = New AICoordination(2);
 
-
-	//------------------------ Restul elementelor jocului -----------------------------///
+	//------------------------ The rest of the scene elements -----------------------------///
 	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
 	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
 
-	state = loadEvents(true);
-	return state;
+	return loadState;
 }
 
 bool WarScene::initializeAI(bool continueOnErrors){
-		//----------------------------INTELIGENTA ARTIFICIALA------------------------------//
+	//----------------------------Artificial Intelligence------------------------------//
 
 	AIEntity* aiSoldier = NULL;
 	SceneGraphNode* soldierMesh = _sceneGraph->findNode("Soldier1");
@@ -171,19 +154,19 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 
 bool WarScene::loadResources(bool continueOnErrors){
 	
-	GUI::getInstance().addButton("Simulate", "Simulate", vec2<F32>(_cachedResolution.width-220 ,
-																   _cachedResolution.height/1.1f),
+	GUI::getInstance().addButton("Simulate", "Simulate", vec2<F32>(renderState()->cachedResolution().width-220 ,
+																   renderState()->cachedResolution().height/1.1f),
 													     vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 														 boost::bind(&WarScene::startSimulation,this));
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3<F32>(60,60,0),          //Position
-							   BITMAP_8_BY_13,    //Font
+		                       vec2<F32>(60,60),          //Position
+							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	GUI::getInstance().addText("RenderBinCount",
-								vec3<F32>(60,70,0),
-								BITMAP_8_BY_13,
+								vec2<F32>(60,70),
+								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 
@@ -192,26 +175,20 @@ bool WarScene::loadResources(bool continueOnErrors){
 	return true;
 }
 
-bool WarScene::unload(){
-	Sky::getInstance().DestroyInstance();
-	return Scene::unload();
-}
-
-
 void WarScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
 		case OIS::KC_W:
-			_moveFB = 0.25f;
+			state()->_moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			_moveLR = 0.25f;
+			state()->_moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			_moveFB = -0.25f;
+			state()->_moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			_moveLR = -0.25f;
+			state()->_moveLR = -0.25f;
 			break;
 		default:
 			break;
@@ -223,11 +200,11 @@ void WarScene::onKeyUp(const OIS::KeyEvent& key){
 	switch(key.key)	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			_moveFB = 0;
+			state()->_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			_moveLR = 0;
+			state()->_moveLR = 0;
 			break;
 		case OIS::KC_F1:
 			_sceneGraph->print();
@@ -241,18 +218,18 @@ void WarScene::onMouseMove(const OIS::MouseEvent& key){
 
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
-			_angleLR = -0.15f;
+			state()->_angleLR = -0.15f;
 		else if(_prevMouse.x - key.state.X.abs < -1 )
-			_angleLR = 0.15f;
+			state()->_angleLR = 0.15f;
 		else
-			_angleLR = 0;
+			state()->_angleLR = 0;
 
 		if(_prevMouse.y - key.state.Y.abs > 1 )
-			_angleUD = -0.1f;
+			state()->_angleUD = -0.1f;
 		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			_angleUD = 0.1f;
+			state()->_angleUD = 0.1f;
 		else
-			_angleUD = 0;
+			state()->_angleUD = 0;
 	}
 	
 	_prevMouse.x = key.state.X.abs;
@@ -269,7 +246,7 @@ void WarScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID butt
 	Scene::onMouseClickUp(key,button);
 	if(button == 0)	{
 		_mousePressed = false;
-		_angleUD = 0;
-		_angleLR = 0;
+		state()->_angleUD = 0;
+		state()->_angleLR = 0;
 	}
 }

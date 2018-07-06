@@ -18,21 +18,51 @@
 #ifndef _RENDER_API_H
 #define _RENDER_API_H
 
-#include "Core/Math/Headers/MathClasses.h"
 #include "RenderAPIEnums.h"
 #include <boost/function.hpp>
-#include <vector>
-
+#include "Utility/Headers/Vector.h"
+#include "Core/Math/Headers/MathClasses.h"
+#if defined( __WIN32__ ) || defined( _WIN32 )
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  include "windows.h"
+#  ifdef min
+#    undef min
+#  endif
+#  ifdef max
+#	 undef max
+#  endif
+//////////////////////////////////////////////////////////////////////
+////////////////////////////////////Needed Linux Headers//////////////
+#elif defined OIS_LINUX_PLATFORM
+#  include <X11/Xlib.h>
+//////////////////////////////////////////////////////////////////////
+////////////////////////////////////Needed Mac Headers//////////////
+#elif defined OIS_APPLE_PLATFORM
+#  include <Carbon/Carbon.h>
+#endif
 ///Simple frustum representation
 struct frustum{
 
-	F32 neard;
-	F32 fard;
+	F32 nearPlane;
+	F32 farPlane;
 	F32 fov;
 	F32 ratio;
 	vec3<F32> point[8];
 };
 
+typedef struct {
+	// Video resolution
+	I32 Width, Height;
+	// Red bits per pixel
+	I32 RedBits;
+	// Green bits per pixel
+	I32 GreenBits;
+	// Blue bits per pixel
+	I32 BlueBits;
+
+} VideoModes;
 //FWD DECLARE CLASSES
 
 class Light;
@@ -53,7 +83,7 @@ class FrameBufferObject;
 class VertexBufferObject;
 
 ///FWD DECLARE ENUMS
-enum SHADER_TYPE;
+enum ShaderType;
 
 ///FWD DECLARE TYPEDEFS
 typedef Texture Texture2D;
@@ -64,40 +94,53 @@ struct RenderStateBlockDescriptor;
 
 ///Renderer Programming Interface
 class RenderAPIWrapper {
-
+public: //RenderAPIWrapper global
+	enum MATRIX_MODE{
+		MODEL_VIEW_MATRIX = 0,
+		PROJECTION_MATRIX = 1
+	};
 protected:
-	RenderAPIWrapper() : _apiId(GFX_RENDER_API_PLACEHOLDER),_apiVersionId(GFX_RENDER_API_VER_PLACEHOLDER) {}
+	RenderAPIWrapper() : _apiId(GFX_RENDER_API_PLACEHOLDER),
+		                 _apiVersionId(GFX_RENDER_API_VER_PLACEHOLDER),
+					     _GPUVendor(GPU_VENDOR_PLACEHOLDER){}
 
 	friend class GFXDevice;
 	
-	inline void setId(RENDER_API apiId)                        {_apiId = apiId;}
-	inline void setVersionId(RENDER_API_VERSION apiVersionId)  {_apiVersionId = apiVersionId;}
+	inline void setId(RenderAPI apiId)                       {_apiId = apiId;}
+	inline void setVersionId(RenderAPIVersion apiVersionId)  {_apiVersionId = apiVersionId;}
+	inline void setGPUVendor(GPUVendor gpuvendor)            {_GPUVendor = gpuvendor;}
 
-	inline RENDER_API         getId()        { return _apiId;}
-	inline RENDER_API_VERSION getVersionId() { return _apiVersionId;}
+	inline RenderAPI        getId()        { return _apiId;}
+	inline RenderAPIVersion getVersionId() { return _apiVersionId;}
+	inline GPUVendor        getGPUVendor() { return _GPUVendor;}
 
 	virtual void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false) = 0;
 	virtual void idle() = 0;
-	virtual void getModelViewMatrix(mat4<F32>& mvMat) = 0;
-	virtual void getProjectionMatrix(mat4<F32>& projMat) = 0;
+	virtual void getMatrix(MATRIX_MODE mode, mat4<F32>& mat) = 0;
 	
+	///Change the resolution and reshape all graphics data
 	virtual void changeResolution(U16 w, U16 h) = 0;
+	///Change the window size without reshaping window data
+	virtual void setWindowSize(U16 w, U16 h) = 0;
+	///Change the window's position
+	virtual void setWindowPos(U16 w, U16 h) = 0;
 
-	virtual FrameBufferObject*  newFBO(FBO_TYPE type = FBO_2D_COLOR) = 0;
+	virtual FrameBufferObject*  newFBO(FBOType type = FBO_2D_COLOR) = 0;
 	virtual VertexBufferObject* newVBO() = 0;
-	virtual PixelBufferObject*  newPBO() = 0;
+	virtual PixelBufferObject*  newPBO(PBOType type = PBO_TEXTURE_2D) = 0;
 	virtual Texture2D*          newTexture2D(bool flipped = false) = 0;
 	virtual TextureCubemap*     newTextureCubemap(bool flipped = false) = 0;
 	virtual ShaderProgram*      newShaderProgram() = 0;
-	virtual Shader*             newShader(const std::string& name, SHADER_TYPE type) = 0;
+	virtual Shader*             newShader(const std::string& name, ShaderType type) = 0;
 	
-	virtual I8   initHardware(const vec2<U16>& resolution) = 0;
+	virtual I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv) = 0;
 	virtual void exitRenderLoop(bool killCommand = false) = 0;
 	virtual void closeRenderingApi() = 0;
-	virtual void initDevice(U32 targetFPS) = 0;
+	virtual void initDevice(U32 targetFrameRate) = 0;
+	virtual void flush() = 0;
 
 	/*Rendering States*/
-	virtual void clearBuffers(U8 buffer_mask) = 0;
+	virtual void clearBuffers(U16 buffer_mask) = 0;
 	virtual void swapBuffers() = 0;
 	virtual void enableFog(F32 density, F32* color) = 0;
 	/*Rendering States*/
@@ -115,11 +158,8 @@ protected:
 
 	/*GUI Rendering*/
 	virtual void drawTextToScreen(GUIElement* const) = 0;
-	virtual void drawCharacterToScreen(void* ,char) = 0;
 	virtual void drawButton(GUIElement* const) = 0;
 	virtual void drawFlash(GUIElement* const) = 0;
-	///console is singleton and viewport dimensions are updated by the API
-	virtual void drawConsole( ) = 0;
 	/*GUI Rendering*/
 
 	/*Object viewing*/
@@ -128,12 +168,12 @@ protected:
 
 	/*Primitives Rendering*/
 	virtual void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset) = 0;
-	virtual void drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset) = 0;
+	virtual void drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<vec3<F32> >& pointsB,const vectorImpl<vec4<F32> >& colors, const mat4<F32>& globalOffset) = 0;
 	/*Primitives Rendering*/
 
 	/*Mesh Rendering*/
 	virtual void renderModel(Object3D* const model) = 0;
-	virtual void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element) = 0;
+	virtual void renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element) = 0;
 	/*Mesh Rendering*/
 
 	/*Color Management*/
@@ -153,14 +193,36 @@ protected:
 
 	virtual F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph) = 0;
 
+    virtual bool loadInContext(const CurrentContext& context, boost::function0<void> callback) = 0;
+
 public: //RenderAPIWrapper global
 
+#if defined( __WIN32__ ) || defined( _WIN32 )
+	virtual HWND getHWND() {return _hwnd;}
+#elif defined( __APPLE_CC__ ) // Apple OS X
+	??
+#else //Linux
+	virtual Display* getDisplay() {return _dpy;}
+	virtual GLXDrawable getDrawSurface() {return _drawable;}
+#endif
 	virtual void updateStateInternal(RenderStateBlock* block, bool force = false) = 0;
 	virtual RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) = 0;
 	
 private:
-	RENDER_API         _apiId;
-	RENDER_API_VERSION _apiVersionId;
+	RenderAPI        _apiId;
+	GPUVendor        _GPUVendor;
+	RenderAPIVersion _apiVersionId;
+
+protected:
+#if defined( __WIN32__ ) || defined( _WIN32 )
+	HWND _hwnd;
+	HDC  _hdc ;
+#elif defined( __APPLE_CC__ ) // Apple OS X
+	??
+#else //Linux
+	Display* _dpy;
+	GLXDrawable _drawable; 
+#endif
 };
 
 #endif

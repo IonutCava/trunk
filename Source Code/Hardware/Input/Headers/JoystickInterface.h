@@ -29,9 +29,9 @@ class JoystickInterface {
     // Input manager.
     OIS::InputManager* _pInputInterface;
 
-    // Vectors to hold joysticks and associated force feedback devices
-    std::vector<OIS::JoyStick*> _vecJoys;
-    std::vector<OIS::ForceFeedback*> _vecFFDev;
+    // vectors to hold joysticks and associated force feedback devices
+    vectorImpl<OIS::JoyStick*> _vecJoys;
+    vectorImpl<OIS::ForceFeedback*> _vecFFDev;
 
     // Selected joystick
     U8 _nCurrJoyInd;

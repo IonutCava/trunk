@@ -18,10 +18,10 @@
 #ifndef _TERRAIN_H_
 #define _TERRAIN_H_
 
-#include "Utility/Headers/BoundingBox.h"
+#include "Graphs/Headers/SceneNode.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
-#include "Graphs/Headers/SceneNode.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 class Quad3D;
 class Quadtree;
@@ -31,7 +31,7 @@ class VertexBufferObject;
 
 class Terrain : public SceneNode {
 
-   enum TERRAIN_TEXTURE_USAGE{
+   enum TerrainTextureUsage{
 	  TERRAIN_TEXTURE_DIFFUSE = 0,
 	  TERRAIN_TEXTURE_NORMALMAP = 1,
 	  TERRAIN_TEXTURE_CAUSTICS = 2,
@@ -41,7 +41,7 @@ class Terrain : public SceneNode {
 	  TERRAIN_TEXTURE_ALPHA = 6
   };
 
-  typedef unordered_map<TERRAIN_TEXTURE_USAGE, Texture2D*> TerrainTextureMap;
+  typedef Unordered_map<TerrainTextureUsage, Texture2D*> TerrainTextureMap;
 
 public:
 
@@ -54,9 +54,9 @@ public:
 	void drawInfinitePlain();
 	void render(SceneGraphNode* const sgn);
 	void postDraw();
-	void prepareMaterial(SceneGraphNode const* const sgn);
+	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
-
+	void sceneUpdate(D32 sceneTime);
 	void drawBoundingBox(SceneGraphNode* const sgn);
 
 	inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
@@ -68,18 +68,18 @@ public:
 
 		   void  terrainSmooth(F32 k);
 		   void  postLoad(SceneGraphNode* const sgn);	
-	inline Vegetation* const getVegetation() const {return _veg;}
-	inline Quadtree& getQuadtree() const {return *_terrainQuadtree;}
+		   void  initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNode* const terrainSGN);
 
+    inline Quadtree&         getQuadtree()   const {return *_terrainQuadtree;}
+	inline Vegetation* const getVegetation() const {return _veg;}
 	inline void addVegetation(Vegetation* veg, std::string grassShader){_veg = veg; _grassShader = grassShader;} 
-		   void initializeVegetation(TerrainDescriptor* terrain);
-		   void toggleVegetation(bool state){ _veg->toggleRendering(state); }
+	inline void toggleVegetation(bool state){ _veg->toggleRendering(state); }
 	inline void setRenderingOptions(bool drawInReflection, const vec3<F32>& eyePos = vec3<F32>(0,0,0)){_drawInReflection = drawInReflection; _eyePos = eyePos;}
 	bool computeBoundingBox(SceneGraphNode* const sgn);
-	inline bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
+	inline bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
 
-	void addTexture(TERRAIN_TEXTURE_USAGE channel, Texture2D* const texture);
-	inline Texture2D* getTexture(TERRAIN_TEXTURE_USAGE channel) {return _terrainTextures[channel];}
+	void addTexture(TerrainTextureUsage channel, Texture2D* const texture);
+	inline Texture2D* getTexture(TerrainTextureUsage channel) {return _terrainTextures[channel];}
 
 protected:
 	template<typename T>
@@ -89,6 +89,7 @@ protected:
 
 private:
 
+	U8                      _lightCount; 
 	U16						_terrainWidth, _terrainHeight;
 	Quadtree*				_terrainQuadtree;
 	VertexBufferObject*		_groundVBO;
@@ -96,9 +97,12 @@ private:
 	F32  _terrainScaleFactor;
 	F32  _terrainHeightScaleFactor;
 	F32	 _farPlane;
+	F32  _stateRefreshInterval;
+	F32  _stateRefreshIntervalBuffer;
 	bool _drawInReflection;
 	bool _alphaTexturePresent;
 	bool _drawBBoxes;
+	bool _shadowMapped;
 
 	TerrainTextureMap       _terrainTextures;
 	Vegetation*             _veg;

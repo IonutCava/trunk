@@ -20,7 +20,7 @@
 
 #include "core.h"
 
-enum SENSOR_TYPE{
+enum SensorType{
 	NONE = 0,
 	VISUAL_SENSOR = 1,
 	AUDIO_SENSOR = 2
@@ -28,17 +28,17 @@ enum SENSOR_TYPE{
 
 class Sensor{
 public:
-	Sensor(SENSOR_TYPE type){_type = type;}
+	Sensor(SensorType type){_type = type;}
 	virtual void updatePosition(const vec3<F32>& newPosition) {_position = newPosition;}
 	/// return the coordinates at which the sensor is found (or the entity it's attached to)
 	inline vec3<F32>& getSpatialPosition() {return _position;}  
-	inline SENSOR_TYPE getSensorType()     {return _type;}
+	inline SensorType getSensorType()     {return _type;}
 	
 protected:
 
 	vec3<F32> _position;
 	vec2<F32> _range; ///< min/max
-	SENSOR_TYPE _type;
+	SensorType _type;
 };
 
 #endif 

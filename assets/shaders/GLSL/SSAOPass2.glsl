@@ -1,20 +1,20 @@
 -- Vertex
 
-varying vec4 texCoord[2];
+varying vec2 _texCoord;
 
 void main(void){
-	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 	gl_Position = sign( gl_Position );
  
 	// Texture coordinate for screen aligned (in correct range):
-	texCoord[0].st = (vec2( gl_Position.x, - gl_Position.y ) + vec2( 1.0 ) ) * 0.5;
+	_texCoord = (vec2( gl_Position.x, - gl_Position.y ) + vec2( 1.0 ) ) * 0.5;
 }
 
 -- Fragment
 
 uniform sampler2D rnm;
 uniform sampler2D normalMap;
-varying vec4 texCoord[2];
+varying vec2 _texCoord;
 
 uniform float totStrength;
 uniform float strength;
@@ -33,15 +33,15 @@ void main(void){
 	vec3 pSphere[10] = {vec3(-0.010735935, 0.01647018, 0.0062425877),vec3(-0.06533369, 0.3647007, -0.13746321),vec3(-0.6539235, -0.016726388, -0.53000957),vec3(0.40958285, 0.0052428036, -0.5591124),vec3(-0.1465366, 0.09899267, 0.15571679),vec3(-0.44122112, -0.5458797, 0.04912532),vec3(0.03755566, -0.10961345, -0.33040273),vec3(0.019100213, 0.29652783, 0.066237666),vec3(0.8765323, 0.011236004, 0.28265962),vec3(0.29264435, -0.40794238, 0.15964167)};
  
    // grab a normal for reflecting the sample rays later on
-   vec3 fres = normalize((texture2D(rnm,texCoord[0].st*offset).xyz*2.0) - vec3(1.0));
+   vec3 fres = normalize((texture(rnm,_texCoord*offset).xyz*2.0) - vec3(1.0));
  
-   vec4 currentPixelSample = texture2D(normalMap,texCoord[0].st);
+   vec4 currentPixelSample = texture(normalMap,_texCoord);
    currentPixelSample.w = 0.0;
    currentPixelSample = normalize(currentPixelSample);
    float currentPixelDepth = currentPixelSample.a;
  
    // current fragment coords in screen space
-   vec3 ep = vec3(texCoord[0].xy,currentPixelDepth);
+   vec3 ep = vec3(_texCoord,currentPixelDepth);
   // get the normal of current fragment
    vec3 norm = currentPixelSample.xyz;
  
@@ -59,7 +59,7 @@ void main(void){
       ray = radD*reflect(pSphere[i],fres);
  
       // get the depth of the occluder fragment
-      occluderFragment = texture2D(normalMap,ep.xy + sign(dot(ray,norm) )*ray.xy);
+      occluderFragment = texture(normalMap,ep.xy + sign(dot(ray,norm) )*ray.xy);
     // if depthDifference is negative = occluder is behind current fragment
       depthDifference = currentPixelDepth-occluderFragment.a;
  

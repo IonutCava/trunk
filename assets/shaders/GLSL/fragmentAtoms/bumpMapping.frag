@@ -1,9 +1,11 @@
+
 //Normal or BumpMap
 uniform sampler2D texBump;
 uniform vec2 zPlanes;
 uniform float parallax_factor;
 uniform float relief_factor;
-uniform int mode;
+uniform int bumpMapLightId;
+
 #define MODE_PHONG      0
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2
@@ -23,7 +25,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 	//Search from front to back for first point inside the object
 	for(int i=0; i<num_steps_lin-1; i++){
 		depth += step;
-		float h = 1.0 - texture2D(texBump, A+AB*depth).a;
+		float h = 1.0 - texture(texBump, A+AB*depth).a;
 		
 		if (depth >= h) {
 			best_depth = depth; //Store best depth
@@ -37,7 +39,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 	// binary search
 	for(int i=0; i<num_steps_bin; i++){
 
-		float h = 1.0 - texture2D(texBump, A+AB*depth).a;
+		float h = 1.0 - texture(texBump, A+AB*depth).a;
 		
 		step /= 2.0;
 		if (depth >= h) {
@@ -52,27 +54,30 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
 	return best_depth;
 }
 
-vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParallax){
-
-	vec3 lightVecTBN = normalize(vPixToLightTBN.xyz);
-	vec3 viewVecTBN = normalize(vPixToEyeTBN);
-
-	vec2 vTexCoord = uv;
-	if(bParallax) {			
-		//Offset, scale and biais
-		float height = texture2D(texBump, uv).a;
-		vTexCoord = uv + ((height-0.5)* parallax_factor * (vec2(viewVecTBN.x, -viewVecTBN.y)/viewVecTBN.z));
-	}
+vec4 NormalMapping(in vec2 uv){
 	//Normal mapping in TBN space
-	vec3 normalTBN = normalize(texture2D(texBump, vTexCoord).xyz * 2.0 - 1.0);
+	vec3 normalTBN = normalize(texture(texBump, uv).xyz * 2.0 - 1.0);
 	//Lighting
-	return Phong(vTexCoord, normalTBN, vPixToEyeTBN, vPixToLightTBN);
+	return Phong(uv, normalTBN);
 }
 
-vec4 ReliefMapping(vec2 uv){
+vec4 ParallaxMapping(in vec2 uv, in vec3 pixToEyeTBN, in vec3 pixToLightTBN){
+	vec3 lightVecTBN = normalize(pixToLightTBN);
+	vec3 viewVecTBN = normalize(pixToEyeTBN);
+	
+	//Offset, scale and biais
+	float height = texture(texBump, uv).a;
+	vec2 vTexCoord = uv + ((height-0.5)* parallax_factor * (vec2(viewVecTBN.x, -viewVecTBN.y)/viewVecTBN.z));
+	
+	//Normal mapping in TBN space
+	vec3 normalTBN = normalize(texture(texBump, vTexCoord).xyz * 2.0 - 1.0);
+	//Lighting
+	return Phong(vTexCoord, normalTBN);
+}
 
-	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
-	vec3 viewVecTBN = normalize(vPixToEyeTBN);
+vec4 ReliefMapping(in int _light, in vec2 uv){
+	vec3 pixToEye = vPixToEyeTBN[bumpMapLightId];
+	vec3 viewVecTBN = normalize(pixToEye);
 	//Size and search starting position in texture space
 	vec2 A = uv;
 	vec2 AB = relief_factor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;
@@ -81,7 +86,7 @@ vec4 ReliefMapping(vec2 uv){
 	
 	vec2 uv_offset = h * AB;
 	
-	vec3 p = vVertexMV;
+	vec3 p = _vertexMV.xyz;
 	vec3 v = normalize(p);
 	//Compute light direction
 	p += v*h*viewVecTBN.z;	
@@ -91,7 +96,6 @@ vec4 ReliefMapping(vec2 uv){
 	planes.y = -zPlanes.y*zPlanes.x/(zPlanes.y-zPlanes.x);
 	gl_FragDepth =((planes.x*p.z+planes.y)/-p.z);
 	
-	return NormalMapping(uv+uv_offset, vPixToEyeTBN, vPixToLightTBNcurrent, false);
+	return NormalMapping(uv+uv_offset);
 }
-
 

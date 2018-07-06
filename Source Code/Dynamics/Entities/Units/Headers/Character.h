@@ -24,7 +24,7 @@
 class Character : public Unit {
 public:
 	/// Currently supported character types
-	enum CHARACTER_TYPE{
+	enum CharacterType{
 		/// user controlled character
 		CHARACTER_TYPE_PLAYER,
 		/// non-user(player) character
@@ -33,18 +33,18 @@ public:
 		CHARACTER_TYPE_PLACEHOLDER
 	};
 
-	Character(CHARACTER_TYPE type, SceneGraphNode* const node);
+	Character(CharacterType type, SceneGraphNode* const node);
 	~Character();
 
 	///Accesors
 
 	/// Set unit type
-	inline void setCharacterType(CHARACTER_TYPE type) {_type = type;}
+	inline void setCharacterType(CharacterType type) {_type = type;}
 	/// Get unit type
-	inline CHARACTER_TYPE getCharacterType()		  {return _type;}
+	inline CharacterType getCharacterType()		  {return _type;}
 
 private:
-	CHARACTER_TYPE _type;
+	CharacterType _type;
 
 };
 #endif

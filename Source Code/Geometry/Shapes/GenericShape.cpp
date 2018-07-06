@@ -7,7 +7,7 @@ GenericShape::~GenericShape() {
 };
 
 void GenericShape::addVertexPosition(vec3<F32> vertPosition){
-	_geometry->getPosition().push_back(vertPosition);
+	_geometry->addPosition(vertPosition);
 	_geometry->getHWIndices().push_back(_geometry->getPosition().size() - 1);
-	_indiceLimits.y = _geometry->getPosition().size() - 1;
+	_geometry->setIndiceLimits(vec2<U16>(0,_geometry->getPosition().size() - 1));
 }

@@ -1,0 +1,19 @@
+#version 130
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
+#define MAX_LIGHT_COUNT 4
+#define MAX_SHADOW_CASTING_LIGHTS 2
+#extension GL_EXT_texture_array : enable
+#extension GL_EXT_gpu_shader4 : enable
+#line 6
+
+uniform sampler2D texture;
+uniform bool useTexture;
+varying vec2 _texCoord;
+
+void main(){
+	if(!useTexture){
+		gl_FragColor = gl_Color;
+	}else{
+		gl_FragColor = texture(texture, _texCoord) * gl_Color;
+	}
+}

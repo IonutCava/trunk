@@ -20,7 +20,7 @@
 
 #include "Managers/Headers/FrameListenerManager.h"
 
-enum REFLECTOR_TYPE{
+enum ReflectorType{
 	TYPE_MIRROR,
 	TYPE_WATER_SURFACE,
 	TYPE_PORTAL,
@@ -32,7 +32,7 @@ class FrameBufferObject;
 /// Virtual interface for reflective surfaces
 class Reflector : public FrameListener{
 public:
-	Reflector(REFLECTOR_TYPE type,const vec2<U16>& resolution);
+	Reflector(ReflectorType type,const vec2<U16>& resolution);
 	virtual ~Reflector();
 
 	///This function should be unique to every reflector. Portals may need special effects, mirrors some special lighting, etc
@@ -51,7 +51,7 @@ public:
 
 private:
 
-	REFLECTOR_TYPE _type;
+	ReflectorType _type;
 	/// How often do we need to update this instance's reflection?
 	U32 _updateInterval;
 	/// What is our current tick count

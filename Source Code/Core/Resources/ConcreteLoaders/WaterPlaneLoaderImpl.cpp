@@ -36,10 +36,11 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
 
 	res->getMaterial()->setTexture(Material::TEXTURE_BASE, waterNM);
 	res->getMaterial()->setShaderProgram(waterShaderProgram->getName());
-
+	vec3<F32> waterDiffuse = res->getMaterial()->getMaterialMatrix().getCol(1);
+	res->getMaterial()->getMaterialMatrix().setCol(1,vec4<F32>(waterDiffuse, 0.5f)); ///HACK: ToDo: add proper water alpha controls
 	RenderStateBlockDescriptor waterMatDesc = res->getMaterial()->getRenderState(FINAL_STAGE)->getDescriptor();
-	waterMatDesc.setCullMode(CULL_MODE_None);
-	waterMatDesc.setBlend(true, BLEND_PROPERTY_SrcAlpha, BLEND_PROPERTY_InvSrcAlpha);
+	waterMatDesc.setCullMode(CULL_MODE_NONE);
+	waterMatDesc.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
 	res->getMaterial()->setRenderStateBlock(waterMatDesc,FINAL_STAGE);
 
 	return res->setInitialData(name);

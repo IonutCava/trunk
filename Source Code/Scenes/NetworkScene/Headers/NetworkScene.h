@@ -24,13 +24,11 @@ class NetworkScene : public Scene {
 
 public:
 	NetworkScene() : Scene() {} 
-	void render();
 	void preRender();
 
 	bool preLoad();
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
-	bool unload();
 
 	void processEvents(F32 time);
 	void processInput();
@@ -43,8 +41,8 @@ private:
 
 private:
 	vec2<F32> _sunAngle;
-	vec4<F32> _sunVector;
-	std::vector<F32> _eventTimers;
+	vec3<F32> _sunvector;
+	vectorImpl<F32> _eventTimers;
 };
 
 #endif

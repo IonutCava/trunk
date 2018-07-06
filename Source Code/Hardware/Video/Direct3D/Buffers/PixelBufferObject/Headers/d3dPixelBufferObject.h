@@ -23,10 +23,13 @@
 class d3dPixelBufferObject : public PixelBufferObject {
 public:
 
-	d3dPixelBufferObject(){}
+	d3dPixelBufferObject(PBOType type) : PixelBufferObject(type) {}
 	~d3dPixelBufferObject() {Destroy();}
 
-	bool Create(U16 width, U16 height) {return true;}
+	bool Create(U16 width, U16 height,U16 depth = 0, 
+				GFXImageFormat internalFormatEnum = RGBA8,
+				GFXImageFormat formatEnum = RGBA,
+				GFXDataFormat dataTypeEnum = FLOAT_32) {return true;}
 				
 	void Destroy() {};
 

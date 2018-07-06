@@ -18,17 +18,37 @@
 	<simSpeed>1</simSpeed>
 	<resolutionWidth>1024</resolutionWidth>
 	<resolutionHeight>768</resolutionHeight>
+	<windowedMode>true</windowedMode>
+	<allowWindowResize>false</allowWindowResize>
+	<enableVSync>false</enableVSync>
 	<zNear>0.175</zNear>
-	<zFar>1200.0</zFar>
+	<zFar>2200.0</zFar>
 	<verticalFOV>60</verticalFOV>
+	<GLminorVer>1</GLminorVer>
 </runtime>	
 
 <rendering>
+	<!-- use custom refresh rate: true / false -->
+	<overrideRefreshRate>false</overrideRefreshRate>
+	<!-- if "overrideRefreshRate" == true, set refresh rate to this value -->
+	<targetRefreshRate>75</targetRefreshRate>
 	<!-- detail level: low = 0, medium = 1, high = 2 -->
 	<detailLevel>2</detailLevel>
+	<!-- AA method: 1 = MSAA, 2 = FXAA, 3 = SMAA, 4 = MSAA+FXAA -->
+	<FSAAmethod>2</FSAAmethod>
+	<FSAAsamples>8</FSAAsamples>
+	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
+	<!-- detail level: low = 0, don't care = 1, high = 2 -->
+	<mipMapDetailLevel>2</mipMapDetailLevel>
+	<fogDetailLevel>2</fogDetailLevel>
 	<enableShadows>true</enableShadows>
 	<shadowDetailLevel>2</shadowDetailLevel>
 	<enableFog>true</enableFog>
+	<!--- only initial values. Override in scene -->
+	<fogStartDistance>500</fogStartDistance>
+	<fogEndDistance>4500</fogEndDistance>
+	<fogDensity>0.01</fogDensity>
+	<fogColor r="0.2" g="0.2" b="0.275"/>
 	<enablePostFX>true</enablePostFX>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>

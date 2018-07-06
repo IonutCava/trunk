@@ -27,8 +27,7 @@ public:
 	d3dDeferredBufferObject();
 	~d3dDeferredBufferObject() {Destroy();}
 
-	bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8, 
-									   IMAGE_FORMATS formatEnum = RGBA) {return true;}
+	bool Create(U16 width, U16 height, U8 imageLayers = 0) {return true;}
 				
 	void Destroy() {}
 
@@ -42,7 +41,7 @@ private:
 	U32  _normalBufferHandle;
 	U32  _positionBufferHandle;
 	U32  _diffuseBufferHandle;
-	std::vector<U32> _textureId;
+	vectorImpl<U32> _textureId;
 };
 
 #endif

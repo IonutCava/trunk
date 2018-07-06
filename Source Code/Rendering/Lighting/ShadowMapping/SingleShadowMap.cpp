@@ -1,0 +1,111 @@
+#include "Headers/SingleShadowMap.h"
+
+#include "Scenes/Headers/SceneState.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Rendering/Lighting/Headers/Light.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Rendering/Camera/Headers/Camera.h"
+#include "Rendering/Headers/Frustum.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+
+SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light)
+{
+	_maxResolution = 0;
+	_resolutionFactor = ParamHandler::getInstance().getParam<U8>("rendering.shadowResolutionFactor");
+	CLAMP<F32>(_resolutionFactor,0.001f, 1.0f);
+	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FBO"), light->getId(), "Single Shadow Map");
+	std::stringstream ss;
+	_renderQuad = New Quad3D();
+	ss << "Light " << (U32)light->getId() << " viewport " << 0;
+	_renderQuad->setName(ss.str());
+
+
+	TextureDescriptor depthMapDescriptor(TEXTURE_2D, 
+										 DEPTH_COMPONENT,
+										 DEPTH_COMPONENT,
+										 UNSIGNED_BYTE); ///Default filters, LINEAR is OK for this
+	depthMapDescriptor.setWrapMode(TEXTURE_CLAMP_TO_EDGE,TEXTURE_CLAMP_TO_EDGE);
+	depthMapDescriptor._useRefCompare = true; //< Use compare function
+	depthMapDescriptor._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
+	depthMapDescriptor._depthCompareMode = LUMINANCE;
+
+	_depthMap = GFX_DEVICE.newFBO(FBO_2D_DEPTH);
+	_depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
+	_depthMap->toggleColorWrites(false);
+}
+
+SingleShadowMap::~SingleShadowMap()
+{
+	SAFE_DELETE(_renderQuad);
+}
+
+void SingleShadowMap::resolution(U16 resolution,SceneRenderState* sceneRenderState){
+	U8 resolutionFactorTemp = sceneRenderState->shadowMapResolutionFactor();
+	CLAMP<U8>(resolutionFactorTemp, 1, 4);
+	U16 maxResolutionTemp = resolution;
+	if(resolutionFactorTemp != _resolutionFactor || _maxResolution != maxResolutionTemp){
+		_resolutionFactor = resolutionFactorTemp;
+		_maxResolution = maxResolutionTemp;
+		///Initialize the FBO's with a variable resolution
+		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _light->getId());
+		U16 shadowMapDimension = _maxResolution/_resolutionFactor; 
+		_depthMap->Create(shadowMapDimension,shadowMapDimension);
+	}
+	ShadowMap::resolution(resolution,sceneRenderState);
+	_renderQuad->setDimensions(vec4<F32>(0,0,_depthMap->getWidth(),_depthMap->getHeight()));
+}
+
+void SingleShadowMap::render(SceneRenderState* renderState, boost::function0<void> sceneRenderFunction){
+	///Only if we have a valid callback;
+	if(sceneRenderFunction.empty()) {
+		ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
+		return;
+	}
+
+	_callback = sceneRenderFunction;
+	renderInternal(renderState);
+}
+
+void SingleShadowMap::renderInternal(SceneRenderState* renderState) const {
+	GFXDevice& gfx = GFX_DEVICE;
+	///Get our eye view
+	vec3<F32> eyePos = renderState->getCamera()->getEye();
+	///For every depth map
+	///Lock our projection matrix so no changes will be permanent during the rest of the frame
+	gfx.lockProjection();
+	///Lock our model view matrix so no camera transforms will be saved beyond this light's scope
+	gfx.lockModelView();
+	///Set the camera to the light's view
+	_light->setCameraToLightView(eyePos);
+	///Set the appropriate projection
+	_light->renderFromLightView(0);
+	///bind the associated depth map
+	_depthMap->Begin();
+	///draw the scene
+	GFX_DEVICE.render(_callback, GET_ACTIVE_SCENE()->renderState());
+	///unbind the associated depth map
+	_depthMap->End();
+	
+	///get all the required information (light MVP matrix for example) 
+	///and restore to the proper camera view
+	_light->setCameraToSceneView();
+	///Undo all modifications to the Projection Matrix
+	gfx.releaseProjection();
+	///Undo all modifications to the ModelView Matrix
+	gfx.releaseModelView();
+	///Restore our view frustum
+	Frustum::getInstance().Extract(eyePos);
+}
+
+void SingleShadowMap::previewShadowMaps(){
+	_depthMap->BindFixed(0);
+	GFX_DEVICE.toggle2D(true);
+		GFX_DEVICE.renderInViewport(vec4<F32>(0,0,256,256),
+								    boost::bind(&GFXDevice::renderModel,
+									            boost::ref(GFX_DEVICE),
+												_renderQuad));;
+	GFX_DEVICE.toggle2D(false);
+	_depthMap->Unbind(0);
+}
+	

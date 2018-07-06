@@ -27,9 +27,9 @@ const int DIVIDE     = 7;
 const int SUBSTRACT  = 8;
 const int COMBINE    = 9;
 
-void applyTexture2D(in sampler2D texUnit, in int type, in int index, in vec2 uv, inout vec4 color){
+void applyTexture(in sampler2D texUnit, in int type, in int index, in vec2 uv, inout vec4 color){
     // Read from the texture
-    vec4 texture = texture2D(texUnit,uv);
+    vec4 texture = texture(texUnit,uv);
    
     if (type == REPLACE){
         color = texture;

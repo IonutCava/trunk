@@ -20,7 +20,7 @@
 
 #include "core.h"
 struct ShaderStageDescriptor{
-	enum SHADER_STAGE{
+	enum ShaderStage{
 		SHADER_NUM_LIGHTS = 0,
 		SHADER_PHONG = 1, ///Blin <-> Phong interchange
 		SHADER_BLIN = 2,
@@ -44,9 +44,9 @@ class ShaderGenerator {
 public:
 	ShaderGenerator();
 	~ShaderGenerator();
-	Shader* generateShader(const std::vector<ShaderStageDescriptor> & stages);
+	Shader* generateShader(const vectorImpl<ShaderStageDescriptor> & stages);
 private:
-	unordered_map<std::string, Shader*> _shaderCache;
+	Unordered_map<std::string, Shader*> _shaderCache;
 };
 
 #endif

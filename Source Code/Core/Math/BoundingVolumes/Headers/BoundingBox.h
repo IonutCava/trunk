@@ -21,7 +21,6 @@
 #include "Core/Math/Headers/Ray.h"
 #include "Utility/Headers/CRC.h"
 
-///ToDo: -Add BoundingSphere -Ionut
 class BoundingBox {
 public:
 	BoundingBox() : _computed(false),
@@ -270,7 +269,7 @@ public:
 		return _extent;
 	}
 
-	inline vec3<F32>  getHalfExtent()   {return getExtent() * 0.5f;}
+	inline vec3<F32>  getHalfExtent() {return getExtent() * 0.5f;}
 
 	inline F32   getWidth()  const {ReadLock r_lock(_lock); return _max.x - _min.x;}
 	inline F32   getHeight() const {ReadLock r_lock(_lock); return _max.y - _min.y;}
@@ -299,7 +298,7 @@ private:
 	vec3<F32> _min, _max;
 	vec3<F32> _center, _extent;
 	mat4<F32> _oldMatrix;
-	std::vector<vec3<F32> > _points;
+	vectorImpl<vec3<F32> > _points;
 	U32 _guid;
 	mutable Lock _lock;
 };

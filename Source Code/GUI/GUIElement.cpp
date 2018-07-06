@@ -2,13 +2,15 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-GUIElement::GUIElement() : _guiType(GUI_PLACEHOLDER),
+GUIElement::GUIElement(GUIType type,const vec2<F32>& position) : 
+                           _guiType(type),
 						   _parent(NULL),
-						   _active(false) {
+						   _active(false),
+						   _position(position){
 						   _name = "defaultGuiControl";
 						   _visible = true;
 	RenderStateBlockDescriptor d;
-	d.setCullMode(CULL_MODE_None);
+	d.setCullMode(CULL_MODE_NONE);
 	d.setZEnable(false);
 	_guiSB = GFX_DEVICE.createStateBlock(d);
 

@@ -44,11 +44,8 @@ public:
 
 	inline bool isLoaded() {return _loadingComplete;}
 
-protected:
-	template<typename T>
-	friend class ImplResourceLoader;
 	///Use this as a callback for multi-threaded loading;
-	virtual bool setInitialData(const std::string& name) {_loadingComplete = true; return true;}
+	virtual bool setInitialData(const std::string& name) {_name = name; _loadingComplete = true; return true;}
 
 protected:
 	std::string	 _name;
@@ -56,7 +53,7 @@ protected:
 	bool _loadingComplete;
 };
 
-enum GEOMETRY_TYPE {
+enum GeometryType {
 
 	VEGETATION,  ///< For special rendering subroutines
 	PRIMITIVE,   ///< Simple objects: Boxes, Spheres etc
@@ -70,9 +67,10 @@ struct FileData {
 	vec3<F32> position;
 	vec3<F32> orientation;
 	vec3<F32> color;
-	GEOMETRY_TYPE type;
+	GeometryType type;
 	F32 data; ///< general purpose
-	std::string data2;
+	std::string data2; 
+	std::string data3;
 	F32 version;
 };
 
@@ -80,7 +78,7 @@ struct TerrainInfo {
 
 	TerrainInfo(){position.set(0,0,0);}
 	///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
-	unordered_map<std::string,std::string> variables;
+	Unordered_map<std::string,std::string> variables;
 	U32    grassDensity;
 	U16    treeDensity;
 	F32  grassScale;

@@ -23,7 +23,7 @@
 class GUIFlash : public GUIElement {
 
 public:
-   GUIFlash();
+	GUIFlash() : GUIElement(GUI_FLASH,vec2<F32>(0,0)) {};
    ~GUIFlash();
 
 	void playMovie();

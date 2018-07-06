@@ -1,14 +1,10 @@
 #include "Headers/FlashScene.h"
-
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Managers/Headers/SceneManager.h"
-#include "GUI/Headers/GUI.h"
 
 REGISTER_SCENE(FlashScene);
 
 void FlashScene::render(){
 	
-	_sceneGraph->render();
 }
 
 
@@ -18,10 +14,10 @@ void FlashScene::preRender(){
 
 void FlashScene::processInput(){
 
-	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
-	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
-	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR);
+	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR);
+	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR/5));
+	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
 
 }
 
@@ -36,25 +32,24 @@ void FlashScene::processEvents(F32 time){
 
 bool FlashScene::load(const std::string& name){
 
-	bool state = false;
+	///Load scene resources
+	SCENE_LOAD(name,true,true);
 	addDefaultLight();
-	state = loadResources(true);	
-	state = loadEvents(true);
-
-	return state;
+	addDefaultSky();
+	return loadState;
 }
 
 bool FlashScene::loadResources(bool continueOnErrors){
 
 	_sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-	_sunVector = vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+	_sunvector = vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
 		GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3<F32>(60,60,0),          //Position
-							   BITMAP_8_BY_13,    //Font
-							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
+		                       vec2<F32>(60,60),           //Position
+							   Font::DIVIDE_DEFAULT,       //Font
+							   vec3<F32>(0.0f,0.2f, 1.0f), //Color
 							   "FPS: %s",0);    //Text and arguments
 		_eventTimers.push_back(0.0f);
     i = 0;

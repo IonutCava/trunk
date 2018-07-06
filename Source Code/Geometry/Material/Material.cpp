@@ -14,7 +14,6 @@ Material::Material() : Resource(),
 					   _shininess(5),
 					   _opacity(1.0f),
 					   _materialMatrix(_ambient,_diffuse,_specular,vec4<F32>(_shininess,_emissive.x,_emissive.y,_emissive.z)),
-					   _computedLightShaders(false),
 					   _dirty(false),
 					   _doubleSided(false),
 					   _castsShadows(true),
@@ -22,8 +21,13 @@ Material::Material() : Resource(),
 					   _shaderProgramChanged(false),
 					   _hardwareSkinning(false),
 					   _shadingMode(SHADING_PHONG), /// phong shading by default
-					   _shaderRef(NULL)
+					   _bumpMethod(BUMP_NONE)
 {
+	_bumpMethodTable[BUMP_NONE] = 0;
+	_bumpMethodTable[BUMP_NORMAL] = 1;
+	_bumpMethodTable[BUMP_PARALLAX] = 2;
+	_bumpMethodTable[BUMP_RELIEF] = 3;
+
 	_textureOperationTable[TextureOperation_Replace]   = 0;
 	_textureOperationTable[TextureOperation_Multiply]  = 1;
 	_textureOperationTable[TextureOperation_Decal]     = 2;
@@ -41,7 +45,6 @@ Material::Material() : Resource(),
    _textures[TEXTURE_OPACITY] = NULL;
    _textures[TEXTURE_SPECULAR] = NULL;
 
-   _matId.i = 0;
    /// Normal state for final rendering
    RenderStateBlockDescriptor normalStateDescriptor;
    if(GFX_DEVICE.getDeferredRendering()){
@@ -54,9 +57,9 @@ Material::Material() : Resource(),
    /// do not used fixed lighting
    shadowDescriptor._fixedLighting = false;
    /// set a polygon offset
-   //shadowDescriptor._zBias = -0.0002f;
+   shadowDescriptor._zBias = 1.0f;
    /// ignore colors
-   shadowDescriptor.setColorWrites(false,false,false,false);
+   shadowDescriptor.setColorWrites(false,false,false,true);
 
    /// the reflection descriptor is the same as the normal descriptor, but with special culling
    RenderStateBlockDescriptor reflectionStateDescriptor;
@@ -69,8 +72,14 @@ Material::Material() : Resource(),
     assert(_defaultRenderStates[FINAL_STAGE] != NULL);
 	assert(_defaultRenderStates[SHADOW_STAGE] != NULL);
 	assert(_defaultRenderStates[REFLECTION_STAGE] != NULL);
-}
 
+	_shaderRef[FINAL_STAGE] = NULL;
+	_shaderRef[SHADOW_STAGE] = NULL;
+	_computedShader[0] = false;
+	_computedShader[1] = false;
+	_matId[0].i = 0;
+    _matId[1].i = 0;
+}
 
 
 Material::~Material(){
@@ -81,7 +90,7 @@ Material::~Material(){
 	_defaultRenderStates.clear();
 }
 
-RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,RENDER_STAGE renderStage){
+RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,RenderStage renderStage){
 	if(descriptor.getHash() == _defaultRenderStates[renderStage]->getDescriptor().getHash()){
 		return _defaultRenderStates[renderStage];
 	}
@@ -102,7 +111,7 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* const texture, T
 		RemoveResource(_textures[textureUsage]);
 	}else{
 		//if we add a new type of texture
-		_computedLightShaders = false; //recompute shaders on texture change
+		_computedShader[0] = false; //recompute shaders on texture change
 	}
 	_textures[textureUsage] = texture;
 	_operations[textureUsage] = op;
@@ -150,38 +159,57 @@ Material::TextureOperation Material::getTextureOperation(U32 op){
 
 
 //Here we set the shader's name
-ShaderProgram* Material::setShaderProgram(const std::string& shader){
+ShaderProgram* Material::setShaderProgram(const std::string& shader,RenderStage renderStage){
+	ShaderProgram* shaderReference = _shaderRef[renderStage];
+	U8 id = (renderStage == FINAL_STAGE ? 0 : 1);
 	//if we already had a shader assigned ...
-	if(!_shader.empty()){
+	if(!_shader[id].empty()){
 		//and we are trying to assing the same one again, return.
-		if(_shader.compare(shader) == 0){
-			_shaderRef = static_cast<ShaderProgram* >(FindResource(_shader));
-			return _shaderRef;
+		if(_shader[id].compare(shader) == 0){
+			shaderReference = static_cast<ShaderProgram* >(FindResource(_shader[id]));
+			return shaderReference;
 		}else{
-			PRINT_FN(Locale::get("REPLACE_SHADER"),_shader.c_str(),shader.c_str());
+			PRINT_FN(Locale::get("REPLACE_SHADER"),_shader[id].c_str(),shader.c_str());
 		}
 	}
 
-	(!shader.empty()) ? _shader = shader : _shader = "NULL_SHADER";
+	(!shader.empty()) ? _shader[id] = shader : _shader[id] = "NULL_SHADER";
 
-	_shaderRef = static_cast<ShaderProgram* >(FindResource(_shader));
-	if(!_shaderRef){
-		ResourceDescriptor shaderDescriptor(_shader);
-		_shaderRef = CreateResource<ShaderProgram>(shaderDescriptor);
+	shaderReference = static_cast<ShaderProgram* >(FindResource(_shader[id]));
+	if(!shaderReference){
+		ResourceDescriptor shaderDescriptor(_shader[id]);
+		std::stringstream ss;
+		ss << "USE_VBO_DATA,";
+		if(!_shaderDefines.empty()){
+			for_each(std::string& shaderDefine, _shaderDefines){
+				ss << shaderDefine;
+				ss << ",";
+			}
+		}
+		ss << "DEFINE_PLACEHOLDER";
+		shaderDescriptor.setPropertyList(ss.str());
+		shaderReference = CreateResource<ShaderProgram>(shaderDescriptor);
 	}
 	_dirty = true;
-	_computedLightShaders = true;
-	_shaderProgramChanged = true;
-	return _shaderRef;
+	_computedShader[id] = true;
+	if(id == 0) { _shaderProgramChanged = true; }
+	_shaderRef[renderStage] = shaderReference; 
+	return shaderReference;
 }
 
 ///If the current material doesn't have a shader associated with it, then add the default ones.
-///Manually setting a shader, overrides this function by setting _computedLightShaders to "true"
-void Material::computeLightShaders(){
-	if(_computedLightShaders) return;
-	if(_shader.empty()){
+///Manually setting a shader, overrides this function by setting _computedShaders to "true"
+void Material::computeShader(bool force, RenderStage renderStage){
+	U8 id = (renderStage == FINAL_STAGE ? 0 : 1);
+	if(_computedShader[id] && !force) return;
+	if(_shader[id].empty()){
 		///the base shader is either for a Forward Renderer ...
-		std::string shader = "lighting";
+		std::string shader;
+		if(renderStage == SHADOW_STAGE){
+			shader = "depthPass";
+		}else{
+			shader = "lighting";
+		}
 		if(GFX_DEVICE.getDeferredRendering()){
 			///... or a Deferred one
 			shader = "DeferredShadingPass1";
@@ -189,23 +217,84 @@ void Material::computeLightShaders(){
 		///What kind of effects do we need?
 		if(_textures[TEXTURE_BASE]){
 			///Bump mapping?
-			if(_textures[TEXTURE_BUMP]){
-				shader += ".Bump";
+			if(_textures[TEXTURE_BUMP] && _bumpMethod != BUMP_NONE){
+				shader += ".Bump"; //Normal Mapping
+				if(_bumpMethod == 2){ //Parallax Mapping
+					shader += ".Parallax";
+				}else if(_bumpMethod == 3){ //Relief Mapping
+					shader += ".Relief";
+				}
 			}else{
 				/// Or simple texture mapping?
 				shader += ".Texture";
 			}
 		}else{
-			/// Or just color mapping?
-			shader += ".NoTexture";
+			/// Or just color mapping? Use the simple fragment
 		}
 
 		if(_hardwareSkinning){
 			///Add the GPU skinnig module to the vertex shader?
 			shader += ",WithBones"; ///<"," as opposed to "." sets the primary vertex shader property
 		}
+		///Add any modifiers you wish
+		if(!_shaderModifier.empty()){
+			shader += ".";
+			shader += _shaderModifier;
+		}
 
-		setShaderProgram(shader);
+		setShaderProgram(shader,renderStage);
+	}
+}
+
+void Material::setCastsShadows(bool state) {
+	if(_castsShadows != state){
+		if(!state) _shader[1] = "NULL_SHADER";
+		else _shader[1].clear();
+		_castsShadows = state;
+		_computedShader[1] = false;
+		_dirty = true;
+	}
+}
+
+void Material::setBumpMethod(U32 newBumpMethod,bool force){
+	if(newBumpMethod == 0){
+		_bumpMethod = BUMP_NONE;
+	}else if(newBumpMethod == 1){
+		_bumpMethod = BUMP_NORMAL;
+	}else if(newBumpMethod == 2){
+		_bumpMethod = BUMP_PARALLAX;
+	}else{
+		_bumpMethod = BUMP_RELIEF;
+	}
+	if(force){
+		_shader[FINAL_STAGE].clear();
+		computeShader(true);
+	}
+}
+
+void Material::setBumpMethod(BumpMethod newBumpMethod,bool force){
+	_bumpMethod = newBumpMethod;
+	if(force){
+		_shader[FINAL_STAGE].clear();
+		computeShader(true);
+	}
+}
+
+void Material::addShaderModifier(const std::string& shaderModifier,bool force) {
+	_shaderModifier = shaderModifier;
+	if(force){
+		_shader[FINAL_STAGE].clear();
+		computeShader(true);
+	}
+}
+
+void Material::addShaderDefines(const std::string& shaderDefines,bool force) {
+	_shaderDefines.push_back(shaderDefines);
+	if(force){
+		_shader[FINAL_STAGE].clear();
+		_shader[SHADOW_STAGE].clear();
+		computeShader(true);
+		computeShader(true,SHADOW_STAGE);
 	}
 }
 
@@ -225,11 +314,11 @@ void Material::setDoubleSided(bool state) {
 	_doubleSided = state;
 	/// Update all render states for this item
 	if(_doubleSided){
-		typedef unordered_map<RENDER_STAGE, RenderStateBlock* >::value_type stateValue;
+		typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
 		for_each(stateValue& it, _defaultRenderStates){
 			RenderStateBlockDescriptor desc =  it.second->getDescriptor();
-				if(desc._cullMode != CULL_MODE_None){
-					desc.setCullMode(CULL_MODE_None);
+				if(desc._cullMode != CULL_MODE_NONE){
+					desc.setCullMode(CULL_MODE_NONE);
 					setRenderStateBlock(desc,it.first);
 				}
 		}
@@ -255,11 +344,11 @@ bool Material::isTranslucent(){
 	}
 	/// Disable culling for translucent items
 	if(state){
-		typedef unordered_map<RENDER_STAGE, RenderStateBlock* >::value_type stateValue;
+		typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
 		for_each(stateValue& it, _defaultRenderStates){
 			RenderStateBlockDescriptor desc =  it.second->getDescriptor();
-			if(desc._cullMode != CULL_MODE_None){
-				desc.setCullMode(CULL_MODE_None);
+			if(desc._cullMode != CULL_MODE_NONE){
+				desc.setCullMode(CULL_MODE_NONE);
 				setRenderStateBlock(desc,it.first);
 			}
 		}
@@ -267,11 +356,13 @@ bool Material::isTranslucent(){
 	return state;
 }
 
-P32 Material::getMaterialId(){
+P32 Material::getMaterialId(RenderStage renderStage){
+	
 	if(_dirty){
-		(_shaderRef != NULL) ? _matId.i = _shaderRef->getId() :  _matId.i = 0;
+		_matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
+		_matId[1].i = (_shaderRef[SHADOW_STAGE] != NULL ?  _shaderRef[SHADOW_STAGE]->getId() : 0);
 		dumpToXML();
 		_dirty = false;
 	}
-	return _matId;
+	return _matId[renderStage == FINAL_STAGE ? 0 : 1];
 }

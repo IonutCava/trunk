@@ -23,13 +23,20 @@ class GUIText : public GUIElement{
 
 friend class GUI;
 public:
-	GUIText(const std::string& id,std::string& text,const vec2<F32>& position, void* font,const vec3<F32>& color) : GUIElement(),
+	GUIText(const std::string& id,
+		    const std::string& text,
+			const vec2<F32>& position,
+			const std::string& font,
+			const vec3<F32>& color,
+			U32 textHeight = 16) : GUIElement(GUI_TEXT,position),
 	  _text(text),
 	  _font(font),
-	  _color(color){_position = position; _guiType = GUI_TEXT;};
+	  _height(textHeight),
+	  _color(color){}
 
 	std::string _text;
-	void*		_font;
+	std::string _font;
+	U32         _height;
 	vec3<F32>   _color;
 
      void onMouseMove(const GUIEvent &event);

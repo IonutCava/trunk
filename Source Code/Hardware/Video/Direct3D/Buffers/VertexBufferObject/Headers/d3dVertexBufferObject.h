@@ -29,8 +29,9 @@ public:
 	
 	void		Enable() {}
 	void		Disable() {}
+	void        Draw(PrimitiveType type, U8 LODindex = 0) {}
 
-	bool Refresh() {return true;}
+	bool queueRefresh() {return Refresh();}
 
 	d3dVertexBufferObject() : VertexBufferObject(), _created(false) {}
 	~d3dVertexBufferObject() {Destroy();}
@@ -39,7 +40,8 @@ public:
 
 private:
 	bool CreateInternal() {return true;}
-
+	bool Refresh() {return true;}
+	void checkStatus() {}
 private:
 	bool _created; 
 

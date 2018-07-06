@@ -19,7 +19,7 @@
 #define _AI_TENIS_SCENE_AI_ACTION_LIST_H_
 #include "AI/ActionInterface/Headers/ActionList.h"
 
-enum AI_MSG{
+enum AIMsg{
 	REQUEST_DISTANCE_TO_TARGET = 0,
 	RECEIVE_DISTANCE_TO_TARGET = 1,
 	ATTACK_BALL = 2,
@@ -33,7 +33,7 @@ public:
 	void processInput();
 	void update(SceneGraphNode* node = NULL, NPC* unitRef = NULL);
 	void addEntityRef(AIEntity* entity);
-	void processMessage(AIEntity* sender, AI_MSG msg,const boost::any& msg_content);
+	void processMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
 
 private:
 	void updatePositions();

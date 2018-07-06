@@ -1,4 +1,5 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 
 template<>
@@ -10,7 +11,7 @@ Box3D* ImplResourceLoader<Box3D>::operator()(){
 	if(!load(ptr,_descriptor.getName())) return NULL;
 
 	if(_descriptor.getFlag()){
-		ptr->useDefaultMaterial(false);
+		ptr->getSceneNodeRenderState().useDefaultMaterial(false);
 		ptr->setMaterial(NULL);
 	}
 

@@ -28,9 +28,9 @@
 class AnimationChannel{
 public:
 	std::string _name;
-	std::vector<aiVectorKey > _positionKeys;
-	std::vector<aiQuatKey   > _rotationKeys;
-	std::vector<aiVectorKey > _scalingKeys;
+	vectorImpl<aiVectorKey > _positionKeys;
+	vectorImpl<aiQuatKey   > _rotationKeys;
+	vectorImpl<aiVectorKey > _scalingKeys;
 	/** The number of position keys */
 	U32 _numPositionKeys;
 	U32 _numRotationKeys;
@@ -50,22 +50,22 @@ public:
 
 	AnimEvaluator( const aiAnimation* pAnim);
 
-	void Evaluate( D32 pTime, unordered_map<std::string, Bone*>& bones);
+	void Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bones);
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
 	U32 GetFrameIndexAt(D32 time);
 
 	inline U32 GetFrameIndex() const {return _lastFrameIndex;}
 	inline U32 GetFrameCount() const {return _transforms.size();}
-	inline std::vector<mat4<F32> >& GetTransforms(D32 dt){ return _transforms[GetFrameIndexAt(dt)]; }
+	inline vectorImpl<mat4<F32> >& GetTransforms(D32 dt){ return _transforms[GetFrameIndexAt(dt)]; }
 
 protected:
 	friend class SceneAnimator;
 	std::string _name;
 
 	/// Array to return transformations results inside. 
-	std::vector<std::vector<mat4<F32> >> _transforms;
-	std::vector<std::vector<mat4<F32> >> _quatTransforms;
+	vectorImpl<vectorImpl<mat4<F32> >> _transforms;
+	vectorImpl<vectorImpl<mat4<F32> >> _quatTransforms;
 
 	/// play forward == true, play backward == false
 	bool _playAnimationForward;
@@ -76,9 +76,9 @@ protected:
 private:
 
 	U32 _lastFrameIndex;
-	std::vector<vec3<U32> > _lastPositions;
-	///Vector that holds all bone channels
-	std::vector<AnimationChannel> _channels;
+	vectorImpl<vec3<U32> > _lastPositions;
+	///vector that holds all bone channels
+	vectorImpl<AnimationChannel> _channels;
 };
 
 #endif

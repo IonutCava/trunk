@@ -40,7 +40,7 @@
 #ifndef _NAVIGATION_MESH_LOADER_H_
 #define _NAVIGATION_MESH_LOADER_H_
 
-#include "Utility/Headers/BoundingBox.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Graphs/Headers/SceneNode.h"
 
 namespace Navigation {
@@ -111,7 +111,7 @@ namespace Navigation {
 		inline U32 getTriCount() const { return tri_ct; }
 	};
 
-	enum MESH_DETAIL_LEVEL{
+	enum MeshDetailLevel{
 		DETAIL_ABSOLUTE,
 		DETAIL_HIGH,
 		DETAIL_MEDIUM,

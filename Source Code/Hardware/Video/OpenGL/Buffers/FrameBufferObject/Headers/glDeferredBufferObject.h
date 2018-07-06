@@ -27,22 +27,15 @@ public:
 	glDeferredBufferObject();
 	~glDeferredBufferObject() {Destroy();}
 
-	bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8, 
-									   IMAGE_FORMATS formatEnum = RGBA);
+	bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
 
 	void Destroy();
-
-	void Begin(U8 nFace=0) const;	
-	void End(U8 nFace=0) const;		
-
-	void Bind(U8 unit=0, U8 texture = 0);		
-	void Unbind(U8 unit=0);	
+	void Begin(GLubyte nFace=0) const;	
 
 private:
-	U32  _normalBufferHandle;
-	U32  _positionBufferHandle;
-	U32  _diffuseBufferHandle;
-	std::vector<U32> _textureIDs;
+	GLuint  _normalBufferHandle;
+	GLuint  _positionBufferHandle;
+	GLuint  _diffuseBufferHandle;
 };
 
 #endif

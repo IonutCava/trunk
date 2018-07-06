@@ -48,14 +48,15 @@ class InputInterface;
 class Kernel : private boost::noncopyable {
 
 public:
-	Kernel();
+	Kernel(I32 argc, char **argv);
 	~Kernel();
 
 	I8 Initialize(const std::string& entryPoint);
 	void Shutdown();
 	void beginLogicLoop();
 
-	static void MainLoopStatic();
+	static void MainLoopApp();
+	inline static void MainLoopStatic() {Kernel::_mainLoopCallback();}
 	static void Idle();
 	///Update all engine components that depend on the current resolution
 	static void updateResolutionCallback(I32 w, I32 h);
@@ -80,8 +81,14 @@ public: ///Input
 	///Mouse button released
 	bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
+	GFXDevice& getGFXDevice() const {return _GFX;}
+	SFXDevice& getSFXDevice() const {return _SFX;}
+	PXDevice&  getPXDevice()  const {return _PFX;}
+
 private:
-   bool MainLoop();
+   static void FirstLoop();
+   bool MainLoopScene();
+   void presentToScreen();
 
 private:
 	///Access to the GPU
@@ -105,14 +112,22 @@ private:
 	///It is destroyed after each scene's "deinitializeAI" is called
 	std::tr1::shared_ptr<Event>  _aiEvent;
 	static bool   _keepAlive;
+	static bool   _applicationReady;
 	/// get elapsed time since kernel initialization
-	inline static D32 getCurrentTime() {return _currentTime;}
+	inline static D32 getCurrentTime()   {return _currentTime;}
+	inline static D32 getCurrentTimeMS() {return _currentTimeMS;}
 
 private:
-   static D32    _currentTime;
-   I32           _targetFrameRate;
+   static boost::function0<void> _mainLoopCallback;
+   static D32     _currentTime;
+   static D32     _currentTimeMS;
    CameraManager* _cameraMgr;
    bool           _loadAI;
+   U32 _nextGameTick;
+   U8 _loops;
+   //Command line arguments
+   I32    _argc;
+   char **_argv;
 };
 
 #endif

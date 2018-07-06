@@ -79,13 +79,13 @@ void FrameListenerManager::idle(){
 }
 
 ///Please see the Ogre3D documentation about this
-void FrameListenerManager::createEvent(FRAME_EVENT_TYPE type, FrameEvent& evt){
+void FrameListenerManager::createEvent(FrameEventType type, FrameEvent& evt){
 		evt._currentTime = GETMSTIME();
 		evt._timeSinceLastEvent = calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
 		evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
 }
 
-F32 FrameListenerManager::calculateEventTime(F32 currentTime, FRAME_EVENT_TYPE type){
+F32 FrameListenerManager::calculateEventTime(F32 currentTime, FrameEventType type){
         EventTimeMap& times = _eventTimers[type];
         times.push_back(currentTime);
 

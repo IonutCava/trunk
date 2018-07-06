@@ -19,17 +19,13 @@
 #define PHYSX_H_
 #include "config.h"
 
-<<<<<<< .mine
 #ifdef _USE_PHYSX_API_
 
-=======
->>>>>>> .r140
 #ifndef _PHYSICS_API_FOUND_
 #define _PHYSICS_API_FOUND_
 #endif
 
 //PhysX includes
-<<<<<<< .mine
 #ifdef _PLATFORM_DEFINES_H_
 #undef U8
 #undef U16
@@ -43,21 +39,6 @@
 #include < PxDefaultErrorCallback.h >
 #include < PxDefaultAllocator.h > 
 #include < PxVisualDebuggerExt.h>
-=======
-#ifdef _PLATFORM_DEFINES_H_
-#undef U8
-#undef U16
-#undef U32
-#undef U64
-#undef _PLATFORM_DEFINES_H_
-#define _P_D_TYPES_ONLY_
-#endif
-#include "config.h"
-#include < PxPhysicsAPI.h >
-#include < PxDefaultErrorCallback.h >
-#include < PxDefaultAllocator.h > 
-#include < PxVisualDebuggerExt.h>
->>>>>>> .r140
 //PhysX includes //
 #include "core.h"
 //PhysX libraries
@@ -69,10 +50,7 @@
 
 #include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
 
-<<<<<<< .mine
 
-=======
->>>>>>> .r140
 
 class SceneGraphNode;
 class PhysXSceneInterface;
@@ -105,7 +83,7 @@ public:
    inline const physx::PxSimulationFilterShader& getFilterShader() {return _gDefaultFilterShader;}
 
 private:
-    PhysXSceneInterface* _currentScene;
+	PhysXSceneInterface* _currentScene;
 	physx::PxPhysics* _gPhysicsSDK ;
 	physx::PxFoundation* _foundation;
 	physx::PxDefaultErrorCallback _gDefaultErrorCallback;

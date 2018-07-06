@@ -1,4 +1,5 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()(){

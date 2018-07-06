@@ -13,7 +13,7 @@ void SceneGraphNode::checkBoundingBoxes(){
 	}
 	// don't update root;
 	if(!getParent()) return; 
-
+	if(!_node->isLoaded()) return;
 	//Compute the BoundingBox if it isn't already
 	if(!getBoundingBox().isComputed()){
 		_node->computeBoundingBox(this);
@@ -42,6 +42,8 @@ void SceneGraphNode::updateTransforms(){
 		if(transform->isDirty()){
 			_node->updateTransform(this);
 			getBoundingBox().Transform(_initialBoundingBox, transform->getGlobalMatrix());
+			///Update the bounding sphere
+			computeBoundingSphere();
 		}
 	}
 
@@ -62,7 +64,7 @@ void SceneGraphNode::updateVisualInformation(){
 	Scene* curentScene = GET_ACTIVE_SCENE();
 	//No point in updating visual information if the scene disabled object rendering 
 	//or rendering of their bounding boxes
-	if(!curentScene->drawObjects() && !curentScene->drawBBox()) return;
+	if(!curentScene->renderState()->drawObjects() && !curentScene->renderState()->drawBBox()) return;
 	//Bounding Boxes should be updated, so we can early cull now.
 	//Early cull switch
 	bool _skipChildren = false;
@@ -74,20 +76,18 @@ void SceneGraphNode::updateVisualInformation(){
 		}
 		//If this node isn't render-disabled, check if it is visible
 		//Skip expensive frustum culling if we shouldn't draw the node in the first place
-		if(_node->getDrawState()){ 
+		if(_node->getSceneNodeRenderState().getDrawState()){ 
 			switch(GFX_DEVICE.getRenderStage()){
-				default:
-				case FINAL_STAGE:
-				case DEFERRED_STAGE:{
+				default: {
 					//Perform visibility test on current node
-					_inView = _node->isInView(true,getBoundingBox());
+					_inView = _node->isInView(true,getBoundingBox(),getBoundingSphere());
 				} break; 
 
 				case SHADOW_STAGE: {
 					_inView = false;
 					if(_node->getMaterial()){
 						if(_node->getMaterial()->getCastsShadows()){
-							_inView = _node->isInView(true,getBoundingBox());
+							_inView = _node->isInView(true,getBoundingBox(),getBoundingSphere());
 						}
 					}
 				}break;

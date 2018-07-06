@@ -12,9 +12,9 @@ Vehicle::~Vehicle()
 
 void Vehicle::setVehicleTypeMask(U8 mask){
 	assert((mask & ~(VEHICLE_TYPE_PLACEHOLDER-1)) == 0);
-	_vehicleTypeMask |= static_cast<VEHICLE_TYPES>(mask);
+	_vehicleTypeMask |= static_cast<VehicleType>(mask);
 }
 
-bool Vehicle::checkVehicleMask(VEHICLE_TYPES type) const {
+bool Vehicle::checkVehicleMask(VehicleType type) const {
 	return (_vehicleTypeMask & type) == type ? false : true;
 }

@@ -2,14 +2,12 @@
 #include "vboInputData.vert"
 varying vec3 normals;
 varying vec3 position;
-varying vec4 texCoord[2];
 varying mat4 TBN;
 
 void main( void ){
 	computeData();
 	gl_Position =  gl_ModelViewProjectionMatrix * vertexData;
 
-	texCoord[0].st = texCoordData;
 	position = vec3(transpose(gl_ModelViewMatrix) * vertexData);
 	normals = normalize(gl_NormalMatrix * normalData);
 
@@ -25,7 +23,7 @@ void main( void ){
 
 } 
 
--- Fragment.NoTexture
+-- Fragment
 
 varying vec3 normals;
 varying vec3 position;
@@ -43,12 +41,12 @@ void main( void ){
 
 varying vec3  normals;
 varying vec3  position;
-varying vec4  texCoord[2];
+varying vec2  _texCoord;
 varying mat4  TBN;
 uniform sampler2D texDiffuse0;
 
 void main( void ){
-  vec4 color = texture2D(texDiffuse0,texCoord[0].st);
+  vec4 color = texture(texDiffuse0,_texCoord);
    if(color.a < 0.2) discard;
    gl_FragData[0] = color;
    gl_FragData[0].a = 0;
@@ -59,18 +57,18 @@ void main( void ){
 -- Fragment.Bump
 
 varying vec4       position;
-varying vec4       texCoord[2];
+varying vec2       _texCoord;
 varying mat4       TBN;
 uniform sampler2D  texDiffuse0;
 uniform sampler2D  texBump;
 
 void main( void ){
 
-   vec4 color = texture2D(texDiffuse0,texCoord[0].st);
+   vec4 color = texture(texDiffuse0,_texCoord);
    if(color.a < 0.2) discard;
    gl_FragData[0] = color;
    gl_FragData[1] = vec4(position.xyz,1);
-   gl_FragData[2] = (texture2D(texBump,texCoord[0]) * 2 -
+   gl_FragData[2] = (texture(texBump,_texCoord) * 2 -
                      vec4(1,1,1,0)) * TBN;
 }
 

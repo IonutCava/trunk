@@ -25,22 +25,22 @@ struct RenderStateBlockDescriptor {
    // Blending   
    bool _blendDefined;
    bool _blendEnable;
-   BLEND_PROPERTY _blendSrc;
-   BLEND_PROPERTY _blendDest;
-   BLEND_OPERATION _blendOp;
+   BlendProperty _blendSrc;
+   BlendProperty _blendDest;
+   BlendOperation _blendOp;
 
    /// Separate Alpha Blending
    bool _alphaBlendDefined;
    bool _alphaBlendEnable;
-   BLEND_PROPERTY _alphaBlendSrc;
-   BLEND_PROPERTY _alphaBlendDest;
-   BLEND_OPERATION _alphaBlendOp;
+   BlendProperty _alphaBlendSrc;
+   BlendProperty _alphaBlendDest;
+   BlendOperation _alphaBlendOp;
 
    /// Alpha test
    bool _alphaDefined;
    bool _alphaTestEnable;   
    I32  _alphaTestRef;
-   COMPARE_FUNC _alphaTestFunc;
+   ComparisonFunction _alphaTestFunc;
 
    /// Color Writes
    bool _enableColorWrite;
@@ -51,23 +51,23 @@ struct RenderStateBlockDescriptor {
 
    /// Rasterizer
    bool _cullDefined;
-   CULL_MODE _cullMode;
+   CullMode _cullMode;
 
    /// Depth
    bool _zDefined;
    bool _zEnable;
    bool _zWriteEnable;
-   COMPARE_FUNC _zFunc;
+   ComparisonFunction _zFunc;
    F32 _zBias;
-   F32 _zSlopeBias;
+   F32 _zUnits;
 
    /// Stencil
    bool _stencilDefined;
    bool _stencilEnable;
-   STENCIL_OPERATION _stencilFailOp;
-   STENCIL_OPERATION _stencilZFailOp;
-   STENCIL_OPERATION _stencilPassOp;
-   COMPARE_FUNC  _stencilFunc;
+   StencilOperation _stencilFailOp;
+   StencilOperation _stencilZFailOp;
+   StencilOperation _stencilPassOp;
+   ComparisonFunction  _stencilFunc;
    U32 _stencilRef;
    U32 _stencilMask;
    U32 _stencilWriteMask;
@@ -78,7 +78,7 @@ struct RenderStateBlockDescriptor {
    /// Color material?
    bool _vertexColorEnable;
 
-   FILL_MODE _fillMode;
+   FillMode _fillMode;
 
    ///Cached hash value;
    U32 _hash;
@@ -89,25 +89,25 @@ struct RenderStateBlockDescriptor {
 
    void fromDescriptor( const RenderStateBlockDescriptor& descriptor );
 
-   void setCullMode(CULL_MODE mode ); 
-   inline void setFillMode(FILL_MODE mode) { _fillMode = mode; }
+   void setCullMode(CullMode mode ); 
+   inline void setFillMode(FillMode mode) { _fillMode = mode; }
 
    void setZEnable(const bool enable); 
    void setZReadWrite(bool read, bool write = true); 
 
    void setAlphaTest(   bool enable, 
-                        COMPARE_FUNC func = COMPARE_FUNC_GreaterEqual, 
+                        ComparisonFunction func = CMP_FUNC_GEQUAL, 
                         I32 alphaRef = 0 );
 
    void setBlend( bool enable, 
-                  BLEND_PROPERTY src = BLEND_PROPERTY_SrcAlpha, 
-                  BLEND_PROPERTY dest = BLEND_PROPERTY_InvSrcAlpha,
-                  BLEND_OPERATION op = BLEND_OPERATION_Add );
+                  BlendProperty src = BLEND_PROPERTY_SRC_ALPHA, 
+                  BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
+                  BlendOperation op = BLEND_OPERATION_ADD );
 
    void setAlphaBlend( bool enable, 
-                        BLEND_PROPERTY src = BLEND_PROPERTY_One, 
-                        BLEND_PROPERTY dest = BLEND_PROPERTY_Zero,
-                        BLEND_OPERATION op = BLEND_OPERATION_Add );
+                        BlendProperty src = BLEND_PROPERTY_ONE, 
+                        BlendProperty dest = BLEND_PROPERTY_ZERO,
+                        BlendOperation op = BLEND_OPERATION_ADD );
 
    void setColorWrites( bool red, bool green, bool blue, bool alpha );
 

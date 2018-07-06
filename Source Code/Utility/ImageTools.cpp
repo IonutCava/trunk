@@ -1,11 +1,12 @@
-#include "core.h"
+
 #include "Headers/ImageTools.h"
 
+
 #undef _UNICODE
-#include "IL/il.h"
-#include "IL/ilu.h"
-#include "IL/ilut.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
+#include <IL/il.h>
+#include <IL/ilu.h>
+#include <IL/ilut.h>
+
 
 namespace ImageTools {
 

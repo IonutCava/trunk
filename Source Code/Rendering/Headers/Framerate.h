@@ -54,10 +54,10 @@ private:
 		_averageFps(0),
 		_maxFps(1.175494351e-38F),
 		_minFps(3.402823466e+38F),
-		_targetFps(60),
+		_targetFrameRate(60),
 		_speedfactor(1),
 		_init(false){}
-  F32           _targetFps;
+  U8            _targetFrameRate;
   F32           _fps;
   F32           _speedfactor;
   F32           _averageFps,_maxFps,_minFps;
@@ -71,7 +71,7 @@ private:
   
 
 public:
-  void          Init(F32 tfps);
+  void          Init(U8 tfps);
   void          SetSpeedFactor();
   inline F32    getFps(){return _fps;}
   inline F32    getSpeedfactor(){ReadLock r_lock(_speedLockMutex); return _speedfactor;}
@@ -80,4 +80,5 @@ public:
   mutable Lock  _speedLockMutex;
 END_SINGLETON
 
+#define FRAME_SPEED_FACTOR  Framerate::getInstance().getSpeedfactor()
 #endif

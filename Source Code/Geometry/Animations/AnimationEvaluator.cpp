@@ -44,7 +44,7 @@ U32 AnimEvaluator::GetFrameIndexAt(D32 ptime){
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp. 
-void AnimEvaluator::Evaluate( D32 pTime, unordered_map<std::string, Bone*>& bones) {
+void AnimEvaluator::Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bones) {
 
 	pTime *= _ticksPerSecond;
 	
@@ -56,7 +56,7 @@ void AnimEvaluator::Evaluate( D32 pTime, unordered_map<std::string, Bone*>& bone
 	// calculate the transformations for each animation channel
 	for( U32 a = 0; a < _channels.size(); a++){
 		const AnimationChannel* channel = &_channels[a];
-		unordered_map<std::string, Bone*>::iterator bonenode = bones.find(channel->_name);
+		Unordered_map<std::string, Bone*>::iterator bonenode = bones.find(channel->_name);
 
 		if(bonenode == bones.end()) { 
 			D_ERROR_FN(Locale::get("ERROR_BONE_FIND"),channel->_name.c_str());

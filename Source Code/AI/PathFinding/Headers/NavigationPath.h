@@ -116,7 +116,7 @@ namespace Navigation {
       bool planSliced();
 
       /// Add points of the path between the two specified points.
-      //bool addPoints(Point3F from, Point3F to, Vector<Point3F> *points);
+      //bool addPoints(Point3F from, Point3F to, vectorImpl<Point3F> *points);
 
       /// 'Visit' the last two points on our visit list.
       bool visitNext();
@@ -125,8 +125,8 @@ namespace Navigation {
       dtStatus                _status;
       tQueryFilter            _filter;
       I32                     _curIndex;
-	  std::vector<vec3<F32> > _points;
-      std::vector<vec3<F32> > _visitPoints;
+	  vectorImpl<vec3<F32> > _points;
+      vectorImpl<vec3<F32> > _visitPoints;
       F32					  _length;
 
       /// Resets our world transform and bounds to fit our point list.

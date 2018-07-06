@@ -19,7 +19,7 @@ enum PhysicsAPI {
 	BULLET,
 	PX_PLACEHOLDER
 };
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+
 class Scene;
 class SceneGraphNode;
 /*“Copyright 2009-2013 DIVIDE-Studio”*/

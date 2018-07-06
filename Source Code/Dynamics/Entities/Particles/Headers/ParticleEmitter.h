@@ -65,7 +65,7 @@ public:
 	virtual void render(SceneGraphNode* const sgn);
 
 	///SceneNode test
-	bool isInView(bool distanceCheck,BoundingBox& boundingBox){return _drawImpostor;}
+	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere){return _drawImpostor;}
 
 private:
 	/// create particles

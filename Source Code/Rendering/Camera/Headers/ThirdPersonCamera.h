@@ -14,3 +14,19 @@
    You should have received a copy of the GNU Lesser General Public License
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
+#ifndef _THIRD_PERSON_CAMERA_H_
+#define _THIRD_PERSON_CAMERA_H_
+
+#include "Camera.h"
+///Movable camera that orbits a certain point
+class ThirdPersonCamera : public Camera {
+
+public:
+	ThirdPersonCamera() : Camera(THIRD_PERSON)
+	{
+	}
+};
+
+#endif

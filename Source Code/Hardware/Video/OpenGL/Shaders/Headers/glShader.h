@@ -17,19 +17,19 @@
 
 #ifndef GL_SHADER_H_
 #define GL_SHADER_H_
-
+#include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 
 class glShader : public Shader{
 public:
-	glShader(const std::string& name, SHADER_TYPE type);
+	glShader(const std::string& name, ShaderType type);
 	~glShader();
 
 	bool load(const std::string& source);
 	void validate();
 
 private:
-	std::string preprocessIncludes(const std::string& source, const std::string& filename, I32 level /*= 0 */ );
+	std::string preprocessIncludes(const std::string& source, const std::string& filename, GLint level /*= 0 */ );
 };
 
 #endif

@@ -1,143 +1,182 @@
 #include "Headers/RenderQueue.h"
+
+#include "Headers/RenderBinMesh.h"
+#include "Headers/RenderBinDelegate.h"
+#include "Headers/RenderBinTranslucent.h"
+#include "Headers/RenderBinParticles.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 
-RenderQueueItem::RenderQueueItem(P32 sortKey, SceneGraphNode* const node ) : _node( node ),
-															    		     _sortKey( sortKey ) {
-	/// Defaulting to a null state hash
-	_stateHash = 0;
-	Material* mat = _node->getNode<SceneNode>()->getMaterial();
-	/// If we have a material
-	if(mat){
-		/// Sort by state hash depending on the current rendering stage
-		if(GFX_DEVICE.getRenderStage() == REFLECTION_STAGE){
-			/// Check if we have a reflection state
-			RenderStateBlock* reflectionState = mat->getRenderState(REFLECTION_STAGE);
-			if(reflectionState != NULL){
-				/// Save the render state hash value for sorting
-				_stateHash = reflectionState->getHash();
-			}else{ /// else, use the final rendering state as that will be used to render in reflection
-				/// all materials should have at least one final render state
-				RenderStateBlock* finalState = mat->getRenderState(FINAL_STAGE);
-				assert(finalState != NULL);
-				_stateHash = finalState->getHash();
-			}
-		}else if(GFX_DEVICE.getRenderStage() == SHADOW_STAGE){
-			/// Check if we have a shadow state
-			RenderStateBlock* shadowState = mat->getRenderState(SHADOW_STAGE);
-			/// If we do not have a special shadow state, don't worry, just use 0 for all similar nodes
-			/// the SceneGraph will use a global state on them, so using 0 is still sort-correct
-			if(shadowState != NULL){
-				/// Save the render state hash value for sorting
-				_stateHash = shadowState->getHash();
-			}
-		}else{
-			/// all materials should have at least one final render state
-			RenderStateBlock* finalState = mat->getRenderState(FINAL_STAGE);
-			assert(finalState != NULL);
-			/// Save the render state has value for sorting
-			_stateHash = finalState->getHash();
-		}
+struct RenderBinCallOrder{
+	bool operator()(RenderBin* a, RenderBin* b) const {
+		return a->getSortOrder() < b->getSortOrder();
 	}
+};
+
+RenderQueue::~RenderQueue()
+{
+	for_each(RenderBinMap::value_type& renderBins, _renderBins){
+		SAFE_DELETE(renderBins.second);
+	}
+	_renderBins.clear();
 }
 
-/// Sorting opaque items is a 2 step process:
-/// 1: sort by shaders
-/// 2: if the shader is identical, sort by state hash
-struct RenderQueueKeyCompare{
-	///Sort 
-	bool operator()( const RenderQueueItem &a, const RenderQueueItem &b ) const{
-		/// No need to sort by shaders in shadow stage -Update: Since animation update, shadow stage uses shaders as well
-		//if(GFX_DEVICE.getRenderStage() != SHADOW_STAGE){ ///Sort by shader in all states
-
-			/// The sort key is the shader id (for now)
-			if(  a._sortKey.i < b._sortKey.i ) 
-				return true;
-	        /// The _stateHash is a CRC value created based on the RenderState.
-			/// Might wanna generate a hash based on mose important values instead, but it's not important at this stage
-			if( a._sortKey.i == b._sortKey.i ) 
-				return a._stateHash < b._stateHash;
-			/// different shaders
-			return false;
-
-		//}
-		/// In shadow stage, sort by state!
-		//return a._stateHash < b._stateHash;
+U16 RenderQueue::getRenderQueueStackSize() {
+	U16 temp = 0;
+	for_each(RenderBinMap::value_type& renderBins, _renderBins){
+		temp += (renderBins.second)->getBinSize();
 	}
-};
+	return temp;
+}
 
+RenderBin* RenderQueue::getBinSorted(U16 renderBin){
+	return _sortedRenderBins[renderBin];
+}
 
+RenderBin* RenderQueue::getBin(U16 renderBin){
+	return getBin(_renderBinId[renderBin]);
+}
 
-struct RenderQueueDistanceBacktoFront{
-	bool operator()( const RenderQueueItem &a, const RenderQueueItem &b) const {
-		const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-		F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPoint(eye);
-		F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPoint(eye);
-		///ToDo: REMOVE WATER DISTANCE CHECK HACK!!!!!!
-		if(a._node->getNode<SceneNode>()->getType() == TYPE_WATER) return true;
-		if(b._node->getNode<SceneNode>()->getType() == TYPE_WATER) return false;
-		return dist_a < dist_b;
+RenderBin* RenderQueue::getBin(RenderBin::RenderBinType rbType){
+	RenderBin* temp = NULL;
+	RenderBinMap::iterator binMapiter = _renderBins.find(rbType);
+	if(binMapiter != _renderBins.end()){
+		temp = binMapiter->second;
 	}
-};
+	return temp;
+}
 
-struct RenderQueueDistanceFrontToBack{
-	bool operator()( const RenderQueueItem &a, const RenderQueueItem &b) const {
-		const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-		F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPoint(eye);
-		F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPoint(eye);
-		return dist_a > dist_b;
+SceneGraphNode* RenderQueue::getItem(U16 renderBin, U16 index){
+	SceneGraphNode* temp = NULL;
+	if(renderBin < _renderBins.size()){
+		RenderBin* tempBin = _renderBins[_renderBinId[renderBin]];
+		if(index < tempBin->getBinSize()){
+			temp = tempBin->getItem(index)._node;
+		}
 	}
-};
+	return temp;
+}
 
-void RenderQueue::sort(){
-	WriteLock w_lock(_renderQueueGetMutex);
-	const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-	std::sort( _translucentStack.begin(), _translucentStack.end(), RenderQueueDistanceBacktoFront());
-	std::sort( _opaqueStack.begin(), _opaqueStack.end(), RenderQueueKeyCompare()  );
-	//Render opaque items first
-	for_each(RenderQueueStack::value_type& s, _opaqueStack){
-		_renderQueue.push_back(s);
+RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
+	RenderBin* temp = NULL;
+	RenderBinMap::iterator binMapiter = _renderBins.find(rbType);
+	if(binMapiter != _renderBins.end()){
+		temp = binMapiter->second;
+	}else{
+		switch(rbType){
+			case RenderBin::RBT_SKY:
+				temp = New RenderBinDelegate(RenderBin::RBT_SKY,RenderingOrder::NONE,0.01);
+				break;
+			case RenderBin::RBT_MESH :
+				temp = New RenderBinMesh(RenderBin::RBT_MESH,RenderingOrder::FRONT_TO_BACK,0.1);
+				break;
+			case RenderBin::RBT_TERRAIN:
+				temp = New RenderBinDelegate(RenderBin::RBT_TERRAIN,RenderingOrder::NONE,0.2);
+				break;
+			case RenderBin::RBT_DELEGATE:
+				temp = New RenderBinDelegate(RenderBin::RBT_DELEGATE,RenderingOrder::NONE,0.3);
+				break;
+			case RenderBin::RBT_SHADOWS:
+				temp = New RenderBinDelegate(RenderBin::RBT_SHADOWS,RenderingOrder::NONE,0.4);
+				break;
+			case RenderBin::RBT_DECALS:
+				temp = New RenderBinMesh(RenderBin::RBT_DECALS,RenderingOrder::FRONT_TO_BACK,0.5);
+				break;
+			case RenderBin::RBT_WATER:
+				///Water does not count as translucency, because rendering is very specific
+				temp = New RenderBinDelegate(RenderBin::RBT_WATER,RenderingOrder::BACK_TO_FRONT,0.6);
+				break;
+			case RenderBin::RBT_FOLIAGE:
+				temp = New RenderBinDelegate(RenderBin::RBT_FOLIAGE,RenderingOrder::BACK_TO_FRONT,0.7);
+				break;
+			case RenderBin::RBT_PARTICLES:
+				temp = New RenderBinParticles(RenderBin::RBT_PARTICLES,RenderingOrder::BACK_TO_FRONT,0.8);
+				break;
+			case RenderBin::RBT_TRANSLUCENT:
+				temp = New RenderBinTranslucent(RenderBin::RBT_TRANSLUCENT,RenderingOrder::BACK_TO_FRONT,0.9);
+				break;
+			default:
+			case RenderBin::RBT_PLACEHOLDER:
+				ERROR_FN(Locale::get("ERROR_INVALID_RENDER_BIN_CREATION"));
+				break;
+		};
+		_renderBins.insert(std::make_pair(rbType,temp));
+		_renderBinId.insert(std::make_pair(_renderBins.size() - 1,  rbType));
+		_sortedRenderBins.push_back(temp);
+		std::sort(_sortedRenderBins.begin(), _sortedRenderBins.end(), RenderBinCallOrder());
 	}
-	//Then translucent
-	for_each(RenderQueueStack::value_type& s, _translucentStack){
-		_renderQueue.push_back(s);
-	}
+	return temp;
+}
+
+RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
+	RenderBin* rb = NULL;
+	switch(node->getType()){
+		default:
+			//skip
+			break;
+		case TYPE_TERRAIN :
+			rb = getOrCreateBin(RenderBin::RBT_TERRAIN);
+			break;
+		case TYPE_WATER :
+			rb = getOrCreateBin(RenderBin::RBT_WATER);
+			break;
+		case TYPE_PARTICLE_EMITTER :
+			rb = getOrCreateBin(RenderBin::RBT_PARTICLES);
+			break;
+		case TYPE_SKY:
+			rb = getOrCreateBin(RenderBin::RBT_SKY);
+			break;
+		case TYPE_OBJECT3D : {
+			///Check if the object has a material with translucency
+			Material* nodeMaterial = node->getMaterial();
+			if(nodeMaterial){
+				if(nodeMaterial->isTranslucent()){
+					///Add it to the appropriate bin if so ...
+					rb = getOrCreateBin(RenderBin::RBT_TRANSLUCENT);
+					break;
+				}
+			}
+			///... else add it to the general geoemtry bin
+			rb = getOrCreateBin(RenderBin::RBT_MESH);
+			}break;
+		};
+	return rb;
 }
 
 void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
 	assert(sgn != NULL);
-	WriteLock w_lock(_renderQueueGetMutex);
-	if(sgn->getNode<SceneNode>()){
-		P32 key;
-		Material* nodeMaterial = sgn->getNode<SceneNode>()->getMaterial();
-		if(nodeMaterial){
-			key = nodeMaterial->getMaterialId();
-			if(sgn->getNode<SceneNode>()->getMaterial()->isTranslucent() || sgn->getNode<SceneNode>()->getType() == TYPE_WATER){
-				_translucentStack.push_back(RenderQueueItem(key,sgn));
-			}else{
-				_opaqueStack.push_back(RenderQueueItem(key,sgn));
-			}
-		}else{
-			key.i = _renderQueue.size()+1;
-			_renderQueue.push_back(RenderQueueItem(key,sgn));
+	SceneNode* sn = sgn->getNode<SceneNode>();
+	if(sn != NULL){
+		RenderBin* rb = getBinForNode(sn);
+		if(rb){
+			rb->addNodeToBin(sgn);
 		}
 	}
 }
 
-const RenderQueueItem& RenderQueue::getItem(I32 index){
-	ReadLock r_lock(_renderQueueGetMutex);
-	return _renderQueue[index];
-}
- 
-void RenderQueue::refresh(){
-	WriteLock w_lock(_renderQueueGetMutex);
-	_renderQueue.resize(0);
-	_translucentStack.resize(0);
-	_opaqueStack.resize(0);
+void RenderQueue::sort(){
+	for_each(RenderBinMap::value_type& renderBin, _renderBins){
+      assert(renderBin.second);
+      renderBin.second->sort();
+   }
 }
 
-U32 RenderQueue::getRenderQueueStackSize(){
-	ReadLock r_lock(_renderQueueGetMutex);
-	return _renderQueue.size();
+void RenderQueue::refresh(){
+	///Finish all GPU commands
+	GFX_DEVICE.flush();
+	for_each(RenderBinMap::value_type& renderBin, _renderBins){
+      assert(renderBin.second);
+      renderBin.second->refresh();
+   }
 }
+
+void RenderQueue::render(){
+	for_each(RenderBin* renderBin, _sortedRenderBins){
+      assert(renderBin);
+      renderBin->render();
+   }
+}
+
+ 

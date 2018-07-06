@@ -1,4 +1,3 @@
-#include "vboInputDataBones.vert"
 
 uniform bool hasAnimations;
 uniform mat4 boneTransforms[60];

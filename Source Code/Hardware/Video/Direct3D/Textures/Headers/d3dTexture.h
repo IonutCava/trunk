@@ -30,7 +30,7 @@ public:
 	bool generateHWResource(const std::string& name){return true;}
 	bool unload() {Destroy(); return true;}
 
-	void Bind(U16 unit){}
+	void Bind(U16 unit, bool fixedPipeline = false){}
 	void Unbind(U16 unit){}
 
 	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d){}

@@ -1,0 +1,41 @@
+#version 130
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
+#define MAX_LIGHT_COUNT 4
+#define MAX_SHADOW_CASTING_LIGHTS 2
+#extension GL_EXT_texture_array : enable
+#extension GL_EXT_gpu_shader4 : enable
+#define USE_VBO_DATA
+#define DEFINE_PLACEHOLDER
+#line 8
+
+attribute vec3  inVertexData;
+attribute vec2  inTexCoordData;
+
+vec4  vertexData;
+
+varying vec4 _vertexMV;
+varying vec2 _texCoord;
+
+uniform mat4 projectionMatrix;
+
+void computeData(void){
+
+#if defined(USE_VBO_DATA)
+    	vertexData = vec4(inVertexData,1.0);
+		_texCoord   = inTexCoordData;
+#else
+		vertexData = gl_Vertex;
+		_texCoord   = gl_MultiTexCoord0.xy;
+#endif
+
+}
+
+void main(void){
+
+	computeData();
+	// Transformed position 
+	_vertexMV = gl_ModelViewMatrix * vertexData;
+	//Compute the final vert position
+	gl_Position = projectionMatrix  * _vertexMV;
+}
+

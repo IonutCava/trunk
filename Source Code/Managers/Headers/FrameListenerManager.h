@@ -22,7 +22,7 @@
 ///Add this include here so that any FrameListner derived class only needs to include the manager
 #include "Rendering/Headers/FrameListener.h"
 
-enum FRAME_EVENT_TYPE{
+enum FrameEventType{
 	FRAME_EVENT_ANY,
 	FRAME_EVENT_STARTED,
 	FRAME_PRERENDER_END,
@@ -34,8 +34,8 @@ class FrameListener;
 struct FrameEvent;
 DEFINE_SINGLETON(FrameListenerManager)
 
-typedef unordered_map<std::string, FrameListener* > ListenerMap;
-typedef std::vector<F32> EventTimeMap;
+typedef Unordered_map<std::string, FrameListener* > ListenerMap;
+typedef vectorImpl<F32> EventTimeMap;
 
 public:
 	void registerFrameListener(FrameListener* listener);
@@ -47,10 +47,10 @@ public:
 	bool frameRenderingQueued(const FrameEvent& evt);
 	bool frameEnded(const FrameEvent& evt);
 
-	void createEvent(FRAME_EVENT_TYPE type, FrameEvent& evt);
+	void createEvent(FrameEventType type, FrameEvent& evt);
 
 private:
-	F32 calculateEventTime(F32 currentTime, FRAME_EVENT_TYPE type);
+	F32 calculateEventTime(F32 currentTime, FrameEventType type);
 
 private:
 	ListenerMap _listeners;

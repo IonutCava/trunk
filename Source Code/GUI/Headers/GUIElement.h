@@ -19,17 +19,12 @@
 #define _GUI_ELEMENT_H_
 #include "core.h"
 
-enum Font
-{
-	STROKE_ROMAN            =   0x0000,
-    STROKE_MONO_ROMAN       =   0x0001,
-    BITMAP_9_BY_15          =   0x0002,
-    BITMAP_8_BY_13          =   0x0003,
-    BITMAP_TIMES_ROMAN_10   =   0x0004,
-    BITMAP_TIMES_ROMAN_24   =   0x0005,
-    BITMAP_HELVETICA_10     =   0x0006,
-    BITMAP_HELVETICA_12     =   0x0007,
-    BITMAP_HELVETICA_18     =   0x0008
+namespace Font {
+
+	const static std::string	DIVIDE_DEFAULT ("Test.ttf");
+	const static std::string	BATANG ("Batang.ttf");
+	const static std::string	DEJA_VU("DejaVuSans.ttf");
+
 };
 
 enum GUIType
@@ -57,7 +52,7 @@ class GUIElement{
 	friend class GUI;
 
 public:
-	GUIElement() ;
+	GUIElement(GUIType type,const vec2<F32>& position) ;
 	virtual ~GUIElement();
 	inline const std::string& getName() const {return _name;}
 	inline const vec2<F32>&   getPosition()  const {return _position;}

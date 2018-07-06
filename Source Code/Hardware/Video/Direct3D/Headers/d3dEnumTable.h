@@ -25,5 +25,5 @@ namespace D3D_ENUM_TABLE
 {
    void fill();
 };
-extern unsigned int d3dTextureTypeTable[TEXTURE_TYPE_PLACEHOLDER];
+extern unsigned int d3dTextureTypeTable[TextureType_PLACEHOLDER];
 #endif

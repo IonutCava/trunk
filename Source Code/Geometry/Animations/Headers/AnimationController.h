@@ -50,21 +50,21 @@ public:
 	///This will set the animation speed
 	inline void AdjustAnimationSpeedTo(D32 tickspersecond) { _animations[_currentAnimIndex]._ticksPerSecond=tickspersecond; }
 	/// get the animationspeed... in ticks per second
-	inline D32 GetAnimationSpeed() const { return _animations[_currentAnimIndex]._ticksPerSecond; }
+	inline F32 GetAnimationSpeed() const { return _animations[_currentAnimIndex]._ticksPerSecond; }
 	/// get the transforms needed to pass to the vertex shader. This will wrap the dt value passed, so it is safe to pass 50000000 as a valid number
-	inline std::vector<mat4<F32> >& GetTransforms(D32 dt){ return _animations[_currentAnimIndex].GetTransforms(dt); }
-	inline std::vector<mat4<F32> >& GetTransformsByIndex(U32 index){ return _animations[_currentAnimIndex]._transforms[index]; }
+	inline vectorImpl<mat4<F32> >& GetTransforms(D32 dt){ return _animations[_currentAnimIndex].GetTransforms(dt); }
+	inline vectorImpl<mat4<F32> >& GetTransformsByIndex(U32 index){ return _animations[_currentAnimIndex]._transforms[index]; }
 	inline U32 GetFrameIndex() const { return _animations[_currentAnimIndex].GetFrameIndex(); }
 	inline U32 GetFrameCount() const {return _animations[_currentAnimIndex].GetFrameCount(); }
 	inline U32 GetAnimationIndex() const { return _currentAnimIndex; }
 	inline std::string GetAnimationName() const { return _animations[_currentAnimIndex]._name;  }
 	///GetBoneIndex will return the index of the bone given its name. The index can be used to index directly into the vector returned from GetTransform
-	inline I32 GetBoneIndex(const std::string& bname){ unordered_map<std::string, U32>::iterator found = _bonesToIndex.find(bname); if(found!=_bonesToIndex.end()) return found->second; else return -1;}
+	inline I32 GetBoneIndex(const std::string& bname){ Unordered_map<std::string, U32>::iterator found = _bonesToIndex.find(bname); if(found!=_bonesToIndex.end()) return found->second; else return -1;}
 	///GetBoneTransform will return the matrix of the bone given its name and the time. be careful with this to make sure and send the correct dt. If the dt is different from what the model is currently at, the transform will be off
 	inline mat4<F32> GetBoneTransform(D32 dt, const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return mat4<F32>(); return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
 	/// same as above, except takes the index
 	inline mat4<F32> GetBoneTransform(D32 dt, U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
-	std::vector<AnimEvaluator> _animations;// a std::vector that holds each animation 
+	vectorImpl<AnimEvaluator> _animations;// a vector that holds each animation 
 	
 	I32 RenderSkeleton(D32 dt);
 
@@ -84,25 +84,25 @@ private:
 	Bone* CreateBoneTree( aiNode* pNode, Bone* parent);
 
 	I32 SubmitSkeletonToGPU(U32 frameIndex);
-	I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, std::vector<vec3<F32> >& pointsA, std::vector<vec3<F32> >& pointsB, std::vector<vec4<F32> >& colors);
+	I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA, vectorImpl<vec3<F32> >& pointsB, vectorImpl<vec4<F32> >& colors);
 
 private:
 	I32 _currentAnimIndex;/** Current animation index */
 	Bone* _skeleton;/** Root node of the internal scene structure */
 
-	unordered_map<std::string, Bone*> _bonesByName;/** Name to node map to quickly find nodes by their name */
-	unordered_map<std::string, U32>   _bonesToIndex;/** Name to node map to quickly find nodes by their name */
-	unordered_map<std::string, U32>   _animationNameToId;// find animations quickly
+	Unordered_map<std::string, Bone*> _bonesByName;/** Name to node map to quickly find nodes by their name */
+	Unordered_map<std::string, U32>   _bonesToIndex;/** Name to node map to quickly find nodes by their name */
+	Unordered_map<std::string, U32>   _animationNameToId;// find animations quickly
 
-	std::vector<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST COPIES!!
-	std::vector<aiMatrix4x4 > _transforms;// temp array of transforms
+	vectorImpl<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST COPIES!!
+	vectorImpl<aiMatrix4x4 > _transforms;// temp array of transforms
 
-	typedef unordered_map<U32/*frameIndex*/, std::vector<vec3<F32> >> pointMap;
-	typedef unordered_map<U32/*frameIndex*/, std::vector<vec4<F32> >> colorMap;
-		///I wanna use my unordered_map here :((((( -Ionut
-	unordered_map<U32 /*animationId*/, pointMap > _pointsA;
-	unordered_map<U32 /*animationId*/, pointMap > _pointsB;
-	unordered_map<U32 /*animationId*/, colorMap > _colors;
+	typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec3<F32> >> pointMap;
+	typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec4<F32> >> colorMap;
+		///I wanna use my Unordered_map here :((((( -Ionut
+	Unordered_map<U32 /*animationId*/, pointMap > _pointsA;
+	Unordered_map<U32 /*animationId*/, pointMap > _pointsB;
+	Unordered_map<U32 /*animationId*/, colorMap > _colors;
 
 	aiMatrix4x4 _rootTransform;
 	mat4<F32>  _rootTransformRender;

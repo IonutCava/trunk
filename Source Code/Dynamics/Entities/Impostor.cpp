@@ -13,14 +13,14 @@ Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
 	if(GFX_DEVICE.getDeferredRendering()){
 		_dummy->getMaterial()->setShaderProgram("DeferredShadingPass1.Impostor");
 	}else{
-		_dummy->getMaterial()->setShaderProgram("lighting.NoTexture");
+		_dummy->getMaterial()->setShaderProgram("lighting");
 	}
-	_dummy->setDrawState(false);
+	_dummy->getSceneNodeRenderState().setDrawState(false);
 	_dummy->setResolution(8);
 	_dummy->setRadius(radius);
 	RenderStateBlockDescriptor dummyDesc = _dummy->getMaterial()->getRenderState(FINAL_STAGE)->getDescriptor();
 	dummyDesc._fixedLighting = false;
-	dummyDesc.setFillMode(FILL_MODE_Wireframe);
+	dummyDesc.setFillMode(FILL_MODE_WIREFRAME);
 	///get's deleted by the material
 	_dummyStateBlock = _dummy->getMaterial()->setRenderStateBlock(dummyDesc,FINAL_STAGE);
 }
@@ -32,7 +32,7 @@ Impostor::~Impostor(){
 
 void Impostor::render(SceneGraphNode* const node){
 	GFXDevice& gfx = GFX_DEVICE;
-	if(gfx.getRenderStage() != FINAL_STAGE && gfx.getRenderStage() != DEFERRED_STAGE) return;
+	if(gfx.isCurrentRenderStage(DISPLAY_STAGE)) return;
 	SET_STATE_BLOCK(_dummyStateBlock);
 	gfx.setObjectState(node->getTransform());
 	gfx.setMaterial(_dummy->getMaterial());
@@ -49,7 +49,7 @@ void Impostor::render(SceneGraphNode* const node){
 /// Render dummy at target transform
 void Impostor::render(Transform* const transform){
 	GFXDevice& gfx = GFX_DEVICE;
-	if(gfx.getRenderStage() != FINAL_STAGE && gfx.getRenderStage() != DEFERRED_STAGE) return;
+	if(gfx.isCurrentRenderStage(DISPLAY_STAGE)) return;
 	SET_STATE_BLOCK(_dummyStateBlock);
 	gfx.setObjectState(transform);
 	//gfx.setMaterial(_dummy->getMaterial());

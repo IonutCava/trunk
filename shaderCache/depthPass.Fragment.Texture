@@ -1,0 +1,36 @@
+#version 130
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
+#define MAX_LIGHT_COUNT 4
+#define MAX_SHADOW_CASTING_LIGHTS 2
+#extension GL_EXT_texture_array : enable
+#extension GL_EXT_gpu_shader4 : enable
+#define USE_VBO_DATA
+#define DEFINE_PLACEHOLDER
+#line 8
+
+varying vec2 _texCoord;
+varying vec4 _vertexMV;
+
+//Opacity and specular maps
+uniform float opacity;
+uniform bool hasOpacity;
+uniform sampler2D opacityMap;
+
+void main(){
+	if(hasOpacity ){
+		if(texture(opacityMap, _texCoord).a < 0.2) discard;
+	}else{
+		if(opacity < 0.2) discard;
+	}
+
+	float depth = _vertexMV.z / _vertexMV.w ;
+	depth = depth * 0.5 + 0.5;
+	float moment1 = depth;
+	float moment2 = depth * depth;
+	
+	// Adjusting moments (this is sort of bias per pixel) using partial derivative
+	float dx = dFdx(depth);
+	float dy = dFdy(depth);
+	moment2 += 0.25*(dx*dx+dy*dy) ;
+	gl_FragData[0] =  vec4( moment1,moment2, 0.0, 0.0 );
+}

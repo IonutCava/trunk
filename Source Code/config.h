@@ -27,11 +27,31 @@
 #ifndef _CONFIG_HEADER_
 #define _CONFIG_HEADER_
 
-<<<<<<< .mine
 ///Application desired framerate for physics simulations
 #define TARGET_FRAME_RATE 60
+///Application update rate
+#define TICKS_PER_SECOND 25
+///Maximum frameskip
+#define  MAX_FRAMESKIP 5
 
 #define TARGET_D3D_VERSION D3D11 /*or D3D10*/
+
+///How many lights should affect a single node
+#define MAX_LIGHTS_PER_SCENE_NODE 4
+#define MAX_SHADOW_CASTING_LIGHTS_PER_NODE 2
+
+///Terrain LOD configuration
+///Camera distance to the terrain chunk is calculated as follows:
+///	vector EyeToChunk = terrainBoundingBoxCenter - EyePos; cameraDistance = EyeToChunk.length();
+#define TERRAIN_CHUNKS_LOD 3 //< Number of LOD levels for the terrain
+#define TERRAIN_CHUNK_LOD0 100.0f //< Relative distance for LOD0->LOD1 selection
+#define TERRAIN_CHUNK_LOD1 180.0f //< Relative distance for LOD0->LOD2 selection
+
+///SceneNode LOD selection
+///Distance computation is identical to the of the terrain (using SceneNode's bounding box)
+#define SCENE_NODE_LOD 3
+#define SCENE_NODE_LOD0 100.0f //< Relative distance for LOD0->LOD1 selection
+#define SCENE_NODE_LOD1 180.0f //< Relative distance for LOD0->LOD2 selection
 
 #ifndef _DEBUG
 	#define NDEBUG
@@ -58,12 +78,6 @@
 //#define __GNUC__
 #endif
 
-=======
-#ifndef _DEBUG
-	#define NDEBUG
-#endif
-
->>>>>>> .r140
 ///Edit the maximum number of concurrent threads that this application may start excluding events.
 ///Default 5: Rendering + Update + A.I. + Networking + PhysX
 #ifndef THREAD_LIMIT
@@ -99,11 +113,10 @@
 #endif //WIN32_LEAN_AND_MEAN
 
 ///Use SSE functions for math calculations: usefull for release
-#ifndef USE_MATH_SSE
-//#define USE_MATH_SSE
+#ifndef USE_MATH_SIMD
+#define USE_MATH_SIMD
 #define ALIGNED_BYTES 16
-#endif //USE_MATH_SSE
-
+#endif //USE_MATH_SIMD
 
 ///Use boost or std::tr1 unordered_map
 ///0 = BOOST

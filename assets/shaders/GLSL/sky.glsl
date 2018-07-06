@@ -8,7 +8,7 @@ void main(void){
 	vertex = normalize(vertexData.xyz);
 	vertexMV = normalize(gl_ModelViewMatrix * vec4(-vertexData.x, vertexData.y, -vertexData.z, 1.0)).xyz;	
 	
-	gl_Position =  gl_ModelViewProjectionMatrix * vertexData;
+	gl_Position =  projectionMatrix * gl_ModelViewMatrix * vertexData;
 	
 }
 
@@ -22,7 +22,7 @@ uniform vec3 sun_vector;
 
 void main (void){
 
-	vec4 sky_color = textureCube(texSky, vertex.xyz);
+	vec4 sky_color = texture(texSky, vertex.xyz);
 	
 	if(enable_sun){
 

@@ -19,6 +19,7 @@
 #define _SKY_H
 
 #include "core.h"
+#include "Graphs/Headers/SceneNode.h"
 
 class Texture;
 class Sphere3D;
@@ -28,21 +29,26 @@ class RenderStateBlock;
 
 typedef Texture TextureCubemap;
 
-enum RENDER_STAGE;
+enum RenderStage;
 
-///Only one sky is visible per scene, right?
-///Singleton it is then. No need to track it via the SceneGraph
-DEFINE_SINGLETON( Sky ) 
+class Sky : public SceneNode { 
 
 public:
-	void draw() const;
-	void setParams(const vec3<F32>& eyePos,const vec3<F32>& sunVect, bool invert, bool drawSun, bool drawSky) ;
+	Sky(const std::string& name);
+	~Sky();
+	void render(SceneGraphNode* const sgn);
+	void setRenderingOptions(const vec3<F32>& eyePos,const vec3<F32>& sunVect, bool invert = false, bool drawSun = true, bool drawSky = true) ;
+	void onDraw();
+	void prepareMaterial(SceneGraphNode* const sgn);
+	void releaseMaterial();
 
 	void addToDrawExclusionMask(I32 stageMask);
 	void removeFromDrawExclusionMask(I32 stageMask);
 	///Draw states are used to test if the current object should be drawn depending on the current render pass
-	bool getDrawState(RENDER_STAGE currentStage) const;
-
+	bool getDrawState(RenderStage currentStage) const;
+	///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
+	bool isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere) {return true;}
+	void postLoad(SceneGraphNode* const sgn);
 private:
 	bool load();
 
@@ -50,20 +56,12 @@ private:
 	bool			  _init,_invert,_drawSky,_drawSun;
 	ShaderProgram*	  _skyShader;
 	TextureCubemap*	  _skybox;
-	vec3<F32>			  _sunVect,	_eyePos;
+	vec3<F32>		  _sunVect,	_eyePos;
 	Sphere3D          *_sky,*_sun;
-	SceneGraphNode    *_skyNode, *_sunNode;
+	SceneGraphNode    *_sunNode, *_skyGeom;
 	U8				  _exclusionMask;
 	RenderStateBlock* _skyboxRenderState;
-
-private:
-	Sky();
-	~Sky();
-	void drawSky() const;
-	void drawSun() const;
-	void drawSkyAndSun() const;
-
-END_SINGLETON
+};
 
 #endif
 

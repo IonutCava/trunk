@@ -20,30 +20,21 @@
 
 #include "Scenes/Headers/Scene.h"
 
-class Quad3D;
 class CubeScene : public Scene {
 
 public:
-	CubeScene() : Scene(), _renderQuad(NULL),
-						   _renderQuad2(NULL),
-						   _renderQuad3(NULL),
-						   _renderQuad4(NULL),
-						   _showTextures(false){}
+	CubeScene() : Scene()
+	{
+	}
 	void render();
 	void preRender();
-	bool preLoad();
 	bool load(const std::string& name);
-	bool unload();
 	bool loadResources(bool continueOnErrors);
 	void processInput();
 	void processEvents(F32 time);
 
 	void onKeyDown(const OIS::KeyEvent& key);
 	void onKeyUp(const OIS::KeyEvent& key);
-
-private:
-	bool _showTextures;
-	Quad3D*	_renderQuad,*_renderQuad2,*_renderQuad3,*_renderQuad4;
 
 };
 

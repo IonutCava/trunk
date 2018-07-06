@@ -31,33 +31,39 @@ public:
 	void unbind();
 	void attachShader(Shader* shader);
 	//Attributes
-	void Attribute(const std::string& ext, D32 value);
-	void Attribute(const std::string& ext, F32 value);
-	void Attribute(const std::string& ext, const vec2<F32>& value);
-	void Attribute(const std::string& ext, const vec3<F32>& value);
-	void Attribute(const std::string& ext, const vec4<F32>& value);
+	void Attribute(const std::string& ext, GLdouble value);
+	void Attribute(const std::string& ext, GLfloat value);
+	void Attribute(const std::string& ext, const vec2<GLfloat>& value);
+	void Attribute(const std::string& ext, const vec3<GLfloat>& value);
+	void Attribute(const std::string& ext, const vec4<GLfloat>& value);
 	//Uniforms
-	void Uniform(const std::string& ext, I32 value);
-	void Uniform(const std::string& ext, F32 value);
-	void Uniform(const std::string& ext, const vec2<F32>& value);
-	void Uniform(const std::string& ext, const vec2<I32>& value);
-	void Uniform(const std::string& ext, const vec3<F32>& value);
-	void Uniform(const std::string& ext, const vec4<F32>& value);
-	void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false);
-    void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false);
-	void Uniform(const std::string& ext, const std::vector<mat4<F32> >& values, bool rowMajor = false);
+	void Uniform(const std::string& ext, GLint value);
+	void Uniform(const std::string& ext, GLfloat value);
+	void Uniform(const std::string& ext, const vec2<GLfloat>& value);
+	void Uniform(const std::string& ext, const vec2<GLint>& value);
+	void Uniform(const std::string& ext, const vec2<GLushort>& value);
+	void Uniform(const std::string& ext, const vec3<GLfloat>& value);
+	void Uniform(const std::string& ext, const vec4<GLfloat>& value);
+	void Uniform(const std::string& ext, const mat3<GLfloat>& value, bool rowMajor = false);
+    void Uniform(const std::string& ext, const mat4<GLfloat>& value, bool rowMajor = false);
+	void Uniform(const std::string& ext, const vectorImpl<GLint >& values);
+	void Uniform(const std::string& ext, const vectorImpl<GLfloat >& values);
+	void Uniform(const std::string& ext, const vectorImpl<mat4<GLfloat> >& values, bool rowMajor = false);
 	//Uniform Texture
-	void UniformTexture(const std::string& ext, U16 slot);
+	void UniformTexture(const std::string& ext, GLushort slot);
 
-	I32 getAttributeLocation(const std::string& name);
-	I32 getUniformLocation(const std::string& name);
+	GLint getAttributeLocation(const std::string& name);
+	GLint getUniformLocation(const std::string& name);
 
 private:
-	I32   cachedLoc(const std::string& name,bool uniform = true);
+	GLint  cachedLoc(const std::string& name,bool uniform = true);
 	bool flushLocCache();
+	void validateInternal();
 
 private:
-	unordered_map<std::string, I32 > _shaderVars;
+	Unordered_map<std::string, GLint > _shaderVars;
+	GLuint _shaderProgramIdInternal;
+	bool _validationQueued;	
 
 protected:
 	bool generateHWResource(const std::string& name);

@@ -1,7 +1,11 @@
 #include "Headers/XMLParser.h"
 
+#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Rendering/Headers/Renderer.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 namespace XML {
@@ -35,44 +39,64 @@ namespace XML {
 		par.setParam("locale",pt.get("language","enGB"));
 		par.setParam("logFile",pt.get("debug.logFile","none"));
 		par.setParam("memFile",pt.get("debug.memFile","none"));
-		par.setParam("groundPos", pt.get("runtime.groundPos",-2000.0f));
 		par.setParam("simSpeed",pt.get("runtime.simSpeed",1));
 		par.setParam("appTitle",pt.get("title","DIVIDE Framework"));
-		par.setParam("detailLevel",pt.get<U8>("rendering.detailLevel",HIGH));
-		
-		U8 shadowDetailLevel = pt.get<U8>("rendering.shadowDetailLevel",HIGH);
+		par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","textures/"));
+		par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));
+
+		U8 shadowDetailLevel = pt.get<U8>("rendering.shadowDetailLevel",DETAIL_HIGH);
 		U8 shadowResolutionFactor = 1;
 		switch(shadowDetailLevel){
 			default:
-			case HIGH:
+			case DETAIL_HIGH:
 				shadowResolutionFactor = 1;
 				break;
-			case MEDIUM:
+			case DETAIL_MEDIUM:
 				shadowResolutionFactor = 2;
 				break;
-			case LOW:
+			case DETAIL_LOW:
 				shadowResolutionFactor = 4;
 				break;
 		};
-		par.setParam("shadowDetailLevel",shadowDetailLevel);
-		par.setParam("shadowResolutionFactor", shadowResolutionFactor);
-		par.setParam("enableShadows",pt.get("rendering.enableShadows", true));
-		par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","textures/"));
-		par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));
+		U8 aaMethod = pt.get<U8>("rendering.FSAAmethod",FS_MSAA);
+		U8 aaSamples = pt.get<U8>("rendering.FSAAsamples",2);
+		bool postProcessing = pt.get("rendering.enablePostFX",false);
+		if(aaMethod == FS_FXAA && !postProcessing) aaMethod = FS_MSAA;
+		par.setParam("postProcessing.enablePostFX",postProcessing);
+		par.setParam("postProcessing.enableFXAA",((aaMethod == FS_FXAA || aaMethod == FS_MSwFXAA) && aaSamples > 0));
+		par.setParam("rendering.FSAAsamples",aaSamples);
+		par.setParam("rendering.FSAAmethod",aaMethod);
+		par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
+		par.setParam("rendering.overrideRefreshRate",pt.get<bool>("rendering.overrideRefreshRate",false));
+		par.setParam("rendering.targetRefreshRate",pt.get<U8>("rendering.targetRefreshRate",75));
+		par.setParam("rendering.anisotropicFilteringLevel",pt.get<U8>("rendering.anisotropicFilteringLevel",1));
+		par.setParam("rendering.fogDetailLevel",pt.get<U8>("rendering.fogDetailLevel",DETAIL_HIGH));
+		par.setParam("rendering.mipMapDetailLevel",pt.get<U8>("rendering.mipMapDetailLevel",DETAIL_HIGH));
+		par.setParam("rendering.shadowDetailLevel",shadowDetailLevel);
+		par.setParam("rendering.shadowResolutionFactor", shadowResolutionFactor);
+		par.setParam("rendering.enableShadows",pt.get("rendering.enableShadows", true));
+		par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
+		par.setParam("rendering.fogStartDistance",pt.get("rendering.fogStartDistance",300.0f));
+		par.setParam("rendering.fogEndDistance",pt.get("rendering.fogEndDistance",800.0f));
+		par.setParam("rendering.fogDensity",pt.get("rendering.fogDensity",0.01f));
+		par.setParam("rendering.fogColor",vec3<F32>(pt.get<F32>("rendering.fogColor.<xmlattr>.r"),
+													pt.get<F32>("rendering.fogColor.<xmlattr>.g"),
+													pt.get<F32>("rendering.fogColor.<xmlattr>.b"))); 
 		I32 resWidth = pt.get("runtime.resolutionWidth",1024.0f);
 		I32 resHeight = pt.get("runtime.resolutionHeight",768.0f);
-		par.setParam("zNear",(F32)pt.get("runtime.zNear",0.1f));
-		par.setParam("zFar",(F32)pt.get("runtime.zFar",1200.0f));
-		par.setParam("verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
-		par.setParam("aspectRatio",1.0f * resWidth / resHeight);
-		par.setParam("resolutionWidth",resWidth);
-		par.setParam("resolutionHeight",resHeight);
-		par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));
-
+		par.setParam("runtime.zNear",(F32)pt.get("runtime.zNear",0.1f));
+		par.setParam("runtime.zFar",(F32)pt.get("runtime.zFar",1200.0f));
+		par.setParam("runtime.verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
+		par.setParam("runtime.GLminorVer",(U8)pt.get("runtime.GLminorVer",2));
+		par.setParam("runtime.aspectRatio",1.0f * resWidth / resHeight);
+		par.setParam("runtime.resolutionWidth",resWidth);
+		par.setParam("runtime.resolutionHeight",resHeight);
+		par.setParam("runtime.windowedMode",pt.get("rendering.windowedMode",true));
+		par.setParam("runtime.allowWindowResize",pt.get("runtime.allowWindowResize",false));
+		par.setParam("runtime.enableVSync",pt.get("runtime.enableVSync",false));
+		par.setParam("runtime.groundPos", pt.get("runtime.groundPos",-2000.0f)); ///<Safety net for physics actors
 		Application::getInstance().setResolutionHeight(resHeight);
 		Application::getInstance().setResolutionWidth(resWidth);
-		bool postProcessing = pt.get("rendering.enablePostFX",false);
-		par.setParam("postProcessing.enablePostFX",postProcessing);
 		if(postProcessing){
 			bool enable3D = pt.get("rendering.enable3D",false);
 			par.setParam("postProcessing.enable3D",enable3D);
@@ -112,17 +136,26 @@ namespace XML {
 		sceneMgr.setActiveScene(scene);
 		scene->setName(sceneName);
 
-		scene->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
-		scene->getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
-		scene->getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
+		scene->state()->getGrassVisibility() = pt.get("vegetation.grassVisibility",1000.0f);
+		scene->state()->getTreeVisibility()  = pt.get("vegetation.treeVisibility",1000.0f);
+		scene->state()->getGeneralVisibility()  = pt.get("options.visibility",1000.0f);
 
-		scene->getWindDirX()  = pt.get("wind.windDirX",1.0f);
-		scene->getWindDirZ()  = pt.get("wind.windDirZ",1.0f);
-		scene->getWindSpeed() = pt.get("wind.windSpeed",1.0f);
+		scene->state()->getWindDirX()  = pt.get("wind.windDirX",1.0f);
+		scene->state()->getWindDirZ()  = pt.get("wind.windDirZ",1.0f);
+		scene->state()->getWindSpeed() = pt.get("wind.windSpeed",1.0f);
 
-		scene->getWaterLevel() = pt.get("water.waterLevel",RAND_MAX);
-		scene->getWaterDepth() = pt.get("water.waterDepth",-75);
-
+		scene->state()->getWaterLevel() = pt.get("water.waterLevel",0.0f);
+		scene->state()->getWaterDepth() = pt.get("water.waterDepth",-75);
+		if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")){
+			par.setParam("options.cameraStartPosition",vec3<F32>(pt.get("options.cameraStartPosition.<xmlattr>.x",0),
+															     pt.get("options.cameraStartPosition.<xmlattr>.y",0),
+																 pt.get("options.cameraStartPosition.<xmlattr>.z",0)));
+			par.setParam("options.cameraStartOrientation",vec2<F32>(pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",0),
+  																    pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",0)));
+			par.setParam("options.cameraStartPositionOverride",true);
+		}else{
+			par.setParam("options.cameraStartPositionOverride",false);
+		}
 		loadTerrain(sceneLocation + "/" + pt.get("terrain","terrain.xml"),scene);
 		loadGeometry(sceneLocation + "/" + pt.get("assets","assets.xml"),scene);
 	}
@@ -258,6 +291,7 @@ namespace XML {
 			if(model.ModelName.compare("Text3D") == 0){
 				model.data = pt.get<F32>(name + ".lineWidth");
 				model.data2 = pt.get<std::string>(name + ".text");
+				model.data3 = pt.get<std::string>(name + ".fontName");
 			}else if(model.ModelName.compare("Box3D") == 0)
 				model.data = pt.get<F32>(name + ".size");
 			else if(model.ModelName.compare("Sphere3D") == 0)
@@ -281,21 +315,28 @@ namespace XML {
 	}
 
 	Material* loadMaterialXML(const std::string &matName){
+		std::string materialFile(matName+"-"+GFX_DEVICE.getRenderer()->getTypeToString()+".xml");
 		pt.clear();
 		std::ifstream inp;
-		inp.open(std::string(matName+".xml").c_str(), std::ifstream::in);
-		inp.close();
+		inp.open(materialFile.c_str(),
+			     std::ifstream::in);
 		if(inp.fail()){
 			inp.clear(std::ios::failbit);
+			inp.close();
 			return NULL;
 		}
+		inp.close();
 		bool skip = false;
 		PRINT_FN(Locale::get("XML_LOAD_MATERIAL"),matName.c_str());
-		read_xml(matName+".xml",pt);
+		read_xml(materialFile, pt);
+
 		std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());
+
 		if(FindResource(materialName)) skip = true;
 		Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
 		if(skip) return mat;
+		///Skip if the material was cooked by a different renderer
+
 		mat->setDiffuse(vec4<F32>(pt.get<F32>("material.diffuse.<xmlattr>.r",0.6f),
 								  pt.get<F32>("material.diffuse.<xmlattr>.g",0.6f),
 								  pt.get<F32>("material.diffuse.<xmlattr>.b",0.6f),
@@ -314,28 +355,31 @@ namespace XML {
 		mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v",50.f));
 		mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
 		if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){
-			mat->setTexture(Material::TEXTURE_BASE,loadTextureXML(pt.get("diffuseTexture1.file","none")),
+			mat->setTexture(Material::TEXTURE_BASE,loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none")),
 							mat->getTextureOperation(pt.get("diffuseTexture1.operation",0)));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture2")){
-			mat->setTexture(Material::TEXTURE_SECOND,loadTextureXML(pt.get("diffuseTexture2.file","none")),
+			mat->setTexture(Material::TEXTURE_SECOND,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
 							mat->getTextureOperation(pt.get("diffuseTexture2.operation",0)));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap")){
-			mat->setTexture(Material::TEXTURE_BUMP,loadTextureXML(pt.get("bumpMap.file","none")),
+			mat->setTexture(Material::TEXTURE_BUMP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")),
 							mat->getTextureOperation(pt.get("bumpMap.operation",0)));
+			if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap.method")){
+				mat->setBumpMethod(pt.get("bumpMap.method",(U32)Material::BUMP_NORMAL));
+			}
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("opacityMap")){
-			mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML(pt.get("opacityMap.file","none")),
+			mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML("opacityMap", pt.get("opacityMap.file","none")),
 							mat->getTextureOperation(pt.get("opacityMap.operation",0)));
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("specularMap")){
-			mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML(pt.get("specularMap.file","none")),
+			mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML("specularMap", pt.get("specularMap.file","none")),
 							mat->getTextureOperation(pt.get("specularMap.operation",0)));
 		}
-		if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
-			mat->setShaderProgram(pt.get("shaderProgram.effect","NULL_SHADER"));
-		}
+		//if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
+		//	mat->setShaderProgram(pt.get("shaderProgram.effect","NULL_SHADER"));
+		//}
 		if(boost::optional<ptree &> child = pt.get_child_optional("shadows")){
 			mat->setCastsShadows(pt.get<bool>("shadows.castsShadows", true));
 			mat->setReceivesShadows(pt.get<bool>("shadows.receiveShadows", true));
@@ -345,6 +389,8 @@ namespace XML {
 	}
 
 	void dumpMaterial(Material* const mat){
+		if(!mat->isDirty()) return;
+
 		ParamHandler &par = ParamHandler::getInstance();
 		std::string file = mat->getName();
 		file = file.substr(file.rfind("/")+1,file.length());
@@ -353,8 +399,7 @@ namespace XML {
 				                    par.getParam<std::string>("scenesLocation") + "/" +
 									par.getParam<std::string>("currentScene") + "/materials/";
 		
-		std::string fileLocation = location +  file + ".xml";
-		if(!mat->isDirty()) return;
+		std::string fileLocation = location +  file + "-" + GFX_DEVICE.getRenderer()->getTypeToString() + ".xml";
 		pt.clear();
 		pt.put("material.name",file);
 		pt.put("material.ambient.<xmlattr>.r",mat->getMaterialMatrix().getCol(0).x);
@@ -375,172 +420,37 @@ namespace XML {
 		pt.put("material.emissive.<xmlattr>.b",mat->getMaterialMatrix().getCol(3).w);
 		pt.put("material.doubleSided", mat->isDoubleSided());
 		Texture* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
+		pt.put("material.textureWrapDescription" , "Wrap: 0 = CLAMP, 1 = CLAMP_TO_EDGE, 2 = CLAMP_TO_BORDER, 3 = DECAL, 4 = REPEAT");
+		pt.put("material.textureFilterDescription" , "Filter: 0 = LINEAR, 1 = NEAREST, 2 = NEAREST_MIPMAP_NEAREST, 3 = LINEAR_MIPMAP_NEAREST, 4 = NEAREST_MIPMAP_LINEAR, 5 = LINEAR_MIPMAP_LINEAR");
 
 		if(baseTexture){
-			pt.put("diffuseTexture1.file",baseTexture->getResourceLocation());
-			U32 wrap[3] = {baseTexture->getTextureWrap(0),
-						   baseTexture->getTextureWrap(1),
-						   baseTexture->getTextureWrap(2)};
-			if(wrap[0] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapU","WRAP");
-			}else if (wrap[0] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapU","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapU","REPEAT");
-			}
-			if(wrap[1] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapV","WRAP");
-			}else if (wrap[1] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapV","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapV","REPEAT");
-			}
-			if(wrap[2] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapW","WRAP");
-			}else if (wrap[2] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapW","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapW","REPEAT");
-			}
-			pt.put("diffuseTexture1.minFilter","LINEAR");
-			pt.put("diffuseTexture1.magFilter","LINEAR");
-			pt.put("diffuseTexture1.mipFilter",true);
-			pt.put("diffuseTexture1.operation",mat->getTextureOperation(Material::TEXTURE_BASE));
+			saveTextureXML("diffuseTexture1",mat->getTextureOperation(Material::TEXTURE_BASE), baseTexture);
 		}
 		Texture* secondTexture = mat->getTexture(Material::TEXTURE_SECOND);
 		if(secondTexture){
-			pt.put("diffuseTexture2.file",secondTexture->getResourceLocation());
-			U32 wrap[3] = {secondTexture->getTextureWrap(0),
-						   secondTexture->getTextureWrap(1),
-						   secondTexture->getTextureWrap(2)};
-			if(wrap[0] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapU","WRAP");
-			}else if (wrap[0] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapU","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapU","REPEAT");
-			}
-			if(wrap[1] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapV","WRAP");
-			}else if (wrap[1] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapV","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapV","REPEAT");
-			}
-			if(wrap[2] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapW","WRAP");
-			}else if (wrap[2] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapW","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapW","REPEAT");
-			}
-			pt.put("diffuseTexture2.minFilter","LINEAR");
-			pt.put("diffuseTexture2.magFilter","LINEAR");
-			pt.put("diffuseTexture2.mipFilter",true);
-			pt.put("diffuseTexture2.operation",mat->getTextureOperation(Material::TEXTURE_SECOND));
+			saveTextureXML("diffuseTexture2",mat->getTextureOperation(Material::TEXTURE_SECOND), secondTexture);
 		}
 		Texture* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
 		if(bumpTexture){
-			pt.put("bumpMap.file",bumpTexture->getResourceLocation());
-			U32 wrap[3] = {bumpTexture->getTextureWrap(0),
-						   bumpTexture->getTextureWrap(1),
-						   bumpTexture->getTextureWrap(2)};
-			if(wrap[0] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapU","WRAP");
-			}else if (wrap[0] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapU","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapU","REPEAT");
-			}
-			if(wrap[1] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapV","WRAP");
-			}else if (wrap[1] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapV","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapV","REPEAT");
-			}
-			if(wrap[2] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapW","WRAP");
-			}else if (wrap[2] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapW","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapW","REPEAT");
-			}
-			pt.put("bumpMap.minFilter","LINEAR");
-			pt.put("bumpMap.magFilter","LINEAR");
-			pt.put("bumpMap.mipFilter",true);
-			pt.put("bumpMap.operation",mat->getTextureOperation(Material::TEXTURE_BUMP));
+			saveTextureXML("bumpMap",mat->getTextureOperation(Material::TEXTURE_BUMP), bumpTexture);
 		}
 		Texture* opacityMap = mat->getTexture(Material::TEXTURE_OPACITY);
 		if(opacityMap){
-			pt.put("opacityMap.file",opacityMap->getResourceLocation());
-			U32 wrap[3] = {opacityMap->getTextureWrap(0),
-						   opacityMap->getTextureWrap(1),
-						   opacityMap->getTextureWrap(2)};
-			if(wrap[0] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapU","WRAP");
-			}else if (wrap[0] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapU","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapU","REPEAT");
-			}
-			if(wrap[1] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapV","WRAP");
-			}else if (wrap[1] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapV","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapV","REPEAT");
-			}
-			if(wrap[2] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapW","WRAP");
-			}else if (wrap[2] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapW","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapW","REPEAT");
-			}
-			pt.put("opacityMap.minFilter","LINEAR");
-			pt.put("opacityMap.magFilter","LINEAR");
-			pt.put("opacityMap.mipFilter",true);
-			pt.put("opacityMap.operation",mat->getTextureOperation(Material::TEXTURE_OPACITY));
+			saveTextureXML("opacityMap",mat->getTextureOperation(Material::TEXTURE_OPACITY), opacityMap);
 		}
 		Texture* specularMap = mat->getTexture(Material::TEXTURE_SPECULAR);
 		if(specularMap){
-			pt.put("specularMap.file",specularMap->getResourceLocation());
-			U32 wrap[3] = {specularMap->getTextureWrap(0),
-						   specularMap->getTextureWrap(1),
-						   specularMap->getTextureWrap(2)};
-			if(wrap[0] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapU","WRAP");
-			}else if (wrap[0] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapU","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapU","REPEAT");
-			}
-			if(wrap[1] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapV","WRAP");
-			}else if (wrap[1] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapV","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapV","REPEAT");
-			}
-			if(wrap[2] ==  Texture::TextureWrap_Wrap){
-				pt.put("diffuseTexture1.MapW","WRAP");
-			}else if (wrap[2] ==  Texture::TextureWrap_Clamp){
-				pt.put("diffuseTexture1.MapW","CLAMP");
-			}else {
-				pt.put("diffuseTexture1.MapW","REPEAT");
-			}
-			pt.put("specularMap.minFilter","LINEAR");
-			pt.put("specularMap.magFilter","LINEAR");
-			pt.put("specularMap.mipFilter",true);
-			pt.put("specularMap.operation",mat->getTextureOperation(Material::TEXTURE_SPECULAR));
+			saveTextureXML("specularMap",mat->getTextureOperation(Material::TEXTURE_SPECULAR), specularMap);
 		}
 		
 		ShaderProgram* s = mat->getShaderProgram();
 		if(s){
 			pt.put("shaderProgram.effect",s->getName());
 		}
-
+		s = mat->getShaderProgram(SHADOW_STAGE);
+		if(s){
+			pt.put("shaderProgram.depthEffect",s->getName());
+		}
 		pt.put("shadows.castsShadows", mat->getCastsShadows());
 		pt.put("shadows.receiveShadows", mat->getReceivesShadows());
 		boost::property_tree::xml_writer_settings<char> settings('\t', 1);
@@ -549,90 +459,36 @@ namespace XML {
 		fclose(xml);
 	}
 
+	void saveTextureXML(const std::string& textureNode, U32 operation, Texture* texture){
+			pt.put(textureNode+".file",texture->getResourceLocation());
+			pt.put(textureNode+".MapU", texture->getTextureWrap(0));
+			pt.put(textureNode+".MapV", texture->getTextureWrap(1));
+			pt.put(textureNode+".MapW", texture->getTextureWrap(2));
+			pt.put(textureNode+".minFilter",texture->getFilter(0));
+			pt.put(textureNode+".magFilter",texture->getFilter(1));
+			pt.put(textureNode+".anisotrophy",texture->getAnisotrophy());
+			pt.put(textureNode+".operation",operation);
+	}
 
-	Texture*  loadTextureXML(const std::string& textureName){
+	Texture*  loadTextureXML(const std::string& textureNode, const std::string& textureName){
 		std::string img_name = textureName.substr( textureName.find_last_of( '/' ) + 1 );
 		std::string pathName = textureName.substr( 0, textureName.rfind("/")+1 );
+
 		ResourceDescriptor texture(img_name);
 		texture.setResourceLocation(pathName + img_name);
 		texture.setFlag(true);
-		Texture* tex1 = CreateResource<Texture2D>(texture);
+		Texture* tex = CreateResource<Texture2D>(texture);
+		I32 wrapU = pt.get(textureNode+".MapU",0);;
+		I32 wrapV = pt.get(textureNode+".MapV",0);
+		I32 wrapW = pt.get(textureNode+".MapW",0);
+		tex->setTextureWrap(wrapU,wrapV,wrapW);
 
-		std::string clampU = pt.get("diffuseTexture1.MapU","CLAMP");
-		std::string clampV = pt.get("diffuseTexture1.MapV","CLAMP");
-		std::string clampW = pt.get("diffuseTexture1.MapW","CLAMP");
-		Texture::TextureWrap wrapU = Texture::TextureWrap_Repeat;
-		Texture::TextureWrap wrapV = Texture::TextureWrap_Repeat;
-		Texture::TextureWrap wrapW = Texture::TextureWrap_Repeat;
+		U32 minFilterValue = pt.get(textureNode+".minFilter",0);
+		U32 magFilterValue = pt.get(textureNode+".magFilter",0);
+		tex->setTextureFilters(minFilterValue,magFilterValue);
 
-		if(clampU.compare("WRAP")){
-			wrapU = Texture::TextureWrap_Wrap;
-		}else if (clampU.compare("CLAMP")){
-			wrapU = Texture::TextureWrap_Clamp;
-		}else if (clampU.compare("REPEAT")){
-			wrapU = Texture::TextureWrap_Repeat;
-		}else{
-			ERROR_FN(Locale::get("ERROR_XML_INVALID_U_PARAM"),textureName.c_str());
-		}
-		if(clampV.compare("WRAP")){
-			wrapV = Texture::TextureWrap_Wrap;
-		}else if (clampV.compare("CLAMP")){
-			wrapV = Texture::TextureWrap_Clamp;
-		}else if (clampV.compare("REPEAT")){
-			wrapV = Texture::TextureWrap_Repeat;
-		}else{
-			ERROR_FN(Locale::get("ERROR_XML_INVALID_V_PARAM"),textureName.c_str());
-		}
-		if(clampW.compare("WRAP")){
-			wrapW = Texture::TextureWrap_Wrap;
-		}else if (clampW.compare("CLAMP")){
-			wrapW = Texture::TextureWrap_Clamp;
-		}else if (clampW.compare("REPEAT")){
-			wrapW = Texture::TextureWrap_Repeat;
-		}else{
-			ERROR_FN(Locale::get("ERROR_XML_INVALID_W_PARAM"),textureName.c_str());
-		}
-
-		tex1->setTextureWrap(wrapU,wrapV,wrapW);
-
-		std::string minFilter = pt.get("diffuseTexture1.minFilter","LINEAR");
-		std::string magFilter = pt.get("diffuseTexture1.magFilter","LINEAR");
-		bool mipFilter = pt.get("diffuseTexture1.mipFilter",true);
-		U8 minFilterValue = Texture::LINEAR_MIPMAP_LINEAR;
-		U8 magFilterValue = Texture::LINEAR_MIPMAP_LINEAR;
-		if(mipFilter){
-			if(minFilter.compare("LINEAR")){
-				minFilterValue = Texture::LINEAR_MIPMAP_LINEAR;
-			}else if(minFilter.compare("NEAREST")){
-				minFilterValue = Texture::NEAREST_MIPMAP_NEAREST;
-			}else{
-				ERROR_FN(Locale::get("ERROR_XML_INVALID_MIN_FILTER"),textureName.c_str());
-			}
-			if(magFilter.compare("LINEAR")){
-				magFilterValue = Texture::LINEAR_MIPMAP_LINEAR;
-			}else if(magFilter.compare("NEAREST")){
-				magFilterValue= Texture::NEAREST_MIPMAP_NEAREST;
-			}else{
-				ERROR_FN(Locale::get("ERROR_XML_INVALID_MAG_FILTER"),textureName.c_str());
-			}
-
-		}else{
-			if(minFilter.compare("LINEAR")){
-				minFilterValue = Texture::LINEAR;
-			}else if(minFilter.compare("NEAREST")){
-				minFilterValue = Texture::NEAREST;
-			}else{
-				ERROR_FN(Locale::get("ERROR_XML_INVALID_MIN_FILTER"),textureName.c_str());
-			}
-			if(magFilter.compare("LINEAR")){
-				magFilterValue = Texture::LINEAR;
-			}else if(magFilter.compare("NEAREST")){
-				magFilterValue = Texture::NEAREST;
-			}else{
-				ERROR_FN(Locale::get("ERROR_XML_INVALID_MAG_FILTER"),textureName.c_str());
-			}
-		}
-		tex1->setTextureFilters(minFilterValue,magFilterValue);
-		return tex1;
+		U32 anisotrophy = pt.get(textureNode+".anisotrophy", 0);
+		tex->setAnisotrophyLevel(anisotrophy);
+		return tex;
 	}
 }

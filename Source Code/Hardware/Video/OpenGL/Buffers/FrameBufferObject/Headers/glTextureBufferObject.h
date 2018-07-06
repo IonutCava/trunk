@@ -24,22 +24,8 @@ class glTextureBufferObject : public glFrameBufferObject {
 
 public:
 
-	glTextureBufferObject(bool cubeMap = false);
+	glTextureBufferObject(bool cubeMap = false, bool depthOnly = false);
 	~glTextureBufferObject() {Destroy();}
-
-	bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8,
-		                               IMAGE_FORMATS formatEnum = RGBA);
-	void Destroy();
-
-	void Begin(U8 nFace=0) const;	
-	void End(U8 nFace=0) const;		
-
-	void Bind(U8 unit=0, U8 texture = 0);		
-	void Unbind(U8 unit=0);	
-
-private:
-	U32 _textureId;
-
 };
 
 #endif

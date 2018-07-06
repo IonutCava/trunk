@@ -19,13 +19,14 @@
 #define _TEXT_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
-
+///For now, the name of the Text3D object is the text itself
 class Text3D : public Object3D
 {
 public:
-	Text3D(const std::string& text) :  Object3D(TEXT_3D),
-									  _text(text),
-									  _font(((void *)0x0000)/*GLUT_STROKE_ROMAN*/)
+	Text3D(const std::string& text,const std::string& font) :  Object3D(TEXT_3D),
+															   _text(text),
+															   _font(font),
+															   _height(16)
 	{
 		///Dummy
 		_geometry->getHWIndices().push_back(0);
@@ -33,10 +34,11 @@ public:
 	}
 	
 
-	inline bool setInitialData(const std::string& name) {_text = name; return true;}
+	inline bool setInitialData(const std::string& text) {_text = text; return Resource::setInitialData(text);}
 	inline std::string&  getText()    {return _text;}
-	inline void*		 getFont()    {return _font;}
+	inline std::string&	 getFont()    {return _font;}
 	inline F32&			 getWidth()   {return _width;}
+	inline U32&          getHeight()  {return _height;}
 
 	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
 		if(sgn->getBoundingBox().isComputed()) return true;
@@ -48,8 +50,9 @@ public:
 
 private:
 	std::string _text;
-	void* _font;
+	std::string _font;
 	F32   _width;
+	U32   _height;
 };
 
 

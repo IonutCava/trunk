@@ -23,7 +23,7 @@ void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
 }
 
 //Process message from sender to receiver
-void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content){
+void AITenisSceneAIActionList::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content){
 	AICoordination* currentTeam = NULL;
 	switch(msg){
 		case REQUEST_DISTANCE_TO_TARGET:
@@ -99,7 +99,7 @@ void AITenisSceneAIActionList::processInput(){
 void AITenisSceneAIActionList::processData(){
 	AIEntity* nearestEntity = _entity;
 	F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
-	typedef unordered_map<AIEntity*, F32 > memberVariable;
+	typedef Unordered_map<AIEntity*, F32 > memberVariable;
 	for_each(memberVariable::value_type& member, _entity->getTeam()->getMemberVariable()){
 		if(member.second < distance && member.first->getGUID() != _entity->getGUID()){
 			distance = member.second;

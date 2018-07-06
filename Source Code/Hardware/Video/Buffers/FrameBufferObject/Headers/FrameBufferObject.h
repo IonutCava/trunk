@@ -18,47 +18,60 @@
 #ifndef _FRAME_BUFFER_OBJECT_H
 #define _FRAME_BUFFER_OBJECT_H
 
-#include "core.h"
+#include "core.h"	
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 #include <boost/noncopyable.hpp>
 
 class FrameBufferObject : private boost::noncopyable{
 
 public:
+	bool AddAttachment(const TextureDescriptor& decriptor, TextureDescriptor::AttachmentType slot);
 
-	virtual bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8, IMAGE_FORMATS formatEnum = RGBA) = 0;
+	virtual bool Create(U16 width, U16 height, U8 imageLayers = 0) = 0;
+
 	virtual void Destroy() = 0;
-
+	virtual void DrawToLayer(U8 face, U8 layer) {} ///<Use by multilayerd FBO's
 	virtual void Begin(U8 nFace=0) const = 0;	
-	virtual void End(U8 nFace=0) const = 0;		
+	virtual void End(U8 nFace=0) const = 0;	
 
-	virtual void Bind(U8 unit=0, U8 texture = 0) = 0;		
-	virtual void Unbind(U8 unit=0) = 0;	
+	virtual void Bind(U8 unit = 0, U8 texture = 0);
+	virtual void Unbind(U8 unit=0);
 
+	virtual void BlitFrom(FrameBufferObject* inputFBO) = 0;
+	///A FBO with color writting disabled is a depth only buffer. But it is not the same as a depthBufferObject(!!) as we still need textures
+	virtual void toggleColorWrites(bool state) {_disableColorWrites = !state;}
+	virtual void toggleDepthWrites(bool state) {_useDepthBuffer = state;}
 	inline U16 getWidth()  const	{return _width;}
 	inline U16 getHeight() const	{return _height;}
 	inline U8  getType()   const	{return _fboType;}
+	inline U8  getHandle() const	{return _frameBufferHandle;}
+	///Support function. Same as "Bind(..)" but sets a flag to enable internal api calls to bind the image without shader support (e.g. OGL: glEnable(textureType))
+	inline void BindFixed(U8 unit=0, U8 texture = 0) {_fixedPipeline = true; Bind(unit,texture);}
 
-	virtual ~FrameBufferObject(){};
-	FrameBufferObject() : _frameBufferHandle(0),
-						  _depthBufferHandle(0),
-					      _width(0),
-						  _height(0), 
-						  _textureType(0),
-						  _bound(false),
-						  _useDepthBuffer(false){}
+	FrameBufferObject(FBOType type);
+	virtual ~FrameBufferObject();
 
 protected:
 	virtual bool checkStatus() = 0;
 
 protected:
+	typedef Unordered_map<TextureDescriptor::AttachmentType, TextureDescriptor >  TextureAttachements;
+
 	bool		_useDepthBuffer;
+	bool        _disableColorWrites;
 	bool        _bound;
+	bool        _fixedPipeline;
 	U16		    _width, _height;
 	U32		    _frameBufferHandle;
 	U32		    _depthBufferHandle;
 	U32		    _textureType;
 	U8          _fboType;
+	U8          _prevTexture;
+	U8          _prevUnit;
+
+	TextureAttachements _attachement;	
+	Unordered_map<TextureDescriptor::AttachmentType, bool > _attachementDirty;
 };
 
 

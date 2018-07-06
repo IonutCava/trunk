@@ -24,15 +24,15 @@
 class glTexture : public Texture {
 
 public:
-	glTexture(U32 type, bool flipped = false);
+	glTexture(GLuint type, bool flipped = false);
 	~glTexture();
 
 	bool unload() {Destroy(); return true;}
 
-	void Bind(U16 unit);
-	void Unbind(U16 unit);
+	void Bind(GLushort unit, bool fixedPipeline = false);
+	void Unbind(GLushort unit);
 
-	void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d);
+	void LoadData(GLuint target, GLubyte* ptr, GLushort& w, GLushort& h, GLubyte d);
 
 protected:
 	bool generateHWResource(const std::string& name);
@@ -42,11 +42,15 @@ private:
 	void Bind() const;
 	void Unbind() const;
 	void Destroy();
+	void reserveStorage(GLint w, GLint h);
 
 private:
-	U32 _type;
-	/// ToDo: Implement this with proper U,V,W mapping! -Ionut
-	U32 glWrapTable[TextureWrap_PLACEHOLDER];
+	GLint _depth;
+	GLuint _type;
+	bool  _reservedStorage;   ///<Used glTexStorage2D for this texture
+	bool  _fixedPipeline;     ///<Textures can be bound without shaders
+	GLboolean  _canReserveStorage; ///<Can use glTexStorage2D
+	
 };
 
 #endif

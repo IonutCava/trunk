@@ -1,30 +1,16 @@
 #include "Headers/PhysXScene.h"
 #include "Headers/PhysXImplementation.h"
 
-#include "GUI/Headers/GUI.h"
-#include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 REGISTER_SCENE(PhysXScene);
 
-//begin copy-paste: randarea scenei
-void PhysXScene::render(){
-	Sky& sky = Sky::getInstance();
 
-	sky.setParams(_camera->getEye(),_sunVector, false,true,true);
-	sky.draw();
-
-	_sceneGraph->render();
-
-}
-//end copy-paste
-
-//begin copy-paste: Desenam un cer standard
+//begin copy-paste
 
 void PhysXScene::preRender(){
-
+	getSkySGN(0)->getNode<Sky>()->setRenderingOptions(renderState()->getCamera()->getEye(),_sunvector);
 }
 //<<end copy-paste
 
@@ -40,40 +26,39 @@ void PhysXScene::processEvents(F32 time){
 
 void PhysXScene::processInput(){
 
-	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
-	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
-	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR);
+	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR);
+	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR/5));
+	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
 }
 
 bool PhysXScene::load(const std::string& name){
 
-	bool state = false;
+	///Load scene resources
+	SCENE_LOAD(name,true,true);
 	///Add a light
 	vec2<F32> sunAngle(0.0f, RADIANS(45.0f));
-	_sunVector = vec4<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y),0.0f );
+	_sunvector = vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y));
 	Light* light = addDefaultLight();
-	light->setLightProperties(LIGHT_POSITION,_sunVector);
-	light->setLightProperties(LIGHT_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(LIGHT_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(LIGHT_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
-	///Load scene resources
-	state = loadResources(true);	
-	state = loadEvents(true);
-	return state;
+	light->setPosition(_sunvector);
+	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vec4<F32>(1.0f,1.0f,1.0f,1.0f));
+	addDefaultSky();
+	return loadState;
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors){
 	 _mousePressed = false;
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3<F32>(60,20,0),          //Position
-							   BITMAP_8_BY_13,    //Font
+		                       vec2<F32>(60,20),          //Position
+							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	GUI::getInstance().addText("RenderBinCount",
-								vec3<F32>(60,30,0),
-								BITMAP_8_BY_13,
+								vec2<F32>(60,30),
+								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
 
@@ -83,14 +68,13 @@ bool PhysXScene::loadResources(bool continueOnErrors){
 	_physx = static_cast<PhysXImplementation* >(PHYSICS_DEVICE.NewSceneInterface(this));
 	//Initialize the physics scene
 	_physx->init();
-	_camera->RotateX(RADIANS(-75));
-	_camera->RotateY(RADIANS(25));
-	_camera->setEye(vec3<F32>(0,30,-40));
+	renderState()->getCamera()->RotateX(RADIANS(-75));
+	renderState()->getCamera()->RotateY(RADIANS(25));
+	renderState()->getCamera()->setEye(vec3<F32>(0,30,-40));
 	return true;
 }
 
 bool PhysXScene::unload(){
-	Sky::getInstance().DestroyInstance();
 	if(_physx){
 		_physx->exit();
 		delete _physx;
@@ -119,16 +103,16 @@ void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
 	Scene::onKeyDown(key);
 	switch(key.key)	{
 		case OIS::KC_W:
-			_moveFB = 0.25f;
+			state()->_moveFB = 0.25f;
 			break;
 		case OIS::KC_A:
-			_moveLR = 0.25f;
+			state()->_moveLR = 0.25f;
 			break;
 		case OIS::KC_S:
-			_moveFB = -0.25f;
+			state()->_moveFB = -0.25f;
 			break;
 		case OIS::KC_D:
-			_moveLR = -0.25f;
+			state()->_moveLR = -0.25f;
 			break;
 		case OIS::KC_1:
 			PHYSICS_DEVICE.createPlane(_physx,vec3<F32>(0,0,0),random(0.5f,2.0f));
@@ -171,11 +155,11 @@ void PhysXScene::onKeyUp(const OIS::KeyEvent& key){
 	switch(key.key)	{
 		case OIS::KC_W:
 		case OIS::KC_S:
-			_moveFB = 0;
+			state()->_moveFB = 0;
 			break;
 		case OIS::KC_A:
 		case OIS::KC_D:
-			_moveLR = 0;
+			state()->_moveLR = 0;
 			break;
 		case OIS::KC_F1:
 			_sceneGraph->print();
@@ -191,18 +175,18 @@ void PhysXScene::onMouseMove(const OIS::MouseEvent& key){
 
 	if(_mousePressed){
 		if(_prevMouse.x - key.state.X.abs > 1 )
-			_angleLR = -0.15f;
+			state()->_angleLR = -0.15f;
 		else if(_prevMouse.x - key.state.X.abs < -1 )
-			_angleLR = 0.15f;
+			state()->_angleLR = 0.15f;
 		else
-			_angleLR = 0;
+			state()->_angleLR = 0;
 
 		if(_prevMouse.y - key.state.Y.abs > 1 )
-			_angleUD = -0.1f;
+			state()->_angleUD = -0.1f;
 		else if(_prevMouse.y - key.state.Y.abs < -1 )
-			_angleUD = 0.1f;
+			state()->_angleUD = 0.1f;
 		else
-			_angleUD = 0;
+			state()->_angleUD = 0;
 	}
 	
 	_prevMouse.x = key.state.X.abs;
@@ -219,7 +203,7 @@ void PhysXScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID bu
 	Scene::onMouseClickUp(key,button);
 	if(button == 0)	{
 		_mousePressed = false;
-		_angleUD = 0;
-		_angleLR = 0;
+		state()->_angleUD = 0;
+		state()->_angleLR = 0;
 	}
 }

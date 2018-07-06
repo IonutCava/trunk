@@ -34,10 +34,10 @@ public:
 private:
 	F32 i ;
 	vec2<F32> _sunAngle;
-	vec4<F32> _sunVector;
+	vec3<F32> _sunvector;
 	F32 update_time;
 	vec4<F32> _vSunColor;
-	std::vector<F32> _eventTimers;
+	vectorImpl<F32> _eventTimers;
 
 };
 

@@ -1,39 +1,31 @@
 #include <networking/ASIO.h>
 #include "Headers/NetworkScene.h"
 
-#include "GUI/Headers/GUI.h"
-#include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Rendering/Camera/Headers/Camera.h"
 
 REGISTER_SCENE(NetworkScene); 
 
-void NetworkScene::render(){
-
-	_sceneGraph->render();
-}
-
 void NetworkScene::preRender(){
 	Light* light = LightManager::getInstance().getLight(0);
-	vec4<F32> vSunColor = _white.lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f), vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
-												0.25f + cosf(_sunAngle.y) * 0.75f);
+	vec4<F32> vSunColor = WHITE().lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f), 
+		                               vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
+									   0.25f + cosf(_sunAngle.y) * 0.75f);
 
-	light->setLightProperties(LIGHT_POSITION,_sunVector);
-	light->setLightProperties(LIGHT_AMBIENT,_white);
-	light->setLightProperties(LIGHT_DIFFUSE,vSunColor);
-	light->setLightProperties(LIGHT_SPECULAR,vSunColor);
+	light->setPosition(_sunvector);
+	light->setLightProperties(LIGHT_PROPERTY_AMBIENT,WHITE());
+	light->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vSunColor);
+	light->setLightProperties(LIGHT_PROPERTY_SPECULAR,vSunColor);
 
-	Sky::getInstance().setParams(_camera->getEye(),vec3<F32>(_sunVector),false,true,false);
-	Sky::getInstance().draw();
+	getSkySGN(0)->getNode<Sky>()->setRenderingOptions(renderState()->getCamera()->getEye(),vec3<F32>(_sunvector),false,true,false);
 
 }
 
 void NetworkScene::processInput(){
 
-	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
-	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
-	if(_moveFB)  _camera->MoveForward(_moveFB * (Framerate::getInstance().getSpeedfactor()/5));
-	if(_moveLR)	 _camera->MoveStrafe(_moveLR * (Framerate::getInstance().getSpeedfactor()/5));
+	if(state()->_angleLR) renderState()->getCamera()->RotateX(state()->_angleLR * FRAME_SPEED_FACTOR);
+	if(state()->_angleUD) renderState()->getCamera()->RotateY(state()->_angleUD * FRAME_SPEED_FACTOR);
+	if(state()->_moveFB)  renderState()->getCamera()->MoveForward(state()->_moveFB * (FRAME_SPEED_FACTOR/5));
+	if(state()->_moveLR)  renderState()->getCamera()->MoveStrafe(state()->_moveLR * (FRAME_SPEED_FACTOR/5));
 }
 
 void NetworkScene::processEvents(F32 time){
@@ -69,7 +61,7 @@ void NetworkScene::checkPatches(){
 	p << std::string("NetworkScene");
 	p << _modelDataArray.size();
 
-	for(std::vector<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)	{
+	for(vectorImpl<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)	{
 		p << (*_iter).ItemName;
 		p << (*_iter).ModelName;
 		p << (*_iter).version;
@@ -85,17 +77,15 @@ bool NetworkScene::preLoad(){
 bool NetworkScene::load(const std::string& name){
 
 	ASIO::getInstance().init(_paramHandler.getParam<std::string>("serverAddress"),std::string("443"));
-
-	bool state = loadResources(true);
+	///Load scene resources
+	SCENE_LOAD(name,true,true);
+	
 	_paramHandler.setParam("serverResponse",std::string("waiting"));
 	addDefaultLight();
-	_camera->setEye(vec3<F32>(0,30,-30));
-	return state;
-}
-
-bool NetworkScene::unload(){
-	Sky::getInstance().DestroyInstance();
-	return Scene::unload();
+	addDefaultSky();
+	renderState()->getCamera()->setEye(vec3<F32>(0,30,-30));
+	
+	return loadState;
 }
 
 void NetworkScene::test(){
@@ -121,7 +111,7 @@ void NetworkScene::disconnect()
 bool NetworkScene::loadResources(bool continueOnErrors)
 {
 	_sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
-	_sunVector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+	_sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
 							-cosf(_sunAngle.y),
 							-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 							0.0f );
@@ -129,40 +119,38 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 	GUI& gui = GUI::getInstance();
 
 	gui.addText("fpsDisplay",           //Unique ID
-		                       vec3<F32>(60,60,0),          //Position
-							   BITMAP_8_BY_13,    //Font
+		                       vec2<F32>(60,60),          //Position
+							    Font::DIVIDE_DEFAULT,    //Font
 							   vec3<F32>(0.0f,0.6f, 1.0f),  //Color
 							   "FPS: %s",0);    //Text and arguments
 	gui.addText("timeDisplay",
-								vec3<F32>(60,70,0),
-								BITMAP_8_BY_13,
+								vec2<F32>(60,70),
+								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
 
-	gui.addText("serverMessage", vec3<F32>(_cachedResolution.width / 4.0f,
-		                                   _cachedResolution.height / 1.6f,
-										   0),
-								BITMAP_8_BY_13,
+	gui.addText("serverMessage", vec2<F32>(renderState()->cachedResolution().width / 4.0f,
+		                                   renderState()->cachedResolution().height / 1.6f),
+								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.5f,0.5f,0.2f),
 								"Server says: %s", "<< nothing yet >>");
 	gui.addText("statusText",
-								vec3<F32>(_cachedResolution.width / 3.0f,
-								          _cachedResolution.height / 1.2f,
-									      0),
-								BITMAP_HELVETICA_12,
+								vec2<F32>(renderState()->cachedResolution().width / 3.0f,
+								          renderState()->cachedResolution().height / 1.2f),
+								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.2f,0.5f,0.2f),
 								"");
 
-	gui.addButton("getPing", "ping me", vec2<F32>(60 , _cachedResolution.height/1.1f),
+	gui.addButton("getPing", "ping me", vec2<F32>(60 , renderState()->cachedResolution().height/1.1f),
 										vec2<F32>(100,25),vec3<F32>(0.6f,0.6f,0.6f),
 										boost::bind(&NetworkScene::test,this));
-	gui.addButton("disconnect", "disconnect", vec2<F32>(180 , _cachedResolution.height/1.1f),
+	gui.addButton("disconnect", "disconnect", vec2<F32>(180 , renderState()->cachedResolution().height/1.1f),
 										vec2<F32>(100,25),vec3<F32>(0.5f,0.5f,0.5f),
 										boost::bind(&NetworkScene::disconnect,this));
-	gui.addButton("connect", "connect", vec2<F32>(300 , _cachedResolution.height/1.1f),
+	gui.addButton("connect", "connect", vec2<F32>(300 , renderState()->cachedResolution().height/1.1f),
 										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::connect,this));
-	gui.addButton("patch", "patch",     vec2<F32>(420 , _cachedResolution.height/1.1f),
+	gui.addButton("patch", "patch",     vec2<F32>(420 , renderState()->cachedResolution().height/1.1f),
 										vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 										boost::bind(&NetworkScene::checkPatches,this));
 		

@@ -1,15 +1,40 @@
 #include "Headers/Object3D.h"
+
 #include "Managers/Headers/SceneManager.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+
+	Object3D::Object3D(PrimitiveType type,PrimitiveFlag flag) : 
+											  SceneNode(TYPE_OBJECT3D),
+											  _update(false),
+											  _geometryType(type),
+											  _geometryFlag(flag),
+											  _geometry(GFX_DEVICE.newVBO()),
+											  _refreshVBO(true),
+											  _usageContext(OBJECT_STATIC)
+
+	{}
+
+	Object3D::Object3D(const std::string& name, PrimitiveType type, PrimitiveFlag flag) : 
+																		SceneNode(name,TYPE_OBJECT3D),
+																	    _update(false),
+																		_geometryType(type),
+																		_geometryFlag(flag),
+																		_geometry(GFX_DEVICE.newVBO()),
+																		_refreshVBO(true),
+																		_usageContext(OBJECT_STATIC)
+	{}
 
 void Object3D::render(SceneGraphNode* const sgn){
 	GFX_DEVICE.renderModel(sgn->getNode<Object3D>());
 }
 
 VertexBufferObject* const Object3D::getGeometryVBO() {
+	assert(_geometry != NULL);
 	if(_refreshVBO){
-		_geometry->Refresh();
+		_geometry->queueRefresh();
 		_refreshVBO = false;
 	}
+	
 	return _geometry;
 }
 
@@ -18,8 +43,9 @@ void Object3D::onDraw(){
 	SceneNode::onDraw();
 
 	if(getMaterial()){
-		if(getMaterial()->getShaderProgram() && getMaterial()->shaderProgramChanged()){
-			_geometry->setShaderProgram(getMaterial()->getShaderProgram());
+		ShaderProgram* finalStageShader = getMaterial()->getShaderProgram(FINAL_STAGE);
+		if(finalStageShader && getMaterial()->shaderProgramChanged()){
+			_geometry->setShaderProgram(finalStageShader);
 		}
 	}
 	
@@ -28,18 +54,17 @@ void Object3D::onDraw(){
 void Object3D::computeTangents(){
 	//Code from: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#header-1
     // inputs
-    std::vector<vec3<F32> > & vertices = _geometry->getPosition();
-    std::vector<vec2<F32> > & uvs      = _geometry->getTexcoord();
-    std::vector<vec3<F32> > & normals  = _geometry->getNormal();
+    vectorImpl<vec2<F32> > & uvs      = _geometry->getTexcoord();
+    vectorImpl<vec3<F32> > & normals  = _geometry->getNormal();
     // outputs
-    std::vector<vec3<F32> > & tangents = _geometry->getTangent();
-    std::vector<vec3<F32> > & bitangents = _geometry->getBiTangent();
+    vectorImpl<vec3<F32> > & tangents = _geometry->getTangent();
+    vectorImpl<vec3<F32> > & bitangents = _geometry->getBiTangent();
 
-	for ( U32 i=0; i< vertices.size(); i+=3){
+	for ( U32 i=0; i< _geometry->getPosition().size(); i+=3){
  		// Shortcuts for vertices
-		vec3<F32> & v0 = vertices[i+0];
-		vec3<F32> & v1 = vertices[i+1];
-		vec3<F32> & v2 = vertices[i+2];
+		vec3<F32>  v0 = _geometry->getPosition(i+0);
+		vec3<F32>  v1 = _geometry->getPosition(i+1);
+		vec3<F32>  v2 = _geometry->getPosition(i+2);
 	 
 		// Shortcuts for UVs
 		vec2<F32> & uv0 = uvs[i+0];

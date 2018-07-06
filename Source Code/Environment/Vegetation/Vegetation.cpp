@@ -1,16 +1,18 @@
 #include "Headers\Vegetation.h"
 
+#include "Core/Headers/ParamHandler.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Graphs/Headers/SceneGraphNode.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
 #include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
 
 Vegetation::~Vegetation(){
-	PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getNode<Terrain>()->getName().c_str());
+	PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getName().c_str());
 	for(U8 i = 0; i < _grassVBO.size(); i++){
 		SAFE_DELETE(_grassVBO[i]);
 	}
@@ -25,47 +27,58 @@ Vegetation::~Vegetation(){
 	PRINT_FN(Locale::get("UNLOAD_VEGETATION_END"));
 }
 
-void Vegetation::initialize(const std::string& grassShader,const std::string& terrainName)
+void Vegetation::initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN)
 {
 	_grassShader  = CreateResource<ShaderProgram>(ResourceDescriptor(grassShader));
 	_grassDensity = _grassDensity/_billboardCount;
-	_terrain = GET_ACTIVE_SCENE()->getSceneGraph()->findNode(terrainName);
+	_terrain = terrain;
+	_terrainSGN = terrainSGN;
 	assert(_terrain);
 	for(U8 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
 	if(_success) _success = generateTrees();
 
 	RenderStateBlockDescriptor transparent;
-    transparent.setCullMode(CULL_MODE_None);
+    transparent.setCullMode(CULL_MODE_NONE);
 	transparent.setAlphaTest(true);
-    transparent.setBlend(true, BLEND_PROPERTY_SrcAlpha, BLEND_PROPERTY_InvSrcAlpha);
+    transparent.setBlend(true, BLEND_PROPERTY_SRC_ALPHA, BLEND_PROPERTY_INV_SRC_ALPHA);
     _grassStateBlock = GFX_DEVICE.createStateBlock( transparent );
 
 	_render = true;
 
 }
 
+void Vegetation::sceneUpdate(D32 sceneTime){
+	if(!_render || !_success) return;
+	///Query shadow state every "_stateRefreshInterval" milliseconds
+	if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
+		Scene* activeScene = GET_ACTIVE_SCENE();
+		_windX = activeScene->state()->getWindDirX();
+		_windZ = activeScene->state()->getWindDirZ();
+		_windS = activeScene->state()->getWindSpeed();
+		_shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
+		_stateRefreshIntervalBuffer += _stateRefreshInterval;
+	}
+}
+
 void Vegetation::draw(bool drawInReflection){
 	if(!_render || !_success) return;
 	if(GFX_DEVICE.getRenderStage() == SHADOW_STAGE) return;
 
-	Scene* activeScene = GET_ACTIVE_SCENE();
-	_windX = activeScene->getWindDirX();
-	_windZ = activeScene->getWindDirZ();
-	_windS = activeScene->getWindSpeed();
+
 
      SET_STATE_BLOCK(_grassStateBlock);
 
 	_grassShader->bind();
-		_grassShader->Uniform("windDirectionX",_windX);
-		_grassShader->Uniform("windDirectionZ",_windZ);
+		_grassShader->Uniform("windDirection",vec2<F32>(_windX,_windZ));
 		_grassShader->Uniform("windSpeed", _windS);
-		_grassShader->Uniform("enable_shadow_mapping", ParamHandler::getInstance().getParam<bool>("enableShadows"));
+		_grassShader->Uniform("light_count", 1);
+		_grassShader->Uniform("enable_shadow_mapping", _shadowMapped);
 		for(U16 index = 0; index < _billboardCount; index++){
 			_grassBillboards[index]->Bind(0);
 				_grassShader->UniformTexture("texDiffuse", 0);
 		
 					_grassVBO[index]->Enable();
-						_terrain->getNode<Terrain>()->getQuadtree().DrawGrass();
+						_terrain->getQuadtree().DrawGrass();
 					_grassVBO[index]->Disable();
 
 			_grassBillboards[index]->Unbind(0);
@@ -94,7 +107,7 @@ bool Vegetation::generateGrass(U32 index){
 
 	_grassVBO.push_back(GFX_DEVICE.newVBO());
 	U32 size = (U32) ceil(_grassDensity) * 3 * 4;
-	_grassVBO[index]->getPosition().reserve( size );
+	_grassVBO[index]->reservePositionCount( size );
 	_grassVBO[index]->getNormal().reserve( size );
 	_grassVBO[index]->getTexcoord().reserve( size );
 	for(U32 k=0; k<(U32)_grassDensity; k++) {
@@ -111,15 +124,15 @@ bool Vegetation::generateGrass(U32 index){
 		}
 
 		_grassSize = (F32)(map_color.g+1) / (256 / _grassScale);
-		vec3<F32> P = _terrain->getNode<Terrain>()->getPosition(x, y);
+		vec3<F32> P = _terrain->getPosition(x, y);
 		P.y -= 0.075f;
-		if(P.y < GET_ACTIVE_SCENE()->getWaterLevel()){
+		if(P.y < GET_ACTIVE_SCENE()->state()->getWaterLevel()){
 			k--;
 			continue;
 		}
 
-		vec3<F32> N = _terrain->getNode<Terrain>()->getNormal(x, y);
-		vec3<F32> T = _terrain->getNode<Terrain>()->getTangent(x, y);
+		vec3<F32> N = _terrain->getNormal(x, y);
+		vec3<F32> T = _terrain->getTangent(x, y);
 		vec3<F32> B = Cross(N, T);
 	
 		if(N.y < 0.8f) {
@@ -131,7 +144,7 @@ bool Vegetation::generateGrass(U32 index){
 
 			U32 idx = (U32)_grassVBO[index]->getPosition().size();
 
-			QuadtreeNode* node = _terrain->getNode<Terrain>()->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
+			QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
 			assert(node);
 			TerrainChunk* chunk = node->getChunk();
 			assert(chunk);
@@ -144,7 +157,7 @@ bool Vegetation::generateGrass(U32 index){
 				vertex.y += Dot(data, B);
 				vertex.z += Dot(data, N);
 				
-				_grassVBO[index]->getPosition().push_back( vertex );
+				_grassVBO[index]->addPosition(vertex );
 				_grassVBO[index]->getNormal().push_back( tTexcoords[i].t < 0.2f ? -N : N );
 				_grassVBO[index]->getTexcoord().push_back( uv_offset + tTexcoords[i] );
 				chunk->getGrassIndiceArray().push_back(idx+i);
@@ -157,7 +170,7 @@ bool Vegetation::generateGrass(U32 index){
 
 	_grassShader->bind();
 		_grassShader->Uniform("lod_metric", 100.0f);
-		_grassShader->Uniform("scale", _grassSize);
+		_grassShader->Uniform("grassScale", _grassSize);
 	_grassShader->unbind();
 
 	PRINT_FN(Locale::get("CREATE_GRASS_END"));
@@ -166,9 +179,9 @@ bool Vegetation::generateGrass(U32 index){
 
 bool Vegetation::generateTrees(){
 	//--> Unique position generation
-	std::vector<vec3<F32> > positions;
+	vectorImpl<vec3<F32> > positions;
 	//<-- End unique position generation
-	std::vector<FileData>& DA = GET_ACTIVE_SCENE()->getVegetationDataArray();
+	vectorImpl<FileData>& DA = GET_ACTIVE_SCENE()->getVegetationDataArray();
 	if(DA.empty()){
 		ERROR_FN(Locale::get("ERROR_CREATE_TREE_NO_GEOM"));
 		return true;
@@ -184,9 +197,9 @@ bool Vegetation::generateTrees(){
 			continue;
 		}
 		
-		vec3<F32> P = _terrain->getNode<Terrain>()->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
+		vec3<F32> P = _terrain->getPosition(((F32)map_x)/_map.w, ((F32)map_y)/_map.h);
 		P.y -= 0.2f;
-		if(P.y < GET_ACTIVE_SCENE()->getWaterLevel()){
+		if(P.y < GET_ACTIVE_SCENE()->state()->getWaterLevel()){
 			k--;
 			continue;
 		}
@@ -201,13 +214,13 @@ bool Vegetation::generateTrees(){
 		}
 		if(!continueLoop) continue;
 		positions.push_back(P);
-		QuadtreeNode* node = _terrain->getNode<Terrain>()->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
+		QuadtreeNode* node = _terrain->getQuadtree().FindLeaf(vec2<F32>(P.x, P.z));
 		assert(node);
 		TerrainChunk* chunk = node->getChunk();
 		assert(chunk);
 		
 		U16 index = rand() % DA.size();
-		chunk->addTree(vec4<F32>(P, random(360.0f)),_treeScale,DA[index],_terrain);
+		chunk->addTree(vec4<F32>(P, random(360.0f)),_treeScale,DA[index],_terrainSGN);
 	}
 	
 	positions.clear();

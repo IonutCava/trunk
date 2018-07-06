@@ -32,4 +32,5 @@ namespace Locale {
 		///Return our desired value now
 		return (char*)_languageTable[key].c_str();
 	}
+
 };

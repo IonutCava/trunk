@@ -76,7 +76,7 @@ Shader* ShaderManager::findShader(const std::string& name){
 	return NULL;
 }
 
-Shader* ShaderManager::loadShader(const std::string& name, const std::string& source, SHADER_TYPE type){
+Shader* ShaderManager::loadShader(const std::string& name, const std::string& source, ShaderType type){
 	Shader* s = findShader(name);
 	if(s != NULL){
 		return s;

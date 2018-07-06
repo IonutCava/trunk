@@ -26,13 +26,17 @@ namespace GL_ENUM_TABLE
    void fill();
 };
 
-extern unsigned int glBlendTable[BLEND_PROPERTY_PLACEHOLDER];
-extern unsigned int glBlendOpTable[BLEND_OPERATION_PLACEHOLDER];
-extern unsigned int glCompareFuncTable[COMPARE_FUNC_PLACEHOLDER];
-extern unsigned int glStencilOpTable[STENCIL_OPERATION_PLACEHOLDER];
-extern unsigned int glCullModeTable[CULL_MODE_PLACEHOLDER];
-extern unsigned int glFillModeTable[FILL_MODE_PLACEHOLDER];
-extern unsigned int glTextureTypeTable[TEXTURE_TYPE_PLACEHOLDER];
-extern unsigned int glFormatTable[IMAGE_FORMAT_PLACEHOLDER];
+extern unsigned int glBlendTable[BlendProperty_PLACEHOLDER];
+extern unsigned int glBlendOpTable[BlendOperation_PLACEHOLDER];
+extern unsigned int glCompareFuncTable[ComparisonFunction_PLACEHOLDER];
+extern unsigned int glStencilOpTable[StencilOperation_PLACEHOLDER];
+extern unsigned int glCullModeTable[CullMode_PLACEHOLDER];
+extern unsigned int glFillModeTable[FillMode_PLACEHOLDER];
+extern unsigned int glTextureTypeTable[TextureType_PLACEHOLDER];
+extern unsigned int glImageFormatTable[IMAGE_FORMAT_PLACEHOLDER];
+extern unsigned int glPrimitiveTypeTable[PrimitiveType_PLACEHOLDER];
+extern unsigned int glDataFormat[GDF_PLACEHOLDER];
+extern unsigned int glWrapTable[TextureWrap_PLACEHOLDER];
+extern unsigned int glTextureFilterTable[TextureFilter_PLACEHOLDER];
 
 #endif

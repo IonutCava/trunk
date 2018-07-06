@@ -13,33 +13,33 @@ AIEntity::AIEntity(const std::string& name) : _name(name),
 	_GUID = GETMSTIME() * random(55);
 }
 
-void AIEntity::sendMessage(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content){
+void AIEntity::sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content){
 	CommunicationInterface* com = getCommunicationInterface();
 	if(com){
 		com->sendMessageToEntity(receiver, msg,msg_content);
 	}
 }
 
-void AIEntity::receiveMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content){
+void AIEntity::receiveMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content){
 	CommunicationInterface* com = getCommunicationInterface();
 	if(com){
 		com->receiveMessageFromEntity(sender, msg,msg_content);
 	}
 }
 
-void AIEntity::processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content) {
+void AIEntity::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content) {
 	WriteLock w_lock(_updateMutex);
 	_actionProcessor->processMessage(sender, msg, msg_content);
 }
 
-Sensor* AIEntity::getSensor(SENSOR_TYPE type){
+Sensor* AIEntity::getSensor(SensorType type){
 	if(_sensorList.find(type) != _sensorList.end()){
 		return _sensorList[type];
 	}
 	return NULL;
 }
 
-bool AIEntity::addSensor(SENSOR_TYPE type, Sensor* sensor){
+bool AIEntity::addSensor(SensorType type, Sensor* sensor){
 	sensor->updatePosition(_node->getTransform()->getPosition());
 	if(_sensorList.find(type) != _sensorList.end()){
 		SAFE_UPDATE(_sensorList[type], sensor);

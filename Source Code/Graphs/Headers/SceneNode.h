@@ -18,12 +18,15 @@
 #ifndef _SCENE_NODE_H_
 #define _SCENE_NODE_H_
 
+#include "SceneNodeRenderState.h"
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Utility/Headers/BoundingBox.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Dynamics/Physics/Headers/PhysicsAsset.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
-enum SCENE_NODE_TYPE{
+enum SceneNodeType{
 	TYPE_ROOT             = toBit(1),
 	TYPE_OBJECT3D         = toBit(2),
 	TYPE_TERRAIN          = toBit(3),
@@ -31,13 +34,13 @@ enum SCENE_NODE_TYPE{
 	TYPE_LIGHT            = toBit(5),
 	TYPE_TRIGGER          = toBit(6),
 	TYPE_PARTICLE_EMITTER = toBit(7),
-
+	TYPE_SKY              = toBit(8),
 	///Place types above
 	TYPE_PLACEHOLDER      = toBit(10)
 };
 
 class Scene;
-enum  RENDER_STAGE;
+enum  RenderStage;
 class SceneNode : public Resource {
 
 	friend class SceneGraphNode;
@@ -45,30 +48,29 @@ class SceneNode : public Resource {
 
 public:
 
-	SceneNode(SCENE_NODE_TYPE type);
-	SceneNode(std::string name, SCENE_NODE_TYPE type);
+	SceneNode(SceneNodeType type);
+	SceneNode(std::string name, SceneNodeType type);
 	virtual ~SceneNode();
 
 	/*Rendering/Processing*/
 	virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
-	inline  void setDrawState(bool state) {_drawState = state;}
-	virtual	bool getDrawState()  const {return _drawState;} 
-			void addToDrawExclusionMask(I32 stageMask);
-			void removeFromDrawExclusionMask(I32 stageMask);
+
+	virtual	bool getDrawState()  const {return _renderState.getDrawState();} 
 	/// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
-	virtual	bool getDrawState(RENDER_STAGE currentStage)  const;
+	virtual	bool getDrawState(RenderStage currentStage)  const {return _renderState.getDrawState(currentStage); }
 	/*//Rendering/Processing*/	
 
 	virtual	bool			unload();
-
-	virtual bool	        isInView(bool distanceCheck,BoundingBox& boundingBox);
+	virtual bool	        isInView(bool distanceCheck,BoundingBox& boundingBox,const BoundingSphere& sphere);
     virtual	void			setMaterial(Material* m);
 			void			clearMaterials();
 		    Material*		getMaterial();
 
 	/* Normal material */
-	virtual	void            prepareMaterial(SceneGraphNode const* const sgn);
+	virtual	void            prepareMaterial(SceneGraphNode* const sgn);
 	virtual	void            releaseMaterial();
+	///setup any derived class special constants, such as animation information or reflection stuff)
+	virtual void            setSpecialShaderConstants(ShaderProgram* const shader);
 	/* Depth map material */
 	virtual	void            prepareShadowMaterial(SceneGraphNode* const sgn);
 	virtual	void            releaseShadowMaterial();
@@ -77,33 +79,44 @@ public:
 	virtual	bool    computeBoundingBox(SceneGraphNode* const sgn);
 	/// Special BB transforms may be required at a certain frame
 	virtual void    updateBBatCurrentFrame(SceneGraphNode* const sgn);
-	virtual void    updateTransform(SceneGraphNode* const sgn);
+	virtual void    updateTransform(SceneGraphNode* const sgn) {};
+	/// Perform any pre-draw operations (this is after sort and transform updates)
 	virtual void    onDraw();
-	virtual void    postDraw();
+	/// Perform any post=draw operations (this is after releasing object and shadow states)
+	virtual void    postDraw() {/*Nothing yet*/}
+	/// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
+	virtual void    preFrameDrawEnd(SceneGraphNode* const sgn);
 	virtual void    drawBoundingBox(SceneGraphNode* const sgn);
 	virtual void    postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(D32 sceneTime);
+	virtual void sceneUpdate(D32 sceneTime) {};
 
-	inline  void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
 	inline 	void	setSelected(bool state)  {_selected = state;}
 	inline 	bool    isSelected()	const	 {return _selected;}
 
-	inline SCENE_NODE_TYPE getType()					  {return _type;}
-	inline void            setType(SCENE_NODE_TYPE type) {_type = type;}
+	inline SceneNodeType getType()					 {return _type;}
+	inline void          setType(SceneNodeType type) {_type = type;}
 
+	inline SceneNodeRenderState& getSceneNodeRenderState() {return _renderState;}
+
+	inline void incLODcount() {_LODcount++;}
+	inline void decLODcount() {_LODcount--;}
+	inline U8   getLODcount() {return _LODcount;}
+	inline U8   getCurrentLOD() {return (_lodLevel < (_LODcount-1) ? _lodLevel : (_LODcount-1));}
 protected:
-	U8          _exclusionMask;
+
+	SceneNodeRenderState  _renderState;
+	///Attach a physics asset to the node to make it physics enabled
+	PhysicsAsset*         _physicsAsset;
+	///LOD level is updated at every visibility check (SceneNode::isInView(...));
+	U8                    _lodLevel; ///<Relative to camera distance
+	U8                    _LODcount; ///<Maximum available LOD levels
 
 private:
 	
 	Material*	_material;				   
-	RenderStateBlock* _shadowStateBlock;
-
-	bool		_drawState;
-	bool        _noDefaultMaterial;
 	bool        _selected;
-	SCENE_NODE_TYPE _type;
+	SceneNodeType _type;
 };
 
 #endif

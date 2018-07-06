@@ -34,12 +34,12 @@ public:
 	aiMatrix4x4 _originalLocalTransform;
 
 	Bone* _parent;
-	std::vector<Bone*> _children;
+	vectorImpl<Bone*> _children;
 
     //index in the current animation's channel array.
 	Bone(const std::string& name) : _name(name), _parent(0){}
 	Bone() : _parent(0){ }
-	~Bone(){SAFE_DELETE_VECTOR(_children); }
+	~Bone(){SAFE_DELETE_vector(_children); }
 };
 
 #endif

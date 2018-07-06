@@ -20,7 +20,7 @@
 
 #include "AI/Headers/AIEntity.h"
 
-enum AI_MSG;
+enum AIMsg;
 
 class SceneGraphNode;
 class ActionList{
@@ -30,7 +30,7 @@ public:
 	virtual void processInput() = 0;
 	virtual void update(SceneGraphNode* node = NULL, NPC* unitRef = NULL) = 0;
 	virtual void addEntityRef(AIEntity* entity) = 0;
-	virtual void processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content) = 0;
+	virtual void processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content) = 0;
 protected:
 	AIEntity*  _entity;
 

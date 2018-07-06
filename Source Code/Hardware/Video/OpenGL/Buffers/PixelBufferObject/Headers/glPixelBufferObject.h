@@ -23,23 +23,31 @@
 class glPixelBufferObject : public PixelBufferObject {
 public:
 
-	glPixelBufferObject();
+	glPixelBufferObject(PBOType type);
 	~glPixelBufferObject() {Destroy();}
 
-	bool Create(U16 width, U16 height);
+	bool Create(GLushort width, GLushort height,GLushort depth = 0, 
+				GFXImageFormat internalFormatEnum = RGBA8,
+				GFXImageFormat formatEnum = RGBA,
+				GFXDataFormat dataTypeEnum = FLOAT_32);
 				
 	void Destroy();
 
-	void* Begin(U8 nFace=0) const;	
-	void End(U8 nFace=0) const;		
+	GLvoid* Begin(GLubyte nFace=0) const;	
+	void End(GLubyte nFace=0) const;		
 
-	void Bind(U8 unit=0) const;		
-	void Unbind(U8 unit=0) const;	
+	void Bind(GLubyte unit=0) const;		
+	void Unbind(GLubyte unit=0) const;	
 
-	void updatePixels(const F32 * const pixels);
+	void updatePixels(const GLfloat * const pixels);
 
 private:
 	bool checkStatus();
+	size_t sizeOf(GLenum dataType) const;
+private:
+	GLenum _dataType;
+	GLenum _format;
+	GLenum _internalFormat;
 
 };
 

@@ -36,14 +36,12 @@ public:
 		_mousePressed = false;
 	}
 
-	void render();
 	void preRender();
 
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
-	bool unload();
 	void processInput();
 	void processEvents(F32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
@@ -57,22 +55,22 @@ private:
 	void startSimulation();
 	void resetSimulation();
 private:
-	std::vector<F32> _eventTimers;
+	vectorImpl<F32> _eventTimers;
 	I8 _score;
-	vec4<F32> _sunVector;
+	vec4<F32> _sunvector;
 	SceneGraphNode* _groundPlaceholder;
-	vec2<I32> _prevMouse;
+	vec2<F32> _prevMouse;
 	bool _mousePressed;
 
 private: //Joc
 	I8 _scorTeam1;
 	I8 _scorTeam2;
 	///AIEntities are the "processors" behing the NPC's
-	std::vector<AIEntity *> _army1;
-	std::vector<AIEntity *> _army2;
+	vectorImpl<AIEntity *> _army1;
+	vectorImpl<AIEntity *> _army2;
 	///NPC's are the actual game entities
-	std::vector<NPC *> _army1NPCs;
-	std::vector<NPC *> _army2NPCs;
+	vectorImpl<NPC *> _army1NPCs;
+	vectorImpl<NPC *> _army2NPCs;
 	///Team's are factions for AIEntites so they can manage friend/foe situations
 	AICoordination *_faction1, *_faction2;
 };

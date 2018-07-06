@@ -43,7 +43,7 @@ public :
 
 protected :
 	Singleton() {}
-	~Singleton() {}
+	virtual ~Singleton() {}
 
 private :
 	/// singleton instance

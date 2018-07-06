@@ -17,7 +17,7 @@
 
 #ifndef _GL_RENDER_STATE_BLOCK_H
 #define _GL_RENDER_STATE_BLOCK_H
-
+#include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
 class glRenderStateBlock : public RenderStateBlock {   
@@ -29,13 +29,13 @@ public:
 
    void activate(glRenderStateBlock* oldState);
 
-   inline U32 getHash() const {return _hashValue;}
+   inline GLuint getHash() const {return _hashValue;}
 
    inline const RenderStateBlockDescriptor& getDescriptor() {return _descriptor;}   
 
 
 private:
    RenderStateBlockDescriptor _descriptor;
-   U32 _hashValue;
+   GLuint _hashValue;
 };
 #endif

@@ -23,9 +23,8 @@
 class FreeFlyCamera : public Camera {
 
 public:
-	FreeFlyCamera()
+	FreeFlyCamera() : Camera(FREE_FLY)
 	{
-		eType = FREE_FLY;
 	}
 };
 

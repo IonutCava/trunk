@@ -1,372 +1,173 @@
-#include "Headers/glResources.h"
+
 #include "Headers/GLWrapper.h"
 #include "Headers/glRenderStateBlock.h"
 
 #include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"
 #include "GUI/Headers/GUIButton.h"
-#include "GUI/Headers/GUIConsole.h"
-#include "Core/Headers/Kernel.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/ImageTools.h"
+#include "Rendering/Headers/Frustum.h"
 #include "Rendering/Lighting/Headers/Light.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
-#include "Rendering/Headers/Frustum.h"
 
-#define USE_FREEGLUT
-bool _applicationClosing = false;
-void GLCheckError(const std::string& File, U32 Line,char* operation) {
-    // Get the last error
-    GLenum ErrorCode = glGetError();
-	while (ErrorCode != GL_NO_ERROR && !_applicationClosing) {
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glTextureArrayBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDepthArrayBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glMSTextureBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glTextureBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDeferredBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glDepthBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexArrayObject.h"
+#include "Hardware/Video/OpenGL/Buffers/PixelBufferObject/Headers/glPixelBufferObject.h"
 
-		ErrorCode = glGetError();
+#define FTGL_LIBRARY_STATIC
+#include <FTGL/ftgl.h>
 
-		if(ErrorCode == GL_NO_ERROR) return;
-        std::string Error = "unknown error";
-        std::string Desc  = "no description";
-
-        // Decode the error code
-        switch (ErrorCode) {
-
-            case GL_INVALID_ENUM : {
-
-                Error = "GL_INVALID_ENUM";
-                Desc  = "an unacceptable value has been specified for an enumerated argument";
-                break;
-            }
-
-            case GL_INVALID_VALUE : {
-
-                Error = "GL_INVALID_VALUE";
-                Desc  = "a numeric argument is out of range";
-                break;
-            }
-
-            case GL_INVALID_OPERATION : {
-
-                Error = "GL_INVALID_OPERATION";
-                Desc  = "the specified operation is not allowed in the current state";
-                break;
-            }
-
-            case GL_STACK_OVERFLOW : {
-
-                Error = "GL_STACK_OVERFLOW";
-                Desc  = "this command would cause a stack overflow";
-                break;
-            }
-
-            case GL_STACK_UNDERFLOW : {
-
-                Error = "GL_STACK_UNDERFLOW";
-                Desc  = "this command would cause a stack underflow";
-                break;
-            }
-
-            case GL_OUT_OF_MEMORY : {
-
-                Error = "GL_OUT_OF_MEMORY";
-                Desc  = "there is not enough memory left to execute the command";
-                break;
-            }
-
-            case GL_INVALID_FRAMEBUFFER_OPERATION_EXT : {
-
-                Error = "GL_INVALID_FRAMEBUFFER_OPERATION_EXT";
-                Desc  = "the object bound to FRAMEBUFFER_BINDING_EXT is not \"framebuffer complete\"";
-                break;
-            }
-        }
-		
-		std::stringstream ss;
-        ss << File.substr(File.find_last_of("\\/") + 1) << " (" << Line << ") : "
-           << Error << ", " 
-		   << Desc;
-		ERROR_FN(Locale::get("ERROR_GENERIC_GL"),operation, ss.str().c_str());
-	}
+#include <glim.h>
+IMPrimitive::IMPrimitive() : _texture(NULL),
+							 _hasLines(false),
+							 _inUse(false),
+							 _lineWidth(2.0f),
+							 _zombieCounter(0){
+	_imInterface = New NS_GLIM::GLIM_BATCH();
 }
 
-//Let's try and create a  valid OpenGL context.
-//Due to university requirements, backwards compatibility with OpenGL 2.0 had to be added
-I8 GL_API::initHardware(const vec2<U16>& resolution){
-	ParamHandler& par = ParamHandler::getInstance();
-	I32   argc   = 1; 
-	//The Application's title can be set in the "config.xml" file, so no explanation here needed
-	char *argv[] = {(char*)par.getParam<std::string>("appTitle").c_str(), NULL};
-	//Using freeglut, because ... why not? Crossplatform window creation in a single line? Sure
-    glutInit(&argc, argv);
-	//So, if someone selected High detail level, try to use pure 3.x API
-	if(par.getParam<U8>("detailLevel") == HIGH){
-		glutInitContextProfile(GLUT_CORE_PROFILE);
-	}else{
-		//Else, they probably don't support 3.x so try a compatibility mode to run 2.x
-		glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
-	}
-	//Standard stuff: RGBA window mode, Double buffering (triple from drivers, no problem)
-	//Also, the depth map is a must!
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE/* |  GLUT_MULTISAMPLE*/);
-	//No comments needed. Resolution is specified in the external XML files
-	glutInitWindowSize(resolution.width, resolution.height);
-	//Try to offset the window position just slightly. Found it useful
-	glutInitWindowPosition(10,50);
-	//For a posibile multi-window support (as seen the the OBJ PhysX Simulator video
-	//Store the main window ID for future reference
-	_windowId = glutCreateWindow(par.getParam<std::string>("appTitle").c_str());
-	//Everything is set up as needed, so initialize the OpenGL API
-	U32 err = glewInit();
-	//Check for errors and print if any (They happen more than anyone thinks)
-	//Bad drivers, old video card, corrupt GPU, anything can throw an error
-	if (GLEW_OK != err){
-		ERROR_FN(Locale::get("ERROR_GFX_DEVICE"),glewGetErrorString(err));
-		PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
-		PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));;
-		//No need to continue, as switching to DX should be set before launching the application!
-		return GLEW_INIT_ERROR;
-	}
-	//If we got here, let's figure out what capabilities we have available
-	I32 max_frag_uniform = 0, max_varying_floats = 0;
-	I32 max_vertex_uniform = 0, max_vertex_attrib = 0,max_texture_units = 0;
-	I32 buffers = 0, samples = 0;
-	I32 major = 0, minor = 0;
-	glGetIntegerv(GL_MAJOR_VERSION, &major); // OpenGL major version
-    glGetIntegerv(GL_MINOR_VERSION, &minor); // OpenGL minor version 
-	glGetIntegerv(GL_SAMPLE_BUFFERS, &buffers);
-	glGetIntegerv(GL_SAMPLES, &samples);
-	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &max_frag_uniform); //How many uniforms can we send to fragment shaders
-	glGetIntegerv(GL_MAX_VARYING_FLOATS, &max_varying_floats); //How many varying floats can we use inside a shader program
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform); //How many uniforms can we send to vertex shaders
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib); //How many attributes can we send to a vertex shader
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units); //Maximum number of texture units we can address in shaders
-	const GLubyte* glslVersionSupported = glGetString(GL_SHADING_LANGUAGE_VERSION);
-	const GLubyte* glDriverVendor = glGetString(GL_VENDOR);
-	//Time to select our shaders.
-	//We do not support OpenGL version lower than 2.0;
-	if(major < 2){
-		ERROR_FN(Locale::get("ERROR_OPENGL_NOT_SUPPORTED"));
-		PRINT_FN(Locale::get("WARN_SWITCH_D3D"));
-		PRINT_FN(Locale::get("WARN_APPLICATION_CLOSE"));
-		return GLEW_OLD_HARDWARE;
-	}else if(major == 2){
-		//If we do start a 2.0 context, use only basic shaders
-		par.setParam("shaderDetailToken",std::string("low"));
-		setVersionId(OpenGL2x);
-	}else if(major == 3 || major == 4){
-		//OpenGL 3.1 introduced v140 for GLSL, so use a maximum of "medium" shaders
-		//some "high" shaders need v150
-		if(minor < 2){
-			//If settings are set to low, use "low" shaders
-			switch(par.getParam<U8>("detailLevel")){
-				case LOW:
-					par.setParam("shaderDetailToken",std::string("low"));
-				break;
-				//cap at "medium" level
-				case MEDIUM:
-					par.setParam("shaderDetailToken",std::string("medium"));
-				break;
+IMPrimitive::~IMPrimitive() {
+	SAFE_DELETE(_imInterface);
+	SAFE_DELETE(_texture);
+}
 
-			};
-		//If we got here, full OpenGL 3.2/3.3 is supported so use full shaders
-		}else{
-			//Same shader selection based on detail level as above
-			switch(par.getParam<U8>("detailLevel")){
-				case LOW:
-					par.setParam("shaderDetailToken",std::string("low"));
-				break;
-				case MEDIUM:
-					par.setParam("shaderDetailToken",std::string("medium"));
-				break;
-				case HIGH:
-					par.setParam("shaderDetailToken",std::string("high"));
-				break;
-			};
-		}
-		if(major == 3){
-			setVersionId(OpenGL3x);
-		}else{
-			setVersionId(OpenGL4x);
-		}
-	}
-	//Print all of the OpenGL functionality info to the console
-	PRINT_FN(Locale::get("GL_MAX_UNIFORM"),max_frag_uniform);
-	PRINT_FN(Locale::get("GL_MAX_FRAG_VARYING"),max_varying_floats);
-	PRINT_FN(Locale::get("GL_MAX_VERT_UNIFORM"),max_vertex_uniform);
-	PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),max_vertex_attrib);
-	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"),max_texture_units); 
-	PRINT_FN(Locale::get("GL_MAX_VERSION"),major,minor);
-	PRINT_FN(Locale::get("GL_GLSL_SUPPORT"),glslVersionSupported);
-	PRINT_FN(Locale::get("GL_VENDOR_STRING"),glDriverVendor);
-	PRINT_FN(Locale::get("GL_MULTI_SAMPLE_INFO"),samples,buffers);
-	GL_ENUM_TABLE::fill();
-	//Set the clear color to a nice blue
-	glClearColor(0.1f,0.1f,0.8f,1);
-	//Smooth shading as GPU's are fast enough to support this as default
-	glShadeModel(GL_SMOOTH);
-	//keep normals in the [0..1] range despite scaling geometry
-	glEnable(GL_NORMALIZE);
-	//Correct texcoord generation during rasterization despite Perspective changes
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	//We can't use LINE_SMOOTH do to our MRT style rendering and Deferred Shading if need be
-	//glEnable(GL_LINE_SMOOTH);
-	//This isn't needed due to the line found after this
-	//glutCloseFunc(closeApplication);
-	//If we end the render loop, continue processing the engine code found after (glutMainLoop)
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
-	//Our Resize/Draw/Idle callback setup
-	glutReshapeFunc(Kernel::updateResolutionCallback);
-	glutDisplayFunc(Kernel::MainLoopStatic);
-	glutIdleFunc(Kernel::Idle);
-	//That's it. Everything should be ready for draw calls
-	PRINT_FN(Locale::get("START_OGL_API_OK"));
+namespace IMPrimitiveValidation{
+	bool zombieCountMatch(const IMPrimitive* priv){	return (priv->_zombieCounter >= 10);}
+	bool isValid(const IMPrimitive* priv){ return !priv->_inUse; }
+}
+
+void GL_API::flush(){
 	
-/*  //The following code should enable vSync
-	int (*SwapInterval)(int);
+	_imShader->bind();
 
-	// main init code :
-	SwapInterval = getProcAddress("glXSwapInterval");
-	if (!SwapInterval)
-	SwapInterval = getProcAddress("glXSwapIntervalEXT");
-	if (!SwapInterval)
-	SwapInterval = getProcAddress("glXSwapIntervalSGI");
-	if (!SwapInterval)
-	SwapInterval = getProcAddress("wglSwapInterval");
-	if (!SwapInterval)
-	SwapInterval = getProcAddress("wglSwapIntervalEXT");
-	if (!SwapInterval)
-	SwapInterval = getProcAddress("wglSwapIntervalSGI");
-	// actual vsync activation
-	SwapInterval(1);
+	for_each(IMPrimitive* priv, _glimInterfaces){
+		if(!priv->_inUse) {
+			++priv->_zombieCounter;
+			continue;
+		}
+		if(!priv->_setupStates.empty()){
+			priv->_setupStates();
+		}
+		if(priv->_texture){
+			priv->_texture->Bind(0);
+			_imShader->Uniform("texture",0);
+			_imShader->Uniform("useTexture", true);
+		}else{
+			_imShader->Uniform("useTexture", false);
+		}
+		if(priv->_hasLines){
+			GLCheck(glPushAttrib(GL_LINE_BIT));
+			GLCheck(glLineWidth(priv->_lineWidth));
+		}
 
-	// no vsync, if needed :
-	SwapInterval(0);
-*/
-	RenderStateBlockDescriptor defaultGLStateDescriptor;
-	GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
-	SET_DEFAULT_STATE_BLOCK();
-	///Build an OpenGL GUI renderer
-	CEGUI::OpenGLRenderer& renderer = CEGUI::OpenGLRenderer::create();
-	GUI::getInstance().bindRenderer(renderer);
-	return _windowId;
-}
+		priv->_imInterface->RenderBatch();
 
-///When closing the application, the main loop has exited. 
-///Control will pass back to the "main" function that should destroy the application
-void GL_API::exitRenderLoop(bool killCommand){
-	if(killCommand){
-		glutLeaveMainLoop();
-	}else{
-		_applicationClosing = true;
+		if(priv->_hasLines){
+			GLCheck(glPopAttrib());
+		}
+		if(priv->_texture){
+			priv->_texture->Unbind(0);
+		}
+		if(!priv->_resetStates.empty()){
+			priv->_resetStates();
+		}
+		priv->_inUse = false;
 	}
-}
+	_imShader->unbind();
 
-///clear up stuff ...
-void GL_API::closeRenderingApi(){
-	SAFE_DELETE(_state2DRendering);
-	//glutDestroyWindow(_windowId);
-}
+	///Remove dead primitives in 3 steps (or we could automate this with shared_ptr?):
+	///1) Partition the vector in 2 parts: valid objects first, zombie objects second
+	vectorImpl<IMPrimitive* >::iterator zombie = std::partition(_glimInterfaces.begin(),
+							  							        _glimInterfaces.end(),
+																IMPrimitiveValidation::zombieCountMatch);
+	///2) For every zombie object, free the memory it's using
+	for( vectorImpl<IMPrimitive *>::iterator i = zombie ; i != _glimInterfaces.end() ; ++i ){
+		SAFE_DELETE(*i);
+	}
+	///3) Remove all the zombie objects once the memory is freed
+	_glimInterfaces.erase(zombie, _glimInterfaces.end());
 
-void GL_API::initDevice(U32 targetFPS){
-	glutMainLoop();
-	exitRenderLoop(false);
-}
-
-void GL_API::changeResolution(U16 w, U16 h){
-	ParamHandler& par = ParamHandler::getInstance();
-	F32 zNear  = par.getParam<F32>("zNear");
-	F32 zFar   = par.getParam<F32>("zFar");
-	F32 fov    = par.getParam<F32>("verticalFOV");
-	F32 ratio  = par.getParam<F32>("aspectRatio");
-
-	// Reset the coordinate system before modifying
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
-	
-	// Set the viewport to be the entire window
-    glViewport(0, 0, w, h);
-
-	// Set the clipping volume
-	gluPerspective(fov,ratio,zNear,zFar);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	_cachedResolution.width = w;
-	_cachedResolution.height = h;
-}
-
-
-void GL_API::idle(){
-
-	glutSetWindow(_windowId); 
-	glutPostRedisplay();
 }
 
 //ToDo: convert to OpenGL 3.2 and GLSL 1.5 standards. No more matrix queries to GPU - Ionut
-void GL_API::getProjectionMatrix(mat4<F32>& projMat){
-	glGetFloatv( GL_PROJECTION_MATRIX, projMat.mat );	
+void GL_API::getMatrix(MATRIX_MODE mode, mat4<GLfloat>& mat){
+	switch(mode){
+		case MODEL_VIEW_MATRIX:
+			GLCheck(glGetFloatv( GL_MODELVIEW_MATRIX, mat.mat ));	
+			//mat = _modelViewMatrix.top();
+			break;
+		case PROJECTION_MATRIX:
+			GLCheck(glGetFloatv( GL_PROJECTION_MATRIX, mat.mat ));	
+			//mat = _projectionMatrix.top();
+			break;
+	};
 }
 
-void GL_API::getModelViewMatrix(mat4<F32>& mvMat){
-	glGetFloatv( GL_MODELVIEW_MATRIX, mvMat.mat );	
-}
+void GL_API::clearBuffers(GLushort buffer_mask){
 
-void GL_API::clearBuffers(U8 buffer_mask){
-
-	I32 buffers = 0;
+	GLint buffers = 0;
 	if((buffer_mask & GFXDevice::COLOR_BUFFER ) == GFXDevice::COLOR_BUFFER) buffers |= GL_COLOR_BUFFER_BIT;
 	if((buffer_mask & GFXDevice::DEPTH_BUFFER) == GFXDevice::DEPTH_BUFFER) buffers |= GL_DEPTH_BUFFER_BIT;
 	if((buffer_mask & GFXDevice::STENCIL_BUFFER) == GFXDevice::STENCIL_BUFFER) buffers |= GL_STENCIL_BUFFER_BIT;
 	GLCheck(glClear(buffers));
 }
 
-void GL_API::swapBuffers(){
-
-#ifdef USE_FREEGLUT
-	glutSwapBuffers();
-#else
-	//nothing yet
-#endif
-}
-
-void GL_API::enableFog(F32 density, F32* color){
-	glFogi (GL_FOG_MODE, GL_EXP2); 
-	glFogfv(GL_FOG_COLOR, color); 
-	glFogf (GL_FOG_DENSITY, density); 
-	glHint (GL_FOG_HINT, GL_NICEST); 
-	glFogf (GL_FOG_START,  310.0f);
-	glFogf (GL_FOG_END,    800.0f);
+void GL_API::enableFog(GLfloat density, GLfloat* color){
+	GLCheck(glFogi (GL_FOG_MODE, GL_EXP2)); 
+	GLCheck(glFogfv(GL_FOG_COLOR, color)); 
+	GLCheck(glFogf (GL_FOG_DENSITY, density)); 
+	GLCheck(glFogf (GL_FOG_START,  ParamHandler::getInstance().getParam<GLfloat>("rendering.fogStartDistance",300.0f)));
+	GLCheck(glFogf (GL_FOG_END,    ParamHandler::getInstance().getParam<GLfloat>("rendering.fogEndDistance",800.0f)));
 }
 
 void GL_API::drawTextToScreen(GUIElement* const textElement){
 	GUIText* text = dynamic_cast<GUIText* >(textElement);
 	assert(text != NULL);
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	glPushMatrix();
-	glLoadIdentity();
+
+	const char* fontName = text->_font.c_str();
+	FontCache::iterator itr = _fonts.find(fontName);
+	if(itr == _fonts.end()){
+		std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
+		fontPath += "GUI/";
+		fontPath += "fonts/";
+		fontPath += text->_font;
+		FTFont* tempFont = New FTGLBitmapFont(fontPath.c_str());
+		if (!tempFont) {
+			ERROR_FN(Locale::get("ERROR_FONT_FILE"),text->_font.c_str());
+        }else {
+			if (!tempFont->FaceSize(text->_height)) {
+				ERROR_FN(Locale::get("ERROR_FONT_HEIGHT"),text->_height);
+            }
+        }
+		_fonts.insert(std::make_pair(fontName, tempFont));
+
+	}
+	glPushAttrib(GL_COLOR_BUFFER_BIT);
 	glColor3f(text->_color.x,text->_color.y,text->_color.z);
-	glRasterPos2f(text->getPosition().x,text->getPosition().y);
-		
-#ifdef USE_FREEGLUT
-		glutBitmapString(text->_font, (U8*)(text->_text.c_str()));
-#else
-		//nothing yet
-#endif
+	glPushMatrix();
+		glLoadIdentity();
+		_modelViewMatrix.push(mat4<GLfloat>()); //glPushMatrix(); glLoadIdentity();
+
+			GLCheck(glRasterPos2f(text->getPosition().x,text->getPosition().y));
+			_fonts[fontName]->Render(text->_text.c_str());
+
 	glPopMatrix();
+	_modelViewMatrix.pop();
 	glColor3i(1,1,1);
 	glPopAttrib();
-}
-
-void GL_API::drawCharacterToScreen(void* font,char text){
-
-#ifdef USE_FREEGLUT
-	glutBitmapCharacter(font, (I32)text);
-#else
-	//nothing yet
-#endif
 }
 
 void GL_API::drawFlash(GUIElement* const flash){
@@ -376,17 +177,34 @@ void GL_API::drawFlash(GUIElement* const flash){
 
 void GL_API::drawButton(GUIElement* const button){
 	GUIButton* b = dynamic_cast<GUIButton* >(button);
-	F32 fontx;
-	F32 fonty;
-	GUIText *t = NULL;	
 
 	if(b){
+		if(!b->isVisible()) return;
+
+		const char* fontName = b->_font.c_str();
+		FontCache::iterator itr = _fonts.find(fontName);
+		if(itr == _fonts.end()){
+			std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
+			fontPath += "GUI/";
+			fontPath += "fonts/";
+			fontPath += b->_font;
+			FTFont* tempFont = New FTGLBitmapFont(fontPath.c_str());
+			if (!tempFont) {
+				ERROR_FN(Locale::get("ERROR_FONT_FILE"),b->_font.c_str());
+			}else {
+				if (!tempFont->FaceSize(b->_fontHeight)) {
+					ERROR_FN(Locale::get("ERROR_FONT_HEIGHT"),b->_fontHeight);
+				}
+			}
+			_fonts.insert(std::make_pair(fontName, tempFont));
+		}
+		FTFont* font = _fonts[fontName];
 		glPushAttrib(GL_COLOR_BUFFER_BIT);
 		/*
 		 *	We will indicate that the mouse cursor is over the button by changing its
 		 *	colour.
 		 */
-		if(!b->isVisible()) return;
+		
 		if (b->_highlight) {
 			glColor3f(b->_color.r + 0.1f,b->_color.g + 0.1f,b->_color.b + 0.2f);
 		}else {
@@ -435,9 +253,9 @@ void GL_API::drawButton(GUIElement* const button){
 			glVertex2f( b->getPosition().x+b->_dimensions.x, b->getPosition().y      );
 		glEnd();
 
-		glLineWidth(1);
-		fontx = b->getPosition().x + (b->_dimensions.x - glutBitmapLength(GLUT_BITMAP_HELVETICA_10,(U8*)b->_text.c_str())) / 2 ;
-		fonty = b->getPosition().y + (b->_dimensions.y+10)/2;
+		glLineWidth(1); 
+		GLfloat fontx = b->getPosition().x + (b->_dimensions.x - font->Advance(b->_text.c_str())) / 2 ;
+		GLfloat fonty = b->getPosition().y + (b->_dimensions.y+10)/2;
 
 		/*
 		 *	if the button is pressed, make it look as though the string has been pushed
@@ -451,78 +269,32 @@ void GL_API::drawButton(GUIElement* const button){
 		/*
 		 *	If the cursor is currently over the button we offset the text string and draw a shadow
 		 */
-		if(!t){/* delete t;*/
-			t = new GUIText(std::string("1"),b->_text,vec2<F32>(fontx,fonty),
-							GLUT_BITMAP_HELVETICA_10,vec3<F32>(0,0,0));
+		if(!b->_guiText){/* delete t;*/
+			b->_guiText = new GUIText(std::string("1"),b->_text,vec2<GLfloat>(fontx,fonty),b->_font,vec3<GLfloat>(0,0,0),b->_fontHeight);
 		}
-		t->_text = b->_text;
 		if(b->_highlight){
 			fontx--;
 			fonty--;
-			t->_color = vec3<F32>(0,0,0);
+			b->_guiText->_color = vec3<GLfloat>(0,0,0);
 		}else{
-			t->_color = vec3<F32>(1,1,1);
+			b->_guiText->_color = vec3<GLfloat>(1,1,1);
 		}
 		
-		t->setPosition(vec2<F32>(fontx,fonty));
-		drawTextToScreen(t);
+		b->_guiText->setPosition(vec2<GLfloat>(fontx,fonty));
+		drawTextToScreen(b->_guiText);
 		glPopAttrib();
 	}
-	SAFE_DELETE(t);
-
 }
-void GL_API::drawConsole(){
-	GUIConsole& console = GUIConsole::getInstance();
-	if(!console.isConsoleOpen()) return;
-
-	ParamHandler& par = ParamHandler::getInstance();
-	glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT | GL_SCISSOR_BIT | GL_TRANSFORM_BIT);
-	setMaterial(console.getRenderQuad()->getMaterial());
-
-	//get the width and heigtht of the viewport
-	struct {GLint x, y, width, height;} viewport;
-	glGetIntegerv(GL_VIEWPORT, &viewport.x);
-	console.getViewportDimensions().x = viewport.width;
-	console.getViewportDimensions().y = viewport.height;
-
-	//reset matrices and switch to ortho view
-						
-	glMatrixMode(GL_PROJECTION);						
-	glPushMatrix();										
-	glLoadIdentity();									
-	glOrtho(0,console.getViewportDimensions().x,0,console.getViewportDimensions().y,-1,1);							
-				
-		
-	//set up a scissor region to draw the console in
-	glScissor(1	,console.getViewportDimensions().y - console.getConsoleHeight(), //bottom coord
-				console.getViewportDimensions().x, //width
-				console.getViewportDimensions().y); //top coord
-	glEnable(GL_SCISSOR_TEST);
-		
-	//render transparent background
-	console.getRenderQuad()->setDimensions(vec4<F32>(0,0, console.getViewportDimensions().x - 1,
-		                                                  console.getViewportDimensions().y - 1));
-	GFX_DEVICE.renderModel(console.getRenderQuad());
-
-	//draw text
-	//RenderText();
-
-	//restore old matrices and properties...	
-			
-	glPopMatrix();
-	glPopAttrib();
-}
-
 
 void GL_API::toggleDepthMapRendering(bool state) {
 	if(state){
 		if(!_depthMapRendering){
-			glShadeModel(GL_FLAT);
+			GLCheck(glShadeModel(GL_FLAT));
 			_depthMapRendering = true;
 		}
 	}else{
 		if(_depthMapRendering){
-			glShadeModel(GL_SMOOTH);
+			GLCheck(glShadeModel(GL_SMOOTH));
 			_depthMapRendering = false;
 		}
 	}
@@ -543,117 +315,204 @@ void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
 /// If now shader is specified, fixed function multiplication are used for compatibility
 void GL_API::setObjectState(Transform* const transform, bool force, ShaderProgram* const shader){
 	if(transform){
-		if(shader && shader->isBound()){
-			shader->Uniform("transformMatrix",transform->getMatrix());
-			shader->Uniform("parentTransformMatrix",transform->getParentMatrix());
-		}
-			
+
 		glPushMatrix();
+		_modelViewMatrix.push(_modelViewMatrix.top());
 		if(force){
 			glLoadIdentity();
+			_modelViewMatrix.top().identity();
 		}
-		glMultMatrixf(transform->getMatrix());
-		glMultMatrixf(transform->getParentMatrix());
+		mat4<F32> transformMatrix = transform->getMatrix() * transform->getParentMatrix();
+		if(shader && shader->isBound()){
+			
+			shader->Uniform("transformMatrix",transformMatrix);
+		}//else{
+			GLCheck(glMultMatrixf(transformMatrix));
+
+			_modelViewMatrix.top() *= transform->getMatrix();
+			_modelViewMatrix.top() *= transform->getParentMatrix();
+		//}
 	}
 }
 
 void GL_API::releaseObjectState(Transform* const transform, ShaderProgram* const shader){
 	if(transform){
 		glPopMatrix();
+		_modelViewMatrix.pop();
 	}
 }
 
 void GL_API::setMaterial(Material* mat){
 	assert(mat != NULL);
-	glColor4fv(&mat->getMaterialMatrix().getCol(1)[0]);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1));
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0));
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2));
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS,mat->getMaterialMatrix().getCol(3).x);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4<F32>(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f));
+	GLCheck(glColor4fv(&mat->getMaterialMatrix().getCol(1)[0]));
+	GLCheck(glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1)));
+	GLCheck(glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0)));
+	GLCheck(glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2)));
+	GLCheck(glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->getMaterialMatrix().getCol(3).r));
+	GLCheck(glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,vec4<GLfloat>(mat->getMaterialMatrix().getCol(3).y,mat->getMaterialMatrix().getCol(3).z,mat->getMaterialMatrix().getCol(3).w,1.0f)));
 }
  
-void GL_API::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback){
+void GL_API::renderInViewport(const vec4<GLfloat>& rect, boost::function0<void> callback){
 	
-	glPushAttrib(GL_VIEWPORT_BIT);
-    glViewport(rect.x, rect.y, rect.z, rect.w);
+	GLCheck(glPushAttrib(GL_VIEWPORT_BIT | GL_DEPTH_BUFFER_BIT));
+	GLCheck(glDisable(GL_DEPTH_TEST));
+    GLCheck(glViewport(rect.x, rect.y, rect.z, rect.w));
 	callback();
-	glPopAttrib();
+	GLCheck(glPopAttrib());
 
 }
 
-void GL_API::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset){
-
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glDisable(GL_TEXTURE_2D);  
-    glDisable(GL_LIGHTING);  
-    glLineWidth(2.0f);
-	glColor3f(0.0f,0.0f,1.0f);
-	glBegin(GL_LINE_LOOP);
-		glVertex3f( min.x, min.y, min.z );
-		glVertex3f( max.x, min.y, min.z );
-		glVertex3f( max.x, min.y, max.z );
-		glVertex3f( min.x, min.y, max.z );
-	glEnd();
-
-	glBegin(GL_LINE_LOOP);
-		glVertex3f( min.x, max.y, min.z );
-		glVertex3f( max.x, max.y, min.z );
-		glVertex3f( max.x, max.y, max.z );
-		glVertex3f( min.x, max.y, max.z );
-	glEnd();
-
-	glBegin(GL_LINES);
-		glVertex3f( min.x, min.y, min.z );
-		glVertex3f( min.x, max.y, min.z );
-		glVertex3f( max.x, min.y, min.z );
-		glVertex3f( max.x, max.y, min.z );
-		glVertex3f( max.x, min.y, max.z );
-		glVertex3f( max.x, max.y, max.z );
-		glVertex3f( min.x, min.y, max.z );
-		glVertex3f( min.x, max.y, max.z );
-	glEnd();
-	glPopAttrib();
-
+IMPrimitive* GL_API::getOrCreateIMPrimitive(){
+	NS_GLIM::GLIM_BATCH* IMInterface = NULL;
+	IMPrimitive* tempPriv = NULL;
+	///Find a zombified primitive
+	vectorImpl<IMPrimitive* >::iterator it;
+	it = std::find_if(_glimInterfaces.begin(),_glimInterfaces.end(),IMPrimitiveValidation::isValid);
+	if(it != _glimInterfaces.end()){///If we have one ...
+		tempPriv = *it;
+		///... resurrect it
+		tempPriv->_zombieCounter = 0;
+		IMInterface->Clear();
+	}else{///If we do not have a valid zombie, add a new element
+		tempPriv = New IMPrimitive();
+		assert(tempPriv->_imInterface != NULL);
+		_glimInterfaces.push_back(tempPriv);
+	}
+	IMInterface = tempPriv->_imInterface;
+	assert(IMInterface != NULL);
+	assert(tempPriv != NULL);
+	tempPriv->_inUse = true;
+	tempPriv->_setupStates.clear();
+	tempPriv->_resetStates.clear();
+	return tempPriv;
 }
 
-void GL_API::drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset){
+void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset){
+
+	IMPrimitive* priv = getOrCreateIMPrimitive();
+	NS_GLIM::GLIM_BATCH* IMInterface = priv->_imInterface;
+
+	priv->_hasLines = true;
+	priv->_lineWidth = 2.0f;
+
+	IMInterface->BeginBatch();
+
+	IMInterface->Attribute4ub("inColorData", 0, 0, 255,255);
+	IMInterface->Begin(NS_GLIM::GLIM_LINE_LOOP);
+		IMInterface->Vertex( min.x, min.y, min.z );
+		IMInterface->Vertex( max.x, min.y, min.z );
+		IMInterface->Vertex( max.x, min.y, max.z );
+		IMInterface->Vertex( min.x, min.y, max.z );
+	IMInterface->End();
+
+	IMInterface->Begin(NS_GLIM::GLIM_LINE_LOOP);
+		IMInterface->Vertex( min.x, max.y, min.z );
+		IMInterface->Vertex( max.x, max.y, min.z );
+		IMInterface->Vertex( max.x, max.y, max.z );
+		IMInterface->Vertex( min.x, max.y, max.z );
+	IMInterface->End();
+
+	IMInterface->Begin(NS_GLIM::GLIM_LINES);
+		IMInterface->Vertex( min.x, min.y, min.z );
+		IMInterface->Vertex( min.x, max.y, min.z );
+		IMInterface->Vertex( max.x, min.y, min.z );
+		IMInterface->Vertex( max.x, max.y, min.z );
+		IMInterface->Vertex( max.x, min.y, max.z );
+		IMInterface->Vertex( max.x, max.y, max.z );
+		IMInterface->Vertex( min.x, min.y, max.z );
+		IMInterface->Vertex( min.x, max.y, max.z );
+	IMInterface->End();
+	IMInterface->EndBatch();
+}
+
+void GL_API::setupSkeletonState(OffsetMatrix mat){
+	glPushMatrix();
+	//glLoadIdentity();
+	_modelViewMatrix.push(_modelViewMatrix.top());
+	mat4<GLfloat> m(mat.mat);
+	_modelViewMatrix.top() *= m;
+	GLCheck(glMultMatrixf(mat.mat));
+	GLCheck(glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT));
+    GLCheck(glDisable(GL_DEPTH_TEST));  
+}
+
+void GL_API::releaseSkeletonState(){
+	GLCheck(glPopAttrib());
+	glPopMatrix();
+	_modelViewMatrix.pop();
+}
+
+void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,const vectorImpl<vec3<GLfloat> >& pointsB,const vectorImpl<vec4<GLfloat> >& colors, const mat4<GLfloat>& globalOffset){
 	/// We need a perfect pair of point A's to point B's
 	if(pointsA.size() != pointsB.size()) return;
 	/// We need a color for each line, even if it is the same one
 	if(pointsA.size() != colors.size()) return;
-	glPushMatrix();
-	//glLoadIdentity();
-	glMultMatrixf(globalOffset);
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glDisable(GL_DEPTH_TEST);  
-    glDisable(GL_TEXTURE_2D);  
-    glDisable(GL_LIGHTING);  
-    glLineWidth(5.0f);
-    glBegin(GL_LINES);
-	for(U16 i = 0; i < pointsA.size(); i++){
-		glColor4fv( &colors[i].r);
-		glVertex3fv( &pointsA[i].x);
-		glVertex3fv( &pointsB[i].x);
+	
+
+	IMPrimitive* priv = getOrCreateIMPrimitive();
+	NS_GLIM::GLIM_BATCH* IMInterface = priv->_imInterface;
+	OffsetMatrix offset;
+	std::copy(globalOffset.mat, globalOffset.mat+16, offset.mat);
+	priv->_hasLines = true;
+	priv->_lineWidth = 5.0f;
+	priv->_setupStates = boost::bind(&GL_API::setupSkeletonState, this, offset);
+	priv->_resetStates = boost::bind(&GL_API::releaseSkeletonState, this);
+	IMInterface->BeginBatch();
+	IMInterface->Attribute4f("inColorData", 1.0f,0.0f,0.0f,1.0f);
+    IMInterface->Begin(NS_GLIM::GLIM_LINES);
+ 
+	for(GLushort i = 0; i < pointsA.size(); i++){
+		IMInterface->Attribute4f("inColorData", colors[i].r, colors[i].g, colors[i].b,colors[i].a);
+		IMInterface->Vertex( pointsA[i].x,pointsA[i].y,pointsA[i].z);
+		IMInterface->Vertex( pointsB[i].x,pointsB[i].y,pointsB[i].z);
 	}
-    glEnd();
-	glPopAttrib();
-	glPopMatrix();
+    IMInterface->End();
+	IMInterface->EndBatch();
+	
+}
+
+void GL_API::render3DText(Text3D* const text){
+	assert(text != NULL);
+
+	const char* fontName = text->getFont().c_str();
+	FontCache::iterator itr = _3DFonts.find(fontName);
+	if(itr == _3DFonts.end()){
+		std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
+		fontPath += "GUI/";
+		fontPath += "fonts/";
+		fontPath += fontName;
+		FTFont* tempFont = New FTGLPolygonFont(fontPath.c_str());
+		if (!tempFont) {
+			ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName);
+        }else {
+			if (!tempFont->FaceSize(text->getHeight())) {
+				ERROR_FN(Locale::get("ERROR_FONT_HEIGHT"),text->getHeight());
+            }
+        }
+		_3DFonts.insert(std::make_pair(fontName, tempFont));
+
+	}
+	GLCheck(glPushAttrib(GL_ENABLE_BIT));
+	GLCheck(glLineWidth(text->getWidth()));
+	
+	_3DFonts[fontName]->Render(text->getText().c_str());
+
+
+	GLCheck(glPopAttrib());
 }
 
 void GL_API::renderModel(Object3D* const model){
-	PRIMITIVE_TYPE type = TRIANGLES;
-	//render in the switch or after. hacky, but works -Ionut
-	bool b_continue = true;
+	PrimitiveType type;
 	switch(model->getType()){
+		//We should never enter the default case!
+		default:{
+			ERROR_FN(Locale::get("ERROR_GL_INVALID_OBJECT_TYPE"),model->getName().c_str());
+			return;
+				}
 		case Object3D::TEXT_3D:{
-			Text3D* text = dynamic_cast<Text3D*>(model);
-			glPushAttrib(GL_ENABLE_BIT);	
-			glLineWidth(text->getWidth());
-			glutStrokeString(text->getFont(), (const U8*)text->getText().c_str());
-			glPopAttrib();
-			b_continue = false;
-			}break;
+			render3DText(dynamic_cast<Text3D*>(model));
+			return;
+				}
 		
 		case Object3D::BOX_3D:
 		case Object3D::SUBMESH:
@@ -664,56 +523,21 @@ void GL_API::renderModel(Object3D* const model){
 		case Object3D::SPHERE_3D:
 			type = QUADS;
 			break;
-		//We should never enter the default case!
-		default:
-			ERROR_FN(Locale::get("ERROR_GL_INVALID_OBJECT_TYPE"),model->getName().c_str());
-			b_continue = false;
-			break;
 	}
 
-	if(b_continue){	
-
-		VertexBufferObject* vbo = model->getGeometryVBO();
-		assert(vbo != NULL);
-		std::vector<U16>& hwIndices = vbo->getHWIndices();
-		assert(!hwIndices.empty());
-		vbo->Enable();
-			GLCheck(glDrawRangeElements(type, (GLshort)model->getIndiceLimits().x, (GLshort)(model->getIndiceLimits().y + 1) /*half open*/ , (size_t)hwIndices.size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0)));
-		vbo->Disable();
-	}
+	VertexBufferObject* vbo = model->getGeometryVBO();
+	assert(vbo != NULL);
+	vbo->Draw(type,model->getCurrentLOD());
 }
 
-void GL_API::renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element){
-	U32 format = 0;
-	switch(f){
-		case _I8:
-			format = GL_BYTE;
-			break;
-		case _I16:
-			format = GL_SHORT;
-			break;
-		case _I32:
-			format = GL_INT;
-			break;
-		case _U8:
-			format = GL_UNSIGNED_BYTE;
-			break;
-		case _U16:
-			format = GL_UNSIGNED_SHORT;
-			break;
-		default:
-		case _U32:
-			format = GL_UNSIGNED_INT;
-			break;
-	}
-	GLCheck(glDrawElements(t, count, format, first_element ));
-	
+void GL_API::renderElements(PrimitiveType t, GFXDataFormat f, GLuint count, const GLvoid* first_element){
+	GLCheck(glDrawElements(t, count, glDataFormat[f], first_element ));
 }
 
 void GL_API::toggle2D(bool state){
 	if(!_state2DRendering){
 		RenderStateBlockDescriptor state2DRenderingDesc;
-		state2DRenderingDesc.setCullMode(CULL_MODE_None);
+		state2DRenderingDesc.setCullMode(CULL_MODE_NONE);
 		//state2DRenderingDesc.setZReadWrite(false,false);
 		state2DRenderingDesc._fixedLighting = false;
 		_state2DRendering = GFX_DEVICE.createStateBlock(state2DRenderingDesc);
@@ -725,28 +549,32 @@ void GL_API::toggle2D(bool state){
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
-		glOrtho(0,_cachedResolution.width,_cachedResolution.height,0,-1,1);
+		//glPushMatrix();glLoadIdentity();glOrtho();
+		_projectionMatrix.push(Divide::GL::_ortho(0,_cachedResolution.width,_cachedResolution.height,0,-1,1)); 
+
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix(); //2
 		glLoadIdentity();
-
+		_modelViewMatrix.push(mat4<GLfloat>()); //glPushMatrix();glLoadIdentity();
 	}else{ //3D
+		_modelViewMatrix.pop(); //glPopMatrix();
 		glPopMatrix(); //2 
+		_projectionMatrix.pop(); //glPopMatrix();
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
 	}
 }
 
-void GL_API::setAmbientLight(const vec4<F32>& light){
+void GL_API::setAmbientLight(const vec4<GLfloat>& light){
 	GLCheck(glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light));
 }
 
 ///Update OpenGL light state
 void GL_API::setLight(Light* const light){
 	assert(light != NULL);
-	U8 slot = light->getSlot();
+	GLubyte slot = light->getSlot();
 	if(!light->getEnabled()){
-	   glDisable(GL_LIGHT0 + light->getSlot());
+	   GLCheck(glDisable(GL_LIGHT0 + slot));
       return;
    }
 	if(slot >= 8){
@@ -754,58 +582,68 @@ void GL_API::setLight(Light* const light){
 		slot = slot%8;
 	}
 
-	LIGHT_TYPE type = light->getLightType();
-	glLightfv(GL_LIGHT0+slot, GL_POSITION, light->getVProperty(LIGHT_POSITION));
-	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  light->getVProperty(LIGHT_AMBIENT));
-	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  light->getVProperty(LIGHT_DIFFUSE));
-	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, light->getVProperty(LIGHT_SPECULAR));
-	if(type == LIGHT_SPOT){
-		glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, light->getVProperty(LIGHT_SPOT_DIRECTION));
-		glLightf(GL_LIGHT0+slot, GL_SPOT_EXPONENT,light->getFProperty(LIGHT_SPOT_EXPONENT));
-		glLightf(GL_LIGHT0+slot, GL_SPOT_CUTOFF, light->getFProperty(LIGHT_SPOT_CUTOFF));
+	LightType type = light->getLightType();
+	vec4<GLfloat> position(light->getPosition());
+	position.w = (type == LIGHT_TYPE_DIRECTIONAL) ? 0.0f : 1.0f;
+	GLCheck(glLightfv(GL_LIGHT0+slot, GL_POSITION, position));
+
+	GLCheck(glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  light->getVProperty(LIGHT_PROPERTY_AMBIENT)));
+	GLCheck(glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  light->getVProperty(LIGHT_PROPERTY_DIFFUSE)));
+	GLCheck(glLightfv(GL_LIGHT0+slot, GL_SPECULAR, light->getVProperty(LIGHT_PROPERTY_SPECULAR)));
+	if(type == LIGHT_TYPE_SPOT){
+		GLCheck(glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, light->getDirection()));
+		GLCheck(glLightf(GL_LIGHT0+slot, GL_SPOT_EXPONENT,light->getFProperty(LIGHT_PROPERTY_SPOT_EXPONENT)));
+		GLCheck(glLightf(GL_LIGHT0+slot, GL_SPOT_CUTOFF, light->getFProperty(LIGHT_PROPERTY_SPOT_CUTOFF)));
 	}
-	if(type != LIGHT_DIRECTIONAL){
-		glLightf(GL_LIGHT0+slot, GL_CONSTANT_ATTENUATION,light->getFProperty(LIGHT_CONST_ATT));
-		glLightf(GL_LIGHT0+slot, GL_LINEAR_ATTENUATION,light->getFProperty(LIGHT_LIN_ATT));
-		glLightf(GL_LIGHT0+slot, GL_QUADRATIC_ATTENUATION,light->getFProperty(LIGHT_QUAD_ATT));
+	if(type != LIGHT_TYPE_DIRECTIONAL){
+		GLCheck(glLightf(GL_LIGHT0+slot, GL_CONSTANT_ATTENUATION,light->getFProperty(LIGHT_PROPERTY_CONST_ATT)));
+		GLCheck(glLightf(GL_LIGHT0+slot, GL_LINEAR_ATTENUATION,light->getFProperty(LIGHT_PROPERTY_LIN_ATT)));
+		GLCheck(glLightf(GL_LIGHT0+slot, GL_QUADRATIC_ATTENUATION,light->getFProperty(LIGHT_PROPERTY_QUAD_ATT)));
 	}
-	glEnable(GL_LIGHT0+slot);
+	GLCheck(glEnable(GL_LIGHT0+slot));
 }
 
 
-//Setting gluLookAt here for camera's or shadow projection
+//Setting _LookAt here for camera's or shadow projection
 // -set the current matrix to GL_MODELVIEW
 // -reset it to identity
-// -invert the scene if needed by using, the now deprecated, I know, glScalef (but hey, so is gluLookAt)
-void GL_API::lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up, bool invertx, bool inverty){
+// -invert the scene if needed by using, the now deprecated, I know, glScalef
+void GL_API::lookAt(const vec3<GLfloat>& eye,const vec3<GLfloat>& center,const vec3<GLfloat>& up, bool invertx, bool inverty){
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
+	_modelViewMatrix.top().identity();
+
 	if(invertx){
-		glScalef(-1.0f,1.0f,1.0f);
+		GLCheck(glScalef(-1.0f,1.0f,1.0f));
+		_modelViewMatrix.top().scale(-1.0f,1.0f,1.0f);
 	}
-	gluLookAt(	eye.x,		eye.y,		eye.z,
-				center.x,	center.y,	center.z,
-				up.x,		up.y,		up.z	);
+	_modelViewMatrix.top() *= Divide::GL::_LookAt(	eye.x,		eye.y,		eye.z,
+												    center.x,	center.y,	center.z,
+													up.x,		up.y,		up.z	);
 }
 
 void GL_API::lockProjection(){
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
+	_projectionMatrix.push(_projectionMatrix.top()); //glPushMatrix();
 }
 
 void GL_API::releaseProjection(){
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
+	_projectionMatrix.pop(); //glPopMatrix();
 }
 
 void GL_API::lockModelView(){
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
+	_modelViewMatrix.push(_modelViewMatrix.top()); //glPushMatrix();
 }
 
 void GL_API::releaseModelView(){
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+	_modelViewMatrix.pop(); //glPopMatrix();
 }
 
 //Setting ortho projection:
@@ -813,10 +651,11 @@ void GL_API::releaseModelView(){
 // -resets it to identity
 // -sets an ortho perspective based on the input rect and limits
 // -and sets the matrix mode back to GL_MODELVIEW
-void GL_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){
+void GL_API::setOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
+	//glLoadIdentity();glOrtho();
+	_projectionMatrix.top() = Divide::GL::_ortho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -825,24 +664,25 @@ void GL_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){
 // -resets it to identity
 // -sets a perspective projection based on the input FoV, aspect ration and limits
 // -and sets the matrix mode back to GL_MODELVIEW
-void GL_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes){
-	glMatrixMode (GL_PROJECTION);
+void GL_API::setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const vec2<GLfloat>& planes){
+	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
-	glLoadIdentity ();
-	gluPerspective(FoV, aspectRatio, planes.x, planes.y);
-	glMatrixMode (GL_MODELVIEW);
+	glLoadIdentity();
+	//glPushMatrix(); glLoadIdentity(); glOrtho();
+	_projectionMatrix.push(Divide::GL::_perspective(FoV, aspectRatio, planes.x, planes.y));
+	glMatrixMode(GL_MODELVIEW);
 }
 
 //Save the area designated by the rectangle "rect" to a TGA file
-void GL_API::Screenshot(char *filename, const vec4<F32>& rect){
+void GL_API::Screenshot(char *filename, const vec4<GLfloat>& rect){
 	// compute width and heidth of the image
-	U16 w = rect.z - rect.x; //maxX - minX
-	U16 h = rect.w - rect.y; //maxY - minY
+	GLushort w = rect.z - rect.x; //maxX - minX
+	GLushort h = rect.w - rect.y; //maxY - minY
 
 	// allocate memory for the pixels
-	U8 *imageData = New U8[w * h * 4];
+	GLubyte *imageData = New GLubyte[w * h * 4];
 	// read the pixels from the frame buffer
-	glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
+	GLCheck(glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid*)imageData));
 	//save to file
 	ImageTools::SaveSeries(filename,w,h,32,imageData);
 }
@@ -851,31 +691,31 @@ void GL_API::Screenshot(char *filename, const vec4<F32>& rect){
 // First, it computes the appropriate z-range and sets an orthogonal projection.
 // Then, it translates and scales it, so that it exactly captures the bounding box
 // of the current frustum slice
-F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
-	F32 shad_modelview[16];
-	F32 shad_proj[16];
-	F32 maxX = -1000.0f;
-    F32 maxY = -1000.0f;
-	F32 maxZ;
-    F32 minX =  1000.0f;
-    F32 minY =  1000.0f;
-	F32 minZ;
+GLfloat GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
+	GLfloat shad_modelview[16];
+	GLfloat shad_proj[16];
+	GLfloat maxX = -1000.0f;
+    GLfloat maxY = -1000.0f;
+	GLfloat maxZ;
+    GLfloat minX =  1000.0f;
+    GLfloat minY =  1000.0f;
+	GLfloat minZ;
 
-	mat4<F32> nv_mvp;
-	vec4<F32> transf;	
+	mat4<GLfloat> nv_mvp;
+	vec4<GLfloat> transf;	
 	
 	// find the z-range of the current frustum as seen from the light
 	// in order to increase precision
-	glGetFloatv(GL_MODELVIEW_MATRIX, nv_mvp.mat);
+	GLCheck(glGetFloatv(GL_MODELVIEW_MATRIX, nv_mvp.mat));
 	
 	// note that only the z-component is need and thus
 	// the multiplication can be simplified
 	// transf.z = shad_modelview[2] * f.point[0].x + shad_modelview[6] * f.point[0].y + shad_modelview[10] * f.point[0].z + shad_modelview[14];
-	transf = nv_mvp*vec4<F32>(f.point[0], 1.0f);
+	transf = nv_mvp*vec4<GLfloat>(f.point[0], 1.0f);
 	minZ = transf.z;
 	maxZ = transf.z;
-	for(U8 i=1; i<8; i++){
-		transf = nv_mvp*vec4<F32>(f.point[i], 1.0f);
+	for(GLubyte i=1; i<8; i++){
+		transf = nv_mvp*vec4<GLfloat>(f.point[i], 1.0f);
 		if(transf.z > maxZ) maxZ = transf.z;
 		if(transf.z < minZ) minZ = transf.z;
 	}
@@ -884,7 +724,7 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 		//Unload every sub node recursively
 
 	for_each(BoundingBox& b, sceneGraph->getBBoxes()){
-		transf = nv_mvp*vec4<F32>(b.getCenter(), 1.0f);
+		transf = nv_mvp*vec4<GLfloat>(b.getCenter(), 1.0f);
 		if(transf.z + b.getHalfExtent().z > maxZ) maxZ = transf.z + b.getHalfExtent().z;
 	//	if(transf.z - b.radius < minZ) minZ = transf.z - b.radius;
 	}
@@ -893,17 +733,24 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 	glLoadIdentity();
 	// set the projection matrix with the new z-bounds
 	// note the inversion because the light looks at the neg. z axis
-	// gluPerspective(LIGHT_FOV, 1.0, maxZ, minZ); // for point lights
-	glOrtho(-1.0, 1.0, -1.0, 1.0, -maxZ, -minZ);
-	glGetFloatv(GL_PROJECTION_MATRIX, shad_proj);
+	// _perspective(LIGHT_FOV, 1.0, maxZ, minZ); // for point lights
+	 //glLoadIdentity(); //glMultMatrixf(...);
+	_projectionMatrix.top() = Divide::GL::_ortho(-1.0, 1.0, -1.0, 1.0, -maxZ, -minZ);
+
+	GLCheck(glGetFloatv(GL_PROJECTION_MATRIX, shad_proj));
 	glPushMatrix();
-	glMultMatrixf(shad_modelview);
-	glGetFloatv(GL_PROJECTION_MATRIX, nv_mvp.mat);
+	GLCheck(glMultMatrixf(shad_modelview));
+	_projectionMatrix.push(_projectionMatrix.top()); //glPushMatrix();
+	mat4<GLfloat> m(shad_modelview);
+	_projectionMatrix.top() *= m; //glMultMatrixf(...);
+
+	GLCheck(glGetFloatv(GL_PROJECTION_MATRIX, nv_mvp.mat));
 	glPopMatrix();
+	_projectionMatrix.pop();//glPopMatrix();
 
 	// find the extends of the frustum slice as projected in light's homogeneous coordinates
-	for(U8 i=0; i<8; i++){
-		transf = nv_mvp*vec4<F32>(f.point[i], 1.0f);
+	for(GLubyte i=0; i<8; i++){
+		transf = nv_mvp*vec4<GLfloat>(f.point[i], 1.0f);
 
 		transf.x /= transf.w;
 		transf.y /= transf.w;
@@ -914,10 +761,10 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 		if(transf.y < minY) minY = transf.y;
 	}
 
-	F32 scaleX = 2.0f/(maxX - minX);
-	F32 scaleY = 2.0f/(maxY - minY);
-	F32 offsetX = -0.5f*(maxX + minX)*scaleX;
-	F32 offsetY = -0.5f*(maxY + minY)*scaleY;
+	GLfloat scaleX = 2.0f/(maxX - minX);
+	GLfloat scaleY = 2.0f/(maxY - minY);
+	GLfloat offsetX = -0.5f*(maxX + minX)*scaleX;
+	GLfloat offsetY = -0.5f*(maxY + minY)*scaleY;
 
 	// apply a crop matrix to modify the projection matrix we got from glOrtho.
 	nv_mvp.identity();
@@ -926,12 +773,54 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 	nv_mvp.element(0,3) = offsetX;
 	nv_mvp.element(1,3) = offsetY;
 	nv_mvp.transpose();
-	glLoadMatrixf(nv_mvp.mat);
-	glMultMatrixf(shad_proj);
-
+	GLCheck(glLoadMatrixf(nv_mvp.mat));
+	GLCheck(glMultMatrixf(shad_proj));
+	mat4<GLfloat> m2(nv_mvp);
+	mat4<GLfloat> m3(shad_proj);
+	_projectionMatrix.top() = m2; //glLoadMatrixf(...);
+	_projectionMatrix.top() *= m3; //glMultMatrixf(...);
 	return minZ;
 }
 
 RenderStateBlock* GL_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor){
 	return New glRenderStateBlock(descriptor);
+}
+
+
+FrameBufferObject* GL_API::newFBO(FBOType type)  {
+	switch(type){
+		case FBO_2D_DEFERRED:
+			return New glDeferredBufferObject(); 
+		case FBO_2D_DEPTH:
+			return New glDepthBufferObject(); 
+		case FBO_2D_ARRAY_DEPTH:
+			return New glDepthArrayBufferObject();
+		case FBO_CUBE_COLOR:
+			return New glTextureBufferObject(true);
+		case FBO_CUBE_DEPTH:
+			return New glTextureBufferObject(true,true);
+		case FBO_CUBE_COLOR_ARRAY:
+			return New glTextureArrayBufferObject(true);
+		case FBO_CUBE_DEPTH_ARRAY:
+			return New glTextureArrayBufferObject(true,true);
+		case FBO_2D_ARRAY_COLOR:
+			return New glTextureArrayBufferObject();
+		case FBO_2D_COLOR_MS:{
+			if(_msaaSamples > 1 && _useMSAA)
+				return New glMSTextureBufferObject(); ///<No MS cube support yet
+			else
+				return New glTextureBufferObject();
+		}
+		default:
+		case FBO_2D_COLOR:
+			return New glTextureBufferObject(); 
+	}
+}
+
+VertexBufferObject* GL_API::newVBO() {
+	return New glVertexArrayObject(); 
+}
+
+PixelBufferObject* GL_API::newPBO(PBOType type) {
+	return New glPixelBufferObject(type); 
 }

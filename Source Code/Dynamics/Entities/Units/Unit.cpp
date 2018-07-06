@@ -2,11 +2,11 @@
 #include "Graphs/Headers/SceneGraphNode.h" 
 #include "Rendering/Headers/Framerate.h"
 
-Unit::Unit(UNIT_TYPE type, SceneGraphNode* const node) : _type(type), 
-													   _node(node),
-													   _moveSpeed(1),
-													   _moveTolerance(0.1f),
-													   _prevTime(GETMSTIME()){}
+Unit::Unit(UnitType type, SceneGraphNode* const node) : _type(type), 
+													    _node(node),
+													    _moveSpeed(1),
+													    _moveTolerance(0.1f),
+													    _prevTime(GETMSTIME()){}
 Unit::~Unit(){}
 
 /// Pathfinding, collision detection, animation playback should all be controlled from here
@@ -27,7 +27,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
 	/// distance = timeDif * 0.001 * moveSpeed
 	F32 moveSpeed = _moveSpeed * 0.001 * timeDif;
 	/// apply framerate varyance
-	moveSpeed *= Framerate::getInstance().getSpeedfactor();
+	moveSpeed *= FRAME_SPEED_FACTOR;
 	/// update previous time
 	_prevTime = currentTime;
 

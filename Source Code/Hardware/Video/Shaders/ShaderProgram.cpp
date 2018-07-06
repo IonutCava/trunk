@@ -27,11 +27,18 @@ ShaderProgram::~ShaderProgram(){
 
 bool ShaderProgram::generateHWResource(const std::string& name){
 	_name = name;
+	_maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 	//Apply global shader values valid throughout application runtime:
+	std::string shadowMaps("texDepthMapFromLight");
 	this->bind();
-		this->UniformTexture("texDepthMapFromLight0",8); //Shadow Maps always bound to 8, 9 and 10
-		this->UniformTexture("texDepthMapFromLight1",9);
-		this->UniformTexture("texDepthMapFromLight2",10);
+		for(I32 i = 0; i < MAX_SHADOW_CASTING_LIGHTS_PER_NODE; i++){
+			std::stringstream ss;
+			ss << shadowMaps;
+			ss << i;
+			this->UniformTexture(ss.str(),10+i); //Shadow Maps always bound from 8 and above
+		}
+		this->UniformTexture("texDepthMapFromLightArray",_maxCombinedTextureUnits - 2); //Reserve first for directional shadows
+		this->UniformTexture("texDepthMapFromLightCube",_maxCombinedTextureUnits - 1); //Reserve second for point shadows
 	this->unbind();
 	return HardwareResource::generateHWResource(name);
 }
@@ -43,17 +50,15 @@ void ShaderProgram::bind(){
 	Frustum& frust = Frustum::getInstance();
 	ParamHandler& par = ParamHandler::getInstance();
 	Application& app = Application::getInstance();
-
 	this->Attribute("cameraPosition",frust.getEyePos());
     this->Uniform("modelViewInvMatrix",frust.getModelviewInvMatrix());
 	this->Uniform("modelViewMatrix",frust.getModelviewMatrix());
 	this->Uniform("modelViewProjectionMatrix",frust.getModelViewProjectionMatrix());
-	this->Uniform("lightProjectionMatrix",GFX_DEVICE.getLightProjectionMatrix());
-	this->Uniform("zPlanes",vec2<F32>(par.getParam<F32>("zNear"),par.getParam<F32>("zFar")));
-	this->Uniform("screenDimension", vec2<I32>(app.getResolution().width,app.getResolution().height));
-	this->Uniform("resolutionFactor", par.getParam<U8>("shadowResolutionFactor"));
+	this->Uniform("projectionMatrix",frust.getProjectionMatrix());
+	this->Uniform("zPlanes",frust.getZPlanes());
+	this->Uniform("screenDimension", app.getResolution());
 	this->Uniform("enableFog",par.getParam<bool>("rendering.enableFog"));
-	this->Uniform("time", GETTIME());
+	this->Uniform("time", GETMSTIME());
 
 }
 
@@ -62,8 +67,8 @@ void ShaderProgram::unbind(){
 	_bound = false;
 }
 
-std::vector<Shader* > ShaderProgram::getShaders(SHADER_TYPE type){
-	std::vector<Shader* > returnShaders;
+vectorImpl<Shader* > ShaderProgram::getShaders(ShaderType type){
+	vectorImpl<Shader* > returnShaders;
 	for_each(Shader* s, _shaders){
 		if(s->getType() == type){
 			returnShaders.push_back(s);

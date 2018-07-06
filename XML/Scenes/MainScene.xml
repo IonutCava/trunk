@@ -19,4 +19,5 @@
 
 <options>
 	<visibility>700</visibility>
+	<!--<cameraStartPosition x="0" y="570" z="40" yOffsetDegrees="35" xOffsetDegrees="98"/>-->
 </options>

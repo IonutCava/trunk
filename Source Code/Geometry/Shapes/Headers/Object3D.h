@@ -19,11 +19,11 @@
 #define _OBJECT_3D_H_
 
 #include "core.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 class BoundingBox;
-
+class VertexBufferObject;
 class Object3D : public SceneNode {
 public:
 	enum PrimitiveType {
@@ -38,27 +38,19 @@ public:
 		OBJECT_3D_FLYWEIGHT
 	};
 
+	enum PrimitiveFlag {
+		PRIMITIVE_FLAG_NONE = 0,
+		PRIMITIVE_FLAG_SKINNED,
+		PRIMITIVE_FLAG_PLACEHOLDER
+
+	};
 	enum UsageContext {
 		OBJECT_DYNAMIC = 0,
 		OBJECT_STATIC
 	};
 
-	Object3D(PrimitiveType type = OBJECT_3D) : SceneNode(TYPE_OBJECT3D),
-											  _update(false),
-											  _geometryType(type),
-											  _geometry(GFX_DEVICE.newVBO()),
-											  _refreshVBO(true),
-											  _usageContext(OBJECT_STATIC)
-
-	{}
-
-	Object3D(const std::string& name, PrimitiveType type = OBJECT_3D) : SceneNode(name,TYPE_OBJECT3D),
-																	    _update(false),
-																		_geometryType(type),
-																		_geometry(GFX_DEVICE.newVBO()),
-																		_refreshVBO(true),
-																		_usageContext(OBJECT_STATIC)
-	{}
+	Object3D(PrimitiveType type = OBJECT_3D,PrimitiveFlag flag = PRIMITIVE_FLAG_NONE);
+	Object3D(const std::string& name, PrimitiveType type = OBJECT_3D, PrimitiveFlag flag = PRIMITIVE_FLAG_NONE);
 
 	virtual ~Object3D(){
 		SAFE_DELETE(_geometry);
@@ -66,12 +58,12 @@ public:
 
 	        VertexBufferObject* const getGeometryVBO(); ///<Please use IBO's ...
 	inline  PrimitiveType             getType()         const {return _geometryType;}
+	inline  PrimitiveFlag             getFlag()         const {return _geometryFlag;}
 	inline  UsageContext              getUsageContext() const {return _usageContext;}
-	inline  vec2<U16>&                getIndiceLimits()       {return _indiceLimits;}
 	inline  void                      setUsageContext(UsageContext newContext) {_usageContext = newContext;}
 
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(D32 sceneTime) {}           ///<To avoid a lot of typing
+	virtual void  sceneUpdate(D32 sceneTime) {}           ///<To avoid a lot of typing
 	virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
 	virtual	void  render(SceneGraphNode* const sgn);
 	virtual void  onDraw();
@@ -84,8 +76,8 @@ protected:
 protected:
 	bool		          _update;
 	bool                  _refreshVBO;
-	vec2<U16>             _indiceLimits;
 	PrimitiveType         _geometryType;
+	PrimitiveFlag         _geometryFlag;
 	UsageContext          _usageContext;
 	VertexBufferObject*   _geometry;
 };

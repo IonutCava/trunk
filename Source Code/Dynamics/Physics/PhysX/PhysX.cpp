@@ -4,14 +4,10 @@
 
 using namespace physx;
 
-<<<<<<< .mine
 PhysX::PhysX() : _currentScene(NULL), 
                  _gPhysicsSDK(NULL),
 				 _foundation(NULL), 
 				 _pvdConnection(NULL){}
-=======
-PhysX::PhysX() : _currentScene(NULL), _gPhysicsSDK(NULL), _foundation(NULL), _pvdConnection(NULL){}
->>>>>>> .r140
 
 I8 PhysX::initPhysics(U8 targetFrameRate){
   _gDefaultFilterShader=physx::PxDefaultSimulationFilterShader;

@@ -39,7 +39,7 @@ namespace Navigation {
 	NavigationMesh::~NavigationMesh(){
 
 		if(mThread)	{
-			mThread->stopEvent();
+			mThread->interruptEvent();
 		}
 
 		freeIntermediates(true);
@@ -88,7 +88,7 @@ namespace Navigation {
 		if(!_buildLock.owns_lock()) return false;
 
 		if(mThread) {
-			mThread->stopEvent();
+			mThread->interruptEvent();
 		}
 
 		mThread.reset(New Event(3,true,true,boost::bind(&NavigationMesh::launchThreadedBuild,this)));

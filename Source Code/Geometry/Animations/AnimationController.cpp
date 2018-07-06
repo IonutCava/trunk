@@ -21,7 +21,7 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
 
 	for (U32 n = 0; n < mesh->mNumBones;++n){
 		const aiBone* bone = mesh->mBones[n];
-		unordered_map<std::string, Bone*>::iterator found = _bonesByName.find(bone->mName.data);
+		Unordered_map<std::string, Bone*>::iterator found = _bonesByName.find(bone->mName.data);
 		if(found != _bonesByName.end()){// FOUND IT!!! woohoo, make sure its not already in the bone list
 			bool skip = false;
 			for(size_t j(0); j< _bones.size(); j++){
@@ -42,15 +42,15 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
 	
 
 	_transforms.resize( _bones.size());
-	D32 timestep = 1.0f/ANIMATION_TICKS_PER_SECOND;// ANIMATION_TICKS_PER_SECOND
+	D32 timestep = 1.0/ANIMATION_TICKS_PER_SECOND;// ANIMATION_TICKS_PER_SECOND
 	for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
 		SetAnimIndex(i);
 		D32 dt = 0;
 		for(D32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
 			dt +=timestep;
 			Calculate(dt);
-			_animations[i]._transforms.push_back(std::vector<mat4<F32> >());
-			std::vector<mat4<F32> >& trans = _animations[i]._transforms.back();
+			_animations[i]._transforms.push_back(vectorImpl<mat4<F32> >());
+			vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
 			for( size_t a = 0; a < _transforms.size(); ++a){
 				mat4<F32> rotationmat;
 				if(GFX_DEVICE.getApi() == Direct3D){
@@ -77,14 +77,14 @@ void SceneAnimator::ExtractAnimations(const aiScene* pScene){
 	// get all the animation names so I can reference them by name and get the correct id
 	U16 i = 0;
 	for_each(AnimEvaluator& animation, _animations){
-		_animationNameToId.insert(unordered_map<std::string, U32>::value_type(animation._name, i++));
+		_animationNameToId.insert(Unordered_map<std::string, U32>::value_type(animation._name, i++));
 	}
 	_currentAnimIndex=0;
 	SetAnimation("Idle");
 }
 
 bool SceneAnimator::SetAnimation(const std::string& name){
-	unordered_map<std::string, U32>::iterator itr = _animationNameToId.find(name);
+	Unordered_map<std::string, U32>::iterator itr = _animationNameToId.find(name);
 	I32 oldindex = _currentAnimIndex;
 	if(itr !=_animationNameToId.end()) _currentAnimIndex = itr->second;
 	return oldindex != _currentAnimIndex;
@@ -179,11 +179,11 @@ I32 SceneAnimator::RenderSkeleton(D32 dt){
 	if(_pointsA[_currentAnimIndex][frameIndex].empty()){
 
 		/// create all the needed points
-		std::vector<vec3<F32> >& pA = _pointsA[_currentAnimIndex][frameIndex];
+		vectorImpl<vec3<F32> >& pA = _pointsA[_currentAnimIndex][frameIndex];
 		pA.reserve(_bones.size());
-		std::vector<vec3<F32> >& pB = _pointsB[_currentAnimIndex][frameIndex];
+		vectorImpl<vec3<F32> >& pB = _pointsB[_currentAnimIndex][frameIndex];
 		pB.reserve(_bones.size());
-		std::vector<vec4<F32> >& cl = _colors[_currentAnimIndex][frameIndex];
+		vectorImpl<vec4<F32> >& cl = _colors[_currentAnimIndex][frameIndex];
 		cl.reserve(_bones.size());
 			/// Construct skeleton
 		Calculate(dt);
@@ -195,9 +195,9 @@ I32 SceneAnimator::RenderSkeleton(D32 dt){
 }
 
 /// Create animation skeleton
-I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, std::vector<vec3<F32> >& pointsA, 
-																		   std::vector<vec3<F32> >& pointsB, 
-																		   std::vector<vec4<F32> >& colors){
+I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA, 
+																		   vectorImpl<vec3<F32> >& pointsB, 
+																		   vectorImpl<vec4<F32> >& colors){
 	aiMatrix4x4 me = piNode->_globalTransform;
 	if(GFX_DEVICE.getApi() == Direct3D){
 		me.Transpose();

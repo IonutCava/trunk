@@ -19,13 +19,14 @@
 #define _POST_EFFECTS_H
 
 #include "core.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
 
 #define FBO_BLOOM_SAMPLES 1
 
+class GFXDevice;
 class Texture;
 typedef Texture Texture2D;
 class Quad3D;
+class Camera;
 class ShaderProgram;
 class FrameBufferObject;
 DEFINE_SINGLETON( PostFX )
@@ -59,9 +60,6 @@ public:
 	Quad3D*	_renderQuad;
 	ShaderProgram* _anaglyphShader;
 	ShaderProgram* _postProcessingShader;
-	ShaderProgram* _blurShader;
-	ShaderProgram* _bloomShader;
-	ShaderProgram* _SSAOShaderPass1;
 	Texture2D* _underwaterTexture;
 	GFXDevice& _gfx;
 	///Update the current camera at every render loop
@@ -70,6 +68,7 @@ public:
 private:
 	void displaySceneWithoutAnaglyph(void);
 	void displaySceneWithAnaglyph(void);
+	void createOperators();
 	~PostFX();
 	PostFX();
 
@@ -79,6 +78,9 @@ private:
 	bool _enableDOF;
 	bool _enableNoise;
 	bool _enableSSAO;
+	bool _enableFXAA;
+	bool _FXAAinit;
+	bool _underwater;
 
 public:
 	void init(const vec2<U16>& resolution);

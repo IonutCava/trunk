@@ -23,7 +23,7 @@
 class Weapon {
 public:
 	/// Weapon type mask
-	enum WEAPON_TYPE {
+	enum WeaponType {
 		///Melee weapon (sword,axe,kinfe,lightsaber)
 		WEAPON_TYPE_MELEE       = toBit(1),
 		///ranged weapons (guns, bows etc)
@@ -32,7 +32,7 @@ public:
 		WEAPON_TYPE_PLACEHOLDER = toBit(10)
 	};
 
-	enum WEAPON_PROPERTY {
+	enum WeaponProperty {
 		/// this weapon does use ammo (or charges for melee)
 		WEAPON_PROPERTY_WITH_AMMO    = toBit(1), 
 		/// this weapon does not us ammo
@@ -41,14 +41,14 @@ public:
 		WEAPON_PROPERTY_PLACEHOLDER  = toBit(10)
 	};
 
-	Weapon(WEAPON_TYPE type);
+	Weapon(WeaponType type);
 	~Weapon();
 
 	/// Add a specific property to this weapon
 	bool addProperties(U8 propertyMask);
 
 private:
-	WEAPON_TYPE _type;
+	WeaponType _type;
 	U8 _properyMask; ///< weapon properties
 };
 #endif

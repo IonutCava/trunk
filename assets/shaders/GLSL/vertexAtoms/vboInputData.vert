@@ -6,55 +6,37 @@ attribute vec3  inBiTangentData;
 
 vec4  vertexData;
 vec3  normalData;
-vec2  texCoordData;
 vec3  tangentData;
 vec3  biTangentData;
 
-uniform bool useVBOVertexData;
-uniform bool emptyNormal;
-uniform bool emptyTexCoord;
-uniform bool emptyTangent;
-uniform bool emptyBiTangent;
+varying vec2 _texCoord;
+
+uniform mat4 transformMatrix;
+uniform mat4 parentTransformMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewInvMatrix;
+uniform mat4 modelViewProjectionMatrix;
+
 
 
 void computeData(void){
 
-	if(useVBOVertexData ){
+#if defined(USE_VBO_DATA)
 
-		//vertexData = vec4(inVertexData,1.0);
-		vertexData = gl_Vertex;
+		vertexData    = vec4(inVertexData,1.0);
+		normalData    = inNormalData;
+		_texCoord     = inTexCoordData;
+		tangentData   = inTangentData;
+		biTangentData = inBiTangentData;
 
-		if(emptyNormal){
-			normalData = gl_Normal;
-		}else{
-			normalData  = inNormalData;
-		}
-
-		if(emptyTexCoord){
-			texCoordData   = gl_MultiTexCoord0.xy;
-		}else{
-			texCoordData   = inTexCoordData;
-		}
-
-		if(emptyTangent){
-			tangentData    = gl_MultiTexCoord1.xyz;
-		}else{
-			tangentData    = inTangentData;
-		}
-
-		if(emptyBiTangent){
-			biTangentData  = gl_MultiTexCoord2.xyz;
-		}else{
-			biTangentData  = inBiTangentData;
-		}
-
-	}else{
+#else
 		vertexData     = gl_Vertex;
 		normalData     = gl_Normal;
-		texCoordData   = gl_MultiTexCoord0.xy;
+		_texCoord      = gl_MultiTexCoord0.xy;
 		tangentData    = gl_MultiTexCoord1.xyz;
 		biTangentData  = gl_MultiTexCoord2.xyz;
-	}
+
+#endif
 }
 
 

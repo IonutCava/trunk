@@ -18,9 +18,11 @@
 #ifndef _EVENT_H_
 #define _EVENT_H_
 
-#include "core.h"
 #include <boost/any.hpp>
+#include <boost/function.hpp>  
 #include <boost/enable_shared_from_this.hpp> 
+#include "Hardware/Platform/Headers/Mutex.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 
 using boost::any_cast;
 
@@ -84,7 +86,7 @@ public:
 	void updateTickCounter(U32 numberOfTicks){_numberOfTicks = numberOfTicks;}
 	void startEvent();
 	void stopEvent();
-	void interruptEvent(){ _end = true; _thisThread->interrupt(); _thisThread->join();}
+	void interruptEvent(){ _end = true; _thisThread->interrupt();}
 
 private:
 	std::string _name;

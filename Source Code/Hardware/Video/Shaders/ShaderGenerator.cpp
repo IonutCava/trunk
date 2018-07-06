@@ -6,7 +6,7 @@ ShaderGenerator::ShaderGenerator(){
 ShaderGenerator::~ShaderGenerator(){
 }
 
-Shader* ShaderGenerator::generateShader(const std::vector<ShaderStageDescriptor> & stages){
+Shader* ShaderGenerator::generateShader(const vectorImpl<ShaderStageDescriptor> & stages){
 	for(U8 i = 0; i < stages.size(); i++){
 		switch(stages[i]._stage){
 			case ShaderStageDescriptor::SHADER_NUM_LIGHTS:

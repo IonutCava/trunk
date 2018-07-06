@@ -25,7 +25,7 @@
 /// Multiple camera managers can be created if needed in the future
 /// No need for singletons here 
 class CameraManager : private boost::noncopyable {
-typedef unordered_map<std::string, Camera*> CameraPool;
+typedef Unordered_map<std::string, Camera*> CameraPool;
 
 public:
 	CameraManager();
@@ -40,7 +40,7 @@ public:
 private:
 	Camera* _camera;
 	CameraPool _cameraPool;
-	std::vector<boost::function0<void> > _listeners;
+	vectorImpl<boost::function0<void> > _listeners;
 };
 
 #endif

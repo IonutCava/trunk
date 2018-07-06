@@ -21,6 +21,7 @@
 #include "ResourceDescriptor.h"
 
 class Resource;
+class HardwareResource;
 class ResourceLoader : private boost::noncopyable {
 
 public:
@@ -45,14 +46,11 @@ protected:
 
 #define DEFAULT_LOADER_IMPL(X)	template<> \
 								bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
-									return res->setInitialData(name);\
+									return ResourceCache::getInstance().load(res, name);\
 								}
 
 #define DEFAULT_HW_LOADER_IMPL(X) template<> \
 								  bool ImplResourceLoader<X>::load(X* const res, const std::string& name){ \
-									if(res->setInitialData(name)){\
-										return res->generateHWResource(name); \
-									} \
-									return false; \
+									return ResourceCache::getInstance().loadHW(res, name);\
 								  }
 #endif

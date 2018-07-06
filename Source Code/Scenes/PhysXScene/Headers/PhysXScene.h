@@ -29,7 +29,6 @@ public:
 				  _physx(NULL),
 				  _mousePressed(false){}
 
-	void render();
 	void preRender();
 
 	bool load(const std::string& name);
@@ -47,11 +46,11 @@ private:
 	void createStack();
 
 private:
-	std::vector<F32> _eventTimers;
-	vec4<F32> _sunVector;
+	vectorImpl<F32> _eventTimers;
+	vec3<F32> _sunvector;
 	PhysXImplementation* _physx;
 	bool _mousePressed;
-	vec2<I32> _prevMouse;
+	vec2<F32> _prevMouse;
 };
 
 #endif

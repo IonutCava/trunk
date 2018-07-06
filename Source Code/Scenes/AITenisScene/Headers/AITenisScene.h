@@ -53,14 +53,12 @@ public:
 		_mousePressed = false;
 	}
 
-	void render();
 	void preRender();
 
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
 	bool initializeAI(bool continueOnErrors);
 	bool deinitializeAI(bool continueOnErrors);
-	bool unload();
 	void processInput();
 	void processEvents(F32 time);
 	void onKeyDown(const OIS::KeyEvent& key);
@@ -75,13 +73,13 @@ private:
 	void resetGame();
 
 private:
-	std::vector<F32> _eventTimers;
-	vec4<F32> _sunVector;
+	vectorImpl<F32> _eventTimers;
+	vec3<F32> _sunvector;
 	Sphere3D* _ball;
 	SceneGraphNode* _ballSGN;
 	SceneGraphNode* _net;
 	SceneGraphNode* _floor;
-	vec2<I32> _prevMouse;
+	vec2<F32> _prevMouse;
 	bool _mousePressed;
 
 private: //Game stuff

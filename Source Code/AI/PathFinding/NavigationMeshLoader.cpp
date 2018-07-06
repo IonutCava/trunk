@@ -308,19 +308,20 @@ namespace Navigation {
 		assert(sn != NULL);
 		if(sn->getType() != TYPE_WATER || 
 		   sn->getType() != TYPE_TERRAIN ||
-		   sn->getType() != TYPE_OBJECT3D){
+		   sn->getType() != TYPE_OBJECT3D ||
+		   sn->getType() != TYPE_SKY){
 			PRINT_FN(Locale::get("WARN_NAV_UNSUPPORTED"),sn->getName().c_str());
 			return data;
 		}
 	    
 		U32 numVert = 1;
 
-		unordered_map<U32, vec3<F32> > globalPointIdxMap;
-		unordered_map<U32, U32> translationMap;
-		std::vector<vec3<F32> > vertexVector;
-		std::vector<vec3<I32> > faceVector;
+		Unordered_map<U32, vec3<F32> > globalPointIdxMap;
+		Unordered_map<U32, U32> translationMap;
+		vectorImpl<vec3<F32> > vertexvector;
+		vectorImpl<vec3<I32> > facevector;
 
-		MESH_DETAIL_LEVEL level = DETAIL_LOW;
+		MeshDetailLevel level = DETAIL_LOW;
 		U32 mask = sn->getType();
 	
 		switch(mask){

@@ -4,19 +4,19 @@
 #include "Graphs/Headers/SceneGraph.h"
 #include "Geometry/Shapes/Headers/Mesh.h" 
 
-typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
+typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize){
 
 	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++)
 		ComputeIndicesArray(i, depth, pos, HMsize);
-	_grassVisibility = GET_ACTIVE_SCENE()->getGrassVisibility();
+	_grassVisibility = GET_ACTIVE_SCENE()->state()->getGrassVisibility();
 }
 
 
 void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree, SceneGraphNode* parentNode){
 	ResourceDescriptor model(tree.ItemName);
 	model.setResourceLocation(tree.ModelName);
-	model.setFlag(true);
+	model.setFlag(false);
 	Mesh* tempTree = CreateResource<Mesh>(model);
 	if(tempTree){
 		std::stringstream ss; ss << "_" << tempTree->getRefCount();
@@ -32,11 +32,8 @@ void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,
 			assert(it.second);
 			Material* m = (it.second)->getNode<SceneNode>()->getMaterial();
 			if(m){
-				if(m->getTexture(Material::TEXTURE_BUMP)){
-					m->setShaderProgram("tree.Bump");
-				}else{
-					m->setShaderProgram("tree.Texture");
-				}
+				m->addShaderDefines("ADD_FOLIAGE, IS_TREE");
+				m->addShaderModifier("Tree");///<Just to create a different shader in the ResourceCahe
 			}
 		}
 		
@@ -83,17 +80,24 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, vec2<U32> pos, vec2<U32
 
 void TerrainChunk::Destroy(){
 
-	for(U8 i=0; i<TERRAIN_CHUNKS_LOD; i++)
+	for(U8 i=0; i<TERRAIN_CHUNKS_LOD; i++){
 		_indice[i].clear();
+		_indOffsetW[i] = 0;
+		_indOffsetH[i] = 0;
+		_grassVisibility = 0;
+	}
+	_grassIndice.clear();
 }
 
-int TerrainChunk::DrawGround(I8 lod, bool drawInReflection){
+int TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, bool drawInReflection){
 
 	assert(lod < TERRAIN_CHUNKS_LOD);
+
 	if(lod>0) lod--;
+	program->Uniform("LOD", lod+2);
 
 	for(U16 j=0; j < _indOffsetH[lod]; j++){
-		GFX_DEVICE.renderElements(TRIANGLE_STRIP,_U32,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
+		GFX_DEVICE.renderElements(TRIANGLE_STRIP,UNSIGNED_INT,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
 	}
 
 	return 1;
@@ -116,7 +120,7 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d){
 		indices_count -= indices_count%4; 
 
 		if(indices_count > 0)
-			GFX_DEVICE.renderElements(QUADS,_U16,indices_count, &(_grassIndice[0]));
+			GFX_DEVICE.renderElements(QUADS,UNSIGNED_SHORT,indices_count, &(_grassIndice[0]));
 			
 	}
 

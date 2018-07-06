@@ -34,7 +34,7 @@ typedef Texture Texture2D;
 ///Trees are added to the SceneGraph and handled by the scene.
 class Vegetation{
 public:
-	Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, std::vector<Texture2D*>& grassBillboards): 
+	Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, vectorImpl<Texture2D*>& grassBillboards): 
 	  _billboardCount(billboardCount),
 	  _grassDensity(grassDensity),
 	  _grassScale(grassScale),
@@ -43,33 +43,44 @@ public:
       _grassBillboards(grassBillboards),
 	  _render(false),
 	  _success(false),
+	  _shadowMapped(true),
 	  _terrain(NULL),
-	  _grassShader(NULL){
+	  _terrainSGN(NULL),
+	  _grassShader(NULL),
+	  _stateRefreshIntervalBuffer(0),
+	  _stateRefreshInterval(1000) ///<Every second?
+	  {
 		  bool alpha = false;
 		  ImageTools::OpenImage(map,_map,alpha);
 	  }
 	~Vegetation();
-	void initialize(const std::string& grassShader, const std::string& terrainName);
+	void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
 	inline void toggleRendering(bool state){_render = state;}
 	void draw(bool drawInReflection);
+	void sceneUpdate(D32 sceneTime);
+
+private:
+	bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
+	bool generateGrass(U32 index);     ///< index = current grass type (billboard, vbo etc)
 
 private:
 	//variables
 	bool _render; ///< Toggle vegetation rendering On/Off
 	bool _success ; 
-	SceneGraphNode* _terrain;
+	SceneGraphNode* _terrainSGN;
+	Terrain*        _terrain;
 	D32 _grassDensity, _treeDensity;
 	U16 _billboardCount;          ///< Vegetation cumulated density
 	F32 _grassSize,_grassScale, _treeScale;
 	F32 _windX, _windZ, _windS, _time;
+	F32 _stateRefreshInterval;
+	F32 _stateRefreshIntervalBuffer;
 	ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
-	std::vector<Texture2D*>	_grassBillboards;
+	vectorImpl<Texture2D*>	_grassBillboards;
 	ShaderProgram*		    _grassShader;
 
-	bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
-	bool generateGrass(U32 index);     ///< index = current grass type (billboard, vbo etc)
-
-	std::vector<VertexBufferObject*>	_grassVBO;
+	bool _shadowMapped;
+	vectorImpl<VertexBufferObject*>	_grassVBO;
 	RenderStateBlock*                   _grassStateBlock;
 };
 

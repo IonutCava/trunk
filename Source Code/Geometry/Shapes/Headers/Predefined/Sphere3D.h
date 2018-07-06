@@ -24,16 +24,16 @@ class Sphere3D : public Object3D {
 
 public:
 
-	Sphere3D(F32 radius, U16 resolution) : Object3D(SPHERE_3D),
+	Sphere3D(F32 radius, F32 resolution) : Object3D(SPHERE_3D),
 										_radius(radius),
 										_resolution(resolution){
 										_dirty = true;
 										}
 	
 	inline F32	  getRadius()    {return _radius;}
-	inline U16    getResolution() {return _resolution;}
+	inline F32    getResolution() {return _resolution;}
 	inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; _refreshVBO = true;}
-	inline void   setResolution(U16 resolution) {_resolution = resolution; _dirty = true; _refreshVBO = true;}
+	inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; _refreshVBO = true;}
 
 	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
 		if(sgn->getBoundingBox().isComputed()) return true;
@@ -58,11 +58,11 @@ private:
 		I32 rings = _resolution;
 		I32 sectors = _resolution;
 		
-	    F32 const R = 1.0f/(rings-1);
-        F32 const S = 1.0f/(sectors-1);
+	    F32 const R = 1./(F32)(rings-1);
+        F32 const S = 1./(F32)(sectors-1);
         I32 r, s;
 
-        _geometry->getPosition().reserve(rings * sectors);
+        _geometry->reservePositionCount(rings * sectors);
         _geometry->getNormal().reserve(rings * sectors);
         _geometry->getTexcoord().reserve(rings * sectors);
         _geometry->getHWIndices().resize(rings * sectors * 4);
@@ -73,8 +73,8 @@ private:
                 F32 const x = cos(2*M_PI * s * S) * sin( M_PI * r * R );
                 F32 const z = sin(2*M_PI * s * S) * sin( M_PI * r * R );
 
+				_geometry->addPosition(vec3<F32>(x * _radius,y * _radius, z * _radius));
 				_geometry->getTexcoord().push_back(vec2<F32>(s*S,r*R));
-                _geometry->getPosition().push_back(vec3<F32>(x * _radius,y * _radius, z * _radius));
 				_geometry->getNormal().push_back(vec3<F32>(x,y,z));
 			}
 		}
@@ -88,17 +88,20 @@ private:
                 _geometry->getHWIndices().push_back((r+1) * sectors + s);
 	        }
 		}
+		vec2<U16> indiceLimits;
 		for(U16 i = 0 ; i < _geometry->getHWIndices().size(); i++){
-			if(_indiceLimits.x > _geometry->getHWIndices()[i]) _indiceLimits.x = _geometry->getHWIndices()[i];
-			if(_indiceLimits.y < _geometry->getHWIndices()[i]) _indiceLimits.y = _geometry->getHWIndices()[i];
+			if(indiceLimits.x > _geometry->getHWIndices()[i])
+				indiceLimits.x = _geometry->getHWIndices()[i];
+			if(indiceLimits.y < _geometry->getHWIndices()[i])
+				indiceLimits.y = _geometry->getHWIndices()[i];
 		}
+		_geometry->setIndiceLimits(indiceLimits);
 		_refreshVBO = true;
 	}
 	
 
 protected:
-	F32 _radius;
-	U16 _resolution;
+	F32 _radius, _resolution;
 	U32 _vertexCount;
 	bool _dirty;
 	

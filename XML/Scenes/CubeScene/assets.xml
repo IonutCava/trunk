@@ -8,8 +8,8 @@
 	<item>box</item>
 	<item>dwarf</item>
 	<item>rifle</item>
-	<!--<item>copacel</item>
-	<item>copac</item>-->
+	<item>copacel</item>
+	<item>copac</item>
 </geometry>
 
 
@@ -115,5 +115,6 @@
 	<color r="0.8" g="0.4" b="0.9"/>
 	<lineWidth>5</lineWidth>
 	<text>Hello World :D</text>
+	<fontName>Test.ttf</fontName>
 	<version>1.0</version>
 </HelloText>

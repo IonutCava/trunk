@@ -31,10 +31,10 @@ public:
 						        vec3<F32>(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
 						        vec3<F32>( 1.0f, -1.0f, 0.0f)};  //BOTTOM RIGHT
 
-		vec3<F32> normals[] = {vec3<F32>(0.0f, 0.0f, 1.0f), 
-						       vec3<F32>(0.0f, 0.0f, 1.0f), 
-						       vec3<F32>(0.0f, 0.0f, 1.0f),
-						       vec3<F32>(0.0f, 0.0f, 1.0f)};
+		vec3<F32> normals[] = {vec3<F32>(0, 0, 1), 
+						       vec3<F32>(0, 0, 1), 
+						       vec3<F32>(0, 0, 1),
+						       vec3<F32>(0, 0, 1)};
 
 		vec3<F32> tangents[] = {vec3<F32>(0.0f, 1.0f, 0.0f), 
 						        vec3<F32>(0.0f, 1.0f, 0.0f), 
@@ -46,14 +46,14 @@ public:
 							     vec2<F32>(0,1),
 							     vec2<F32>(1,1)};
 
-		_geometry->getPosition().reserve(4);
+		_geometry->reservePositionCount(4);
 		_geometry->getNormal().reserve(4);
 		_geometry->getTangent().reserve(4);
 		_geometry->getTexcoord().reserve(4);
 		_geometry->getHWIndices().reserve(4);
 
 		for(U8 i = 0;  i < 4; i++){
-			_geometry->getPosition().push_back(vertices[i]);
+			_geometry->addPosition(vertices[i]);
 			_geometry->getNormal().push_back(normals[i]);
 			_geometry->getTangent().push_back(tangents[i]);
 			_geometry->getTexcoord().push_back(texcoords[i]);
@@ -64,7 +64,7 @@ public:
 	   _geometry->getHWIndices().push_back(0); //   |    |
 	   _geometry->getHWIndices().push_back(1); //   |    |
 	   _geometry->getHWIndices().push_back(3); //  v0----v3
-	   _indiceLimits = vec2<U16>(0,3);
+  	   _geometry->setIndiceLimits(vec2<U16>(0,3));
 	   _refreshVBO = true;
 	   //computeTangents();
 	}
@@ -91,10 +91,10 @@ public:
 	void setCorner(CornerLocation corner, const vec3<F32>& value){
 		//In 2D mode, Quad's are flipped!!!!
 		switch(corner){
-	     	case TOP_LEFT:     _geometry->getPosition()[0] = value; break;
-			case TOP_RIGHT:    _geometry->getPosition()[1] = value; break;
-			case BOTTOM_LEFT:  _geometry->getPosition()[2] = value; break;
-			case BOTTOM_RIGHT: _geometry->getPosition()[3] = value; break;
+	     	case TOP_LEFT:     _geometry->modifyPositionValue(0,value); break;
+			case TOP_RIGHT:    _geometry->modifyPositionValue(1,value); break;
+			case BOTTOM_LEFT:  _geometry->modifyPositionValue(2,value); break;
+			case BOTTOM_RIGHT: _geometry->modifyPositionValue(3,value); break;
 			default: break;
 		}
 		_refreshVBO = true;
@@ -104,10 +104,10 @@ public:
 	//rect.xy = Top Left; rect.zw = Bottom right
 	//Remember to invert for 2D mode
 	void setDimensions(const vec4<F32>& rect){
-		_geometry->getPosition()[0] = vec3<F32>(rect.x, rect.w, 0);
-		_geometry->getPosition()[1] = vec3<F32>(rect.z, rect.w, 0);
-		_geometry->getPosition()[2] = vec3<F32>(rect.x, rect.y, 0);
-		_geometry->getPosition()[3] = vec3<F32>(rect.z, rect.y, 0);
+		_geometry->modifyPositionValue(0,vec3<F32>(rect.x, rect.w, 0));
+		_geometry->modifyPositionValue(1,vec3<F32>(rect.z, rect.w, 0));
+		_geometry->modifyPositionValue(2,vec3<F32>(rect.x, rect.y, 0));
+		_geometry->modifyPositionValue(3,vec3<F32>(rect.z, rect.y, 0));
 		_refreshVBO = true;
 	}
 

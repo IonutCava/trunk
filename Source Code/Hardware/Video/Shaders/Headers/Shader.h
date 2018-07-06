@@ -21,7 +21,7 @@
 #include "core.h"
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
 
-enum SHADER_TYPE {
+enum ShaderType {
 	FRAGMENT_SHADER,
 	VERTEX_SHADER,
 	GEOMETRY_SHADER,
@@ -30,13 +30,13 @@ enum SHADER_TYPE {
 
 class Shader : public TrackedObject{
 public:
-	Shader(const std::string& name, SHADER_TYPE type);
+	Shader(const std::string& name, ShaderType type);
 	virtual ~Shader();
 
 	virtual bool load(const std::string& name) = 0;
 
 	inline U16          getShaderId() {return _shader;}
-	inline SHADER_TYPE  getType()     {return _type;}
+	inline ShaderType  getType()     {return _type;}
 	inline std::string& getName()     {return _name;}
 
 protected:
@@ -46,7 +46,7 @@ protected:
 	std::string _name;
 	bool _compiled;
 	U16 _shader;
-	SHADER_TYPE _type;
+	ShaderType _type;
 };
 
 #endif

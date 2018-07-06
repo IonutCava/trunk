@@ -1,13 +1,19 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
-#include "Geometry/Shapes/Headers/SubMesh.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 
 SubMesh* ImplResourceLoader<SubMesh>::operator()(){
 
-	SubMesh* ptr = New SubMesh(_descriptor.getName());
+	SubMesh* ptr = NULL;
+	if(_descriptor.getEnumValue() == Object3D::PRIMITIVE_FLAG_SKINNED){
+		ptr = New SkinnedSubMesh(_descriptor.getName());
+	}else{
+		ptr = New SubMesh(_descriptor.getName());
+	}
 
 	if(!load(ptr,_descriptor.getName())) return NULL;
 	if(_descriptor.getFlag()){
-		ptr->useDefaultMaterial(false);
+		ptr->getSceneNodeRenderState().useDefaultMaterial(false);
 		ptr->setMaterial(NULL);
 	}
 	ptr->setId(_descriptor.getId());

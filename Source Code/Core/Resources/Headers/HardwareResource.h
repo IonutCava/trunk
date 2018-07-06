@@ -27,10 +27,6 @@ public:
 	HardwareResource(const std::string& name) : Resource(name), _hardwareInitComplete(false) {}
 	virtual ~HardwareResource(){}
 	inline bool isHWInitComplete() {return _hardwareInitComplete;}
-
-protected:
-	template<typename T>
-	friend class ImplResourceLoader;
 	///Use this as a callback for multi-threaded loading. 
 	///Generate hardware elements (buffers, textures, shaders etc. after joining main loading thread.
 	virtual bool generateHWResource(const std::string& name) {_hardwareInitComplete = true; return true;}

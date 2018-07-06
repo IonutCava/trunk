@@ -88,8 +88,7 @@
 #ifndef _MATH_CLASSES_H_
 #define _MATH_CLASSES_H_
 
-#include <math.h>
-#include "MathHelper.h"
+#include "config.h"
 
 #define EPSILON				0.000001f
 #ifndef M_PI
@@ -113,15 +112,19 @@
 #define centimetre   *0.01f
 #define millimeter   *0.001f
 
+#ifdef USE_MATH_SIMD		
+	#include "MathSIMD.h"
+#else
+	#include "MathFPU.h"	
+#endif
+
+#include "MathHelper.h"
+
 const  F32 INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
 inline F32 random(F32 max=1.0) { return max * rand() * INV_RAND_MAX; }
 inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * rand(); }
 inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
 
-
-//#include <Eigen/Dense>
-//using Eigen::Matrix3f;
-//using Eigen::Matrix4f;
 
 template<class T>
 class vec2;
@@ -176,10 +179,10 @@ public:
 
 	inline void set(T _x,T _y) { this->x = _x; this->y = _y; }
 	inline void reset(void) { this->x = this->y = 0; }
-	inline F32 length(void) const { return Util::square_root_f(this->x * this->x + this->y * this->y); }
-	inline F32 normalize(void) {
-		F32 inv,l = this->length();
-		if(l < EPSILON) return 0.0f;
+	inline T length(void) const { return square_root_tpl(this->x * this->x + this->y * this->y); }
+	inline T normalize(void) {
+		T inv,l = this->length();
+		if(l < EPSILON) return 0;
 		inv = 1.0f / l;
 		this->x *= inv;
 		this->y *= inv;
@@ -192,9 +195,9 @@ public:
 	inline vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB) { return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); }
 	/// return the coordinates of the closest point from *this to the segment determined by points vA and vB
 	inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB) {
-		F32 factor = this->projectionOnLine(vA, vB);
-		if (factor <= 0.0f) return vA;
-		if (factor >= 1.0f) return vB;
+		T factor = this->projectionOnLine(vA, vB);
+		if (factor <= 0) return vA;
+		if (factor >= 1) return vB;
 		return (((vB-vA) * factor) + vA);
 	}
 	/// return the projection factor from *this to the line determined by points vA and vB
@@ -203,10 +206,10 @@ public:
 		return v.dot(*this - vA) / v.dot(v);
 	}
 	/// linear interpolation between 2 vectors
-	inline vec2 lerp(vec2 &u, vec2 &v, F32 factor) { return ((u * (1 - factor)) + (v * factor)); }
+	inline vec2 lerp(vec2 &u, vec2 &v, T factor) { return ((u * (1 - factor)) + (v * factor)); }
 	inline vec2 lerp(vec2 &u, vec2 &v, vec2& factor) { return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x), (u.y * (1 - factor.y)) + (v.y * factor.y))); }
-	inline F32 angle(void) { return (F32)atan2(this->y,this->x); }
-	inline F32 angle(const vec2 &v) { return (F32)atan2(v.y-this->y,v.x-this->x); }
+	inline T angle(void) { return (T)atan2(this->y,this->x); }
+	inline T angle(const vec2 &v) { return (T)atan2(v.y-this->y,v.x-this->x); }
 
 	inline void swap(vec2 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; }
 	inline void swap(vec2 *iv) { this->swap(*iv); }
@@ -220,7 +223,7 @@ public:
 	};
 };
 template<class T>
-inline vec2<T> operator*(F32 fl, const vec2<T>& v)	{ return vec2<T>(v.x*fl, v.y*fl);}
+inline vec2<T> operator*(T fl, const vec2<T>& v)	{ return vec2<T>(v.x*fl, v.y*fl);}
 template<class T>
 inline T Dot(const vec2<T>& a, const vec2<T>& b) { return(a.x*b.x+a.y*b.y); }
 
@@ -262,13 +265,16 @@ public:
 
 	inline void set(T _x,T _y,T _z) { this->x = _x; this->y = _y; this->z = _z; }
 	inline void reset(void) { this->x = this->y = this->z = 0; }
-	inline F32 length(void) const { 
+	inline T length(void) const { 
 		//return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z); 
-		return Util::square_root_f(this->x * this->x + this->y * this->y + this->z * this->z);
+		return square_root_tpl(lengthSquared());
 	}
-	inline F32 normalize(void) {
-		F32 inv,l = this->length();
-		if(l < EPSILON) return 0.0f;
+	inline T lengthSquared() const {
+		return this->x * this->x + this->y * this->y + this->z * this->z;
+	}
+	inline T normalize(void) {
+		T inv,l = this->length();
+		if(l < EPSILON) return 0;
 		inv = 1.0f / l;
 		this->x *= inv;
 		this->y *= inv;
@@ -293,11 +299,11 @@ public:
 
 	inline T dot(const vec3 &v) { return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z)); }
 	inline bool compare(const vec3 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi); }
-	inline F32 distance(const vec3 &_v) {return Util::square_root_f(((_v.x - this->x)*(_v.x - this->x)) + ((_v.y - this->y)*(_v.y - this->y)) + ((_v.z - this->z)*(_v.z - this->z)));}
+	inline T distance(const vec3 &_v) {return square_root_tpl(((_v.x - this->x)*(_v.x - this->x)) + ((_v.y - this->y)*(_v.y - this->y)) + ((_v.z - this->z)*(_v.z - this->z)));}
 
 	/// Returns the angle in radians between '*this' and 'v'
-	inline F32 angle(vec3 &v) { 
-		F32 angle = (F32)fabs(acos(this->dot(v)/(this->length()*v.length())));
+	inline T angle(vec3<T> &v) { 
+		T angle = (T)fabs(acos(this->dot(v)/(this->length()*v.length())));
 		if(angle < EPSILON) return 0;
 		return angle;
 	}
@@ -306,7 +312,7 @@ public:
 
 	inline vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB) { return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); }
 	inline vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
-		F32 factor = this->projectionOnLine(vA, vB);
+		T factor = this->projectionOnLine(vA, vB);
 		if (factor <= 0.0f) return vA;
 		if (factor >= 1.0f) return vB;
 		return (((vB-vA) * factor) + vA);
@@ -315,7 +321,7 @@ public:
 		vec3 v(vB - vA);
 		return v.dot(*this - vA) / v.dot(v);
 	}
-	inline vec3 lerp(vec3 &u, vec3 &v, F32 factor) { return ((u * (1 - factor)) + (v * factor)); }
+	inline vec3 lerp(vec3 &u, vec3 &v, T factor) { return ((u * (1 - factor)) + (v * factor)); }
 	inline vec3 lerp(vec3 &u, vec3 &v, vec3& factor) { return (vec3(	(u.x * (1 - factor.x)) + (v.x * factor.x),
 																		(u.y * (1 - factor.y)) + (v.y * factor.y),
 																		(u.z * (1 - factor.z)) + (v.z * factor.z))); }
@@ -357,7 +363,7 @@ public:
 	}
 };
 template<class T>
-inline vec3<T> operator*(F32 fl, const vec3<T>& v)	{ return vec3<T>(v.x*fl, v.y*fl, v.z*fl);}
+inline vec3<T> operator*(T fl, const vec3<T>& v)	{ return vec3<T>(v.x*fl, v.y*fl, v.z*fl);}
 
 template<class T>
 inline T Dot(const vec3<T>& a, const vec3<T>& b) { return(a.x*b.x+a.y*b.y+a.z*b.z); }
@@ -373,7 +379,7 @@ inline vec2<T>::vec2(const vec3<T> &_v) {
 
 /// This calculates a vector between 2 points and returns the result
 template<class T>
-inline vec3<T>& Vector(const vec3<T> &vp1, const vec3<T> &vp2) {
+inline vec3<T>& vector(const vec3<T> &vp1, const vec3<T> &vp2) {
 	vec3<T> *ret = new vec3<T>(vp1.x - vp2.x, vp1.y - vp2.y, vp1.z - vp2.z);
 	return *ret;
 }
@@ -392,17 +398,17 @@ inline vec3<T>::vec3(const vec4<T> &_v) {
 template <class T>
 class vec4 {
 public:
-	vec4(void) : x(0), y(0), z(0), w(1), xyz(x,y,z) { }
-	vec4(T _x,T _y,T _z,T _w) : x(_x), y(_y), z(_z), w(_w), xyz(x,y,z) { }
-	vec4(const T *_v) : x(_v[0]), y(_v[1]), z(_v[2]), w(_v[3]), xyz(x,y,z) { }
-	vec4(const vec3<T> &_v) : x(_v.x), y(_v.y), z(_v.z), w(1), xyz(x,y,z) { }
-	vec4(const vec3<T> &_v,T _w) : x(_v.x), y(_v.y), z(_v.z), w(_w), xyz(x,y,z) { }
-	vec4(const vec4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w), xyz(x,y,z) { }
+	vec4(void) : x(0), y(0), z(0), w(1) { }
+	vec4(T _x,T _y,T _z,T _w) : x(_x), y(_y), z(_z), w(_w) { }
+	vec4(const T *_v) : x(_v[0]), y(_v[1]), z(_v[2]), w(_v[3]) { }
+	vec4(const vec3<T> &_v) : x(_v.x), y(_v.y), z(_v.z), w(1) { }
+	vec4(const vec3<T> &_v,T _w) : x(_v.x), y(_v.y), z(_v.z), w(_w) { }
+	vec4(const vec4 &_v) : x(_v.x), y(_v.y), z(_v.z), w(_v.w) { }
 
 	I32 operator==(const vec4 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON && fabs(this->z - _v.z) < EPSILON && fabs(this->w - _v.w) < EPSILON); }
 	I32 operator!=(const vec4 &_v) { return !(*this == _v); }
 
-	vec4 &operator=(T _f) { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this);  xyz = vec3<T>(x,y,z);}
+	vec4 &operator=(T _f) { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this);}
 	const vec4 operator*(T _f) const { return vec4(this->x * _f,this->y * _f,this->z * _f,this->w * _f); }
 	const vec4 operator/(T _f) const {
 		if(fabs(_f) < EPSILON) return *this;
@@ -413,10 +419,10 @@ public:
 	const vec4 operator-() const { return vec4(-x,-y,-z,-w); }
 	const vec4 operator-(const vec4 &_v) const { return vec4(this->x - _v.x,this->y - _v.y,this->z - _v.z,this->w - _v.w); }
 
-	vec4 &operator*=(T _f)           { return *this = *this * _f; xyz.set(x,y,z);}
-	vec4 &operator/=(T _f)           { return *this = *this / _f; xyz.set(x,y,z);}
-	vec4 &operator+=(const vec4 &_v) { return *this = *this + _v; xyz.set(x,y,z);}
-	vec4 &operator-=(const vec4 &_v) { return *this = *this - _v; xyz.set(x,y,z);}
+	vec4 &operator*=(T _f)           { return *this = *this * _f; }
+	vec4 &operator/=(T _f)           { return *this = *this / _f; }
+	vec4 &operator+=(const vec4 &_v) { return *this = *this + _v; }
+	vec4 &operator-=(const vec4 &_v) { return *this = *this - _v; }
 
 	T operator*(const vec3<T> &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w; }
 	T operator*(const vec4<T> &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w * _v.w; }
@@ -426,15 +432,15 @@ public:
 //	T &operator[](I32 _i) { return this->v[_i]; }
 //	const T &operator[](I32 _i) const { return this->v[_i]; }
 
-	inline void set(T _x,T _y,T _z,T _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; xyz.set(x,y,z);}
+	inline void set(T _x,T _y,T _z,T _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w;}
 
-	inline void reset(void) { this->x = this->y = this->z = this->w = 0; xyz.set(x,y,z);}
+	inline void reset(void) { this->x = this->y = this->z = this->w = 0;}
 
 	inline bool compare(const vec4 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi && fabs(this->w - _v.w) < epsi); }
 
 	inline vec4 lerp(const vec4 &u, const vec4 &v, T factor) { return ((u * (1 - factor)) + (v * factor)); }
 
-	inline void swap(vec4 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; tmp=z; z=iv.z; iv.z=tmp; tmp=w; w=iv.w; iv.w=tmp;  xyz.set(x,y,z);}
+	inline void swap(vec4 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; tmp=z; z=iv.z; iv.z=tmp; tmp=w; w=iv.w; iv.w=tmp;}
 	inline void swap(vec4 *iv) { this->swap(*iv); }
 
 	union {
@@ -445,11 +451,10 @@ public:
 		struct {T width,height,depth,key;};
 		T v[4];
 	};
-	vec3<T> xyz; 
 };
 
 template<class T>
-inline vec4<T> operator*(F32 fl, const vec4<T>& v)	{ return vec4<T>(v.x*fl, v.y*fl, v.z*fl,  v.w*fl);}
+inline vec4<T> operator*(T fl, const vec4<T>& v)	{ return vec4<T>(v.x*fl, v.y*fl, v.z*fl,  v.w*fl);}
 
 template<class T>
 inline vec2<T>::vec2(const vec4<T> &_v) {
@@ -499,7 +504,7 @@ public:
 					   mat[2] * v[0] + mat[5] * v[1] + mat[8] * v[2],
 					   v[3]);
 	}
-	mat3 operator*(F32 f) const {
+	mat3 operator*(T f) const {
 		return mat3(mat[0] * f, mat[1] * f, mat[2] * f,
 					mat[3] * f,	mat[4] * f,	mat[5] * f,
 					mat[6] * f,	mat[7] * f,	mat[8] * f);
@@ -526,7 +531,7 @@ public:
 					mat[6] - m[6], mat[7] - m[7], mat[8] - m[8]);
 	}
 	
-	mat3 &operator*=(F32 f) { return *this = *this * f; }
+	mat3 &operator*=(T f) { return *this = *this * f; }
 	mat3 &operator*=(const mat3 &m) { return *this = *this * m; }
 	mat3 &operator+=(const mat3 &m) { return *this = *this + m; }
 	mat3 &operator-=(const mat3 &m) { return *this = *this - m; }
@@ -543,7 +548,7 @@ public:
 					mat[7], mat[5], mat[8]);
 	}
 
-	inline F32 det(void) const {
+	inline T det(void) const {
 		return ((mat[0] * mat[4] * mat[8]) +
 				(mat[3] * mat[7] * mat[2]) +
 				(mat[6] * mat[1] * mat[5]) -
@@ -553,7 +558,7 @@ public:
 	}
 
 	inline mat3 inverse(void) const {
-		F32 idet = 1.0f / det();
+		T idet = 1.0f / det();
 		return mat3((mat[4] * mat[8] - mat[7] * mat[5]) * idet,
 					-(mat[1] * mat[8] - mat[7] * mat[2]) * idet,
 					 (mat[1] * mat[5] - mat[4] * mat[2]) * idet,
@@ -577,60 +582,60 @@ public:
 		mat[2] = 0.0; mat[5] = 0.0; mat[8] = 1.0;
 	}
 
-	inline void rotate(const vec3<T> &v,F32 angle) {
+	inline void rotate(const vec3<T> &v,T angle) {
 		rotate(v.x,v.y,v.z,angle);
 	}
 
-	void rotate(F32 x,F32 y,F32 z,F32 angle) {
+	void rotate(T x,T y,T z,T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
-		F32 l = Util::square_root_f(x * x + y * y + z * z);
-		if(l < EPSILON) l = 1.0f;
-		else l = 1.0f / l;
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
+		T l = Util::square_root_tpl(x * x + y * y + z * z);
+		if(l < EPSILON) l = 1;
+		else l = 1 / l;
 		x *= l;
 		y *= l;
 		z *= l;
-		F32 xy = x * y;
-		F32 yz = y * z;
-		F32 zx = z * x;
-		F32 xs = x * s;
-		F32 ys = y * s;
-		F32 zs = z * s;
-		F32 c1 = 1.0f - c;
+		T xy = x * y;
+		T yz = y * z;
+		T zx = z * x;
+		T xs = x * s;
+		T ys = y * s;
+		T zs = z * s;
+		T c1 = 1 - c;
 		mat[0] = c1 * x * x + c;	mat[3] = c1 * xy - zs;		mat[6] = c1 * zx + ys;
 		mat[1] = c1 * xy + zs;		mat[4] = c1 * y * y + c;	mat[7] = c1 * yz - xs;
 		mat[2] = c1 * zx - ys;		mat[5] = c1 * yz + xs;		mat[8] = c1 * z * z + c;
 	}
 
-	inline void rotate_x(F32 angle) {
+	inline void rotate_x(T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
-		mat[0] = 1.0; mat[3] = 0.0; mat[6] = 0.0;
-		mat[1] = 0.0; mat[4] = c; mat[7] = -s;
-		mat[2] = 0.0; mat[5] = s; mat[8] = c;
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
+		mat[0] = 1; mat[3] = 0; mat[6] = 0;
+		mat[1] = 0; mat[4] = c; mat[7] = -s;
+		mat[2] = 0; mat[5] = s; mat[8] = c;
 	}
 
-	inline void rotate_y(F32 angle) {
+	inline void rotate_y(T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
-		mat[0] = c; mat[3] = 0.0; mat[6] = s;
-		mat[1] = 0.0; mat[4] = 1.0; mat[7] = 0.0;
-		mat[2] = -s; mat[5] = 0.0; mat[8] = c;
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
+		mat[0] = c;  mat[3] = 0; mat[6] = s;
+		mat[1] = 0;  mat[4] = 1; mat[7] = 0;
+		mat[2] = -s; mat[5] = 0; mat[8] = c;
 	}
 
-	inline void rotate_z(F32 angle) {
+	inline void rotate_z(T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
-		mat[0] = c; mat[3] = -s; mat[6] = 0.0;
-		mat[1] = s; mat[4] = c; mat[7] = 0.0;
-		mat[2] = 0.0; mat[5] = 0.0; mat[8] = 1.0;
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
+		mat[0] = c; mat[3] = -s; mat[6] = 0;
+		mat[1] = s; mat[4] = c;  mat[7] = 0;
+		mat[2] = 0; mat[5] = 0;  mat[8] = 1;
 	}
 
-	inline void scale(F32 x,F32 y,F32 z) {
+	inline void scale(T x,T y,T z) {
 		mat[0] = x; mat[3] = 0; mat[6] = 0;
 		mat[1] = 0; mat[4] = y; mat[7] = 0;
 		mat[2] = 0; mat[5] = 0; mat[8] = z;
@@ -663,7 +668,8 @@ public:
 template<class T>
 class mat4 {
 public:
-	mat4(void) {
+	mat4(void)/* : mat(NULL)*/{
+		allocateMem();
 		this->mat[0] = 1.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
 		this->mat[1] = 0.0; this->mat[5] = 1.0; this->mat[9]  = 0.0; this->mat[13] = 0.0;
 		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = 0.0;
@@ -673,51 +679,60 @@ public:
 	mat4(T m0, T m1, T m2, T m3,
 		 T m4, T m5, T m6, T m7,
 		 T m8, T m9, T m10,T m11,
-		 T m12,T m13,T m14,T m15) {
+		 T m12,T m13,T m14,T m15)/* : mat(NULL)*/{
+		allocateMem();
 		this->mat[0] = m0; this->mat[4] = m4; this->mat[8]  = m8;  this->mat[12] = m12;
 		this->mat[1] = m1; this->mat[5] = m5; this->mat[9]  = m9;  this->mat[13] = m13;
 		this->mat[2] = m2; this->mat[6] = m6; this->mat[10] = m10; this->mat[14] = m14;
 		this->mat[3] = m3; this->mat[7] = m7; this->mat[11] = m11; this->mat[15] = m15;
 	}
 
-	mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4){
+	mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4)/* : mat(NULL)*/{
+		allocateMem();
 		this->mat[0] = col1.x; this->mat[4] = col2.x; this->mat[8]  = col3.x; this->mat[12] = col4.x;
 		this->mat[1] = col1.y; this->mat[5] = col2.y; this->mat[9]  = col3.y; this->mat[13] = col4.y;
 		this->mat[2] = col1.z; this->mat[6] = col2.z; this->mat[10] = col3.z; this->mat[14] = col4.z;
 		this->mat[3] = col1.w; this->mat[7] = col2.w; this->mat[11] = col3.w; this->mat[15] = col4.w;
 	}
 
-	mat4(const vec3<T> &v) {
+	mat4(const vec3<T> &v)/* : mat(NULL)*/{
+		allocateMem();
 		translate(v);
 	}
 
-	mat4(T x,T y,T z) {
+	mat4(T x,T y,T z)/* : mat(NULL)*/{
+		allocateMem();
 		translate(x,y,z);
 	}
 
-	mat4(const vec3<T> &axis,F32 angle) {
+	mat4(const vec3<T> &axis,T angle)/* : mat(NULL)*/{
+		allocateMem();
 		rotate(axis,angle);
 	}
 
-	mat4(F32 x,F32 y,F32 z,F32 angle) {
+	mat4(T x,T y,T z,T angle)/* : mat(NULL)*/{
+		allocateMem();
 		rotate(x,y,z,angle);
 	}
 
-	mat4(const mat3<T> &m) {
+	mat4(const mat3<T> &m)/* : mat(NULL)*/{
+		allocateMem();
 		this->mat[0] = m[0]; this->mat[4] = m[3]; this->mat[8]  = m[6]; this->mat[12] = 0.0;
 		this->mat[1] = m[1]; this->mat[5] = m[4]; this->mat[9]  = m[7]; this->mat[13] = 0.0;
 		this->mat[2] = m[2]; this->mat[6] = m[5]; this->mat[10] = m[8]; this->mat[14] = 0.0;
 		this->mat[3] = 0.0;  this->mat[7] = 0.0;  this->mat[11] = 0.0;  this->mat[15] = 1.0;
 	}
 
-	mat4(const T *m) {
+	mat4(const T *m)/* : mat(NULL)*/{
+		allocateMem();
 		this->mat[0] = m[0]; this->mat[4] = m[4]; this->mat[8]  = m[8];  this->mat[12] = m[12];
 		this->mat[1] = m[1]; this->mat[5] = m[5]; this->mat[9]  = m[9];  this->mat[13] = m[13];
 		this->mat[2] = m[2]; this->mat[6] = m[6]; this->mat[10] = m[10]; this->mat[14] = m[14];
 		this->mat[3] = m[3]; this->mat[7] = m[7]; this->mat[11] = m[11]; this->mat[15] = m[15];
 	}
 
-	mat4(const mat4 &m) {
+	mat4(const mat4 &m)/* : mat(NULL)*/{
+		allocateMem();
 		this->mat[0] = m[0]; this->mat[4] = m[4]; this->mat[8]  = m[8];  this->mat[12] = m[12];
 		this->mat[1] = m[1]; this->mat[5] = m[5]; this->mat[9]  = m[9];  this->mat[13] = m[13];
 		this->mat[2] = m[2]; this->mat[6] = m[6]; this->mat[10] = m[10]; this->mat[14] = m[14];
@@ -737,7 +752,7 @@ public:
 					   this->mat[3] * v[0] + this->mat[7] * v[1] + this->mat[11] * v[2] + this->mat[15] * v[3]);
 	}
 
-	mat4<T> operator*(F32 f) const {
+	mat4<T> operator*(T f) const {
 		return mat4<T>(this->mat[0]  * f, this->mat[1]  * f, this->mat[2]  * f, this->mat[3]  * f,
 					   this->mat[4]  * f, this->mat[5]  * f, this->mat[6]  * f, this->mat[7]  * f,
 					   this->mat[8]  * f, this->mat[9]  * f, this->mat[10] * f, this->mat[11] * f,
@@ -746,7 +761,7 @@ public:
 
 	mat4<T> operator*(const mat4<T> &m) const {
 		mat4<T> ret;
-		Util::Mat4::mmul(this->mat,m.mat,ret.mat);
+		Mat4::Multiply(this->mat,m.mat,ret.mat);
 		return ret;
 	}
 
@@ -763,7 +778,7 @@ public:
 
 	/// premultiply the matrix by the given matrix
 	void multmatrix(const mat4& m) {
-		F32 tmp[4];
+		T tmp[4];
 		for (I8 j=0; j<4; j++) {
 			tmp[0] = mat[j];
 			tmp[1] = mat[4+j];
@@ -782,6 +797,7 @@ public:
 					this->mat[8]  + m[8],  this->mat[9]  + m[9],  this->mat[10] + m[10], this->mat[11] + m[11],
 					this->mat[12] + m[12], this->mat[13] + m[13], this->mat[14] + m[14], this->mat[15] + m[15]);
 	}
+
 	mat4 operator-(const mat4 &m) const {
 		return mat4(this->mat[0]  - m[0],  this->mat[1]  - m[1],  this->mat[2]  - m[2],  this->mat[3]  - m[3],
 					this->mat[4]  - m[4],  this->mat[5]  - m[5],  this->mat[6]  - m[6],  this->mat[7]  - m[7],
@@ -789,10 +805,15 @@ public:
 					this->mat[12] - m[12], this->mat[13] - m[13], this->mat[14] - m[14], this->mat[15] - m[15]);
 	}
 
-	inline T &element(I8 i, I8 j, bool columnMajor = true)	{return (columnMajor ? this->data[i][j] : this->data[j][i]);}//this->mat[i+j*4]; }
-	inline const T &element(I8 i, I8 j, bool columnMajor = true)	const {return (columnMajor ? this->data[i][j] : this->data[j][i]);}//this->mat[i+j*4]; }
+	inline T &element(I8 row, I8 column, bool rowMajor = false)	{
+		return (rowMajor ? this->mat[column+row*4] : this->mat[row+column*4]); 
+	}
 
-	mat4 &operator*=(F32 f) { return *this = *this * f; }
+	inline const T &element(I8 row, I8 column, bool rowMajor = false) const {
+		return (rowMajor ? this->mat[column+row*4] : this->mat[row+column*4]); 
+	}
+
+	mat4 &operator*=(T f) { return *this = *this * f; }
 	mat4 &operator*=(const mat4 &m) { return *this = *this * m; }
 	mat4 &operator+=(const mat4 &m) { return *this = *this + m; }
 	mat4 &operator-=(const mat4 &m) { return *this = *this - m; }
@@ -831,18 +852,8 @@ public:
 					this->mat[12], this->mat[13], this->mat[14], this->mat[15]);
 	}
 	
-	inline F32 det(void) const {
-		return ((this->mat[0] * this->mat[5] * this->mat[10]) +
-				(this->mat[4] * this->mat[9] * this->mat[2])  +
-				(this->mat[8] * this->mat[1] * this->mat[6])  -
-				(this->mat[8] * this->mat[5] * this->mat[2])  -
-				(this->mat[4] * this->mat[1] * this->mat[10]) -
-				(this->mat[0] * this->mat[9] * this->mat[6]));
-	}
-	
-	inline void inverse(mat4& ret) {
-		Util::Mat4::_mm_inverse_ps(this->mat,ret.mat);
-	}
+	inline T det(void) const { return Mat4::det(this->mat); }
+	inline void inverse(mat4& ret) { Mat4::Inverse(this->mat,ret.mat); }
 
 	inline void zero(void) {
 		this->mat[0] = 0.0; this->mat[4] = 0.0; this->mat[8] = 0.0; this->mat[12] = 0.0;
@@ -858,50 +869,50 @@ public:
 		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
 	}
 
-	void rotate(const vec3<T> &axis,F32 angle) {
+	void rotate(const vec3<T> &axis,T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
-		vec3 v = axis;
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
+		vec3<T> v = axis;
 		v.normalize();
-		F32 xx = v.x * v.x;
-		F32 yy = v.y * v.y;
-		F32 zz = v.z * v.z;
-		F32 xy = v.x * v.y;
-		F32 yz = v.y * v.z;
-		F32 zx = v.z * v.x;
-		F32 xs = v.x * s;
-		F32 ys = v.y * s;
-		F32 zs = v.z * s;
-		mat[0] = (1.0f - c) * xx + c;  mat[4] = (1.0f - c) * xy - zs; mat[8] = (1.0f - c) * zx + ys;
-		mat[1] = (1.0f - c) * xy + zs; mat[5] = (1.0f - c) * yy + c;  mat[9] = (1.0f - c) * yz - xs; 
-		mat[2] = (1.0f - c) * zx - ys; mat[6] = (1.0f - c) * yz + xs; mat[10] = (1.0f - c) * zz + c;
+		T xx = v.x * v.x;
+		T yy = v.y * v.y;
+		T zz = v.z * v.z;
+		T xy = v.x * v.y;
+		T yz = v.y * v.z;
+		T zx = v.z * v.x;
+		T xs = v.x * s;
+		T ys = v.y * s;
+		T zs = v.z * s;
+		mat[0] = (1 - c) * xx + c;  mat[4] = (1 - c) * xy - zs; mat[8]  = (1 - c) * zx + ys;
+		mat[1] = (1 - c) * xy + zs; mat[5] = (1 - c) * yy + c;  mat[9]  = (1 - c) * yz - xs; 
+		mat[2] = (1 - c) * zx - ys; mat[6] = (1 - c) * yz + xs; mat[10] = (1 - c) * zz + c;
 	}
 
-	inline void rotate(F32 x,F32 y,F32 z,F32 angle) {
-		rotate(vec3(x,y,z),angle);
+	inline void rotate(T x,T y,T z,T angle) {
+		rotate(vec3<T>(x,y,z),angle);
 	}
 
-	inline void rotate_x(F32 angle) {
+	inline void rotate_x(T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
 		mat[5] =  c;  mat[9]  = -s; 
 		mat[6] =  s;  mat[10] =  c;
 	}
 
-	inline void rotate_y(F32 angle) {
+	inline void rotate_y(T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
 		mat[0] =  c; mat[8]  =  s;
 		mat[2] = -s; mat[10] =  c;
 	}
 
-	inline void rotate_z(F32 angle) {
+	inline void rotate_z(T angle) {
 		DegToRad(angle);
-		F32 c = (F32)cos(angle);
-		F32 s = (F32)sin(angle);
+		T c = (T)cos(angle);
+		T s = (T)sin(angle);
 		mat[0] =  c;  mat[4] = -s;  
 		mat[1] =  s;  mat[5] =  c;
 		
@@ -913,8 +924,8 @@ public:
 		mat[10] = v.z; 
 	}
 
-	inline void scale(F32 x,F32 y,F32 z) {
-		scale(vec3(x,y,z));
+	inline void scale(T x,T y,T z) {
+		scale(vec3<T>(x,y,z));
 	}
 
 	inline void translate(const vec3<T> &v) {
@@ -923,34 +934,34 @@ public:
 		this->mat[14] = v.z;
 	}
 
-	inline void translate(F32 x,F32 y,F32 z) {
-		translate(vec3(x,y,z));
+	inline void translate(T x,T y,T z) {
+		translate(vec3<T>(x,y,z));
 	}
 
 	void reflect(const vec4<T> &plane) {
-		F32 x = plane.x;
-		F32 y = plane.y;
-		F32 z = plane.z;
-		F32 x2 = x * 2.0f;
-		F32 y2 = y * 2.0f;
-		F32 z2 = z * 2.0f;
-		this->mat[0] = 1.0f - x * x2; this->mat[4] = -y * x2;       this->mat[8] = -z * x2;        this->mat[12] = -plane.w * x2;
-		this->mat[1] = -x * y2;       this->mat[5] = 1.0f - y * y2; this->mat[9] = -z * y2;        this->mat[13] = -plane.w * y2;
-		this->mat[2] = -x * z2;       this->mat[6] = -y * z2;       this->mat[10] = 1.0f - z * z2; this->mat[14] = -plane.w * z2;
-		this->mat[3] = 0.0;           this->mat[7] = 0.0;           this->mat[11] = 0.0;           this->mat[15] = 1.0;
+		T x = plane.x;
+		T y = plane.y;
+		T z = plane.z;
+		T x2 = x * 2.0f;
+		T y2 = y * 2.0f;
+		T z2 = z * 2.0f;
+		this->mat[0] = 1 - x * x2; this->mat[4] = -y * x2;    this->mat[8] = -z * x2;      this->mat[12] = -plane.w * x2;
+		this->mat[1] = -x * y2;    this->mat[5] = 1 - y * y2; this->mat[9] = -z * y2;      this->mat[13] = -plane.w * y2;
+		this->mat[2] = -x * z2;    this->mat[6] = -y * z2;    this->mat[10] = 1 - z * z2;  this->mat[14] = -plane.w * z2;
+		this->mat[3] = 0;          this->mat[7] = 0;          this->mat[11] = 0;           this->mat[15] = 1;
 	}
 
-	inline void reflect(F32 x,F32 y,F32 z,F32 w) {
-		reflect(vec4<F32>(x,y,z,w));
+	inline void reflect(T x,T y,T z,T w) {
+		reflect(vec4<T>(x,y,z,w));
 	}
 	
-	inline void perspective(F32 fov,F32 aspect,F32 znear,F32 zfar) {
-		F32 y = (F32)tan(fov * M_PI / 360.0f);
-		F32 x = y * aspect;
-		this->mat[0] = 1.0f / x; this->mat[4] = 0.0;      this->mat[8] = 0.0;                               this->mat[12] = 0.0;
-		this->mat[1] = 0.0;      this->mat[5] = 1.0f / y; this->mat[9] = 0.0;                               this->mat[13] = 0.0;
-		this->mat[2] = 0.0;      this->mat[6] = 0.0;      this->mat[10] = -(zfar + znear) / (zfar - znear); this->mat[14] = -(2.0f * zfar * znear) / (zfar - znear);
-		this->mat[3] = 0.0;      this->mat[7] = 0.0;      this->mat[11] = -1.0;                             this->mat[15] = 0.0;
+	inline void perspective(T fov,T aspect,T znear,T zfar) {
+		T y = (T)tan(fov * M_PI / 360.0f);
+		T x = y * aspect;
+		this->mat[0] = 1 / x; this->mat[4] = 0;     this->mat[8]  = 0;                                this->mat[12] = 0;
+		this->mat[1] = 0;     this->mat[5] = 1 / y; this->mat[9]  = 0;                                this->mat[13] = 0;
+		this->mat[2] = 0;     this->mat[6] = 0;     this->mat[10] = -(zfar + znear) / (zfar - znear); this->mat[14] = -(2 * zfar * znear) / (zfar - znear);
+		this->mat[3] = 0;     this->mat[7] = 0;     this->mat[11] = -1;                               this->mat[15] = 0;
 	}
 
 	inline void look_at(const vec3<T> &eye,const vec3<T> &dir,const vec3<T> &up) {
@@ -970,19 +981,30 @@ public:
 		*this = m0 * m1;
 	}
 
-	inline void look_at(const F32 *eye,const F32 *dir,const F32 *up) {
-		look_at(vec3(eye),vec3(dir),vec3(up));
+	inline void look_at(const T *eye,const T *dir,const T *up) {
+		look_at(vec3<T>(eye),vec3<T>(dir),vec3<T>(up));
 	}
 
-	union{
-		T mat[16];
-		T data[4][4];
-		T a1, a2, a3, a4;
-		T b1, b2, b3, b4;
-		T c1, c2, c3, c4;
-		T d1, d2, d3, d4;
-	};
-	//Eigen::Matrix<T,4,4> _emat;
+///It's hard to allow 16-bytes alignment here to use with SIMD instructions when all the values can 
+///be changed from anywhere in the code by reference / pointer. Use the slower unaligned loader instead for SSE
+#ifdef USE_MATH_SIMD	
+	__declspec(align(ALIGNED_BYTES))  T mat[16];/*T* mat;*/
+//	~mat4()
+//	{
+//		free_simd(mat);
+//	}
+//	inline void allocateMem() { if(mat != NULL) free_simd(mat); mat = (T*)malloc_simd(16 * sizeof(T));}
+#else
+	T mat[16];/*T* mat;*/
+#endif
+	~mat4()
+	{
+		/*SAFE_DELETE_ARRAY(mat);*/
+	}
+	inline void allocateMem() {/*if(mat != NULL) SAFE_DELETE_ARRAY(mat); mat = new T[16];*/}
+//#endif
+		
+		
 };
 
 template<class T>
@@ -994,14 +1016,8 @@ inline mat3<T>::mat3(const mat4<T> &m) {
 
 /// Converts a point from world coordinates to projection coordinates
 ///(from Y = depth, Z = up to Y = up, Z = depth)
-inline void projectPoint(const vec3<F32>& position,vec3<F32>& output){
-	output.x = position.x;
-	output.y = position.z;
-	output.z = position.y;
-}
-/// Converts a point from world coordinates to projection coordinates
-///(from Y = depth, Z = up to Y = up, Z = depth)
-inline void projectPoint(const vec3<I32>& position, vec3<I32>& output){
+template <class T>
+inline void projectPoint(const vec3<T>& position,vec3<T>& output){
 	output.x = position.x;
 	output.y = position.z;
 	output.z = position.y;

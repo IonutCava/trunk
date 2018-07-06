@@ -8,67 +8,43 @@ attribute ivec4 inBoneIndiceData;
 
 vec4  vertexData;
 vec3  normalData;
-vec2  texCoordData;
 vec3  tangentData;
 vec3  biTangentData;
 vec4  boneWeightData;
 ivec4 boneIndiceData;
 
-uniform bool useVBOVertexData;
-uniform bool emptyNormal;
-uniform bool emptyTexCoord;
-uniform bool emptyTangent;
-uniform bool emptyBiTangent;
-uniform bool emptyBones;
+varying vec2 _texCoord;
+
+uniform mat4 transformMatrix;
+uniform mat4 parentTransformMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewInvMatrix;
+uniform mat4 modelViewProjectionMatrix;
+
 
 void computeData(void){
 
-	if(useVBOVertexData ){
+#if defined(USE_VBO_DATA)
 
-		//vertexData = vec4(inVertexData,1.0);
-		vertexData = gl_Vertex;
+		vertexData     = gl_Vertex;
+		normalData     = inNormalData;
+		_texCoord      = inTexCoordData;
+		tangentData    = inTangentData;
+		biTangentData  = inBiTangentData;
+		boneWeightData = inBoneWeightData;
+		boneIndiceData = inBoneIndiceData;
+		
 
-		if(emptyNormal){
-			normalData = gl_Normal;
-		}else{
-			normalData  = inNormalData;
-		}
-
-		if(emptyTexCoord){
-			texCoordData   = gl_MultiTexCoord0.xy;
-		}else{
-			texCoordData   = inTexCoordData;
-		}
-
-		if(emptyTangent){
-			tangentData    = gl_MultiTexCoord1.xyz;
-		}else{
-			tangentData    = inTangentData;
-		}
-
-		if(emptyBiTangent){
-			biTangentData  = gl_MultiTexCoord2.xyz;
-		}else{
-			biTangentData  = inBiTangentData;
-		}
-
-		if(emptyBones){
-			boneWeightData = gl_MultiTexCoord4;
-			boneIndiceData = ivec4(gl_MultiTexCoord3);
-		}else{
-			boneWeightData = inBoneWeightData;
-			boneIndiceData = inBoneIndiceData;
-		}
-
-	}else{
+#else
 		vertexData     = gl_Vertex;
 		normalData     = gl_Normal;
-		texCoordData   = gl_MultiTexCoord0.xy;
+		_texCoord      = gl_MultiTexCoord0.xy;
 		tangentData    = gl_MultiTexCoord1.xyz;
 		biTangentData  = gl_MultiTexCoord2.xyz;
 		boneWeightData = gl_MultiTexCoord3;
 		boneIndiceData = ivec4(gl_MultiTexCoord4);
-	}
+#endif
+
 }
 
 

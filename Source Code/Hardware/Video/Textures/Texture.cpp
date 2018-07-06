@@ -3,26 +3,27 @@
 #include "Core/Headers/ParamHandler.h"
 
 bool Texture::_generateMipmaps = true;
-unordered_map<I16, U32> Texture::_textureBoundMap;
+Unordered_map<U8, U32> Texture::textureBoundMap;
 
 Texture::Texture(bool flipped) : HardwareResource(),
 								_flipped(flipped),
-								_minFilter(LINEAR_MIPMAP_LINEAR),
-								_magFilter(LINEAR_MIPMAP_LINEAR),
+								_minFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
+								_magFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR),
 								_handle(0),
 								_bound(false),
 								_hasTransparency(false)
 {
-	if(_textureBoundMap.empty()){
+	if(textureBoundMap.empty()){
 		for(U8 i = 0; i < 15; i++){
 			//Set all 16 texture slots to 0
-			_textureBoundMap.insert(std::make_pair(i,0));
+			textureBoundMap.insert(std::make_pair(i,0));
 		}
 	}
 	/// Defaults
-	_wrapU = TextureWrap_Repeat;
-	_wrapV = TextureWrap_Repeat;
-	_wrapW = TextureWrap_Repeat;
+	_wrapU = TEXTURE_REPEAT;
+	_wrapV = TEXTURE_REPEAT;
+	_wrapW = TEXTURE_REPEAT;
+	setAnisotrophyLevel(ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel",1));
 }
 
 
@@ -66,9 +67,9 @@ void Texture::resize(U16 width, U16 height){
 	/// ToDo: use gluScaleImage if this is needed!
 }
 
-bool Texture::checkBinding(I16 unit, U32 handle){
-	if(_textureBoundMap[unit] != handle){
-		_textureBoundMap[unit] = handle;
+bool Texture::checkBinding(U16 unit, U32 handle){
+	if(textureBoundMap[unit] != handle){
+		textureBoundMap[unit] = handle;
 		return true;
 	}
 	//return false;
@@ -79,7 +80,7 @@ bool Texture::checkBinding(I16 unit, U32 handle){
 void Texture::Bind() const {
 }
 
-void Texture::Bind(U16 unit)  {
+void Texture::Bind(U16 unit, bool fixedPipeline)  {
 }
 
 void Texture::Unbind() const {

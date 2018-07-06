@@ -23,11 +23,10 @@ class d3dFrameBufferObject : public FrameBufferObject
 {
 public:
 
-	d3dFrameBufferObject() : FrameBufferObject() {}
+	d3dFrameBufferObject(FBOType type) : FrameBufferObject(type) {}
 	virtual ~d3dFrameBufferObject() {}
-
-	virtual bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8,
-											   IMAGE_FORMATS formatEnum = RGBA) = 0;
+	
+	virtual bool Create(U16 width, U16 height, U8 imageLayers = 0) = 0;
 				
 	virtual void Destroy() = 0;
 
@@ -36,7 +35,7 @@ public:
 
 	virtual void Bind(U8 unit=0, U8 texture = 0)  = 0;
 	virtual void Unbind(U8 unit=0) = 0;
-
+	void BlitFrom(FrameBufferObject* inputFBO);
 protected:
 	bool checkStatus();
 

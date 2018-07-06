@@ -1,156 +1,85 @@
 -- Vertex
 #include "vboInputData.vert"
-varying vec4 texCoord[2];
-varying vec3 vVertexMV;
+#include "foliage.vert"
 
-uniform float time;
-uniform float lod_metric;
-uniform float scale;
-uniform float windDirectionX;
-uniform float windDirectionZ;
-uniform float windSpeed;
-uniform int enable_shadow_mapping;
-uniform mat4 modelViewInvMatrix;
-uniform mat4 lightProjectionMatrix;
+uniform bool enable_shadow_mapping;
+
+varying vec3 vPixToLightTBN[MAX_LIGHT_COUNT];
+uniform mat4 lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
+varying vec4 shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
+varying vec3 _normalMV;
+varying vec4 _vertexMV;
+
+uniform int light_count;
+
+void computeLightVectorsPhong(){
+	vec3 tmpVec; 
+
+	int i = 0; ///Only the first light for now
+	//for(int i = 0; i < MAX_LIGHT_COUNT; i++){
+	//	if(light_count == i) break;
+	vec4 vLightPosMV = gl_LightSource[i].position;	
+	if(vLightPosMV.w == 0.0){ ///<Directional Light
+		tmpVec = -vLightPosMV.xyz;					
+	}else{///<Omni or spot. Change later if spot
+		tmpVec = vLightPosMV.xyz - _vertexMV.xyz;	
+	}
+	vPixToLightTBN[0] = tmpVec;
+}
 
 void main(void){
 	computeData();
-	texCoord[0] = vec4(texCoordData,0,0);
 	
-	vec4 vertex = vertexData;
-	vec4 vertexMV = gl_ModelViewMatrix * vertexData;
-	vec3 normalMV = gl_NormalMatrix * normalData;
-	vVertexMV = vertexMV.xyz;
+	_normalMV = gl_NormalMatrix * normalData;
 
-	if(normalData.y < 0.0 ) {
-		normalMV = -normalMV;
-		vertex.x += ((0.5*scale)*cos(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionX;
-		vertex.z += ((0.5*scale)*sin(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionZ;
-	}
-	
-	vec4 vLightPosMV = -gl_LightSource[0].position;	
-	float intensity = dot(vLightPosMV.xyz, normalMV);
+	computeFoliageMovementGrass(normalData, _normalMV, vertexData);
+	_vertexMV = gl_ModelViewMatrix * vertexData;
+
+	computeLightVectorsPhong();
+	vec3 vLightPosMVTemp = vPixToLightTBN[0];
+	float intensity = dot(vLightPosMVTemp.xyz, _normalMV);
 	gl_FrontColor = vec4(intensity, intensity, intensity, 1.0);
-	gl_FrontColor.a = 1.0 - clamp(length(vertexMV)/lod_metric, 0.0, 1.0);
+	gl_FrontColor.a = 1.0 - clamp(length(_vertexMV)/lod_metric, 0.0, 1.0);
 		
-	gl_Position = gl_ModelViewProjectionMatrix * vertex;
 	
-	if(enable_shadow_mapping != 0) {
-		// Transformed position 
-		vec4 pos = gl_ModelViewMatrix * vertexData;
-		// position multiplied by the inverse of the camera matrix
-		pos = modelViewInvMatrix * pos;
+	gl_Position = projectionMatrix * _vertexMV;
+	
+	if(enable_shadow_mapping) {
 		// position multiplied by the light matrix. 
 		//The vertex's position from the light's perspective
-		texCoord[1] = lightProjectionMatrix * pos;
+		shadowCoord[0] = lightProjectionMatrices[0] * modelViewInvMatrix * _vertexMV;
 	}
 }
 
 -- Fragment
 
-varying vec4 texCoord[2];
-varying vec3 vVertexMV;
-
+varying vec2 _texCoord;
+varying vec3 _normalMV;
+varying vec4 _vertexMV;
+varying vec3 vPixToLightTBN[MAX_LIGHT_COUNT];
 uniform sampler2D texDiffuse;
 
-// SHADOW MAPPING //
-// 0->no  1->shadow mapping  2->shadow mapping + projected texture
-uniform int enable_shadow_mapping;
-//tdmfl0 -> high detail
-//tdmfl1 -> medium detail
-//tdmfl2 -> low detail
-//change according to distance from eye
-uniform float resolutionFactor;
-uniform sampler2DShadow texDepthMapFromLight0;
-uniform sampler2DShadow texDepthMapFromLight1;
-uniform sampler2DShadow texDepthMapFromLight2;
-#define Z_TEST_SIGMA 0.0001
-////////////////////
+///Global NDotL, basically
+float iDiffuse;
+#include "shadowMapping.frag"
 
-float ShadowMapping(out vec3 vPixPosInDepthMap);
-float filterFinalShadow(sampler2DShadow depthMap,vec3 vPosInDM, float resolution);
+void main (void){
 
-void main (void)
-{
-	vec4 cBase = texture2D(texDiffuse, texCoord[0].st);
+	vec4 cBase = texture(texDiffuse, _texCoord);
 	if(cBase.a < 0.4) discard;
 	
 	vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
 	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * gl_Color;
-	gl_FragColor = cAmbient * cBase + cDiffuse * cBase;
-	
+	vec3 L = normalize(vPixToLightTBN[0]);
+	iDiffuse = max(dot(L, _normalMV), 0.0);
 	// SHADOW MAPPING
 	vec3 vPixPosInDepthMap;
-	float shadow = ShadowMapping(vPixPosInDepthMap);
-	shadow = shadow * 0.5 + 0.5;
-	gl_FragColor *= shadow;
+	float shadow = 1.0f;
+	applyShadowDirectional(0, shadow);
 
+	gl_FragColor = cAmbient * cBase + (0.2 + 0.8 * shadow) * cDiffuse * cBase;
 	
 	gl_FragColor.a = gl_Color.a;
 }
 
 
-float ShadowMapping(out vec3 vPixPosInDepthMap){
-
-	float fShadow = 1.0;
-			
-	float tOrtho[3];
-	tOrtho[0] = 5.0;
-	tOrtho[1] = 10.0;
-	tOrtho[2] = 50.0;
-	bool ok = false;
-	int id = 0;
-	vec3 posInDM;
-	for(int i = 0; i < 3; i++){
-		if(!ok){
-		
-			vPixPosInDepthMap = vec3(texCoord[1].xy/tOrtho[i], texCoord[1].z) / (texCoord[1].w);
-			vPixPosInDepthMap = (vPixPosInDepthMap + 1.0) * 0.5;
-
-			if(vPixPosInDepthMap.x >= 0.0 && vPixPosInDepthMap.y >= 0.0 && vPixPosInDepthMap.x <= 1.0 && vPixPosInDepthMap.y <= 1.0){
-				id = i;
-				ok = true;
-				posInDM = vPixPosInDepthMap;
-				break; // no need to continue
-			}
-		}
-	}
-
-	if(ok){
-		switch(id){
-			case 0:
-				fShadow = filterFinalShadow(texDepthMapFromLight0,posInDM, 2048/resolutionFactor);
-				break;
-			case 1:
-				fShadow = filterFinalShadow(texDepthMapFromLight1,posInDM, 1024/resolutionFactor);
-				break;
-			case 2:
-				fShadow = filterFinalShadow(texDepthMapFromLight2,posInDM, 512/resolutionFactor);
-				break;
-		};
-	}
-	
-	return fShadow;
-}
-
-float filterFinalShadow(sampler2DShadow depthMap,vec3 vPosInDM, float resolution){
-	// Gaussian 3x3 filter
-	vec4 vDepthMapColor = shadow2D(depthMap, vPosInDM);
-	float fShadow = 0.0;
-	if((vDepthMapColor.z+Z_TEST_SIGMA) < vPosInDM.z){
-		fShadow = shadow2D(depthMap, vPosInDM).x * 0.25;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, -1)).x * 0.0625;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, 0)).x * 0.125;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( -1, 1)).x * 0.0625;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 0, -1)).x * 0.125;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 0, 1)).x * 0.125;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, -1)).x * 0.0625;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, 0)).x * 0.125;
-		fShadow += shadow2DOffset(depthMap, vPosInDM, ivec2( 1, 1)).x * 0.0625;
-
-		fShadow = clamp(fShadow, 0.0, 1.0);
-	}else{
-		fShadow = 1.0;
-	}
-	return fShadow;
-}

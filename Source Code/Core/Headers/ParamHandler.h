@@ -22,12 +22,12 @@
 #include <boost/any.hpp>
 
 DEFINE_SINGLETON (ParamHandler)
-typedef unordered_map<std::string, boost::any> ParamMap;
+typedef Unordered_map<std::string, boost::any> ParamMap;
 
 public:
 
 	template <class T>	
-	T getParam(const std::string& name){
+	T getParam(const std::string& name,T defaultValue = T()){
 		ReadLock r_lock(_mutex);
 		ParamMap::iterator it = _params.find(name);
 		if(it != _params.end()){
@@ -37,7 +37,7 @@ public:
 				ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
 			}
 		}
-		return T(); ///integrals will be 0, string will be empty, etc;
+		return defaultValue; ///integrals will be 0, string will be empty, etc;
 	}
 
 	void setParam(const std::string& name, const boost::any& value){

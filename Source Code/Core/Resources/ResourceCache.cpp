@@ -1,9 +1,14 @@
-#include "Headers/Resource.h"
 #include "Headers/ResourceCache.h"
+#include "Headers/HardwareResource.h"
 #include "Core/Headers/ParamHandler.h"
+
+ResourceCache::ResourceCache(){
+	_loadingPool = New boost::threadpool::pool(3);
+}
 
 ResourceCache::~ResourceCache(){
 	Destroy();
+	SAFE_DELETE(_loadingPool);
 	PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));
 }
 
@@ -26,9 +31,8 @@ Resource* ResourceCache::loadResource(const std::string& name){
 		res->AddRef();
 		D_PRINT_FN(Locale::get("RESOURCE_CACHE_GET_RES_INC"),name.c_str(),res->getRefCount());
 	}else{
-		PRINT_FN(Locale::get("RESOURCE_CAHCE_GET_RES"),name.c_str());
+		PRINT_FN(Locale::get("RESOURCE_CACHE_GET_RES"),name.c_str());
 	}
-
 	return res;
 }
 
@@ -93,4 +97,18 @@ bool ResourceCache::remove(Resource* const resource,bool force){
 	
 	ERROR_FN(Locale::get("ERROR_RESOURCE_REM_NOT_FOUND"),name.c_str());
 	return force;
+}
+
+bool ResourceCache::load(Resource* const res, const std::string& name) {
+	assert(res != NULL);
+	return res->setInitialData(name);
+}
+
+bool ResourceCache::loadHW(Resource* const res, const std::string& name){
+	if(load(res,name)){
+		HardwareResource* hwRes = dynamic_cast<HardwareResource* >(res);
+		assert(hwRes);
+		return hwRes->generateHWResource(name); 
+	} 
+	return false; 
 }

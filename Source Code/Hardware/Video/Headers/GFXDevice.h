@@ -20,29 +20,41 @@
 
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Direct3D/Headers/DXWrapper.h"
-
-enum RENDER_STAGE;
-enum SCENE_NODE_TYPE;
+#include "Managers/Headers/RenderPassManager.h" ///<For GFX_RENDER_BIN_SIZE
+enum RenderStage;
+enum SceneNodeType;
 
 class Light;
 class Camera;
 class Object3D;
 class Framerate;
-
+class Renderer;
+class SceneRenderState;
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
 friend class Frustum; ///< For matrix recovery operations
 
 public:
-	void setApi(RENDER_API api);
 
-	inline RENDER_API         getApi()        {return _api.getId(); }
-	inline RENDER_API_VERSION getApiVersion() {return _api.getVersionId();}
+	enum BufferType	{
+		COLOR_BUFFER   = 0x0001,
+		DEPTH_BUFFER   = 0x0010,
+		STENCIL_BUFFER = 0x0100
+	};
+
+	void setApi(RenderAPI api);
+
+	inline RenderAPI        getApi()        {return _api.getId(); }
+	inline RenderAPIVersion getApiVersion() {return _api.getVersionId();}
+	inline GPUVendor        getGPUVendor()  {return _api.getGPUVendor();}
+
+	inline I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv){return _api.initHardware(resolution,argc,argv);}
 
 	inline void registerKernel(Kernel* const kernel)     {_kernel = kernel;}
-	inline I8   initHardware(const vec2<U16>& resolution){return _api.initHardware(resolution);}
-	inline void initDevice(U32 targetFPS)                {_api.initDevice(targetFPS);}
+	inline void initDevice(U32 targetFrameRate)          {_api.initDevice(targetFrameRate);}
 	inline void changeResolution(U16 w, U16 h)           {_api.changeResolution(w,h);}
+	inline void setWindowSize(U16 w, U16 h)              {_api.setWindowSize(w,h);}
+	inline void setWindowPos(U16 w, U16 h)               {_api.setWindowPos(w,h);}
 	inline void exitRenderLoop(bool killCommand = false) {_api.exitRenderLoop(killCommand);}
 	       void closeRenderingApi();
 
@@ -56,23 +68,20 @@ public:
 	}
 
 	inline void idle() {_api.idle();}
+	inline void flush() {_api.flush();}
 
-	inline mat4<F32>& getLightProjectionMatrix()                            {return _currentLightProjectionMatrix;}
-	inline void       setLightProjectionMatrix(const mat4<F32>& lightMatrix){_currentLightProjectionMatrix = lightMatrix;}
-
-	inline FrameBufferObject*  newFBO(FBO_TYPE type = FBO_2D_COLOR){return _api.newFBO(type); }
+	inline FrameBufferObject*  newFBO(FBOType type = FBO_2D_COLOR){return _api.newFBO(type); }
 	inline VertexBufferObject* newVBO(){return _api.newVBO(); }
-	inline PixelBufferObject*  newPBO(){return _api.newPBO(); }
+	inline PixelBufferObject*  newPBO(PBOType type = PBO_TEXTURE_2D){return _api.newPBO(type); }
 
 	inline Texture2D*      newTexture2D(bool flipped = false)                   {return _api.newTexture2D(flipped);}
 	inline TextureCubemap* newTextureCubemap(bool flipped = false)              {return _api.newTextureCubemap(flipped);}
 	inline ShaderProgram*  newShaderProgram()                                   {return _api.newShaderProgram(); }
-	inline Shader*         newShader(const std::string& name, SHADER_TYPE type) {return _api.newShader(name,type); }
-	
+	inline Shader*         newShader(const std::string& name, ShaderType type) {return _api.newShader(name,type); }
 	inline void enableFog(F32 density, F32* color){_api.enableFog(density,color);}
 
 	inline void swapBuffers()               {_api.swapBuffers();}
-	inline void clearBuffers(U8 buffer_mask){_api.clearBuffers(buffer_mask);}
+	inline void clearBuffers(U16 buffer_mask){_api.clearBuffers(buffer_mask);}
 	
 	inline void toggle2D(bool _2D)  {_api.toggle2D(_2D);}
 	inline void lockProjection()    {_api.lockProjection();}
@@ -82,16 +91,18 @@ public:
 
 	inline void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)        {_api.setOrthoProjection(rect,planes);}
 	inline void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes){_api.setPerspectiveProjection(FoV,aspectRatio,planes);}
-
-	void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback);
+	inline void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback)  {_api.renderInViewport(rect,callback);}
 
 	void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
-	void drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset);
+	void drawLines(const vectorImpl<vec3<F32> >& pointsA,const vectorImpl<vec3<F32> >& pointsB,const vectorImpl<vec4<F32> >& colors, const mat4<F32>& globalOffset);
 
 	void renderModel(Object3D* const model);
-	void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element);
+	void renderElements(PrimitiveType t, GFXDataFormat f, U32 count, const void* first_element);
 	void renderGUIElement(GUIElement* const guiElement);
-
+	///The render callback must update all visual information and populate the "RenderBin"'s!
+	///Use the sceneGraph::update callback as default using the macro SCENE_GRAPH_UPDATE(pointer)
+	///pointer = a pointer to the sceneGraph instance used for rendering
+	void render(boost::function0<void> renderFunction,SceneRenderState* const sceneRenderState);
 	///Set the current material properties
 	inline void setMaterial(Material* mat)             {_api.setMaterial(mat);}
 	///Instruct the Rendering API to modify the ambient light
@@ -103,37 +114,28 @@ public:
 
 	///Sets the current render state.
 	///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
-		   void         setRenderStage(RENDER_STAGE stage);
-	inline RENDER_STAGE getRenderStage()                 {return _renderStage;}
-	inline void         setDeferredRendering(bool state) {_deferredRendering = state;} 
-	inline bool         getDeferredRendering()           {return _deferredRendering;}
+	inline void  setRenderStage(RenderStage stage) {_renderStage = stage;}
+    ///Checks if the current rendering stage is any of the stages defined in renderStageMask
+	///@param renderStageMask Is a bitmask of the stages we whish to check if active
+		   bool isCurrentRenderStage(U16 renderStageMask);
+           bool getDeferredRendering();
+
+	inline RenderStage  getRenderStage()                 {return _renderStage;}
 	inline void         setPrevShaderId(const U32& id)   {_prevShaderId = id;}
 	inline U32          getPrevShaderId()                {return _prevShaderId;}
 	inline void         setPrevTextureId(const U32& id)  {_prevTextureId = id;}
 	inline U32          getPrevTextureId()               {return _prevTextureId;}
+	inline Renderer*    getRenderer()                    {assert(_renderer != NULL); return _renderer;}
+	       void         setRenderer(Renderer* const renderer);
+		   void         closeRenderer();
 	///Save a screenshot in TGA format
 	inline void Screenshot(char *filename, const vec4<F32>& rect){_api.Screenshot(filename,rect);}
-	/// Get all items from the renderQueue, update their states and set materials
-	void processRenderQueue();
 	/// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
-	bool excludeFromStateChange(SCENE_NODE_TYPE currentType);
+	bool excludeFromStateChange(const SceneNodeType& currentType);
 	///Creates a new API dependend stateblock based on the received description
 	///Calls newRenderStateBlock and also saves the new block in the state block map
 	RenderStateBlock* GFXDevice::createStateBlock(const RenderStateBlockDescriptor& descriptor);
-	
-private:
-	///Returns an API dependend stateblock based on the description
-	inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) {
-		return _api.newRenderStateBlock(descriptor);
-	}
-	/// Delegate specifig GUI drawing functionality to the Rendering API
-	inline void drawTextToScreen(GUIElement* const text)        {_api.drawTextToScreen(text);}
-	inline void drawCharacterToScreen(void* font,char character){_api.drawCharacterToScreen(font,character);}
-	inline void drawButton(GUIElement* const button)            {_api.drawButton(button);}
-	inline void drawFlash(GUIElement* const flash)              {_api.drawFlash(flash);}
-	inline void drawConsole()                                   {_api.drawConsole();}
 
-public:
 	///Sets the current state block to the one passed as a param
 	///It is not set immediately, but a call to "updateStates" is required
            void setStateBlock(RenderStateBlock* block);
@@ -159,43 +161,42 @@ public:
 						  const vec3<F32>& pos, 
 						  boost::function0<void> callback = 0);
 
-	inline U16 getLastBinSize() {return _renderBinCount;}
+	inline bool loadInContext(const CurrentContext& context, boost::function0<void> callback) {return _api.loadInContext(context, callback);}
 
-public:
-	enum BufferType	{
-		COLOR_BUFFER   = 0x0001,
-		DEPTH_BUFFER   = 0x0010,
-		STENCIL_BUFFER = 0x0100
-	};
+#if defined( __WIN32__ ) || defined( _WIN32 )
+	HWND getHWND() {return _api.getHWND();}
+#elif defined( __APPLE_CC__ ) // Apple OS X
+	??
+#else //Linux
+	Display* getDisplay() {return _api.getDisplay();}
+	GLXDrawable getDrawSurface() {return _api.getDrawSurface();}
+#endif
+private:
+
+	   GFXDevice();
+
+	///Returns an API dependend stateblock based on the description
+	inline RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor) {
+		return _api.newRenderStateBlock(descriptor);
+	}
+	/// Delegate specifig GUI drawing functionality to the Rendering API
+	inline void drawTextToScreen(GUIElement* const text)        {_api.drawTextToScreen(text);}
+	inline void drawButton(GUIElement* const button)            {_api.drawButton(button);}
+	inline void drawFlash(GUIElement* const flash)              {_api.drawFlash(flash);}
+	inline void getMatrix(MATRIX_MODE mode, mat4<F32>& mat)     {_api.getMatrix(mode, mat);}
 
 private:
-	inline void getModelViewMatrix(mat4<F32>& mvMat)   {_api.getModelViewMatrix(mvMat);}
-	inline void getProjectionMatrix(mat4<F32>& projMat){_api.getProjectionMatrix(projMat);}
-
-private:
-	GFXDevice() :
-	   _api(GL_API::getInstance()) ///<Defaulting to OpenGL if no api has been defined
-	   {
-		   _prevShaderId = 0;
-		   _prevTextureId = 0;
-		   _deferredRendering = false;
-		   _currentStateBlock = NULL;
-		   _newStateBlock = NULL;
-		   _stateBlockDirty = false;
-	   }
 	RenderAPIWrapper& _api;
-	bool _deferredRendering;
 	bool _deviceStateDirty;
-	RENDER_STAGE _renderStage;
-	mat4<F32> _currentLightProjectionMatrix;
-    U32  _prevShaderId, _prevTextureId;
-	U16 _renderBinCount;
+	RenderStage _renderStage;
+    U32  _prevShaderId,  _prevTextureId;
 
 protected:
 	friend class GL_API;
 	friend class DX_API;
+	Renderer* _renderer;
 	/*State management */
-	typedef unordered_map<U32, RenderStateBlock* > RenderStateMap;
+	typedef Unordered_map<U32, RenderStateBlock* > RenderStateMap;
 	RenderStateMap _stateBlockMap;
     bool  _stateBlockDirty;
 	bool _stateBlockByDescription;
@@ -207,6 +208,6 @@ protected:
 END_SINGLETON
 
 #define GFX_DEVICE GFXDevice::getInstance()
-#define GFX_RENDER_BIN_SIZE GFX_DEVICE.getLastBinSize()
+#define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)
 
 #endif

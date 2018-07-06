@@ -119,7 +119,7 @@ void SceneAnimator::Load(std::ifstream& file){
 		_animations[i].Load(file);
 	}
 	for(uint32_t i(0); i< _animations.size(); i++){// get all the animation names so I can reference them by name and get the correct id
-		_animationNameToId.insert(unordered_map<std::string, uint32_t>::value_type(_animations[i]._name, i));
+		_animationNameToId.insert(Unordered_map<std::string, uint32_t>::value_type(_animations[i]._name, i));
 	}
 	if(_animations.size() >0) _currentAnimIndex =0;// set it to the first animation if there are any
 	char bname[250];
@@ -130,7 +130,7 @@ void SceneAnimator::Load(std::ifstream& file){
 		file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the size of the bone name
 		file.read(bname, nsize);// the size of the bone name
 		bname[nsize]=0;
-		unordered_map<std::string, Bone*>::iterator found = _bonesByName.find(bname);
+		Unordered_map<std::string, Bone*>::iterator found = _bonesByName.find(bname);
 		Bone* tep = found->second;
 		_bonesToIndex[found->first] = i;
 		_bones[i]=tep;
@@ -144,8 +144,8 @@ void SceneAnimator::Load(std::ifstream& file){
 		for(float ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
 			dt +=timestep;
 			Calculate(dt);
-			_animations[i]._transforms.push_back(std::vector<mat4<F32> >());
-			std::vector<mat4<F32> >& trans = _animations[i]._transforms.back();
+			_animations[i]._transforms.push_back(vectorImpl<mat4<F32> >());
+			vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
 			for( size_t a = 0; a < _transforms.size(); ++a){
 				mat4<F32> rotationmat;
 				AnimUtils::TransformMatrix(rotationmat, aiMatrix4x4(_bones[a]->_globalTransform *  _bones[a]->_offsetMatrix));
@@ -164,7 +164,7 @@ void SceneAnimator::SaveSkeleton(std::ofstream& file, Bone* parent){
 	file.write(reinterpret_cast<char*>(&parent->_originalLocalTransform), sizeof(parent->_originalLocalTransform));// original bind pose
 	nsize = static_cast<uint32_t>(parent->_children.size());// number of children
 	file.write(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of children
-	for( std::vector<Bone*>::iterator it = parent->_children.begin(); it != parent->_children.end(); ++it)// continue for all children
+	for( vectorImpl<Bone*>::iterator it = parent->_children.begin(); it != parent->_children.end(); ++it)// continue for all children
 		SaveSkeleton(file, *it); 
 }
 

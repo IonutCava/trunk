@@ -124,7 +124,7 @@ class TriangleVariable : public LimitedVariable
 
 //////////// Variable effect class //////////////////////////////////////////////////////////
 
-typedef unordered_map<std::string, Variable*> MapVariables;
+typedef Unordered_map<std::string, Variable*> MapVariables;
 typedef void (*EffectVariablesApplier)(MapVariables& mapVars, OIS::Effect* pEffect);
 
 class VariableEffect

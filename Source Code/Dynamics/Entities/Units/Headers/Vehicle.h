@@ -24,7 +24,7 @@
 class Vehicle : public Unit {
 public:
 	/// Currently supported vehicle types
-	enum VEHICLE_TYPES{
+	enum VehicleType{
 		/// Ground based vehicles
 		VEHICLE_TYPE_GROUND      = toBit(1),
 		/// Flying/Space vehicles
@@ -43,7 +43,7 @@ public:
 	/// A vehicle can be of multiple types at once
 	void setVehicleTypeMask(U8 mask);
 	/// Check if current vehicle fits the desired type
-	bool checkVehicleMask(VEHICLE_TYPES type) const;
+	bool checkVehicleMask(VehicleType type) const;
 
 public:
 	/// Is this vehicle controlled by the player or the AI?

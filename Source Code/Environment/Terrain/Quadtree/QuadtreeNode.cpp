@@ -1,9 +1,11 @@
 #include "Headers/QuadtreeNode.h"
+
 #include "Rendering/Headers/Frustum.h"
-#include "Utility/Headers/BoundingBox.h"
-#include "Environment/Terrain/Headers/TerrainChunk.h"
-#include "Environment/Terrain/Headers/Terrain.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
+#include "Environment/Terrain/Headers/Terrain.h"
+#include "Environment/Terrain/Headers/TerrainChunk.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 void QuadtreeNode::Build(U8 depth,		
 						 vec2<U32> pos,					
@@ -54,11 +56,11 @@ void QuadtreeNode::Build(U8 depth,
 	}
 }
 
-bool QuadtreeNode::computeBoundingBox(const std::vector<vec3<F32> >& vertices){
+bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
 	assert(!vertices.empty());
 
 	if(_terrainChunk != NULL) {
-		std::vector<U32>& tIndices = _terrainChunk->getIndiceArray(0);
+		vectorImpl<U32>& tIndices = _terrainChunk->getIndiceArray(0);
 		F32 tempMin = 100000.0f;
 		F32 tempMax = -100000.0f;
 		
@@ -157,7 +159,7 @@ void QuadtreeNode::DrawGround(I32 options)
 		assert(_terrainChunk);
 
 		if(options & CHUNK_BIT_WATERREFLECTION) {
-			_terrainChunk->DrawGround(TERRAIN_CHUNKS_LOD-1,true);
+			_terrainChunk->DrawGround(TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,true);
 		}
 		else {
 			
@@ -167,8 +169,7 @@ void QuadtreeNode::DrawGround(I32 options)
 			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
 			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
 			_LOD = lod;
-			getParentShaderProgram()->Uniform("LOD", (I32)lod);
-			_terrainChunk->DrawGround(lod);
+			_terrainChunk->DrawGround(lod,_parentShaderProgram);
 		}
 	}
 	else {

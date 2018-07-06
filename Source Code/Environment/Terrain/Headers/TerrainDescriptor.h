@@ -58,7 +58,7 @@ public:
 
 	}
 private:
-	unordered_map<std::string,std::string> _variables;
+	Unordered_map<std::string,std::string> _variables;
 	U32    _grassDensity;
 	U16    _treeDensity;
 	F32	   _grassScale;

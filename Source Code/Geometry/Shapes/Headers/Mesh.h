@@ -38,28 +38,27 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 class Mesh : public Object3D {
 public:
 
-	Mesh() : Object3D(MESH), _visibleToNetwork(true),
-							 _playAnimations(true),
-							 _hasAnimations(false)
+	Mesh(PrimitiveFlag flag = PRIMITIVE_FLAG_NONE) : Object3D(MESH,flag),
+													 _visibleToNetwork(true)
 	{
 		_refreshVBO = false;
 	}
 
-	~Mesh() {}
+	virtual ~Mesh() {}
 		
 	bool computeBoundingBox(SceneGraphNode* const sgn);
-	void updateTransform(SceneGraphNode* const sgn);
-	void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+	virtual void updateTransform(SceneGraphNode* const sgn);
+	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 
 	/// Called from SceneGraph "sceneUpdate"
-		   void sceneUpdate(D32 sceneTime);
-		   void postLoad(SceneGraphNode* const sgn);
-		   void onDraw();
-	inline void render(SceneGraphNode* const sgn){};
-	
-	inline bool                        hasAnimations()  {return _hasAnimations;}
-	inline bool                        playAnimations() {return _playAnimations;}
-	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
+	virtual void sceneUpdate(D32 sceneTime);
+	virtual void postLoad(SceneGraphNode* const sgn);
+	virtual	void onDraw();
+	inline  void render(SceneGraphNode* const sgn){};
+	virtual void preFrameDrawEnd() {}
+	virtual void setSpecialShaderConstants(ShaderProgram* const shader) {}
+
+	inline vectorImpl<std::string>&   getSubMeshes()   {return _subMeshes;}
 
 	inline void  addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
@@ -67,15 +66,13 @@ protected:
 	void computeTangents(){}	
 
 protected:
-	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
-	typedef unordered_map<U32, SubMesh*> subMeshRefMap;
+	typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;
+	typedef Unordered_map<U32, SubMesh*> subMeshRefMap;
 
 	bool _visibleToNetwork;
-	bool _playAnimations;
-	bool _hasAnimations;
 
-	std::vector<std::string > _subMeshes;
-	subMeshRefMap            _subMeshRefMap;
+	vectorImpl<std::string > _subMeshes;
+	subMeshRefMap             _subMeshRefMap;
 };
 
 #endif

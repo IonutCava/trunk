@@ -18,54 +18,37 @@
 #ifndef _RENDER_QUEUE_H_
 #define _RENDER_QUEUE_H_
 
-#include "core.h"
-class SceneGraphNode;
+#include "RenderBin.h"
+class SceneNode;
 
-struct RenderQueueItem{
-
-	SceneGraphNode  *_node;
-	P32              _sortKey;
-	U32              _stateHash;
-
-	RenderQueueItem() : _node(NULL){}
-	RenderQueueItem(P32 sortKey, SceneGraphNode *node );
-};
-
-struct RenderingOrder{
-	enum List{
-		NONE = 0,
-		FRONT_TO_BACK = 1,
-		BACK_TO_FRONT = 2,
-		BY_STATE = 3
-	};
-};
-
+///This class manages all of the RenderBins and renders them in the correct order
 DEFINE_SINGLETON( RenderQueue )
-	typedef std::vector< RenderQueueItem > RenderQueueStack;
+	typedef Unordered_map<RenderBin::RenderBinType, RenderBin* > RenderBinMap;
+	typedef Unordered_map<U16, RenderBin::RenderBinType > RenderBinIDType;
 
 public:
+	///
 	void sort();
 	void refresh();
+	void render();
 	void addNodeToQueue(SceneGraphNode* const sgn);
-	U32  getRenderQueueStackSize();
-	const RenderQueueItem& RenderQueue::getItem(I32 index);
+	U16 getRenderQueueStackSize();
+	inline U16 getRenderQueueBinSize() {return _sortedRenderBins.size();}
+	SceneGraphNode* getItem(U16 renderBin, U16 index);
+	RenderBin*      getBinSorted(U16 renderBin);
+	RenderBin*      getBin(U16 renderBin);
+	RenderBin*      getBin(RenderBin::RenderBinType rbType);
 
 private:
-	RenderQueue() {
-		_renderQueue.reserve(250);
-		_order = RenderingOrder::BACK_TO_FRONT;
-		_lowestKey = 0;
-		_highestKey = 0;
-	}
-	
-	mutable Lock _renderQueueGetMutex; 
+	~RenderQueue();
+	RenderBin* getBinForNode(SceneNode* const nodeType);
+	RenderBin* getOrCreateBin(const RenderBin::RenderBinType& rbType);
 
-	RenderQueueStack _opaqueStack;
-	RenderQueueStack _translucentStack;
-	RenderQueueStack _renderQueue;
-	RenderingOrder::List _order;
-	I32 _lowestKey;
-	I32 _highestKey;
+private:
+	RenderBinMap _renderBins;
+	RenderBinIDType _renderBinId;
+	vectorImpl<RenderBin* > _sortedRenderBins;
+
 END_SINGLETON
 
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="Divide"
 	ProjectGUID="{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
 	RootNamespace="Grafica"
@@ -18,7 +18,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)$(TargetFramework)\"
 			ConfigurationType="1"
 			CharacterSet="2"
 			>
@@ -40,13 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-<<<<<<< .mine
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\glm&quot;;&quot;$(EngineLibraries)\glfw\include&quot;;&quot;$(EngineLibraries)\glim\include&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_DEBUG;_CRT_SECURE_NO_WARNINGS"
-=======
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
-				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS"
->>>>>>> .r140
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -70,18 +65,10 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="true"
 				AdditionalOptions="/Y3"
-<<<<<<< .mine
-				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking_d.lib SDL.lib SDL_mixer.lib freeglut_static_d.lib OIS_static_d.lib expat_d.lib SILLY.lib pcre_d.lib libpng_d.lib libtiff_d.lib zlib_d.lib jpeg_d.lib freetype_d.lib ftgl_static_d.lib CEGUIBase_Static_d.lib CEGUIExpatParser_Static_d.lib CEGUISILLYImageCodec_Static_d.lib CEGUIOpenGLRenderer_Static_d.lib CEGUIFalagardWRBase_Static_d.lib"
-=======
-				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking_d.lib SDL.lib SDL_mixer.lib freeglut_d.lib OIS_static_d.lib freetype_d.lib expat_d.lib SILLY.lib pcre_d.lib libpng_d.lib libtiff_d.lib zlib_d.lib jpeg_d.lib CEGUIBase_Static_d.lib CEGUIExpatParser_Static_d.lib CEGUISILLYImageCodec_Static_d.lib CEGUIOpenGLRenderer_Static_d.lib CEGUIFalagardWRBase_Static_d.lib"
->>>>>>> .r140
+				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking_d.lib SDL.lib SDL_mixer.lib OIS_static_d.lib expat_d.lib SILLY.lib pcre_d.lib libpng_d.lib libtiff_d.lib zlib_d.lib jpeg_d.lib freetype_d.lib ftgl_static_d.lib glim_d.lib GLFW_d.lib glew32s_d.lib CEGUIBase_Static_d.lib CEGUIExpatParser_Static_d.lib CEGUISILLYImageCodec_Static_d.lib CEGUIOpenGLRenderer_Static_d.lib CEGUIFalagardWRBase_Static_d.lib Winmm.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
-<<<<<<< .mine
-				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
-=======
-				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
->>>>>>> .r140
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; libcmtd.lib;"
 				GenerateDebugInformation="true"
@@ -113,7 +100,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)$(TargetFramework)\"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -139,13 +126,8 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-<<<<<<< .mine
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\glm&quot;;&quot;$(EngineLibraries)\glfw\include&quot;;&quot;$(EngineLibraries)\glim\include&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
-=======
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
-				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS"
->>>>>>> .r140
 				StringPooling="true"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -166,15 +148,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib freeglut_static.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib ftgl_static.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib"
+				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib ftgl_static.lib glim.lib GLFW.lib glew32s.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib Winmm.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
-<<<<<<< .mine
-				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
-=======
-				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
->>>>>>> .r140
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\glfw\lib&quot;;&quot;$(EngineLibraries)\glim\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
 				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; LIBCMTD.lib"
+				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; LIBCMTD.lib;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -207,6 +185,324 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="Rendering"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath="..\..\Source Code\Rendering\DeferredLightingRenderer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\DeferredShadingRenderer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\ForwardRenderer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\Framerate.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\Rendering\Frustum.cpp"
+				>
+			</File>
+			<Filter
+				Name="Camera"
+				>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Camera\Camera.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Camera\Headers\Camera.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Camera\Headers\OrbitCamera.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="PostFX"
+				>
+				<File
+					RelativePath="..\..\Source Code\Rendering\PostFX\PostFX.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderOperator.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStage.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="CustomOperators"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\FXAAPreRenderOperator.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\FXAAPreRenderOperator.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="Headers"
+				>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\DeferredLightingRenderer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\DeferredShadingRenderer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\ForwardRenderer.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\FrameListener.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\Framerate.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\Frustum.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Headers\Renderer.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Lighting"
+				>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Lighting\Light.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Lighting\PointLight.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\Lighting\SpotLight.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\Light.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\PointLight.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\SpotLight.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="ShadowMapping"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\ParallelSplitShadowMaps.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\ShadowMap.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\SingleShadowMap.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ParallelSplitShadowMaps.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\SingleShadowMap.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="RenderPass"
+				>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\Reflector.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderBin.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderBinDelegate.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderBinMesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderBinParticles.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderBinTranslucent.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderBin.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinDelegate.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinMesh.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinParticles.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinTranslucent.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderPass.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
+		</Filter>
 		<Filter
 			Name="Dynamics"
 			>
@@ -258,6 +554,10 @@
 					>
 					<File
 						RelativePath="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAPIWrapper.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAsset.h"
 						>
 					</File>
 					<File
@@ -439,15 +739,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Source Code\GUI\GUIConsole.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Source Code\GUI\GUIElement.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\Source Code\GUI\GUIFlash.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Source Code\GUI\GUISplash.cpp"
 				>
 			</File>
 			<File
@@ -466,15 +766,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\Source Code\GUI\Headers\GUIConsole.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\Source Code\GUI\Headers\GUIElement.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\Source Code\GUI\Headers\GUIFlash.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\GUI\Headers\GUISplash.h"
 					>
 				</File>
 				<File
@@ -618,10 +918,6 @@
 				Name="Headers"
 				>
 				<File
-					RelativePath="..\..\Source Code\Utility\Headers\BoundingBox.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\Source Code\Utility\Headers\CRC.h"
 					>
 				</File>
@@ -639,6 +935,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Utility\Headers\UnorderedMap.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\Vector.h"
 					>
 				</File>
 				<File
@@ -709,7 +1009,15 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\Source Code\Core\Math\Headers\MathFPU.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Core\Math\Headers\MathHelper.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Core\Math\Headers\MathSIMD.h"
 						>
 					</File>
 					<File
@@ -724,6 +1032,22 @@
 						RelativePath="..\..\Source Code\Core\Math\Headers\Transform.h"
 						>
 					</File>
+				</Filter>
+				<Filter
+					Name="BoundingVolumes"
+					>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter
@@ -1133,7 +1457,19 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\gluOverrides.cpp"
 						>
 					</File>
 					<File
@@ -1155,11 +1491,11 @@
 							Name="Headers"
 							>
 							<File
-								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.h"
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h"
 								>
 							</File>
 							<File
-								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.h"
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h"
 								>
 							</File>
 						</Filter>
@@ -1175,11 +1511,23 @@
 								>
 							</File>
 							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthArrayBufferObject.cpp"
+								>
+							</File>
+							<File
 								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp"
 								>
 							</File>
 							<File
 								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glMSTextureBufferObject.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureArrayBufferObject.cpp"
 								>
 							</File>
 							<File
@@ -1194,11 +1542,23 @@
 									>
 								</File>
 								<File
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthArrayBufferObject.h"
+									>
+								</File>
+								<File
 									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthBufferObject.h"
 									>
 								</File>
 								<File
 									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glMSTextureBufferObject.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureArrayBufferObject.h"
 									>
 								</File>
 								<File
@@ -1227,14 +1587,14 @@
 							Name="VertexBufferObject"
 							>
 							<File
-								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexBufferObject.cpp"
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp"
 								>
 							</File>
 							<Filter
 								Name="Headers"
 								>
 								<File
-									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexBufferObject.h"
+									RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h"
 									>
 								</File>
 							</Filter>
@@ -1251,6 +1611,10 @@
 							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShaderProgram.cpp"
 							>
 						</File>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp"
+							>
+						</File>
 						<Filter
 							Name="Headers"
 							>
@@ -1260,6 +1624,10 @@
 							</File>
 							<File
 								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShaderProgram.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glUniformBufferObject.h"
 								>
 							</File>
 						</Filter>
@@ -1465,6 +1833,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Hardware\Video\Headers\RenderAPIEnums.h"
 						>
 					</File>
@@ -1523,6 +1895,10 @@
 							RelativePath="..\..\Source Code\Hardware\Video\Textures\Headers\Texture.h"
 							>
 						</File>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\Textures\Headers\TextureDescriptor.h"
+							>
+						</File>
 					</Filter>
 				</Filter>
 				<Filter
@@ -1531,6 +1907,10 @@
 					<Filter
 						Name="FrameBufferObject"
 						>
+						<File
+							RelativePath="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\FrameBufferObject.cpp"
+							>
+						</File>
 						<Filter
 							Name="Headers"
 							>
@@ -1683,6 +2063,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Managers\RenderPassManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Managers\SceneManager.cpp"
 				>
 			</File>
@@ -1707,6 +2091,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Managers\Headers\LightManager.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Managers\Headers\RenderPassManager.h"
 					>
 				</File>
 				<File
@@ -1810,6 +2198,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\Geometry\Shapes\SkinnedMesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Shapes\SkinnedSubMesh.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\Geometry\Shapes\SubMesh.cpp"
 					>
 				</File>
@@ -1826,6 +2222,14 @@
 					</File>
 					<File
 						RelativePath="..\..\Source Code\Geometry\Shapes\Headers\Object3D.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Geometry\Shapes\Headers\SkinnedMesh.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h"
 						>
 					</File>
 					<File
@@ -1882,7 +2286,23 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\assets\shaders\GLSL\DepthOfField.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\depthPass.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\FXAA.glsl"
+					>
+				</File>
+				<File
 					RelativePath="..\..\assets\shaders\GLSL\grass.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl"
 					>
 				</File>
 				<File
@@ -1891,6 +2311,10 @@
 				</File>
 				<File
 					RelativePath="..\..\assets\shaders\GLSL\postProcessing.glsl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\assets\shaders\GLSL\shadowPreviewDirectional.glsl"
 					>
 				</File>
 				<File
@@ -1910,10 +2334,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\assets\shaders\GLSL\tree.glsl"
-					>
-				</File>
-				<File
 					RelativePath="..\..\assets\shaders\GLSL\water.glsl"
 					>
 				</File>
@@ -1925,7 +2345,15 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert"
+						>
+					</File>
+					<File
 						RelativePath="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaultsBump.vert"
 						>
 					</File>
 					<File
@@ -1949,6 +2377,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\phong_directional_light.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\phong_light_loop.frag"
+						>
+					</File>
+					<File
 						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\phong_lighting.frag"
 						>
 					</File>
@@ -1957,11 +2393,39 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\phong_point_light.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\phong_spot_light.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_directional.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_point.frag"
+						>
+					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag"
+						>
+					</File>
+					<File
 						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\shadowMapping.frag"
 						>
 					</File>
 					<File
 						RelativePath="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="geometryAtoms"
+					>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom"
 						>
 					</File>
 				</Filter>
@@ -1999,6 +2463,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Source Code\Graphs\SceneNodeRenderState.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Graphs\SGNRenderCalls.cpp"
 				>
 			</File>
@@ -2015,6 +2483,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Graphs\Headers\SceneNode.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h"
 					>
 				</File>
 				<File
@@ -2143,8 +2615,6 @@
 			Name="LIBS"
 			>
 			<Filter
-<<<<<<< .mine
-=======
 				Name="ReCast"
 				>
 				<File
@@ -2205,7 +2675,6 @@
 				</Filter>
 			</Filter>
 			<Filter
->>>>>>> .r140
 				Name="Detour"
 				>
 				<File
@@ -2333,233 +2802,6 @@
 				RelativePath="..\..\localisation\enGB.ini"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Rendering"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
-			>
-			<File
-				RelativePath="..\..\Source Code\Rendering\Framerate.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\Rendering\Frustum.cpp"
-				>
-			</File>
-			<Filter
-				Name="Camera"
-				>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Recast.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\Camera\Camera.cpp"
->>>>>>> .r140
-					>
-				</File>
-				<Filter
-					Name="Headers"
-					>
-					<File
-						RelativePath="..\..\Source Code\Rendering\Camera\Headers\Camera.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\Camera\Headers\OrbitCamera.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="PostFX"
-				>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastAlloc.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\PostFX\PostFX.cpp"
->>>>>>> .r140
-					>
-				</File>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastArea.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStage.cpp"
->>>>>>> .r140
-					>
-				</File>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastContour.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp"
->>>>>>> .r140
-					>
-				</File>
-<<<<<<< .mine
-				<File
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastFilter.cpp"
-=======
-				<Filter
-					Name="Headers"
->>>>>>> .r140
-					>
-					<File
-						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderOperator.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStage.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="CustomOperators"
-					>
-					<File
-						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\DoFPreRenderOperator.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\SSAOPreRenderOperator.cpp"
-						>
-					</File>
-					<Filter
-						Name="Headers"
-						>
-						<File
-							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="Headers"
-				>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastLayers.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\Headers\FrameListener.h"
->>>>>>> .r140
-					>
-				</File>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMesh.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\Headers\Framerate.h"
->>>>>>> .r140
-					>
-				</File>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMeshDetail.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\Headers\Frustum.h"
->>>>>>> .r140
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Lighting"
-				>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRasterization.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\Lighting\Light.cpp"
->>>>>>> .r140
-					>
-				</File>
-				<File
-<<<<<<< .mine
-					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRegion.cpp"
-=======
-					RelativePath="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp"
->>>>>>> .r140
-					>
-				</File>
-				<Filter
-					Name="Headers"
-					>
-					<File
-<<<<<<< .mine
-						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\Recast.h"
-=======
-						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\Light.h"
->>>>>>> .r140
-						>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="RenderPass"
-				>
-				<File
-					RelativePath="..\..\Source Code\Rendering\RenderPass\Reflector.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp"
-					>
-				</File>
-				<Filter
-					Name="Headers"
-					>
-					<File
-<<<<<<< .mine
-						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAlloc.h"
-=======
-						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h"
->>>>>>> .r140
-						>
-					</File>
-					<File
-<<<<<<< .mine
-						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAssert.h"
-=======
-						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h"
->>>>>>> .r140
-						>
-					</File>
-				</Filter>
-			</Filter>
 		</Filter>
 		<File
 			RelativePath="..\..\Source Code\config.h"

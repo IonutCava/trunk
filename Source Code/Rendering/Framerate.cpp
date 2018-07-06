@@ -1,8 +1,8 @@
 #include "Headers/Framerate.h"
 #include "Core/Headers/Console.h"
 
-void Framerate::Init(F32 tfps){
-  _targetFps = tfps;
+void Framerate::Init(U8 tfps){
+  _targetFrameRate = tfps;
    
 #if defined( __WIN32__ ) || defined( _WIN32 )
   QueryPerformanceCounter(&_framedelay);
@@ -28,9 +28,9 @@ void Framerate::SetSpeedFactor(){
 
 
   _speedfactor = (F32)(_currentticks.QuadPart-_framedelay.QuadPart)/
-	            ((F32)_tickspersecond.QuadPart/_targetFps);
+	            ((F32)_tickspersecond.QuadPart/_targetFrameRate);
 
-  _fps = _targetFps/_speedfactor;
+  _fps = _targetFrameRate/_speedfactor;
   
   if (_speedfactor <= 0)
     _speedfactor = 1;
@@ -52,7 +52,7 @@ void Framerate::benchmark(){
 	//Average FPS
 	if(_count > 500){
 		_averageFps /= _count;
-		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), _averageFps,_maxFps,_minFps); 
+		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), _averageFps,_maxFps,_minFps,1000.0f/_averageFps); 
 		_count = 0;
 	}
 	++_count;

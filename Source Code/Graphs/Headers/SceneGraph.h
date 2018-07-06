@@ -17,6 +17,7 @@
 
 #ifndef _SCENE_GRAPH_H_
 #define _SCENE_GRAPH_H_
+#define SCENE_GRAPH_UPDATE(pointer) boost::bind(&SceneGraph::update, pointer)
 
 #include "SceneGraphNode.h"
 class Ray;
@@ -38,7 +39,7 @@ class SceneGraph  {
 		return _root; 
 	}
 
-	inline  std::vector<BoundingBox >& getBBoxes(){
+	inline  vectorImpl<BoundingBox >& getBBoxes(){
 		return _root->getBBoxes(_boundingBoxes);
 	}
 
@@ -46,7 +47,7 @@ class SceneGraph  {
 		return _root->findNode(name,sceneNodeName);
 	}
 	
-	void render();
+
 	/// Update transforms and bounding boxes
 	void update();
 	/// Update all nodes. Called from "updateSceneState" from class Scene
@@ -64,9 +65,8 @@ class SceneGraph  {
 private:
 	boost::mutex    _rootAccessMutex; 
 	SceneGraphNode* _root;
-	Scene*          _scene;
 	bool            _updateRunning;
-	std::vector<BoundingBox>        _boundingBoxes;
-	std::vector<SceneGraphNode* >   _pendingDeletionNodes;
+	vectorImpl<BoundingBox>        _boundingBoxes;
+	vectorImpl<SceneGraphNode* >   _pendingDeletionNodes;
 };
 #endif

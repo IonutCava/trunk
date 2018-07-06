@@ -18,7 +18,7 @@ void WarSceneAIActionList::addEntityRef(AIEntity* entity){
 	}
 }
 
-void WarSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content){
+void WarSceneAIActionList::processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content){
 	switch(msg){
 		case REQUEST_DISTANCE_TO_TARGET:
 			updatePositions();

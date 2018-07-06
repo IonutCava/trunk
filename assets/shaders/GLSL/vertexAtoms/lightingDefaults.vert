@@ -1,85 +1,56 @@
-varying vec4 vPixToLightTBN[1];
-varying vec3 vPixToEyeTBN;
-varying vec3 vVertexMV;
-varying vec3 vPixToLightMV;
-varying vec3 vLightDirMV;
-varying vec4 texCoord[2];
-varying vec3 vNormalMV;
+varying vec3 vPixToLightTBN[MAX_LIGHT_COUNT];
+varying vec3 vPixToLightMV[MAX_LIGHT_COUNT];
+varying vec3 vPixToEyeTBN[MAX_LIGHT_COUNT];
+varying vec4 shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
 
-uniform int mode;
-uniform int enable_shadow_mapping;
-uniform mat4 lightProjectionMatrix;
+varying vec4 _vertexMV;
+varying vec3 _normalMV;
+
+uniform bool enable_shadow_mapping;
+uniform int light_count;
+uniform mat4 lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
+
+#include "lightingDefaultsBump.vert"
+
+void computeLightVectorsPhong(){
+	vec3 tmpVec; 
+
+	for(int i = 0; i < MAX_LIGHT_COUNT; i++){
+		if(light_count == i) break;
+		vec4 vLightPosMV = gl_LightSource[i].position;	
+		if(vLightPosMV.w == 0.0){ ///<Directional Light
+			tmpVec = -vLightPosMV.xyz;					
+		}else{///<Omni or spot. Change later if spot
+			tmpVec = vLightPosMV.xyz - _vertexMV.xyz;	
+		}
+
+		vPixToLightMV[i] = tmpVec;
+		vPixToLightTBN[i] = tmpVec;
+		vPixToEyeTBN[i] = -_vertexMV.xyz;
+	}
+}
 
 
-#define LIGHT_DIRECTIONAL		0.0
-#define LIGHT_OMNIDIRECTIONAL	1.0
-#define LIGHT_SPOT				2.0
+void computeLightVectors(in bool bump){
 
-
-#define MODE_PHONG      0
-#define MODE_BUMP		1
-#define MODE_PARALLAX	2
-#define MODE_RELIEF		3
-
-void computeLightVectors(){
-
-	texCoord[0].st = texCoordData;
 	vec3 n = normalize(gl_NormalMatrix * normalData);
 	vec3 t = normalize(gl_NormalMatrix * tangentData);
 	vec3 b = cross(n, t);
+	_normalMV = n;
+	// Transformed position 
+	_vertexMV = gl_ModelViewMatrix * vertexData;
 	
-	vNormalMV = n;
-
-	vec4 vLightPosMV = gl_LightSource[0].position;	
-	vVertexMV = vec3(gl_ModelViewMatrix * vertexData);	
-	
-	vec3 tmpVec; 
-
-	if(vLightPosMV.w == LIGHT_DIRECTIONAL)
-		tmpVec = -vLightPosMV.xyz;					
-	else
-		tmpVec = vLightPosMV.xyz - vVertexMV.xyz;	
-
-	vPixToLightMV = tmpVec;
-	
-	if(mode == MODE_PHONG){
-		vPixToLightTBN[0].xyz = tmpVec.xyz;
-		vPixToLightTBN[0].w = vLightPosMV.w;
-		vPixToEyeTBN = -vVertexMV;
-		
-	}
-	else
-	{
-		vPixToLightTBN[0].x = dot(tmpVec, t);
-		vPixToLightTBN[0].y = dot(tmpVec, b);
-		vPixToLightTBN[0].z = dot(tmpVec, n);
-		// Point or directional?
-		vPixToLightTBN[0].w = vLightPosMV.w;	
-			
-		//View vector
-		tmpVec = -vVertexMV;
-		vPixToEyeTBN.x = dot(tmpVec, t);
-		vPixToEyeTBN.y = dot(tmpVec, b);
-		vPixToEyeTBN.z = dot(tmpVec, n);
-	}
-
-	if(length(gl_LightSource[0].spotDirection) > 0.001)	{
-		// Spot light
-		vLightDirMV = normalize(gl_LightSource[0].spotDirection);
-		vPixToLightTBN[0].w = LIGHT_SPOT;
+	if(bump == false){
+		computeLightVectorsPhong();
 	}else{
-		// Not a spot light
-		vLightDirMV = gl_LightSource[0].spotDirection;
+		computeLightVectorsBump(t,b,n);
 	}
-	
 
-	if(enable_shadow_mapping != 0) {
-		// Transformed position 
-		vec4 pos = gl_ModelViewMatrix * vertexData;
+	if(enable_shadow_mapping) {
 		// position multiplied by the inverse of the camera matrix
-		pos = modelViewInvMatrix * pos;
 		// position multiplied by the light matrix. The vertex's position from the light's perspective
-		texCoord[1] = lightProjectionMatrix * pos;
+		for(int i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++){
+			shadowCoord[i] = lightProjectionMatrices[i] * modelViewInvMatrix * _vertexMV;
+		}
 	}	
-
 }

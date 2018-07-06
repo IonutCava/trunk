@@ -17,36 +17,83 @@
 
 #ifndef _GL_RESOURCES_H_
 #define _GL_RESOURCES_H_
+
+#if defined( __WIN32__ ) || defined( _WIN32 )
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  include "windows.h"
+#  ifdef min
+#    undef min
+#  endif
+#  ifdef max
+#	 undef max
+#  endif
+//////////////////////////////////////////////////////////////////////
+////////////////////////////////////Needed Linux Headers//////////////
+#elif defined OIS_LINUX_PLATFORM
+#  include <X11/Xlib.h>
+//////////////////////////////////////////////////////////////////////
+////////////////////////////////////Needed Mac Headers//////////////
+#elif defined OIS_APPLE_PLATFORM
+#  include <Carbon/Carbon.h>
+#endif
+
 #if !defined(__gl_h_) && !defined(__GL_H__) && !defined(__X_GL_H) 
 
-#define GLEW_STATIC
-<<<<<<< .mine
-///Static link to freeglut
-#ifndef FREEGLUT_STATIC
-#define FREEGLUT_STATIC
-#define USE_FREEGLUT
-#endif
+//#define GLEW_STATIC
+
 ///Static link to CEGUI
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
 #endif 
 
 #include <glew.h>
-#include <freeglut.h> 
-
-=======
-#include <glew.h>
-#include <freeglut.h> 
->>>>>>> .r140
+#include <GL/glfw.h>
 #include <RendererModules/OpenGL/CEGUIOpenGLRenderer.h>
 
+
 #ifdef _DEBUG
-#define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__,#Func))
+namespace Divide {
+	namespace GL {
+		///from: https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
+		///Check the current operation for errors
+		void DebugOutputToFile(GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message);
+		void DebugOutputToFileAMD(GLenum source, GLuint id, GLenum severity, const GLchar* message);
+		static void CALLBACK DebugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam){
+			DebugOutputToFile(source, type, id, severity, message);
+		}
+		static void CALLBACK DebugCallbackAMD(GLenum source, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam){
+			DebugOutputToFileAMD(source, id, severity, message);
+		}
+		///Check the current operation for errors
+		void GLCheckError(const std::string& File, GLuint Line, GLchar* operation);
+		///Clear previous error codes
+		void GLFlushErrors();
+
+	}
+}
+#define GLCheck(Func) (Divide::GL::GLFlushErrors(), (Func), Divide::GL::GLCheckError(__FILE__, __LINE__,#Func))
+
 #else
  #define GLCheck(Func) (Func)
 #endif
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+///State the various attribute locations to use in GLSL with VAO/VBO's
+namespace Divide {
+  namespace GL {
+	enum {
+		 VERTEX_POSITION_LOCATION    = 0,
+		 VERTEX_NORMAL_LOCATION      = 1,
+		 VERTEX_TEXCOORD_LOCATION    = 2,
+		 VERTEX_TANGENT_LOCATION     = 3,
+		 VERTEX_BITANGENT_LOCATION   = 4,
+		 VERTEX_BONE_WEIGHT_LOCATION = 5,
+		 VERTEX_BONE_INDICE_LOCATION = 6
+	};
+  }
+}
 ///Half float conversion from: http://www.opengl.org/discussion_boards/archive/index.php/t-154530.html [thx gking]
 namespace glDataConversion {
 	union nv_half_data {
@@ -155,6 +202,46 @@ namespace glDataConversion {
 	inline static GLuint ftopacked(GLfloat val) {
 	}
 };
+/* ARB_vertex_type_2_10_10_10_rev */
+#define P10(f) ((I32)((f) * 0x1FF))
+#define UP10(f) ((I32)((f) * 0x3FF))
+#define PN2(f) ((I32)((f) < 0.333 ? 3 /* = -0.333 */ : (f) < 1 ? 0 /* = 0.333 */ : 1)) /* normalized */
+#define P2(f) ((I32)(f)) /* unnormalized */
+#define UP2(f) ((I32)((f) * 0x3))
+#define P1010102(x,y,z,w) (P10(x) | (P10(y) << 10) | (P10(z) << 20) | (P2(w) << 30))
+#define PN1010102(x,y,z,w) (P10(x) | (P10(y) << 10) | (P10(z) << 20) | (PN2(w) << 30))
+#define UP1010102(x,y,z,w) (UP10(x) | (UP10(y) << 10) | (UP10(z) << 20) | (UP2(w) << 30))
 
+/*----------- GLU overrides ------*/
+template<class T>
+class mat4;
+
+namespace Divide {
+	namespace GL {
+
+mat4<GLfloat> _ortho(GLfloat left, 
+					 GLfloat right,
+					 GLfloat bottom,
+					 GLfloat top,
+					 GLfloat zNear,
+					 GLfloat zFar);
+
+mat4<GLfloat> _perspective(GLfloat fovy, 
+						   GLfloat aspect,
+						   GLfloat zNear,
+						   GLfloat zFar);
+
+///Code by Fadi Chehimi from http://www.khronos.org/message_boards/viewtopic.php?f=4&t=502
+mat4<GLfloat> _LookAt(GLfloat eyeX, 
+					  GLfloat eyeY,
+		 			  GLfloat eyeZ,
+		 		 	  GLfloat lookAtX,
+			          GLfloat lookAtY,
+			          GLfloat lookAtZ,
+			          GLfloat upX,
+			          GLfloat upY,
+			          GLfloat upZ);
+	}
+}
 #endif
 #endif

@@ -1,5 +1,5 @@
 #include "Headers/d3dEnumTable.h"
-unsigned int d3dTextureTypeTable[TEXTURE_TYPE_PLACEHOLDER];
+unsigned int d3dTextureTypeTable[TextureType_PLACEHOLDER];
 
 namespace D3D_ENUM_TABLE {
 
@@ -8,6 +8,10 @@ namespace D3D_ENUM_TABLE {
 		d3dTextureTypeTable[TEXTURE_2D] = 1;
 		d3dTextureTypeTable[TEXTURE_3D] = 2;
 		d3dTextureTypeTable[TEXTURE_CUBE_MAP] = 3;
+		d3dTextureTypeTable[TEXTURE_2D_ARRAY] = 4;
+		d3dTextureTypeTable[TEXTURE_CUBE_ARRAY] = 5;
+		d3dTextureTypeTable[TEXTURE_2D_MS] = 6;
+		d3dTextureTypeTable[TEXTURE_2D_ARRAY_MS] = 7;
 
 	}
 }

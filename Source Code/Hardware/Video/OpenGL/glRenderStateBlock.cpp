@@ -3,8 +3,6 @@
 #include "Headers/glEnumTable.h"
 #include "Core\Headers\Console.h"
 
-void GLCheckError(const std::string& File, unsigned int Line, char* operation);
-
 #define SHOULD_TOGGLE(state) (!oldState || oldState->_descriptor.state != _descriptor.state)
 
 #define TOGGLE_NO_CHECK(state, enum) if(_descriptor.state) { \
@@ -15,9 +13,9 @@ void GLCheckError(const std::string& File, unsigned int Line, char* operation);
 
 #define TOGGLE_WITH_CHECK(state, enum) if(!oldState || oldState->_descriptor.state != _descriptor.state) { \
 											if(_descriptor.state) { \
-												glEnable(enum);  \
+												GLCheck(glEnable(enum));  \
 											} else { \
-												glDisable(enum); \
+												GLCheck(glDisable(enum)); \
 											} \
 									   }
 
@@ -48,7 +46,7 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
 
    if(SHOULD_TOGGLE(_alphaTestFunc) || SHOULD_TOGGLE(_alphaTestRef)){
       GLCheck(glAlphaFunc(glCompareFuncTable[_descriptor._alphaTestFunc], 
-		                   (F32) _descriptor._alphaTestRef * 1.0f/255.0f));
+		                   (GLfloat) _descriptor._alphaTestRef * 1.0f/255.0f));
    }
 
    if(SHOULD_TOGGLE(_writeRedChannel) || 
@@ -74,9 +72,10 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
       if (_descriptor._zBias == 0){
          GLCheck(glDisable(GL_POLYGON_OFFSET_FILL));
       } else {
-         F32 bias = _descriptor._zBias * 10000.0f;
+         GLfloat units  = _descriptor._zUnits; 
+		 GLfloat factor = _descriptor._zBias;
          GLCheck(glEnable(GL_POLYGON_OFFSET_FILL));
-         GLCheck(glPolygonOffset(bias, bias));
+         GLCheck(glPolygonOffset( factor, units));
       } 
    }
    
@@ -104,7 +103,7 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
       GLCheck(glStencilMask(_descriptor._stencilWriteMask));
    }
 
-   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+   GLCheck(glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE));
 
    if(SHOULD_TOGGLE(_fillMode)){
       GLCheck(glPolygonMode(GL_FRONT_AND_BACK, glFillModeTable[_descriptor._fillMode]));

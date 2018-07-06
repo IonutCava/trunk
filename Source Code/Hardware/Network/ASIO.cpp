@@ -54,7 +54,7 @@ void ASIO::HandleGeometryAppendOpCode(WorldPacket& p){
 	PRINT_FN(Locale::get("ASIO_PAK_REC_GEOM_APPEND"));
 	U8 size;
 	p >> size;
-	std::vector<FileData> patch;
+	vectorImpl<FileData> patch;
 	for(U8 i = 0; i < size; i++){
 
 		FileData d;

@@ -1,10 +1,12 @@
 #include "Headers/Terrain.h"
-#include "Quadtree/Headers/Quadtree.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
-#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Headers/TerrainDescriptor.h"
+
+#include "Core/Headers/ParamHandler.h"
+#include "Quadtree/Headers/Quadtree.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 #define COORD(x,y,w)	((y)*(w)+(x))
 
@@ -30,9 +32,9 @@ bool Terrain::unload(){
 void Terrain::loadVisualResources(){
 
 
-	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->setTextureWrap(Texture::TextureWrap_Repeat,
-															  Texture::TextureWrap_Repeat,
-															  Texture::TextureWrap_Repeat);
+	_terrainTextures[TERRAIN_TEXTURE_DIFFUSE]->setTextureWrap(TEXTURE_REPEAT,
+															  TEXTURE_REPEAT,
+															  TEXTURE_REPEAT);
 
 
 	if(_terrainTextures[TERRAIN_TEXTURE_ALPHA] != NULL){
@@ -46,7 +48,7 @@ void Terrain::loadVisualResources(){
 	_terrainRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
 
 	///For now, terrain doesn't cast shadows
-	addToDrawExclusionMask(SHADOW_STAGE);
+	getSceneNodeRenderState().addToDrawExclusionMask(SHADOW_STAGE);
 }
 
 bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
@@ -70,9 +72,8 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	_boundingBox.MultiplyMax(vec3<F32>(1,_terrainHeightScaleFactor,1));
 
 	_groundVBO = GFX_DEVICE.newVBO();
-	std::vector<vec3<F32> >&		vertexData	= _groundVBO->getPosition();
-	std::vector<vec3<F32> >&		normalData	= _groundVBO->getNormal();
-	std::vector<vec3<F32> >&		tangentData	= _groundVBO->getTangent();
+	vectorImpl<vec3<F32> >&		normalData	= _groundVBO->getNormal();
+	vectorImpl<vec3<F32> >&		tangentData	= _groundVBO->getTangent();
 
 	U8 d; U32 t, id;
 	bool alpha = false;
@@ -89,17 +90,17 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	if(_terrainWidth%2==0)	_terrainWidth++;
 	if(_terrainHeight%2==0)	_terrainHeight++;
 
-	vertexData.resize(_terrainWidth*_terrainHeight);
+	_groundVBO->resizePositionCount(_terrainWidth*_terrainHeight);
 	normalData.resize(_terrainWidth*_terrainHeight);
 	tangentData.resize(_terrainWidth*_terrainHeight);
-
+	vec3<F32> vertexData;
 	for(U32 j=0; j < _terrainHeight; j++) {
 		for(U32 i=0; i < _terrainWidth; i++) {
 
 			U32 idxHM = COORD(i,j,_terrainWidth);
-			vertexData[idxHM].x = _boundingBox.getMin().x + ((F32)i) * 
+			vertexData.x = _boundingBox.getMin().x + ((F32)i) * 
 				                (_boundingBox.getMax().x - _boundingBox.getMin().x)/(_terrainWidth-1);
-			vertexData[idxHM].z = _boundingBox.getMin().z + ((F32)j) * 
+			vertexData.z = _boundingBox.getMin().z + ((F32)j) * 
 				                (_boundingBox.getMax().z - _boundingBox.getMin().z)/(_terrainHeight-1);
 			U32 idxIMG = COORD(	i<heightmapWidth? i : i-1,
 								j<heightmapHeight? j : j-1,
@@ -107,8 +108,9 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 			F32 h = (F32)(data[idxIMG*d + 0] + data[idxIMG*d + 1] + data[idxIMG*d + 2])/3.0f;
 
-			vertexData[idxHM].y = (_boundingBox.getMin().y + ((F32)h) * 
+			vertexData.y = (_boundingBox.getMin().y + ((F32)h) * 
 				                 (_boundingBox.getMax().y - _boundingBox.getMin().y)/(255)) * _terrainHeightScaleFactor;
+			_groundVBO->modifyPositionValue(idxHM,vertexData);
 
 		}
 	}
@@ -123,8 +125,8 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
 			U32 idx = COORD(i,j,_terrainWidth);
 			
-			vec3<F32> vU = vertexData[COORD(i+offset, j+0, _terrainWidth)] - vertexData[COORD(i-offset, j+0, _terrainWidth)];
-			vec3<F32> vV = vertexData[COORD(i+0, j+offset, _terrainWidth)] - vertexData[COORD(i+0, j-offset, _terrainWidth)];
+			vec3<F32> vU = _groundVBO->getPosition(COORD(i+offset, j+0, _terrainWidth)) -  _groundVBO->getPosition(COORD(i-offset, j+0, _terrainWidth));
+			vec3<F32> vV = _groundVBO->getPosition(COORD(i+0, j+offset, _terrainWidth)) -  _groundVBO->getPosition(COORD(i+0, j-offset, _terrainWidth));
 
 			normalData[idx].cross(vV, vU);
 			normalData[idx].normalize();
@@ -175,14 +177,14 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 	infinitePlane.setFlag(true); //No default material
 	_plane = CreateResource<Quad3D>(infinitePlane);
 
-	F32 depth = GET_ACTIVE_SCENE()->getWaterDepth();
-	F32 height = GET_ACTIVE_SCENE()->getWaterLevel()- depth;
-	vec3<F32> eyePos(0.0f, 0.0f, 0.0f);
-	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("zFar");
-	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(eyePos.x - _farPlane, height, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(eyePos.x + _farPlane, height, eyePos.z - _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(eyePos.x - _farPlane, height, eyePos.z + _farPlane));
-	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(eyePos.x + _farPlane, height, eyePos.z + _farPlane));
+	F32 depth = GET_ACTIVE_SCENE()->state()->getWaterDepth();
+	F32 height = GET_ACTIVE_SCENE()->state()->getWaterLevel()- depth;
+	_farPlane = 2.0f * ParamHandler::getInstance().getParam<F32>("runtime.zFar");
+	_plane->setCorner(Quad3D::TOP_LEFT, vec3<F32>(   -_farPlane, height, -_farPlane));
+	_plane->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(   _farPlane, height, -_farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(-_farPlane, height,  _farPlane));
+	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(_farPlane, height,  _farPlane));
+	_plane->getSceneNodeRenderState().setDrawState(false);
 
 	return true;
 }
@@ -197,19 +199,17 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 	_groundVBO->Create();
 	_planeSGN = _node->addNode(_plane);
 	_plane->computeBoundingBox(_planeSGN);
-	_plane->setDrawState(false);
 	_planeSGN->setActive(false);
 	_planeTransform = _planeSGN->getTransform();
 	computeBoundingBox(_node);
 	ShaderProgram* s = getMaterial()->getShaderProgram();
 	s->bind();
 		s->Uniform("alphaTexture", _alphaTexturePresent);
-		s->Uniform("detail_scale", 100.0f);
-		s->Uniform("diffuse_scale", 100.0f);
+		s->Uniform("detail_scale", 1000.0f);
+		s->Uniform("diffuse_scale", 250.0f);
 		s->Uniform("bbox_min", _boundingBox.getMin());
 		s->Uniform("bbox_max", _boundingBox.getMax());
-		s->Uniform("water_height", GET_ACTIVE_SCENE()->getWaterLevel());
-		s->Uniform("enable_shadow_mapping", ParamHandler::getInstance().getParam<bool>("enableShadows"));
+		s->Uniform("water_height", GET_ACTIVE_SCENE()->state()->getWaterLevel());
 	s->unbind();
 	
 }
@@ -223,8 +223,8 @@ bool Terrain::computeBoundingBox(SceneGraphNode* const sgn){
 	return  SceneNode::computeBoundingBox(sgn);
 }
 
-void Terrain::initializeVegetation(TerrainDescriptor* terrain) {	
-	std::vector<Texture2D*> grass;
+void Terrain::initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNode* const terrainSGN) {	
+	vectorImpl<Texture2D*> grass;
 	ResourceDescriptor grassBillboard1("Grass Billboard 1");
 	grassBillboard1.setResourceLocation(terrain->getVariable("grassBillboard1"));
 	ResourceDescriptor grassBillboard2("Grass Billboard 2");
@@ -245,11 +245,11 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 									grass),
 				  "grass");
 	toggleVegetation(true);
-	 _veg->initialize(_grassShader,_name);
+	 _veg->initialize(_grassShader,this,terrainSGN);
 }
 
 
-void Terrain::addTexture(TERRAIN_TEXTURE_USAGE channel, Texture2D* const texture) {
+void Terrain::addTexture(TerrainTextureUsage channel, Texture2D* const texture) {
 	assert(texture != NULL);
 	std::pair<TerrainTextureMap::iterator, bool > result;
 	//Try and add it to the map

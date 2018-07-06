@@ -26,7 +26,7 @@ typedef Texture Texture2D;
 class FrameBufferObject;
 class DoFPreRenderOperator : public PreRenderOperator {
 public:
-	DoFPreRenderOperator(ShaderProgram* const bloomShader, Quad3D* const target, FrameBufferObject* result, const vec2<U16>& resolution);
+	DoFPreRenderOperator(Quad3D* const target, FrameBufferObject* result, const vec2<U16>& resolution);
 	~DoFPreRenderOperator();
 
 	void operation();
@@ -35,8 +35,6 @@ public:
 private:
 	ShaderProgram* _dofShader;
 	FrameBufferObject* _outputFBO;
-	FrameBufferObject* _tempDepthOfFieldFBO;
-
 };
 
 #endif

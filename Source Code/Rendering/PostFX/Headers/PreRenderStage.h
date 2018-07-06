@@ -1,5 +1,5 @@
-#ifndef _PRE_RENDER_STAGE_H_
-#define _PRE_RENDER_STAGE_H_
+#ifndef _PRE_RenderStage_H_
+#define _PRE_RenderStage_H_
 
 #include "core.h"
 
@@ -15,7 +15,7 @@ public:
 	void reshape(I32 width, I32 height);
 
 private:
-	std::vector<PreRenderOperator* >	_operators;
+	vectorImpl<PreRenderOperator* >	_operators;
 	bool								_isValid;		//True if the filter is valid
 };
 

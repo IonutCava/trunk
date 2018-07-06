@@ -56,7 +56,7 @@ void Quadtree::Build(BoundingBox& terrainBBox,
 	_root->Build(0, vec2<U32>(0,0), HMsize, minHMSize);
 }
 
-BoundingBox& Quadtree::computeBoundingBox(const std::vector<vec3<F32> >& vertices){
+BoundingBox& Quadtree::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
 	assert(_root);
 	assert(!vertices.empty());
 	 _root->computeBoundingBox(vertices);

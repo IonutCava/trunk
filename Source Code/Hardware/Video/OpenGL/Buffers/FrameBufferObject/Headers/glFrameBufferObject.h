@@ -17,29 +17,42 @@
 
 #ifndef _GL_FRAME_BUFFER_OBJECT_H
 #define _GL_FRAME_BUFFER_OBJECT_H
-
+#include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
 
 class glFrameBufferObject : public FrameBufferObject {
 
 public:
 
-	glFrameBufferObject() : FrameBufferObject() {};
+	glFrameBufferObject(FBOType type) : FrameBufferObject(type)
+	{
+		_textureId[0] = 0;
+		_textureId[1] = 0;
+		_textureId[2] = 0;
+		_textureId[3] = 0;
+		_depthId      = 0;
+		_imageLayers  = 0;
+	}
 	virtual ~glFrameBufferObject() {}
+	
+	virtual bool Create(GLushort width, GLushort height, GLubyte imageLayers = 0);
+	virtual void Destroy();
+	virtual void DrawToLayer(GLubyte face, GLubyte layer) {} ///<Use by multilayerd FBO's
 
-	virtual bool Create(U16 width, U16 height, IMAGE_FORMATS internalFormatEnum = RGBA8,
-		                                       IMAGE_FORMATS formatEnum = RGBA) = 0;
-	virtual void Destroy() = 0;
+	virtual void Begin(GLubyte nFace=0) const;	
+	virtual void End(GLubyte nFace=0) const;
+	virtual void Bind(GLubyte unit=0, GLubyte texture = 0);		
+	virtual void Unbind(GLubyte unit=0);	
 
-	virtual void Begin(U8 nFace=0) const = 0;	
-	virtual void End(U8 nFace=0) const = 0;		
-
-	virtual void Bind(U8 unit=0, U8 texture = 0) = 0;		
-	virtual void Unbind(U8 unit=0) = 0;	
+	void BlitFrom(FrameBufferObject* inputFBO);
 
 protected:
 	bool checkStatus();
 
+protected:
+	GLuint _textureId[4];  ///<Color attachements
+	GLuint _depthId;      ///<Depth attachement
+	GLuint _imageLayers;
 };
 
 #endif

@@ -18,26 +18,27 @@
 #ifndef _SCENE_GRAPH_NODE_H_
 #define _SCENE_GRAPH_NODE_H_
 
+#define SCENE_GRAPH_PROCESS(pointer) boost::bind(&SceneGraph::process(),pointer)
+
 #include "SceneNode.h"
-#include "Hardware/Video/Headers/GFXDevice.h"
 
 class SceneGraph;
 class SceneRoot : public SceneNode{
 public:
-	SceneRoot() : SceneNode("root",TYPE_ROOT){useDefaultMaterial(false);}
+	SceneRoot() : SceneNode("root",TYPE_ROOT){_renderState.useDefaultMaterial(false);}
 	void render(SceneGraphNode* const sgn) {return;}
 
 	bool load(const std::string& name) {return true;}
 	void postLoad(SceneGraphNode* const sgn) {};	
 	bool unload() {return true;}
 	void onDraw() {};
-	bool computeBoundingBox(SceneGraphNode* const sgn){return true;}
+	bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
 	void updateTransform(SceneGraphNode* const sgn) {}
 };
 
 class SceneGraphNode{
 public:
-	typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
+	typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 	SceneGraphNode(SceneNode* node);
 
 	~SceneGraphNode();
@@ -80,9 +81,11 @@ inline       void             setGrandParent(SceneGraphNode* grandParent) {_gran
 inline   	 void    		  setInitialBoundingBox(BoundingBox& initialBoundingBox){_initialBoundingBox = initialBoundingBox;}
 inline const BoundingBox&     getInitialBoundingBox()		  {return _initialBoundingBox;}
 inline       BoundingBox&	  getBoundingBox()                {return _boundingBox;}
-std::vector<BoundingBox >&    getBBoxes(std::vector<BoundingBox >& boxes );
+vectorImpl<BoundingBox >&    getBBoxes(vectorImpl<BoundingBox >& boxes );
 inline       void             updateBB(bool state) {_updateBB = state;}
-inline       bool             updateBB() {return _updateBB;}
+inline       bool             updateBB()           {return _updateBB;}
+inline       BoundingSphere&  getBoundingSphere()  {return _boundingSphere;}         
+	         bool             computeBoundingSphere();
 /*Bounding Box Management*/
 
 /*Transform management*/
@@ -121,6 +124,7 @@ private:
 	///it should be copied in every computeBoungingBox call;
 	BoundingBox _initialBoundingBox;
 	BoundingBox _boundingBox; 
+	BoundingSphere _boundingSphere; ///<For faster visibility culling
 
 	Transform*	_transform;
 	SceneGraph* _sceneGraph;

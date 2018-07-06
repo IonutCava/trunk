@@ -1,6 +1,6 @@
 #include "Headers/Shader.h"
 
-Shader::Shader(const std::string& name, SHADER_TYPE type){
+Shader::Shader(const std::string& name, ShaderType type){
   _name = name;
   _type = type;
   _compiled = false;

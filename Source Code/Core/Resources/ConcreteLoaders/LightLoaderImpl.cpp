@@ -1,14 +1,29 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
-#include "Rendering/Lighting/Headers/Light.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Rendering/Lighting/Headers/PointLight.h"
+#include "Rendering/Lighting/Headers/SpotLight.h"
+#include "Rendering/Lighting/Headers/DirectionalLight.h"
 
 Light* ImplResourceLoader<Light>::operator()(){
 
+	Light* ptr = NULL;
 	//descriptor ID is not the same as light ID. This is the light's slot!!
-	Light* ptr = New Light(_descriptor.getId());
-
-	if(!ptr) return NULL;
+	switch(_descriptor.getEnumValue()){
+		case -1:
+		case LIGHT_TYPE_POINT:
+		default:
+			ptr = New PointLight(_descriptor.getId());
+		break;
+		case LIGHT_TYPE_DIRECTIONAL:
+			ptr = New DirectionalLight(_descriptor.getId());
+			break;
+		case LIGHT_TYPE_SPOT:
+			ptr = New SpotLight(_descriptor.getId());
+			break;
+	};
+	assert(ptr != NULL);
 	if(!load(ptr,_descriptor.getName())) return NULL;
-	ptr->useDefaultMaterial(false);
+	ptr->getSceneNodeRenderState().useDefaultMaterial(false);
 	ptr->setMaterial(NULL);
 	return ptr;
 	

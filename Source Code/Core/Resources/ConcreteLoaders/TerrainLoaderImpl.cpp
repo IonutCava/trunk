@@ -1,7 +1,11 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
+
+#include "Core/Headers/ParamHandler.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
-#include "Managers/Headers/SceneManager.h"
+
 
 Terrain* ImplResourceLoader<Terrain>::operator()() {
 
@@ -16,7 +20,7 @@ Terrain* ImplResourceLoader<Terrain>::operator()() {
 template<>
 bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& name) {
 
-	std::vector<TerrainDescriptor*>& terrains = GET_ACTIVE_SCENE()->getTerrainInfoArray();
+	vectorImpl<TerrainDescriptor*>& terrains = GET_ACTIVE_SCENE()->getTerrainInfoArray();
 	PRINT_FN(Locale::get("TERRAIN_LOAD_START"),name.c_str());
 
 	TerrainDescriptor* terrain = NULL;
