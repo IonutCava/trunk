@@ -94,10 +94,6 @@ extern "C" {
 }
 #endif
 
-namespace {
-    static LARGE_INTEGER g_time;
-}
-
 void* malloc_aligned(const size_t size, size_t alignment) {
     return _aligned_malloc(size, alignment);
 }
@@ -166,15 +162,17 @@ namespace Divide {
     }
 
     void getTicksPerSecond(TimeValue& ticksPerSecond) {
-        bool queryAvailable = QueryPerformanceFrequency(&g_time) != 0;
+        LARGE_INTEGER time;
+        bool queryAvailable = QueryPerformanceFrequency(&time) != 0;
         DIVIDE_ASSERT(queryAvailable,
             "Current system does not support 'QueryPerformanceFrequency calls!");
-        ticksPerSecond = g_time.QuadPart;
+        ticksPerSecond = time.QuadPart;
     }
 
     void getCurrentTime(TimeValue& timeOut) {
-        QueryPerformanceCounter(&g_time);
-        timeOut = g_time.QuadPart;
+        LARGE_INTEGER time;
+        QueryPerformanceCounter(&time);
+        timeOut = time.QuadPart;
     }
 
 }; //namespace Divide
