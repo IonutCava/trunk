@@ -99,7 +99,8 @@ namespace Divide {
         };
 
         struct ImportData {
-            ImportData()
+            ImportData(const stringImpl& meshFile)
+                : _modelPath(meshFile)
             {
                 _vertexBuffer = nullptr;
                 _hasAnimations = false;
@@ -113,9 +114,6 @@ namespace Divide {
 
             // Was it loaded from file, or just created?
             bool _loadedFromFile;
-            // Name and path
-            stringImpl _modelName;
-            stringImpl _modelPath;
             // Geometry
             VertexBuffer* _vertexBuffer;
             // Submeshes
@@ -125,6 +123,10 @@ namespace Divide {
             vectorImpl<Bone*> _bones;
             vectorImpl<std::shared_ptr<AnimEvaluator>> _animations;
             bool _hasAnimations;
+
+            // Name and path
+            stringImpl _modelName;
+            stringImpl _modelPath;
         };
     };
 
@@ -133,8 +135,8 @@ namespace Divide {
     class Material;
     DEFINE_SINGLETON(MeshImporter)
         public:
-            bool loadMeshDataFromFile(const stringImpl& meshFilePath, Import::ImportData& dataOut);
-            Mesh* loadMesh(const Import::ImportData& dataIn);
+            bool loadMeshDataFromFile(Import::ImportData& dataOut);
+            Mesh* loadMesh(const stringImpl& name, const Import::ImportData& dataIn);
 
         protected:
             Material* loadSubMeshMaterial(const Import::MaterialData& importData,

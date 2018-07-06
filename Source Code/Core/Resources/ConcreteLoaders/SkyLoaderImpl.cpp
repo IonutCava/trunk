@@ -7,7 +7,8 @@ namespace Divide {
 template<>
 Sky* ImplResourceLoader<Sky>::operator()() {
     Sky* ptr = MemoryManager_NEW Sky(_descriptor.getName());
-    if (!load(ptr, _descriptor.getName())) {
+
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     }
 

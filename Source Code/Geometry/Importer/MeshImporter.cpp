@@ -163,18 +163,18 @@ namespace Import {
         return true;
     }
 };
-    bool MeshImporter::loadMeshDataFromFile(const stringImpl& meshFilePath, Import::ImportData& dataOut) {
+    bool MeshImporter::loadMeshDataFromFile(Import::ImportData& dataOut) {
         D64 start = 0.0;
         D64 elapsed = 0.0;
         start = Time::ElapsedMilliseconds(true);
-        stringImpl modelName = meshFilePath.substr(meshFilePath.find_last_of('/') + 1);
-        stringImpl path = meshFilePath.substr(0, meshFilePath.find_last_of('/'));
+        stringImpl modelName = dataOut._modelPath.substr(dataOut._modelPath.find_last_of('/') + 1);
+        stringImpl path = dataOut._modelPath.substr(0, dataOut._modelPath.find_last_of('/'));
 
         bool success = false;
         if (!dataOut.loadFromFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
             Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), modelName.c_str());
 
-            DVDConverter converter(dataOut, meshFilePath, success);
+            DVDConverter converter(dataOut, dataOut._modelPath, success);
             if (success) {
                 dataOut._modelName = modelName;
                 dataOut._modelPath = path;
@@ -195,7 +195,7 @@ namespace Import {
         return success;
     }
 
-    Mesh* MeshImporter::loadMesh(const Import::ImportData& dataIn) {
+    Mesh* MeshImporter::loadMesh(const stringImpl& name, const Import::ImportData& dataIn) {
 
         D64 start = 0.0;
         D64 elapsed = 0.0;
@@ -231,7 +231,9 @@ namespace Import {
             }
         }
 
-        Mesh* mesh = MemoryManager_NEW Mesh(dataIn._hasAnimations
+        Mesh* mesh = MemoryManager_NEW Mesh(name,
+                                            dataIn._modelPath,
+                                            dataIn._hasAnimations
                                                 ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
                                                 : Object3D::ObjectFlag::OBJECT_FLAG_NONE);
         if (dataIn._hasAnimations) {
@@ -239,8 +241,6 @@ namespace Import {
             animator = nullptr;
         }
 
-        mesh->setName(dataIn._modelName);
-        mesh->setResourceLocation(dataIn._modelPath);
         mesh->renderState().setDrawState(true);
         mesh->getGeometryVB()->fromBuffer(*dataIn._vertexBuffer);
 

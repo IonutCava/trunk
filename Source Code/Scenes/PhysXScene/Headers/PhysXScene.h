@@ -38,7 +38,11 @@ namespace Divide {
 
 class PhysXScene : public Scene {
    public:
-    PhysXScene() : Scene() { _hasGroundPlane = false; }
+    explicit PhysXScene(const stringImpl& name)
+        : Scene(name)
+    {
+        _hasGroundPlane = false;
+    }
 
     void preRender();
 

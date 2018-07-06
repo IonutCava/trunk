@@ -38,7 +38,11 @@ namespace Divide {
 
 class CubeScene : public Scene {
    public:
-    CubeScene() : Scene() {}
+    explicit CubeScene(const stringImpl& name) 
+        : Scene(name)
+    {
+    }
+
     void render();
     void preRender();
     bool load(const stringImpl& name, GUI* const gui);

@@ -60,17 +60,16 @@ DEFINE_SINGLETON(ResourceCache)
             ptr = ImplResourceLoader<T>(descriptor)();
             if (ptr) {
                 /// validate it's integrity and add it to the cache
-                add(descriptor.getName(), ptr);
+                add( ptr);
             }
         }
         return ptr;
     }
 
     Resource* const find(const stringImpl& name);
-    void add(const stringImpl& name, Resource* const resource);
+    void add(Resource* const resource);
     bool remove(Resource* res);
-    bool load(Resource* const res, const stringImpl& name);
-    bool loadHW(Resource* const res, const stringImpl& name);
+    bool load(Resource* const res);
 
   protected:
     ResourceCache();

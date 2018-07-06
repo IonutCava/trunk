@@ -38,7 +38,11 @@ namespace Divide {
 
 class NetworkScene : public Scene {
    public:
-    NetworkScene() : Scene() {}
+    explicit NetworkScene(const stringImpl& name)
+        : Scene(name)
+    {
+    }
+
     void preRender();
 
     bool load(const stringImpl& name, GUI* const gui);

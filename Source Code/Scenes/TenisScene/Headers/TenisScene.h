@@ -46,8 +46,8 @@ class NPC;
 
 class TenisScene : public Scene {
    public:
-    TenisScene()
-        : Scene(),
+    explicit TenisScene(const stringImpl& name)
+        : Scene(name),
           _aiPlayer1(nullptr),
           _aiPlayer2(nullptr),
           _aiPlayer3(nullptr),

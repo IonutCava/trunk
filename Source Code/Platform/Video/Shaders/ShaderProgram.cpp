@@ -12,8 +12,8 @@
 
 namespace Divide {
 
-ShaderProgram::ShaderProgram(GFXDevice& context, bool asyncLoad)
-    : Resource("temp_shader_program"),
+ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad)
+    : Resource(name, resourceLocation),
       GraphicsResource(context),
       _asyncLoad(asyncLoad)
 {

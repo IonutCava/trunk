@@ -9,7 +9,7 @@ namespace Divide {
 
 template<>
 Terrain* ImplResourceLoader<Terrain>::operator()() {
-    Terrain* ptr = MemoryManager_NEW Terrain();
+    Terrain* ptr = MemoryManager_NEW Terrain(_descriptor.getName());
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), _descriptor.getName().c_str());
     TerrainDescriptor* terrain = GET_ACTIVE_SCENE().getTerrainInfo(_descriptor.getName());

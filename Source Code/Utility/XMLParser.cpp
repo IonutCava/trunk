@@ -341,7 +341,6 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
     }
 
     sceneMgr.setActiveScene(*scene);
-    scene->setName(sceneName);
     scene->state().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
     scene->state().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
     scene->state().generalVisibility(pt.get("options.visibility", 1000.0f));

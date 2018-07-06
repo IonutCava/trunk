@@ -7,8 +7,8 @@
 
 namespace Divide {
 
-WaterPlane::WaterPlane()
-    : SceneNode(SceneNodeType::TYPE_WATER),
+WaterPlane::WaterPlane(const stringImpl& name)
+    : SceneNode(name, SceneNodeType::TYPE_WATER),
       Reflector(ReflectorType::TYPE_WATER_SURFACE, vec2<U16>(1024, 1024)),
       _plane(nullptr),
       _waterLevel(0),

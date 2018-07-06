@@ -59,9 +59,9 @@ class ImplResourceLoader : public ResourceLoader {
 
    protected:
 
-    bool load(ResourceType* const res, const stringImpl& name) {
+    bool load(ResourceType* const res) {
         res->setState(ResourceState::RES_LOADING);
-        return ResourceCache::instance().load(res, name);
+        return ResourceCache::instance().load(res);
     }
 };
 

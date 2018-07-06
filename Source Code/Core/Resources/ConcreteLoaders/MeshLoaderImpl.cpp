@@ -10,21 +10,20 @@ Mesh* ImplResourceLoader<Mesh>::operator()() {
     MeshImporter& importer = MeshImporter::instance();
 
     Mesh* ptr = nullptr;
-    Import::ImportData tempMeshData;
-    if (importer.loadMeshDataFromFile(_descriptor.getResourceLocation(), tempMeshData)) {
-        ptr = importer.loadMesh(tempMeshData);
+    Import::ImportData tempMeshData(_descriptor.getResourceLocation());
+    if (importer.loadMeshDataFromFile(tempMeshData)) {
+        ptr = importer.loadMesh(_descriptor.getName(), tempMeshData);
     } else {
         //handle error
         assert(false);
     }
 
-    if (!load(ptr, _descriptor.getName()) || !ptr) {
+    if (!load(ptr) || !ptr) {
         MemoryManager::DELETE(ptr);
     } else {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);
         }
-        ptr->setResourceLocation(_descriptor.getResourceLocation());
     }
 
     return ptr;

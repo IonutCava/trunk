@@ -2,6 +2,9 @@
 
 namespace Divide {
 
-ScriptedCamera::ScriptedCamera(const vec3<F32>& eye)
-    : Camera(CameraType::SCRIPTED, eye) {}
+ScriptedCamera::ScriptedCamera(const stringImpl& name, const vec3<F32>& eye)
+    : Camera(name, CameraType::SCRIPTED, eye)
+{
+}
+
 };

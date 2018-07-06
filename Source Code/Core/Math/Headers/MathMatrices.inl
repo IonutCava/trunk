@@ -2061,6 +2061,9 @@ void mat4<T>::ortho(U left, U right, U bottom, U top, U zNear, U zFar) {
     m[0][0] =  static_cast<T>(2.0f / (right - left));
     m[1][1] =  static_cast<T>(2.0f / (top - bottom));
     m[2][2] = -static_cast<T>(2.0f / (zFar - zNear));
+    m[3][3] =  static_cast<T>(1);
+
+
     m[3][0] = -static_cast<T>(to_float(right + left) / (right - left));
     m[3][1] = -static_cast<T>(to_float(top + bottom) / (top - bottom));
     m[3][2] = -static_cast<T>(to_float(zFar + zNear) / (zFar - zNear));

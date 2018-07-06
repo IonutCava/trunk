@@ -12,8 +12,12 @@
 
 namespace Divide {
 
-glTexture::glTexture(GFXDevice& context, TextureType type, bool asyncLoad)
-    : Texture(context, type, asyncLoad),
+glTexture::glTexture(GFXDevice& context,
+                     const stringImpl& name,
+                     const stringImpl& resourceLocation,
+                     TextureType type,
+                     bool asyncLoad)
+    : Texture(context, name, resourceLocation, type, asyncLoad),
     _lockManager(new glLockManager())
 {
     _allocatedStorage = false;
@@ -45,9 +49,9 @@ bool glTexture::unload() {
     return true;
 }
 
-void glTexture::threadedLoad(const stringImpl& name) {
+void glTexture::threadedLoad() {
     updateSampler();
-    Texture::threadedLoad(name);
+    Texture::threadedLoad();
     _lockManager->Lock(_asyncLoad);
 }
 

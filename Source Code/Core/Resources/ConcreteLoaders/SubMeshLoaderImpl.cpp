@@ -15,7 +15,7 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()() {
         ptr = MemoryManager_NEW SubMesh(_descriptor.getName());
     }
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     } else {
         if (_descriptor.getFlag()) {

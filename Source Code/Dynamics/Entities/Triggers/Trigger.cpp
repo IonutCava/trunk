@@ -8,8 +8,8 @@
 
 namespace Divide {
 
-Trigger::Trigger()
-    : SceneNode(SceneNodeType::TYPE_TRIGGER),
+Trigger::Trigger(const stringImpl& name)
+    : SceneNode(name, SceneNodeType::TYPE_TRIGGER),
       _drawImpostor(false),
       _triggerImpostor(nullptr),
       _enabled(true)

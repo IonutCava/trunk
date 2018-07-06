@@ -15,8 +15,8 @@
 
 namespace Divide {
 
-Terrain::Terrain()
-    : Object3D(ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
+Terrain::Terrain(const stringImpl& name)
+    : Object3D(name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
       _alphaTexturePresent(false),
       _plane(nullptr),
       _drawBBoxes(false),

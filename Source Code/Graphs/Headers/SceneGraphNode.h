@@ -63,7 +63,7 @@ class SceneRoot : public SceneNode {
     }
 
     bool unload() { return true; }
-    bool load(const stringImpl& name) {
+    bool load() override {
         return true; 
     }
 
@@ -76,7 +76,7 @@ class SceneRoot : public SceneNode {
 // to create complex transforms in the scene
 class SceneTransform : public SceneNode {
    public:
-    SceneTransform() : SceneNode(SceneNodeType::TYPE_TRANSFORM) {
+    SceneTransform() : SceneNode("TransformNode", SceneNodeType::TYPE_TRANSFORM) {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_SPECIAL);
     }
@@ -85,7 +85,7 @@ class SceneTransform : public SceneNode {
 
     void postLoad(SceneGraphNode& sgn) { return; }
     bool unload() { return true; }
-    bool load(const stringImpl& name) { return true; }
+    bool load() override { return true; }
 };
 
 

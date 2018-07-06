@@ -3,8 +3,8 @@
 namespace Divide {
 
 IMPLEMENT_ALLOCATOR(d3dShaderProgram, 0, 0);
-d3dShaderProgram::d3dShaderProgram(GFXDevice& context, bool asyncLoad) :
-    ShaderProgram(context, asyncLoad)
+d3dShaderProgram::d3dShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) :
+    ShaderProgram(context, name, resourceLocation, asyncLoad)
 {
 }
 

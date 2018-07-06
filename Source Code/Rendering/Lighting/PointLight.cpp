@@ -6,7 +6,9 @@
 
 namespace Divide {
 
-PointLight::PointLight(F32 range) : Light(range, LightType::POINT) {
+PointLight::PointLight(const stringImpl& name, F32 range)
+     : Light(name, range, LightType::POINT)
+{
     // +x
     _direction[0].set(WORLD_X_AXIS);
     // -x

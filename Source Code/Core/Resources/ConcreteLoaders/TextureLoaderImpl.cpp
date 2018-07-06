@@ -15,9 +15,8 @@ Texture* ImplResourceLoader<Texture>::operator()() {
 
     bool threadedLoad = _descriptor.getThreaded();
 
-    Texture* ptr = GFX_DEVICE.newTexture(static_cast<TextureType>(_descriptor.getEnumValue()), threadedLoad);
+    Texture* ptr = GFX_DEVICE.newTexture(_descriptor.getName(), _descriptor.getResourceLocation(), static_cast<TextureType>(_descriptor.getEnumValue()), threadedLoad);
 
-    ptr->setResourceLocation(_descriptor.getResourceLocation());
     if (_descriptor.getID() > 0) {
         ptr->setNumLayers(to_ubyte(_descriptor.getID()));
     }
@@ -28,7 +27,7 @@ Texture* ImplResourceLoader<Texture>::operator()() {
             *_descriptor.getPropertyDescriptor<SamplerDescriptor>());
     }
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),
                          _descriptor.getResourceLocation().c_str(),
                          _descriptor.getName().c_str());

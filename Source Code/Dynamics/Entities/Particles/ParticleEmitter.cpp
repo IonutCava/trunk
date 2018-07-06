@@ -25,8 +25,8 @@ namespace {
     static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
 
-ParticleEmitter::ParticleEmitter()
-    : SceneNode(SceneNodeType::TYPE_PARTICLE_EMITTER),
+ParticleEmitter::ParticleEmitter(const stringImpl& name)
+    : SceneNode(name, SceneNodeType::TYPE_PARTICLE_EMITTER),
       _drawImpostor(false),
       _particleStateBlockHash(0),
       _particleStateBlockHashDepth(0),

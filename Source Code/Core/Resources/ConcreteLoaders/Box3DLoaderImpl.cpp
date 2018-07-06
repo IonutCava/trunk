@@ -12,9 +12,9 @@ Box3D* ImplResourceLoader<Box3D>::operator()() {
             atof(_descriptor.getPropertyListString().c_str());  //<should work
     }
 
-    Box3D* ptr = MemoryManager_NEW Box3D(vec3<F32>(to_float(size)));
+    Box3D* ptr = MemoryManager_NEW Box3D(_descriptor.getName(), vec3<F32>(to_float(size)));
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     } else {
         if (_descriptor.getFlag()) {

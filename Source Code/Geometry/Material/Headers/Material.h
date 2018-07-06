@@ -180,7 +180,7 @@ class Material : public Resource, public FrameListener {
     };
 
    public:
-    Material();
+    explicit Material(const stringImpl& name);
     ~Material();
 
     /// Return a new instance of this material with the name composed of the

@@ -88,7 +88,7 @@ class WaterPlane : public SceneNode, public Reflector {
     template <typename T>
     friend class ImplResourceLoader;
 
-    WaterPlane();
+    explicit WaterPlane(const stringImpl& name);
 
     ~WaterPlane();
 

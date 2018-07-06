@@ -40,9 +40,8 @@ namespace Divide {
 
 class Text3D : public Object3D {
    public:
-    Text3D(const stringImpl& text, const stringImpl& font)
-        : Object3D(ObjectType::TEXT_3D, ObjectFlag::OBJECT_FLAG_NONE),
-          _text(text),
+    explicit Text3D(const stringImpl& name, const stringImpl& font)
+        : Object3D(name, ObjectType::TEXT_3D, ObjectFlag::OBJECT_FLAG_NONE),
           _font(font),
           _height(16),
           _width(1.0f)

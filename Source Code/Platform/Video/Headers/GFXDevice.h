@@ -451,12 +451,12 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->newGVD(*this, persistentMapped, ringBufferLength);
     }
 
-    inline Texture* newTexture(TextureType type, bool asyncLoad) {
-        return _api->newTexture(*this, type, asyncLoad);
+    inline Texture* newTexture(const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) {
+        return _api->newTexture(*this, name, resourceLocation, type, asyncLoad);
     }
 
-    inline ShaderProgram* newShaderProgram(bool asyncLoad) {
-        return _api->newShaderProgram(*this, asyncLoad);
+    inline ShaderProgram* newShaderProgram(const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) {
+        return _api->newShaderProgram(*this, name, resourceLocation, asyncLoad);
     }
 
     inline Shader* newShader(const stringImpl& name,

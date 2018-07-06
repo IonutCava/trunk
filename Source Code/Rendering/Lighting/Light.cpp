@@ -11,8 +11,8 @@
 
 namespace Divide {
 
-Light::Light(const F32 range, const LightType& type)
-    : SceneNode(SceneNodeType::TYPE_LIGHT),
+Light::Light(const stringImpl& name, const F32 range, const LightType& type)
+    : SceneNode(name, SceneNodeType::TYPE_LIGHT),
       _type(type),
       _rangeChanged(true),
       _drawImpostor(false),
@@ -41,13 +41,12 @@ Light::~Light()
 {
 }
 
-bool Light::load(const stringImpl& name) {
-    setName(name);
+bool Light::load() {
     _shadowCamera =
         Application::instance()
         .kernel()
         .getCameraMgr()
-        .createCamera(name + "_shadowCamera", Camera::CameraType::FREE_FLY);
+        .createCamera(getName() + "_shadowCamera", Camera::CameraType::FREE_FLY);
 
     _shadowCamera->setMoveSpeedFactor(0.0f);
     _shadowCamera->setTurnSpeedFactor(0.0f);

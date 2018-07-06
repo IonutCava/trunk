@@ -38,8 +38,8 @@ namespace Divide {
 
 class TerrainDescriptor : public Resource {
    public:
-    TerrainDescriptor()
-        : Resource("temp_terrain_descriptor"),
+    explicit TerrainDescriptor(const stringImpl& name)
+        : Resource(name),
           _active(false),
           _addToPhysics(false),
           _is16Bit(false),

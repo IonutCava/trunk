@@ -362,7 +362,7 @@ class Camera : public Resource {
    protected:
     SET_DELETE_HASHMAP_FRIEND
     friend class CameraManager;
-    Camera(const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
     virtual ~Camera();
 
    protected:

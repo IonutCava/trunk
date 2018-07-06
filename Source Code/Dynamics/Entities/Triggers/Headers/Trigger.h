@@ -44,7 +44,7 @@ class Trigger : public SceneNode {
     typedef std::shared_ptr<Task> Task_ptr;
 
    public:
-    Trigger();
+    Trigger(const stringImpl& name);
     ~Trigger();
 
     /// Dummy function from SceneNode;

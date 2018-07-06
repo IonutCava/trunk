@@ -46,7 +46,7 @@ class d3dShader : public Shader {
 
     ~d3dShader();
 
-    bool load(const stringImpl& source);
+    bool load(const stringImpl& source) override;
     bool compile();
     void validate();
 };

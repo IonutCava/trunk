@@ -40,7 +40,8 @@ void ResourceCache::Destroy() {
     }
 }
 
-void ResourceCache::add(const stringImpl& name, Resource* const res) {
+void ResourceCache::add(Resource* const res) {
+    const stringImpl& name = res->getName();
     DIVIDE_ASSERT(!name.empty(),
                   "ResourceCache add error: Invalid resource name!");
     if (res == nullptr) {
@@ -48,7 +49,7 @@ void ResourceCache::add(const stringImpl& name, Resource* const res) {
                          name.c_str());
         return;
     }
-    res->setName(name);
+
     WriteLock w_lock(_creationMutex);
     hashAlg::insert(_resDB, std::make_pair(_ID_RT(name), res));
 }
@@ -135,9 +136,8 @@ bool ResourceCache::removeInternal(Resource* const resource) {
     return true;
 }
 
-bool ResourceCache::load(Resource* const res, const stringImpl& name) {
+bool ResourceCache::load(Resource* const res) {
     assert(res != nullptr);
-    res->setName(name);
     return res->load();
 }
 

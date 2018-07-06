@@ -14,17 +14,23 @@ namespace Divide {
 
 template<>
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
+    const ParamHandler& par = ParamHandler::instance();
 
-    ParamHandler& par = ParamHandler::instance();
-    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram(USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded() : false);
-
+    stringImpl resourceLocation;
     if (_descriptor.getResourceLocation().compare("default") == 0) {
-        ptr->setResourceLocation(
+        resourceLocation = 
             par.getParam<stringImpl>(_ID("assetsLocation")) + "/" +
-            par.getParam<stringImpl>(_ID("shaderLocation")) + "/");
+            par.getParam<stringImpl>(_ID("shaderLocation")) + "/";
     } else {
-        ptr->setResourceLocation(_descriptor.getResourceLocation());
+        resourceLocation = _descriptor.getResourceLocation();
     }
+
+    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram(_descriptor.getName(), 
+                                                     resourceLocation,
+                                                     USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
+                                                                              : false);
+
+
 
     // get all of the preprocessor defines
     if (!_descriptor.getPropertyListString().empty()) {
@@ -37,7 +43,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
         }
     }
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     } else {
         ShaderManager::instance().registerShaderProgram(ptr->getName(), ptr);

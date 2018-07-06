@@ -7,6 +7,9 @@
 
 namespace Divide {
 
-FirstPersonCamera::FirstPersonCamera(const vec3<F32>& eye)
-    : Camera(CameraType::FIRST_PERSON, eye) {}
+FirstPersonCamera::FirstPersonCamera(const stringImpl& name, const vec3<F32>& eye)
+    : Camera(name, CameraType::FIRST_PERSON, eye)
+{
+}
+
 };

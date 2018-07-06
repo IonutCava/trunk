@@ -148,10 +148,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                         BufferUpdateFrequency frequency =
                             BufferUpdateFrequency::ONCE) const override;
     /// Create and return a new texture. The callee is responsible for it's deletion!
-    Texture* newTexture(GFXDevice& context, TextureType type, bool asyncLoad) const override;
+    Texture* newTexture(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) const override;
     /// Create and return a new shader program.
     /// The callee is responsible for it's deletion!
-    ShaderProgram* newShaderProgram(GFXDevice& context, bool asyncLoad) const override;
+    ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const override;
     /// Create and return a new shader of the specified type by loading the
     /// specified name (optionally, post load optimised).
     /// The callee is responsible for it's deletion!

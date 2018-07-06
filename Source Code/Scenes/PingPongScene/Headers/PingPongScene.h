@@ -40,7 +40,9 @@ class Sphere3D;
 
 class PingPongScene : public Scene {
    public:
-    PingPongScene() : Scene() {
+    explicit PingPongScene(const stringImpl& name)
+        : Scene(name)
+    {
         _sideDrift = 0;
         _directionTowardsAdversary = true;
         _upwardsDirection = false;

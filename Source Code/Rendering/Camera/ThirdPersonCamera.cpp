@@ -5,8 +5,10 @@
 
 namespace Divide {
 
-ThirdPersonCamera::ThirdPersonCamera(const vec3<F32>& eye)
-    : OrbitCamera(CameraType::THIRD_PERSON, eye) {}
+ThirdPersonCamera::ThirdPersonCamera(const stringImpl& name, const vec3<F32>& eye)
+    : OrbitCamera(name, CameraType::THIRD_PERSON, eye)
+{
+}
 
 void ThirdPersonCamera::onActivate() {
     Application::instance().snapCursorToCenter();

@@ -13,18 +13,18 @@ Light* ImplResourceLoader<Light>::operator()() {
     switch (static_cast<LightType>(_descriptor.getEnumValue())) {
         default:
         case LightType::POINT:
-            ptr = MemoryManager_NEW PointLight();
+            ptr = MemoryManager_NEW PointLight(_descriptor.getName());
             break;
         case LightType::DIRECTIONAL:
-            ptr = MemoryManager_NEW DirectionalLight();
+            ptr = MemoryManager_NEW DirectionalLight(_descriptor.getName());
             break;
         case LightType::SPOT:
-            ptr = MemoryManager_NEW SpotLight();
+            ptr = MemoryManager_NEW SpotLight(_descriptor.getName());
             break;
     };
     assert(ptr != nullptr);
 
-    if (!ptr->load(_descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     } else {
         ptr->renderState().useDefaultMaterial(false);

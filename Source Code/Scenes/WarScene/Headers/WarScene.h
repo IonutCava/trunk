@@ -47,7 +47,7 @@ class WarSceneOrder;
 
 class WarScene : public Scene {
    public:
-    WarScene();
+    explicit WarScene(const stringImpl& name);
     ~WarScene();
 
     bool load(const stringImpl& name, GUI* const gui);

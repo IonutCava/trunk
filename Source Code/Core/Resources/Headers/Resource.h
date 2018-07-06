@@ -71,6 +71,8 @@ class NOINITVTABLE Resource : public TrackedObject {
 
    public:
     explicit Resource(const stringImpl& name);
+    explicit Resource(const stringImpl& name,
+                      const stringImpl& resourceLocation);
 
     virtual ~Resource();
 
@@ -82,12 +84,8 @@ class NOINITVTABLE Resource : public TrackedObject {
     /// Name management
     const stringImpl& getName() const;
 
-    void setName(const stringImpl& name);
-
     /// Physical file location
     const stringImpl& getResourceLocation() const;
-
-    void setResourceLocation(const stringImpl& resourceLocation);
 
     ResourceState getState() const;
 

@@ -7,9 +7,9 @@ namespace Divide {
 template<>
 Text3D* ImplResourceLoader<Text3D>::operator()() {
     Text3D* ptr = MemoryManager_NEW Text3D(_descriptor.getName(),
-                                           _descriptor.getResourceLocation());
+                                           _descriptor.getResourceLocation()); //< font
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     } else {
         if (_descriptor.getFlag()) {

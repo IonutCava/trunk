@@ -44,8 +44,9 @@ typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 class OrbitCamera : public Camera {
   protected:
     friend class CameraManager;
-    OrbitCamera(const CameraType& type = CameraType::ORBIT,
-                const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit OrbitCamera(const stringImpl& name, 
+                         const CameraType& type = CameraType::ORBIT,
+                         const vec3<F32>& eye = VECTOR3_ZERO);
   public:
     void setTarget(SceneGraphNode_wptr sgn,
                    const vec3<F32>& offsetDirection = vec3<F32>(0, 0.75, 1.0));

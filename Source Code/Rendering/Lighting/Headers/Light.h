@@ -76,7 +76,7 @@ class Light : public SceneNode {
     /// Create a new light assigned to the specified slot with the specified range
     /// @param slot = the slot the light is assigned to (as in OpenGL slot for example)
     /// @param range = the light influence range (for spot/point lights)
-    Light(const F32 range, const LightType& type);
+    explicit Light(const stringImpl& name, const F32 range, const LightType& type);
     virtual ~Light();
 
     /// Is the light a shadow caster?
@@ -200,7 +200,7 @@ class Light : public SceneNode {
     friend class LightManager;
     template <typename T>
     friend class ImplResourceLoader;
-    bool load(const stringImpl& name);
+    bool load() override;
     void postLoad(SceneGraphNode& sgn) override;
     SceneGraphNode* getSGN() const { return _lightSGN; }
     /// Set light type

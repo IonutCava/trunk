@@ -6,8 +6,9 @@ namespace Divide {
 
 template<>
 TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()() {
-    TerrainDescriptor* ptr = MemoryManager_NEW TerrainDescriptor();
-    if (!load(ptr, _descriptor.getName())) {
+    TerrainDescriptor* ptr = MemoryManager_NEW TerrainDescriptor(_descriptor.getName());
+
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     }
 

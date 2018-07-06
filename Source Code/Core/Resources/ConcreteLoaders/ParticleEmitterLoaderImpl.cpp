@@ -6,9 +6,9 @@ namespace Divide {
 
 template<>
 ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()() {
-    ParticleEmitter* ptr = MemoryManager_NEW ParticleEmitter();
+    ParticleEmitter* ptr = MemoryManager_NEW ParticleEmitter(_descriptor.getName());
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     } else {
         ptr->renderState().useDefaultMaterial(false);

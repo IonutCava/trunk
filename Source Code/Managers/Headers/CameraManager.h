@@ -104,7 +104,7 @@ class CameraManager : private NonCopyable, public FrameListener {
     /// matrix every frame
     bool frameStarted(const FrameEvent& evt);
     void setActiveCamera(Camera* cam);
-    void addNewCamera(const stringImpl& cameraName, Camera* const camera);
+    void addNewCamera(Camera* const camera);
 
    private:
     bool _addNewListener;

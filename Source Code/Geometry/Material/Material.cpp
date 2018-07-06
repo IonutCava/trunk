@@ -23,8 +23,8 @@ bool Material::_shadersComputedThisFrame = false;
 U32 Material::_totalShaderComputeCountThisFrame = 0;
 U32 Material::_totalShaderComputeCount = 0;
 
-Material::Material()
-    : Resource("temp_material"),
+Material::Material(const stringImpl& name)
+    : Resource(name),
       FrameListener(),
       _parallaxFactor(1.0f),
       _dirty(false),

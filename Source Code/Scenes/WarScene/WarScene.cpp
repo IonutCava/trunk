@@ -37,8 +37,8 @@ namespace {
     U64 elapsedGameTimeUs = 0;
 };
 
-WarScene::WarScene()
-    : Scene(),
+WarScene::WarScene(const stringImpl& name)
+    : Scene(name),
     _infoBox(nullptr),
     _sceneReady(false),
     _lastNavMeshBuildTime(0UL)

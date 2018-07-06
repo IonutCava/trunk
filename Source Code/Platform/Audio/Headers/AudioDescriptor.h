@@ -39,15 +39,14 @@ namespace Divide {
 
 class AudioDescriptor : public Resource {
    public:
-    AudioDescriptor(const stringImpl& audioFile)
-        : Resource(audioFile),
+    AudioDescriptor(const stringImpl& name, const stringImpl& audioFile)
+        : Resource(name, audioFile),
           _isLooping(false),
           _is3D(false),
           _frequency(44.2f),
           _bitDepth(16),
           _channelID(-1),
-          _volume(100),
-          _audioFile(audioFile)
+          _volume(100)
    {
    }
 
@@ -57,7 +56,11 @@ class AudioDescriptor : public Resource {
     }
 
     bool unload() { return true; }
-    inline const stringImpl& getAudioFile() { return _audioFile; }
+
+    inline const stringImpl& getAudioFile() { 
+        return Resource::getResourceLocation();
+    }
+
     inline bool& isLooping() { return _isLooping; }
     inline bool& is3D() { return _is3D; }
 
@@ -76,7 +79,6 @@ class AudioDescriptor : public Resource {
     bool _isLooping, _is3D;
     F32 _frequency;
     I8 _bitDepth, _channelID, _volume;
-    stringImpl _audioFile;
 };
 
 };  // namespace Divide

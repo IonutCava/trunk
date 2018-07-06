@@ -80,8 +80,8 @@ class NOINITVTABLE SceneNode : public Resource {
       };
 
    public:
-    SceneNode(const SceneNodeType& type);
-    SceneNode(const stringImpl& name, const SceneNodeType& type);
+    explicit SceneNode(const stringImpl& name, const SceneNodeType& type);
+    explicit SceneNode(const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations (this is after sort and transform

@@ -45,7 +45,7 @@ class glShader : public Shader {
              const bool optimise = false);
     ~glShader();
 
-    bool load(const stringImpl& source);
+    bool load(const stringImpl& source) override;
     bool compile();
     void validate();
 

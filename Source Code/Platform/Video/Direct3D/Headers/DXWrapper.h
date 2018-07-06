@@ -95,12 +95,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
         return MemoryManager_NEW d3dPixelBuffer(context, type);
     }
 
-    inline Texture* newTexture(GFXDevice& context, TextureType type, bool asyncLoad) const override {
-        return MemoryManager_NEW d3dTexture(context, type, asyncLoad);
+    inline Texture* newTexture(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) const override {
+        return MemoryManager_NEW d3dTexture(context, name, resourceLocation, type, asyncLoad);
     }
 
-    inline ShaderProgram* newShaderProgram(GFXDevice& context, bool asyncLoad) const override {
-        return MemoryManager_NEW d3dShaderProgram(context, asyncLoad);
+    inline ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const override {
+        return MemoryManager_NEW d3dShaderProgram(context, name, resourceLocation, asyncLoad);
     }
 
     inline Shader* newShader(GFXDevice& context,

@@ -73,7 +73,10 @@ class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
         COUNT
     };
 
-    ShaderProgram(GFXDevice& context, bool asyncLoad);
+    explicit ShaderProgram(GFXDevice& context,
+                           const stringImpl& name,
+                           const stringImpl& resourceLocation,
+                           bool asyncLoad);
     virtual ~ShaderProgram();
 
     virtual bool bind() = 0;

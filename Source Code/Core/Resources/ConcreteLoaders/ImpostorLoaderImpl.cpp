@@ -21,7 +21,7 @@ ImpostorSphere* ImplResourceLoader<ImpostorSphere>::operator()() {
         ptr->setMaterialTpl(matTemp);
     }
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     }
 
@@ -45,7 +45,7 @@ ImpostorBox* ImplResourceLoader<ImpostorBox>::operator()() {
         ptr->setMaterialTpl(matTemp);
     }
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     }
 

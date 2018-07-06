@@ -65,7 +65,7 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {                     \
 
 #define INIT_SCENE_FACTORY \
     namespace { \
-        hashMapImpl<ULL, std::function<Scene*()> > g_sceneFactory; \
+        hashMapImpl<ULL, std::function<Scene*(const stringImpl& name)> > g_sceneFactory; \
     };\
     REGISTER_SCENE(MainScene)\
     REGISTER_SCENE(CubeScene)\

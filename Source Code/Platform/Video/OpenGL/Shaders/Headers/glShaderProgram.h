@@ -46,7 +46,10 @@ class glShaderProgram final : public ShaderProgram {
     DECLARE_ALLOCATOR
     friend class Attorney::GLAPIShaderProgram;
    public:
-    glShaderProgram(GFXDevice& context, bool asyncLoad);
+    explicit glShaderProgram(GFXDevice& context,
+                             const stringImpl& name,
+                             const stringImpl& resourceLocation,
+                             bool asyncLoad);
     ~glShaderProgram();
 
     /// Make sure this program is ready for deletion
@@ -134,7 +137,7 @@ class glShaderProgram final : public ShaderProgram {
     void link();
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
-    void threadedLoad(const stringImpl& name);
+    void threadedLoad();
     /// Cache uniform/attribute locations for shader programs
     I32 getUniformLocation(const char* name) override;
 

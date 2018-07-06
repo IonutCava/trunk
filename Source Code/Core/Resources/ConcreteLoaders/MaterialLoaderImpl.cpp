@@ -7,10 +7,10 @@ namespace Divide {
 
 template<>
 Material* ImplResourceLoader<Material>::operator()() {
-    Material* ptr = MemoryManager_NEW Material();
+    Material* ptr = MemoryManager_NEW Material(_descriptor.getName());
     assert(ptr != nullptr);
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     } else {
         if (_descriptor.getFlag()) {

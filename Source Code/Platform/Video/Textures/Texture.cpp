@@ -10,9 +10,13 @@ namespace {
     static const U16 g_partitionSize = 128;
 };
 
-Texture::Texture(GFXDevice& context, TextureType type, bool asyncLoad)
+Texture::Texture(GFXDevice& context,
+                 const stringImpl& name,
+                 const stringImpl& resourceLocation,
+                 TextureType type,
+                 bool asyncLoad)
     : GraphicsResource(context),
-      Resource("temp_texture"),
+      Resource(name, resourceLocation),
       _numLayers(1),
       _lockMipMaps(false),
       _samplerDirty(true),
@@ -31,12 +35,10 @@ Texture::~Texture()
 }
 
 bool Texture::load() {
-    assert(!getName().empty());
-
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
         [&]() {
-            threadedLoad(getName());
+            threadedLoad();
         }
     );
 
@@ -44,7 +46,7 @@ bool Texture::load() {
 }
 
 /// Load texture data using the specified file name
-void Texture::threadedLoad(const stringImpl& name) {
+void Texture::threadedLoad() {
     // Make sure we have a valid file path
     if (!getResourceLocation().empty() && getResourceLocation().compare("default") != 0) {
 
@@ -103,8 +105,6 @@ void Texture::threadedLoad(const stringImpl& name) {
             }
         }
     }
-
-    setResourceLocation(_name);
 
     Resource::load();
 }

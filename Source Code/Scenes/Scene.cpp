@@ -47,8 +47,8 @@ struct selectionQueueDistanceFrontToBack {
 };
 };
 
-Scene::Scene()
-    : Resource("temp_scene"),
+Scene::Scene(const stringImpl& name)
+    : Resource(name),
       _GFX(GFX_DEVICE),
       _LRSpeedFactor(5.0f),
       _loadComplete(false),

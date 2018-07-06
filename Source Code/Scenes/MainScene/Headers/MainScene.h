@@ -41,8 +41,8 @@ class WaterPlane;
 
 class MainScene : public Scene {
    public:
-    MainScene()
-        : Scene(),
+    explicit MainScene(const stringImpl& name)
+        : Scene(name),
           _water(nullptr),
           _beep(nullptr),
           _freeflyCamera(false),

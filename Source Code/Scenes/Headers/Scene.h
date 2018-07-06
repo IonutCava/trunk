@@ -92,7 +92,7 @@ class Scene : public Resource {
     static bool initStaticData();
 
    public:
-    Scene();
+    explicit Scene(const stringImpl& name);
     virtual ~Scene();
 
     /**Begin scene logic loop*/

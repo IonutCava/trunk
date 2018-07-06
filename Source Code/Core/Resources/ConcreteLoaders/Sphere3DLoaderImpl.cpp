@@ -7,7 +7,8 @@ namespace Divide {
 
 template<>
 Sphere3D* ImplResourceLoader<Sphere3D>::operator()() {
-    Sphere3D* ptr = MemoryManager_NEW Sphere3D(_descriptor.getEnumValue() == 0 
+    Sphere3D* ptr = MemoryManager_NEW Sphere3D(_descriptor.getName(),
+                                               _descriptor.getEnumValue() == 0
                                                                           ? 1.0f
                                                                           : to_float(_descriptor.getEnumValue()),
                                                _descriptor.getID() == 0 
@@ -23,7 +24,7 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()() {
         ptr->setMaterialTpl(matTemp);
     }
 
-    if (!load(ptr, _descriptor.getName())) {
+    if (!load(ptr)) {
         MemoryManager::DELETE(ptr);
     }
 

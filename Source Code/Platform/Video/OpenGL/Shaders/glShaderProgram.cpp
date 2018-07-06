@@ -14,8 +14,8 @@ namespace Divide {
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
 IMPLEMENT_ALLOCATOR(glShaderProgram, 0, 0);
-glShaderProgram::glShaderProgram(GFXDevice& context, bool asyncLoad)
-    : ShaderProgram(context, asyncLoad),
+glShaderProgram::glShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad)
+    : ShaderProgram(context, name, resourceLocation, asyncLoad),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
@@ -210,7 +210,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh) {
 
 /// This should be called in the loading thread, but some issues are still
 /// present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad(const stringImpl& name) {
+void glShaderProgram::threadedLoad() {
     // Loading from binary gives us a linked program ready for usage.
     if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object
@@ -468,7 +468,7 @@ bool glShaderProgram::load() {
             ? CurrentContext::GFX_LOADING_CTX
             : CurrentContext::GFX_RENDERING_CTX,
         [&](){
-            threadedLoad(_name);
+            threadedLoad();
         });
 }
 

@@ -38,7 +38,11 @@ namespace Divide {
 
 class FlashScene : public Scene {
    public:
-    FlashScene() : Scene() {}
+    explicit FlashScene(const stringImpl& name)
+        : Scene(name)
+    {
+    }
+
     void render();
     void preRender();
     bool load(const stringImpl& name, GUI* const gui);

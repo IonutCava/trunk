@@ -474,8 +474,8 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
                                       const U32 ringBufferLength = 1) const = 0;
     virtual PixelBuffer* newPB(GFXDevice& context,
                                const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
-    virtual Texture* newTexture(GFXDevice& context, TextureType type, bool asyncLoad) const = 0;
-    virtual ShaderProgram* newShaderProgram(GFXDevice& context, bool asyncLoad) const = 0;
+    virtual Texture* newTexture(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, TextureType type, bool asyncLoad) const = 0;
+    virtual ShaderProgram* newShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad) const = 0;
     virtual Shader* newShader(GFXDevice& context,
                               const stringImpl& name, const ShaderType& type,
                               const bool optimise = false) const = 0;

@@ -39,7 +39,10 @@ namespace Divide {
 class d3dShaderProgram final : public ShaderProgram {
     DECLARE_ALLOCATOR
    public:
-    d3dShaderProgram(GFXDevice& context, bool asyncLoad);
+    explicit d3dShaderProgram(GFXDevice& context,
+                              const stringImpl& name,
+                              const stringImpl& resourceLocation,
+                              bool asyncLoad);
 
     ~d3dShaderProgram();
 

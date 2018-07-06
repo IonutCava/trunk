@@ -6,33 +6,33 @@
 
 namespace Divide {
 
-Object3D::Object3D(ObjectType type, ObjectFlag flag)
-    : Object3D("", type, to_uint(flag))
-{
-}
-
-Object3D::Object3D(ObjectType type, U32 flagMask)
-    : Object3D("", type, flagMask)
-{
-}
-
 Object3D::Object3D(const stringImpl& name, ObjectType type, ObjectFlag flag)
-    : Object3D(name, type, to_uint(flag))
+    : Object3D(name, "", type, to_uint(flag))
 {
 }
 
 Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
-    : SceneNode(name, SceneNodeType::TYPE_OBJECT3D),
-      _update(false),
-      _playAnimations(true),
-      _geometryType(type),
-      _geometryFlagMask(flagMask),
-      _geometryPartitionID(0U)
+    : Object3D(name, "", type, flagMask)
+{
+}
+
+Object3D::Object3D(const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
+    : Object3D(name, resourceLocation, type, to_uint(flag))
+{
+}
+
+Object3D::Object3D(const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
+    : SceneNode(name, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
+    _update(false),
+    _playAnimations(true),
+    _geometryType(type),
+    _geometryFlagMask(flagMask),
+    _geometryPartitionID(0U)
 {
     _buffer =
         BitCompare(_geometryFlagMask, to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
-            ? nullptr
-            : GFX_DEVICE.newVB();
+        ? nullptr
+        : GFX_DEVICE.newVB();
 }
 
 Object3D::~Object3D()

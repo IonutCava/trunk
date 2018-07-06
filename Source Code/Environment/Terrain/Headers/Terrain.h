@@ -106,7 +106,7 @@ class Terrain : public Object3D {
     friend class Attorney::TerrainLoader;
 
    public:
-    Terrain();
+    explicit Terrain(const stringImpl& name);
     ~Terrain();
 
     bool unload();

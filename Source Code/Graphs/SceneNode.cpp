@@ -10,15 +10,16 @@
 
 namespace Divide {
 
-SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
+SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
+    : SceneNode(name, "", type)
 {
 }
 
-SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
-    : Resource(name),
-      _materialTemplate(nullptr),
-      _type(type),
-      _LODcount(1)  ///<Defaults to 1 LOD level
+SceneNode::SceneNode(const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type)
+    : Resource(name, resourceLocation),
+     _materialTemplate(nullptr),
+     _type(type),
+     _LODcount(1)  ///<Defaults to 1 LOD level
 {
 }
 

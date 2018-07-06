@@ -3,8 +3,12 @@
 
 namespace Divide {
 
-d3dTexture::d3dTexture(GFXDevice& context, TextureType type, bool asyncLoad)
-    : Texture(context, type, asyncLoad)
+d3dTexture::d3dTexture(GFXDevice& context,
+                       const stringImpl& name,
+                       const stringImpl& resourceLocation,
+                       TextureType type,
+                       bool asyncLoad)
+    : Texture(context, name, resourceLocation, type, asyncLoad)
 {
     _type = d3dTextureTypeTable[to_uint(type)];
 }

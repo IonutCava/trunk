@@ -8,8 +8,10 @@
 
 namespace Divide {
 
-Mesh::Mesh(ObjectFlag flag)
-    : Object3D(ObjectType::MESH, flag),
+Mesh::Mesh(const stringImpl& name,
+           const stringImpl& resourceLocation, 
+           ObjectFlag flag)
+    : Object3D(name, resourceLocation, ObjectType::MESH, flag),
       _visibleToNetwork(true),
       _animator(nullptr)
 {

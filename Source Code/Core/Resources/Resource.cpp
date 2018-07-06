@@ -10,6 +10,13 @@ Resource::Resource(const stringImpl& name)
 {
 }
 
+Resource::Resource(const stringImpl& name,
+                   const stringImpl& resourceLocation)
+    : Resource(name)
+{
+    _resourceLocation = resourceLocation;
+}
+
 Resource::~Resource()
 {
 }
@@ -28,17 +35,9 @@ const stringImpl& Resource::getName() const {
     return _name;
 }
 
-void Resource::setName(const stringImpl& name) {
-    _name = name;
-}
-
 /// Physical file location
 const stringImpl& Resource::getResourceLocation() const {
     return _resourceLocation;
-}
-
-void Resource::setResourceLocation(const stringImpl& resourceLocation) {
-    _resourceLocation = resourceLocation;
 }
 
 ResourceState Resource::getState() const {

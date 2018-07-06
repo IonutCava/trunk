@@ -35,24 +35,24 @@ Camera* CameraManager::createCamera(const stringImpl& cameraName,
     Camera* camera = nullptr;
     switch (type) {
     case Camera::CameraType::FIRST_PERSON:
-        camera = MemoryManager_NEW FirstPersonCamera();
+        camera = MemoryManager_NEW FirstPersonCamera(cameraName);
         break;
     case Camera::CameraType::FREE_FLY:
-        camera = MemoryManager_NEW FreeFlyCamera();
+        camera = MemoryManager_NEW FreeFlyCamera(cameraName);
         break;
     case Camera::CameraType::ORBIT:
-        camera = MemoryManager_NEW OrbitCamera();
+        camera = MemoryManager_NEW OrbitCamera(cameraName);
         break;
     case Camera::CameraType::SCRIPTED:
-        camera = MemoryManager_NEW ScriptedCamera();
+        camera = MemoryManager_NEW ScriptedCamera(cameraName);
         break;
     case Camera::CameraType::THIRD_PERSON:
-        camera = MemoryManager_NEW ThirdPersonCamera();
+        camera = MemoryManager_NEW ThirdPersonCamera(cameraName);
         break;
     }
 
     if (camera != nullptr) {
-        addNewCamera(cameraName, camera);
+        addNewCamera(camera);
     }
 
     return camera;
@@ -93,22 +93,20 @@ void CameraManager::setActiveCamera(Camera* cam) {
     }
 }
 
-void CameraManager::addNewCamera(const stringImpl& cameraName,
-                                 Camera* const camera) {
+void CameraManager::addNewCamera(Camera* const camera) {
     if (camera == nullptr) {
         Console::errorfn(Locale::get(_ID("ERROR_CAMERA_MANAGER_CREATION")),
-                         cameraName.c_str());
+                         camera->getName().c_str());
         return;
     }
 
     camera->setIOD(ParamHandler::instance().getParam<F32>(_ID("postProcessing.anaglyphOffset")));
-    camera->setName(cameraName);
 
     for (const DELEGATE_CBK_PARAM<Camera&>& listener : _updateCameralisteners) {
         camera->addUpdateListener(listener);
     }
 
-    hashAlg::emplace(_cameraPool, _ID_RT(cameraName), camera);
+    hashAlg::emplace(_cameraPool, _ID_RT(camera->getName()), camera);
     hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);
 }
 

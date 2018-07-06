@@ -41,7 +41,7 @@ namespace Divide {
 class ThirdPersonCamera : public OrbitCamera {
   protected:
     friend class CameraManager;
-    ThirdPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit ThirdPersonCamera(const stringImpl& name, const vec3<F32>& eye = VECTOR3_ZERO);
     
   public:
     bool mouseMoved(const Input::MouseEvent& arg);

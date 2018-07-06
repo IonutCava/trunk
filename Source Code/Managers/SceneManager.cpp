@@ -127,7 +127,7 @@ Scene* SceneManager::createScene(const stringImpl& name) {
     ULL nameHash = _ID_RT(name);
 
     if (!name.empty()) {
-        scene = g_sceneFactory[nameHash]();
+        scene = g_sceneFactory[nameHash](name);
     }
 
     if (scene != nullptr) {

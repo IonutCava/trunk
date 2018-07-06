@@ -46,7 +46,7 @@ class GenericVertexData;
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
 class ParticleEmitter : public SceneNode {
    public:
-    ParticleEmitter();
+    explicit ParticleEmitter(const stringImpl& name);
     ~ParticleEmitter();
 
     /// Dummy function from SceneNode;

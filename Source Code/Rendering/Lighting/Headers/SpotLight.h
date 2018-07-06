@@ -39,7 +39,7 @@ namespace Divide {
 
 class SpotLight : public Light {
    public:
-    SpotLight(F32 range = 2);
+    explicit SpotLight(const stringImpl& name, F32 range = 2);
 };
 
 };  // namespace Divide

@@ -41,7 +41,7 @@ namespace Divide {
 class ScriptedCamera : public Camera {
   protected:
     friend class CameraManager;
-    ScriptedCamera(const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit ScriptedCamera(const stringImpl& name, const vec3<F32>& eye = VECTOR3_ZERO);
 };
 
 };  // namespace Divide
