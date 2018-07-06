@@ -184,6 +184,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
@@ -247,7 +248,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
@@ -360,7 +361,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>

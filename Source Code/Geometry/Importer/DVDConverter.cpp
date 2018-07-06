@@ -39,7 +39,7 @@ namespace Divide {
             // set the parent; in case this is the root node, it will be null
             internalNode->_parent = parent;
 
-            internalNode->_localTransform = pNode->mTransformation;
+            AnimUtils::TransformMatrix(pNode->mTransformation, internalNode->_localTransform);
             internalNode->_originalLocalTransform = internalNode->_localTransform;
             calculateBoneToWorldTransform(internalNode);
 
@@ -122,14 +122,10 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
     importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
     U32 ppsteps =
-        aiProcess_TransformUVCoords |  // preprocess UV transformations
-                                       // (scaling, translation ...)
-        aiProcess_FindInstances |      // search for instanced meshes and remove
-                                       // them by references to one master
-        aiProcess_OptimizeMeshes |     // join small meshes, if possible;
-        aiProcess_OptimizeGraph |      // Nodes without
-                                       // animations/bones/lights/cameras are
-                                       // collapsed & joined.
+        aiProcess_TransformUVCoords |  // Preprocess UV transformations (scaling, translation ...)
+        aiProcess_FindInstances |      // Search for instanced meshes and remove them by references to one master
+        aiProcess_OptimizeMeshes |     // Join small meshes, if possible;
+        /*aiProcess_OptimizeGraph |*/  // Nodes without animations/bones/lights/cameras are collapsed & joined.
         aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
         aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality |
         aiProcess_LimitBoneWeights | aiProcess_RemoveRedundantMaterials |
@@ -156,8 +152,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
 
                 Bone* found = target._skeleton->find(bone->mName.data);
                 assert(found != nullptr);
-
-                found->_offsetMatrix = bone->mOffsetMatrix;
+                AnimUtils::TransformMatrix(bone->mOffsetMatrix, found->_offsetMatrix);
                 target._bones.push_back(found);
             }
         }

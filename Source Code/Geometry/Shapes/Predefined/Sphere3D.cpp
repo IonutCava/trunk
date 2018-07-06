@@ -87,6 +87,7 @@ void Sphere3D::rebuildVB() {
 
     vb->create();
     vb->queueRefresh();
+    _geometryTriangles.resize(0);
     setBoundsChanged();
 }
 

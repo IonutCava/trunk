@@ -92,7 +92,7 @@ void Object3D::rebuildVB() {
 void Object3D::rebuild() {
     if (_geometryDirty) {
         rebuildVB();
-        computeTriangleList(true);
+        computeTriangleList();
         _geometryDirty = false;
     }
 }
@@ -134,8 +134,8 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
 }
 
 // Create a list of triangles from the vertices + indices lists based on primitive type
-bool Object3D::computeTriangleList(bool force) {
-    if (!_geometryTriangles.empty() && !force) {
+bool Object3D::computeTriangleList() {
+    if (!_geometryTriangles.empty()) {
         return true;
     }
 
@@ -156,7 +156,7 @@ bool Object3D::computeTriangleList(bool force) {
                   "Object3D error: computeTriangleList called with no position "
                   "data available!");
 
-    if (!_geometryTriangles.empty() && force) {
+    if (!_geometryTriangles.empty()) {
         _geometryTriangles.resize(0);
     }
 

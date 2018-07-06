@@ -176,7 +176,7 @@ class SceneAnimator {
     inline const mat4<F32>& boneOffsetTransform(const stringImpl& bname) {
         Bone* bone = boneByName(bname);
         if (bone != nullptr) {
-            AnimUtils::TransformMatrix(bone->_offsetMatrix, _boneTransformCache);
+            _boneTransformCache = bone->_offsetMatrix;
         }
         return _boneTransformCache;
     }
@@ -206,9 +206,8 @@ class SceneAnimator {
     void updateTransforms(Bone* pNode);
     void calculate(I32 animationIndex, const D64 pTime);
     I32 createSkeleton(Bone* piNode,
-                       const aiMatrix4x4& parent,
-                       vector<Line>& lines,
-                       bool rowMajor = false);
+                       const mat4<F32>& parent,
+                       vector<Line>& lines);
 
    private:
     /// Frame count of the longest registered animation

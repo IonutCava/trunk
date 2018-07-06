@@ -91,7 +91,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     for (const vectorBest<mat4<F32>>& frameTransforms : _transforms) {
         animationData.insert(std::cend(animationData), std::cbegin(frameTransforms), std::cend(frameTransforms));
         for (U32 i = 0; i < bonePadding; ++i) {
-            animationData.push_back(mat4<F32>());
+            animationData.push_back(MAT4_IDENTITY);
         }
     }
 
@@ -137,7 +137,7 @@ I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const {
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
-void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton, bool rowMajor) {
+void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
     D64 pTime = dt * _ticksPerSecond;
 
     D64 time = 0.0f;
@@ -238,8 +238,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton, bool rowMajor) {
             presentScaling.Set(1.0f, 1.0f, 1.0f);
         }
 
-        aiMatrix4x4& mat = bonenode->_localTransform;
-        mat = aiMatrix4x4(presentRotation.GetMatrix());
+        aiMatrix4x4 mat(presentRotation.GetMatrix());
         mat.a1 *= presentScaling.x;
         mat.b1 *= presentScaling.x;
         mat.c1 *= presentScaling.x;
@@ -252,9 +251,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton, bool rowMajor) {
         mat.a4  = presentPosition.x;
         mat.b4  = presentPosition.y;
         mat.c4  = presentPosition.z;
-        if (rowMajor) {
-            mat.Transpose();
-        }
+        AnimUtils::TransformMatrix(mat, bonenode->_localTransform);
     }
     _lastTime = time;
 }

@@ -47,10 +47,10 @@ class Bone {
        U64        _nameKey;
    public:
     I32 _boneID;
-    aiMatrix4x4 _offsetMatrix;
-    aiMatrix4x4 _localTransform;
-    aiMatrix4x4 _globalTransform;
-    aiMatrix4x4 _originalLocalTransform;
+    mat4<F32> _offsetMatrix;
+    mat4<F32> _localTransform;
+    mat4<F32> _globalTransform;
+    mat4<F32> _originalLocalTransform;
 
     Bone* _parent;
     vector<Bone*> _children;

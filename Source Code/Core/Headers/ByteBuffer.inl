@@ -342,6 +342,59 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
     return b;
 }
 
+template <typename T>
+inline ByteBuffer &operator<<(ByteBuffer &b, mat2<T> const &m) {
+    for (U8 i = 0; i < 4; ++i) {
+        b << m[i];
+    }
+
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator>>(ByteBuffer &b, mat2<T> &n) {
+    for (U8 i = 0; i < 4; ++i) {
+        b >> m[i];
+    }
+
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator<<(ByteBuffer &b, mat3<T> const &m) {
+    for (U8 i = 0; i < 9; ++i) {
+        b << m[i];
+    }
+
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator>>(ByteBuffer &b, mat3<T> &n) {
+    for (U8 i = 0; i < 9; ++i) {
+        b >> m[i];
+    }
+
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator<<(ByteBuffer &b, mat4<T> const &m) {
+    for (U8 i = 0; i < 16; ++i) {
+        b << m[i];
+    }
+
+    return b;
+}
+
+template <typename T>
+inline ByteBuffer &operator>>(ByteBuffer &b, mat4<T> &m) {
+    for (U8 i = 0; i < 16; ++i) {
+        b >> m[i];
+    }
+
+    return b;
+}
 template <typename T, size_t N>
 inline ByteBuffer &operator<<(ByteBuffer &b, const std::array<T, N>& v) {
     b << static_cast<U64>(N);

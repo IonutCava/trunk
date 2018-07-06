@@ -74,7 +74,7 @@ class AnimEvaluator {
     AnimEvaluator(const aiAnimation* pAnim, U32 idx);
     ~AnimEvaluator();
 
-    void evaluate(const D64 dt, Bone* skeleton, bool rowMajor = false);
+    void evaluate(const D64 dt, Bone* skeleton);
 
     I32 frameIndexAt(const D64 elapsedTime) const;
 

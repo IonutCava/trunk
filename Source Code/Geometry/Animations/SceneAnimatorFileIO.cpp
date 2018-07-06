@@ -186,17 +186,10 @@ void SceneAnimator::saveSkeleton(ByteBuffer& dataOut, Bone* parent) const {
     // the name of the bone
     dataOut << parent->name();
     // the bone offsets
-    for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            dataOut << parent->_offsetMatrix[i][j];
-        }
-    }
+    dataOut << parent->_offsetMatrix;
     // original bind pose
-    for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            dataOut << parent->_originalLocalTransform[i][j];
-        }
-    }
+    dataOut << parent->_originalLocalTransform;
+
     // number of children
     uint32_t nsize = static_cast<uint32_t>(parent->_children.size());
     dataOut << nsize;
@@ -216,18 +209,10 @@ Bone* SceneAnimator::loadSkeleton(ByteBuffer& dataIn, Bone* parent) {
     dataIn >> tempString;
     internalNode->name(tempString);
     // the bone offsets
-    for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            dataIn >> internalNode->_offsetMatrix[i][j];
-        }
-    }
+    dataIn >> internalNode->_offsetMatrix;
     // original bind pose
-    for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            dataIn >> internalNode->_originalLocalTransform[i][j];
-        }
-    }
-
+    dataIn >> internalNode->_originalLocalTransform;
+ 
     // a copy saved
     internalNode->_localTransform = internalNode->_originalLocalTransform;
     calculateBoneToWorldTransform(internalNode);

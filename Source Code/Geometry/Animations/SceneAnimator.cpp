@@ -21,7 +21,7 @@ void calculateBoneToWorldTransform(Bone* child) {
     // the matrices to get the Object to World transform,
     // or in this case, the Bone To World transform
     while (parent) {
-        child->_globalTransform =  parent->_localTransform * child->_globalTransform;
+        child->_globalTransform *= parent->_localTransform;
         // get the parent of the bone we are working on
         parent = parent->_parent;
     }
@@ -61,7 +61,7 @@ bool SceneAnimator::init(PlatformContext& context) {
     _transforms.resize(_skeletonDepthCache);
 
     D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
-    vectorBest<mat4<F32> > vec;
+    vectorBest<mat4<F32>> vec;
     vec_size animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
@@ -76,14 +76,13 @@ bool SceneAnimator::init(PlatformContext& context) {
         for (D64 ticks = 0; ticks < duration; ticks += tickStep) {
             dt += timestep;
             calculate((I32)i, dt);
-            crtAnimation->transforms().push_back(vec);
-            vectorBest<mat4<F32> >& trans = crtAnimation->transforms().back();
-            trans.resize(_skeletonDepthCache);
+            vec.resize(_skeletonDepthCache, MAT4_IDENTITY);
             for (I32 a = 0; a < _skeletonDepthCache; ++a) {
                 Bone* bone = _bones[a];
-                AnimUtils::TransformMatrix(bone->_globalTransform * bone->_offsetMatrix, trans[a]);
+                vec[a] = bone->_offsetMatrix * bone->_globalTransform;
                 bone->_boneID = a;
             }
+            crtAnimation->transforms().push_back(vec);
         }
 
         _skeletonLines[i].resize(crtAnimation->frameCount(), -1);
@@ -167,7 +166,7 @@ const vector<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
         // Construct skeleton
         calculate(animationIndex, dt);
         // Start with identity transform
-        createSkeleton(_skeleton, aiMatrix4x4(), lines);
+        createSkeleton(_skeleton, MAT4_IDENTITY, lines);
     }
 
     return lines;
@@ -175,22 +174,19 @@ const vector<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
 
 /// Create animation skeleton
 I32 SceneAnimator::createSkeleton(Bone* piNode,
-                                  const aiMatrix4x4& parent,
-                                  vector<Line>& lines,
-                                  bool rowMajor) {
+                                  const mat4<F32>& parent,
+                                  vector<Line>& lines) {
 
-    const aiMatrix4x4& me = piNode->_globalTransform;
+    const mat4<F32>& me = piNode->_globalTransform;
 
     if (piNode->_parent) {
         Line line;
         line.colour(255, 0, 0, 255);
         line.width(2.0f);
 
-        if (rowMajor) {
-            line.segment(parent.d1, parent.d2, parent.d3, me.d1, me.d2, me.d3);
-        } else {
-            line.segment(parent.a4, parent.b4, parent.c4, me.a4, me.b4, me.c4);
-        }
+        vec3<F32> start = parent.getRow(3).xyz();
+        vec3<F32> end = me.getRow(3).xyz();
+        line.segment(start.x, start.y, start.z, end.x, end.y, end.z);
         lines.emplace_back(line);
     }
 
