@@ -129,7 +129,7 @@ class Vegetation : public SceneNode {
     ShaderProgram* _cullShader;
     stringImpl _grassShaderName;
     bool _shadowMapped;
-    size_t _grassStateBlockHash;
+    U32  _grassStateBlockHash;
     bool _culledFinal;
     U32 _readBuffer;
     U32 _writeBuffer;

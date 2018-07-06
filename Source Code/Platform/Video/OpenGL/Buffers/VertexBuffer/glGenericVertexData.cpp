@@ -219,65 +219,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
 
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        static const size_t cmdSize = sizeof(IndirectDrawCommand);
-        GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
-        GLuint drawCount = command.drawCount();
-        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-        if (useCmdBuffer) {
-            bufferPtr offset = (bufferPtr)(cmd.baseInstance * cmdSize);
-            if (_indexBuffer > 0) {
-                if (command.renderGeometry()) {
-                    glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset, drawCount, cmdSize);
-                }
-                if (command.renderWireframe()) {
-                    glMultiDrawElementsIndirect(GL_LINE_LOOP, GL_UNSIGNED_INT, offset, drawCount, cmdSize);
-                }
-            } else {
-                if (command.renderGeometry()) {
-                    glMultiDrawArraysIndirect(mode, offset, drawCount, cmdSize);
-                }
-                if (command.renderWireframe()) {
-                    glMultiDrawArraysIndirect(GL_LINE_LOOP, offset, drawCount, cmdSize);
-                }
-            }
-        } else {
-            if (drawCount > 1) {
-                vectorImpl<GLsizei> count(drawCount, cmd.indexCount);
-                if (_indexBuffer > 0) {
-                    vectorImpl<U32> indices(drawCount, cmd.baseInstance);
-                    if (command.renderGeometry()) {
-                        glMultiDrawElements(mode, count.data(), GL_UNSIGNED_INT, (bufferPtr*)(indices.data()), drawCount);
-                    }
-                    if (command.renderWireframe()) {
-                        glMultiDrawElements(GL_LINE_LOOP, count.data(), GL_UNSIGNED_INT, (bufferPtr*)(indices.data()), drawCount);
-                    }
-                } else {
-                    vectorImpl<I32> first(drawCount, cmd.firstIndex);
-                    if (command.renderGeometry()) {
-                        glMultiDrawArrays(mode, first.data(), count.data(), drawCount);
-                    }
-                    if (command.renderWireframe()) {
-                        glMultiDrawArrays(GL_LINE_LOOP, first.data(), count.data(), drawCount);
-                    }
-                }
-            } else {
-                if (_indexBuffer > 0) {
-                    if (command.renderGeometry()) {
-                        glDrawElements(mode, cmd.indexCount, GL_UNSIGNED_INT, bufferOffset(cmd.firstIndex));
-                    }
-                    if (command.renderWireframe()) {
-                        glDrawElements(GL_LINE_LOOP, cmd.indexCount, GL_UNSIGNED_INT, bufferOffset(cmd.firstIndex));
-                    }
-                } else {
-                    if (command.renderGeometry()) {
-                        glDrawArrays(mode, cmd.firstIndex, cmd.indexCount);
-                    }
-                    if (command.renderWireframe()) {
-                        glDrawArrays(GL_LINE_LOOP, cmd.firstIndex, cmd.indexCount);
-                    }
-                }
-            }
-        }
+        GLUtil::submitRenderCommand(command, useCmdBuffer, GL_UNSIGNED_INT, _indexBuffer);
     }
 
     // Deactivate transform feedback if needed

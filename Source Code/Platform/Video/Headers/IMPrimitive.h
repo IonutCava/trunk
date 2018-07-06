@@ -111,8 +111,8 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
     }
 
     /// State management
-    inline size_t stateHash() const { return _stateHash; }
-    inline void stateHash(size_t hashValue) { _stateHash = hashValue; }
+    inline U32 stateHash() const { return _stateHash; }
+    inline void stateHash(U32 hashValue) { _stateHash = hashValue; }
 
     inline const mat4<F32>& worldMatrix() const { return _worldMatrix; }
     inline void worldMatrix(const mat4<F32>& worldMatrix) {
@@ -155,7 +155,7 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
     DELEGATE_CBK<> _setupStates;
     DELEGATE_CBK<> _resetStates;
     /// The state hash associated with this render instance
-    size_t _stateHash;
+    U32 _stateHash;
     /// The transform matrix for this element
     mat4<F32> _worldMatrix;
 };

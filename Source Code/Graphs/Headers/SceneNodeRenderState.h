@@ -28,8 +28,8 @@ class SceneNodeRenderState {
     void addToDrawExclusionMask(RenderStage stage);
     void removeFromDrawExclusionMask(RenderStage stage);
 
-    size_t getDepthStateBlock();
-    size_t getShadowStateBlock();
+    U32 getDepthStateBlock();
+    U32 getShadowStateBlock();
 
    protected:
     bool _hasWaterReflection;
@@ -37,8 +37,8 @@ class SceneNodeRenderState {
     bool _noDefaultMaterial;
     U32 _exclusionMask;
 
-    size_t _depthStateBlockHash;
-    size_t _shadowStateBlockHash;
+    U32 _depthStateBlockHash;
+    U32 _shadowStateBlockHash;
 };
 
 };  // namespace Divide

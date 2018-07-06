@@ -267,7 +267,7 @@ template <typename T>
 namespace Util {
 /// a la Boost
 template <typename T>
-void Hash_combine(std::size_t& seed, const T& v) {
+void Hash_combine(U32& seed, const T& v) {
     std::hash<T> hasher;
     seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }

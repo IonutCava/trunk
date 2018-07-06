@@ -320,7 +320,7 @@ class Material : public Resource {
         setShaderProgram(shader, RenderStage::REFLECTION, computeOnAdd);
     }
 
-    inline void setRenderStateBlock(size_t renderStateBlockHash,
+    inline void setRenderStateBlock(U32 renderStateBlockHash,
                                     RenderStage renderStage) {
         _defaultRenderStates[to_uint(renderStage)] = renderStateBlockHash;
     }
@@ -342,7 +342,7 @@ class Material : public Resource {
     inline F32 getParallaxFactor() const { return _parallaxFactor; }
     inline U8  getTextureCount()   const { return _shaderData._textureCount; }
 
-    size_t getRenderStateBlock(RenderStage currentStage);
+    U32 getRenderStateBlock(RenderStage currentStage);
     inline Texture* getTexture(ShaderProgram::TextureUsage textureUsage) const {
         return _textures[to_uint(textureUsage)];
     }
@@ -400,7 +400,7 @@ class Material : public Resource {
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
     std::array<ShaderInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo;
-    std::array<size_t, to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
+    std::array<U32, to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
 
     bool _shaderThreadedLoad;
 

@@ -87,7 +87,7 @@ class NavMeshDebugDraw : public duDebugDraw {
    private:
     PrimitiveType _primType;
     IMPrimitive* _primitive;
-    size_t _navMeshStateBlockHash;
+    U32 _navMeshStateBlockHash;
     U32 _vertCount;
     U32 _color;
     bool _overrideColor;

@@ -228,7 +228,7 @@ bool glVertexArray::refresh() {
         for (U8 j = 0; j < to_uint(VertexAttribute::COUNT); ++j) {
             stageUsage[j] = _useAttribute[j] && stageMask[j];
         }
-        U32 crtHash = to_uint(std::hash<AttribFlags>()(stageUsage));
+        U32 crtHash = std::hash<AttribFlags>()(stageUsage);
         _vaoHashes[i] = crtHash;
         _vaoCaches[i] = getVao(crtHash);
         if (_vaoCaches[i] == 0) {
@@ -239,7 +239,7 @@ bool glVertexArray::refresh() {
             vaoCachesDirty[i] = true;
         }
 
-        Console::printfn("      %d : %d", i, crtHash);
+        Console::printfn("      %d : %d", i, to_uint(crtHash));
     }
 
 
@@ -275,7 +275,7 @@ bool glVertexArray::refresh() {
                            size,
                            countRequirement * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                            GLUtil::getVBOMemUsage(_VBHandle._id),
-                           GLUtil::g_globalVBOs.size());
+                           GLUtil::getVBOCount());
 
         _effectiveEntryOffset = _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES;
     }
@@ -285,8 +285,7 @@ bool glVertexArray::refresh() {
 
     _smallData.clear();
 
-    // Check if we need to update the IBO (will be true for the first Refresh()
-    // call)
+    // Check if we need to update the IBO (will be true for the first Refresh() call)
     if (indicesChanged) {
         bufferPtr data = usesLargeIndices()
                              ? static_cast<bufferPtr>(_hardwareIndicesL.data())
@@ -349,56 +348,16 @@ void glVertexArray::draw(const GenericDrawCommand& command,
         return;
     }
     // Make sure the buffer is current
-    if (!setActive()) {
-        return;
-    }
-  
-    static const size_t cmdSize = sizeof(IndirectDrawCommand);
-
-    bufferPtr offset = (bufferPtr)(cmd.baseInstance * cmdSize);
-    U16 drawCount = command.drawCount();
-    GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
-
-    if (useCmdBuffer) {
-        if (command.renderGeometry()) {
-            glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, cmdSize);
-        }
-        if (command.renderWireframe()) {
-            glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, cmdSize);
-        }
-    } else {
-        if (drawCount > 1) {
-            vectorImpl<GLsizei> count(drawCount, cmd.indexCount);
-            vectorImpl<U32> indices(drawCount, cmd.firstIndex);
-            if (command.renderGeometry()) {
-                glMultiDrawElements(mode, count.data(), _formatInternal, (bufferPtr*)indices.data(), drawCount);
-            }
-            if (command.renderWireframe()) {
-                glMultiDrawElements(GL_LINE_LOOP, count.data(), _formatInternal, (bufferPtr*)indices.data(), drawCount);
-            }
-        } else {
-            if (command.renderGeometry()) {
-                glDrawElements(mode, cmd.indexCount, _formatInternal, bufferOffset(cmd.firstIndex));
-            }
-            if (command.renderWireframe()) {
-                glDrawElements(GL_LINE_LOOP, cmd.indexCount, _formatInternal, bufferOffset(cmd.firstIndex));
-            }
-        }
-    }
-}
-
-/// Set the current buffer as active
-bool glVertexArray::setActive() {
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
     if (_IBid == 0) {
         if (!createInternal()) {
-            return false;
+            return;
         }
     }
     // Check if we have a refresh request queued up
     if (_refreshQueued) {
         if (!refresh()) {
-            return false;
+            return;
         }
     }
 
@@ -411,9 +370,8 @@ bool glVertexArray::setActive() {
     }
 
     // Bind the the vertex buffer and index buffer
-    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
     setIfDifferentBindRange(_VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
-    return true;
+    GLUtil::submitRenderCommand(command, useCmdBuffer, _formatInternal, _IBid);
 }
 
 /// Activate and set all of the required vertex attributes.

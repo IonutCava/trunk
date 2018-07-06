@@ -6,6 +6,9 @@
 namespace Divide {
 namespace GLUtil {
 
+
+static vectorImpl<VBO> g_globalVBOs;
+
 U32 VBO::getChunkCountForSize(size_t sizeInBytes) {
     return to_uint(std::ceil(to_float(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
 }
@@ -136,6 +139,10 @@ U32 getVBOMemUsage(GLuint handle) {
     }
 
     return 0;
+}
+
+U32 getVBOCount() {
+    return to_uint(g_globalVBOs.size());
 }
 
 void clearVBOs() {

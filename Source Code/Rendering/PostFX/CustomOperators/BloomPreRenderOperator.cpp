@@ -95,7 +95,7 @@ void BloomPreRenderOperator::operation() {
         return;
     }
 
-    size_t defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
+    U32 defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
 
     toneMapScreen();
 

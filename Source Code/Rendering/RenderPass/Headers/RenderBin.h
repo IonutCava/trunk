@@ -52,7 +52,7 @@ struct RenderBinItem {
     RenderingComponent* _renderable;
     I32 _sortKeyA;
     I32 _sortKeyB;
-    size_t _stateHash;
+    U32 _stateHash;
     F32 _distanceToCameraSq;
 
     RenderBinItem() : _renderable(nullptr) {}

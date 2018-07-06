@@ -80,12 +80,11 @@ namespace GLUtil {
         U32 _offset;
     };
 
-    static vectorImpl<VBO> g_globalVBOs;
-
     bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut);
     bool releaseVBO(GLuint& handle, U32& offset);
     U32 getVBOMemUsage(GLuint handle);
-    
+    U32 getVBOCount();
+
     void clearVBOs();
 
     void createAndAllocBuffer(GLsizeiptr bufferSize,

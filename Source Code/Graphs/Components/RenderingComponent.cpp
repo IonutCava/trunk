@@ -65,7 +65,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
         Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 5.0f));
     _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
     // Prepare it for line rendering
-    size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
+    U32 noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
     RenderStateBlock stateBlock(GFX_DEVICE.getRenderStateBlock(noDepthStateBlock));
     _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
     _axisGizmo->stateHash(stateBlock.getHash());
@@ -151,7 +151,7 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
 }
 
 void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture) {
-    size_t inputHash = additionalTexture.getHash();
+    U32 inputHash = additionalTexture.getHash();
     TextureDataContainer::const_iterator it;
     it = std::find_if(std::begin(_textureDependencies), std::end(_textureDependencies),
                       [&inputHash](const TextureData& textureData) { 
@@ -164,7 +164,7 @@ void RenderingComponent::registerTextureDependency(const TextureData& additional
 }
 
 void RenderingComponent::removeTextureDependency(const TextureData& additionalTexture) {
-    size_t inputHash = additionalTexture.getHash();
+    U32 inputHash = additionalTexture.getHash();
     TextureDataContainer::iterator it;
     it = std::find_if(std::begin(_textureDependencies), std::end(_textureDependencies),
                       [&inputHash](const TextureData& textureData) { 
@@ -440,7 +440,7 @@ ShaderProgram* const RenderingComponent::getDrawShader(
                 : nullptr);
 }
 
-size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
+U32 RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     if (!getMaterialInstance()) {
         return 0L;
     }

@@ -231,7 +231,7 @@ void PlotFloatEvents(const stringImpl& eventName,
 
 /// a la Boost
 template <typename T>
-void Hash_combine(std::size_t& seed, const T& v);
+void Hash_combine(U32& seed, const T& v);
 
 void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search,
                           const stringImpl& replace);
@@ -318,6 +318,25 @@ FORCE_INLINE void Inverse(const T* in, T* out);
 };  // namespace Mat4
 };  // namespace Util
 };  // namespace Divide
+
+namespace std {
+    template<typename T, size_t N>
+    struct hash<array<T, N> >
+    {
+        typedef array<T, N> argument_type;
+        typedef unsigned int result_type;
+
+        result_type operator()(const argument_type& a) const
+        {
+            result_type h = 0;
+            for (const T& elem : a)
+            {
+                Divide::Util::Hash_combine(h, elem);
+            }
+            return h;
+        }
+    };
+};
 
 #endif  //_CORE_MATH_MATH_HELPER_H_
 

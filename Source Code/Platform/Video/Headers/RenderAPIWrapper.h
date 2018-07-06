@@ -112,7 +112,7 @@ struct GenericDrawCommand {
     U32 _renderOptions;
     bool _locked;
     bool _drawToBuffer;
-    size_t _stateHash;
+    U32 _stateHash;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
     ShaderProgram* _shaderProgram;
@@ -136,7 +136,7 @@ struct GenericDrawCommand {
         _queryID = queryID;
     }
 
-    inline void stateHash(size_t hashValue) {
+    inline void stateHash(U32 hashValue) {
         assert(!_locked);
         _stateHash = hashValue;
     }
@@ -182,7 +182,7 @@ struct GenericDrawCommand {
     inline U8 LoD() const { return _lodIndex; }
     inline U32 queryID() const { return _queryID; }
     inline U16 drawCount() const { return _drawCount; }
-    inline size_t stateHash() const { return _stateHash; }
+    inline U32 stateHash() const { return _stateHash; }
     inline bool drawToBuffer() const { return _drawToBuffer; }
 
     inline bool renderWireframe() const {
@@ -314,8 +314,8 @@ class TextureData {
     }
 
     // No need to cache this as it should already be pretty fast
-    inline size_t getHash() const {
-        size_t hash = 0;
+    inline U32 getHash() const {
+        U32 hash = 0;
         Util::Hash_combine(hash, to_uint(_textureType));
         Util::Hash_combine(hash, _samplerHash);
         Util::Hash_combine(hash, _textureHandle);
@@ -324,7 +324,7 @@ class TextureData {
     }
 
     TextureType _textureType;
-    size_t _samplerHash;
+    U32 _samplerHash;
     GFXImageFormat _textureFormat;
 private:
     U64  _textureHandle;

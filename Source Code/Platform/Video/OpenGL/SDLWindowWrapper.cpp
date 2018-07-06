@@ -464,6 +464,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
     CEGUI::System::create(*_GUIGLrenderer);
 
+    static const vec4<F32> clearColor = DefaultColors::DIVIDE_BLUE();
+    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+
     // That's it. Everything should be ready for draw calls
     Console::printfn(Locale::get("START_OGL_API_OK"));
 

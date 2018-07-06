@@ -75,6 +75,12 @@ extern SDL_Window* _mainWindow;
 extern SDL_GLContext _glRenderContext;
 extern vectorImpl<SDL_GLContext> _glSecondaryContexts;
 
+
+void submitRenderCommand(const GenericDrawCommand& drawCommand,
+                         bool useIndirectBuffer,
+                         GLenum internalFormat,
+                         GLuint indexBuffer = 0);
+
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();
 

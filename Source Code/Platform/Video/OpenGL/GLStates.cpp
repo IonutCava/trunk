@@ -211,9 +211,9 @@ bool GL_API::bindSamplers(GLushort unitOffset,
 }
 
 /// Bind the sampler object described by the hash value to the specified unit
-bool GL_API::bindSampler(GLushort unit, size_t samplerHash) {
+bool GL_API::bindSampler(GLushort unit, U32 samplerHash) {
 
-    size_t& sampler = _samplerBoundMap[unit];
+    U32& sampler = _samplerBoundMap[unit];
 
     if (sampler != samplerHash) {
         // Get the sampler object defined by the hash value and bind it to the
@@ -261,7 +261,7 @@ bool GL_API::bindTextures(GLushort unitOffset,
 bool GL_API::bindTexture(GLushort unit,
                          GLuint handle,
                          GLenum target,
-                         size_t samplerHash) {
+                         U32 samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
     DIVIDE_ASSERT(

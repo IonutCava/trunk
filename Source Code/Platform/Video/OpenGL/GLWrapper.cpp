@@ -662,9 +662,9 @@ bool GL_API::makeTextureResident(const TextureData& textureData) {
 
 /// Verify if we have a sampler object created and available for the given
 /// descriptor
-size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
+U32 GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // Get the descriptor's hash value
-    size_t hashValue = descriptor.getHash();
+    U32 hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map
     samplerObjectMap::const_iterator it = _samplerMap.find(hashValue);
     // If we fail to find it, we need to create a new sampler object
@@ -678,7 +678,7 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
 }
 
 /// Return the OpenGL sampler object's handle for the given hash value
-GLuint GL_API::getSamplerHandle(size_t samplerHash) {
+GLuint GL_API::getSamplerHandle(U32 samplerHash) {
     // If the hash value is 0, we assume the code is trying to unbind a sampler object
     GLuint samplerHandle = 0;
     if (samplerHash > 0) {

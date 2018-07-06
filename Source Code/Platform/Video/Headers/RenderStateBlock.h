@@ -72,7 +72,7 @@ class RenderStateBlock : public GUIDWrapper {
 
     FillMode _fillMode;
 
-    size_t _cachedHash;
+    U32 _cachedHash;
     bool _lockHash;
 
   private:
@@ -177,7 +177,7 @@ class RenderStateBlock : public GUIDWrapper {
         return _fillMode;
     }
 
-    inline size_t getHash() const {
+    inline U32 getHash() const {
         return _cachedHash;
     }
 

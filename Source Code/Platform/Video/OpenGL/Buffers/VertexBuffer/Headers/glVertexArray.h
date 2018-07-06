@@ -60,8 +60,6 @@ class glVertexArray : public VertexBuffer {
     bool create(bool staticDraw = true);
     void destroy();
 
-    virtual bool setActive();
-
     /// Never call Refresh() just queue it and the data will update before
     /// drawing
     inline bool queueRefresh() {

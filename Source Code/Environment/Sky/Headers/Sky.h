@@ -78,8 +78,8 @@ class Sky : public SceneNode {
     Texture* _skybox;
     Sphere3D* _sky;
     F32    _farPlane;
-    size_t _skyboxRenderStateHash;
-    size_t _skyboxRenderStateReflectedHash;
+    U32 _skyboxRenderStateHash;
+    U32 _skyboxRenderStateReflectedHash;
 };
 
 };  // namespace Divide

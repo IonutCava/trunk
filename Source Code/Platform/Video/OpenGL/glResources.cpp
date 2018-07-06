@@ -248,6 +248,87 @@ void fillEnumTables() {
     glShaderStageNameTable[to_uint(ShaderType::COMPUTE)] = "Compute";
 }
 
+namespace {
+void submitIndirectCommand(U32 baseInstance,
+                           U32 drawCount,
+                           GLenum mode,
+                           GLenum internalFormat,
+                           GLuint indexBuffer) {
+    static const size_t cmdSize = sizeof(IndirectDrawCommand);
+    if (indexBuffer > 0) {
+        glMultiDrawElementsIndirect(mode, 
+                                    internalFormat,
+                                    (bufferPtr)(baseInstance * cmdSize),
+                                    drawCount,
+                                    cmdSize);
+    } else {
+        glMultiDrawArraysIndirect(mode,
+                                  (bufferPtr)(baseInstance * cmdSize),
+                                  drawCount,
+                                  cmdSize);
+    }
+}
+
+void sumitDirectCommand(const IndirectDrawCommand& cmd,
+                        GLenum mode,
+                        GLenum internalFormat,
+                        GLuint indexBuffer) {
+
+    if (indexBuffer > 0) {
+        glDrawElements(mode, cmd.indexCount, internalFormat, bufferOffset(cmd.firstIndex));
+    } else {
+        glDrawArrays(mode, cmd.firstIndex, cmd.indexCount);
+    }
+}
+
+void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
+                              U32 drawCount,
+                              GLenum mode,
+                              GLenum internalFormat,
+                              GLuint indexBuffer) {
+    vectorImpl<GLsizei> count(drawCount, cmd.indexCount);
+    if (indexBuffer > 0) {
+        vectorImpl<U32> indices(drawCount, cmd.baseInstance);
+        glMultiDrawElements(mode, count.data(), internalFormat, (bufferPtr*)(indices.data()), drawCount);
+    } else {
+        vectorImpl<I32> first(drawCount, cmd.firstIndex);
+        glMultiDrawArrays(mode, first.data(), count.data(), drawCount);
+    }
+}
+
+void submitRenderCommand(const GenericDrawCommand& drawCommand,
+                         GLenum mode,
+                         bool useIndirectBuffer,
+                         GLenum internalFormat,
+                         GLuint indexBuffer) {
+    if (useIndirectBuffer) {
+        submitIndirectCommand(drawCommand.cmd().baseInstance, drawCommand.drawCount(), mode, internalFormat, indexBuffer);
+    } else {
+        if (drawCommand.drawCount() > 1) {
+            submitDirectMultiCommand(drawCommand.cmd(), drawCommand.drawCount(), mode, internalFormat, indexBuffer);
+        } else {
+            sumitDirectCommand(drawCommand.cmd(), mode, internalFormat, indexBuffer);
+        }
+    }
+}
+
+};
+
+void submitRenderCommand(const GenericDrawCommand& drawCommand,
+                         bool useIndirectBuffer,
+                         GLenum internalFormat,
+                         GLuint indexBuffer) {
+
+    GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    if (drawCommand.renderGeometry()) {
+        GLenum mode = glPrimitiveTypeTable[to_uint(drawCommand.primitiveType())];
+        submitRenderCommand(drawCommand, mode, useIndirectBuffer, internalFormat, indexBuffer);
+    }
+    if (drawCommand.renderWireframe()) {
+        submitRenderCommand(drawCommand, GL_LINE_LOOP, useIndirectBuffer, internalFormat, indexBuffer);
+    }
+}
+
 };  // namespace GLutil
 
 }; //namespace Divide

@@ -75,7 +75,7 @@ class GUIElement {
 
     inline const stringImpl& getName() const { return _name; }
     inline const GUIType getType() const { return _guiType; }
-    inline size_t getStateBlockHash() const { return _guiSBHash; }
+    inline U32 getStateBlockHash() const { return _guiSBHash; }
     inline const bool isActive() const { return _active; }
     inline const bool isVisible() const { return _visible; }
 
@@ -94,7 +94,7 @@ class GUIElement {
 
    protected:
     GUIType _guiType;
-    size_t _guiSBHash;
+    U32 _guiSBHash;
     U64 _lastDrawTimer;
     CEGUI::Window* _parent;
 

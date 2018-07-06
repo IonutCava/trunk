@@ -121,7 +121,7 @@ class ParticleEmitter : public SceneNode {
 
     GenericVertexData* _particleGPUBuffer;
 
-    size_t _particleStateBlockHash;
+    U32 _particleStateBlockHash;
 
     ShaderProgram* _particleShader;
     ShaderProgram* _particleDepthShader;

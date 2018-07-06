@@ -375,7 +375,7 @@ void GFXDevice::postProcessRenderTarget(RenderTarget renderTarget) {
 /// This is just a short-circuit system (hack) to send a list of points to the
 /// shader
 /// It's used, mostly, to draw full screen quads using geometry shaders
-void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
+void GFXDevice::drawPoints(U32 numPoints, U32 stateHash,
                            ShaderProgram* const shaderProgram) {
     // We need a valid amount of points. Check lower limit
     DIVIDE_ASSERT(numPoints != 0, Locale::get("ERROR_GFX_POINTS_UNDERFLOW"));
@@ -396,8 +396,7 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
 
 /// This is just a short-circuit system (hack) to quickly send 3 vertices to the shader
 /// It's used, mostly, to draw full screen quads using vertex shaders
-void GFXDevice::drawTriangle(size_t stateHash,
-                             ShaderProgram* const shaderProgram) {
+void GFXDevice::drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram) {
     // We require a state hash value to set proper states
     _defaultDrawCmd.stateHash(stateHash);
     // We also require a shader program (although it may already be bound. Better safe ...)

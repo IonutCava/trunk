@@ -280,7 +280,7 @@ void CascadedShadowMaps::previewShadowMaps() {
         return;
     }
 
-    size_t stateHash = GFX_DEVICE.getDefaultStateBlock(true);
+    U32 stateHash = GFX_DEVICE.getDefaultStateBlock(true);
     _depthMap->bind();
     for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);
