@@ -112,10 +112,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     inline void UploadPushConstant(const PushConstant& constant);
     inline void UploadPushConstants(const PushConstants& constants);
 
-    void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) override;
-
-    void SetMemoryBarrier(MemoryBarrierType type) override;
-
    protected:
     glShaderProgramLoadInfo buildLoadInfo();
     std::pair<bool, stringImpl> loadSourceCode(ShaderType stage,

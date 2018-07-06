@@ -168,7 +168,7 @@ void LightPool::idle() {
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
-bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
+bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, GFX::CommandBuffer& bufferInOut) {
     if (_context.shadowDetailLevel() == RenderDetailLevel::OFF) {
         return true;
     }
@@ -184,7 +184,7 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
         if(light != nullptr) {
             _currentShadowCastingLight = light;
             light->validateOrCreateShadowMaps(_context, sceneRenderState);
-            light->generateShadowMaps(idx++ * 6);
+            light->generateShadowMaps(idx++ * 6, bufferInOut);
         }
     }
 
@@ -204,14 +204,14 @@ void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
 }
 
 // If we have computed shadowmaps, bind them before rendering any geometry;
-void LightPool::bindShadowMaps(GFXDevice& context) {
+void LightPool::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
     // Skip applying shadows if we are rendering to depth map, or we have
     // shadows disabled
     if (context.shadowDetailLevel() == RenderDetailLevel::OFF) {
         return;
     }
 
-    ShadowMap::bindShadowMaps(context);
+    ShadowMap::bindShadowMaps(context, bufferInOut);
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {
@@ -332,7 +332,7 @@ void LightPool::uploadLightBuffers() {
     }
 }
 
-void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
+void LightPool::drawLightImpostors(GFX::CommandBuffer& bufferInOut) const {
     if (!_previewShadowMaps) {
         return;
     }
@@ -343,8 +343,6 @@ void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
     const U32 spotLightCount = _activeLightCount[to_base(LightType::SPOT)];
     const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
     if (totalLightCount > 0) {
-        RenderSubPassCmd newSubPass;
-
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
         pipelineDescriptor._shaderProgram = _lightImpostorShader;
@@ -353,19 +351,19 @@ void LightPool::drawLightImpostors(RenderSubPassCmds& subPassesInOut) const {
         pointsCmd.primitiveType(PrimitiveType::API_POINTS);
         pointsCmd.drawCount(to_U16(totalLightCount));
 
-        BindPipelineCommand bindPipeline;
+        GFX::BindPipelineCommand bindPipeline;
         bindPipeline._pipeline = _context.newPipeline(pipelineDescriptor);
-        newSubPass._commands.add(bindPipeline);
+        GFX::BindPipeline(bufferInOut, bindPipeline);
         
-        DrawCommand drawCommand;
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set._textureData.addTexture(TextureData(_lightIconsTexture->getTextureType(),
+                                                                  _lightIconsTexture->getHandle(),
+                                                                  to_U8(ShaderProgram::TextureUsage::UNIT0)));
+        GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+
+        GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(pointsCmd);
-        newSubPass._commands.add(drawCommand);
-
-        newSubPass._textures.addTexture(TextureData(_lightIconsTexture->getTextureType(),
-                                                    _lightIconsTexture->getHandle(),
-                                                    to_U8(ShaderProgram::TextureUsage::UNIT0)));
-
-        subPassesInOut.push_back(newSubPass);
+        GFX::AddDrawCommands(bufferInOut, drawCommand);
     }
 }
 

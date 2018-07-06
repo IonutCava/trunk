@@ -66,9 +66,9 @@ void SceneEnvironmentProbePool::removeProbe(EnvironmentProbe_wptr probe) {
     }
 }
 
-void SceneEnvironmentProbePool::debugDraw(RenderSubPassCmds& subPassesInOut) {
+void SceneEnvironmentProbePool::debugDraw(GFX::CommandBuffer& bufferInOut) {
     for (const EnvironmentProbe_ptr& probe : _envProbes) {
-        probe->debugDraw(subPassesInOut);
+        probe->debugDraw(bufferInOut);
     }
 }
 

@@ -29,34 +29,35 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _SCENE_ENVIRONMENT_PROBE_POOL_H_
-#define _SCENE_ENVIRONMENT_PROBE_POOL_H_
+#ifndef _CLIP_PLANES_H_
+#define _CLIP_PLANES_H_
 
-#include "Rendering/Headers/EnvironmentProbe.h"
-#include "Scenes/Headers/SceneComponent.h"
+#include "Core/Math/Headers/Plane.h"
 
 namespace Divide {
+    struct ClipPlaneList {
+        ClipPlaneList(U32 size, const Plane<F32>& defaultValue)
+            : _planes(size, defaultValue),
+              _active(size, false)
+        {
+        }
 
-class SceneRenderState;
-class SceneEnvironmentProbePool : public SceneComponent {
-public:
-    SceneEnvironmentProbePool(Scene& parentScene);
-    ~SceneEnvironmentProbePool();
+        void resize(U32 size, const Plane<F32>& defaultValue) {
+            _planes.resize(size, defaultValue);
+            _active.resize(size, false);
+        }
 
-    const EnvironmentProbeList& getNearestSorted();
+        void set(U32 index, const Plane<F32>& plane, bool active) {
+            assert(index < _planes.size());
 
-    EnvironmentProbe_wptr addInfiniteProbe(const vec3<F32>& position);
-    EnvironmentProbe_wptr addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
-    void removeProbe(EnvironmentProbe_wptr probe);
+            _planes[index].set(plane.getEquation());
+            _active[index] = active;
+        }
 
-    void debugDraw(GFX::CommandBuffer& bufferInOut);
-
-protected:
-    bool _isSorted;
-    EnvironmentProbeList _envProbes;
-    EnvironmentProbeList _sortedProbes;
-};
+        PlaneList _planes;
+        vectorImpl<bool> _active;
+    };
 
 }; //namespace Divide
 
-#endif //_SCENE_ENVIRONMENT_PROBE_POOL_H_
+#endif //_CLIP_PLANES_H_

@@ -9,6 +9,7 @@
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
@@ -163,7 +164,8 @@ void ShadowMap::clearShadowMaps(GFXDevice& context) {
     s_shadowMaps.clear();
 }
 
-void ShadowMap::bindShadowMaps(GFXDevice& context) {
+void ShadowMap::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         RTAttachmentType attachment
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
@@ -171,8 +173,11 @@ void ShadowMap::bindShadowMaps(GFXDevice& context) {
                                           : RTAttachmentType::Depth;
 
         U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
-        context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).bind(bindSlot, attachment, 0);
+        TextureData data = context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).getAttachment(attachment, 0).texture()->getData();
+        data.setBinding(bindSlot);
+        descriptorSetCmd._set._textureData.addTexture(data);
     }
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 }
 
 void ShadowMap::clearShadowMapBuffers(GFXDevice& context) {

@@ -95,7 +95,7 @@ public:
     RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex);
     const RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex) const;
 
-    void doCustomPass(PassParams& params);
+    GFX::CommandBuffer doCustomPass(PassParams& params);
 
 private:
 

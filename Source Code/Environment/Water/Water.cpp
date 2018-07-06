@@ -70,10 +70,12 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     renderable->setReflectionCallback(DELEGATE_BIND(&WaterPlane::updateReflection,
                                                     this,
-                                                    std::placeholders::_1));
+                                                    std::placeholders::_1,
+                                                    std::placeholders::_2));
     renderable->setRefractionCallback(DELEGATE_BIND(&WaterPlane::updateRefraction,
                                                     this,
-                                                    std::placeholders::_1));
+                                                    std::placeholders::_1,
+                                                    std::placeholders::_2));
 
     renderable->setReflectionAndRefractionType(ReflectorType::PLANAR_REFLECTOR);
 
@@ -111,15 +113,15 @@ void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
     cmd.sourceBuffer(_plane->getGeometryVB());
     cmd.cmd().indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
 
-    DrawCommand drawCommand;
+    GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    pkgInOut._commands.add(drawCommand);
+    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
 /// update water refraction
-void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
+void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
     bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
@@ -136,11 +138,11 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     params.pass = renderParams._passIndex;
     params.clippingPlanes._planes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
     params.clippingPlanes._active[to_U32(g_refractionClipID)] = true;
-    renderParams._context.parent().renderPassManager().doCustomPass(params);
+    bufferInOut.add(renderParams._context.parent().renderPassManager().doCustomPass(params));
 }
 
 /// Update water reflections
-void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
+void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
     bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
@@ -164,7 +166,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     params.pass = renderParams._passIndex;
     params.clippingPlanes._planes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
     params.clippingPlanes._active[to_U32(g_reflectionClipID)] = true;
-    renderParams._context.parent().renderPassManager().doCustomPass(params);
+    bufferInOut.add(renderParams._context.parent().renderPassManager().doCustomPass(params));
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {

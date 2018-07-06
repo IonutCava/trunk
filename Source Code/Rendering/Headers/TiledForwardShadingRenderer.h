@@ -41,10 +41,13 @@ class TiledForwardShadingRenderer : public Renderer {
     TiledForwardShadingRenderer(PlatformContext& context, ResourceCache& cache);
     ~TiledForwardShadingRenderer();
 
-    void preRender(RenderTarget& target, LightPool& lightPool) override;
+    void preRender(RenderTarget& target,
+                   LightPool& lightPool,
+                   GFX::CommandBuffer& bufferInOut) override;
 
     void render(const DELEGATE_CBK<void>& renderCallback,
-                const SceneRenderState& sceneRenderState)  override;
+                const SceneRenderState& sceneRenderState,
+                GFX::CommandBuffer& bufferInOut)  override;
 
     void updateResolution(U16 width, U16 height)  override;
 

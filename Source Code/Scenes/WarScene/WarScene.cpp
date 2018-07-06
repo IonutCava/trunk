@@ -146,9 +146,9 @@ namespace {
     }
 };
 
-void WarScene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
-    subPassesInOut.back()._commands.add(_targetLines->toDrawCommands());
-    Scene::debugDraw(activeCamera, stagePass, subPassesInOut);
+void WarScene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) {
+    bufferInOut.add(_targetLines->toCommandBuffer());
+    Scene::debugDraw(activeCamera, stagePass, bufferInOut);
 }
 
 void WarScene::processTasks(const U64 deltaTime) {

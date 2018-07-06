@@ -39,13 +39,13 @@ glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(cont
 
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-            _textureType = to_U32(GL_TEXTURE_1D);
+            _textureType = TextureType::TEXTURE_1D;
             break;
         case PBType::PB_TEXTURE_2D:
-            _textureType = to_U32(GL_TEXTURE_2D);
+            _textureType = TextureType::TEXTURE_2D;
             break;
         case PBType::PB_TEXTURE_3D:
-            _textureType = to_U32(GL_TEXTURE_3D);
+            _textureType = TextureType::TEXTURE_3D;
             break;
         default:
             Console::errorfn(Locale::get(_ID("ERROR_PB_INVALID_TYPE")));
@@ -120,7 +120,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
                            GFXImageFormat internalFormatEnum,
                            GFXImageFormat formatEnum,
                            GFXDataFormat dataTypeEnum) {
-    GLenum textureTypeEnum = static_cast<GLenum>(_textureType);
+    GLenum textureTypeEnum = GLUtil::glTextureTypeTable[to_U32(_textureType)];
     _internalFormat = GLUtil::glImageFormatTable[to_U32(internalFormatEnum)];
     _format = GLUtil::glImageFormatTable[to_U32(formatEnum)];
     _dataType = GLUtil::glDataFormat[to_U32(dataTypeEnum)];

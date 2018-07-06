@@ -41,15 +41,6 @@ class GFXDevice;
 
 namespace GFX {
 
-class Scoped2DRendering : private NonCopyable {
-   public:
-    Scoped2DRendering(GFXDevice& context);
-    ~Scoped2DRendering();
-
-   private:
-    GFXDevice& _context;
-};
-
 class ScopedDebugMessage : private NonCopyable {
 public:
     explicit ScopedDebugMessage(GFXDevice& context, const stringImpl& message, I32 id);

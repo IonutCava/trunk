@@ -51,6 +51,10 @@ class SceneGraphNode;
 class RenderingComponent;
 class RenderStagePass;
 
+namespace GFX {
+    class CommandBuffer;
+};
+
 struct RenderBinItem {
     RenderingComponent* _renderable;
     I32 _sortKeyA;
@@ -74,7 +78,7 @@ struct RenderingOrder {
 
 //Bins can sold certain node types. This is also the order in which nodes will be rendered!
 BETTER_ENUM(RenderBinType, U32, 
-    RBT_TERRAIN = 0, //< Terrains should ocupy most of the screen and be balanced fill/geometry cost
+    RBT_TERRAIN = 0, //< Terrains should occupy most of the screen and be balanced fill/geometry cost
     RBT_OPAQUE,      //< Opaque geometry will be occluded by terrain but will often occlude most of the sky (e.g.: indoors)
     RBT_SKY,         //< Sky needs to be drawn after ALL opque geometry to save on fillrate
     RBT_TRANSPARENT, //< Transparent items use a simple 0/1 alpha value supplied via an opacity map or the albedo's alpha channel
@@ -85,8 +89,6 @@ BETTER_ENUM(RenderBinType, U32,
 
 class SceneRenderState;
 class RenderStagePass;
-struct RenderSubPassCmd;
-typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
 class RenderBin {
@@ -101,7 +103,7 @@ class RenderBin {
 
     void sort(RenderingOrder::List renderOrder, const Task& parentTask);
     void populateRenderQueue(const RenderStagePass& renderStagePass);
-    void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut);
+    void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut);
     void refresh();
 
     void addNodeToBin(const SceneGraphNode& sgn,

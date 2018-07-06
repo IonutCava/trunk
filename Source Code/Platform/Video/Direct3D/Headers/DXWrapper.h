@@ -51,7 +51,7 @@ public:
 protected:
     ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
     void closeRenderingAPI() override;
-    void changeViewport(const vec4<I32>& newViewport) const override;
+    bool changeViewport(const vec4<I32>& newViewport) const override;
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
     void beginFrame() override;
     void endFrame() override;

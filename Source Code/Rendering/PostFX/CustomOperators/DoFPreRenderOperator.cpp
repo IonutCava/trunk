@@ -43,7 +43,7 @@ void DoFPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 }
 
-void DoFPreRenderOperator::execute() {
+void DoFPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Copy current screen
     /*
     RenderTarget* screen = &_parent.inputRT();
@@ -55,7 +55,7 @@ void DoFPreRenderOperator::execute() {
         GenericDrawCommand triangleCmd;
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
-        triangleCmd.stateHash(_context.getDefaultStateBlock(true));
+        triangleCmd.stateHash(_context.get2DStateBlock());
         triangleCmd.shaderProgram(_dofShader);
         _context.draw(triangleCmd);
     screen->end();

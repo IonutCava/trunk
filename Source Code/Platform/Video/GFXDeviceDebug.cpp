@@ -132,15 +132,17 @@ void GFXDevice::renderDebugViews() {
                 textureData.setBinding(view._textureBindSlot);
 
                 bindPipeline._pipeline = newPipeline(pipelineDesc);
-                pushConstants._constants = view._shaderData;
                 GFX::BindPipeline(buffer, bindPipeline);
+
+                pushConstants._constants = view._shaderData;
+                GFX::SendPushConstants(buffer, pushConstants);
 
                 setViewport._viewport.set(viewport);
                 GFX::SetViewPort(buffer, setViewport);
 
                 bindDescriptorSets._set._textureData.clear();
                 bindDescriptorSets._set._textureData.addTexture(textureData);
-                GFX::BindDescripotSets(buffer, bindDescriptorSets);
+                GFX::BindDescriptorSets(buffer, bindDescriptorSets);
 
                 GFX::AddDrawCommands(buffer, drawCommand);
 
@@ -204,7 +206,7 @@ void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
         }
 
         _debugFrustumPrimitive->fromLines(lines);
-        bufferInOut.add(_debugFrustumPrimitive->toDrawCommands());
+        bufferInOut.add(_debugFrustumPrimitive->toCommandBuffer());
     }
 }
 
@@ -231,7 +233,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             _axisGizmo->worldMatrix(mat4<F32>(-activeCamera.getForwardDir() * 2,
                                                VECTOR3_ZERO,
                                                activeCamera.getUpDir()) * getMatrix(MATRIX::VIEW_INV));
-            bufferInOut.add(_axisGizmo->toDrawCommands());
+            bufferInOut.add(_axisGizmo->toCommandBuffer());
         }
     }
 }

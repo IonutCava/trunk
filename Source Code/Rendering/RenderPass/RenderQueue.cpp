@@ -147,9 +147,9 @@ void RenderQueue::populateRenderQueues(const RenderStagePass& renderStagePass) {
     }
 }
 
-void RenderQueue::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
+void RenderQueue::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut) {
     for (RenderBin* renderBin : _activeBins) {
-        renderBin->postRender(renderState, renderStagePass, subPassesInOut);
+        renderBin->postRender(renderState, renderStagePass, bufferInOut);
     }
 }
 

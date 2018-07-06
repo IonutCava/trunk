@@ -854,10 +854,19 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
 
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
+
+    ShaderProgram* program = pipeline.shaderProgram();
     // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(pipeline.shaderProgram() != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
-    return pipeline.shaderProgram()->bind();
+    if (program->bind()) {
+        for (U32 i = 0; i < to_U32(ShaderType::COUNT); ++i) {
+            program->SetSubroutines(static_cast<ShaderType>(i), pipeline.shaderFunctions()[i]);
+        }
+        return true;
+    }
+
+    return false;
 }
 
 void GL_API::sendPushConstants(const PushConstants& pushConstants) {
@@ -867,14 +876,44 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     program->UploadPushConstants(pushConstants);
 }
 
-void GL_API::dispatchCompute(const ShaderProgram::ComputeParams& computeParams) {
+void GL_API::dispatchCompute(const ComputeParams& computeParams) {
     assert(s_activePipeline != nullptr);
 
-    glShaderProgram* program = static_cast<glShaderProgram*>(s_activePipeline->shaderProgram());
-    program->DispatchCompute(computeParams._groupSize.x,
-                             computeParams._groupSize.y,
-                             computeParams._groupSize.z);
-    program->SetMemoryBarrier(computeParams._barrierType);
+    glDispatchCompute(computeParams._groupSize.x,
+                      computeParams._groupSize.y,
+                      computeParams._groupSize.z);
+
+    //ToDo: Separate compute and memory barriers -Ionut
+    if (computeParams._barrierType != MemoryBarrierType::COUNT) {
+        MemoryBarrierMask barrierType = MemoryBarrierMask::GL_ALL_BARRIER_BITS;
+        switch (computeParams._barrierType) {
+            case MemoryBarrierType::ALL:
+                break;
+            case MemoryBarrierType::BUFFER:
+                barrierType = MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;
+                break;
+            case MemoryBarrierType::SHADER_BUFFER:
+                barrierType = MemoryBarrierMask::GL_SHADER_STORAGE_BARRIER_BIT;
+                break;
+            case MemoryBarrierType::COUNTER:
+                barrierType = MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT;
+                break;
+            case MemoryBarrierType::QUERY:
+                barrierType = MemoryBarrierMask::GL_QUERY_BUFFER_BARRIER_BIT;
+                break;
+            case MemoryBarrierType::RENDER_TARGET:
+                barrierType = MemoryBarrierMask::GL_FRAMEBUFFER_BARRIER_BIT;
+                break;
+            case MemoryBarrierType::TEXTURE:
+                barrierType = MemoryBarrierMask::GL_TEXTURE_UPDATE_BARRIER_BIT;
+                break;
+            case MemoryBarrierType::TRANSFORM_FEEDBACK:
+                barrierType = MemoryBarrierMask::GL_TRANSFORM_FEEDBACK_BARRIER_BIT;
+                break;
+        }
+
+        glMemoryBarrier(barrierType);
+    }
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd) {
@@ -914,6 +953,12 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             }break;
             case GFX::CommandType::END_RENDER_SUB_PASS: {
             }break;
+            case GFX::CommandType::BLIT_RT: {
+                GFX::BlitRenderTargetCommand* crtCmd = static_cast<GFX::BlitRenderTargetCommand*>(cmd.get());
+                _context.renderTargetPool().renderTarget(crtCmd->_destination).blitFrom(&_context.renderTargetPool().renderTarget(crtCmd->_source),
+                                                                                        crtCmd->_blitColour,
+                                                                                        crtCmd->_blitDepth);
+            }break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
                 GFX::BindDescriptorSetsCommand* crtCmd = static_cast<GFX::BindDescriptorSetsCommand*>(cmd.get());
                 const DescriptorSet& set = crtCmd->_set;
@@ -936,10 +981,16 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 sendPushConstants(static_cast<GFX::SendPushConstantsCommand*>(cmd.get())->_constants);
             } break;
             case GFX::CommandType::SET_SCISSOR: {
-                assert(false && "ToDo");
+                setScissor(static_cast<GFX::SetScissorCommand*>(cmd.get())->_rect);
             }break;
             case GFX::CommandType::SET_VIEWPORT: {
                 _context.setViewport(static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport);
+            }break;
+            case GFX::CommandType::SET_CAMERA: {
+                Attorney::GFXDeviceAPI::renderFromCamera(_context, *(static_cast<GFX::SetCameraCommand*>(cmd.get())->_camera));
+            }break;
+            case GFX::CommandType::SET_CLIP_PLANES: {
+                Attorney::GFXDeviceAPI::setClippingPlanes(_context, static_cast<GFX::SetClipPlanesCommand*>(cmd.get())->_clippingPlanes);
             }break;
             case GFX::CommandType::DRAW_COMMANDS : {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
@@ -957,6 +1008,8 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 }
             }break;
             case GFX::CommandType::DISPATCH_COMPUTE: {
+                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
+
                 GFX::DispatchComputeCommand* crtCmd = static_cast<GFX::DispatchComputeCommand*>(cmd.get());
                 dispatchCompute(crtCmd->_params);
             }break;

@@ -89,7 +89,7 @@ enum class ReflectorType : U32 {
     COUNT
 };
 
-typedef DELEGATE_CBK<void, RenderCbkParams&> RenderCallback;
+typedef DELEGATE_CBK<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
 
 class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderPass;
@@ -186,10 +186,12 @@ class RenderingComponent : public SGNComponent {
     // and saves it in the appropriate material slot
     bool updateReflection(U32 reflectionIndex, 
                           Camera* camera,
-                          const SceneRenderState& renderState);
+                          const SceneRenderState& renderState,
+                          GFX::CommandBuffer& bufferInOut);
     bool updateRefraction(U32 refractionIndex,
                           Camera* camera,
-                          const SceneRenderState& renderState);
+                          const SceneRenderState& renderState,
+                          GFX::CommandBuffer& bufferInOut);
     bool clearReflection();
     bool clearRefraction();
 
@@ -247,17 +249,19 @@ class RenderingCompRenderPass {
         static bool updateReflection(RenderingComponent& renderable,
                                      U32 reflectionIndex,
                                      Camera* camera,
-                                     const SceneRenderState& renderState)
+                                     const SceneRenderState& renderState,
+                                     GFX::CommandBuffer& bufferInOut)
         {
-            return renderable.updateReflection(reflectionIndex, camera, renderState);
+            return renderable.updateReflection(reflectionIndex, camera, renderState, bufferInOut);
         }
 
         static bool updateRefraction(RenderingComponent& renderable,
                                      U32 refractionIndex,
                                      Camera* camera,
-                                     const SceneRenderState& renderState)
+                                     const SceneRenderState& renderState,
+                                     GFX::CommandBuffer& bufferInOut)
         {
-            return renderable.updateRefraction(refractionIndex, camera, renderState);
+            return renderable.updateRefraction(refractionIndex, camera, renderState, bufferInOut);
         }
 
         static bool clearReflection(RenderingComponent& renderable)

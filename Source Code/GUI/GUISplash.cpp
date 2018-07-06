@@ -47,18 +47,37 @@ GUISplash::~GUISplash()
 }
 
 void GUISplash::render(GFXDevice& context) {
-    GFX::ScopedViewport splashViewport(context, vec4<I32>(0, 0, _dimensions.width, _dimensions.height));
-    _splashImage->bind(to_U8(ShaderProgram::TextureUsage::UNIT0));
-
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = context.getDefaultStateBlock(true);
+    pipelineDescriptor._stateHash = context.get2DStateBlock();
     pipelineDescriptor._shaderProgram = _splashShader;
+
+    GFX::CommandBuffer buffer;
+
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineCmd._pipeline = context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(buffer, pipelineCmd);
+
+
+    GFX::SetViewportCommand viewportCommand;
+    viewportCommand._viewport.set(0, 0, _dimensions.width, _dimensions.height);
+    GFX::SetViewPort(buffer, viewportCommand);
+
+    TextureData texData = _splashImage->getData();
+    texData.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.addTexture(texData);
+    GFX::BindDescriptorSets(buffer, descriptorSetCmd);
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
 
-    context.draw(triangleCmd, context.newPipeline(pipelineDescriptor));
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::AddDrawCommands(buffer, drawCmd);
+
+    context.flushCommandBuffer(buffer);
 }
 
 };

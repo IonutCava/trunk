@@ -146,9 +146,9 @@ void RenderBin::populateRenderQueue(const RenderStagePass& renderStagePass) {
     _context.unlockQueue(type);
 }
 
-void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
+void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut) {
     for (const RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStagePass, subPassesInOut);
+        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStagePass, bufferInOut);
     }
 }
 };

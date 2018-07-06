@@ -38,18 +38,18 @@ namespace GFX {
 template<typename T>
 inline void CommandBuffer::add(const T& command) {
     static_assert(std::is_base_of<Command, T>::value, "CommandBuffer error: Unknown command type!");
-    if (!command.empty()) {
-        _data.emplace_back(std::make_unique<T>(command));
-        rebuildCaches();
-    }
+    _data.emplace_back(std::make_unique<T>(command));
+    rebuildCaches();
 }
 
 inline void CommandBuffer::add(const CommandBuffer& other) {
-    _data.insert(std::end(_data),
-                    std::cbegin(other._data),
-                    std::cend(other._data));
+    if (!other.empty()) {
+        _data.insert(std::end(_data),
+                     std::cbegin(other._data),
+                     std::cend(other._data));
 
-    rebuildCaches();
+        rebuildCaches();
+    }
 }
 
 inline vectorImpl<std::shared_ptr<Command>>& CommandBuffer::operator()() {
@@ -62,6 +62,10 @@ inline const vectorImpl<std::shared_ptr<Command>>& CommandBuffer::operator()() c
 
 inline const vectorImpl<Pipeline*>& CommandBuffer::getPipelines() const {
     return _pipelineCache;
+}
+
+inline const vectorImpl<ClipPlaneList*>& CommandBuffer::getClipPlanes() const {
+    return _clipPlanesCache;
 }
 
 inline const vectorImpl<PushConstants*>& CommandBuffer::getPushConstants() const {
@@ -79,6 +83,7 @@ inline const vectorImpl<GenericDrawCommand*>& CommandBuffer::getDrawCommands() c
 inline void CommandBuffer::clear() {
     _data.clear();
     _pipelineCache.clear();
+    _clipPlanesCache.clear();
     _pushConstantsCache.clear();
     _descriptorSetCache.clear();
     _drawCommandsCache.clear();

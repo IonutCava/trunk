@@ -50,6 +50,8 @@ Pipeline const* GL_API::s_activePipeline = nullptr;
 RenderTarget* GL_API::s_activeRenderTarget = nullptr;
 
 vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
+vec4<I32> GL_API::s_activeViewport = vec4<I32>(-1);
+vec4<I32> GL_API::s_activeScissor = vec4<I32>(-1);
 GLfloat GL_API::s_depthFarVal = 1.0f;
 bool GL_API::s_primitiveRestartEnabled = false;
 bool GL_API::s_rasterizationEnabled = true;
@@ -82,6 +84,8 @@ void GL_API::clearStates() {
 
     s_activePipeline = nullptr;
     s_activeRenderTarget = nullptr;
+    s_activeViewport.set(-1);
+    s_activeScissor.set(-1);
 
     glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
 
@@ -531,14 +535,30 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
 
 /// Change the current viewport area. Redundancy check is performed in GFXDevice
 /// class
-void GL_API::changeViewport(const vec4<I32>& newViewport) const {
+bool GL_API::changeViewport(const vec4<I32>& newViewport) const {
+    if (newViewport != GL_API::s_activeViewport) {
     // Debugging and profiling the application may require setting a 1x1
     // viewport to exclude fill rate bottlenecks
-    if (Config::Profile::USE_1x1_VIEWPORT) {
-        glViewport(newViewport.x, newViewport.y, 1, 1);
-    } else {
-        glViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
+        if (Config::Profile::USE_1x1_VIEWPORT) {
+            glViewport(newViewport.x, newViewport.y, 1, 1);
+        } else {
+            glViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
+        }
+        GL_API::s_activeViewport.set(newViewport);
+        return true;
     }
+
+    return false;
+}
+
+bool GL_API::setScissor(const vec4<I32>& newScissorRect) const {
+    if (newScissorRect != GL_API::s_activeScissor) {
+        glScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
+        GL_API::s_activeScissor.set(newScissorRect);
+        return true;
+    }
+
+    return false;
 }
 
 /// A state block should contain all rendering state changes needed for the next draw call.

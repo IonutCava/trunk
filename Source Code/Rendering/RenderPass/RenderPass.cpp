@@ -142,8 +142,10 @@ void RenderPass::generateDrawCommands() {
 }
 
 void RenderPass::render(SceneRenderState& renderState) {
+    GFX::CommandBuffer commandBuffer;
+
     if (_stageFlag != RenderStage::SHADOW) {
-        LightPool::bindShadowMaps(_context);
+        LightPool::bindShadowMaps(_context, commandBuffer);
     }
 
     switch(_stageFlag) {
@@ -160,14 +162,14 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.pass = 0;
             params.doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
             params.occlusionCull = true;
-            _parent.doCustomPass(params);
+            commandBuffer.add(_parent.doCustomPass(params));
             _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize();
 
         } break;
         case RenderStage::SHADOW: {
             GFX::ScopedDebugMessage msg(_context, "Shadow Render Stage", 1);
 
-            Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager());
+            Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), commandBuffer);
         } break;
         case RenderStage::REFLECTION: {
             SceneManager& mgr = _parent.parent().sceneManager();
@@ -181,7 +183,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                 /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
                 const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
                 for (EnvironmentProbe_ptr& probe : probes) {
-                    probe->refresh();
+                    probe->refresh(commandBuffer);
                 }
                 RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);
                 for (const RenderPassCuller::VisibleNode& node : mainNodeCache) {
@@ -209,7 +211,8 @@ void RenderPass::render(SceneRenderState& renderState) {
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
                                                                                  ReflectionUtil::currentEntry(),
                                                                                  params.camera,
-                                                                                 renderState)) {
+                                                                                 renderState,
+                                                                                 commandBuffer)) {
 
                             ReflectionUtil::updateBudget();
                         }
@@ -245,19 +248,21 @@ void RenderPass::render(SceneRenderState& renderState) {
                         if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
                                                                                 RefractionUtil::currentEntry(),
                                                                                 params.camera,
-                                                                                renderState))
+                                                                                renderState,
+                                                                                commandBuffer))
                         {
                             RefractionUtil::updateBudget();
                         }
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, isVisile);
-                    }
-                    else {
+                    }  else {
                         Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
                     }
                 }
             }
         } break;
     };
+
+    _context.flushCommandBuffer(commandBuffer);
 }
 
 // This is very hackish but should hold up fine

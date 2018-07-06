@@ -78,9 +78,9 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
 }
 
 // Order: luminance calc -> bloom -> tonemap
-void BloomPreRenderOperator::execute() {
+void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
@@ -88,44 +88,108 @@ void BloomPreRenderOperator::execute() {
 
     RenderTargetHandle screen = _parent.inputRT();
 
+    pipelineDescriptor._shaderProgram = _bloomCalc;
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
+
      // Step 1: generate bloom
-    screen._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0); //screen
+    TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //screen
+    data.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.addTexture(data);
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 
     // render all of the "bright spots"
-    _context.renderTargetPool().drawToTargetBegin(_bloomOutput._targetID);
-        pipelineDescriptor._shaderProgram = _bloomCalc;
-        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor));
-    _context.renderTargetPool().drawToTargetEnd();
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = _bloomOutput._targetID;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::AddDrawCommands(bufferInOut, drawCmd);
+
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 
     // Step 2: blur bloom
-    _blur->bind();
     // Blur horizontally
-    _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
-    _bloomOutput._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
+    pipelineDescriptor._shaderProgram = _blur;
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
 
-    Pipeline blurPipeline = _context.newPipeline(pipelineDescriptor);
-    _context.renderTargetPool().drawToTargetBegin(_bloomBlurBuffer[0]._targetID);
-        pipelineDescriptor._shaderProgram = _blur;
-        _context.draw(triangleCmd, blurPipeline, _bloomCalcConstants);
-    _context.renderTargetPool().drawToTargetEnd();
+    data = _bloomOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    data.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.clear();
+    descriptorSetCmd._set._textureData.addTexture(data);
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+
+    beginRenderPassCmd._target = _bloomBlurBuffer[0]._targetID;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    pushConstantsCommand._constants = _bloomCalcConstants;
+    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+
+    GFX::AddDrawCommands(bufferInOut, drawCmd);
+
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 
     // Blur vertically (recycle the render target. We have a copy)
-    _blur->SetSubroutine(ShaderType::FRAGMENT, _vertBlur);
-    _bloomBlurBuffer[0]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
-    
-    _context.renderTargetPool().drawToTargetBegin(_bloomBlurBuffer[1]._targetID);
-        _context.draw(triangleCmd, blurPipeline, _bloomCalcConstants);
-    _context.renderTargetPool().drawToTargetEnd();
+    pipelineDescriptor._shaderProgram = _blur;
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)][0] = _vertBlur;
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
+
+    data = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    data.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.clear();
+    descriptorSetCmd._set._textureData.addTexture(data);
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+
+    beginRenderPassCmd._target = _bloomBlurBuffer[1]._targetID;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+
+    GFX::AddDrawCommands(bufferInOut, drawCmd);
+
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
         
     // Step 3: apply bloom
-    _bloomBlurBuffer[0]._rt->blitFrom(screen._rt);
-    _bloomBlurBuffer[0]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0); //Screen
-    _bloomBlurBuffer[1]._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0); //Bloom
-    
-    _context.renderTargetPool().drawToTargetBegin(screen._targetID, _screenOnlyDraw);
-        pipelineDescriptor._shaderProgram = _bloomApply;
-        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor), _bloomApplyConstants);
-    _context.renderTargetPool().drawToTargetEnd();
+    GFX::BlitRenderTargetCommand blitRTCommand;
+    blitRTCommand._source = screen._targetID;
+    blitRTCommand._destination = _bloomBlurBuffer[0]._targetID;
+    GFX::BlitRenderTarget(bufferInOut, blitRTCommand);
+
+    TextureData data0 = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Screen
+    data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+    TextureData data1 = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData(); //Bloom
+    data1.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT1));
+
+    data = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    data.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.clear();
+    descriptorSetCmd._set._textureData.addTexture(data0);
+    descriptorSetCmd._set._textureData.addTexture(data1);
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+
+    pipelineDescriptor._shaderProgram = _bloomApply;
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].clear();
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
+
+    pushConstantsCommand._constants = _bloomApplyConstants;
+    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+
+    beginRenderPassCmd._target = screen._targetID;
+    beginRenderPassCmd._descriptor = _screenOnlyDraw;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+
+    GFX::AddDrawCommands(bufferInOut, drawCmd);
+
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 }
 
 void BloomPreRenderOperator::debugPreview(U8 slot) const {

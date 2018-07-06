@@ -44,23 +44,41 @@ TiledForwardShadingRenderer::~TiledForwardShadingRenderer()
 {
 }
 
-void TiledForwardShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
-    Renderer::preRender(target, lightPool);
-
-    target.bind(to_U8(ShaderProgram::TextureUsage::DEPTH), RTAttachmentType::Depth, 0);
+void TiledForwardShadingRenderer::preRender(RenderTarget& target,
+                                            LightPool& lightPool,
+                                            GFX::CommandBuffer& bufferInOut) {
+    Renderer::preRender(target, lightPool, bufferInOut);
 
     _flag = getMaxNumLightsPerTile();
-    _lightCullComputeShader->bind();
 
+    GFX::BindPipelineCommand bindPipelineCmd;
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._shaderProgram = _lightCullComputeShader;
+    bindPipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+
+    TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
+    data.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
+
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    bindDescriptorSetsCmd._set._textureData.addTexture(data);
+    GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
+
+    GFX::SendPushConstantsCommand sendPushConstantsCmd;
     PushConstants constants;
     constants.set("maxNumLightsPerTile", PushConstantType::UINT, _flag);
+    sendPushConstantsCmd._constants = constants;
+    GFX::SendPushConstants(bufferInOut, sendPushConstantsCmd);
 
-    _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1, constants);
-    _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::SHADER_BUFFER);
+    GFX::DispatchComputeCommand computeCmd;
+    computeCmd._params._barrierType = MemoryBarrierType::SHADER_BUFFER;
+    computeCmd._params._groupSize = vec3<U32>(getNumTilesX(), getNumTilesY(), 1);
+    GFX::AddComputeCommand(bufferInOut, computeCmd);
 }
 
 void TiledForwardShadingRenderer::render(const DELEGATE_CBK<void>& renderCallback,
-                                 const SceneRenderState& sceneRenderState) {
+                                         const SceneRenderState& sceneRenderState,
+                                         GFX::CommandBuffer& bufferInOut) {
     renderCallback();
 }
 

@@ -29,8 +29,8 @@ void GFXDevice::uploadGPUBlock() {
         // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-        _api->updateClipPlanes();
         _gpuBlock._needsUpload = false;
+        _api->updateClipPlanes();
     }
 }
 
@@ -39,27 +39,16 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuff
 
     assert(renderQueue.locked() == false);
     if (!renderQueue.empty()) {
-        renderQueue.batch();
-
         U32 queueSize = renderQueue.size();
         for (U32 idx = 0; idx < queueSize; ++idx) {
-            RenderPackage& package = renderQueue.getPackage(idx);
-
-            subPassCmd._shaderBuffers.insert(std::end(subPassCmd._shaderBuffers),
-                                             std::begin(package._shaderBuffers),
-                                             std::end(package._shaderBuffers));
-
-            subPassCmd._textures.set(package._textureData);
-            subPassCmd._commands.add(package._commands);
+            subPassCmd.add(renderQueue.getPackage(idx)._commands);
         }
         renderQueue.clear();
     }
 }
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
-    uploadGPUBlock();
     _api->flushCommandBuffer(commandBuffer);
-    commandBuffer.resize(0);
 }
 
 void GFXDevice::lockQueue(RenderBinType type) {
@@ -232,6 +221,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     ShaderBufferBinding shaderBuffer;
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
+    shaderBuffer._buffer = bufferData._cmdBuffer;
     shaderBuffer._range.set(0, bufferData._cmdBuffer->getPrimitiveCount());
     shaderBuffer._atomicCounter.first = true;
     
@@ -241,7 +231,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._shaderBuffers.push_back(shaderBuffer);
     bindDescriptorSetsCmd._set._textureData.addTexture(data);
-    GFX::BindDescripotSets(bufferInOut, bindDescriptorSetsCmd);
+    GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
     
     U32 cmdCount = bufferData._lastCommandCount;
 
@@ -254,7 +244,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     GFX::SendPushConstants(bufferInOut, sendPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd;
-    computeCmd._params._barrierType = ShaderProgram::MemoryBarrierType::COUNTER;
+    computeCmd._params._barrierType = MemoryBarrierType::COUNTER;
     computeCmd._params._groupSize = vec3<U32>((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     GFX::AddComputeCommand(bufferInOut, computeCmd);
 }
@@ -270,9 +260,15 @@ U32 GFXDevice::getLastCullCount() const {
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
-    static GFX::BindPipelineCommand bindPipelineCmd(_textRenderPipeline);
-    static GFX::SendPushConstantsCommand pushConstantsCommand(_textRenderConstants);
+    static bool firstRun = false;
+    static GFX::BindPipelineCommand bindPipelineCmd;
+    static GFX::SendPushConstantsCommand pushConstantsCommand;
     static GFX::DrawTextCommand drawTextCommand;
+    if (!firstRun) {
+        bindPipelineCmd._pipeline = _textRenderPipeline;
+        pushConstantsCommand._constants = _textRenderConstants;
+        firstRun = true;
+    }
 
     drawTextCommand._batch = batch;
 
@@ -288,26 +284,42 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 }
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
+    GFX::CommandBuffer buffer;
+
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = getDefaultStateBlock(true);
+    pipelineDescriptor._stateHash = get2DStateBlock();
     pipelineDescriptor._shaderProgram = _displayShader;
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
 
+    GFX::BindPipelineCommand bindPipelineCmd;
+    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(buffer, bindPipelineCmd);
+
     RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    screen.bind(to_U8(ShaderProgram::TextureUsage::UNIT0),
-                RTAttachmentType::Colour,
-                to_U8(ScreenTargets::ALBEDO));
+    TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();
+    texData.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
 
-
-    GFX::Scoped2DRendering scoped2D(*this);
-    GFX::ScopedViewport targetArea(*this, targetViewport);
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    bindDescriptorSetsCmd._set._textureData.addTexture(texData);
+    GFX::BindDescriptorSets(buffer, bindDescriptorSetsCmd);
+    
+    GFX::SetViewportCommand viewportCommand;
+    viewportCommand._viewport.set(targetViewport);
+    GFX::SetViewPort(buffer, viewportCommand);
 
     // Blit render target to screen
-    draw(triangleCmd, newPipeline(pipelineDescriptor));
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::AddDrawCommands(buffer, drawCmd);
 
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+    GFX::SetCamera(buffer, setCameraCommand);
+    flushCommandBuffer(buffer);
+    
     // Render all 2D debug info and call API specific flush function
     ReadLock r_lock(_2DRenderQueueLock);
     for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {

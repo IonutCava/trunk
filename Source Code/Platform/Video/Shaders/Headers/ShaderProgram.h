@@ -85,24 +85,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         ROUGHNESS = GLOSS
     };
 
-    enum class MemoryBarrierType : U32 {
-        BUFFER = 0,
-        TEXTURE = 1,
-        RENDER_TARGET = 2,
-        TRANSFORM_FEEDBACK = 3,
-        COUNTER = 4,
-        QUERY = 5,
-        SHADER_BUFFER = 6,
-        ALL = 7,
-        COUNT
-    };
-
-    struct ComputeParams {
-        MemoryBarrierType _barrierType = MemoryBarrierType::COUNT;
-        vec3<U32> _groupSize;
-    };
-
-    public:
+   public:
     explicit ShaderProgram(GFXDevice& context,
                            size_t descriptorHash,
                            const stringImpl& name,
@@ -129,13 +112,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual U32 GetSubroutineIndex(ShaderType type, const char* name) const = 0;
     virtual U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const = 0;
     virtual U32 GetSubroutineUniformCount(ShaderType type) const = 0;
-  
-    virtual void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) = 0;
 
-    virtual void SetMemoryBarrier(MemoryBarrierType type) = 0;
-
-    /// ShaderProgram object id (i.e.: for OGL _shaderProgramID =
-    /// glCreateProgram())
+    /// ShaderProgram object id (i.e.: for OGL _shaderProgramID = glCreateProgram())
     inline U32 getID() const { return _shaderProgramID; }
     ///  Calling recompile will re-create the marked shaders from source files
     ///  and update them in the ShaderManager if needed

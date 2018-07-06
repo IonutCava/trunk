@@ -131,7 +131,8 @@ protected:
     I32 getFont(const stringImpl& fontName);
     /// Change the current viewport area. Redundancy check is performed in GFXDevice
     /// class
-    void changeViewport(const vec4<GLint>& newViewport) const override;
+    bool changeViewport(const vec4<I32>& newViewport) const override;
+    bool setScissor(const vec4<I32>& newScissorRect) const;
     /// Reset as much of the GL default state as possible within the limitations
     /// given
     void clearStates();
@@ -224,7 +225,7 @@ private:
 
     bool bindPipeline(const Pipeline& pipeline);
     void sendPushConstants(const PushConstants& pushConstants);
-    void dispatchCompute(const ShaderProgram::ComputeParams& computeParams);
+    void dispatchCompute(const ComputeParams& computeParams);
 
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();
@@ -293,6 +294,8 @@ private:
     static GLboolean s_blendEnabled;
     static vectorImpl<BlendingProperties> s_blendProperties;
     static vec4<U8> s_blendColour;
+    static vec4<I32> s_activeViewport;
+    static vec4<I32> s_activeScissor;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
 

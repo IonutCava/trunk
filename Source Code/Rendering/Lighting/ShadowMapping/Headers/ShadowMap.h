@@ -52,6 +52,10 @@ class Camera;
 class ShadowMapInfo;
 class SceneRenderState;
 
+namespace GFX {
+    class CommandBuffer;
+};
+
 typedef std::array<Camera*, Config::Lighting::MAX_SPLITS_PER_LIGHT> ShadowCameraPool;
 
 /// All the information needed for a single light's shadowmap
@@ -61,7 +65,7 @@ class NOINITVTABLE ShadowMap {
     virtual ~ShadowMap();
 
     /// Render the scene and save the frame to the shadow map
-    virtual void render(U32 passIdx) = 0;
+    virtual void render(U32 passIdx, GFX::CommandBuffer& bufferInOut) = 0;
     /// Get the current shadow mapping tehnique
     inline ShadowType getShadowMapType() const { return _shadowMapType; }
 
@@ -79,7 +83,7 @@ class NOINITVTABLE ShadowMap {
     static void resetShadowMaps(GFXDevice& context);
     static void initShadowMaps(GFXDevice& context);
     static void clearShadowMaps(GFXDevice& context);
-    static void bindShadowMaps(GFXDevice& context);
+    static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
     static U16  findDepthMapLayer(ShadowType shadowType);
     static void commitDepthMapLayer(ShadowType shadowType, U32 layer);
     static bool freeDepthMapLayer(ShadowType shadowType, U32 layer);

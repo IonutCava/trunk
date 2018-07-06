@@ -216,7 +216,7 @@ class Scene : public Resource {
     /// returns true if the camera was moved/rotated/etc
     bool updateCameraControls(U8 playerIndex);
     /// Draw debug entities
-    virtual void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut);
+    virtual void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut);
 
     inline Camera& baseCamera() { return *_baseCamera; }
 
@@ -365,8 +365,8 @@ class SceneManager {
     }
 
     /// Draw debug entities
-    static void debugDraw(Scene& scene, const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
-        scene.debugDraw(activeCamera, stagePass, subPassesInOut);
+    static void debugDraw(Scene& scene, const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) {
+        scene.debugDraw(activeCamera, stagePass, bufferInOut);
     }
 
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }

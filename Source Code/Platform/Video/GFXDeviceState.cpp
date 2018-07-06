@@ -101,14 +101,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
-    // Utility cameras
-    _2DCamera = Camera::createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
-    _cubeCamera = Camera::createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
-    _dualParaboloidCamera = Camera::createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
-
-    // Update the 2D camera so it matches our new rendering viewport
-    _2DCamera->setProjection(vec4<F32>(0, to_F32(renderResolution.w), 0, to_F32(renderResolution.h)), vec2<F32>(-1, 1));
-
     // Create general purpose render state blocks
     RenderStateBlock::init();
     RenderStateBlock defaultState;

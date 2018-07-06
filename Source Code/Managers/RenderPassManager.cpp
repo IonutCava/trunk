@@ -203,7 +203,7 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
                 bindDescriptorSets._set._textureData.addTexture(prevDepthData);
             }
 
-            GFX::BindDescripotSets(buffer, bindDescriptorSets);
+            GFX::BindDescriptorSets(buffer, bindDescriptorSets);
         }
 
         RTDrawDescriptor& drawPolicy = 
@@ -292,7 +292,7 @@ GFX::CommandBuffer RenderPassManager::woitPass(const PassParams& params, const R
             beginRenderPassCompCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
             beginRenderPassCompCmd._descriptor = noClearPolicy;
             PipelineDescriptor pipelineDescriptor;
-            pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+            pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgram = _OITCompositionShader;
             bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
 
@@ -319,7 +319,7 @@ GFX::CommandBuffer RenderPassManager::woitPass(const PassParams& params, const R
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.addTexture(accum);
         descriptorSetCmd._set._textureData.addTexture(revealage);
-        GFX::BindDescripotSets(buffer, descriptorSetCmd);
+        GFX::BindDescriptorSets(buffer, descriptorSetCmd);
         GFX::AddDrawCommands(buffer, drawCmd);
         GFX::EndRenderPass(buffer, endRenderPassCompCmd);
     }
@@ -327,15 +327,19 @@ GFX::CommandBuffer RenderPassManager::woitPass(const PassParams& params, const R
     return buffer;
 }
 
-void RenderPassManager::doCustomPass(PassParams& params) {
+GFX::CommandBuffer RenderPassManager::doCustomPass(PassParams& params) {
     GFX::CommandBuffer commandBuffer;
 
     // Tell the Rendering API to draw from our desired PoV
-    _context.renderFromCamera(*params.camera);
-    _context.setClipPlanes(params.clippingPlanes);
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._camera = params.camera;
+    GFX::SetCamera(commandBuffer, setCameraCommand);
+
+    GFX::SetClipPlanesCommand setClipPlanesCommand;
+    setClipPlanesCommand._clippingPlanes = params.clippingPlanes;
+    GFX::SetClipPlanes(commandBuffer, setClipPlanesCommand);
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params.target);
-
     commandBuffer.add(prePass(params, target));
 
     if (params.occlusionCull) {
@@ -347,7 +351,9 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     if (false) {
         commandBuffer.add(woitPass(params, target));
     }
-    _context.flushCommandBuffer(commandBuffer);
+    
+
+    return commandBuffer;
 }
 
 };

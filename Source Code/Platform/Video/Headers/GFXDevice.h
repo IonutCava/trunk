@@ -97,7 +97,6 @@ namespace Attorney {
     class GFXDeviceAPI;
     class GFXDeviceGUI;
     class GFXDeviceKernel;
-    class GFXDeviceRenderer;
     class GFXDeviceGraphicsResource;
     class GFXDeviceGFXRTPool;
     class KernelApplication;
@@ -120,12 +119,8 @@ class GFXDevice : public KernelComponent {
     friend class Attorney::GFXDeviceAPI;
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
-    friend class Attorney::GFXDeviceRenderer;
     friend class Attorney::GFXDeviceGraphicsResource;
     friend class Attorney::GFXDeviceGFXRTPool;
-
-protected:
-    typedef std::stack<vec4<I32>> ViewportStack;
 
 public:
     enum class ScreenTargets : U32 {
@@ -194,10 +189,6 @@ public:  // GPU interface
     void beginFrame();
     void endFrame();
 
-    /// Set all of the needed API specific settings for 2D (Ortho) / 3D (Perspective) rendering
-    /// Returns true if the state was changed or false if it was already set
-    bool toggle2D(bool state);
-
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
 
     void lockQueue(RenderBinType type);
@@ -215,24 +206,18 @@ public:  // GPU interface
 
     /// Clipping plane management. All the clipping planes are handled by shader programs only!
     void updateClipPlanes();
-    /// disable or enable a clip plane by index
-    inline void toggleClipPlane(ClipPlaneIndex index, const bool state);
-    /// modify a single clip plane by index
-    inline void setClipPlane(ClipPlaneIndex index, const Plane<F32>& p, bool state);
-    /// set a new list of clipping planes. The old one is discarded
-    inline void setClipPlanes(const ClipPlaneList& clipPlanes);
-    /// clear all clipping planes
-    inline void resetClipPlanes();
 
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
-    void generateCubeMap(RenderTargetID cubeMap,
+    void generateCubeMap(
+        RenderTargetID cubeMap,
         const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         const RenderStagePass& stagePass,
         U32 passIndex,
+        GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
     void generateDualParaboloidMap(RenderTargetID targetBuffer,
@@ -241,6 +226,7 @@ public:  // GPU interface
         const vec2<F32>& zPlanes,
         const RenderStagePass& stagePass,
         U32 passIndex,
+        GFX::CommandBuffer& commandsInOut,
         Camera* camera = nullptr);
 
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
@@ -253,10 +239,9 @@ public:  // GPU interface
     inline void add2DRenderFunction(const GUID_DELEGATE_CBK& callback, U32 callOrder);
     inline void remove2DRenderFunction(const GUID_DELEGATE_CBK& callback);
     /// Returns true if the viewport was changed
-    bool restoreViewport();
-    /// Returns true if the viewport was changed
     bool setViewport(const vec4<I32>& viewport);
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
+    bool restoreViewport();
 
     void setSceneZPlanes(const vec2<F32>& zPlanes);
 
@@ -301,14 +286,13 @@ public:  // Accessors and Mutators
     /// Return the last number of HIZ culled items
     U32 getLastCullCount() const;
 
-    /// 2D rendering enabled
-    inline bool is2DRendering() const { return _2DRendering; }
-
     /// returns the standard state block
     inline size_t getDefaultStateBlock(bool noDepth) const {
-        return is2DRendering() ? _state2DRenderingHash
-            : (noDepth ? _defaultStateNoDepthHash
-                : _defaultStateBlockHash);
+        return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash;
+    }
+
+    inline size_t get2DStateBlock() const {
+        return _state2DRenderingHash;
     }
 
     inline const Texture_ptr& getPrevDepthBuffer() const {
@@ -345,7 +329,7 @@ public:  // Accessors and Mutators
 
     inline void registerDrawCalls(U32 count) { FRAME_DRAW_CALLS += count; }
 
-    inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
+    inline const vec4<I32>& getCurrentViewport() const { return _viewport; }
 
     inline const RenderStagePass& setRenderStagePass(const RenderStagePass& stage);
 
@@ -404,8 +388,6 @@ protected:
     void renderDebugViews();
     
 protected:
-    friend class Camera;
-    void renderFromCamera(Camera& camera);
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
 
@@ -431,10 +413,10 @@ protected:
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }
 
 private:
-    void updateViewportInternal(const vec4<I32>& viewport);
-
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
+    void setClipPlanes(const ClipPlaneList& clipPlanes);
+    void renderFromCamera(Camera& camera);
 
     ErrorCode createAPIInstance();
 
@@ -450,10 +432,6 @@ private:
 
     /// Pointer to a shader creation queue
     ShaderComputeQueue* _shaderComputeQueue;
-
-    Camera* _cubeCamera;
-    Camera* _2DCamera;
-    Camera* _dualParaboloidCamera;
 
     RenderStagePass _renderStagePass;
     RenderStagePass _prevRenderStagePass;
@@ -510,7 +488,8 @@ protected:
     SharedLock _graphicsResourceMutex;
     vectorImpl<I64> _graphicResources;
     /// Current viewport stack
-    ViewportStack _viewport;
+    vec4<I32> _viewport;
+    vec4<I32> _prevViewport;
 
     GFXShaderData _gpuBlock;
 
@@ -583,14 +562,6 @@ namespace Attorney {
         friend class Divide::Attorney::KernelApplication;
     };
 
-    class GFXDeviceRenderer {
-        private:
-        static void uploadGPUBlock(GFXDevice& device) {
-            device.uploadGPUBlock();
-        }
-        friend class Divide::Renderer;
-    };
-
     class GFXDeviceGraphicsResource {
        private:
        static void onResourceCreate(GFXDevice& device, I64 GUID) {
@@ -616,6 +587,13 @@ namespace Attorney {
             device.uploadGPUBlock();
         }
 
+        static void renderFromCamera(GFXDevice& device, Camera& camera) {
+            device.renderFromCamera(camera);
+        }
+
+        static void setClippingPlanes(GFXDevice& device, const ClipPlaneList& clippingPlanes) {
+            device.setClipPlanes(clippingPlanes);
+        }
         /// Get the entire list of clipping planes
         static const ClipPlaneList& getClippingPlanes(GFXDevice& device) {
             return device._clippingPlanes;

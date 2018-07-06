@@ -44,8 +44,6 @@ public:
     {
     }
 
-    bool isCompatible(const RenderPackage& other) const;
-
     void clear();
     void set(const RenderPackage& other);
 
@@ -76,7 +74,7 @@ public:
     U32 size() const;
     bool empty() const;
     bool locked() const;
-    void batch();
+
     const RenderPackage& getPackage(U32 idx) const;
 
 protected:

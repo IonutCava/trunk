@@ -99,7 +99,7 @@ void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
     resetStates();
 }
 
-GFX::CommandBuffer glIMPrimitive::toDrawCommands() const {
+GFX::CommandBuffer glIMPrimitive::toCommandBuffer() const {
     GFX::CommandBuffer buffer;
     if (!paused()) {
         DIVIDE_ASSERT(_pipeline.shaderProgram() != nullptr,

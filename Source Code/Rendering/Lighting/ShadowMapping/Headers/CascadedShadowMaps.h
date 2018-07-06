@@ -53,8 +53,8 @@ class CascadedShadowMaps : public ShadowMap {
    public:
     explicit CascadedShadowMaps(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, U8 numSplits);
     ~CascadedShadowMaps();
-    void render(U32 passIdx);
-    void postRender();
+    void render(U32 passIdx, GFX::CommandBuffer& bufferInOut);
+    void postRender(GFX::CommandBuffer& bufferInOut);
     void init(ShadowMapInfo* const smi);
 
    protected:

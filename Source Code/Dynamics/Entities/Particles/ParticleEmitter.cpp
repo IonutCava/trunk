@@ -210,9 +210,9 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     }
 
     GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
-    DrawCommand drawCommand;
+    GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    pkgInOut._commands.add(drawCommand);
+    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
 
     const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
     PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();

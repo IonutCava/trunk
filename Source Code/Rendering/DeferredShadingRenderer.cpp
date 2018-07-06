@@ -9,6 +9,7 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
@@ -135,8 +136,10 @@ DeferredShadingRenderer::~DeferredShadingRenderer()
     _context.gfx().renderTargetPool().deallocateRT(_deferredBuffer);
 }
 
-void DeferredShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
-    Renderer::preRender(target, lightPool);
+void DeferredShadingRenderer::preRender(RenderTarget& target,
+                                        LightPool& lightPool,
+                                        GFX::CommandBuffer& bufferInOut) {
+    Renderer::preRender(target, lightPool, bufferInOut);
 
     Light::LightList& lights = lightPool.getLights(LightType::POINT);
 
@@ -165,13 +168,15 @@ void DeferredShadingRenderer::preRender(RenderTarget& target, LightPool& lightPo
 }
 
 void DeferredShadingRenderer::render(const DELEGATE_CBK<void>& renderCallback,
-                                     const SceneRenderState& sceneRenderState) {
-    firstPass(renderCallback, sceneRenderState);
-    secondPass(sceneRenderState);
+                                     const SceneRenderState& sceneRenderState,
+                                     GFX::CommandBuffer& bufferInOut) {
+    firstPass(renderCallback, sceneRenderState, bufferInOut);
+    secondPass(sceneRenderState, bufferInOut);
 }
 
 void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void>& renderCallback,
-                                        const SceneRenderState& sceneRenderState) {
+                                        const SceneRenderState& sceneRenderState,
+                                        GFX::CommandBuffer& bufferInOut) {
     // Pass 1
     // Draw the geometry, saving parameters into the buffer
     _context.gfx().renderTargetPool().drawToTargetBegin(_deferredBuffer._targetID);
@@ -179,55 +184,90 @@ void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void>& renderCallback
     _context.gfx().renderTargetPool().drawToTargetEnd();
 }
 
-void DeferredShadingRenderer::secondPass(
-    const SceneRenderState& sceneRenderState) {
+void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderState,
+                                         GFX::CommandBuffer& bufferInOut) {
     // Pass 2
     // Draw a 2D fullscreen quad with lighting shader applied and all generated
     // textures bound to that shader
-    GFX::Scoped2DRendering scoped2D(_context.gfx());
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+    GFX::SetCamera(bufferInOut, setCameraCommand);
 
-    _deferredBuffer._rt->bind(0, RTAttachmentType::Colour, 0);
-    _deferredBuffer._rt->bind(1, RTAttachmentType::Colour, 1);
-    _deferredBuffer._rt->bind(2, RTAttachmentType::Colour, 2);
-    _deferredBuffer._rt->bind(3, RTAttachmentType::Colour, 3);
-    _lightTexture->bind(4);
+    TextureData texData0 = _deferredBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    TextureData texData1 = _deferredBuffer._rt->getAttachment(RTAttachmentType::Colour, 1).texture()->getData();
+    TextureData texData2 = _deferredBuffer._rt->getAttachment(RTAttachmentType::Colour, 2).texture()->getData();
+    TextureData texData3 = _deferredBuffer._rt->getAttachment(RTAttachmentType::Colour, 3).texture()->getData();
+    TextureData lightData = _lightTexture->getData();
+    
+    texData0.setBinding(0);
+    texData1.setBinding(1);
+    texData2.setBinding(2);
+    texData3.setBinding(3);
+    lightData.setBinding(4);
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.addTexture(texData0);
+    descriptorSetCmd._set._textureData.addTexture(texData1);
+    descriptorSetCmd._set._textureData.addTexture(texData2);
+    descriptorSetCmd._set._textureData.addTexture(texData3);
+    descriptorSetCmd._set._textureData.addTexture(lightData);
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
     pipelineDescriptor._shaderProgram = _previewDeferredShader;
 
     Pipeline pipeline = _context.gfx().newPipeline(pipelineDescriptor);
-    PushConstants constants;
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineCmd._pipeline = pipeline;
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
+
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    
 
     GenericDrawCommand cmd;
     if (_debugView) {
-        constants.set("texDiffuse0", PushConstantType::UINT, 4);
+        pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 4);
+        GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
         if (_renderQuads[1]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
-            _context.gfx().draw(cmd, pipeline, constants);
+            GFX::DrawCommand drawCmd;
+            drawCmd._drawCommands.push_back(cmd);
+            GFX::AddDrawCommands(bufferInOut, drawCmd);
         }
-        constants.set("texDiffuse0", PushConstantType::UINT, 1);
+        pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 1);
+        GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
         if (_renderQuads[2]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
-            _context.gfx().draw(cmd, pipeline, constants);
+            GFX::DrawCommand drawCmd;
+            drawCmd._drawCommands.push_back(cmd);
+            GFX::AddDrawCommands(bufferInOut, drawCmd);
         }
-        constants.set("texDiffuse0", PushConstantType::UINT, 2);
+        pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 2);
+        GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
         if (_renderQuads[3]->onRender(_context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
-            _context.gfx().draw(cmd, pipeline, constants);
+            GFX::DrawCommand drawCmd;
+            drawCmd._drawCommands.push_back(cmd);
+            GFX::AddDrawCommands(bufferInOut, drawCmd);
         }
     }
-
-    constants.set("lightCount", PushConstantType::INT, (I32)_cachedLightCount);
 
     pipelineDescriptor._shaderProgram = _deferredShader;
     pipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    pipelineCmd._pipeline = pipeline;
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
+
+    pushConstantsCommand._constants.set("lightCount", PushConstantType::INT, (I32)_cachedLightCount);
+    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
 
     if (_renderQuads[_debugView ? 4 : 0]->onRender(_context.gfx().getRenderStage())) {
         cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
-        _context.gfx().draw(cmd, pipeline, constants);
+        GFX::DrawCommand drawCmd;
+        drawCmd._drawCommands.push_back(cmd);
+        GFX::AddDrawCommands(bufferInOut, drawCmd);
     }
-
+    
     GUI& gui = _context.gui();
     GUIElement* guiElement = gui.getGUIElement(0, _ID("FinalImage"));
     if (guiElement) {

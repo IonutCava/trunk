@@ -62,22 +62,6 @@ struct VideoModes {
     I32 BlueBits;
 };
 
-struct ClipPlaneList {
-    ClipPlaneList(U32 size, const Plane<F32>& defaultValue)
-        : _planes(size, defaultValue),
-        _active(size, false)
-    {
-    }
-
-    void resize(U32 size, const Plane<F32>& defaultValue) {
-        _planes.resize(size, defaultValue);
-        _active.resize(size, false);
-    }
-
-    PlaneList _planes;
-    vectorImpl<bool> _active;
-};
-
 typedef std::array<bool, to_base(VertexAttribute::COUNT)> AttribFlags;
 
 /// Renderer Programming Interface
@@ -108,7 +92,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) = 0;
 
    protected:
-    virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
+    virtual bool changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
 };
 

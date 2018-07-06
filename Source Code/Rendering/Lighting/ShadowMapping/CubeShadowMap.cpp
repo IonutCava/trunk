@@ -43,13 +43,14 @@ void CubeShadowMap::init(ShadowMapInfo* const smi) {
     _init = true;
 }
 
-void CubeShadowMap::render(U32 passIdx) {
+void CubeShadowMap::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     _context.generateCubeMap(getDepthMapID(),
                              _arrayOffset,
                              _light->getPosition(),
                              vec2<F32>(0.1f, _light->getRange()),
                              RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS),
                              passIdx,
+                             bufferInOut,
                              _shadowCameras[0]);
 }
 

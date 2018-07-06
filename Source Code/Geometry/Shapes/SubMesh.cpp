@@ -39,9 +39,9 @@ void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
 
     cmd.sourceBuffer(_parentMesh->getGeometryVB());
 
-    DrawCommand drawCommand;
+    GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    pkgInOut._commands.add(drawCommand);
+    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
 
     Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

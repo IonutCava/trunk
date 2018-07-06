@@ -187,7 +187,7 @@ protected:
     void preRender(const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
     void postRender(const Camera& camera, GFX::CommandBuffer& bufferInOut);
     void debugDraw(const Camera& camera, GFX::CommandBuffer& bufferInOut);
-    bool generateShadowMaps();
+    bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
     bool populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex);
     Camera* getActiveCamera() const;
     void currentPlayerPass(U8 playerIndex);
@@ -310,8 +310,8 @@ class SceneManagerRenderPass {
         mgr.debugDraw(camera, bufferInOut);
     }
 
-    static bool generateShadowMaps(Divide::SceneManager& mgr) {
-        return mgr.generateShadowMaps();
+    static bool generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {
+        return mgr.generateShadowMaps(bufferInOut);
     }
 
     static Camera* getActiveCamera(Divide::SceneManager& mgr) {

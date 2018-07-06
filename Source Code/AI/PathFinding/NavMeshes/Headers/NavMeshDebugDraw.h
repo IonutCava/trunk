@@ -33,7 +33,7 @@
 #define _NAV_MESH_DEBUG_DRAW_H_
 
 #include <ReCast/DebugUtils/Include/DebugDraw.h>
-#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Headers/CommandBuffer.h"
 
 namespace Divide {
 
@@ -41,6 +41,7 @@ class GFXDevice;
 class IMPrimitive;
 class RenderStateBlock;
 class CommandBuffer;
+
 namespace AI {
 namespace Navigation {
 
@@ -85,7 +86,7 @@ class NavMeshDebugDraw : public duDebugDraw {
         vertex(x, y, z, colour);
     }
 
-    CommandBuffer toDrawCommands() const;
+    GFX::CommandBuffer toCommandBuffer() const;
 
    private:
     GFXDevice& _context;

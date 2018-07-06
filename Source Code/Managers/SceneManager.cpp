@@ -495,11 +495,11 @@ void SceneManager::debugDraw(const Camera& camera, GFX::CommandBuffer& bufferInO
     _platformContext->gfx().debugDraw(activeSceneRenderState, camera, bufferInOut);
 }
 
-bool SceneManager::generateShadowMaps() {
+bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     Scene& activeScene = getActiveScene();
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
     assert(lightPool != nullptr);
-    return lightPool->generateShadowMaps(activeScene.renderState());
+    return lightPool->generateShadowMaps(activeScene.renderState(), bufferInOut);
 }
 
 Camera* SceneManager::getActiveCamera() const {

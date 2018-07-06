@@ -53,7 +53,7 @@ class NOINITVTABLE PreRenderOperator {
     virtual ~PreRenderOperator();
 
     virtual void idle(const Configuration& config) = 0;
-    virtual void execute() = 0;
+    virtual void execute(GFX::CommandBuffer& bufferInOut) = 0;
 
     virtual void reshape(U16 width, U16 height);
 

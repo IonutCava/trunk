@@ -134,7 +134,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     /// Called once per frame with the time diff between this and the last frame
     void update(const U64 deltaTime);
     /// Render the debug mesh if debug drawing is enabled
-    void draw(RenderSubPassCmds& subPassesInOut);
+    GFX::CommandBuffer draw();
     inline void debugDraw(bool state) { _debugDraw = state; }
     inline bool debugDraw() const { return _debugDraw; }
 

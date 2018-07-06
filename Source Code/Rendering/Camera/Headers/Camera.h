@@ -48,6 +48,13 @@ class Camera : public Resource {
         ORBIT, SCRIPTED
     };
 
+    enum class UtilityCamera : U32 {
+        _2D = 0,
+        CUBE,
+        DUAL_PARABOLOID,
+        COUNT
+    };
+
    public:
 
     virtual void fromCamera(Camera& camera);
@@ -354,9 +361,11 @@ class Camera : public Resource {
     // Camera pool
     public:
        static void update(const U64 deltaTime);
+       static void initPool(const vec2<U16>& renderResolution);
        static void destroyPool();
        static Camera* activeCamera();
 
+       static Camera* utilityCamera(UtilityCamera type);
        static Camera* previousCamera();
        static void    activeCamera(Camera* cam);
        static void    activeCamera(U64 cam);
@@ -379,6 +388,8 @@ class Camera : public Resource {
 
       static Camera* s_activeCamera;
       static Camera* s_previousCamera;
+
+      static std::array<Camera*, to_base(UtilityCamera::COUNT)> _utilityCameras;
 
       typedef hashMapImpl<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
 

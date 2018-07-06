@@ -33,6 +33,7 @@
 #define _PIXEL_BUFFER_OBJECT_H
 
 #include "Platform/Headers/PlatformDefines.h"
+#include "Platform/Video/Headers/TextureData.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
@@ -49,7 +50,7 @@ class NOINITVTABLE PixelBuffer : public GraphicsResource, public GUIDWrapper {
            _height(0),
            _depth(0),
            _pixelBufferHandle(0),
-           _textureType(0)
+           _textureType(TextureType::COUNT)
        {
        }
 
@@ -75,12 +76,21 @@ class NOINITVTABLE PixelBuffer : public GraphicsResource, public GUIDWrapper {
     inline U16 getDepth() const { return _depth; }
     inline PBType getType() const { return _pbtype; }
 
+    inline TextureData getData() const {
+        TextureData ret;
+        ret.setHandle(getTextureHandle());
+        ret.setBinding(0);
+        ret._textureType = _textureType;
+        ret._samplerHash = 0;
+        return ret;
+    }
+
    protected:
     PBType _pbtype;
     U32 _textureID;
     U16 _width, _height, _depth;
     U32 _pixelBufferHandle;
-    U32 _textureType;
+    TextureType _textureType;
 };
 
 };  // namespace Divide

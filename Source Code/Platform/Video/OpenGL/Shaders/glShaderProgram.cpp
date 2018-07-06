@@ -675,42 +675,6 @@ I32 glShaderProgram::cachedValueUpdate(const PushConstant& constant) {
     return binding;
 }
 
-void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups, const PushConstants& constants) {
-    UploadPushConstants(constants);
-    glDispatchCompute(xGroups, yGroups, zGroups);
-}
-
-void glShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
-    MemoryBarrierMask barrierType = MemoryBarrierMask::GL_ALL_BARRIER_BITS;
-    switch (type) {
-        case MemoryBarrierType::ALL :
-            break;
-        case MemoryBarrierType::BUFFER :
-            barrierType = MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;
-            break;
-        case MemoryBarrierType::SHADER_BUFFER :
-            barrierType = MemoryBarrierMask::GL_SHADER_STORAGE_BARRIER_BIT;
-            break;
-        case MemoryBarrierType::COUNTER:
-            barrierType = MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT;
-            break;
-        case MemoryBarrierType::QUERY:
-            barrierType = MemoryBarrierMask::GL_QUERY_BUFFER_BARRIER_BIT;
-            break;
-        case MemoryBarrierType::RENDER_TARGET:
-            barrierType = MemoryBarrierMask::GL_FRAMEBUFFER_BARRIER_BIT;
-            break;
-        case MemoryBarrierType::TEXTURE:
-            barrierType = MemoryBarrierMask::GL_TEXTURE_UPDATE_BARRIER_BIT;
-            break;
-        case MemoryBarrierType::TRANSFORM_FEEDBACK:
-            barrierType = MemoryBarrierMask::GL_TRANSFORM_FEEDBACK_BARRIER_BIT;
-            break;
-    }
-
-    glMemoryBarrier(barrierType);
-}
-
 void glShaderProgram::reuploadUniforms() {
     for (UniformsByNameHash::ShaderVarMap::value_type it : _uniformsByNameHash._shaderVars) {
         UploadPushConstant(it.second);

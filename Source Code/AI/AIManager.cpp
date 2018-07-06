@@ -207,12 +207,12 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
     _navMeshDebugDraw = state;
 }
 
-void AIManager::debugDraw(RenderSubPassCmds& subPassesInOut, bool forceAll) {
+void AIManager::debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll) {
     WriteLock w_lock(_navMeshMutex);
     for (NavMeshMap::value_type& it : _navMeshes) {
         it.second->update(_deltaTime);
         if (forceAll || it.second->debugDraw()) {
-            it.second->draw(subPassesInOut);
+            bufferInOut.add(it.second->draw());
         }
     }
 }

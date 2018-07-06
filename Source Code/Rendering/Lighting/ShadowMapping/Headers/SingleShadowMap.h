@@ -44,7 +44,7 @@ class SingleShadowMap : public ShadowMap {
     explicit SingleShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras);
     ~SingleShadowMap();
 
-    void render(U32 passIdx);
+    void render(U32 passIdx, GFX::CommandBuffer& bufferInOut);
     void init(ShadowMapInfo* const smi);
 
    private:

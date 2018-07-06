@@ -182,7 +182,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     GFX::SendPushConstants(pkg._commands, pushConstantsCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
-    GFX::BindDescripotSets(pkg._commands, bindDescriptorSetsCommand);
+    GFX::BindDescriptorSets(pkg._commands, bindDescriptorSetsCommand);
 
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
 }
@@ -391,48 +391,38 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         }
     }
 
-    bufferInOut.add(_boundingBoxPrimitive[0]->toDrawCommands());
-    bufferInOut.add(_boundingBoxPrimitive[1]->toDrawCommands());
-    bufferInOut.add(_boundingSpherePrimitive->toDrawCommands());
+    bufferInOut.add(_boundingBoxPrimitive[0]->toCommandBuffer());
+    bufferInOut.add(_boundingBoxPrimitive[1]->toCommandBuffer());
+    bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
     if (_skeletonPrimitive) {
-        bufferInOut.add(_skeletonPrimitive->toDrawCommands());
+        bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
     }
     if (Config::Build::IS_DEBUG_BUILD) {
-        bufferInOut.add(_axisGizmo->toDrawCommands());
+        bufferInOut.add(_axisGizmo->toCommandBuffer());
     }
 }
 
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
-    ShaderBufferList::iterator it;
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (RenderPackage& pkg : _renderData[pass]) {
+    ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffers),
+                                                 std::end(_shaderBuffers),
+                                                 [slot](const ShaderBufferBinding& binding)
+                                                 -> bool { return binding._binding == slot; });
 
-            ShaderBufferList::iterator itEnd = std::end(_shaderBuffers);
-            it = std::find_if(std::begin(_shaderBuffers), itEnd,
-                [slot](const ShaderBufferBinding& binding)
-                        -> bool { return binding._binding == slot; });
-
-            if (it == itEnd) {
-               vectorAlg::emplace_back(_shaderBuffers, slot, &shaderBuffer, bindRange);
-            } else {
-                it->set(slot, &shaderBuffer, bindRange);
-            }
-        }
+    if (it == std::end(_shaderBuffers)) {
+        vectorAlg::emplace_back(_shaderBuffers, slot, &shaderBuffer, bindRange);
+    } else {
+        it->set(slot, &shaderBuffer, bindRange);
     }
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (RenderPackage& pkg : _renderData[pass]) {
-            _shaderBuffers.erase(
-                std::remove_if(std::begin(_shaderBuffers), std::end(_shaderBuffers),
-                    [&slot](const ShaderBufferBinding& binding)
-                    -> bool { return binding._binding == slot; }),
-                std::end(_shaderBuffers));
-        }
-    }
+    _shaderBuffers.erase(std::remove_if(std::begin(_shaderBuffers),
+                                        std::end(_shaderBuffers),
+                                        [&slot](const ShaderBufferBinding& binding)
+                                        -> bool { return binding._binding == slot; }),
+                         std::end(_shaderBuffers));
 }
 
 ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& renderStagePass) {
@@ -508,7 +498,7 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
 void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
     RenderPackage& pkg = renderData(renderStagePass);
     pkg.isRenderable(false);
-    if (canDraw(renderStagePass) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass)) {
+    if (canDraw(renderStagePass)) {
 
         if (_renderPackagesDirty) {
             for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
@@ -516,30 +506,31 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
             }
             _renderPackagesDirty = false;
         }
+        if (_parentSGN.prepareDraw(sceneRenderState, renderStagePass)) {
+            _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg);
 
-        _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg);
+            updateLoDLevel(*Camera::activeCamera(), renderStagePass);
 
-        updateLoDLevel(*Camera::activeCamera(), renderStagePass);
+            bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
+            renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
 
-        bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
-        renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
+            bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
+            renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
 
-        bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
-        renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
+            const vectorImpl<GenericDrawCommand*>& commands = pkg._commands.getDrawCommands();
+            for (GenericDrawCommand* cmd : commands) {
+                cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
+                                  renderGeometry || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
 
-        const vectorImpl<GenericDrawCommand*>& commands = pkg._commands.getDrawCommands();
-        for (GenericDrawCommand* cmd : commands) {
-            cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
-                              renderGeometry  || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+                cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
+                                  renderWireframe || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
 
-            cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
-                              renderWireframe || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
-
-            cmd->LoD(_lodLevel);
-        }
-        if (!commands.empty()) {
-            pkg.isRenderable(true);
-            setDrawIDs(renderStagePass, commandOffset(), commandIndex());
+                cmd->LoD(_lodLevel);
+            }
+            if (!commands.empty()) {
+                pkg.isRenderable(true);
+                setDrawIDs(renderStagePass, commandOffset(), commandIndex());
+            }
         }
     }
 }
@@ -563,7 +554,8 @@ bool RenderingComponent::clearReflection() {
 
 bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                           Camera* camera,
-                                          const SceneRenderState& renderState)
+                                          const SceneRenderState& renderState,
+                                          GFX::CommandBuffer& bufferInOut)
 {
     // Low lod entities don't need up to date reflections
     if (_lodLevel > 1) {
@@ -611,7 +603,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 
     if (_reflectionCallback) {
         RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, camera);
-        _reflectionCallback(params);
+        _reflectionCallback(params, bufferInOut);
     } else {
         if (_reflectorType == ReflectorType::CUBE_REFLECTOR) {
             const vec2<F32>& zPlanes = camera->getZPlanes();
@@ -620,7 +612,8 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                      camera->getEye(),
                                      vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
                                      RenderStagePass(RenderStage::REFLECTION, RenderPassType::COLOUR_PASS),
-                                     reflectionIndex);
+                                     reflectionIndex,
+                                     bufferInOut);
         }
     }
 
@@ -641,7 +634,8 @@ bool RenderingComponent::clearRefraction() {
 
 bool RenderingComponent::updateRefraction(U32 refractionIndex,
                                           Camera* camera,
-                                          const SceneRenderState& renderState) {
+                                          const SceneRenderState& renderState,
+                                          GFX::CommandBuffer& bufferInOut) {
     // no default refraction system!
     if (!_refractionCallback) {
         return false;
@@ -688,7 +682,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     }
 
     RenderCbkParams params(_context, _parentSGN, renderState, refractRTID, refractionIndex, camera);
-    _refractionCallback(params);
+    _refractionCallback(params, bufferInOut);
 
     return false;
 }

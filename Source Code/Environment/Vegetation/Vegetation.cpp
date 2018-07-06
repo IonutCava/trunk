@@ -302,10 +302,6 @@ U32 Vegetation::getQueryID() {
 void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
     U32 queryID = getQueryID();
 
-    if (_context.is2DRendering()) {
-        return;
-    }
-
     bool draw = false;
     switch (queryID) {
         case 0 /*SHADOW*/: {
@@ -347,16 +343,25 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
         _cullDrawCommand.sourceBuffer(buffer);
         buffer->incQueryQueue();
 
-        PushConstants constants;
-        constants.set("ObjectExtent", PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
-        constants.set("dvd_visibilityDistance",PushConstantType::FLOAT, sceneRenderState.grassVisibility());
-        constants.set("cullType", PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
+        GFX::CommandBuffer cmdBuffer;
 
-        _context.draw(_cullDrawCommand, _context.newPipeline(pipeDesc), constants);
+        GFX::BindPipelineCommand pipelineCmd;
+        pipelineCmd._pipeline = _context.newPipeline(pipeDesc);
+        GFX::BindPipeline(cmdBuffer, pipelineCmd);
+
+        GFX::SendPushConstantsCommand pushConstantsCommand;
+        pushConstantsCommand._constants.set("ObjectExtent", PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
+        pushConstantsCommand._constants.set("dvd_visibilityDistance", PushConstantType::FLOAT, sceneRenderState.grassVisibility());
+        pushConstantsCommand._constants.set("cullType", PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
+        GFX::SendPushConstants(cmdBuffer, pushConstantsCommand);
+
+        GFX::DrawCommand drawCmd;
+        drawCmd._drawCommands.push_back(_cullDrawCommand);
+        GFX::AddDrawCommands(cmdBuffer, drawCmd);
+        _context.flushCommandBuffer(cmdBuffer);
 
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //_cullDrawCommand.sourceBuffer(_treeGPUBuffer);
-        // GFXDevice::instance().draw(_cullDrawCommand);
     }
 }
 
@@ -369,9 +374,9 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
     cmd.cmd().firstIndex = 0;
     cmd.cmd().indexCount = 12 * 3;
     cmd.LoD(1);
-    DrawCommand drawCommand;
+    GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    pkgInOut._commands.add(drawCommand);
+    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
 
     const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
     PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();

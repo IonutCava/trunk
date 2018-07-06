@@ -20,10 +20,10 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::preRender(RenderTarget& target, LightPool& lightPool) {
+void Renderer::preRender(RenderTarget& target,
+                         LightPool& lightPool,
+                         GFX::CommandBuffer& bufferInOut) {
     lightPool.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL,
                               ShaderBufferLocation::LIGHT_SHADOW);
-
-    Attorney::GFXDeviceRenderer::uploadGPUBlock(_context.gfx());
 }
 };

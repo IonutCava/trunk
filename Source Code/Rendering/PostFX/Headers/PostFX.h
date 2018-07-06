@@ -68,6 +68,7 @@ DEFINE_SINGLETON(PostFX)
 
     inline void pushFilter(FilterType filter) {
         ++_filterStackCount[to_U32(filter)];
+        _filtersDirty = true;
     }
 
     inline void popFilter(FilterType filter) {
@@ -75,6 +76,7 @@ DEFINE_SINGLETON(PostFX)
         // just to make sure we are in a proper state
         if (_filterStackCount[to_U32(filter)] > 0) {
             --_filterStackCount[to_U32(filter)];
+            _filtersDirty = true;
         }
     }
 
@@ -130,7 +132,7 @@ DEFINE_SINGLETON(PostFX)
     DELEGATE_CBK<void> _fadeInComplete;
 
     FilterStack _filterStackCount;
-
+    bool _filtersDirty;
 
     GenericDrawCommand _drawCommand;
     Pipeline _drawPipeline;

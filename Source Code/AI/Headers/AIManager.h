@@ -40,8 +40,10 @@ namespace Divide {
 class Scene;
 class Task;
 class TaskPool;
-struct RenderSubPassCmd;
-typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
+
+namespace GFX {
+    class CommandBuffer;
+}; //namespace GFX
 
 namespace AI {
 
@@ -106,7 +108,7 @@ class AIManager : public SceneComponent
     inline bool updating() const { return _updating; }
     /// Handle any debug information rendering (nav meshes, AI paths, etc).
     /// Called by Scene::postRender after depth map preview call
-    void debugDraw(RenderSubPassCmds& subPassesInOut, bool forceAll = true);
+    void debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll = true);
     inline bool isDebugDraw() const { return _navMeshDebugDraw; }
     /// Toggle debug draw for all NavMeshes
     void toggleNavMeshDebugDraw(bool state);

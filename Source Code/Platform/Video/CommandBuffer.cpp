@@ -17,10 +17,19 @@ void BeginRenderSubPass(CommandBuffer& buffer, const BeginRenderSubPassCommand& 
 void EndRenderSubPass(CommandBuffer& buffer, const EndRenderSubPassCommand& cmd) {
     buffer.add(cmd);
 }
+void BlitRenderTarget(CommandBuffer& buffer, const BlitRenderTargetCommand& cmd) {
+    buffer.add(cmd);
+}
 void SetViewPort(CommandBuffer& buffer, const SetViewportCommand& cmd) {
     buffer.add(cmd);
 }
 void SetScissor(CommandBuffer& buffer, const SetScissorCommand& cmd) {
+    buffer.add(cmd);
+}
+void SetCamera(CommandBuffer& buffer, const SetCameraCommand& cmd) {
+    buffer.add(cmd);
+}
+void SetClipPlanes(CommandBuffer& buffer, const SetClipPlanesCommand& cmd) {
     buffer.add(cmd);
 }
 void BindPipeline(CommandBuffer& buffer, const BindPipelineCommand& cmd) {
@@ -29,7 +38,7 @@ void BindPipeline(CommandBuffer& buffer, const BindPipelineCommand& cmd) {
 void SendPushConstants(CommandBuffer& buffer, const SendPushConstantsCommand& cmd) {
     buffer.add(cmd);
 }
-void BindDescripotSets(CommandBuffer& buffer, const BindDescriptorSetsCommand& cmd) {
+void BindDescriptorSets(CommandBuffer& buffer, const BindDescriptorSetsCommand& cmd) {
     buffer.add(cmd);
 }
 void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd) {
@@ -54,10 +63,14 @@ void CommandBuffer::rebuildCaches() {
         if (cmd->_type == CommandType::BIND_PIPELINE) {
             Pipeline& pipeline = std::dynamic_pointer_cast<BindPipelineCommand>(cmd)->_pipeline;
             _pipelineCache.push_back(&pipeline);
-            if (pipeline.shaderProgram() == nullptr) {
-                int al;
-                al = 5;
-            }
+        }
+    }
+
+    _clipPlanesCache.resize(0);
+    for (const std::shared_ptr<Command>& cmd : _data) {
+        if (cmd->_type == CommandType::SET_CLIP_PLANES) {
+            ClipPlaneList& planes = std::dynamic_pointer_cast<SetClipPlanesCommand>(cmd)->_clippingPlanes;
+            _clipPlanesCache.push_back(&planes);
         }
     }
 

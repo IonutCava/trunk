@@ -16,6 +16,8 @@ namespace Divide {
 Camera* Camera::s_activeCamera = nullptr;
 Camera* Camera::s_previousCamera = nullptr;
 
+std::array<Camera*, to_base(Camera::UtilityCamera::COUNT)> Camera::_utilityCameras;
+
 U32 Camera::s_changeCameraId = 0;
 U32 Camera::s_updateCameraId = 0;
 Camera::ListenerMap Camera::s_changeCameraListeners;
@@ -69,6 +71,23 @@ Camera* Camera::activeCamera() {
     return s_activeCamera;
 }
 
+Camera* Camera::utilityCamera(UtilityCamera type) {
+    if (type != UtilityCamera::COUNT) {
+        return _utilityCameras[to_base(type)];
+    }
+
+    return nullptr;
+}
+
+void Camera::initPool(const vec2<U16>& renderResolution) {
+    _utilityCameras[to_base(UtilityCamera::_2D)] = Camera::createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
+    _utilityCameras[to_base(UtilityCamera::CUBE)] = Camera::createCamera("CubeCamera", Camera::CameraType::FREE_FLY);
+    _utilityCameras[to_base(UtilityCamera::DUAL_PARABOLOID)] = Camera::createCamera("DualParaboloidCamera", Camera::CameraType::FREE_FLY);
+
+    // Update the 2D camera so it matches our new rendering viewport
+    _utilityCameras[to_base(UtilityCamera::_2D)]->setProjection(vec4<F32>(0, to_F32(renderResolution.w), 0, to_F32(renderResolution.h)), vec2<F32>(-1, 1));
+}
+
 void Camera::destroyPool() {
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_DELETE")));
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
@@ -78,6 +97,7 @@ void Camera::destroyPool() {
         it.second->unload();
     }
     MemoryManager::DELETE_HASHMAP(s_cameraPool);
+    _utilityCameras.fill(nullptr);
 }
 
 Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {

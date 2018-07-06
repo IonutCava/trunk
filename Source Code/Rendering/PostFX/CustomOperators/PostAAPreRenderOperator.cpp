@@ -65,25 +65,47 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
 }
 
 /// This is tricky as we use our screen as both input and output
-void PostAAPreRenderOperator::execute() {
+void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     STUBBED("ToDo: Move PostAA to compute shaders to avoid a blit and RT swap. -Ionut");
     RenderTargetHandle ldrTarget = _parent.outputRT();
 
-    _samplerCopy._rt->blitFrom(ldrTarget._rt);
-    _samplerCopy._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
+    pipelineDescriptor._shaderProgram = (_useSMAA ? _smaa : _fxaa);
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, pipelineCmd);
+
+    GFX::BlitRenderTargetCommand blitRTCommand;
+    blitRTCommand._source = ldrTarget._targetID;
+    blitRTCommand._destination = _samplerCopy._targetID;
+    GFX::BlitRenderTarget(bufferInOut, blitRTCommand);
+
+    TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.addTexture(data0);
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 
     // Apply FXAA/SMAA to the specified render target
-    _context.renderTargetPool().drawToTargetBegin(ldrTarget._targetID);
-        PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
-        pipelineDescriptor._shaderProgram = (_useSMAA ? _smaa : _fxaa);
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = ldrTarget._targetID;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
-        GenericDrawCommand pointsCmd;
-        pointsCmd.primitiveType(PrimitiveType::API_POINTS);
-        pointsCmd.drawCount(1);
+    GenericDrawCommand pointsCmd;
+    pointsCmd.primitiveType(PrimitiveType::API_POINTS);
+    pointsCmd.drawCount(1);
 
-        _context.draw(pointsCmd, _context.newPipeline(pipelineDescriptor), _fxaaConstants);
-    _context.renderTargetPool().drawToTargetEnd();
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    pushConstantsCommand._constants = _fxaaConstants;
+    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(pointsCmd);
+    GFX::AddDrawCommands(bufferInOut, drawCmd);
+
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 }
 
 };

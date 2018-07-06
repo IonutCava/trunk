@@ -647,6 +647,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                                : mainWindow.getDimensions(WindowType::WINDOW));
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
 
+    Camera::initPool(renderResolution);
     Camera::addUpdateListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraUpdate(_platformContext->gfx(), cam); });
     Camera::addChangeListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraChange(_platformContext->gfx(), cam); });
     // If we could not initialize the graphics device, exit

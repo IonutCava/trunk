@@ -113,9 +113,9 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         cmd.sourceBuffer(vb);
         cmd.cmd().indexCount = to_U32(vb->getIndexCount());
         
-        DrawCommand drawCommand;
+        GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
-        pkgInOut._commands.add(drawCommand);
+        GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
     }
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);

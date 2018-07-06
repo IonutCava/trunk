@@ -52,10 +52,13 @@ class NOINITVTABLE Renderer {
     Renderer(PlatformContext& context, ResourceCache& cache, RendererType type);
     virtual ~Renderer();
 
-    virtual void preRender(RenderTarget& target, LightPool& lightPool);
+    virtual void preRender(RenderTarget& target,
+                           LightPool& lightPool,
+                           GFX::CommandBuffer& bufferInOut);
 
     virtual void render(const DELEGATE_CBK<void>& renderCallback,
-                        const SceneRenderState& sceneRenderState) = 0;
+                        const SceneRenderState& sceneRenderState,
+                        GFX::CommandBuffer& bufferInOut) = 0;
 
     virtual void updateResolution(U16 width, U16 height) = 0;
 

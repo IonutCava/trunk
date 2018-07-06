@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DESCRIPTOR_SETS_H_
 #define _DESCRIPTOR_SETS_H_
 
+#include "ClipPlanes.h"
 #include "TextureData.h"
 #include "Core/Math/Headers/MathVectors.h"
 

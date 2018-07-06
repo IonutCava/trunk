@@ -15,7 +15,7 @@ class PreRenderBatch {
     void destroy();
 
     void idle(const Configuration& config);
-    void execute(const FilterStack& stack);
+    void execute(const FilterStack& stack, GFX::CommandBuffer& buffer);
     void reshape(U16 width, U16 height);
 
     void bindOutput(U8 slot);

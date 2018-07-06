@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _COMMAND_BUFFER_H_
 
 #include "GenericDrawCommand.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
@@ -45,6 +46,9 @@ enum class CommandType : U8 {
     END_RENDER_SUB_PASS,
     SET_VIEWPORT,
     SET_SCISSOR,
+    BLIT_RT,
+    SET_CAMERA,
+    SET_CLIP_PLANES,
     BIND_PIPELINE,
     BIND_DESCRIPTOR_SETS,
     SEND_PUSH_CONSTANTS,
@@ -70,12 +74,6 @@ struct BindPipelineCommand : Command {
     {
     }
 
-    BindPipelineCommand(const Pipeline& pipeline)
-        : BindPipelineCommand(),
-          _pipeline(pipeline)
-    {
-    }
-
     void execute() override {};
 
     Pipeline _pipeline;
@@ -83,11 +81,6 @@ struct BindPipelineCommand : Command {
 
 struct SendPushConstantsCommand : Command {
     SendPushConstantsCommand() : Command(CommandType::SEND_PUSH_CONSTANTS)
-    {
-    }
-    SendPushConstantsCommand(const PushConstants& constants)
-        : SendPushConstantsCommand(),
-         _constants(constants)
     {
     }
 
@@ -154,6 +147,18 @@ struct EndRenderSubPassCommand : Command {
     void execute() override {};
 };
 
+struct BlitRenderTargetCommand : Command {
+    BlitRenderTargetCommand() : Command(CommandType::BLIT_RT)
+    {
+    }
+
+    void execute() override {};
+
+    bool _blitColour = true;
+    bool _blitDepth = false;
+    RenderTargetID _source;
+    RenderTargetID _destination;
+};
 
 struct SetScissorCommand : Command {
     SetScissorCommand() : Command(CommandType::SET_SCISSOR)
@@ -164,6 +169,29 @@ struct SetScissorCommand : Command {
 
     vec4<I32> _rect;
 };
+
+struct SetCameraCommand : Command {
+    SetCameraCommand() : Command(CommandType::SET_CAMERA)
+    {
+    }
+
+    void execute() override {};
+
+    Camera* _camera = nullptr;
+};
+
+struct SetClipPlanesCommand : Command {
+    SetClipPlanesCommand()
+        : Command(CommandType::SET_CLIP_PLANES),
+          _clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
+    {
+    }
+
+    void execute() override {};
+
+    ClipPlaneList _clippingPlanes;
+};
+
 
 struct BindDescriptorSetsCommand : Command {
     BindDescriptorSetsCommand() : Command(CommandType::BIND_DESCRIPTOR_SETS)
@@ -192,7 +220,12 @@ struct DispatchComputeCommand : Command {
 
     void execute() override {};
 
-    ShaderProgram::ComputeParams _params;
+    ComputeParams _params;
+};
+
+struct CommandEntry {
+    U32 _idx = 0;
+    CommandType _type = CommandType::COUNT;
 };
 
 class CommandBuffer {
@@ -212,6 +245,7 @@ class CommandBuffer {
     inline const vectorImpl<std::shared_ptr<Command>>& operator()() const;
 
     inline const vectorImpl<Pipeline*>& getPipelines() const;
+    inline const vectorImpl<ClipPlaneList*>& getClipPlanes() const;
     inline const vectorImpl<PushConstants*>& getPushConstants() const;
     inline const vectorImpl<DescriptorSet*>& getDescriptorSets() const;
     inline const vectorImpl<GenericDrawCommand*>& getDrawCommands() const;
@@ -225,21 +259,43 @@ class CommandBuffer {
 
     protected:
     vectorImpl<std::shared_ptr<Command>> _data;
+
     vectorImpl<Pipeline*> _pipelineCache;
+    vectorImpl<ClipPlaneList*> _clipPlanesCache;
     vectorImpl<PushConstants*> _pushConstantsCache;
     vectorImpl<DescriptorSet*> _descriptorSetCache;
     vectorImpl<GenericDrawCommand*> _drawCommandsCache;
+
+    vectorImplFast<CommandEntry> _buffer;
+    vectorImplFast<BindPipelineCommand> _bindPipelineCommands;
+    vectorImplFast<SendPushConstantsCommand> _sendPushConstantsCommands;
+    vectorImplFast<DrawCommand> _drawCommands;
+    vectorImplFast<SetViewportCommand> _setViewportCommands;
+    vectorImplFast<SetCameraCommand> _setCameraCommands;
+    vectorImplFast<SetClipPlanesCommand> _setClipPlanesCommand;
+    vectorImplFast<BeginRenderPassCommand> _beginRenderPassCommands;
+    vectorImplFast<EndRenderPassCommand> _endRenderPassCommands;
+    vectorImplFast<BeginRenderSubPassCommand> _beginRenderSubPassCommands;
+    vectorImplFast<EndRenderSubPassCommand> _endRenderSubPassCommands;
+    vectorImplFast<BlitRenderTargetCommand> _blitRenderTargetCommands;
+    vectorImplFast<SetScissorCommand> _setScissorCommands;
+    vectorImplFast<BindDescriptorSetsCommand> _bindDescriptorSetsCommands;
+    vectorImplFast<DrawTextCommand> _drawTextCommands;
+    vectorImplFast<DispatchComputeCommand> _dispatchComputeCommands;
 };
 
 void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd);
 void EndRenderPass(CommandBuffer& buffer, const EndRenderPassCommand& cmd);
 void BeginRenderSubPass(CommandBuffer& buffer, const BeginRenderSubPassCommand& cmd);
 void EndRenderSubPass(CommandBuffer& buffer, const EndRenderSubPassCommand& cmd);
+void BlitRenderTarget(CommandBuffer& buffer, const BlitRenderTargetCommand& cmd);
 void SetViewPort(CommandBuffer& buffer, const SetViewportCommand& cmd);
 void SetScissor(CommandBuffer& buffer, const SetScissorCommand& cmd);
+void SetCamera(CommandBuffer& buffer, const SetCameraCommand& cmd);
+void SetClipPlanes(CommandBuffer& buffer, const SetClipPlanesCommand& cmd);
 void BindPipeline(CommandBuffer& buffer, const BindPipelineCommand& cmd);
 void SendPushConstants(CommandBuffer& buffer, const SendPushConstantsCommand& cmd);
-void BindDescripotSets(CommandBuffer& buffer, const BindDescriptorSetsCommand& cmd);
+void BindDescriptorSets(CommandBuffer& buffer, const BindDescriptorSetsCommand& cmd);
 void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd);
 void AddDrawTextCommand(CommandBuffer& buffer, const DrawTextCommand& cmd);
 void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd);

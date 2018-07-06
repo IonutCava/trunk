@@ -118,9 +118,9 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     cmd.sourceBuffer(_sky->getGeometryVB());
     cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
 
-    DrawCommand drawCommand;
+    GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    pkgInOut._commands.add(drawCommand);
+    GFX::AddDrawCommands(pkgInOut._commands, drawCommand);
 
     const vectorImpl<Pipeline*>& pipelines = pkgInOut._commands.getPipelines();
     PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();

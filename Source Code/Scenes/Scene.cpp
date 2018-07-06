@@ -1098,8 +1098,7 @@ void Scene::processTasks(const U64 deltaTime) {
     }
 }
 
-void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
-    RenderSubPassCmd& subPass = subPassesInOut.back();
+void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut) {
     if (Config::Build::IS_DEBUG_BUILD) {
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
@@ -1132,17 +1131,17 @@ void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePa
             for (size_t i = 0; i < regionCount; ++i) {
                 const BoundingBox& box = _octreeBoundingBoxes[i];
                 _octreePrimitives[i]->fromBox(box.getMin(), box.getMax(), vec4<U8>(255, 0, 255, 255));
-                subPass._commands.add(_octreePrimitives[i]->toDrawCommands());
+                bufferInOut.add(_octreePrimitives[i]->toCommandBuffer());
             }
         }
     }
     if (Config::Build::IS_DEBUG_BUILD) {
-        subPass._commands.add(_linesPrimitive->toDrawCommands());
+        bufferInOut.add(_linesPrimitive->toCommandBuffer());
     }
     // Show NavMeshes
-    _aiManager->debugDraw(subPassesInOut, false);
-    _lightPool->drawLightImpostors(subPassesInOut);
-    _envProbePool->debugDraw(subPassesInOut);
+    _aiManager->debugDraw(bufferInOut, false);
+    _lightPool->drawLightImpostors(bufferInOut);
+    _envProbePool->debugDraw(bufferInOut);
 }
 
 bool Scene::checkCameraUnderwater(U8 playerIndex) const {

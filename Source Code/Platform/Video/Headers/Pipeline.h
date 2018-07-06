@@ -39,10 +39,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+enum class MemoryBarrierType : U32 {
+    BUFFER = 0,
+    TEXTURE = 1,
+    RENDER_TARGET = 2,
+    TRANSFORM_FEEDBACK = 3,
+    COUNTER = 4,
+    QUERY = 5,
+    SHADER_BUFFER = 6,
+    ALL = 7,
+    COUNT
+};
+
+struct ComputeParams {
+    MemoryBarrierType _barrierType = MemoryBarrierType::COUNT;
+    vec3<U32> _groupSize;
+};
+
+typedef std::array<vectorImpl<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
+
 struct PipelineDescriptor {
     U8 _multiSampleCount = 0;
     size_t _stateHash = 0;
     ShaderProgram_wptr _shaderProgram;
+    ShaderFunctions _shaderFunctions;
 }; //struct PipelineDescriptor
 
 class Pipeline {
@@ -66,6 +86,11 @@ public:
         return _multiSampleCount;
     }
 
+
+    inline const ShaderFunctions& shaderFunctions() const {
+        return _shaderFunctions;
+    }
+
     bool operator==(const Pipeline &other) const;
     bool operator!=(const Pipeline &other) const;
 
@@ -75,6 +100,7 @@ private: //data
     size_t _stateHash;
     U8 _multiSampleCount;
     ShaderProgram_wptr _shaderProgram;
+    ShaderFunctions _shaderFunctions;
 
 }; //class Pipeline
 

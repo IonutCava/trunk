@@ -122,8 +122,8 @@ void NavMeshDebugDraw::end() {
     }
 }
 
-CommandBuffer NavMeshDebugDraw::toDrawCommands() const {
-    return _primitive->toDrawCommands();
+GFX::CommandBuffer NavMeshDebugDraw::toCommandBuffer() const {
+    return _primitive->toCommandBuffer();
 }
 
 void NavMeshDebugDraw::overrideColour(U32 col) {

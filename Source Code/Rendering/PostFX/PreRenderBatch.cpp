@@ -162,12 +162,13 @@ RenderTargetHandle& PreRenderBatch::outputRT() {
     return _postFXOutput;
 }
 
-void PreRenderBatch::execute(const FilterStack& stack) {
+void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffer) {
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
 
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.getDefaultStateBlock(true);
+    pipelineDescriptor._shaderProgram = _luminanceCalc;
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
@@ -176,41 +177,83 @@ void PreRenderBatch::execute(const FilterStack& stack) {
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        inputRT()._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
-        _previousLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0);
+        TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+        TextureData data1 = _previousLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        data1.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT1));
 
-        _context.renderTargetPool().drawToTargetBegin(_currentLuminance._targetID);
-            pipelineDescriptor._shaderProgram = _luminanceCalc;
-            _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor));
-        _context.renderTargetPool().drawToTargetEnd();
+        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        beginRenderPassCmd._target = _currentLuminance._targetID;
+        GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+
+        GFX::BindPipelineCommand pipelineCmd;
+        pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+        GFX::BindPipeline(buffer, pipelineCmd);
+
+        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        descriptorSetCmd._set._textureData.addTexture(data0);
+        descriptorSetCmd._set._textureData.addTexture(data1);
+        GFX::BindDescriptorSets(buffer, descriptorSetCmd);
+
+        GFX::DrawCommand drawCmd;
+        drawCmd._drawCommands.push_back(triangleCmd);
+        GFX::AddDrawCommands(buffer, drawCmd);
+
+        GFX::EndRenderPassCommand endRenderPassCmd;
+        GFX::EndRenderPass(buffer, endRenderPassCmd);
 
         // Use previous luminance to control adaptive exposure
-        _previousLuminance._rt->blitFrom(_currentLuminance._rt);
+        GFX::BlitRenderTargetCommand blitRTCommand;
+        blitRTCommand._source = _currentLuminance._targetID;
+        blitRTCommand._destination = _previousLuminance._targetID;
+        GFX::BlitRenderTarget(buffer, blitRTCommand);
     }
 
     // Execute all HDR based operators
     for (PreRenderOperator* op : hdrBatch) {
         if (op != nullptr && stack[to_U32(op->operatorType())] > 0) {
-            op->execute();
+            op->execute(buffer);
         }
     }
 
+    pipelineDescriptor._shaderProgram = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(buffer, pipelineCmd);
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    inputRT()._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT0), RTAttachmentType::Colour, 0);
+    TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.addTexture(data0);
 
     if (_adaptiveExposureControl) {
-        _currentLuminance._rt->bind(to_U8(ShaderProgram::TextureUsage::UNIT1), RTAttachmentType::Colour, 0);
+        TextureData data1 = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+        data1.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT1));
+        descriptorSetCmd._set._textureData.addTexture(data1);
     }
+    GFX::BindDescriptorSets(buffer, descriptorSetCmd);
 
-    _context.renderTargetPool().drawToTargetBegin(_postFXOutput._targetID);
-        pipelineDescriptor._shaderProgram = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
-        _context.draw(triangleCmd, _context.newPipeline(pipelineDescriptor), _toneMapConstants);
-    _context.renderTargetPool().drawToTargetEnd();
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = _postFXOutput._targetID;
+    GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    pushConstantsCommand._constants = _toneMapConstants;
+    GFX::SendPushConstants(buffer, pushConstantsCommand);
+
+    GFX::DrawCommand drawCmd;
+    drawCmd._drawCommands.push_back(triangleCmd);
+    GFX::AddDrawCommands(buffer, drawCmd);
+
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(buffer, endRenderPassCmd);
 
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {
         if (op != nullptr && stack[to_U32(op->operatorType())] > 0) {
-            op->execute();
+            op->execute(buffer);
         }
     }
 }

@@ -111,11 +111,11 @@ class LightPool : public SceneComponent {
     void uploadLightData(ShaderBufferLocation lightDataLocation,
                          ShaderBufferLocation shadowDataLocation);
 
-    void drawLightImpostors(RenderSubPassCmds& subPassesInOut) const;
+    void drawLightImpostors(GFX::CommandBuffer& bufferInOut) const;
 
     static void idle();
     /// shadow mapping
-    static void bindShadowMaps(GFXDevice& context);
+    static void bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
     static void togglePreviewShadowMaps(GFXDevice& context);
 
     /// Get the appropriate shadow bind slot for every light's shadow
@@ -142,7 +142,7 @@ class LightPool : public SceneComponent {
 
   protected:
     friend class SceneManager;
-    bool generateShadowMaps(SceneRenderState& sceneRenderState);
+    bool generateShadowMaps(SceneRenderState& sceneRenderState, GFX::CommandBuffer& bufferInOut);
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
         return std::find_if(std::begin(_lights[to_U32(type)]), std::end(_lights[to_U32(type)]),

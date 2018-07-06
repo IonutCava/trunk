@@ -6,17 +6,6 @@
 namespace Divide {
 namespace GFX {
 
-Scoped2DRendering::Scoped2DRendering(GFXDevice& context)
-    : _context(context)
-{
-    _context.toggle2D(true);
-}
-
-Scoped2DRendering::~Scoped2DRendering()
-{
-    _context.toggle2D(false);
-}
-
 ScopedDebugMessage::ScopedDebugMessage(GFXDevice& context, const stringImpl& message, I32 id)
     : _context(context)
 {

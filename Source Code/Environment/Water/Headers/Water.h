@@ -71,8 +71,8 @@ class WaterPlane : public SceneNode {
 
    private:
     void updateBoundsInternal(SceneGraphNode& sgn) override;
-    void updateReflection(RenderCbkParams& renderParams);
-    void updateRefraction(RenderCbkParams& renderParams);
+    void updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
+    void updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
 
    private:
     /// cached far plane value

@@ -33,7 +33,6 @@ EnvironmentProbe::EnvironmentProbe(Scene& parentScene, ProbeType type) :
         
     _currentArrayIndex = allocateSlice();
 
-
     RenderStateBlock primitiveStateBlock;
 
     PipelineDescriptor pipelineDescriptor;
@@ -108,14 +107,15 @@ U16 EnvironmentProbe::allocateSlice() {
     return i;
 }
 
-void EnvironmentProbe::refresh() {
+void EnvironmentProbe::refresh(GFX::CommandBuffer& bufferInOut) {
     if (++_currentUpdateCall % _updateRate == 0) {
         _context.generateCubeMap(s_reflection._targetID,
                                  _currentArrayIndex,
                                  _aabb.getCenter(),
                                  vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
                                  RenderStagePass(RenderStage::REFLECTION, RenderPassType::COLOUR_PASS),
-                                 getRTIndex());
+                                 getRTIndex(),
+                                 bufferInOut);
         _currentUpdateCall = 0;
     }
     _boundingBoxPrimitive->paused(true);
@@ -147,7 +147,7 @@ U32 EnvironmentProbe::getRTIndex() const {
     return _currentArrayIndex;
 }
 
-void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
+void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
     _boundingBoxPrimitive->paused(false);
 
     const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
@@ -158,31 +158,31 @@ void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     pipelineDescriptor._stateHash = _context.getDefaultStateBlock(false);
     pipelineDescriptor._shaderProgram = _impostorShader;
 
-    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
-    cmd.sourceBuffer(vb);
-
-    RenderSubPassCmd newSubPass;
-    newSubPass._textures.addTexture(TextureData(reflectTex->getTextureType(),
-                                                reflectTex->getHandle(),
-                                                to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE)));
-
-    BindPipelineCommand bindPipelineCmd;
+    GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    newSubPass._commands.add(bindPipelineCmd);
+    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 
-    SendPushConstantsCommand pushConstantsCmd;
-    PushConstants& constants = pushConstantsCmd._constants;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.addTexture(TextureData(reflectTex->getTextureType(),
+                                                              reflectTex->getHandle(),
+                                                              to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE)));
+    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+
+    GFX::SendPushConstantsCommand pushConstants;
+    PushConstants& constants = pushConstants._constants;
     const vec3<F32>& bbPos = _aabb.getCenter();
     constants.set("dvd_WorldMatrixOverride", PushConstantType::MAT4, mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
     constants.set("dvd_LayerIndex", PushConstantType::UINT, to_U32(_currentArrayIndex));
-    newSubPass._commands.add(pushConstantsCmd);
+    GFX::SendPushConstants(bufferInOut, pushConstants);
 
-    DrawCommand drawCommand;
+    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
+    cmd.sourceBuffer(vb);
+
+    GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    newSubPass._commands.add(drawCommand);
+    GFX::AddDrawCommands(bufferInOut, drawCommand);
 
-    newSubPass._commands.add(_boundingBoxPrimitive->toDrawCommands());
-    subPassesInOut.push_back(newSubPass);
+    bufferInOut.add(_boundingBoxPrimitive->toCommandBuffer());
 }
 
 void EnvironmentProbe::updateInternal() {

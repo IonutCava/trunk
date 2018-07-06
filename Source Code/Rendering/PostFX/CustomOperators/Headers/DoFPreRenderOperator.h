@@ -42,7 +42,7 @@ class DoFPreRenderOperator : public PreRenderOperator {
     ~DoFPreRenderOperator();
 
     void idle(const Configuration& config) override;
-    void execute() override;
+    void execute(GFX::CommandBuffer& bufferInOut) override;
     void reshape(U16 width, U16 height) override;
 
    private:

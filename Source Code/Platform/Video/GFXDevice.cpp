@@ -118,18 +118,15 @@ GFXDevice::GFXDevice(Kernel& parent)
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-    // Cameras
-    _2DCamera = nullptr;
-    _cubeCamera = nullptr;
-    _dualParaboloidCamera = nullptr;
     // Booleans
     _2DRendering = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
     _renderDetailLevel = RenderDetailLevel::HIGH;
     _API_ID = RenderAPI::COUNT;
-    // To allow calls to "setBaseViewport"
-    _viewport.push(vec4<I32>(-1));
+    
+    _viewport.set(-1);
+    _prevViewport.set(-1);
 
     _lastCommandCount.fill(0);
     _lastNodeCount.fill(0);
@@ -173,10 +170,11 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const vec2<F32>& zPlanes,
                                 const RenderStagePass& stagePass,
                                 U32 passIndex,
+                                GFX::CommandBuffer& bufferInOut,
                                 Camera* camera) {
 
     if (!camera) {
-        camera = _cubeCamera;
+        camera = Camera::utilityCamera(Camera::UtilityCamera::CUBE);
     }
 
     // Only the first colour attachment or the depth attachment is used for now
@@ -221,7 +219,9 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
 
     // Enable our render target
-    _rtPool->drawToTargetBegin(cubeMap);
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = cubeMap;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
@@ -244,11 +244,13 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
         params.pass = passIndex + i;
-        passMgr.doCustomPass(params);
+        bufferInOut.add(passMgr.doCustomPass(params));
     }
 
     // Resolve our render target
-    _rtPool->drawToTargetEnd();
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+
     // Return to our previous rendering stage
     setRenderStagePass(prevRenderStage);
 }
@@ -259,10 +261,11 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const vec2<F32>& zPlanes,
                                           const RenderStagePass& stagePass,
                                           U32 passIndex,
+                                          GFX::CommandBuffer& bufferInOut,
                                           Camera* camera)
 {
     if (!camera) {
-        camera = _dualParaboloidCamera;
+        camera = Camera::utilityCamera(Camera::UtilityCamera::DUAL_PARABOLOID);
     }
 
     RenderTarget& paraboloidTarget = _rtPool->renderTarget(targetBuffer);
@@ -301,7 +304,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     params.bindTargets = false;
     // Enable our render target
 
-    _rtPool->drawToTargetBegin(targetBuffer);
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = targetBuffer;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+
     for (U8 i = 0; i < 2; ++i) {
             paraboloidTarget.drawToLayer(hasColour ? RTAttachmentType::Colour
                                                    : RTAttachmentType::Depth,
@@ -312,9 +318,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
             // And generated required matrices
             // Pass our render function to the renderer
             params.pass = passIndex + i;
-            passMgr.doCustomPass(params);
+            bufferInOut.add(passMgr.doCustomPass(params));
         }
-    _rtPool->drawToTargetEnd();
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
     // Return to our previous rendering stage
     setRenderStagePass(prevRenderStage);
 }
@@ -405,7 +412,7 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     PostFX::instance().updateResolution(w, h);
 
     // Update the 2D camera so it matches our new rendering viewport
-    _2DCamera->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1));
+    Camera::utilityCamera(Camera::UtilityCamera::_2D)->setProjection(vec4<F32>(0, to_F32(w), 0, to_F32(h)), vec2<F32>(-1, 1));
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it
@@ -465,28 +472,22 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
     return MAT4_IDENTITY;
 }
 
-/// Update the internal GPU data buffer with the clip plane values
-void GFXDevice::updateClipPlanes() {
-    static_assert(std::is_same<std::remove_reference<decltype(*(_gpuBlock._data._clipPlanes))>::type, vec4<F32>>::value,
-                  "GFXDevice error: invalid clip plane type!");
+/// set a new list of clipping planes. The old one is discarded
+void GFXDevice::setClipPlanes(const ClipPlaneList& clipPlanes) {
+    static_assert(std::is_same<std::remove_reference<decltype(*(_gpuBlock._data._clipPlanes))>::type, vec4<F32>>::value, "GFXDevice error: invalid clip plane type!");
+    static_assert(sizeof(vec4<F32>) == sizeof(Plane<F32>), "GFXDevice error: clip plane size mismatch!");
 
-    static_assert(sizeof(vec4<F32>) == sizeof(Plane<F32>),
-                  "GFXDevice error: clip plane size mismatch!");
+    if (clipPlanes._active != _clippingPlanes._active ||
+        clipPlanes._planes != _clippingPlanes._planes)
+    {
+        _clippingPlanes = clipPlanes;
 
-    memcpy(&_gpuBlock._data._clipPlanes[0],
-           _clippingPlanes._planes.data(),
-           sizeof(vec4<F32>) * to_base(Frustum::FrustPlane::COUNT));
+        memcpy(&_gpuBlock._data._clipPlanes[0],
+               _clippingPlanes._planes.data(),
+               sizeof(vec4<F32>) * to_base(Frustum::FrustPlane::COUNT));
 
-    _gpuBlock._needsUpload = true;
-}
-
-/// Update the internal GPU data buffer with the updated viewport dimensions
-void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
-    // Change the viewport on the Rendering API level
-    _api->changeViewport(viewport);
-    // Update the buffer with the new value
-    _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
-    _gpuBlock._needsUpload = true;
+        _gpuBlock._needsUpload = true;
+    }
 }
 
 void GFXDevice::setSceneZPlanes(const vec2<F32>& zPlanes) {
@@ -527,65 +528,31 @@ void GFXDevice::renderFromCamera(Camera& camera) {
     }
 }
 
-/// Enable or disable 2D rendering mode 
-/// (orthographic projection, no depth reads)
-bool GFXDevice::toggle2D(bool state) {
-    // Prevent double 2D toggle to the same state (e.g. in a loop)
-    if (state == _2DRendering) {
-        return false;
-    }
-
-    _2DRendering = state;
-    // If we need to enable 2D rendering
-    if (state) {
-        // Upload 2D camera matrices to the GPU
-        renderFromCamera(*_2DCamera);
-    } else {
-        Camera::activeCamera(Camera::previousCamera());
-    }
-
-    return true;
-}
-
 /// Update the rendering viewport
 bool GFXDevice::setViewport(const vec4<I32>& viewport) {
-    bool updated = false;
-    // Avoid redundant changes
-    if (!viewport.compare(_viewport.top())) {
-        // Activate the new viewport
-        updateViewportInternal(viewport);
-        updated = true;
-    }
-    // Push the new viewport onto the stack
-    _viewport.push(viewport);
+    // Change the viewport on the Rendering API level
+    if (_api->changeViewport(viewport)) {
+    // Update the buffer with the new value
+        _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
+        _gpuBlock._needsUpload = true;
+        _prevViewport.set(_viewport);
+        _viewport.set(viewport);
 
-    return updated;
-}
-
-/// Restore the viewport to it's previous value
-bool GFXDevice::restoreViewport() {
-    vec4<I32> crtViewport(_viewport.top());
-    // Restore the viewport
-    _viewport.pop();
-    const vec4<I32>& prevViewport = _viewport.top();
-    if (!crtViewport.compare(prevViewport)) {
-        // Activate the new top viewport
-        updateViewportInternal(prevViewport);
         return true;
     }
 
     return false;
 }
 
+/// Restore the viewport to it's previous value
+bool GFXDevice::restoreViewport() {
+    return setViewport(_prevViewport);
+}
+
 /// Set a new viewport clearing the previous stack first
 void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
-    while (!_viewport.empty()) {
-        _viewport.pop();
-    }
-    _viewport.push(viewport);
-
-    // Set the new viewport
-    updateViewportInternal(viewport);
+    setViewport(viewport);
+    _prevViewport.set(viewport);
 }
 
 void GFXDevice::onCameraUpdate(const Camera& camera) {
@@ -666,9 +633,8 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     U16 theight = height;
     bool wasEven = false;
 
-    //GFX::Scoped2DRendering scoped2D(*this);
     // Store the current width and height of each mip
-    vec4<I32> previousViewport(_viewport.top());
+    vec4<I32> previousViewport(_prevViewport);
 
     // Bind the depth texture to the first texture unit
     Texture_ptr depth = screenTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
@@ -690,7 +656,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.addTexture(texData);
-    GFX::BindDescripotSets(cmdBufferInOut, descriptorSetCmd);
+    GFX::BindDescriptorSets(cmdBufferInOut, descriptorSetCmd);
 
     GFX::SetViewportCommand viewportCommand;
     GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -717,8 +683,6 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(triangleCmd);
             GFX::AddDrawCommands(cmdBufferInOut, drawCmd);
-            
-            draw(triangleCmd, pipeline, constants);
         }
 
         // Calculate next viewport size
@@ -729,7 +693,6 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
         level++;
     }
 
-    updateViewportInternal(previousViewport);
     viewportCommand._viewport.set(previousViewport);
     GFX::SetViewPort(cmdBufferInOut, viewportCommand);
 

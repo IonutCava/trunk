@@ -43,6 +43,10 @@ class IMPrimitive;
 class ShaderProgram;
 class ImpostorSphere;
 
+namespace GFX {
+    class CommandBuffer;
+}; //namespace GFX
+
 FWD_DECLARE_MANAGED_CLASS(EnvironmentProbe);
 class EnvironmentProbe : public GUIDWrapper {
 public:
@@ -59,7 +63,7 @@ public:
     static void onStartup(GFXDevice& context);
     static void onShutdown(GFXDevice& context);
 
-    void refresh();
+    void refresh(GFX::CommandBuffer& bufferInOut);
     void setUpdateRate(U8 rate);
     void setBounds(const vec3<F32>& min, const vec3<F32>& max);
     void setBounds(const vec3<F32>& center, F32 radius);
@@ -69,7 +73,7 @@ public:
     F32 distanceSqTo(const vec3<F32>& pos) const;
     U32 getRTIndex() const;
 
-    void debugDraw(RenderSubPassCmds& subPassesInOut);
+    void debugDraw(GFX::CommandBuffer& bufferInOut);
 
 protected:
     void updateInternal();
