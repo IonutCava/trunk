@@ -134,7 +134,6 @@ bool AIEntity::addAISceneImpl(AISceneImpl* AISceneImpl) {
 }
 
 void AIEntity::processInput(const U64 deltaTime) {
-    ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
         _AISceneImpl->init();
         _AISceneImpl->processInput(deltaTime);
@@ -142,14 +141,12 @@ void AIEntity::processInput(const U64 deltaTime) {
 }
 
 void AIEntity::processData(const U64 deltaTime) {
-    ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
         _AISceneImpl->processData(deltaTime);
     }
 }
 
 void AIEntity::update(const U64 deltaTime) {
-    ReadLock r_lock(_managerQueryMutex);
     if (_AISceneImpl) {
         _AISceneImpl->update(deltaTime, _unitRef);
     }

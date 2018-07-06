@@ -8,12 +8,14 @@
 namespace Divide {
 using namespace AI;
 
-AITeam::AITeam(U32 id) : GUIDWrapper(), _teamID(id) {
+AITeam::AITeam(U32 id) : GUIDWrapper(), _teamID(id)
+{
     _team.clear();
     AIManager::getInstance().registerTeam(this);
 }
 
-AITeam::~AITeam() {
+AITeam::~AITeam()
+{
     AIManager::getInstance().unregisterTeam(this);
     {
         WriteLock w1_lock(_crowdMutex);
@@ -45,66 +47,78 @@ void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
     _aiTeamCrowd.erase(it);
 }
 
+vectorImpl<AIEntity*> AITeam::getEntityList() const {
+    vectorImpl<AIEntity*> entities;
+    ReadLock r2_lock(_updateMutex);
+    entities.reserve(_team.size());
+    for (const AITeam::TeamMap::value_type& entity : _team) {
+        entities.push_back(entity.second);
+    }
+    r2_lock.unlock();
+
+    return entities;
+}
+
 void AITeam::update(const U64 deltaTime) {
     // Crowds
-    ReadLock r_lock(_crowdMutex);
+    ReadLock r1_lock(_crowdMutex);
     for (AITeamCrowd::value_type& it : _aiTeamCrowd) {
         it.second->update(deltaTime);
     }
-    r_lock.unlock();
-    WriteLock w_lock(_updateMutex);
-    for (AITeam::TeamMap::value_type& entity : _team) {
-        Attorney::AIEntityAITeam::update(*entity.second, deltaTime);
+    r1_lock.unlock();
+
+    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+    for (AIEntity* entity : entities) {
+        Attorney::AIEntityAITeam::update(*entity, deltaTime);
     }
 }
 
 void AITeam::processInput(const U64 deltaTime) {
-    WriteLock w_lock(_updateMutex);
-    for (AITeam::TeamMap::value_type& entity : _team) {
-        Attorney::AIEntityAITeam::processInput(*entity.second, deltaTime);
+   vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+    for (AIEntity* entity : entities) {
+        Attorney::AIEntityAITeam::processInput(*entity, deltaTime);
     }
 }
 
 void AITeam::processData(const U64 deltaTime) {
-    WriteLock w_lock(_updateMutex);
-    for (AITeam::TeamMap::value_type& entity : _team) {
-        Attorney::AIEntityAITeam::processData(*entity.second, deltaTime);
+    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+    for (AIEntity* entity : entities) {
+        Attorney::AIEntityAITeam::processData(*entity, deltaTime);
     }
 }
 
 void AITeam::resetCrowd() {
-    WriteLock w_lock(_updateMutex);
-    for (AITeam::TeamMap::value_type& entity : _team) {
-        entity.second->resetCrowd();
+    vectorImpl<AIEntity*> entities = AITeam::getEntityList();
+    for (AIEntity* entity : entities) {
+        entity->resetCrowd();
     }
 }
 
 bool AITeam::addTeamMember(AIEntity* entity) {
-    UpgradableReadLock ur_lock(_updateMutex);
     if (!entity) {
         return false;
     }
     /// If entity already belongs to this team, no need to do anything
+    WriteLock w_lock(_updateMutex);
     if (_team.find(entity->getGUID()) != std::end(_team)) {
         return true;
     }
-    UpgradeToWriteLock uw_lock(ur_lock);
     hashAlg::emplace(_team, entity->getGUID(), entity);
     Attorney::AIEntityAITeam::setTeamPtr(*entity, this);
+
     return true;
 }
 
 /// Removes an entity from this list
 bool AITeam::removeTeamMember(AIEntity* entity) {
-    UpgradableReadLock ur_lock(_updateMutex);
     if (!entity) {
         return false;
     }
+
+    WriteLock w_lock(_updateMutex);
     if (_team.find(entity->getGUID()) != std::end(_team)) {
-        UpgradeToWriteLock uw_lock(ur_lock);
         _team.erase(entity->getGUID());
     }
-
     return true;
 }
 

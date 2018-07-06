@@ -42,6 +42,9 @@ class SceneGraphNode;
 /// Unit interface
 class Unit : public FrameListener {
    public:
+    typedef hashMapImpl<U32, I32> AttributeMap;
+
+   public:
     /// Currently supported unit types
     enum class UnitType : U32 {
         /// "Living beings"
@@ -98,6 +101,9 @@ class Unit : public FrameListener {
     /// If the parent node is deleted, this gets called automatically
     void nodeDeleted();
 
+    virtual void setAttribute(U32 attributeID, I32 initialValue);
+    virtual I32 getAttribute(U32 attributeID) const;
+
    protected:
     /// Unit type
     UnitType _type;
@@ -114,6 +120,7 @@ class Unit : public FrameListener {
     /// SceneGraphNode the unit is managing (used for updating positions and
     /// checking collisions
     SceneGraphNode* _node;
+    AttributeMap _attributes;
     mutable SharedLock _unitUpdateMutex;
 };
 

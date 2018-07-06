@@ -84,6 +84,12 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                                AI::GOAPValue(true));
     idleAction.setEffect(AI::GOAPFact(AI::Fact::Idling), AI::GOAPFact(true));
 
+    AI::AttackEnemy attackAction("Attack");
+    attackAction.setPrecondition(AI::GOAPFact(AI::Fact::EnemyDead), 
+                                 AI::GOAPValue(false));
+    attackAction.setEffect(AI::GOAPFact(AI::Fact::EnemyDead), 
+                           AI::GOAPValue(true));
+
     AI::GOAPGoal captureFlag(
         "Capture enemy flag",
         to_uint(AI::WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG));
@@ -100,6 +106,9 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     AI::GOAPGoal idle("Idle", to_uint(AI::WarSceneOrder::WarOrder::ORDER_IDLE));
     idle.setVariable(AI::GOAPFact(AI::Fact::Idling), AI::GOAPValue(true));
 
+    AI::GOAPGoal killEnemy("Kill", to_uint(AI::WarSceneOrder::WarOrder::ORDER_KILL_ENEMY));
+    killEnemy.setVariable(AI::GOAPFact(AI::Fact::EnemyDead), AI::GOAPValue(true));
+
     std::array<AI::GOAPPackage,
                to_const_uint(AI::WarSceneAISceneImpl::AIType::COUNT)>
         goapPackages;
@@ -114,9 +123,13 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             AI::GOAPFact(AI::Fact::EnemyHasFlag), AI::GOAPValue(false));
         goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::Idling),
                                             AI::GOAPValue(true));
+        goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::EnemyDead),
+                                            AI::GOAPValue(false));
 
         goapPackage._actionSet.push_back(idleAction);
+        goapPackage._actionSet.push_back(attackAction);
         goapPackage._goalList.push_back(idle);
+        goapPackage._goalList.push_back(killEnemy);
     }
 
     AI::GOAPPackage& animalPackage =
@@ -138,6 +151,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
         for (I32 i = 0; i < 15; ++i) {
             F32 speed = 5.5f;  // 5.5 m/s
             F32 zFactor = 0.0f;
+            I32 damage = 5;
             AI::WarSceneAISceneImpl::AIType type;
             if (IS_IN_RANGE_INCLUSIVE(i, 0, 4)) {
                 currentMesh = lightNodeMesh;
@@ -153,6 +167,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                 speed = 5.75f;
                 zFactor = 1.0f;
                 type = AI::WarSceneAISceneImpl::AIType::ANIMAL;
+                damage = 10;
             } else {
                 currentMesh = heavyNodeMesh;
                 currentScale =
@@ -161,6 +176,7 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                 speed = 5.35f;
                 zFactor = 2.0f;
                 type = AI::WarSceneAISceneImpl::AIType::HEAVY;
+                damage = 15;
             }
 
             SceneGraphNode& currentNode =
@@ -202,7 +218,10 @@ bool WarScene::initializeAI(bool continueOnErrors) {
             aiSoldier->addAISceneImpl(brain);
             soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
             soldier->setMovementSpeed(speed * 2);
-
+            soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
+            soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);
+            soldier->setAttribute(to_uint(AI::UnitAttributes::ALIVE_FLAG), 1);
+            
             _army[k].push_back(aiSoldier);
             _armyNPCs[k].push_back(soldier);
             
@@ -318,6 +337,8 @@ void WarScene::startSimulation() {
                 AI::WarSceneOrder::WarOrder::ORDER_SCORE_ENEMY_FLAG));
             _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
                 AI::WarSceneOrder::WarOrder::ORDER_IDLE));
+            _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
+                AI::WarSceneOrder::WarOrder::ORDER_KILL_ENEMY));
         }
     } else {
         stringImpl info(

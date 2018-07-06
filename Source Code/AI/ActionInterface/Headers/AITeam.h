@@ -57,13 +57,13 @@ class Order {
 
 class AITeam : public GUIDWrapper {
    public:
-   public:
     typedef Navigation::DivideDtCrowd* CrowdPtr;
     typedef hashMapImpl<AIEntity::PresetAgentRadius, CrowdPtr> AITeamCrowd;
     typedef hashMapImpl<AIEntity*, F32> MemberVariable;
     typedef hashMapImpl<I64, AIEntity*> TeamMap;
     typedef std::shared_ptr<Order> OrderPtr;
     typedef vectorImpl<OrderPtr> OrderList;
+   public:
     AITeam(U32 id);
     ~AITeam();
 
@@ -82,9 +82,8 @@ class AITeam : public GUIDWrapper {
     bool removeEnemyTeam(U32 enemyTeamID);
 
     inline void setTeamID(U32 value) { _teamID = value; }
-    inline U32 getTeamID() const { return _teamID; }
-    inline I32 getEnemyTeamID(U32 index) const {
-        ReadLock r_lock(_enemyTeamLock);
+    inline U32  getTeamID() const { return _teamID; }
+    inline I32  getEnemyTeamID(U32 index) const {
         if (_enemyTeams.size() <= index) {
             return -1;
         }
@@ -98,6 +97,7 @@ class AITeam : public GUIDWrapper {
         WriteLock w_lock(_orderMutex);
         _orders.clear();
     }
+
     inline void addOrder(const OrderPtr& order) {
         WriteLock w_lock(_orderMutex);
         if (findOrder(order->getID()) == std::end(_orders)) {
@@ -127,6 +127,8 @@ class AITeam : public GUIDWrapper {
     void removeCrowd(AIEntity::PresetAgentRadius radius);
 
    protected:
+    vectorImpl<AIEntity*> getEntityList() const;
+
     inline OrderList::iterator findOrder(const Order& order) {
         return findOrder(order.getID());
     }
@@ -140,9 +142,7 @@ class AITeam : public GUIDWrapper {
             });
     }
 
-    inline vectorImpl<U32>::iterator AITeam::findEnemyTeamEntry(
-        U32 enemyTeamID) {
-        ReadLock r_lock(_enemyTeamLock);
+    inline vectorImpl<U32>::iterator AITeam::findEnemyTeamEntry(U32 enemyTeamID) {
         return vectorAlg::find_if(
             std::begin(_enemyTeams), std::end(_enemyTeams),
             [&enemyTeamID](U32 id) -> bool { return id == enemyTeamID; });
@@ -159,7 +159,6 @@ class AITeam : public GUIDWrapper {
     AITeamCrowd _aiTeamCrowd;
     mutable SharedLock _updateMutex;
     mutable SharedLock _crowdMutex;
-    mutable SharedLock _enemyTeamLock;
     vectorImpl<U32> _enemyTeams;
     OrderList _orders;
 };

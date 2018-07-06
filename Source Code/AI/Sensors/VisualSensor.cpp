@@ -60,14 +60,12 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
         NodeContainer::iterator nodeEntry = container->second.find(nodeGUID);
         if (nodeEntry != std::end(container->second)) {
             container->second.erase(nodeEntry);
-        } else {
-            Console::errorfn(
-                "VisualSensor: Specified node does not exist in specified "
-                "container!");
+            NodePositions& positions = _nodePositionsMap[containerID];
+            NodePositions::const_iterator it = positions.find(nodeGUID);
+            if (it != std::end(positions)) {
+                positions.erase(it);
+            }
         }
-    } else {
-        Console::errorfn(
-            "VisualSensor: Invalid container specified for unfollow!");
     }
 }
 
@@ -88,8 +86,8 @@ SceneGraphNode* VisualSensor::getClosestNode(U32 containerID) {
         NPC* const unit = _parentEntity->getUnitRef();
         if (unit) {
             const vec3<F32>& currentPosition = unit->getCurrentPosition();
-            U64 currentNearest = 0;
-            U32 currentDistanceSq = 0;
+            U64 currentNearest = positions.begin()->first;
+            U32 currentDistanceSq = std::numeric_limits<U32>::max();
             for (const NodePositions::value_type& entry : positions) {
                 U32 temp = currentPosition.distanceSquared(entry.second);
                 if (temp < currentDistanceSq) {

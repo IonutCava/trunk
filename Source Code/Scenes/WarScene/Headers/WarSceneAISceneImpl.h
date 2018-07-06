@@ -38,13 +38,23 @@
 #include <fstream>
 
 namespace Divide {
+class Unit;
 
 namespace AI {
+
+enum class UnitAttributes : U32 {
+    HEALTH_POINTS = 0,
+    DAMAGE = 1,
+    ALIVE_FLAG = 2,
+    COUNT
+};
 
 enum class AIMsg : U32 { 
     HAVE_FLAG = 0,
     ENEMY_HAS_FLAG = 1,
     HAVE_SCORED = 2,
+    ATTACK = 3,
+    HAVE_DIED = 4,
     COUNT
 };
 
@@ -106,6 +116,7 @@ public:
     SGNNodeFact _flags[2];
     SGNNodeFact _flagCarriers[2];
     SmallCounterFact _score[2];
+    SmallCounterFact _teamAliveCount[2];
     PositionFact _teamFlagPosition[2];
 };
 
@@ -114,8 +125,10 @@ class LocalWorkingMemory {
     LocalWorkingMemory() {
         _hasEnemyFlag.value(false);
         _enemyHasFlag.value(false);
+        _currentTarget.value(nullptr);
     }
 
+    SGNNodeFact _currentTarget;
     ToggleStateFact _hasEnemyFlag;
     ToggleStateFact _enemyHasFlag;
 };
@@ -126,6 +139,7 @@ class WarSceneOrder : public Order {
         ORDER_IDLE = 0,
         ORDER_CAPTURE_ENEMY_FLAG = 1,
         ORDER_SCORE_ENEMY_FLAG = 2,
+        ORDER_KILL_ENEMY = 3,
         COUNT
     };
 
@@ -150,7 +164,8 @@ namespace Attorney {
 
 class WarSceneAISceneImpl : public AISceneImpl {
     friend class Attorney::WarAISceneWarAction;
-
+   public:
+       typedef hashMapImpl<I64, AIEntity*> NodeToUnitMap;
    public:
        enum class AIType {
            ANIMAL = 0,
@@ -180,6 +195,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     bool checkCurrentActionComplete(const GOAPAction& planStep);
 
    private:
+    bool DIE();
     void requestOrders();
     void updatePositions();
     bool performAction(const GOAPAction& planStep);
@@ -188,17 +204,21 @@ class WarSceneAISceneImpl : public AISceneImpl {
     void printWorkingMemory() const;
     void initInternal();
 
+    AIEntity* getUnitForNode(U32 teamID, SceneGraphNode* node) const;
+
    private:
     AIType _type;
     U16 _tickCount;
     U64 _deltaTime;
     U8 _orderRequestTryCount;
     U8 _visualSensorUpdateCounter;
+    U64 _attackTimer;
     VisualSensor* _visualSensor;
     AudioSensor* _audioSensor;
     LocalWorkingMemory _localWorkingMemory;
     /// Keep this in memory at this level
     vectorImpl<WarSceneAction> _actionList;
+    NodeToUnitMap _nodeToUnitMap[2];
     static GlobalWorkingMemory _globalWorkingMemory;
     mutable std::ofstream _WarAIOutputStream;
     static vec3<F32> _initialFlagPositions[2];

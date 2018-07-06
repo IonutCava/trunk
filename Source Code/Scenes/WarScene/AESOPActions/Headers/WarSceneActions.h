@@ -43,6 +43,7 @@ enum class Fact : U32 {
     HasEnemyFlag = 2,
     EnemyHasFlag = 3,
     Idling = 4,
+    EnemyDead = 5,
     COUNT
 };
 
@@ -58,6 +59,8 @@ inline const char* WarSceneFactName(GOAPFact fact) {
             return "Enemy has flag";
         case Fact::Idling:
             return "Idling";
+        case Fact::EnemyDead:
+            return "Enemy Dead";
     };
     return GOAPFactName(fact);
 };
@@ -68,6 +71,7 @@ enum class ActionType : U32 {
     ACTION_SCORE_FLAG = 2,
     ACTION_RETURN_FLAG_TO_BASE = 3,
     ACTION_IDLE = 4,
+    ACTION_ATTACK_ENEMY = 5,
     COUNT
 };
 
@@ -110,6 +114,11 @@ class ReturnFlagHome : public WarSceneAction {
 class ScoreFlag : public WarSceneAction {
    public:
     ScoreFlag(const stringImpl& name, F32 cost = 1.0f);
+};
+
+class AttackEnemy : public WarSceneAction {
+   public:
+    AttackEnemy(const stringImpl& name, F32 cost = 1.0f);
 };
 
 };  // namespace AI

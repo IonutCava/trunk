@@ -165,7 +165,7 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
         if (!plan.empty()) {
             _currentStep++;
             const GOAPAction* crtAction = getActiveAction();
-            if (crtAction && !performAction(*crtAction)) {
+            if (!crtAction || (crtAction && !performAction(*crtAction))) {
                 invalidateCurrentPlan();
                 return false;
             }

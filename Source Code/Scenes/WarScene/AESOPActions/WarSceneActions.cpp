@@ -50,5 +50,10 @@ ScoreFlag::ScoreFlag(const stringImpl& name, F32 cost)
 {
 }
 
+AttackEnemy::AttackEnemy(const stringImpl& name, F32 cost)
+    : WarSceneAction(ActionType::ACTION_ATTACK_ENEMY, name, cost)
+{
+}
+
 };  // namespace AI
 };  // namespace Divide
