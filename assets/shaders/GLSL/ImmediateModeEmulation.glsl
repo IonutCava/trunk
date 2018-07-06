@@ -71,6 +71,8 @@ void main(void) {
 
 --Fragment.EnvironmentProbe
 
+#include "utility.frag"
+
 uniform uint dvd_LayerIndex;
 layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
 

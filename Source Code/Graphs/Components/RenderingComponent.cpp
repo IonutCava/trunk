@@ -91,7 +91,7 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
         _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
         // Prepare it for line rendering
         size_t noDepthStateBlock = GFX_DEVICE.getDefaultStateBlock(true);
-        RenderStateBlock stateBlock(GFX_DEVICE.getRenderStateBlock(noDepthStateBlock));
+        RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
         _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
         _axisGizmo->stateHash(stateBlock.getHash());
         _axisGizmo->paused(true);

@@ -40,6 +40,9 @@ void main(){
 
 -- Fragment
 
+#include "utility.frag"
+
+
 // Interpolated values from the vertex shaders
 in vec4 particleColour;
 

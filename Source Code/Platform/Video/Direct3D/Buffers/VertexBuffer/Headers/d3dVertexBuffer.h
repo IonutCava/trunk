@@ -47,8 +47,7 @@ class d3dVertexBuffer : public VertexBuffer {
 
     void destroy();
 
-    void draw(const GenericDrawCommand& command,
-              bool useCmdBuffer = false);
+    void draw(const GenericDrawCommand& command);
 
     bool queueRefresh();
 

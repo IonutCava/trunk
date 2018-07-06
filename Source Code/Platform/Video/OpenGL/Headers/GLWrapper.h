@@ -90,8 +90,14 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
-    void drawText(const TextLabel& textLabel, const vec2<F32>& position) override;
+    void drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) override;
     void draw(const GenericDrawCommand& cmd) override;
+
+    /// Sets the current state block to the one passed as a param
+    size_t setStateBlock(size_t stateBlockHash) override;
+
+    void flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) override;
+
     /// This functions should be run in a separate, consumer thread.
     /// The main app thread, the producer, adds tasks via a lock-free queue that is
     /// checked every 20 ms
@@ -113,8 +119,8 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void clearStates();
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
 
-    bool makeTexturesResident(const TextureDataContainer& textureData) override;
-    bool makeTextureResident(const TextureData& textureData) override;
+    bool makeTexturesResident(const TextureDataContainer& textureData);
+    bool makeTextureResident(const TextureData& textureData);
 
   public:
     /// Enable or disable primitive restart and ensure that the correct index size is used
@@ -141,11 +147,11 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static bool setActiveTransformFeedback(GLuint ID, GLuint& previousID);
     /// Change the currently active shader program.
     static bool setActiveProgram(GLuint programHandle);
-    /// A state block should contain all rendering state changes needed for the next
-    /// draw call.
+    /// A state block should contain all rendering state changes needed for the next draw call.
     /// Some may be redundant, so we check each one individually
     void activateStateBlock(const RenderStateBlock& newBlock,
-                            const RenderStateBlock& oldBlock) const override;
+                            const RenderStateBlock& oldBlock) const;
+    void activateStateBlock(const RenderStateBlock& newBlock) const;
     /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelPackUnpackAlignment(GLint packAlignment = 1,
                                             GLint unpackAlignment = 1) {
@@ -192,6 +198,8 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     bool initShaders();
     /// Revert everything that was set up in "initShaders()"
     bool deInitShaders();
+
+    bool setState(const GenericDrawCommand& cmd);
 
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();
@@ -275,6 +283,9 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
 
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
 
+    /* GL State management */
+    size_t _currentStateBlockHash;
+    size_t _previousStateBlockHash;
 
     Time::ProfileTimer& _swapBufferTimer;
 END_SINGLETON

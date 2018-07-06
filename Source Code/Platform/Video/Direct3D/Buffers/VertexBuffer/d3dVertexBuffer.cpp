@@ -21,7 +21,7 @@ bool d3dVertexBuffer::create(bool staticDraw) {
 void d3dVertexBuffer::destroy() {
 }
 
-void d3dVertexBuffer::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
+void d3dVertexBuffer::draw(const GenericDrawCommand& command) {
 }
 
 bool d3dVertexBuffer::queueRefresh() {

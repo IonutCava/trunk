@@ -2,6 +2,7 @@
 #include "Headers/glIMPrimitive.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
 #include "Platform/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
@@ -52,6 +53,8 @@ GL_API::GL_API()
       _prevWidthString(0),
       _lineWidthLimit(1),
       _dummyVAO(0),
+      _currentStateBlockHash(0),
+      _previousStateBlockHash(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
@@ -100,6 +103,7 @@ void GL_API::beginFrame() {
     // to stay in sync with third party software
     GFX_DEVICE.registerDrawCall();
     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
+    _previousStateBlockHash = 0;
 }
 
 /// Finish rendering the current frame
@@ -651,7 +655,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
 /// (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
-void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
+void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) {
     /*glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1,
                     "OpenGL render text start!");*/
     // Retrieve the font from the font cache
@@ -660,6 +664,9 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
     if (font == FONS_INVALID) {
         return;
     }
+
+    setStateBlock(stateHash);
+
     // See FontStash documentation for the following block
     {
         fonsClearState(_fonsContext);
@@ -694,23 +701,100 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
     // glPopDebugGroup();
 }
 
-void GL_API::draw(const GenericDrawCommand& cmd) {
-    if (cmd.sourceBuffer() == nullptr) {
-        GL_API::setActiveVAO(_dummyVAO);
-        
-        U32 indexCount = 0;
-        switch(cmd.primitiveType()) {
-            case PrimitiveType::TRIANGLES : indexCount = cmd.drawCount() * 3; break;
-            case PrimitiveType::API_POINTS: indexCount = cmd.drawCount(); break;
-            default: indexCount = cmd.cmd().indexCount; break;
-        }
+bool GL_API::setState(const GenericDrawCommand& cmd) {
+    // Set the proper render states
+    setStateBlock(cmd.stateHash());
+    // We need a valid shader as no fixed function pipeline is available
+    DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
+                  "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    // Try to bind the shader program. If it failed to load, or isn't loaded
+    // yet, cancel the draw request for this frame
+    return cmd.shaderProgram()->bind();
+}
 
-        glDrawArrays(GLUtil::glPrimitiveTypeTable[to_uint(cmd.primitiveType())], cmd.cmd().firstIndex, indexCount);
-    } else {
-        cmd.sourceBuffer()->draw(cmd, false);
+void GL_API::draw(const GenericDrawCommand& cmd) {
+    if (setState(cmd)) {
+        if (cmd.sourceBuffer() == nullptr) {
+            GL_API::setActiveVAO(_dummyVAO);
+        
+            U32 indexCount = 0;
+            switch(cmd.primitiveType()) {
+                case PrimitiveType::TRIANGLES : indexCount = cmd.drawCount() * 3; break;
+                case PrimitiveType::API_POINTS: indexCount = cmd.drawCount(); break;
+                default: indexCount = cmd.cmd().indexCount; break;
+            }
+
+            glDrawArrays(GLUtil::glPrimitiveTypeTable[to_uint(cmd.primitiveType())], cmd.cmd().firstIndex, indexCount);
+        } else {
+            cmd.sourceBuffer()->draw(cmd);
+        }
     }
 }
 
+void GL_API::flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) {
+    U32 drawCallCount = 0;
+    for (const CommandBuffer& crtBuffer : buffers) {
+        makeTexturesResident(crtBuffer._textures);
+        for (const ShaderBufferBindCmd& shaderBufCmd : crtBuffer._shaderBuffers) {
+            shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
+                                            shaderBufCmd._dataRange.x,
+                                            shaderBufCmd._dataRange.y);
+        }
+
+        for (const GenericDrawCommand& cmd : crtBuffer._commands) {
+            // Set the proper render states
+            if (setState(cmd)) {
+                /// Submit a single draw command
+                DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
+                // Same rules about pre-processing the draw command apply
+                cmd.sourceBuffer()->draw(cmd);
+                if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
+                    drawCallCount++;
+                }
+                if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+                    drawCallCount++;
+                }
+            }
+        }
+    }
+
+    GFX_DEVICE.registerDrawCalls(drawCallCount);
+}
+
+/// Activate the render state block described by the specified hash value (0 == default state block)
+size_t GL_API::setStateBlock(size_t stateBlockHash) {
+    // Passing 0 is a perfectly acceptable way of enabling the default render state block
+    if (stateBlockHash == 0) {
+        stateBlockHash = GFX_DEVICE.getDefaultStateBlock(false);
+    }
+
+    // If the new state hash is different from the previous one
+    if (stateBlockHash != _currentStateBlockHash) {
+        // Remember the previous state hash
+        _previousStateBlockHash = _currentStateBlockHash;
+        // Update the current state hash
+        _currentStateBlockHash = stateBlockHash;
+
+        RenderStateBlock previousState, currentState;
+        bool currentStateValid = RenderStateBlock::get(_currentStateBlockHash, currentState);
+        if (_previousStateBlockHash != 0) {
+            bool previousStateValid = RenderStateBlock::get(_previousStateBlockHash, previousState);
+
+            DIVIDE_ASSERT(currentState != previousState &&
+                          currentStateValid &&  previousStateValid,
+                          "GL_API error: Invalid state blocks detected on activation!");
+
+            // Activate the new render state block in an rendering API dependent way
+            activateStateBlock(currentState, previousState);
+        } else {
+            DIVIDE_ASSERT(currentStateValid, "GL_API error: Invalid state blocks detected on activation!");
+            activateStateBlock(currentState);
+        }
+    }
+
+    // Return the previous state hash
+    return _previousStateBlockHash;
+}
 
 void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
     _indirectDrawBuffer = static_cast<const glUniformBuffer&>(commandBuffer).bufferID();

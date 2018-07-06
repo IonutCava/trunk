@@ -457,7 +457,7 @@ void GL_API::changeViewport(const vec4<I32>& newViewport) const {
 /// A state block should contain all rendering state changes needed for the next draw call.
 /// Some may be redundant, so we check each one individually
 void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
-                                const RenderStateBlock&  oldBlock) const {
+                                const RenderStateBlock& oldBlock) const {
     auto toggle = [](bool flag, GLenum state) {
         flag ? glEnable(state) : glDisable(state);
     };
@@ -545,6 +545,49 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
                     cWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
                     cWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
     }
+}
+
+void GL_API::activateStateBlock(const RenderStateBlock& newBlock) const {
+    auto toggle = [](bool flag, GLenum state) {
+        flag ? glEnable(state) : glDisable(state);
+    };
+
+    toggle(newBlock.blendEnable(), GL_BLEND);
+    toggle(newBlock.cullEnabled(), GL_CULL_FACE);
+    toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
+    toggle(newBlock.zEnable(), GL_DEPTH_TEST);
+    glBlendFuncSeparate(GLUtil::glBlendTable[to_uint(newBlock.blendSrc())],
+                        GLUtil::glBlendTable[to_uint(newBlock.blendDest())],
+                        GL_ONE,
+                        GL_ZERO);
+    glBlendEquation(GLUtil::glBlendOpTable[to_uint(newBlock.blendOp())]);
+    if (newBlock.cullMode() != CullMode::NONE) {
+        glCullFace(GLUtil::glCullModeTable[to_uint(newBlock.cullMode())]);
+    }
+
+    glPolygonMode(GL_FRONT_AND_BACK, GLUtil::glFillModeTable[to_uint(newBlock.fillMode())]);
+    glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.zFunc())]);
+    glStencilMask(newBlock.stencilWriteMask());
+    glStencilFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.stencilFunc())],
+                  newBlock.stencilRef(),
+                  newBlock.stencilMask());
+    glStencilOp(GLUtil::glStencilOpTable[to_uint(newBlock.stencilFailOp())],
+                GLUtil::glStencilOpTable[to_uint(newBlock.stencilZFailOp())],
+                GLUtil::glStencilOpTable[to_uint(newBlock.stencilPassOp())]);
+
+    if (IS_ZERO(newBlock.zBias())) {
+        glDisable(GL_POLYGON_OFFSET_FILL);
+    } else {
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(newBlock.zBias(), newBlock.zUnits());
+    }
+
+    P32 cWrite = newBlock.colourWrite();
+    glColorMask(cWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
+                cWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
+                cWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B
+                cWrite.b[3] == 1 ? GL_TRUE : GL_FALSE);  // A
+    
 }
 
 };

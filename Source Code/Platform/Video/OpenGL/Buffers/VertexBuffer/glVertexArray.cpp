@@ -321,7 +321,9 @@ bool glVertexArray::createInternal() {
 }
 
 /// Render the current buffer data using the specified command
-void glVertexArray::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
+void glVertexArray::draw(const GenericDrawCommand& command) {
+    bool useCmdBuffer = command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
+
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
     if (_IBid == 0) {

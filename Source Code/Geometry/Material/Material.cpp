@@ -562,7 +562,7 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
         for (U32 index = 0; index < to_const_uint(RenderStage::COUNT); ++index) {
             for (U8 variant = 0; variant < _defaultRenderStates[index].size(); ++variant) {
                 size_t hash = _defaultRenderStates[index][variant];
-                RenderStateBlock descriptor(GFX_DEVICE.getRenderStateBlock(hash));
+                RenderStateBlock descriptor(RenderStateBlock::get(hash));
                 descriptor.setCullMode(CullMode::NONE);
                 if (_translucencySource != TranslucencySource::COUNT) {
                     descriptor.setBlend(true);

@@ -280,15 +280,6 @@ inline mat4<F32> GFXDevice::getMatrix(const MATRIX& mode) const {
     return getMatrixInternal(mode);
 }
 
-/// Submit multiple draw commands that use the same source buffer (e.g. terrain or batched meshes)
-inline void
-GFXDevice::submitCommands(const vectorImpl<GenericDrawCommand>& cmds, bool useIndirectRender) {
-    for (const GenericDrawCommand& cmd : cmds) {
-        // Data validation is handled in the single command version
-        submitCommand(cmd, useIndirectRender);
-    }
-}
-
 };  // namespace Divide
 
 #endif

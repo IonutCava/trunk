@@ -38,6 +38,20 @@
 namespace Divide {
 
 class RenderStateBlock : public GUIDWrapper {
+   public:
+      typedef hashMapImpl<size_t, RenderStateBlock> RenderStateMap;
+      static RenderStateMap _stateBlockMap;
+   private:
+      static SharedLock _stateBlockMapMutex;
+   public:
+       static void init();
+       static void clear();
+       /// Retrieve a state block by hash value.
+       /// If the hash value doesn't exist in the state block map, return the default state block
+       static const RenderStateBlock& get(size_t renderStateBlockHash);
+       /// Returns false if the specified hash is not found in the map
+       static bool get(size_t renderStateBlockHash, RenderStateBlock& blockOut);
+
    protected:
     /// Colour Writes
     P32 _colourWrite;
@@ -82,7 +96,8 @@ class RenderStateBlock : public GUIDWrapper {
     RenderStateBlock(const RenderStateBlock& b);
 
     void setDefaultValues();
-    
+    void copy(const RenderStateBlock& other);
+
     void setFillMode(FillMode mode);
     void setZBias(F32 zBias, F32 zUnits);
     void setZFunc(ComparisonFunction zFunc = ComparisonFunction::LEQUAL);
@@ -134,7 +149,6 @@ class RenderStateBlock : public GUIDWrapper {
     inline bool zEnable() const {
         return _zEnable;
     }
-
     inline ComparisonFunction zFunc() const {
         return _zFunc;
     }

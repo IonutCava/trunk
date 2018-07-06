@@ -75,8 +75,7 @@ class d3dGenericVertexData : public GenericVertexData {
 
    protected:
     friend class GFXDevice;
-    void draw(const GenericDrawCommand& command,
-              bool useCmdBuffer = false) override {}
+    void draw(const GenericDrawCommand& command) override {}
 };
 
 };  // namespace Divide

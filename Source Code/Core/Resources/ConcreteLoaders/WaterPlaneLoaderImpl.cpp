@@ -48,7 +48,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS, true);
 
     size_t hash = waterMat->getRenderStateBlock(RenderStage::DISPLAY);
-    RenderStateBlock waterMatDesc(GFX_DEVICE.getRenderStateBlock(hash));
+    RenderStateBlock waterMatDesc(RenderStateBlock::get(hash));
     waterMatDesc.setCullMode(CullMode::NONE);
     waterMat->setRenderStateBlock(waterMatDesc.getHash(), RenderStage::DISPLAY);
 

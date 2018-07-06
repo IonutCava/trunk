@@ -72,43 +72,10 @@ void GFXDevice::uploadGPUBlock() {
         _gpuBlock._updated = false;
     }
 }
-
-/// A draw command is composed of a target buffer and a command. The command
-/// part is processed here
-bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
-    // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
-                  "GFXDevice error: Draw shader state is not valid for the "
-                  "current draw operation!");
-
-    // Set the proper render states
-    setStateBlock(cmd.stateHash());
-
-    // Try to bind the shader program. If it failed to load, or isn't loaded
-    // yet, cancel the draw request for this frame
-    return cmd.shaderProgram()->bind();
-}
-
-void GFXDevice::submitCommand(const GenericDrawCommand& cmd, bool useIndirectRender) {
-    // We may choose the instance count programmatically, and it may turn out to be 0, so skip draw
-    if (setBufferData(cmd)) {
-        /// Submit a single draw command
-        DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
-        // Same rules about pre-processing the draw command apply
-        cmd.sourceBuffer()->draw(cmd, useIndirectRender);
-        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-            registerDrawCall();
-        }
-        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
-            registerDrawCall();
-        }
-    }
-}
-
 void GFXDevice::flushRenderQueues() {
-    uploadGPUBlock();
-
     ReadLock lock(_renderQueueLock);
+    vectorImpl<CommandBuffer> commandBuffers;
+    commandBuffers.reserve(_renderQueues.size());
     for (RenderQueue& renderQueue : _renderQueues) {
         if (!renderQueue.empty()) {
             U32 queueSize = renderQueue.size();
@@ -117,6 +84,7 @@ void GFXDevice::flushRenderQueues() {
                 vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
                 vectorAlg::vecSize commandCount = drawCommands.size();
                 if (commandCount > 0) {
+                    CommandBuffer crtBuffer;
                     vectorAlg::vecSize previousCommandIndex = 0;
                     vectorAlg::vecSize currentCommandIndex = 1;
                     for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
@@ -127,12 +95,19 @@ void GFXDevice::flushRenderQueues() {
                             previousCommandIndex = currentCommandIndex;
                         }
                     }
-                    for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                        it._buffer->bindRange(it._slot, it._range.x, it._range.y);
+                    for (GenericDrawCommand& cmd : drawCommands) {
+                        cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
                     }
 
-                    _api->makeTexturesResident(package._textureData);
-                    submitCommands(package._drawCommands, true);
+                    for (ShaderBufferList::value_type& it : package._shaderBuffers) {
+                        crtBuffer._shaderBuffers.emplace_back(it._buffer, it._slot, it._range);
+                    }
+
+                    crtBuffer._textures = package._textureData;
+                    crtBuffer._commands.insert(std::cbegin(crtBuffer._commands),
+                                               std::cbegin(drawCommands),
+                                               std::cend(drawCommands));
+                    commandBuffers.push_back(crtBuffer);
                 }
             }
 
@@ -140,6 +115,10 @@ void GFXDevice::flushRenderQueues() {
         }
         renderQueue.unlock();
     }
+    lock.unlock();
+
+    uploadGPUBlock();
+    _api->flushCommandBuffers(commandBuffers);
 }
 
 void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
@@ -382,15 +361,13 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
 }
 
 void GFXDevice::draw(const GenericDrawCommand& cmd) {
-    if (setBufferData(cmd)) {
-        uploadGPUBlock();
-        _api->draw(cmd);
-        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-            registerDrawCall();
-        }
-        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
-            registerDrawCall();
-        }
+    uploadGPUBlock();
+    _api->draw(cmd);
+    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
+        registerDrawCall();
+    }
+    if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+        registerDrawCall();
     }
 }
 

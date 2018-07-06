@@ -26,26 +26,20 @@ void DX_API::changeViewport(const vec4<I32>& newViewport) const {}
 
 void DX_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {}
 
-bool DX_API::makeTexturesResident(const TextureDataContainer& textureData) {
-    return true;
-}
-
-bool DX_API::makeTextureResident(const TextureData& textureData) {
-    return true;
-}
-
 void DX_API::beginFrame() {}
 
 void DX_API::endFrame(bool swapBuffers) {}
 
 void DX_API::updateClipPlanes() {}
 
-void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {}
+void DX_API::drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) {}
 
 void DX_API::draw(const GenericDrawCommand& cmd) {}
 
+void DX_API::flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) {}
+
 void DX_API::syncToThread(std::thread::id threadID) {}
 
-void DX_API::activateStateBlock(const RenderStateBlock& newBlock,
-                                const RenderStateBlock& oldBlock) const {}
+size_t DX_API::setStateBlock(size_t stateBlockHash) { return 0; }
+
 };

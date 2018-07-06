@@ -81,7 +81,6 @@ namespace Attorney {
     class GFXDeviceGUI;
     class GFXDeviceKernel;
     class GFXDeviceRenderer;
-    class GFXDeviceRenderStateBlock;
 };
 
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
@@ -90,9 +89,7 @@ DEFINE_SINGLETON(GFXDevice)
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
     friend class Attorney::GFXDeviceRenderer;
-    friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
-    typedef hashMapImpl<size_t, RenderStateBlock> RenderStateMap;
     typedef std::stack<vec4<I32>> ViewportStack;
 
   public:
@@ -335,9 +332,6 @@ DEFINE_SINGLETON(GFXDevice)
     inline void setClipPlanes(const PlaneList& clipPlanes);
     /// clear all clipping planes
     inline void resetClipPlanes();
-    /// Retrieve a state block by hash value.
-    /// If the hash value doesn't exist in the state block map, return the default state block
-    const RenderStateBlock& getRenderStateBlock(size_t renderStateBlockHash) const;
 
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
@@ -457,11 +451,6 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline RenderStage setRenderStage(RenderStage stage);
 
-    void submitCommand(const GenericDrawCommand& cmd,
-                       bool useIndirectRender = false);
-
-    inline void submitCommands(const vectorImpl<GenericDrawCommand>& cmds,
-                               bool useIndirectRender = false); 
   public:
       IMPrimitive*       newIMP() const;
       VertexBuffer*      newVB() const;
@@ -498,11 +487,10 @@ DEFINE_SINGLETON(GFXDevice)
     void setBaseViewport(const vec4<I32>& viewport);
 
     inline void drawText(const TextLabel& text,
-                         size_t stateHash,
-                         const vec2<F32>& position) {
+                         const vec2<F32>& position,
+                         size_t stateHash) {
         uploadGPUBlock();
-        setStateBlock(stateHash);
-        _api->drawText(text, position);
+        _api->drawText(text, position, stateHash);
     }
 
     void drawDebugAxis(const SceneRenderState& sceneRenderState);
@@ -549,17 +537,9 @@ DEFINE_SINGLETON(GFXDevice)
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
     void updateViewportInternal(I32 x, I32 y, I32 width, I32 height);
-    /// returns false if there was an invalid state detected that could prevent
-    /// rendering
-    bool setBufferData(const GenericDrawCommand& cmd);
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
 
-    /// If the stateBlock doesn't exist in the state block map, add it for future reference
-    bool registerRenderStateBlock(const RenderStateBlock& stateBlock);
-
-    /// Sets the current state block to the one passed as a param
-    size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
     NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex);
@@ -593,10 +573,7 @@ DEFINE_SINGLETON(GFXDevice)
     /* Rendering buffers.*/
     GFXRTPool _rtPool;
     /*State management */
-    RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
-    size_t _currentStateBlockHash;
-    size_t _previousStateBlockHash;
     size_t _defaultStateBlockHash;
     /// The default render state buth with depth testing disabled
     size_t _defaultStateNoDepthHash;
@@ -664,20 +641,11 @@ namespace Attorney {
         static void drawText(const TextLabel& text,
                              size_t stateHash,
                              const vec2<F32>& position) {
-            return GFXDevice::instance().drawText(text, stateHash, position);
+            return GFXDevice::instance().drawText(text, position, stateHash);
         }
 
         friend class Divide::GUI;
         friend class Divide::GUIText;
-    };
-
-    class GFXDeviceRenderStateBlock {
-    private:
-        static bool registerStateBlock(const RenderStateBlock& block) {
-            return GFXDevice::instance().registerRenderStateBlock(block);
-        }
-
-        friend class Divide::RenderStateBlock;
     };
 
     class GFXDeviceKernel {

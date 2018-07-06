@@ -119,7 +119,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
             prim->drawShader(_imShader.get());
         }
         // Set the primitive's render state block
-        setStateBlock(prim->stateHash());
+        _api->setStateBlock(prim->stateHash());
         // Call any "onDraw" function the primitive may have attached
         prim->setupStates();
         // Check if any texture is present

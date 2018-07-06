@@ -84,6 +84,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _dualParaboloidCamera = cameraMgr.createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
 
     // Create general purpose render state blocks
+    RenderStateBlock::init();
     RenderStateBlock defaultState;
     _defaultStateBlockHash = defaultState.getHash();
 
@@ -110,8 +111,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     assert(_defaultStateNoDepthHash != _defaultStateBlockHash &&
            "GFXDevice error: Invalid default state hash detected!");
     // Activate the default render states
-    _previousStateBlockHash = _stateBlockMap[0].getHash();
-    setStateBlock(_defaultStateBlockHash);
+    _api->setStateBlock(_defaultStateBlockHash);
     // Our default render targets hold the screen buffer, depth buffer, and a
     // special, on demand,
     // down-sampled version of the depth buffer
@@ -226,7 +226,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     _axisGizmo = getOrCreatePrimitive(false);
     _axisGizmo->name("GFXDeviceAxisGizmo");
-    RenderStateBlock primitiveDescriptor(getRenderStateBlock(getDefaultStateBlock(true)));
+    RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
     _axisGizmo->stateHash(primitiveDescriptor.getHash());
 
     ResourceDescriptor previewNormalsShader("fbPreview");
@@ -256,8 +256,7 @@ void GFXDevice::closeRenderingAPI() {
     PostFX::destroyInstance();
     // Delete the renderer implementation
     Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
-    // Delete our default render state blocks
-    _stateBlockMap.clear();
+    RenderStateBlock::clear();
     // Destroy all of the immediate mode emulation primitives created during runtime
     {
         WriteLock w_lock(_imInterfaceLock);
@@ -324,7 +323,7 @@ void GFXDevice::idle() {
 
 void GFXDevice::beginFrame() {
     _api->beginFrame();
-    setStateBlock(_defaultStateBlockHash);
+    _api->setStateBlock(_defaultStateBlockHash);
     _previousDepthBuffer._rt->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV),
                                    RTAttachment::Type::Depth,
                                    0,
@@ -389,7 +388,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
     _previousDepthBuffer._rt->blitFrom(&renderTarget(RenderTargetID::SCREEN), false, true);
 
     // Activate the default render states
-    setStateBlock(_defaultStateBlockHash);
+    _api->setStateBlock(_defaultStateBlockHash);
     // Unbind shaders
     ShaderProgram::unbind();
     _api->endFrame(swapBuffers);

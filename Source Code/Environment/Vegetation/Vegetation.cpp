@@ -378,11 +378,11 @@ void Vegetation::gpuCull() {
         _cullDrawCommand.sourceBuffer(buffer);
         buffer->incQueryQueue();
 
-        GFX_DEVICE.submitCommand(_cullDrawCommand);
+        GFX_DEVICE.draw(_cullDrawCommand);
 
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //_cullDrawCommand.sourceBuffer(_treeGPUBuffer);
-        // GFX_DEVICE.submitCommand(_cullDrawCommand);
+        // GFX_DEVICE.draw(_cullDrawCommand);
     }
 }
 

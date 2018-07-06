@@ -226,6 +226,27 @@ class RingBuffer {
 };
 
 class ShaderBuffer;
+struct ShaderBufferBindCmd {
+    explicit ShaderBufferBindCmd(ShaderBuffer* buffer,
+                                 ShaderBufferLocation binding,
+                                 vec2<U32> dataRange)
+        : _buffer(buffer),
+          _binding(binding),
+          _dataRange(dataRange)
+    {
+    }
+
+    ShaderBuffer* _buffer;
+    ShaderBufferLocation _binding;
+    vec2<U32> _dataRange;
+};
+
+struct CommandBuffer {
+    TextureDataContainer _textures;
+    vectorImpl<GenericDrawCommand>  _commands;
+    vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
+};
+
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
    protected:
@@ -240,22 +261,21 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void closeRenderingAPI() = 0;
 
     virtual void drawText(const TextLabel& textLabel,
-                          const vec2<F32>& position) = 0;
+                          const vec2<F32>& position,
+                          size_t stateHash) = 0;
 
     virtual void updateClipPlanes() = 0;
     virtual U64  getFrameDurationGPU() = 0;
-    virtual void activateStateBlock(const RenderStateBlock& newBlock,
-                                    const RenderStateBlock& oldBlock) const = 0;
 
+    virtual size_t setStateBlock(size_t stateBlockHash) = 0;
     virtual void draw(const GenericDrawCommand& cmd) = 0;
+
+    virtual void flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) = 0;
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void syncToThread(std::thread::id threadID) = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
-
-    virtual bool makeTexturesResident(const TextureDataContainer& textureData) = 0;
-    virtual bool makeTextureResident(const TextureData& textureData) = 0;
 };
 
 };  // namespace Divide

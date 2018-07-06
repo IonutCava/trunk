@@ -4,6 +4,9 @@
 
 namespace Divide {
 
+RenderStateBlock::RenderStateMap RenderStateBlock::_stateBlockMap;
+SharedLock RenderStateBlock::_stateBlockMapMutex;
+
 RenderStateBlock::RenderStateBlock()
     : GUIDWrapper(), 
      _cachedHash(0),
@@ -37,6 +40,31 @@ RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
      _fillMode(other._fillMode),
      _cachedHash(other._cachedHash)
 {
+}
+
+void RenderStateBlock::copy(const RenderStateBlock& other) {
+    _lockHash = false;
+    _colourWrite = other._colourWrite;
+    _blendEnable = other._blendEnable;
+    _blendSrc = other._blendSrc;
+    _blendDest = other._blendDest;
+    _blendOp = other._blendOp;
+    _cullMode = other._cullMode;
+    _cullEnabled = other._cullEnabled;
+    _zEnable = other._zEnable;
+    _zFunc = other._zFunc;
+    _zBias = other._zBias;
+    _zUnits = other._zUnits;
+    _stencilEnable = other._stencilEnable;
+    _stencilRef = other._stencilRef;
+    _stencilMask = other._stencilMask;
+    _stencilWriteMask = other._stencilWriteMask;
+    _stencilFailOp = other._stencilFailOp;
+    _stencilZFailOp = other._stencilZFailOp;
+    _stencilPassOp = other._stencilPassOp;
+    _stencilFunc = other._stencilFunc;
+    _fillMode = other._fillMode;
+    _cachedHash = other._cachedHash;
 }
 
 void RenderStateBlock::flipCullMode() {
@@ -184,7 +212,41 @@ void RenderStateBlock::clean() {
     Util::Hash_combine(_cachedHash, to_uint(_fillMode));
 
     if (previousCache != _cachedHash) {
-        Attorney::GFXDeviceRenderStateBlock::registerStateBlock(*this);
+        WriteLock w_lock(_stateBlockMapMutex);
+        hashAlg::emplace(_stateBlockMap, _cachedHash, *this);
     }
 }
+
+void RenderStateBlock::init() {
+}
+
+void RenderStateBlock::clear() {
+    WriteLock w_lock(_stateBlockMapMutex);
+    _stateBlockMap.clear();
+}
+
+/// Return the the render state block defined by the specified hash value.
+const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash) {
+    ReadLock r_lock(_stateBlockMapMutex);
+    // Find the render state block associated with the received hash value
+    RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
+    // Assert if it doesn't exist. Avoids programming errors.
+    DIVIDE_ASSERT(it != std::cend(_stateBlockMap),
+                  "RenderStateBlock error: Invalid render state block hash specified for getRenderStateBlock!");
+    // Return the state block's descriptor
+    return it->second;
+}
+
+bool RenderStateBlock::get(size_t renderStateBlockHash, RenderStateBlock& blockOut) {
+    ReadLock r_lock(_stateBlockMapMutex);
+    // Find the render state block associated with the received hash value
+    RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
+    if(it != std::cend(_stateBlockMap) ) {
+        blockOut.copy(it->second);
+        return true;
+    }
+
+    return false;
+}
+
 };

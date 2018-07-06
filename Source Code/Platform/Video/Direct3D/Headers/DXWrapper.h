@@ -33,7 +33,6 @@
 #define _WRAPPER_DX_H_
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
-
 #include "Platform/Video/Direct3D/Headers/d3dEnumTable.h"
 
 namespace Divide {
@@ -47,20 +46,20 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void closeRenderingAPI() override;
     void changeViewport(const vec4<I32>& newViewport) const override;
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
-    bool makeTexturesResident(const TextureDataContainer& textureData) override;
-    bool makeTextureResident(const TextureData& textureData) override;
     void beginFrame() override;
     void endFrame(bool swapBuffers) override;
 
-    void drawText(const TextLabel& textLabel, const vec2<F32>& position) override;
+    void drawText(const TextLabel& textLabel, const vec2<F32>& position, size_t stateHash) override;
     void draw(const GenericDrawCommand& cmd);
+
+    void flushCommandBuffers(const vectorImpl<CommandBuffer>& buffers) override;
+
     void updateClipPlanes() override;
     void syncToThread(std::thread::id threadID) override;
 
-    U64 getFrameDurationGPU() override { return 0; }
-    void activateStateBlock(const RenderStateBlock& newBlock,
-                            const RenderStateBlock& oldBlock) const override;
+    size_t setStateBlock(size_t stateBlockHash) override;
 
+    U64 getFrameDurationGPU() override { return 0; }
 END_SINGLETON
 
 };  // namespace Divide

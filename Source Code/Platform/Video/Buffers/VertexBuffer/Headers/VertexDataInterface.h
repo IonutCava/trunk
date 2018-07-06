@@ -42,8 +42,7 @@ class NOINITVTABLE VertexDataInterface : protected GraphicsResource, public GUID
     VertexDataInterface(GFXDevice& context);
     virtual ~VertexDataInterface();
 
-    virtual void draw(const GenericDrawCommand& command,
-                      bool useCmdBuffer = false) = 0;
+    virtual void draw(const GenericDrawCommand& command) = 0;
 };
 
 };  // namespace Divide

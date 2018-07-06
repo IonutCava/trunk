@@ -30,8 +30,6 @@ GFXDevice::GFXDevice()
     // Hash values
     _state2DRenderingHash = 0;
     _defaultStateBlockHash = 0;
-    _currentStateBlockHash = 0;
-    _previousStateBlockHash = 0;
     _defaultStateNoDepthHash = 0;
     _stateDepthOnlyRenderingHash = 0;
     // Pointers
@@ -241,59 +239,6 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     setRenderStage(prevRenderStage);
     // Restore our previous camera
     kernel.getCameraMgr().popActiveCamera();
-}
-
-/// If the stateBlock doesn't exist in the state block map, add it for future reference
-bool GFXDevice::registerRenderStateBlock(const RenderStateBlock& descriptor) {
-    // Each combination of render states has a unique hash value
-    size_t hashValue = descriptor.getHash();
-    // Find the corresponding render state block
-    // Create a new one if none are found. The GFXDevice class is
-    // responsible for deleting these!
-    std::pair<RenderStateMap::iterator, bool> result =
-        hashAlg::emplace(_stateBlockMap, hashValue, descriptor);
-    // Return true if registration was successful 
-    return result.second;
-}
-
-/// Activate the render state block described by the specified hash value (0 == default state block)
-size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
-    // Passing 0 is a perfectly acceptable way of enabling the default render state block
-    if (stateBlockHash == 0) {
-        stateBlockHash = _defaultStateBlockHash;
-    }
-
-    // If the new state hash is different from the previous one
-    if (stateBlockHash != _currentStateBlockHash) {
-        // Remember the previous state hash
-        _previousStateBlockHash = _currentStateBlockHash;
-        // Update the current state hash
-        _currentStateBlockHash = stateBlockHash;
-        RenderStateMap::const_iterator currentStateIt = _stateBlockMap.find(_currentStateBlockHash);
-        RenderStateMap::const_iterator previousStateIt = _stateBlockMap.find(_previousStateBlockHash);
-
-        DIVIDE_ASSERT(currentStateIt != previousStateIt &&
-                      currentStateIt != std::cend(_stateBlockMap) &&
-                      previousStateIt != std::cend(_stateBlockMap),
-                      "GFXDevice error: Invalid state blocks detected on activation!");
-
-        // Activate the new render state block in an rendering API dependent way
-        _api->activateStateBlock(currentStateIt->second, previousStateIt->second);
-    }
-    // Return the previous state hash
-    return _previousStateBlockHash;
-}
-
-/// Return the the render state block defined by the specified hash value.
-const RenderStateBlock& GFXDevice::getRenderStateBlock(size_t renderStateBlockHash) const {
-    // Find the render state block associated with the received hash value
-    RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
-    // Assert if it doesn't exist. Avoids programming errors.
-    DIVIDE_ASSERT(it != std::cend(_stateBlockMap),
-                  "GFXDevice error: Invalid render state block hash specified "
-                  "for getRenderStateBlock!");
-    // Return the state block's descriptor
-    return it->second;
 }
 
 void GFXDevice::increaseResolution() {
@@ -526,7 +471,7 @@ void GFXDevice::toggle2D(bool state) {
     // If we need to enable 2D rendering
     if (state) {
         // Activate the 2D render state block
-        previousStateBlockHash = setStateBlock(_state2DRenderingHash);
+        previousStateBlockHash = _api->setStateBlock(_state2DRenderingHash);
         // Push the 2D camera
         kernel.getCameraMgr().pushActiveCamera(_2DCamera);
         // Upload 2D camera matrices to the GPU
@@ -537,7 +482,7 @@ void GFXDevice::toggle2D(bool state) {
         // Reverting to 3D implies popping the 2D camera
         kernel.getCameraMgr().popActiveCamera();
         // And restoring the previous state block
-        setStateBlock(previousStateBlockHash);
+        _api->setStateBlock(previousStateBlockHash);
     }
 }
 

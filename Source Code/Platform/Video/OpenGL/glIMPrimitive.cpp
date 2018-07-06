@@ -57,6 +57,7 @@ void glIMPrimitive::render(bool forceWireframe, U32 instanceCount) {
     DIVIDE_ASSERT(_drawShader != nullptr,
                   "glIMPrimitive error: Draw call received without a valid "
                   "shader defined!");
+
     _imInterface->SetShaderProgramHandle(_drawShader->getID());
     _imInterface->RenderBatchInstanced(instanceCount,
                                        forceWireframe || _forceWireframe);

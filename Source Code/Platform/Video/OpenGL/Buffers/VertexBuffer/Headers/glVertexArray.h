@@ -70,8 +70,7 @@ class glVertexArray : public VertexBuffer {
 
    protected:
     friend class GFXDevice;
-    void draw(const GenericDrawCommand& commands,
-              bool useCmdBuffer = false);
+    void draw(const GenericDrawCommand& commands);
 
    protected:
     friend class GL_API;

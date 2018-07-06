@@ -124,8 +124,9 @@ void glGenericVertexData::bindFeedbackBufferRange(U32 buffer,
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
-void glGenericVertexData::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
+void glGenericVertexData::draw(const GenericDrawCommand& command) {
 
+    bool useCmdBuffer = command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
     U32 drawBufferID = command.drawToBuffer();
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (drawBufferID > 0 && !_feedbackBuffers.empty());

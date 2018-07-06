@@ -60,6 +60,7 @@ public:
         RENDER_BOUNDS_AABB = toBit(3),
         RENDER_BOUNDS_SPHERE = toBit(4),
         RENDER_NO_RASTERIZE = toBit(5),
+        RENDER_INDIRECT = toBit(6),
         COUNT = 5
     };
 
