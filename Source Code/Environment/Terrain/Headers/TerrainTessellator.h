@@ -44,6 +44,25 @@ namespace Attorney {
 };
 
 struct TessellatedTerrainNode {
+
+    TessellatedTerrainNode()
+        : type(0),
+          tscale_negx(1.0f),
+          tscale_posx(1.0f),
+          tscale_negz(1.0f),
+          tscale_posz(1.0f),
+          p(nullptr),
+          c1(nullptr),
+          c2(nullptr),
+          c3(nullptr),
+          c4(nullptr),
+          n(nullptr),
+          s(nullptr),
+          e(nullptr),
+          w(nullptr)
+    {
+    }
+
     vec3<F32> origin;
     vec2<F32> dimensions;
     U8 type; // 1, 2, 3, 4 -- the child # relative to its parent. (0 == root)
@@ -64,6 +83,23 @@ struct TessellatedTerrainNode {
     TessellatedTerrainNode *s; // Neighbor to south
     TessellatedTerrainNode *e; // Neighbor to east
     TessellatedTerrainNode *w; // Neighbor to west
+
+    inline void reset() {
+        type = 0;
+        tscale_negx = 1.0f;
+        tscale_posx = 1.0f;
+        tscale_negz = 1.0f;
+        tscale_posz = 1.0f;
+        p = nullptr;
+        c1 = nullptr;
+        c2 = nullptr;
+        c3 = nullptr;
+        c4 = nullptr;
+        n = nullptr;
+        s = nullptr;
+        e = nullptr;
+        w = nullptr;
+    }
 }; //struct TessellatedTerrainNode
 
 struct TessellatedNodeData {
@@ -85,6 +121,10 @@ struct TessellatedNodeData {
 class TerrainTessellator {
     friend class Attorney::TerrainTessellatorLoader;
 public:
+    typedef vectorImpl<TessellatedTerrainNode> TreeVector;
+    typedef vectorImpl<TessellatedNodeData> RenderDataVector;
+
+public:
     // Reserves memory for the terrrain quadtree and initializes the data structure.
     TerrainTessellator();
     // Frees memory for the terrain quadtree.
@@ -102,9 +142,11 @@ public:
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)
     // n = the current node we are testing
-    TessellatedTerrainNode* find(TessellatedTerrainNode* n, F32 x, F32 z);
+    TessellatedTerrainNode* find(TessellatedTerrainNode& n, F32 x, F32 z);
 
-    const std::vector<TessellatedNodeData>& renderData() const;
+    const RenderDataVector& renderData() const;
+
+    const vec3<F32>& getEye() const;
 
 protected:
     // Resets the terrain quadtree.
@@ -112,22 +154,22 @@ protected:
     
     // Determines whether a node should be subdivided based on its distance to the camera.
     // Returns true if the node should be subdivided.
-    bool checkDivide(const vec3<F32>& camPos, TessellatedTerrainNode* node);
+    bool checkDivide(const vec3<F32>& camPos, TessellatedTerrainNode& node);
 
     // Returns true if node is sub-divided. False otherwise.
-    bool divideNode(const vec3<F32>& camPos, TessellatedTerrainNode* node);
+    bool divideNode(const vec3<F32>& camPos, TessellatedTerrainNode& node);
 
     //Allocates a new node in the terrain quadtree with the specified parameters.
-    TessellatedTerrainNode* createNode(TessellatedTerrainNode* parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height);
+    TessellatedTerrainNode* createNode(TessellatedTerrainNode& parent, U8 type, F32 x, F32 y, F32 z, F32 width, F32 height);
 
     // Calculate the tessellation scale factor for a node depending on the neighboring patches.
-    void calcTessScale(TessellatedTerrainNode* node);
+    void calcTessScale(TessellatedTerrainNode& node);
 
     // Pushes a node (patch) to the GPU to be drawn.
-    void renderNode(TessellatedTerrainNode* node);
+    void renderNode(TessellatedTerrainNode& node);
 
     // Traverses the terrain quadtree to draw nodes with no children.
-    void renderRecursive(TessellatedTerrainNode* node);
+    void renderRecursive(TessellatedTerrainNode& node);
 
 protected:
     static void initTessellationPatch(VertexBuffer* vb);
@@ -136,10 +178,9 @@ private:
     I32 _numNodes;
     U16 _renderDepth;
     U16 _maxRenderDepth;
-    TessellatedTerrainNode* _tree;
-    TessellatedTerrainNode* _treeTail;
-
-    std::vector<TessellatedNodeData> _renderData;
+    vec3<F32> _cameraEyeCache;
+    TreeVector _tree;
+    RenderDataVector _renderData;
 
 }; //TerrainTessellator
 

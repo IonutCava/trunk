@@ -52,7 +52,7 @@ void SFXDevice::closeAudioAPI() {
     _musicPlaylists.clear();
     _currentPlaylist.second.clear();
     _api->closeAudioAPI();
-    _api.release();
+    _api.reset();
 }
 
 void SFXDevice::beginFrame() {

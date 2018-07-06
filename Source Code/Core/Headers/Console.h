@@ -109,6 +109,10 @@ class Console : private NonCopyable {
     static void outThread();
 
    private:
+    //static std::condition_variable _entryEnqueCV;
+    //static std::mutex _entryEnqueMutex;
+    //static std::atomic_bool _entryAdded;
+
     static ConsolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
     static bool _threadID;

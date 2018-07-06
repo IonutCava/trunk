@@ -158,8 +158,8 @@ class Terrain : public Object3D {
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
-    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
-    typedef std::array<bool, to_base(RenderStage::COUNT)> CameraUpdateFlagArray;
+    typedef std::array<TerrainTessellator, to_base(RenderStagePass::count())> TessellatorArray;
+    typedef std::array<bool, to_base(RenderStagePass::count())> CameraUpdateFlagArray;
 
     U32 _chunkSize;
     vec3<F32> _offsetPosition;

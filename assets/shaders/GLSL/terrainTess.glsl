@@ -373,9 +373,12 @@ void waterDetails(in int index, in mat4 worldMat) {
 
     float minHeight = (worldMat * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
 
-    //for (int i = 0; i < MAX_WATER_BODIES; ++i) {
-        float waterWidth = dvd_waterDetails/*[i]*/.x + dvd_waterPositionsW/*[i]*/.x;
-        float waterLength = dvd_waterDetails/*[i]*/.y + dvd_waterPositionsW/*[i]*/.z;
+    //for (int i = 0; i < MAX_WATER_BODIES; ++i)
+    {
+        vec4 details = dvd_waterDetails/*[i]*/;
+        vec4 position = dvd_waterPositionsW/*[i]*/;
+        float waterWidth = details.x + position.x;
+        float waterLength = details.y + position.z;
         float halfWidth = waterWidth * 0.5;
         float halfLength = waterLength * 0.5;
         if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
@@ -385,9 +388,9 @@ void waterDetails(in int index, in mat4 worldMat) {
             maxDistance = max(maxDistance, 1.0 - clamp(gl_ClipDistance[0], 0.0, 1.0));
 
             // Current water depth in relation to the minimum possible depth
-            minDepth = min(minDepth, clamp(1.0 - (dvd_waterPositionsW.y - vertexW.y) / (dvd_waterPositionsW.y - minHeight), 0.0, 1.0));
+            minDepth = min(minDepth, clamp(1.0 - (position.y - vertexW.y) / (position.y - minHeight), 0.0, 1.0));
         }
-    //}
+    }
         
     _waterDetails = vec2(maxDistance, minDepth);
 }
@@ -424,7 +427,7 @@ void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in mat4 worldMat)
     PassData(i);
 #if defined(SHADOW_PASS)
     geom_vertexWVP = gl_in[i].gl_Position;
-#endif
+#endif //SHADOW_PASS
 
     gl_Position = getWVPPositon(i);
 
@@ -445,14 +448,16 @@ void PerVertex(in int i, in vec3 edge_dist, in vec4 wireColor, in mat4 worldMat)
     } else {
         gs_edgeDist = vec3(0, 0, edge_dist.z);
     }
-#   endif
-#endif
+#   endif //_DEBUG
+#endif //SHADOW_PASS
 }
 
 void main(void)
 {
     vec4 wireColor = wireframeColor();
-    mat4 worldMat = dvd_WorldMatrix(_in[0].dvd_instanceID);
+
+    const uint index = _in[0].dvd_instanceID;
+    mat4 worldMat = dvd_WorldMatrix(index);
 
     // Calculate edge distances for wireframe
     vec3 edge_dist = vec3(0.0);

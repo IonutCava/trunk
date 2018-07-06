@@ -24,7 +24,7 @@ namespace Divide {
 
 namespace {
     /// Maximum number of lines to display in the console Window
-    const U32 _CEGUI_MAX_CONSOLE_ENTRIES = Config::Build::IS_DEBUG_BUILD ? 128 : 512;
+    constexpr U32 _CEGUI_MAX_CONSOLE_ENTRIES = Config::Build::IS_DEBUG_BUILD ? 128 : 512;
 };
 
 GUIConsole::GUIConsole(PlatformContext& context, ResourceCache& cache)
@@ -182,12 +182,8 @@ bool GUIConsole::isVisible() {
 }
 
 void GUIConsole::printText(const char* output, bool error) {
-    if (!_init) {
-        _outputBuffer.push_back(std::make_pair(output, error));
-    } else {
-        WriteLock w_lock(_outputLock);
-        _outputBuffer.push_back(std::make_pair(output, error));
-    }
+    WriteLock w_lock(_outputLock);
+    _outputBuffer.push_back(std::make_pair(output, error));
 }
 
 void GUIConsole::OutputText(const char* inMsg, const bool error) {
@@ -213,23 +209,30 @@ void GUIConsole::update(const U64 deltaTime) {
     if (!isVisible()) {
         return;
     }
-    WriteLock w_lock(_outputLock);
-    while (!_outputBuffer.empty()) {
-        const std::pair<stringImpl, bool>& message = _outputBuffer.front();
-        bool error = message.second;
-        if (_lastMsgError != error) {
-            _lastMsgError = error;
-            OutputText(_lastMsg.c_str(), _lastMsgError);
-            _lastMsg.clear();
+
+    {
+        UpgradableReadLock ur_lock(_outputLock);
+        size_t entryCount = _outputBuffer.size();
+        if (entryCount > 0) {
+            for(size_t i = 0; i < entryCount; ++i) {
+                const std::pair<stringImpl, bool>& message = _outputBuffer[i];
+
+                bool error = message.second;
+                if (_lastMsgError != error) {
+                    _lastMsgError = error;
+                    OutputText(_lastMsg.c_str(), _lastMsgError);
+                    _lastMsg.clear();
+                }
+                if (error) {
+                    _lastMsg.append("Error: ");
+                }
+                _lastMsg.append(message.first.c_str());
+                _lastMsg.append("\n");
+            }
+            UpgradeToWriteLock uw_lock(ur_lock);
+            _outputBuffer.clear();
         }
-        if (error) {
-            _lastMsg.append("Error: ");
-        }
-        _lastMsg.append(message.first.c_str());
-        _lastMsg.append("\n");
-        _outputBuffer.pop_front();
     }
-    _outputBuffer.clear();
 
     if (!_lastMsg.empty()) {
         OutputText(_lastMsg.c_str(), _lastMsgError);

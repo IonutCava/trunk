@@ -47,7 +47,7 @@ bool PXDevice::closePhysicsAPI() {
     }
 
     bool state = _api->closePhysicsAPI();
-    _api.release();
+    _api.reset();
 
     return state;
 }

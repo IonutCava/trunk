@@ -57,13 +57,15 @@ class GUIConsole {
     explicit GUIConsole(PlatformContext& context, ResourceCache& cache);
     ~GUIConsole();
 
-    void setVisible(bool visible);  //< Hide or show the console
-    bool isVisible();  //< Return true if console is visible, false if is hidden
-    /// add text to the console Window. Uses a text buffer if the console isn't
-    /// ready for display yet
-    void printText(const char* output, bool error);
+    /// Hide or show the console
+    void setVisible(bool visible);
+    /// Return true if console is visible, false if is hidden
+    bool isVisible();
 
     void update(const U64 deltaTime);
+
+    /// Add text to the console Window. Uses a text buffer if the console isn't ready for display yet
+    void printText(const char* output, bool error);
 
    protected:
     void RegisterHandlers();  //< Register our handler functions
@@ -103,6 +105,7 @@ class GUIConsole {
     std::deque<CEGUI::String> _inputHistory;
     /// Used to cycle through history
     I16 _inputHistoryIndex;
+    
     SharedLock _outputLock;
     boost::circular_buffer<std::pair<stringImpl, bool>> _outputBuffer;
 };

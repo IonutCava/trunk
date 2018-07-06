@@ -15,7 +15,9 @@ bool Console::_threadID = false;
 bool Console::_enabled = true;
 
 std::thread Console::_printThread;
-
+//std::condition_variable Console::_entryEnqueCV;
+//std::mutex Console::_entryEnqueMutex;
+//std::atomic_bool Console::_entryAdded;
 std::atomic_bool Console::_running;
 Console::ConsolePrintCallback Console::_guiConsoleCallback;
 
@@ -25,39 +27,24 @@ moodycamel::ConcurrentQueue<Console::OutputEntry> Console::_outputBuffer(MAX_CON
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
-    std::cout << "-------------------------------------------------------------"
-                 "-----------------\n";
+    std::cout << "------------------------------------------------------------------------------\n";
     std::cout << "Copyright (c) 2017 DIVIDE-Studio\n";
     std::cout << "Copyright (c) 2009 Ionut Cava\n\n";
     std::cout << "This file is part of DIVIDE Framework.\n\n";
-    std::cout << "Permission is hereby granted, free of charge, to any person "
-                 "obtaining a copy of this software\n";
-    std::cout << "and associated documentation files (the 'Software'), to deal "
-                 "in the Software without restriction,\n";
-    std::cout << "including without limitation the rights to use, copy, "
-                 "modify, merge, publish, distribute, sublicense,\n";
-    std::cout << "and/or sell copies of the Software, and to permit persons to "
-                 "whom the Software is furnished to do so,\n";
+    std::cout << "Permission is hereby granted, free of charge, to any person obtaining a copy of this software\n";
+    std::cout << "and associated documentation files (the 'Software'), to deal in the Software without restriction,\n";
+    std::cout << "including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,\n";
+    std::cout << "and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,\n";
     std::cout << "subject to the following conditions:\n\n";
-    std::cout << "The above copyright notice and this permission notice shall "
-                 "be included in all copies or substantial portions of the "
-                 "Software.\n\n";
-    std::cout << "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY "
-                 "KIND, EXPRESS OR IMPLIED,\n";
-    std::cout << "INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF "
-                 "MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND "
-                 "NONINFRINGEMENT.\n";
-    std::cout << "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE "
-                 "FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\n";
-    std::cout << "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING "
-                 "FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE\n";
+    std::cout << "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n";
+    std::cout << "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\n";
+    std::cout << "INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n";
+    std::cout << "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\n";
+    std::cout << "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE\n";
     std::cout << "OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n";
-    std::cout << "For any problems or licensing issues I may have overlooked, "
-                 "please contact: \n";
-    std::cout << "E-mail: ionut.cava@divide-studio.com | Website: \n"
-                 "http://wwww.divide-studio.com\n";
-    std::cout << "-------------------------------------------------------------"
-                 "------------------\n\n";
+    std::cout << "For any problems or licensing issues I may have overlooked, please contact: \n";
+    std::cout << "E-mail: ionut.cava@divide-studio.com | Website: \n http://wwww.divide-studio.com\n";
+    std::cout << "-------------------------------------------------------------------------------\n\n";
 }
 
 const char* Console::formatText(const char* format, ...) {
@@ -104,15 +91,23 @@ void Console::output(const char* text, const bool newline, const bool error) {
         entry._error = error;
         entry._text = outStream.str();
 
+        //std::unique_lock<std::mutex> lk(_entryEnqueMutex);
         //moodycamel::ProducerToken ptok(_outputBuffer);
         WAIT_FOR_CONDITION_TIMEOUT(_outputBuffer.enqueue(/*ptok, */entry),
                                    Time::SecondsToMilliseconds(1.0));
+        //_entryAdded = true;
+        //_entryEnqueCV.notify_one();
     }
 }
 
 void Console::outThread() {
     //moodycamel::ConsumerToken ctok(_outputBuffer);
     while (_running) {
+        {
+            //std::unique_lock<std::mutex> lk(_entryEnqueMutex);
+            //_entryEnqueCV.wait(lk, [] {return _entryAdded == true; });
+        }
+
         OutputEntry entry;
         if (_outputBuffer.try_dequeue(/*ctok, */entry)) {
             std::ostream& outStream = entry._error ? std::cerr : std::cout;
@@ -121,7 +116,7 @@ void Console::outThread() {
             if (_guiConsoleCallback) {
                 _guiConsoleCallback(entry._text.c_str(), entry._error);
             }
-        }  else {
+        } else {
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
     }
@@ -138,7 +133,10 @@ void Console::stop() {
 
     OutputEntry entry;
     entry._text = "------------------------------------------";
+
+    //std::unique_lock<std::mutex> lk(_entryEnqueMutex);
     _outputBuffer.enqueue(entry);
+    //_entryEnqueCV.notify_one();
     _printThread.join();
 
     std::cerr << std::flush;

@@ -328,7 +328,7 @@ void GFXDevice::closeRenderingAPI() {
     _gpuObjectArena.clear();
     // Close the rendering API
     _api->closeRenderingAPI();
-    _api.release();
+    _api.reset();
     if (!_graphicResources.empty()) {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());
     }
