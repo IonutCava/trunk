@@ -40,9 +40,6 @@ public:
 	void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, U8 bpp, GFXImageFormat format){}
 
 private:
-
-	void Bind() const {}
-	void Unbind() const {}
 	void Destroy() {}
 
 private:

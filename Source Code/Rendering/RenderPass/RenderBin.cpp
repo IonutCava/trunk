@@ -176,8 +176,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
             if(isLightValidStage){
                 U8 offset = 9;
                 for(U8 n = 0; n < lightCount; n++, offset++){
-                    Light* l = lightMgr.getLightForCurrentNode(n);
-                    lightMgr.bindDepthMaps(l, n, offset);
+                    lightMgr.bindDepthMaps(lightMgr.getLightForCurrentNode(n), n, offset);
                 }
             }
 
@@ -196,8 +195,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
             if(isLightValidStage){
                 U8 offset = (lightCount - 1) + 9;
                 for(I32 n = lightCount - 1; n >= 0; n--,offset--){
-                    Light* l = lightMgr.getLightForCurrentNode(n);
-                    lightMgr.unbindDepthMaps(l, offset);
+                    lightMgr.unbindDepthMaps(lightMgr.getLightForCurrentNode(n), offset);
                 }
             }
         }

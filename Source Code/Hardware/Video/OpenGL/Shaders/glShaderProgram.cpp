@@ -436,7 +436,7 @@ GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform){
     //Not loaded or NULL_SHADER
     if(_shaderProgramId == 0) return -1;
 
-    while(!isHWInitComplete()){}
+    if(!isHWInitComplete()) return -1;
 
     ShaderVarMap::iterator it = _shaderVars.find(name);
 

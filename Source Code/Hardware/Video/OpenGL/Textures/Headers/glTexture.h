@@ -44,8 +44,6 @@ protected:
 	void threadedLoad(const std::string& name);
 
 private:
-	void Bind() const;
-	void Unbind() const;
 	void Destroy();
 	void reserveStorage(GLint w, GLint h);
 	void createSampler();

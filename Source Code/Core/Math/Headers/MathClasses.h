@@ -469,9 +469,7 @@ public:
     }
 
     mat4<T> operator*(const mat4<T> &m) const {
-        mat4<T> ret;
-        Mat4::Multiply(this->mat,m.mat,ret.mat);
-        return ret;
+        return mat4<T>(Mat4::Multiply(this->mat, m.mat));
     }
 
     inline bool operator == (mat4& B) const {

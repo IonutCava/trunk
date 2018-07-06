@@ -40,6 +40,7 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
     }
 
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
+    glUniformBufferObject::unbind();
 }
 
 void GL_API::updateStateInternal(RenderStateBlock* block, bool force){

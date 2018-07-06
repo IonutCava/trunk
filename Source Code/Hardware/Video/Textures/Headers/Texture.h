@@ -24,6 +24,7 @@
 #define _TEXTURE_H
 
 #include "core.h"
+
 #include "TextureDescriptor.h"
 #include "Core/Resources/Headers/HardwareResource.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
@@ -57,8 +58,6 @@ protected:
     template<typename T>
     friend class ImplResourceLoader;
     virtual bool generateHWResource(const std::string& name) {return HardwareResource::generateHWResource(name);}
-    virtual void Bind() const;
-    virtual void Unbind() const;
 
 protected:
     Texture(const bool flipped = false);
@@ -69,7 +68,6 @@ protected:
     U16 _width,_height;
     U8  _bitDepth;
     bool _flipped;
-    bool _bound;
     bool _hasTransparency;
     mat4<F32>  _transformMatrix;
     SamplerDescriptor _samplerDescriptor;

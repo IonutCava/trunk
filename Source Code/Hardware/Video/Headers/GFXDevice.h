@@ -79,20 +79,19 @@ public:
     inline void endFrame()   {_api.endFrame();  }
     inline void flush()      {_api.flush();}
 
-    inline Shader*             newShader(const std::string& name,
-                                         const  ShaderType& type,
-                                         const bool optimise = false)                 {return _api.newShader(name,type,optimise); }
-
     /// Rendering buffer management
+    inline FrameBufferObject*  getScreenBuffer(U8 index)                       const  {assert(index < 2 && index >= 0); return _screenBuffer[index];}
+    inline FrameBufferObject*  getDepthBuffer()                                const  {return _depthBuffer;}
+
     inline FrameBufferObject*  newFBO(const FBOType& type = FBO_2D_COLOR)             {return _api.newFBO(type); }
     inline VertexBufferObject* newVBO(const PrimitiveType& type = TRIANGLES)          {return _api.newVBO(type); }
     inline PixelBufferObject*  newPBO(const PBOType& type = PBO_TEXTURE_2D)           {return _api.newPBO(type); }
     inline Texture2D*          newTexture2D(const bool flipped = false)               {return _api.newTexture2D(flipped);}
     inline TextureCubemap*     newTextureCubemap(const bool flipped = false)          {return _api.newTextureCubemap(flipped);}
     inline ShaderProgram*      newShaderProgram(const bool optimise = false)          {return _api.newShaderProgram(optimise); }
-    inline FrameBufferObject*  getScreenBuffer(U8 index)                       const  {assert(index < 2 && index >= 0); return _screenBuffer[index];}
-    inline FrameBufferObject*  getDepthBuffer()                                const  {return _depthBuffer;}
-
+    inline Shader*             newShader(const std::string& name, const  ShaderType& type, const bool optimise = false) {
+        return _api.newShader(name,type,optimise); 
+    }
     ///Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool            initShaders()                                        {return _api.initShaders();}
     inline bool            deInitShaders()                                      {return _api.deInitShaders();}

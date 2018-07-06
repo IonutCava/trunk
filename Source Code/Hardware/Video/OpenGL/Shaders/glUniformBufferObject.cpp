@@ -29,8 +29,10 @@ glUniformBufferObject::glUniformBufferObject() : GUIDWrapper(), _UBOid(0), _bind
 
 glUniformBufferObject::~glUniformBufferObject()
 {
-    if(_UBOid > 0) 
+    if(_UBOid > 0) {
         GLCheck(glDeleteBuffers(1, &_UBOid));
+        _UBOid = 0;
+    }
 }
 
 void glUniformBufferObject::Create(GLint bufferIndex, bool dynamic, bool stream){
@@ -39,23 +41,27 @@ void glUniformBufferObject::Create(GLint bufferIndex, bool dynamic, bool stream)
     assert(_UBOid != 0);
 }
 
-void glUniformBufferObject::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize){
+void glUniformBufferObject::ReserveBuffer(GLuint primitiveCount, GLsizeiptr primitiveSize) const {
     assert(_UBOid != 0);
     GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, _UBOid));
     GLCheck(glBufferData(GL_UNIFORM_BUFFER, primitiveSize * primitiveCount, NULL, _usage));
     GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
 }
 
-void glUniformBufferObject::ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data){
+void glUniformBufferObject::ChangeSubData(GLintptr offset,	GLsizeiptr size, const GLvoid *data) const {
     assert(_UBOid != 0);
     GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, _UBOid));
     GLCheck(glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data));
+    //GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+}
+
+void glUniformBufferObject::unbind() {
     GLCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
 }
 
-bool glUniformBufferObject::bindUniform(GLuint shaderProgramHandle, GLuint uboLocation) {
+bool glUniformBufferObject::bindUniform(GLuint shaderProgramHandle, GLuint uboLocation) const {
     if(uboLocation == GL_INVALID_INDEX) {
-       ERROR_FN(Locale::get("ERROR_UBO_INVALID_LOCATION"),shaderProgramHandle);
+        ERROR_FN(Locale::get("ERROR_UBO_INVALID_LOCATION"),shaderProgramHandle);
         return false;
     }
 
@@ -63,13 +69,13 @@ bool glUniformBufferObject::bindUniform(GLuint shaderProgramHandle, GLuint uboLo
     return true;
 }
 
-bool glUniformBufferObject::bindBufferRange(GLintptr offset, GLsizeiptr size) {
+bool glUniformBufferObject::bindBufferRange(GLintptr offset, GLsizeiptr size) const {
     assert(_UBOid != 0);
     GLCheck(glBindBufferRange(GL_UNIFORM_BUFFER, _bindIndex, _UBOid, offset, size));
     return true;
 }
 
-bool glUniformBufferObject::bindBufferBase() {
+bool glUniformBufferObject::bindBufferBase() const {
     assert(_UBOid != 0);
     GLCheck(glBindBufferBase(GL_UNIFORM_BUFFER, _bindIndex, _UBOid));
     return true;

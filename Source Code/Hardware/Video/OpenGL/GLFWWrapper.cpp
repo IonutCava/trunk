@@ -141,7 +141,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     //So, if someone selected High detail level, try to use pure 3.x API
     GLubyte msaaSamples = par.getParam<GLubyte>("rendering.FSAAsamples",2);
-	GLubyte msaaMethod  = par.getParam<GLubyte>("rendering.FSAAmethod",FS_MSAA);
+    GLubyte msaaMethod  = par.getParam<GLubyte>("rendering.FSAAmethod",FS_MSAA);
     _useMSAA = (msaaMethod == FS_MSAA || msaaMethod == FS_MSwFXAA) && (msaaSamples > 1);
 
     if(_useMSAA)	glfwWindowHint(GLFW_SAMPLES, msaaSamples);
