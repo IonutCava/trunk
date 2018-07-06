@@ -13,8 +13,14 @@
 namespace Divide {
 
 RTAttachment::RTAttachment(const RTAttachmentDescriptor& descriptor)
+    : RTAttachment(descriptor, nullptr)
+{
+}
+
+RTAttachment::RTAttachment(const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt)
     : _descriptor(descriptor),
       _texture(nullptr),
+      _externalAttachment(externalAtt),
       _changed(false),
       _mipWriteLevel(0),
       _writeLayer(0),
@@ -27,7 +33,7 @@ RTAttachment::~RTAttachment()
 }
 
 const Texture_ptr& RTAttachment::texture() const {
-    return _texture;
+    return isExternal() ? _externalAttachment->texture() : _texture;
 }
 
 void RTAttachment::texture(const Texture_ptr& tex) {
@@ -36,7 +42,12 @@ void RTAttachment::texture(const Texture_ptr& tex) {
 }
 
 bool RTAttachment::used() const {
-    return _texture != nullptr;
+    return _texture != nullptr ||
+           _externalAttachment != nullptr;
+}
+
+bool RTAttachment::isExternal() const {
+    return _externalAttachment != nullptr;
 }
 
 void RTAttachment::mipWriteLevel(U16 level) {

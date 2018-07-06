@@ -71,11 +71,12 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
     }
 
     const Texture_ptr& tex = attachment->texture();
-
-    // Do we need to resize the attachment?
-    bool shouldResize = tex->getWidth() != getWidth() || tex->getHeight() != getHeight();
-    if (shouldResize) {
-        tex->resize(NULL, vec2<U16>(getWidth(), getHeight()));
+    if (!attachment->isExternal()) {
+        // Do we need to resize the attachment?
+        bool shouldResize = tex->getWidth() != getWidth() || tex->getHeight() != getHeight();
+        if (shouldResize) {
+            tex->resize(NULL, vec2<U16>(getWidth(), getHeight()));
+        }
     }
 
     // Find the appropriate binding point
@@ -455,7 +456,9 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vector<RTAtt
             U32 binding = att->binding();
             if (static_cast<GLenum>(binding) != GL_NONE) {
                 GLint buffer = static_cast<GLint>(binding - static_cast<GLint>(GL_COLOR_ATTACHMENT0));
-
+                if (!drawPolicy.clearColour(to_U8(buffer))) {
+                    continue;
+                }
                 GFXDataFormat dataType = att->texture()->getDescriptor().dataType();
                 if (dataType == GFXDataFormat::FLOAT_16 || dataType == GFXDataFormat::FLOAT_32) {
                     glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, att->clearColour()._v);

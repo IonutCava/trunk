@@ -56,18 +56,16 @@ void RTAttachmentPool::copy(const RTAttachmentPool& other) {
     }
 }
 
-RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descriptor) {
-    U8 index = descriptor._index;
-    RTAttachmentType type = descriptor._type;
+RTAttachment_ptr& RTAttachmentPool::checkAndRemoveExistingAttachment(RTAttachmentType type, U8 index) {
     assert(index < to_U8(_attachment[to_U32(type)].size()));
 
     RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
     if (ptr != nullptr) {
         // Replacing existing attachment
-        Console::d_printfn(Locale::get(_ID("WARNING_REPLACING_RT_ATTACHMENT")), 
-                           _parent.getGUID(),
-                           getAttachmentName(type),
-                           index);
+        Console::d_printfn(Locale::get(_ID("WARNING_REPLACING_RT_ATTACHMENT")),
+            _parent.getGUID(),
+            getAttachmentName(type),
+            index);
         // Just to be clear about our intentions
         ptr.reset();
         --_attachmentCount[to_U32(type)];
@@ -79,13 +77,19 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
             }
         }
     }
+    return ptr;
+}
+
+RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descriptor) {
+    RTAttachmentType type = descriptor._type;
+    RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, descriptor._index);
 
     ptr = std::make_shared<RTAttachment>(descriptor);
 
     ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
                                                             _parent.name().c_str(),
                                                             getAttachmentName(type),
-                                                            index,
+                                                             descriptor._index,
                                                             _parent.getGUID()));
     textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(descriptor._texDescriptor);
@@ -101,6 +105,23 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     ptr->texture(tex);
 
     ++_attachmentCount[to_U32(type)];
+
+    _attachmentCache[to_U32(type)].push_back(ptr);
+
+    return ptr;
+}
+
+RTAttachment_ptr& RTAttachmentPool::update(const ExternalRTAttachmentDescriptor& descriptor) {
+    RTAttachmentDescriptor internalDescriptor = descriptor._attachment->descriptor();
+    internalDescriptor._index = descriptor._index;
+    internalDescriptor._type = RTAttachmentType::Colour;
+
+    RTAttachmentType type = internalDescriptor._type;
+    RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, internalDescriptor._index);
+
+    ptr = std::make_shared<RTAttachment>(internalDescriptor, descriptor._attachment);
+
+     ++_attachmentCount[to_U32(type)];
 
     _attachmentCache[to_U32(type)].push_back(ptr);
 

@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
+FWD_DECLARE_MANAGED_CLASS(RTAttachment);
 
 /// This enum is used when creating render targets to define the channel that the texture will attach to
 enum class RTAttachmentType : U8 {
@@ -45,6 +46,12 @@ enum class RTAttachmentType : U8 {
     Depth = 1,
     Stencil = 2,
     COUNT
+};
+
+// Only for colour attachments
+struct ExternalRTAttachmentDescriptor {
+    RTAttachment_ptr _attachment;
+    U8 _index = 0;
 };
 
 struct RTAttachmentDescriptor {
@@ -57,10 +64,13 @@ struct RTAttachmentDescriptor {
 class RTAttachment {
     public:
         explicit RTAttachment(const RTAttachmentDescriptor& descriptor);
+        explicit RTAttachment(const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt);
         virtual ~RTAttachment();
 
         bool used() const;
         
+        bool isExternal() const;
+
         bool changed() const;
         void clearChanged();
 
@@ -87,7 +97,7 @@ class RTAttachment {
         U16  _mipWriteLevel;
         U16  _writeLayer;
         Texture_ptr _texture;
-
+        RTAttachment_ptr _externalAttachment;
         RTAttachmentDescriptor _descriptor;
 };
 

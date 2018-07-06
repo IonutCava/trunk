@@ -235,12 +235,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
             { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
         };
 
+        const RTAttachment_ptr& screenAttchment = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachmentPtr(RTAttachmentType::Colour, 0);
+
+        vector<ExternalRTAttachmentDescriptor> externalAttachments = {
+            { screenAttchment, to_U8(ScreenTargets::MODULATE) }
+        };
+
         RenderTargetDescriptor oitDesc = {};
         oitDesc._name = "OIT";
         oitDesc._resolution = renderResolution;
         oitDesc._attachmentCount = to_U8(attachments.size());
         oitDesc._attachments = attachments.data();
-
+        oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
+        oitDesc._externalAttachments = externalAttachments.data();
         _rtPool->allocateRT(RenderTargetUsage::OIT, oitDesc);
     }
     // Reflection Targets

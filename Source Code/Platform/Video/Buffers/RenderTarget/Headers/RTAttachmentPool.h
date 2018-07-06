@@ -49,6 +49,7 @@ public:
     void copy(const RTAttachmentPool& other);
 
     RTAttachment_ptr& update(const RTAttachmentDescriptor& descriptor);
+    RTAttachment_ptr& update(const ExternalRTAttachmentDescriptor& descriptor);
 
     // Return true if the attachment was used. False if the call had no effect
     bool clear(RTAttachmentType type, U8 index);
@@ -63,10 +64,11 @@ public:
 private:
     RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachmentType type, U8 index);
     const RTAttachment_ptr& getInternal(const AttachmentPool& pool, RTAttachmentType type, U8 index) const;
+    RTAttachment_ptr& checkAndRemoveExistingAttachment(RTAttachmentType type, U8 index);
 
 private:
     AttachmentPool _attachment;
-    std::array < U8, to_base(RTAttachmentType::COUNT)> _attachmentCount;
+    std::array<U8, to_base(RTAttachmentType::COUNT)> _attachmentCount;
 
     AttachmentPool _attachmentCache;
     bool _isFrameListener = false;

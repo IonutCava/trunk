@@ -77,6 +77,7 @@ RTDrawDescriptor::RTDrawDescriptor()
     enableState(State::CHANGE_VIEWPORT);
 
     _drawMask.enableAll();
+    _clearColourAttachment.fill(true);
 }
 
 void RTDrawDescriptor::stateMask(U32 stateMask) {

@@ -82,7 +82,11 @@ struct RenderTargetDescriptor {
     U8 _attachmentCount = 0;
     stringImpl _name = "";
     vec2<U16>  _resolution = vec2<U16>(1u);
-    RTAttachmentDescriptor* _attachments;
+    RTAttachmentDescriptor* _attachments = nullptr;
+
+    U8 _externalAttachmentCount = 0;
+    ExternalRTAttachmentDescriptor* _externalAttachments = nullptr;
+
     F32 _depthValue = 1.0f;
     vec2<F32> _depthRange = vec2<F32>(0.0f, 1.0f);
 };
@@ -108,6 +112,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     /// Resize all attachments
     virtual bool resize(U16 width, U16 height) = 0;
 
+    virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
     virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
 
     /// Use by multilayered FB's

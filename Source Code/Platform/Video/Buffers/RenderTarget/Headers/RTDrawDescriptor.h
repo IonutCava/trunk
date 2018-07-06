@@ -93,6 +93,9 @@ class RTDrawDescriptor {
     inline RTBlendState& blendState(U8 index) { return _blendStates[index]; }
     inline const RTBlendState& blendState(U8 index) const{ return _blendStates[index]; }
 
+    inline void clearColour(U8 index, const bool state) { _clearColourAttachment[index] = state; }
+    inline bool clearColour(U8 index) const { return _clearColourAttachment[index]; }
+
     bool operator==(const RTDrawDescriptor& other) const;
     bool operator!=(const RTDrawDescriptor& other) const;
 
@@ -100,6 +103,7 @@ class RTDrawDescriptor {
     RTDrawMask _drawMask;
     U32 _stateMask;
     std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
+    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
 };
 
 }; //namespace Divide

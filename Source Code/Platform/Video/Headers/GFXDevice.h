@@ -131,6 +131,7 @@ public:
         COUNT,
         ACCUMULATION = ALBEDO,
         REVEALAGE = NORMALS,
+        MODULATE = VELOCITY
     };
 
     struct NodeData : private NonCopyable {
