@@ -7,7 +7,8 @@ namespace GFX {
     template <typename... Args>
     PushConstant* PushConstantPool::allocateConstant(Args&&... args) {
         WriteLock lock(_mutex);
-         return _pool.newElement(std::forward<Args>(args)...);
+        return _pool.newElement(std::forward<Args>(args)...);
+        //return MemoryManager_NEW PushConstant(std::forward<Args>(args)...);
     }
 
     template <typename... Args>

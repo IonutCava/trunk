@@ -271,6 +271,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\File\FileWatcherManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\PushConstant.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\PushConstantPool.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\PushConstants.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderAPIWrapper.cpp" />

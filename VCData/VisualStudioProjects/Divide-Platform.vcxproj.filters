@@ -701,6 +701,9 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\PushConstants.cpp">
       <Filter>Video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\PushConstant.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

@@ -18,6 +18,8 @@ namespace GFX {
         if (constants != nullptr) {
             WriteLock lock(_mutex);
             _pool.deleteElement(constants);
+            //MemoryManager::DELETE(constants);
+            //constants = nullptr;
         }
     }
 

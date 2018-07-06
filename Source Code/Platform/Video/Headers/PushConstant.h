@@ -45,8 +45,8 @@ namespace GFX {
         FLOAT,
         DOUBLE,
         //BVEC2, use vec2<I32>(1/0, 1/0)
-        //BVEC3, use vec3<I32>(1/0, 1/0)
-        //BVEC4, use vec4<I32>(1/0, 1/0)
+        //BVEC3, use vec3<I32>(1/0, 1/0, 1/0)
+        //BVEC4, use vec4<I32>(1/0, 1/0, 1/0, 1/0)
         IVEC2,
         IVEC3,
         IVEC4,
@@ -97,41 +97,20 @@ namespace GFX {
                      const std::array<T, N>& values,
                      bool flag = false)
             : _binding(binding),
-            _type(type),
-            _values(std::cbegin(values), std::cend(values)),
-            _flag(flag),
-            _transpose(false)
+              _type(type),
+              _values(std::cbegin(values), std::cend(values)),
+              _flag(flag),
+              _transpose(false)
         {
         }
 
-        PushConstant(const PushConstant& other)
-        {
-            assign(other);
-        }
+        PushConstant(const PushConstant& other);
+        PushConstant& operator=(const PushConstant& other);
+        PushConstant& assign(const PushConstant& other);
 
-        PushConstant& operator=(const PushConstant& other) {
-            return assign(other);
-        }
+        ~PushConstant();
 
-        PushConstant& assign(const PushConstant& other) {
-            _binding = other._binding;
-            _type = other._type;
-            _flag = other._flag;
-            _values = other._values;
-
-            return *this;
-        }
-
-        ~PushConstant() {
-            clear();
-        }
-
-        inline void clear() {
-            _values.clear();
-            _binding.clear();
-            _type = PushConstantType::COUNT;
-            _flag = false;
-        }
+        void clear();
 
         //I32              _binding = -1;
         stringImplFast   _binding;
