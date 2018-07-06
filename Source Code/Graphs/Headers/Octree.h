@@ -56,6 +56,11 @@ class Octree : public std::enable_shared_from_this<Octree> {
 
         void updateTree();
 
+        vectorImpl<IntersectionRecord> allIntersections(const Frustum& region, U32 typeFilterMask);
+        vectorImpl<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end);
+        IntersectionRecord nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask);
+        vectorImpl<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask);
+        
     private:
         U8 activeNodes() const;
         void buildTree();
@@ -68,8 +73,16 @@ class Octree : public std::enable_shared_from_this<Octree> {
         std::shared_ptr<Octree>
         createNode(const BoundingBox& region, SceneGraphNode_wptr object);
 
-        vectorImpl<IntersectionRecord> getIntersection(const vectorImpl<SceneGraphNode_wptr>& parentObjects);
-        void handleIntersection(SceneGraphNode_ptr node, IntersectionRecord intersection);
+        bool isStatic(const SceneGraphNode& node) const;
+        vectorImpl<IntersectionRecord> getIntersection(const Frustum& frustum, U32 typeFilterMask) const;
+        vectorImpl<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const;
+        vectorImpl<IntersectionRecord> getIntersection(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask) const;
+        
+        void handleIntersection(IntersectionRecord intersection) const;
+        IntersectionRecord getIntersection(SceneGraphNode& node, const Frustum& frustum) const;
+        IntersectionRecord getIntersection(SceneGraphNode& node1, SceneGraphNode& node2) const;
+        IntersectionRecord getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end) const;
+        
 
     private:
         U32 _nodeMask;

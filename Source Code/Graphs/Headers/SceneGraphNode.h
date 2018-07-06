@@ -138,11 +138,17 @@ class SceneGraphNode : public GUIDWrapper,
     /// SceneNode's name
     SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false);
     /// Find a child Node using the given name (either SGN name or SceneNode name)
-    SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false);
+    SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false, bool recursive = false);
+    /// Find a child using the give GUID
+    SceneGraphNode_wptr findChild(I64 GUID, bool recursive = false);
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
                    vectorImpl<SceneGraphNode_cwptr>& selectionHits,
                    bool recursive = true) const;
+
+    inline void onCollisionCbk(const DELEGATE_CBK_PARAM<SceneGraphNode_cptr>& cbk) {
+        _collisionCbk = cbk;
+    }
 
     /// Selection helper functions
     void setSelectionFlag(SelectionFlag flag);
@@ -201,6 +207,10 @@ class SceneGraphNode : public GUIDWrapper,
     }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
+
+    bool isChildOfType(U32 typeMask, bool ignoreRoot) const;
+    bool isRelated(const SceneGraphNode& target) const;
+    bool isChild(const SceneGraphNode& target, bool recursive) const;
 
     inline bool hasChildren() const {
         return getChildCount() > 0;
@@ -275,6 +285,7 @@ class SceneGraphNode : public GUIDWrapper,
     inline void setSpatialPartitionFlag() {
         _spatialPartitionFlag = true;
     }
+
    protected:
     friend class Octree;
     inline bool getSpatialPartitionFlag() const {
@@ -284,10 +295,10 @@ class SceneGraphNode : public GUIDWrapper,
         _spatialPartitionFlag = false;
     }
 
-    void onCollision(SceneGraphNode_wptr collider);
+    void onCollision(SceneGraphNode_cwptr collider);
 
    private:
-    bool filterCollission(SceneGraphNode& node);
+    bool filterCollission(const SceneGraphNode& node);
     inline void setName(const stringImpl& name) { _name = name; }
 
    private:
@@ -319,6 +330,8 @@ class SceneGraphNode : public GUIDWrapper,
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
     StateTracker<bool> _trackedBools;
+
+    DELEGATE_CBK_PARAM<SceneGraphNode_cptr> _collisionCbk;
 };
 
 template <>

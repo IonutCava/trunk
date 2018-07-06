@@ -40,33 +40,17 @@ namespace Divide {
 class Octree;
 class SceneGraphNode;
 typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
-typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
 
 class IntersectionRecord
 {
   public:
-    IntersectionRecord() : _distance(std::numeric_limits<D32>::max()),
-                           _hasHit(false)
-    {
-    }
-
+    IntersectionRecord();
     IntersectionRecord(const vec3<F32>& hitPos,
                        const vec3<F32>& hitNormal,
                        const Ray& ray,
-                       D32 distance) : _position(hitPos),
-                                       _normal(hitNormal),
-                                       _ray(ray),
-                                       _distance(distance),
-                                       _hasHit(true) 
-    {
-    }
-
+                       D32 distance);
     /// Creates a new intersection record indicating whether there was a hit or not and the object which was hit.
-    IntersectionRecord(SceneGraphNode_wptr hitObject) : _intersectedObject1(hitObject),
-                                                        _distance(0.0),
-                                                        _hasHit(hitObject.lock() != nullptr)
-    {
-    }
+    IntersectionRecord(SceneGraphNode_wptr hitObject);
 
     /// This is the exact point in 3D space which has an intersection.
     vec3<F32> _position;
@@ -82,32 +66,20 @@ class IntersectionRecord
     /// this is a reference to the current node within the octree for where the collision occurred. In some cases, the collision handler
     /// will want to be able to spawn new objects and insert them into the tree. This node is a good starting place for inserting these objects
     /// since it is a very near approximation to where we want to be in the tree.
-    std::shared_ptr<Octree> _treeNode;
-    /// check the object identities between the two intersection records. If they match in either order, we have a duplicate.
-
-    bool operator==(const IntersectionRecord& otherRecord)
-    {
-        SceneGraphNode_ptr node11 = _intersectedObject1.lock();
-        SceneGraphNode_ptr node12 = _intersectedObject2.lock();
-        SceneGraphNode_ptr node21 = otherRecord._intersectedObject1.lock();
-        SceneGraphNode_ptr node22 = otherRecord._intersectedObject2.lock();
-
-        /*if (node11 && node12 && node21 && node22) {
-            if (node21->getGUID() == node11->getGUID() && node22->getGUID() == node12->getGUID()) {
-                return true;
-            }
-            if (node21->getGUID() == node12->getGUID() && node22->getGUID() == node11->getGUID()) {
-                return true;
-            }
-        }*/
-        return false;
-    }
-
+    std::shared_ptr<const Octree> _treeNode;
     /// This is the distance from the ray to the intersection point. 
     /// You'll usually want to use the nearest collision point if you get multiple intersections.
     D32 _distance;
 
     bool _hasHit;
+
+    /// check the object identities between the two intersection records. If they match in either order, we have a duplicate.
+    bool operator==(const IntersectionRecord& otherRecord);
+
+    inline bool isEmpty() const {
+        return !_intersectedObject1.lock() &&
+               !_intersectedObject2.lock();
+    }
 };
 }; //namespace Divide
 #endif //_OCTREE_INTERSECTION_RECORD_H_

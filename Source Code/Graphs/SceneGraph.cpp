@@ -142,6 +142,14 @@ void SceneGraph::onCameraUpdate(Camera& camera) {
 
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
+
+    /*if (_loadComplete) {
+        U32 filter = to_const_uint(SceneNodeType::TYPE_OBJECT3D);
+        SceneGraphNode_ptr collision = _octree->nearestIntersection(ray, start, end, filter)._intersectedObject1.lock();
+        if (collision) {
+            Console::d_printfn("Octree ray cast [ %s ]", collision->getName().c_str());
+        }
+    }*/
 }
 
 void SceneGraph::postLoad() {

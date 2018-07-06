@@ -419,9 +419,11 @@ bool glShaderProgram::load() {
                 bool parseIncludes = false;
 
                 stringImpl sourceCode;
-                shaderMgr.shaderFileRead(Shader::CACHE_LOCATION_TEXT + shaderCompileName,
-                                         true,
-                                         sourceCode);
+                if (Config::USE_SHADER_TEXT_CACHE) {
+                    shaderMgr.shaderFileRead(Shader::CACHE_LOCATION_TEXT + shaderCompileName,
+                                             true,
+                                             sourceCode);
+                }
 
                 if (sourceCode.empty()) {
                     parseIncludes = true;

@@ -494,13 +494,16 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     SceneGraphNode_ptr firstPersonFlag = _sceneGraph.getRoot().addNode(*flagNode, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
+    firstPersonFlag->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
+    firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
     flagPComp = firstPersonFlag->getComponent<PhysicsComponent>();
     flagPComp->ignoreView(true, renderState().getCamera().getGUID());
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
-    _firstPersonWeapon = firstPersonFlag;
 
+    _firstPersonWeapon = firstPersonFlag;
+    
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
     AI::WarSceneAIProcessor::registerScoreCallback([&](U8 teamID, const stringImpl& unitName) {
@@ -719,6 +722,12 @@ bool WarScene::loadResources(bool continueOnErrors) {
     _taskTimers.push_back(0.0); // animation team 2
     _taskTimers.push_back(0.0); // light timer
     return true;
+}
+
+void WarScene::weaponCollision(SceneGraphNode_cptr collider) {
+    if (collider) {
+        Console::d_printfn("Weapon touched [ %s ]", collider->getName().c_str());
+    }
 }
 
 };

@@ -171,16 +171,94 @@ void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
     // Call delete on the SceneGraphNode's pointer to do that
 }
 
-SceneGraphNode_wptr SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName) {
+bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
+    if (ignoreRoot) {
+        ClearBit(typeMask, to_const_uint(SceneNodeType::TYPE_ROOT));
+    }
+    SceneGraphNode_ptr parent = getParent().lock();
+    while (parent != nullptr) {
+        if (BitCompare(typeMask, to_uint(parent->getNode<>()->getType()))) {
+            return true;
+        }
+        parent = parent->getParent().lock();
+    }
+
+    return false;
+}
+
+bool SceneGraphNode::isRelated(const SceneGraphNode& target) const {
+    I64 targetGUID = target.getGUID();
+    //is same node?
+    if (getGUID() == targetGUID) {
+        return true;
+    }
+    SceneGraphNode_ptr parent = getParent().lock();
+    //is target parent?
+    if (parent && parent->getGUID() == target.getGUID()) {
+        return true;
+    }
+    //is sibling
+    if (parent && parent->isChild(target, true)) {
+        return true;
+    }
+    //is target child?
+    return isChild(target, true);
+}
+
+bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const {
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        const SceneGraphNode& child = getChild(i, childCount);
+        if (child.getGUID() == target.getGUID()) {
+            return true;
+        } else {
+            if (recursive) {
+                if (child.isChild(target, true)) {  
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+SceneGraphNode_wptr SceneGraphNode::findChild(I64 GUID, bool recursive) {
+    U32 childCount = getChildCount();
+    for (U32 i = 0; i < childCount; ++i) {
+        SceneGraphNode& child = getChild(i, childCount);
+        if (child.getGUID() == GUID) {
+            return child.shared_from_this();
+        } else {
+            if (recursive) {
+                SceneGraphNode_wptr recChild = child.findChild(GUID, recursive);
+                if (recChild.lock()) {
+                    return recChild;
+                }
+            }
+        }
+    }
+    // no children's name matches or there are no more children
+    // so return nullptr, indicating that the node was not found yet
+    return SceneGraphNode_wptr();
+}
+
+SceneGraphNode_wptr SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) {
     U32 childCount = getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
         SceneGraphNode& child = getChild(i, childCount);
         if (sceneNodeName ? child.getNode()->getName().compare(name) == 0
-                          : child.getName().compare(name) == 0) {
+                          : child.getName().compare(name) == 0)
+        {
             return child.shared_from_this();
+        } else {
+            if (recursive) {
+                SceneGraphNode_wptr recChild = child.findChild(name, sceneNodeName, recursive);
+                if (recChild.lock()) {
+                    return recChild;
+                }
+            }
         }
     }
-
     // no children's name matches or there are no more children
     // so return nullptr, indicating that the node was not found yet
     return SceneGraphNode_wptr();
@@ -385,16 +463,19 @@ void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
     
 }
 
-bool SceneGraphNode::filterCollission(SceneGraphNode& node) {
+bool SceneGraphNode::filterCollission(const SceneGraphNode& node) {
     // filter by mask, type, etc
     return true;
 }
 
-void SceneGraphNode::onCollision(SceneGraphNode_wptr collider) {
-    SceneGraphNode_ptr node = collider.lock();
-    if (node && filterCollission(*node)) {
-        //handle collision
-        Console::d_printfn("Collision [ %s ] - [ %s ]", getName().c_str(), node->getName().c_str());
+void SceneGraphNode::onCollision(SceneGraphNode_cwptr collider) {
+    //handle collision
+    if (_collisionCbk) {
+        SceneGraphNode_cptr node = collider.lock();
+        if (node && filterCollission(*node)) {
+            assert(getGUID() != node->getGUID());
+            _collisionCbk(node);
+        }
     }
 }
 

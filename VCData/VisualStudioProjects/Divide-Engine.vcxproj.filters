@@ -518,6 +518,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\PostAAPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\IntersectionRecord.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">

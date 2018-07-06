@@ -132,24 +132,21 @@ void Octree::update(const U64 deltaTime) {
 
     // root node
     if (_parent == nullptr) {
-        vectorImpl<IntersectionRecord> irList = getIntersection(vectorImpl<SceneGraphNode_wptr>());
+        vectorImpl<SceneGraphNode_wptr> parentNodes;
+        vectorImpl<IntersectionRecord> irList = getIntersection(parentNodes, _nodeMask);
 
         for(IntersectionRecord ir : irList) {
-            SceneGraphNode_ptr obj1 = ir._intersectedObject1.lock();
-            SceneGraphNode_ptr obj2 = ir._intersectedObject2.lock();
-            if (obj1 != nullptr) {
-                handleIntersection(obj1, ir);
-            }
-            if (obj2 != nullptr) {
-                handleIntersection(obj2, ir);
-            }
+            handleIntersection(ir);
         }
     }
 }
 
 bool Octree::addNode(SceneGraphNode_wptr node) {
     SceneGraphNode_ptr nodePtr = node.lock();
-    if (nodePtr &&  !BitCompare(_nodeMask, to_uint(nodePtr->getNode<>()->getType()))) {
+    if (nodePtr && // check for valid node
+        !BitCompare(_nodeMask, to_uint(nodePtr->getNode<>()->getType())) &&  // check for valid type
+        !nodePtr->isChildOfType(_nodeMask, true)) // parent is valid type as well
+    {
         _pendingInsertion.push(node);
         _treeReady = false;
         return true;
@@ -447,11 +444,266 @@ U8 Octree::activeNodes() const {
     return ret;
 }
 
-vectorImpl<IntersectionRecord> Octree::getIntersection(const vectorImpl<SceneGraphNode_wptr>& parentObjects) {
-    return vectorImpl<IntersectionRecord>();
+/// Gives you a list of all intersection records which intersect or are contained within the given frustum area
+vectorImpl<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, U32 typeFilterMask) const
+{
+    //terminator for any recursion
+    if (_objects.empty() == 0 && activeNodes() == 0) {   
+        return vectorImpl<IntersectionRecord>();
+    }
+
+    vectorImpl<IntersectionRecord> ret;
+
+    //test each object in the list for intersection
+    for(SceneGraphNode_wptr objPtr : _objects) {
+        SceneGraphNode_ptr obj = objPtr.lock();
+        assert(obj);
+        //skip any objects which don't meet our type criteria
+        if (BitCompare(typeFilterMask, to_const_uint(obj->getNode<>()->getType()))) {
+            continue;
+        }
+
+        //test for intersection
+        IntersectionRecord ir = getIntersection(*obj, frustum);
+        if (!ir.isEmpty()) {
+            ret.push_back(ir);
+        }
+    }
+
+    //test each object in the list for intersection
+    for (I32 i = 0; i < 8; ++i) {
+        if (_childNodes[i] != nullptr && 
+            frustum.ContainsBoundingBox(_childNodes[i]->_region) != Frustum::FrustCollision::FRUSTUM_OUT)
+        {
+            vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(frustum, typeFilterMask);
+            ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
+        }
+    }
+    return ret;
 }
 
-void Octree::handleIntersection(SceneGraphNode_ptr node, IntersectionRecord intersection) {
+/// Gives you a list of intersection records for all objects which intersect with the given ray
+vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, F32 start, F32 end, U32 typeFilterMask) const
+{
+    //terminator for any recursion
+    if (_objects.empty() == 0 && activeNodes() == 0) {
+        return vectorImpl<IntersectionRecord>();
+    }
+
+    vectorImpl<IntersectionRecord> ret;
+
+    //the ray is intersecting this region, so we have to check for intersection with all of our contained objects and child regions.
+
+    //test each object in the list for intersection
+    for (SceneGraphNode_wptr objPtr : _objects) {
+        SceneGraphNode_ptr obj = objPtr.lock();
+        assert(obj);
+        //skip any objects which don't meet our type criteria
+        if (BitCompare(typeFilterMask, to_const_uint(obj->getNode<>()->getType()))) {
+            continue;
+        }
+
+        if (obj->getBoundingBoxConst().intersect(intersectRay, start, end)) {
+            IntersectionRecord ir = getIntersection(*obj, intersectRay, start, end);
+            if (!ir.isEmpty()) {
+                ret.push_back(ir);
+            }
+        }
+    }
+
+    // test each child octant for intersection
+    for (I32 i = 0; i < 8; ++i) {
+        if (_childNodes[i] != nullptr && _childNodes[i]->_region.intersect(intersectRay, start, end)) {
+            vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(intersectRay, start, end, typeFilterMask);
+            ret.insert(std::cend(ret), std::cbegin(hitList), std::cend(hitList));
+        }
+    }
+
+    return ret;
+}
+
+vectorImpl<IntersectionRecord> Octree::getIntersection(vectorImpl<SceneGraphNode_wptr>& parentObjects, U32 typeFilterMask) const
+{
+    vectorImpl<IntersectionRecord> intersections;
+    //assume all parent objects have already been processed for collisions against each other.
+    //check all parent objects against all objects in our local node
+    for(SceneGraphNode_wptr pObjPtr : parentObjects)
+    {
+        SceneGraphNode_ptr pObj = pObjPtr.lock();
+        assert(pObj);
+
+        for (SceneGraphNode_wptr objPtr : _objects) {
+            SceneGraphNode_ptr obj = objPtr.lock();
+            assert(obj);
+            //We let the two objects check for collision against each other. They can figure out how to do the coarse and granular checks.
+            //all we're concerned about is whether or not a collision actually happened.
+            IntersectionRecord ir = getIntersection(*pObj, *obj);
+            if (!ir.isEmpty()) {
+                bool found = false;
+                for (IntersectionRecord& irTemp : intersections) {
+                    if (irTemp == ir) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    intersections.push_back(ir);
+                }
+            }
+        }
+    }
+
+    //now, check all our local objects against all other local objects in the node
+    if (_objects.size() > 1) {
+        vectorImpl<SceneGraphNode_wptr> tmp(_objects);
+        while (!tmp.empty()) {
+            for(SceneGraphNode_wptr lObj2Ptr : tmp) {
+                SceneGraphNode_ptr lObj2 = lObj2Ptr.lock();
+                assert(lObj2);
+                SceneGraphNode_ptr lObj1 = tmp[tmp.size() - 1].lock();
+                assert(lObj1);
+                if (lObj1->getGUID() == lObj2->getGUID() || (isStatic(*lObj1) && isStatic(*lObj2))) {
+                    continue;
+                }
+
+                IntersectionRecord ir = getIntersection(*lObj1, *lObj2);
+                if (!ir.isEmpty()) {
+                    intersections.push_back(ir);
+                }
+            }
+
+            //remove this object from the temp list so that we can run in O(N(N+1)/2) time instead of O(N*N)
+            tmp.pop_back();
+        }
+    }
+
+    //now, merge our local objects list with the parent objects list, then pass it down to all children.
+    for(SceneGraphNode_wptr lObjPtr : _objects) {
+        SceneGraphNode_ptr lObj = lObjPtr.lock();
+        if (lObj && !isStatic(*lObj)) {
+            parentObjects.push_back(lObjPtr);
+        }
+    }
+
+    //each child node will give us a list of intersection records, which we then merge with our own intersection records.
+    for (U8 i = 0; i < 8; ++i) {
+        if (_activeNodes[i]) {
+            assert(_childNodes[i]);
+            vectorImpl<IntersectionRecord> hitList = _childNodes[i]->getIntersection(parentObjects, typeFilterMask);
+            intersections.insert(std::cend(intersections), std::cbegin(hitList), std::cend(hitList));
+        }
+    }
+
+    return intersections;
+}
+
+/// This gives you a list of every intersection record created with the intersection ray
+vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end)
+{
+    return allIntersections(intersectionRay, start, end, _nodeMask);
+}
+
+/// This gives you the first object encountered by the intersection ray
+IntersectionRecord Octree::nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
+{
+    if (!_treeReady) {
+        updateTree();
+    }
+
+    vectorImpl<IntersectionRecord> intersections = getIntersection(intersectionRay, start, end, typeFilterMask);
+
+    IntersectionRecord nearest;
+
+    for(const IntersectionRecord& ir : intersections) {
+        if (!nearest._hasHit) {
+            nearest = ir;
+            continue;
+        }
+
+        if (ir._distance < nearest._distance) {
+            nearest = ir;
+        }
+    }
+
+    return nearest;
+}
+
+/// This gives you a list of all intersections, filtered by a specific type of object
+vectorImpl<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, F32 start, F32 end, U32 typeFilterMask)
+{
+    if (!_treeReady) {
+        updateTree();
+    }
+
+    return getIntersection(intersectionRay, start, end, typeFilterMask);
+}
+
+/// This gives you a list of all objects which [intersect or are contained within] the given frustum and meet the given object type
+vectorImpl<IntersectionRecord> Octree::allIntersections(const Frustum& region, U32 typeFilterMask)
+{
+    if (!_treeReady) {
+        updateTree();
+    }
+
+    return getIntersection(region, typeFilterMask);
+}
+
+void Octree::handleIntersection(IntersectionRecord intersection) const {
+    SceneGraphNode_ptr obj1 = intersection._intersectedObject1.lock();
+    SceneGraphNode_ptr obj2 = intersection._intersectedObject2.lock();
+    if (obj1 != nullptr && obj2 != nullptr) {
+        // Check for child / parent relation
+        if(obj1->isRelated(*obj2)) {
+            return;
+        }
+        obj1->onCollision(obj2);
+        obj2->onCollision(obj1);
+    }
+}
+
+bool Octree::isStatic(const SceneGraphNode& node) const {
+    return node.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC;
+}
+
+IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum) const {
+    const BoundingBox& bb = node.getBoundingBoxConst();
+
+    if (frustum.ContainsBoundingBox(bb) != Frustum::FrustCollision::FRUSTUM_OUT) {
+        IntersectionRecord ir(node.shared_from_this());
+        ir._treeNode = shared_from_this();
+        return ir;
+    }
+
+    return IntersectionRecord();
+}
+
+IntersectionRecord Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2) const {
+    if (node1.getGUID() != node2.getGUID()) {
+        if (node1.getBoundingSphereConst().collision(node2.getBoundingSphereConst())) {
+            const BoundingBox& bb1 = node1.getBoundingBoxConst();
+            const BoundingBox& bb2 = node2.getBoundingBoxConst();
+            if (bb1.collision(bb2)) {
+                IntersectionRecord ir(node1.shared_from_this());
+                ir._intersectedObject2 = node2.shared_from_this();
+                ir._treeNode = shared_from_this();
+                return ir;
+            }
+        }
+    }
+
+    return IntersectionRecord();
+}
+
+IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end) const {
+    const BoundingBox& bb = node.getBoundingBoxConst();
+    IntersectionRecord ir;
+    if (bb.intersect(intersectRay, start, end)) {
+        ir._intersectedObject1 = node.shared_from_this();
+        ir._ray = intersectRay;
+        ir._treeNode = shared_from_this();
+    }
+
+    return ir;
 }
 
 }; //namespace Divide
