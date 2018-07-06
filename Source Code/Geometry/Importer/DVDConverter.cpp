@@ -55,6 +55,7 @@ Mesh* DVDConverter::load(const string& file){
 			if(s->getRefCount() == 1){
 				Material* m = loadSubMeshMaterial(_aiScenePointer->mMaterials[_aiScenePointer->mMeshes[n]->mMaterialIndex],string(s->getName()+ "_material"));
 				s->setMaterial(m);
+				m->setHardwareSkinning(s->_hasAnimations);
 			}//else the Resource manager created a copy of the material
 			tempMesh->addSubMesh(s->getName());
 		}

@@ -52,7 +52,6 @@ void SceneNode::onDraw(){
 	Material* mat = getMaterial();
 	if(mat){
 		mat->computeLightShaders();
-
 	}
 }
 

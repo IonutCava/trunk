@@ -8,7 +8,27 @@ uniform mat4 modelViewInvMatrix;
 
 #include "vboInputData.vert"
 #include "lightingDefaults.vert"
+
+void main(void){
+
+	computeData();
+
+	//Compute the final vert position
+	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
+	vec4 normal = vec4(normalize(gl_NormalMatrix * normalData),0);
+	computeLightVectors();
+}
+
+-- Vertex.WithBones
+
+uniform float time;
+
+uniform mat4 modelViewInvMatrix;
+//uniform mat4 modelViewProjectionMatrix;
+//uniform mat4 transformMatrix;
+//uniform mat4 parentTransformMatrix;
 #include "boneTransforms.vert"
+#include "lightingDefaults.vert"
 
 void main(void){
 

@@ -3,8 +3,7 @@
 varying vec3 normals;
 varying float depth;
 
-uniform float zNear;
-uniform float zFar;
+uniform vec2 zPlanes;
 
 float LinearDepth(in float inDepth);
 
@@ -17,9 +16,9 @@ void main(void){
 }
 
 float LinearDepth(in float inDepth){
-	float dif = zFar - zNear;
-	float A = -(zFar + zNear) / dif;
-	float B = -2*zFar*zNear / dif;
+	float dif = zPlanes.y - zPlanes.x;
+	float A = -(zPlanes.y + zPlanes.x) / dif;
+	float B = -2*zPlanes.y*zPlanes.x / dif;
 	float C = -(A*inDepth + B) / inDepth; // C in [-1, 1]
 	return 0.5 * C + 0.5; // in [0, 1]
 }

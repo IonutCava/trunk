@@ -72,12 +72,23 @@ bool glShaderProgram::load(const string& name){
 		///Split the shader name to get the effect file name and the effect properties 
 		std::string shaderName = name.substr(0,name.find_first_of("."));
 		std::string shaderProperties;
+		///Vertex Properties work in revers order. All the text after "|" goes first.
+		///The rest of the shader properties are added later
+		size_t propPositionVertex = name.find_first_of(",");
 		size_t propPosition = name.find_first_of(".");
 		if(propPosition !=string::npos){
-			shaderProperties = "."+name.substr(propPosition+1);
+			shaderProperties = "."+ name.substr(propPosition+1,propPositionVertex-propPosition-1);
+		}
+	
+		std::string vertexProperties;
+		if(propPositionVertex !=string::npos){
+			vertexProperties = "."+name.substr(propPositionVertex+1);
 		}
 		
-		std::string vertexShader = shaderName+".Vertex"+shaderProperties;
+		vertexProperties += shaderProperties;
+
+		
+		std::string vertexShader = shaderName+".Vertex"+vertexProperties;
 		std::string fragmentShader = shaderName+".Fragment"+shaderProperties;
 		std::string geometryShader = shaderName+".Geometry"+shaderProperties;
 		std::string tessellationShader = shaderName+".Tessellation"+shaderProperties;

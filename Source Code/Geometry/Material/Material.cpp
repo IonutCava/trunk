@@ -22,6 +22,7 @@ Material::Material() : Resource(),
 					   _castsShadows(true),
 					   _receiveShadows(true),
 					   _shaderProgramChanged(false),
+					   _hardwareSkinning(false),
 					   _shadingMode(SHADING_PHONG), /// phong shading by default
 					   _shaderRef(NULL)
 {
@@ -184,7 +185,8 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader){
 
 	_shaderRef = static_cast<ShaderProgram* >(FindResource(_shader));
 	if(!_shaderRef){
-		_shaderRef = CreateResource<ShaderProgram>(ResourceDescriptor(_shader));
+		ResourceDescriptor shaderDescriptor(_shader);
+		_shaderRef = CreateResource<ShaderProgram>(shaderDescriptor);
 	}
 	_dirty = true;
 	_computedLightShaders = true;
@@ -200,25 +202,37 @@ Texture2D* const  Material::getTexture(TextureUsage textureUsage)  {
 	return _textures[textureUsage];
 }
 
+///If the current material doesn't have a shader associated with it, then add the default ones.
+///Manually setting a shader, overrides this function by setting _computedLightShaders to "true"
 void Material::computeLightShaders(){
-	//If the current material doesn't have a shader associated with it, then add the default ones.
-	//Manually setting a shader, overrides this function by setting _computedLightShaders to "true"
 	if(_computedLightShaders) return;
 	if(_shader.empty()){
+		///the base shader is either for a Forward Renderer ...
 		std::string shader = "lighting";
 		if(GFX_DEVICE.getDeferredRendering()){
+			///... or a Deferred one
 			shader = "DeferredShadingPass1";
 		}
-
+		///What kind of effects do we need?
 		if(_textures[TEXTURE_BASE]){
+			///Bump mapping?
 			if(_textures[TEXTURE_BUMP]){
-				setShaderProgram(shader + ".Bump");
+				shader += ".Bump";
 			}else{
-				setShaderProgram(shader + ".Texture");
+				/// Or simple texture mapping?
+				shader += ".Texture";
 			}
 		}else{
-			setShaderProgram(shader + ".NoTexture");
+			/// Or just color mapping?
+			shader += ".NoTexture";
 		}
+
+		if(_hardwareSkinning){
+			///Add the GPU skinnig module to the vertex shader?
+			shader += ",WithBones"; ///<"," as opposed to "." sets the primary vertex shader property
+		}
+
+		setShaderProgram(shader);
 	}
 }
 

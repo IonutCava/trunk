@@ -144,6 +144,7 @@ void GL_API::initHardware(){
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform); //How many uniforms can we send to vertex shaders
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib); //How many attributes can we send to a vertex shader
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units); //Maximum number of texture units we can address in shaders
+	const GLubyte* glslVersionSupported = glGetString(GL_SHADING_LANGUAGE_VERSION);
 	//Time to select our shaders.
 	//We do not support OpenGL version lower than 2.0;
 	if(major < 2){
@@ -198,6 +199,7 @@ void GL_API::initHardware(){
 	PRINT_FN("Max GLSL vertex attributes supported: %d",max_vertex_attrib);
 	PRINT_FN("Max Combined Texture Units supported: %d",max_texture_units); 
 	PRINT_FN("Hardware acceleration up to OpenGL %d.%d supported!",major,minor);
+	PRINT_FN("GLSL version supported: [ %s ]",glslVersionSupported);
 	GL_ENUM_TABLE::fill();
 	//Set the clear color to a nice blue
 	glClearColor(0.1f,0.1f,0.8f,1);
@@ -292,7 +294,7 @@ void GL_API::idle(){
 	glutPostRedisplay();
 }
 
-//ToDo: convert to OpenGL 3.3 and GLSL 1.5 standards. No more matrix queries to GPU - Ionut
+//ToDo: convert to OpenGL 3.2 and GLSL 1.5 standards. No more matrix queries to GPU - Ionut
 void GL_API::getProjectionMatrix(mat4<F32>& projMat){
 	glGetFloatv( GL_PROJECTION_MATRIX, projMat.mat );	
 }
@@ -307,7 +309,7 @@ void GL_API::clearBuffers(U8 buffer_mask){
 	if((buffer_mask & GFXDevice::COLOR_BUFFER ) == GFXDevice::COLOR_BUFFER) buffers |= GL_COLOR_BUFFER_BIT;
 	if((buffer_mask & GFXDevice::DEPTH_BUFFER) == GFXDevice::DEPTH_BUFFER) buffers |= GL_DEPTH_BUFFER_BIT;
 	if((buffer_mask & GFXDevice::STENCIL_BUFFER) == GFXDevice::STENCIL_BUFFER) buffers |= GL_STENCIL_BUFFER_BIT;
-	glClear(buffers);
+	GLCheck(glClear(buffers));
 }
 
 void GL_API::swapBuffers(){
@@ -618,10 +620,11 @@ void GL_API::renderModel(Object3D* const model){
 	if(b_continue){	
 
 		VertexBufferObject* vbo = model->getGeometryVBO();
+		assert(vbo != NULL);
 		std::vector<U16>& hwIndices = vbo->getHWIndices();
-
+		assert(!hwIndices.empty());
 		vbo->Enable();
-			glDrawRangeElements(type, model->getIndiceLimits().x, model->getIndiceLimits().y, hwIndices.size(), GL_UNSIGNED_SHORT, (const GLvoid*)(0) );
+			GLCheck(glDrawRangeElements(type, (GLshort)model->getIndiceLimits().x, (GLshort)(model->getIndiceLimits().y + 1) /*half open*/ , (size_t)hwIndices.size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0)));
 		vbo->Disable();
 	}
 }
@@ -649,7 +652,7 @@ void GL_API::renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, c
 			format = GL_UNSIGNED_INT;
 			break;
 	}
-	glDrawElements(t, count, format, first_element );
+	GLCheck(glDrawElements(t, count, format, first_element ));
 	
 }
 
@@ -683,7 +686,7 @@ void GL_API::toggle2D(bool state){
 }
 
 void GL_API::setAmbientLight(const vec4<F32>& light){
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light);
+	GLCheck(glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light));
 }
 
 ///Update OpenGL light state

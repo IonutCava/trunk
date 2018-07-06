@@ -43,32 +43,15 @@ void ShaderProgram::bind(){
 	Frustum& frust = Frustum::getInstance();
 	ParamHandler& par = ParamHandler::getInstance();
 	Application& app = Application::getInstance();
-	F32 resolutionFactor = 1;
-	switch(par.getParam<U8>("shadowDetailLevel")){
-		case LOW: {
-			 //1/4 the shadowmap resolution
-			resolutionFactor = 4;
-		}break;
-		case MEDIUM: {
-			//1/2 the shadowmap resolution
-			resolutionFactor = 2;
-		}break;
-		default:
-		case HIGH: {
-			//Full shadowmap resolution
-			resolutionFactor = 1;
-		}break;
-	};
+
 	this->Attribute("cameraPosition",frust.getEyePos());
     this->Uniform("modelViewInvMatrix",frust.getModelviewInvMatrix());
 	this->Uniform("modelViewMatrix",frust.getModelviewMatrix());
 	this->Uniform("modelViewProjectionMatrix",frust.getModelViewProjectionMatrix());
 	this->Uniform("lightProjectionMatrix",GFX_DEVICE.getLightProjectionMatrix());
-	this->Uniform("zNear",par.getParam<F32>("zNear"));
-	this->Uniform("zFar",par.getParam<F32>("zFar"));
-	this->Uniform("screenWidth", app.getWindowDimensions().width);
-	this->Uniform("screenHeight", app.getWindowDimensions().height);
-	this->Uniform("resolutionFactor", resolutionFactor);
+	this->Uniform("zPlanes",vec2<F32>(par.getParam<F32>("zNear"),par.getParam<F32>("zFar")));
+	this->Uniform("screenDimension", app.getWindowDimensions());
+	this->Uniform("resolutionFactor", par.getParam<U8>("shadowDetailLevel"));
 	this->Uniform("time", GETTIME());
 	this->Uniform("enableFog",true);
 }

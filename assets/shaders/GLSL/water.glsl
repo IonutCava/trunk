@@ -29,8 +29,7 @@ void main(void)
 
 -- Fragment
 
-uniform float screenWidth;
-uniform float screenHeight;
+uniform vec2 screenDimension;
 uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;
@@ -70,7 +69,7 @@ void main (void)
 	vec3 normal1 = texture2D(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
 	vec3 normal = normalize(normal0+normal1);
 	
-	vec2 uvReflection = vec2(gl_FragCoord.x/screenWidth, gl_FragCoord.y/screenHeight);
+	vec2 uvReflection = vec2(gl_FragCoord.x/screenDimension.x, gl_FragCoord.y/screenDimension.y);
 	
 	vec2 uvFinal = uvReflection.xy + noise_factor*normal.xy;
 	gl_FragColor = texture2D(texWaterReflection, uvFinal);

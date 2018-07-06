@@ -1694,6 +1694,10 @@
 						RelativePath="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert"
 						>
 					</File>
+					<File
+						RelativePath="..\..\assets\shaders\GLSL\vertexAtoms\vboInputDataBones.vert"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="fragmentAtoms"

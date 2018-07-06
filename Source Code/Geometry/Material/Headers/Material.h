@@ -87,6 +87,7 @@ public:
   bool load(const std::string& name) {_name = name; return true;}
   bool unload();
 
+  inline void setHardwareSkinning(bool state)    {_hardwareSkinning = state;}
   inline void setAmbient(const vec4<F32>& value) {_ambient = value; _materialMatrix.setCol(0,value);}
   inline void setDiffuse(const vec4<F32>& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
   inline void setSpecular(const vec4<F32>& value) {_specular = value; _materialMatrix.setCol(2,value);}
@@ -153,7 +154,8 @@ private:
   bool _doubleSided;
   bool _castsShadows;
   bool _receiveShadows;
-  bool _shaderProgramChanged;
+  bool _shaderProgramChanged; ///< Used for tracking VBO binding with shader
+  bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
   ShaderProgram* _shaderRef;
 
   /// use this map to add more render states mapped to a specific state

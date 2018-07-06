@@ -29,8 +29,6 @@ uniform sampler2D texBruit2;
 uniform bool enable_pdc;
 uniform bool enable_underwater;
 
-uniform float screenWidth;
-uniform float screenHeight;
 uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;

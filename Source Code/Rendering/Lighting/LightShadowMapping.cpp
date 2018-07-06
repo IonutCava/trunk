@@ -13,26 +13,12 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 		ERROR_FN("Setting invalid shadow casting callback for light [ %d ]", _id);
 		return;
 	}
-	F32 resolutionFactor = 1;
+	///The higher the shadow detail level, the bigger depth buffers we have
+	F32 resolutionFactor = ParamHandler::getInstance().getParam<U8>("shadowDetailLevel");
 	///If this is the first initialization pass, first = true;
 	///If we changed the callback after initialization, first = false;
 	bool firstPass = false;
-	///The higher the shadow detail level, the bigger depth buffers we have
-	switch(ParamHandler::getInstance().getParam<U8>("shadowDetailLevel")){
-		case LOW: {
-			 ///1/4 the shadowmap resolution
-			resolutionFactor = 4;
-		}break;
-		case MEDIUM: {
-			///1/2 the shadowmap resolution
-			resolutionFactor = 2;
-		}break;
-		default:
-		case HIGH: {
-			///Full shadowmap resolution
-			resolutionFactor = 1;
-		}break;
-	};
+
 	///If this is the first call, create depth maps;
 	if(_depthMaps.empty()){
 		///Create the FBO's

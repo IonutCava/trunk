@@ -151,7 +151,7 @@ protected:
 	std::vector<vec2<F32> >	_dataTexcoord;
 	std::vector<vec3<F32> >	_dataTangent;
 	std::vector<vec3<F32> >	_dataBiTangent;
-	std::vector<vec4<U8> >  _boneIndices;
+	std::vector<vec4<U8>  > _boneIndices;
 	std::vector<vec4<F32> > _boneWeights;
 
 	/// To change this, call Create again on the VBO

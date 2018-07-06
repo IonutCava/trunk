@@ -47,10 +47,18 @@ private:
 	void Disable_VBO();
 	void Disable_Shader_VBO();
 
+	///Bone data
+	void Enable_Bone_Data_VA();
+	void Enable_Bone_Data_VBO();
+	void Enable_Shader_Bone_Data_VBO();
+	void Disable_Bone_Data_VA();
+	void Disable_Bone_Data_VBO();
+	void Disable_Shader_Bone_Data_VBO();
+
 private:
 	bool _created; ///< VBO's can be auto-created as GL_STATIC_DRAW if Enable() is called before Create();
 				   ///< Tis helps with multi-threaded asset loading without creating separate GL contexts for each thread
-
+	bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
 	I32 _positionDataLocation;
 	I32 _normalDataLocation;
 	I32 _texCoordDataLocation;

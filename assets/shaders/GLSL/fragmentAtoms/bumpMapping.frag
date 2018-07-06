@@ -1,9 +1,8 @@
 //Normal or BumpMap
 uniform sampler2D texBump;
+uniform vec2 zPlanes;
 uniform float parallax_factor;
 uniform float relief_factor;
-uniform float zNear;
-uniform float zFar;
 uniform int mode;
 #define MODE_PHONG      0
 #define MODE_BUMP		1
@@ -88,8 +87,8 @@ vec4 ReliefMapping(vec2 uv){
 	p += v*h*viewVecTBN.z;	
 	
 	vec2 planes;
-	planes.x = -zFar/(zFar-zNear);
-	planes.y = -zFar*zNear/(zFar-zNear);
+	planes.x = -zPlanes.y/(zPlanes.y-zPlanes.x);
+	planes.y = -zPlanes.y*zPlanes.x/(zPlanes.y-zPlanes.x);
 	gl_FragDepth =((planes.x*p.z+planes.y)/-p.z);
 	
 	return NormalMapping(uv+uv_offset, vPixToEyeTBN, vPixToLightTBNcurrent, false);

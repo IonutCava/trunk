@@ -6,6 +6,7 @@
 /// Default destructor
 glVertexBufferObject::glVertexBufferObject() : VertexBufferObject() {
 	_created = false;
+	_animationData = false;
 }
 
 /// Delete buffer
@@ -33,33 +34,32 @@ bool glVertexBufferObject::Refresh(){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
-	ptrdiff_t	nSizePosition = 0;
-	ptrdiff_t	nSizeNormal = 0;
-	ptrdiff_t	nSizeTexcoord = 0;
-	ptrdiff_t	nSizeTangent = 0;
-	ptrdiff_t	nSizeBiTangent = 0;
-	ptrdiff_t	nSizeBoneWeights = 0;
-	ptrdiff_t	nSizeBoneIndices = 0;
+	ptrdiff_t nSizePosition = 0;
+	ptrdiff_t nSizeNormal = 0;
+	ptrdiff_t nSizeTexcoord = 0;
+	ptrdiff_t nSizeTangent = 0;
+	ptrdiff_t nSizeBiTangent = 0;
+	ptrdiff_t nSizeBoneWeights = 0;
+	ptrdiff_t nSizeBoneIndices = 0;
 
 	if(!_dataPosition.empty()) {
 		nSizePosition = _dataPosition.size()*sizeof(vec3<F32>);
-	}
-	else {
+	}else {
 		ERROR_F("No position data !\n");
 		return false;
 	}
 
-	nSizeNormal	= _dataNormal.size()*sizeof(vec3<F32>);
-	nSizeTexcoord = _dataTexcoord.size()*sizeof(vec2<F32>);
-	nSizeTangent = _dataTangent.size()*sizeof(vec3<F32>);
+	_animationData = (!_boneWeights.empty() && !_boneIndices.empty());
+
+	nSizeNormal	   = _dataNormal.size()*sizeof(vec3<F32>);
+	nSizeTexcoord  = _dataTexcoord.size()*sizeof(vec2<F32>);
+	nSizeTangent   = _dataTangent.size()*sizeof(vec3<F32>);
 	nSizeBiTangent = _dataBiTangent.size()*sizeof(vec3<F32>);
-	/// Bone indices and weights are always packed togheter to prevent invalid animations
-	nSizeBoneWeights = _boneWeights.size()*sizeof(vec4<F32>);
-	nSizeBoneIndices = _boneIndices.size()*sizeof(vec4<U8>);
 	
 	_VBOoffsetPosition  = 0;
 	ptrdiff_t previousOffset = _VBOoffsetPosition;
 	ptrdiff_t previousCount = nSizePosition;
+
 	if(nSizeNormal > 0){
 		_VBOoffsetNormal = previousOffset + previousCount;
 		previousOffset = _VBOoffsetNormal;
@@ -84,13 +84,15 @@ bool glVertexBufferObject::Refresh(){
 		previousCount = nSizeBiTangent;
 	}
 
-	if(nSizeBoneWeights > 0 && nSizeBoneIndices > 0){
+	if(_animationData){
+		/// Bone indices and weights are always packed togheter to prevent invalid animations
+		nSizeBoneWeights = _boneWeights.size()*sizeof(vec4<F32>);
+		nSizeBoneIndices = _boneIndices.size()*sizeof(vec4<U8>);
 		_VBOoffsetBoneIndices = previousOffset + previousCount;
 		previousOffset = _VBOoffsetBoneIndices;
 		previousCount = nSizeBoneIndices;
 		_VBOoffsetBoneWeights = previousOffset + previousCount;
 	}
-
 
 	glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 	glBufferData(GL_ARRAY_BUFFER, nSizePosition+
@@ -104,49 +106,48 @@ bool glVertexBufferObject::Refresh(){
 	if(_positionDirty){
 	    glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetPosition,	nSizePosition,	    
 		                                 (const GLvoid*)(&_dataPosition[0].x));
+		/// Clear all update flags
+		_positionDirty  = false;
 	}
 
 	if(_dataNormal.size() && _normalDirty){
 		glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetNormal,	    nSizeNormal,	   
 		                                (const GLvoid*)(&_dataNormal[0].x));
+		_normalDirty    = false;
 	}
 
 	if(_dataTexcoord.size() && _texcoordDirty){
 		glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetTexcoord,	nSizeTexcoord,   	
 		                                (const GLvoid*)(&_dataTexcoord[0].s));
+		_texcoordDirty  = false;
 	}
 
 	if(_dataTangent.size() && _tangentDirty){
 		glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetTangent,	    nSizeTangent,	    
 		                                 (const GLvoid*)(&_dataTangent[0].x));
+		_tangentDirty   = false;
 	}
 
 	if(_dataBiTangent.size() && _bitangentDirty){
 		glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetBiTangent,	nSizeBiTangent,	    
 		                                (const GLvoid*)(&_dataBiTangent[0].x));
+		_bitangentDirty = false;
 	}
 
-	if(_boneWeights.size() && _boneIndices.size()) {
+	if(_animationData) {
 		if(_indicesDirty){
 			glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetBoneIndices,	nSizeBoneIndices,	
 								             (const GLvoid*)(&_boneIndices[0].x));
+			_indicesDirty   = false;
 		}
 		if(_weightsDirty){
 			glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetBoneWeights,	nSizeBoneWeights,	
 							                 (const GLvoid*)(&_boneWeights[0].x));
+			_weightsDirty   = false;
 		}
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	/// Clear all update flags
-	_positionDirty  = false;
-	_normalDirty    = false;
-	_texcoordDirty  = false;
-	_tangentDirty   = false;
-	_bitangentDirty = false;
-	_indicesDirty   = false;
-	_weightsDirty   = false;
 
 	return true;
 }
@@ -207,19 +208,30 @@ void glVertexBufferObject::setShaderProgram(ShaderProgram* const shaderProgram) 
 
 /// If we do not have a VBO object, we use vertex arrays as fail safes
 void glVertexBufferObject::Enable(){
-	if(!_created) CreateInternal();
+	if(!_created) CreateInternal(); ///< Make sure we have valid data
+
 	if(_VBOid){
+		glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 		if(_IBOid){
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBOid);
 		}
 		/// If we do not have a shader assigned, use old style VBO
 		if(_currentShader == NULL){
 			Enable_VBO();		
+			if(_animationData){
+				Enable_Bone_Data_VBO();
+			}
 		}else{ /// Else, use attrib pointers
 			Enable_Shader_VBO();
+			if(_animationData){
+				Enable_Shader_Bone_Data_VBO();
+			}
 		}
 	}else{
 		Enable_VA();		
+		if(_animationData){
+			Enable_Bone_Data_VA();
+		}
 	}
 }
 /// If we do not have a VBO object, we use vertex arrays as fail safes
@@ -227,14 +239,25 @@ void glVertexBufferObject::Disable(){
 	if(_VBOid){
 		/// If we do not have a shader assigned, use old style VBO
 		if(_currentShader == NULL){
+			if(_animationData){
+				Disable_Bone_Data_VBO();
+			}
 			Disable_VBO();		
 		}else{
+			if(_animationData){
+				Disable_Shader_Bone_Data_VBO();
+			}
 			Disable_Shader_VBO();
 		}
 		if(_IBOid){
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	}else{
+		if(_animationData){
+			Disable_Bone_Data_VA();
+		}
 		Disable_VA();		
 	}
 }
@@ -267,29 +290,33 @@ void glVertexBufferObject::Enable_VA() {
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(3, GL_FLOAT, sizeof(vec3<F32>), &(_dataBiTangent[0].x));
 	}
+}
 
-	if(!_boneWeights.empty() && !_boneIndices.empty()){
-		glClientActiveTexture(GL_TEXTURE3);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(4, GL_BYTE,sizeof(vec4<U8>), &(_boneIndices[0].x));
+void glVertexBufferObject::Enable_Bone_Data_VA() {
 
-		glClientActiveTexture(GL_TEXTURE4);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(4, GL_FLOAT, sizeof(vec4<F32>), &(_boneWeights[0].x));
+	glClientActiveTexture(GL_TEXTURE3);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer(4, GL_BYTE,sizeof(vec4<U8>), &(_boneIndices[0].x));
 
-	}
+	glClientActiveTexture(GL_TEXTURE4);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer(4, GL_FLOAT, sizeof(vec4<F32>), &(_boneWeights[0].x));
+
+}
+
+
+void glVertexBufferObject::Disable_Bone_Data_VA() {
+
+	glClientActiveTexture(GL_TEXTURE4);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glClientActiveTexture(GL_TEXTURE3);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
 }
 
 /// If we do not have a VBO object, we use vertex arrays as fail safes
 void glVertexBufferObject::Disable_VA() {
-
-	if(!_boneWeights.empty() && !_boneIndices.empty()){
-		glClientActiveTexture(GL_TEXTURE4);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
-		glClientActiveTexture(GL_TEXTURE3);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	}
 
 	if(!_dataBiTangent.empty()){
 		glClientActiveTexture(GL_TEXTURE2);
@@ -305,7 +332,6 @@ void glVertexBufferObject::Disable_VA() {
 		glClientActiveTexture(GL_TEXTURE0);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
-
 	
 	if(!_dataNormal.empty()) {
 		glDisableClientState(GL_NORMAL_ARRAY);
@@ -316,8 +342,6 @@ void glVertexBufferObject::Disable_VA() {
 
 
 void glVertexBufferObject::Enable_VBO() {
-
-	glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, sizeof(vec3<F32>), (const GLvoid*)_VBOoffsetPosition);
@@ -344,27 +368,28 @@ void glVertexBufferObject::Enable_VBO() {
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(3, GL_FLOAT, sizeof(vec3<F32>), (const GLvoid*)_VBOoffsetBiTangent);
 	}
+}
 
-	if(!_boneWeights.empty() && !_boneIndices.empty()){
-		glClientActiveTexture(GL_TEXTURE3);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(4, GL_BYTE, sizeof(vec4<U8>),  (const GLvoid*)_VBOoffsetBoneIndices);
+void glVertexBufferObject::Enable_Bone_Data_VBO() {
+	
+	glClientActiveTexture(GL_TEXTURE3);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer(4, GL_BYTE, sizeof(vec4<U8>),  (const GLvoid*)_VBOoffsetBoneIndices);
 
-		glClientActiveTexture(GL_TEXTURE4);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(4, GL_FLOAT, sizeof(vec4<F32>), (const GLvoid*)_VBOoffsetBoneWeights);
-	}
+	glClientActiveTexture(GL_TEXTURE4);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer(4, GL_FLOAT, sizeof(vec4<F32>), (const GLvoid*)_VBOoffsetBoneWeights);
+}
+		
+void glVertexBufferObject::Disable_Bone_Data_VBO() {
+	glClientActiveTexture(GL_TEXTURE4);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glClientActiveTexture(GL_TEXTURE3);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 void glVertexBufferObject::Disable_VBO(){
-
-	if(!_boneIndices.empty() && !_boneWeights.empty()){
-		glClientActiveTexture(GL_TEXTURE4);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
-		glClientActiveTexture(GL_TEXTURE3);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	}
 
 	if(!_dataBiTangent.empty()){
 		glClientActiveTexture(GL_TEXTURE2);
@@ -387,10 +412,7 @@ void glVertexBufferObject::Disable_VBO(){
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
-
 
 void glVertexBufferObject::Enable_Shader_VBO(){
 	assert(_currentShader != NULL); ///< Should never fail
@@ -399,9 +421,8 @@ void glVertexBufferObject::Enable_Shader_VBO(){
 	_currentShader->Uniform("emptyTexCoord",_dataTexcoord.empty());
 	_currentShader->Uniform("emptyTangent",_dataTangent.empty());
 	_currentShader->Uniform("emptyBiTangent",_dataBiTangent.empty());
-	_currentShader->Uniform("emptyBones",(_boneIndices.empty() || _boneWeights.empty()));
+	_currentShader->Uniform("emptyBones",!_animationData);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, sizeof(vec3<F32>), (const GLvoid*)_VBOoffsetPosition);
@@ -428,27 +449,28 @@ void glVertexBufferObject::Enable_Shader_VBO(){
 		glEnableVertexAttribArray(_biTangentDataLocation);
 		glVertexAttribPointer(_biTangentDataLocation, 3, GL_FLOAT, GL_FALSE, sizeof(vec3<F32>), (const GLvoid*)_VBOoffsetBiTangent);
 	}
+}
 
-	if(!_boneIndices.empty() && !_boneWeights.empty()){
-		/// Bone indices
-		glEnableVertexAttribArray(_boneIndiceDataLocation);
-		glVertexAttribIPointer(_boneIndiceDataLocation, 4, GL_BYTE, sizeof(vec4<U8>), (const GLvoid*)_VBOoffsetBoneIndices);
+void glVertexBufferObject::Enable_Shader_Bone_Data_VBO() {
 
-		/// Bone weights
-		glEnableVertexAttribArray(_boneWeightDataLocation);
-		glVertexAttribPointer(_boneWeightDataLocation,  4, GL_FLOAT, GL_FALSE, sizeof(vec4<F32>), (const GLvoid*)_VBOoffsetBoneWeights);
+	/// Bone indices
+	glEnableVertexAttribArray(_boneIndiceDataLocation);
+	glVertexAttribIPointer(_boneIndiceDataLocation, 4, GL_BYTE, sizeof(vec4<U8>), (const GLvoid*)_VBOoffsetBoneIndices);
 
-	}
+	/// Bone weights
+	glEnableVertexAttribArray(_boneWeightDataLocation);
+	glVertexAttribPointer(_boneWeightDataLocation,  4, GL_FLOAT, GL_FALSE, sizeof(vec4<F32>), (const GLvoid*)_VBOoffsetBoneWeights);
+}
 
+void glVertexBufferObject::Disable_Shader_Bone_Data_VBO(){
+
+	glDisableVertexAttribArray(_boneWeightDataLocation);
+	glDisableVertexAttribArray(_boneIndiceDataLocation);
 }
 
 void glVertexBufferObject::Disable_Shader_VBO(){
-	assert(_currentShader != NULL); ///< Should never fail
 
-	if(!_boneIndices.empty() && _boneWeights.empty()){
-		glDisableVertexAttribArray(_boneWeightDataLocation);
-		glDisableVertexAttribArray(_boneIndiceDataLocation);
-	}
+	assert(_currentShader != NULL); ///< Should never fail
 
 	if(!_dataBiTangent.empty()){
 		glDisableVertexAttribArray(_biTangentDataLocation);
@@ -469,5 +491,6 @@ void glVertexBufferObject::Disable_Shader_VBO(){
 	//glDisableVertexAttribArray(_positionDataLocation);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
+
