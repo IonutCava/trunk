@@ -78,16 +78,19 @@ namespace Navigation {
     }
 
     void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z, U32 color){
-        if(!_dirty || !_primitive) return;
-        if(_overrideColor)  color = _color;
+        if (!_dirty || !_primitive){
+            return;
+        }
+        if (_overrideColor) {
+            color = _color;
+        }
 
-        vec4<U8> colorVec;
-        vec3<F32> vert(x,y,z);
-        rcCol(color, colorVec.r, colorVec.g, colorVec.b, colorVec.a);
-        colorVec.a = 64;
+        U8 colorVec[4];
+        rcCol(color, colorVec[0], colorVec[1], colorVec[2], colorVec[3]);
+        colorVec[3] = 64;
 
-        _primitive->attribute4ub("inColorData", colorVec);
-        _primitive->vertex(vert);
+        _primitive->attribute4ub("inColorData", colorVec[0], colorVec[1], colorVec[2], colorVec[3]);
+        _primitive->vertex(x, y, z);
     }
 
     void NavMeshDebugDraw::end() {

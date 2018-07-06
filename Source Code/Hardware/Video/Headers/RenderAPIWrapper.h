@@ -45,6 +45,8 @@ typedef vectorImpl<Plane<F32> > PlaneList;
 class SceneGraph;
 
 class ShaderProgram;
+class GenericVertexData;
+class VertexDataInterface;
 
 typedef struct {
     // Video resolution
@@ -71,13 +73,13 @@ struct GenericDrawCommand {
 private:
     U8     _queryID;
     U8     _lodIndex;
-    I32    _drawID;
     bool   _drawToBuffer;
     bool   _renderWireframe;
     size_t _stateHash;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
     ShaderProgram*      _shaderProgram;
+    VertexDataInterface*  _sourceBuffer;
 
 public:
     inline void LoD(U8 lod)                 { _lodIndex = lod; }
@@ -88,8 +90,11 @@ public:
     inline void instanceCount(U32 count)    { _cmd.instanceCount = count; }
     inline void firstIndex(U32 index)       { _cmd.firstIndex = index; }
     inline void indexCount(U32 count)       { _cmd.count = count; }
-    inline void drawID(I32 drawID)          { _drawID = drawID; }
+    inline void baseInstance(U32 value)     { _cmd.baseInstance = value; }
+    inline void drawID(I32 drawID)          { baseInstance(drawID); }
     inline void shaderProgram(ShaderProgram* const program) { _shaderProgram = program; }
+    inline void sourceBuffer(VertexDataInterface* const sourceBuffer) { _sourceBuffer = sourceBuffer; }
+    inline void primitiveType(PrimitiveType type) { _type = type;  }
 
     inline U8 LoD()               const { return _lodIndex; }
     inline U8 queryID()           const { return _queryID; }
@@ -97,11 +102,13 @@ public:
     inline bool drawToBuffer()    const { return _drawToBuffer; }
     inline bool renderWireframe() const { return _renderWireframe; }
     inline U32 instanceCount()    const { return _cmd.instanceCount; }
-    inline I32 drawID()           const { return _drawID; }
-
-    inline const IndirectDrawCommand& cmd() const { return _cmd; }
-    inline ShaderProgram* shaderProgram()   const { return _shaderProgram; }
-    inline PrimitiveType  primitiveType()   const { return _type; }
+    inline U32 indexCount()       const { return _cmd.count; }
+    inline I32 drawID()           const { return _cmd.baseInstance; }
+    
+    inline const IndirectDrawCommand& cmd()    const { return _cmd; }
+    inline ShaderProgram* shaderProgram()      const { return _shaderProgram; }
+    inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
+    inline PrimitiveType  primitiveType()      const { return _type; }
 
     GenericDrawCommand() : GenericDrawCommand(TRIANGLE_STRIP, 0, 0)
     {
@@ -111,14 +118,26 @@ public:
                                                                                                       _lodIndex(0),
                                                                                                       _stateHash(0),
                                                                                                       _queryID(0),
-                                                                                                      _drawID(-1),
                                                                                                       _drawToBuffer(false),
                                                                                                       _renderWireframe(false),
-                                                                                                      _shaderProgram(nullptr)
+                                                                                                      _shaderProgram(nullptr),
+                                                                                                      _sourceBuffer(nullptr)
     {
         _cmd.count = count;
         _cmd.firstIndex = firstIndex;
         _cmd.instanceCount = instanceCount;
+    }
+
+    inline void set(const GenericDrawCommand& base) {
+        _cmd = base._cmd;
+        _queryID = base._queryID;
+        _lodIndex = base._lodIndex;
+        _drawToBuffer = base._drawToBuffer;
+        _renderWireframe = base._renderWireframe;
+        _stateHash = base._stateHash;
+        _type = base._type;
+        _shaderProgram = base._shaderProgram;
+        _sourceBuffer = base._sourceBuffer;
     }
 };
 
@@ -132,7 +151,6 @@ class VertexBuffer;
 class ShaderBuffer;
 class ShaderProgram;
 class RenderStateBlock;
-class GenericVertexData;
 class RenderStateBlockDescriptor;
 
 ///Renderer Programming Interface
@@ -191,6 +209,7 @@ protected:
     virtual void changeResolutionInternal(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void createLoaderThread() = 0;
+    virtual void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const = 0;
 };
 
 }; //namespace Divide

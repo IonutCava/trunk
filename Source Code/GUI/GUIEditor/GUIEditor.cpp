@@ -106,10 +106,10 @@ void GUIEditor::TrackSelection() {
                 _valuesField[i][j]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[i][j]));
             }
         }
-        _toggleButtons[TOGGLE_SKELETONS]->setSelected(_currentSelection->renderSkeleton());
-        _toggleButtons[TOGGLE_SHADOW_MAPPING]->setSelected(_currentSelection->castsShadows());
-        _toggleButtons[TOGGLE_WIREFRAME]->setSelected(_currentSelection->renderWireframe());
-        _toggleButtons[TOGGLE_BOUNDING_BOXES]->setSelected(_currentSelection->renderBoundingBox());
+        _toggleButtons[TOGGLE_SKELETONS]->setSelected(_currentSelection->getComponent<RenderingComponent>()->renderSkeleton());
+        _toggleButtons[TOGGLE_SHADOW_MAPPING]->setSelected(_currentSelection->getComponent<RenderingComponent>()->castsShadows());
+        _toggleButtons[TOGGLE_WIREFRAME]->setSelected(_currentSelection->getComponent<RenderingComponent>()->renderWireframe());
+        _toggleButtons[TOGGLE_BOUNDING_BOXES]->setSelected(_currentSelection->getComponent<RenderingComponent>()->renderBoundingBox());
     }
 }
 
@@ -542,7 +542,7 @@ bool GUIEditor::Handle_WireframeToggle(const CEGUI::EventArgs &e) {
         D_PRINT_FN("[Editor]: Wireframe rendering disabled!");
     }
     if (_currentSelection) {
-        _currentSelection->renderWireframe(_toggleButtons[TOGGLE_WIREFRAME]->isSelected());
+        _currentSelection->getComponent<RenderingComponent>()->renderWireframe(_toggleButtons[TOGGLE_WIREFRAME]->isSelected());
     }
     return true;
 }
@@ -564,7 +564,7 @@ bool GUIEditor::Handle_ShadowMappingToggle(const CEGUI::EventArgs &e) {
         D_PRINT_FN("[Editor]: Shadow Mapping disabled!");
     }
     if (_currentSelection) {
-        _currentSelection->castsShadows(_toggleButtons[TOGGLE_SHADOW_MAPPING]->isSelected());
+        _currentSelection->getComponent<RenderingComponent>()->castsShadows(_toggleButtons[TOGGLE_SHADOW_MAPPING]->isSelected());
     }
     return true;
 }
@@ -598,7 +598,7 @@ bool GUIEditor::Handle_BoundingBoxesToggle(const CEGUI::EventArgs &e) {
         D_PRINT_FN("[Editor]: Bounding Box rendering disabled!");
     }
     if (_currentSelection) {
-        _currentSelection->renderBoundingBox(_toggleButtons[TOGGLE_BOUNDING_BOXES]->isSelected());
+        _currentSelection->getComponent<RenderingComponent>()->renderBoundingBox(_toggleButtons[TOGGLE_BOUNDING_BOXES]->isSelected());
     }
     return true;
 }
@@ -621,7 +621,7 @@ bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
     }
 
     if (_currentSelection) {
-        _currentSelection->renderSkeleton(_toggleButtons[TOGGLE_SKELETONS]->isSelected());
+        _currentSelection->getComponent<RenderingComponent>()->renderSkeleton(_toggleButtons[TOGGLE_SKELETONS]->isSelected());
     }
     return true;
 }

@@ -63,7 +63,7 @@ public:
 
     ///When the SceneGraph calls the trigger's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
-
+    void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) { }
     ///SceneNode test
     bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = false ) {
         return _drawImpostor;

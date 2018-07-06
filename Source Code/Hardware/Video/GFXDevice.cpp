@@ -123,20 +123,17 @@ GFXDevice::~GFXDevice()
 
 /// A draw command is composed of a target buffer and a command. The command part is processed here
 bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
-    // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(cmd.shaderProgram() && cmd.shaderProgram()->getId() != 0, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // We also need a valid draw command ID so we can index the node buffer properly
-    DIVIDE_ASSERT(cmd.drawID() < (I32)_matricesData.size(), "GFXDevice error: Invalid draw ID encountered!");
+    DIVIDE_ASSERT(cmd.drawID() < std::max((I32)_matricesData.size(), 1) && cmd.drawID() >= 0, "GFXDevice error: Invalid draw ID encountered!");
+    if (cmd.instanceCount() == 0) {
+        return false;
+    }
+    // We need a valid shader as no fixed function pipeline is available
+    DIVIDE_ASSERT(cmd.shaderProgram() != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     if (!cmd.shaderProgram()->bind()) {
         return false;
     }
-    // LoD level is only available when submitting the command, not on the visible node preprocess step.
-    // This means that it's too complicated to add it to the nodeBuffer, so we need to pass it manually here
-    cmd.shaderProgram()->Uniform("dvd_lodLevel", (I32)cmd.LoD());
-    // In an ideal world, we bind the entire buffer once and just index into it in the shader with the drawID
-    // This doesn't seem to work properly, for some reason now (08/2014)    
-    _nodeBuffer->BindRange(SHADER_BUFFER_NODE_INFO, std::max(cmd.drawID(), 0), 1);
     // Finally, set the proper render states
     setStateBlock(cmd.stateHash());
     // Continue with the draw call
@@ -156,8 +153,6 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const
         ERROR_FN(Locale::get("ERROR_GFX_POINTS_OVERFLOW"));
         return;
     }
-    // We create a default draw command without a draw ID
-    _defaultDrawCmd.drawID(-1);
     // We require a state hash value to set proper states
     _defaultDrawCmd.stateHash(stateHash);
     // We also require a shader program (although it may already be bound. Better safe ...)
@@ -195,28 +190,24 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement) {
     guiElement->lastDrawTimer(GETUSTIME());
 }
 
-/// Submit a single draw command using the specified buffer
-void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd) {
-    DIVIDE_ASSERT(buffer != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
+/// Submit a single draw command
+void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
+    DIVIDE_ASSERT(cmd.sourceBuffer() != nullptr, "GFXDevice error: Invalid vertex buffer submitted!");
     // We may choose the instance count programmatically, and it may turn out to be 0, so skip draw
-    if (cmd.cmd().instanceCount != 0 && setBufferData(cmd)) {
-        // Same rule about pre-processing the draw command apply
-        buffer->Draw(cmd);
+    if (setBufferData(cmd)) {
+        // Same rules about pre-processing the draw command apply
+        cmd.sourceBuffer()->Draw(cmd);
     }
 }
 
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain or batched meshes)
-void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds) {
-    // We may generate commands programmatically, so skip if the command count is 0
-    if (cmds.empty() ){
-        return;
-    }
+void GFXDevice::submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds) {
     // Ideally, we would merge all of the draw commands in a command buffer, sort by state, shader, etc, and submit a single render call
     STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");    
     // That feature will be added later, so, for now, submit each command manually
     for(const GenericDrawCommand& cmd : cmds) {
         // Data validation is handled in the single command version
-        submitRenderCommand(buffer, cmd);
+        submitRenderCommand(cmd);
     }
 }
 
@@ -590,14 +581,8 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     getRenderer()->processVisibleNodes(visibleNodes, _gpuBlock);
     // Generate and upload all lighting data
     LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
-    // Clear previous node data
-    hashAlg::fastClear(_sgnToDrawIDMap);
-    // Allocate sufficient space in the buffers
-    //_sgnToDrawIDMap.reserve(nodeCount + 1);
     // The first entry has identity values (e.g. for rendering points)
     _matricesData.resize(nodeCount + 1);
-    // Non SGN entries point to the identity values in the buffer
-    hashAlg::emplace(_sgnToDrawIDMap, static_cast<I64>(0), 0);
     // Loop over the list of nodes
     for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
         SceneGraphNode* const crtNode = visibleNodes[i];
@@ -625,15 +610,39 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
         // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
         temp._matrix[1].element(3,2,true) = static_cast<F32>(LightManager::getInstance().getLights().size());
         temp._matrix[1].element(3,3,true) = static_cast<F32>(crtNode->getComponent<AnimationComponent>() ? crtNode->getComponent<AnimationComponent>()->boneCount() : 0);
-        // Get the color matrix (diffuse, ambient, specular, etc.)
-        temp._matrix[2].set(crtNode->getMaterialColorMatrix());
-        // Get the material property matrix (alpha test, texture count, texture operation, etc.)
-        temp._matrix[3].set(crtNode->getMaterialPropertyMatrix());
-        // Register the node in the GUID<->Data map
-        hashAlg::emplace(_sgnToDrawIDMap, crtNode->getGUID(), static_cast<I32>(i + 1));
+        RenderingComponent* const renderable = crtNode->getComponent<RenderingComponent>();
+        if (renderable) {
+            // Get the color matrix (diffuse, ambient, specular, etc.)
+            renderable->getMaterialColorMatrix(temp._matrix[2]);
+            // Get the material property matrix (alpha test, texture count, texture operation, etc.)
+            renderable->getMaterialPropertyMatrix(temp._matrix[3]);
+        }
     }
     // Once the CPU-side buffer is filled, upload the buffer to the GPU, flushing the old data
     _nodeBuffer->UpdateData(0, (nodeCount + 1) * sizeof(NodeData), _matricesData.data(), true);
+}
+
+void GFXDevice::buildDrawCommands(const vectorImpl<SceneGraphNode* >& visibleNodes, SceneRenderState& sceneRenderState) {
+    // If there aren't any nodes visible in the current pass, don't update anything
+    if (visibleNodes.empty()) {
+        return;
+    }
+    vectorAlg::vecSize nodeCount = visibleNodes.size();
+    vectorImpl<IndirectDrawCommand> drawCommands;
+    drawCommands.resize(nodeCount + 1);
+    // Loop over the list of nodes
+    for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
+        SceneGraphNode* const crtNode = visibleNodes[i];
+        RenderingComponent* const renderable = crtNode->getComponent<RenderingComponent>();
+        if (!renderable) {
+            continue;
+        }
+        const vectorImpl<GenericDrawCommand>& nodeDrawCommands = renderable->getDrawCommands(1 + i, sceneRenderState, getRenderStage());
+        for (const GenericDrawCommand& cmd : nodeDrawCommands) {
+            drawCommands[cmd.drawID()] = cmd.cmd();
+        }
+    }
+    uploadDrawCommands(drawCommands);
 }
 
 /// Depending on the context, either immediately call the function, or pass it to the loading thread via a queue
@@ -739,28 +748,28 @@ void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max, const vec4
     priv->attribute4ub("inColorData", color);
     // Draw the bottom loop
     priv->begin(LINE_LOOP);
-        priv->vertex( vec3<F32>(min.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, min.y, max.z) );
+        priv->vertex( min.x, min.y, min.z );
+        priv->vertex( max.x, min.y, min.z );
+        priv->vertex( max.x, min.y, max.z );
+        priv->vertex( min.x, min.y, max.z );
     priv->end();
     // Draw the top loop
     priv->begin(LINE_LOOP);
-        priv->vertex( vec3<F32>(min.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, max.y, max.z) );
+        priv->vertex( min.x, max.y, min.z );
+        priv->vertex( max.x, max.y, min.z );
+        priv->vertex( max.x, max.y, max.z );
+        priv->vertex( min.x, max.y, max.z );
     priv->end();
     // Connect the top to the bottom
     priv->begin(LINES);
-        priv->vertex( vec3<F32>(min.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(min.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, min.z) );
-        priv->vertex( vec3<F32>(max.x, min.y, max.z) );
-        priv->vertex( vec3<F32>(max.x, max.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, min.y, max.z) );
-        priv->vertex( vec3<F32>(min.x, max.y, max.z) );
+        priv->vertex( min.x, min.y, min.z );
+        priv->vertex( min.x, max.y, min.z );
+        priv->vertex( max.x, min.y, min.z );
+        priv->vertex( max.x, max.y, min.z );
+        priv->vertex( max.x, min.y, max.z );
+        priv->vertex( max.x, max.y, max.z );
+        priv->vertex( min.x, min.y, max.z );
+        priv->vertex( min.x, max.y, max.z );
     priv->end();
     // Finish our object
     priv->endBatch();

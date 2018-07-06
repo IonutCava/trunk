@@ -36,23 +36,24 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
-    ShaderProgram* drawShader = sgn->getDrawShader(currentRenderStage);
+void Object3D::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+    RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
+    assert(renderable != nullptr);
 
-    if (drawCommands().empty()) {
-        GenericDrawCommand drawCmd;
-        drawCmd.renderWireframe(sgn->renderWireframe());
-        drawCmd.stateHash(sgn->getDrawStateHash(currentRenderStage));
-        drawCmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-        drawCmd.shaderProgram(drawShader);
-        GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCmd);
-    } else {
-        for (GenericDrawCommand& cmd : _drawCommands) {
-            cmd.renderWireframe(sgn->renderWireframe());
-            cmd.shaderProgram(drawShader);
-        }
-        GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCommands());
-    }
+    VertexBuffer* const vb = getGeometryVB();
+
+    GenericDrawCommand drawCmd;
+    drawCmd.renderWireframe(renderable->renderWireframe());
+    drawCmd.stateHash(renderable->getDrawStateHash(currentRenderStage));
+    drawCmd.shaderProgram(renderable->getDrawShader(currentRenderStage));
+    drawCmd.sourceBuffer(vb);
+    drawCmd.indexCount((U32)(vb->getIndexCount()));
+
+    drawCommandsOut.push_back(drawCmd);
+}
+
+void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
+    GFX_DEVICE.submitRenderCommand(sgn->getComponent<RenderingComponent>()->getDrawCommands());
 }
 
 bool Object3D::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){

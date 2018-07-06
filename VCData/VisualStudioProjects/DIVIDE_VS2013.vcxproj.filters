@@ -467,9 +467,6 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\main.cpp" />
-    <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp">
-      <Filter>Graphs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
     </ClCompile>
@@ -856,6 +853,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponent.cpp">
+      <Filter>Graphs\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1393,6 +1393,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\MemoryTracker.h">
       <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

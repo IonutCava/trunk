@@ -24,6 +24,7 @@
 #define _QUAD_TREE_NODE
 
 #include "core.h"
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
@@ -58,8 +59,8 @@ public:
     bool computeBoundingBox();
     void Destroy();
 
-    void CreateDrawCommand(U32 options, const SceneRenderState& sceneRenderState);
-    void DrawBBox() const;
+    void createDrawCommand(U32 options, const SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    void drawBBox() const;
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 

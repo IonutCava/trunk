@@ -19,7 +19,6 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped) : GenericVertexD
     _currentReadQuery = 0;
     _transformFeedback = 0;
     _currentWriteQuery = 0;
-    _indirectDrawBuffer = 0;
     _vertexArray[GVD_USAGE_DRAW] = 0;
     _vertexArray[GVD_USAGE_FDBCK] = 0;
 
@@ -66,11 +65,6 @@ glGenericVertexData::~glGenericVertexData()
     }
     // Make sure we don't have the indirect draw buffer bound
     //glBindBuffer(GL_QUERY_BUFFER_AMD, 0);
-    // If we have an indirect draw buffer, delete it
-    if (_indirectDrawBuffer > 0) {
-        glDeleteBuffers(1, &_indirectDrawBuffer);
-        _indirectDrawBuffer = 0;
-    }
     // Make sure we don't have our transform feedback object bound
     GL_API::setActiveTransformFeedback(0);
     // If we have a transform feedback object, delete it
@@ -117,8 +111,6 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     // Create our buffer objects
     _bufferObjects.resize(numBuffers, 0);
     glGenBuffers(numBuffers, &_bufferObjects[0]);
-    // Allocate a buffer for indirect draw used to store the query results without a round-trip to the CPU
-    glGenBuffers(1, &_indirectDrawBuffer);
     // Prepare our generic queries
     _numQueries = numQueries;
     for (U8 i = 0; i < 2; ++i) {
@@ -195,11 +187,6 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     // Update vertex attributes if needed (e.g. if offsets changed)
     SetAttributes(feedbackActive);
 
-    // Write query result to the primCount field of the indirect draw command to avoid a round trip to the CPU
-    //glGetQueryObjectuiv(queryId, GL_QUERY_RESULT_AVAILABLE, BUFFER_OFFSET(offsetof(DrawArraysIndirectCommand, primCount)));
-    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-    glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(IndirectDrawCommand), &cmd, GL_DYNAMIC_COPY);
-
     // Activate transform feedback if needed
     if (feedbackActive) {
        GL_API::setActiveTransformFeedback(_transformFeedback);
@@ -211,8 +198,9 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
         GLenum type = command.renderWireframe() ? GL_LINE_LOOP : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
-        glDrawArraysIndirect(type, 0);
+        glDrawArraysIndirect(type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)));
     }
+
     // Deactivate transform feedback if needed
     if (feedbackActive) {
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
@@ -240,15 +228,14 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
     _elementSize[buffer] = elementSize;
     _sizeFactor[buffer] = sizeFactor;
     size_t bufferSize = elementCount * elementSize;
-    // Bind the buffer object
-    GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
     
+    GLuint currentBuffer = _bufferObjects[buffer];
     if (persistentMapped) {
         // If we requested a persistently mapped buffer, we use glBufferStorage to pin it in memory
         GLenum flag = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glBufferStorage(GL_ARRAY_BUFFER, bufferSize * sizeFactor, NULL, flag);
+        glNamedBufferStorageEXT(currentBuffer, bufferSize * sizeFactor, NULL, flag);
         // Map the entire buffer range
-        _bufferPersistentData[buffer] = glMapBufferRange(GL_ARRAY_BUFFER, 0, bufferSize * 3, flag);
+        _bufferPersistentData[buffer] = glMapNamedBufferRangeEXT(currentBuffer, 0, bufferSize * 3, flag);
         DIVIDE_ASSERT(data != nullptr, "glGenericVertexData error: persistent mapping failed when setting the current buffer!");
         // Create sizeFactor copies of the data and store them in the buffer
         for(U8 i = 0; i < sizeFactor; ++i) {
@@ -261,10 +248,10 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
         GLenum flag = isFeedbackBuffer(buffer) ? (dynamic ? (stream ? GL_STREAM_COPY : GL_DYNAMIC_COPY) : GL_STATIC_COPY) :
                                                  (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
         // If the buffer is not persistently mapped, allocate storage the classic way
-        glBufferData(GL_ARRAY_BUFFER, bufferSize * sizeFactor, NULL, flag);
+        glNamedBufferDataEXT(currentBuffer, bufferSize * sizeFactor, NULL, flag);
         // And upload sizeFactor copies of the data
         for (U8 i = 0; i < sizeFactor; ++i) {
-            glBufferSubData(GL_ARRAY_BUFFER, i * bufferSize, bufferSize, data);
+            glNamedBufferSubDataEXT(currentBuffer, i * bufferSize, bufferSize, data);
         }
     }
     _bufferSet[buffer] = true;

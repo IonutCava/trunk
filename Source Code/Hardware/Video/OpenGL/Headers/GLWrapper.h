@@ -133,6 +133,7 @@ protected:
     void clearStates(const bool skipShader, const bool skipTextures, const bool skipBuffers);
     /// Return the glsl optimisation context (created by the glsl-optimizer library)
     inline glslopt_ctx* getGLSLOptContext() const { return _GLSLOptContex; }
+    void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const;
 
 public:
     /// Enable or disable primitive restart and ensure that the correct index size is used
@@ -189,6 +190,8 @@ private:
     GLint _lineWidthLimit;
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
     GLuint _pointDummyVAO; 
+    /// Used to store all of the indirect draw commands
+    static GLuint _indirectDrawBuffer;
     /// A cache of all fonts used 
     typedef hashMapImpl<stringImpl , I32 > FontCache;
     FontCache  _fonts;

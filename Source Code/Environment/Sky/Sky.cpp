@@ -83,19 +83,23 @@ void Sky::postLoad( SceneGraphNode* const sgn ) {
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
 }
 
-bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
+bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
     return _sky->onDraw(sgn, currentStage);
+}
+
+void Sky::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+    GenericDrawCommand cmd;
+    cmd.renderWireframe(sgn->getComponent<RenderingComponent>()->renderWireframe());
+    cmd.stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
+    cmd.shaderProgram(_skyShader);
+    cmd.sourceBuffer(_sky->getGeometryVB());
+    cmd.indexCount(_sky->getGeometryVB()->getIndexCount());
+    drawCommandsOut.push_back(cmd);
 }
 
 void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     _skybox->Bind(ShaderProgram::TEXTURE_UNIT0);
-
-    GenericDrawCommand cmd;
-    cmd.renderWireframe(sgn->renderWireframe());
-    cmd.stateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);
-    cmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-    cmd.shaderProgram(_skyShader);
-    GFX_DEVICE.submitRenderCommand(_sky->getGeometryVB(), cmd);
+    GFX_DEVICE.submitRenderCommand(sgn->getComponent<RenderingComponent>()->getDrawCommands());
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor) {

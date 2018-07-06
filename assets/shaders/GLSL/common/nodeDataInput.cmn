@@ -14,7 +14,7 @@ layout(binding = SHADER_BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 
 #if defined(VERT_SHADER)
 
-out float gl_ClipDistance[MAX_CLIP_PLANES];
+//out float gl_ClipDistance[MAX_CLIP_PLANES];
 
 void setClipPlanes(in vec4 worldSpaceVertex) {
     

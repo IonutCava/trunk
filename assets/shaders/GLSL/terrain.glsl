@@ -40,8 +40,6 @@ in vec2 _uv1;
 
 smooth in float _waterDepth;
 
-uniform int dvd_lodLevel = 0;
-
 out vec4 _colorOut;
 
 //subroutine vec4 TerrainMappingType();

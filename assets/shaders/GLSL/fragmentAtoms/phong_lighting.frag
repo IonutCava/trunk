@@ -6,7 +6,7 @@ void phong_omni(const in vec4 lightColor, const in LightPropertiesFrag lightProp
 	float att = lightProp._att;
     materialProp.ambient += dvd_MatAmbient * lightColor.a * att;
     if (lightProp._NDotL > 0.0) {
-#if defined(USE_SHADING_BLINN_PHONG);
+#if defined(USE_SHADING_BLINN_PHONG)
 		vec3 halfDir = normalize(lightProp._lightDir + lightProp._viewDirNorm);
 		float specAngle = max(dot(lightProp._normal, halfDir), 0.0);
 #else
@@ -23,7 +23,7 @@ void phong_spot(const in vec4 lightColor, const in LightPropertiesFrag lightProp
     if (lightProp._NDotL > 0.0){
 	    //add the lighting contributions
 		float att = lightProp._att;
-#if defined(USE_SHADING_BLINN_PHONG);
+#if defined(USE_SHADING_BLINN_PHONG)
 		vec3 halfDir = normalize(lightProp._lightDir + lightProp._viewDirNorm);
 		float specAngle = max(dot(lightProp._normal, halfDir), 0.0);
 #else

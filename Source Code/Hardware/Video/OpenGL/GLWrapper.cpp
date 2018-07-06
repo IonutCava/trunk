@@ -81,6 +81,7 @@ void GL_API::beginFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT/* | GL_STENCIL_BUFFER_BIT*/);
     // Clears are registered as draw calls by most software, so we do the same to stay in sync with third party software
     GFX_DEVICE.registerDrawCall();
+    GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
 }
 
 /// Finish rendering the current frame
@@ -111,7 +112,7 @@ bool GL_API::initShaders() {
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
     glswAddDirectiveToken("","#version 430 core\n/*“Copyright 2009-2014 DIVIDE-Studio”*/");
-
+    glswAddDirectiveToken("","#extension GL_ARB_shader_draw_parameters : require");
     // Add current build environment information to the shaders
 #   if defined(_DEBUG)
         glswAddDirectiveToken("", "#define _DEBUG");
@@ -264,6 +265,10 @@ void GL_API::drawPoints(GLuint numPoints) {
     GL_API::setActiveVAO(_pointDummyVAO);
     glDrawArrays(GL_POINTS, 0, numPoints);
     GFX_DEVICE.registerDrawCall();
+}
+
+void GL_API::uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const {
+    glNamedBufferDataEXT(_indirectDrawBuffer, sizeof(IndirectDrawCommand) * drawCommands.size(), drawCommands.data(), GL_DYNAMIC_COPY);
 }
 
 /// Verify if we have a sampler object created and available for the given descriptor

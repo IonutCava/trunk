@@ -48,6 +48,7 @@ protected:
     void changeResolutionInternal(U16 w, U16 h);
     void changeViewport(const vec4<I32>& newViewport) const;
     void setCursorPosition(U16 x, U16 y) const;
+    void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
     void beginFrame();

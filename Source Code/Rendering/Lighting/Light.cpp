@@ -200,7 +200,7 @@ void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRende
         _impostor->renderState().setDrawState( true );
         _lightSGN->addNode( _impostor )->setActive( true );
     }
-    Material* const impostorMaterialInst = _lightSGN->getChildren().begin()->second->getMaterialInstance();
+    Material* const impostorMaterialInst = _lightSGN->getChildren().begin()->second->getComponent<RenderingComponent>()->getMaterialInstance();
     impostorMaterialInst->setDiffuse(getDiffuseColor());
     impostorMaterialInst->setAmbient(getDiffuseColor());
 

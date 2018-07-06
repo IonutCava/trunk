@@ -46,13 +46,12 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     
     _target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
 
-    GL_API::setActiveBuffer(_target, _UBOid);
     if (_persistentMapped) {
         GLenum usageFlag = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glBufferStorage(_target, _bufferSize, NULL, usageFlag | GL_DYNAMIC_STORAGE_BIT);
-        _mappedBuffer = glMapBufferRange(_target, 0, _bufferSize, usageFlag);
+        glNamedBufferStorageEXT(_UBOid, _bufferSize, NULL, usageFlag | GL_DYNAMIC_STORAGE_BIT);
+        _mappedBuffer = glMapNamedBufferRangeEXT(_UBOid, 0, _bufferSize, usageFlag);
     }else{
-        glBufferData(_target, _bufferSize, NULL, GL_DYNAMIC_DRAW);
+        glNamedBufferDataEXT(_UBOid, _bufferSize, NULL, GL_DYNAMIC_DRAW);
     }
 }
 

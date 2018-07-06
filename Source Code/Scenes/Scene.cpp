@@ -134,8 +134,8 @@ bool Scene::loadModel( const FileData& data ) {
     }
 
     SceneGraphNode* meshNode = _sceneGraph->getRoot()->createNode( thisObj, data.ItemName );
-    meshNode->castsShadows( data.castsShadows );
-    meshNode->receivesShadows( data.receivesShadows );
+    meshNode->getComponent<RenderingComponent>()->castsShadows(data.castsShadows);
+    meshNode->getComponent<RenderingComponent>()->receivesShadows(data.receivesShadows);
     meshNode->getComponent<PhysicsComponent>()->setScale( data.scale );
     meshNode->getComponent<PhysicsComponent>()->setRotation( data.orientation );
     meshNode->getComponent<PhysicsComponent>()->setPosition( data.position );
@@ -198,8 +198,8 @@ bool Scene::loadGeometry( const FileData& data ) {
     thisObjSGN->getComponent<PhysicsComponent>()->setScale( data.scale );
     thisObjSGN->getComponent<PhysicsComponent>()->setRotation( data.orientation );
     thisObjSGN->getComponent<PhysicsComponent>()->setPosition( data.position );
-    thisObjSGN->castsShadows( data.castsShadows );
-    thisObjSGN->receivesShadows( data.receivesShadows );
+    thisObjSGN->getComponent<RenderingComponent>()->castsShadows(data.castsShadows);
+    thisObjSGN->getComponent<RenderingComponent>()->receivesShadows(data.receivesShadows);
     if ( data.staticUsage ) {
         thisObjSGN->usageContext( SceneGraphNode::NODE_STATIC );
     }
@@ -466,8 +466,8 @@ void Scene::debugDraw( const RenderStage& stage ) {
         GFX_DEVICE.drawDebugAxis( currentGizmoState != SceneRenderState::NO_GIZMO );
 
         if ( currentGizmoState == SceneRenderState::SELECTED_GIZMO ) {
-            if ( _currentSelection != nullptr ) {
-                _currentSelection->drawDebugAxis();
+            if (_currentSelection != nullptr && _currentSelection->getComponent<RenderingComponent>()) {
+                _currentSelection->getComponent<RenderingComponent>()->drawDebugAxis();
             }
         }
 #   endif

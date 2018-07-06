@@ -62,7 +62,9 @@ bool SceneNode::isInView( const SceneRenderState& sceneRenderState, SceneGraphNo
         }
     }
 
-    sgn->lodLevel( ( cameraDistance > Config::SCENE_NODE_LOD0 ) ? ( ( cameraDistance > Config::SCENE_NODE_LOD1 ) ? 2 : 1 ) : 0 );
+    if (sgn->getComponent<RenderingComponent>()) {
+        sgn->getComponent<RenderingComponent>()->lodLevel((cameraDistance > Config::SCENE_NODE_LOD0) ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1) : 0);
+    }
 
     return true;
 }

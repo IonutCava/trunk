@@ -116,10 +116,8 @@ public:
     
     void drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const shaderProgram);
     void drawGUIElement(GUIElement* guiElement);
-    void submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd);
-    void submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds);
-	/// Returns the visible nodes' buffer index for the given ID
-	inline I32 getDrawID(I64 drawIDIndex) const;
+    void submitRenderCommand(const GenericDrawCommand& cmd);
+    void submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds);
     ///Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
 	inline RenderStage setRenderStage(RenderStage stage);
@@ -206,8 +204,6 @@ public:
 	///Save a screenshot in TGA format
 	void Screenshot(char *filename);
 
-    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes);
-
     inline U32  getFrameCount()          const { return FRAME_COUNT; }
     inline I32  getDrawCallCount()       const { return FRAME_DRAW_CALLS_PREV; }
     inline void registerDrawCall()             { FRAME_DRAW_CALLS++; }
@@ -273,6 +269,7 @@ protected:
     }
 
     inline void loadingThreadAvailable(bool state)  { _loadingThreadAvailable = state; }
+    inline void uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const { _api->uploadDrawCommands(drawCommands); }
 
 protected:
     friend class Kernel;
@@ -294,6 +291,11 @@ protected:
     F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) ;
     ///sets the view frustum to either the left or right eye position for anaglyph rendering
     void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
+
+protected:
+    friend class RenderPassCuller;
+    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes);
+    void buildDrawCommands(const vectorImpl<SceneGraphNode* >& visibleNodes, SceneRenderState& sceneRenderState);
 
 private:
 
@@ -398,7 +400,6 @@ protected:
 
     vectorImpl<NodeData >     _matricesData;
     vectorImpl<GPUVideoMode > _supportedDislpayModes;
-    hashMapImpl<I64, I32>     _sgnToDrawIDMap;
 
     ShaderBuffer*  _gfxDataBuffer;
     ShaderBuffer*  _nodeBuffer;

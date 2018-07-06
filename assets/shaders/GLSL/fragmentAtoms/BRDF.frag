@@ -11,11 +11,11 @@
 void getBRDFFactors(const in LightPropertiesFrag lightProp, inout MaterialProperties materialProp) {
 #if defined(USE_SHADING_PHONG)
     Phong(lightProp, materialProp);
-#elif defined(USE_SHADING_BLINN_PHONG);
+#elif defined(USE_SHADING_BLINN_PHONG)
     Phong(lightProp, materialProp);
-#elif defined(USE_SHADING_TOON);
-#elif defined(USE_SHADING_OREN_NAYAR);
-#else //if defined(USE_SHADING_COOK_TORRANCE);
+#elif defined(USE_SHADING_TOON)
+#elif defined(USE_SHADING_OREN_NAYAR)
+#else //if defined(USE_SHADING_COOK_TORRANCE)
 #endif
 }
 

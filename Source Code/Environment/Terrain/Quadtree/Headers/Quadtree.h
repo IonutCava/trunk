@@ -24,6 +24,7 @@
 #define _QUAD_TREE
 
 #include "Core/Math/Headers/MathClasses.h"
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 
@@ -46,10 +47,10 @@ public:
 	inline U32  getChunkCount() const { return _chunkCount;}
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-    void CreateDrawCommands(const SceneRenderState& sceneRenderState);
-    void DrawBBox() const;
+    void createDrawCommands(const SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    void drawBBox() const;
 
-    QuadtreeNode* FindLeaf(const vec2<F32>& pos);
+    QuadtreeNode* findLeaf(const vec2<F32>& pos);
 
     Quadtree();
     ~Quadtree();

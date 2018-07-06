@@ -36,6 +36,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
     _nodeBuffer = newSB(true);
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
+    _nodeBuffer->Bind(SHADER_BUFFER_NODE_INFO);
     // Resize our window to the target resolution (usually, the splash screen resolution)
     changeResolution(resolution.width, resolution.height);
     // Create general purpose render state blocks
@@ -132,7 +133,6 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
 
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingApi() {
-	_sgnToDrawIDMap.clear();
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
 	// Destroy our post processing system

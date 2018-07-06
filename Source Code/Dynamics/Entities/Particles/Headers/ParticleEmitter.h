@@ -110,6 +110,7 @@ protected:
     
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
+    void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
     void onCameraChange(SceneGraphNode* const sgn);
 
 private:

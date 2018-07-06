@@ -15,7 +15,9 @@ SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag) : Object3D(name, SUBME
                                                              _id(0),
                                                              _parentMesh(nullptr)
 {
-    _drawCmd = GenericDrawCommand(TRIANGLES, 0, 1);
+    _drawCmd.primitiveType(TRIANGLES);
+    _drawCmd.firstIndex(0);
+    _drawCmd.indexCount(1);
 }
 
 SubMesh::~SubMesh()
@@ -43,16 +45,18 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
+void SubMesh::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_parentMesh != nullptr);
-    _drawCmd.renderWireframe(sgn->renderWireframe());
-    _drawCmd.LoD(sgn->lodLevel());
-    _drawCmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-    _drawCmd.stateHash(sgn->getDrawStateHash(currentRenderStage));
-    _drawCmd.shaderProgram(sgn->getDrawShader(currentRenderStage));
-    _parentMesh->addDrawCommand(_drawCmd);
 
-    GFX_DEVICE.submitRenderCommand(_parentMesh->getGeometryVB(), _drawCmd);
+    RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
+    assert(renderable != nullptr);
+
+    _drawCmd.renderWireframe(renderable->renderWireframe());
+    _drawCmd.LoD(renderable->lodLevel());
+    _drawCmd.stateHash(renderable->getDrawStateHash(currentRenderStage));
+    _drawCmd.shaderProgram(renderable->getDrawShader(currentRenderStage));
+    _drawCmd.sourceBuffer(_parentMesh->getGeometryVB());
+    drawCommandsOut.push_back(_drawCmd);
 }
 
 };

@@ -44,7 +44,7 @@ public:
     void Load( U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, Terrain* const terrain );
     void Destroy();
 
-    void CreateDrawCommand(I8 lod);
+    void createDrawCommand(I8 lod, vectorImpl<GenericDrawCommand>& drawCommandsOut);
     
     void addObject(Mesh* obj);
 
@@ -73,7 +73,6 @@ private:
     F32                 _sizeY;
     vec2<F32>           _heightBounds; //< 0 = minHeight, 1 = maxHeight
     VertexBuffer*       _terrainVB;
-    Terrain*            _parentTerrain;
     QuadtreeNode*       _parentNode;
     Vegetation*         _vegetation;
     static U32          _chunkID;

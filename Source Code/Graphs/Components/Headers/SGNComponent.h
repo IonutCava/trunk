@@ -35,13 +35,16 @@ public:
         SGN_COMP_ANIMATION = 0,
         SGN_COMP_NAVIGATION = 1,
         SGN_COMP_PHYSICS = 2,
-        ComponentType_PLACEHOLDER = 3
+        SGN_COMP_RENDERING = 3,
+        ComponentType_PLACEHOLDER = 4
     };
 
     SGNComponent(ComponentType type, SceneGraphNode* const parentSGN);
     virtual ~SGNComponent();
 
-    virtual void onDraw(RenderStage currentStage) {}
+    virtual bool onDraw(RenderStage currentStage) {
+        return true;
+    }
     virtual void update(const U64 deltaTime) {
         _deltaTime = deltaTime;
         _elapsedTime += deltaTime;

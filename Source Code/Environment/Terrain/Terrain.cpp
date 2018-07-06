@@ -119,55 +119,56 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
-
+void Terrain::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     size_t drawStateHash = 0;
 
     if (bitCompare(currentRenderStage, DEPTH_STAGE)) {
         drawStateHash = bitCompare(currentRenderStage, Z_PRE_PASS_STAGE) ? _terrainRenderStateHash : _terrainDepthRenderStateHash;
-    } else{
+    }else{
         drawStateHash = bitCompare(currentRenderStage, REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash;
     }
 
-    ShaderProgram* drawShader = sgn->getDrawShader(bitCompare(currentRenderStage, REFLECTION_STAGE) ? FINAL_STAGE : currentRenderStage);
-    I32 drawID = GFX_DEVICE.getDrawID(sgn->getGUID());
+    RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
+    assert(renderable != nullptr);
 
-    if(_terrainInView){
+    ShaderProgram* drawShader = renderable->getDrawShader(bitCompare(currentRenderStage, REFLECTION_STAGE) ? FINAL_STAGE : currentRenderStage);
+
+    if (_terrainInView){
+        vectorImpl<GenericDrawCommand> tempCommands;
+        tempCommands.reserve(_terrainQuadtree->getChunkCount());
+
         // draw ground
-        _terrainQuadtree->CreateDrawCommands(sceneRenderState);
+        _terrainQuadtree->createDrawCommands(sceneRenderState, tempCommands);
 
+        std::sort(tempCommands.begin(), tempCommands.end(),
+            [](const GenericDrawCommand& a, const GenericDrawCommand& b) {
+            return a.LoD() < b.LoD();
+        });
 
-        std::sort(_drawCommands.begin(), _drawCommands.end(),
-                  [](const GenericDrawCommand& a, const GenericDrawCommand& b) {
-                        return a.LoD() < b.LoD();
-                    });
-
-        for(GenericDrawCommand& cmd : _drawCommands){
-            cmd.renderWireframe(sgn->renderWireframe());
+        for (GenericDrawCommand& cmd : tempCommands){
+            cmd.renderWireframe(renderable->renderWireframe());
             cmd.stateHash(drawStateHash);
             cmd.shaderProgram(drawShader);
-            cmd.drawID(drawID);
+            cmd.sourceBuffer(getGeometryVB());
+            drawCommandsOut.push_back(cmd);
         }
 
-        GFX_DEVICE.submitRenderCommand(getGeometryVB(), drawCommands());
-
-        clearDrawCommands();
     }
-    
+
     // draw infinite plane
-    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) && _planeInView ){
-        GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
-        cmd.renderWireframe(sgn->renderWireframe());
+    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) && _planeInView){
+        GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 1);
+        cmd.renderWireframe(renderable->renderWireframe());
         cmd.stateHash(drawStateHash);
-        cmd.drawID(drawID);
         cmd.shaderProgram(drawShader);
-        GFX_DEVICE.submitRenderCommand(_plane->getGeometryVB(), cmd);
+        cmd.sourceBuffer(_plane->getGeometryVB());
+        drawCommandsOut.push_back(cmd);
     }
 }
 
 void Terrain::postDrawBoundingBox(SceneGraphNode* const sgn) const {
-    if (_drawBBoxes)	{
-        _terrainQuadtree->DrawBBox();
+    if (_drawBBoxes) {
+        _terrainQuadtree->drawBBox();
     }
 }
 

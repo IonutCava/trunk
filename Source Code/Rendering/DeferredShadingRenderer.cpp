@@ -169,26 +169,33 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
     GenericDrawCommand cmd;
     cmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
-    cmd.drawID(GFX_DEVICE.getDrawID(0));
     cmd.shaderProgram(_previewDeferredShader);
     if(_debugView){
         _previewDeferredShader->bind();
         _previewDeferredShader->UniformTexture("texDiffuse0",4);
-        if(_renderQuads[1]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
-            GFX_DEVICE.submitRenderCommand(_renderQuads[1]->getGeometryVB(), cmd);
+        if (_renderQuads[1]->onDraw(nullptr, GFX_DEVICE.getRenderStage())) {
+            cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
+            GFX_DEVICE.submitRenderCommand(cmd);
+        }
         _previewDeferredShader->UniformTexture("texDiffuse0",1);
-        if(_renderQuads[2]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
-            GFX_DEVICE.submitRenderCommand(_renderQuads[2]->getGeometryVB(), cmd);
+        if (_renderQuads[2]->onDraw(nullptr, GFX_DEVICE.getRenderStage())){
+            cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
+            GFX_DEVICE.submitRenderCommand(cmd);
+        }
         _previewDeferredShader->UniformTexture("texDiffuse0",2);
-        if(_renderQuads[3]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
-            GFX_DEVICE.submitRenderCommand(_renderQuads[3]->getGeometryVB(), cmd);
+        if (_renderQuads[3]->onDraw(nullptr, GFX_DEVICE.getRenderStage())) {
+            cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
+            GFX_DEVICE.submitRenderCommand(cmd);
+        }
     }
     _deferredShader->bind();
-        _deferredShader->Uniform("lightCount",(I32)_cachedLightCount);
+    _deferredShader->Uniform("lightCount",(I32)_cachedLightCount);
 
     cmd.shaderProgram(_deferredShader);
-    if(_renderQuads[ _debugView ? 4 : 0]->onDraw(nullptr, GFX_DEVICE.getRenderStage()))
-        GFX_DEVICE.submitRenderCommand(_renderQuads[ _debugView ? 4 : 0]->getGeometryVB(), cmd);
+    if (_renderQuads[_debugView ? 4 : 0]->onDraw(nullptr, GFX_DEVICE.getRenderStage())) {
+        cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
+        GFX_DEVICE.submitRenderCommand(cmd);
+    }
 
     GFX_DEVICE.toggle2D(false);
     GUI& gui = GUI::getInstance();

@@ -28,16 +28,16 @@ void glIMPrimitive::begin(PrimitiveType type) {
     _imInterface->Begin(GLUtil::GL_ENUM_TABLE::glimPrimitiveType[type]);
 }
 
-void glIMPrimitive::vertex(const vec3<F32>& vert) {
-    _imInterface->Vertex( vert.x, vert.y, vert.z );
+void glIMPrimitive::vertex(F32 x, F32 y, F32 z) {
+    _imInterface->Vertex( x, y, z );
 }
 
-void glIMPrimitive::attribute4ub(const stringImpl& attribName, const vec4<U8>& value) {
-    _imInterface->Attribute4ub(attribName.c_str(), value.x, value.y, value.z, value.w);
+void glIMPrimitive::attribute4ub(const stringImpl& attribName, U8 x, U8 y, U8 z, U8 w) {
+    _imInterface->Attribute4ub(attribName.c_str(), x, y, z, w);
 }
 
-void glIMPrimitive::attribute4f(const stringImpl& attribName, const vec4<F32>& value) {
-    _imInterface->Attribute4f(attribName.c_str(), value.x, value.y, value.z, value.w);
+void glIMPrimitive::attribute4f(const stringImpl& attribName, F32 x, F32 y, F32 z, F32 w) {
+    _imInterface->Attribute4f(attribName.c_str(), x, y, z, w);
 }
 
 void glIMPrimitive::attribute1i(const stringImpl& attribName, I32 value) {

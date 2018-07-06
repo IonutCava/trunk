@@ -329,7 +329,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 			glswSetPath(_lastPathPrefix.c_str(), _lastPathSuffix.c_str());
 		}
         // Mirror initial shader defines to match line count
-        GLint initialOffset = 19;
+        GLint initialOffset = 20;
         if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) { //nVidia specific
             initialOffset += 6;
         }

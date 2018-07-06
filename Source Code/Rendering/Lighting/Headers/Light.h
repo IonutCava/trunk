@@ -153,6 +153,7 @@ protected:
 
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
+    virtual void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
     void postLoad(SceneGraphNode* const sgn);
     ///Set light type
     ///@param type Directional/Spot/Omni (see LightType enum)

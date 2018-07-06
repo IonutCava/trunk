@@ -14,8 +14,7 @@ namespace Divide {
 
 U32 TerrainChunk::_chunkID = 0;
 
-TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode) : _parentTerrain(parentTerrain),
-                                                                                           _parentNode(parentNode),
+TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode) : _parentNode(parentNode),
                                                                                            _vegetation(nullptr)
 {
     _chunkID++;
@@ -24,9 +23,9 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const par
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
 
-    _terrainVB = _parentTerrain->getGeometryVB();
+    _terrainVB = parentTerrain->getGeometryVB();
 
-    VegetationDetails vegDetails = _parentTerrain->_vegDetails;
+    VegetationDetails vegDetails = parentTerrain->_vegDetails;
     vegDetails.name += stringAlg::toBase("_chunk_" + Util::toString(_chunkID));
     _vegetation = New Vegetation(vegDetails); //<Deleted by the sceneGraph on "unload"
     _vegetation->renderState().useDefaultMaterial(false);
@@ -131,13 +130,14 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
     assert(nIndice == _lodIndCount[lod]);
 }
 
-void TerrainChunk::CreateDrawCommand(I8 lod) {
+void TerrainChunk::createDrawCommand(I8 lod, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
-    if(lod > 0) lod--;
-        
+    if (lod > 0) {
+        lod--;
+    }
     GenericDrawCommand drawCommand(TRIANGLE_STRIP, _lodIndOffset[lod] + _chunkIndOffset, _lodIndCount[lod]);
     drawCommand.LoD(lod);
-    _parentTerrain->addDrawCommand(drawCommand);
+    drawCommandsOut.push_back(drawCommand);
 }
 
 U8 TerrainChunk::getLoD() const { 

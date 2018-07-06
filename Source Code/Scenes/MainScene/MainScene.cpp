@@ -26,7 +26,7 @@ void MainScene::updateLights(){
 	_sun->setDiffuseColor(_sunColor);
 	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
     for(SceneGraphNode* const ter : _visibleTerrains){
-        ter->getMaterialInstance()->setAmbient(_sunColor);
+        ter->getComponent<RenderingComponent>()->getMaterialInstance()->setAmbient(_sunColor);
     }
 
     _updateLights = false;

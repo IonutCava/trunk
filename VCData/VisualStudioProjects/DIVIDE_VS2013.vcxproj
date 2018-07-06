@@ -459,9 +459,9 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\AnimationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\PhysicsComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Components\SGNComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp" />
-    <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
@@ -616,6 +616,7 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\AnimationComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NavigationComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\PhysicsComponent.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\SGNComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h" />

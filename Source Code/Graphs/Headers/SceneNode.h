@@ -27,6 +27,7 @@
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
+#include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 class Scene;
@@ -67,6 +68,7 @@ public:
     virtual	bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
     virtual	bool getDrawState(const RenderStage& currentStage);
+    virtual void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) = 0;
     /*//Rendering/Processing*/
 
     virtual	bool	  unload();
@@ -91,8 +93,7 @@ protected:
     friend class RenderBin;
     friend class RenderPass;
     friend class SceneGraph;
-    friend class SceneGraphNode;
-
+    friend class RenderingComponent;
     /// Perform any post-draw operations (this is after releasing object and shadow states)
     virtual void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {/*Nothing yet*/ }
     /// Called from SceneGraph "sceneUpdate"
@@ -110,13 +111,13 @@ protected:
 protected:
     ///The various states needed for rendering
     SceneNodeRenderState  _renderState;
-    U8                    _LODcount; ///<Maximum available LOD levels
+    ///Maximum available LOD levels
+    U8                    _LODcount; 
 
 private:
-    //mutable SharedLock _materialLock;
-    Material*	  _materialTemplate;
-    bool          _hasSGNParent;
     SceneNodeType _type;
+    bool          _hasSGNParent;
+    Material*	  _materialTemplate;
 };
 
 }; //namespace Divide

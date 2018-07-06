@@ -65,12 +65,7 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 c
                     return a.first < b.first;
               });
 }
-/// Returns the visible nodes' buffer index for the given ID
-inline I32 GFXDevice::getDrawID(I64 drawIDIndex) const {
-	hashMapImpl<I64, I32>::const_iterator it = _sgnToDrawIDMap.find(drawIDIndex);
-	assert(it != _sgnToDrawIDMap.end());
-	return it->second;
-}
+
 ///Sets the current render stage.
 ///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
 inline RenderStage GFXDevice::setRenderStage(RenderStage stage) {

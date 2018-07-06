@@ -60,7 +60,6 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
             _playAnimationsCurrent = playAnimation;
         }
     }
-	clearDrawCommands();
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 

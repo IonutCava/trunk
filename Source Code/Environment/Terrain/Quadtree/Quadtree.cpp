@@ -21,24 +21,24 @@ void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Scene
     _root->sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Quadtree::CreateDrawCommands(const SceneRenderState& sceneRenderState) {
+void Quadtree::createDrawCommands(const SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_root);
     U32 options = CHUNK_BIT_TESTCHILDREN;
-    if (GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
+    if (GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)) {
         options |= CHUNK_BIT_WATERREFLECTION;
-    else if (GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE))
+    } else if (GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)) {
         options |= CHUNK_BIT_SHADOWMAP;
-
-    _root->CreateDrawCommand(options, sceneRenderState);
+    }
+    _root->createDrawCommand(options, sceneRenderState, drawCommandsOut);
 }
 
-void Quadtree::DrawBBox() const {
+void Quadtree::drawBBox() const {
     assert(_root);
-    _root->DrawBBox();
+    _root->drawBBox();
     GFX_DEVICE.drawBox3D(_root->getBoundingBox().getMin(), _root->getBoundingBox().getMax(), vec4<U8>(0, 64, 255, 255));
 }
 
-QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {
+QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {
     assert(_root);
     QuadtreeNode* node  = _root;
     QuadtreeNode* child = nullptr;

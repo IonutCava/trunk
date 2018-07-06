@@ -6,8 +6,6 @@ invariant gl_Position;
 out vec4 _vertexW;
 out vec2 _texCoord;
 
-uniform int dvd_lodLevel = 0;
-
 #include "nodeBufferedInput.cmn"
 
 #if defined(USE_GPU_SKINNING)
@@ -21,7 +19,7 @@ vec3  dvd_Tangent;
 vec3  dvd_BiTangent;
 
 void computeData(){
-
+    dvd_drawID     = gl_BaseInstanceARB;
     dvd_Vertex     = vec4(inVertexData,1.0);
     dvd_Normal     = inNormalData;
     dvd_Tangent    = inTangentData;

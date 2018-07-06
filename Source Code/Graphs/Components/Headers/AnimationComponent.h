@@ -41,7 +41,7 @@ public:
 
     AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN);
     ~AnimationComponent();
-    void onDraw(RenderStage currentStage);
+    bool onDraw(RenderStage currentStage);
     
     void update(const U64 deltaTime);
 

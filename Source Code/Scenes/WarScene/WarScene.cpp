@@ -230,28 +230,23 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     _sun->csmSplitLogFactor(0.925f);
     _sun->csmNearClipOffset(25.0f);
     // Add some obstacles
-    SceneGraphNode* cylinderC  = _sceneGraph->findNode("cylinderC");
-    SceneGraphNode* cylinderNW = _sceneGraph->findNode("cylinderNW");
-    SceneGraphNode* cylinderNE = _sceneGraph->findNode("cylinderNE");
-    SceneGraphNode* cylinderSW = _sceneGraph->findNode("cylinderSW");
-    SceneGraphNode* cylinderSE = _sceneGraph->findNode("cylinderSE");
+    SceneGraphNode* cylinder[5];
+    cylinder[0] = _sceneGraph->findNode("cylinderC");
+    cylinder[1] = _sceneGraph->findNode("cylinderNW");
+    cylinder[2] = _sceneGraph->findNode("cylinderNE");
+    cylinder[3] = _sceneGraph->findNode("cylinderSW");
+    cylinder[4] = _sceneGraph->findNode("cylinderSE");
 
-    (*cylinderC->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
-    (*cylinderC->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
-    (*cylinderNW->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
-    (*cylinderNW->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
-    (*cylinderNE->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
-    (*cylinderNE->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
-    (*cylinderSW->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
-    (*cylinderSW->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
-    (*cylinderSE->getChildren().begin()).second->getMaterialInstance()->setDoubleSided(true);
-    (*cylinderSE->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
+    for (U8 i = 0; i < 5; ++i) {
+        RenderingComponent* const renderable = (*cylinder[i]->getChildren().begin()).second->getComponent<RenderingComponent>();
+        renderable->getMaterialInstance()->setDoubleSided(true);
+        (*cylinder[i]->getChildren().begin()).second->getNode()->getMaterialTpl()->setDoubleSided(true);
+    }
 
-    assert(cylinderNW && cylinderNE && cylinderSW && cylinderSE);
-    SceneNode* cylinderMeshNW = cylinderNW->getNode();
-    SceneNode* cylinderMeshNE = cylinderNE->getNode();
-    SceneNode* cylinderMeshSW = cylinderSW->getNode();
-    SceneNode* cylinderMeshSE = cylinderSE->getNode();
+    SceneNode* cylinderMeshNW = cylinder[1]->getNode();
+    SceneNode* cylinderMeshNE = cylinder[2]->getNode();
+    SceneNode* cylinderMeshSW = cylinder[3]->getNode();
+    SceneNode* cylinderMeshSE = cylinder[4]->getNode();
 
     std::string currentName;
     SceneNode* currentMesh = nullptr;
@@ -260,25 +255,25 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     std::pair<I32, I32> currentPos;
     for(U8 i = 0; i < 40; ++i){
         if(i < 10){
-            baseNode = cylinderNW;
+            baseNode = cylinder[1];
             currentMesh = cylinderMeshNW;
             currentName = "Cylinder_NW_" + Util::toString((I32)i);
             currentPos.first  = -200 + 40 * i + 50;
             currentPos.second = -200 + 40 * i + 50;
         }else if(i >= 10 && i < 20){
-            baseNode = cylinderNE;
+            baseNode = cylinder[2];
             currentMesh = cylinderMeshNE;
             currentName = "Cylinder_NE_" + Util::toString((I32)i);
             currentPos.first  =  200 - 40 * (i%10) - 50;
             currentPos.second = -200 + 40 * (i%10) + 50;
         }else if(i >= 20 && i < 30){
-            baseNode = cylinderSW;
+            baseNode = cylinder[3];
             currentMesh = cylinderMeshSW;
             currentName = "Cylinder_SW_" + Util::toString((I32)i);
             currentPos.first  = -200 + 40 * (i%20) + 50;
             currentPos.second =  200 - 40 * (i%20) - 50;
         }else{
-            baseNode = cylinderSE;
+            baseNode = cylinder[4];
             currentMesh = cylinderMeshSE;
             currentName = "Cylinder_SE_" + Util::toString((I32)i);
             currentPos.first  = 200 - 40 * (i%30) - 50;
@@ -296,7 +291,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
         currentNode->getComponent<PhysicsComponent>()->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
         currentNode->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
-    SceneGraphNode* baseFlagNode = cylinderNW;
+    SceneGraphNode* baseFlagNode = cylinder[1];
     _flag[0] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team1Flag");
     _flag[0]->setSelectable(false);
     _flag[0]->usageContext(baseFlagNode->usageContext());
@@ -469,7 +464,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
 
             aiSoldier = New AI::AIEntity(currentNode->getComponent<PhysicsComponent>()->getPosition(), currentNode->getName());
             aiSoldier->addSensor(AI::VISUAL_SENSOR);
-            k == 0 ? currentNode->renderBoundingBox(true) : currentNode->renderSkeleton(true);
+            k == 0 ? currentNode->getComponent<RenderingComponent>()->renderBoundingBox(true) : currentNode->getComponent<RenderingComponent>()->renderSkeleton(true);
 
             AI::WarSceneAISceneImpl* brain = New AI::WarSceneAISceneImpl();
 

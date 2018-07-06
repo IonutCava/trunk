@@ -68,6 +68,7 @@ public:
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
+    void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& renderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
     inline bool isInView( const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = true ) { return true; }
 
 protected:

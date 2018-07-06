@@ -18,7 +18,7 @@
    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
- */
+   */
 
 #ifndef VECTOR_H_
 #define VECTOR_H_
@@ -42,36 +42,35 @@ template<typename Type>
 using vectorImpl = boost::container::vector<Type>;
 
 namespace boost {
-    typedef size_t vecSize;
+typedef size_t vecSize;
 
-    template<typename T>
-    inline void shrinkToFit(vectorImpl<T>& inputVector) {
-        inputVector.shrink_to_fit();
-    }
+template<typename T>
+inline void shrinkToFit(vectorImpl<T>& inputVector) {
+inputVector.shrink_to_fit();
+}
 
 #	ifndef BOOST_PAIR_FUNCS
 #	define BOOST_PAIR_FUNCS
-		template<typename K, typename V>
-		inline std::pair<K, V> makePair(const K& key, const V& val) {
-		return std::make_pair(key, val);
-		}
+template<typename K, typename V>
+inline std::pair<K, V> makePair(const K& key, const V& val) {
+return std::make_pair(key, val);
+}
 
-		template<typename K, typename V>
-		inline std::pair<K, V> makePairCpy(const K& key, V val) {
-		return std::make_pair(key, val);
-		}
+template<typename K, typename V>
+inline std::pair<K, V> makePairCpy(const K& key, V val) {
+return std::make_pair(key, val);
+}
 #	endif
-
 };
 */
 #elif defined(VECTOR_IMP) && VECTOR_IMP == 0
 
 #include <EASTL/vector.h>
 
-namespace vectorAlg  = eastl;
+namespace vectorAlg = eastl;
 
 template<typename Type>
-using vectorImpl = vectorAlg::vector<Type>;
+using vectorImpl = vectorAlg::vector < Type > ;
 
 namespace eastl {
     typedef eastl_size_t vecSize;
@@ -81,19 +80,24 @@ namespace eastl {
         inputVector.set_capacity(inputVector.size()  * sizeof(T));
     }
 
+    template<typename T, class... Args>
+    inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector, Args&&... args) {
+        new(inputVector.push_back_uninitialized())T(std::forward<Args>(args)...);
+        return &inputVector.back();
+    }
+
 #	ifndef EASTL_PAIR_FUNCS
 #	define EASTL_PAIR_FUNCS
-		template<typename K, typename V>
-		inline eastl::pair<K, V> makePair(const K& key, const V& val) {
-			return eastl::make_pair_ref(key, val);
-		}
+    template<typename K, typename V>
+    inline eastl::pair<K, V> makePair(const K& key, const V& val) {
+        return eastl::make_pair_ref(key, val);
+    }
 
-		template<typename K, typename V>
-		inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
-			return eastl::make_pair_ref(key, val);
-		}
+    template<typename K, typename V>
+    inline eastl::pair<K, V> makePairCpy(const K& key, V val) {
+        return eastl::make_pair_ref(key, val);
+    }
 #	endif
-
 };
 
 #else //defined(VECTOR_IMP) && VECTOR_IMP == 1
@@ -108,27 +112,34 @@ using vectorImpl = vectorAlg::vector<Type>;
 namespace std {
     typedef size_t vecSize;
 
-	//template<typename T1, typename T2>
-	//using pair = std::pair<T1, T2>;
+    //template<typename T1, typename T2>
+    //using pair = std::pair<T1, T2>;
 
     template<typename T>
     inline void shrinkToFit(vectorImpl<T>& inputVector) {
         inputVector.shrink_to_fit();
     }
 
+    template<typename T, class... _Valty>
+    inline typename vectorImpl<T>::iterator emplace_back(vectorImpl<T>& inputVector, _Valty&&... _Val) {
+        inputVector.emplace_back(std::forward<Args>(args)...);
+        return inputVector.back();
+    }
+
 #	ifndef STD_PAIR_FUNCS
 #	define STD_PAIR_FUNCS
-		template<typename K, typename V>
-		inline std::pair<K, V> makePair(const K& key, const V& val) {
-			return std::make_pair(key, val);
-		}
+    template<typename K, typename V>
+    inline std::pair<K, V> makePair(const K& key, const V& val) {
+        return std::make_pair(key, val);
+    }
 
-		template<typename K, typename V>
-		inline std::pair<K, V> makePairCpy(const K& key, V val) {
-			return std::make_pair(key, val);
-		}
+    template<typename K, typename V>
+    inline std::pair<K, V> makePairCpy(const K& key, V val) {
+        return std::make_pair(key, val);
+    }
 #	endif
 };
 #endif //defined(VECTOR_IMP)
 
+#define SET_VECTOR_EMPLACE_FRIEND template<typename T, class... Args> friend typename vectorImpl<T>::iterator vectorAlg::emplace_back(vectorImpl<T>& inputVector, Args&&... args);
 #endif

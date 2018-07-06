@@ -72,7 +72,6 @@ protected:
     GLuint _IBid;
     GLuint _VBid;
     GLuint _VAOid;
-    GLuint _indirectDrawBuffer;
     GLuint _usage;
     bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
     bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that

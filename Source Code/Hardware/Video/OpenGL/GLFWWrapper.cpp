@@ -243,7 +243,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
     // We need a dummy VAO object for point rendering
     glGenVertexArrays(1, &_pointDummyVAO);
-
+    // Allocate a buffer for indirect draw used to store the query results without a round-trip to the CPU
+    glGenBuffers(1, &_indirectDrawBuffer);
     // In debug, we also have various performance counters to profile GPU rendering operations
 #   ifdef _DEBUG
         // We have multiple counter buffers, and each can be multi-buffered (currently, only double-buffered, front and back) to avoid pipeline stalls
@@ -295,7 +296,15 @@ void GL_API::closeRenderingApi() {
     // Destroy the text rendering system
     deleteFonsContext();
     _fonts.clear();
-
+    // If we have an indirect draw buffer, delete it
+    if (_indirectDrawBuffer > 0) {
+        glDeleteBuffers(1, &_indirectDrawBuffer);
+        _indirectDrawBuffer = 0;
+    }
+    if (_pointDummyVAO > 0) {
+        glDeleteVertexArrays(1, &_pointDummyVAO);
+        _pointDummyVAO = 0;
+    }
     // Destroy application windows and close GLFW
     glfwDestroyWindow( GLUtil::_loaderWindow );
     glfwDestroyWindow( GLUtil::_mainWindow );

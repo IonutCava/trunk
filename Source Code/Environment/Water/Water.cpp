@@ -91,7 +91,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
        _dirty = false;
     }
     if (_paramsDirty){
-        ShaderProgram* shader = sgn->getMaterialInstance()->getShaderInfo(FINAL_STAGE).getProgram();
+        ShaderProgram* shader = sgn->getComponent<RenderingComponent>()->getMaterialInstance()->getShaderInfo(FINAL_STAGE).getProgram();
         shader->Uniform("_waterShininess", _shininess);
         shader->Uniform("_noiseFactor", _noiseFactor);
         shader->Uniform("_noiseTile", _noiseTile);
@@ -112,33 +112,40 @@ bool WaterPlane::onDraw(SceneGraphNode* const sgn, const RenderStage& currentSta
 void WaterPlane::postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
 }
 
-void WaterPlane::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
-    if(!_plane->onDraw(nullptr, currentRenderStage))
-        return;
-
+void WaterPlane::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
+    RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
+    assert(renderable != nullptr);
 
-    if(!depthPass){
+    ShaderProgram* drawShader = renderable->getDrawShader(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE);
+    drawShader->Uniform("underwater", _cameraUnderWater);
+    GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
+    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.stateHash(renderable->getMaterialInstance()->getRenderStateBlock(FINAL_STAGE));
+    cmd.shaderProgram(drawShader);
+    cmd.sourceBuffer(_plane->getGeometryVB());
+    drawCommandsOut.push_back(cmd);
+}
+
+void WaterPlane::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
+    if (!_plane->onDraw(nullptr, currentRenderStage)) {
+        return;
+    }
+    if (!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
         _reflectedTexture->Bind(1);
         if ( !_cameraUnderWater ) {
             _refractionTexture->Bind( 2 );
         }
     }
 
-    ShaderProgram* drawShader = sgn->getDrawShader(depthPass ? Z_PRE_PASS_STAGE : FINAL_STAGE);
-    drawShader->Uniform("underwater", _cameraUnderWater);
-    GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
-    cmd.renderWireframe(sgn->renderWireframe());
-    cmd.stateHash(sgn->getMaterialInstance()->getRenderStateBlock(FINAL_STAGE));
-    cmd.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-    cmd.shaderProgram(drawShader);
-    GFX_DEVICE.submitRenderCommand(_plane->getGeometryVB(), cmd);
+    GFX_DEVICE.submitRenderCommand(sgn->getComponent<RenderingComponent>()->getDrawCommands());
 }
 
 bool WaterPlane::getDrawState(const RenderStage& currentStage) {
     // Wait for the Reflector to update
-    if(!_createdFB) return false;
-
+    if (!_createdFB) {
+        return false;
+    }
     // Make sure we are not drawing our self unless this is desired
     if((currentStage == REFLECTION_STAGE || _reflectionRendering || _refractionRendering) && !_updateSelf)	return false;
 

@@ -266,7 +266,7 @@ bool TenisScene::load(const stringImpl& name, CameraManager* const cameraMgr, GU
         //it.second->setReceivesShadows(false);
     //}
     _floor = _sceneGraph->findNode("Floor");
-    _floor->castsShadows(false);
+    _floor->getComponent<RenderingComponent>()->castsShadows(false);
 
     AI::AIManager::getInstance().pauseUpdate(false);
     return loadState;

@@ -60,11 +60,6 @@ public:
     inline  ObjectType          getObjectType() const {return _geometryType;}
     inline  U32                 getFlagMask()   const {return _geometryFlagMask;}
 
-    ///Draw Command
-    inline void  addDrawCommand(const GenericDrawCommand& drawCommand)      { _drawCommands.push_back(drawCommand);}
-    inline const vectorImpl<GenericDrawCommand >& drawCommands()      const { return _drawCommands; }
-    inline void  clearDrawCommands()                                        { _drawCommands.clear(); }
-
     virtual bool  onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     virtual bool  updateAnimations(SceneGraphNode* const sgn) { return false; }
     inline void   setGeometryPartitionId(size_t idx) { _geometryPartitionId = (U32)idx; }
@@ -78,7 +73,7 @@ public:
 
 protected:
     virtual	void  render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage);
-
+    virtual void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();
     virtual void computeTangents();
 	/// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
@@ -95,8 +90,6 @@ protected:
     vectorImpl<vec3<U32> > _geometryTriangles;	
     ///A custom, override vertex buffer
     VertexBuffer* _buffer;
-    ///The draw command associated with this render instance
-    vectorImpl<GenericDrawCommand > _drawCommands;
 };
 
 }; //namespace Divide

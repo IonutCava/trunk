@@ -253,7 +253,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
         if(sceneNode){
             sceneNode->renderState().setDrawState(true);
             outNode = _parentScene->getSceneGraph()->addNode(sceneNode, sgnName);
-            outNode->castsShadows(shadowState);
+            outNode->getComponent<RenderingComponent>()->castsShadows(shadowState);
         }
         if(!outNode){
             ERROR_FN(Locale::get("ERROR_ACTOR_CAST"), sgnName.c_str());

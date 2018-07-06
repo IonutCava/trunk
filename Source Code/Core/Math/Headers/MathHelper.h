@@ -197,6 +197,17 @@ namespace Util {
         return _ssBuffer.str();
     }
 
+    template<> inline std::string toString(const U8&  data) { return std::to_string(static_cast<U32>(data)); }
+    template<> inline std::string toString(const U16& data) { return std::to_string(static_cast<U32>(data)); }
+    template<> inline std::string toString(const U32& data) { return std::to_string(data); }
+    template<> inline std::string toString(const U64& data) { return std::to_string(data); }
+    template<> inline std::string toString(const I8&  data) { return std::to_string(static_cast<I32>(data)); }
+    template<> inline std::string toString(const I16& data) { return std::to_string(static_cast<I32>(data)); }
+    template<> inline std::string toString(const I32& data) { return std::to_string(data); }
+    template<> inline std::string toString(const I64& data) { return std::to_string(data); }
+    template<> inline std::string toString(const F32& data) { return std::to_string(data); }
+    template<> inline std::string toString(const D32& data) { return std::to_string(data); }
+
     //U = to data type, T = from data type
     template<typename U, typename T>
     inline U convertData(const T& data){

@@ -13,14 +13,18 @@ RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, SceneG
                                                                                                         _sortKeyB( sortKeyB ),
                                                                                                         _distanceToCameraSq(distToCamSq)
 {
-    Material* mat = _node->getMaterialInstance();
-    // If we do not have a material, no need to continue
-    if (!mat) {
-        return;
+    _stateHash = 0;
+    RenderingComponent* const renderable = _node->getComponent<RenderingComponent>();
+    if (renderable) {
+        Material* nodeMaterial = renderable->getMaterialInstance();
+        // If we do not have a material, no need to continue
+        if (!nodeMaterial) {
+            return;
+        }
+        // Sort by state hash depending on the current rendering stage
+        // Save the render state hash value for sorting
+        _stateHash = GFX_DEVICE.getStateBlockDescriptor(nodeMaterial->getRenderStateBlock(GFX_DEVICE.getRenderStage())).getHash();
     }
-    // Sort by state hash depending on the current rendering stage
-    // Save the render state hash value for sorting
-    _stateHash = GFX_DEVICE.getStateBlockDescriptor(mat->getRenderStateBlock(GFX_DEVICE.getRenderStage())).getHash();
 }
 
 struct RenderQueueDistanceBacktoFront{
@@ -121,9 +125,12 @@ void RenderBin::refresh(){
 void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
     I32 keyA = (U32)_renderBinStack.size() + 1;
     I32 keyB = keyA;
-    Material* nodeMaterial = sgn->getMaterialInstance();
-    if(nodeMaterial){
-        nodeMaterial->getSortKeys(keyA, keyB);
+    RenderingComponent* const renderable = sgn->getComponent<RenderingComponent>();
+    if (renderable) {
+        Material* nodeMaterial = renderable->getMaterialInstance();
+        if (nodeMaterial){
+            nodeMaterial->getSortKeys(keyA, keyB);
+        }
     }
 	_renderBinStack.push_back(RenderBinItem(keyA, keyB, sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos), sgn));
 }
@@ -135,7 +142,10 @@ void RenderBin::render(const SceneRenderState& renderState, const RenderStage& c
     //We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for(U16 j = 0; j < getBinSize(); ++j){
         //Call render and the stage exclusion mask should do the rest
-        getItem(j)._node->render(renderState, currentRenderStage);
+        RenderingComponent* const renderable = getItem(j)._node->getComponent<RenderingComponent>();
+        if (renderable) {
+            renderable->render(renderState, currentRenderStage);
+        }
     }
 }
 

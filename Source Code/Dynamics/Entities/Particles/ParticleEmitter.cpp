@@ -122,18 +122,25 @@ void ParticleEmitter::onCameraChange(SceneGraphNode* const sgn){
     _particleDepthShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
 }
 
+void ParticleEmitter::getDrawCommands(SceneGraphNode* const sgn, const RenderStage& currentRenderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+    if (!(_particlesCurrentCount > 0 && _enabled && _created)){
+        return;
+    }
+    
+    _drawCommand.renderWireframe(sgn->getComponent<RenderingComponent>()->renderWireframe());
+    _drawCommand.stateHash(_particleStateBlockHash);
+    _drawCommand.instanceCount(_particlesCurrentCount);
+    _drawCommand.shaderProgram(currentRenderStage == FINAL_STAGE ? _particleShader : _particleDepthShader);
+    _drawCommand.sourceBuffer(_particleGPUBuffer);
+    drawCommandsOut.push_back(_drawCommand);
+}
+
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
 void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     if(_particlesCurrentCount > 0 && _enabled && _created){
         _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(ShaderProgram::TEXTURE_UNIT1, TextureDescriptor::Depth);
-
-        _drawCommand.renderWireframe(sgn->renderWireframe());
-        _drawCommand.stateHash(_particleStateBlockHash);
-        _drawCommand.instanceCount(_particlesCurrentCount);
-        _drawCommand.drawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
-        _drawCommand.shaderProgram(currentRenderStage == FINAL_STAGE ? _particleShader : _particleDepthShader);
-        GFX_DEVICE.submitRenderCommand(_particleGPUBuffer, _drawCommand);
+        GFX_DEVICE.submitRenderCommand(sgn->getComponent<RenderingComponent>()->getDrawCommands());
     }
 }
 
@@ -217,7 +224,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
     F32 delta = getUsToSec(deltaTime);
 
     I32 newParticles = _descriptor._emissionInterval + random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
-    newParticles = (I32)(newParticles * delta) / (sgn->lodLevel() + 1);
+    newParticles = (I32)(newParticles * delta) / (sgn->getComponent<RenderingComponent>()->lodLevel() + 1);
     PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
     const vec3<F32>& origin = transform->getPosition();

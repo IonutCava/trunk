@@ -2,6 +2,7 @@
 
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -12,31 +13,36 @@
 
 namespace Divide {
 
+
+bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
+    BoundingBox& bb = sgn->getBoundingBox();
+    bb.reset();
+    for (const SceneGraphNode::NodeChildren::value_type& s : sgn->getChildren()) {
+        sgn->addBoundingBox(s.second->getBoundingBoxConst(), s.second->getNode()->getType());
+    }
+    bb.setComputed(true);
+    return SceneNode::computeBoundingBox(sgn);
+}
+
 SceneGraphNode::SceneGraphNode( SceneGraph* const sg, SceneNode* const node, const stringImpl& name ) : GUIDWrapper(),
-                                                  _sceneGraph(sg),
-                                                  _node(node),
-                                                  _lodLevel( 0 ),
-                                                  _elapsedTime(0ULL),
-                                                  _parent(nullptr),
-                                                  _loaded(true),
-                                                  _wasActive(true),
-                                                  _active(true),
-                                                  _inView(false),
-                                                  _selected(false),
-                                                  _isSelectable(false),
-                                                  _sorted(false),
-                                                  _silentDispose(false),
-                                                  _boundingBoxDirty(true),
-                                                  _shouldDelete(false),
-                                                  _castsShadows(true),
-                                                  _receiveShadows(true),
-                                                  _renderWireframe(false),
-                                                  _renderBoundingBox(false),
-                                                  _renderSkeleton(false),
-                                                  _updateTimer(GETMSTIME()),
-                                                  _childQueue(0),
-                                                  _bbAddExclusionList(0),
-                                                  _usageContext(NODE_DYNAMIC)
+                                                                                                       _sceneGraph(sg),
+                                                                                                       _node(node),
+                                                                                                       _elapsedTime(0ULL),
+                                                                                                       _parent(nullptr),
+                                                                                                       _loaded(true),
+                                                                                                       _wasActive(true),
+                                                                                                       _active(true),
+                                                                                                       _inView(false),
+                                                                                                       _selected(false),
+                                                                                                       _isSelectable(false),
+                                                                                                       _sorted(false),
+                                                                                                       _silentDispose(false),
+                                                                                                       _boundingBoxDirty(true),
+                                                                                                       _shouldDelete(false),
+                                                                                                       _updateTimer(GETMSTIME()),
+                                                                                                       _childQueue(0),
+                                                                                                       _bbAddExclusionList(0),
+                                                                                                       _usageContext(NODE_DYNAMIC)
 {
     
     assert(_node != nullptr);
@@ -44,39 +50,10 @@ SceneGraphNode::SceneGraphNode( SceneGraph* const sg, SceneNode* const node, con
     setName( name );
     _instanceID = (node->GetRef() - 1);
     Material* const materialTemplate = _node->getMaterialTpl();
-    _materialInstance = materialTemplate != nullptr ? materialTemplate->clone("_instance_" + name) : nullptr;
     _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
+    _components[SGNComponent::SGN_COMP_RENDERING]  = New RenderingComponent(materialTemplate != nullptr ? materialTemplate->clone("_instance_" + name) : nullptr, this);
     _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
     _components[SGNComponent::SGN_COMP_PHYSICS]    = New PhysicsComponent(this);
-
-#   ifdef _DEBUG
-        // Red X-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255)));
-        // Green Y-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255))); 
-        // Blue Z-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
-        _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
-        // Prepare it for line rendering
-        _axisGizmo->_hasLines = true;
-        _axisGizmo->_lineWidth = 5.0f;
-        _axisGizmo->stateHash(GFX_DEVICE.getDefaultStateBlock(true));
-        _axisGizmo->paused(true);
-        // Create the object containing all of the lines
-        _axisGizmo->beginBatch();
-        _axisGizmo->attribute4ub("inColorData", _axisLines[0]._color);
-        // Set the mode to line rendering
-        _axisGizmo->begin(LINES);
-        // Add every line in the list to the batch
-        for (const Line& line : _axisLines) {
-            _axisGizmo->attribute4ub("inColorData", line._color);
-            _axisGizmo->vertex( line._startPoint );
-            _axisGizmo->vertex( line._endPoint );
-        }
-        _axisGizmo->end();
-        // Finish our object
-        _axisGizmo->endBatch();
-#   endif
 }
 
 ///If we are destroying the current graph node
@@ -94,9 +71,6 @@ SceneGraphNode::~SceneGraphNode()
         _components[i] = nullptr;
     }
     _children.clear();
-#ifdef _DEBUG
-    _axisGizmo->_canZombify = true;
-#endif
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& type) {
@@ -133,9 +107,7 @@ bool SceneGraphNode::unload(){
     if ( !_silentDispose && getParent() ) {
         PRINT_FN( Locale::get( "REMOVE_SCENEGRAPH_NODE" ), _node->getName().c_str(), getName().c_str() );
     }
-    if (_materialInstance){
-        RemoveResource(_materialInstance);
-    }
+
     //if not root
     if ( getParent() ) {
         RemoveResource( _node );
@@ -258,6 +230,120 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
 
     for (const NodeChildren::value_type& it : _children ) {
         it.second->Intersect( ray, start, end, selectionHits );
+    }
+}
+
+
+
+void SceneGraphNode::setSelected(const bool state) {
+    _selected = state;
+    for (NodeChildren::value_type& it : _children) {
+        it.second->setSelected(_selected);
+    }
+}
+
+bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){
+    if (_boundingBox.Transform(_initialBoundingBox, transform, !_initialBoundingBox.Compare(_initialBoundingBoxCache))) {
+        _initialBoundingBoxCache = _initialBoundingBox;
+        _boundingSphere.fromBoundingBox(_boundingBox);
+        return true;
+    }
+
+    return false;
+}
+
+void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox){
+    if (!initialBoundingBox.Compare(getInitialBoundingBox())){
+        _initialBoundingBox = initialBoundingBox;
+        _initialBoundingBox.setComputed(true);
+        _boundingBoxDirty = true;
+    }
+}
+
+void SceneGraphNode::onCameraChange() {
+    for (NodeChildren::value_type& it : _children) {
+        it.second->onCameraChange();
+    }
+    _node->onCameraChange(this);
+}
+
+///Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
+void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
+    //Compute from leaf to root to ensure proper calculations
+    for (NodeChildren::value_type& it : _children) {
+        assert(it.second);
+        it.second->sceneUpdate(deltaTime, sceneState);
+    }
+    // update local time
+    _elapsedTime += deltaTime;
+    // update all of the internal components (animation, physics, etc)
+    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
+        if (_components[i]) {
+            _components[i]->update(deltaTime);
+        }
+    }
+
+    if (getComponent<PhysicsComponent>()->transformUpdated()) {
+        _boundingBoxDirty = true;
+        for (NodeChildren::value_type& it : _children) {
+            it.second->getComponent<PhysicsComponent>()->transformUpdated(true);
+        }
+    }
+    assert(_node->getState() == RES_LOADED);
+    //Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
+
+    //Compute the BoundingBox if it isn't already
+    if (!_boundingBox.isComputed()) {
+        _node->computeBoundingBox(this);
+        assert(_boundingBox.isComputed());
+        _boundingBoxDirty = true;
+    }
+
+    if (_boundingBoxDirty) {
+        if (updateBoundingBoxTransform(getComponent<PhysicsComponent>()->getWorldMatrix())) {
+            if (_parent) {
+                _parent->getBoundingBox().setComputed(false);
+            }
+        }
+        _boundingBoxDirty = false;
+    }
+
+    getComponent<PhysicsComponent>()->transformUpdated(false);
+
+    _node->sceneUpdate(deltaTime, this, sceneState);
+
+    if (_shouldDelete) {
+        GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+    }
+}
+
+bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState, const RenderStage& renderStage){
+    if (_reset[renderStage]) {
+        _reset[renderStage] = false;
+        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
+            for (SceneGraphNode::NodeChildren::value_type& it : getParent()->getChildren()) {
+                if (it.second->getComponent<AnimationComponent>()) {
+                    it.second->getComponent<AnimationComponent>()->resetTimers();
+                }
+            }
+        }
+    }
+
+    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
+        if (_components[i]) {
+            if (!_components[i]->onDraw(renderStage)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void SceneGraphNode::inView(const bool state){
+    _inView = state;
+    if (state && getComponent<RenderingComponent>()) {
+        getComponent<RenderingComponent>()->inViewCallback();
     }
 }
 

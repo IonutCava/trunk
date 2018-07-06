@@ -93,7 +93,7 @@ bool AnimationComponent::playNextAnimation() {
 }
 
 void AnimationComponent::renderSkeleton(){
-    if (!_skeletonAvailable || (!GET_ACTIVE_SCENE()->renderState().drawSkeletons() && !_parentSGN->renderSkeleton())) {
+    if (!_skeletonAvailable || (!GET_ACTIVE_SCENE()->renderState().drawSkeletons() && !_parentSGN->getComponent<RenderingComponent>()->renderSkeleton())) {
         return;
     }
 
@@ -103,7 +103,7 @@ void AnimationComponent::renderSkeleton(){
     GFX_DEVICE.drawLines(skeletonLines, _parentSGN->getComponent<PhysicsComponent>()->getWorldMatrix(), vec4<I32>(), false, true);
 }
 
-void AnimationComponent::onDraw(RenderStage currentStage) {
+bool AnimationComponent::onDraw(RenderStage currentStage) {
     STUBBED("BoneTransformBuffers: Replace Read/Write design with 3xSize single buffer with UpdateData + BindRange");
 
     _skeletonAvailable = false;
@@ -112,11 +112,13 @@ void AnimationComponent::onDraw(RenderStage currentStage) {
                                                    _animationTransforms.data(), true);
     _boneTransformBuffer[_readBuffer]->Bind(SHADER_BUFFER_BONE_TRANSFORMS);
 
-    if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations || _currentTimeStamp < 0.0)
-        return;
-
+    if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations || _currentTimeStamp < 0.0) {
+        return true;
+    }
     //All animation data is valid, so we have a skeleton to render if needed
     _skeletonAvailable = true;
+    
+    return true;
 }
 
 I32 AnimationComponent::frameIndex() const {

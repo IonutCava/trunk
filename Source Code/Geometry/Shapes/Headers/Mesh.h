@@ -63,6 +63,7 @@ protected:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) { }
+    virtual void getDrawCommands(SceneGraphNode* const sgn, const RenderStage& renderStage, SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 
 protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;

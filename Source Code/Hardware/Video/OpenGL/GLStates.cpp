@@ -10,6 +10,7 @@
 namespace Divide {
 
 /// The following static variables are used to remember the current OpenGL state
+GLuint GL_API::_indirectDrawBuffer = 0;
 GLint  GL_API::_activePackUnpackAlignments[] = {1, 1};
 GLint  GL_API::_activePackUnpackRowLength[]  = {0, 0};
 GLint  GL_API::_activePackUnpackSkipPixels[] = {0, 0};

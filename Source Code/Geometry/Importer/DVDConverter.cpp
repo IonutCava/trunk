@@ -89,7 +89,7 @@ bool DVDConverter::init(){
                aiProcess_FindInvalidData          |
                0;
 
-    if(GFX_DEVICE.getApi() != OpenGL && GFX_DEVICE.getApi() != OpenGLES){
+    if (GFX_DEVICE.getApi() != OpenGL && GFX_DEVICE.getApi() != OpenGLES) {
         _ppsteps |= aiProcess_ConvertToLeftHanded;
     }
 
@@ -97,7 +97,7 @@ bool DVDConverter::init(){
 }
 
 Mesh* DVDConverter::load(const stringImpl& file){
-    if (_ppsteps == 0){
+    if (_ppsteps == 0) {
         ERROR_FN(Locale::get("ERROR_NO_INIT_IMPORTER_LOAD"));
         return nullptr;
     }
@@ -123,8 +123,9 @@ Mesh* DVDConverter::load(const stringImpl& file){
 
         size_t i = GetMatchingFormat(exporter, _modelName.substr(_modelName.find_last_of(".") + 1));
 
-        if (i != SIZE_MAX)
+        if (i != SIZE_MAX) {
             exporter.Export(_aiScenePointer, exporter.GetExportFormatDescription(i)->id, processedModel);
+        }
     }*/
 
     D_PRINT_FN(Locale::get("LOAD_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
@@ -143,7 +144,9 @@ Mesh* DVDConverter::load(const stringImpl& file){
     bool skinned = false;
     for (U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
         vertCount += _aiScenePointer->mMeshes[n]->mNumVertices;
-        if (_aiScenePointer->mMeshes[n]->HasBones()) skinned = true;
+        if (_aiScenePointer->mMeshes[n]->HasBones()) {
+            skinned = true;
+        }
     }
 
     VertexBuffer* vb = tempMesh->getGeometryVB();
@@ -161,9 +164,9 @@ Mesh* DVDConverter::load(const stringImpl& file){
     for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
         aiMesh* currentMesh = _aiScenePointer->mMeshes[n];
         //Skip points and lines ... for now -Ionut
-        if (currentMesh->mNumVertices == 0)
+        if (currentMesh->mNumVertices == 0) {
             continue;
-
+        }
         tempSubMesh = loadSubMeshGeometry(currentMesh, tempMesh, n);
 
         if (tempSubMesh){
@@ -196,7 +199,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
 
     stringImpl temp(source->mName.C_Str());
 
-    if(temp.empty()){
+    if (temp.empty()) {
         std::stringstream ss;
         ss << _fileLocation.substr(_fileLocation.rfind("/")+1, _fileLocation.length()).c_str();
         ss << "-submesh-";
@@ -206,22 +209,26 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
 
     SubMesh* tempSubMesh = nullptr;
     bool skinned = source->HasBones();
-    if(temp.find(".LOD1") != stringImpl::npos ||
+    if (temp.find(".LOD1") != stringImpl::npos ||
         temp.find(".LOD2") != stringImpl::npos/* ||
         temp.find(".LODn") != stringImpl::npos*/){ ///Add as many LOD levels as you please
         tempSubMesh = FindResourceImpl<SubMesh>(_fileLocation.substr(0,_fileLocation.rfind(".LOD")));
         assert(tempSubMesh != nullptr);
         tempSubMesh->incLODcount();
-    }else{
+    } else {
         //Submesh is created as a resource when added to the scenegraph
         ResourceDescriptor submeshdesc(temp);
         submeshdesc.setFlag(true);
         submeshdesc.setId(count);
-        if(skinned) submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
+        if (skinned) {
+            submeshdesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
+        }
         tempSubMesh = CreateResource<SubMesh>(submeshdesc);
-        if(!tempSubMesh) return nullptr;
+        if (!tempSubMesh) {
+            return nullptr;
+        }
         //it may be already loaded
-        if(tempSubMesh->getParentMesh()){
+        if (tempSubMesh->getParentMesh()) {
             return tempSubMesh;
         }
         baseMeshLoading = true;
@@ -231,9 +238,9 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
 
     if(skinned){
         assert(source->mNumBones < 256); ///<Fit in U8
-        for(U8 a = 0; a < source->mNumBones; a++){
+        for (U8 a = 0; a < source->mNumBones; a++){
             const aiBone* bone = source->mBones[a];
-            for( U32 b = 0; b < bone->mNumWeights; b++){
+            for ( U32 b = 0; b < bone->mNumWeights; b++) {
                 weightsPerVertex[bone->mWeights[b].mVertexId].push_back(vertexWeight( a, bone->mWeights[b].mWeight));
             }
         }
@@ -337,7 +344,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
     Material* tempMaterial = nullptr;
     if(!DISABLE_MAT_FROM_FILE){
         tempMaterial = XML::loadMaterial(materialName.c_str());
-        if(tempMaterial) return tempMaterial;
+        if (tempMaterial) {
+            return tempMaterial;
+        }
     }
 
     // If it's not defined in an XML File, see if it was previously loaded by the Resource Cache
@@ -345,9 +354,15 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
     // If we found it in the Resource Cache, return a copy of it
     ResourceDescriptor materialDesc(materialName);
-    if(skinned) materialDesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
+    if (skinned) {
+        materialDesc.setEnumValue(Object3D::OBJECT_FLAG_SKINNED);
+    }
+
     tempMaterial = CreateResource<Material>(materialDesc);
-    if(skip) return tempMaterial;
+
+    if (skip) {
+        return tempMaterial;
+    }
 
     // Compare load results with the standard success value
     aiReturn result = AI_SUCCESS;
@@ -447,7 +462,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
                                     &blend,
                                     &op,
                                     mode);
-        if(result != AI_SUCCESS) break;
+        if (result != AI_SUCCESS) {
+            break;
+        }
         // get full path
         stringImpl path = tName.data;
         // get only image name
@@ -480,7 +497,9 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
         tName.Clear();
         count++;
-        if(count == 2) break;
+        if (count == 2) {
+            break;
+        }
         STUBBED("ToDo: Use more than 2 textures for each material. Fix This! -Ionut")
     }//endwhile
 

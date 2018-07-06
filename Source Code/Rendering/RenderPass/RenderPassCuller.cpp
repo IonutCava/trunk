@@ -24,6 +24,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
 
     if ( !_visibleNodes.empty() ) {
         if ( renderingLocked && !RenderPassManager::getInstance().isResetQueued() ) {
+            GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState());
             return;
         } 
         refreshNodeList();
@@ -41,6 +42,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
     currentNode->getRoot()->inView(true);
 
     GFX_DEVICE.processVisibleNodes(_visibleNodes);
+    GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState());
 
     if ( !renderingLocked ) {
         refreshNodeList();
@@ -53,6 +55,8 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
     if (bitCompare(sceneRenderState.objectState(), SceneRenderState::NO_DRAW)) {
         return;
     }
+    RenderStage currentStage = GFX_DEVICE.getRenderStage();
+
     currentNode->inView(false);
     //Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
@@ -60,14 +64,14 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
     //Skip all of this for inactive nodes.
     if(currentNode->isActive() && currentNode->getParent()) {
         SceneNode* node = currentNode->getNode();
-        RenderStage currentStage = GFX_DEVICE.getRenderStage();
         //If this node isn't render-disabled, check if it is visible
         //Skip expensive frustum culling if we shouldn't draw the node in the first place
         if ( !node->renderState().getDrawState( currentStage ) ) {
             //If the current SceneGraphNode isn't visible, it's children aren't visible as well
             skipChildren = true;
         } else {
-            if(currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && currentNode->castsShadows())){
+            if (currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && 
+                (currentNode->getComponent<RenderingComponent>() ? currentNode->getComponent<RenderingComponent>()->castsShadows() : false))){
                 //Perform visibility test on current node
                 if (node->isInView(sceneRenderState, currentNode, currentStage == SHADOW_STAGE ? false : true)){
                     //If the current node is visible, add it to the render queue

@@ -50,14 +50,14 @@ public:
     /// Ends gathering information about the primitives.
     void end();
     /// Specify the position of a vertex belonging to this primitive
-    void vertex(const vec3<F32>& vert);
+    void vertex(F32 x, F32 y, F32 z);
     /// Specify each attribute at least once(even with dummy values) before calling begin!
     /// Specify an attribute that will be applied to all vertex calls after this
     void attribute1i(const stringImpl& attribName, I32 value);
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4ub(const stringImpl& attribName, const vec4<U8>& value);
+    void attribute4ub(const stringImpl& attribName, U8 x, U8 y, U8 z, U8 w);
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4f(const stringImpl& attribName, const vec4<F32>& value);
+    void attribute4f(const stringImpl& attribName, F32 x, F32 y, F32 z, F32 w);
     /// Restore the primitive to it's initial state
     void clear();
     /// Submit the created batch to the GPU for rendering

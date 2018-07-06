@@ -28,6 +28,10 @@ void DX_API::changeViewport(const vec4<I32>& newViewport) const
 {
 }
 
+void DX_API::uploadDrawCommands(const vectorImpl<IndirectDrawCommand>& drawCommands) const
+{
+}
+
 void DX_API::setWindowPos(U16 w, U16 h) const
 {
 }

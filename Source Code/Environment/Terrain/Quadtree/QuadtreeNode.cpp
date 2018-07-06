@@ -140,30 +140,31 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
 }
 
 
-void QuadtreeNode::DrawBBox() const {
+void QuadtreeNode::drawBBox() const {
     GFX_DEVICE.drawBox3D(_boundingBox.getMin(), _boundingBox.getMax(), vec4<U8>(0, 128, 255, 255));
 
     if (!isALeaf()){
-        _children[CHILD_NW]->DrawBBox();
-        _children[CHILD_NE]->DrawBBox();
-        _children[CHILD_SW]->DrawBBox();
-        _children[CHILD_SE]->DrawBBox();
+        _children[CHILD_NW]->drawBBox();
+        _children[CHILD_NE]->drawBBox();
+        _children[CHILD_SW]->drawBBox();
+        _children[CHILD_SE]->drawBBox();
     }
 }
 
-void QuadtreeNode::CreateDrawCommand(U32 options, const SceneRenderState& sceneRenderState) {
+void QuadtreeNode::createDrawCommand(U32 options, const SceneRenderState& sceneRenderState, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
-    if (!isInView(options, sceneRenderState))
+    if (!isInView(options, sceneRenderState)) {
         return;
+    }
 
     if (isALeaf()) {
         assert(_terrainChunk);
-        _terrainChunk->CreateDrawCommand(bitCompare(options, CHUNK_BIT_WATERREFLECTION) ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD);
+        _terrainChunk->createDrawCommand(bitCompare(options, CHUNK_BIT_WATERREFLECTION) ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD, drawCommandsOut);
     }else{
-        _children[CHILD_NW]->CreateDrawCommand(options, sceneRenderState);
-        _children[CHILD_NE]->CreateDrawCommand(options, sceneRenderState);
-        _children[CHILD_SW]->CreateDrawCommand(options, sceneRenderState);
-        _children[CHILD_SE]->CreateDrawCommand(options, sceneRenderState);
+        _children[CHILD_NW]->createDrawCommand(options, sceneRenderState, drawCommandsOut);
+        _children[CHILD_NE]->createDrawCommand(options, sceneRenderState, drawCommandsOut);
+        _children[CHILD_SW]->createDrawCommand(options, sceneRenderState, drawCommandsOut);
+        _children[CHILD_SE]->createDrawCommand(options, sceneRenderState, drawCommandsOut);
     }
 }
 
