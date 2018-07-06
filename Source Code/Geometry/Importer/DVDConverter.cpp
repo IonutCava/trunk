@@ -339,7 +339,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         }
     }  // endfor
 
-    SubMeshDVDConverterAttorney::setGeometryLimits(
+    Attorney::SubMeshDVDConverter::setGeometryLimits(
         *tempSubMesh, importBB.getMin(), importBB.getMax());
 
     if (_aiScenePointer->HasAnimations() && skinned) {

@@ -60,7 +60,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     _plane->computeBoundingBox(planeSGN);
     computeBoundingBox(sgn);
     for (TerrainChunk* chunk : _terrainChunks) {
-        sgn.addNode(TerrainChunkTerrainAttorney::getVegetation(*chunk));
+        sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk));
     }
     SceneNode::postLoad(sgn);
 }

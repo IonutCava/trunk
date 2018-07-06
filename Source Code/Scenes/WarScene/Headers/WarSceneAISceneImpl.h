@@ -137,8 +137,12 @@ class WarSceneOrder : public Order {
     void unlock() { Order::unlock(); }
 };
 
+namespace Attorney {
+    class WarAISceneWarAction;
+};
+
 class WarSceneAISceneImpl : public AISceneImpl {
-    friend class WarAISceneWarActionAttorney;
+    friend class Attorney::WarAISceneWarAction;
 
    public:
     WarSceneAISceneImpl();
@@ -182,20 +186,21 @@ class WarSceneAISceneImpl : public AISceneImpl {
     static vec3<F32> _initialFlagPositions[2];
 };
 
-class WarAISceneWarActionAttorney {
+namespace Attorney {
+class WarAISceneWarAction {
    private:
     static bool preAction(WarSceneAISceneImpl& aiScene, ActionType type,
-                          const WarSceneAction* warAction) {
+                          const Divide::AI::WarSceneAction* warAction) {
         return aiScene.preAction(type, warAction);
     }
     static bool postAction(WarSceneAISceneImpl& aiScene, ActionType type,
-                           const WarSceneAction* warAction) {
+                           const Divide::AI::WarSceneAction* warAction) {
         return aiScene.postAction(type, warAction);
     }
 
-    friend class WarSceneAction;
+    friend class Divide::AI::WarSceneAction;
 };
-
+};  // namespace Attorney
 };  // namespace AI
 };  // namespace Divide
 

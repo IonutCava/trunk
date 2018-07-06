@@ -3,6 +3,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/ProfileTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
@@ -49,7 +50,6 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // and coherently mapped
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
-    _nodeBuffer->Bind(ShaderBufferLocation::SHADER_BUFFER_NODE_INFO);
     // Resize our window to the target resolution (usually, the splash screen
     // resolution)
     changeResolution(resolution.width, resolution.height);
@@ -182,6 +182,8 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     setRenderer(RendererType::RENDERER_FORWARD_PLUS);
     ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer",
                                                false);
+
+    _commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }
@@ -217,7 +219,7 @@ void GFXDevice::closeRenderingAPI() {
     _api->closeRenderingAPI();
     // Wait for the loading thread to terminate
     _state.stopLoaderThread();
-
+    Time::REMOVE_TIMER(_commandBuildTimer);
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {

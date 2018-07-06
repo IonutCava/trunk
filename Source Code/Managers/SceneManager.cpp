@@ -68,7 +68,7 @@ bool SceneManager::load(const stringImpl& sceneName,
         return false;
     }
     cacheResolution(resolution);
-    return SceneManagerAttorney::load(*_activeScene, sceneName, _GUI);
+    return Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
 }
 
 Scene* SceneManager::createScene(const stringImpl& name) {
@@ -88,7 +88,7 @@ Scene* SceneManager::createScene(const stringImpl& name) {
 bool SceneManager::unloadCurrentScene() {
     AI::AIManager::getInstance().pauseUpdate(true);
     RemoveResource(_defaultMaterial);
-    return SceneManagerAttorney::unload(*_activeScene);
+    return Attorney::SceneManager::unload(*_activeScene);
 }
 
 void SceneManager::initPostLoadState() {
@@ -98,13 +98,13 @@ void SceneManager::initPostLoadState() {
 
 bool SceneManager::deinitializeAI(bool continueOnErrors) {
     bool state =
-        SceneManagerAttorney::deinitializeAI(*_activeScene, continueOnErrors);
+        Attorney::SceneManager::deinitializeAI(*_activeScene, continueOnErrors);
     AI::AIManager::getInstance().destroyInstance();
     return state;
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {
-    return SceneManagerAttorney::frameStarted(*_activeScene);
+    return Attorney::SceneManager::frameStarted(*_activeScene);
 }
 
 bool SceneManager::framePreRenderStarted(const FrameEvent& evt) {
@@ -117,7 +117,7 @@ bool SceneManager::frameEnded(const FrameEvent& evt) {
     if (_loadPreRenderComplete) {
         Material::unlockShaderQueue();
     }
-    return SceneManagerAttorney::frameEnded(*_activeScene);
+    return Attorney::SceneManager::frameEnded(*_activeScene);
 }
 
 void SceneManager::preRender() {
@@ -197,9 +197,9 @@ void SceneManager::render(RenderStage stage, const Kernel& kernel) {
     }
 
     _activeScene->renderState().getCamera().renderLookAt();
-    KernelSceneAttorney::submitRenderCall(
+    Attorney::KernelScene::submitRenderCall(
         kernel, stage, _activeScene->renderState(), renderFunction);
-    SceneManagerAttorney::debugDraw(*_activeScene, stage);
+    Attorney::SceneManager::debugDraw(*_activeScene, stage);
 }
 
 void SceneManager::postRender() {
@@ -207,7 +207,7 @@ void SceneManager::postRender() {
 }
 
 void SceneManager::onCameraChange() {
-    SceneManagerAttorney::onCameraChange(*_activeScene);
+    Attorney::SceneManager::onCameraChange(*_activeScene);
 }
 
 ///--------------------------Input

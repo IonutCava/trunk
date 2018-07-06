@@ -44,13 +44,12 @@ class SceneGraphNode;
 class RenderPassCuller {
    public:
     struct RenderableNode {
+        //ToDo: Add more data as needed
         SceneGraphNode* _visibleNode;
-        bool _isDrawReady;
-
         explicit RenderableNode()
-            : _visibleNode(nullptr), _isDrawReady(false) {}
+            : _visibleNode(nullptr) {}
         explicit RenderableNode(SceneGraphNode& node)
-            : _visibleNode(&node), _isDrawReady(false) {}
+            : _visibleNode(&node) {}
     };
 
     typedef vectorImpl<RenderableNode> VisibleNodeList;

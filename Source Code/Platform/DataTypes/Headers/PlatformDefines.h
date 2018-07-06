@@ -274,21 +274,19 @@ inline bool DOUBLE_COMPARE(D32 X, D32 Y) {
     return DOUBLE_COMPARE_TOLERANCE(X, Y, EPSILON_D32);
 }
 
-/// Performes extra asserts steps (logging, message boxes, etc). Returns true if
-/// the assert should be processed.
+/// Performes extra asserts steps (logging, message boxes, etc). 
+/// Returns true if the assert should be processed.
 bool preAssert(const bool expression, const char* failMessage);
 /// It is safe to call evaluate expressions and call functions inside the assert
 /// check as it will compile for every build type
 inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
 #if defined(_DEBUG)
-    if (preAssert(expression, failMessage))
+    if (preAssert(expression, failMessage)) {
+        assert(expression && failMessage);
+    }
 #else
     ACKNOWLEDGE_UNUSED(failMessage);
 #endif
-    {
-        assert(expression && failMessage);
-    }
-
     return expression;
 }
 

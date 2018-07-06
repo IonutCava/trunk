@@ -56,6 +56,10 @@ enum class RenderStage : U32;
 struct FrameEvent;
 class GUI;
 
+namespace Attorney {
+    class KernelScene;
+};
+
 /// The kernel is the main interface to our engine components:
 ///-video
 ///-audio
@@ -63,7 +67,7 @@ class GUI;
 ///-scene manager
 ///-etc
 class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
-    friend class KernelSceneAttorney;
+    friend class Attorney::KernelScene;
 
    public:
     Kernel(I32 argc, char** argv, Application& parentApp);
@@ -181,7 +185,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     char** _argv;
 };
 
-class KernelSceneAttorney {
+namespace Attorney {
+class KernelScene {
    private:
     static void submitRenderCall(const Kernel& kernel, RenderStage stage,
                                  const SceneRenderState& sceneRenderState,
@@ -189,9 +194,9 @@ class KernelSceneAttorney {
         kernel.submitRenderCall(stage, sceneRenderState, sceneRenderCallback);
     }
 
-    friend class SceneManager;
+    friend class Divide::SceneManager;
 };
-
+};  // namespace Attorney
 };  // namespace Divide
 
 #endif  //_CORE_KERNEL_H_

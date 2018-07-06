@@ -39,13 +39,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Material;
+class GFXDevice;
+class RenderBin;
 class ShaderProgram;
 class SceneGraphNode;
+
+namespace Attorney {
+    class RenderingCompGFXDevice;
+    class RenderingCompSceneGraph;
+    class RenderingCompRenderBin;
+    class RenderingCompPassCuller;
+};
+
 class RenderingComponent : public SGNComponent {
-    friend class RenderingCompGFXDeviceAttorney;
-    friend class RenderingCompSceneGraphAttorney;
-    friend class RenderingCompRenderBinAttorney;
-    friend class RenderingCompPassCullerAttorney;
+    friend class Attorney::RenderingCompGFXDevice;
+    friend class Attorney::RenderingCompSceneGraph;
+    friend class Attorney::RenderingCompRenderBin;
+    friend class Attorney::RenderingCompPassCuller;
 
    public:
     RenderingComponent(Material* const materialInstance,
@@ -116,10 +126,6 @@ class RenderingComponent : public SGNComponent {
 
     inline void drawOrder(U32 index) { _drawOrder = index; }
 
-    inline const GFXDevice::RenderPackage& getRenderData() const {
-        return _renderData;
-    }
-
    protected:
     Material* _materialInstance;
     /// LOD level is updated at every visibility check
@@ -142,11 +148,11 @@ class RenderingComponent : public SGNComponent {
 #endif
 };
 
-class RenderingCompGFXDeviceAttorney {
+namespace Attorney {
+class RenderingCompGFXDevice {
    private:
     static vectorImpl<GenericDrawCommand>& getDrawCommands(
-        RenderingComponent& renderable,
-        SceneRenderState& sceneRenderState,
+        RenderingComponent& renderable, SceneRenderState& sceneRenderState,
         RenderStage renderStage) {
         return renderable.getDrawCommands(sceneRenderState, renderStage);
     }
@@ -156,30 +162,23 @@ class RenderingCompGFXDeviceAttorney {
                         RenderStage renderStage) {
         return renderable.canDraw(sceneRenderState, renderStage);
     }
-    friend class GFXDevice;
+
+    friend class Divide::GFXDevice;
 };
 
-class RenderingCompSceneGraphAttorney {
+class RenderingCompSceneGraph {
    private:
     static void inViewCallback(RenderingComponent& renderable) {
         renderable.inViewCallback();
     }
 
-    friend class SceneGraphNode;
+    friend class Divide::SceneGraphNode;
 };
 
-class RenderingCompRenderBinAttorney {
+class RenderingCompRenderBin {
    private:
-
     static const GFXDevice::RenderPackage& getRenderData(
-        RenderingComponent& renderable,
-        const SceneRenderState& renderState,
-        RenderStage renderStage,
-        bool preDraw = false) {
-        if (preDraw) {
-            renderable.preDraw(renderState, renderStage);
-        }
-
+        RenderingComponent& renderable) {
         return renderable._renderData;
     }
 
@@ -193,10 +192,10 @@ class RenderingCompRenderBinAttorney {
         renderable.drawOrder(index);
     }
 
-    friend class RenderBin;
+    friend class Divide::RenderBin;
 };
 
-class RenderingCompPassCullerAttorney {
+class RenderingCompPassCuller {
    private:
     static bool canDraw(RenderingComponent& renderable,
                         const SceneRenderState& sceneRenderState,
@@ -204,8 +203,9 @@ class RenderingCompPassCullerAttorney {
         return renderable.canDraw(sceneRenderState, renderStage);
     }
 
-    friend class RenderPassCuller;
+    friend class Divide::RenderPassCuller;
 };
 
+};  // namespace Attorney
 };  // namespace Divide
 #endif

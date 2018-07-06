@@ -37,8 +37,12 @@
 namespace Divide {
 namespace AI {
 
+namespace Attorney {
+    class AudioSensorConstructor;
+};
+
 class AudioSensor : public Sensor {
-    friend class AudioSensorConstructorAttorney;
+    friend class Attorney::AudioSensorConstructor;
 
    public:
     void update(const U64 deltaTime);
@@ -48,15 +52,16 @@ class AudioSensor : public Sensor {
     AudioSensor(AIEntity* const parentEntity);
 };
 
-class AudioSensorConstructorAttorney {
+namespace Attorney {
+class AudioSensorConstructor {
    private:
     static AudioSensor* construct(AIEntity* const parentEntity) {
         return MemoryManager_NEW AudioSensor(parentEntity);
     }
 
-    friend class AIEntity;
+    friend class Divide::AI::AIEntity;
 };
-
+};  // namespace Attorney
 };  // namespace AI
 };  // namespace Divide
 

@@ -50,13 +50,17 @@ class AISceneImpl;
 class Order;
 enum class AIMsg : U32;  //< scene dependent message list
 namespace Navigation {
-class DivideRecast;
-class DivideDtCrowd;
+    class DivideRecast;
+    class DivideDtCrowd;
+};
+
+namespace Attorney {
+    class AIEntityAITeam;
 };
 
 /// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
-    friend class AIEntityAITeamAttorney;
+    friend class Attorney::AIEntityAITeam;
    public:
     enum class PresetAgentRadius : U32 {
         AGENT_RADIUS_SMALL = 0,
@@ -219,7 +223,8 @@ class AIEntity : public GUIDWrapper {
     bool _stopped;
 };
 
-class AIEntityAITeamAttorney {
+namespace Attorney {
+class AIEntityAITeam {
    private:
     static void setTeamPtr(AIEntity& entity, AITeam* const teamPtr) {
         entity.setTeamPtr(teamPtr);
@@ -235,7 +240,7 @@ class AIEntityAITeamAttorney {
     }
     friend class AITeam;
 };
-
+};  // namespace Attorney
 };  // namespace AI
 };  // namespace Divide
 

@@ -20,13 +20,7 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
     bufferPtr ptr =
         gl44ext::glMapNamedBufferRangeEXT(bufferId, 0, bufferSize, accessMask);
 #endif
-    if (!ptr) {
-        GLuint previousBufferID = 0;
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, bufferId, previousBufferID);
-        glBufferStorage(GL_ARRAY_BUFFER, bufferSize, data, usageMask);
-        ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0, bufferSize, accessMask);
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, previousBufferID);
-    }
+    assert(ptr != NULL);
 
     return ptr;
 }
@@ -85,17 +79,7 @@ void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
 #else
             GLboolean result = gl44ext::glUnmapNamedBufferEXT(bufferId);
 #endif
-            if (result == GL_FALSE) {
-                GLuint previousBufferID = 0;
-                GL_API::setActiveBuffer(GL_ARRAY_BUFFER, bufferId,
-                                        previousBufferID);
-                GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER);
-                GL_API::setActiveBuffer(GL_ARRAY_BUFFER, previousBufferID);
-
-                DIVIDE_ASSERT(result == GL_TRUE,
-                              "GLUtil::freePersistentBuffer error: "
-                              "can't unmap specified buffer!");
-            }
+            assert(result != GL_FALSE);
             mappedPtr = nullptr;
         }
         glDeleteBuffers(1, &bufferId);

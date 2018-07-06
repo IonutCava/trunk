@@ -140,7 +140,7 @@ void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
 
     U32 index = 0;
     for (RenderBinItem& item : _renderBinStack) {
-        RenderingCompRenderBinAttorney::drawOrder(*item._renderable,
+        Attorney::RenderingCompRenderBin::drawOrder(*item._renderable,
                                                   binIndex + index++);
     }
 }
@@ -176,8 +176,7 @@ void RenderBin::render(const SceneRenderState& renderState,
     // this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
         GFX_DEVICE.addToRenderQueue(
-            RenderingCompRenderBinAttorney::getRenderData(
-                *item._renderable, renderState, renderStage, true));
+            Attorney::RenderingCompRenderBin::getRenderData(*item._renderable));
     }
 
     GFX_DEVICE.flushRenderQueue();
@@ -186,7 +185,7 @@ void RenderBin::render(const SceneRenderState& renderState,
 void RenderBin::postRender(const SceneRenderState& renderState,
                            RenderStage renderStage) {
     for (const RenderBinItem& item : _renderBinStack) {
-        RenderingCompRenderBinAttorney::postDraw(*item._renderable, renderState,
+        Attorney::RenderingCompRenderBin::postDraw(*item._renderable, renderState,
                                                  renderStage);
     }
 }

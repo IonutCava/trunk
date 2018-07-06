@@ -19,7 +19,7 @@ vec3  dvd_Tangent;
 vec3  dvd_BiTangent;
 
 void computeData(){
-    dvd_drawID     = gl_BaseInstanceARB + gl_DrawIDARB;
+    dvd_drawID     = /*gl_BaseInstanceARB + */gl_DrawIDARB;
     dvd_Vertex     = vec4(inVertexData,1.0);
     dvd_Normal     = inNormalData;
     dvd_Tangent    = inTangentData;

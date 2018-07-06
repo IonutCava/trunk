@@ -54,9 +54,15 @@ and a name.
 
 namespace Divide {
 
+namespace Attorney {
+    class SubMeshMesh;
+    class SubMeshDVDConverter;
+};
+
+class DVDConverter;
 class SubMesh : public Object3D {
-    friend class SubMeshMeshAttorney;
-    friend class SubMeshDVDConverterAttorney;
+    friend class Attorney::SubMeshMesh;
+    friend class Attorney::SubMeshDVDConverter;
 
    public:
     SubMesh(const stringImpl& name,
@@ -91,23 +97,26 @@ class SubMesh : public Object3D {
     GenericDrawCommand _drawCmd;
 };
 
-class SubMeshMeshAttorney {
+namespace Attorney {
+class SubMeshMesh {
    private:
     static void setParentMesh(SubMesh& submesh, Mesh* const parentMesh) {
         submesh.setParentMesh(parentMesh);
     }
-    friend class Mesh;
+
+    friend class Divide::Mesh;
 };
 
-class SubMeshDVDConverterAttorney {
+class SubMeshDVDConverter {
    private:
     static void setGeometryLimits(SubMesh& submesh, const vec3<F32>& min,
                                   const vec3<F32>& max) {
         submesh._importBB.set(min, max);
     }
-    friend class DVDConverter;
-};
 
+    friend class Divide::DVDConverter;
+};
+};  // namespace Attorney
 };  // namespace Divide
 
 #endif

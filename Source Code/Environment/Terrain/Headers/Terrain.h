@@ -41,6 +41,8 @@
 
 namespace Divide {
 
+class TerrainLoader;
+
 struct TerrainTextureLayer {
     TerrainTextureLayer() {
         _lastOffset = 0;
@@ -94,9 +96,14 @@ class ShaderProgram;
 class SamplerDescriptor;
 class TerrainDescriptor;
 
+namespace Attorney {
+    class TerrainChunk;
+    class TerrainLoader;
+};
+
 class Terrain : public Object3D {
-    friend class TerrainChunkAttorney;
-    friend class TerrainLoaderAttorney;
+    friend class Attorney::TerrainChunk;
+    friend class Attorney::TerrainLoader;
 
    public:
     Terrain();
@@ -169,19 +176,20 @@ class Terrain : public Object3D {
     size_t _terrainReflectionRenderStateHash;
 };
 
-class TerrainChunkAttorney {
+namespace Attorney {
+class TerrainChunk {
    private:
     static VegetationDetails& vegetationDetails(Terrain& terrain) {
         return terrain._vegDetails;
     }
     static void registerTerrainChunk(Terrain& terrain,
-                                     TerrainChunk* const chunk) {
+                                     Divide::TerrainChunk* const chunk) {
         terrain._terrainChunks.push_back(chunk);
     }
-    friend class TerrainChunk;
+    friend class Divide::TerrainChunk;
 };
 
-class TerrainLoaderAttorney {
+class TerrainLoader {
    private:
     static void setUnderwaterDiffuseScale(Terrain& terrain, F32 diffuseScale) {
         terrain._underwaterDiffuseScale = diffuseScale;
@@ -223,8 +231,11 @@ class TerrainLoaderAttorney {
         return terrain._terrainScaleFactor;
     }
     static U32& chunkSize(Terrain& terrain) { return terrain._chunkSize; }
-    friend class TerrainLoader;
+
+    friend class Divide::TerrainLoader;
 };
+
+};  // namespace Attorney
 };  // namespace Divide
 
 #endif

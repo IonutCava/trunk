@@ -13,6 +13,7 @@ namespace Divide {
 
 bool Material::_shaderQueueLocked = false;
 bool Material::_serializeShaderLoad = false;
+I32  Material::_invalidShaderKey = -std::numeric_limits<I16>::max();
 
 Material::Material()
     : Resource("temp_material"),
@@ -205,16 +206,15 @@ void Material::setShaderProgramInternal(
 
     U32 stageIndex = to_uint(renderStage);
     ShaderInfo& info = _shaderInfo[stageIndex];
-    ShaderProgram* shaderReference = info._shaderRef;
     // if we already had a shader assigned ...
     if (!info._shader.empty()) {
         // and we are trying to assign the same one again, return.
-        shaderReference = FindResourceImpl<ShaderProgram>(info._shader);
+        info._shaderRef = FindResourceImpl<ShaderProgram>(info._shader);
         if (info._shader.compare(shader) != 0) {
             Console::printfn(Locale::get("REPLACE_SHADER"),
                              info._shader.c_str(), shader.c_str());
-            UNREGISTER_TRACKED_DEPENDENCY(shaderReference);
-            RemoveResource(shaderReference);
+            UNREGISTER_TRACKED_DEPENDENCY(info._shaderRef);
+            RemoveResource(info._shaderRef);
         }
     }
 
@@ -581,10 +581,10 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     const ShaderInfo& info = _shaderInfo[to_uint(RenderStage::DISPLAY_STAGE)];
 
     shaderKey = info._shaderRef ? info._shaderRef->getID()
-                                : -std::numeric_limits<I8>::max();
+                                : Material::_invalidShaderKey;
 
     U32 textureSlot = to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0);
     textureKey = _textures[textureSlot] ? _textures[textureSlot]->getHandle()
-                                        : -std::numeric_limits<I8>::max();
+                                        : Material::_invalidShaderKey;
 }
 };

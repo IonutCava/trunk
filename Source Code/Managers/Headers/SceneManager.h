@@ -39,10 +39,13 @@ namespace Divide {
 
 enum class RenderStage : U32;
 class RenderPassCuller;
+namespace Attorney {
+    class SceneManagerKernel;
+};
 
 DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                       Input::InputAggregatorInterface)
-    friend class SceneManagerKernelAttorney;
+    friend class Attorney::SceneManagerKernel;
   public:
     /// Lookup the factory methods table and return the pointer to a newly
     /// constructed scene bound to that name
@@ -69,11 +72,11 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool load(const stringImpl& name, const vec2<U16>& resolution);
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
-        return SceneManagerAttorney::checkLoadFlag(*_activeScene);
+        return Attorney::SceneManager::checkLoadFlag(*_activeScene);
     }
     /// Create AI entities, teams, NPC's etc
     inline bool initializeAI(bool continueOnErrors) {
-        return SceneManagerAttorney::initializeAI(*_activeScene,
+        return Attorney::SceneManager::initializeAI(*_activeScene,
                                                   continueOnErrors);
     }
     /// Destroy all AI entities, teams, NPC's createa in "initializeAI"
@@ -89,7 +92,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Gather input events and process them in the current scene
     inline void processInput(const U64 deltaTime) {
         _activeScene->processInput(deltaTime);
-        SceneManagerAttorney::updateCameraControls(*_activeScene);
+        Attorney::SceneManager::updateCameraControls(*_activeScene);
     }
 
     inline void processTasks(const U64 deltaTime) {
@@ -170,18 +173,20 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
 END_SINGLETON
 
-class SceneManagerKernelAttorney {
+namespace Attorney {
+class SceneManagerKernel {
    private:
     static void initPostLoadState() {
-        SceneManager::getInstance().initPostLoadState();
+        Divide::SceneManager::getInstance().initPostLoadState();
     }
     static void onCameraChange() {
-        SceneManager::getInstance().onCameraChange();
+        Divide::SceneManager::getInstance().onCameraChange();
     }
-    friend class Kernel;
+    friend class Divide::Kernel;
 };
+};  // namespace Attorney
 
-    /// Return a pointer to the currently active scene
+/// Return a pointer to the currently active scene
 inline Scene* GET_ACTIVE_SCENE() {
     return SceneManager::getInstance().getActiveScene();
 }

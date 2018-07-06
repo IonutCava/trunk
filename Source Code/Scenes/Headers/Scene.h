@@ -69,11 +69,15 @@ class TerrainDescriptor;
 class ParticleEmitter;
 class PhysicsSceneInterface;
 
+namespace Attorney {
+    class SceneManager;
+};
+
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2
 /// states:
 /// one for game information and one for rendering information
 class Scene : public Resource, public Input::InputAggregatorInterface {
-    friend class SceneManagerAttorney;
+    friend class Attorney::SceneManager;
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 #ifdef _DEBUG
@@ -132,7 +136,7 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     SceneGraphNode& addSky(Sky* const skyItem);
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
-        SceneRenderStateSceneAttorney::cachedResolution(
+        Attorney::SceneRenderStateScene::cachedResolution(
             _sceneState.getRenderState(), newResolution);
     }
 
@@ -303,7 +307,8 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
 #endif
 };
 
-class SceneManagerAttorney {
+namespace Attorney {
+class SceneManager {
    private:
     static bool updateCameraControls(Scene& scene) {
         return scene.updateCameraControls();
@@ -328,9 +333,9 @@ class SceneManagerAttorney {
         scene.debugDraw(stage);
     }
 
-    friend class SceneManager;
+    friend class Divide::SceneManager;
 };
-
+};  // namespace Attorney
 };  // namespace Divide
 
 /// usage: REGISTER_SCENE(A,B) where: - A is the scene's class name

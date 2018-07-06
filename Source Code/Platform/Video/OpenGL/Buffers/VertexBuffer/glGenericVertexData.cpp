@@ -191,7 +191,7 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     // Get the OpenGL specific command from the generic one
     const IndirectDrawCommand& cmd = command.cmd();
     // Instance count can be generated programmatically, so make sure it's valid
-    if (cmd.instanceCount == 0) {
+    if (cmd.primCount == 0) {
         return;
     }
     // Check if we are rendering to the screen or to a buffer

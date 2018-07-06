@@ -48,6 +48,7 @@ GFXDevice::GFXDevice()
     _gfxDataBuffer = nullptr;
     _HIZConstructProgram = nullptr;
     _previewDepthMapShader = nullptr;
+    _commandBuildTimer = nullptr;
     // Integers
     _stateExclusionMask = 0;
     FRAME_COUNT = 0;

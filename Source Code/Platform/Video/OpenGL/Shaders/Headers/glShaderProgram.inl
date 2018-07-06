@@ -35,7 +35,9 @@ namespace Divide {
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const U8& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarU8Map::iterator it = _shaderVarsU8.find(location);
     if (it != std::end(_shaderVarsU8)) {
@@ -44,15 +46,18 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const U8& value) {
         } else {
             it->second = value;
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsU8, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsU8, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const U16& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarU16Map::iterator it = _shaderVarsU16.find(location);
     if (it != std::end(_shaderVarsU16)) {
@@ -61,15 +66,18 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const U16& value) {
         } else {
             it->second = value;
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsU16, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsU16, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const U32& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarU32Map::iterator it = _shaderVarsU32.find(location);
     if (it != std::end(_shaderVarsU32)) {
@@ -78,15 +86,18 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const U32& value) {
         } else {
             it->second = value;
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsU32, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsU32, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const I32& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarI32Map::iterator it = _shaderVarsI32.find(location);
     if (it != std::end(_shaderVarsI32)) {
@@ -95,15 +106,18 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const I32& value) {
         } else {
             it->second = value;
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsI32, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsI32, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const F32& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarF32Map::iterator it = _shaderVarsF32.find(location);
     if (it != std::end(_shaderVarsF32)) {
@@ -112,15 +126,18 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const F32& value) {
         } else {
             it->second = value;
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsF32, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsF32, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<F32>& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarVec2F32Map::iterator it = _shaderVarsVec2F32.find(location);
     if (it != std::end(_shaderVarsVec2F32)) {
@@ -129,15 +146,18 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<F32>& va
         } else {
             it->second.set(value);
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsVec2F32, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsVec2F32, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<I32>& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarvec2I32Map::iterator it = _shaderVarsVec2I32.find(location);
     if (it != std::end(_shaderVarsVec2I32)) {
@@ -146,94 +166,110 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<I32>& va
         } else {
             it->second.set(value);
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsVec2I32, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsVec2I32, location, value);
     return true;
 }
  
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<U16>& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarVec2U16Map::iterator it = _shaderVarsVec2U16.find(location);
     if (it != std::end(_shaderVarsVec2U16)) {
         if (it->second == value) {
             return false;
         } else {
-            it->second = value;
+            it->second.set(value);
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsVec2U16, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsVec2U16, location, value);
     return true;
 }
  
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<F32>& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarVec3F32Map::iterator it = _shaderVarsVec3F32.find(location);
     if (it != std::end(_shaderVarsVec3F32)) {
         if (it->second == value) {
             return false;
         } else {
-            it->second = value;
+            it->second.set(value);
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsVec3F32, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsVec3F32, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<F32>& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarVec4F32Map::iterator it = _shaderVarsVec4F32.find(location);
     if (it != std::end(_shaderVarsVec4F32)) {
         if (it->second == value) {
             return false;
         } else {
-            it->second = value;
+            it->second.set(value);
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsVec4F32, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsVec4F32, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat3<F32>& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarMat3Map::iterator it = _shaderVarsMat3.find(location);
     if (it != std::end(_shaderVarsMat3)) {
         if (it->second == value) {
             return false;
         } else {
-            it->second = value;
+            it->second.set(value);
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsMat3, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsMat3, location, value);
     return true;
 }
 
 template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat4<F32>& value) {
-    assert(location != -1);
+    if (location == -1) {
+        return false;
+    }
 
     ShaderVarMat4Map::iterator it = _shaderVarsMat4.find(location);
     if (it != std::end(_shaderVarsMat4)) {
         if (it->second == value) {
             return false;
         } else {
-            it->second = value;
+            it->second.set(value);
         }
-    } 
+    } else {
+        hashAlg::emplace(_shaderVarsMat4, location, value);
+    }
 
-    hashAlg::emplace(_shaderVarsMat4, location, value);
     return true;
 }
 

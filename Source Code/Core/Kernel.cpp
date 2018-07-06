@@ -64,7 +64,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(
         &LightManager::onCameraChange, &LightManager::getInstance()));
     _cameraMgr->addCameraUpdateListener(
-        DELEGATE_BIND(&SceneManagerKernelAttorney::onCameraChange));
+        DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraChange));
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread
     // so how many threads do we allocate for tasks? That's up to the programmer
@@ -406,7 +406,7 @@ void Kernel::firstLoop() {
 #if defined(_DEBUG) || defined(_PROFILE)
     Time::ApplicationTimer::getInstance().benchmark(true);
 #endif
-    SceneManagerKernelAttorney::initPostLoadState();
+    Attorney::SceneManagerKernel::initPostLoadState();
 
     _currentTime = _nextGameTick = Time::ElapsedMicroseconds();
 }

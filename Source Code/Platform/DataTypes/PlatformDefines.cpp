@@ -47,6 +47,7 @@ bool preAssert(const bool expression, const char* failMessage) {
 
     return !Config::Assert::CONTINUE_ON_ASSERT;
 }
+
 };  // namespace Divide
 
 #if defined(_DEBUG)

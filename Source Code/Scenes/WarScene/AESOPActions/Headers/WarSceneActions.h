@@ -77,9 +77,13 @@ enum class ActionType : U32 {
     ACTION_RETURN_TO_BASE = 6
 };
 
+namespace Attorney {
+    class WarSceneActionWarAIScene;
+};
+
 class WarSceneAISceneImpl;
 class WarSceneAction : public GOAPAction {
-    friend class WarSceneActionWarAISceneAttorney;
+    friend class Attorney::WarSceneActionWarAIScene;
 
    public:
     inline ActionType actionType() const { return _type; }
@@ -97,15 +101,17 @@ class WarSceneAction : public GOAPAction {
     ActionType _type;
 };
 
-class WarSceneActionWarAISceneAttorney {
+namespace Attorney {
+class WarSceneActionWarAIScene {
    private:
     static void setParentAIScene(WarSceneAction& action,
-                                 WarSceneAISceneImpl* const scene) {
+                                 Divide::AI::WarSceneAISceneImpl* const scene) {
         action._parentScene = scene;
     }
 
-    friend class WarSceneAISceneImpl;
+    friend class Divide::AI::WarSceneAISceneImpl;
 };
+};  // namespace Attorney
 
 class ApproachFlag : public WarSceneAction {
    public:

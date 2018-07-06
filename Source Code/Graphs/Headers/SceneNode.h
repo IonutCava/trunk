@@ -63,9 +63,12 @@ class ShaderProgram;
 class SceneGraphNode;
 enum class RenderStage : U32;
 
+namespace Attorney {
+    class SceneNodeGraph;
+};
+
 class SceneNode : public Resource {
-    friend class SceneNodeRenderAttorney;
-    friend class SceneNodeGraphAttorney;
+    friend class Attorney::SceneNodeGraph;
 
    public:
     SceneNode(const SceneNodeType& type);
@@ -134,7 +137,8 @@ class SceneNode : public Resource {
     Material* _materialTemplate;
 };
 
-class SceneNodeGraphAttorney {
+namespace Attorney {
+class SceneNodeGraph {
    private:
     static bool hasSGNParent(SceneNode& node) { return node.hasSGNParent(); }
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
@@ -158,6 +162,6 @@ class SceneNodeGraphAttorney {
 
     friend class SceneGraphNode;
 };
-
+};  // namespace Attorney
 };  // namespace Divide
 #endif

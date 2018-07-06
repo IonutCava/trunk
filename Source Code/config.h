@@ -68,7 +68,8 @@ const unsigned int MAX_POINTS_PER_BATCH = static_cast<unsigned int>(1 << 31);
 const unsigned int MAX_BONE_COUNT_PER_NODE = 256;
 /// Estimated maximum number of visible objects per render pass (This includes
 /// debug primitives);
-const unsigned int MAX_VISIBLE_NODES = 2048;
+/// 1024 with 4 * sizeof(mat4) = 64Kb (UBO max size)
+const unsigned int MAX_VISIBLE_NODES = 1024;
 /// How many clip planes should the shaders us
 const unsigned int MAX_CLIP_PLANES = 6;
 /// Generic index value used to separate primitives within the same vertex

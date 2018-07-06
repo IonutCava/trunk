@@ -34,7 +34,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
 void Mesh::addSubMesh(SubMesh* const subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
     hashAlg::emplace(_subMeshRefMap, subMesh->getID(), subMesh);
-    SubMeshMeshAttorney::setParentMesh(*subMesh, this);
+    Attorney::SubMeshMesh::setParentMesh(*subMesh, this);
     _maxBoundingBox.reset();
 }
 

@@ -13,7 +13,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
                                 TerrainDescriptor* terrainDescriptor) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
 
-    TerrainLoaderAttorney::setUnderwaterDiffuseScale(
+    Attorney::TerrainLoader::setUnderwaterDiffuseScale(
         *terrain, terrainDescriptor->getVariablef("underwaterDiffuseScale"));
 
     SamplerDescriptor blendMapSampler;
@@ -95,7 +95,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         textureTileMaps.setID(textureCountAlbedo);
         textureTileMaps.setResourceLocation(arrayLocation);
         textureTileMaps.setPropertyDescriptor(
-            TerrainLoaderAttorney::getAlbedoSampler(*terrain));
+            Attorney::TerrainLoader::getAlbedoSampler(*terrain));
         textureLayer->setTileMaps(CreateResource<Texture>(textureTileMaps));
 
         arrayLocation.clear();
@@ -146,10 +146,10 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         textureNormalMaps.setID(textureCountDetail);
         textureNormalMaps.setResourceLocation(arrayLocation);
         textureNormalMaps.setPropertyDescriptor(
-            TerrainLoaderAttorney::getNormalSampler(*terrain));
+            Attorney::TerrainLoader::getNormalSampler(*terrain));
         textureLayer->setNormalMaps(CreateResource<Texture>(textureTileMaps));
 
-        TerrainLoaderAttorney::addTextureLayer(*terrain, textureLayer);
+        Attorney::TerrainLoader::addTextureLayer(*terrain, textureLayer);
     }
 
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
@@ -167,7 +167,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
     terrainMaterial->setShaderDefines(
         "MAX_TEXTURE_LAYERS " +
-        std::to_string(TerrainLoaderAttorney::textureLayerCount(*terrain)));
+        std::to_string(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +
                                       std::to_string(textureCount));
     terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY_STAGE, true);
@@ -180,7 +180,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     textureWaterCaustics.setResourceLocation(
         terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(
-        TerrainLoaderAttorney::getAlbedoSampler(*terrain));
+        Attorney::TerrainLoader::getAlbedoSampler(*terrain));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0,
                                 CreateResource<Texture>(textureWaterCaustics));
 
@@ -189,7 +189,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     underwaterAlbedoTexture.setResourceLocation(
         terrainDescriptor->getVariable("underwaterAlbedoTexture"));
     underwaterAlbedoTexture.setPropertyDescriptor(
-        TerrainLoaderAttorney::getAlbedoSampler(*terrain));
+        Attorney::TerrainLoader::getAlbedoSampler(*terrain));
     terrainMaterial->setTexture(
         ShaderProgram::TextureUsage::TEXTURE_UNIT1,
         CreateResource<Texture>(underwaterAlbedoTexture));
@@ -199,7 +199,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     underwaterDetailTexture.setResourceLocation(
         terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(
-        TerrainLoaderAttorney::getNormalSampler(*terrain));
+        Attorney::TerrainLoader::getNormalSampler(*terrain));
     terrainMaterial->setTexture(
         ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
         CreateResource<Texture>(underwaterDetailTexture));
@@ -219,7 +219,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     // terrainDescDepth.setZBias(1.0f, 2.0f);
     terrainDescDepth.setColorWrites(true, true, false, false);
 
-    TerrainLoaderAttorney::setRenderStateHashes(
+    Attorney::TerrainLoader::setRenderStateHashes(
         *terrain, GFX_DEVICE.getOrCreateStateBlock(terrainDesc),
         GFX_DEVICE.getOrCreateStateBlock(terrainDescRef),
         GFX_DEVICE.getOrCreateStateBlock(terrainDescDepth));
@@ -231,8 +231,8 @@ bool TerrainLoader::loadThreadedResources(
     Terrain* terrain, TerrainDescriptor* terrainDescriptor) {
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true);  // No default material
-    Quad3D* planePtr = TerrainLoaderAttorney::plane(*terrain);
-    F32& farPlane = TerrainLoaderAttorney::farPlane(*terrain);
+    Quad3D* planePtr = Attorney::TerrainLoader::plane(*terrain);
+    F32& farPlane = Attorney::TerrainLoader::farPlane(*terrain);
     planePtr = CreateResource<Quad3D>(infinitePlane);
     Quad3D& plane = *planePtr;
     // our bottom plane is placed at the bottom of our water entity
@@ -256,10 +256,9 @@ bool TerrainLoader::loadThreadedResources(
 
     VertexBuffer* groundVB = terrain->getGeometryVB();
     vec2<F32>& terrainScaleFactor =
-        TerrainLoaderAttorney::scaleFactor(*terrain);
-    ;
+        Attorney::TerrainLoader::scaleFactor(*terrain);
 
-    TerrainLoaderAttorney::chunkSize(*terrain) =
+    Attorney::TerrainLoader::chunkSize(*terrain) =
         terrainDescriptor->getChunkSize();
     terrainScaleFactor.set(terrainDescriptor->getScale());
 
@@ -308,8 +307,8 @@ bool TerrainLoader::loadThreadedResources(
             heightValues.push_back(data[i]);
         }
     }
-    vec2<U16>& dimensions = TerrainLoaderAttorney::dimensions(*terrain);
-    TerrainLoaderAttorney::dimensions(*terrain)
+    vec2<U16>& dimensions = Attorney::TerrainLoader::dimensions(*terrain);
+    Attorney::TerrainLoader::dimensions(*terrain)
         .set(heightmapWidth, heightmapHeight);
     if (dimensions.x % 2 == 0) {
         dimensions.x++;
@@ -329,7 +328,7 @@ bool TerrainLoader::loadThreadedResources(
     groundVB->resizeNormalCount(terrainWidth * terrainHeight);
     groundVB->resizeTangentCount(terrainWidth * terrainHeight);
 
-    BoundingBox& terrainBB = TerrainLoaderAttorney::boundingBox(*terrain);
+    BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
 
     terrainBB.set(
         vec3<F32>(-terrainWidth * 0.5f, minAltitude, -terrainHeight * 0.5f),
@@ -455,7 +454,7 @@ bool TerrainLoader::loadThreadedResources(
         }
     }
     groundVB->Create();
-    TerrainLoaderAttorney::buildQuadtree(*terrain);
+    Attorney::TerrainLoader::buildQuadtree(*terrain);
     initializeVegetation(terrain, terrainDescriptor);
     Console::printfn(Locale::get("TERRAIN_LOAD_END"),
                      terrain->getName().c_str());
@@ -504,7 +503,7 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
     Texture* grassBillboardArray = CreateResource<Texture>(textureDetailMaps);
 
     VegetationDetails& vegDetails =
-        TerrainLoaderAttorney::vegetationDetails(*terrain);
+        Attorney::TerrainLoader::vegetationDetails(*terrain);
     vegDetails.billboardCount = textureCount;
     vegDetails.name = terrainDescriptor->getName() + "_grass";
     vegDetails.grassDensity = terrainDescriptor->getGrassDensity();

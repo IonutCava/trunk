@@ -74,6 +74,10 @@ void glUniformBuffer::DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const {
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
                                  const bufferPtr data) const {
 
+    if (size == offset) {
+        return;
+    }
+
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize,
                    "glUniformBuffer::UpdateData error: was called with an "
                   "invalid range (buffer overflow)!");
@@ -81,9 +85,7 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
                    "glUniformBuffer::UpdateData error: was called for an "
                    "unmapped buffer!");
 
-    if (size == 0 || !data) {
-        return;
-    }
+    DiscardSubData(offset, size);
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, size);
@@ -105,9 +107,12 @@ bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
         _currentBindConfig.set(bindIndex, _UBOid, offsetElementCount,
                                rangeElementCount);
 
-        glBindBufferRange(_target, bindIndex, _UBOid,
-                          _primitiveSize * offsetElementCount,
-                          _primitiveSize * rangeElementCount);
+        if (offsetElementCount != rangeElementCount) {
+            glBindBufferRange(_target, bindIndex, _UBOid,
+                              _primitiveSize * offsetElementCount,
+                              _primitiveSize * rangeElementCount);
+        }
+
         return true;
     }
 

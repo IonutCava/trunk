@@ -8,6 +8,7 @@
 
 #include "Managers/Headers/SceneManager.h"
 
+#include "Core/Headers/ProfileTimer.h"
 #include "Core/Headers/ApplicationTimer.h"
 
 namespace Divide {
@@ -64,7 +65,6 @@ void GFXDevice::uploadGlobalBufferData() {
 
     if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)]) {
         uploadDrawCommands(_drawCommandsCache);
-        //assert(_matricesData.size() == _drawCommandsCache.size());
         _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
     }
      
@@ -85,7 +85,7 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
         cmd.drawID() < std::max(static_cast<U32>(_matricesData.size()), 1u) &&
             cmd.drawID() >= 0,
         "GFXDevice error: Invalid draw ID encountered!");
-    if (cmd.instanceCount() == 0 || cmd.drawCount() == 0) {
+    if (cmd.primCount() == 0 || cmd.drawCount() == 0) {
         return false;
     }
     // We need a valid shader as no fixed function pipeline is available
@@ -99,6 +99,9 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     }
     // Finally, set the proper render states
     setStateBlock(cmd.stateHash());
+    // Bind the valid range for node buffer data
+    _nodeBuffer->BindRange(ShaderBufferLocation::SHADER_BUFFER_NODE_INFO,
+                           cmd.drawID(), cmd.drawCount());
     // Continue with the draw call
     return true;
 }
@@ -139,11 +142,6 @@ void GFXDevice::processCommand(const GenericDrawCommand& cmd) {
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain
 /// or batched meshes)
 void GFXDevice::processCommands(const vectorImpl<GenericDrawCommand>& cmds) {
-    // Ideally, we would merge all of the draw commands in a command buffer,
-    // sort by state/shader/etc and submit a single render call
-    STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");
-    // That feature will be added later, so, for now, submit each command
-    // manually
     for (const GenericDrawCommand& cmd : cmds) {
         // Data validation is handled in the single command version
         processCommand(cmd);
@@ -200,76 +198,45 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 }
 
 /// Prepare the list of visible nodes for rendering
-void GFXDevice::processVisibleNodes(VisibleNodeList& visibleNodes,
-                                    SceneRenderState& sceneRenderState) {
-    // If there aren't any nodes visible in the current pass, don't update
-    // anything
-    if (visibleNodes.empty()) {
-        return;
-    }
-    vectorAlg::vecSize nodeCount = visibleNodes.size();
-    // Pass the list of nodes to the renderer for a pre-render pass
-    getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
-    // Generate and upload all lighting data
-    LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
-    // The first entry has identity values (e.g. for rendering points)
-    _matricesData.reserve(nodeCount + 1);
-    _matricesData.resize(1);
-    // Loop over the list of nodes
-    for (VisibleNodeList::value_type& crtNode : visibleNodes) {
-        RenderingComponent* const renderable =
-            crtNode._visibleNode->getComponent<RenderingComponent>();
-        if (!RenderingCompGFXDeviceAttorney::canDraw(
-                *renderable, sceneRenderState, getRenderStage())) {
-            crtNode._isDrawReady = false;
-            continue;
-        }
-        crtNode._isDrawReady = true;
-        NodeData temp;
-        // Extract transform data
-        const PhysicsComponent* const transform =
-            crtNode._visibleNode->getComponent<PhysicsComponent>();
-        // If we have valid transform data ...
-        if (transform) {
-            // ... get the node's world matrix properly interpolated
-            temp._matrix[0].set(
-                crtNode._visibleNode->getComponent<PhysicsComponent>()->getWorldMatrix(
-                    _interpolationFactor));
-            // Calculate the normal matrix (world * view)
-            // If the world matrix is uniform scaled, inverseTranspose is a
-            // double transpose (no-op) so we can skip it
-            temp._matrix[1].set(
-                mat3<F32>(temp._matrix[0] * _gpuBlock._ViewMatrix));
-            if (!transform->isUniformScaled()) {
-                // Non-uniform scaling requires an inverseTranspose to negate
-                // scaling contribution but preserve rotation
-                temp._matrix[1].set(mat3<F32>(temp._matrix[0]));
-                temp._matrix[1].inverseTranspose();
-                temp._matrix[1] *= _gpuBlock._ViewMatrix;
-            }
-        } else {
-            // Nodes without transforms are considered as using identity
-            // matrices
-            temp._matrix[0].identity();
-            temp._matrix[1].identity();
-        }
-        // Since the normal matrix is 3x3, we can use the extra row and column
-        // to store additional data
-        temp._matrix[1].element(3, 2, true) =
-            static_cast<F32>(LightManager::getInstance().getLights().size());
-        temp._matrix[1].element(3, 3, true) = static_cast<F32>(
-            crtNode._visibleNode->getComponent<AnimationComponent>()
-                ? crtNode._visibleNode->getComponent<AnimationComponent>()->boneCount()
-                : 0);
+void GFXDevice::processVisibleNode(RenderPassCuller::RenderableNode& node,
+                                   SceneRenderState& sceneRenderState,
+                                   NodeData& dataOut) {
+    RenderingComponent* const renderable =
+        node._visibleNode->getComponent<RenderingComponent>();
+    AnimationComponent* const animComp =
+        node._visibleNode->getComponent<AnimationComponent>();
+    PhysicsComponent* const transform =
+        node._visibleNode->getComponent<PhysicsComponent>();
 
-        // Get the color matrix (diffuse, ambient, specular, etc.)
-        renderable->getMaterialColorMatrix(temp._matrix[2]);
-        // Get the material property matrix (alpha test, texture count,
-        // texture operation, etc.)
-        renderable->getMaterialPropertyMatrix(temp._matrix[3]);
-
-        _matricesData.push_back(temp);
+    // Extract transform data (if available)
+    // (Nodes without transforms are considered as using identity matrices)
+    if (transform) {
+        // ... get the node's world matrix properly interpolated
+        dataOut._matrix[0].set(transform->getWorldMatrix(_interpolationFactor));
+        // Calculate the normal matrix (world * view)
+        // If the world matrix is uniform scaled, inverseTranspose is a
+        // double transpose (no-op) so we can skip it
+        dataOut._matrix[1].set(mat3<F32>(dataOut._matrix[0] * _gpuBlock._ViewMatrix));
+        if (!transform->isUniformScaled()) {
+            // Non-uniform scaling requires an inverseTranspose to negate
+            // scaling contribution but preserve rotation
+            dataOut._matrix[1].set(mat3<F32>(dataOut._matrix[0]));
+            dataOut._matrix[1].inverseTranspose();
+            dataOut._matrix[1] *= _gpuBlock._ViewMatrix;
+        }
     }
+    // Since the normal matrix is 3x3, we can use the extra row and column
+    // to store additional data
+    dataOut._matrix[1].element(3, 2, true) =
+        static_cast<F32>(LightManager::getInstance().getLights().size());
+    dataOut._matrix[1].element(3, 3, true) =
+        static_cast<F32>(animComp ? animComp->boneCount() : 0);
+
+    // Get the color matrix (diffuse, ambient, specular, etc.)
+    renderable->getMaterialColorMatrix(dataOut._matrix[2]);
+    // Get the material property matrix (alpha test, texture count,
+    // texture operation, etc.)
+    renderable->getMaterialPropertyMatrix(dataOut._matrix[3]);
 
     _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = true;
 }
@@ -283,10 +250,18 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         return;
     }
 
-    if (refreshNodeData) {
-        processVisibleNodes(visibleNodes, sceneRenderState);
-    }
+    Time::START_TIMER(_commandBuildTimer);
+
     vectorAlg::vecSize nodeCount = visibleNodes.size();
+    if (refreshNodeData) {
+        // Pass the list of nodes to the renderer for a pre-render pass
+        getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
+        // Generate and upload all lighting data
+        LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
+        // The first entry has identity values (e.g. for rendering points)
+        _matricesData.resize(nodeCount + 1);
+    }
+
     _renderQueue.reserve(nodeCount);
     // Reset previously generated commands
     vectorImpl<GenericDrawCommand> nonBatchedCommands;
@@ -297,12 +272,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     for (VisibleNodeList::value_type& node : visibleNodes) {
-        if (!node._isDrawReady) {
-            continue;
-        }
-
         vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            RenderingCompGFXDeviceAttorney::getDrawCommands(
+            Attorney::RenderingCompGFXDevice::getDrawCommands(
                 *node._visibleNode->getComponent<RenderingComponent>(),
                 sceneRenderState, currentStage);
 
@@ -310,6 +281,9 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
             for (GenericDrawCommand& cmd : nodeDrawCommands) {
                 cmd.drawID(drawID);
                 nonBatchedCommands.push_back(cmd);
+            }
+            if (refreshNodeData) {
+                processVisibleNode(node, sceneRenderState, _matricesData[drawID]);
             }
             drawID += 1;
         }
@@ -324,6 +298,8 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     }
 
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
+
+    Time::STOP_TIMER(_commandBuildTimer);
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
@@ -334,26 +310,21 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
     if (!previousIDC.shaderProgram() || !currentIDC.shaderProgram()) {
         return false;
     }
-    // Batchable commands must share the same buffer
-    if (previousIDC.sourceBuffer()->getGUID() ==
+    if (previousIDC.compatible(currentIDC) &&
+        // Batchable commands must share the same buffer
+        previousIDC.sourceBuffer()->getGUID() ==
             currentIDC.sourceBuffer()->getGUID() &&
         // And the same shader program
         previousIDC.shaderProgram()->getID() ==
-            currentIDC.shaderProgram()->getID() &&
-        // Different states aren't batchable currently
-        previousIDC.stateHash() == currentIDC.stateHash() &&
-        // We need the same primitive type
-        previousIDC.primitiveType() == currentIDC.primitiveType() &&
-        previousIDC.renderWireframe() == currentIDC.renderWireframe())
+            currentIDC.shaderProgram()->getID())
     {
         U32 prevCount = previousIDC.drawCount();
-        U32 crtCount = currentIDC.drawCount();
-        /*if (previousIDC.drawID() + prevCount + 1 != currentIDC.drawID()) {
+        if (previousIDC.drawID() + prevCount != currentIDC.drawID()) {
             return false;
-        }*/
+        }
         // If the rendering commands are batchable, increase the draw count for
         // the previous one
-        previousIDC.drawCount(prevCount + crtCount);
+        previousIDC.drawCount(prevCount + currentIDC.drawCount());
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);

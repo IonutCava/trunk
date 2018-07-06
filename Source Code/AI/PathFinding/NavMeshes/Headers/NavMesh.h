@@ -94,9 +94,14 @@ struct NavMeshTileHeader {
 /// Represents a set of bounds within which a Recast navigation mesh is
 /// generated.
 class NavMeshDebugDraw;
+class DivideDtCrowd;
+
+namespace Attorney {
+    class NavigationMeshCrowd;
+};
 
 class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
-    friend class NavigationMeshCrowdAttorney;
+    friend class Attorney::NavigationMeshCrowd;
 
    protected:
     enum class RenderMode : U32 {
@@ -219,7 +224,8 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     std::unique_ptr<NavMeshDebugDraw> _debugDrawInterface;
 };
 
-class NavigationMeshCrowdAttorney {
+namespace Attorney {
+class NavigationMeshCrowd {
    private:
     static dtNavMesh* getNavigationMesh(NavigationMesh& navMesh) {
         return navMesh._navMesh;
@@ -228,9 +234,9 @@ class NavigationMeshCrowdAttorney {
         NavigationMesh& navMesh) {
         return navMesh._configParams;
     }
-    friend class DivideDtCrowd;
+    friend class Divide::AI::Navigation::DivideDtCrowd;
 };
-
+};  // namespace Attorney
 };  // namespace Navigation
 };  // namespace AI
 };  // namespace Divide

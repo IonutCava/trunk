@@ -39,6 +39,10 @@ namespace Divide {
 class SceneGraphNode;
 namespace AI {
 
+namespace Attorney {
+    class VisualSensorConstructor;
+};
+
 /// SGN GUID, SGN pointer
 typedef hashMapImpl<I64, SceneGraphNode*> NodeContainer;
 /// Container ID, NodeContainer
@@ -49,7 +53,7 @@ typedef hashMapImpl<I64, vec3<F32> > NodePositions;
 typedef hashMapImpl<U32, NodePositions> NodePositionsMap;
 
 class VisualSensor : public Sensor {
-    friend class VisualSensorConstructorAttorney;
+    friend class Attorney::VisualSensorConstructor;
    public:
      ~VisualSensor();
 
@@ -76,15 +80,16 @@ class VisualSensor : public Sensor {
     NodePositionsMap _nodePositionsMap;
 };
 
-class VisualSensorConstructorAttorney {
+namespace Attorney {
+class VisualSensorConstructor {
    private:
     static VisualSensor* construct(AIEntity* const parentEntity) {
         return MemoryManager_NEW VisualSensor(parentEntity);
     }
 
-    friend class AIEntity;
+    friend class Divide::AI::AIEntity;
 };
-
+};  // namespace Attorney
 };  // namespace AI
 };  // namespace Divide
 

@@ -381,6 +381,7 @@ class Material : public Resource {
    private:
     static bool _shaderQueueLocked;
     static bool _serializeShaderLoad;
+    static I32  _invalidShaderKey;
 
     typedef std::tuple<U32, ResourceDescriptor, DELEGATE_CBK<>>
         ShaderQueueElement;

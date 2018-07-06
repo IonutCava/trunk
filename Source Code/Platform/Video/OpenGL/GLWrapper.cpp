@@ -178,6 +178,9 @@ bool GL_API::initShaders() {
         ("const uint MAX_LIGHTS_PER_SCENE = " +
          std::to_string(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
     glswAddDirectiveToken(
+        "", ("const int MAX_VISIBLE_NODES = " +
+             std::to_string(Config::MAX_VISIBLE_NODES) + ";").c_str());
+    glswAddDirectiveToken(
         "", ("#define SHADER_BUFFER_LIGHT_NORMAL " +
              std::to_string(to_uint(
                  ShaderBufferLocation::SHADER_BUFFER_LIGHT_NORMAL))).c_str());
@@ -193,6 +196,7 @@ bool GL_API::initShaders() {
         "", ("#define SHADER_BUFFER_UNIFORMS " +
              std::to_string(to_uint(
                  ShaderBufferLocation::SHADER_BUFFER_UNIFORMS))).c_str());
+    
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
 
@@ -420,11 +424,10 @@ void GL_API::drawPoints(GLuint numPoints) {
 void GL_API::uploadDrawCommands(
     const vectorImpl<IndirectDrawCommand>& drawCommands) const {
     GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _indirectDrawBuffer);
-    GLUtil::allocBuffer(_indirectDrawBuffer,
-                        static_cast<GLsizeiptr>(sizeof(IndirectDrawCommand) *
-                                                drawCommands.size()),
-                        GL_DYNAMIC_COPY, 
-                        const_cast<vectorImpl<IndirectDrawCommand>::pointer>(drawCommands.data()));
+    GLUtil::allocBuffer(
+        _indirectDrawBuffer,
+        (GLsizeiptr)(sizeof(IndirectDrawCommand) * drawCommands.size()),
+        GL_DYNAMIC_DRAW, (GLUtil::bufferPtr)drawCommands.data());
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {

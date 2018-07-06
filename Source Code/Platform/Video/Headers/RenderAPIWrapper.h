@@ -73,12 +73,12 @@ typedef struct {
 struct IndirectDrawCommand {
     IndirectDrawCommand()
         : count(0),
-          instanceCount(1),
+          primCount(1),
           firstIndex(0),
           baseVertex(0),
           baseInstance(0) {}
     U32 count;
-    U32 instanceCount;
+    U32 primCount;
     U32 firstIndex;
     U32 baseVertex;
     U32 baseInstance;
@@ -105,7 +105,7 @@ struct GenericDrawCommand {
     inline void stateHash(size_t hashValue) { _stateHash = hashValue; }
     inline void drawToBuffer(bool state) { _drawToBuffer = state; }
     inline void renderWireframe(bool state) { _renderWireframe = state; }
-    inline void instanceCount(U32 count) { _cmd.instanceCount = count; }
+    inline void primCount(U32 count) { _cmd.primCount = count; }
     inline void firstIndex(U32 index) { _cmd.firstIndex = index; }
     inline void indexCount(U32 count) { _cmd.count = count; }
     inline void shaderProgram(ShaderProgram* const program) {
@@ -123,7 +123,7 @@ struct GenericDrawCommand {
     inline size_t stateHash() const { return _stateHash; }
     inline bool drawToBuffer() const { return _drawToBuffer; }
     inline bool renderWireframe() const { return _renderWireframe; }
-    inline U32 instanceCount() const { return _cmd.instanceCount; }
+    inline U32 primCount() const { return _cmd.primCount; }
     inline U32 indexCount() const { return _cmd.count; }
 
     inline const IndirectDrawCommand& cmd() const { return _cmd; }
@@ -135,7 +135,7 @@ struct GenericDrawCommand {
         : GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 0) {}
 
     GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 count,
-                       U32 instanceCount = 1)
+                       U32 primCount = 1)
         : _type(type),
           _lodIndex(0),
           _stateHash(0),
@@ -147,7 +147,7 @@ struct GenericDrawCommand {
           _sourceBuffer(nullptr) {
         _cmd.count = count;
         _cmd.firstIndex = firstIndex;
-        _cmd.instanceCount = instanceCount;
+        _cmd.primCount = primCount;
     }
 
     inline void set(const GenericDrawCommand& base) {
@@ -161,6 +161,17 @@ struct GenericDrawCommand {
         _type = base._type;
         _shaderProgram = base._shaderProgram;
         _sourceBuffer = base._sourceBuffer;
+    }
+
+    inline bool compatible(const GenericDrawCommand& other) const {
+        return _queryID == other._queryID && _lodIndex == other._lodIndex &&
+               _drawToBuffer == other._drawToBuffer &&
+               _renderWireframe == other._renderWireframe &&
+               _stateHash == other._stateHash && _type == other._type &&
+               (_shaderProgram != nullptr) ==
+                   (other._shaderProgram != nullptr) &&
+               (_sourceBuffer != nullptr) == 
+                   (other._sourceBuffer != nullptr);
     }
 };
 

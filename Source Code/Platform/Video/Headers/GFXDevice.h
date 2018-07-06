@@ -58,6 +58,10 @@ class Renderer;
 class SceneGraphNode;
 class SceneRenderState;
 
+namespace Time {
+    class ProfileTimer;
+};
+
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
@@ -84,6 +88,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     };
   public:  // GPU specific data
    typedef vectorImpl<RenderPassCuller::RenderableNode> VisibleNodeList;
+
    typedef vectorImpl<std::pair<ShaderBufferLocation, ShaderBuffer*>>
        ShaderBufferList;
    struct RenderPackage {
@@ -403,8 +408,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
    protected:
     friend class SceneManager;
-    void processVisibleNodes(VisibleNodeList& visibleNodes,
-                             SceneRenderState& sceneRenderState);
     void buildDrawCommands(VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
                            bool refreshNodeData);
@@ -444,6 +447,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
+    void processVisibleNode(RenderPassCuller::RenderableNode& node,
+                            SceneRenderState& sceneRenderState,
+                            NodeData& dataOut);
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;
@@ -512,10 +518,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// Batching unsorted commands does not work
     vectorImpl<NodeData> _matricesData;
     vectorImpl<IndirectDrawCommand> _drawCommandsCache;
-
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;
-
+    Time::ProfileTimer* _commandBuildTimer;
     //0 = gfxDataBuffer, 1 = nodeBuffer, 3 = command buffer
     bool _buffersDirty[to_const_uint(GPUBuffer::COUNT)];
     std::unique_ptr<Renderer> _renderer;

@@ -104,10 +104,10 @@ bool AIEntity::addSensor(SensorType type) {
     Sensor* sensor = nullptr;
     switch (type) {
         case SensorType::AUDIO_SENSOR: {
-            sensor = AudioSensorConstructorAttorney::construct(this);
+            sensor = Attorney::AudioSensorConstructor::construct(this);
         } break;
         case SensorType::VISUAL_SENSOR: {
-            sensor = VisualSensorConstructorAttorney::construct(this);
+            sensor = Attorney::VisualSensorConstructor::construct(this);
         } break;
     };
 

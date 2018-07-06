@@ -39,7 +39,7 @@ WarSceneAISceneImpl::~WarSceneAISceneImpl() {
 
 void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
     WarSceneAction* const warAction = static_cast<WarSceneAction*>(action);
-    WarSceneActionWarAISceneAttorney::setParentAIScene(*warAction, this);
+    Attorney::WarSceneActionWarAIScene::setParentAIScene(*warAction, this);
 
     switch (warAction->actionType()) {
         case ActionType::ACTION_APPROACH_FLAG:

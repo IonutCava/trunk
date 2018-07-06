@@ -55,10 +55,15 @@ struct FogDescriptor {
     vec3<F32> _fogColor;
 };
 
+class Scene;
+namespace Attorney {
+    class SceneRenderStateScene;
+};
+
 /// Contains all the information needed to render the scene: camera position,
 /// render state, etc
 class SceneRenderState {
-    friend class SceneRenderStateSceneAttorney;
+    friend class Attorney::SceneRenderStateScene;
 
    public:
     enum class GizmoState : U32 {
@@ -131,15 +136,17 @@ class SceneRenderState {
     vec2<U16> _cachedResolution;
 };
 
-class SceneRenderStateSceneAttorney {
+namespace Attorney {
+class SceneRenderStateScene {
    private:
     static void cachedResolution(SceneRenderState& sceneRenderState,
                                  const vec2<U16>& resolution) {
         sceneRenderState.cachedResolution(resolution);
     }
 
-    friend class Scene;
+    friend class Divide::Scene;
 };
+};  // namespace Attorney
 
 class SceneState {
    public:
@@ -163,6 +170,11 @@ class SceneState {
     inline F32& getWindSpeed() { return _windSpeed; }
     inline F32& getWindDirX() { return _windDirX; }
     inline F32& getWindDirZ() { return _windDirZ; }
+
+    inline F32 getWindSpeed() const { return _windSpeed; }
+    inline F32 getWindDirX()  const { return _windDirX; }
+    inline F32 getWindDirZ()  const { return _windDirZ; }
+
     inline F32& getGrassVisibility() { return _grassVisibility; }
     inline F32& getTreeVisibility() { return _treeVisibility; }
     inline F32& getGeneralVisibility() { return _generalVisibility; }

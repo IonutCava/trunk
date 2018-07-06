@@ -205,7 +205,7 @@ void ParticleEmitter::getDrawCommands(
     _drawCommand.renderWireframe(
         sgn.getComponent<RenderingComponent>()->renderWireframe());
     _drawCommand.stateHash(_particleStateBlockHash);
-    _drawCommand.instanceCount(particleCount);
+    _drawCommand.primCount(particleCount);
     _drawCommand.shaderProgram(renderStage == RenderStage::DISPLAY_STAGE
                                    ? _particleShader
                                    : _particleDepthShader);
@@ -246,6 +246,7 @@ void ParticleEmitter::uploadToGPU() {
 bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              RenderStage currentStage) {
     if (!_enabled || getAliveParticleCount() == 0) {
+        renderState().setDrawState(false);
         return false;
     }
     _particles->sort();
@@ -263,7 +264,7 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
         GFX_DEVICE.submitRenderCommand(
             sgn.getComponent<RenderingComponent>()->getDrawCommands());
     }*/
-
+    renderState().setDrawState(true);
     return true;
 }
 

@@ -38,8 +38,8 @@ namespace Divide {
 namespace AI {
 
 namespace Navigation {
-class DivideDtCrowd;
-class NavigationMesh;
+    class DivideDtCrowd;
+    class NavigationMesh;
 };
 
 class Order {

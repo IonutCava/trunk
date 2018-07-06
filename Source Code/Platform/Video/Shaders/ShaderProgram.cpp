@@ -80,11 +80,11 @@ bool ShaderProgram::update(const U64 deltaTime) {
                           par.getParam<F32>("rendering.sceneState.fogDensity"));
         }
         // Upload wind data
-        Scene* activeScene = GET_ACTIVE_SCENE();
+        const SceneState& activeSceneState = GET_ACTIVE_SCENE()->state();
         this->Uniform("windDirection",
-                      vec2<F32>(activeScene->state().getWindDirX(),
-                                activeScene->state().getWindDirZ()));
-        this->Uniform("windSpeed", activeScene->state().getWindSpeed());
+                      vec2<F32>(activeSceneState.getWindDirX(),
+                                activeSceneState.getWindDirZ()));
+        this->Uniform("windSpeed", activeSceneState.getWindSpeed());
         _sceneDataDirty = false;
     }
     // The following values are updated only if a call to the ShaderManager's
@@ -164,44 +164,6 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
         // If we did not find it, we'll show an error message in debug builds
         Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),
                            define.c_str(), getName().c_str());
-    }
-}
-
-void ShaderProgram::addShaderUniform(const stringImpl& uniform,
-                                     const ShaderType& type) {
-    // Find the string in the list of uniforms
-    vectorImpl<stringImpl>::iterator it =
-        std::find(std::begin(_customUniforms[to_uint(type)]),
-                  std::end(_customUniforms[to_uint(type)]), uniform);
-    // If we can't find it, we add it
-    if (it == std::end(_definesList)) {
-        _customUniforms[to_uint(type)].push_back(uniform);
-    } else {
-        // If we did find it, we'll show an error message in debug builds about
-        // double add
-        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_UNIFORM_ADD"),
-                           uniform.c_str(), to_uint(type),
-                           getName().c_str());
-    }
-}
-
-/// Remove an uniform from the shader. The uniform must have been added
-/// previously for the specified shader type
-void ShaderProgram::removeUniform(const stringImpl& uniform,
-                                  const ShaderType& type) {
-    U32 typeInt = to_uint(type);
-    // Find the string in the list of uniforms
-    vectorImpl<stringImpl>::iterator it =
-        std::find(std::begin(_customUniforms[typeInt]),
-                  std::end(_customUniforms[typeInt]), uniform);
-    // If we find it, we remove it
-    if (it != std::end(_customUniforms[typeInt])) {
-        _customUniforms[typeInt].erase(it);
-    } else {
-        // If we did find it, we'll show an error message in debug builds about
-        // double add
-        Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"),
-                           uniform.c_str(), typeInt, getName().c_str());
     }
 }
 

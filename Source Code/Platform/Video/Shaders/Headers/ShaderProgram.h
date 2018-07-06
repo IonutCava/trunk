@@ -190,12 +190,6 @@ class ShaderProgram : public HardwareResource {
     /// Remove a define from the shader. The defined must have been added
     /// previously
     void removeShaderDefine(const stringImpl& define);
-    /// Add either fragment or vertex uniforms (without the "uniform" word. e.g.
-    /// addShaderUniform("vec3 eyePos", VERTEX_SHADER);)
-    void addShaderUniform(const stringImpl& uniform, const ShaderType& type);
-    /// Remove an uniform from the shader. The uniform must have been added
-    /// previously for the specified shader type
-    void removeUniform(const stringImpl& uniform, const ShaderType& type);
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline vectorAlg::vecSize getFunctionCount(ShaderType shader, U8 LoD) {
@@ -281,8 +275,6 @@ class ShaderProgram : public HardwareResource {
     U8 _outputCount;
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
-    /// A list of custom shader uniforms
-    vectorImpl<stringImpl> _customUniforms[to_const_uint(ShaderType::COUNT)];
     /// ID<->shaders pair
     typedef hashMapImpl<U32, Shader*> ShaderIDMap;
     ShaderIDMap _shaderIDMap;

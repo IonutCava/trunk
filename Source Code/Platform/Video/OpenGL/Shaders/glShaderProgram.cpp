@@ -90,9 +90,6 @@ bool glShaderProgram::update(const U64 deltaTime) {
             GLint binaryLength = 0;
             glGetProgramiv(_shaderProgramID, GL_PROGRAM_BINARY_LENGTH,
                            &binaryLength);
-            // glGetProgramPipelineiv(_shaderProgramID,
-            // GL_PROGRAM_BINARY_LENGTH,
-            //                       &binaryLength);
             // allocate a big enough buffer to hold it
             void* binary = (void*)malloc(binaryLength);
             DIVIDE_ASSERT(binary != NULL,
@@ -408,9 +405,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
         // Mirror initial shader defines to match line count
         GLint initialOffset = 20;
-        if (GFX_DEVICE.getGPUVendor() ==
-            GPUVendor::GPU_VENDOR_NVIDIA) {  // nVidia
-                                             // specific
+        // nVidia specific
+        if (GFX_DEVICE.getGPUVendor() == GPUVendor::GPU_VENDOR_NVIDIA) {
             initialOffset += 6;
         }
         // Get all of the preprocessor defines and add them to the general
@@ -435,13 +431,6 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
             // We start off from the general offset
             lineCountOffset[i] = initialOffset;
-            // And add every custom uniform specified (yet again, we add all the
-            // needed dressing)
-            for (U8 j = 0; j < _customUniforms[i].size(); ++j) {
-                shaderSourceUniforms[i].append("uniform " +
-                                               _customUniforms[i][j] + ";\n");
-                lineCountOffset[i]++;
-            }
             // We also add a custom include to all shaders that contains GPU
             // data buffers. We need to account for its size as well
             lineCountOffset[i] += 42;
@@ -703,10 +692,6 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, U32 value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform1ui(_shaderProgramID, location, value);
     }
@@ -714,10 +699,6 @@ void glShaderProgram::Uniform(GLint location, U32 value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, I32 value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform1i(_shaderProgramID, location, value);
     }
@@ -725,10 +706,6 @@ void glShaderProgram::Uniform(GLint location, I32 value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, F32 value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform1f(_shaderProgramID, location, value);
     }
@@ -736,10 +713,6 @@ void glShaderProgram::Uniform(GLint location, F32 value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vec2<F32>& value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform2fv(_shaderProgramID, location, 1, value);
     }
@@ -747,10 +720,6 @@ void glShaderProgram::Uniform(GLint location, const vec2<F32>& value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vec2<I32>& value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform2iv(_shaderProgramID, location, 1, value);
     }
@@ -758,10 +727,6 @@ void glShaderProgram::Uniform(GLint location, const vec2<I32>& value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vec2<U16>& value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform2uiv(_shaderProgramID, location, 1,
                              vec2<U32>(value.x, value.y));
@@ -770,10 +735,6 @@ void glShaderProgram::Uniform(GLint location, const vec2<U16>& value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vec3<F32>& value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform3fv(_shaderProgramID, location, 1, value);
     }
@@ -781,10 +742,6 @@ void glShaderProgram::Uniform(GLint location, const vec3<F32>& value) {
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, value)) {
         glProgramUniform4fv(_shaderProgramID, location, 1, value);
     }
@@ -794,9 +751,6 @@ void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
 void glShaderProgram::Uniform(GLint location,
                               const mat3<F32>& value,
                               bool rowMajor) {
-    if (location == -1) {
-        return;
-    }
 
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
@@ -808,9 +762,6 @@ void glShaderProgram::Uniform(GLint location,
 void glShaderProgram::Uniform(GLint location,
                               const mat4<F32>& value,
                               bool rowMajor) {
-    if (location == -1) {
-        return;
-    }
 
     if (cachedValueUpdate(location, value)) {
         glProgramUniformMatrix4fv(_shaderProgramID, location, 1,
@@ -820,7 +771,7 @@ void glShaderProgram::Uniform(GLint location,
 
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vectorImpl<I32>& values) {
-    if (values.empty()) {
+    if (values.empty() || location == -1) {
         return;
     }
 
@@ -898,10 +849,6 @@ void glShaderProgram::Uniform(GLint location,
 }
 
 void glShaderProgram::Uniform(GLint location, U8 slot) {
-    if (location == -1) {
-        return;
-    }
-
     if (cachedValueUpdate(location, slot)) {
         glProgramUniform1i(_shaderProgramID, location, static_cast<I32>(slot));
     }

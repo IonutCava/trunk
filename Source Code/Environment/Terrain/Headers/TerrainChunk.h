@@ -45,8 +45,12 @@ class SceneGraphNode;
 class QuadtreeNode;
 struct FileData;
 
+namespace Attorney {
+    class TerrainChunkTerrain;
+};
+
 class TerrainChunk {
-    friend class TerrainChunkTerrainAttorney;
+    friend class Attorney::TerrainChunkTerrain;
 
    public:
     TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode);
@@ -92,14 +96,15 @@ class TerrainChunk {
     static U32 _chunkID;
 };
 
-class TerrainChunkTerrainAttorney {
+namespace Attorney {
+class TerrainChunkTerrain {
    private:
-    static Vegetation* const getVegetation(TerrainChunk& chunk) {
+    static Vegetation* const getVegetation(Divide::TerrainChunk& chunk) {
         return chunk.getVegetation();
     }
-    friend class Terrain;
+    friend class Divide::Terrain;
 };
-
+};  // namespace Attorney
 };  // namespace Divide
 
 #endif

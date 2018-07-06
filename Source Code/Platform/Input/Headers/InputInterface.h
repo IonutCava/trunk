@@ -52,11 +52,14 @@ void checkMacEvents();
 
 namespace Divide {
 namespace Input {
+
+namespace Attorney {
+    class InputInterfaceEvent;
+};
 //////////// Event handler class declaration
 ///////////////////////////////////////////////////
 DEFINE_SINGLETON(InputInterface)
-    friend class InputInterfaceEventAttorney;
-
+    friend class Attorney::InputInterfaceEvent;
   public:
     ErrorCode init(Kernel& kernel, const stringImpl& windowTitle);
 
@@ -150,14 +153,16 @@ DEFINE_SINGLETON(InputInterface)
 
 END_SINGLETON
 
-class InputInterfaceEventAttorney {
-   private:
-    static KeyEvent& getKeyRef(U32 index) {
-        return InputInterface::getInstance().getKeyRef(index);
-    }
+namespace Attorney {
+    class InputInterfaceEvent {
+    private:
+        static KeyEvent& getKeyRef(U32 index) {
+            return InputInterface::getInstance().getKeyRef(index);
+        }
 
-    friend class EventHandler;
-};
+        friend class Divide::Input::EventHandler;
+    };
+};  // namespace Attorney
 
 };  // namespace Input
 };  // namespace Divide

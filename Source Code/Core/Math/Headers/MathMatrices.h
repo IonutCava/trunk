@@ -231,7 +231,13 @@ class mat3 {
         this->mat[8] = m8;
     }
 
-    inline void set(const T *m) { memcpy(this->mat, m, sizeof(T) * 9); }
+    inline void set(const T *m) { 
+        memcpy(this->mat, m, sizeof(T) * 9);
+    }
+
+    inline void set(const mat3<T> &matrix) {
+        this->set(matrix.mat);
+    }
 
     inline void set(const mat4<T> &matrix) {
         this->mat[0] = matrix[0];
