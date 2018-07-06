@@ -296,7 +296,19 @@ void sumitDirectCommand(const IndirectDrawCommand& cmd,
                         GLuint indexBuffer) {
 
     if (indexBuffer > 0) {
-        glDrawElementsInstanced(mode, cmd.indexCount, internalFormat, bufferOffset(cmd.firstIndex), cmd.primCount);
+        bufferPtr offset = nullptr;
+        if (internalFormat == GL_UNSIGNED_SHORT) {
+            GLushort* shortOffset = 0;
+            shortOffset += cmd.firstIndex;
+            offset = shortOffset;
+        } else {
+            GLuint* uintOffset = 0;
+            uintOffset += cmd.firstIndex;
+            offset = uintOffset;
+        }
+
+        
+        glDrawElementsInstanced(mode, cmd.indexCount, internalFormat, offset, cmd.primCount);
     } else {
         glDrawArraysInstanced(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount);
     }
@@ -307,6 +319,7 @@ void submitDirectMultiCommand(const IndirectDrawCommand& cmd,
                               GLenum mode,
                               GLenum internalFormat,
                               GLuint indexBuffer) {
+    //ToDo: This seems really wrong -Ionut
     vectorImpl<GLsizei> count(drawCount, cmd.indexCount);
     if (indexBuffer > 0) {
         vectorImpl<U32> indices(drawCount, cmd.baseInstance);

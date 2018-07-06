@@ -48,16 +48,20 @@ namespace Divide {
 class NOINITVTABLE GenericVertexData : public VertexDataInterface,
                                        public RingBuffer {
    public:
+     
+     struct IndexBuffer {
+         size_t count = 0;
+         bufferPtr data = nullptr;
+         bool smallIndices = false;
+     };
+
+   public:
     GenericVertexData(GFXDevice& context, const U32 ringBufferLength);
     virtual ~GenericVertexData();
 
-    inline void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) {
-        vectorImpl<U32> indices;
-        setIndexBuffer(indicesCount, dynamic, stream);
-    }
+    virtual void setIndexBuffer(const IndexBuffer& indices, bool dynamic, bool stream) = 0;
+    virtual void updateIndexBuffer(const IndexBuffer& indices) = 0;
 
-    virtual void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream, const vectorImpl<U32>& indices) = 0;
-    virtual void updateIndexBuffer(const vectorImpl<U32>& indices) = 0;
     virtual void create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
     virtual void setFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
 

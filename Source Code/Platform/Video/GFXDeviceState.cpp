@@ -389,9 +389,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingAPI() {
     assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
-    _axisGizmo->clear();
-    _debugFrustumPrimitive->clear();
-    _debugViews.clear();
+    if (_axisGizmo) {
+        _axisGizmo->clear();
+        _debugFrustumPrimitive->clear();
+        _debugViews.clear();
+    }
+
     // Destroy our post processing system
     Console::printfn(Locale::get(_ID("STOP_POST_FX")));
     PostFX::destroyInstance();

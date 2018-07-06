@@ -21,6 +21,7 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
     _currentReadQuery = 0;
     _transformFeedback = 0;
     _currentWriteQuery = 0;
+    _smallIndices = false;
     _vertexArray[to_base(GVDUsage::DRAW)] = 0;
     _vertexArray[to_base(GVDUsage::FDBCK)] = 0;
     _feedbackQueries.fill(nullptr);
@@ -148,7 +149,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     }
 
     // Submit the draw command
-    GLUtil::submitRenderCommand(command, useCmdBuffer, GL_UNSIGNED_INT, _indexBuffer);
+    GLUtil::submitRenderCommand(command, useCmdBuffer, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _indexBuffer);
 
     // Deactivate transform feedback if needed
     if (feedbackActive) {
@@ -165,41 +166,39 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     }
 }
 
-void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream, const vectorImpl<U32>& indices) {
-    if (indicesCount > 0) {
-        assert(_indexBuffer == 0 && "glGenericVertexData::SetIndexBuffer error: Tried to double create index buffer!");
+void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, bool dynamic, bool stream) {
+    if (indices.count > 0) {
+        if (_indexBuffer != 0) {
+            GLUtil::freeBuffer(_indexBuffer);
+        }
 
         _indexBufferUsage = dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
                                     : GL_STATIC_DRAW;
+
         // Generate an "Index Buffer Object"
+        _indexBufferSize = (GLuint)indices.count;
+        _smallIndices = indices.smallIndices;
+
         GLUtil::createAndAllocBuffer(
-                static_cast<GLsizeiptr>(indicesCount * sizeof(GLuint)),
-                _indexBufferUsage,
-                _indexBuffer,
-                indices.empty() ? NULL : (bufferPtr)indices.data());
-        _indexBufferSize = indicesCount;
-        // Assert if the IB creation failed
-        assert(_indexBuffer != 0 && Locale::get(_ID("ERROR_IB_INIT")));
+            static_cast<GLsizeiptr>(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32))),
+            _indexBufferUsage,
+            _indexBuffer,
+            indices.data ? indices.data : NULL);
     } else {
         GLUtil::freeBuffer(_indexBuffer);
     }
 }
 
-void glGenericVertexData::updateIndexBuffer(const vectorImpl<U32>& indices) {
-    DIVIDE_ASSERT(!indices.empty() && _indexBufferSize >= to_U32(indices.size()),
-        "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
-
+void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
+    DIVIDE_ASSERT(indices.count > 0 && _indexBufferSize >= to_U32(indices.count),
+                  "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
     assert(_indexBuffer != 0 && "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
 
-    glNamedBufferData(_indexBuffer,
-                      static_cast<GLsizeiptr>(_indexBufferSize * sizeof(GLuint)),
-                      NULL,
-                      _indexBufferUsage);
-
-    glNamedBufferSubData(_indexBuffer, 
-        0, 
-        static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)),
-        (bufferPtr)(indices.data()));
+    glInvalidateBufferData(_indexBuffer);
+    glNamedBufferSubData(_indexBuffer,
+                         0,
+                         static_cast<GLsizeiptr>(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32))),
+                         indices.data);
 }
 
 /// Specify the structure and data of the given buffer
@@ -297,22 +296,19 @@ void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescri
     bool isIntegerType = format != GFXDataFormat::FLOAT_16 &&
                          format != GFXDataFormat::FLOAT_32;
     
-    GLuint offset = (GLuint)(descriptor.offset() * dataSizeForType(format));
-    offset += descriptor.interleavedOffsetInBytes();
-
     if (!isIntegerType || descriptor.normalized()) {
         glVertexArrayAttribFormat(activeVAO,
                                   descriptor.attribIndex(),
                                   descriptor.componentsPerElement(),
                                   GLUtil::glDataFormat[to_U32(format)],
                                   descriptor.normalized() ? GL_TRUE : GL_FALSE,
-                                  offset);
+                                  (GLuint)descriptor.strideInBytes());
     } else {
         glVertexArrayAttribIFormat(activeVAO,
                                    descriptor.attribIndex(),
                                    descriptor.componentsPerElement(),
                                    GLUtil::glDataFormat[to_U32(format)],
-                                   offset);
+                                   (GLuint)descriptor.strideInBytes());
     }
 
     glVertexArrayBindingDivisor(activeVAO, descriptor.bufferIndex(), descriptor.instanceDivisor());

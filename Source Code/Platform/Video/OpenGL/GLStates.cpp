@@ -15,12 +15,6 @@
 
 namespace Divide {
 
-#if defined(USE_FIXED_FUNCTION_IMGUI)
-    GLuint GL_API::s_imguiVAO = 0;
-    GLuint GL_API::s_imguiVBO = 0;
-    GLuint GL_API::s_imguiIB = 0;
-#endif
-
 /// The following static variables are used to remember the current OpenGL state
 GLuint GL_API::s_UBOffsetAlignment = 0;
 GLuint GL_API::s_UBMaxSize = 0;

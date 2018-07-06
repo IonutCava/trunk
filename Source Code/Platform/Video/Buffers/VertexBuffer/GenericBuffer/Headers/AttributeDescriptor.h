@@ -42,15 +42,29 @@ namespace Divide {
         ~AttributeDescriptor();
 
         void set(U32 bufferIndex,
-                 U32 instanceDivisor,
                  U32 componentsPerElement,
-                 bool normalized,
-                 U32 elementCountOffset,
+                 GFXDataFormat dataType);
+
+        void set(U32 bufferIndex,
+                 U32 componentsPerElement,
                  GFXDataFormat dataType,
-                 U32 interleavedOffsetInBytes = 0);
+                 bool normalized);
+
+        void set(U32 bufferIndex,
+                 U32 componentsPerElement,
+                 GFXDataFormat dataType,
+                 bool normalized,
+                 size_t strideInBytes);
+
+        void set(U32 bufferIndex,
+                 U32 componentsPerElement,
+                 GFXDataFormat dataType,
+                 bool normalized,
+                 size_t strideInBytes,
+                 U32 instanceDivisor);
 
         void attribIndex(U32 index);
-        void offset(U32 elementCountOffset);
+        void strideInBytes(size_t strideInBytes);
         void bufferIndex(U32 bufferIndex);
         void instanceDivisor(U32 instanceDivisor);
         void componentsPerElement(U32 componentsPerElement);
@@ -59,10 +73,9 @@ namespace Divide {
         void dataType(GFXDataFormat type);
         void wasSet(bool wasSet);
         void clean();
-        void stride(size_t stride);
 
         inline U32 attribIndex() const { return _index; }
-        inline U32 offset() const { return _elementCountOffset; }
+        inline size_t strideInBytes() const { return _strideInBytes; }
         inline U32 bufferIndex() const { return _parentBuffer; }
         inline U32 instanceDivisor() const { return _divisor; }
         inline U32 componentsPerElement() const { return _componentsPerElement; }
@@ -71,20 +84,17 @@ namespace Divide {
         inline GFXDataFormat dataType() const { return _type; }
         inline bool wasSet() const { return _wasSet; }
         inline bool dirty() const { return _dirty; }
-        
-        size_t stride() const;
-
+ 
     protected:
         U32 _index;
         U32 _divisor;
         U32 _parentBuffer;
         U32 _componentsPerElement;
-        U32 _elementCountOffset;
         U32 _interleavedOffset;
         bool _wasSet;
         bool _dirty;
         bool _normalized;
-        size_t _stride;
+        size_t _strideInBytes;
         GFXDataFormat _type;
     };
 }; //namespace Divide

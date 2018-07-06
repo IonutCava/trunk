@@ -227,20 +227,42 @@ void Vegetation::uploadGrassData() {
                           sizeof(I32), true, NULL, true, false);
 
         buffer->attribDescriptor(posLocation)
-            .set(to_base(BufferUsage::CulledPositionBuffer), instanceDiv, 4, false, 0, 
-                             GFXDataFormat::FLOAT_32);
+            .set(to_base(BufferUsage::CulledPositionBuffer),
+                 4,
+                 GFXDataFormat::FLOAT_32,
+                 false,
+                 0,
+                 instanceDiv);
+
         buffer->attribDescriptor(scaleLocation)
-            .set(to_base(BufferUsage::CulledSizeBuffer), instanceDiv, 1, false, 0,
-                 GFXDataFormat::FLOAT_32);
+            .set(to_base(BufferUsage::CulledSizeBuffer),
+                 1,
+                 GFXDataFormat::FLOAT_32,
+                 false,
+                 0,
+                 instanceDiv);
+
         buffer->attribDescriptor(instLocation)
-            .set(to_base(BufferUsage::CulledInstanceBuffer), instanceDiv, 1, false, 0,
-                 GFXDataFormat::SIGNED_INT);
+            .set(to_base(BufferUsage::CulledInstanceBuffer), 
+                 1,
+                 GFXDataFormat::SIGNED_INT,
+                 false,
+                 0,
+                 instanceDiv);
         buffer->fdbkAttribDescriptor(posLocation)
-            .set(to_base(BufferUsage::UnculledPositionBuffer), instanceDiv, 4, false, 0,
-                 GFXDataFormat::FLOAT_32);
+            .set(to_base(BufferUsage::UnculledPositionBuffer),
+                 4,
+                 GFXDataFormat::FLOAT_32,
+                 false,
+                 0,
+                 instanceDiv);
         buffer->fdbkAttribDescriptor(scaleLocation)
-            .set(to_base(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0,
-                 GFXDataFormat::FLOAT_32);
+            .set(to_base(BufferUsage::UnculledSizeBuffer),
+                 1,
+                 GFXDataFormat::FLOAT_32,
+                 false,
+                 0,
+                 instanceDiv);
 
         buffer->toggleDoubleBufferedQueries(false);
     }
@@ -412,9 +434,9 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
     U32 queryID = getQueryID();
     gpuCull(sceneRenderState, *sceneRenderState.parentScene().playerCamera());
 
-    buffer->attribDescriptor(posLocation).offset(_instanceCountGrass * queryID);
-    buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
-    buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
+    buffer->attribDescriptor(posLocation).strideInBytes(sizeof(vec4<F32>) * _instanceCountGrass * queryID);
+    buffer->attribDescriptor(scaleLocation).strideInBytes(sizeof(F32) * _instanceCountGrass * queryID);
+    buffer->attribDescriptor(instLocation).strideInBytes(sizeof(I32) * _instanceCountGrass * queryID);
 
     GenericDrawCommand cmd = pkg.drawCommand(0, 0);
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));

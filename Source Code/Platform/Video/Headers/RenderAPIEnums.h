@@ -69,6 +69,7 @@ enum class AttribLocation : U32 {
     VERTEX_BONE_WEIGHT = 5,
     VERTEX_BONE_INDICE = 6,
     VERTEX_WIDTH = 7,
+    VERTEX_GENERIC = 8,
     COUNT
 };
 

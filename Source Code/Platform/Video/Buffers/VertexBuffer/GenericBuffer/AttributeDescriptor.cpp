@@ -9,11 +9,10 @@ AttributeDescriptor::AttributeDescriptor()
     _divisor(0),
     _parentBuffer(0),
     _componentsPerElement(0),
-    _elementCountOffset(0),
     _wasSet(false),
     _dirty(true),
     _normalized(false),
-    _stride(0),
+    _strideInBytes(0),
     _interleavedOffset(0),
     _type(GFXDataFormat::UNSIGNED_INT)
 {
@@ -23,27 +22,38 @@ AttributeDescriptor::~AttributeDescriptor()
 {
 }
 
-void AttributeDescriptor::set(U32 bufferIndex, 
-                              U32 instanceDivisor,
+void AttributeDescriptor::set(U32 bufferIndex, U32 componentsPerElement, GFXDataFormat dataType) {
+    set(bufferIndex, componentsPerElement, dataType, false);
+}
+
+void AttributeDescriptor::set(U32 bufferIndex,
                               U32 componentsPerElement,
-                              bool normalized,
-                              U32 elementCountOffset,
                               GFXDataFormat dataType,
-                              U32 interleavedOffsetInBytes) {
+                              bool normalized) {
+    set(bufferIndex, componentsPerElement, dataType, normalized, 0);
+}
+
+void AttributeDescriptor::set(U32 bufferIndex,
+                              U32 componentsPerElement,
+                              GFXDataFormat dataType,
+                              bool normalized,
+                              size_t strideInBytes) {
+    set(bufferIndex, componentsPerElement, dataType, normalized, strideInBytes, 0);
+}
+
+void AttributeDescriptor::set(U32 bufferIndex, 
+                              U32 componentsPerElement,
+                              GFXDataFormat dataType,
+                              bool normalized,
+                              size_t strideInBytes,
+                              U32 instanceDivisor) {
 
     this->bufferIndex(bufferIndex);
     this->instanceDivisor(instanceDivisor);
     this->componentsPerElement(componentsPerElement);
     this->normalized(normalized);
-    this->offset(elementCountOffset);
+    this->strideInBytes(strideInBytes);
     this->dataType(dataType);
-    this->interleavedOffsetInBytes(interleavedOffsetInBytes);
-}
-
-void AttributeDescriptor::stride(size_t stride) {
-    _stride = stride;
-    _dirty = true;
-    _wasSet = false;
 }
 
 void AttributeDescriptor::attribIndex(U32 index) {
@@ -52,15 +62,16 @@ void AttributeDescriptor::attribIndex(U32 index) {
     _wasSet = false;
 }
 
-void AttributeDescriptor::bufferIndex(U32 bufferIndex) {
-    _parentBuffer = bufferIndex;
+void AttributeDescriptor::strideInBytes(size_t strideInBytes) {
+    _strideInBytes = strideInBytes;
     _dirty = true;
     _wasSet = false;
 }
 
-void AttributeDescriptor::offset(U32 elementCountOffset) {
-    _elementCountOffset = elementCountOffset;
+void AttributeDescriptor::bufferIndex(U32 bufferIndex) {
+    _parentBuffer = bufferIndex;
     _dirty = true;
+    _wasSet = false;
 }
 
 void AttributeDescriptor::instanceDivisor(U32 instanceDivisor) {
@@ -86,14 +97,6 @@ void AttributeDescriptor::dataType(GFXDataFormat type) {
 void AttributeDescriptor::interleavedOffsetInBytes(U32 interleavedOffsetInBytes) {
     _interleavedOffset = interleavedOffsetInBytes;
     _dirty = true;
-}
-
-size_t AttributeDescriptor::stride() const {
-    if (_stride == 0) {
-        return componentsPerElement() * dataSizeForType(dataType());
-    }
-
-    return _stride;
 }
 
 void AttributeDescriptor::wasSet(bool wasSet) {

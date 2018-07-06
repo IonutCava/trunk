@@ -87,7 +87,6 @@ private:
     U16 _drawCount;                     // 4  bytes
     U8  _drawToBuffer;                  // 2  bytes
     U8  _lodIndex;                      // 1  bytes
-
 public:
     GenericDrawCommand();
     GenericDrawCommand(PrimitiveType type,

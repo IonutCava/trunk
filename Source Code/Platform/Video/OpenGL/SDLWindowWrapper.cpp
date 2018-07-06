@@ -95,9 +95,8 @@ ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
     GLUtil::_glRenderContext = SDL_GL_CreateContext(window.getRawWindow());
     if (GLUtil::_glRenderContext == nullptr)
     {
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
-                         Locale::get(_ID("ERROR_GL_OLD_VERSION")));
-        Console::printfn(Locale::get(_ID("WARN_SWITCH_D3D")));
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
+        Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
         Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
         return ErrorCode::OGL_OLD_HARDWARE;
     }
@@ -106,9 +105,11 @@ ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
 }
 
 ErrorCode GL_API::destroyGLContext() {
-    SDL_GL_DeleteContext(GLUtil::_glRenderContext);
-    g_ContextPool.destroy();
+    if (GLUtil::_glRenderContext != nullptr) {
+        SDL_GL_DeleteContext(GLUtil::_glRenderContext);
+    }
 
+    g_ContextPool.destroy();
     return ErrorCode::NO_ERR;
 }
 
@@ -380,42 +381,42 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.b,
                  DefaultColours::DIVIDE_BLUE.a);
 
-
-#if defined(USE_FIXED_FUNCTION_IMGUI)
-    glGenVertexArrays(1, &s_imguiVAO);
-    glGenBuffers(1, &s_imguiVBO);
-    glGenBuffers(1, &s_imguiIB);
-
-    setActiveVAO(s_imguiVAO);
-    setActiveBuffer(GL_ARRAY_BUFFER, s_imguiVBO);
-    
-    glEnableVertexAttribArray(13);
-    glEnableVertexAttribArray(to_base(AttribLocation::VERTEX_TEXCOORD));
-    glEnableVertexAttribArray(to_base(AttribLocation::VERTEX_COLOR));
-
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-    glVertexAttribPointer(13, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
-    glVertexAttribPointer(to_base(AttribLocation::VERTEX_TEXCOORD), 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
-    glVertexAttribPointer(to_base(AttribLocation::VERTEX_COLOR), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
-#undef OFFSETOF
-#else
     // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
     _IMGUIBuffer = _context.newGVD(1);
 
+    GenericVertexData::IndexBuffer idxBuff;
+    idxBuff.smallIndices = sizeof(ImDrawIdx) == 2;
+    idxBuff.count = MAX_IMGUI_VERTS * 3;
+    
     _IMGUIBuffer->create(1);
-    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, 2 * sizeof(vec2<F32>) + sizeof(vec4<U8>), false, NULL, true, true); //Pos, UV and Colour
-    _IMGUIBuffer->setIndexBuffer(MAX_IMGUI_VERTS * 3, true, true, {});
-
-    AttributeDescriptor& descPos = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
-    AttributeDescriptor& descUV = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
-    AttributeDescriptor& descColour = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
+    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), false, NULL, true, true); //Pos, UV and Colour
+    _IMGUIBuffer->setIndexBuffer(idxBuff, true, true);
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-    descPos.set(0, 0, 2, false, 1, GFXDataFormat::FLOAT_32, to_U32(OFFSETOF(ImDrawVert, pos)));
-    descUV.set(0, 0, 2, false, 1, GFXDataFormat::FLOAT_32, to_U32(OFFSETOF(ImDrawVert, uv)));
-    descColour.set(0, 0, 4, true, 1, GFXDataFormat::UNSIGNED_BYTE, to_U32(OFFSETOF(ImDrawVert, col)));
+    AttributeDescriptor& descPos = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_GENERIC));
+    AttributeDescriptor& descUV = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_TEXCOORD));
+    AttributeDescriptor& descColour = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_COLOR));
+
+    descPos.set(0,
+                2,
+                GFXDataFormat::FLOAT_32,
+                false,
+                to_U32(OFFSETOF(ImDrawVert, pos)));
+
+    descUV.set(0,
+               2,
+               GFXDataFormat::FLOAT_32,
+               false,
+               to_U32(OFFSETOF(ImDrawVert, uv)));
+
+    descColour.set(0,
+                   4,
+                   GFXDataFormat::UNSIGNED_BYTE,
+                   true,
+                   to_U32(OFFSETOF(ImDrawVert, col)));
+
 #undef OFFSETOF
-#endif
+
     // Prepare shader headers and various shader related states
     if (initShaders()) {
         // That's it. Everything should be ready for draw calls
@@ -434,14 +435,10 @@ void GL_API::closeRenderingAPI() {
         DIVIDE_UNEXPECTED_CALL("GLSL failed to shutdown!");
     }
 
-#if defined(USE_FIXED_FUNCTION_IMGUI)
-    deleteVAOs(1, &s_imguiVAO);
-    deleteBuffers(1, &s_imguiVBO);
-    deleteBuffers(1, &s_imguiIB);
-#endif
-
-    CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
-    _GUIGLrenderer = nullptr;
+    if (_GUIGLrenderer) {
+        CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
+        _GUIGLrenderer = nullptr;
+    }
     // Destroy sampler objects
     {
         WriteLock w_lock(s_samplerMapLock);
@@ -450,12 +447,16 @@ void GL_API::closeRenderingAPI() {
     // Destroy the text rendering system
     deleteFonsContext();
     _fonts.clear();
-    GL_API::deleteVAOs(1, &s_dummyVAO);
+    if (s_dummyVAO > 0) {
+        GL_API::deleteVAOs(1, &s_dummyVAO);
+    }
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     GL_API::s_vaoPool.destroy();
-    GL_API::s_hardwareQueryPool->destroy();
-    MemoryManager::DELETE(s_hardwareQueryPool);
+    if (GL_API::s_hardwareQueryPool != nullptr) {
+        GL_API::s_hardwareQueryPool->destroy();
+        MemoryManager::DELETE(s_hardwareQueryPool);
+    }
 
     destroyGLContext();
 }

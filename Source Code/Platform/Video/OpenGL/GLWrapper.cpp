@@ -62,9 +62,8 @@ GL_API::GL_API(GFXDevice& context)
       _prevWidthString(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
-#if !defined(USE_FIXED_FUNCTION_IMGUI)
       _IMGUIBuffer(nullptr),
-#endif
+      _glswState(-1),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     // Only updated in Debug builds
@@ -663,6 +662,14 @@ bool GL_API::initShaders() {
             ") in uint inLineWidthData;",
         lineOffsets);
 
+    appendToShaderHeader(
+        ShaderType::VERTEX,
+        "layout(location = " +
+            to_stringImpl(to_base(AttribLocation::VERTEX_GENERIC)) +
+        ") in vec2 inGenericData;",
+        lineOffsets);
+
+    
 
     auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
         for (const std::pair<stringImpl, stringImpl>& entry : shaderVaryings) {
@@ -760,7 +767,7 @@ bool GL_API::deInitShaders() {
     glShaderProgram::destroyStaticData();
 
     // Shutdown GLSW
-    return (glswShutdown() == 1);
+    return (_glswState != -1 ? glswShutdown() == 1 : true);
 }
 
 /// Try to find the requested font in the font cache. Load on cache miss.
@@ -866,30 +873,27 @@ void GL_API::drawText(const TextElementBatch& batch) {
 }
 
 void GL_API::drawIMGUI(ImDrawData* data) {
-#if defined(USE_FIXED_FUNCTION_IMGUI)
-    GL_API::setActiveVAO(s_imguiVAO);
-#endif
     if (data != nullptr && data->Valid) {
-        //glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
-
         GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
 
-#if defined(USE_FIXED_FUNCTION_IMGUI)
-            const ImDrawIdx* idx_buffer_offset = 0;
-            setActiveBuffer(GL_ARRAY_BUFFER, s_imguiVBO);
-            glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&cmd_list->VtxBuffer.front(), GL_STREAM_DRAW);
+            //glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&cmd_list->VtxBuffer.front(), GL_STREAM_DRAW);
+            //glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front(), GL_STREAM_DRAW);*/
 
-            setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, s_imguiIB);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front(), GL_STREAM_DRAW);
-#else
+            GenericVertexData::IndexBuffer idxBuffer;
+            idxBuffer.smallIndices = sizeof(ImDrawIdx) == 2;
+            idxBuffer.count = to_U32(cmd_list->IdxBuffer.Size);
+            idxBuffer.data = (bufferPtr)cmd_list->IdxBuffer.Data;
+
             assert(cmd_list->VtxBuffer.size() < MAX_IMGUI_VERTS);
-            _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0, (bufferPtr)&cmd_list->VtxBuffer.front());
-            _IMGUIBuffer->updateIndexBuffer(vectorImpl<U32>(std::cbegin(cmd_list->IdxBuffer), std::cend(cmd_list->IdxBuffer)));
-#endif
+            _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0u, static_cast<bufferPtr>(cmd_list->VtxBuffer.Data));
+            _IMGUIBuffer->updateIndexBuffer(idxBuffer);
+
             for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {
+
                 const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+
                 if (pcmd->UserCallback) {
                     pcmd->UserCallback(cmd_list, pcmd);
                 } else {
@@ -900,20 +904,12 @@ void GL_API::drawIMGUI(ImDrawData* data) {
                                        (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
                     cmd.cmd().indexCount = to_U32(pcmd->ElemCount);
-#if defined(USE_FIXED_FUNCTION_IMGUI)
-                    glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer_offset);
-#else
                     _IMGUIBuffer->draw(cmd);
-#endif
                 }
-#if defined(USE_FIXED_FUNCTION_IMGUI)
-                idx_buffer_offset += pcmd->ElemCount;
-#else
+
                 cmd.cmd().firstIndex += pcmd->ElemCount;
-#endif
             }
         }
-        //glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
     }
 }
 

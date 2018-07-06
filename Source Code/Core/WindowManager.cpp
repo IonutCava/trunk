@@ -279,8 +279,8 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         if (Config::ENABLE_GPU_VALIDATION) {
             // OpenGL error handling is available in any build configuration
             // if the proper defines are in place.
-            OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG |
-                           SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG;
+            OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG
+                      /*|  SDL_GL_CONTEXT_DEBUG_FLAG*/;
         }
 
         auto validate = [](I32 errCode) -> bool {

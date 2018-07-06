@@ -86,8 +86,9 @@ class glGenericVertexData : public GenericVertexData {
     void create(U8 numBuffers = 1, U8 numQueries = 1) override;
     U32 getFeedbackPrimitiveCount(U8 queryID) override;
 
-    void setIndexBuffer(U32 indicesCount, bool dynamic,  bool stream, const vectorImpl<U32>& indices) override;
-    void updateIndexBuffer(const vectorImpl<U32>& indices) override;
+    void setIndexBuffer(const IndexBuffer& indices, bool dynamic, bool stream) override;
+
+    void updateIndexBuffer(const IndexBuffer& indices) override;
 
     void setBuffer(U32 buffer,
                    U32 elementCount,
@@ -118,10 +119,9 @@ class glGenericVertexData : public GenericVertexData {
     U32 feedbackBindPoint(U32 buffer);
 
     void incQueryQueue() override;
-
-    static bool setIfDifferentBindRange(GLuint activeVAO, GLuint bindIndex, const BufferBindConfig& bindConfig);
-
+    
    private:
+    bool _smallIndices;
     GLuint _indexBuffer;
     GLuint _indexBufferSize;
     GLenum _indexBufferUsage;

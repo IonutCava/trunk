@@ -80,11 +80,16 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                              false,
                              false);
             if (!indices.empty()) {
-                buffer.setIndexBuffer(to_U32(indices.size()), false, false, indices);
+                GenericVertexData::IndexBuffer idxBuff;
+                idxBuff.smallIndices = false;
+                idxBuff.count = to_U32(indices.size());
+                idxBuff.data = (bufferPtr)(indices.data());
+
+                buffer.setIndexBuffer(idxBuff, false, false);
             }
 
             AttributeDescriptor& desc = buffer.attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
-            desc.set(g_particleGeometryBuffer, 0, 3, false, 0, GFXDataFormat::FLOAT_32);
+            desc.set(g_particleGeometryBuffer, 3, GFXDataFormat::FLOAT_32);
         }
     }
 
@@ -148,9 +153,19 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
                              true,
                              true);
 
-            buffer.attribDescriptor(positionAttribLocation).set(g_particlePositionBuffer, 1, 4, false, 0, GFXDataFormat::FLOAT_32);
+            buffer.attribDescriptor(positionAttribLocation).set(g_particlePositionBuffer,
+                                                                4,
+                                                                GFXDataFormat::FLOAT_32,
+                                                                false,
+                                                                0,
+                                                                1);
 
-            buffer.attribDescriptor(colourAttribLocation).set(g_particleColourBuffer, 1, 4, true, 0, GFXDataFormat::UNSIGNED_BYTE);
+            buffer.attribDescriptor(colourAttribLocation).set(g_particleColourBuffer,
+                                                              4,
+                                                              GFXDataFormat::UNSIGNED_BYTE,
+                                                              true,
+                                                              0,
+                                                              1);
         }
     }
 

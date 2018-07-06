@@ -721,7 +721,7 @@ namespace MemoryManager {
 
 template <typename T>
 inline void SAFE_FREE(T*& ptr) {
-    if (ptr) {
+    if (ptr != nullptr) {
         free(ptr);
         ptr = nullptr;
     }
@@ -741,10 +741,10 @@ inline void DELETE(T*& ptr) {
 /// Deletes and nullifies the specified pointer
 template <typename T>
 inline void SAFE_DELETE(T*& ptr) {
-    DIVIDE_ASSERT(ptr != nullptr, "SAFE_DELETE: null pointer received");
-
-    delete ptr;
-    ptr = nullptr;
+    if (ptr != nullptr) {
+        delete ptr;
+        ptr = nullptr;
+    }
 }
 #define SET_SAFE_DELETE_FRIEND \
     template <typename T>      \
@@ -763,10 +763,10 @@ inline void DELETE_ARRAY(T*& ptr) {
 /// Deletes and nullifies the specified array pointer
 template <typename T>
 inline void SAFE_DELETE_ARRAY(T*& ptr) {
-    DIVIDE_ASSERT(ptr != nullptr, "SAFE_DELETE_ARRAY: null pointer received");
-
-    delete[] ptr;
-    ptr = nullptr;
+    if (ptr != nullptr) {
+        delete[] ptr;
+        ptr = nullptr;
+    }
 }
 #define SET_SAFE_DELETE_ARRAY_FRIEND \
     template <typename T>            \
