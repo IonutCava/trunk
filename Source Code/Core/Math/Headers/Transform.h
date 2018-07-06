@@ -77,17 +77,18 @@ class Transform : public GUIDWrapper, private NonCopyable {
 
     /// Set the local X,Y and Z position
     void setPosition(const vec3<F32>& position) {
+        this->_dirty = true;
         WriteLock w_lock(this->_lock);
         this->_transformValues._translation.set(position);
-        setDirty();
     }
 
     /// Set the local X,Y and Z scale factors
     void setScale(const vec3<F32>& scale) {
+        this->_dirty = true;
+        this->_rebuildMatrix = true;
+
         WriteLock w_lock(this->_lock);
         this->_transformValues._scale.set(scale);
-        setDirty();
-        rebuildMatrix();
     }
 
     /// Set the local orientation using the Axis-Angle system.
@@ -106,26 +107,27 @@ class Transform : public GUIDWrapper, private NonCopyable {
 
     /// Set the local orientation so that it matches the specified quaternion.
     void setRotation(const Quaternion<F32>& quat) {
+        this->_dirty = true;
+        this->_rebuildMatrix = true;
+
         WriteLock w_lock(this->_lock);
         this->_transformValues._orientation.set(quat);
         this->_transformValues._orientation.normalize();
-        setDirty();
-        rebuildMatrix();
     }
 
     /// Add the specified translation factors to the current local position
     void translate(const vec3<F32>& axisFactors) {
+        this->_dirty = true;
         WriteLock w_lock(this->_lock);
         this->_transformValues._translation += axisFactors;
-        setDirty();
     }
 
     /// Add the specified scale factors to the current local position
     void scale(const vec3<F32>& axisFactors) {
+        this->_dirty = true;
+        this->_rebuildMatrix = true;
         WriteLock w_lock(this->_lock);
         this->_transformValues._scale += axisFactors;
-        setDirty();
-        rebuildMatrix();
     }
 
     /// Apply the specified Axis-Angle rotation starting from the current
@@ -150,11 +152,12 @@ class Transform : public GUIDWrapper, private NonCopyable {
 
     /// Perform a SLERP rotation towards the specified quaternion
     void rotateSlerp(const Quaternion<F32>& quat, const D32 deltaTime) {
+        this->_dirty = true;
+        this->_rebuildMatrix = true;
+
         WriteLock w_lock(this->_lock);
         this->_transformValues._orientation.slerp(quat, deltaTime);
         this->_transformValues._orientation.normalize();
-        setDirty();
-        rebuildMatrix();
     }
 
     /// If a non-uniform scaling factor is currently set (either locally or in
@@ -288,6 +291,8 @@ class Transform : public GUIDWrapper, private NonCopyable {
     /// Scale, orientation and translation are extracted from the specified
     /// matrix
     inline void setTransforms(const mat4<F32>& transform) {
+        this->_dirty = true;
+
         WriteLock w_lock(this->_lock);
         Quaternion<F32>& rotation = this->_transformValues._orientation;
         vec3<F32>& position = this->_transformValues._translation;
@@ -325,7 +330,6 @@ class Transform : public GUIDWrapper, private NonCopyable {
         rotation = Quaternion<F32>(mat3<F32>(
             vRows[0].x, vRows[1].x, vRows[2].x, vRows[0].y, vRows[1].y,
             vRows[2].y, vRows[0].z, vRows[1].z, vRows[2].z));
-        setDirty();
     }
     /// Set all of the internal values to match those of the specified transform
     inline void clone(Transform* const transform) {
@@ -336,12 +340,12 @@ class Transform : public GUIDWrapper, private NonCopyable {
     inline const TransformValues& getValues() const { return _transformValues; }
     /// Set position, scale and rotation based on the specified transform values
     inline void setValues(const TransformValues& values) {
+        this->_dirty = true;
+
         WriteLock w_lock(this->_lock);
         this->_transformValues._scale.set(values._scale);
         this->_transformValues._translation.set(values._translation);
         this->_transformValues._orientation.set(values._orientation);
-        setDirty();
-        w_lock.unlock();
     }
     /// Compares 2 transforms
     bool operator==(const Transform& other) const {
@@ -354,11 +358,6 @@ class Transform : public GUIDWrapper, private NonCopyable {
     }
     /// Reset transform to identity
     void identity();
-
-   private:
-    inline void setDirty() { this->_dirty = true; }
-
-    inline void rebuildMatrix() { this->_rebuildMatrix = true; }
 
    private:
     /// The actual scale, rotation and translation values

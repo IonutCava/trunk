@@ -38,7 +38,7 @@ SharedLock Kernel::_threadedCallbackLock;
 vectorImpl<U64> Kernel::_threadedCallbackBuffer;
 hashMapImpl<U64, DELEGATE_CBK<> > Kernel::_threadedCallbackFunctions;
 
-Util::GraphPlot2D Kernel::_appTimeGraph;
+Util::GraphPlot2D Kernel::_appTimeGraph("APP_TIME_GRAPH");
 
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),

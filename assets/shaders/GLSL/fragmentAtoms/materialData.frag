@@ -56,7 +56,7 @@ float Gloss(in vec3 bump, in vec2 texCoord)
 vec4 getTextureColor(in vec2 uv) {
     #define TEX_MODULATE 0
     #define TEX_ADD  1
-    #define TEX_SUBSTRACT  2
+    #define TEX_SUBTRACT  2
     #define TEX_DIVIDE  3
     #define TEX_SMOOTH_ADD  4
     #define TEX_SIGNED_ADD  5
@@ -78,7 +78,7 @@ vec4 getTextureColor(in vec2 uv) {
         case TEX_REPLACE    : color  = color2;       break;
         case TEX_SIGNED_ADD : color += color2 - 0.5; break;
         case TEX_DIVIDE     : color /= color2;          break;
-        case TEX_SUBSTRACT  : color -= color2;          break;
+        case TEX_SUBTRACT   : color -= color2;          break;
         case TEX_DECAL      : color = vec4(mix(color.rgb, color2.rgb, color2.a), color.a); break;
         case TEX_ADD        : {
             color.rgb += color2.rgb;

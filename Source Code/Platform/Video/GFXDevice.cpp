@@ -642,10 +642,9 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 }
 /// Renders the result of plotting the specified 2D graph
 void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D,
-                                    const vec4<U8>& color) {
+                            const vec4<U8>& color) {
     if (!plot2D.empty()) {
-        Util::GraphPlot3D plot3D;
-        plot3D._plotName = plot2D._plotName;
+        Util::GraphPlot3D plot3D(plot2D._plotName);
         plot3D._coords.reserve(plot2D._coords.size());
         for (const vec2<F32>& coords : plot2D._coords) {
             vectorAlg::emplace_back(plot3D._coords, coords, 0.0f);
@@ -656,7 +655,7 @@ void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D,
 
 /// Renders the result of plotting the specified 3D graph
 void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
-                                    const vec4<U8>& color) {
+                            const vec4<U8>& color) {
     if (!plot3D.empty()) {
         vectorImpl<Line> plotLines;
         const vectorImpl<vec3<F32>>& coords = plot3D._coords;

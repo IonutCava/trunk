@@ -329,6 +329,28 @@ __forceinline void inverse(const T* in, T* out) {
 }
 
 template <typename T>
+__forceinline void add(const T a[16], const T b[16], T r[16]) {
+    T rTemp[] = {
+        a[0]  + b[0],  a[1]  + b[1],  a[2]  + b[2],  a[3]  + b[3],
+        a[4]  + b[4],  a[5]  + b[5],  a[6]  + b[6],  a[7]  + b[7],
+        a[8]  + b[8],  a[9]  + b[9],  a[10] + b[10], a[11] + b[11],
+        a[12] + b[12], a[13] + b[13], a[14] + b[14], a[15] + b[15]};
+
+    memcpy(r, rTemp, 16 * sizeof(T));
+}
+
+template <typename T>
+__forceinline void substract(const T a[16], const T b[16], T r[16]) {
+    T rTemp[] = {
+        a[0]  - b[0],  a[1]  - b[1],  a[2]  - b[2],  a[3]  - b[3],
+        a[4]  - b[4],  a[5]  - b[5],  a[6]  - b[6],  a[7]  - b[7],
+        a[8]  - b[8],  a[9]  - b[9],  a[10] - b[10], a[11] - b[11],
+        a[12] - b[12], a[13] - b[13], a[14] - b[14], a[15] - b[15]};
+
+    memcpy(r, rTemp, 16 * sizeof(T));
+}
+
+template <typename T>
 __forceinline void multiply(const T a[16], const T b[16], T r[16]) {
     T rTemp[] = 
         {(a[0]  * b[0]) + (a[1]  * b[4]) + (a[2]  * b[8] ) + (a[3]  * b[12]),
@@ -349,6 +371,16 @@ __forceinline void multiply(const T a[16], const T b[16], T r[16]) {
          (a[12] * b[3]) + (a[13] * b[7]) + (a[14] * b[11]) + (a[15] * b[15])};
 
     memcpy(r, rTemp, 16 * sizeof(T));
+}
+
+template <typename T>
+__forceinline void multiplyScalar(const T a[16], T b, T r[16]){
+    T rTemp[] = { (a[0]  * b), (a[1]  * b), (a[2]  * b), (a[3]  * b),
+                  (a[4]  * b), (a[5]  * b), (a[6]  * b), (a[7]  * b),
+                  (a[8]  * b), (a[9]  * b), (a[10] * b), (a[11] * b),
+                  (a[12] * b), (a[13] * b), (a[14] * b), (a[15] * b) };
+
+   memcpy(r, rTemp, 16 * sizeof(T));
 }
 
 };  // namespace Mat4

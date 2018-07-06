@@ -111,7 +111,7 @@ glimBatchData::glimBatchData() {
 }
 
 glimBatchData::~glimBatchData() {
-    Reset(false);
+    Reset();
 
 #ifdef AE_RENDERAPI_OPENGL
     if (m_bCreatedVBOs) {
@@ -127,7 +127,7 @@ glimBatchData::~glimBatchData() {
 #endif
 }
 
-void glimBatchData::Reset(bool reserve) {
+void glimBatchData::Reset(bool reserveBuffers, unsigned int vertexCount) {
     m_State = GLIM_BATCH_STATE::STATE_EMPTY;
 
     m_Attributes.clear();
@@ -147,12 +147,12 @@ void glimBatchData::Reset(bool reserve) {
     m_fMinZ = 99999999.0f;
     m_fMaxZ = -99999999.0f;
 
-    if (reserve) {
-        m_PositionData.reserve(64 * 3);
-        m_IndexBuffer_Points.reserve(16);
-        m_IndexBuffer_Lines.reserve(32);
-        m_IndexBuffer_Triangles.reserve(128);
-        m_IndexBuffer_Wireframe.reserve(128);
+    if (reserveBuffers) {
+        m_PositionData.reserve(vertexCount);
+        m_IndexBuffer_Points.reserve(vertexCount / 4);
+        m_IndexBuffer_Lines.reserve(vertexCount / 2);
+        m_IndexBuffer_Triangles.reserve(vertexCount * 2);
+        m_IndexBuffer_Wireframe.reserve(vertexCount * 2);
     }
 #ifdef AE_RENDERAPI_D3D11
     if (m_pVertexBuffer) {

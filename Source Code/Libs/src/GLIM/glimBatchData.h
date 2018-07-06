@@ -68,7 +68,7 @@ namespace NS_GLIM
         ~glimBatchData ();
 
         // Deletes all allocated data and resets default states
-        void Reset(bool reserve = true);
+        void Reset(bool reserveBuffers = false, unsigned int vertexCount = 64 * 3);
 
         // Uploads the data onto the GPU
         void Upload (unsigned int uiCurrentProgram);

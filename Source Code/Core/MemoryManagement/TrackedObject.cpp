@@ -35,7 +35,7 @@ bool TrackedObject::SubRef() {
     for (it = std::begin(_dependencyList); it != std::end(_dependencyList);) {
         /// We should never have a null object in our dependency map
         assert(*it != nullptr);
-        /// substract ref count for every sub object
+        /// subtract ref count for every sub object
         if ((*it)->SubRef()) {
             /// if it's no longer used, remove it from the dependecy list
             /// it should be scheduled for deletion anyway

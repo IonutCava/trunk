@@ -43,7 +43,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _axisGizmo->stateHash(GFX_DEVICE.getDefaultStateBlock(true));
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
-    _axisGizmo->beginBatch();
+    _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2);
     _axisGizmo->attribute4ub("inColorData", _axisLines[0]._color);
     // Set the mode to line rendering
     _axisGizmo->begin(PrimitiveType::LINES);

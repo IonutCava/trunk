@@ -45,11 +45,22 @@ namespace Divide {
 namespace Util {
 
 struct NOINITVTABLE GraphPlot {
+    explicit GraphPlot(const stringImpl& name) : _plotName(name)
+    {
+    }
+
     stringImpl _plotName;
     virtual bool empty() const = 0;
 };
 
 struct GraphPlot2D : public GraphPlot {
+    GraphPlot2D() : GraphPlot2D("UNNAMED_PLOT_2D")
+    {
+    }
+    GraphPlot2D(const stringImpl& name) : GraphPlot(name)
+    {
+    }
+
     vectorImpl<vec2<F32>> _coords;
      
     bool empty() const {
@@ -58,6 +69,13 @@ struct GraphPlot2D : public GraphPlot {
 };
 
 struct GraphPlot3D : public GraphPlot {
+    GraphPlot3D() : GraphPlot3D("UNNAMED_PLOT_3D")
+    {
+    }
+    GraphPlot3D(const stringImpl& name) : GraphPlot(name)
+    {
+    }
+
     vectorImpl<vec3<F32>> _coords;
 
     bool empty() const {

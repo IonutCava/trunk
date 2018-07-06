@@ -583,12 +583,9 @@ class mat4 {
     }
 
     mat4<T> operator*(T f) const {
-        return mat4<T>(this->mat[0] * f, this->mat[1] * f, this->mat[2] * f,
-                       this->mat[3] * f, this->mat[4] * f, this->mat[5] * f,
-                       this->mat[6] * f, this->mat[7] * f, this->mat[8] * f,
-                       this->mat[9] * f, this->mat[10] * f, this->mat[11] * f,
-                       this->mat[12] * f, this->mat[13] * f, this->mat[14] * f,
-                       this->mat[15] * f);
+        mat4<T> retValue;
+        Util::Mat4::multiplyScalar(this->mat, f, retValue.mat);
+        return retValue;
     }
 
     mat4<T> operator*(const mat4<T> &m) const {
@@ -706,23 +703,15 @@ class mat4 {
     }
 
     mat4 operator+(const mat4 &matrix) const {
-        F32 *m = this->mat;
-        return mat4(m[0] + matrix[0], m[1] + matrix[1], m[2] + matrix[2],
-                    m[3] + matrix[3], m[4] + matrix[4], m[5] + matrix[5],
-                    m[6] + matrix[6], m[7] + matrix[7], m[8] + matrix[8],
-                    m[9] + matrix[9], m[10] + matrix[10], m[11] + matrix[11],
-                    m[12] + matrix[12], m[13] + matrix[13], m[14] + matrix[14],
-                    m[15] + matrix[15]);
+        mat4<T> retValue;
+        Util::Mat4::add(this->mat, matrix.mat, retValue.mat);
+        return retValue;
     }
 
     mat4 operator-(const mat4 &matrix) const {
-        F32 *m = this->mat;
-        return mat4(m[0] - matrix[0], m[1] - matrix[1], m[2] - matrix[2],
-                    m[3] - matrix[3], m[4] - matrix[4], m[5] - matrix[5],
-                    m[6] - matrix[6], m[7] - matrix[7], m[8] - matrix[8],
-                    m[9] - matrix[9], m[10] - matrix[10], m[11] - matrix[11],
-                    m[12] - matrix[12], m[13] - matrix[13], m[14] - matrix[14],
-                    m[15] - matrix[15]);
+         mat4<T> retValue;
+        Util::Mat4::subtract(this->mat, matrix.mat, retValue.mat);
+        return retValue;
     }
 
     inline T &element(I8 row, I8 column, bool rowMajor = false) {
@@ -735,10 +724,25 @@ class mat4 {
                          : this->mat[row + column * 4]);
     }
 
-    mat4 &operator*=(T f) { return *this = *this * f; }
-    mat4 &operator*=(const mat4 &matrix) { return *this = *this * matrix; }
-    mat4 &operator+=(const mat4 &matrix) { return *this = *this + matrix; }
-    mat4 &operator-=(const mat4 &matrix) { return *this = *this - matrix; }
+    mat4 &operator*=(T f) {
+        Util::Mat4::multiplyScalar(this->mat, f, this->mat);
+        return *this;
+    }
+
+    mat4 &operator*=(const mat4 &matrix) {
+        Util::Mat4::multiply(this->mat, matrix.mat, this->mat);
+        return *this;
+    }
+
+    mat4 &operator+=(const mat4 &matrix) {
+        Util::Mat4::add(this->mat, matrix.mat, this->mat);
+        return *this;
+    }
+
+    mat4 &operator-=(const mat4 &matrix) {
+        Util::Mat4::subtract(this->mat, matrix.mat, this->mat);
+        return *this;
+    }
 
     operator T *() { return this->mat; }
     operator const T *() const { return this->mat; }

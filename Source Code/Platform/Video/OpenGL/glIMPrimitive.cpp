@@ -15,9 +15,9 @@ glIMPrimitive::glIMPrimitive() : IMPrimitive() {
 
 glIMPrimitive::~glIMPrimitive() {}
 
-void glIMPrimitive::beginBatch() {
-    _imInterface->BeginBatch();
-    IMPrimitive::beginBatch();
+void glIMPrimitive::beginBatch(bool reserveBuffers, unsigned int vertexCount) {
+    _imInterface->BeginBatch(reserveBuffers, vertexCount);
+    IMPrimitive::beginBatch(reserveBuffers, vertexCount);
 }
 
 void glIMPrimitive::begin(PrimitiveType type) {

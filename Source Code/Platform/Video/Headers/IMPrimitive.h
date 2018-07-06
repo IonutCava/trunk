@@ -72,10 +72,11 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
 
     virtual void render(bool forceWireframe = false, U32 instanceCount = 1) = 0;
 
-    virtual void beginBatch() {
+    virtual void beginBatch(bool reserveBuffers, unsigned int vertexCount) {
         _inUse = true;
         _zombieCounter = 0;
     }
+
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(F32 x, F32 y, F32 z) = 0;
     inline void vertex(const vec3<F32>& vert) {

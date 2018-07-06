@@ -183,14 +183,13 @@ void flushFloatEvents() {
     vec->clear();
 }
 
-void recordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp) {
+void recordFloatEvent(const stringImpl& eventName, F32 eventValue, U64 timestamp) {
     vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
     if( !vec ) {
         vec = new vectorImpl<GlobalFloatEvent>();
         _globalFloatEvents.reset(vec);
     }
-    GlobalFloatEvent floatEvent{ eventName, eventValue, timestamp };
-    vec->push_back(floatEvent);
+    vectorAlg::emplace_back(*vec, eventName, eventValue, timestamp);
 }
 
 const vectorImpl<GlobalFloatEvent>& getFloatEvents() {
@@ -213,7 +212,7 @@ void plotFloatEvents(const stringImpl& eventName,
             vectorAlg::emplace_back(
                 targetGraph._coords,
                 static_cast<F32>(
-                    Time::MicrosecondsToMilliseconds(crtEvent._timestamp)),
+                    Time::MicrosecondsToMilliseconds(crtEvent._timeStamp)),
                 crtEvent._eventValue);
         }
     }

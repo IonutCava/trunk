@@ -921,5 +921,8 @@
     <None Include="..\..\Source Code\Core\Headers\Console.inl">
       <Filter>Core\Headers</Filter>
     </None>
+    <None Include="..\..\Source Code\Core\Math\Headers\Quaternion.inl">
+      <Filter>Core\Math\Headers</Filter>
+    </None>
   </ItemGroup>
 </Project>

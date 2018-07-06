@@ -157,11 +157,13 @@ void GFXDevice::flushRenderQueue() {
         vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
         vectorAlg::vecSize commandCount = drawCommands.size();
         if (commandCount > 0) {
-            GenericDrawCommand& previousCmd = drawCommands[0];
-            for (vectorAlg::vecSize i = 1; i < commandCount; i++) {
-                GenericDrawCommand& currentCmd = drawCommands[i];
-                if (!batchCommands(previousCmd, currentCmd)) {
-                    previousCmd = currentCmd;
+            vectorAlg::vecSize previousCommandIndex = 0;
+            vectorAlg::vecSize currentCommandIndex = 1;
+            for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+                if (!batchCommands(drawCommands[previousCommandIndex], 
+                                   drawCommands[currentCommandIndex]))
+                {
+                    previousCommandIndex = currentCommandIndex;
                 }
             }
             drawCommands.erase(
@@ -400,7 +402,7 @@ IMPrimitive& GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
     priv->_lineWidth = lineWidth;
     priv->stateHash(_defaultStateBlockHash);
     // Create the object
-    priv->beginBatch();
+    priv->beginBatch(true, 16);
     // Set it's color
     priv->attribute4ub("inColorData", color);
     // Draw the bottom loop
@@ -460,7 +462,7 @@ IMPrimitive& GFXDevice::drawLines(const vectorImpl<Line>& lines, F32 lineWidth,
                 DELEGATE_BIND(&GFXDevice::restoreViewport, this));
         }
         // Create the object containing all of the lines
-        priv->beginBatch();
+        priv->beginBatch(true, to_uint(lines.size()) * 2);
         priv->attribute4ub("inColorData", lines[0]._color);
         // Set the mode to line rendering
         priv->begin(PrimitiveType::LINES);

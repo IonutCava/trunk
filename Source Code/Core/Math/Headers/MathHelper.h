@@ -196,14 +196,23 @@ namespace Util {
 struct GraphPlot2D;
 struct GraphPlot3D;
 struct GlobalFloatEvent {
-    const char* _eventName;
+    explicit GlobalFloatEvent(const stringImpl& name,
+                              F32 eventValue,
+                              U64 timeStamp)
+        : _eventName(name),
+          _eventValue(eventValue),
+          _timeStamp(timeStamp)
+    {
+    }
+
+    stringImpl _eventName;
     F32 _eventValue;
-    U64 _timestamp;
+    U64 _timeStamp;
 };
 
 void flushFloatEvents();
 
-void recordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp);
+void recordFloatEvent(const stringImpl& eventName, F32 eventValue, U64 timestamp);
 
 const vectorImpl<GlobalFloatEvent>& getFloatEvents();
 
@@ -268,11 +277,15 @@ vec3<F32> UNPACK_VEC3(F32 value);
 
 namespace Mat4 {
 template <typename T>
-void multiply(const T* a, const T* b, T* r);
-
+__forceinline void add(const T* a, const T* b, T* r);
+template <typename T>
+__forceinline void subtract(const T* a, const T* b, T* r);
+template <typename T>
+__forceinline void multiply(const T* a, const T* b, T* r);
+template <typename T>
+__forceinline void multiplyScalar(const T* a, T b, T* r);
 template <typename T>
 __forceinline T det(const T* mat);
-
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
 template <typename T>
 __forceinline void inverse(const T* in, T* out);

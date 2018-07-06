@@ -50,7 +50,7 @@ class glIMPrimitive : public IMPrimitive {
    public:
     /// Begins defining one piece of geometry that can later be rendered with
     /// one set of states.
-    void beginBatch();
+    void beginBatch(bool reserveBuffers, unsigned int vertexCount);
     /// Ends defining the batch. After this call "RenderBatch" can be called to
     /// actually render it.
     void endBatch();
