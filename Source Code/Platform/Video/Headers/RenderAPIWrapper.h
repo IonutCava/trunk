@@ -349,8 +349,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual bool initShaders() = 0;
     virtual bool deInitShaders() = 0;
 
-    virtual ErrorCode initRenderingAPI(const vec2<U16>& resolution, I32 argc,
-                                       char** argv) = 0;
+    virtual ErrorCode initRenderingAPI(I32 argc, char** argv) = 0;
     virtual void closeRenderingAPI() = 0;
 
     virtual void toggleRasterization(bool state) = 0;

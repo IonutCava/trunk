@@ -96,10 +96,9 @@ ErrorCode InputInterface::init(Kernel& kernel) {
         _pMouse = static_cast<OIS::Mouse*>(
             _pInputInterface->createInputObject(OIS::OISMouse, true));
         _pMouse->setEventCallback(_pEventHdlr);
-        const OIS::MouseState& ms =
-            _pMouse->getMouseState();  // width and height are mutable
-        ms.width = Application::getInstance().getResolution().width;
-        ms.height = Application::getInstance().getResolution().height;
+        const OIS::MouseState& ms = _pMouse->getMouseState();  // width and height are mutable
+        ms.width = Application::getInstance().getWindowManager().getResolution().width;
+        ms.height = Application::getInstance().getWindowManager().getResolution().height;
     } catch (OIS::Exception& ex) {
         Console::printfn(Locale::get("ERROR_INPUT_CREATE_MOUSE"), ex.eText);
     }

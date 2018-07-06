@@ -167,8 +167,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    };
 
   public:  // GPU interface
-    ErrorCode initRenderingAPI(const vec2<U16>& resolution, I32 argc,
-                               char** argv) override;
+    ErrorCode initRenderingAPI(I32 argc, char** argv) override;
     void closeRenderingAPI() override;
 
     inline void setAPI(RenderAPI API) { _API_ID = API; }
@@ -257,8 +256,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void restoreViewport();
     void setViewport(const vec4<I32>& viewport);
-    /// Enable or disable fullscreen rendering
-    void toggleFullScreen(const bool state);
+    /// Switch between fullscreen rendering
+    void toggleFullScreen();
     void changeResolution(U16 w, U16 h) override;
     bool loadInContext(const CurrentContext& context,
                        const DELEGATE_CBK<>& callback);

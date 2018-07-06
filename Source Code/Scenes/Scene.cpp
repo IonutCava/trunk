@@ -514,7 +514,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     cbks.second = [this]() {
         if (_input->getKeyState(Input::KeyCode::KC_LMENU) == SceneInput::InputState::PRESSED) {
-            GFX_DEVICE.toggleFullScreen(!Application::getInstance().isFullScreen());
+            GFX_DEVICE.toggleFullScreen();
         }
     };
     _input->addKeyMapping(Input::KeyCode::KC_RETURN, cbks);

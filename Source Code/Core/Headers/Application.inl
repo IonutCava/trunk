@@ -115,43 +115,99 @@ inline const char* getErrorCodeName(ErrorCode code) {
     };
 }
 
-inline const vec2<U16>& Application::getResolution() const {
-    return _resolution;
+inline const vec2<U16>& WindowManager::getResolution() const {
+    return getResolution(_activeWindowType);
 }
 
-inline const vec2<U16>& Application::getScreenCenter() const {
-    return _screenCenter;
+inline const vec2<U16>& WindowManager::getResolution(WindowType window) const {
+    return _resolution[to_uint(window)];
 }
 
-inline const vec2<U16>& Application::getPreviousResolution() const {
-    return _prevResolution;
+inline const vec2<U16>& WindowManager::getScreenCenter() const {
+    return getScreenCenter(_activeWindowType);
 }
 
-inline void Application::setResolutionWidth(U16 w) {
-    _prevResolution.set(_resolution);
-    _resolution.width = w;
-    _screenCenter.x = w / 2;
+inline const vec2<U16>& WindowManager::getScreenCenter(WindowType window) const {
+    return _screenCenter[to_uint(window)];
 }
 
-inline void Application::setResolutionHeight(U16 h) {
-    _prevResolution.set(_resolution);
-    _resolution.height = h;
-    _screenCenter.y = h / 2;
+inline const vec2<U16>& WindowManager::getPreviousResolution() const {
+    return getPreviousResolution(_activeWindowType);
 }
 
-inline void Application::setResolution(U16 w, U16 h) {
-    _prevResolution.set(_resolution);
-    _resolution.set(w, h);
-    _screenCenter.set(_resolution / 2);
+inline const vec2<U16>& WindowManager::getPreviousResolution(WindowType window) const {
+    return _prevResolution[to_uint(window)];
 }
 
-inline void Application::RequestShutdown() { _requestShutdown = true; }
+inline void WindowManager::setResolutionWidth(U16 w) {
+    setResolutionWidth(_activeWindowType, w);
+}
 
-inline void Application::CancelShutdown() { _requestShutdown = false; }
+inline void WindowManager::setResolutionWidth(WindowType window, U16 w) {
+    _prevResolution[to_uint(window)].set(_resolution[to_uint(window)]);
+    _resolution[to_uint(window)].width = w;
+    _screenCenter[to_uint(window)].x = w / 2;
+}
 
-inline bool Application::ShutdownRequested() const { return _requestShutdown; }
+inline void WindowManager::setResolutionHeight(U16 h) {
+    setResolutionHeight(_activeWindowType, h);
+}
 
-inline Kernel& Application::getKernel() const { return *_kernel; }
+inline void WindowManager::setResolutionHeight(WindowType window, U16 h) {
+    _prevResolution[to_uint(window)].set(_resolution[to_uint(window)]);
+    _resolution[to_uint(window)].height = h;
+    _screenCenter[to_uint(window)].y = h / 2;
+}
+
+inline void WindowManager::setResolution(U16 w, U16 h) {
+    setResolution(_activeWindowType, w, h);
+}
+
+inline void WindowManager::setResolution(WindowType window, U16 w, U16 h) {
+    _prevResolution[to_uint(window)].set(_resolution[to_uint(window)]);
+    _resolution[to_uint(window)].set(w, h);
+    _screenCenter[to_uint(window)].set(_resolution[to_uint(window)] / 2);
+}
+
+inline bool WindowManager::hasFocus() const {
+    return _hasFocus;
+}
+
+inline void WindowManager::hasFocus(const bool state) {
+    _hasFocus = state;
+}
+
+inline WindowType WindowManager::mainWindowType() const {
+    return _activeWindowType;
+}
+
+inline void WindowManager::mainWindowType(WindowType type) {
+    _activeWindowType = type;
+}
+
+inline void Application::RequestShutdown() {
+    _requestShutdown = true;
+}
+
+inline void Application::CancelShutdown() {
+    _requestShutdown = false;
+}
+
+inline bool Application::ShutdownRequested() const {
+    return _requestShutdown;
+}
+
+inline Kernel& Application::getKernel() const {
+    return *_kernel;
+}
+
+inline WindowManager& Application::getWindowManager() {
+    return _windowManager;
+}
+
+inline const WindowManager& Application::getWindowManager() const {
+    return _windowManager;
+}
 
 inline const std::thread::id& Application::getMainThreadID() const {
     return _threadID;
@@ -165,31 +221,34 @@ inline void Application::setMemoryLogFile(const stringImpl& fileName) {
     _memLogBuffer = fileName;
 }
 
-inline bool Application::hasFocus() const { return _hasFocus; }
-
-inline void Application::hasFocus(const bool state) { _hasFocus = state; }
-
-inline bool Application::isFullScreen() const { return _isFullscreen; }
-
-inline void Application::isFullScreen(const bool state) {
-    _isFullscreen = state;
+inline bool Application::mainLoopActive() const {
+    return _mainLoopActive;
 }
 
-inline bool Application::mainLoopActive() const { return _mainLoopActive; }
+inline void Application::mainLoopActive(bool state) {
+    _mainLoopActive = state;
+}
 
-inline void Application::mainLoopActive(bool state) { _mainLoopActive = state; }
+inline bool Application::mainLoopPaused() const {
+    return _mainLoopPaused;
+}
 
-inline bool Application::mainLoopPaused() const { return _mainLoopPaused; }
-
-inline void Application::mainLoopPaused(bool state) { _mainLoopPaused = state; }
+inline void Application::mainLoopPaused(bool state) {
+    _mainLoopPaused = state;
+}
 
 inline void Application::snapCursorToCenter() const {
-    snapCursorToPosition(_screenCenter.x, _screenCenter.y);
+    const vec2<U16>& center = _windowManager.getScreenCenter();
+    snapCursorToPosition(center.x, center.y);
 }
 
-inline void Application::throwError(ErrorCode err) { _errorCode = err; }
+inline void Application::throwError(ErrorCode err) {
+    _errorCode = err;
+}
 
-inline ErrorCode Application::errorCode() const { return _errorCode; }
+inline ErrorCode Application::errorCode() const {
+    return _errorCode;
+}
 
 inline void Application::registerShutdownCallback(const DELEGATE_CBK<>& cbk) {
     _shutdownCallback.push_back(cbk);

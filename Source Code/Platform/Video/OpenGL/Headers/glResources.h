@@ -86,7 +86,9 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 /// properly created
 extern GLuint _invalidObjectID;
 /// Main rendering window
-extern GLFWwindow* _mainWindow;
+extern GLFWwindow* _mainWindowWindowed;
+extern GLFWwindow* _mainWindowSplash;
+extern GLFWwindow* _mainWindowFullScreen;
 /// Background thread for loading resources
 extern GLFWwindow* _loaderWindow;
 /// Populate enumeration tables with appropriate API values

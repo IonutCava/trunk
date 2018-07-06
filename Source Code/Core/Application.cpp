@@ -14,7 +14,13 @@ bool MemoryManager::MemoryTracker::Ready = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 #endif
 
-Application::Application() : _kernel(nullptr), _hasFocus(true) {
+WindowManager::WindowManager() : _hasFocus(true),
+                                 _activeWindowType(WindowType::WINDOW)
+{
+}
+
+Application::Application() : _kernel(nullptr)
+{
     // MemoryTracker::Ready = false; //< faster way of disabling memory tracking
     _requestShutdown = false;
     _mainLoopActive = false;
@@ -30,7 +36,8 @@ Application::Application() : _kernel(nullptr), _hasFocus(true) {
     Console::toggleTimeStamps(true);
 }
 
-Application::~Application() {
+Application::~Application()
+{
     for (DELEGATE_CBK<>& cbk : _shutdownCallback) {
         cbk();
     }
@@ -84,7 +91,9 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,
     return err;
 }
 
-void Application::run() { _kernel->runLogicLoop(); }
+void Application::run() {
+    _kernel->runLogicLoop();
+}
 
 void Application::snapCursorToPosition(U16 x, U16 y) const {
     _kernel->setCursorPosition(x, y);

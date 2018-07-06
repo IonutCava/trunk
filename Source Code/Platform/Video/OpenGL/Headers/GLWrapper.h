@@ -48,6 +48,7 @@ namespace CEGUI {
 };
 
 namespace Divide {
+    enum class WindowType : U32;
 
 /// OpenGL implementation of the RenderAPIWrapper
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
@@ -65,9 +66,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     ~GL_API();
 
     /// Try and create a valid OpenGL context taking in account the specified
-    /// resolution and command line arguments
-    ErrorCode initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
-                               char** argv) override;
+    /// command line arguments
+    ErrorCode initRenderingAPI(GLint argc, char** argv) override;
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() override;
     /// Prepare our shader loading system
@@ -255,8 +255,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static GLuint getSamplerHandle(size_t samplerHash);
 
   private:
-    ErrorCode createMainWindow(const vec2<GLushort>& resolution, bool decorated);
-    ErrorCode destroyMainWindow();
+    ErrorCode createWindow(WindowType windowType, 
+                           const vec2<GLushort>& resolution);
+    ErrorCode destroyWindow(WindowType windowType);
+    GLFWwindow* getActiveWindow() const;
+    bool handleChangeWindowType(WindowType newWindowType);
+
     /// FontStash library initialization
     void createFonsContext();
     /// FontStash library deinitialization
@@ -268,6 +272,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                               ShaderOffsetArray& inOutOffset);
 
   private:
+    /// The current rendering window type
+    WindowType _crtWindowType;
     /// The previous Text3D node's font face size
     GLfloat _prevSizeNode;
     /// The previous plain text string's font face size

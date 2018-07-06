@@ -44,7 +44,8 @@ GL_API::GL_API()
       _GUIGLrenderer(nullptr),
       _fonsContext(nullptr),
       _GLSLOptContex(nullptr),
-      _enableCEGUIRendering(false)
+      _enableCEGUIRendering(false),
+      _crtWindowType(WindowType::COUNT)
 {
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0;
@@ -78,6 +79,10 @@ void GL_API::deleteFonsContext() {
 
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame() {
+    WindowType mainWindowType = Application::getInstance().getWindowManager().mainWindowType();
+    if (_crtWindowType != mainWindowType) {
+        handleChangeWindowType(mainWindowType);
+    }
 // Start a duration query in debug builds
 #ifdef _DEBUG
     glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]);
@@ -106,7 +111,7 @@ void GL_API::endFrame() {
         // glPopDebugGroup();
     }
     // Swap buffers
-    glfwSwapBuffers(GLUtil::_mainWindow);
+    glfwSwapBuffers(getActiveWindow());
     // Poll for new events
     glfwPollEvents();
 // End the timing query started in beginFrame() in debug builds
@@ -564,7 +569,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
         if (textLabel._alignFlag != 0) {
             fonsSetAlign(_fonsContext, textLabel._alignFlag);
         }
-        const vec2<U16>& cachedResolution = Application::getInstance().getResolution();
+        const vec2<U16>& cachedResolution = Application::getInstance().getWindowManager().getResolution();
         if (textLabel._multiLine) {
             lines.clear();
             lines = Util::Split(textLabel.text(), '\n');

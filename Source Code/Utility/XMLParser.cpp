@@ -277,10 +277,14 @@ void loadConfig(const std::string &file) {
         std::max(pt.get<I32>("rendering.anisotropicFilteringLevel", 1), 1));
     par.setParam("rendering.shadowDetailLevel", shadowDetailLevel);
     par.setParam("rendering.enableFog", pt.get("rendering.enableFog", true));
-    vec2<U16> resolution(pt.get("runtime.resolutionWidth", 1024),
-                         pt.get("runtime.resolutionHeight", 768));
-    par.setParam("runtime.windowedMode",
-                 pt.get("rendering.windowedMode", true));
+
+    vec2<U16> resolutionWindow(pt.get("runtime.resolution.windowedMode.<xmlattr>.w", 1024),
+                               pt.get("runtime.resolution.windowedMode.<xmlattr>.h", 768));
+    vec2<U16> resolutionFullscreen(pt.get("runtime.resolution.fullscreenMode.<xmlattr>.w", 1024),
+                                   pt.get("runtime.resolution.fullscreenMode.<xmlattr>.h", 768));
+    vec2<U16> resolutionSplashScreen(pt.get("runtime.resolution.splashScreenMode.<xmlattr>.w", 400),
+                                     pt.get("runtime.resolution.splashScreenMode.<xmlattr>.h", 300));
+    bool startFullScreen = !pt.get("rendering.windowedMode", true);
     par.setParam("runtime.enableVSync", pt.get("runtime.enableVSync", false));
     par.setParam("runtime.groundPos",
                  pt.get("runtime.groundPos",
@@ -301,9 +305,21 @@ void loadConfig(const std::string &file) {
     par.setParam("rendering.verticalFOV", pt.get("runtime.verticalFOV", 60.0f));
     par.setParam("rendering.zNear", pt.get("runtime.zNear", 0.1f));
     par.setParam("rendering.zFar", pt.get("runtime.zFar", 700.0f));
-    Application::getInstance().setResolution(resolution.width,
-                                             resolution.height);
 
+
+    WindowManager& windowManager = Application::getInstance().getWindowManager();
+    windowManager.setResolution(WindowType::WINDOW,
+                                resolutionWindow.width,
+                                resolutionWindow.height);
+    windowManager.setResolution(WindowType::FULLSCREEN,
+                                resolutionFullscreen.width,
+                                resolutionFullscreen.height);
+    windowManager.setResolution(WindowType::SPLASH,
+                                resolutionSplashScreen.width,
+                                resolutionSplashScreen.height);
+    windowManager.mainWindowType(startFullScreen
+                                     ? WindowType::FULLSCREEN
+                                     : WindowType::WINDOW);
     // global fog values
     par.setParam("rendering.sceneState.fogDensity",
                  pt.get("rendering.fogDensity", 0.01f));

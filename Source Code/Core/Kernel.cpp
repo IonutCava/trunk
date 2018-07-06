@@ -257,7 +257,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     _GFX.setInterpolation(Config::USE_FIXED_TIMESTEP ? interpolationFactor : 1.0);
     
     // Get input events
-    _APP.hasFocus() ? _input.update(_currentTimeDelta) : _sceneMgr.onLostFocus();
+    _APP.getWindowManager().hasFocus()
+        ? _input.update(_currentTimeDelta)
+        : _sceneMgr.onLostFocus();
     // Update physics - uses own timestep implementation
     _PFX.update(_freezeLoopTime ? 0ULL : _currentTimeDelta);
     // Update the graphical user interface
@@ -393,12 +395,8 @@ void Kernel::firstLoop() {
         mainLoopApp();
     }
     mainLoopApp();
-    GFX_DEVICE.setWindowPos(10, 60);
     par.setParam("freezeGUITime", false);
     par.setParam("freezeLoopTime", false);
-    const vec2<U16> prevRes =
-        Application::getInstance().getPreviousResolution();
-    GFX_DEVICE.changeResolution(prevRes.width, prevRes.height);
 #if defined(_DEBUG) || defined(_PROFILE)
     Time::ApplicationTimer::getInstance().benchmark(true);
 #endif
@@ -427,8 +425,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
-    if (!CheckMemory(Config::REQUIRED_RAM_SIZE, 
-                     Application::getInstance().getSysInfo())) {
+    SysInfo& systemInfo = Application::getInstance().getSysInfo();
+    if (!CheckMemory(Config::REQUIRED_RAM_SIZE, systemInfo)) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
@@ -448,13 +446,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get("START_RENDER_INTERFACE"));
-    Application::getInstance().isFullScreen(
-        !ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
-    vec2<U16> resolution = _APP.getResolution();
-    F32 aspectRatio = to_float(resolution.width) / 
-                      to_float(resolution.height);
-    ErrorCode initError =
-        _GFX.initRenderingAPI(vec2<U16>(400, 300), _argc, _argv);
+    WindowManager& winManager = _APP.getWindowManager();
+    WindowType windowType = winManager.mainWindowType();
+
+    vec2<U16> resolution = winManager.getResolution();
+    F32 aspectRatio = to_float(resolution.width) / to_float(resolution.height);
+
+    ErrorCode initError = _GFX.initRenderingAPI(_argc, _argv);
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;
@@ -472,11 +470,23 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _cameraMgr->addNewCamera("defaultCamera", camera);
     _cameraMgr->pushActiveCamera(camera);
 
+    const vec2<U16>& splashResolution = winManager.getResolution(WindowType::SPLASH);
+    winManager.mainWindowType(WindowType::SPLASH);
+
+    _GFX.setWindowPos(static_cast<U16>((systemInfo._systemResolutionWidth  -
+                                        splashResolution.width)  / 2),
+                      static_cast<U16>((systemInfo._systemResolutionHeight -
+                                        splashResolution.height) / 2));
+
     // Load and render the splash screen
     _GFX.setRenderStage(RenderStage::DISPLAY);
     _GFX.beginFrame();
-    GUISplash("divideLogo.jpg", vec2<U16>(400, 300)).render();
+    GUISplash("divideLogo.jpg", splashResolution).render();
     _GFX.endFrame();
+
+    winManager.mainWindowType(WindowType::WINDOW);
+    GFX_DEVICE.setWindowPos(10, 60);
+    winManager.mainWindowType(windowType);
 
     Console::printfn(Locale::get("START_SOUND_INTERFACE"));
     if ((initError = _SFX.initAudioAPI()) != ErrorCode::NO_ERR) {
@@ -586,7 +596,7 @@ void Kernel::updateResolutionCallback(U16 w, U16 h) {
     vec2<U16> newResolution(w, h);
 
     Application& APP = Application::getInstance();
-    APP.setResolution(newResolution.width, newResolution.height);
+    APP.getWindowManager().setResolution(newResolution.width, newResolution.height);
     // Update internal resolution tracking (used for joysticks and mouse)
     Input::InputInterface::getInstance().updateResolution(newResolution.width, newResolution.height);
     GUI::getInstance().onResize(newResolution);

@@ -66,6 +66,48 @@ enum class ErrorCode : I32 {
 
 class Kernel;
 const char* getErrorCodeName(ErrorCode code);
+    
+enum class WindowType : U32 {
+    WINDOW = 0,
+    SPLASH = 1,
+    FULLSCREEN = 2,
+    COUNT
+};
+
+class WindowManager {
+public:
+    WindowManager();
+
+    inline bool hasFocus() const;
+    inline void hasFocus(const bool state);
+
+    inline WindowType mainWindowType() const;
+    inline void mainWindowType(WindowType type);
+    
+    /// Application resolution (either fullscreen resolution or window dimensions)
+    inline const vec2<U16>& getResolution() const;
+    inline const vec2<U16>& getResolution(WindowType window) const;
+    inline const vec2<U16>& getScreenCenter() const;
+    inline const vec2<U16>& getScreenCenter(WindowType window) const;
+    inline const vec2<U16>& getPreviousResolution() const;
+    inline const vec2<U16>& getPreviousResolution(WindowType window) const;
+
+    inline void setResolutionWidth(U16 w);
+    inline void setResolutionWidth(WindowType window, U16 w);
+    inline void setResolutionHeight(U16 h);
+    inline void setResolutionHeight(WindowType window, U16 h);
+    inline void setResolution(U16 w, U16 h);
+    inline void setResolution(WindowType window, U16 w, U16 h);
+
+protected:
+    /// this is false if the window/application lost focus (e.g. clicked another
+    /// window, alt + tab, etc)
+    bool _hasFocus;
+    WindowType _activeWindowType;
+    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _resolution;
+    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _screenCenter;
+    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _prevResolution;
+};
 
 /// Lightweight singleton class that manages our application's kernel and window
 /// information
@@ -76,29 +118,17 @@ DEFINE_SINGLETON(Application)
     ErrorCode initialize(const stringImpl& entryPoint, I32 argc, char** argv);
     void run();
 
-    /// Application resolution (either fullscreen resolution or window dimensions)
-    inline const vec2<U16>& getResolution() const;
-    inline const vec2<U16>& getScreenCenter() const;
-    inline const vec2<U16>& getPreviousResolution() const;
-
-    inline void setResolutionWidth(U16 w);
-    inline void setResolutionHeight(U16 h);
-    inline void setResolution(U16 w, U16 h);
-
     inline void RequestShutdown();
     inline void CancelShutdown();
     inline bool ShutdownRequested() const;
+
     inline Kernel& getKernel() const;
+    inline WindowManager& getWindowManager();
+    inline const WindowManager& getWindowManager() const;
 
     inline bool isMainThread() const;
     inline const std::thread::id& getMainThreadID() const;
     inline void setMemoryLogFile(const stringImpl& fileName);
-
-    inline bool hasFocus() const;
-    inline void hasFocus(const bool state);
-
-    inline bool isFullScreen() const;
-    inline void isFullScreen(const bool state);
 
     inline bool mainLoopActive() const;
     inline void mainLoopActive(bool state);
@@ -107,7 +137,6 @@ DEFINE_SINGLETON(Application)
     inline void mainLoopPaused(bool state);
 
     void snapCursorToPosition(U16 x, U16 y) const;
-
     inline void snapCursorToCenter() const;
 
     inline void throwError(ErrorCode err);
@@ -126,19 +155,13 @@ DEFINE_SINGLETON(Application)
 
   private:
     SysInfo _sysInfo;
+    WindowManager _windowManager;
+     
     ErrorCode _errorCode;
     /// this is true when we are inside the main app loop
     std::atomic_bool _mainLoopActive;
     std::atomic_bool _mainLoopPaused;
     std::atomic_bool _requestShutdown;
-    /// this is false if the window/application lost focus (e.g. clicked another
-    /// window, alt + tab, etc)
-    bool _hasFocus;
-    /// this is false if the application is running in windowed mode
-    bool _isFullscreen;
-    vec2<U16> _resolution;
-    vec2<U16> _screenCenter;
-    vec2<U16> _prevResolution;
     std::unique_ptr<Kernel> _kernel;
     /// buffer to register all of the memory allocations recorded via
     /// "MemoryManager_NEW"

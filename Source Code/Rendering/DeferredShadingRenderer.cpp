@@ -17,7 +17,8 @@
 namespace Divide {
 
 DeferredShadingRenderer::DeferredShadingRenderer()
-    : Renderer(RendererType::RENDERER_DEFERRED_SHADING), _cachedLightCount(0) {
+    : Renderer(RendererType::RENDERER_DEFERRED_SHADING), _cachedLightCount(0)
+{
     _lightTexture = GFX_DEVICE.newPB();
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
@@ -78,8 +79,10 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     ParamHandler& par = ParamHandler::getInstance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam("rendering.enableShadows", false);
-    U16 width = Application::getInstance().getResolution().width;
-    U16 height = Application::getInstance().getResolution().height;
+
+    vec2<U16> resolution = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution();
+    U16 width = resolution.width;
+    U16 height = resolution.height;
 
     updateResolution(width, height);
 

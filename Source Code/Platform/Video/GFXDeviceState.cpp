@@ -14,12 +14,11 @@ namespace Divide {
 
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
-ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
-                                      char** argv) {
+ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     ErrorCode hardwareState = createAPIInstance();
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
-        hardwareState = _api->initRenderingAPI(resolution, argc, argv);
+        hardwareState = _api->initRenderingAPI(argc, argv);
     }
 
     if (hardwareState != ErrorCode::NO_ERR) {
@@ -31,9 +30,8 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // Create an immediate mode shader used for general purpose rendering (e.g.
     // to mimic the fixed function pipeline)
     _imShader = ShaderManager::getInstance().getDefaultShader();
-    DIVIDE_ASSERT(
-        _imShader != nullptr,
-        "GFXDevice error: No immediate mode emulation shader available!");
+    DIVIDE_ASSERT(_imShader != nullptr,
+                  "GFXDevice error: No immediate mode emulation shader available!");
     PostFX::createInstance();
     // Create a shader buffer to store the following info:
     // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec,
@@ -53,8 +51,9 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, 1, sizeof(NodeData));
     _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
-    // Resize our window to the target resolution (usually, the splash screen
-    // resolution)
+    // Resize our window to the target resolution
+    const vec2<U16>& resolution 
+        = Application::getInstance().getWindowManager().getResolution();
     changeResolution(resolution.width, resolution.height);
 
     // Create general purpose render state blocks

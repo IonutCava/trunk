@@ -35,7 +35,7 @@ void GFXDevice::previewDepthBuffer() {
         static_cast<U8>(ShaderProgram::TextureUsage::UNIT0),
         TextureDescriptor::AttachmentType::Depth);
 
-    GFX::ScopedViewport viewport(Application::getInstance().getResolution().width - 256, 0,256, 256);
+    GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 256, 0,256, 256);
     drawPoints(1, _defaultStateNoDepthHash, _previewDepthMapShader);
 #endif
 }

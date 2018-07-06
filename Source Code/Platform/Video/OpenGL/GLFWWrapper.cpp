@@ -18,13 +18,13 @@
 
 namespace Divide {
 
-ErrorCode GL_API::createMainWindow(const vec2<GLushort>& resolution, bool decorated) {
+ErrorCode GL_API::createWindow(WindowType windowType,
+                               const vec2<GLushort>& resolution) {
 
 #if defined(_DEBUG) || defined(_GLDEBUG_IN_RELEASE)
     // OpenGL error handling is available in any build configurations if the
     // proper defines are in place.
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
-    glfwWindowHint(GLFW_DECORATED, decorated);
     // Debug context also ensures more robust GLFW stress testing
 #if defined(_DEBUG)
     glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_LOSE_CONTEXT_ON_RESET);
@@ -34,11 +34,14 @@ ErrorCode GL_API::createMainWindow(const vec2<GLushort>& resolution, bool decora
     // Toggle multi-sampling if requested. This options requires a
     // client-restart, sadly.
     glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.gpuState().MSAAEnabled()
-        ? GFX_DEVICE.gpuState().MSAASamples()
-        : 0);
+                                    ? GFX_DEVICE.gpuState().MSAASamples()
+                                    : 0);
+
     // I REALLY think re-sizable windows are a bad idea. Increase the resolution
     // instead of messing up render targets
     glfwWindowHint(GLFW_RESIZABLE, false);
+    // All windows start hidden
+    glfwWindowHint(GLFW_VISIBLE, false);
     // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
     glfwWindowHint(GLFW_RED_BITS, 8);
     glfwWindowHint(GLFW_GREEN_BITS, 8);
@@ -53,8 +56,7 @@ ErrorCode GL_API::createMainWindow(const vec2<GLushort>& resolution, bool decora
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    }
-    else {
+    } else {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 #ifdef GL_VERSION_4_5
@@ -63,16 +65,36 @@ ErrorCode GL_API::createMainWindow(const vec2<GLushort>& resolution, bool decora
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 #endif
     }
-    // Open an OpenGL window; resolution and windowed mode is specified in the
-    // external XML files
-    GLUtil::_mainWindow =
+
+    GLFWwindow* targetWindow = windowType == WindowType::FULLSCREEN
+                                   ? GLUtil::_mainWindowFullScreen
+                                   : windowType == WindowType::WINDOW
+                                       ? GLUtil::_mainWindowWindowed
+                                       : GLUtil::_mainWindowSplash;
+
+    DIVIDE_ASSERT(targetWindow == nullptr,
+                  "GL_API::createWindow error: Tried to double-create the same window!");
+
+    DIVIDE_ASSERT(windowType != WindowType::WINDOW && GLUtil::_mainWindowWindowed == nullptr,
+                  "GL_API::createWindow error: invalid window creation order!");
+    
+    glfwWindowHint(GLFW_DECORATED, (windowType == WindowType::WINDOW));
+    
+    // Open an OpenGL window; 
+    // resolution and windowed mode is specified in the external XML files
+    // Only the windowed window hold an OpenGL context. Splash and FullScreen just share it
+    targetWindow =
         glfwCreateWindow(resolution.width, resolution.height,
             ParamHandler::getInstance().getParam<stringImpl>("appTitle", "Divide").c_str(),
-            Application::getInstance().isFullScreen() ? glfwGetPrimaryMonitor() : nullptr,
-            nullptr);
+            windowType == WindowType::FULLSCREEN
+                ? glfwGetPrimaryMonitor() 
+                : nullptr,
+            windowType != WindowType::WINDOW
+                ? GLUtil::_mainWindowWindowed
+                : nullptr);
 
     // Check if we have a valid window
-    if (!GLUtil::_mainWindow) {
+    if (!targetWindow) {
         glfwTerminate();
         Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
             Locale::get("ERROR_GL_OLD_VERSION"));
@@ -83,31 +105,77 @@ ErrorCode GL_API::createMainWindow(const vec2<GLushort>& resolution, bool decora
 
     SysInfo& systemInfo = Application::getInstance().getSysInfo();
     // Bind the window close request received from GLFW with our custom callback
-    glfwSetWindowCloseCallback(GLUtil::_mainWindow,
-                               GLUtil::glfw_close_callback);
-    // Bind the window close request received from GLFW with our custom callback
-    getWindowHandle(GLUtil::_mainWindow, systemInfo);
-    // The application window will hold the main rendering context
-    glfwMakeContextCurrent(GLUtil::_mainWindow);
-    // Bind our focus change callback to GLFW's internal wiring
-    glfwSetWindowFocusCallback(GLUtil::_mainWindow,
-                               GLUtil::glfw_focus_callback);
-    const GLFWvidmode* desktopMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    systemInfo._systemResolutionWidth = desktopMode->width;
-    systemInfo._systemResolutionHeight = desktopMode->height;
+    if (windowType == WindowType::WINDOW) {
+        // Only the windowed window has a close button.
+        // Splash screens should never send a close request,
+        // and full screen should quit via in-game systems
+        glfwSetWindowCloseCallback(targetWindow, GLUtil::glfw_close_callback);
+    }
+
+    if (windowType != Application::getInstance().getWindowManager().mainWindowType() ) {
+        // We need to get the window handle for the main rendering window only
+        getWindowHandle(targetWindow, systemInfo);
+        // The application window will hold the main rendering context
+        glfwMakeContextCurrent(targetWindow);
+    }
 
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode GL_API::destroyMainWindow() {
-    glfwDestroyWindow(GLUtil::_mainWindow);
+ErrorCode GL_API::destroyWindow(WindowType windowType) {
+    GLFWwindow*& targetWindow = windowType == WindowType::FULLSCREEN
+                                    ? GLUtil::_mainWindowFullScreen
+                                    : windowType == WindowType::WINDOW
+                                        ? GLUtil::_mainWindowWindowed
+                                        : GLUtil::_mainWindowSplash;
+
+    DIVIDE_ASSERT(targetWindow != nullptr,
+                  "GL_API::destroyWindow error: Tried to double-delete the same window!");
+
+    glfwDestroyWindow(targetWindow);
+    targetWindow = nullptr;
+
     return ErrorCode::NO_ERR;
+}
+
+bool GL_API::handleChangeWindowType(WindowType newWindowType) {
+    switch (newWindowType) {
+        case WindowType::FULLSCREEN: {
+            glfwHideWindow(GLUtil::_mainWindowWindowed);
+            glfwHideWindow(GLUtil::_mainWindowSplash);
+            glfwShowWindow(GLUtil::_mainWindowFullScreen);
+            // Bind our focus change callback to GLFW's internal wiring
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowFullScreen, GLUtil::glfw_focus_callback);
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowSplash, NULL);
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowWindowed, NULL);
+        } break;
+        case WindowType::WINDOW: {
+            glfwHideWindow(GLUtil::_mainWindowFullScreen);
+            glfwHideWindow(GLUtil::_mainWindowSplash);
+            glfwShowWindow(GLUtil::_mainWindowWindowed);
+            // Bind our focus change callback to GLFW's internal wiring
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowWindowed, GLUtil::glfw_focus_callback);
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowSplash, NULL);
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowFullScreen, NULL);
+        } break;
+        case WindowType::SPLASH: {
+            glfwHideWindow(GLUtil::_mainWindowWindowed);
+            glfwHideWindow(GLUtil::_mainWindowFullScreen);
+            glfwShowWindow(GLUtil::_mainWindowSplash);
+            // Bind our focus change callback to GLFW's internal wiring
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowSplash, GLUtil::glfw_focus_callback);
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowFullScreen, NULL);
+            glfwSetWindowFocusCallback(GLUtil::_mainWindowWindowed, NULL);
+        } break;
+    };
+
+    _crtWindowType = newWindowType;
+    return true;
 }
 
 /// Try and create a valid OpenGL context taking in account the specified
 /// resolution and command line arguments
-ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
-                                   char** argv) {
+ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper
     // values
     GLUtil::fillEnumTables();
@@ -121,10 +189,28 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     if (!glfwInit()) {
         return ErrorCode::GLFW_INIT_ERROR;
     }
-    ErrorCode windowState = createMainWindow(resolution, false);
+    
+    WindowManager& winManager = Application::getInstance().getWindowManager();
+    // THE ORDER IS VERY IMPORTANT! Window contains the OpenGL context. Splash and FullScreen just share it!
+    ErrorCode windowState = createWindow(WindowType::WINDOW, winManager.getResolution(WindowType::WINDOW));
     if (windowState != ErrorCode::NO_ERR) {
         return windowState;
     }
+
+    windowState = createWindow(WindowType::SPLASH, winManager.getResolution(WindowType::SPLASH));
+    if (windowState != ErrorCode::NO_ERR) {
+        return windowState;
+    }
+
+    windowState = createWindow(WindowType::FULLSCREEN, winManager.getResolution(WindowType::FULLSCREEN));
+    if (windowState != ErrorCode::NO_ERR) {
+        return windowState;
+    }
+
+    SysInfo& systemInfo = Application::getInstance().getSysInfo();
+    const GLFWvidmode* desktopMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    systemInfo._systemResolutionWidth = desktopMode->width;
+    systemInfo._systemResolutionHeight = desktopMode->height;
 
     // Init OpenGL Bindings for main context
     glbinding::Binding::initialize(false);
@@ -134,7 +220,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     glfwWindowHint(GLFW_VISIBLE, 0);
     // The loader window will share context lists with the main window
     GLUtil::_loaderWindow = glfwCreateWindow(1, 1, "divide-res-loader", nullptr,
-                                             GLUtil::_mainWindow);
+                                             GLUtil::_mainWindowWindowed);
     // The loader window is essential to the engine structure, so fail if we
     // can't create it
     if (!GLUtil::_loaderWindow) {
@@ -142,17 +228,8 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         return ErrorCode::GLFW_WINDOW_INIT_ERROR;
     }
 
-    // Get the current display mode used by the focused monitor
-    const GLFWvidmode* return_struct =
-        glfwGetVideoMode(glfwGetPrimaryMonitor());
-    // Attempt to position the window in the center of the screen. Useful for
-    // the splash screen
-    glfwSetWindowPos(GLUtil::_mainWindow,
-                     to_int((return_struct->width - resolution.width) * 0.5f),
-                     to_int((return_struct->height - resolution.height) * 0.5f));
-
     DIVIDE_ASSERT(glfwExtensionSupported("GL_EXT_direct_state_access") == 1,
-        "GL_API::initRenderingAPI error: DSA is not supported!");
+                                         "GL_API::initRenderingAPI error: DSA is not supported!");
 // OpenGL has a nifty error callback system, available in every build
 // configuration if required
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
@@ -422,24 +499,42 @@ void GL_API::closeRenderingAPI() {
     }
     // Destroy application windows and close GLFW
     glfwDestroyWindow(GLUtil::_loaderWindow);
-    destroyMainWindow();
+
+    destroyWindow(WindowType::SPLASH);
+    destroyWindow(WindowType::FULLSCREEN);
+    destroyWindow(WindowType::WINDOW);
+
     glfwTerminate();
+}
+
+GLFWwindow* GL_API::getActiveWindow() const {
+    WindowType mainWindowType = 
+        Application::getInstance().getWindowManager().mainWindowType();
+
+    GLFWwindow* crtWindow = 
+    mainWindowType == WindowType::FULLSCREEN 
+                            ? GLUtil::_mainWindowFullScreen
+                            : mainWindowType == WindowType::WINDOW
+                                ? GLUtil::_mainWindowWindowed
+                                : GLUtil::_mainWindowSplash;
+
+    return crtWindow;
 }
 
 /// changeResolution is simply asking GLFW to do the resizing and updating the
 /// resolution cache
 void GL_API::changeResolution(GLushort w, GLushort h) {
-    glfwSetWindowSize(GLUtil::_mainWindow, w, h);
+    glfwSetWindowSize(getActiveWindow(), w, h);
 }
 
 /// Window positioning is handled by GLFW
 void GL_API::setWindowPos(GLushort w, GLushort h) {
-    glfwSetWindowPos(GLUtil::_mainWindow, w, h);
+    glfwSetWindowPos(getActiveWindow(), w, h);
 }
 
 /// Mouse positioning is handled by GLFW
 void GL_API::setCursorPosition(GLushort x, GLushort y) {
-    glfwSetCursorPos(GLUtil::_mainWindow, (GLdouble)x, (GLdouble)y);
+    glfwSetCursorPos(getActiveWindow(), (GLdouble)x, (GLdouble)y);
 }
 
 /// This functions should be run in a separate, consumer thread.
