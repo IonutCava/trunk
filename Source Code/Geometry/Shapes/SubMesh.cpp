@@ -13,7 +13,7 @@ SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
     : Object3D(
           name,
           ObjectType::SUBMESH,
-          enum_to_uint(flag) | enum_to_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),
+          to_uint(flag) | to_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _visibleToNetwork(true),
       _render(true),
       _ID(0),

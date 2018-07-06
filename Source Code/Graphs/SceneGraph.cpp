@@ -19,12 +19,12 @@ void SceneGraph::load() {
     _root->getComponent<RenderingComponent>()->castsShadows(false);
     _root->getComponent<RenderingComponent>()->receivesShadows(false);
     _root->setBBExclusionMask(
-        enum_to_uint(SceneNodeType::TYPE_SKY) |
-        enum_to_uint(SceneNodeType::TYPE_LIGHT) |
-        enum_to_uint(SceneNodeType::TYPE_TRIGGER) |
-        enum_to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-        enum_to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) |
-        enum_to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
+        to_uint(SceneNodeType::TYPE_SKY) |
+        to_uint(SceneNodeType::TYPE_LIGHT) |
+        to_uint(SceneNodeType::TYPE_TRIGGER) |
+        to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+        to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) |
+        to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
 }
 
 void SceneGraph::unload() {

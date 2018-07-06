@@ -10,7 +10,7 @@ namespace Divide {
 FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler)
-    : PreRenderOperator(FXAA_STAGE, resolution, sampler),
+    : PreRenderOperator(PostFXRenderStage::FXAA_STAGE, resolution, sampler),
       _outputFB(result),
       _ready(false) {
     _samplerCopy = GFX_DEVICE.newFB();
@@ -19,7 +19,7 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
                                      GFXDataFormat::UNSIGNED_BYTE);
     fxaaDescriptor.setSampler(*_internalSampler);
 
-    _samplerCopy->AddAttachment(fxaaDescriptor, TextureDescriptor::Color0);
+    _samplerCopy->AddAttachment(fxaaDescriptor, TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);

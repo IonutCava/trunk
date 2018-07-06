@@ -9,16 +9,15 @@ namespace Divide {
 Light* ImplResourceLoader<Light>::operator()() {
     Light* ptr = nullptr;
     // descriptor ID is not the same as light ID. This is the light's slot!!
-    switch (_descriptor.getEnumValue()) {
-        case -1:
-        case LIGHT_TYPE_POINT:
+    switch (static_cast<LightType>(_descriptor.getEnumValue())) {
         default:
+        case LightType::LIGHT_TYPE_POINT:
             ptr = MemoryManager_NEW PointLight();
             break;
-        case LIGHT_TYPE_DIRECTIONAL:
+        case LightType::LIGHT_TYPE_DIRECTIONAL:
             ptr = MemoryManager_NEW DirectionalLight();
             break;
-        case LIGHT_TYPE_SPOT:
+        case LightType::LIGHT_TYPE_SPOT:
             ptr = MemoryManager_NEW SpotLight();
             break;
     };

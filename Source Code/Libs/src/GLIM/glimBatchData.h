@@ -47,7 +47,7 @@ namespace NS_GLIM
     };
 
     // used for tracking erroneous use of the interface
-    enum GLIM_BATCH_STATE
+    enum class GLIM_BATCH_STATE : unsigned int
     {
         STATE_EMPTY,
         STATE_BEGINNING_BATCH,

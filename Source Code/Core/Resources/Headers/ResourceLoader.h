@@ -64,14 +64,14 @@ class ImplResourceLoader : public ResourceLoader {
 #define DEFAULT_LOADER_IMPL(X)                                               \
     template <>                                                              \
     bool ImplResourceLoader<X>::load(X* const res, const stringImpl& name) { \
-        res->setState(RES_LOADING);                                          \
+        res->setState(ResourceState::RES_LOADING);                           \
         return ResourceCache::getInstance().load(res, name);                 \
     }
 
 #define DEFAULT_HW_LOADER_IMPL(X)                                            \
     template <>                                                              \
     bool ImplResourceLoader<X>::load(X* const res, const stringImpl& name) { \
-        res->setState(RES_LOADING);                                          \
+        res->setState(ResourceState::RES_LOADING);                           \
         return ResourceCache::getInstance().loadHW(res, name);               \
     }
 };  // namespace Divide

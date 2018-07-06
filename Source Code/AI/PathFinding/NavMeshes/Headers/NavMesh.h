@@ -99,8 +99,8 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     friend class NavigationMeshCrowdAttorney;
 
    protected:
-    enum RenderMode {
-        RENDER_NAVMESH,
+    enum class RenderMode : U32 {
+        RENDER_NAVMESH = 0,
         RENDER_CONTOURS,
         RENDER_POLYMESH,
         RENDER_DETAILMESH,

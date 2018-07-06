@@ -85,7 +85,7 @@ void TenisScene::startGame() {
     Kernel& kernel = Application::getInstance().getKernel();
     Task_ptr newGame(kernel.AddTask(
         Time::MillisecondsToMicroseconds(15), 0,
-        DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
+        DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, CallbackParam::TYPE_INTEGER)));
     registerTask(newGame);
     newGame->startTask();
     _gameGUID = newGame->getGUID();
@@ -267,7 +267,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
     // Add a light
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL,
+    _sun = addLight(LightType::LIGHT_TYPE_DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _currentSky =
         &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
@@ -316,10 +316,10 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
         player[2]->getComponent<PhysicsComponent>()->getPosition(), "Player3");
     _aiPlayer4 = MemoryManager_NEW AI::AIEntity(
         player[3]->getComponent<PhysicsComponent>()->getPosition(), "Player4");
-    _aiPlayer1->addSensor(AI::VISUAL_SENSOR);
-    _aiPlayer2->addSensor(AI::VISUAL_SENSOR);
-    _aiPlayer3->addSensor(AI::VISUAL_SENSOR);
-    _aiPlayer4->addSensor(AI::VISUAL_SENSOR);
+    _aiPlayer1->addSensor(AI::SensorType::VISUAL_SENSOR);
+    _aiPlayer2->addSensor(AI::SensorType::VISUAL_SENSOR);
+    _aiPlayer3->addSensor(AI::SensorType::VISUAL_SENSOR);
+    _aiPlayer4->addSensor(AI::SensorType::VISUAL_SENSOR);
 
     _aiPlayer1->addAISceneImpl(
         MemoryManager_NEW AI::TenisSceneAISceneImpl(_ballSGN));

@@ -25,10 +25,10 @@ class SceneNodeRenderState {
     void addToDrawExclusionMask(U32 stageMask);
     void removeFromDrawExclusionMask(U32 stageMask);
     inline void addToDrawExclusionMask(RenderStage stage) {
-        addToDrawExclusionMask(enum_to_uint(stage));
+        addToDrawExclusionMask(to_uint(stage));
     }
     inline void removeFromDrawExclusionMask(RenderStage stage) {
-        removeFromDrawExclusionMask(enum_to_uint(stage));
+        removeFromDrawExclusionMask(to_uint(stage));
     }
     size_t getDepthStateBlock();
     size_t getShadowStateBlock();

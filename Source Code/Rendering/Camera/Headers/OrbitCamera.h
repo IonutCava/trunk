@@ -41,7 +41,7 @@ class SceneGraphNode;
 /// It's position / direction can't be changed by user input
 class OrbitCamera : public Camera {
    public:
-    OrbitCamera(const CameraType& type = ORBIT,
+    OrbitCamera(const CameraType& type = CameraType::ORBIT,
                 const vec3<F32>& eye = VECTOR3_ZERO);
 
     void setTarget(SceneGraphNode& sgn,

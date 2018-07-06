@@ -98,7 +98,8 @@ class glVertexArray : public VertexBuffer {
     vectorImpl<vec4<GLshort> > _tangentSmall;
     vectorImpl<vec4<GLshort> > _bitangentSmall;
 
-    GLsizei _prevSize[VertexAttribute_PLACEHOLDER];
+    GLsizei _prevSize[to_const_uint(
+        VertexAttribute::COUNT)];
     GLsizei _prevSizeIndices;
 };
 

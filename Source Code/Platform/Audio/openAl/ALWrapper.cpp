@@ -21,11 +21,11 @@ ErrorCode OpenAL_API::initAudioAPI() {
     alGenBuffers(MAX_SOUND_BUFFERS, buffers);
     ALenum error = alGetError();
     if (error != AL_NO_ERROR) {
-        return OAL_INIT_ERROR;
+        return ErrorCode::OAL_INIT_ERROR;
     }
     // Clear Error Code (so we can catch any new errors)
     alGetError();
-    return OAL_INIT_ERROR;
+    return ErrorCode::OAL_INIT_ERROR;
 }
 
 void OpenAL_API::closeAudioAPI() {}

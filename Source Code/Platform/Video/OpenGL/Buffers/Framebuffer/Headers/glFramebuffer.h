@@ -58,11 +58,11 @@ class glFramebuffer : public Framebuffer {
     void End();
 
     void Bind(GLubyte unit = 0, TextureDescriptor::AttachmentType slot =
-                                    TextureDescriptor::Color0);
+                                    TextureDescriptor::AttachmentType::Color0);
     void ReadData(const vec4<GLushort>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
     void BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot =
-                                            TextureDescriptor::Color0,
+                                            TextureDescriptor::AttachmentType::Color0,
                   bool blitColor = true, bool blitDepth = false);
 
    protected:
@@ -84,8 +84,10 @@ class glFramebuffer : public Framebuffer {
     bool _depthMaskChanged;
     const std::unique_ptr<glFramebuffer> _resolveBuffer;
 
-    GLint _attOffset[TextureDescriptor::AttachmentType_PLACEHOLDER];
-    vec2<GLushort> _mipMapLevel[TextureDescriptor::AttachmentType_PLACEHOLDER];
+    GLint _attOffset[to_const_uint(
+        TextureDescriptor::AttachmentType::COUNT)];
+    vec2<GLushort> _mipMapLevel[to_const_uint(
+        TextureDescriptor::AttachmentType::COUNT)];
 };
 
 };  // namespace Divide

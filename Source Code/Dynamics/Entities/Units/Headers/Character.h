@@ -78,13 +78,13 @@ namespace Divide {
 class Character : public Unit {
    public:
     /// Currently supported character types
-    enum CharacterType {
+    enum class CharacterType : U32 {
         /// user controlled character
-        CHARACTER_TYPE_PLAYER,
+        CHARACTER_TYPE_PLAYER = 0,
         /// non-user(player) character
         CHARACTER_TYPE_NPC,
         /// placeholder
-        CHARACTER_TYPE_PLACEHOLDER
+        COUNT
     };
 
     Character(CharacterType type, SceneGraphNode& node);

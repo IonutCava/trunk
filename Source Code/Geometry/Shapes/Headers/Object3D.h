@@ -50,14 +50,14 @@ class Object3D : public SceneNode {
         SUBMESH = toBit(5),
         TERRAIN = toBit(6),
         FLYWEIGHT = toBit(7),
-        OBJECT_3D_PLACEHOLDER = toBit(8)
+        COUNT = toBit(8)
     };
 
     enum class ObjectFlag : U32 {
         OBJECT_FLAG_NONE = toBit(0),
         OBJECT_FLAG_SKINNED = toBit(1),
         OBJECT_FLAG_NO_VB = toBit(2),
-        OBJECT_FLAG_PLACEHOLDER = toBit(3)
+        COUNT = toBit(3)
     };
 
     explicit Object3D(ObjectType type, ObjectFlag flag);

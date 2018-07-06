@@ -47,16 +47,16 @@ struct GenericDrawCommand;
 class ShaderProgram : public HardwareResource {
    public:
     /// A list of built-in sampler slots. Use these if possible
-    enum TextureUsage {
+    enum class TextureUsage : U32 {
         TEXTURE_UNIT0 = 0,
         TEXTURE_UNIT1 = 1,
         TEXTURE_NORMALMAP = 2,
         TEXTURE_OPACITY = 3,
         TEXTURE_SPECULAR = 4,
         TEXTURE_PROJECTION = 5,
-        TextureUsage_PLACEHOLDER = 6,
         TEXTURE_GLOSS = TEXTURE_SPECULAR,
-        TEXTURE_ROUGHNESS = TEXTURE_GLOSS
+        TEXTURE_ROUGHNESS = TEXTURE_GLOSS,
+        COUNT
     };
 
     virtual ~ShaderProgram();
@@ -137,6 +137,10 @@ class ShaderProgram : public HardwareResource {
     inline void UniformTexture(const stringImpl& ext, U16 slot) {
         UniformTexture(cachedLoc(ext), slot);
     }
+
+    inline void UniformTexture(const stringImpl& ext, TextureUsage slot) {
+        UniformTexture(cachedLoc(ext), slot);
+    }
     /// Subroutine
     virtual void SetSubroutines(ShaderType type,
                                 const vectorImpl<U32>& indices) const = 0;
@@ -171,7 +175,11 @@ class ShaderProgram : public HardwareResource {
                          bool rowMajor = false) const = 0;
     virtual void Uniform(I32 location, const vectorImpl<mat4<F32> >& values,
                          bool rowMajor = false) const = 0;
-    virtual void UniformTexture(I32, U16 slot) = 0;
+    virtual void UniformTexture(I32 location, U16 slot) = 0;
+
+    inline void UniformTexture(I32 location, TextureUsage slot) {
+        UniformTexture(location, to_uint(slot));
+    }
 
     inline void Uniform(I32 location, bool value) const {
         Uniform(location, value ? 1 : 0);
@@ -212,12 +220,12 @@ class ShaderProgram : public HardwareResource {
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline vectorAlg::vecSize getFunctionCount(ShaderType shader, U8 LoD) {
-        return _functionIndex[enum_to_uint(shader)][LoD].size();
+        return _functionIndex[to_uint(shader)][LoD].size();
     }
 
     inline void setFunctionCount(ShaderType shader, U8 LoD,
                                  vectorAlg::vecSize count) {
-        _functionIndex[enum_to_uint(shader)][LoD].resize(count, 0);
+        _functionIndex[to_uint(shader)][LoD].resize(count, 0);
     }
 
     inline void setFunctionCount(ShaderType shader, vectorAlg::vecSize count) {
@@ -229,7 +237,7 @@ class ShaderProgram : public HardwareResource {
     inline void setFunctionIndex(ShaderType shader, U8 LoD, U32 index,
                                  U32 functionEntry) {
 
-        U32 shaderTypeValue = enum_to_uint(shader);
+        U32 shaderTypeValue = to_uint(shader);
 
         if (_functionIndex[shaderTypeValue][LoD].empty()) {
             return;
@@ -250,7 +258,7 @@ class ShaderProgram : public HardwareResource {
     }
 
     inline U32 addFunctionIndex(ShaderType shader, U32 index) {
-        U32 shaderTypeValue = enum_to_uint(shader);
+        U32 shaderTypeValue = to_uint(shader);
 
         _availableFunctionIndex[shaderTypeValue].push_back(index);
         return U32(_availableFunctionIndex[shaderTypeValue].size() - 1);
@@ -281,7 +289,7 @@ class ShaderProgram : public HardwareResource {
     const vectorImpl<U32>& getAvailableFunctions(ShaderType type) const;
 
    protected:
-    bool _refreshStage[enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)];
+    bool _refreshStage[to_const_uint(ShaderType::COUNT)];
     bool _optimise;
     bool _dirty;
     std::atomic_bool _bound;
@@ -295,7 +303,7 @@ class ShaderProgram : public HardwareResource {
     vectorImpl<stringImpl> _definesList;
     /// A list of custom shader uniforms
     vectorImpl<stringImpl>
-        _customUniforms[enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)];
+        _customUniforms[to_const_uint(ShaderType::COUNT)];
     /// ID<->shaders pair
     typedef hashMapImpl<U32, Shader*> ShaderIDMap;
     ShaderIDMap _shaderIDMap;
@@ -310,10 +318,10 @@ class ShaderProgram : public HardwareResource {
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
 
-    vectorImpl<U32> _functionIndex[enum_to_uint_const(
-        ShaderType::ShaderType_PLACEHOLDER)][Config::SCENE_NODE_LOD];
-    vectorImpl<U32> _availableFunctionIndex[enum_to_uint_const(
-        ShaderType::ShaderType_PLACEHOLDER)];
+    vectorImpl<U32> _functionIndex[to_const_uint(
+        ShaderType::COUNT)][Config::SCENE_NODE_LOD];
+    vectorImpl<U32> _availableFunctionIndex[to_const_uint(
+        ShaderType::COUNT)];
 };
 
 };  // namespace Divide

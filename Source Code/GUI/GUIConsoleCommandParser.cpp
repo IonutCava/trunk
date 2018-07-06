@@ -186,7 +186,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     // Check if we already have a NavMesh created
     AI::Navigation::NavigationMesh* temp =
         AI::AIManager::getInstance().getNavMesh(
-            AI::AIEntity::AGENT_RADIUS_SMALL);
+            AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL);
     // Create a new NavMesh if we don't currently have one
     if (!temp) {
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
@@ -206,7 +206,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     // If we loaded/built the NavMesh correctly, add it to the AIManager
     if (loaded) {
         AI::AIManager::getInstance().addNavMesh(
-            AI::AIEntity::AGENT_RADIUS_SMALL, temp);
+            AI::AIEntity::PresetAgentRadius::AGENT_RADIUS_SMALL, temp);
     }
 }
 
@@ -260,8 +260,8 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     model.orientation =
         GET_ACTIVE_SCENE()->state().getRenderState().getCamera().getEuler();
     model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
-                     ? PRIMITIVE
-                     : GEOMETRY;
+                     ? GeometryType::PRIMITIVE
+                     : GeometryType::GEOMETRY;
     model.version = 1.0f;
     model.staticUsage = false;
     model.navigationUsage = true;

@@ -4,9 +4,9 @@
 namespace Divide {
 namespace Input {
 
-U8 InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
+ErrorCode InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
     if (_bIsInitialized) {
-        return NO_ERR;
+        return ErrorCode::NO_ERR;
     }
 
     Console::printfn(Locale::get("INPUT_CREATE_START"));
@@ -54,7 +54,7 @@ U8 InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
     I32 numJoysticks =
         std::min(_pInputInterface->getNumberOfDevices(OIS::OISJoyStick),
-                 static_cast<I32>(Joystick_PLACEHOLDER));
+                 to_int(Joystick::COUNT));
 
     if (numJoysticks > 0) {
         _pJoysticks.resize(numJoysticks);
@@ -101,7 +101,7 @@ U8 InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
 
     _bIsInitialized = true;
 
-    return _nStatus;
+    return ErrorCode::NO_ERR;
 }
 
 void InputInterface::updateResolution(U16 w, U16 h) {
@@ -119,7 +119,7 @@ U8 InputInterface::update(const U64 deltaTime) {
     U8 nEffectUpdateCnt = 0;
 
     if (!_bIsInitialized) {
-        return _nStatus;
+        return 0;
     }
     if (_bMustStop) {
         terminate();
@@ -152,7 +152,7 @@ U8 InputInterface::update(const U64 deltaTime) {
         }
     }
 
-    return _nStatus;
+    return 1;
 }
 
 void InputInterface::terminate() {

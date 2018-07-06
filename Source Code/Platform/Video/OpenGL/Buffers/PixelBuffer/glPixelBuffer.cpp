@@ -31,13 +31,13 @@ size_t glPixelBuffer::sizeOf(GLenum dataType) const {
 glPixelBuffer::glPixelBuffer(PBType type) : PixelBuffer(type) {
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-            _textureType = enum_to_uint(GL_TEXTURE_1D);
+            _textureType = to_uint(GL_TEXTURE_1D);
             break;
         case PBType::PB_TEXTURE_2D:
-            _textureType = enum_to_uint(GL_TEXTURE_2D);
+            _textureType = to_uint(GL_TEXTURE_2D);
             break;
         case PBType::PB_TEXTURE_3D:
-            _textureType = enum_to_uint(GL_TEXTURE_3D);
+            _textureType = to_uint(GL_TEXTURE_3D);
             break;
         default:
             Console::errorfn(Locale::get("ERROR_PB_INVALID_TYPE"));
@@ -111,9 +111,9 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
                            GFXDataFormat dataTypeEnum) {
     GLenum textureTypeEnum = static_cast<GLenum>(_textureType);
     _internalFormat =
-        GLUtil::GL_ENUM_TABLE::glImageFormatTable[enum_to_uint(internalFormatEnum)];
-    _format = GLUtil::GL_ENUM_TABLE::glImageFormatTable[enum_to_uint(formatEnum)];
-    _dataType = GLUtil::GL_ENUM_TABLE::glDataFormat[enum_to_uint(dataTypeEnum)];
+        GLUtil::GL_ENUM_TABLE::glImageFormatTable[to_uint(internalFormatEnum)];
+    _format = GLUtil::GL_ENUM_TABLE::glImageFormatTable[to_uint(formatEnum)];
+    _dataType = GLUtil::GL_ENUM_TABLE::glDataFormat[to_uint(dataTypeEnum)];
 
     Destroy();
     Console::printfn(Locale::get("GL_PB_GEN"), width, height);
@@ -134,20 +134,20 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     GL_API::bindTexture(0, _textureID, textureTypeEnum);
     glTexParameteri(textureTypeEnum, GL_GENERATE_MIPMAP, 0);
     glTexParameteri(textureTypeEnum, GL_TEXTURE_MIN_FILTER,
-                    enum_to_uint(GL_NEAREST));
+                    to_uint(GL_NEAREST));
     glTexParameteri(textureTypeEnum, GL_TEXTURE_MAG_FILTER,
-                    enum_to_uint(GL_NEAREST));
+                    to_uint(GL_NEAREST));
     glTexParameteri(textureTypeEnum, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(textureTypeEnum, GL_TEXTURE_MAX_LEVEL, 1000);
     glTexParameteri(textureTypeEnum, GL_TEXTURE_WRAP_S,
-                    enum_to_uint(GL_REPEAT));
+                    to_uint(GL_REPEAT));
     if (_pbtype != PBType::PB_TEXTURE_1D) {
         glTexParameteri(textureTypeEnum, GL_TEXTURE_WRAP_T,
-                        enum_to_uint(GL_REPEAT));
+                        to_uint(GL_REPEAT));
     }
     if (_pbtype == PBType::PB_TEXTURE_3D) {
         glTexParameteri(textureTypeEnum, GL_TEXTURE_WRAP_R,
-                        enum_to_uint(GL_REPEAT));
+                        to_uint(GL_REPEAT));
     }
 
     void* pixels = nullptr;
@@ -181,17 +181,17 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
             glTexImage1D(textureTypeEnum, 0,
-                         enum_to_uint(_internalFormat), _width, 0,
+                         to_uint(_internalFormat), _width, 0,
                          _format, _dataType, pixels);
             break;
         case PBType::PB_TEXTURE_2D:
             glTexImage2D(textureTypeEnum, 0,
-                         enum_to_uint(_internalFormat), _width,
+                         to_uint(_internalFormat), _width,
                          _height, 0, _format, _dataType, pixels);
             break;
         case PBType::PB_TEXTURE_3D:
             glTexImage3D(textureTypeEnum, 0,
-                         enum_to_uint(_internalFormat), _width,
+                         to_uint(_internalFormat), _width,
                          _height, _depth, 0, _format, _dataType, pixels);
             break;
     };

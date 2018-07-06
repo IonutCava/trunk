@@ -40,7 +40,7 @@ namespace Divide {
 class Texture;
 namespace AI {
 
-enum AIMsg : I32;
+enum class AIMsg : U32;
 /// Provides a scene-level AI implementation
 class AISceneImpl : private NonCopyable {
    public:

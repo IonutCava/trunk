@@ -8,7 +8,7 @@ GUIMessageBox::GUIMessageBox(const stringImpl& id, const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre,
                              CEGUI::Window* parent)
-    : GUIElement(parent, GUI_MESSAGE_BOX, offsetFromCentre) {
+    : GUIElement(parent, GUIType::GUI_MESSAGE_BOX, offsetFromCentre) {
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience
     // to reduce typing
     CEGUI::WindowManager* pWindowManager =
@@ -66,13 +66,14 @@ void GUIMessageBox::setOffset(const vec2<I32>& offsetFromCentre) {
 
 void GUIMessageBox::setMessageType(MessageType type) {
     switch (type) {
-        case MESSAGE_INFO: {
+        default:
+        case MessageType::MESSAGE_INFO: {
             _msgBoxWindow->setProperty("CaptionColour", "FFFFFFFF");
         } break;
-        case MESSAGE_WARNING: {
+        case MessageType::MESSAGE_WARNING: {
             _msgBoxWindow->setProperty("CaptionColour", "00FFFFFF");
         } break;
-        case MESSAGE_ERROR: {
+        case MessageType::MESSAGE_ERROR: {
             _msgBoxWindow->setProperty("CaptionColour", "FF0000FF");
         } break;
     }

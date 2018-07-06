@@ -8,7 +8,7 @@ GUIButton::GUIButton(const stringImpl& id, const stringImpl& text,
                      const stringImpl& guiScheme, const vec2<I32>& position,
                      const vec2<U32>& dimensions, const vec3<F32>& color,
                      CEGUI::Window* parent, ButtonCallback callback)
-    : GUIElement(parent, GUI_BUTTON, position),
+    : GUIElement(parent, GUIType::GUI_BUTTON, position),
       _text(text),
       _dimensions(dimensions),
       _color(color),

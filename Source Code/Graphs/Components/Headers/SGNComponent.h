@@ -40,12 +40,12 @@ enum class RenderStage : U32;
 class SceneGraphNode;
 class SGNComponent : private NonCopyable {
    public:
-    enum ComponentType {
+    enum class ComponentType : U32 {
         SGN_COMP_ANIMATION = 0,
         SGN_COMP_NAVIGATION = 1,
         SGN_COMP_PHYSICS = 2,
         SGN_COMP_RENDERING = 3,
-        ComponentType_PLACEHOLDER = 4
+        COUNT
     };
 
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);

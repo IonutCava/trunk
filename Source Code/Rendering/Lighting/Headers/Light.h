@@ -37,14 +37,14 @@
 namespace Divide {
 
 /// The different types of lights supported
-enum LightType {
+enum class LightType : U32 {
     LIGHT_TYPE_DIRECTIONAL = 0,
     LIGHT_TYPE_POINT = 1,  ///< or omni light, if you prefer
     LIGHT_TYPE_SPOT = 2,
-    LightType_PLACEHOLDER
+    COUNT
 };
 
-enum LightMode {
+enum class LightMode : U32 {
     LIGHT_MODE_SIMPLE =
         0,  ///< normal light. Can't be moved or changed at runtime
     LIGHT_MODE_TOGGLABLE = 1,  ///< can be switched on or off, change
@@ -52,6 +52,7 @@ enum LightMode {
     LIGHT_MODE_MOVABLE =
         2,  ///< can change position at runtime / most expensive
     // LIGHT_MODE_DOMINANT = 3 ///< only shadow caster in scene
+    COUNT
 };
 
 struct LightProperties {
@@ -85,11 +86,11 @@ class SceneRenderState;
 /// A light object placed in the scene at a certain position
 class Light : public SceneNode {
    public:
-    enum PropertyType {
+    enum class PropertyType : U32 {
         PROPERTY_TYPE_VISUAL = 0,
         PROPERTY_TYPE_PHYSICAL = 1,
         PROPERTY_TYPE_SHADOW = 2,
-        PropertyType_PLACEHOLDER = 3
+        COUNT
     };
 
     typedef hashMapImpl<I64, Light*> LightMap;
@@ -264,9 +265,9 @@ class Light : public SceneNode {
     Camera* const shadowCamera() const { return _shadowCamera; }
 
     const I32 getLightTypeValue() const {
-        return _type == LIGHT_TYPE_DIRECTIONAL
+        return _type == LightType::LIGHT_TYPE_DIRECTIONAL
                    ? 0
-                   : (_type == LIGHT_TYPE_POINT ? 1 : 2);
+                   : (_type == LightType::LIGHT_TYPE_POINT ? 1 : 2);
     }
 
    protected:
@@ -275,7 +276,7 @@ class Light : public SceneNode {
 
     LightType _type;
     LightMode _mode;
-    bool _dirty[PropertyType_PLACEHOLDER];
+    bool _dirty[to_const_uint(PropertyType::COUNT)];
 
    private:
     U8 _resolutionFactor;

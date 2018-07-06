@@ -57,7 +57,11 @@ class Plane {
         plane normal points. The "negative side" is the other half
         space. The flag "no side" indicates the plane itself.
         */
-    enum Side { NO_SIDE, POSITIVE_SIDE, NEGATIVE_SIDE };
+    enum class Side : I32 {
+        NO_SIDE,
+        POSITIVE_SIDE,
+        NEGATIVE_SIDE
+    };
 
     Plane() : _distance(0), _active(false), _index(0) {}
 
@@ -87,8 +91,8 @@ class Plane {
 
     inline Side classifyPoint(const vec3<F32>& point) const {
         F32 result = getDistance(point);
-        return (result > 0 ? POSITIVE_SIDE
-                           : (result < 0 ? NEGATIVE_SIDE : NO_SIDE));
+        return (result > 0 ? Side::POSITIVE_SIDE
+                           : (result < 0 ? Side::NEGATIVE_SIDE : Side::NO_SIDE));
     }
 
     inline T getDistance(const vec3<T>& point) const {

@@ -42,31 +42,31 @@ void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
     WarSceneActionWarAISceneAttorney::setParentAIScene(*warAction, this);
 
     switch (warAction->actionType()) {
-        case ACTION_APPROACH_FLAG:
+        case ActionType::ACTION_APPROACH_FLAG:
             AISceneImpl::registerAction(
                 MemoryManager_NEW ApproachFlag(*warAction));
             return;
-        case ACTION_CAPTURE_FLAG:
+        case ActionType::ACTION_CAPTURE_FLAG:
             AISceneImpl::registerAction(
                 MemoryManager_NEW CaptureFlag(*warAction));
             return;
-        case ACTION_RETURN_FLAG:
+        case ActionType::ACTION_RETURN_FLAG:
             AISceneImpl::registerAction(
                 MemoryManager_NEW ReturnFlag(*warAction));
             return;
-        case ACTION_RECOVER_FLAG:
+        case ActionType::ACTION_RECOVER_FLAG:
             AISceneImpl::registerAction(
                 MemoryManager_NEW RecoverFlag(*warAction));
             return;
-        case ACTION_KILL_ENEMY:
+        case ActionType::ACTION_KILL_ENEMY:
             AISceneImpl::registerAction(
                 MemoryManager_NEW KillEnemy(*warAction));
             return;
-        case ACTION_RETURN_TO_BASE:
+        case ActionType::ACTION_RETURN_TO_BASE:
             AISceneImpl::registerAction(
                 MemoryManager_NEW ReturnHome(*warAction));
             return;
-        case ACTION_PROTECT_FLAG_CARRIER:
+        case ActionType::ACTION_PROTECT_FLAG_CARRIER:
             AISceneImpl::registerAction(
                 MemoryManager_NEW ProtectFlagCarrier(*warAction));
             return;
@@ -76,10 +76,10 @@ void WarSceneAISceneImpl::registerAction(GOAPAction* const action) {
 }
 
 void WarSceneAISceneImpl::initInternal() {
-    _visualSensor =
-        dynamic_cast<VisualSensor*>(_entity->getSensor(VISUAL_SENSOR));
+    _visualSensor = dynamic_cast<VisualSensor*>(
+        _entity->getSensor(SensorType::VISUAL_SENSOR));
     //_audioSensor =
-    // dynamic_cast<AudioSensor*>(_entity->getSensor(AUDIO_SENSOR));
+    // dynamic_cast<AudioSensor*>(_entity->getSensor(SensorType::AUDIO_SENSOR));
     DIVIDE_ASSERT(_visualSensor != nullptr,
                   "WarSceneAISceneImpl error: No visual sensor found for "
                   "current AI entity!");
@@ -119,8 +119,10 @@ void WarSceneAISceneImpl::initInternal() {
 
 void WarSceneAISceneImpl::requestOrders() {
     const vectorImpl<Order*>& orders = _entity->getTeam()->requestOrders();
-    U8 priority[WarSceneOrder::ORDER_PLACEHOLDER];
-    memset(priority, 0, sizeof(U8) * WarSceneOrder::ORDER_PLACEHOLDER);
+    U8 priority[to_const_uint(WarSceneOrder::WarOrder::COUNT)];
+    memset(priority, 0,
+           sizeof(U8) *
+               to_const_uint(WarSceneOrder::WarOrder::COUNT));
 
     resetActiveGoals();
     printWorkingMemory();
@@ -128,49 +130,50 @@ void WarSceneAISceneImpl::requestOrders() {
     for (Order* const order : orders) {
         WarSceneOrder::WarOrder orderID = static_cast<WarSceneOrder::WarOrder>(
             dynamic_cast<WarSceneOrder*>(order)->getID());
+        U32 orderIDVal = to_uint(orderID);
         switch (orderID) {
-            case WarSceneOrder::ORDER_FIND_ENEMY_FLAG: {
+            case WarSceneOrder::WarOrder::ORDER_FIND_ENEMY_FLAG: {
                 if (!_workingMemory._hasEnemyFlag.value() &&
                     !_workingMemory._enemyFlagNear.value() &&
                     !_workingMemory._teamMateHasFlag.value()) {
-                    priority[orderID] = 240;
+                    priority[orderIDVal] = 240;
                 }
             } break;
-            case WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG: {
+            case WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG: {
                 if (!_workingMemory._hasEnemyFlag.value() &&
                     _workingMemory._enemyFlagNear.value() &&
                     !_workingMemory._teamMateHasFlag.value()) {
-                    priority[orderID] = 245;
+                    priority[orderIDVal] = 245;
                 }
             } break;
-            case WarSceneOrder::ORDER_RETURN_ENEMY_FLAG: {
+            case WarSceneOrder::WarOrder::ORDER_RETURN_ENEMY_FLAG: {
                 if (_workingMemory._hasEnemyFlag.value()) {
-                    priority[orderID] = 250;
+                    priority[orderIDVal] = 250;
                 }
             } break;
-            case WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER: {
+            case WarSceneOrder::WarOrder::ORDER_PROTECT_FLAG_CARRIER: {
                 if (!_workingMemory._hasEnemyFlag.value() &&
                     _workingMemory._teamMateHasFlag.value()) {
-                    priority[orderID] =
+                    priority[orderIDVal] =
                         WorkingMemory::_flagProtectors[_entity->getTeamID()]
                                     .value() > 2
                             ? 125
                             : 220;
                 }
             } break;
-            case WarSceneOrder::ORDER_RETRIEVE_FLAG: {
+            case WarSceneOrder::WarOrder::ORDER_RETRIEVE_FLAG: {
                 if (_workingMemory._enemyHasFlag.value() &&
                     !_workingMemory._hasEnemyFlag.value()) {
-                    priority[orderID] =
+                    priority[orderIDVal] =
                         WorkingMemory::_flagRetrievers[_entity->getTeamID()]
                                     .value() > 1
                             ? 125
                             : 200;
                     if (_workingMemory._friendlyFlagNear.value()) {
-                        priority[orderID] += 2;
+                        priority[orderIDVal] += 2;
                     }
                     if (_workingMemory._enemyFlagNear.value()) {
-                        priority[orderID] -= 2;
+                        priority[orderIDVal] -= 2;
                     }
                 }
             } break;
@@ -179,18 +182,23 @@ void WarSceneAISceneImpl::requestOrders() {
 
     for (GOAPGoal& goal : goalList()) {
         if (goal.getName().compare("Find enemy flag") == 0) {
-            goal.relevancy(
-                std::max(priority[WarSceneOrder::ORDER_FIND_ENEMY_FLAG],
-                         priority[WarSceneOrder::ORDER_PROTECT_FLAG_CARRIER]));
+            goal.relevancy(std::max(
+                priority[to_uint(
+                    WarSceneOrder::WarOrder::ORDER_FIND_ENEMY_FLAG)],
+                priority[to_uint(
+                    WarSceneOrder::WarOrder::ORDER_PROTECT_FLAG_CARRIER)]));
         }
         if (goal.getName().compare("Capture enemy flag") == 0) {
-            goal.relevancy(priority[WarSceneOrder::ORDER_CAPTURE_ENEMY_FLAG]);
+            goal.relevancy(priority[to_uint(
+                WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG)]);
         }
         if (goal.getName().compare("Return enemy flag") == 0) {
-            goal.relevancy(priority[WarSceneOrder::ORDER_RETURN_ENEMY_FLAG]);
+            goal.relevancy(priority[to_uint(
+                WarSceneOrder::WarOrder::ORDER_RETURN_ENEMY_FLAG)]);
         }
         if (goal.getName().compare("Retrieve flag") == 0) {
-            goal.relevancy(priority[WarSceneOrder::ORDER_RETRIEVE_FLAG]);
+            goal.relevancy(priority[to_uint(
+                WarSceneOrder::WarOrder::ORDER_RETRIEVE_FLAG)]);
         }
     }
     GOAPGoal* goal = findRelevantGoal();
@@ -215,29 +223,29 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
                   "WarScene error: INVALID TEAM FOR INPUT UPDATE");
 
     switch (type) {
-        case ACTION_APPROACH_FLAG: {
+        case ActionType::ACTION_APPROACH_FLAG: {
             Console::d_printfn("Starting approach flag action [ %d ]",
                                _entity->getGUID());
             _entity->updateDestination(
                 _workingMemory._teamFlagPosition[1 - currentTeam->getTeamID()]
                     .value());
         } break;
-        case ACTION_CAPTURE_FLAG: {
+        case ActionType::ACTION_CAPTURE_FLAG: {
             Console::d_printfn("Starting capture flag action [ %d ]",
                                _entity->getGUID());
         } break;
-        case ACTION_RETURN_TO_BASE: {
+        case ActionType::ACTION_RETURN_TO_BASE: {
             Console::d_printfn("Starting return to base action [ %d ]",
                                _entity->getGUID());
             _entity->updateDestination(
                 _workingMemory._teamFlagPosition[currentTeam->getTeamID()]
                     .value());
         } break;
-        case ACTION_RETURN_FLAG: {
+        case ActionType::ACTION_RETURN_FLAG: {
             Console::d_printfn("Starting return flag action [ %d ]",
                                _entity->getGUID());
         } break;
-        case ACTION_PROTECT_FLAG_CARRIER: {
+        case ActionType::ACTION_PROTECT_FLAG_CARRIER: {
             Console::d_printfn("Starting protect flag action [ %d ]",
                                _entity->getGUID());
             assert(_workingMemory._flagCarrier.value() != nullptr);
@@ -249,7 +257,7 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
             WorkingMemory::_flagProtectors[currentTeam->getTeamID()].value(
                 temp);
         } break;
-        case ACTION_RECOVER_FLAG: {
+        case ActionType::ACTION_RECOVER_FLAG: {
             Console::d_printfn("Starting recover flag action [ %d ]",
                                _entity->getGUID());
             assert(_workingMemory._enemyFlagCarrier.value() != nullptr);
@@ -277,11 +285,11 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                   "WarScene error: INVALID TEAM FOR INPUT UPDATE");
 
     switch (type) {
-        case ACTION_APPROACH_FLAG: {
+        case ActionType::ACTION_APPROACH_FLAG: {
             Console::d_printfn("Approach flag action over [ %d ]",
                                _entity->getGUID());
         } break;
-        case ACTION_CAPTURE_FLAG: {
+        case ActionType::ACTION_CAPTURE_FLAG: {
             Console::d_printfn("Capture flag action over [ %d ]",
                                _entity->getGUID());
             assert(!_workingMemory._hasEnemyFlag.value());
@@ -303,22 +311,23 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
             _workingMemory._hasEnemyFlag.value(true);
             for (const AITeam::TeamMap::value_type& member :
                  currentTeam->getTeamMembers()) {
-                _entity->sendMessage(member.second, HAVE_FLAG, _entity);
+                _entity->sendMessage(member.second, AIMsg::HAVE_FLAG, _entity);
             }
             const AITeam* const enemyTeam =
                 AIManager::getInstance().getTeamByID(
                     currentTeam->getEnemyTeamID(0));
             for (const AITeam::TeamMap::value_type& enemy :
                  enemyTeam->getTeamMembers()) {
-                _entity->sendMessage(enemy.second, ENEMY_HAS_FLAG, _entity);
+                _entity->sendMessage(enemy.second, AIMsg::ENEMY_HAS_FLAG,
+                                     _entity);
             }
         } break;
-        case ACTION_RETURN_TO_BASE: {
+        case ActionType::ACTION_RETURN_TO_BASE: {
             Console::printfn("Return to base action over [ %d ]",
                              _entity->getGUID());
         } break;
 
-        case ACTION_RETURN_FLAG: {
+        case ActionType::ACTION_RETURN_FLAG: {
             Console::printfn("Return flag action over [ %d ]",
                              _entity->getGUID());
 
@@ -337,14 +346,14 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                 prevScale *
                 targetNode->getComponent<PhysicsComponent>()->getScale());
         } break;
-        case ACTION_PROTECT_FLAG_CARRIER: {
+        case ActionType::ACTION_PROTECT_FLAG_CARRIER: {
             U8 temp = WorkingMemory::_flagProtectors[currentTeam->getTeamID()]
                           .value() -
                       1;
             WorkingMemory::_flagProtectors[currentTeam->getTeamID()].value(
                 temp);
         } break;
-        case ACTION_RECOVER_FLAG: {
+        case ActionType::ACTION_RECOVER_FLAG: {
             U8 temp = WorkingMemory::_flagRetrievers[currentTeam->getTeamID()]
                           .value() -
                       1;
@@ -373,9 +382,9 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
         *static_cast<const WarSceneAction*>(planStep);
 
     if (_workingMemory._teamMateHasFlag.value() &&
-        (warAction.actionType() == ACTION_APPROACH_FLAG ||
-         warAction.actionType() == ACTION_CAPTURE_FLAG ||
-         warAction.actionType() == ACTION_RETURN_FLAG)) {
+        (warAction.actionType() == ActionType::ACTION_APPROACH_FLAG ||
+         warAction.actionType() == ActionType::ACTION_CAPTURE_FLAG ||
+         warAction.actionType() == ActionType::ACTION_RETURN_FLAG)) {
         invalidateCurrentPlan();
         return false;
     }
@@ -393,7 +402,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
     bool state = false;
     const BoundingBox& bb1 = currentNode->getBoundingBoxConst();
     switch (warAction.actionType()) {
-        case ACTION_APPROACH_FLAG: {
+        case ActionType::ACTION_APPROACH_FLAG: {
             state = enemyFlag->getBoundingBoxConst().Collision(bb1);
             if (!state && _entity->destinationReached()) {
                 _entity->updateDestination(
@@ -402,7 +411,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
                         .value());
             }
         } break;
-        case ACTION_CAPTURE_FLAG: {
+        case ActionType::ACTION_CAPTURE_FLAG: {
             state = enemyFlag->getBoundingBoxConst().Collision(bb1);
             if (!state && _entity->destinationReached()) {
                 _entity->updateDestination(
@@ -411,7 +420,7 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
                         .value());
             }
         } break;
-        case ACTION_RETURN_FLAG: {
+        case ActionType::ACTION_RETURN_FLAG: {
             const SceneGraphNode* const ownFlag =
                 _workingMemory._flags[currentTeam->getTeamID()].value();
             assert(ownFlag != nullptr);
@@ -424,19 +433,19 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
                          _initialFlagPositions[currentTeam->getTeamID()]) <
                          g_ATTACK_RADIUS);
         } break;
-        case ACTION_PROTECT_FLAG_CARRIER: {
+        case ActionType::ACTION_PROTECT_FLAG_CARRIER: {
             if (_entity->destinationReached()) {
                 _entity->updateDestination(
                     _workingMemory._flagCarrier.value()->getPosition(), true);
             }
         } break;
-        case ACTION_RECOVER_FLAG: {
+        case ActionType::ACTION_RECOVER_FLAG: {
             if (_entity->destinationReached()) {
                 _entity->updateDestination(
                     _workingMemory._enemyFlagCarrier.value()->getPosition());
             }
         } break;
-        case ACTION_RETURN_TO_BASE: {
+        case ActionType::ACTION_RETURN_TO_BASE: {
             state = _entity->getPosition().distanceSquared(
                         _initialFlagPositions[currentTeam->getTeamID()]) <
                     g_ATTACK_RADIUS * g_ATTACK_RADIUS;
@@ -458,18 +467,19 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(
 void WarSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
                                          const cdiggins::any& msg_content) {
     switch (msg) {
-        case HAVE_FLAG: {
+        case AIMsg::HAVE_FLAG: {
             _workingMemory._teamMateHasFlag.value(true);
             _workingMemory._flagCarrier.value(sender);
         } break;
-        case ENEMY_HAS_FLAG: {
+        case AIMsg::ENEMY_HAS_FLAG: {
             _workingMemory._enemyHasFlag.value(true);
             _workingMemory._enemyFlagCarrier.value(sender);
-            worldState().setVariable(GOAPFact(EnemyHasFlag), GOAPValue(true));
+            worldState().setVariable(GOAPFact(Fact::EnemyHasFlag),
+                                     GOAPValue(true));
         } break;
     };
 
-    if (msg == HAVE_FLAG || msg == ENEMY_HAS_FLAG) {
+    if (msg == AIMsg::HAVE_FLAG || msg == AIMsg::ENEMY_HAS_FLAG) {
         invalidateCurrentPlan();
     }
 }

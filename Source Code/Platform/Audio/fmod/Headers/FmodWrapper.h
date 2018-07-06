@@ -45,7 +45,7 @@ namespace Divide {
 
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
   public:
-    ErrorCode initAudioAPI() { return FMOD_AUDIO_INIT_ERROR; }
+    ErrorCode initAudioAPI() { return ErrorCode::FMOD_AUDIO_INIT_ERROR; }
 
     void closeAudioAPI() {}
 

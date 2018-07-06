@@ -46,7 +46,7 @@ class Frustum {
     void Extract();
 
    public:
-    enum FrustCollision {
+    enum class FrustCollision : U32 {
         FRUSTUM_OUT = 0,
         FRUSTUM_IN = 1,
         FRUSTUM_INTERSECT = 2

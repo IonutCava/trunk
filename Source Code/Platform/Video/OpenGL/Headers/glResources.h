@@ -63,9 +63,8 @@ using namespace gl45;
 #endif
 
 namespace NS_GLIM {
-class GLIM_BATCH;
-enum GLIM_ENUM : GLint;
-};
+    enum class GLIM_ENUM : int;
+}; //namespace NS_GLIM
 
 namespace Divide {
 namespace GLUtil {
@@ -106,30 +105,30 @@ namespace GL_ENUM_TABLE {
 void fill();
 
 extern GLenum
-    glBlendTable[enum_to_uint_const(BlendProperty::BlendProperty_PLACEHOLDER)];
-extern GLenum glBlendOpTable[enum_to_uint_const(
-    BlendOperation::BlendOperation_PLACEHOLDER)];
-extern GLenum glCompareFuncTable[enum_to_uint_const(
-    ComparisonFunction::ComparisonFunction_PLACEHOLDER)];
-extern GLenum glStencilOpTable[enum_to_uint_const(
-    StencilOperation::StencilOperation_PLACEHOLDER)];
+    glBlendTable[to_const_uint(BlendProperty::COUNT)];
+extern GLenum glBlendOpTable[to_const_uint(
+    BlendOperation::COUNT)];
+extern GLenum glCompareFuncTable[to_const_uint(
+    ComparisonFunction::COUNT)];
+extern GLenum glStencilOpTable[to_const_uint(
+    StencilOperation::COUNT)];
 extern GLenum
-    glCullModeTable[enum_to_uint_const(CullMode::CullMode_PLACEHOLDER)];
+    glCullModeTable[to_const_uint(CullMode::COUNT)];
 extern GLenum
-    glFillModeTable[enum_to_uint_const(FillMode::FillMode_PLACEHOLDER)];
-extern GLenum glTextureTypeTable[enum_to_uint_const(
-    TextureType::TextureType_PLACEHOLDER)];
-extern GLenum glImageFormatTable[enum_to_uint_const(
-    GFXImageFormat::GFXImageFormat_PLACEHOLDER)];
-extern GLenum glPrimitiveTypeTable[enum_to_uint_const(
-    PrimitiveType::PrimitiveType_PLACEHOLDER)];
-extern GLenum glDataFormat[enum_to_uint_const(GFXDataFormat::GDF_PLACEHOLDER)];
+    glFillModeTable[to_const_uint(FillMode::COUNT)];
+extern GLenum glTextureTypeTable[to_const_uint(
+    TextureType::COUNT)];
+extern GLenum glImageFormatTable[to_const_uint(
+    GFXImageFormat::COUNT)];
+extern GLenum glPrimitiveTypeTable[to_const_uint(
+    PrimitiveType::COUNT)];
+extern GLenum glDataFormat[to_const_uint(GFXDataFormat::COUNT)];
 extern GLenum
-    glWrapTable[enum_to_uint_const(TextureWrap::TextureWrap_PLACEHOLDER)];
-extern GLenum glTextureFilterTable[enum_to_uint_const(
-    TextureFilter::TextureFilter_PLACEHOLDER)];
-extern NS_GLIM::GLIM_ENUM glimPrimitiveType[enum_to_uint_const(
-    PrimitiveType::PrimitiveType_PLACEHOLDER)];
+    glWrapTable[to_const_uint(TextureWrap::COUNT)];
+extern GLenum glTextureFilterTable[to_const_uint(
+    TextureFilter::COUNT)];
+extern NS_GLIM::GLIM_ENUM glimPrimitiveType[to_const_uint(
+    PrimitiveType::COUNT)];
 
 };  // namespace GL_ENUM_TABLE
 };  // namespace GLUtil

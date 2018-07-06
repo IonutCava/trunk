@@ -147,7 +147,7 @@ Material::TextureOperation getTextureOperation(const char *operation) {
 void saveTextureXML(const std::string &textureNode, Texture *texture,
                     ptree &tree, const std::string &operation = "") {
     const SamplerDescriptor &sampler = texture->getCurrentSampler();
-    while (texture->getState() != RES_LOADED) {
+    while (texture->getState() != ResourceState::RES_LOADED) {
         // texture not fully loaded yet
     }
 
@@ -201,7 +201,7 @@ Texture *loadTextureXML(const std::string &textureNode,
 inline std::string getRendererTypeName(RendererType type) {
     switch (type) {
         default:
-        case RendererType::RendererType_PLACEHOLDER:
+        case RendererType::COUNT:
             return "Unknown_Renderer_Type";
         case RendererType::RENDERER_FORWARD_PLUS:
             return "Forward_Renderer";
@@ -641,7 +641,7 @@ void loadGeometry(const std::string &file, Scene *const scene) {
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
-            model.type = GEOMETRY;
+            model.type = GeometryType::GEOMETRY;
             model.version = pt.get<F32>(name + ".version");
 
             if (boost::optional<ptree &> child =
@@ -715,7 +715,7 @@ void loadGeometry(const std::string &file, Scene *const scene) {
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
-            model.type = VEGETATION;
+            model.type = GeometryType::VEGETATION;
             model.version = pt.get<F32>(name + ".version");
             if (boost::optional<ptree &> child =
                     pt.get_child_optional(name + ".castsShadows")) {
@@ -808,7 +808,7 @@ void loadGeometry(const std::string &file, Scene *const scene) {
                 model.data = 0;
             }
 
-            model.type = PRIMITIVE;
+            model.type = GeometryType::PRIMITIVE;
             model.version = pt.get<F32>(name + ".version");
 
             if (boost::optional<ptree &> child =
@@ -930,14 +930,14 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
     mat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture1")) {
-        mat->setTexture(ShaderProgram::TEXTURE_UNIT0,
+        mat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0,
                         loadTextureXML("diffuseTexture1",
                                        pt.get("diffuseTexture1.file", "none")));
     }
 
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture2")) {
-        mat->setTexture(ShaderProgram::TEXTURE_UNIT1,
+        mat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT1,
                         loadTextureXML("diffuseTexture2",
                                        pt.get("diffuseTexture2.file", "none")),
                         getTextureOperation(
@@ -947,7 +947,7 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
 
     if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap")) {
         mat->setTexture(
-            ShaderProgram::TEXTURE_NORMALMAP,
+            ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
             loadTextureXML("bumpMap", pt.get("bumpMap.file", "none")));
         if (boost::optional<ptree &> child =
                 pt.get_child_optional("bumpMap.method")) {
@@ -958,13 +958,13 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
 
     if (boost::optional<ptree &> child = pt.get_child_optional("opacityMap")) {
         mat->setTexture(
-            ShaderProgram::TEXTURE_OPACITY,
+            ShaderProgram::TextureUsage::TEXTURE_OPACITY,
             loadTextureXML("opacityMap", pt.get("opacityMap.file", "none")));
     }
 
     if (boost::optional<ptree &> child = pt.get_child_optional("specularMap")) {
         mat->setTexture(
-            ShaderProgram::TEXTURE_SPECULAR,
+            ShaderProgram::TextureUsage::TEXTURE_SPECULAR,
             loadTextureXML("specularMap", pt.get("specularMap.file", "none")));
     }
 
@@ -1027,27 +1027,30 @@ void dumpMaterial(Material &mat) {
 
     Texture *texture = nullptr;
 
-    if ((texture = mat.getTexture(ShaderProgram::TEXTURE_UNIT0)) != nullptr) {
+    if ((texture = mat.getTexture(
+             ShaderProgram::TextureUsage::TEXTURE_UNIT0)) != nullptr) {
         saveTextureXML("diffuseTexture1", texture, pt_writer);
     }
 
-    if ((texture = mat.getTexture(ShaderProgram::TEXTURE_UNIT1)) != nullptr) {
+    if ((texture = mat.getTexture(
+             ShaderProgram::TextureUsage::TEXTURE_UNIT1)) != nullptr) {
         saveTextureXML("diffuseTexture2", texture, pt_writer,
                        getTextureOperationName(mat.getTextureOperation()));
     }
 
-    if ((texture = mat.getTexture(ShaderProgram::TEXTURE_NORMALMAP)) !=
-        nullptr) {
+    if ((texture = mat.getTexture(
+             ShaderProgram::TextureUsage::TEXTURE_NORMALMAP)) != nullptr) {
         saveTextureXML("bumpMap", texture, pt_writer);
         pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
     }
 
-    if ((texture = mat.getTexture(ShaderProgram::TEXTURE_OPACITY)) != nullptr) {
+    if ((texture = mat.getTexture(
+             ShaderProgram::TextureUsage::TEXTURE_OPACITY)) != nullptr) {
         saveTextureXML("opacityMap", texture, pt_writer);
     }
 
-    if ((texture = mat.getTexture(ShaderProgram::TEXTURE_SPECULAR)) !=
-        nullptr) {
+    if ((texture = mat.getTexture(
+             ShaderProgram::TextureUsage::TEXTURE_SPECULAR)) != nullptr) {
         saveTextureXML("specularMap", texture, pt_writer);
     }
 
@@ -1071,8 +1074,9 @@ void dumpMaterial(Material &mat) {
 
     FILE *xml = fopen(fileLocation.c_str(), "w");
     fclose(xml);
-    write_xml(fileLocation, pt_writer, std::locale(), 
-        boost::property_tree::xml_writer_make_settings<ptree::key_type>('\t', 1));
+    write_xml(fileLocation, pt_writer, std::locale(),
+              boost::property_tree::xml_writer_make_settings<ptree::key_type>(
+                  '\t', 1));
 }
 };  // namespace XML
 };  // namespace Divide

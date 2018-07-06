@@ -11,7 +11,7 @@ namespace Divide {
 BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
                                                const vec2<U16>& resolution,
                                                SamplerDescriptor* const sampler)
-    : PreRenderOperator(BLOOM_STAGE, resolution, sampler),
+    : PreRenderOperator(PostFXRenderStage::BLOOM_STAGE, resolution, sampler),
       _outputFB(result),
       _tempHDRFB(nullptr),
       _luminaMipLevel(0) {
@@ -28,8 +28,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
                                           GFXDataFormat::UNSIGNED_BYTE);
     tempBloomDescriptor.setSampler(*_internalSampler);
 
-    _tempBloomFB->AddAttachment(tempBloomDescriptor, TextureDescriptor::Color0);
-    _outputFB->AddAttachment(tempBloomDescriptor, TextureDescriptor::Color0);
+    _tempBloomFB->AddAttachment(tempBloomDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _outputFB->AddAttachment(tempBloomDescriptor, TextureDescriptor::AttachmentType::Color0);
     _outputFB->setClearColor(DefaultColors::BLACK());
     ResourceDescriptor bright("bright");
     bright.setThreadedLoading(false);
@@ -38,10 +38,10 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
 
     _bright = CreateResource<ShaderProgram>(bright);
     _blur = CreateResource<ShaderProgram>(blur);
-    _bright->UniformTexture("texScreen", ShaderProgram::TEXTURE_UNIT0);
+    _bright->UniformTexture("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
     _bright->UniformTexture("texExposure", 1);
     _bright->UniformTexture("texPrevExposure", 2);
-    _blur->UniformTexture("texScreen", ShaderProgram::TEXTURE_UNIT0);
+    _blur->UniformTexture("texScreen", ShaderProgram::TextureUsage::TEXTURE_UNIT0);
     _blur->Uniform("kernelSize", 10);
     _horizBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT_SHADER, "blurHorizontal");
     _vertBlur = _blur->GetSubroutineIndex(ShaderType::FRAGMENT_SHADER, "blurVertical");
@@ -103,7 +103,7 @@ void BloomPreRenderOperator::operation() {
     _outputFB->Begin(Framebuffer::defaultPolicy());
     {
         // screen FB
-        _inputFB[0]->Bind(ShaderProgram::TEXTURE_UNIT0);
+        _inputFB[0]->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _bright);
     }
     _outputFB->End();
@@ -114,7 +114,7 @@ void BloomPreRenderOperator::operation() {
     _tempBloomFB->Begin(Framebuffer::defaultPolicy());
     {
         // bright spots
-        _outputFB->Bind(ShaderProgram::TEXTURE_UNIT0);
+        _outputFB->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _blur);
     }
     _tempBloomFB->End();
@@ -124,7 +124,7 @@ void BloomPreRenderOperator::operation() {
     _outputFB->Begin(Framebuffer::defaultPolicy());
     {
         // horizontally blurred bright spots
-        _tempBloomFB->Bind(ShaderProgram::TEXTURE_UNIT0);
+        _tempBloomFB->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _blur);
         // clear states
     }
@@ -140,7 +140,7 @@ void BloomPreRenderOperator::toneMapScreen() {
                                         GFXImageFormat::RGBA16F,
                                         GFXDataFormat::FLOAT_16);
         hdrDescriptor.setSampler(*_internalSampler);
-        _tempHDRFB->AddAttachment(hdrDescriptor, TextureDescriptor::Color0);
+        _tempHDRFB->AddAttachment(hdrDescriptor, TextureDescriptor::AttachmentType::Color0);
         _tempHDRFB->Create(_inputFB[0]->getWidth(), _inputFB[0]->getHeight());
 
         _luminaFB[0] = GFX_DEVICE.newFB();
@@ -155,7 +155,7 @@ void BloomPreRenderOperator::toneMapScreen() {
                                          GFXImageFormat::RED16F,
                                          GFXDataFormat::FLOAT_16);
         lumaDescriptor.setSampler(lumaSampler);
-        _luminaFB[0]->AddAttachment(lumaDescriptor, TextureDescriptor::Color0);
+        _luminaFB[0]->AddAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
         U32 lumaRez = nextPOW2(_inputFB[0]->getWidth() / 3);
         // make the texture square sized and power of two
         _luminaFB[0]->Create(lumaRez, lumaRez);
@@ -163,7 +163,7 @@ void BloomPreRenderOperator::toneMapScreen() {
         lumaSampler.setFilters(TextureFilter::TEXTURE_FILTER_LINEAR);
         lumaSampler.toggleMipMaps(false);
         lumaDescriptor.setSampler(lumaSampler);
-        _luminaFB[1]->AddAttachment(lumaDescriptor, TextureDescriptor::Color0);
+        _luminaFB[1]->AddAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
 
         _luminaFB[1]->Create(1, 1);
         _luminaMipLevel = 0;

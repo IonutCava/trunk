@@ -103,11 +103,11 @@ class Vegetation : public SceneNode {
     U32 getQueryID();
 
    private:
-    enum CullType {
+    enum class CullType : U32 {
         PASS_THROUGH = 0,
         INSTANCE_CLOUD_REDUCTION = 1,
         HI_Z_CULL = 2,
-        CullType_PLACEHOLDER = 3
+        COUNT
     };
     // variables
     bool _render;  ///< Toggle vegetation rendering On/Off
@@ -133,7 +133,7 @@ class Vegetation : public SceneNode {
     U32 _writeBuffer;
     U32 _instanceCountGrass;
     U32 _instanceCountTrees;
-    U32 _instanceRoutineIdx[CullType_PLACEHOLDER];
+    U32 _instanceRoutineIdx[to_const_uint(CullType::COUNT)];
     vectorImpl<F32> _grassScales;
     vectorImpl<vec4<F32> > _grassPositions;
     // vectorImpl<mat4<F32> > _grassMatricesTemp;

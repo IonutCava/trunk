@@ -10,7 +10,7 @@ namespace Divide {
 using namespace AI;
 
 VisualSensor::VisualSensor(AIEntity* const parentEntity)
-    : Sensor(parentEntity, VISUAL_SENSOR) {}
+    : Sensor(parentEntity, SensorType::VISUAL_SENSOR) {}
 
 VisualSensor::~VisualSensor() {
     for (NodeContainerMap::value_type& container : _nodeContainerMap) {

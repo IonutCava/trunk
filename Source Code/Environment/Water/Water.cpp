@@ -10,12 +10,12 @@ namespace Divide {
 
 WaterPlane::WaterPlane()
     : SceneNode(SceneNodeType::TYPE_WATER),
-      Reflector(TYPE_WATER_SURFACE, vec2<U16>(1024, 1024)),
+      Reflector(ReflectorType::TYPE_WATER_SURFACE, vec2<U16>(1024, 1024)),
       _plane(nullptr),
       _waterLevel(0),
       _waterDepth(0),
-      _refractionPlaneID(ClipPlaneIndex::ClipPlaneIndex_PLACEHOLDER),
-      _reflectionPlaneID(ClipPlaneIndex::ClipPlaneIndex_PLACEHOLDER),
+      _refractionPlaneID(ClipPlaneIndex::COUNT),
+      _reflectionPlaneID(ClipPlaneIndex::COUNT),
       _reflectionRendering(false),
       _refractionRendering(false),
       _refractionTexture(nullptr),
@@ -41,15 +41,15 @@ WaterPlane::WaterPlane()
                     .getCameraConst()
                     .getZPlanes()
                     .y;
-    _plane->setCorner(Quad3D::TOP_LEFT,
+    _plane->setCorner(Quad3D::CornerLocation::TOP_LEFT,
                       vec3<F32>(-_farPlane * 1.5f, 0, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::TOP_RIGHT,
+    _plane->setCorner(Quad3D::CornerLocation::TOP_RIGHT,
                       vec3<F32>(_farPlane * 1.5f, 0, -_farPlane * 1.5f));
-    _plane->setCorner(Quad3D::BOTTOM_LEFT,
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
                       vec3<F32>(-_farPlane * 1.5f, 0, _farPlane * 1.5f));
-    _plane->setCorner(Quad3D::BOTTOM_RIGHT,
+    _plane->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
                       vec3<F32>(_farPlane * 1.5f, 0, _farPlane * 1.5f));
-    _plane->setNormal(Quad3D::CORNER_ALL, WORLD_Y_AXIS);
+    _plane->setNormal(Quad3D::CornerLocation::CORNER_ALL, WORLD_Y_AXIS);
     _plane->renderState().setDrawState(false);
     // The water doesn't cast shadows, doesn't need ambient occlusion and
     // doesn't have real "depth"
@@ -67,7 +67,7 @@ WaterPlane::WaterPlane()
 
     _refractionTexture = GFX_DEVICE.newFB();
     _refractionTexture->AddAttachment(refractionDescriptor,
-                                      TextureDescriptor::Color0);
+                                      TextureDescriptor::AttachmentType::Color0);
     _refractionTexture->toggleDepthBuffer(true);
     _refractionTexture->Create(_resolution.x, _resolution.y);
 }

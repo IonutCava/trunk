@@ -43,7 +43,7 @@ class GUIText : public GUIElement, public TextLabel {
     GUIText(const stringImpl& id, const stringImpl& text,
             const vec2<I32>& position, const stringImpl& font,
             const vec3<F32>& color, CEGUI::Window* parent, U32 textHeight = 16)
-        : GUIElement(parent, GUI_TEXT, position),
+        : GUIElement(parent, GUIType::GUI_TEXT, position),
           TextLabel(text, font, color, textHeight) {}
     void mouseMoved(const GUIEvent& event);
     void onMouseUp(const GUIEvent& event);

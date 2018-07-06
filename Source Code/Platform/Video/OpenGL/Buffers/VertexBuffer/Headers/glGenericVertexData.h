@@ -41,10 +41,10 @@
 namespace Divide {
 
 class glGenericVertexData : public GenericVertexData {
-    enum GVDUsage {
+    enum class GVDUsage : U32 {
         GVD_USAGE_DRAW = 0,
         GVD_USAGE_FDBCK = 1,
-        GVD_USAGE_PLACEHOLDER = 2
+        COUNT
     };
 
    public:
@@ -107,7 +107,7 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _indexBuffer;
     GLuint _transformFeedback;
     GLuint _numQueries;
-    GLuint _vertexArray[GVD_USAGE_PLACEHOLDER];
+    GLuint _vertexArray[to_const_uint(GVDUsage::COUNT)];
     bool* _bufferSet;
     bool* _bufferPersistent;
     GLuint* _elementCount;

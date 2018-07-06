@@ -54,7 +54,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode& currentNode,
     // No point in updating visual information if the scene disabled object
     // rendering
     // or rendering of their bounding boxes
-    if (bitCompare(sceneRenderState.objectState(), SceneRenderState::NO_DRAW)) {
+    if (sceneRenderState.objectState() == SceneRenderState::ObjectRenderState::NO_DRAW) {
         return;
     }
     RenderStage currentStage = GFX_DEVICE.getRenderStage();

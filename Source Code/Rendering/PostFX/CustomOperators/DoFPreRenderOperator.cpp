@@ -10,13 +10,13 @@ namespace Divide {
 DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
                                            const vec2<U16>& resolution,
                                            SamplerDescriptor* const sampler)
-    : PreRenderOperator(DOF_STAGE, resolution, sampler), _outputFB(result) {
+    : PreRenderOperator(PostFXRenderStage::DOF_STAGE, resolution, sampler), _outputFB(result) {
     TextureDescriptor dofDescriptor(TextureType::TEXTURE_2D,
                                     GFXImageFormat::RGBA8,
                                     GFXDataFormat::UNSIGNED_BYTE);
     dofDescriptor.setSampler(*_internalSampler);
 
-    _samplerCopy->AddAttachment(dofDescriptor, TextureDescriptor::Color0);
+    _samplerCopy->AddAttachment(dofDescriptor, TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
     _samplerCopy->Create(resolution.width, resolution.height);
     ResourceDescriptor dof("DepthOfField");
@@ -48,7 +48,7 @@ void DoFPreRenderOperator::operation() {
 
     _outputFB->Begin(Framebuffer::defaultPolicy());
     _samplerCopy->Bind(0);  // screenFB
-    _inputFB[1]->Bind(1, TextureDescriptor::Depth);  // depthFB
+    _inputFB[1]->Bind(1, TextureDescriptor::AttachmentType::Depth);  // depthFB
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
     _outputFB->End();
 }

@@ -10,7 +10,7 @@
 namespace Divide {
 
 CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
-    : ShadowMap(light, shadowCamera, SHADOW_TYPE_CubeMap) {
+    : ShadowMap(light, shadowCamera, ShadowType::SHADOW_TYPE_CubeMap) {
     Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
                      "Single Shadow Map");
     // Default filters, LINEAR is OK for this
@@ -27,7 +27,7 @@ CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
     depthMapDescriptor.setSampler(depthMapSampler);
 
     _depthMap = GFX_DEVICE.newFB();
-    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
+    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
     _depthMap->toggleColorWrites(false);
 }
 

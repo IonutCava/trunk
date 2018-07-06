@@ -10,8 +10,8 @@
 namespace Divide {
 
 PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::SGN_COMP_PHYSICS, parentSGN),
-      _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
+    : SGNComponent(SGNComponent::ComponentType::SGN_COMP_PHYSICS, parentSGN),
+      _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
       _transformUpdated(true),
       _physicsAsset(nullptr),
       _transform(nullptr) {
@@ -60,22 +60,22 @@ void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     }
 
     if (_parentSGN.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-        U32 obj3DExclussionMask = enum_to_uint(Object3D::ObjectType::TEXT_3D) |
-                                  enum_to_uint(Object3D::ObjectType::MESH) |
-                                  enum_to_uint(Object3D::ObjectType::FLYWEIGHT);
+        U32 obj3DExclussionMask = to_uint(Object3D::ObjectType::TEXT_3D) |
+                                  to_uint(Object3D::ObjectType::MESH) |
+                                  to_uint(Object3D::ObjectType::FLYWEIGHT);
         if (!bitCompare(obj3DExclussionMask,
-                        enum_to_uint(
+                        to_uint(
                             _parentSGN.getNode<Object3D>()->getObjectType()))) {
             PHYSICS_DEVICE.createActor(
                 _parentSGN, sceneName,
-                _parentSGN.usageContext() == SceneGraphNode::NODE_STATIC
-                    ? MASK_RIGID_STATIC
-                    : MASK_RIGID_DYNAMIC,
-                _physicsCollisionGroup == NODE_COLLIDE_IGNORE
-                    ? GROUP_NON_COLLIDABLE
-                    : (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH
-                           ? GROUP_COLLIDABLE_NON_PUSHABLE
-                           : GROUP_COLLIDABLE_PUSHABLE));
+                _parentSGN.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC
+                    ? PhysicsActorMask::MASK_RIGID_STATIC
+                    : PhysicsActorMask::MASK_RIGID_DYNAMIC,
+                _physicsCollisionGroup == PhysicsGroup::NODE_COLLIDE_IGNORE
+                    ? PhysicsCollisionGroup::GROUP_NON_COLLIDABLE
+                    : (_physicsCollisionGroup == PhysicsGroup::NODE_COLLIDE_NO_PUSH
+                           ? PhysicsCollisionGroup::GROUP_COLLIDABLE_NON_PUSHABLE
+                           : PhysicsCollisionGroup::GROUP_COLLIDABLE_PUSHABLE));
         }
     }
 }

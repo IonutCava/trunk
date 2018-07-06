@@ -51,7 +51,7 @@ void NetworkScene::processGUI(const U64 deltaTime) {
 
 void NetworkScene::checkPatches() {
     if (_modelDataArray.empty()) return;
-    WorldPacket p(CMSG_GEOMETRY_LIST);
+    WorldPacket p(OPCodesEx::CMSG_GEOMETRY_LIST);
     p << stringImpl("NetworkScene");
     p << _modelDataArray.size();
 
@@ -72,7 +72,7 @@ bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
     _paramHandler.setParam("serverResponse", "waiting");
-    addLight(LIGHT_TYPE_DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
+    addLight(LightType::LIGHT_TYPE_DIRECTIONAL, GET_ACTIVE_SCENEGRAPH().getRoot());
     _currentSky =
         &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
     renderState().getCamera().setEye(vec3<F32>(0, 30, -30));
@@ -81,7 +81,7 @@ bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
 }
 
 void NetworkScene::test() {
-    WorldPacket p(CMSG_PING);
+    WorldPacket p(OPCodesEx::CMSG_PING);
     p << Time::ElapsedMilliseconds();
     ASIOImpl::getInstance().sendPacket(p);
 }

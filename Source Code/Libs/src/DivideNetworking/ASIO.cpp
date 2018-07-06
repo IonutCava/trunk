@@ -37,7 +37,7 @@ ASIO::~ASIO() {
 
 void ASIO::disconnect() {
     if (!_connected) return;
-    WorldPacket p(CMSG_REQUEST_DISCONNECT);
+    WorldPacket p(OPCodes::CMSG_REQUEST_DISCONNECT);
     p << _localClient->getSocket().local_endpoint().address().to_string();
     sendPacket(p);
 }

@@ -50,7 +50,7 @@ class SamplerDescriptor : public PropertyDescriptor {
    public:
     /// The constructer specifies the type so it can be used later for
     /// downcasting if needed
-    SamplerDescriptor() : PropertyDescriptor(DESCRIPTOR_SAMPLER) {
+    SamplerDescriptor() : PropertyDescriptor(DescriptorType::DESCRIPTOR_SAMPLER) {
         setDefaultValues();
     }
 
@@ -211,24 +211,24 @@ class TextureDescriptor : public PropertyDescriptor {
    public:
     /// This enum is used when creating Frame Buffers to define the channel that
     /// the texture will attach to
-    enum AttachmentType {
+    enum class AttachmentType : U32 {
         Color0 = 0,
         Color1 = 1,
         Color2 = 2,
         Color3 = 3,
         Depth = 4,
-        AttachmentType_PLACEHOLDER = 5
+        COUNT
 
     };
 
     TextureDescriptor()
-        : TextureDescriptor(TextureType::TextureType_PLACEHOLDER,
-                            GFXImageFormat::GFXImageFormat_PLACEHOLDER,
-                            GFXDataFormat::GDF_PLACEHOLDER) {}
+        : TextureDescriptor(TextureType::COUNT,
+                            GFXImageFormat::COUNT,
+                            GFXDataFormat::COUNT) {}
 
     TextureDescriptor(TextureType type, GFXImageFormat internalFormat,
                       GFXDataFormat dataType)
-        : PropertyDescriptor(DESCRIPTOR_TEXTURE),
+        : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
           _type(type),
           _internalFormat(internalFormat),
           _dataType(dataType) {

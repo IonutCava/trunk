@@ -41,12 +41,12 @@ class OcclusionQuery {
     OcclusionQuery() {}
     virtual ~OcclusionQuery() {}
 
-    enum QueryResult {
+    enum class QueryResult : U32 {
         OC_VISIBLE = 0,
         OC_OCCLUDED,
         OC_WAITING,
         OC_ERROR,
-        OC_PLACEHOLDER
+        COUNT
     };
 
     /// Returns the status of the last query

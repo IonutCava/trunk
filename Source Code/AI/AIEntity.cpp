@@ -31,7 +31,7 @@ AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)
       _moveWaitTimer(0ULL),
       _stopped(false) {
     _currentPosition.set(currentPosition);
-    _agentRadiusCategory = AGENT_RADIUS_SMALL;
+    _agentRadiusCategory = PresetAgentRadius::AGENT_RADIUS_SMALL;
 }
 
 AIEntity::~AIEntity() {
@@ -103,10 +103,10 @@ bool AIEntity::addSensor(SensorType type) {
     WriteLock w_lock(_updateMutex);
     Sensor* sensor = nullptr;
     switch (type) {
-        case AUDIO_SENSOR: {
+        case SensorType::AUDIO_SENSOR: {
             sensor = AudioSensorConstructorAttorney::construct(this);
         } break;
-        case VISUAL_SENSOR: {
+        case SensorType::VISUAL_SENSOR: {
             sensor = VisualSensorConstructorAttorney::construct(this);
         } break;
     };

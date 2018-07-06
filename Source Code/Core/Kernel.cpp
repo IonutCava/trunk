@@ -166,7 +166,7 @@ void Kernel::mainLoopApp() {
     GFX_DEVICE.beginFrame();
     {
         // Launch the FRAME_STARTED event
-        frameMgr.createEvent(_currentTime, FRAME_EVENT_STARTED, evt);
+        frameMgr.createEvent(_currentTime, FrameEventType::FRAME_EVENT_STARTED, evt);
         _keepAlive = frameMgr.frameEvent(evt);
 
         // Process the current frame
@@ -174,18 +174,18 @@ void Kernel::mainLoopApp() {
 
         // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended
         // event)
-        frameMgr.createEvent(_currentTime, FRAME_EVENT_PROCESS, evt);
+        frameMgr.createEvent(_currentTime, FrameEventType::FRAME_EVENT_PROCESS, evt);
         _keepAlive = frameMgr.frameEvent(evt) && _keepAlive;
     }
     GFX_DEVICE.endFrame();
 
     // Launch the FRAME_ENDED event (buffers have been swapped)
-    frameMgr.createEvent(_currentTime, FRAME_EVENT_ENDED, evt);
+    frameMgr.createEvent(_currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);
     _keepAlive = frameMgr.frameEvent(evt) && _keepAlive;
 
     _keepAlive = !APP.ShutdownRequested() && _keepAlive;
     ErrorCode err = APP.errorCode();
-    if (err != NO_ERR) {
+    if (err != ErrorCode::NO_ERR) {
         Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
         _keepAlive = false;
     }
@@ -295,22 +295,22 @@ void Kernel::renderScene() {
     /// the exact same geometry
     RenderPassManager::getInstance().lock();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
     _sceneMgr.render(RenderStage::Z_PRE_PASS_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)->End();
 
     _GFX.ConstructHIZ();
 
     if (postProcessing) {
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
             ->Begin(Framebuffer::defaultPolicy());
     }
 
     _sceneMgr.render(stage, *this);
 
     if (postProcessing) {
-        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->End();
+        _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
         PostFX::getInstance().displayScene();
     }
 
@@ -333,15 +333,15 @@ void Kernel::renderSceneAnaglyph() {
     currentCamera->renderLookAt();
     RenderPassManager::getInstance().lock();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
     SceneManager::getInstance().render(RenderStage::Z_PRE_PASS_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)->End();
     // first screen buffer
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
         ->Begin(Framebuffer::defaultPolicy());
     SceneManager::getInstance().render(stage, *this);
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->End();
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)->End();
 
     RenderPassManager::getInstance().unlock();
 
@@ -350,15 +350,15 @@ void Kernel::renderSceneAnaglyph() {
     currentCamera->renderLookAt();
     RenderPassManager::getInstance().lock();
     // Z-prePass
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
         ->Begin(Framebuffer::defaultPolicy());
     SceneManager::getInstance().render(RenderStage::Z_PRE_PASS_STAGE, *this);
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)->End();
     // second screen buffer
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)
         ->Begin(Framebuffer::defaultPolicy());
     SceneManager::getInstance().render(stage, *this);
-    _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->End();
+    _GFX.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)->End();
 
     RenderPassManager::getInstance().unlock();
 
@@ -368,7 +368,7 @@ void Kernel::renderSceneAnaglyph() {
 bool Kernel::presentToScreen(FrameEvent& evt) {
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
 
-    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_START, evt);
+    frameMgr.createEvent(_currentTime, FrameEventType::FRAME_PRERENDER_START, evt);
     if (!frameMgr.frameEvent(evt)) {
         return false;
     }
@@ -379,21 +379,21 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     // perform time-sensitive shader tasks
     ShaderManager::getInstance().update(_currentTimeDelta);
 
-    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_END, evt);
+    frameMgr.createEvent(_currentTime, FrameEventType::FRAME_PRERENDER_END, evt);
     if (!frameMgr.frameEvent(evt)) {
         return false;
     }
 
     renderScene();
 
-    frameMgr.createEvent(_currentTime, FRAME_POSTRENDER_START, evt);
+    frameMgr.createEvent(_currentTime, FrameEventType::FRAME_POSTRENDER_START, evt);
     if (!frameMgr.frameEvent(evt)) {
         return false;
     }
 
     _sceneMgr.postRender();
 
-    frameMgr.createEvent(_currentTime, FRAME_POSTRENDER_END, evt);
+    frameMgr.createEvent(_currentTime, FrameEventType::FRAME_POSTRENDER_END, evt);
     if (!frameMgr.frameEvent(evt)) {
         return false;
     }
@@ -442,17 +442,17 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),
                       std::placeholders::_1, std::placeholders::_2));
-    _PFX.setAPI(PXDevice::PhysX);
-    _SFX.setAPI(SFXDevice::SDL);
+    _PFX.setAPI(PXDevice::PhysicsAPI::PhysX);
+    _SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default
-    _GFX.setAPI(GFXDevice::OpenGL);
+    _GFX.setAPI(GFXDevice::RenderAPI::OpenGL);
     _GFX.setStateChangeExclusionMask(
-        enum_to_uint(SceneNodeType::TYPE_LIGHT) | 
-        enum_to_uint(SceneNodeType::TYPE_TRIGGER) | 
-        enum_to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) | 
-        enum_to_uint(SceneNodeType::TYPE_SKY) |
-        enum_to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) | 
-        enum_to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
+        to_uint(SceneNodeType::TYPE_LIGHT) | 
+        to_uint(SceneNodeType::TYPE_TRIGGER) | 
+        to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) | 
+        to_uint(SceneNodeType::TYPE_SKY) |
+        to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) | 
+        to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
     // Target FPS is usually 60. So all movement is capped around that value
     Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
     // Load info from XML files
@@ -467,7 +467,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ErrorCode initError =
         _GFX.initRenderingAPI(vec2<U16>(400, 300), _argc, _argv);
     // If we could not initialize the graphics device, exit
-    if (initError != NO_ERR) {
+    if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
@@ -492,33 +492,35 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     LightManager::getInstance().init();
 
     Console::printfn(Locale::get("START_SOUND_INTERFACE"));
-    if ((initError = _SFX.initAudioAPI()) != NO_ERR) {
+    if ((initError = _SFX.initAudioAPI()) != ErrorCode::NO_ERR) {
         return initError;
     }
 
     Console::printfn(Locale::get("START_PHYSICS_INTERFACE"));
     if ((initError = _PFX.initPhysicsAPI(Config::TARGET_FRAME_RATE)) !=
-        NO_ERR) {
+        ErrorCode::NO_ERR) {
         return initError;
     }
 
     // Bind the kernel with the input interface
-    Input::InputInterface::getInstance().init(
-        *this, par.getParam<stringImpl>("appTitle"));
-
+     if ((initError = Input::InputInterface::getInstance().init(
+        *this, par.getParam<stringImpl>("appTitle"))) !=
+        ErrorCode::NO_ERR) {
+        return initError;
+    }
     // Initialize GUI with our current resolution
     _GUI.init(resolution);
     _sceneMgr.init(&_GUI);
 
     if (!_sceneMgr.load(startupScene, resolution)) {  //< Load the scene
         Console::errorfn(Locale::get("ERROR_SCENE_LOAD"), startupScene.c_str());
-        return MISSING_SCENE_DATA;
+        return ErrorCode::MISSING_SCENE_DATA;
     }
 
     if (!_sceneMgr.checkLoadFlag()) {
         Console::errorfn(Locale::get("ERROR_SCENE_LOAD_NOT_CALLED"),
                          startupScene.c_str());
-        return MISSING_SCENE_LOAD_CALL;
+        return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
 
     camera->setMoveSpeedFactor(par.getParam<F32>("options.cameraSpeed.move"));

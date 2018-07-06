@@ -11,7 +11,7 @@ namespace Divide {
 
 RenderingComponent::RenderingComponent(Material* const materialInstance,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, parentSGN),
+    : SGNComponent(SGNComponent::ComponentType::SGN_COMP_ANIMATION, parentSGN),
       _lodLevel(0),
       _castsShadows(true),
       _receiveShadows(true),
@@ -167,7 +167,8 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     SceneNodeRenderAttorney::postDraw(*node, _parentSGN, renderStage);
 
 #ifdef _DEBUG
-    if (sceneRenderState.gizmoState() == SceneRenderState::ALL_GIZMO) {
+    if (sceneRenderState.gizmoState() ==
+        SceneRenderState::GizmoState::ALL_GIZMO) {
         if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
             if (_parentSGN.getNode<Object3D>()->getObjectType() ==
                 Object3D::ObjectType::MESH) {
@@ -183,8 +184,8 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
     if (renderBoundingBox() ||
-        bitCompare(sceneRenderState.objectState(),
-                   SceneRenderState::DRAW_BOUNDING_BOX)) {
+        sceneRenderState.objectState() ==
+            SceneRenderState::ObjectRenderState::DRAW_BOUNDING_BOX) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
         GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(),
                              vec4<U8>(0, 0, 255, 255));

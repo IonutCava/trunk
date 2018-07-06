@@ -15,7 +15,7 @@
 namespace Divide {
 
 RenderQueue::RenderQueue() : _renderQueueLocked(false), _isSorted(false) {
-    //_renderBins.reserve(RenderBin::RBT_PLACEHOLDER);
+    //_renderBins.reserve(RenderBin::COUNT);
 }
 
 RenderQueue::~RenderQueue() { MemoryManager::DELETE_HASHMAP(_renderBins); }
@@ -57,65 +57,74 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
     RenderBin* temp = nullptr;
 
     switch (rbType) {
-        case RenderBin::RBT_MESH: {
+        case RenderBin::RenderBinType::RBT_MESH: {
             // By state varies based on the current rendering stage
             temp = MemoryManager_NEW RenderBinMesh(
-                RenderBin::RBT_MESH, RenderingOrder::BY_STATE, 0.0f);
+                RenderBin::RenderBinType::RBT_MESH,
+                RenderingOrder::List::BY_STATE, 0.0f);
         } break;
-        case RenderBin::RBT_TERRAIN: {
+        case RenderBin::RenderBinType::RBT_TERRAIN: {
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_TERRAIN, RenderingOrder::FRONT_TO_BACK, 1.0f);
+                RenderBin::RenderBinType::RBT_TERRAIN,
+                RenderingOrder::List::FRONT_TO_BACK, 1.0f);
         } break;
-        case RenderBin::RBT_DELEGATE: {
+        case RenderBin::RenderBinType::RBT_DELEGATE: {
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_DELEGATE, RenderingOrder::FRONT_TO_BACK, 2.0f);
+                RenderBin::RenderBinType::RBT_DELEGATE,
+                RenderingOrder::List::FRONT_TO_BACK, 2.0f);
         } break;
-        case RenderBin::RBT_SHADOWS: {
+        case RenderBin::RenderBinType::RBT_SHADOWS: {
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_SHADOWS, RenderingOrder::NONE, 3.0f);
+                RenderBin::RenderBinType::RBT_SHADOWS,
+                RenderingOrder::List::NONE, 3.0f);
         } break;
-        case RenderBin::RBT_DECALS: {
+        case RenderBin::RenderBinType::RBT_DECALS: {
             temp = MemoryManager_NEW RenderBinMesh(
-                RenderBin::RBT_DECALS, RenderingOrder::FRONT_TO_BACK, 4.0f);
+                RenderBin::RenderBinType::RBT_DECALS,
+                RenderingOrder::List::FRONT_TO_BACK, 4.0f);
         } break;
-        case RenderBin::RBT_SKY: {
+        case RenderBin::RenderBinType::RBT_SKY: {
             // Draw sky after opaque but before translucent to prevent overdraw
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_SKY, RenderingOrder::NONE, 5.0f);
+                RenderBin::RenderBinType::RBT_SKY, RenderingOrder::List::NONE,
+                5.0f);
         } break;
-        case RenderBin::RBT_WATER: {
+        case RenderBin::RenderBinType::RBT_WATER: {
             // Water does not count as translucency, because rendering is very
             // specific
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_WATER, RenderingOrder::BACK_TO_FRONT, 6.0f);
+                RenderBin::RenderBinType::RBT_WATER,
+                RenderingOrder::List::BACK_TO_FRONT, 6.0f);
         } break;
-        case RenderBin::RBT_VEGETATION_GRASS: {
+        case RenderBin::RenderBinType::RBT_VEGETATION_GRASS: {
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_VEGETATION_GRASS, RenderingOrder::BACK_TO_FRONT,
-                7.0f);
+                RenderBin::RenderBinType::RBT_VEGETATION_GRASS,
+                RenderingOrder::List::BACK_TO_FRONT, 7.0f);
         } break;
-        case RenderBin::RBT_VEGETATION_TREES: {
+        case RenderBin::RenderBinType::RBT_VEGETATION_TREES: {
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_VEGETATION_TREES, RenderingOrder::BACK_TO_FRONT,
-                7.5f);
+                RenderBin::RenderBinType::RBT_VEGETATION_TREES,
+                RenderingOrder::List::BACK_TO_FRONT, 7.5f);
         } break;
-        case RenderBin::RBT_PARTICLES: {
+        case RenderBin::RenderBinType::RBT_PARTICLES: {
             temp = MemoryManager_NEW RenderBinParticles(
-                RenderBin::RBT_PARTICLES, RenderingOrder::BACK_TO_FRONT, 8.0f);
+                RenderBin::RenderBinType::RBT_PARTICLES,
+                RenderingOrder::List::BACK_TO_FRONT, 8.0f);
         } break;
-        case RenderBin::RBT_TRANSLUCENT: {
+        case RenderBin::RenderBinType::RBT_TRANSLUCENT: {
             // When rendering translucent objects we should sort each object's
             // polygons depending on it's distance to the camera
             temp = MemoryManager_NEW RenderBinTranslucent(
-                RenderBin::RBT_TRANSLUCENT, RenderingOrder::BACK_TO_FRONT,
-                9.0f);
+                RenderBin::RenderBinType::RBT_TRANSLUCENT,
+                RenderingOrder::List::BACK_TO_FRONT, 9.0f);
         } break;
-        case RenderBin::RBT_IMPOSTOR: {
+        case RenderBin::RenderBinType::RBT_IMPOSTOR: {
             temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RBT_IMPOSTOR, RenderingOrder::FRONT_TO_BACK, 9.9f);
+                RenderBin::RenderBinType::RBT_IMPOSTOR,
+                RenderingOrder::List::FRONT_TO_BACK, 9.9f);
         } break;
         default:
-        case RenderBin::RBT_PLACEHOLDER: {
+        case RenderBin::RenderBinType::COUNT: {
             Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_CREATION"));
         } break;
     };
@@ -140,42 +149,44 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
     assert(node != nullptr);
     switch (node->getType()) {
         case SceneNodeType::TYPE_LIGHT: {
-            return getOrCreateBin(RenderBin::RBT_IMPOSTOR);
+            return getOrCreateBin(RenderBin::RenderBinType::RBT_IMPOSTOR);
         }
         case SceneNodeType::TYPE_WATER: {
-            return getOrCreateBin(RenderBin::RBT_WATER);
+            return getOrCreateBin(RenderBin::RenderBinType::RBT_WATER);
         }
         case SceneNodeType::TYPE_PARTICLE_EMITTER: {
-            return getOrCreateBin(RenderBin::RBT_PARTICLES);
+            return getOrCreateBin(RenderBin::RenderBinType::RBT_PARTICLES);
         }
         case SceneNodeType::TYPE_VEGETATION_GRASS: {
-            return getOrCreateBin(RenderBin::RBT_VEGETATION_GRASS);
+            return getOrCreateBin(
+                RenderBin::RenderBinType::RBT_VEGETATION_GRASS);
         }
         case SceneNodeType::TYPE_VEGETATION_TREES: {
-            return getOrCreateBin(RenderBin::RBT_VEGETATION_TREES);
+            return getOrCreateBin(
+                RenderBin::RenderBinType::RBT_VEGETATION_TREES);
         }
         case SceneNodeType::TYPE_SKY: {
-            return getOrCreateBin(RenderBin::RBT_SKY);
+            return getOrCreateBin(RenderBin::RenderBinType::RBT_SKY);
         }
         case SceneNodeType::TYPE_OBJECT3D: {
             if (static_cast<Object3D*>(node)->getObjectType() ==
                 Object3D::ObjectType::TERRAIN) {
-                return getOrCreateBin(RenderBin::RBT_TERRAIN);
+                return getOrCreateBin(RenderBin::RenderBinType::RBT_TERRAIN);
             }
             // Check if the object has a material with translucency
             if (matInstance && matInstance->isTranslucent()) {
                 // Add it to the appropriate bin if so ...
-                return getOrCreateBin(RenderBin::RBT_TRANSLUCENT);
+                return getOrCreateBin(
+                    RenderBin::RenderBinType::RBT_TRANSLUCENT);
             }
             //... else add it to the general geometry bin
-            return getOrCreateBin(RenderBin::RBT_MESH);
+            return getOrCreateBin(RenderBin::RenderBinType::RBT_MESH);
         }
     }
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(SceneGraphNode& sgn,
-                                 const vec3<F32>& eyePos) {
+void RenderQueue::addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
     RenderingComponent* renderingCmp = sgn.getComponent<RenderingComponent>();
     RenderBin* rb = getBinForNode(
         sgn.getNode(),

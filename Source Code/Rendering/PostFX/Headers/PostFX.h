@@ -69,7 +69,7 @@ DEFINE_SINGLETON(PostFX)
     bool _underwater;
     bool _depthPreview;
 
-    enum TexOperatorBindPoint {
+    enum class TexOperatorBindPoint : U32 {
         TEX_BIND_POINT_SCREEN = 0,
         TEX_BIND_POINT_BLOOM = 1,
         TEX_BIND_POINT_SSAO = 2,

@@ -110,8 +110,8 @@ bool DVDConverter::init() {
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
         aiProcess_FindDegenerates | aiProcess_FindInvalidData | 0;
 
-    if (GFX_DEVICE.getAPI() != GFXDevice::OpenGL &&
-        GFX_DEVICE.getAPI() != GFXDevice::OpenGLES) {
+    if (GFX_DEVICE.getAPI() != GFXDevice::RenderAPI::OpenGL &&
+        GFX_DEVICE.getAPI() != GFXDevice::RenderAPI::OpenGLES) {
         _ppsteps |= aiProcess_ConvertToLeftHanded;
     }
 
@@ -266,7 +266,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         submeshdesc.setID(count);
         if (skinned) {
             submeshdesc.setEnumValue(
-                enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+                to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
         tempSubMesh = CreateResource<SubMesh>(submeshdesc);
         if (!tempSubMesh) {
@@ -411,7 +411,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
     ResourceDescriptor materialDesc(materialName);
     if (skinned) {
         materialDesc.setEnumValue(
-            enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+            to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
     }
 
     tempMaterial = CreateResource<Material>(materialDesc);
@@ -484,7 +484,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
     tempMaterial->setOpacity(opacity);
 
     // default shading model
-    I32 shadingModel = enum_to_int(Material::ShadingMode::SHADING_PHONG);
+    I32 shadingModel = to_int(Material::ShadingMode::SHADING_PHONG);
     // Load shading model
     aiGetMaterialInteger(source, AI_MATKEY_SHADING_MODEL, &shadingModel);
     tempMaterial->setShadingMode(aiShadingModeInternalTable[shadingModel]);
@@ -558,8 +558,8 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             assert(textureRes != nullptr);
             // The first texture is always "Replace"
             tempMaterial->setTexture(
-                count == 1 ? ShaderProgram::TEXTURE_UNIT1
-                           : ShaderProgram::TEXTURE_UNIT0,
+                count == 1 ? ShaderProgram::TextureUsage::TEXTURE_UNIT1
+                           : ShaderProgram::TextureUsage::TEXTURE_UNIT0,
                 textureRes,
                 count == 0
                     ? Material::TextureOperation::TextureOperation_Replace
@@ -603,7 +603,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BumpMethod::BUMP_NORMAL);
         }  // endif
@@ -635,7 +635,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TEXTURE_NORMALMAP,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BumpMethod::BUMP_NORMAL);
         }  // endif
@@ -668,7 +668,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TEXTURE_OPACITY, textureRes,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_OPACITY, textureRes,
                                      aiTextureOperationTable[op]);
             tempMaterial->setDoubleSided(true);
         }  // endif
@@ -678,15 +678,15 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
 
         // try to find out whether the diffuse texture has any
         // non-opaque pixels. If we find a few, use it as opacity texture
-        if (tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)) {
+        if (tempMaterial->getTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0)) {
             if (!(flags & aiTextureFlags_IgnoreAlpha) &&
-                tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)
+                tempMaterial->getTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0)
                     ->hasTransparency()) {
                 ResourceDescriptor texDesc(
-                    tempMaterial->getTexture(ShaderProgram::TEXTURE_UNIT0)
+                    tempMaterial->getTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0)
                         ->getName());
                 Texture* textureRes = CreateResource<Texture>(texDesc);
-                tempMaterial->setTexture(ShaderProgram::TEXTURE_OPACITY,
+                tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_OPACITY,
                                          textureRes);
             }
         }
@@ -720,7 +720,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
             Texture* textureRes = CreateResource<Texture>(texture);
-            tempMaterial->setTexture(ShaderProgram::TEXTURE_SPECULAR,
+            tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_SPECULAR,
                                      textureRes, aiTextureOperationTable[op]);
         }  // endif
     }      // endif

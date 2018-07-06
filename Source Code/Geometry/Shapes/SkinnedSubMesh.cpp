@@ -22,7 +22,7 @@ SkinnedSubMesh::~SkinnedSubMesh() { MemoryManager::DELETE(_animator); }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
-    sgn.setComponent(SGNComponent::SGN_COMP_ANIMATION,
+    sgn.setComponent(SGNComponent::ComponentType::SGN_COMP_ANIMATION,
                      MemoryManager_NEW AnimationComponent(_animator, sgn));
     SubMesh::postLoad(sgn);
 }

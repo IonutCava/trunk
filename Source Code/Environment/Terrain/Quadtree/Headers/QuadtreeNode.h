@@ -38,9 +38,14 @@
 
 namespace Divide {
 
-enum ChildPosition { CHILD_NW = 0, CHILD_NE = 1, CHILD_SW = 2, CHILD_SE = 3 };
+enum class ChildPosition :U32 { 
+    CHILD_NW = 0, 
+    CHILD_NE = 1, 
+    CHILD_SW = 2, 
+    CHILD_SE = 3
+};
 
-enum ChunkBit {
+enum class ChunkBit : U32 {
     CHUNK_BIT_TESTCHILDREN = toBit(1),
     CHUNK_BIT_WATERREFLECTION = toBit(2),
     CHUNK_BIT_SHADOWMAP = toBit(3)
@@ -73,16 +78,18 @@ class QuadtreeNode {
                      SceneState& sceneState);
 
     inline bool isALeaf() const {
-        return !(_children[CHILD_NW] && _children[CHILD_NE] &&
-                 _children[CHILD_SW] && _children[CHILD_SE]);
+        return !(getChild(ChildPosition::CHILD_NW) && 
+                 getChild(ChildPosition::CHILD_NE) &&
+                 getChild(ChildPosition::CHILD_SW) && 
+                 getChild(ChildPosition::CHILD_SE));
     }
 
     inline BoundingBox& getBoundingBox() { return _boundingBox; }
     inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
     inline TerrainChunk* getChunk() { return _terrainChunk; }
 
-    inline QuadtreeNode* getChild(ChildPosition pos) { return _children[pos]; }
-    inline QuadtreeNode* getChild(U32 index) { return _children[index]; }
+    inline QuadtreeNode* getChild(ChildPosition pos) const { return getChild(to_uint(pos)); }
+    inline QuadtreeNode* getChild(U32 index) const { return _children[index]; }
 
     QuadtreeNode();
     ~QuadtreeNode();

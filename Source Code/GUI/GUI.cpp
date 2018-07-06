@@ -397,7 +397,7 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...) {
     va_end(args);
 
     GUIElement* element = _guiStack[id];
-    assert(element->getType() == GUI_TEXT);
+    assert(element->getType() == GUIType::GUI_TEXT);
 
     GUIText* textElement = dynamic_cast<GUIText*>(element);
     assert(textElement != nullptr);

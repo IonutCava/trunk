@@ -39,7 +39,7 @@
 
 namespace Divide {
 
-enum ErrorCode {
+enum class ErrorCode : I32 {
     NO_ERR = 0,
     MISSING_SCENE_DATA = -1,
     MISSING_SCENE_LOAD_CALL = -2,

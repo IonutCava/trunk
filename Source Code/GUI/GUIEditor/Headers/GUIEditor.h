@@ -117,8 +117,8 @@ DEFINE_SINGLETON(GUIEditor)
     bool Handle_IncrementScaleGranularity(const CEGUI::EventArgs &e);
     bool Handle_DecrementScaleGranularity(const CEGUI::EventArgs &e);
 
-  private:
-    enum ToggleButtons {
+private:
+    enum class ToggleButtons : U32 {
         TOGGLE_WIREFRAME = 0,
         TOGGLE_DEPTH_PREVIEW = 1,
         TOGGLE_SHADOW_MAPPING = 2,
@@ -127,22 +127,51 @@ DEFINE_SINGLETON(GUIEditor)
         TOGGLE_BOUNDING_BOXES = 5,
         TOGGLE_NAV_MESH_DRAW = 6,
         TOGGLE_SKELETONS = 7,
-        ToggleButtons_PLACEHOLDER = 8
+        COUNT
     };
-    enum ControlField {
+    enum class ControlFields : U32 {
         CONTROL_FIELD_X = 0,
         CONTROL_FIELD_Y = 1,
         CONTROL_FIELD_Z = 2,
         CONTROL_FIELD_GRANULARITY = 3,
-        ControlField_PLACEHOLDER = 4
+        COUNT
     };
-    enum TransformFields {
+    enum class TransformFields : U32 {
         TRANSFORM_POSITION = 0,
         TRANSFORM_ROTATION = 1,
         TRANSFORM_SCALE = 2,
-        TransformFields_PLACEHOLDER = 3
+        COUNT
     };
 
+    F32& currentValues(TransformFields transform, ControlFields control) {
+        assert(transform < TransformFields::COUNT &&
+                control < ControlFields::COUNT);
+        return _currentValues[to_uint(transform)][to_uint(control)];
+    }
+
+    CEGUI::Editbox*& valuesField(TransformFields transform, ControlFields control) {
+        assert(transform < TransformFields::COUNT &&
+                control < ControlFields::COUNT);
+        return _valuesField[to_uint(transform)][to_uint(control)];
+    }
+
+    CEGUI::ToggleButton*& toggleButton(ToggleButtons button) {
+        assert(button < ToggleButtons::COUNT);
+        return _toggleButtons[to_uint(button)];
+    }
+
+    CEGUI::Window*& transformButtonsInc(TransformFields transform, ControlFields control) {
+           assert(transform < TransformFields::COUNT &&
+                  control < ControlFields::COUNT);
+        return _transformButtonsInc[to_uint(transform)][to_uint(control)];
+    }
+
+     CEGUI::Window*& transformButtonsDec(TransformFields transform, ControlFields control) {
+           assert(transform < TransformFields::COUNT &&
+                  control < ControlFields::COUNT);
+        return _transformButtonsDec[to_uint(transform)][to_uint(control)];
+    }
+  private:
     bool _init;
     bool _wasControlClick;
     bool _createNavMeshQueued;
@@ -152,14 +181,20 @@ DEFINE_SINGLETON(GUIEditor)
         _editorWindow;  //< This will be a pointer to the EditorRoot window.
     CEGUI::Window *_saveSelectionButton;
     CEGUI::Window *_deleteSelectionButton;
-    CEGUI::ToggleButton *_toggleButtons[ToggleButtons_PLACEHOLDER];
-    CEGUI::Window *
-        _transformButtonsInc[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
-    CEGUI::Window *
-        _transformButtonsDec[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
-    CEGUI::Editbox *
-        _valuesField[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
-    F32 _currentValues[TransformFields_PLACEHOLDER][ControlField_PLACEHOLDER];
+    CEGUI::ToggleButton *_toggleButtons[to_const_uint(
+        ToggleButtons::COUNT)];
+    CEGUI::Window *_transformButtonsInc
+        [to_const_uint(TransformFields::COUNT)]
+        [to_const_uint(ControlFields::COUNT)];
+    CEGUI::Window *_transformButtonsDec
+        [to_const_uint(TransformFields::COUNT)]
+        [to_const_uint(ControlFields::COUNT)];
+    CEGUI::Editbox *_valuesField
+        [to_const_uint(TransformFields::COUNT)]
+        [to_const_uint(ControlFields::COUNT)];
+    F32 _currentValues
+        [to_const_uint(TransformFields::COUNT)]
+        [to_const_uint(ControlFields::COUNT)];
 
 END_SINGLETON
 

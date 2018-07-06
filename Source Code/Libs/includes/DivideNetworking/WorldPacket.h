@@ -2,6 +2,7 @@
 #define MANGOSSERVER_WORLDPACKET_H
 
 #include "ByteBuffer.h"
+#include "OPCodesTpl.h"
 #include <boost/serialization/base_object.hpp>
 
 namespace Divide {
@@ -9,8 +10,8 @@ namespace Divide {
 class WorldPacket : public ByteBuffer {
    public:
     // just container for later use
-    WorldPacket() : ByteBuffer(0), m_opcode(0) {}
-    explicit WorldPacket(U16 opcode, size_t res = 200)
+    WorldPacket() : ByteBuffer(0), m_opcode(OPCodes::MSG_NOP) {}
+    explicit WorldPacket(OPCodes::ValueType opcode, size_t res = 200)
         : ByteBuffer(res), m_opcode(opcode) {}
     // copy constructor
     WorldPacket(const WorldPacket& packet)
@@ -22,9 +23,9 @@ class WorldPacket : public ByteBuffer {
         m_opcode = opcode;
     }
 
-    U16 getOpcode() const { return m_opcode; }
+    OPCodes::ValueType getOpcode() const { return m_opcode; }
 
-    void SetOpcode(U16 opcode) { m_opcode = opcode; }
+    void SetOpcode(OPCodes::ValueType opcode) { m_opcode = opcode; }
 
    private:
     friend class boost::serialization::access;
@@ -36,7 +37,7 @@ class WorldPacket : public ByteBuffer {
     }
 
    protected:
-    U16 m_opcode;
+    OPCodes::ValueType m_opcode;
 };
 
 };  // namespace Divide

@@ -84,35 +84,45 @@ typedef __int64 _I64;
 typedef float F32;
 typedef double D32;
 
+/*
+template<typename Enum>
+constexpr U32 operator"" _u32 ( Enum value )
+{
+    return static_cast<U32>(value);
+}*/
+
 template <typename Enum>
-auto to_underlying_type(const Enum value) ->
+/*constexpr*/ auto to_underlying_type(const Enum value) ->
     typename std::underlying_type<Enum>::type {
     return static_cast<typename std::underlying_type<Enum>::type>(value);
 }
 
 template<typename T>
-constexpr U32 enum_to_uint_const(const T value) {
+constexpr U32 to_const_uint(const T value) {
     return static_cast<U32>(value);
 }
 
-template <typename T>
-U32 enum_to_uint(const T value) {
-    return static_cast<U32>(to_underlying_type(value));
-}
-
 template<typename T>
-constexpr I32 enum_to_int_const(const T value) {
+constexpr I32 to_const_int(const T value) {
     return static_cast<I32>(value);
 }
 
 template <typename T>
-I32 enum_to_int(const T value) {
+U32 to_uint(const T value) {
+    return static_cast<U32>(to_underlying_type(value));
+}
+
+template <typename T>
+I32 to_int(const T value) {
     return static_cast<I32>(to_underlying_type(value));
 }
 
 /// Converts an arbitrary positive integer value to a bitwise value used for
 /// masks
-#define toBit(X) (1 << (X))
+template<typename T>
+constexpr T toBit(T X) {
+    return 1 << X;
+}
 /* See
 
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/

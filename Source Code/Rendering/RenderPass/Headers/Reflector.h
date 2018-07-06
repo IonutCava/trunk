@@ -37,12 +37,12 @@
 
 namespace Divide {
 
-enum ReflectorType {
-    TYPE_MIRROR,
+enum class ReflectorType : U32 {
+    TYPE_MIRROR = 0,
     TYPE_WATER_SURFACE,
     TYPE_PORTAL,
     TYPE_MATERIAL,
-    TYPE_REFLECTOR_PLACEHOLDER
+    COUNT
 };
 
 class Quad3D;

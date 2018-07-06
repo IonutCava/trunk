@@ -40,19 +40,24 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
     _alive.clear();
 
     if (_totalCount > 0) {
-        if (bitCompare(_optionsMask, Properties::PROPERTIES_POS)) {
+        if (bitCompare(_optionsMask,
+                       to_uint(Properties::PROPERTIES_POS))) {
             _position.resize(_totalCount);
         }
-        if (bitCompare(_optionsMask, Properties::PROPERTIES_VEL)) {
+        if (bitCompare(_optionsMask,
+                       to_uint(Properties::PROPERTIES_VEL))) {
             _velocity.resize(_totalCount);
         }
-        if (bitCompare(_optionsMask, Properties::PROPERTIES_ACC)) {
+        if (bitCompare(_optionsMask,
+                       to_uint(Properties::PROPERTIES_ACC))) {
             _acceleration.resize(_totalCount);
         }
-        if (bitCompare(_optionsMask, Properties::PROPERTIES_COLOR)) {
+        if (bitCompare(_optionsMask,
+                       to_uint(Properties::PROPERTIES_COLOR))) {
             _color.resize(_totalCount);
         }
-        if (bitCompare(_optionsMask, Properties::PROPERTIES_COLOR_TRANS)) {
+        if (bitCompare(_optionsMask,
+                       to_uint(Properties::PROPERTIES_COLOR_TRANS))) {
             _startColor.resize(_totalCount);
             _endColor.resize(_totalCount);
         }
@@ -96,23 +101,24 @@ void ParticleData::sort() {
 }
 
 void ParticleData::swapData(U32 indexA, U32 indexB) {
-    if (bitCompare(_optionsMask, Properties::PROPERTIES_POS)) {
+    if (bitCompare(_optionsMask, to_uint(Properties::PROPERTIES_POS))) {
         // std::swap(_position[indexA], _position[indexB]);
         _position[indexA] = _position[indexB];
     }
-    if (bitCompare(_optionsMask, Properties::PROPERTIES_VEL)) {
+    if (bitCompare(_optionsMask, to_uint(Properties::PROPERTIES_VEL))) {
         // std::swap(_velocity[indexA], _velocity[indexB]);
         _velocity[indexA] = _velocity[indexB];
     }
-    if (bitCompare(_optionsMask, Properties::PROPERTIES_ACC)) {
+    if (bitCompare(_optionsMask, to_uint(Properties::PROPERTIES_ACC))) {
         // std::swap(_acceleration[indexA], _acceleration[indexB]);
         _acceleration[indexA] = _acceleration[indexB];
     }
-    if (bitCompare(_optionsMask, Properties::PROPERTIES_COLOR)) {
+    if (bitCompare(_optionsMask, to_uint(Properties::PROPERTIES_COLOR))) {
         // std::swap(_color[indexA], _color[indexB]);
         _color[indexA] = _color[indexB];
     }
-    if (bitCompare(_optionsMask, Properties::PROPERTIES_COLOR_TRANS)) {
+    if (bitCompare(_optionsMask,
+                   to_uint(Properties::PROPERTIES_COLOR_TRANS))) {
         // std::swap(_startColor[indexA], _startColor[indexB]);
         _startColor[indexA] = _startColor[indexB];
         // std::swap(_endColor[indexA], _endColor[indexB]);

@@ -15,7 +15,7 @@ DivideRecast::DivideRecast() {
     _filter->setExcludeFlags(0);       // Exclude none
     // Area flags for polys to consider in search, and their cost
     // TODO have a way of configuring the filter
-    _filter->setAreaCost(SAMPLE_POLYAREA_GROUND, 1.0f);
+    _filter->setAreaCost(to_int(SamplePolyAreas::SAMPLE_POLYAREA_GROUND), 1.0f);
     _filter->setAreaCost(DT_TILECACHE_WALKABLE_AREA, 1.0f);
 
     // Init path store. MaxVertex 0 means empty path slot
@@ -50,33 +50,33 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
     status = navQuery.findNearestPoly(pStartPos, extents, _filter.get(),
                                       &StartPoly, StartNearest);
     if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
-        return PATH_ERROR_NO_NEAREST_POLY_START;  // couldn't find a polygon
+        return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_START;  // couldn't find a polygon
 
     // find the end polygon
     status = navQuery.findNearestPoly(pEndPos, extents, _filter.get(), &EndPoly,
                                       EndNearest);
     if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
-        return PATH_ERROR_NO_NEAREST_POLY_END;  // couldn't find a polygon
+        return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_END;  // couldn't find a polygon
 
     status =
         navQuery.findPath(StartPoly, EndPoly, StartNearest, EndNearest,
                           _filter.get(), PolyPath, &nPathCount, MAX_PATHPOLY);
     if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {
-        return PATH_ERROR_COULD_NOT_CREATE_PATH;  // couldn't create a path
+        return PathErrorCode::PATH_ERROR_COULD_NOT_CREATE_PATH;  // couldn't create a path
     }
 
     if (nPathCount == 0) {
-        return PATH_ERROR_COULD_NOT_FIND_PATH;  // couldn't find a path
+        return PathErrorCode::PATH_ERROR_COULD_NOT_FIND_PATH;  // couldn't find a path
     }
     status = navQuery.findStraightPath(StartNearest, EndNearest, PolyPath,
                                        nPathCount, StraightPath, nullptr,
                                        nullptr, &nVertCount, MAX_PATHVERT);
     if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {
-        return PATH_ERROR_NO_STRAIGHT_PATH_CREATE;  // couldn't create a path
+        return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_CREATE;  // couldn't create a path
     }
 
     if (nVertCount == 0) {
-        return PATH_ERROR_NO_STRAIGHT_PATH_FIND;  // couldn't find a path
+        return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_FIND;  // couldn't find a path
     }
     // At this point we have our path.  Copy it to the path store
     I32 nIndex = 0;
@@ -95,7 +95,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
     _pathStore[pathSlot].MaxVertex = nVertCount;
     _pathStore[pathSlot].Target = target;
 
-    return PATH_ERROR_NONE;
+    return PathErrorCode::PATH_ERROR_NONE;
 }
 
 vectorImpl<vec3<F32> > DivideRecast::getPath(I32 pathSlot) {

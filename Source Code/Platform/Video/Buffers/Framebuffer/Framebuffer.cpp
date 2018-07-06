@@ -22,12 +22,14 @@ Framebuffer::Framebuffer(bool multiSampled)
     }
 }
 
-Framebuffer::~Framebuffer() {}
+Framebuffer::~Framebuffer()
+{
+}
 
 bool Framebuffer::AddAttachment(const TextureDescriptor& descriptor,
                                 TextureDescriptor::AttachmentType slot) {
-    _attachmentDirty[slot] = true;
-    _attachment[slot] = descriptor;
+    _attachmentDirty[to_uint(slot)] = true;
+    _attachment[to_uint(slot)] = descriptor;
 
     return true;
 }

@@ -7,7 +7,7 @@
 namespace Divide {
 
 DirectionalLight::DirectionalLight()
-    : Light(-1, LIGHT_TYPE_DIRECTIONAL),
+    : Light(-1, LightType::LIGHT_TYPE_DIRECTIONAL),
       _csmSplitCount(3),
       _csmSplitLogFactor(0.95f),
       _csmStabilize(true),

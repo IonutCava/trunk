@@ -169,7 +169,7 @@ void AnimEvaluator::Evaluate(const D32 dt,
         mat.a4 = presentPosition.x;
         mat.b4 = presentPosition.y;
         mat.c4 = presentPosition.z;
-        if (GFX_DEVICE.getAPI() == GFXDevice::Direct3D) {
+        if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
             mat.Transpose();
         }
 

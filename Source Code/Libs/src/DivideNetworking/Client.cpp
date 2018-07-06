@@ -84,7 +84,7 @@ void Client::handle_read_packet(const boost::system::error_code& ec,
             }
         }
 
-        if (packet.getOpcode() == SMSG_SEND_FILE) {
+        if (packet.getOpcode() == OPCodes::SMSG_SEND_FILE) {
             boost::asio::async_read_until(
                 socket_, request_buf, "\n\n",
                 boost::bind(&Client::handle_read_file, this,
@@ -157,7 +157,7 @@ void Client::start_write() {
     if (stopped_) return;
 
     if (_packetQueue.empty()) {
-        WorldPacket heart(MSG_HEARTBEAT);
+        WorldPacket heart(OPCodes::MSG_HEARTBEAT);
         heart << (I8)0;
         _packetQueue.push_back(heart);
     }

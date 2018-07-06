@@ -40,7 +40,10 @@ namespace Divide {
 class SceneGraphNode;
 class NavigationComponent : public SGNComponent {
    public:
-    enum NavigationContext { NODE_OBSTACLE = 0, NODE_IGNORE };
+    enum class NavigationContext :U32 {
+        NODE_OBSTACLE = 0,
+        NODE_IGNORE
+    };
 
     NavigationComponent(SceneGraphNode& sgn);
     ~NavigationComponent();

@@ -38,11 +38,11 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     // It's only updated on demand.
     _depthRanges = GFX_DEVICE.newFB(false);
     _depthRanges->AddAttachment(depthRangesDescriptor,
-                                TextureDescriptor::Color0);
+                                TextureDescriptor::AttachmentType::Color0);
     _depthRanges->toggleDepthBuffer(false);
     _depthRanges->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
     vec2<U16> screenRes =
-        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
             ->getResolution();
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                        Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
@@ -70,9 +70,10 @@ void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
 void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                        Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
-    vec2<U16> resTemp(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
-                          ->getResolution() +
-                      tileSize);
+    vec2<U16> resTemp(
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+            ->getResolution() +
+        tileSize);
     _depthRanges->Create(resTemp.x / tileSize.x - 1,
                          resTemp.y / tileSize.y - 1);
 }
@@ -85,7 +86,7 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
 
     for (const Light::LightMap::value_type& it : lights) {
         const Light& light = *it.second;
-        if (light.getLightType() == LIGHT_TYPE_POINT) {
+        if (light.getLightType() == LightType::LIGHT_TYPE_POINT) {
             _omniLightList.push_back(LightGrid::makeLight(
                 light.getPosition(), light.getDiffuseColor(),
                 light.getRange()));
@@ -132,8 +133,9 @@ void ForwardPlusRenderer::downSampleDepthBuffer(
         _depthRangesConstructProgram->Uniform(
             "dvd_ProjectionMatrixInverse",
             GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV_MATRIX));
-        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
-            ->Bind(ShaderProgram::TEXTURE_UNIT0, TextureDescriptor::Depth);
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0),
+                   TextureDescriptor::AttachmentType::Depth);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                               _depthRangesConstructProgram);
 

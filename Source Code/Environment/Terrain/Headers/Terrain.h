@@ -51,7 +51,7 @@ struct TerrainTextureLayer {
 
     ~TerrainTextureLayer();
 
-    enum TerrainTextureChannel {
+    enum class TerrainTextureChannel : U32 {
         TEXTURE_RED_CHANNEL = 0,
         TEXTURE_GREEN_CHANNEL = 1,
         TEXTURE_BLUE_CHANNEL = 2,
@@ -63,11 +63,11 @@ struct TerrainTextureLayer {
     inline void setNormalMaps(Texture* const texture) { _normalMaps = texture; }
     inline void setDiffuseScale(TerrainTextureChannel textureChannel,
                                 F32 scale) {
-        _diffuseUVScale[textureChannel] = scale;
+        _diffuseUVScale[to_uint(textureChannel)] = scale;
     }
     inline void setDetailScale(TerrainTextureChannel textureChannel,
                                F32 scale) {
-        _detailUVScale[textureChannel] = scale;
+        _detailUVScale[to_uint(textureChannel)] = scale;
     }
 
     inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }

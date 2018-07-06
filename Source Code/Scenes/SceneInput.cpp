@@ -64,7 +64,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
         // set it's state to selected
         _currentSelection->setSelected(true);
 #ifdef _DEBUG
-        _lines[DEBUG_LINE_RAY_PICK].push_back(
+        _lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].push_back(
             Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
 #endif
     }
@@ -231,7 +231,8 @@ bool Scene::onKeyUp(const Input::KeyEvent& key) {
         } break;
 #ifdef _DEBUG
         case KeyCode::KC_F9: {
-            for (U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i) {
+            for (U32 i = 0;
+                 i < to_uint(DebugLines::COUNT); ++i) {
                 _lines[i].clear();
             }
         } break;
@@ -277,7 +278,7 @@ static I32 axisDeadZone = 256;
 bool Scene::joystickAxisMoved(const Input::JoystickEvent& key, I8 axis) {
     STUBBED(
         "ToDo: Store input from multiple joysticks in scene state! - Ionut");
-    if (key.device->getID() != Input::JOYSTICK_1) {
+    if (key.device->getID() != to_int(Input::Joystick::JOYSTICK_1)) {
         return false;
     }
     I32 axisABS = key.state.mAxes[axis].abs;

@@ -123,7 +123,7 @@ void Camera::rotate(const Quaternion<F32>& q) {
         return;
     }
 
-    if (_type == FIRST_PERSON) {
+    if (_type == CameraType::FIRST_PERSON) {
         vec3<F32> euler;
         q.getEuler(&euler);
         rotate(euler.yaw, euler.pitch, euler.roll);
@@ -145,7 +145,7 @@ void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
     pitch = -pitch * _cameraTurnSpeed;
     roll = -roll * _cameraTurnSpeed;
 
-    if (_type == FIRST_PERSON) {
+    if (_type == CameraType::FIRST_PERSON) {
         _accumPitchDegrees += pitch;
 
         if (_accumPitchDegrees > 90.0f) {
@@ -187,7 +187,7 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     _eye += _xAxis * dx * _cameraMoveSpeed;
     _eye += WORLD_Y_AXIS * dy * _cameraMoveSpeed;
 
-    if (_type == FIRST_PERSON) {
+    if (_type == CameraType::FIRST_PERSON) {
         // Calculate the forward direction. Can't just use the camera's local
         // z axis as doing so will cause the camera to move more slowly as the
         // camera's view approaches 90 degrees straight up and down.

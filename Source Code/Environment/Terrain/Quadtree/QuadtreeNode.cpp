@@ -9,10 +9,10 @@
 namespace Divide {
 
 QuadtreeNode::QuadtreeNode() {
-    _children[CHILD_NW] = nullptr;
-    _children[CHILD_NE] = nullptr;
-    _children[CHILD_SW] = nullptr;
-    _children[CHILD_SE] = nullptr;
+    _children[to_uint(ChildPosition::CHILD_NW)] = nullptr;
+    _children[to_uint(ChildPosition::CHILD_NE)] = nullptr;
+    _children[to_uint(ChildPosition::CHILD_SW)] = nullptr;
+    _children[to_uint(ChildPosition::CHILD_SE)] = nullptr;
     _terrainChunk = nullptr;
     _LOD = 0;
     _terLoDOffset = 0.0f;
@@ -20,10 +20,10 @@ QuadtreeNode::QuadtreeNode() {
 }
 
 QuadtreeNode::~QuadtreeNode() {
-    MemoryManager::DELETE(_children[CHILD_NW]);
-    MemoryManager::DELETE(_children[CHILD_NE]);
-    MemoryManager::DELETE(_children[CHILD_SW]);
-    MemoryManager::DELETE(_children[CHILD_SE]);
+    MemoryManager::DELETE(_children[to_uint(ChildPosition::CHILD_NW)]);
+    MemoryManager::DELETE(_children[to_uint(ChildPosition::CHILD_NE)]);
+    MemoryManager::DELETE(_children[to_uint(ChildPosition::CHILD_SW)]);
+    MemoryManager::DELETE(_children[to_uint(ChildPosition::CHILD_SE)]);
     MemoryManager::DELETE(_terrainChunk);
 }
 
@@ -48,37 +48,48 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos,
     }
 
     // Create 4 children
-    _children[CHILD_NW] = MemoryManager_NEW QuadtreeNode();
-    _children[CHILD_NE] = MemoryManager_NEW QuadtreeNode();
-    _children[CHILD_SW] = MemoryManager_NEW QuadtreeNode();
-    _children[CHILD_SE] = MemoryManager_NEW QuadtreeNode();
+    _children[to_uint(ChildPosition::CHILD_NW)] =
+        MemoryManager_NEW QuadtreeNode();
+    _children[to_uint(ChildPosition::CHILD_NE)] =
+        MemoryManager_NEW QuadtreeNode();
+    _children[to_uint(ChildPosition::CHILD_SW)] =
+        MemoryManager_NEW QuadtreeNode();
+    _children[to_uint(ChildPosition::CHILD_SE)] =
+        MemoryManager_NEW QuadtreeNode();
 
     // Compute children bounding boxes
     const vec3<F32>& center = _boundingBox.getCenter();
-    _children[CHILD_NW]->setBoundingBox(
+    _children[to_uint(ChildPosition::CHILD_NW)]->setBoundingBox(
         BoundingBox(_boundingBox.getMin(), center));
-    _children[CHILD_NE]->setBoundingBox(
+    _children[to_uint(ChildPosition::CHILD_NE)]->setBoundingBox(
         BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z),
                     vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
-    _children[CHILD_SW]->setBoundingBox(
+    _children[to_uint(ChildPosition::CHILD_SW)]->setBoundingBox(
         BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z),
                     vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
-    _children[CHILD_SE]->setBoundingBox(
+    _children[to_uint(ChildPosition::CHILD_SE)]->setBoundingBox(
         BoundingBox(center, _boundingBox.getMax()));
     // Compute children positions
     vec2<U32> tNewHMpos[4];
-    tNewHMpos[CHILD_NW] = pos + vec2<U32>(0, 0);
-    tNewHMpos[CHILD_NE] = pos + vec2<U32>(newsize.x, 0);
-    tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
-    tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
-    _children[CHILD_NW]->Build(depth + 1, tNewHMpos[CHILD_NW], HMsize,
-                               _minHMSize, terrain, chunkCount);
-    _children[CHILD_NE]->Build(depth + 1, tNewHMpos[CHILD_NE], HMsize,
-                               _minHMSize, terrain, chunkCount);
-    _children[CHILD_SW]->Build(depth + 1, tNewHMpos[CHILD_SW], HMsize,
-                               _minHMSize, terrain, chunkCount);
-    _children[CHILD_SE]->Build(depth + 1, tNewHMpos[CHILD_SE], HMsize,
-                               _minHMSize, terrain, chunkCount);
+    tNewHMpos[to_uint(ChildPosition::CHILD_NW)] = pos + vec2<U32>(0, 0);
+    tNewHMpos[to_uint(ChildPosition::CHILD_NE)] =
+        pos + vec2<U32>(newsize.x, 0);
+    tNewHMpos[to_uint(ChildPosition::CHILD_SW)] =
+        pos + vec2<U32>(0, newsize.y);
+    tNewHMpos[to_uint(ChildPosition::CHILD_SE)] =
+        pos + vec2<U32>(newsize.x, newsize.y);
+    _children[to_uint(ChildPosition::CHILD_NW)]->Build(
+        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NW)], HMsize,
+        _minHMSize, terrain, chunkCount);
+    _children[to_uint(ChildPosition::CHILD_NE)]->Build(
+        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NE)], HMsize,
+        _minHMSize, terrain, chunkCount);
+    _children[to_uint(ChildPosition::CHILD_SW)]->Build(
+        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SW)], HMsize,
+        _minHMSize, terrain, chunkCount);
+    _children[to_uint(ChildPosition::CHILD_SE)]->Build(
+        depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SE)], HMsize,
+        _minHMSize, terrain, chunkCount);
 }
 
 bool QuadtreeNode::computeBoundingBox() {
@@ -130,18 +141,18 @@ void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                : 0;
 
     if (!isALeaf()) {
-        _children[CHILD_NW]->sceneUpdate(deltaTime, sgn, sceneState);
-        _children[CHILD_NE]->sceneUpdate(deltaTime, sgn, sceneState);
-        _children[CHILD_SW]->sceneUpdate(deltaTime, sgn, sceneState);
-        _children[CHILD_SE]->sceneUpdate(deltaTime, sgn, sceneState);
+        _children[to_uint(ChildPosition::CHILD_NW)]->sceneUpdate(deltaTime, sgn, sceneState);
+        _children[to_uint(ChildPosition::CHILD_NE)]->sceneUpdate(deltaTime, sgn, sceneState);
+        _children[to_uint(ChildPosition::CHILD_SW)]->sceneUpdate(deltaTime, sgn, sceneState);
+        _children[to_uint(ChildPosition::CHILD_SE)]->sceneUpdate(deltaTime, sgn, sceneState);
     }
 }
 
 bool QuadtreeNode::isInView(U32 options,
                             const SceneRenderState& sceneRenderState) const {
-    if (bitCompare(options, CHUNK_BIT_TESTCHILDREN)) {
+    if (bitCompare(options, to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN))) {
         const Camera& cam = sceneRenderState.getCameraConst();
-        if (!bitCompare(options, CHUNK_BIT_SHADOWMAP)) {
+        if (!bitCompare(options, to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
             const vec3<F32>& eye = cam.getEye();
             F32 visibilityDistance =
                 GET_ACTIVE_SCENE()->state().getGeneralVisibility() +
@@ -159,23 +170,23 @@ bool QuadtreeNode::isInView(U32 options,
             const Frustum& frust = cam.getFrustumConst();
             switch (frust.ContainsSphere(_boundingSphere.getCenter(),
                                          _boundingSphere.getRadius())) {
-                case Frustum::FRUSTUM_OUT:
+                case Frustum::FrustCollision::FRUSTUM_OUT:
                     return false;
-                case Frustum::FRUSTUM_IN:
-                    options &= ~CHUNK_BIT_TESTCHILDREN;
+                case Frustum::FrustCollision::FRUSTUM_IN:
+                    options &= ~to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
                     break;
-                case Frustum::FRUSTUM_INTERSECT: {
+                case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
                     switch (frust.ContainsBoundingBox(_boundingBox)) {
-                        case Frustum::FRUSTUM_IN:
-                            options &= ~CHUNK_BIT_TESTCHILDREN;
+                        case Frustum::FrustCollision::FRUSTUM_IN:
+                            options &= ~to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
                             break;
-                        case Frustum::FRUSTUM_OUT:
+                        case Frustum::FrustCollision::FRUSTUM_OUT:
                             return false;
                     };  // inner switch
-                };  // case FRUSTUM_INTERSECT
-            };  // outer case
-        }  // if
-    }  // CHUNK_BIT_TESTCHILDREN option
+                };      // case Frustum::FrustCollision::FRUSTUM_INTERSECT
+            };          // outer case
+        }               // if
+    }                   // ChunkBit::CHUNK_BIT_TESTCHILDREN option
 
     return true;
 }
@@ -185,10 +196,10 @@ void QuadtreeNode::drawBBox() const {
                          vec4<U8>(0, 128, 255, 255));
 
     if (!isALeaf()) {
-        _children[CHILD_NW]->drawBBox();
-        _children[CHILD_NE]->drawBBox();
-        _children[CHILD_SW]->drawBBox();
-        _children[CHILD_SE]->drawBBox();
+        _children[to_uint(ChildPosition::CHILD_NW)]->drawBBox();
+        _children[to_uint(ChildPosition::CHILD_NE)]->drawBBox();
+        _children[to_uint(ChildPosition::CHILD_SW)]->drawBBox();
+        _children[to_uint(ChildPosition::CHILD_SE)]->drawBBox();
     }
 }
 
@@ -202,18 +213,18 @@ void QuadtreeNode::createDrawCommand(
     if (isALeaf()) {
         assert(_terrainChunk);
         _terrainChunk->createDrawCommand(
-            bitCompare(options, CHUNK_BIT_WATERREFLECTION)
+            bitCompare(options, to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION))
                 ? Config::TERRAIN_CHUNKS_LOD - 1
                 : _LOD,
             drawCommandsOut);
     } else {
-        _children[CHILD_NW]->createDrawCommand(options, sceneRenderState,
+        _children[to_uint(ChildPosition::CHILD_NW)]->createDrawCommand(options, sceneRenderState,
                                                drawCommandsOut);
-        _children[CHILD_NE]->createDrawCommand(options, sceneRenderState,
+        _children[to_uint(ChildPosition::CHILD_NE)]->createDrawCommand(options, sceneRenderState,
                                                drawCommandsOut);
-        _children[CHILD_SW]->createDrawCommand(options, sceneRenderState,
+        _children[to_uint(ChildPosition::CHILD_SW)]->createDrawCommand(options, sceneRenderState,
                                                drawCommandsOut);
-        _children[CHILD_SE]->createDrawCommand(options, sceneRenderState,
+        _children[to_uint(ChildPosition::CHILD_SE)]->createDrawCommand(options, sceneRenderState,
                                                drawCommandsOut);
     }
 }

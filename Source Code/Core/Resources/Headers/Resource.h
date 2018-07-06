@@ -52,7 +52,7 @@ namespace Divide {
 /// It will still exist, but won't contain any data.
 /// RES_UNKNOWN and RES_CREATED are safe to delete
 
-enum ResourceState {
+enum class ResourceState : U32 {
     RES_UNKNOWN = 0,  //<The resource exists, but it's state is undefined
     RES_CREATED = 1,  //<The pointer has been created and instantiated, but no
                       //data has been loaded
@@ -69,7 +69,9 @@ class Resource : public TrackedObject {
 
    public:
     explicit Resource(const stringImpl& name)
-        : TrackedObject(), _name(name), _resourceState(RES_CREATED) {
+        : TrackedObject(),
+          _name(name),
+          _resourceState(ResourceState::RES_CREATED) {
         _threadedLoading = true;
         _threadedLoadComplete = false;
     }
@@ -117,7 +119,7 @@ class Resource : public TrackedObject {
     std::atomic_bool _threadedLoadComplete;
 };
 
-enum GeometryType {
+enum class GeometryType : U32 {
     VEGETATION,  ///< For special rendering subroutines
     PRIMITIVE,   ///< Simple objects: Boxes, Spheres etc
     GEOMETRY     ///< All other forms of geometry

@@ -24,7 +24,7 @@ namespace NS_GLIM
     };
 
     //! The enum holding all important GLIM configuration values.
-    enum GLIM_ENUM
+    enum class GLIM_ENUM : int
     {
         GLIM_NOPRIMITIVE,        // for internal use
 
@@ -51,7 +51,7 @@ namespace NS_GLIM
         GLIM_4UB,                // for internal use
     };
 
-    enum GLIM_API
+    enum class GLIM_API : unsigned int
     {
         GLIM_NONE,
         GLIM_OPENGL,

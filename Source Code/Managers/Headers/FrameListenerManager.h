@@ -65,9 +65,10 @@ DEFINE_SINGLETON(FrameListenerManager)
     /// returns the event time in milliseconds
     D32 calculateEventTime(const D32 currentTime, FrameEventType type);
 
-  private:
+   private:
     vectorImpl<FrameListener*> _listeners;
-    EventTimeMap _eventTimers[FRAME_EVENT_ENDED + 1];
+    EventTimeMap
+        _eventTimers[to_const_uint(FrameEventType::FRAME_EVENT_ENDED) + 1];
 
 END_SINGLETON
 

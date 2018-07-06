@@ -39,9 +39,13 @@
 namespace Divide {
 
 namespace AI {
-enum AIMsg { HAVE_FLAG = 0, ENEMY_HAS_FLAG = 1 };
+enum class AIMsg : U32 { 
+    HAVE_FLAG = 0,
+    ENEMY_HAS_FLAG = 1,
+    COUNT
+};
 
-enum FactType {
+enum class FactType : U32 {
     FACT_TYPE_POSITION = 0,
     FACT_TYPE_COUNTER_SMALL = 1,
     FACT_TYPE_COUNTER_MEDIUM = 2,
@@ -49,7 +53,7 @@ enum FactType {
     FACT_TYPE_TOGGLE_STATE = 4,
     FACT_TYPE_AI_NODE = 5,
     FACT_TYPE_SGN_NODE = 6,
-    FactType_PLACEHOLDER = 7
+    COUNT
 };
 
 template <typename T, FactType F>
@@ -77,13 +81,13 @@ class WorkingMemoryFact {
     FactType _type;
 };
 
-typedef WorkingMemoryFact<AIEntity*, FACT_TYPE_AI_NODE> AINodeFact;
-typedef WorkingMemoryFact<SceneGraphNode*, FACT_TYPE_SGN_NODE> SGNNodeFact;
-typedef WorkingMemoryFact<vec3<F32>, FACT_TYPE_POSITION> PositionFact;
-typedef WorkingMemoryFact<U8, FACT_TYPE_COUNTER_SMALL> SmallCounterFact;
-typedef WorkingMemoryFact<U16, FACT_TYPE_COUNTER_MEDIUM> MediumCounterFact;
-typedef WorkingMemoryFact<U32, FACT_TYPE_COUNTER_LARGE> LargeCounterFact;
-typedef WorkingMemoryFact<bool, FACT_TYPE_TOGGLE_STATE> ToggleStateFact;
+typedef WorkingMemoryFact<AIEntity*, FactType::FACT_TYPE_AI_NODE> AINodeFact;
+typedef WorkingMemoryFact<SceneGraphNode*, FactType::FACT_TYPE_SGN_NODE> SGNNodeFact;
+typedef WorkingMemoryFact<vec3<F32>, FactType::FACT_TYPE_POSITION> PositionFact;
+typedef WorkingMemoryFact<U8, FactType::FACT_TYPE_COUNTER_SMALL> SmallCounterFact;
+typedef WorkingMemoryFact<U16, FactType::FACT_TYPE_COUNTER_MEDIUM> MediumCounterFact;
+typedef WorkingMemoryFact<U32, FactType::FACT_TYPE_COUNTER_LARGE> LargeCounterFact;
+typedef WorkingMemoryFact<bool, FactType::FACT_TYPE_TOGGLE_STATE> ToggleStateFact;
 
 class WorkingMemory {
    public:
@@ -119,13 +123,13 @@ class WorkingMemory {
 
 class WarSceneOrder : public Order {
    public:
-    enum WarOrder {
+    enum class WarOrder : U32 {
         ORDER_FIND_ENEMY_FLAG = 0,
         ORDER_CAPTURE_ENEMY_FLAG = 1,
         ORDER_RETURN_ENEMY_FLAG = 2,
         ORDER_PROTECT_FLAG_CARRIER = 3,
         ORDER_RETRIEVE_FLAG = 4,
-        ORDER_PLACEHOLDER = 5
+        COUNT
     };
     WarSceneOrder(WarOrder order) : Order(static_cast<U32>(order)) {}
     void evaluatePriority();

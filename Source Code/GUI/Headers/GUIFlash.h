@@ -39,7 +39,7 @@ namespace Divide {
 class GUIFlash : public GUIElement {
    public:
     GUIFlash(CEGUI::Window* parent)
-        : GUIElement(parent, GUI_FLASH, vec2<I32>(0, 0)){};
+        : GUIElement(parent, GUIType::GUI_FLASH, vec2<I32>(0, 0)){};
     ~GUIFlash();
 
     void playMovie();

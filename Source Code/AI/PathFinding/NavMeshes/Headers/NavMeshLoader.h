@@ -131,7 +131,10 @@ class NavModelData {
 };
 
 namespace NavigationMeshLoader {
-enum MeshDetailLevel { DETAIL_ABSOLUTE = 0, DETAIL_BOUNDINGBOX = 1 };
+enum class MeshDetailLevel : U32 { 
+    DETAIL_ABSOLUTE = 0,
+    DETAIL_BOUNDINGBOX = 1
+};
 
 /// Load the input geometry from file (Wavefront OBJ format) and save it in
 /// 'outData'
@@ -149,7 +152,7 @@ void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
 
 void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices,
                  U32 triangleIndexOffset = 0,
-                 const SamplePolyAreas& areaType = SAMPLE_POLYAREA_GROUND);
+                 const SamplePolyAreas& areaType = SamplePolyAreas::SAMPLE_POLYAREA_GROUND);
 
 char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
 

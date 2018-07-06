@@ -121,7 +121,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     bool loadState = SCENE_LOAD(name, gui, true, true);
     renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL,
+    _sun = addLight(LightType::LIGHT_TYPE_DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _sun->csmSplitCount(3);  // 3 splits
     _sun->csmSplitLogFactor(0.965f);
@@ -151,9 +151,9 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
                       0.34f);
     _waterGraphNode = &_sceneGraph.getRoot().addNode(_water);
     _waterGraphNode->useDefaultTransform(false);
-    _waterGraphNode->usageContext(SceneGraphNode::NODE_STATIC);
+    _waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     _waterGraphNode->getComponent<NavigationComponent>()->navigationContext(
-        NavigationComponent::NODE_IGNORE);
+        NavigationComponent::NavigationContext::NODE_IGNORE);
     // Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(
         &SceneManager::renderVisibleNodes, &SceneManager::getInstance()));
@@ -230,7 +230,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
     Task_ptr boxMove(
         kernel.AddTask(Time::MillisecondsToMicroseconds(30), 0,
                        DELEGATE_BIND(&MainScene::test, this, stringImpl("test"),
-                                     TYPE_STRING)));
+                                     CallbackParam::TYPE_STRING)));
     registerTask(boxMove);
     boxMove->startTask();
 

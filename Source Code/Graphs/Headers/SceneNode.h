@@ -54,7 +54,7 @@ enum class SceneNodeType : U32 {
     TYPE_VEGETATION_GRASS = toBit(9),   //< grass node
     TYPE_VEGETATION_TREES = toBit(10),  //< trees node (to do later)
     /// Place types above
-    TYPE_PLACEHOLDER = toBit(11)
+    COUNT
 };
 
 class SceneState;

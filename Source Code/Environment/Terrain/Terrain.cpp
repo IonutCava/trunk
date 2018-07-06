@@ -87,14 +87,14 @@ void Terrain::buildQuadtree() {
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
         drawShader->UniformTexture("texWaterCaustics",
-                                   ShaderProgram::TEXTURE_UNIT0);
+                                   ShaderProgram::TextureUsage::TEXTURE_UNIT0);
         drawShader->UniformTexture("texUnderwaterAlbedo",
-                                   ShaderProgram::TEXTURE_UNIT1);
+                                   ShaderProgram::TextureUsage::TEXTURE_UNIT1);
         drawShader->UniformTexture("texUnderwaterDetail",
-                                   ShaderProgram::TEXTURE_NORMALMAP);
+                                   ShaderProgram::TextureUsage::TEXTURE_NORMALMAP);
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-        U8 textureOffset = ShaderProgram::TEXTURE_NORMALMAP + 1;
+        U8 textureOffset = to_uint(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP) + 1;
         U8 layerOffset = 0;
         stringImpl layerIndex;
         for (U32 k = 0; k < _terrainTextures.size(); ++k) {
@@ -193,8 +193,8 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     }
 
     // draw infinite plane
-    if (GFX_DEVICE.isCurrentRenderStage(enum_to_uint(RenderStage::FINAL_STAGE) |
-                                        enum_to_uint(RenderStage::Z_PRE_PASS_STAGE)) &&
+    if (GFX_DEVICE.isCurrentRenderStage(to_uint(RenderStage::FINAL_STAGE) |
+                                        to_uint(RenderStage::Z_PRE_PASS_STAGE)) &&
         _planeInView) {
         GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 1);
         cmd.renderWireframe(renderable->renderWireframe());

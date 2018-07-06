@@ -5,33 +5,37 @@
 #define OPCODE_ENUM
 #endif
 
+#include <stdint.h>
+
 namespace Divide {
+
 /// Packet handling requires OPCodes to be defined. Use the following num
 /// structure to define them in each app:
-enum OPCodes {
-    MSG_HEARTBEAT = 0x000,
-    SMSG_SEND_FILE = 0x001,
-    SMSG_DISCONNECT = 0x002,
-    CMSG_REQUEST_DISCONNECT = 0x003
-};
+class OPCodes {
+public:
+    typedef int32_t ValueType;
 
-#define FIRST_FREE_OPCODE 0x004
-#define LAST_OPCODE NUM_MSG_TYPES
-#define OPCODE_ID(X) ((unsigned int)FIRST_FREE_OPCODE + (X))
+    static const ValueType MSG_NOP = 0x000;
+    static const ValueType MSG_HEARTBEAT = 0x001;
+    static const ValueType SMSG_SEND_FILE = 0x002;
+    static const ValueType SMSG_DISCONNECT = 0x003;
+    static const ValueType CMSG_REQUEST_DISCONNECT = 0x004;
+
+    static const ValueType FIRST_FREE_OPCODE = OPCodes::CMSG_REQUEST_DISCONNECT;
+ 
+    static constexpr ValueType OPCODE_ID(ValueType index) {
+        return OPCodes::FIRST_FREE_OPCODE + index;
+    }
+};
 
 /*To create new OPCodes follow this convention:
-#include <DivideNetworking/Utility/InheritEnum.h>
 
-enum OPCodesEx { //<Or whaterver name you wish
-    CMSG_EXAMPLE  = OPCODE_ID(1),
-    SMSG_EXAMPLE2 = OPCODE_ID(2),
-                .....
-    LAST_OPCODE
+class OPCodesEx : public OPCodes { //<Or whaterver name you wish
+    static const ValueType CMSG_EXAMPLE = OPCODE_ID(1);
+    static const ValueType SMSG_EXAMPLE2 = OPCODE_ID(2);
 };
 
-typedef InheritEnum< OPCodesEx, OPCodes > OPCodesImpl;
-
-And use OPCodesImpl for switch statements and packet handling
+And use OPCodesEx for switch statements and packet handling
 */
 
 };  // namespace Divide

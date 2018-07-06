@@ -55,7 +55,7 @@ bool Sky::load() {
         location + "skybox_2.jpg," + location + "skybox_1.jpg," + location +
         "skybox_5.jpg," + location + "skybox_6.jpg," + location +
         "skybox_3.jpg," + location + "skybox_4.jpg");
-    skyboxTextures.setEnumValue(enum_to_uint(TextureType::TEXTURE_CUBE_MAP));
+    skyboxTextures.setEnumValue(to_uint(TextureType::TEXTURE_CUBE_MAP));
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
     skyboxTextures.setThreadedLoading(false);
     _skybox = CreateResource<Texture>(skyboxTextures);
@@ -81,7 +81,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     }
     _sky->renderState().setDrawState(false);
     sgn.addNode(_sky).getComponent<PhysicsComponent>()->physicsGroup(
-        PhysicsComponent::NODE_COLLIDE_IGNORE);
+        PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
 
     SceneNode::postLoad(sgn);
 }
@@ -112,7 +112,7 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
 void Sky::render(SceneGraphNode& sgn,
                  const SceneRenderState& sceneRenderState,
                  const RenderStage& currentRenderStage) {
-    _skybox->Bind(ShaderProgram::TEXTURE_UNIT0);
+    _skybox->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
     GFX_DEVICE.submitRenderCommand(
         sgn.getComponent<RenderingComponent>()->getDrawCommands());
 }

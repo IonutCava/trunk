@@ -12,7 +12,7 @@
 namespace Divide {
 
 SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
-    : ShadowMap(light, shadowCamera, SHADOW_TYPE_Single) {
+    : ShadowMap(light, shadowCamera, ShadowType::SHADOW_TYPE_Single) {
     Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
                      "Single Shadow Map");
     ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
@@ -30,7 +30,7 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
 
     depthMapDescriptor.setSampler(depthMapSampler);
     _depthMap = GFX_DEVICE.newFB();
-    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Depth);
+    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
     _depthMap->toggleColorWrites(false);
 }
 
@@ -86,7 +86,7 @@ void SingleShadowMap::renderInternal(
 }
 
 void SingleShadowMap::previewShadowMaps() {
-    _depthMap->Bind(ShaderProgram::TEXTURE_UNIT0);
+    _depthMap->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                           _previewDepthMapShader);
 }

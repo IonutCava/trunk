@@ -43,13 +43,13 @@ class SceneGraphNode;
 class Unit : public FrameListener {
    public:
     /// Currently supported unit types
-    enum UnitType {
+    enum class UnitType : U32 {
         /// "Living beings"
         UNIT_TYPE_CHARACTER,
         /// e.g. Cars, planes, ships etc
         UNIT_TYPE_VEHICLE,
         /// add more types above this
-        UNIT_TYPE_PLACEHOLDER
+        COUNT
     };
 
     Unit(UnitType type, SceneGraphNode& node);

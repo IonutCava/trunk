@@ -82,7 +82,7 @@ void PingPongScene::serveBall() {
         Task_ptr newGame(
             kernel.AddTask(Time::MillisecondsToMicroseconds(30), 0,
                            DELEGATE_BIND(&PingPongScene::test, this, rand() % 5,
-                                         TYPE_INTEGER)));
+                                         CallbackParam::TYPE_INTEGER)));
         registerTask(newGame);
         newGame->startTask();
     }
@@ -194,7 +194,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
             message = "You lost!";
             _score--;
 
-            if (b == TYPE_INTEGER) {
+            if (b == CallbackParam::TYPE_INTEGER) {
                 I32 quote = a.constant_cast<I32>();
                 if (_score % 3 == 0)
                     _GUI->modifyText("insults", (char*)_quotes[quote].c_str());
@@ -259,7 +259,7 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL, 
+    _sun = addLight(LightType::LIGHT_TYPE_DIRECTIONAL, 
                GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _currentSky =
         &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
@@ -361,7 +361,10 @@ bool PingPongScene::joystickAxisMoved(const Input::JoystickEvent& key,
 
 bool PingPongScene::joystickButtonReleased(const Input::JoystickEvent& key,
                                            I8 button) {
-    if (button == 0 && key.device->getID() != Input::JOYSTICK_1) serveBall();
+    if (button == 0 && 
+        key.device->getID() != to_int(Input::Joystick::JOYSTICK_1)){
+        serveBall();
+    }
     return Scene::joystickButtonReleased(key, button);
 }
 };

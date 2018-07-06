@@ -13,7 +13,7 @@ namespace Divide {
     "Please include 'OPCodesTpl' and define custom OPcodes before using the networking library!"
 #endif
 
-enum OPCodes : I32;
+class OPCodes;
 class Client;
 class ASIO {
    public:

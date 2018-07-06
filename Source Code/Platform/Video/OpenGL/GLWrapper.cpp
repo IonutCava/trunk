@@ -176,19 +176,19 @@ bool GL_API::initShaders() {
          std::to_string(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
     glswAddDirectiveToken(
         "", ("#define SHADER_BUFFER_LIGHT_NORMAL " +
-             std::to_string(enum_to_uint(
+             std::to_string(to_uint(
                  ShaderBufferLocation::SHADER_BUFFER_LIGHT_NORMAL))).c_str());
     glswAddDirectiveToken(
         "", ("#define SHADER_BUFFER_GPU_BLOCK " +
-             std::to_string(enum_to_uint(
+             std::to_string(to_uint(
                  ShaderBufferLocation::SHADER_BUFFER_GPU_BLOCK))).c_str());
     glswAddDirectiveToken(
         "", ("#define SHADER_BUFFER_NODE_INFO " +
-             std::to_string(enum_to_uint(
+             std::to_string(to_uint(
                  ShaderBufferLocation::SHADER_BUFFER_NODE_INFO))).c_str());
     glswAddDirectiveToken(
         "", ("#define SHADER_BUFFER_UNIFORMS " +
-             std::to_string(enum_to_uint(
+             std::to_string(to_uint(
                  ShaderBufferLocation::SHADER_BUFFER_UNIFORMS))).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
@@ -197,7 +197,7 @@ bool GL_API::initShaders() {
     glswAddDirectiveToken(
         "Fragment",
         ("#define SHADER_BUFFER_LIGHT_SHADOW " +
-         std::to_string(enum_to_uint(
+         std::to_string(to_uint(
              ShaderBufferLocation::SHADER_BUFFER_LIGHT_SHADOW))).c_str());
     glswAddDirectiveToken(
         "Fragment", ("#define MAX_TEXTURE_SLOTS " +
@@ -205,41 +205,53 @@ bool GL_API::initShaders() {
                          "rendering.maxTextureSlots", 16))).c_str());
     glswAddDirectiveToken(
         "Fragment", ("#define TEXTURE_UNIT0 " +
-                     std::to_string(ShaderProgram::TEXTURE_UNIT0)).c_str());
+                     std::to_string(to_uint(
+                         ShaderProgram::TextureUsage::TEXTURE_UNIT0))).c_str());
     glswAddDirectiveToken(
         "Fragment", ("#define TEXTURE_UNIT1 " +
-                     std::to_string(ShaderProgram::TEXTURE_UNIT1)).c_str());
+                     std::to_string(to_uint(
+                         ShaderProgram::TextureUsage::TEXTURE_UNIT1))).c_str());
     glswAddDirectiveToken(
-        "Fragment", ("#define TEXTURE_NORMALMAP " +
-                     std::to_string(ShaderProgram::TEXTURE_NORMALMAP)).c_str());
+        "Fragment",
+        ("#define TEXTURE_NORMALMAP " +
+         std::to_string(to_uint(
+             ShaderProgram::TextureUsage::TEXTURE_NORMALMAP))).c_str());
     glswAddDirectiveToken(
-        "Fragment", ("#define TEXTURE_OPACITY " +
-                     std::to_string(ShaderProgram::TEXTURE_OPACITY)).c_str());
+        "Fragment",
+        ("#define TEXTURE_OPACITY " +
+         std::to_string(to_uint(
+             ShaderProgram::TextureUsage::TEXTURE_OPACITY))).c_str());
     glswAddDirectiveToken(
-        "Fragment", ("#define TEXTURE_SPECULAR " +
-                     std::to_string(ShaderProgram::TEXTURE_SPECULAR)).c_str());
+        "Fragment",
+        ("#define TEXTURE_SPECULAR " +
+         std::to_string(to_uint(
+             ShaderProgram::TextureUsage::TEXTURE_SPECULAR))).c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define TEXTURE_PROJECTION " +
-         std::to_string(ShaderProgram::TEXTURE_PROJECTION)).c_str());
+         std::to_string(to_uint(
+             ShaderProgram::TextureUsage::TEXTURE_PROJECTION))).c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define SHADOW_CUBE_START " +
          std::to_string(
              (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                 LightManager::SHADOW_SLOT_TYPE_CUBE))).c_str());
+                 LightManager::ShadowSlotType::SHADOW_SLOT_TYPE_CUBE)))
+            .c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define SHADOW_NORMAL_START " +
          std::to_string(
              (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                 LightManager::SHADOW_SLOT_TYPE_NORMAL))).c_str());
+                 LightManager::ShadowSlotType::SHADOW_SLOT_TYPE_NORMAL)))
+            .c_str());
     glswAddDirectiveToken(
         "Fragment",
         ("#define SHADOW_ARRAY_START " +
          std::to_string(
              (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                 LightManager::SHADOW_SLOT_TYPE_ARRAY))).c_str());
+                 LightManager::ShadowSlotType::SHADOW_SLOT_TYPE_ARRAY)))
+            .c_str());
     glswAddDirectiveToken("Fragment", "const uint DEPTH_EXP_WARP = 32;");
 
     // GLSL <-> VBO intercommunication
@@ -251,47 +263,47 @@ bool GL_API::initShaders() {
     glswAddDirectiveToken(
         "Vertex",
         ("#define SHADER_BUFFER_BONE_TRANSFORMS " +
-         std::to_string(enum_to_uint(
+         std::to_string(to_uint(
              ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS))).c_str());
     // Vertex data has a fixed format
     glswAddDirectiveToken(
         "Vertex", ("layout(location = " +
                    std::to_string(
-                       enum_to_uint(AttribLocation::VERTEX_POSITION_LOCATION)) +
+                       to_uint(AttribLocation::VERTEX_POSITION_LOCATION)) +
                    ") in vec3  inVertexData;").c_str());
     glswAddDirectiveToken(
         "Vertex",
         ("layout(location = " +
-         std::to_string(enum_to_uint(AttribLocation::VERTEX_COLOR_LOCATION)) +
+         std::to_string(to_uint(AttribLocation::VERTEX_COLOR_LOCATION)) +
          ") in vec4  inColorData;").c_str());
     glswAddDirectiveToken(
         "Vertex",
         ("layout(location = " +
-         std::to_string(enum_to_uint(AttribLocation::VERTEX_NORMAL_LOCATION)) +
+         std::to_string(to_uint(AttribLocation::VERTEX_NORMAL_LOCATION)) +
          ") in vec3  inNormalData;").c_str());
     glswAddDirectiveToken(
         "Vertex", ("layout(location = " +
                    std::to_string(
-                       enum_to_uint(AttribLocation::VERTEX_TEXCOORD_LOCATION)) +
+                       to_uint(AttribLocation::VERTEX_TEXCOORD_LOCATION)) +
                    ") in vec2  inTexCoordData;").c_str());
     glswAddDirectiveToken(
         "Vertex",
         ("layout(location = " +
-         std::to_string(enum_to_uint(AttribLocation::VERTEX_TANGENT_LOCATION)) +
+         std::to_string(to_uint(AttribLocation::VERTEX_TANGENT_LOCATION)) +
          ") in vec3  inTangentData;").c_str());
     glswAddDirectiveToken("Vertex",
                           ("layout(location = " +
-                           std::to_string(enum_to_uint(
+                           std::to_string(to_uint(
                                AttribLocation::VERTEX_BITANGENT_LOCATION)) +
                            ") in vec3  inBiTangentData;").c_str());
     glswAddDirectiveToken("Vertex",
                           ("layout(location = " +
-                           std::to_string(enum_to_uint(
+                           std::to_string(to_uint(
                                AttribLocation::VERTEX_BONE_WEIGHT_LOCATION)) +
                            ") in vec4  inBoneWeightData;").c_str());
     glswAddDirectiveToken("Vertex",
                           ("layout(location = " +
-                           std::to_string(enum_to_uint(
+                           std::to_string(to_uint(
                                AttribLocation::VERTEX_BONE_INDICE_LOCATION)) +
                            ") in ivec4 inBoneIndiceData;").c_str());
     // GPU specific data, such as GFXDevice's main uniform block and clipping
@@ -304,9 +316,10 @@ bool GL_API::initShaders() {
     // Create an optimisation context used for post-processing shaders
     // (using Aras Pranckevičius's glsl-optimizer:
     // https://github.com/aras-p/glsl-optimizer )
-    _GLSLOptContex = glslopt_initialize(
-        GFX_DEVICE.getAPI() == GFXDevice::OpenGLES ? kGlslTargetOpenGLES30
-                                                   : kGlslTargetOpenGL);
+    _GLSLOptContex =
+        glslopt_initialize(GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES
+                               ? kGlslTargetOpenGLES30
+                               : kGlslTargetOpenGL);
     // Check initialization status for GLSL and glsl-optimizer
     return (glswState == 1 && _GLSLOptContex != nullptr);
 }

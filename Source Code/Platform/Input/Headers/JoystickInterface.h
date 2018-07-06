@@ -133,7 +133,10 @@ class JoystickInterface {
     }
     inline bool wasFFDetected() const { return _bFFFound; }
 
-    enum EWhichJoystick { ePrevious = -1, eNext = +1 };
+    enum class EWhichJoystick : I32 { 
+        ePrevious = -1,
+        eNext = +1
+    };
 
     void selectJoystick(EWhichJoystick eWhich) {
         // Note: Reset the master gain to half the maximum and autocenter mode
@@ -144,7 +147,7 @@ class JoystickInterface {
             _dMasterGain = 0.5;  // Half the maximum.
             changeMasterGain(0.0);
         } else {
-            _nCurrJoyInd += eWhich;
+            _nCurrJoyInd += to_int(eWhich);
             if (_nCurrJoyInd < -1 || _nCurrJoyInd >= (U8)_vecJoys.size())
                 _nCurrJoyInd = -1;
             if (_vecJoys.size() > 1 && _nCurrJoyInd >= 0) {
@@ -171,15 +174,19 @@ class JoystickInterface {
         _vecFFDev[_nCurrJoyInd]->setMasterGain(_dMasterGain);
     }
 
-    enum EAutoCenterHow { eOff, eOn, eToggle };
+    enum class EAutoCenterHow : U32 { 
+        eOff = 0,
+        eOn,
+        eToggle
+    };
 
-    void changeAutoCenter(EAutoCenterHow eHow = eToggle) {
+    void changeAutoCenter(EAutoCenterHow eHow = EAutoCenterHow::eToggle) {
         if (_nCurrJoyInd < 0) return;
 
-        if (eHow == eToggle)
+        if (eHow == EAutoCenterHow::eToggle)
             _bAutoCenter = !_bAutoCenter;
         else
-            _bAutoCenter = (eHow == eOn ? true : false);
+            _bAutoCenter = (eHow == EAutoCenterHow::eOn ? true : false);
 
         _vecFFDev[_nCurrJoyInd]->setAutoCenterMode(_bAutoCenter);
     }

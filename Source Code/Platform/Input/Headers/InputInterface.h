@@ -58,7 +58,7 @@ DEFINE_SINGLETON(InputInterface)
     friend class InputInterfaceEventAttorney;
 
   public:
-    U8 init(Kernel& kernel, const stringImpl& windowTitle);
+    ErrorCode init(Kernel& kernel, const stringImpl& windowTitle);
 
     void updateResolution(U16 w, U16 h);
 
@@ -115,8 +115,8 @@ DEFINE_SINGLETON(InputInterface)
           _pMouse(nullptr),
           _pEffectMgr(nullptr),
           _bMustStop(false),
-          _bIsInitialized(false),
-          _nStatus(0) {
+          _bIsInitialized(false)
+    {
         for (U8 i = 0; i < KeyCode_PLACEHOLDER; ++i) {
             _keys[i]._key = static_cast<KeyCode>(i);
         }
@@ -137,8 +137,6 @@ DEFINE_SINGLETON(InputInterface)
 
     bool _bMustStop;
     bool _bIsInitialized;
-
-    I16 _nStatus;
 
     // App. heart beat frequency.
     static const U8 _nHartBeatFreq = 30;  // Hz

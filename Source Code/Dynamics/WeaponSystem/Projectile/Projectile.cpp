@@ -4,14 +4,14 @@ namespace Divide {
 
 Projectile::Projectile(ProjectileType type) : _type(type) {
     /// no placeholders please
-    assert(_type != PROJECTILE_TYPE_PLACEHOLDER);
+    assert(_type != ProjectileType::COUNT);
 }
 
 Projectile::~Projectile() {}
 
-bool Projectile::addProperties(U8 propertyMask) {
-    assert((propertyMask & ~(PROJECTILE_PROPERTY_PLACEHOLDER - 1)) == 0);
-    _properyMask |= static_cast<ProjectileProperty>(propertyMask);
+bool Projectile::addProperties(ProjectileProperty property) {
+    assert(property != ProjectileProperty::COUNT);
+    _properyMask |= to_uint(property);
     return true;
 }
 };

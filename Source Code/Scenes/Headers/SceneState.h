@@ -61,14 +61,14 @@ class SceneRenderState {
     friend class SceneRenderStateSceneAttorney;
 
    public:
-    enum GizmoState {
+    enum class GizmoState : U32 {
         NO_GIZMO = toBit(0),
         SCENE_GIZMO = toBit(1),
         SELECTED_GIZMO = toBit(2),
         ALL_GIZMO = SCENE_GIZMO | SELECTED_GIZMO
     };
 
-    enum ObjectRenderState {
+    enum class ObjectRenderState : U32 {
         NO_DRAW = toBit(0),
         DRAW_OBJECT = toBit(1),
         DRAW_BOUNDING_BOX = toBit(2),

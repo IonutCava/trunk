@@ -66,7 +66,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
 
     if (_gPhysicsSDK == nullptr) {
         Console::errorfn(Locale::get("ERROR_START_PHYSX_API"));
-        return PHYSX_INIT_ERROR;
+        return ErrorCode::PHYSX_INIT_ERROR;
     }
 
 #ifdef _DEBUG
@@ -89,7 +89,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
 
     if (!PxInitExtensions(*_gPhysicsSDK)) {
         Console::errorfn(Locale::get("ERROR_EXTENSION_PHYSX_API"));
-        return PHYSX_EXTENSION_ERROR;
+        return ErrorCode::PHYSX_EXTENSION_ERROR;
     }
 
     if (!_cooking) {
@@ -104,7 +104,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
     updateTimeStep(targetFrameRate);
     Console::printfn(Locale::get("START_PHYSX_API_OK"));
 
-    return NO_ERR;
+    return ErrorCode::NO_ERR;
 }
 
 bool PhysX::closePhysicsAPI() {
@@ -205,7 +205,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         ok = (filesize != 0);
     }
 
-    if (group == GROUP_NON_COLLIDABLE) {
+    if (group == PhysicsCollisionGroup::GROUP_NON_COLLIDABLE) {
         // return true;
     }
 
@@ -267,7 +267,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
                           orientation.z,
                           orientation.w).getConjugate());
 
-        if (mask != MASK_RIGID_DYNAMIC) {
+        if (mask != PhysicsActorMask::MASK_RIGID_DYNAMIC) {
             tempActor->_actor =
                 _gPhysicsSDK->createRigidStatic(posePxTransform);
         } else {

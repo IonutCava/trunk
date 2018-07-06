@@ -41,8 +41,8 @@
 
 namespace Divide {
 
-enum FrameEventType {
-    FRAME_EVENT_ANY,
+enum class FrameEventType : U32 {
+    FRAME_EVENT_ANY = 0,
     FRAME_EVENT_STARTED,
     FRAME_PRERENDER_START,
     FRAME_PRERENDER_END,

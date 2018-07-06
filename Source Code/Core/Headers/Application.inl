@@ -37,72 +37,72 @@ namespace Divide {
 inline const char* getErrorCodeName(ErrorCode code) {
     switch (code) {
         default:
-        case NO_ERR: {
+        case ErrorCode::NO_ERR: {
             return "Unknown error";
         };
-        case MISSING_SCENE_DATA: {
+        case ErrorCode::MISSING_SCENE_DATA: {
             return "Invalid Scene Data. SceneManager failed to load the "
                    "specified scene";
         };
-        case MISSING_SCENE_LOAD_CALL: {
+        case ErrorCode::MISSING_SCENE_LOAD_CALL: {
             return "The specified scene failed to load all of its data "
                    "properly";
         };
-        case GFX_NOT_SUPPORTED: {
+        case ErrorCode::GFX_NOT_SUPPORTED: {
             return "The specified rendering API is not fully implemented and "
                    "as such, it's not supported";
         };
-        case GFX_NON_SPECIFIED: {
+        case ErrorCode::GFX_NON_SPECIFIED: {
             return "No rendering API specified before trying to initialize the "
                    "GFX Device";
         };
-        case SFX_NON_SPECIFIED: {
+        case ErrorCode::SFX_NON_SPECIFIED: {
             return "No audio API specified before trying to initialize the "
                    "SFX Device";
         };
-        case PFX_NON_SPECIFIED:{
+        case ErrorCode::PFX_NON_SPECIFIED:{
             return "No physx API specified before trying to initialize the "
                    "PFX Device";
         };
-        case GLFW_INIT_ERROR: {
+        case ErrorCode::GLFW_INIT_ERROR: {
             return "GLFW system failed to initialize";
         };
-        case GLFW_WINDOW_INIT_ERROR: {
+        case ErrorCode::GLFW_WINDOW_INIT_ERROR: {
             return "GLFW failed to create a valid window";
         };
-        case GLBINGING_INIT_ERROR: {
+        case ErrorCode::GLBINGING_INIT_ERROR: {
             return "GLBinding failed to initialize";
         };
-        case GL_OLD_HARDWARE: {
+        case ErrorCode::GL_OLD_HARDWARE: {
             return "Current hardware does not support the minimum OpenGL "
                    "features required";
         };
-        case DX_INIT_ERROR: {
+        case ErrorCode::DX_INIT_ERROR: {
             return "DirectX API failed to initialize";
         };
-        case DX_OLD_HARDWARE: {
+        case ErrorCode::DX_OLD_HARDWARE: {
             return "Current hardware does not support the minimum DirectX "
                    "features required";
         };
-        case SDL_AUDIO_INIT_ERROR: {
+        case ErrorCode::SDL_AUDIO_INIT_ERROR: {
             return "SDL Audio library failed to initialize";
         };
-        case SDL_AUDIO_MIX_INIT_ERROR: {
+        case ErrorCode::SDL_AUDIO_MIX_INIT_ERROR: {
             return "SDL Audio Mixer failed to initialize";
         };
-        case FMOD_AUDIO_INIT_ERROR: {
+        case ErrorCode::FMOD_AUDIO_INIT_ERROR: {
             return "FMod Audio library failed to initialize";
         };
-        case OAL_INIT_ERROR: {
+        case ErrorCode::OAL_INIT_ERROR: {
             return "OpenAL failed to initialize";
         };
-        case PHYSX_INIT_ERROR: {
+        case ErrorCode::PHYSX_INIT_ERROR: {
             return "The PhysX library failed to initialize";
         };
-        case PHYSX_EXTENSION_ERROR: {
+        case ErrorCode::PHYSX_EXTENSION_ERROR: {
             return "The PhysX library failed to load the required extensions";
         };
-        case NO_LANGUAGE_INI: {
+        case ErrorCode::NO_LANGUAGE_INI: {
             return "Invalid language file";
         };
     };

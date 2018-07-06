@@ -38,12 +38,12 @@
 namespace Divide {
 namespace Input {
 /// Points to the position of said joystick in the vector
-enum Joystick {
+enum class Joystick : U32 {
     JOYSTICK_1 = 0,
     JOYSTICK_2 = 1,
     JOYSTICK_3 = 2,
     JOYSTICK_4 = 3,
-    Joystick_PLACEHOLDER = 4
+    COUNT
 };
 
 typedef OIS::KeyCode KeyCode;

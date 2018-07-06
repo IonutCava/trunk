@@ -54,7 +54,7 @@ class Framebuffer : private NonCopyable, public GUIDWrapper {
               _numColorChannels(1) {}
     };
 
-    enum FramebufferUsage {
+    enum class FramebufferUsage : U32 {
         FB_READ_WRITE = 0,
         FB_READ_ONLY = 1,
         FB_WRITE_ONLY = 2
@@ -67,7 +67,7 @@ class Framebuffer : private NonCopyable, public GUIDWrapper {
 
     inline Texture* GetAttachment(
         TextureDescriptor::AttachmentType slot) const {
-        return _attachmentTexture[slot];
+        return _attachmentTexture[to_uint(slot)];
     }
 
     virtual bool AddAttachment(const TextureDescriptor& descriptor,
@@ -91,9 +91,9 @@ class Framebuffer : private NonCopyable, public GUIDWrapper {
     virtual void Begin(const FramebufferTarget& drawPolicy) = 0;
     virtual void End() = 0;
 
-    virtual void Bind(
-        U8 unit = 0,
-        TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) = 0;
+    virtual void Bind(U8 unit = 0,
+                      TextureDescriptor::AttachmentType
+                          slot = TextureDescriptor::AttachmentType::Color0) = 0;
 
     virtual void ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                           GFXDataFormat dataType, void* outData) = 0;
@@ -103,10 +103,10 @@ class Framebuffer : private NonCopyable, public GUIDWrapper {
                  outData);
     }
 
-    virtual void BlitFrom(
-        Framebuffer* inputFB,
-        TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0,
-        bool blitColor = true, bool blitDepth = false) = 0;
+    virtual void BlitFrom(Framebuffer* inputFB,
+                          TextureDescriptor::AttachmentType
+                              slot = TextureDescriptor::AttachmentType::Color0,
+                          bool blitColor = true, bool blitDepth = false) = 0;
     // If true, array texture and/or cubemaps are bound to a single attachment
     // and shader based layered rendering should be used
     virtual void toggleLayeredRendering(const bool state) {
@@ -153,10 +153,11 @@ class Framebuffer : private NonCopyable, public GUIDWrapper {
     U16 _width, _height;
     U32 _framebufferHandle;
     vec4<F32> _clearColor;
-    TextureDescriptor
-        _attachment[TextureDescriptor::AttachmentType_PLACEHOLDER];
-    Texture* _attachmentTexture[TextureDescriptor::AttachmentType_PLACEHOLDER];
-    bool _attachmentDirty[TextureDescriptor::AttachmentType_PLACEHOLDER];
+    TextureDescriptor _attachment[to_const_uint(TextureDescriptor::AttachmentType::COUNT)];
+    Texture* _attachmentTexture[to_const_uint(
+        TextureDescriptor::AttachmentType::COUNT)];
+    bool _attachmentDirty[to_const_uint(
+        TextureDescriptor::AttachmentType::COUNT)];
 };
 
 };  // namespace Divide

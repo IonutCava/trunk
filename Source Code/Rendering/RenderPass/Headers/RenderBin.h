@@ -60,12 +60,12 @@ struct RenderBinItem {
 };
 
 struct RenderingOrder {
-    enum List {
+    enum class List : U32 {
         NONE = 0,
         FRONT_TO_BACK = 1,
         BACK_TO_FRONT = 2,
         BY_STATE = 3,
-        ORDER_PLACEHOLDER = 4
+        COUNT
     };
 };
 
@@ -76,7 +76,7 @@ class RenderBin {
     typedef vectorImpl<RenderBinItem> RenderBinStack;
 
    public:
-    enum RenderBinType {
+    enum class RenderBinType : U32 {
         RBT_MESH = 0,
         RBT_DELEGATE,
         RBT_TRANSLUCENT,
@@ -89,16 +89,16 @@ class RenderBin {
         RBT_VEGETATION_TREES,
         RBT_DECALS,
         RBT_SHADOWS,
-        RBT_PLACEHOLDER
+        COUNT
     };
 
-    stringImpl renderBinTypeToNameMap[RBT_PLACEHOLDER + 1];
+    stringImpl renderBinTypeToNameMap[to_const_uint(RenderBinType::COUNT) + 1];
 
     friend class RenderQueue;
 
-    RenderBin(const RenderBinType& rbType = RBT_PLACEHOLDER,
+    RenderBin(const RenderBinType& rbType = RenderBinType::COUNT,
               const RenderingOrder::List& renderOrder =
-                  RenderingOrder::ORDER_PLACEHOLDER,
+                  RenderingOrder::List::COUNT,
               D32 drawKey = -1);
 
     virtual ~RenderBin() {}

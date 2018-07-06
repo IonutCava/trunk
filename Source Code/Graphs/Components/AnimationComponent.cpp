@@ -8,7 +8,7 @@ namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneAnimator* animator,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, parentSGN),
+    : SGNComponent(SGNComponent::ComponentType::SGN_COMP_ANIMATION, parentSGN),
       _animator(animator),
       _skeletonAvailable(false),
       _playAnimations(true),
@@ -170,7 +170,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
     if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
         (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
          !bitCompare(node->getFlagMask(), 
-                     enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))) {
+                     to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))) {
         return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 

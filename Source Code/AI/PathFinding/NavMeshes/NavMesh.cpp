@@ -29,7 +29,7 @@ NavigationMesh::NavigationMesh() : GUIDWrapper() {
     _buildThreaded = true;
     _debugDraw = false;
     _renderConnections = false;
-    _renderMode = RENDER_NAVMESH;
+    _renderMode = RenderMode::RENDER_NAVMESH;
     _heightField = nullptr;
     _compactHeightField = nullptr;
     _countourSet = nullptr;
@@ -568,7 +568,7 @@ void NavigationMesh::render() {
     RenderMode mode = _renderMode;
 
     if (_building) {
-        mode = RENDER_NAVMESH;
+        mode = RenderMode::RENDER_NAVMESH;
         _debugDrawInterface->overrideColor(duRGBA(255, 0, 0, 80));
     }
 
@@ -577,28 +577,28 @@ void NavigationMesh::render() {
     _navigationMeshLock.lock();
 
     switch (mode) {
-        case RENDER_NAVMESH:
+        case RenderMode::RENDER_NAVMESH:
             if (_navMesh) {
                 duDebugDrawNavMesh(_debugDrawInterface.get(), *_navMesh, 0);
             }
             break;
-        case RENDER_CONTOURS:
+        case RenderMode::RENDER_CONTOURS:
             if (_countourSet) {
                 duDebugDrawContours(_debugDrawInterface.get(), *_countourSet);
             }
             break;
-        case RENDER_POLYMESH:
+        case RenderMode::RENDER_POLYMESH:
             if (_polyMesh) {
                 duDebugDrawPolyMesh(_debugDrawInterface.get(), *_polyMesh);
             }
             break;
-        case RENDER_DETAILMESH:
+        case RenderMode::RENDER_DETAILMESH:
             if (_polyMeshDetail) {
                 duDebugDrawPolyMeshDetail(_debugDrawInterface.get(),
                                           *_polyMeshDetail);
             }
             break;
-        case RENDER_PORTALS:
+        case RenderMode::RENDER_PORTALS:
             if (_navMesh) {
                 duDebugDrawNavMeshPortals(_debugDrawInterface.get(), *_navMesh);
             }

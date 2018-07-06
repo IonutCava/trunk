@@ -20,7 +20,7 @@ template <>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
                                           const stringImpl& name) {
     ParamHandler& param = ParamHandler::getInstance();
-    res->setState(RES_LOADING);
+    res->setState(ResourceState::RES_LOADING);
 
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::TEXTURE_REPEAT);
@@ -57,7 +57,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
 
     waterMat->dumpToFile(false);
     waterMat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
-    waterMat->setTexture(ShaderProgram::TEXTURE_UNIT0, waterNM);
+    waterMat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0, waterNM);
     waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::FINAL_STAGE,
                                true);
     waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS_STAGE, true);

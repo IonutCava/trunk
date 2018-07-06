@@ -44,7 +44,7 @@ class SceneRenderState;
 DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
 
   public:
-    enum ShadowSlotType {
+    enum class ShadowSlotType : U32 {
         SHADOW_SLOT_TYPE_NORMAL = 0,
         SHADOW_SLOT_TYPE_CUBE = 1,
         SHADOW_SLOT_TYPE_ARRAY = 2
@@ -94,12 +94,12 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     inline U8 getShadowBindSlotOffset(LightType lightType) {
         switch (lightType) {
             default:
-            case LIGHT_TYPE_SPOT:
-                return getShadowBindSlotOffset(SHADOW_SLOT_TYPE_NORMAL);
-            case LIGHT_TYPE_POINT:
-                return getShadowBindSlotOffset(SHADOW_SLOT_TYPE_CUBE);
-            case LIGHT_TYPE_DIRECTIONAL:
-                return getShadowBindSlotOffset(SHADOW_SLOT_TYPE_ARRAY);
+            case LightType::LIGHT_TYPE_SPOT:
+                return getShadowBindSlotOffset(ShadowSlotType::SHADOW_SLOT_TYPE_NORMAL);
+            case LightType::LIGHT_TYPE_POINT:
+                return getShadowBindSlotOffset(ShadowSlotType::SHADOW_SLOT_TYPE_CUBE);
+            case LightType::LIGHT_TYPE_DIRECTIONAL:
+                return getShadowBindSlotOffset(ShadowSlotType::SHADOW_SLOT_TYPE_ARRAY);
         };
     }
 
@@ -113,10 +113,10 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     bool framePreRenderEnded(const FrameEvent& evt);
 
   private:
-    enum ShaderBufferType {
+    enum class ShaderBufferType : U32 {
         SHADER_BUFFER_NORMAL = 0,
         SHADER_BUFFER_SHADOW = 1,
-        ShaderBuffer_PLACEHOLDER = 2
+        COUNT
     };
 
     LightManager();
@@ -135,7 +135,8 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     vectorImpl<LightProperties> _lightProperties;
     vectorImpl<LightShadowProperties> _lightShadowProperties;
 
-    ShaderBuffer* _lightShaderBuffer[ShaderBuffer_PLACEHOLDER];
+    ShaderBuffer* _lightShaderBuffer[to_const_uint(
+        ShaderBufferType::COUNT)];
 
     U8 _normShadowLocation;
     U8 _cubeShadowLocation;

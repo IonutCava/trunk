@@ -10,7 +10,7 @@
 namespace Divide {
 
 SFXDevice::SFXDevice() : _state(true, true, true, true),
-                         _API_ID(SFX_PLACEHOLDER),
+                         _API_ID(AudioAPI::COUNT),
                          _api(nullptr)
 {
 }
@@ -35,7 +35,7 @@ ErrorCode SFXDevice::initAudioAPI() {
         } break;
         default: {
             Console::errorfn(Locale::get("ERROR_SFX_DEVICE_API"));
-            return SFX_NON_SPECIFIED;
+            return ErrorCode::SFX_NON_SPECIFIED;
         } break;
     };
 

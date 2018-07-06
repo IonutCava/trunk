@@ -7,7 +7,7 @@
 namespace Divide {
 
 Object3D::Object3D(ObjectType type, ObjectFlag flag)
-    : Object3D("", type, enum_to_uint(flag)) 
+    : Object3D("", type, to_uint(flag)) 
 {
 }
 
@@ -18,7 +18,7 @@ Object3D::Object3D(ObjectType type, U32 flagMask)
 }
 
 Object3D::Object3D(const stringImpl& name, ObjectType type, ObjectFlag flag)
-    : Object3D(name, type, enum_to_uint(flag))
+    : Object3D(name, type, to_uint(flag))
 {
 }
 
@@ -29,14 +29,14 @@ Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
       _geometryFlagMask(flagMask),
       _geometryPartitionID(0) {
     _buffer = bitCompare(_geometryFlagMask,
-                         enum_to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
+                         to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
                   ? nullptr
                   : GFX_DEVICE.newVB();
 }
 
 Object3D::~Object3D() {
     if (!bitCompare(_geometryFlagMask,
-                    enum_to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
+                    to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
         MemoryManager::DELETE(_buffer);
     }
 }
@@ -82,7 +82,7 @@ bool Object3D::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
 }
 
 bool Object3D::onDraw(const RenderStage& currentStage) {
-    return getState() == RES_LOADED;
+    return getState() == ResourceState::RES_LOADED;
 }
 
 void Object3D::computeNormals() {

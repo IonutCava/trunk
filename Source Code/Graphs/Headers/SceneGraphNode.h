@@ -52,7 +52,7 @@ class SceneRoot : public SceneNode {
    public:
     SceneRoot() : SceneNode("root", SceneNodeType::TYPE_ROOT) {
         _renderState.useDefaultMaterial(false);
-        setState(RES_LOADED);
+        setState(ResourceState::RES_LOADED);
     }
 
     bool onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
@@ -79,7 +79,7 @@ class SceneTransform : public SceneNode {
    public:
     SceneTransform() : SceneNode(SceneNodeType::TYPE_TRANSFORM) {
         _renderState.useDefaultMaterial(false);
-        setState(RES_LOADED);
+        setState(ResourceState::RES_LOADED);
     }
 
     void render(SceneGraphNode& sgn,
@@ -99,7 +99,10 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     typedef hashMapImpl<stringImpl, SceneGraphNode*> NodeChildren;
 
     /// Usage context affects lighting, navigation, physics, etc
-    enum UsageContext { NODE_DYNAMIC = 0, NODE_STATIC };
+    enum class UsageContext : U32 {
+        NODE_DYNAMIC = 0,
+        NODE_STATIC 
+    };
 
     bool unload();
     /// Update bounding boxes
@@ -215,7 +218,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
 
     inline void setComponent(SGNComponent::ComponentType type,
                              SGNComponent* component) {
-        _components[type].reset(component);
+        _components[to_uint(type)].reset(component);
     }
 
     template <typename T>
@@ -226,22 +229,22 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     template <>
     inline AnimationComponent* getComponent() const {
         return static_cast<AnimationComponent*>(
-            _components[SGNComponent::SGN_COMP_ANIMATION].get());
+            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_ANIMATION)].get());
     }
     template <>
     inline NavigationComponent* getComponent() const {
         return static_cast<NavigationComponent*>(
-            _components[SGNComponent::SGN_COMP_NAVIGATION].get());
+            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_NAVIGATION)].get());
     }
     template <>
     inline PhysicsComponent* getComponent() const {
         return static_cast<PhysicsComponent*>(
-            _components[SGNComponent::SGN_COMP_PHYSICS].get());
+            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_PHYSICS)].get());
     }
     template <>
     inline RenderingComponent* getComponent() const {
         return static_cast<RenderingComponent*>(
-            _components[SGNComponent::SGN_COMP_RENDERING].get());
+            _components[to_uint(SGNComponent::ComponentType::SGN_COMP_RENDERING)].get());
     }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
@@ -315,7 +318,8 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     stringImpl _name;
 
     UsageContext _usageContext;
-    std::unique_ptr<SGNComponent> _components[SGNComponent::ComponentType_PLACEHOLDER];
+    std::unique_ptr<SGNComponent> _components[to_const_uint(
+        SGNComponent::ComponentType::COUNT)];
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
     hashMapImpl<RenderStage, bool, hashAlg::hash<RenderStage>> _reset;
 

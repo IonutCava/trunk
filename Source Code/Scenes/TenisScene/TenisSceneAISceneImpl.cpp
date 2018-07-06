@@ -32,26 +32,26 @@ void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
                                            const cdiggins::any& msg_content) {
     AITeam* currentTeam = nullptr;
     switch (msg) {
-        case REQUEST_DISTANCE_TO_TARGET:
+        case AIMsg::REQUEST_DISTANCE_TO_TARGET:
             updatePositions();
             _entity->sendMessage(
-                sender, RECEIVE_DISTANCE_TO_TARGET,
+                sender, AIMsg::RECEIVE_DISTANCE_TO_TARGET,
                 distanceToBall(_initialPosition, _ballPosition));
             break;
-        case RECEIVE_DISTANCE_TO_TARGET: {
+        case AIMsg::RECEIVE_DISTANCE_TO_TARGET: {
             assert(_entity->getTeam());
             bool success = false;
             _entity->getTeam()->getMemberVariable()[sender] =
                 msg_content.constant_cast<F32>(success);
             assert(success);
         } break;
-        case ATTACK_BALL:
+        case AIMsg::ATTACK_BALL:
             currentTeam = _entity->getTeam();
             assert(currentTeam);
             for (const AITeam::TeamMap::value_type& member :
                  currentTeam->getTeamMembers()) {
                 if (_entity->getGUID() != member.second->getGUID()) {
-                    _entity->sendMessage(member.second, DONT_ATTACK_BALL, 0);
+                    _entity->sendMessage(member.second, AIMsg::DONT_ATTACK_BALL, 0);
                 }
             }
             if (_ballToTeam2) {
@@ -68,7 +68,7 @@ void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg,
                 }
             }
             break;
-        case DONT_ATTACK_BALL:
+        case AIMsg::DONT_ATTACK_BALL:
             _attackBall = false;
             break;
     };
@@ -102,7 +102,7 @@ void TenisSceneAISceneImpl::processInput(const U64 deltaTime) {
          currentTeam->getTeamMembers()) {
         /// Ask all of our team-mates to send us their distance to the ball
         if (_entity->getGUID() != member.second->getGUID()) {
-            _entity->sendMessage(member.second, REQUEST_DISTANCE_TO_TARGET, 0);
+            _entity->sendMessage(member.second, AIMsg::REQUEST_DISTANCE_TO_TARGET, 0);
         }
     }
 }
@@ -119,7 +119,7 @@ void TenisSceneAISceneImpl::processData(const U64 deltaTime) {
             nearestEntity = member.first;
         }
     }
-    _entity->sendMessage(nearestEntity, ATTACK_BALL, distance);
+    _entity->sendMessage(nearestEntity, AIMsg::ATTACK_BALL, distance);
 }
 
 void TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
@@ -136,7 +136,7 @@ void TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef) {
     }
 
     /// Update sensor information
-    Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
+    Sensor* visualSensor = _entity->getSensor(SensorType::VISUAL_SENSOR);
 
     if (visualSensor) {
         visualSensor->update(deltaTime);

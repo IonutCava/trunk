@@ -38,7 +38,12 @@ namespace Divide {
 
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(SFXDevice, AudioAPIWrapper, final)
   public:
-    enum AudioAPI { FMOD, OpenAL, SDL, SFX_PLACEHOLDER };
+    enum class AudioAPI : U32 {
+        FMOD,
+        OpenAL,
+        SDL,
+        COUNT
+    };
 
     ErrorCode initAudioAPI();
     void closeAudioAPI();

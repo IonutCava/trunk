@@ -30,7 +30,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     glfwSetErrorCallback(GLUtil::glfw_error_callback);
     // Attempt to init GLFW
     if (!glfwInit()) {
-        return GLFW_INIT_ERROR;
+        return ErrorCode::GLFW_INIT_ERROR;
     }
 
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
@@ -63,7 +63,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
 
         // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
-    if (GFX_DEVICE.getAPI() == GFXDevice::OpenGLES) {
+    if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -89,7 +89,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
                          Locale::get("ERROR_GL_OLD_VERSION"));
         Console::printfn(Locale::get("WARN_SWITCH_D3D"));
         Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
-        return (GLFW_WINDOW_INIT_ERROR);
+        return ErrorCode::GLFW_WINDOW_INIT_ERROR;
     }
 
     // The application window will hold the main rendering context
@@ -113,7 +113,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     // can't create it
     if (!GLUtil::_loaderWindow) {
         glfwTerminate();
-        return GLFW_WINDOW_INIT_ERROR;
+        return ErrorCode::GLFW_WINDOW_INIT_ERROR;
     }
 
     // Get the current display mode used by the focused monitor
@@ -309,12 +309,12 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     createFonsContext();
     if (_fonsContext == nullptr) {
         Console::errorfn(Locale::get("ERROR_FONT_INIT"));
-        return GLFW_WINDOW_INIT_ERROR;
+        return ErrorCode::GLFW_WINDOW_INIT_ERROR;
     }
 
     // Prepare immediate mode emulation rendering
     NS_GLIM::glim.SetVertexAttribLocation(
-        enum_to_uint(AttribLocation::VERTEX_POSITION_LOCATION));
+        to_uint(AttribLocation::VERTEX_POSITION_LOCATION));
 
     // We need a dummy VAO object for point rendering
     glGenVertexArrays(1, &_pointDummyVAO);
@@ -358,7 +358,7 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         par.getParam<bool>("GUI.CEGUI.ExtraStates"));
     CEGUI::System::create(*_GUIGLrenderer);
 
-    return NO_ERR;
+    return ErrorCode::NO_ERR;
 }
 
 /// Clear everything that was setup in initRenderingAPI()

@@ -82,26 +82,37 @@ RenderBin::RenderBin(const RenderBinType& rbType,
                      const RenderingOrder::List& renderOrder, D32 drawKey)
     : _rbType(rbType), _renderOrder(renderOrder), _drawKey(drawKey) {
     _renderBinStack.reserve(125);
-    renderBinTypeToNameMap[RBT_PLACEHOLDER] = "Invalid Bin";
-    renderBinTypeToNameMap[RBT_MESH] = "Mesh Bin";
-    renderBinTypeToNameMap[RBT_IMPOSTOR] = "Impostor Bin";
-    renderBinTypeToNameMap[RBT_DELEGATE] = "Delegate Bin";
-    renderBinTypeToNameMap[RBT_TRANSLUCENT] = "Translucent Bin";
-    renderBinTypeToNameMap[RBT_SKY] = "Sky Bin";
-    renderBinTypeToNameMap[RBT_WATER] = "Water Bin";
-    renderBinTypeToNameMap[RBT_TERRAIN] = "Terrain Bin";
-    renderBinTypeToNameMap[RBT_PARTICLES] = "Particle Bin";
-    renderBinTypeToNameMap[RBT_VEGETATION_GRASS] = "Grass Bin";
-    renderBinTypeToNameMap[RBT_VEGETATION_TREES] = "Trees Bin";
-    renderBinTypeToNameMap[RBT_DECALS] = "Decals Bin";
-    renderBinTypeToNameMap[RBT_SHADOWS] = "Shadow Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::COUNT)] =
+        "Invalid Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_MESH)] = "Mesh Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_IMPOSTOR)] =
+        "Impostor Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DELEGATE)] =
+        "Delegate Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TRANSLUCENT)] =
+        "Translucent Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_SKY)] = "Sky Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_WATER)] =
+        "Water Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TERRAIN)] =
+        "Terrain Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_PARTICLES)] =
+        "Particle Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_GRASS)] =
+        "Grass Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_TREES)] =
+        "Trees Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DECALS)] =
+        "Decals Bin";
+    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_SHADOWS)] =
+        "Shadow Bin";
 }
 
 void RenderBin::sort(const RenderStage& currentRenderStage) {
     // WriteLock w_lock(_renderBinGetMutex);
     switch (_renderOrder) {
         default:
-        case RenderingOrder::BY_STATE: {
+        case RenderingOrder::List::BY_STATE: {
             if (GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
                 std::sort(std::begin(_renderBinStack),
                           std::end(_renderBinStack),
@@ -111,20 +122,20 @@ void RenderBin::sort(const RenderStage& currentRenderStage) {
                           std::end(_renderBinStack), RenderQueueKeyCompare());
             }
         } break;
-        case RenderingOrder::BACK_TO_FRONT: {
+        case RenderingOrder::List::BACK_TO_FRONT: {
             std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
                       RenderQueueDistanceBacktoFront());
         } break;
-        case RenderingOrder::FRONT_TO_BACK: {
+        case RenderingOrder::List::FRONT_TO_BACK: {
             std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
                       RenderQueueDistanceFrontToBack());
         } break;
-        case RenderingOrder::NONE: {
+        case RenderingOrder::List::NONE: {
             // no need to sort
         } break;
-        case RenderingOrder::ORDER_PLACEHOLDER: {
+        case RenderingOrder::List::COUNT: {
             Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"),
-                             renderBinTypeToNameMap[_rbType]);
+                             renderBinTypeToNameMap[to_uint(_rbType)]);
         } break;
     };
 }
@@ -135,8 +146,7 @@ void RenderBin::refresh() {
     _renderBinStack.reserve(128);
 }
 
-void RenderBin::addNodeToBin(SceneGraphNode& sgn,
-                             const vec3<F32>& eyePos) {
+void RenderBin::addNodeToBin(SceneGraphNode& sgn, const vec3<F32>& eyePos) {
     I32 keyA = (U32)_renderBinStack.size() + 1;
     I32 keyB = keyA;
     RenderingComponent* const renderable =

@@ -12,7 +12,9 @@ using namespace physx;
 
 namespace Divide {
 
-enum PhysXSceneInterfaceState { STATE_LOADING_ACTORS };
+enum class PhysXSceneInterfaceState : U32 {
+    STATE_LOADING_ACTORS
+};
 
 PhysXSceneInterface::PhysXSceneInterface(Scene* parentScene)
     : PhysicsSceneInterface(parentScene),

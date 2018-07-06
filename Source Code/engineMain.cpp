@@ -14,7 +14,7 @@ int engineMain(int argc, char** argv) {
     ErrorCode returnCode =
         Application::getOrCreateInstance().initialize("main.xml", argc, argv);
 
-    if (returnCode == NO_ERR) {
+    if (returnCode == ErrorCode::NO_ERR) {
         Application::getInstance().run();
     } else {
         // If any error occurred, close the application as details should
@@ -28,6 +28,6 @@ int engineMain(int argc, char** argv) {
     // well
     Application::getInstance().destroyInstance();
 
-    return returnCode;
+    return to_int(returnCode);
 }
 };

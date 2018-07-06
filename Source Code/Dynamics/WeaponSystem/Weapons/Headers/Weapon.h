@@ -40,33 +40,33 @@ namespace Divide {
 class Weapon {
    public:
     /// Weapon type mask
-    enum WeaponType {
+    enum class WeaponType : U32 {
         /// Melee weapon (sword,axe,kinfe,lightsaber)
         WEAPON_TYPE_MELEE = toBit(1),
         /// ranged weapons (guns, bows etc)
         WEAPON_TYPE_RANGED = toBit(2),
         /// Place all weapon types above this
-        WEAPON_TYPE_PLACEHOLDER = toBit(10)
+        COUNT = toBit(10)
     };
 
-    enum WeaponProperty {
+    enum class WeaponProperty : U32 {
         /// this weapon does use ammo (or charges for melee)
         WEAPON_PROPERTY_WITH_AMMO = toBit(1),
         /// this weapon does not us ammo
         WEAPON_PROPERTY_WITHOUT_AMMO = toBit(2),
         /// Place all weapon types above this
-        WEAPON_PROPERTY_PLACEHOLDER = toBit(10)
+        COUNT = toBit(10)
     };
 
     Weapon(WeaponType type);
     ~Weapon();
 
     /// Add a specific property to this weapon
-    bool addProperties(U8 propertyMask);
+    bool addProperty(WeaponProperty propertyMask);
 
    private:
     WeaponType _type;
-    U8 _properyMask;  ///< weapon properties
+    U32 _properyMask;  ///< weapon properties
 };
 
 };  // namespace Divide

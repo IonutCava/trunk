@@ -235,7 +235,7 @@ static unsigned short getHeight(const float fx, const float fy, const float fz,
 }
 
 
-enum EdgeValues
+enum EdgeValues  
 {
     UNDEF = -1,
     HULL = -2,

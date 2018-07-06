@@ -11,7 +11,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     ParamHandler& par = ParamHandler::getInstance();
     ShaderProgram* ptr = GFX_DEVICE.newShaderProgram();
 
-    ptr->setState(RES_LOADING);
+    ptr->setState(ResourceState::RES_LOADING);
     ptr->enableThreadedLoading(_descriptor.getThreaded() &&
                                Application::getInstance().mainLoopActive());
     if (_descriptor.getResourceLocation().compare("default") == 0) {

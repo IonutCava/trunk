@@ -4,7 +4,7 @@ namespace Divide {
 using namespace AI;
 
 AudioSensor::AudioSensor(AIEntity* const parentEntity)
-    : Sensor(parentEntity, AUDIO_SENSOR) {}
+    : Sensor(parentEntity, SensorType::AUDIO_SENSOR) {}
 
 AudioSensor::~AudioSensor() {}
 

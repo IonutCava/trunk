@@ -51,11 +51,12 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
     if (!boundingBox.ContainsPoint(eye)) {
         switch (
             cam.getFrustumConst().ContainsSphere(center, sphere.getRadius())) {
-            case Frustum::FRUSTUM_OUT: {
+            case Frustum::FrustCollision::FRUSTUM_OUT: {
                 return false;
             };
-            case Frustum::FRUSTUM_INTERSECT: {
-                if (!cam.getFrustumConst().ContainsBoundingBox(boundingBox)) {
+            case Frustum::FrustCollision::FRUSTUM_INTERSECT: {
+                if (cam.getFrustumConst().ContainsBoundingBox(boundingBox) ==
+                    Frustum::FrustCollision::FRUSTUM_OUT) {
                     return false;
                 }
             };

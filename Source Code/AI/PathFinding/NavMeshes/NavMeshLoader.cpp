@@ -309,26 +309,26 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
     assert(sgn != nullptr);
 
     if (sgn->getComponent<NavigationComponent>()->navigationContext() !=
-            NavigationComponent::NODE_IGNORE &&  // Ignore if specified
+            NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if specified
         box.getHeight() > 0.05f)  // Skip small objects
     {
         SceneNode* sn = sgn->getNode();
 
         SceneNodeType nodeType = sn->getType();
-        U32 ignoredNodeType = enum_to_uint(SceneNodeType::TYPE_ROOT) |
-                              enum_to_uint(SceneNodeType::TYPE_LIGHT) |
-                              enum_to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-                              enum_to_uint(SceneNodeType::TYPE_TRIGGER) | 
-                              enum_to_uint(SceneNodeType::TYPE_SKY) | 
-                              enum_to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
+        U32 ignoredNodeType = to_uint(SceneNodeType::TYPE_ROOT) |
+                              to_uint(SceneNodeType::TYPE_LIGHT) |
+                              to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+                              to_uint(SceneNodeType::TYPE_TRIGGER) | 
+                              to_uint(SceneNodeType::TYPE_SKY) | 
+                              to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 
         U32 allowedNodeType =
-            enum_to_uint(SceneNodeType::TYPE_WATER) |
-            enum_to_uint(SceneNodeType::TYPE_OBJECT3D) |
-            enum_to_uint(SceneNodeType::TYPE_VEGETATION_TREES);
+            to_uint(SceneNodeType::TYPE_WATER) |
+            to_uint(SceneNodeType::TYPE_OBJECT3D) |
+            to_uint(SceneNodeType::TYPE_VEGETATION_TREES);
 
-        if (!bitCompare(allowedNodeType, enum_to_uint(nodeType))) {
-            if (!bitCompare(ignoredNodeType, enum_to_uint(nodeType))) {
+        if (!bitCompare(allowedNodeType, to_uint(nodeType))) {
+            if (!bitCompare(ignoredNodeType, to_uint(nodeType))) {
                 Console::printfn(Locale::get("WARN_NAV_UNSUPPORTED"),
                                  sn->getName().c_str());
                 goto next;
@@ -337,37 +337,37 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
             U32 ignored3DObjectType =
-                enum_to_uint(Object3D::ObjectType::MESH) |
-                enum_to_uint(Object3D::ObjectType::TEXT_3D) |
-                enum_to_uint(Object3D::ObjectType::FLYWEIGHT);
+                to_uint(Object3D::ObjectType::MESH) |
+                to_uint(Object3D::ObjectType::TEXT_3D) |
+                to_uint(Object3D::ObjectType::FLYWEIGHT);
             if (bitCompare(ignored3DObjectType,
-                           enum_to_uint(dynamic_cast<Object3D*>(sn)->getObjectType())))
+                           to_uint(dynamic_cast<Object3D*>(sn)->getObjectType())))
             {
                 goto next;
             }
         }
 
-        MeshDetailLevel level = DETAIL_ABSOLUTE;
+        MeshDetailLevel level = MeshDetailLevel::DETAIL_ABSOLUTE;
         VertexBuffer* geometry = nullptr;
-        SamplePolyAreas areaType = SAMPLE_AREA_OBSTACLE;
+        SamplePolyAreas areaType = SamplePolyAreas::SAMPLE_AREA_OBSTACLE;
 
         switch (nodeType) {
             case SceneNodeType::TYPE_WATER: {
                 if (!sgn->getComponent<NavigationComponent>()
                          ->navMeshDetailOverride())
-                    level = DETAIL_BOUNDINGBOX;
-                areaType = SAMPLE_POLYAREA_WATER;
+                    level = MeshDetailLevel::DETAIL_BOUNDINGBOX;
+                areaType = SamplePolyAreas::SAMPLE_POLYAREA_WATER;
             } break;
             case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
                 if (!sgn->getComponent<NavigationComponent>()
                          ->navMeshDetailOverride() &&
-                    sgn->usageContext() == SceneGraphNode::NODE_STATIC) {
-                    level = DETAIL_BOUNDINGBOX;
+                    sgn->usageContext() == SceneGraphNode::UsageContext::NODE_STATIC) {
+                    level = MeshDetailLevel::DETAIL_BOUNDINGBOX;
                 }
                 if (dynamic_cast<Object3D*>(sn)->getObjectType() ==
                     Object3D::ObjectType::TERRAIN) {
-                    areaType = SAMPLE_POLYAREA_GROUND;
+                    areaType = SamplePolyAreas::SAMPLE_POLYAREA_GROUND;
                 }
             } break;
             default: {
@@ -386,7 +386,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 
         U32 currentTriangleIndexOffset = outData.getVertCount();
 
-        if (level == DETAIL_ABSOLUTE) {
+        if (level == MeshDetailLevel::DETAIL_ABSOLUTE) {
             if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
                 geometry = dynamic_cast<Object3D*>(sn)->getGeometryVB();
             } else /*nodeType == TYPE_WATER*/ {
@@ -425,7 +425,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                 addTriangle(&outData, triangles[i], currentTriangleIndexOffset,
                             areaType);
             }
-        } else if (level == DETAIL_BOUNDINGBOX) {
+        } else if (level == MeshDetailLevel::DETAIL_BOUNDINGBOX) {
             const vec3<F32>* vertices = box.getPoints();
 
             for (U32 i = 0; i < 8; i++) {

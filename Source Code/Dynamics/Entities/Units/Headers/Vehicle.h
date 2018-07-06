@@ -40,7 +40,7 @@ namespace Divide {
 class Vehicle : public Unit {
    public:
     /// Currently supported vehicle types
-    enum VehicleType {
+    enum class VehicleType : U32 {
         /// Ground based vehicles
         VEHICLE_TYPE_GROUND = toBit(1),
         /// Flying/Space vehicles
@@ -50,21 +50,21 @@ class Vehicle : public Unit {
         /// Underwater vehicles
         VEHICLE_TYPE_UNDERWATER = toBit(4),
         /// For Future expansion
-        VEHICLE_TYPE_PLACEHOLDER = toBit(10)
+        COUNT = toBit(10)
     };
 
     Vehicle(SceneGraphNode& node);
     ~Vehicle();
 
     /// A vehicle can be of multiple types at once
-    void setVehicleTypeMask(U8 mask);
+    void setVehicleTypeMask(U32 mask);
     /// Check if current vehicle fits the desired type
     bool checkVehicleMask(VehicleType type) const;
 
    public:
     /// Is this vehicle controlled by the player or the AI?
     bool _playerControlled;
-    U8 _vehicleTypeMask;
+    U32 _vehicleTypeMask;
 };
 
 };  // namespace Divide

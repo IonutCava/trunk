@@ -37,12 +37,12 @@
 
 namespace Divide {
 
-enum ShadowType {
+enum class ShadowType : I32 {
     SHADOW_TYPE_NONE = -1,
     SHADOW_TYPE_Single,
     SHADOW_TYPE_CSM,
     SHADOW_TYPE_CubeMap,
-    SHADOW_TYPE_PLACEHOLDER,
+    COUNT,
 };
 
 class Light;

@@ -41,7 +41,12 @@ namespace Divide {
 
 class Camera : public Resource {
    public:
-    enum CameraType { FREE_FLY, FIRST_PERSON, THIRD_PERSON, ORBIT, SCRIPTED };
+    enum class CameraType : U32 { 
+        FREE_FLY = 0,
+        FIRST_PERSON,
+        THIRD_PERSON,
+        ORBIT, SCRIPTED
+    };
 
    public:
     Camera(const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);

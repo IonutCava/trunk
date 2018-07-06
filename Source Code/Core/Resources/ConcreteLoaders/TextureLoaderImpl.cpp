@@ -12,12 +12,12 @@ Texture* ImplResourceLoader<Texture>::operator()() {
     Texture* ptr = nullptr;
 
     if (_descriptor.getEnumValue() ==
-        enum_to_uint(TextureType::TEXTURE_CUBE_MAP)) {
+        to_uint(TextureType::TEXTURE_CUBE_MAP)) {
         ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());
     } else if (_descriptor.getEnumValue() ==
-                   enum_to_uint(TextureType::TEXTURE_2D_ARRAY) ||
+                   to_uint(TextureType::TEXTURE_2D_ARRAY) ||
                _descriptor.getEnumValue() ==
-                   enum_to_uint(TextureType::TEXTURE_2D_ARRAY_MS)) {
+                   to_uint(TextureType::TEXTURE_2D_ARRAY_MS)) {
         ptr = GFX_DEVICE.newTextureArray(_descriptor.getFlag());
         ptr->setNumLayers(_descriptor.getID());
     } else {

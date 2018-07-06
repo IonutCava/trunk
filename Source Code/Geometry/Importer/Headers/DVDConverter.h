@@ -70,8 +70,8 @@ struct aiScene;
 struct aiMesh;
 struct aiMaterial;
 struct aiNode;
-enum aiTextureOp : int;
-enum aiTextureMapMode : int;
+enum aiTextureOp;
+enum aiTextureMapMode;
 
 namespace Assimp {
 class Importer;
@@ -107,12 +107,12 @@ DEFINE_SINGLETON(DVDConverter)
     stringImpl _fileLocation;
     stringImpl _modelName;
 
-    TextureWrap aiTextureMapModeTable[enum_to_uint_const(
-        TextureWrap::TextureWrap_PLACEHOLDER)];
-    Material::ShadingMode aiShadingModeInternalTable[enum_to_uint_const(
-        Material::ShadingMode::ShadingMode_PLACEHOLDER)];
-    Material::TextureOperation aiTextureOperationTable[enum_to_uint_const(
-        Material::TextureOperation::TextureOperation_PLACEHOLDER)];
+    TextureWrap aiTextureMapModeTable[to_const_uint(
+        TextureWrap::COUNT)];
+    Material::ShadingMode aiShadingModeInternalTable[to_const_uint(
+        Material::ShadingMode::COUNT)];
+    Material::TextureOperation aiTextureOperationTable[to_const_uint(
+        Material::TextureOperation::COUNT)];
 END_SINGLETON
 
 };  // namespace Divide

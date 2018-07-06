@@ -59,8 +59,7 @@ class AITeam : public GUIDWrapper {
    public:
    public:
     typedef Navigation::DivideDtCrowd* CrowdPtr;
-    typedef hashMapImpl<AIEntity::PresetAgentRadius, CrowdPtr,
-                        hashAlg::hash<I32> > AITeamCrowd;
+    typedef hashMapImpl<AIEntity::PresetAgentRadius, CrowdPtr> AITeamCrowd;
     typedef hashMapImpl<AIEntity*, F32> MemberVariable;
     typedef hashMapImpl<I64, AIEntity*> TeamMap;
 

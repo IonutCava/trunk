@@ -56,27 +56,28 @@ class Material : public Resource {
         BUMP_NORMAL = 1,  //<Normal mapping
         BUMP_PARALLAX = 2,
         BUMP_RELIEF = 3,
-        BumpMethod_PLACEHOLDER = 4
+        COUNT
     };
 
     /// How should each texture be added
     enum class TextureOperation : U32 {
-        TextureOperation_Multiply = 0x0,
-        TextureOperation_Add = 0x1,
-        TextureOperation_Subtract = 0x2,
-        TextureOperation_Divide = 0x3,
-        TextureOperation_SmoothAdd = 0x4,
-        TextureOperation_SignedAdd = 0x5,
-        TextureOperation_Decal = 0x6,
-        TextureOperation_Replace = 0x7,
-        TextureOperation_PLACEHOLDER = 0x8
+        TextureOperation_Multiply = 0,
+        TextureOperation_Add = 1,
+        TextureOperation_Subtract = 2,
+        TextureOperation_Divide = 3,
+        TextureOperation_SmoothAdd = 4,
+        TextureOperation_SignedAdd = 5,
+        TextureOperation_Decal = 6,
+        TextureOperation_Replace = 7,
+        COUNT
     };
 
     enum class TranslucencySource : U32 {
         TRANSLUCENT_DIFFUSE = 0,
         TRANSLUCENT_OPACITY_MAP,
         TRANSLUCENT_DIFFUSE_MAP,
-        TRANSLUCENT_NONE
+        TRANSLUCENT_NONE,
+        COUNT
     };
     /// Not used yet but implemented for shading model selection in shaders
     /// This enum matches the ASSIMP one on a 1-to-1 basis
@@ -87,7 +88,7 @@ class Material : public Resource {
         SHADING_TOON = 0x4,
         SHADING_OREN_NAYAR = 0x5,
         SHADING_COOK_TORRANCE = 0x6,
-        ShadingMode_PLACEHOLDER = 0xb
+        COUNT
     };
 
     /// ShaderData stores information needed by the shader code to properly
@@ -127,7 +128,7 @@ class Material : public Resource {
             SHADER_STAGE_QUEUED = 1,
             SHADER_STAGE_COMPUTED = 2,
             SHADER_STAGE_ERROR = 3,
-            ShaderCompilationStage_PLACEHOLDER = 4
+            COUNT
         };
 
         ShaderProgram* _shaderRef;
@@ -144,12 +145,12 @@ class Material : public Resource {
             _shaderRef = nullptr;
             _shader = "";
             _shaderCompStage =
-                ShaderCompilationStage::ShaderCompilationStage_PLACEHOLDER;
+                ShaderCompilationStage::COUNT;
             _isCustomShader = false;
-            for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+            for (U32 i = 0; i < to_uint(ShaderType::COUNT);
                  ++i) {
                 memset(_shadingFunction[i], 0,
-                       enum_to_uint(BumpMethod::BumpMethod_PLACEHOLDER) *
+                       to_uint(BumpMethod::COUNT) *
                            sizeof(U32));
             }
         }
@@ -160,10 +161,10 @@ class Material : public Resource {
             _shader = other._shader;
             _shaderCompStage = other._shaderCompStage;
             _isCustomShader = other._isCustomShader;
-            for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+            for (U32 i = 0; i < to_uint(ShaderType::COUNT);
                  ++i) {
                 for (U32 j = 0;
-                     j < enum_to_uint(BumpMethod::BumpMethod_PLACEHOLDER);
+                     j < to_uint(BumpMethod::COUNT);
                      ++j) {
                     _shadingFunction[i][j] = other._shadingFunction[i][j];
                 }
@@ -173,8 +174,8 @@ class Material : public Resource {
         }
 
         U32 _shadingFunction
-            [enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)]
-            [enum_to_uint_const(BumpMethod::BumpMethod_PLACEHOLDER)];
+            [to_const_uint(ShaderType::COUNT)]
+            [to_const_uint(BumpMethod::COUNT)];
 
        protected:
         StateTracker<bool> _trackedBools;
@@ -327,7 +328,7 @@ class Material : public Resource {
 
     size_t getRenderStateBlock(RenderStage currentStage);
     inline Texture* const getTexture(ShaderProgram::TextureUsage textureUsage) {
-        return _textures[textureUsage];
+        return _textures[to_uint(textureUsage)];
     }
     ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::FINAL_STAGE);
 

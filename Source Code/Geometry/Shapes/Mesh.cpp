@@ -12,7 +12,7 @@ Mesh::Mesh(ObjectFlag flag)
       _visibleToNetwork(true),
       _playAnimations(true),
       _playAnimationsCurrent(false) {
-    setState(RES_LOADING);
+    setState(ResourceState::RES_LOADING);
 }
 
 Mesh::~Mesh() {}
@@ -53,7 +53,7 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     typedef SceneGraphNode::NodeChildren::value_type value_type;
 
     if (bitCompare(getFlagMask(),
-                   enum_to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
+                   to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
         bool playAnimation =
             (_playAnimations &&
              ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));

@@ -61,7 +61,11 @@ class EffectManager {
     vectorImpl<vectorAlg::vecSize> _vecPlayableEffectInd;
 
    public:
-    enum EWhichEffect { ePrevious = -1, eNone = 0, eNext = +1 };
+    enum class EWhichEffect : I32 {
+        ePrevious = -1,
+        eNone = 0,
+        eNext = +1
+    };
 
     EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateFreq);
     ~EffectManager();

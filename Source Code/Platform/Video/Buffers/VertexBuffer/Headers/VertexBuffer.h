@@ -45,7 +45,7 @@ class ShaderProgram;
 /// OGL uses a vertex array object for this)
 class VertexBuffer : public VertexDataInterface {
    protected:
-    enum VertexAttribute {
+    enum class VertexAttribute : U32 {
         ATTRIB_POSITION = 0,
         ATTRIB_COLOR = 1,
         ATTRIB_NORMAL = 2,
@@ -54,7 +54,7 @@ class VertexBuffer : public VertexDataInterface {
         ATTRIB_BITANGENT = 5,
         ATTRIB_BONE_WEIGHT = 6,
         ATTRIB_BONE_INDICE = 7,
-        VertexAttribute_PLACEHOLDER = 8
+        COUNT
     };
 
    public:
@@ -135,15 +135,15 @@ class VertexBuffer : public VertexDataInterface {
     }
 
     inline vectorImpl<vec2<F32> >& getTexcoord() {
-        _attribDirty[ATTRIB_TEXCOORD] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
         return _dataTexcoord;
     }
     inline vectorImpl<vec4<U8> >& getBoneIndices() {
-        _attribDirty[ATTRIB_BONE_INDICE] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
         return _boneIndices;
     }
     inline vectorImpl<vec4<F32> >& getBoneWeights() {
-        _attribDirty[ATTRIB_BONE_WEIGHT] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
         return _boneWeights;
     }
 
@@ -216,77 +216,77 @@ class VertexBuffer : public VertexDataInterface {
     inline void addPosition(const vec3<F32>& pos) {
         setMinMaxPosition(pos);
         _dataPosition.push_back(pos);
-        _attribDirty[ATTRIB_POSITION] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
     inline void addColor(const vec3<U8>& col) {
         _dataColor.push_back(col);
-        _attribDirty[ATTRIB_COLOR] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
     }
 
     inline void addTexCoord(const vec2<F32>& texCoord) {
         _dataTexcoord.push_back(texCoord);
-        _attribDirty[ATTRIB_TEXCOORD] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
     }
 
     inline void addNormal(const vec3<F32>& norm) {
         _dataNormal.push_back(norm);
-        _attribDirty[ATTRIB_NORMAL] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
     }
 
     inline void addTangent(const vec3<F32>& tangent) {
         _dataTangent.push_back(tangent);
-        _attribDirty[ATTRIB_TANGENT] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
     }
 
     inline void addBiTangent(const vec3<F32>& bitangent) {
         _dataBiTangent.push_back(bitangent);
-        _attribDirty[ATTRIB_BITANGENT] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BITANGENT)] = true;
     }
 
     inline void addBoneIndex(const vec4<U8>& idx) {
         _boneIndices.push_back(idx);
-        _attribDirty[ATTRIB_BONE_INDICE] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
     }
 
     inline void addBoneWeight(const vec4<F32>& idx) {
         _boneWeights.push_back(idx);
-        _attribDirty[ATTRIB_BONE_WEIGHT] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
     }
 
     inline void modifyPositionValue(U32 index, const vec3<F32>& newValue) {
         DIVIDE_ASSERT(index < _dataPosition.size(),
                       "VertexBuffer error: Invalid position offset!");
         _dataPosition[index] = newValue;
-        _attribDirty[ATTRIB_POSITION] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
     inline void modifyColorValue(U32 index, const vec3<U8>& newValue) {
         DIVIDE_ASSERT(index < _dataColor.size(),
                       "VertexBuffer error: Invalid color offset!");
         _dataColor[index] = newValue;
-        _attribDirty[ATTRIB_COLOR] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
     }
 
     inline void modifyNormalValue(U32 index, const vec3<F32>& newValue) {
         DIVIDE_ASSERT(index < _dataNormal.size(),
                       "VertexBuffer error: Invalid normal offset!");
         _dataNormal[index] = newValue;
-        _attribDirty[ATTRIB_NORMAL] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
     }
 
     inline void modifyTangentValue(U32 index, const vec3<F32>& newValue) {
         DIVIDE_ASSERT(index < _dataTangent.size(),
                       "VertexBuffer error: Invalid tangent offset!");
         _dataTangent[index] = newValue;
-        _attribDirty[ATTRIB_TANGENT] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
     }
 
     inline void modifyBiTangentValue(U32 index, const vec3<F32>& newValue) {
         DIVIDE_ASSERT(index < _dataBiTangent.size(),
                       "VertexBuffer error: Invalid bitangent offset!");
         _dataBiTangent[index] = newValue;
-        _attribDirty[ATTRIB_BITANGENT] = true;
+        _attribDirty[to_uint(VertexAttribute::ATTRIB_BITANGENT)] = true;
     }
 
     inline void shrinkAllDataToFit() {
@@ -349,8 +349,8 @@ class VertexBuffer : public VertexDataInterface {
         _boneWeights.clear();
         _hardwareIndicesL.clear();
         _hardwareIndicesS.clear();
-        memset(_attribDirty, true, VertexAttribute_PLACEHOLDER * sizeof(bool));
-        memset(_VBoffset, 0, VertexAttribute_PLACEHOLDER * sizeof(ptrdiff_t));
+        memset(_attribDirty, true, to_uint(VertexAttribute::COUNT) * sizeof(bool));
+        memset(_VBoffset, 0, to_uint(VertexAttribute::COUNT) * sizeof(ptrdiff_t));
         _minPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::max()));
         _maxPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::min()));
     }
@@ -384,7 +384,7 @@ class VertexBuffer : public VertexDataInterface {
     GFXDataFormat _format;
     /// An index value that separates objects (OGL: primitive restart index)
     U32 _indexDelimiter;
-    ptrdiff_t _VBoffset[VertexAttribute_PLACEHOLDER];
+    ptrdiff_t _VBoffset[to_const_uint(VertexAttribute::COUNT)];
 
     // first: offset, second: count
     vectorImpl<vectorAlg::pair<U32, U32> > _partitions;
@@ -405,7 +405,7 @@ class VertexBuffer : public VertexDataInterface {
     /// Use either U32 or U16 indices. Always prefer the later
     bool _largeIndices;
     /// Cache system to update only required data
-    bool _attribDirty[VertexAttribute_PLACEHOLDER];
+    bool _attribDirty[to_const_uint(VertexAttribute::COUNT)];
     bool _primitiveRestartEnabled;
     /// Was the data submitted to the GPU?
     bool _created;

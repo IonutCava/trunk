@@ -43,8 +43,8 @@ void fill();
 
 };
 
-extern U32 d3dTextureTypeTable[enum_to_uint_const(
-    TextureType::TextureType_PLACEHOLDER)];
+extern U32 d3dTextureTypeTable[to_const_uint(
+    TextureType::COUNT)];
 
 };  // namespace Divide
 #endif

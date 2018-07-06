@@ -19,11 +19,11 @@ void Quadtree::createDrawCommands(
     const SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     assert(_root);
-    U32 options = CHUNK_BIT_TESTCHILDREN;
+    U32 options = to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
     if (GFX_DEVICE.isCurrentRenderStage(RenderStage::REFLECTION_STAGE)) {
-        options |= CHUNK_BIT_WATERREFLECTION;
+        options |= to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION);
     } else if (GFX_DEVICE.isCurrentRenderStage(RenderStage::SHADOW_STAGE)) {
-        options |= CHUNK_BIT_SHADOWMAP;
+        options |= to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP);
     }
     _root->createDrawCommand(options, sceneRenderState, drawCommandsOut);
 }

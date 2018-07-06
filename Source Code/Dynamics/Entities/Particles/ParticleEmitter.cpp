@@ -27,9 +27,7 @@ ParticleEmitter::ParticleEmitter()
     _writeOffset = 2;
 }
 
-ParticleEmitter::~ParticleEmitter() {
-    unload();
-}
+ParticleEmitter::~ParticleEmitter() { unload(); }
 
 bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     // assert if double init!
@@ -41,24 +39,14 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
 
     // Not using Quad3D to improve performance
     static F32 particleQuad[] = {
-        -0.5f,
-        -0.5f,
-        0.0f,
-        0.5f,
-        -0.5f,
-        0.0f,
-        -0.5f,
-        0.5f,
-        0.0f,
-        0.5f,
-        0.5f,
-        0.0f,
+        -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f,
+        -0.5f, 0.5f,  0.0f, 0.5f, 0.5f,  0.0f,
     };
 
     _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false,
                                   false);
     _particleGPUBuffer->getDrawAttribDescriptor(
-                            enum_to_uint(
+                            to_uint(
                                 AttribLocation::VERTEX_POSITION_LOCATION))
         .set(0, 0, 3, false, 0, 0, GFXDataFormat::FLOAT_32);
 
@@ -109,7 +97,7 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 0, 0, GFXDataFormat::FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(
-                            enum_to_uint(AttribLocation::VERTEX_COLOR_LOCATION))
+                            to_uint(AttribLocation::VERTEX_COLOR_LOCATION))
         .set(2, 1, 4, true, 0, 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
@@ -146,7 +134,8 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 }
 
 bool ParticleEmitter::unload() {
-    if (getState() != RES_LOADED && getState() != RES_LOADING) {
+    if (getState() != ResourceState::RES_LOADED &&
+        getState() != ResourceState::RES_LOADING) {
         return true;
     }
     if (_particleTexture) {
@@ -205,8 +194,7 @@ void ParticleEmitter::onCameraChange(SceneGraphNode& sgn) {
 }
 
 void ParticleEmitter::getDrawCommands(
-    SceneGraphNode& sgn,
-    const RenderStage& currentRenderStage,
+    SceneGraphNode& sgn, const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,
     vectorImpl<GenericDrawCommand>& drawCommandsOut) {
     U32 particleCount = getAliveParticleCount();
@@ -233,9 +221,11 @@ void ParticleEmitter::render(SceneGraphNode& sgn,
     U32 particleCount = getAliveParticleCount();
 
     if (particleCount > 0 && _enabled) {
-        _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
-        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
-            ->Bind(ShaderProgram::TEXTURE_UNIT1, TextureDescriptor::Depth);
+        _particleTexture->Bind(
+            to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+            ->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1),
+                   TextureDescriptor::AttachmentType::Depth);
         GFX_DEVICE.submitRenderCommand(
             sgn.getComponent<RenderingComponent>()->getDrawCommands());
     }
@@ -261,7 +251,7 @@ void ParticleEmitter::uploadToGPU() {
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 0, readOffset, GFXDataFormat::FLOAT_32);
     _particleGPUBuffer->getDrawAttribDescriptor(
-                            enum_to_uint(AttribLocation::VERTEX_COLOR_LOCATION))
+                            to_uint(AttribLocation::VERTEX_COLOR_LOCATION))
         .set(2, 1, 4, true, 0, readOffset, GFXDataFormat::UNSIGNED_BYTE);
 
     _writeOffset = (_writeOffset + 1) % 3;
@@ -283,8 +273,7 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
 }
 
 /// Pre-process particles
-void ParticleEmitter::sceneUpdate(const U64 deltaTime,
-                                  SceneGraphNode& sgn,
+void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                                   SceneState& sceneState) {
     if (!_enabled || getAliveParticleCount() == 0) {
         return;

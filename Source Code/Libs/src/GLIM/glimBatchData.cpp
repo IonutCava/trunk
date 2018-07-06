@@ -21,7 +21,7 @@ namespace NS_GLIM
 
     void GlimArrayData::Reset (void)
     {
-        m_DataType = GLIM_NODATA;
+        m_DataType = GLIM_ENUM::GLIM_NODATA;
         m_ArrayData.clear ();
         m_ArrayData.reserve(256);
         
@@ -36,30 +36,30 @@ namespace NS_GLIM
         switch (m_DataType)
         {
         // 4 byte data
-        case GLIM_1I:
-        case GLIM_1F:
-        case GLIM_4UB:
+        case GLIM_ENUM::GLIM_1I:
+        case GLIM_ENUM::GLIM_1F:
+        case GLIM_ENUM::GLIM_4UB:
             m_ArrayData.push_back (m_CurrentValue[0]);
             return;
 
         // 8 byte data
-        case GLIM_2I:
-        case GLIM_2F:
+        case GLIM_ENUM::GLIM_2I:
+        case GLIM_ENUM::GLIM_2F:
             m_ArrayData.push_back (m_CurrentValue[0]);
             m_ArrayData.push_back (m_CurrentValue[1]);
             return;
 
         // 12 byte data
-        case GLIM_3I:
-        case GLIM_3F:
+        case GLIM_ENUM::GLIM_3I:
+        case GLIM_ENUM::GLIM_3F:
             m_ArrayData.push_back (m_CurrentValue[0]);
             m_ArrayData.push_back (m_CurrentValue[1]);
             m_ArrayData.push_back (m_CurrentValue[2]);
             return;
 
         // 16 byte data
-        case GLIM_4I:
-        case GLIM_4F:
+        case GLIM_ENUM::GLIM_4I:
+        case GLIM_ENUM::GLIM_4F:
             m_ArrayData.push_back (m_CurrentValue[0]);
             m_ArrayData.push_back (m_CurrentValue[1]);
             m_ArrayData.push_back (m_CurrentValue[2]);
@@ -140,7 +140,7 @@ namespace NS_GLIM
 
     void glimBatchData::Reset (bool reserve)
     {
-        m_State = STATE_EMPTY;
+        m_State = GLIM_BATCH_STATE::STATE_EMPTY;
 
         m_Attributes.clear ();
         m_PositionData.clear ();
@@ -334,27 +334,27 @@ namespace NS_GLIM
             switch (it->second.m_DataType)
             {
             // 4 byte data
-            case GLIM_1I:
-            case GLIM_1F:
-            case GLIM_4UB:
+            case GLIM_ENUM::GLIM_1I:
+            case GLIM_ENUM::GLIM_1F:
+            case GLIM_ENUM::GLIM_4UB:
                 uiVertexDataSize += sizeof (int) * 1;
                 break;
 
             // 8 byte data
-            case GLIM_2I:
-            case GLIM_2F:
+            case GLIM_ENUM::GLIM_2I:
+            case GLIM_ENUM::GLIM_2F:
                 uiVertexDataSize += sizeof (int) * 2;
                 break;
 
             // 12 byte data
-            case GLIM_3I:
-            case GLIM_3F:
+            case GLIM_ENUM::GLIM_3I:
+            case GLIM_ENUM::GLIM_3F:
                 uiVertexDataSize += sizeof (int) * 3;
                 break;
 
             // 16 byte data
-            case GLIM_4I:
-            case GLIM_4F:
+            case GLIM_ENUM::GLIM_4I:
+            case GLIM_ENUM::GLIM_4F:
                 uiVertexDataSize += sizeof (int) * 4;
                 break;
 
@@ -406,31 +406,31 @@ namespace NS_GLIM
 
             switch (it->second.m_DataType)
             {
-            case GLIM_1F:
+            case GLIM_ENUM::GLIM_1F:
                 glVertexAttribPointer (iAttributeArray, 1, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_2F:
+            case GLIM_ENUM::GLIM_2F:
                 glVertexAttribPointer (iAttributeArray, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_3F:
+            case GLIM_ENUM::GLIM_3F:
                 glVertexAttribPointer (iAttributeArray, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_4F:
+            case GLIM_ENUM::GLIM_4F:
                 glVertexAttribPointer (iAttributeArray, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_1I:
+            case GLIM_ENUM::GLIM_1I:
                 glVertexAttribIPointer (iAttributeArray, 1, GL_INT, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_2I:
+            case GLIM_ENUM::GLIM_2I:
                 glVertexAttribIPointer (iAttributeArray, 2, GL_INT, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_3I:
+            case GLIM_ENUM::GLIM_3I:
                 glVertexAttribIPointer (iAttributeArray, 3, GL_INT, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_4I:
+            case GLIM_ENUM::GLIM_4I:
                 glVertexAttribIPointer (iAttributeArray, 4, GL_INT, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
-            case GLIM_4UB:
+            case GLIM_ENUM::GLIM_4UB:
                 glVertexAttribPointer (iAttributeArray, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, BUFFER_OFFSET (it->second.m_uiBufferOffset));
                 break;
             }

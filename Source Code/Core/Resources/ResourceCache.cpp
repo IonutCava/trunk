@@ -120,13 +120,13 @@ bool ResourceCache::removeInternal(Resource* const resource) {
     if (refCount == 1) {
         Console::printfn(Locale::get("RESOURCE_CACHE_REM_RES"),
                          nameCpy.c_str());
-        resource->setState(RES_LOADING);
+        resource->setState(ResourceState::RES_LOADING);
         if (resource->unload()) {
-            resource->setState(RES_CREATED);
+            resource->setState(ResourceState::RES_CREATED);
         } else {
             Console::errorfn(Locale::get("ERROR_RESOURCE_REM"),
                              nameCpy.c_str());
-            resource->setState(RES_UNKNOWN);
+            resource->setState(ResourceState::RES_UNKNOWN);
         }
     }
 

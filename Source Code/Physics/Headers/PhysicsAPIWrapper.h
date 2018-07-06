@@ -37,13 +37,16 @@
 
 namespace Divide {
 
-enum PhysicsCollisionGroup {
-    GROUP_NON_COLLIDABLE,
+enum class PhysicsCollisionGroup : U32 {
+    GROUP_NON_COLLIDABLE = 0,
     GROUP_COLLIDABLE_NON_PUSHABLE,
     GROUP_COLLIDABLE_PUSHABLE,
 };
 
-enum PhysicsActorMask { MASK_RIGID_STATIC, MASK_RIGID_DYNAMIC };
+enum class PhysicsActorMask : U32 {
+    MASK_RIGID_STATIC = 0,
+    MASK_RIGID_DYNAMIC
+};
 
 class Scene;
 class SceneGraphNode;

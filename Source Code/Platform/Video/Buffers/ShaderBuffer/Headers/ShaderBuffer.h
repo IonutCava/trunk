@@ -80,7 +80,7 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
     inline bool BindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
                           U32 rangeElementCount) {
-        return BindRange(enum_to_uint(bindIndex),
+        return BindRange(to_uint(bindIndex),
                          offsetElementCount,
                          rangeElementCount);
 
@@ -89,12 +89,12 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
     virtual bool Bind(U32 bindIndex) = 0;
 
     inline bool Bind(ShaderBufferLocation bindIndex) {
-        return Bind(enum_to_uint(bindIndex));
+        return Bind(to_uint(bindIndex));
     }
 
     inline void PrintInfo(const ShaderProgram *shaderProgram,
                           ShaderBufferLocation bindIndex) {
-        PrintInfo(shaderProgram, enum_to_uint(bindIndex));
+        PrintInfo(shaderProgram, to_uint(bindIndex));
     }
 
     virtual void PrintInfo(const ShaderProgram *shaderProgram,

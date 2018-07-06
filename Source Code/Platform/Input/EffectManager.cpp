@@ -175,7 +175,7 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
 
     // If no effect selected, and next or previous requested, select the first
     // one.
-    if (eWhich != eNone && _nCurrEffectInd < 0) {
+    if (eWhich != EWhichEffect::eNone && _nCurrEffectInd < 0) {
         _nCurrEffectInd = 0;
         // Otherwise, remove the current one from the device and then select the
         // requested one if any.
@@ -185,7 +185,7 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
         _pJoystickInterface->getCurrentFFDevice()->remove(effect);
 
         _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(false);
-        _nCurrEffectInd += eWhich;
+        _nCurrEffectInd += to_int(eWhich);
         if (_nCurrEffectInd < -1 ||
             _nCurrEffectInd >= (I16)_vecPlayableEffectInd.size()) {
             _nCurrEffectInd = -1;
@@ -193,7 +193,7 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
     }
 
     // If no effect must be selected, reset the selection index
-    if (eWhich == eNone) {
+    if (eWhich == EWhichEffect::eNone) {
         _nCurrEffectInd = -1;
         // Otherwise, upload the new selected effect to the device if any.
     } else if (_nCurrEffectInd >= 0) {

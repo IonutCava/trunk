@@ -19,7 +19,7 @@ Terrain* ImplResourceLoader<Terrain>::operator()() {
 template <>
 bool ImplResourceLoader<Terrain>::load(Terrain* const res,
                                        const stringImpl& name) {
-    res->setState(RES_LOADING);
+    res->setState(ResourceState::RES_LOADING);
 
     Console::printfn(Locale::get("TERRAIN_LOAD_START"), name.c_str());
 

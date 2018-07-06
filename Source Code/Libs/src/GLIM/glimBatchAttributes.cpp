@@ -13,13 +13,13 @@ namespace NS_GLIM
     {
         Data.m_CurrentValue[0].Float = a1;
 
-        const GLIM_ENUM Type = GLIM_1F;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_1F;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::glimAttribute1f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute1f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute1f: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute1f: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
 
@@ -30,13 +30,13 @@ namespace NS_GLIM
         Data.m_CurrentValue[0].Float = a1;
         Data.m_CurrentValue[1].Float = a2;
 
-        const GLIM_ENUM Type = GLIM_2F;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_2F;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute2f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute2f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute2f: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute2f: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }
@@ -47,13 +47,13 @@ namespace NS_GLIM
         Data.m_CurrentValue[1].Float = a2;
         Data.m_CurrentValue[2].Float = a3;
 
-        const GLIM_ENUM Type = GLIM_3F;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_3F;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute3f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute3f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute3f: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute3f: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }
@@ -65,13 +65,13 @@ namespace NS_GLIM
         Data.m_CurrentValue[2].Float = a3;
         Data.m_CurrentValue[3].Float = a4;
 
-        const GLIM_ENUM Type = GLIM_4F;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_4F;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute4f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute4f: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute4f: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute4f: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }
@@ -81,13 +81,13 @@ namespace NS_GLIM
     {
         Data.m_CurrentValue[0].Int = a1;
 
-        const GLIM_ENUM Type = GLIM_1I;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_1I;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute1i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute1i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute1i: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute1i: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }
@@ -97,13 +97,13 @@ namespace NS_GLIM
         Data.m_CurrentValue[0].Int = a1;
         Data.m_CurrentValue[1].Int = a2;
 
-        const GLIM_ENUM Type = GLIM_2I;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_2I;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute2i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute2i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute2i: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute2i: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }
@@ -114,13 +114,13 @@ namespace NS_GLIM
         Data.m_CurrentValue[1].Int = a2;
         Data.m_CurrentValue[2].Int = a3;
 
-        const GLIM_ENUM Type = GLIM_3I;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_3I;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute3i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute3i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute3i: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute3i: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }
@@ -132,13 +132,13 @@ namespace NS_GLIM
         Data.m_CurrentValue[2].Int = a3;
         Data.m_CurrentValue[3].Int = a4;
 
-        const GLIM_ENUM Type = GLIM_4I;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_4I;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute4i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute4i: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute4i: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute4i: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }
@@ -151,13 +151,13 @@ namespace NS_GLIM
         Data.m_CurrentValue[0].Bytes[2] = a3;
         Data.m_CurrentValue[0].Bytes[3] = a4;
 
-        const GLIM_ENUM Type = GLIM_4UB;
+        const GLIM_ENUM Type = GLIM_ENUM::GLIM_4UB;
 
         // Check that either the batch is just about to be created, or the attribute has already been mentioned before.
-        GLIM_CHECK ((m_Data.m_State == STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_NODATA), "GLIM::Attribute4ub: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH) || (Data.m_DataType != GLIM_ENUM::GLIM_NODATA), "GLIM::Attribute4ub: All to-be-used attributes need to be set to default values, after BeginBatch and before Begin is called.");
 
         // check that the type matches
-        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_NODATA), "GLIM::glimAttribute4ub: An attribute was used with different type than previously.");
+        GLIM_CHECK ((Data.m_DataType == Type) || (Data.m_DataType == GLIM_ENUM::GLIM_NODATA), "GLIM::glimAttribute4ub: An attribute was used with different type than previously.");
         // set the type
         Data.m_DataType = Type;
     }

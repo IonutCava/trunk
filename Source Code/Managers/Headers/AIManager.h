@@ -41,8 +41,8 @@ namespace AI {
 DEFINE_SINGLETON(AIManager)
   public:
     typedef hashMapImpl<U32, AITeam*> AITeamMap;
-    typedef hashMapImpl<AIEntity::PresetAgentRadius, Navigation::NavigationMesh*,
-                        hashAlg::hash<I32> > NavMeshMap;
+    typedef hashMapImpl<AIEntity::PresetAgentRadius,
+                        Navigation::NavigationMesh*> NavMeshMap;
 
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
     void Destroy();

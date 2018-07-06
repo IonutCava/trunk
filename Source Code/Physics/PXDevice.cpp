@@ -5,7 +5,7 @@
 
 namespace Divide {
     
-PXDevice::PXDevice() : _API_ID(PX_PLACEHOLDER),
+PXDevice::PXDevice() : _API_ID(PhysicsAPI::COUNT),
                        _api(nullptr)
 {
 }
@@ -25,7 +25,7 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
         case PhysicsAPI::Bullet: 
         default: {
             Console::errorfn(Locale::get("ERROR_PFX_DEVICE_API"));
-            return PFX_NON_SPECIFIED;
+            return ErrorCode::PFX_NON_SPECIFIED;
         } break;
     };
 

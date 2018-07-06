@@ -77,10 +77,10 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 #ifdef _DEBUG
-    enum DebugLines {
+    enum class DebugLines : U32 {
         DEBUG_LINE_RAY_PICK = 0,
         DEBUG_LINE_OBJECT_TO_TARGET = 1,
-        DEBUG_LINE_PLACEHOLDER
+        COUNT
     };
 #endif
    public:
@@ -299,7 +299,7 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     vec2<I32> _previousMousePos;
     bool _mousePressed[8];
 #ifdef _DEBUG
-    vectorImpl<Line> _lines[DEBUG_LINE_PLACEHOLDER];
+    vectorImpl<Line> _lines[to_const_uint(DebugLines::COUNT)];
 #endif
 };
 

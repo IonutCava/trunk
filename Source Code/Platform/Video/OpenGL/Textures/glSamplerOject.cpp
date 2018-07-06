@@ -19,23 +19,23 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
     glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_MIN_FILTER,
-        enum_to_uint(
-            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[enum_to_uint(descriptor
+        to_uint(
+            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[to_uint(descriptor
                                                             .minFilter())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_MAG_FILTER,
-        enum_to_uint(
-            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[enum_to_uint(descriptor
+        to_uint(
+            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[to_uint(descriptor
                                                             .magFilter())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_S,
-        enum_to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[enum_to_uint(descriptor.wrapU())]));
+        to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[to_uint(descriptor.wrapU())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_T,
-        enum_to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[enum_to_uint(descriptor.wrapV())]));
+        to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[to_uint(descriptor.wrapV())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_R,
-        enum_to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[enum_to_uint(descriptor.wrapW())]));
+        to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[to_uint(descriptor.wrapW())]));
     if (descriptor.wrapU() == TextureWrap::TEXTURE_CLAMP_TO_BORDER ||
         descriptor.wrapV() == TextureWrap::TEXTURE_CLAMP_TO_BORDER ||
         descriptor.wrapW() == TextureWrap::TEXTURE_CLAMP_TO_BORDER) {
@@ -45,11 +45,11 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
 
     if (descriptor._useRefCompare) {
         glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,
-                            enum_to_uint(GL_COMPARE_R_TO_TEXTURE));
+                            to_uint(GL_COMPARE_R_TO_TEXTURE));
         glSamplerParameteri(
             _samplerID, GL_TEXTURE_COMPARE_FUNC,
-            enum_to_uint(
-                GLUtil::GL_ENUM_TABLE::glCompareFuncTable[enum_to_uint(descriptor
+            to_uint(
+                GLUtil::GL_ENUM_TABLE::glCompareFuncTable[to_uint(descriptor
                                                               ._cmpFunc)]));
     }
 

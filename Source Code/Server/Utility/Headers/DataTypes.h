@@ -6,7 +6,12 @@
 
 namespace Divide {
 
-enum GEOMETRY_TYPE { MESH, VEGETATION, PRIMITIVE, PLACEHOLDER };
+enum class GeometryType : U32 { 
+    MESH,
+    VEGETATION,
+    PRIMITIVE,
+    PLACEHOLDER
+};
 
 class FileData {
    public:
@@ -16,7 +21,7 @@ class FileData {
     vec3<F32> position;
     vec3<F32> orientation;
     vec3<F32> color;
-    GEOMETRY_TYPE type;
+    GeometryType type;
     F32 data;  // general purpose
     stringImpl data2;
     F32 version;

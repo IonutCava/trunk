@@ -135,9 +135,9 @@ class glShaderProgram : public ShaderProgram {
     bool _validated;
     bool _loadedFromBinary;
     Shader*
-        _shaderStage[enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)];
-    GLenum _shaderStageTable[enum_to_uint_const(
-        ShaderType::ShaderType_PLACEHOLDER)];
+        _shaderStage[to_const_uint(ShaderType::COUNT)];
+    GLenum _shaderStageTable[to_const_uint(
+        ShaderType::COUNT)];
     GLuint _shaderProgramIDTemp;
     static stringImpl _lastPathPrefix;
     static stringImpl _lastPathSuffix;

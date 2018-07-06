@@ -30,7 +30,7 @@ bool Texture::generateHWResource(const stringImpl& name) {
     // Each texture type is loaded differently
     if (_textureType == TextureType::TEXTURE_2D) {
         // 2D Textures are loaded directly
-        if (!LoadFile(enum_to_uint(_textureType), getResourceLocation())) {
+        if (!LoadFile(to_uint(_textureType), getResourceLocation())) {
             return false;
         }
         // Cube maps and texture arrays need to load each face/layer separately

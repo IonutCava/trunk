@@ -40,13 +40,13 @@ namespace Divide {
 class Ammunition {
    public:
     /// Type of ammo defines it's properties
-    enum AmmunitionType {
+    enum class AmmunitionType : U32 {
         /// Uses a counter to keep track of quantity
         AMMUNITION_TYPE_DEPLETABLE = toBit(1),
         /// Does not keep track of quantity
         AMMUNITION_TYPE_INFINITE = toBit(2),
         /// Place all ammo types above this
-        AMMUNITION_TYPE_PLACEHOLDER = toBit(10),
+        COUNT = toBit(10),
     };
 
     Ammunition(AmmunitionType type);

@@ -9,16 +9,16 @@ namespace Divide {
 
 void ASIOImpl::handlePacket(WorldPacket& p) {
     switch (p.getOpcode()) {
-        case MSG_HEARTBEAT:
+        case OPCodes::MSG_HEARTBEAT:
             HandleHeartBeatOpCode(p);
             break;
-        case SMSG_PONG:
+        case OPCodesEx::SMSG_PONG:
             HandlePongOpCode(p);
             break;
-        case SMSG_DISCONNECT:
+        case OPCodes::SMSG_DISCONNECT:
             HandleDisconnectOpCode(p);
             break;
-        case SMSG_GEOMETRY_APPEND:
+        case OPCodesEx::SMSG_GEOMETRY_APPEND:
             HandleGeometryAppendOpCode(p);
             break;
         default:
@@ -68,11 +68,11 @@ void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p) {
         p >> d.scale.z;
         p >> type;
         if (type == 0)
-            d.type = GEOMETRY;
+            d.type = GeometryType::GEOMETRY;
         else if (type == 1)
-            d.type = VEGETATION;
+            d.type = GeometryType::VEGETATION;
         else
-            d.type = PRIMITIVE;
+            d.type = GeometryType::PRIMITIVE;
         p >> d.version;
         patch.push_back(d);
     }

@@ -76,13 +76,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     };
 
   public:  // GPU specific data
-      enum RenderAPI {
+      enum class RenderAPI : U32 {
         OpenGL,    ///< 4.x+
         OpenGLES,  ///< 3.x+
         Direct3D,  ///< 11.x+ (not supported yet)
         Mantle,    ///< not supported yet
         None,      ///< not supported yet
-        GFX_RENDER_API_PLACEHOLDER
+        COUNT
     };
 
     struct GPUBlock {
@@ -95,11 +95,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
     };
 
-    enum RenderTarget {
+    enum class RenderTarget : U32 {
         RENDER_TARGET_SCREEN = 0,
         RENDER_TARGET_ANAGLYPH = 1,
         RENDER_TARGET_DEPTH = 2,
-        RenderTarget_PLACEHOLDER = 3
+        COUNT
     };
 
   public:  // GPU interface
@@ -237,8 +237,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// triggers,
     /// etc)
     inline bool excludeFromStateChange(const SceneNodeType& currentType) {
-        return (_stateExclusionMask & enum_to_int(currentType)) ==
-               enum_to_int(currentType);
+        return (_stateExclusionMask & to_int(currentType)) ==
+               to_int(currentType);
     }
 
     inline void setStateChangeExclusionMask(I32 stateMask) {
@@ -265,7 +265,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     }
 
     inline Framebuffer* getRenderTarget(RenderTarget target) const {
-        return _renderTarget[target];
+        return _renderTarget[to_uint(target)];
     }
 
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
@@ -422,7 +422,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     GPUVendor _GPUVendor;
     GPUState _state;
     /* Rendering buffers*/
-    Framebuffer* _renderTarget[RenderTarget_PLACEHOLDER];
+    Framebuffer* _renderTarget[to_const_uint(
+        RenderTarget::COUNT)];
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;

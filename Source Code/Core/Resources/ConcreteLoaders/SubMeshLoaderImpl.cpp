@@ -8,7 +8,7 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()() {
     SubMesh* ptr = nullptr;
 
     if (_descriptor.getEnumValue() ==
-        enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+        to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
         ptr = MemoryManager_NEW SkinnedSubMesh(_descriptor.getName());
     } else {
         ptr = MemoryManager_NEW SubMesh(_descriptor.getName());

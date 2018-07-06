@@ -45,19 +45,19 @@ void FrameListenerManager::removeFrameListener(FrameListener* listener) {
 /// If the manager returns false at any step, the application exists
 bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
     switch (evt._type) {
-        case FRAME_EVENT_STARTED:
+        case FrameEventType::FRAME_EVENT_STARTED:
             return frameStarted(evt);
-        case FRAME_PRERENDER_START:
+        case FrameEventType::FRAME_PRERENDER_START:
             return framePreRenderStarted(evt);
-        case FRAME_PRERENDER_END:
+        case FrameEventType::FRAME_PRERENDER_END:
             return framePreRenderEnded(evt);
-        case FRAME_POSTRENDER_START:
+        case FrameEventType::FRAME_POSTRENDER_START:
             return framePostRenderStarted(evt);
-        case FRAME_POSTRENDER_END:
+        case FrameEventType::FRAME_POSTRENDER_END:
             return framePostRenderEnded(evt);
-        case FRAME_EVENT_PROCESS:
+        case FrameEventType::FRAME_EVENT_PROCESS:
             return frameRenderingQueued(evt);
-        case FRAME_EVENT_ENDED:
+        case FrameEventType::FRAME_EVENT_ENDED:
             return frameEnded(evt);
     };
 
@@ -135,14 +135,14 @@ void FrameListenerManager::createEvent(const U64 currentTime,
                                        FrameEventType type, FrameEvent& evt) {
     evt._currentTime = Time::MicrosecondsToMilliseconds<D32>(currentTime);
     evt._timeSinceLastEvent =
-        calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
+        calculateEventTime(evt._currentTime, FrameEventType::FRAME_EVENT_ANY);
     evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
     evt._type = type;
 }
 
 D32 FrameListenerManager::calculateEventTime(const D32 currentTime,
                                              FrameEventType type) {
-    EventTimeMap& times = _eventTimers[type];
+    EventTimeMap& times = _eventTimers[to_uint(type)];
     times.push_back(currentTime);
 
     if (times.size() == 1) {

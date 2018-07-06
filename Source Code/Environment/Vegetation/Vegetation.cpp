@@ -54,7 +54,7 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _renderDrawCommand =
         GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 12 * 3);
 
-    memset(_instanceRoutineIdx, 0, CullType_PLACEHOLDER * sizeof(U32));
+    memset(_instanceRoutineIdx, 0, to_uint(CullType::COUNT) * sizeof(U32));
 
     ResourceDescriptor instanceCullShader("instanceCull");
     instanceCullShader.setThreadedLoading(false);
@@ -95,12 +95,12 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
     _cullShader->UniformTexture("HiZBuffer", 0);
     _cullShader->Uniform("dvd_frustumBias", 12.5f);
-    _instanceRoutineIdx[PASS_THROUGH] = _cullShader->GetSubroutineIndex(
+    _instanceRoutineIdx[to_uint(CullType::PASS_THROUGH)] = _cullShader->GetSubroutineIndex(
         ShaderType::VERTEX_SHADER, "PassThrough");
-    _instanceRoutineIdx[INSTANCE_CLOUD_REDUCTION] =
+    _instanceRoutineIdx[to_uint(CullType::INSTANCE_CLOUD_REDUCTION)] =
         _cullShader->GetSubroutineIndex(ShaderType::VERTEX_SHADER,
                                         "InstanceCloudReduction");
-    _instanceRoutineIdx[HI_Z_CULL] = _cullShader->GetSubroutineIndex(
+    _instanceRoutineIdx[to_uint(CullType::HI_Z_CULL)] = _cullShader->GetSubroutineIndex(
         ShaderType::VERTEX_SHADER, "HiZOcclusionCull");
 
     RenderStateBlockDescriptor transparent;
@@ -124,7 +124,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",
                                   RenderStage::Z_PRE_PASS_STAGE, true);
     vegMaterial->addCustomTexture(_grassBillboards,
-                                  ShaderProgram::TEXTURE_UNIT0);
+                                  to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
     vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
@@ -134,17 +134,17 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
         kernel.AddTask(0, 1, DELEGATE_BIND(&Vegetation::generateGrass, this),
                        DELEGATE_BIND(&Vegetation::uploadGrassData, this)));
     _generateVegetation->startTask();
-    setState(RES_LOADED);
+    setState(ResourceState::RES_LOADED);
 }
 
 namespace {
-enum BufferUsage {
+enum class BufferUsage : U32 {
     UnculledPositionBuffer = 0,
     CulledPositionBuffer = 1,
     UnculledSizeBuffer = 2,
     CulledSizeBuffer = 3,
     CulledInstanceBuffer = 4,
-    BufferUsage_PLACEHOLDER = 5
+    COUNT
 };
 
 const U32 posLocation = 10;
@@ -240,40 +240,40 @@ void Vegetation::uploadGrassData() {
     for (U8 i = 0; i < 2; ++i) {
         GenericVertexData* buffer = _grassGPUBuffer[i];
 
-        buffer->Create(BufferUsage_PLACEHOLDER, 3);
+        buffer->Create(to_uint(BufferUsage::COUNT), 3);
         // position culled will be generated using transform feedback using
         // shader output 'posLocation'
         // writing to buffer "CulledPositionBuffer"
-        buffer->SetFeedbackBuffer(CulledPositionBuffer, 0);
-        buffer->SetFeedbackBuffer(CulledSizeBuffer, 1);
-        buffer->SetFeedbackBuffer(CulledInstanceBuffer, 2);
+        buffer->SetFeedbackBuffer(to_uint(BufferUsage::CulledPositionBuffer), 0);
+        buffer->SetFeedbackBuffer(to_uint(BufferUsage::CulledSizeBuffer), 1);
+        buffer->SetFeedbackBuffer(to_uint(BufferUsage::CulledInstanceBuffer), 2);
 
-        buffer->SetBuffer(UnculledPositionBuffer, _instanceCountGrass,
+        buffer->SetBuffer(to_uint(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
                           sizeof(vec4<F32>), 3, &_grassPositions[0], false,
                           false);
-        buffer->SetBuffer(UnculledSizeBuffer, _instanceCountGrass, sizeof(F32),
+        buffer->SetBuffer(to_uint(BufferUsage::UnculledSizeBuffer), _instanceCountGrass, sizeof(F32),
                           3, &_grassScales[0], false, false);
-        buffer->SetBuffer(CulledPositionBuffer, _instanceCountGrass * 3,
+        buffer->SetBuffer(to_uint(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,
                           sizeof(vec4<F32>), 3, NULL, true, false);
-        buffer->SetBuffer(CulledSizeBuffer, _instanceCountGrass * 3,
+        buffer->SetBuffer(to_uint(BufferUsage::CulledSizeBuffer), _instanceCountGrass * 3,
                           sizeof(F32), 3, NULL, true, false);
-        buffer->SetBuffer(CulledInstanceBuffer, _instanceCountGrass * 3,
+        buffer->SetBuffer(to_uint(BufferUsage::CulledInstanceBuffer), _instanceCountGrass * 3,
                           sizeof(I32), 3, NULL, true, false);
 
         buffer->getDrawAttribDescriptor(posLocation)
-            .set(CulledPositionBuffer, instanceDiv, 4, false, 0, 0,
+            .set(to_uint(BufferUsage::CulledPositionBuffer), instanceDiv, 4, false, 0, 0,
                  GFXDataFormat::FLOAT_32);
         buffer->getDrawAttribDescriptor(scaleLocation)
-            .set(CulledSizeBuffer, instanceDiv, 1, false, 0, 0,
+            .set(to_uint(BufferUsage::CulledSizeBuffer), instanceDiv, 1, false, 0, 0,
                  GFXDataFormat::FLOAT_32);
         buffer->getDrawAttribDescriptor(instLocation)
-            .set(CulledInstanceBuffer, instanceDiv, 1, false, 0, 0,
+            .set(to_uint(BufferUsage::CulledInstanceBuffer), instanceDiv, 1, false, 0, 0,
                  GFXDataFormat::SIGNED_INT);
         buffer->getFdbkAttribDescriptor(posLocation)
-            .set(UnculledPositionBuffer, instanceDiv, 4, false, 0, 0,
+            .set(to_uint(BufferUsage::UnculledPositionBuffer), instanceDiv, 4, false, 0, 0,
                  GFXDataFormat::FLOAT_32);
         buffer->getFdbkAttribDescriptor(scaleLocation)
-            .set(UnculledSizeBuffer, instanceDiv, 1, false, 0, 0,
+            .set(to_uint(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0, 0,
                  GFXDataFormat::FLOAT_32);
 
         /*
@@ -373,18 +373,18 @@ void Vegetation::gpuCull() {
         //_cullShader->SetSubroutine(VERTEX_SHADER,
         //_instanceRoutineIdx[HI_Z_CULL]);
         _cullShader->Uniform("cullType",
-                             /*queryID*/ (U32)INSTANCE_CLOUD_REDUCTION);
+                             /*queryID*/ to_uint(CullType::INSTANCE_CLOUD_REDUCTION));
 
         GFX::ScopedRasterizer scoped2D(false);
-        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
-            ->Bind(0, TextureDescriptor::Depth);
-        buffer->BindFeedbackBufferRange(CulledPositionBuffer,
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH)
+            ->Bind(0, TextureDescriptor::AttachmentType::Depth);
+        buffer->BindFeedbackBufferRange(to_uint(BufferUsage::CulledPositionBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
-        buffer->BindFeedbackBufferRange(CulledSizeBuffer,
+        buffer->BindFeedbackBufferRange(to_uint(BufferUsage::CulledSizeBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
-        buffer->BindFeedbackBufferRange(CulledInstanceBuffer,
+        buffer->BindFeedbackBufferRange(to_uint(BufferUsage::CulledInstanceBuffer),
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
 

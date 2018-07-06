@@ -35,7 +35,7 @@ GUISplash::~GUISplash() {
 }
 
 void GUISplash::render() {
-    _splashImage->Bind(ShaderProgram::TEXTURE_UNIT0);
+    _splashImage->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                           _splashShader);
 }

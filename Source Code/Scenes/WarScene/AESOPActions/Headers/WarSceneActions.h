@@ -37,7 +37,7 @@ namespace Divide {
 namespace AI {
 
 // Some useful predicates
-enum Fact {
+enum class Fact : U32 {
     AtEnemyFlagLoc = 0,
     AtHomeFlagLoc = 1,
     HasEnemyFlag = 2,
@@ -49,25 +49,25 @@ enum Fact {
 
 inline const char* WarSceneFactName(GOAPFact fact) {
     switch (static_cast<Fact>(fact)) {
-        case AtEnemyFlagLoc:
+        case Fact::AtEnemyFlagLoc:
             return "At enemy flag location";
-        case AtHomeFlagLoc:
+        case Fact::AtHomeFlagLoc:
             return "At home location";
-        case HasEnemyFlag:
+        case Fact::HasEnemyFlag:
             return "Has enemy flag";
-        case HasOwnFlag:
+        case Fact::HasOwnFlag:
             return "Has own flag";
-        case EnemyHasFlag:
+        case Fact::EnemyHasFlag:
             return "Enemy has flag";
-        case EnemyDead:
+        case Fact::EnemyDead:
             return "Enemy dead";
-        case FlagCarrierDead:
+        case Fact::FlagCarrierDead:
             return "Flag carrier dead";
     };
     return GOAPFactName(fact);
 };
 
-enum ActionType {
+enum class ActionType : U32 {
     ACTION_APPROACH_FLAG = 0,
     ACTION_CAPTURE_FLAG = 1,
     ACTION_RETURN_FLAG = 2,

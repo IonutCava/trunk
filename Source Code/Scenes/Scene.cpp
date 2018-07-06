@@ -84,14 +84,14 @@ void Scene::onCameraChange() {
 void Scene::postRender() {
 #ifdef _DEBUG
     if (renderState().drawDebugLines()) {
-        if (!_lines[DEBUG_LINE_RAY_PICK].empty()) {
-            GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],
+        if (!_lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].empty()) {
+            GFX_DEVICE.drawLines(_lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)],
                                  mat4<F32>(), vec4<I32>(), false, false);
         }
     }
-    if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() &&
+    if (!_lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)].empty() &&
         renderState().drawDebugTargetLines()) {
-        GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET], mat4<F32>(),
+        GFX_DEVICE.drawLines(_lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)], mat4<F32>(),
                              vec4<I32>(), false, false);
     }
 #endif
@@ -103,7 +103,7 @@ void Scene::loadXMLAssets(bool singleStep) {
     while (!_modelDataArray.empty()) {
         const FileData& it = _modelDataArray.top();
         // vegetation is loaded elsewhere
-        if (it.type == VEGETATION) {
+        if (it.type == GeometryType::VEGETATION) {
             _vegetationDataArray.push_back(it);
         } else {
             loadModel(it);
@@ -117,7 +117,7 @@ void Scene::loadXMLAssets(bool singleStep) {
 }
 
 bool Scene::loadModel(const FileData& data) {
-    if (data.type == PRIMITIVE) {
+    if (data.type == GeometryType::PRIMITIVE) {
         return loadGeometry(data);
     }
 
@@ -141,16 +141,16 @@ bool Scene::loadModel(const FileData& data) {
     meshNode.getComponent<PhysicsComponent>()->setRotation(data.orientation);
     meshNode.getComponent<PhysicsComponent>()->setPosition(data.position);
     if (data.staticUsage) {
-        meshNode.usageContext(SceneGraphNode::NODE_STATIC);
+        meshNode.usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     }
     if (data.navigationUsage) {
         meshNode.getComponent<NavigationComponent>()->navigationContext(
-            NavigationComponent::NODE_OBSTACLE);
+            NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
     if (data.physicsUsage) {
         meshNode.getComponent<PhysicsComponent>()->physicsGroup(
-            data.physicsPushable ? PhysicsComponent::NODE_COLLIDE
-                                 : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
+            data.physicsPushable ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE
+                                 : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH);
     }
     if (data.useHighDetailNavMesh) {
         meshNode.getComponent<NavigationComponent>()->navigationDetailOverride(
@@ -178,13 +178,13 @@ bool Scene::loadGeometry(const FileData& data) {
         item.setBoolMask(quadMask);
         thisObj = CreateResource<Quad3D>(item);
         static_cast<Quad3D*>(thisObj)
-            ->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, 1, 0));
+            ->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
         static_cast<Quad3D*>(thisObj)
-            ->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(1, 1, 0));
+            ->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
         static_cast<Quad3D*>(thisObj)
-            ->setCorner(Quad3D::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
+            ->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
         static_cast<Quad3D*>(thisObj)
-            ->setCorner(Quad3D::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
+            ->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
     } else if (data.ModelName.compare("Text3D") == 0) {
         /// set font file
         item.setResourceLocation(data.data3);
@@ -216,16 +216,16 @@ bool Scene::loadGeometry(const FileData& data) {
     thisObjSGN.getComponent<RenderingComponent>()->receivesShadows(
         data.receivesShadows);
     if (data.staticUsage) {
-        thisObjSGN.usageContext(SceneGraphNode::NODE_STATIC);
+        thisObjSGN.usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     }
     if (data.navigationUsage) {
         thisObjSGN.getComponent<NavigationComponent>()->navigationContext(
-            NavigationComponent::NODE_OBSTACLE);
+            NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
     if (data.physicsUsage) {
         thisObjSGN.getComponent<PhysicsComponent>()->physicsGroup(
-            data.physicsPushable ? PhysicsComponent::NODE_COLLIDE
-                                 : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
+            data.physicsPushable ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE
+                                 : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH);
     }
     if (data.useHighDetailNavMesh) {
         thisObjSGN.getComponent<NavigationComponent>()
@@ -255,7 +255,7 @@ SceneGraphNode& Scene::addLight(Light* const lightItem,
                                 SceneGraphNode& parentNode) {
     assert(lightItem != nullptr);
 
-    lightItem->setCastShadows(lightItem->getLightType() != LIGHT_TYPE_POINT);
+    lightItem->setCastShadows(lightItem->getLightType() != LightType::LIGHT_TYPE_POINT);
 
     return parentNode.addNode(lightItem);
 }
@@ -264,13 +264,13 @@ SceneGraphNode& Scene::addLight(LightType type,
                                 SceneGraphNode& parentNode) {
     const char* lightType = "";
     switch (type) {
-        case LIGHT_TYPE_DIRECTIONAL:
+        case LightType::LIGHT_TYPE_DIRECTIONAL:
             lightType = "Default_directional_light ";
             break;
-        case LIGHT_TYPE_POINT:
+        case LightType::LIGHT_TYPE_POINT:
             lightType = "Default_point_light_";
             break;
-        case LIGHT_TYPE_SPOT:
+        case LightType::LIGHT_TYPE_SPOT:
             lightType = "Default_spot_light_";
             break;
     }
@@ -278,7 +278,7 @@ SceneGraphNode& Scene::addLight(LightType type,
     ResourceDescriptor defaultLight(
         lightType +
         std::to_string(LightManager::getInstance().getLights().size()));
-    defaultLight.setEnumValue(type);
+    defaultLight.setEnumValue(to_uint(type));
     return addLight(CreateResource<Light>(defaultLight), parentNode);
 }
 
@@ -304,17 +304,17 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
             Terrain* temp = CreateResource<Terrain>(terrain);
             SceneGraphNode& terrainTemp = root.createNode(temp);
             terrainTemp.setActive(terrainInfo->getActive());
-            terrainTemp.usageContext(SceneGraphNode::NODE_STATIC);
+            terrainTemp.usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 
             NavigationComponent* nComp =
                 terrainTemp.getComponent<NavigationComponent>();
-            nComp->navigationContext(NavigationComponent::NODE_OBSTACLE);
+            nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
             PhysicsComponent* pComp =
                 terrainTemp.getComponent<PhysicsComponent>();
             pComp->physicsGroup(terrainInfo->getCreatePXActor()
-                                    ? PhysicsComponent::NODE_COLLIDE_NO_PUSH
-                                    : PhysicsComponent::NODE_COLLIDE_IGNORE);
+                                    ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH
+                                    : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
         }
     }
     // Camera position is overridden in the scene's XML configuration file
@@ -421,7 +421,7 @@ bool Scene::updateCameraControls() {
     Camera& cam = renderState().getCamera();
     switch (cam.getType()) {
         default:
-        case Camera::FREE_FLY: {
+        case Camera::CameraType::FREE_FLY: {
             if (state()._angleLR) {
                 cam.rotateYaw(CLAMPED<I32>(state()._angleLR, -1, 1));
             }
@@ -509,9 +509,9 @@ void Scene::debugDraw(const RenderStage& stage) {
     const SceneRenderState::GizmoState& currentGizmoState =
         renderState().gizmoState();
 
-    GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::NO_GIZMO);
+    GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::GizmoState::NO_GIZMO);
 
-    if (currentGizmoState == SceneRenderState::SELECTED_GIZMO) {
+    if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
         if (_currentSelection != nullptr &&
             _currentSelection->getComponent<RenderingComponent>()) {
             _currentSelection->getComponent<RenderingComponent>()

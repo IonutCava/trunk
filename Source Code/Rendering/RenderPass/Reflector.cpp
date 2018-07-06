@@ -78,7 +78,7 @@ bool Reflector::build() {
 
     _reflectedTexture = GFX_DEVICE.newFB();
     _reflectedTexture->AddAttachment(reflectionDescriptor,
-                                     TextureDescriptor::Color0);
+                                     TextureDescriptor::AttachmentType::Color0);
     _reflectedTexture->toggleDepthBuffer(true);
     _createdFB = _reflectedTexture->Create(_resolution.x, _resolution.y);
 
@@ -89,7 +89,8 @@ void Reflector::previewReflection() {
 #ifdef _DEBUG
     if (_previewReflection) {
         F32 height = _resolution.y * 0.333f;
-        _reflectedTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
+        _reflectedTexture->Bind(
+            to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
         vec4<I32> viewport(
             0, Application::getInstance().getResolution().y - height,
             _resolution.x * 0.333f, height);

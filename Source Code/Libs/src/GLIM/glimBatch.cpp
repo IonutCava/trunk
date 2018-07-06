@@ -28,7 +28,7 @@ namespace NS_GLIM
 
     void GLIM_BATCH::Clear (void)
     {
-        m_PrimitiveType = GLIM_NOPRIMITIVE;
+        m_PrimitiveType = GLIM_ENUM::GLIM_NOPRIMITIVE;
         m_Data.Reset ();
     }
 
@@ -79,10 +79,10 @@ namespace NS_GLIM
 #ifdef AE_RENDERAPI_OPENGL
     bool GLIM_BATCH::BeginRenderOGL (void)
     {
-        if (m_Data.m_State == STATE_EMPTY)
+        if (m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY)
             return (false);
 
-        GLIM_CHECK (m_Data.m_State == STATE_FINISHED_BATCH, "GLIM_BATCH::RenderBatch: This function can only be called after a batch has been created.");
+        GLIM_CHECK (m_Data.m_State == GLIM_BATCH_STATE::STATE_FINISHED_BATCH, "GLIM_BATCH::RenderBatch: This function can only be called after a batch has been created.");
         
         // allow the application to apply gl states now
         if (s_StateChangeCallback)
@@ -195,22 +195,22 @@ namespace NS_GLIM
 
     void GLIM_BATCH::BeginBatch (void)
     {
-        GLIM_CHECK ((m_Data.m_State == STATE_EMPTY) || (m_Data.m_State == STATE_FINISHED_BATCH), "GLIM_BATCH::BeginBatch: This function cannot be called again before EndBatch has been called.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY) || (m_Data.m_State == GLIM_BATCH_STATE::STATE_FINISHED_BATCH), "GLIM_BATCH::BeginBatch: This function cannot be called again before EndBatch has been called.");
 
         // clear all previous data
         Clear ();
 
         // start an entirely new batch
-        m_Data.m_State = STATE_BEGINNING_BATCH;
+        m_Data.m_State = GLIM_BATCH_STATE::STATE_BEGINNING_BATCH;
     }
 
     void GLIM_BATCH::EndBatch (void)
     {
         // if the state is STATE_BEGINNING_BATCH, than no Begin/End call has been made => created an empty batch, which is ok
-        GLIM_CHECK ((m_Data.m_State == STATE_END_PRIMITIVE) || (m_Data.m_State == STATE_BEGINNING_BATCH), "GLIM_BATCH::EndBatch: This function must be called after a call to \"End\".");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_END_PRIMITIVE) || (m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH), "GLIM_BATCH::EndBatch: This function must be called after a call to \"End\".");
 
         // mark this batch as finished
-        m_Data.m_State = STATE_FINISHED_BATCH;
+        m_Data.m_State = GLIM_BATCH_STATE::STATE_FINISHED_BATCH;
 
 #ifdef AE_RENDERAPI_D3D11
         m_Data.GenerateSignature ();
@@ -221,28 +221,28 @@ namespace NS_GLIM
     {
         // if the state is STATE_BEGINNING_BATCH, than no Begin/End call has been made yet
         // if it is STATE_END_PRIMITIVE then a previous Begin/End call has been made
-        GLIM_CHECK ((m_Data.m_State == STATE_END_PRIMITIVE) || (m_Data.m_State == STATE_BEGINNING_BATCH), "GLIM_BATCH::Begin: This function must be called after a call to \"BeginBatch\" or after a \"Begin\"/\"End\"-pair.");
+        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_END_PRIMITIVE) || (m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH), "GLIM_BATCH::Begin: This function must be called after a call to \"BeginBatch\" or after a \"Begin\"/\"End\"-pair.");
 
-        m_Data.m_State = STATE_BEGIN_PRIMITIVE;
+        m_Data.m_State = GLIM_BATCH_STATE::STATE_BEGIN_PRIMITIVE;
         m_PrimitiveType = eType;
         m_uiPrimitiveVertex = 0;
         m_uiPrimitiveFirstIndex = (unsigned int) (m_Data.m_PositionData.size ()) / 3; // three floats per vertex
 
         switch (m_PrimitiveType)
         {
-        case GLIM_TRIANGLES:
-        case GLIM_POINTS:
-        case GLIM_LINES:
-        case GLIM_LINE_STRIP:
-        case GLIM_LINE_LOOP:
-        case GLIM_POLYGON:
-        case GLIM_TRIANGLE_FAN:
-        case GLIM_QUADS:
+        case GLIM_ENUM::GLIM_TRIANGLES:
+        case GLIM_ENUM::GLIM_POINTS:
+        case GLIM_ENUM::GLIM_LINES:
+        case GLIM_ENUM::GLIM_LINE_STRIP:
+        case GLIM_ENUM::GLIM_LINE_LOOP:
+        case GLIM_ENUM::GLIM_POLYGON:
+        case GLIM_ENUM::GLIM_TRIANGLE_FAN:
+        case GLIM_ENUM::GLIM_QUADS:
             // Life is good.
             break;
 
-        case GLIM_QUAD_STRIP:
-        case GLIM_TRIANGLE_STRIP:
+        case GLIM_ENUM::GLIM_QUAD_STRIP:
+        case GLIM_ENUM::GLIM_TRIANGLE_STRIP:
         
             //! \todo Stuff...
 
@@ -257,25 +257,25 @@ namespace NS_GLIM
 
     void GLIM_BATCH::End (void)
     {
-        GLIM_CHECK (m_Data.m_State == STATE_BEGIN_PRIMITIVE, "GLIM_BATCH::End: This function can only be called after a call to \"Begin\".");
+        GLIM_CHECK (m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGIN_PRIMITIVE, "GLIM_BATCH::End: This function can only be called after a call to \"Begin\".");
 
-        m_Data.m_State = STATE_END_PRIMITIVE;
+        m_Data.m_State = GLIM_BATCH_STATE::STATE_END_PRIMITIVE;
 
         switch (m_PrimitiveType)
         {
-        case GLIM_TRIANGLES:
+        case GLIM_ENUM::GLIM_TRIANGLES:
             {
                 GLIM_CHECK (m_uiPrimitiveVertex % 3 == 0, "GLIM_BATCH::End: You did not finish constructing the last triangle.");
             }
             break;
 
-        case GLIM_TRIANGLE_STRIP:
+        case GLIM_ENUM::GLIM_TRIANGLE_STRIP:
             {
                 //! \todo Stuff...
             }
             break;
 
-        case GLIM_TRIANGLE_FAN:
+        case GLIM_ENUM::GLIM_TRIANGLE_FAN:
             {
                 GLIM_CHECK (m_uiPrimitiveVertex >= 4, "GLIM_BATCH::End: You did not finish constructing the triangle fan. At least 4 vertices are required.");
 
@@ -295,37 +295,37 @@ namespace NS_GLIM
             }
             break;
 
-        case GLIM_QUADS:
+        case GLIM_ENUM::GLIM_QUADS:
             {
                 GLIM_CHECK (m_uiPrimitiveVertex % 4 == 0, "GLIM_BATCH::End: You did not finish constructing the last Quad.");
             }
             break;
 
-        case GLIM_QUAD_STRIP:
+        case GLIM_ENUM::GLIM_QUAD_STRIP:
             {
                 //! \todo Stuff...
             }
             break;
 
-        case GLIM_POINTS:
+        case GLIM_ENUM::GLIM_POINTS:
             {
                 // nothing to do
             }
             break;
 
-        case GLIM_LINES:
+        case GLIM_ENUM::GLIM_LINES:
             {
                 GLIM_CHECK (m_uiPrimitiveVertex % 2 == 0, "GLIM_BATCH::End: You did not finish constructing the last Line.");
             }
             break;
 
-        case GLIM_LINE_STRIP:
+        case GLIM_ENUM::GLIM_LINE_STRIP:
             {
                 GLIM_CHECK (m_uiPrimitiveVertex > 1, "GLIM_BATCH::End: You did not finish constructing the Line-strip.");
             }
             break;
 
-        case GLIM_LINE_LOOP:
+        case GLIM_ENUM::GLIM_LINE_LOOP:
             {
                 GLIM_CHECK (m_uiPrimitiveVertex > 1, "GLIM_BATCH::End: You did not finish constructing the Line-Loop.");
 
@@ -334,7 +334,7 @@ namespace NS_GLIM
             }
             break;
 
-        case GLIM_POLYGON:
+        case GLIM_ENUM::GLIM_POLYGON:
             {
                 GLIM_CHECK ((m_uiPrimitiveVertex == 0) || (m_uiPrimitiveVertex >= 3), "GLIM_BATCH::End: You did not finish constructing the last Polygon.");
 
@@ -361,11 +361,11 @@ namespace NS_GLIM
 
     void GLIM_BATCH::Vertex (float x, float y, float z)
     {
-        GLIM_CHECK (m_Data.m_State == STATE_BEGIN_PRIMITIVE, "GLIM_BATCH::Vertex: This function can only be called after a call to \"Begin\".");
+        GLIM_CHECK (m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGIN_PRIMITIVE, "GLIM_BATCH::Vertex: This function can only be called after a call to \"Begin\".");
 
         switch (m_PrimitiveType)
         {
-        case GLIM_TRIANGLES:
+        case GLIM_ENUM::GLIM_TRIANGLES:
             {
                 ++m_uiPrimitiveVertex;
                 const unsigned int uiIndex = m_Data.AddVertex (x, y, z);
@@ -393,13 +393,13 @@ namespace NS_GLIM
             }
             break;
 
-        case GLIM_TRIANGLE_STRIP:
+        case GLIM_ENUM::GLIM_TRIANGLE_STRIP:
             {
                 //! \todo Stuff...
             }
             break;
 
-        case GLIM_TRIANGLE_FAN:
+        case GLIM_ENUM::GLIM_TRIANGLE_FAN:
             {
                 ++m_uiPrimitiveVertex;
 
@@ -429,7 +429,7 @@ namespace NS_GLIM
             }
             break;
 
-        case GLIM_QUADS:
+        case GLIM_ENUM::GLIM_QUADS:
             {
                 ++m_uiPrimitiveVertex;
 
@@ -468,20 +468,20 @@ namespace NS_GLIM
             }
             break;
 
-        case GLIM_QUAD_STRIP:
+        case GLIM_ENUM::GLIM_QUAD_STRIP:
             {
                 //! \todo Stuff...
             }
             break;
 
-        case GLIM_POINTS:
+        case GLIM_ENUM::GLIM_POINTS:
             {
                 const unsigned int uiIndex = m_Data.AddVertex (x, y, z);
                 m_Data.m_IndexBuffer_Points.push_back (uiIndex);
             }
             break;
 
-        case GLIM_LINES:
+        case GLIM_ENUM::GLIM_LINES:
             {
                 ++m_uiPrimitiveVertex;
                 const unsigned int uiIndex = m_Data.AddVertex (x, y, z);
@@ -489,8 +489,8 @@ namespace NS_GLIM
             }
             break;
 
-        case GLIM_LINE_STRIP:
-        case GLIM_LINE_LOOP:
+        case GLIM_ENUM::GLIM_LINE_STRIP:
+        case GLIM_ENUM::GLIM_LINE_LOOP:
             {
                 ++m_uiPrimitiveVertex;
 
@@ -511,7 +511,7 @@ namespace NS_GLIM
             }
             break;
 
-        case GLIM_POLYGON:
+        case GLIM_ENUM::GLIM_POLYGON:
             {
                 ++m_uiPrimitiveVertex;
 

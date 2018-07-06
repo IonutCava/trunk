@@ -47,7 +47,7 @@ class TextLabel;
 class Transform;
 class GUIElement;
 class SceneRenderState;
-enum ErrorCode : I32;
+enum class ErrorCode : I32;
 
 template <typename T>
 class Plane;

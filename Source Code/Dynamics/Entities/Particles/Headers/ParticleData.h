@@ -39,13 +39,13 @@ namespace Divide {
 /// Container to store data for a given set of particles
 class ParticleData {
    public:
-    enum Properties {
+    enum class Properties : U32 {
         PROPERTIES_POS = toBit(0),
         PROPERTIES_VEL = toBit(1),
         PROPERTIES_ACC = toBit(2),
         PROPERTIES_COLOR = toBit(3),
         PROPERTIES_COLOR_TRANS = toBit(4),
-        Proeprties_PLACEHOLDER = toBit(5)
+        COUNT = toBit(5)
     };
     /// helper array used for sorting
     vectorImpl<U32> _indices;

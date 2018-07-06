@@ -78,8 +78,8 @@ class Quad3D : public Object3D {
         getGeometryVB()->Create();
     }
 
-    enum CornerLocation {
-        TOP_LEFT,
+    enum class CornerLocation : U32 {
+        TOP_LEFT = 0,
         TOP_RIGHT,
         BOTTOM_LEFT,
         BOTTOM_RIGHT,
@@ -88,13 +88,13 @@ class Quad3D : public Object3D {
 
     vec3<F32> getCorner(CornerLocation corner) {
         switch (corner) {
-            case TOP_LEFT:
+            case CornerLocation::TOP_LEFT:
                 return getGeometryVB()->getPosition()[0];
-            case TOP_RIGHT:
+            case CornerLocation::TOP_RIGHT:
                 return getGeometryVB()->getPosition()[1];
-            case BOTTOM_LEFT:
+            case CornerLocation::BOTTOM_LEFT:
                 return getGeometryVB()->getPosition()[2];
-            case BOTTOM_RIGHT:
+            case CornerLocation::BOTTOM_RIGHT:
                 return getGeometryVB()->getPosition()[3];
             default:
                 break;
@@ -106,19 +106,19 @@ class Quad3D : public Object3D {
 
     void setNormal(CornerLocation corner, const vec3<F32>& normal) {
         switch (corner) {
-            case TOP_LEFT:
+            case CornerLocation::TOP_LEFT:
                 getGeometryVB()->modifyNormalValue(0, normal);
                 break;
-            case TOP_RIGHT:
+            case CornerLocation::TOP_RIGHT:
                 getGeometryVB()->modifyNormalValue(1, normal);
                 break;
-            case BOTTOM_LEFT:
+            case CornerLocation::BOTTOM_LEFT:
                 getGeometryVB()->modifyNormalValue(2, normal);
                 break;
-            case BOTTOM_RIGHT:
+            case CornerLocation::BOTTOM_RIGHT:
                 getGeometryVB()->modifyNormalValue(3, normal);
                 break;
-            case CORNER_ALL: {
+            case CornerLocation::CORNER_ALL: {
                 getGeometryVB()->modifyNormalValue(0, normal);
                 getGeometryVB()->modifyNormalValue(1, normal);
                 getGeometryVB()->modifyNormalValue(2, normal);
@@ -132,16 +132,16 @@ class Quad3D : public Object3D {
 
     void setCorner(CornerLocation corner, const vec3<F32>& value) {
         switch (corner) {
-            case TOP_LEFT:
+            case CornerLocation::TOP_LEFT:
                 getGeometryVB()->modifyPositionValue(0, value);
                 break;
-            case TOP_RIGHT:
+            case CornerLocation::TOP_RIGHT:
                 getGeometryVB()->modifyPositionValue(1, value);
                 break;
-            case BOTTOM_LEFT:
+            case CornerLocation::BOTTOM_LEFT:
                 getGeometryVB()->modifyPositionValue(2, value);
                 break;
-            case BOTTOM_RIGHT:
+            case CornerLocation::BOTTOM_RIGHT:
                 getGeometryVB()->modifyPositionValue(3, value);
                 break;
             default:

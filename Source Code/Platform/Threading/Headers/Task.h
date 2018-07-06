@@ -37,8 +37,8 @@
 
 namespace Divide {
 
-enum CallbackParam {
-    TYPE_INTEGER,
+enum class CallbackParam : U32 {
+    TYPE_INTEGER = 0,
     TYPE_MEDIUM_INTEGER,
     TYPE_SMALL_INTEGER,
     TYPE_UNSIGNED_INTEGER,

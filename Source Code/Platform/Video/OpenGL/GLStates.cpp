@@ -54,7 +54,7 @@ void GL_API::clearStates(const bool skipShader, const bool skipTextures,
     if (!skipBuffers) {
         setPixelPackUnpackAlignment();
         setActiveVAO(0);
-        setActiveFB(0, Framebuffer::FB_READ_WRITE);
+        setActiveFB(0, Framebuffer::FramebufferUsage::FB_READ_WRITE);
         setActiveBuffer(GL_ARRAY_BUFFER, 0);
         setActiveBuffer(GL_TEXTURE_BUFFER, 0);
         setActiveBuffer(GL_UNIFORM_BUFFER, 0);
@@ -65,8 +65,7 @@ void GL_API::clearStates(const bool skipShader, const bool skipTextures,
         setActiveTransformFeedback(0);
     }
 
-    if (!skipScissor)
-    {
+    if (!skipScissor) {
         glDisable(GL_SCISSOR_TEST);
     }
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
@@ -251,10 +250,12 @@ bool GL_API::setActiveFB(GLuint ID, Framebuffer::FramebufferUsage usage) {
         ID = 0;
     }
     // Prevent double bind
-    if (_activeFBID[usage] == ID) {
-        if (usage == Framebuffer::FB_READ_WRITE) {
-            if (_activeFBID[Framebuffer::FB_READ_ONLY] == ID &&
-                _activeFBID[Framebuffer::FB_WRITE_ONLY] == ID) {
+    if (_activeFBID[to_uint(usage)] == ID) {
+        if (usage == Framebuffer::FramebufferUsage::FB_READ_WRITE) {
+            if (_activeFBID[to_uint(
+                    Framebuffer::FramebufferUsage::FB_READ_ONLY)] == ID &&
+                _activeFBID[to_uint(
+                    Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] == ID) {
                 return false;
             }
         } else {
@@ -263,24 +264,26 @@ bool GL_API::setActiveFB(GLuint ID, Framebuffer::FramebufferUsage usage) {
     }
     // Bind the requested buffer to the appropriate target
     switch (usage) {
-        case Framebuffer::FB_READ_WRITE: {
+        case Framebuffer::FramebufferUsage::FB_READ_WRITE: {
             // According to documentation this is equivalent to independent
             // calls to
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            _activeFBID[Framebuffer::FB_READ_ONLY] = ID;
-            _activeFBID[Framebuffer::FB_WRITE_ONLY] = ID;
+            _activeFBID[to_uint(
+                Framebuffer::FramebufferUsage::FB_READ_ONLY)] = ID;
+            _activeFBID[to_uint(
+                Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] = ID;
         } break;
-        case Framebuffer::FB_READ_ONLY: {
+        case Framebuffer::FramebufferUsage::FB_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
         } break;
-        case Framebuffer::FB_WRITE_ONLY: {
+        case Framebuffer::FramebufferUsage::FB_WRITE_ONLY: {
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, ID);
         } break;
     };
     // Remember the new binding state for future reference
-    _activeFBID[usage] = ID;
+    _activeFBID[to_uint(usage)] = ID;
     return true;
 }
 
@@ -443,31 +446,32 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     TOGGLE_WITH_CHECK(_zEnable, GL_DEPTH_TEST);
     // Check separate blend functions
     if (SHOULD_TOGGLE_2(_blendSrc, _blendDest)) {
-        glBlendFuncSeparate(
-            GLUtil::GL_ENUM_TABLE::glBlendTable[enum_to_uint(newDescriptor._blendSrc)],
-            GLUtil::GL_ENUM_TABLE::glBlendTable[enum_to_uint(newDescriptor._blendDest)],
-            GL_ONE, GL_ZERO);
+        glBlendFuncSeparate(GLUtil::GL_ENUM_TABLE::glBlendTable[to_uint(
+                                newDescriptor._blendSrc)],
+                            GLUtil::GL_ENUM_TABLE::glBlendTable[to_uint(
+                                newDescriptor._blendDest)],
+                            GL_ONE, GL_ZERO);
     }
     // Check the blend equation
     if (SHOULD_TOGGLE(_blendOp)) {
-        glBlendEquation(
-            GLUtil::GL_ENUM_TABLE::glBlendOpTable[enum_to_uint(newDescriptor._blendOp)]);
+        glBlendEquation(GLUtil::GL_ENUM_TABLE::glBlendOpTable[to_uint(
+            newDescriptor._blendOp)]);
     }
     // Check culling mode (back (CW) / front (CCW) by default)
     if (SHOULD_TOGGLE(_cullMode)) {
-        glCullFace(
-            GLUtil::GL_ENUM_TABLE::glCullModeTable[enum_to_uint(newDescriptor._cullMode)]);
+        glCullFace(GLUtil::GL_ENUM_TABLE::glCullModeTable[to_uint(
+            newDescriptor._cullMode)]);
     }
     // Check rasterization mode
     if (SHOULD_TOGGLE(_fillMode)) {
-        glPolygonMode(
-            GL_FRONT_AND_BACK,
-            GLUtil::GL_ENUM_TABLE::glFillModeTable[enum_to_uint(newDescriptor._fillMode)]);
+        glPolygonMode(GL_FRONT_AND_BACK,
+                      GLUtil::GL_ENUM_TABLE::glFillModeTable[to_uint(
+                          newDescriptor._fillMode)]);
     }
     // Check the depth function
     if (SHOULD_TOGGLE(_zFunc)) {
-        glDepthFunc(
-            GLUtil::GL_ENUM_TABLE::glCompareFuncTable[enum_to_uint(newDescriptor._zFunc)]);
+        glDepthFunc(GLUtil::GL_ENUM_TABLE::glCompareFuncTable[to_uint(
+            newDescriptor._zFunc)]);
     }
     // Check if we need to toggle the depth mask
     if (SHOULD_TOGGLE(_zWriteEnable)) {
@@ -479,20 +483,18 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     }
     // Stencil function is dependent on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFunc, _stencilRef, _stencilMask)) {
-        glStencilFunc(
-            GLUtil::GL_ENUM_TABLE::glCompareFuncTable[enum_to_uint(newDescriptor
-                                                          ._stencilFunc)],
-            newDescriptor._stencilRef, newDescriptor._stencilMask);
+        glStencilFunc(GLUtil::GL_ENUM_TABLE::glCompareFuncTable[to_uint(
+                          newDescriptor._stencilFunc)],
+                      newDescriptor._stencilRef, newDescriptor._stencilMask);
     }
     // Stencil operation is also dependent  on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFailOp, _stencilZFailOp, _stencilPassOp)) {
-        glStencilOp(
-            GLUtil::GL_ENUM_TABLE::glStencilOpTable[enum_to_uint(newDescriptor
-                                                        ._stencilFailOp)],
-            GLUtil::GL_ENUM_TABLE::glStencilOpTable[enum_to_uint(newDescriptor
-                                                        ._stencilZFailOp)],
-            GLUtil::GL_ENUM_TABLE::glStencilOpTable[enum_to_uint(newDescriptor
-                                                        ._stencilPassOp)]);
+        glStencilOp(GLUtil::GL_ENUM_TABLE::glStencilOpTable[to_uint(
+                        newDescriptor._stencilFailOp)],
+                    GLUtil::GL_ENUM_TABLE::glStencilOpTable[to_uint(
+                        newDescriptor._stencilZFailOp)],
+                    GLUtil::GL_ENUM_TABLE::glStencilOpTable[to_uint(
+                        newDescriptor._stencilPassOp)]);
     }
     // Check and set polygon offset
     if (SHOULD_TOGGLE(_zBias)) {

@@ -40,7 +40,7 @@ namespace Divide {
 class Projectile {
    public:
     /// The physical characteristics of this projectile
-    enum ProjectileType {
+    enum class ProjectileType : U32 {
         /// Use a raytrace scan to the target's hitbox (raygun, non-tracked
         /// bullets)
         PROJECTILE_TYPE_RAYTRACE = toBit(1),
@@ -48,27 +48,27 @@ class Projectile {
         /// spells)
         PROJECTILE_TYPE_SLOW = toBit(2),
         /// Add new projectile types above
-        PROJECTILE_TYPE_PLACEHOLDER = toBit(10)
+        COUNT = toBit(10)
     };
 
-    enum ProjectileProperty {
+    enum class ProjectileProperty : U32 {
         /// Projectile is not affected by gravity (raygun, spells)
         PROJECTILE_PROPERTYE_NO_GRAVITY = toBit(1),
         /// Projectile is affected by gravity (rockets, boulders, sniperbullets)
         PROJECTILE_PROPERTY_GRAVITY = toBit(2),
         /// Add new projectile properties above
-        PROJECTILE_PROPERTY_PLACEHOLDER = toBit(10)
+        COUNT = toBit(10)
     };
 
     Projectile(ProjectileType type);
     ~Projectile();
 
     /// Add a specific property to this projectile
-    bool addProperties(U8 propertyMask);
+    bool addProperties(ProjectileProperty property);
 
    private:
     ProjectileType _type;
-    U8 _properyMask;  ///< weapon properties
+    U32 _properyMask;  ///< weapon properties
 };
 
 };  // namespace Divide

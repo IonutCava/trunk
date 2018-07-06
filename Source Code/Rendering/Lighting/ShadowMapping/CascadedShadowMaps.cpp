@@ -21,7 +21,7 @@ namespace Divide {
 
 CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
                                        F32 numSplits)
-    : ShadowMap(light, shadowCamera, SHADOW_TYPE_CSM) {
+    : ShadowMap(light, shadowCamera, ShadowType::SHADOW_TYPE_CSM) {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
@@ -63,7 +63,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     depthMapDescriptor.setSampler(depthMapSampler);
 
     _depthMap = GFX_DEVICE.newFB(false);
-    _depthMap->AddAttachment(depthMapDescriptor, TextureDescriptor::Color0);
+    _depthMap->AddAttachment(depthMapDescriptor,
+                             TextureDescriptor::AttachmentType::Color0);
     _depthMap->toggleDepthBuffer(true);  //<create a floating point depth buffer
     _depthMap->setClearColor(DefaultColors::WHITE());
 
@@ -79,7 +80,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     blurMapDescriptor.setSampler(blurMapSampler);
 
     _blurBuffer = GFX_DEVICE.newFB(false);
-    _blurBuffer->AddAttachment(blurMapDescriptor, TextureDescriptor::Color0);
+    _blurBuffer->AddAttachment(blurMapDescriptor,
+                               TextureDescriptor::AttachmentType::Color0);
     _blurBuffer->toggleDepthBuffer(false);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
 }
@@ -106,7 +108,8 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
                          _light->getGUID());
         _depthMap->Create(_resolution, _resolution);
         vec2<U16> screenResolution =
-            GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
+            GFX_DEVICE.getRenderTarget(
+                           GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
                 ->getResolution();
         _horizBlur = _blurDepthMapShader->GetSubroutineIndex(
             ShaderType::GEOMETRY_SHADER, "computeCoordsH");
@@ -151,7 +154,8 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
     renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
     for (U8 i = 0; i < _numSplits; ++i) {
         ApplyFrustumSplit(i);
-        _depthMap->DrawToLayer(TextureDescriptor::Color0, i, true);
+        _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
+                               true);
         GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
         LightManager::getInstance().registerShadowPass();
     }
@@ -280,7 +284,8 @@ void CascadedShadowMaps::postRender() {
     _depthMap->Bind();
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
-        _blurBuffer->DrawToLayer(TextureDescriptor::Color0, i, false);
+        _blurBuffer->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
+                                 false);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                               _blurDepthMapShader);
     }
@@ -293,7 +298,8 @@ void CascadedShadowMaps::postRender() {
                                  1.0f / (_depthMap->getHeight() * 1.0f));
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
-        _depthMap->DrawToLayer(TextureDescriptor::Color0, i, false);
+        _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
+                               false);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                               _blurDepthMapShader);
     }
@@ -301,7 +307,7 @@ void CascadedShadowMaps::postRender() {
 }
 
 bool CascadedShadowMaps::BindInternal(U8 offset) {
-    _depthMap->Bind(offset, TextureDescriptor::Color0);
+    _depthMap->Bind(offset, TextureDescriptor::AttachmentType::Color0);
     return true;
 }
 
@@ -310,7 +316,7 @@ void CascadedShadowMaps::togglePreviewShadowMaps(bool state) {
 }
 
 void CascadedShadowMaps::previewShadowMaps() {
-    _depthMap->Bind(ShaderProgram::TEXTURE_UNIT0);
+    _depthMap->Bind(to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
     for (U8 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);
         _previewDepthMapShader->Uniform(

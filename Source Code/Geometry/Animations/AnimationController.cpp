@@ -75,7 +75,7 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer) {
             Calculate((I32)i, dt);
             _animations[i]._transforms.push_back(vec);
             vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
-            if (GFX_DEVICE.getAPI() == GFXDevice::Direct3D) {
+            if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
                 for (vectorAlg::vecSize a = 0; a < _transforms.size(); ++a) {
                     AnimUtils::TransformMatrix(
                         _bones[a]->_offsetMatrix * _bones[a]->_globalTransform,
@@ -133,7 +133,7 @@ Bone* SceneAnimator::CreateBoneTree(aiNode* pNode, Bone* parent) {
                                      // theroot node, it will be null
     _bonesByName[internalNode->_name] = internalNode;  // use the name as a key
     internalNode->_localTransform = pNode->mTransformation;
-    if (GFX_DEVICE.getAPI() == GFXDevice::Direct3D) {
+    if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
         internalNode->_localTransform.Transpose();
     }
     internalNode->_originalLocalTransform =
@@ -189,7 +189,7 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child) {
     // This will climb the nodes up along through the parents concatenating all
     // the matrices to get the Object to World transform,
     // or in this case, the Bone To World transform
-    if (GFX_DEVICE.getAPI() == GFXDevice::Direct3D) {
+    if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
         while (parent) {
             child->_globalTransform *= parent->_localTransform;
             parent =
@@ -246,7 +246,7 @@ const vectorImpl<Line>& SceneAnimator::getSkeletonLines(I32 animationIndex,
 I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent,
                                   vectorImpl<Line>& lines) {
     aiMatrix4x4 me = piNode->_globalTransform;
-    if (GFX_DEVICE.getAPI() == GFXDevice::Direct3D) {
+    if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
         me.Transpose();
     }
 

@@ -45,7 +45,7 @@ class PhysicsComponent : public SGNComponent {
     PhysicsComponent(SceneGraphNode& parentSGN);
     ~PhysicsComponent();
 
-    enum PhysicsGroup {
+    enum class PhysicsGroup : U32 {
         NODE_COLLIDE_IGNORE = 0,
         NODE_COLLIDE_NO_PUSH,
         NODE_COLLIDE

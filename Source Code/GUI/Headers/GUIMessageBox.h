@@ -47,7 +47,7 @@ class GUIMessageBox : public GUIElement {
     friend class GUI;
 
    public:
-    enum MessageType {
+    enum class MessageType : U32 {
         MESSAGE_INFO = 0,
         MESSAGE_WARNING = 1,
         MESSAGE_ERROR = 2

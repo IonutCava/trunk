@@ -27,12 +27,13 @@ void GFXDevice::previewDepthBuffer() {
         _previewDepthMapShader->Uniform("useScenePlanes", true);
     }
 
-    if (_previewDepthMapShader->getState() != RES_LOADED) {
+    if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
 
-    _renderTarget[RENDER_TARGET_DEPTH]->Bind(ShaderProgram::TEXTURE_UNIT0,
-                                             TextureDescriptor::Depth);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->Bind(
+        to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0),
+        TextureDescriptor::AttachmentType::Depth);
 
     renderInViewport(
         vec4<I32>(Application::getInstance().getResolution().width - 256, 0,
@@ -84,7 +85,8 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         bool texture = (priv->_texture != nullptr);
         // And bind it to the first diffuse texture slot
         if (texture) {
-            priv->_texture->Bind(ShaderProgram::TEXTURE_UNIT0);
+            priv->_texture->Bind(
+                to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0));
         }
         // Inform the shader if we have (or don't have) a texture
         _imShader->Uniform("useTexture", texture);
@@ -120,9 +122,13 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
-    drawLines(_axisLines, offset * _gpuBlock._ViewMatrix.getInverse(),
-              vec4<I32>(_renderTarget[RENDER_TARGET_SCREEN]->getWidth() - 128,
-                        0, 128, 128),
-              true, true);
+    drawLines(
+        _axisLines, offset * _gpuBlock._ViewMatrix.getInverse(),
+        vec4<I32>(
+            _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]
+                    ->getWidth() -
+                128,
+            0, 128, 128),
+        true, true);
 }
 };

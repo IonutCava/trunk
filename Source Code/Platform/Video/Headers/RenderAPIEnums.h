@@ -98,20 +98,21 @@ enum class RenderStage : U32 {
     DEPTH_STAGE = SHADOW_STAGE | Z_PRE_PASS_STAGE
 };
 
-enum class ClipPlaneIndex : U32{
+enum class ClipPlaneIndex : U32 {
     CLIP_PLANE_0 = 0,
     CLIP_PLANE_1 = 1,
     CLIP_PLANE_2 = 2,
     CLIP_PLANE_3 = 3,
     CLIP_PLANE_4 = 4,
     CLIP_PLANE_5 = 5,
-    ClipPlaneIndex_PLACEHOLDER = 6,
+    COUNT
 };
 
 enum class PBType : U32 { 
     PB_TEXTURE_1D, 
     PB_TEXTURE_2D, 
-    PB_TEXTURE_3D 
+    PB_TEXTURE_3D,
+    COUNT
 };
 
 enum class PrimitiveType : U32 {
@@ -124,14 +125,15 @@ enum class PrimitiveType : U32 {
     TRIANGLE_FAN = 0x0006,
     QUAD_STRIP = 0x0007,
     POLYGON = 0x0008,
-    PrimitiveType_PLACEHOLDER = 0x009
+    COUNT
 };
 
 enum class RenderDetailLevel : U32 {
     DETAIL_LOW = 0,
     DETAIL_MEDIUM = 1,
     DETAIL_HIGH = 2,
-    DETAIL_ULTRA = 3
+    DETAIL_ULTRA = 3,
+    COUNT
 };
 
 /// Specifies how the red, green, blue, and alpha source blending factors are
@@ -155,7 +157,7 @@ enum class BlendProperty : U32 {
     /// with polygons sorted from nearest to farthest.
     BLEND_PROPERTY_SRC_ALPHA_SAT,
     /// Place all properties above this.
-    BlendProperty_PLACEHOLDER
+    COUNT
 };
 
 /// Specifies how source and destination colors are combined.
@@ -174,7 +176,7 @@ enum class BlendOperation : U32 {
     /// (image thresholding against a constant color, for example).
     BLEND_OPERATION_MAX,
     /// Place all properties above this.
-    BlendOperation_PLACEHOLDER
+    COUNT
 };
 
 /// Valid comparison functions for most states
@@ -199,7 +201,7 @@ enum class ComparisonFunction : U32 {
     /// Always passes.
     CMP_FUNC_ALWAYS,
     /// Place all properties above this.
-    ComparisonFunction_PLACEHOLDER
+    COUNT
 };
 
 /// Specifies whether front- or back-facing facets are candidates for culling.
@@ -212,7 +214,7 @@ enum class CullMode : U32 {
     /// Cull All polygons
     CULL_MODE_ALL,
     /// Place all properties above this.
-    CullMode_PLACEHOLDER
+    COUNT
 };
 
 /// Available shader stages
@@ -223,7 +225,7 @@ enum class ShaderType : U32 {
     TESSELATION_CTRL_SHADER = 3,
     TESSELATION_EVAL_SHADER = 4,
     COMPUTE_SHADER = 5,
-    ShaderType_PLACEHOLDER = 6
+    COUNT
 };
 
 /// Valid front and back stencil test actions
@@ -250,7 +252,7 @@ enum class StencilOperation : U32 {
     /// when decrementing a stencil buffer value of zero.
     STENCIL_OPERATION_DECR_WRAP,
     /// Place all properties above this.
-    StencilOperation_PLACEHOLDER
+    COUNT
 };
 
 /// Defines all available fill modes for primitives
@@ -263,7 +265,7 @@ enum class FillMode : U32 {
     /// The interior of the polygon is filled.
     FILL_MODE_SOLID,
     /// Place all properties above this.
-    FillMode_PLACEHOLDER
+    COUNT
 };
 
 enum class TextureType : U32 {
@@ -275,7 +277,7 @@ enum class TextureType : U32 {
     TEXTURE_CUBE_ARRAY,
     TEXTURE_2D_MS,
     TEXTURE_2D_ARRAY_MS,
-    TextureType_PLACEHOLDER
+    COUNT
 };
 
 enum class TextureFilter : U32 {
@@ -285,7 +287,7 @@ enum class TextureFilter : U32 {
     TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST = 0x0003,
     TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR = 0x0004,
     TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR = 0x0005,
-    TextureFilter_PLACEHOLDER = 0x0006
+    COUNT
 };
 
 enum class TextureWrap : U32 {
@@ -299,7 +301,7 @@ enum class TextureWrap : U32 {
     TEXTURE_DECAL = 0x3,
     TEXTURE_REPEAT = 0x4,
     TEXTURE_MIRROR_REPEAT = 0x5,
-    TextureWrap_PLACEHOLDER = 0x6
+    COUNT
 };
 
 enum class GFXImageFormat : U32 {
@@ -343,7 +345,7 @@ enum class GFXImageFormat : U32 {
     DEPTH_COMPONENT24,
     DEPTH_COMPONENT32,
     DEPTH_COMPONENT32F,
-    GFXImageFormat_PLACEHOLDER
+    COUNT
 };
 
 enum class GFXDataFormat : U32 {
@@ -355,7 +357,7 @@ enum class GFXDataFormat : U32 {
     SIGNED_INT = 0x0005,
     FLOAT_16 = 0x0006,
     FLOAT_32 = 0x0008,
-    GDF_PLACEHOLDER
+    COUNT
 };
 
 enum class GPUVendor : U32 {
@@ -363,7 +365,7 @@ enum class GPUVendor : U32 {
     GPU_VENDOR_AMD,
     GPU_VENDOR_INTEL,
     GPU_VENDOR_OTHER,
-    GPU_VENDOR_PLACEHOLDER
+    COUNT
 };
 
 };  // namespace Divide

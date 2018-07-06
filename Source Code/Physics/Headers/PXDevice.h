@@ -42,7 +42,12 @@ namespace Divide {
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
   public:
-    enum PhysicsAPI { PhysX, ODE, Bullet, PX_PLACEHOLDER };
+    enum class PhysicsAPI : U32 {
+        PhysX = 0,
+        ODE,
+        Bullet,
+        COUNT
+    };
 
     inline void setAPI(PhysicsAPI API) { _API_ID = API; }
     inline PhysicsAPI getAPI() const { return _API_ID; }

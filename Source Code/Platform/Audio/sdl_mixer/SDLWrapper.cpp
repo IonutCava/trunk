@@ -20,14 +20,14 @@ ErrorCode SDL_API::initAudioAPI() {
             if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT,
                               MIX_DEFAULT_CHANNELS, 2048) == -1) {
                 Console::errorfn("%s", Mix_GetError());
-                return SDL_AUDIO_MIX_INIT_ERROR;
+                return ErrorCode::SDL_AUDIO_MIX_INIT_ERROR;
             }
         }
 
-        return NO_ERR;
+        return ErrorCode::NO_ERR;
     }
     Console::errorfn("%s", Mix_GetError());
-    return SDL_AUDIO_INIT_ERROR;
+    return ErrorCode::SDL_AUDIO_INIT_ERROR;
 }
 
 void SDL_API::closeAudioAPI() {

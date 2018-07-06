@@ -46,7 +46,7 @@ void loadGeometry(const stringImpl &file) {
         model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
         model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
         model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
-        model.type = MESH;
+        model.type = GeometryType::MESH;
         model.version = pt.get<F32>(name + ".version");
         Patch::getInstance().addGeometry(model);
     }
@@ -71,7 +71,7 @@ void loadGeometry(const stringImpl &file) {
         model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
         model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
         model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
-        model.type = VEGETATION;
+        model.type = GeometryType::VEGETATION;
         model.version = pt.get<F32>(name + ".version");
         Patch::getInstance().addGeometry(model);
     }
@@ -120,7 +120,7 @@ void loadGeometry(const stringImpl &file) {
             else
                 model.data = 0;
 
-            model.type = PRIMITIVE;
+            model.type = GeometryType::PRIMITIVE;
             model.version = pt.get<F32>(name + ".version");
             Patch::getInstance().addGeometry(model);
         }

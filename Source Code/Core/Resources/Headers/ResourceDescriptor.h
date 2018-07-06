@@ -43,7 +43,7 @@ namespace Divide {
 /// information in a general format
 class PropertyDescriptor {
    public:
-    enum DescriptorType {
+    enum class DescriptorType : U32 {
         DESCRIPTOR_TEXTURE = 0,
         DESCRIPTOR_SAMPLER = 1,
         DESCRIPTOR_PARTICLE = 2

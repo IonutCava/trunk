@@ -20,7 +20,7 @@ using boost::asio::ip::tcp;
 
 namespace Divide {
 
-enum OPCodes : I32;
+class OPCodes;
 class ASIO;
 
 class Client {

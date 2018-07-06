@@ -49,17 +49,17 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
     }
 
     switch (_light->getLightType()) {
-        case LIGHT_TYPE_POINT: {
+        case LightType::LIGHT_TYPE_POINT: {
             _numLayers = 6;
             _shadowMap = MemoryManager_NEW CubeShadowMap(_light, shadowCamera);
         } break;
-        case LIGHT_TYPE_DIRECTIONAL: {
+        case LightType::LIGHT_TYPE_DIRECTIONAL: {
             DirectionalLight* dirLight = static_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
             _shadowMap = MemoryManager_NEW CascadedShadowMaps(
                 _light, shadowCamera, _numLayers);
         } break;
-        case LIGHT_TYPE_SPOT: {
+        case LightType::LIGHT_TYPE_SPOT: {
             _shadowMap =
                 MemoryManager_NEW SingleShadowMap(_light, shadowCamera);
         } break;
@@ -85,7 +85,7 @@ bool ShadowMap::Bind(U8 offset) {
 }
 
 bool ShadowMap::BindInternal(U8 offset) {
-    _depthMap->Bind(offset, TextureDescriptor::Depth);
+    _depthMap->Bind(offset, TextureDescriptor::AttachmentType::Depth);
     return true;
 }
 

@@ -33,21 +33,17 @@
 #define _OPCODES_IMPL_H_
 
 #include <DivideNetworking/OPCodesTpl.h>
-#include <DivideNetworking/Utility/InheritEnum.h>
 
 namespace Divide {
 
-enum OPCodesEx {
-    CMSG_GEOMETRY_LIST = OPCODE_ID(1),
-    SMSG_GEOMETRY_APPEND = OPCODE_ID(2),
-    CMSG_REQUEST_GEOMETRY = OPCODE_ID(3),
-    CMSG_PING = OPCODE_ID(4),
-    SMSG_PONG = OPCODE_ID(5),
-    LAST_OPCODE
+class OPCodesEx : public OPCodes {
+public:
+    static const ValueType CMSG_GEOMETRY_LIST = OPCODE_ID(1);
+    static const ValueType SMSG_GEOMETRY_APPEND = OPCODE_ID(2);
+    static const ValueType CMSG_REQUEST_GEOMETRY = OPCODE_ID(3);
+    static const ValueType CMSG_PING = OPCODE_ID(4);
+    static const ValueType SMSG_PONG = OPCODE_ID(5);
 };
-
-typedef InheritEnum<OPCodesEx, OPCodes> OPCodesImpl;
-
 };  // namespace Divide
 
 #endif

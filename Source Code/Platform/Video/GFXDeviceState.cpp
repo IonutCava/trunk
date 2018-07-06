@@ -16,7 +16,7 @@ namespace Divide {
 ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                       char** argv) {
     ErrorCode hardwareState = createAPIInstance();
-    if (hardwareState == NO_ERR) {
+    if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
         _api->initRenderingAPI(resolution, argc, argv);
     } else {
@@ -86,9 +86,9 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    _renderTarget[RENDER_TARGET_SCREEN] = newFB(true);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)] = newFB(true);
     // The depth buffer should probably be merged into the screen buffer
-    _renderTarget[RENDER_TARGET_DEPTH] = newFB(false);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)] = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -118,8 +118,9 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // occlusion culling
     // Must be as close as possible to the screen's depth buffer
     SamplerDescriptor depthSamplerHiZ;
-    depthSamplerHiZ.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST,
-                               TextureFilter::TEXTURE_FILTER_NEAREST);
+    depthSamplerHiZ.setFilters(
+        TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST,
+        TextureFilter::TEXTURE_FILTER_NEAREST);
     depthSamplerHiZ.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     depthSamplerHiZ.toggleMipMaps(true);
     TextureDescriptor depthDescriptorHiZ(TextureType::TEXTURE_2D_MS,
@@ -127,28 +128,28 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
                                          GFXDataFormat::FLOAT_32);
     depthDescriptorHiZ.setSampler(depthSamplerHiZ);
     // Add the attachments to the render targets
-    _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(
-        screenDescriptor, TextureDescriptor::Color0);
-    _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(
-        depthDescriptor, TextureDescriptor::Depth);
-    _renderTarget[RENDER_TARGET_SCREEN]->Create(resolution.width,
-                                                resolution.height);
-    _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptorHiZ,
-                                                      TextureDescriptor::Depth);
-    _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
-    _renderTarget[RENDER_TARGET_DEPTH]->Create(resolution.width,
-                                               resolution.height);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->AddAttachment(
+        screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->AddAttachment(
+        depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->Create(
+        resolution.width, resolution.height);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->AddAttachment(
+        depthDescriptorHiZ, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->toggleColorWrites(false);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->Create(resolution.width,
+                                                             resolution.height);
     // If we enabled anaglyph rendering, we need a second target, identical to
     // the screen target
     // used to render the scene at an offset
     if (_enableAnaglyph) {
-        _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(true);
-        _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(
-            screenDescriptor, TextureDescriptor::Color0);
-        _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(
-            depthDescriptor, TextureDescriptor::Depth);
-        _renderTarget[RENDER_TARGET_ANAGLYPH]->Create(resolution.width,
-                                                      resolution.height);
+        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)] = newFB(true);
+        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)]->AddAttachment(
+            screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)]->AddAttachment(
+            depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_ANAGLYPH)]->Create(
+            resolution.width, resolution.height);
     }
     // If render targets ready, we initialize our post processing system
     PostFX::getInstance().init(resolution);
@@ -182,13 +183,13 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer",
                                                false);
     // Everything is ready from the rendering point of view
-    return NO_ERR;
+    return ErrorCode::NO_ERR;
 }
 
 /// Revert everything that was set up in initRenderingAPI()
 void GFXDevice::closeRenderingAPI() {
-   DIVIDE_ASSERT(_api != nullptr,
-                 "GFXDevice error: closeRenderingAPI called without init!");
+    DIVIDE_ASSERT(_api != nullptr,
+                  "GFXDevice error: closeRenderingAPI called without init!");
 
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
@@ -227,9 +228,7 @@ void GFXDevice::closeRenderingAPI() {
         } break;
         case RenderAPI::None: {
         } break;
-        default: { 
-        } break; 
-    };
+        default: { } break; };
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to
@@ -297,7 +296,7 @@ Renderer& GFXDevice::getRenderer() const {
 }
 
 void GFXDevice::setRenderer(RendererType rendererType) {
-    DIVIDE_ASSERT(rendererType != RendererType::RendererType_PLACEHOLDER,
+    DIVIDE_ASSERT(rendererType != RendererType::COUNT,
                   "GFXDevice error: Tried to create an invalid renderer!");
     Renderer* renderer = nullptr;
     switch (rendererType) {
@@ -322,22 +321,22 @@ ErrorCode GFXDevice::createAPIInstance() {
         case RenderAPI::Direct3D: {
             _api = &DX_API::getOrCreateInstance();
             Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
-            return GFX_NOT_SUPPORTED;
+            return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
         case RenderAPI::Mantle: {
             Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
-            return GFX_NOT_SUPPORTED;
+            return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
         case RenderAPI::None: {
             Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
-            return GFX_NOT_SUPPORTED;
+            return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
         default: {
             Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
-            return GFX_NON_SPECIFIED;
+            return ErrorCode::GFX_NON_SPECIFIED;
         } break;
     };
 
-    return NO_ERR;
+    return ErrorCode::NO_ERR;
 }
 };

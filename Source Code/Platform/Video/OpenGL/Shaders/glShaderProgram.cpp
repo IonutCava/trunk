@@ -21,25 +21,25 @@ glShaderProgram::glShaderProgram(const bool optimise)
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramID = GLUtil::_invalidObjectID;
     // some basic translation tables for shade types
-    _shaderStageTable[enum_to_uint(ShaderType::VERTEX_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::VERTEX_SHADER)] =
         GL_VERTEX_SHADER;
-    _shaderStageTable[enum_to_uint(ShaderType::FRAGMENT_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::FRAGMENT_SHADER)] =
         GL_FRAGMENT_SHADER;
-    _shaderStageTable[enum_to_uint(ShaderType::GEOMETRY_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::GEOMETRY_SHADER)] =
         GL_GEOMETRY_SHADER;
-    _shaderStageTable[enum_to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
         GL_TESS_CONTROL_SHADER;
-    _shaderStageTable[enum_to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
         GL_TESS_EVALUATION_SHADER;
-    _shaderStageTable[enum_to_uint(ShaderType::COMPUTE_SHADER)] =
+    _shaderStageTable[to_uint(ShaderType::COMPUTE_SHADER)] =
         GL_COMPUTE_SHADER;
     // pointers to all of our shader stages
-    _shaderStage[enum_to_uint(ShaderType::VERTEX_SHADER)] = nullptr;
-    _shaderStage[enum_to_uint(ShaderType::FRAGMENT_SHADER)] = nullptr;
-    _shaderStage[enum_to_uint(ShaderType::GEOMETRY_SHADER)] = nullptr;
-    _shaderStage[enum_to_uint(ShaderType::TESSELATION_CTRL_SHADER)] = nullptr;
-    _shaderStage[enum_to_uint(ShaderType::TESSELATION_EVAL_SHADER)] = nullptr;
-    _shaderStage[enum_to_uint(ShaderType::COMPUTE_SHADER)] = nullptr;
+    _shaderStage[to_uint(ShaderType::VERTEX_SHADER)] = nullptr;
+    _shaderStage[to_uint(ShaderType::FRAGMENT_SHADER)] = nullptr;
+    _shaderStage[to_uint(ShaderType::GEOMETRY_SHADER)] = nullptr;
+    _shaderStage[to_uint(ShaderType::TESSELATION_CTRL_SHADER)] = nullptr;
+    _shaderStage[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] = nullptr;
+    _shaderStage[to_uint(ShaderType::COMPUTE_SHADER)] = nullptr;
 }
 
 glShaderProgram::~glShaderProgram() {
@@ -214,7 +214,7 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
             _shaderProgramIDTemp = glCreateProgram();
         }
         // For every possible stage that the program might use
-        for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+        for (U32 i = 0; i < to_uint(ShaderType::COUNT);
              ++i) {
             // Get the shader pointer for that stage
             Shader* shader = _shaderStage[i];
@@ -307,7 +307,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 
     // Check if we need to refresh an existing program, or create a new one
     bool refresh = false;
-    for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER); ++i) {
+    for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
         if (_refreshStage[i]) {
             refresh = true;
             break;
@@ -404,12 +404,12 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
         // Now that we have an offset for the general header, we need to move to
         // per-stage offsets
-        GLint lineCountOffset[enum_to_uint_const(
-            ShaderType::ShaderType_PLACEHOLDER)];
+        GLint lineCountOffset[to_const_uint(
+            ShaderType::COUNT)];
         // Every stage has it's own uniform specific header
-        stringImpl shaderSourceUniforms[enum_to_uint_const(
-            ShaderType::ShaderType_PLACEHOLDER)];
-        for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+        stringImpl shaderSourceUniforms[to_const_uint(
+            ShaderType::COUNT)];
+        for (U32 i = 0; i < to_uint(ShaderType::COUNT);
              ++i) {
             // We start off from the general offset
             lineCountOffset[i] = initialOffset;
@@ -425,8 +425,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             lineCountOffset[i] += 42;
         }
         // GLSW directives are accounted here
-        lineCountOffset[enum_to_uint(ShaderType::VERTEX_SHADER)] += 18;
-        lineCountOffset[enum_to_uint(ShaderType::FRAGMENT_SHADER)] += 10;
+        lineCountOffset[to_uint(ShaderType::VERTEX_SHADER)] += 18;
+        lineCountOffset[to_uint(ShaderType::FRAGMENT_SHADER)] += 10;
 
         // Split the shader name to get the effect file name and the effect
         // properties
@@ -458,23 +458,23 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
 
         // Create an appropriate name for every shader stage
-        stringImpl shaderCompileName[enum_to_uint_const(
-            ShaderType::ShaderType_PLACEHOLDER)];
-        shaderCompileName[enum_to_uint(ShaderType::VERTEX_SHADER)] =
+        stringImpl shaderCompileName[to_const_uint(
+            ShaderType::COUNT)];
+        shaderCompileName[to_uint(ShaderType::VERTEX_SHADER)] =
             shaderName + ".Vertex" + vertexProperties;
-        shaderCompileName[enum_to_uint(ShaderType::FRAGMENT_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::FRAGMENT_SHADER)] =
             shaderName + ".Fragment" + shaderProperties;
-        shaderCompileName[enum_to_uint(ShaderType::GEOMETRY_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::GEOMETRY_SHADER)] =
             shaderName + ".Geometry" + shaderProperties;
-        shaderCompileName[enum_to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
             shaderName + ".TessellationC" + shaderProperties;
-        shaderCompileName[enum_to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
             shaderName + ".TessellationE" + shaderProperties;
-        shaderCompileName[enum_to_uint(ShaderType::COMPUTE_SHADER)] =
+        shaderCompileName[to_uint(ShaderType::COMPUTE_SHADER)] =
             shaderName + ".Compute" + shaderProperties;
 
         // For every stage
-        for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+        for (U32 i = 0; i < to_uint(ShaderType::COUNT);
              ++i) {
             // Brute force conversion to an enum
             ShaderType type = static_cast<ShaderType>(i);
@@ -624,7 +624,7 @@ void glShaderProgram::SetSubroutines(ShaderType type,
                   "unbound or unlinked program!");
     // Validate data and send to GPU
     if (!indices.empty() && indices[0] != GLUtil::_invalidObjectID) {
-        glUniformSubroutinesuiv(_shaderStageTable[enum_to_uint(type)],
+        glUniformSubroutinesuiv(_shaderStageTable[to_uint(type)],
                                 (GLsizei)indices.size(), indices.data());
     }
 }
@@ -637,7 +637,7 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
 
     if (index != GLUtil::_invalidObjectID) {
         U32 value[] = {index};
-        glUniformSubroutinesuiv(_shaderStageTable[enum_to_uint(type)], 1,
+        glUniformSubroutinesuiv(_shaderStageTable[to_uint(type)], 1,
                                 value);
     }
 }
@@ -649,7 +649,7 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
                   "invalid program!");
 
     I32 subroutineCount = 0;
-    glGetProgramStageiv(_shaderProgramID, _shaderStageTable[enum_to_uint(type)],
+    glGetProgramStageiv(_shaderProgramID, _shaderStageTable[to_uint(type)],
                         GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
 
     return std::max(subroutineCount, 0);
@@ -663,7 +663,7 @@ U32 glShaderProgram::GetSubroutineUniformLocation(
                   "invalid program!");
 
     return glGetSubroutineUniformLocation(
-        _shaderProgramID, _shaderStageTable[enum_to_uint(type)], name.c_str());
+        _shaderProgramID, _shaderStageTable[to_uint(type)], name.c_str());
 }
 
 /// Get the index of the specified subroutine name for the specified stage. Not
@@ -675,7 +675,7 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
                   "invalid program!");
 
     return glGetSubroutineIndex(
-        _shaderProgramID, _shaderStageTable[enum_to_uint(type)], name.c_str());
+        _shaderProgramID, _shaderStageTable[to_uint(type)], name.c_str());
 }
 
 /// Set an uniform value

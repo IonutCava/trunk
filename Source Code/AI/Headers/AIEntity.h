@@ -47,8 +47,8 @@ class NPC;
 namespace AI {
 class AITeam;
 class AISceneImpl;
-enum AIMsg;  //< scene dependent message list
 class Order;
+enum class AIMsg : U32;  //< scene dependent message list
 namespace Navigation {
 class DivideRecast;
 class DivideDtCrowd;
@@ -58,12 +58,12 @@ class DivideDtCrowd;
 class AIEntity : public GUIDWrapper {
     friend class AIEntityAITeamAttorney;
    public:
-    enum PresetAgentRadius {
+    enum class PresetAgentRadius : U32 {
         AGENT_RADIUS_SMALL = 0,
         AGENT_RADIUS_MEDIUM = 1,  //< normal human
         AGENT_RADIUS_LARGE = 2,
         AGENT_RADIUS_EXTRA_LARGE = 3,
-        AgentRadius_PLACEHOLDER = 4
+        COUNT
     };
 
     AIEntity(const vec3<F32>& currentPosition, const stringImpl& name);
@@ -187,7 +187,7 @@ class AIEntity : public GUIDWrapper {
     mutable SharedLock _updateMutex;
     mutable SharedLock _managerQueryMutex;
 
-    typedef hashMapImpl<SensorType, Sensor*, hashAlg::hash<I32> > SensorMap;
+    typedef hashMapImpl<SensorType, Sensor*> SensorMap;
     SensorMap _sensorList;
     NPC* _unitRef;
     /// PathFinding

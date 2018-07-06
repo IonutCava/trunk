@@ -20,7 +20,7 @@ Application::Application() : _kernel(nullptr), _hasFocus(true) {
     _mainLoopActive = false;
     _mainLoopPaused = false;
     _threadID = std::this_thread::get_id();
-    _errorCode = NO_ERR;
+    _errorCode = ErrorCode::NO_ERR;
     ParamHandler::createInstance();
     Time::ApplicationTimer::createInstance();
     // Don't log parameter requests

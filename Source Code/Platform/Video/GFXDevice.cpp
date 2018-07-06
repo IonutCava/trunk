@@ -50,8 +50,7 @@ F32 _anaglyphIOD = -0.01f;
 };
 
 GFXDevice::GFXDevice()
-    : _api(nullptr), _renderStage(RenderStage::INVALID_STAGE)
-{
+    : _api(nullptr), _renderStage(RenderStage::INVALID_STAGE) {
     // Hash values
     _state2DRenderingHash = 0;
     _defaultStateBlockHash = 0;
@@ -83,8 +82,8 @@ GFXDevice::GFXDevice()
     _enablePostProcessing = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::DETAIL_HIGH;
-    _GPUVendor = GPUVendor::GPU_VENDOR_PLACEHOLDER;
-    _API_ID = GFX_RENDER_API_PLACEHOLDER;
+    _GPUVendor = GPUVendor::COUNT;
+    _API_ID = RenderAPI::COUNT;
     // Utility cameras
     _2DCamera = MemoryManager_NEW FreeFlyCamera();
     _2DCamera->lockView(true);
@@ -180,11 +179,11 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement) {
     setStateBlock(guiElement->getStateBlockHash());
     // Choose the appropriate rendering path
     switch (guiElement->getType()) {
-        case GUI_TEXT: {
+        case GUIType::GUI_TEXT: {
             const GUIText& text = static_cast<GUIText&>(*guiElement);
             drawText(text, text.getPosition());
         } break;
-        case GUI_FLASH: {
+        case GUIType::GUI_FLASH: {
             static_cast<GUIFlash*>(guiElement)->playMovie();
         } break;
         default: {
@@ -229,8 +228,10 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
                                 const RenderStage& renderStage) {
     // Only the first color attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    Texture* colorAttachment = cubeMap.GetAttachment(TextureDescriptor::Color0);
-    Texture* depthAttachment = cubeMap.GetAttachment(TextureDescriptor::Depth);
+    Texture* colorAttachment =
+        cubeMap.GetAttachment(TextureDescriptor::AttachmentType::Color0);
+    Texture* depthAttachment =
+        cubeMap.GetAttachment(TextureDescriptor::AttachmentType::Depth);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);
@@ -282,8 +283,9 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        cubeMap.DrawToFace(
-            hasColor ? TextureDescriptor::Color0 : TextureDescriptor::Depth, i);
+        cubeMap.DrawToFace(hasColor ? TextureDescriptor::AttachmentType::Color0
+                                    : TextureDescriptor::AttachmentType::Depth,
+                           i);
         // Point our camera to the correct face
         _cubeCamera->lookAt(pos, TabCenter[i], TabUp[i]);
         // And generated required matrices
@@ -364,11 +366,13 @@ const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(
 /// The main entry point for any resolution change request
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
-    if (_renderTarget[RENDER_TARGET_SCREEN] != nullptr) {
+    if (_renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)] !=
+        nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
         if (vec2<U16>(w, h) ==
-                _renderTarget[RENDER_TARGET_SCREEN]->getResolution() ||
+                _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]
+                    ->getResolution() ||
             !(w > 1 && h > 1)) {
             return;
         }
@@ -429,7 +433,8 @@ void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
     } else if (mode == MATRIX_MODE::VIEW_PROJECTION_INV_MATRIX) {
         _gpuBlock._ViewProjectionMatrix.getInverse(mat);
     } else {
-        DIVIDE_ASSERT(false,
+        DIVIDE_ASSERT(
+            false,
             "GFXDevice error: attempted to query an invalid matrix target!");
     }
 }
@@ -741,7 +746,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     }
     // If we want and can call the function in the loading thread, add it to the
     // lock-free, single-producer, single-consumer queue
-    if (context == CurrentContext::GFX_LOADING_CONTEXT && 
+    if (context == CurrentContext::GFX_LOADING_CONTEXT &&
         _state.loadingThreadAvailable()) {
         while (!_state.getLoadQueue().push(callback))
             ;
@@ -762,17 +767,21 @@ void GFXDevice::ConstructHIZ() {
     // And we calculate the target viewport for each loop
     hizTarget._changeViewport = false;
     // The depth buffer's resolution should be equal to the screen's resolution
-    vec2<U16> resolution = _renderTarget[RENDER_TARGET_DEPTH]->getResolution();
+    vec2<U16> resolution =
+        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]
+            ->getResolution();
     // We use a special shader that downsamples the buffer
     _HIZConstructProgram->bind();
     // We will use a state block that disables color writes as we will render
     // only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
-    _renderTarget[RENDER_TARGET_DEPTH]->Begin(hizTarget);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->Begin(
+        hizTarget);
     // Bind the depth texture to the first texture unit
-    _renderTarget[RENDER_TARGET_DEPTH]->Bind(ShaderProgram::TEXTURE_UNIT0,
-                                             TextureDescriptor::Depth);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->Bind(
+        to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0),
+        TextureDescriptor::AttachmentType::Depth);
     // Calculate the number of mipmap levels we need to generate
     U16 numLevels = 1 + (U16)floorf(log2f(fmaxf((F32)resolution.width,
                                                 (F32)resolution.height)));
@@ -791,19 +800,22 @@ void GFXDevice::ConstructHIZ() {
         currentWidth = currentWidth > 0 ? currentWidth : 1;
         currentHeight = currentHeight > 0 ? currentHeight : 1;
         // Update the viewport with the new resolution
-        GFX::ScopedViewport viewport(vec4<I32>(0, 0, currentWidth, currentHeight));
+        GFX::ScopedViewport viewport(
+            vec4<I32>(0, 0, currentWidth, currentHeight));
         // Bind next mip level for rendering but first restrict fetches only to
         // previous level
-        _renderTarget[RENDER_TARGET_DEPTH]->SetMipLevel(
-            i - 1, i - 1, i, TextureDescriptor::Depth);
+        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]
+            ->SetMipLevel(i - 1, i - 1, i,
+                          TextureDescriptor::AttachmentType::Depth);
         // Dummy draw command as the full screen quad is generated completely by
         // a geometry shader
         drawPoints(1, _stateDepthOnlyRenderingHash, _HIZConstructProgram);
     }
     // Reset mipmap level range for the depth buffer
-    _renderTarget[RENDER_TARGET_DEPTH]->ResetMipLevel(TextureDescriptor::Depth);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]
+        ->ResetMipLevel(TextureDescriptor::AttachmentType::Depth);
     // Unbind the render target
-    _renderTarget[RENDER_TARGET_DEPTH]->End();
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_DEPTH)]->End();
 }
 
 /// Find an unused primitive object or create a new one and return it
@@ -831,24 +843,24 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
     return tempPriv;
 }
 /// Renders the result of plotting the specified 2D graph
-void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& color) const {
-    if (plot2D.empty())
-    {
+void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D,
+                            const vec4<U8>& color) const {
+    if (plot2D.empty()) {
         return;
     }
     Util::GraphPlot3D plot3D;
     plot3D._plotName = plot2D._plotName;
     plot3D._coords.reserve(plot2D._coords.size());
-    for (const vec2<F32>& coords : plot2D._coords){
+    for (const vec2<F32>& coords : plot2D._coords) {
         vectorAlg::emplace_back(plot3D._coords, coords.x, coords.y, 0.0f);
     }
     plot3DGraph(plot3D, color);
 }
 
 /// Renders the result of plotting the specified 3D graph
-void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D, const vec4<U8>& color) const {
-    if (plot3D.empty())
-    {
+void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
+                            const vec4<U8>& color) const {
+    if (plot3D.empty()) {
         return;
     }
     vectorImpl<Line> plotLines;
@@ -951,14 +963,14 @@ void GFXDevice::drawLines(const vectorImpl<Line>& lines,
 void GFXDevice::Screenshot(char* filename) {
     // Get the screen's resolution
     const vec2<U16>& resolution =
-        _renderTarget[RENDER_TARGET_SCREEN]->getResolution();
+        _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]
+            ->getResolution();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = resolution.width * resolution.height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[RENDER_TARGET_SCREEN]->ReadData(GFXImageFormat::RGBA,
-                                                  GFXDataFormat::UNSIGNED_BYTE,
-                                                  imageData);
+    _renderTarget[to_uint(RenderTarget::RENDER_TARGET_SCREEN)]->ReadData(
+        GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,
                            vec2<U16>(resolution.width, resolution.height), 32,

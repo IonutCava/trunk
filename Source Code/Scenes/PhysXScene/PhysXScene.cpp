@@ -9,13 +9,13 @@ namespace Divide {
 
 REGISTER_SCENE(PhysXScene);
 
-enum PhysXStateEnum {
+enum class PhysXState : U32 {
     STATE_ADDING_ACTORS = 0,
     STATE_IDLE = 2,
     STATE_LOADING = 3
 };
 
-static std::atomic<PhysXStateEnum> s_sceneState;
+static std::atomic<PhysXState> s_sceneState;
 
 // begin copy-paste
 void PhysXScene::preRender() {
@@ -40,7 +40,7 @@ void PhysXScene::processGUI(const U64 deltaTime) {
 void PhysXScene::processInput(const U64 deltaTime) {}
 
 bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
-    s_sceneState = STATE_LOADING;
+    s_sceneState = PhysXState::STATE_LOADING;
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
     // Add a light
@@ -48,12 +48,12 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     _sunvector =
         vec3<F32>(-cosf(sunAngle.x) * sinf(sunAngle.y), -cosf(sunAngle.y),
                   -sinf(sunAngle.x) * sinf(sunAngle.y));
-    _sun = addLight(LIGHT_TYPE_DIRECTIONAL,
+    _sun = addLight(LightType::LIGHT_TYPE_DIRECTIONAL,
                GET_ACTIVE_SCENEGRAPH().getRoot()).getNode<DirectionalLight>();
     _sun->setDirection(_sunvector);
     _currentSky =
         &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
-    s_sceneState = STATE_IDLE;
+    s_sceneState = PhysXState::STATE_IDLE;
     return loadState;
 }
 
@@ -86,10 +86,9 @@ void PhysXScene::createStack(U32 size) {
     vec3<F32> Pos(0, 10 + CubeSize, 0);
     F32 Offset = -stackSize * (CubeSize * 2.0f + Spacing) * 0.5f + 0;
 
-    while (s_sceneState == STATE_ADDING_ACTORS)
-        ;
+    while (s_sceneState == PhysXState::STATE_ADDING_ACTORS);
 
-    s_sceneState = STATE_ADDING_ACTORS;
+    s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
     while (stackSize) {
         for (U16 i = 0; i < stackSize; i++) {
@@ -101,18 +100,18 @@ void PhysXScene::createStack(U32 size) {
         stackSize--;
     }
 
-    s_sceneState = STATE_IDLE;
+    s_sceneState = PhysXState::STATE_IDLE;
 }
 
 void PhysXScene::createTower(U32 size) {
-    while (s_sceneState == STATE_ADDING_ACTORS)
+    while (s_sceneState == PhysXState::STATE_ADDING_ACTORS)
         ;
-    s_sceneState = STATE_ADDING_ACTORS;
+    s_sceneState = PhysXState::STATE_ADDING_ACTORS;
 
     for (U8 i = 0; i < size; i++)
         PHYSICS_DEVICE.createBox(vec3<F32>(0, 5.0f + 5 * i, 0), 0.5f);
 
-    s_sceneState = STATE_IDLE;
+    s_sceneState = PhysXState::STATE_IDLE;
 }
 
 bool PhysXScene::onKeyUp(const Input::KeyEvent& key) {

@@ -18,7 +18,7 @@ ErrorCode DX_API::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     D3D_ENUM_TABLE::fill();
     // CEGUI::System::create(CEGUI::Direct3D10Renderer::create(
     // /*myD3D10Device*/nullptr ));
-    return DX_INIT_ERROR;
+    return ErrorCode::DX_INIT_ERROR;
 }
 
 void DX_API::closeRenderingAPI() {}

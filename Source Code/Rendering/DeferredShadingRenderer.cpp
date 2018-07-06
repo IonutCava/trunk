@@ -54,10 +54,10 @@ DeferredShadingRenderer::DeferredShadingRenderer()
 
     for (U8 i = 0; i < 4; i++) gBuffer[i].setSampler(gBufferSampler);
 
-    _deferredBuffer->AddAttachment(gBuffer[0], TextureDescriptor::Color0);
-    _deferredBuffer->AddAttachment(gBuffer[1], TextureDescriptor::Color1);
-    _deferredBuffer->AddAttachment(gBuffer[2], TextureDescriptor::Color2);
-    _deferredBuffer->AddAttachment(gBuffer[3], TextureDescriptor::Color3);
+    _deferredBuffer->AddAttachment(gBuffer[0], TextureDescriptor::AttachmentType::Color0);
+    _deferredBuffer->AddAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Color1);
+    _deferredBuffer->AddAttachment(gBuffer[2], TextureDescriptor::AttachmentType::Color2);
+    _deferredBuffer->AddAttachment(gBuffer[3], TextureDescriptor::AttachmentType::Color3);
     _deferredBuffer->toggleDepthBuffer(true);
     _deferredBuffer->setClearColor(DefaultColors::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
@@ -175,10 +175,10 @@ void DeferredShadingRenderer::secondPass(
     // textures bound to that shader
     GFX::Scoped2DRendering scoped2D(true);
 
-    _deferredBuffer->Bind(0, TextureDescriptor::Color0);
-    _deferredBuffer->Bind(1, TextureDescriptor::Color1);
-    _deferredBuffer->Bind(2, TextureDescriptor::Color2);
-    _deferredBuffer->Bind(3, TextureDescriptor::Color3);
+    _deferredBuffer->Bind(0, TextureDescriptor::AttachmentType::Color0);
+    _deferredBuffer->Bind(1, TextureDescriptor::AttachmentType::Color1);
+    _deferredBuffer->Bind(2, TextureDescriptor::AttachmentType::Color2);
+    _deferredBuffer->Bind(3, TextureDescriptor::AttachmentType::Color3);
     _lightTexture->Bind(4);
 
     GenericDrawCommand cmd;
@@ -235,19 +235,19 @@ void DeferredShadingRenderer::updateResolution(U16 width, U16 height) {
 
     _renderQuads[0]->setDimensions(vec4<F32>(0, 0, width, height));
     _renderQuads[1]->setDimensions(vec4<F32>(width / 2, 0, width, height / 2));
-    _renderQuads[2]->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));
-    _renderQuads[2]->setCorner(Quad3D::TOP_RIGHT,
+    _renderQuads[2]->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, height, 0));
+    _renderQuads[2]->setCorner(Quad3D::CornerLocation::TOP_RIGHT,
                                vec3<F32>(width / 2, height, 0));
-    _renderQuads[2]->setCorner(Quad3D::BOTTOM_LEFT,
+    _renderQuads[2]->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
                                vec3<F32>(0, height / 2, 0));
-    _renderQuads[2]->setCorner(Quad3D::BOTTOM_RIGHT,
+    _renderQuads[2]->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
                                vec3<F32>(width / 2, height / 2, 0));
-    _renderQuads[3]->setCorner(Quad3D::TOP_LEFT,
+    _renderQuads[3]->setCorner(Quad3D::CornerLocation::TOP_LEFT,
                                vec3<F32>(width / 2, height, 0));
-    _renderQuads[3]->setCorner(Quad3D::TOP_RIGHT, vec3<F32>(width, height, 0));
-    _renderQuads[3]->setCorner(Quad3D::BOTTOM_LEFT,
+    _renderQuads[3]->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(width, height, 0));
+    _renderQuads[3]->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,
                                vec3<F32>(width / 2, height / 2, 0));
-    _renderQuads[3]->setCorner(Quad3D::BOTTOM_RIGHT,
+    _renderQuads[3]->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT,
                                vec3<F32>(width, height / 2, 0));
     // Using a separate, smaller render quad for debug view because it's faster
     // than resizing a quad back and forth -Ionut

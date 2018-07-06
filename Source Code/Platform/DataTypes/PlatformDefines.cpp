@@ -39,7 +39,7 @@ bool preAssert(const bool expression, const char* failMessage) {
             if (msgBox) {
                 msgBox->setTitle("Assertion Failed!");
                 msgBox->setMessage(stringImpl("Assert: ") + failMessage);
-                msgBox->setMessageType(GUIMessageBox::MESSAGE_ERROR);
+                msgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
                 msgBox->show();
             }
         }

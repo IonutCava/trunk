@@ -44,23 +44,24 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node, const stringImpl& name)
       _updateTimer(Time::ElapsedMilliseconds()),
       _childQueue(0),
       _bbAddExclusionList(0),
-      _usageContext(NODE_DYNAMIC) {
+      _usageContext(UsageContext::NODE_DYNAMIC) {
     assert(_node != nullptr);
 
     setName(name);
     _instanceID = (node->GetRef() - 1);
     Material* const materialTpl = _node->getMaterialTpl();
 
-    _components[SGNComponent::SGN_COMP_ANIMATION].reset(nullptr);
+    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_ANIMATION)]
+        .reset(nullptr);
 
-    _components[SGNComponent::SGN_COMP_NAVIGATION].reset(
-        MemoryManager_NEW NavigationComponent(*this));
+    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_NAVIGATION)]
+        .reset(MemoryManager_NEW NavigationComponent(*this));
 
-    _components[SGNComponent::SGN_COMP_PHYSICS].reset(
-        MemoryManager_NEW PhysicsComponent(*this));
+    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_PHYSICS)]
+        .reset(MemoryManager_NEW PhysicsComponent(*this));
 
-    _components[SGNComponent::SGN_COMP_RENDERING].reset(
-        MemoryManager_NEW RenderingComponent(
+    _components[to_uint(SGNComponent::ComponentType::SGN_COMP_RENDERING)]
+        .reset(MemoryManager_NEW RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                    : nullptr,
             *this));
@@ -77,7 +78,7 @@ SceneGraphNode::~SceneGraphNode() {
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
                                     const SceneNodeType& type) {
-    if (!bitCompare(_bbAddExclusionList, enum_to_uint(type))) {
+    if (!bitCompare(_bbAddExclusionList, to_uint(type))) {
         _boundingBox.Add(bb);
         if (_parent) {
             _parent->getBoundingBox().setComputed(false);
@@ -154,8 +155,9 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
 
 SceneGraphNode& SceneGraphNode::addNode(SceneNode* const node,
                                         const stringImpl& name) {
-    STUBBED("SceneGraphNode: This add/create node system is an ugly HACK "
-            "so it should probably be removed soon! -Ionut")
+    STUBBED(
+        "SceneGraphNode: This add/create node system is an ugly HACK "
+        "so it should probably be removed soon! -Ionut")
 
     if (SceneNodeGraphAttorney::hasSGNParent(*node)) {
         node->AddRef();
@@ -174,8 +176,9 @@ SceneGraphNode& SceneGraphNode::createNode(SceneNode* const node,
     // If we did not supply a custom name use the SceneNode's name
     SceneGraphNode* sceneGraphNode = MemoryManager_NEW SceneGraphNode(
         node, name.empty() ? node->getName() : name);
-    DIVIDE_ASSERT(sceneGraphNode != nullptr,
-    "SceneGraphNode::createNode error: New node allocation failed");
+    DIVIDE_ASSERT(
+        sceneGraphNode != nullptr,
+        "SceneGraphNode::createNode error: New node allocation failed");
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
     // Do all the post load operations on the SceneNode
@@ -294,7 +297,10 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     // update local time
     _elapsedTime += deltaTime;
     // update all of the internal components (animation, physics, etc)
-    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
+    for (U8 i = 0;
+         i < to_uint(
+                 SGNComponent::ComponentType::COUNT);
+         ++i) {
         if (_components[i]) {
             _components[i]->update(deltaTime);
         }
@@ -306,7 +312,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
             it.second->getComponent<PhysicsComponent>()->transformUpdated(true);
         }
     }
-    assert(_node->getState() == RES_LOADED);
+    assert(_node->getState() == ResourceState::RES_LOADED);
     // Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
 
     // Compute the BoundingBox if it isn't already
@@ -339,7 +345,8 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  const RenderStage& renderStage) {
     if (_reset[renderStage]) {
         _reset[renderStage] = false;
-        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
+        if (getParent() &&
+            !GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
             for (SceneGraphNode::NodeChildren::value_type& it :
                  getParent()->getChildren()) {
                 if (it.second->getComponent<AnimationComponent>()) {
@@ -350,7 +357,10 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
         }
     }
 
-    for (U8 i = 0; i < SGNComponent::ComponentType_PLACEHOLDER; ++i) {
+    for (U8 i = 0;
+         i < to_uint(
+                 SGNComponent::ComponentType::COUNT);
+         ++i) {
         if (_components[i]) {
             if (!_components[i]->onDraw(renderStage)) {
                 return false;

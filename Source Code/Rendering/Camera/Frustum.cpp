@@ -11,12 +11,13 @@ Frustum::Frustum(Camera& parentCamera)
 
 Frustum::FrustCollision Frustum::ContainsPoint(const vec3<F32>& point) const {
     for (const Plane<F32>& frustumPlane : _frustumPlanes) {
-        if (frustumPlane.classifyPoint(point) != Plane<F32>::POSITIVE_SIDE) {
-            return FRUSTUM_OUT;
+        if (frustumPlane.classifyPoint(point) !=
+            Plane<F32>::Side::POSITIVE_SIDE) {
+            return FrustCollision::FRUSTUM_OUT;
         }
     }
 
-    return FRUSTUM_IN;
+    return FrustCollision::FRUSTUM_IN;
 }
 
 Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center,
@@ -27,15 +28,15 @@ Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center,
         distance = frustumPlane.getDistance(center);
 
         if (distance < -radius) {
-            return FRUSTUM_OUT;
+            return FrustCollision::FRUSTUM_OUT;
         }
 
         if (std::fabs(distance) < radius) {
-            return FRUSTUM_INTERSECT;
+            return FrustCollision::FRUSTUM_INTERSECT;
         }
     }
 
-    return FRUSTUM_IN;
+    return FrustCollision::FRUSTUM_IN;
 }
 
 Frustum::FrustCollision Frustum::ContainsBoundingBox(
@@ -50,20 +51,21 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(
 
         for (U8 c = 0; c < 8; ++c) {
             if (frustumPlane.classifyPoint(boxCorners[c]) ==
-                Plane<F32>::NEGATIVE_SIDE) {
+                Plane<F32>::Side::NEGATIVE_SIDE) {
                 iPtIn = 0;
                 iInCount--;
             }
         }
 
         if (iInCount == 0) {
-            return FRUSTUM_OUT;
+            return FrustCollision::FRUSTUM_OUT;
         }
 
         iTotalIn += iPtIn;
     }
 
-    return iTotalIn == 6 ? FRUSTUM_IN : FRUSTUM_INTERSECT;
+    return iTotalIn == 6 ? FrustCollision::FRUSTUM_IN
+                         : FrustCollision::FRUSTUM_INTERSECT;
 }
 
 void Frustum::Extract() {

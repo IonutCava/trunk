@@ -18,7 +18,7 @@ enum class RenderStage : U32;
 /// Technically, it's a post render operation
 class PreRenderOperator {
    protected:
-    enum PostFXRenderStage {
+    enum class PostFXRenderStage : U32 {
         FXAA_STAGE = toBit(1),
         SSAO_STAGE = toBit(2),
         DOF_STAGE = toBit(3),

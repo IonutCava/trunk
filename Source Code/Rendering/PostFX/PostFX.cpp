@@ -78,23 +78,23 @@ void PostFX::init(const vec2<U16>& resolution) {
         postFXShader.setThreadedLoading(false);
         std::stringstream ss;
         ss << "TEX_BIND_POINT_SCREEN "
-           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_SCREEN))
-           << ", ";
+           << std::to_string(to_uint(
+                  TexOperatorBindPoint::TEX_BIND_POINT_SCREEN)) << ", ";
         ss << "TEX_BIND_POINT_BLOOM "
-           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_BLOOM))
-           << ", ";
+           << std::to_string(to_uint(
+                  TexOperatorBindPoint::TEX_BIND_POINT_BLOOM)) << ", ";
         ss << "TEX_BIND_POINT_SSAO "
-           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_SSAO))
-           << ", ";
+           << std::to_string(to_uint(
+                  TexOperatorBindPoint::TEX_BIND_POINT_SSAO)) << ", ";
         ss << "TEX_BIND_POINT_NOISE "
-           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_NOISE))
-           << ", ";
+           << std::to_string(to_uint(
+                  TexOperatorBindPoint::TEX_BIND_POINT_NOISE)) << ", ";
         ss << "TEX_BIND_POINT_BORDER "
-           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_BORDER))
-           << ", ";
+           << std::to_string(to_uint(
+                  TexOperatorBindPoint::TEX_BIND_POINT_BORDER)) << ", ";
         ss << "TEX_BIND_POINT_UNDERWATER "
-           << stringAlg::fromBase(
-                  std::to_string((U32)TEX_BIND_POINT_UNDERWATER));
+           << std::to_string(to_uint(
+                  TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
         postFXShader.setPropertyList(stringAlg::toBase(ss.str()));
         _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
 
@@ -127,7 +127,8 @@ void PostFX::init(const vec2<U16>& resolution) {
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
             ShaderType::FRAGMENT_SHADER, "outputDepth"));  // 8
         _shaderFunctionSelection.resize(
-            _postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT_SHADER),
+            _postProcessingShader->GetSubroutineUniformCount(
+                ShaderType::FRAGMENT_SHADER),
             0);
     }
 
@@ -147,17 +148,20 @@ void PostFX::createOperators() {
 
     PreRenderStageBuilder& stageBuilder = PreRenderStageBuilder::getInstance();
     Framebuffer* screenBuffer =
-        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN);
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN);
     Framebuffer* depthBuffer =
-        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH);
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_DEPTH);
 
     if (_gfx->anaglyphEnabled()) {
         ResourceDescriptor anaglyph("anaglyph");
         anaglyph.setThreadedLoading(false);
         _anaglyphShader = CreateResource<ShaderProgram>(anaglyph);
-        _anaglyphShader->UniformTexture("texRightEye",
-                                        TEX_BIND_POINT_RIGHT_EYE);
-        _anaglyphShader->UniformTexture("texLeftEye", TEX_BIND_POINT_LEFT_EYE);
+        _anaglyphShader->UniformTexture(
+            "texRightEye",
+            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
+        _anaglyphShader->UniformTexture(
+            "texLeftEye",
+            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
     }
 
     // Bloom and Ambient Occlusion generate textures that are applied in the
@@ -232,10 +236,14 @@ void PostFX::displayScene() {
     if (_gfx->anaglyphEnabled()) {
         drawShader = _anaglyphShader;
         _anaglyphShader->bind();
-        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
-            ->Bind(TEX_BIND_POINT_RIGHT_EYE);  // right eye buffer
-        _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)
-            ->Bind(TEX_BIND_POINT_LEFT_EYE);  // left eye buffer
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+            ->Bind(to_uint(
+                TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));  // right eye
+                                                                   // buffer
+        _gfx->getRenderTarget(GFXDevice::RenderTarget::RENDER_TARGET_ANAGLYPH)
+            ->Bind(to_uint(
+                TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));  // left eye
+                                                                  // buffer
     } else {
         drawShader = _postProcessingShader;
         _postProcessingShader->bind();
@@ -243,34 +251,40 @@ void PostFX::displayScene() {
                                               _shaderFunctionSelection);
 
 #ifdef _DEBUG
-        _gfx->getRenderTarget(_depthPreview ? GFXDevice::RENDER_TARGET_DEPTH
-                                            : GFXDevice::RENDER_TARGET_SCREEN)
-            ->Bind(TEX_BIND_POINT_SCREEN, _depthPreview
-                                              ? TextureDescriptor::Depth
-                                              : TextureDescriptor::Color0);
+        _gfx->getRenderTarget(
+                  _depthPreview ? GFXDevice::RenderTarget::RENDER_TARGET_DEPTH
+                                : GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
+            ->Bind(to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
+                   _depthPreview ? TextureDescriptor::AttachmentType::Depth
+                                 : TextureDescriptor::AttachmentType::Color0);
 #else
         _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
             ->Bind(TEX_BIND_POINT_SCREEN);
 #endif
 
         if (_underwaterTexture) {
-            _underwaterTexture->Bind(TEX_BIND_POINT_UNDERWATER);
+            _underwaterTexture->Bind(
+                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
         }
 
         if (_noise) {
-            _noise->Bind(TEX_BIND_POINT_NOISE);
+            _noise->Bind(
+                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
         }
 
         if (_screenBorder) {
-            _screenBorder->Bind(TEX_BIND_POINT_BORDER);
+            _screenBorder->Bind(
+                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
         }
 
         if (_bloomFB) {
-            _bloomFB->Bind(TEX_BIND_POINT_BLOOM);
+            _bloomFB->Bind(
+                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
         }
 
         if (_SSAO_FB) {
-            _SSAO_FB->Bind(TEX_BIND_POINT_SSAO);
+            _SSAO_FB->Bind(
+                to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
         }
     }
 
@@ -286,7 +300,8 @@ void PostFX::idle() {
     // Update states
 
     if (!_postProcessingShader) {
-        init(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
+        init(GFX_DEVICE.getRenderTarget(
+                            GFXDevice::RenderTarget::RENDER_TARGET_SCREEN)
                  ->getResolution());
     }
 
@@ -323,15 +338,23 @@ void PostFX::idle() {
     // recreate only the fragment shader
     if (recompileShader) {
         _postProcessingShader->recompile(false, true);
-        _postProcessingShader->UniformTexture("texScreen",
-                                              TEX_BIND_POINT_SCREEN);
-        _postProcessingShader->UniformTexture("texBloom", TEX_BIND_POINT_BLOOM);
-        _postProcessingShader->UniformTexture("texSSAO", TEX_BIND_POINT_SSAO);
-        _postProcessingShader->UniformTexture("texNoise", TEX_BIND_POINT_NOISE);
-        _postProcessingShader->UniformTexture("texVignette",
-                                              TEX_BIND_POINT_BORDER);
-        _postProcessingShader->UniformTexture("texWaterNoiseNM",
-                                              TEX_BIND_POINT_UNDERWATER);
+        _postProcessingShader->UniformTexture(
+            "texScreen",
+            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+        _postProcessingShader->UniformTexture(
+            "texBloom",
+            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
+        _postProcessingShader->UniformTexture(
+            "texSSAO", to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
+        _postProcessingShader->UniformTexture(
+            "texNoise",
+            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+        _postProcessingShader->UniformTexture(
+            "texVignette",
+            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+        _postProcessingShader->UniformTexture(
+            "texWaterNoiseNM",
+            to_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     }
 
     if (_enableBloom) {

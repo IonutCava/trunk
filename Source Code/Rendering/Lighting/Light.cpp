@@ -26,7 +26,7 @@ Light::Light(const F32 range, const LightType& type)
       _shadowMapInfo(nullptr),
       _score(0.0f) {
     // All lights default to fully dynamic for now.
-    setLightMode(LIGHT_MODE_MOVABLE);
+    setLightMode(LightMode::LIGHT_MODE_MOVABLE);
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         _shadowProperties._lightVP[i].identity();
     }
@@ -45,7 +45,8 @@ Light::Light(const F32 range, const LightType& type)
     _properties._attenuation =
         vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f);  // constAtt, linearAtt, quadAtt
 
-    memset(_dirty, true, PropertyType_PLACEHOLDER * sizeof(bool));
+    memset(_dirty, true,
+           to_uint(PropertyType::COUNT) * sizeof(bool));
     _enabled = true;
     _renderState.addToDrawExclusionMask(RenderStage::DEPTH_STAGE);
 }
@@ -61,7 +62,7 @@ bool Light::load(const stringImpl& name) {
 }
 
 bool Light::unload() {
-    if (getState() != RES_LOADED && getState() != RES_LOADING) {
+    if (getState() != ResourceState::RES_LOADED && getState() != ResourceState::RES_LOADING) {
         return true;
     }
 
@@ -91,10 +92,10 @@ void Light::onCameraChange() {
         return;
     }
 
-    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
+    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
 
-    if (_type != LIGHT_TYPE_DIRECTIONAL) {
-        if (_mode == LIGHT_MODE_MOVABLE) {
+    if (_type != LightType::LIGHT_TYPE_DIRECTIONAL) {
+        if (_mode == LightMode::LIGHT_MODE_MOVABLE) {
             const vec3<F32>& newPosition =
                 _lightSGN->getComponent<PhysicsComponent>()->getPosition();
             if (_properties._position.xyz() != newPosition) {
@@ -116,7 +117,7 @@ void Light::onCameraChange() {
 
 void Light::setPosition(const vec3<F32>& newPosition) {
     // Togglable lights can't be moved.
-    if (_mode == LIGHT_MODE_TOGGLABLE) {
+    if (_mode == LightMode::LIGHT_MODE_TOGGLABLE) {
         Console::errorfn(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(),
                          "Light_Togglable", "LIGHT_POSITION");
         return;
@@ -124,27 +125,27 @@ void Light::setPosition(const vec3<F32>& newPosition) {
 
     _properties._position.xyz(newPosition);
 
-    if (_mode == LIGHT_MODE_MOVABLE) {
+    if (_mode == LightMode::LIGHT_MODE_MOVABLE) {
         _lightSGN->getComponent<PhysicsComponent>()->setPosition(newPosition);
     }
     _updateLightBB = true;
 
-    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
+    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
 }
 
 void Light::setDiffuseColor(const vec3<F32>& newDiffuseColor) {
     _properties._diffuse.set(newDiffuseColor, _properties._diffuse.a);
-    _dirty[PROPERTY_TYPE_VISUAL] = true;
+    _dirty[to_uint(PropertyType::PROPERTY_TYPE_VISUAL)] = true;
 }
 
 void Light::setRange(F32 range) {
     _properties._attenuation.w = range;
-    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
+    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
 }
 
 void Light::setDirection(const vec3<F32>& newDirection) {
     // Togglable lights can't be moved.
-    if (_mode == LIGHT_MODE_TOGGLABLE) {
+    if (_mode == LightMode::LIGHT_MODE_TOGGLABLE) {
         Console::errorfn(Locale::get("WARNING_ILLEGAL_PROPERTY"), getGUID(),
                          "Light_Togglable", "LIGHT_DIRECTION");
         return;
@@ -152,19 +153,19 @@ void Light::setDirection(const vec3<F32>& newDirection) {
     vec3<F32> newDirectionNormalized(newDirection);
     newDirectionNormalized.normalize();
 
-    if (_type == LIGHT_TYPE_SPOT) {
+    if (_type == LightType::LIGHT_TYPE_SPOT) {
         _properties._direction.xyz(newDirectionNormalized);
     } else {
         _properties._position.xyz(newDirectionNormalized);
     }
 
     _updateLightBB = true;
-    _dirty[PROPERTY_TYPE_PHYSICAL] = true;
+    _dirty[to_uint(PropertyType::PROPERTY_TYPE_PHYSICAL)] = true;
 }
 
 void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                         SceneState& sceneState) {
-    if (_type == LIGHT_TYPE_DIRECTIONAL) {
+    if (_type == LightType::LIGHT_TYPE_DIRECTIONAL) {
         return;
     }
 
@@ -181,15 +182,14 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 }
 
 bool Light::computeBoundingBox(SceneGraphNode& sgn) {
-    if (_type == LIGHT_TYPE_DIRECTIONAL) {
+    if (_type == LightType::LIGHT_TYPE_DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _properties._position.xyz() *
             Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
         sgn.getBoundingBox().set(directionalLightPosition - vec3<F32>(10),
                                  directionalLightPosition + vec3<F32>(10));
     } else {
-        sgn.getBoundingBox().set(vec3<F32>(-getRange()),
-                                 vec3<F32>(getRange()));
+        sgn.getBoundingBox().set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
     }
 
     _updateLightBB = true;
@@ -254,7 +254,7 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState) {
     sm->render(sceneRenderState, _callback);
     sm->postRender();
 
-    _dirty[PROPERTY_TYPE_SHADOW] = true;
+    _dirty[to_uint(PropertyType::PROPERTY_TYPE_SHADOW)] = true;
 }
 
 void Light::setLightMode(const LightMode& mode) { _mode = mode; }

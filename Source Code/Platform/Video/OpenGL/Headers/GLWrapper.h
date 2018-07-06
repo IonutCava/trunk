@@ -154,7 +154,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Return the OpenGL framebuffer handle bound and assigned for the specified
     /// usage
     inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage) {
-        return _activeFBID[usage];
+        return _activeFBID[to_uint(usage)];
     }
     /// Change the clear color for the specified renderTarget
     static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);

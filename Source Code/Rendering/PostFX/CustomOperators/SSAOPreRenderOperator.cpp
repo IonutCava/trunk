@@ -11,12 +11,12 @@ namespace Divide {
 SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler)
-    : PreRenderOperator(SSAO_STAGE, resolution, sampler), _outputFB(result) {
+    : PreRenderOperator(PostFXRenderStage::SSAO_STAGE, resolution, sampler), _outputFB(result) {
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RGB8,
                                        GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(*_internalSampler);
-    _outputFB->AddAttachment(outputDescriptor, TextureDescriptor::Color0);
+    _outputFB->AddAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
     _outputFB->Create(_resolution.width, _resolution.height);
     ResourceDescriptor ssao("SSAOPass");
     ssao.setThreadedLoading(false);
@@ -36,7 +36,7 @@ void SSAOPreRenderOperator::operation() {
 
     _outputFB->Begin(Framebuffer::defaultPolicy());
     _inputFB[0]->Bind(0);                            // screen
-    _inputFB[1]->Bind(1, TextureDescriptor::Depth);  // depth
+    _inputFB[1]->Bind(1, TextureDescriptor::AttachmentType::Depth);  // depth
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                           _ssaoShader);
     _outputFB->End();

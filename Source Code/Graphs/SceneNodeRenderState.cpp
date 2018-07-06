@@ -27,16 +27,16 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(U32 stageMask) {
-    assert((stageMask & ~(enum_to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
+    assert((stageMask & ~(to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
     _exclusionMask &= ~stageMask;
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(U32 stageMask) {
-    assert((stageMask & ~(enum_to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
+    assert((stageMask & ~(to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
     _exclusionMask |= stageMask;
 }
 
 bool SceneNodeRenderState::getDrawState(const RenderStage& currentStage) const {
-    return _drawState && !bitCompare(_exclusionMask, enum_to_uint(currentStage));
+    return _drawState && !bitCompare(_exclusionMask, to_uint(currentStage));
 }
 };

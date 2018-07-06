@@ -39,7 +39,7 @@ namespace Divide {
 enum class RendererType : U32 {
     RENDERER_FORWARD_PLUS = 0,
     RENDERER_DEFERRED_SHADING = 1,
-    RendererType_PLACEHOLDER = 2
+    COUNT
 };
 
 /// A n abstract renderer used to switch between different rendering techniques:
