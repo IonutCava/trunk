@@ -87,7 +87,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _resCache = std::make_unique<ResourceCache>(*_platformContext);
 
     FrameListenerManager::createInstance();
-    OpenCLInterface::createInstance();
+    //OpenCLInterface::createInstance();
 }
 
 Kernel::~Kernel()
@@ -645,10 +645,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
-    initError = OpenCLInterface::instance().init();
+    /*initError = OpenCLInterface::instance().init();
     if (initError != ErrorCode::NO_ERR) {
         return initError;
-    }
+    }*/
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
     _renderPassManager = std::make_unique<RenderPassManager>(*this, _platformContext->gfx());
@@ -731,7 +731,7 @@ void Kernel::shutdown() {
     ECS::Terminate();
 
     ShadowMap::destroyShadowMaps(_platformContext->gfx());
-    OpenCLInterface::instance().deinit();
+    //OpenCLInterface::instance().deinit();
     _renderPassManager.reset();
 
     Camera::destroyPool();

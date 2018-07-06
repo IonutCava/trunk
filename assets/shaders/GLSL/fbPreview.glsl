@@ -70,6 +70,7 @@ uniform int layer;
 void main()
 {
     _colourOut = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel);
+    _colourOut.a = 1.0;
 }
 
 -- Fragment.Layered.LinearDepth

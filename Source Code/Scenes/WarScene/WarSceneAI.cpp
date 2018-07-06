@@ -133,16 +133,14 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
     _faction[1]->addEnemyTeam(_faction[0]->getTeamID());
 
-    bool state = addUnits();
-    if (state || continueOnErrors) {
-        Scene::initializeAI(continueOnErrors);
+    if (addUnits()) {
+        //_sceneGraph->findNode("Soldier1")->setActive(false);
+        //_sceneGraph->findNode("Soldier2")->setActive(false);
+        //_sceneGraph->findNode("Soldier3")->setActive(false);
+        return true;
     }
 
-    //_sceneGraph->findNode("Soldier1")->setActive(false);
-    //_sceneGraph->findNode("Soldier2")->setActive(false);
-    //_sceneGraph->findNode("Soldier3")->setActive(false);
-
-    return state;
+    return false;
 }
 
 bool WarScene::removeUnits() {
@@ -416,7 +414,7 @@ bool WarScene::deinitializeAI(bool continueOnErrors) {
         for (U8 i = 0; i < 2; ++i) {
             MemoryManager::DELETE(_faction[i]);
         }
-        return Scene::deinitializeAI(continueOnErrors);
+        return true;
     }
 
     return false;

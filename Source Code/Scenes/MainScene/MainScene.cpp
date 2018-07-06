@@ -189,7 +189,37 @@ bool MainScene::load(const stringImpl& name) {
     constants.set("_waterShininess", GFX::PushConstantType::FLOAT, 50.0f);
     constants.set("_noiseFactor", GFX::PushConstantType::VEC2, vec2<F32>(10.0f, 10.0f));
     constants.set("_noiseTile", GFX::PushConstantType::VEC2, vec2<F32>(0.1f, 0.1f));
-    return loadState;
+
+
+    if (loadState) {
+        _taskTimers.push_back(0.0); // Sun
+        _guiTimersMS.push_back(0.0);  // Fps
+        _guiTimersMS.push_back(0.0);  // Time
+
+        _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
+        _sunvector =
+            vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
+                -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
+
+        removeTask(g_boxMoveTaskID);
+        g_boxMoveTaskID = CreateTask(context(),
+            DELEGATE_BIND(&MainScene::test,
+                this,
+                std::placeholders::_1,
+                stringImpl("test"),
+                CallbackParam::TYPE_STRING));
+        registerTask(g_boxMoveTaskID);
+
+        ResourceDescriptor beepSound("beep sound");
+        beepSound.setResourceName("beep.wav");
+        beepSound.setResourceLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
+        beepSound.setFlag(false);
+        _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
+
+        return true;
+    }
+
+    return false;
 }
 
 U16 MainScene::registerInputActions() {
@@ -299,34 +329,6 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
             }
         }
     }
-}
-
-bool MainScene::loadResources(bool continueOnErrors) {
-    _taskTimers.push_back(0.0); // Sun
-    _guiTimersMS.push_back(0.0);  // Fps
-    _guiTimersMS.push_back(0.0);  // Time
-
-    _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
-    _sunvector =
-        vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
-                  -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
-
-    removeTask(g_boxMoveTaskID);
-    g_boxMoveTaskID = CreateTask(context(),
-                                 DELEGATE_BIND(&MainScene::test,
-                                               this,
-                                               std::placeholders::_1,
-                                               stringImpl("test"),
-                                               CallbackParam::TYPE_STRING));
-    registerTask(g_boxMoveTaskID);
-
-    ResourceDescriptor beepSound("beep sound");
-    beepSound.setResourceName("beep.wav");
-    beepSound.setResourceLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
-    beepSound.setFlag(false);
-    _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
-
-    return true;
 }
 
 void MainScene::postLoadMainThread() {

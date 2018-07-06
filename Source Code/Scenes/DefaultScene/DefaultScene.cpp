@@ -39,17 +39,13 @@ bool DefaultScene::load(const stringImpl& name) {
 
     state().saveLoadDisabled(true);
 
+    _taskTimers.push_back(0.0);
+
     return loadState;
 }
 
 void DefaultScene::processGUI(const U64 deltaTimeUS) {
     Scene::processGUI(deltaTimeUS);
-}
-
-bool DefaultScene::loadResources(bool continueOnErrors) {
-    _taskTimers.push_back(0.0);
-
-    return true;
 }
 
 void DefaultScene::postLoadMainThread() {

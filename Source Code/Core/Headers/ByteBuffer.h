@@ -52,7 +52,7 @@ class ByteBuffer {
 
     // constructor
     ByteBuffer(size_t res);
-
+    
     void clear() noexcept;
 
     template <typename T>

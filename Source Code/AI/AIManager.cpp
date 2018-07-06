@@ -34,10 +34,6 @@ AIManager::~AIManager()
     destroy();
 }
 
-void AIManager::initialize() {
-
-}
-
 /// Clear up any remaining AIEntities
 void AIManager::destroy() {
     {

@@ -165,8 +165,12 @@ Scene* SceneManager::load(stringImpl sceneName) {
     bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
 
     if (sceneNotLoaded) {
-        XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, sceneName, loadingScene, _platformContext->config());
-        state = Attorney::SceneManager::load(*loadingScene, sceneName);
+        state = Attorney::SceneManager::loadFromCache(*loadingScene, sceneName);
+        if (!state) {
+            XML::loadScene(Paths::g_xmlDataLocation + Paths::g_scenesLocation, sceneName, loadingScene, _platformContext->config());
+            state = Attorney::SceneManager::load(*loadingScene, sceneName);
+        }
+        
         if (state) {
             Attorney::SceneManager::postLoad(*loadingScene);
         }
@@ -180,13 +184,9 @@ Scene* SceneManager::load(stringImpl sceneName) {
 bool SceneManager::unloadScene(Scene* scene) {
     assert(scene != nullptr);
     
-    if (Attorney::SceneManager::deinitializeAI(*scene)) {
-        _platformContext->gui().onUnloadScene(scene);
-        Attorney::SceneManager::onRemoveActive(*scene);
-        return Attorney::SceneManager::unload(*scene);
-    }
-
-    return false;
+    _platformContext->gui().onUnloadScene(scene);
+    Attorney::SceneManager::onRemoveActive(*scene);
+    return Attorney::SceneManager::unload(*scene);
 }
 
 void SceneManager::setActiveScene(Scene* const scene) {

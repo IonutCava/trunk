@@ -42,7 +42,6 @@ public:
 
     bool load(const stringImpl& name) override;
     void postLoadMainThread() override;
-    bool loadResources(bool continueOnErrors) override;
     void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
     void processTasks(const U64 deltaTimeUS) override;
     void processGUI(const U64 deltaTimeUS) override;

@@ -271,7 +271,6 @@ void glFramebuffer::fastBlit(GLuint inputFB,
     queueMipMapRecomputation();
 }
 
-
 void glFramebuffer::blitFrom(const RTBlitParams& params)
 {
     if (!params._inputFB || (params._blitColours.empty() && params._blitDepth.empty())) {
@@ -301,9 +300,29 @@ void glFramebuffer::blitFrom(const RTBlitParams& params)
         GLenum colourAttIn = GL_NONE;
         GLenum colourAttOut = GL_NONE;
         if (!params._blitColours.empty() && hasColour()) {
+            const ColourBlitEntry& entry = params._blitColours.front();
+
             clearMask |= GL_COLOR_BUFFER_BIT;
-            colourAttIn = GL_COLOR_ATTACHMENT0 + params._blitColours.front()._inputIndex;
-            colourAttOut = GL_COLOR_ATTACHMENT0 + params._blitColours.front()._outputIndex;
+            colourAttIn = GL_COLOR_ATTACHMENT0 + entry._inputIndex;
+            colourAttOut = GL_COLOR_ATTACHMENT0 + entry._outputIndex;
+
+
+            const vector<RTAttachment_ptr>& inputAttachments = input->_attachmentPool->get(RTAttachmentType::Colour);
+            const vector<RTAttachment_ptr>& outputAttachments = this->_attachmentPool->get(RTAttachmentType::Colour);
+            const RTAttachment_ptr& inAtt = inputAttachments[entry._inputIndex];
+            const RTAttachment_ptr& outAtt = outputAttachments[entry._outputIndex];
+
+            inAtt->writeLayer(entry._inputLayer);
+            {
+                const BindingState& inState = input->getAttachmentState(static_cast<GLenum>(inAtt->binding()));
+                input->toggleAttachment(inAtt, inState._attState, false);
+            }
+
+            outAtt->writeLayer(entry._outputLayer);
+            {
+                const BindingState& outState = this->getAttachmentState(static_cast<GLenum>(outAtt->binding()));
+                this->toggleAttachment(outAtt, outState._attState, false);
+            }
         }
 
         fastBlit(input->_framebufferHandle, this->_framebufferHandle, inputDim, outputDim, colourAttIn, colourAttOut, clearMask);

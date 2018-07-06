@@ -46,15 +46,16 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 
     const RenderTarget& rt = *inputRT()._rt;
 
-    SamplerDescriptor screenSampler;
+    SamplerDescriptor screenSampler = {};
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);
     screenSampler.setAnisotropy(0);
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
-                                       GFXImageFormat::RGBA8,
+                                       GFXImageFormat::RGB8,
                                        GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(screenSampler);
+    
     {
         //Colour0 holds the LDR screen texture
         vector<RTAttachmentDescriptor> att = {
@@ -70,7 +71,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
         _postFXOutput = _context.renderTargetPool().allocateRT(desc);
     }
 
-    SamplerDescriptor lumaSampler;
+    SamplerDescriptor lumaSampler = {};
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
 
@@ -78,7 +79,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
                                      GFXImageFormat::RED16F,
                                      GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
-    lumaDescriptor.automaticMipMapGeneration(false);
+    lumaDescriptor.automaticMipMapGeneration(true);
     {
         // make the texture square sized and power of two
         U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));
@@ -182,8 +183,7 @@ void PreRenderBatch::execute(const Camera& camera, const FilterStack& stack, GFX
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
 
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._shaderProgramHandle = _luminanceCalc->getID();
+    PipelineDescriptor pipelineDescriptor = {};
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
@@ -197,30 +197,32 @@ void PreRenderBatch::execute(const Camera& camera, const FilterStack& stack, GFX
         // Step 1: Luminance calc
         TextureData data1 = _previousLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
 
-        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        GFX::BeginRenderPassCommand beginRenderPassCmd = {};
         beginRenderPassCmd._target = _currentLuminance._targetID;
         beginRenderPassCmd._name = "DO_LUMINANCE_PASS";
         GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
-        GFX::BindPipelineCommand pipelineCmd;
+        pipelineDescriptor._shaderProgramHandle = _luminanceCalc->getID();
+
+        GFX::BindPipelineCommand pipelineCmd = {};
         pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
         GFX::EnqueueCommand(buffer, pipelineCmd);
 
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set = _context.newDescriptorSet();
         descriptorSetCmd._set->_textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
         descriptorSetCmd._set->_textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
         GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
-        GFX::DrawCommand drawCmd;
+        GFX::DrawCommand drawCmd = {};
         drawCmd._drawCommands.push_back(triangleCmd);
         GFX::EnqueueCommand(buffer, drawCmd);
 
-        GFX::EndRenderPassCommand endRenderPassCmd;
+        GFX::EndRenderPassCommand endRenderPassCmd = {};
         GFX::EnqueueCommand(buffer, endRenderPassCmd);
 
         // Use previous luminance to control adaptive exposure
-        GFX::BlitRenderTargetCommand blitRTCommand;
+        GFX::BlitRenderTargetCommand blitRTCommand = {};
         blitRTCommand._source = _currentLuminance._targetID;
         blitRTCommand._destination = _previousLuminance._targetID;
         blitRTCommand._blitColours.emplace_back();
@@ -235,12 +237,12 @@ void PreRenderBatch::execute(const Camera& camera, const FilterStack& stack, GFX
     }
 
     pipelineDescriptor._shaderProgramHandle = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap)->getID();
-    GFX::BindPipelineCommand pipelineCmd;
+    GFX::BindPipelineCommand pipelineCmd = {};
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::EnqueueCommand(buffer, pipelineCmd);
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set = _context.newDescriptorSet();
     descriptorSetCmd._set->_textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
 
@@ -250,20 +252,20 @@ void PreRenderBatch::execute(const Camera& camera, const FilterStack& stack, GFX
     }
     GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = _postFXOutput._targetID;
     beginRenderPassCmd._name = "DO_TONEMAP_PASS";
     GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
-    GFX::SendPushConstantsCommand pushConstantsCommand;
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants = _toneMapConstants;
     GFX::EnqueueCommand(buffer, pushConstantsCommand);
 
-    GFX::DrawCommand drawCmd;
+    GFX::DrawCommand drawCmd = {};
     drawCmd._drawCommands.push_back(triangleCmd);
     GFX::EnqueueCommand(buffer, drawCmd);
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPassCommand endRenderPassCmd = {};
     GFX::EnqueueCommand(buffer, endRenderPassCmd);
 
     // Execute all LDR based operators

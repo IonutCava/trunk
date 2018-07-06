@@ -286,6 +286,50 @@ bool PingPongScene::load(const stringImpl& name) {
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _currentSky = addSky();
 
+    ResourceDescriptor minge("Ping Pong Ball");
+    _ball = CreateResource<Sphere3D>(_resCache, minge);
+    _ball->setResolution(16);
+    _ball->setRadius(0.1f);
+    _ball->getMaterialTpl()->setDiffuse(FColour(0.4f, 0.4f, 0.4f, 1.0f));
+    _ball->getMaterialTpl()->setShininess(36.8f);
+    _ball->getMaterialTpl()->setSpecular(FColour(0.774597f, 0.774597f, 0.774597f, 1.0f));
+
+    SceneGraphNodeDescriptor ballNodeDescriptor;
+    ballNodeDescriptor._node = _ball;
+    ballNodeDescriptor._name = "PingPongBallSGN";
+    ballNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    ballNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
+    ballNodeDescriptor._isSelectable = false;
+    ballNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
+        to_base(ComponentType::BOUNDS) |
+        to_base(ComponentType::RENDERING) |
+        to_base(ComponentType::RIGID_BODY) |
+        to_base(ComponentType::NAVIGATION) |
+        to_base(ComponentType::NETWORKING);
+    _ballSGN = _sceneGraph->getRoot().addNode(ballNodeDescriptor);
+    _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
+
+    // Add some taunts
+    _quotes.push_back("Ha ha ... even Odin's laughin'!");
+    _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
+    _quotes.push_back(
+        "Ooolee, ole ole ole, see the ball? ... It's past your end");
+    _quotes.push_back(
+        "You're lucky the room's empty. I'd be so ashamed otherwise if I were "
+        "you");
+    _quotes.push_back("It's not the hard. Even a monkey can do it.");
+
+    _guiTimersMS.push_back(0.0);  // Fps
+    _taskTimers.push_back(0.0);  // Light
+
+    _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
+    _paddleCam->fromCamera(*playerCamera());
+    // Position the camera
+    // renderState().getCamera().setPitch(-90);
+    _paddleCam->lockMovement(true);
+    _paddleCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
+
+
     return loadState;
 }
 
@@ -312,54 +356,6 @@ U16 PingPongScene::registerInputActions() {
     _input->addKeyMapping(Input::KeyCode::KC_L, actions);
 
     return actionID++;
-}
-
-bool PingPongScene::loadResources(bool continueOnErrors) {
-    // Create a ball
-    ResourceDescriptor minge("Ping Pong Ball");
-    _ball = CreateResource<Sphere3D>(_resCache, minge);
-    _ball->setResolution(16);
-    _ball->setRadius(0.1f);
-    _ball->getMaterialTpl()->setDiffuse(FColour(0.4f, 0.4f, 0.4f, 1.0f));
-    _ball->getMaterialTpl()->setShininess(36.8f);
-    _ball->getMaterialTpl()->setSpecular(FColour(0.774597f, 0.774597f, 0.774597f, 1.0f));
-
-    SceneGraphNodeDescriptor ballNodeDescriptor;
-    ballNodeDescriptor._node = _ball;
-    ballNodeDescriptor._name = "PingPongBallSGN";
-    ballNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-    ballNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
-    ballNodeDescriptor._isSelectable = false;
-    ballNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
-                                        to_base(ComponentType::BOUNDS) |
-                                        to_base(ComponentType::RENDERING) |
-                                        to_base(ComponentType::RIGID_BODY) |
-                                        to_base(ComponentType::NAVIGATION) |
-                                        to_base(ComponentType::NETWORKING);
-    _ballSGN = _sceneGraph->getRoot().addNode(ballNodeDescriptor);
-    _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
- 
-    // Add some taunts
-    _quotes.push_back("Ha ha ... even Odin's laughin'!");
-    _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
-    _quotes.push_back(
-        "Ooolee, ole ole ole, see the ball? ... It's past your end");
-    _quotes.push_back(
-        "You're lucky the room's empty. I'd be so ashamed otherwise if I were "
-        "you");
-    _quotes.push_back("It's not the hard. Even a monkey can do it.");
-
-    _guiTimersMS.push_back(0.0);  // Fps
-    _taskTimers.push_back(0.0);  // Light
-
-    _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
-    _paddleCam->fromCamera(*playerCamera());
-    // Position the camera
-    // renderState().getCamera().setPitch(-90);
-    _paddleCam->lockMovement(true);
-    _paddleCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
-
-    return true;
 }
 
 void PingPongScene::postLoadMainThread() {

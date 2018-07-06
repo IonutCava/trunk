@@ -648,7 +648,16 @@ bool WarScene::load(const stringImpl& name) {
     }
 
     _sceneReady = true;
-    return loadState;
+    if (loadState) {
+        return initializeAI(true);
+    }
+    return false;
+}
+
+
+bool WarScene::unload() {
+    deinitializeAI(true);
+    return Scene::unload();
 }
 
 U16 WarScene::registerInputActions() {
@@ -736,28 +745,6 @@ void WarScene::toggleCamera(InputParams param) {
     }
 }
 
-bool WarScene::loadResources(bool continueOnErrors) {
-    // Add a first person camera
-    Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
-    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
-    cam->setMoveSpeedFactor(10.0f);
-    cam->setTurnSpeedFactor(10.0f);
-    // Add a third person camera
-    cam = Camera::createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
-    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
-    cam->setMoveSpeedFactor(0.02f);
-    cam->setTurnSpeedFactor(0.01f);
-
-    _guiTimersMS.push_back(0.0);  // Fps
-    _guiTimersMS.push_back(0.0);  // AI info
-    _guiTimersMS.push_back(0.0);  // Game info
-    _taskTimers.push_back(0.0); // Sun animation
-    _taskTimers.push_back(0.0); // animation team 1
-    _taskTimers.push_back(0.0); // animation team 2
-    _taskTimers.push_back(0.0); // light timer
-    return true;
-}
-
 void WarScene::postLoadMainThread() {
     const vec2<U16>& resolution = _context.gfx().renderingResolution();
 
@@ -804,6 +791,26 @@ void WarScene::postLoadMainThread() {
                   "");
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
+
+    // Add a first person camera
+    Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
+    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
+    cam->setMoveSpeedFactor(10.0f);
+    cam->setTurnSpeedFactor(10.0f);
+    // Add a third person camera
+    cam = Camera::createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
+    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
+    cam->setMoveSpeedFactor(0.02f);
+    cam->setTurnSpeedFactor(0.01f);
+
+    _guiTimersMS.push_back(0.0);  // Fps
+    _guiTimersMS.push_back(0.0);  // AI info
+    _guiTimersMS.push_back(0.0);  // Game info
+    _taskTimers.push_back(0.0); // Sun animation
+    _taskTimers.push_back(0.0); // animation team 1
+    _taskTimers.push_back(0.0); // animation team 2
+    _taskTimers.push_back(0.0); // light timer
+
     Scene::postLoadMainThread();
 }
 
