@@ -54,7 +54,7 @@ public:
     void destroy() {}
 };
 
-DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper<DX_API>, final)
+DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
   protected:
     DX_API() : RenderAPIWrapper() {}
     virtual ~DX_API() {}
