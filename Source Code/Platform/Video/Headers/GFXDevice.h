@@ -502,6 +502,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void processVisibleNode(const RenderPassCuller::RenderableNode& node,
                             NodeData& dataOut);
+    vec2<U32> processNodeBucket(VisibleNodeList::iterator nodeIt,
+                                SceneRenderState& sceneRenderState,
+                                vec2<U32> offset,
+                                bool refreshNodeData);
 
   private:
     Camera* _cubeCamera;
@@ -563,7 +567,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     GPUBlock _gpuBlock;
 
-    U32 _lastNodeCount;
     DrawCommandList _drawCommandsCache;
     std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
     typedef vectorImpl<RenderPackage> RenderQueue;

@@ -43,7 +43,7 @@ void GL_API::clearStates(const bool skipTextures,
                          const bool skipScissor) {
 
     if (!skipTextures) {
-        for(U32 i = 0; i < GL_API::_maxTextureUnits; ++i) {
+        for(U16 i = 0; i < to_ushort(GL_API::_maxTextureUnits); ++i) {
             std::pair<GLuint, GLenum>& it  = _textureBoundMap[i];
             GL_API::bindTexture(i, 0, it.second);
         }

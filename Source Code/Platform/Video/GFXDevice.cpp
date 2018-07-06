@@ -45,7 +45,6 @@ GFXDevice::GFXDevice()
     _previewDepthMapShader = nullptr;
     _commandBuildTimer = nullptr;
     // Integers
-    _lastNodeCount = 0;
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;

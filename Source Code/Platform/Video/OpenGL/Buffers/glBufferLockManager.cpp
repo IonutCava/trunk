@@ -35,8 +35,9 @@ void glBufferLockManager::WaitForLockedRange(size_t _lockBeginBytes,
     swapLocks.reserve(_bufferLocks.size());
 
     for (BufferLock& lock : _bufferLocks) {
-        if (testRange.Overlaps(lock._range)) {
-            wait(&lock._syncObj, lock._status);
+        if (testRange.Overlaps(lock._range) &&
+            lock._status == GL_SIGNALED) {
+            lock._status = wait(&lock._syncObj, lock._status);
             cleanup(&lock);
         } else {
             swapLocks.push_back(lock);
@@ -52,15 +53,17 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes,
 
     BufferRange testRange = { _lockBeginBytes, _lockLength };
     for (BufferLock& lock : _bufferLocks) {
-        if (testRange.Overlaps(lock._range) && lock._status != GL_UNSIGNALED) {
-            return;
+        if (testRange.Overlaps(lock._range) && 
+            lock._status == GL_SIGNALED) {
+            WaitForLockedRange(_lockBeginBytes, _lockLength);
+            break;
         }
     }
 
     _bufferLocks.push_back({testRange,
                             glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,
                                         UnusedMask::GL_UNUSED_BIT), 
-                            GL_UNSIGNALED});
+                            GL_SIGNALED});
 
     _lastLockOffset = _lockBeginBytes;
     _lastLockRange = _lockLength;
@@ -68,7 +71,9 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes,
 
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::cleanup(BufferLock* _bufferLock) {
-    glDeleteSync(_bufferLock->_syncObj);
+    GLUtil::_deleteSync(_bufferLock->_syncObj);
+    _bufferLock->_status = GL_UNSIGNALED;
+    _bufferLock->_syncObj = nullptr;
 }
 
 };

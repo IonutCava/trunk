@@ -44,10 +44,11 @@ class glLockManager {
     void Lock();
 
    protected:
-    void wait(GLsync* _syncObj, GLenum& response);
+    GLenum wait(GLsync* _syncObj, GLenum response);
 
    protected:
     GLsync _defaultSync;
+    std::atomic<GLenum> _defaultSyncState;
     // Whether it's the CPU (true) that updates, or the GPU (false)
     bool _CPUUpdates;
 };

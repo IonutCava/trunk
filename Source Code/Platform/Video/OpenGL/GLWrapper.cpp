@@ -77,7 +77,7 @@ GL_API::GL_API()
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
-    _samplerBoundMap.fill(-1);
+    _samplerBoundMap.fill(0);
     _textureBoundMap.fill(std::make_pair(0, GL_NONE));
 }
 

@@ -243,6 +243,13 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glRenderContext);
     glbinding::Binding::initialize();
     glbinding::Binding::useCurrentContext();
+    {
+        GLUtil::_mainContext = glbinding::getCurrentContext();
+        GLUtil::_clientWaitSync = glClientWaitSync;
+        GLUtil::_waitSync = glWaitSync;
+        GLUtil::_fenceSync = glFenceSync;
+        GLUtil::_deleteSync = glDeleteSync;
+    }
     // OpenGL has a nifty error callback system, available in every build
     // configuration if required
 #if defined(ENABLE_GPU_VALIDATION)
@@ -618,7 +625,7 @@ void GL_API::threadedLoadCallback() {
     assert(GLUtil::_mainWindow != nullptr);
     SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glLoadingContext);
     glbinding::Binding::initialize();
-
+    GLUtil::_loadingContext = glbinding::getCurrentContext();
 // Enable OpenGL debug callbacks for this context as well
 #if defined(ENABLE_GPU_VALIDATION)
     glEnable(GL_DEBUG_OUTPUT);

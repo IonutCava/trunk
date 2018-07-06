@@ -104,6 +104,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
 }
 
 void Material::update(const U64 deltaTime) {
+
     for (ShaderInfo& info : _shaderInfo) {
         if (info._shaderCompStage ==
             ShaderInfo::ShaderCompilationStage::PENDING) {

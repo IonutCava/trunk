@@ -367,15 +367,19 @@ void glGenericVertexData::setBuffer(U32 buffer,
         _bufferPersistentData[buffer] = GLUtil::allocPersistentBuffer(
             currentBuffer, bufferSize * sizeFactor, storageMask, accessMask);
 
-        DIVIDE_ASSERT(data != nullptr,
+        DIVIDE_ASSERT(_bufferPersistentData[buffer] != nullptr,
                       "glGenericVertexData error: persistent mapping failed "
                       "when setting the current buffer!");
         _lockManagers[buffer]->WaitForLockedRange(0, bufferSize * sizeFactor);
         // Create sizeFactor copies of the data and store them in the buffer
         for (U8 i = 0; i < sizeFactor; ++i) {
             bufferPtr dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
-            memcpy(dst, data, bufferSize);
-        }
+            if (data != nullptr) {
+                memcpy(dst, data, bufferSize);
+            } else {
+                memset(dst, NULL, bufferSize);
+            }
+       }
     } else {
         GLenum flag =
             isFeedbackBuffer(buffer)

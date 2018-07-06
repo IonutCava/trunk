@@ -52,7 +52,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     };
 
     _particleGPUBuffer->setBuffer(0, 12, sizeof(F32), 1, particleQuad, false,
-                                  false);
+                                  false, true);
     _particleGPUBuffer->getDrawAttribDescriptor(
                             to_uint(
                                 AttribLocation::VERTEX_POSITION))
@@ -98,9 +98,9 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
     U32 particleCount = _particles->totalCount();
 
     _particleGPUBuffer->setBuffer(1, particleCount * 3, 4 * sizeof(F32), 1,
-                                  NULL, true, true, /*true*/ false);
+                                  NULL, true, true, true);
     _particleGPUBuffer->setBuffer(2, particleCount * 3, 4 * sizeof(U8), 1, NULL,
-                                  true, true, /*true*/ false);
+                                  true, true, true);
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 4 * sizeof(F32), 0, GFXDataFormat::FLOAT_32);
