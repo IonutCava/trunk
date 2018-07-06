@@ -59,7 +59,7 @@ glUniformBuffer::~glUniformBuffer()
 }
 
 void glUniformBuffer::destroy() {
-    if (_UBOId > 0) {
+    if (_UBOid > 0) {
         if (_persistentMapped) {
             _lockManager->WaitForLockedRange(0, _allignedBufferSize, false);
         } else {
