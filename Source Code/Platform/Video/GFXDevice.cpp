@@ -717,7 +717,7 @@ void GFXDevice::buildDrawCommands(
     }
     vectorAlg::vecSize nodeCount = visibleNodes.size();
     vectorImpl<IndirectDrawCommand> drawCommands;
-    drawCommands.reserve(nodeCount + 1);
+    drawCommands.resize(nodeCount + 1);
     // Loop over the list of nodes
     for (vectorAlg::vecSize i = 0; i < nodeCount; ++i) {
         SceneGraphNode* const crtNode = visibleNodes[i];
@@ -727,24 +727,12 @@ void GFXDevice::buildDrawCommands(
             continue;
         }
         const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-            renderable->getDrawCommands(sceneRenderState,
+            renderable->getDrawCommands(1 + i, sceneRenderState,
                                         getRenderStage());
         for (const GenericDrawCommand& cmd : nodeDrawCommands) {
-            drawCommands.push_back(cmd.cmd());
+            drawCommands[cmd.cmd().baseInstance] = cmd.cmd();
         }
     }
-
-    drawCommands.erase(
-        std::remove_if(std::begin(drawCommands), std::end(drawCommands),
-                       [](IndirectDrawCommand& indirectCommand)
-                       -> bool { return indirectCommand.count == 0; }),
-        std::end(drawCommands));
-
-    U32 currentIndex = 0;
-    for (IndirectDrawCommand& indirectCommand : drawCommands) {
-        indirectCommand.baseInstance = currentIndex++;
-    }
-
     uploadDrawCommands(drawCommands);
 }
 

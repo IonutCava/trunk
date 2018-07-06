@@ -126,7 +126,7 @@ bool GL_API::initShaders() {
     // shader
     // Add version as the first shader statement, followed by copyright notice
     glswAddDirectiveToken(
-        "", "#version 430 core\n/*“Copyright 2009-2015 DIVIDE-Studio”*/");
+        "", "#version 440 core\n/*“Copyright 2009-2015 DIVIDE-Studio”*/");
     glswAddDirectiveToken("",
                           "#extension GL_ARB_shader_draw_parameters : require");
 // Add current build environment information to the shaders

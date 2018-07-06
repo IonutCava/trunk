@@ -65,7 +65,7 @@ class glUniformBuffer final : public ShaderBuffer {
                    U32 bindIndex);
 
    protected:
-    vec3<U32> _currentBindConfig;
+    static vec4<U32> _currentBindConfig;
 
     GLuint _UBOid;
     bufferPtr _mappedBuffer;

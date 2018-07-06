@@ -8,6 +8,8 @@
 
 namespace Divide {
 
+vec4<U32> glUniformBuffer::_currentBindConfig(Config::PRIMITIVE_RESTART_INDEX_L);
+
 glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
                                  bool persistentMapped)
     : ShaderBuffer(bufferName, unbound, persistentMapped),
@@ -92,7 +94,7 @@ bool glUniformBuffer::BindRange(U32 bindIndex,
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
-    vec3<U32> bindConfiguration(bindIndex, offsetElementCount, rangeElementCount);
+    vec4<U32> bindConfiguration(bindIndex, _UBOid, offsetElementCount, rangeElementCount);
     if (_currentBindConfig == bindConfiguration) {
         return false;
     }

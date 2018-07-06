@@ -260,10 +260,15 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
 }
 
 const vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
-    SceneRenderState& sceneRenderState, RenderStage renderStage) {
+    vectorAlg::vecSize commandOffset, SceneRenderState& sceneRenderState,
+    RenderStage renderStage) {
     _drawCommandsCache.clear();
-    _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
-                                          sceneRenderState, _drawCommandsCache);
+    _parentSGN.getNode()->getDrawCommands(
+        _parentSGN, renderStage, sceneRenderState, _drawCommandsCache);
+    U32 i = 0;
+    for (GenericDrawCommand& cmd : _drawCommandsCache) {
+        const_cast<IndirectDrawCommand&>(cmd.cmd()).baseInstance = static_cast<U32>(commandOffset) + i++;
+    }
     return _drawCommandsCache;
 }
 

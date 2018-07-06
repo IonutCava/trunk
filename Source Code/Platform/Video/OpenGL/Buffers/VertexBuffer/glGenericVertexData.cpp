@@ -44,14 +44,14 @@ glGenericVertexData::~glGenericVertexData() {
     GL_API::setActiveVAO(0);
     // Delete the rendering VAO
     if (_vertexArray[to_uint(GVDUsage::GVD_USAGE_DRAW)] > 0) {
-        glDeleteVertexArrays(to_uint(GVDUsage::GVD_USAGE_DRAW),
-                             &_vertexArray[0]);
+        glDeleteVertexArrays(1,
+                             &_vertexArray[to_uint(GVDUsage::GVD_USAGE_DRAW)]);
         _vertexArray[to_uint(GVDUsage::GVD_USAGE_DRAW)] = 0;
     }
     // Delete the transform feedback VAO
     if (_vertexArray[to_uint(GVDUsage::GVD_USAGE_FDBCK)] > 0) {
-        glDeleteVertexArrays(to_uint(GVDUsage::GVD_USAGE_FDBCK),
-                             &_vertexArray[0]);
+        glDeleteVertexArrays(1,
+                             &_vertexArray[to_uint(GVDUsage::GVD_USAGE_FDBCK)]);
         _vertexArray[to_uint(GVDUsage::GVD_USAGE_FDBCK)] = 0;
     }
     // Make sure we don't have the indirect draw buffer bound
@@ -225,16 +225,13 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 
         if (_indexBuffer > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-            glDrawElementsInstancedBaseVertexBaseInstance(type, cmd.count, GL_UNSIGNED_INT, (void*)(cmd.firstIndex * sizeof(GL_UNSIGNED_INT)), cmd.instanceCount, cmd.baseVertex, cmd.baseInstance);
-            /*glMultiDrawElementsIndirect(
+            glMultiDrawElementsIndirect(
                 type, GL_UNSIGNED_INT,
-                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)), 1, 0);*/
+                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)), 1, 0);
         } else {
-            glDrawArraysInstancedBaseInstance(type, cmd.firstIndex, cmd.count, cmd.instanceCount, cmd.baseInstance);
-            /*
             glMultiDrawArraysIndirect(
                 type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)),
-                1, 0);*/
+                1, 0);
         }
     }
 
