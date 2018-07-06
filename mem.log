@@ -1,0 +1,90 @@
+[ 3.396 ] : New allocation: 4 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\terrain\terrain.cpp" at line: 28.
+	 Max Allocation: [4] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\terrain\terrain.cpp" at line: 28
+
+[ 5.755 ] : New allocation: 44 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\utility\quadtree.cpp" at line: 71.
+	 Max Allocation: [44] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\utility\quadtree.cpp" at line: 71
+
+[ 7.292 ] : New allocation: 1651 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [1651] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 7.446 ] : New allocation: 3399 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 9.499 ] : New allocation: 249 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 9.514 ] : New allocation: 808 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 10.113 ] : New allocation: 152 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\managers\terrainmanager.cpp" at line: 40.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 10.133 ] : New allocation: 1011 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 10.161 ] : New allocation: 1820 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 10.195 ] : New allocation: 1258 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 15.99 ] : New allocation: 220 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 27.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 15.99 ] : New allocation: 20 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 192.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 15.99 ] : New allocation: 10 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 91.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.011 ] : New allocation: 524 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 301.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.048 ] : New allocation: 260 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 412.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.048 ] : New allocation: 22 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 91.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.143 ] : New allocation: 260 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 412.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.143 ] : New allocation: 22 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 91.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.143 ] : New allocation: 260 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 412.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.143 ] : New allocation: 22 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 91.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.143 ] : New allocation: 260 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 412.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.143 ] : New allocation: 23 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 91.
+	 Max Allocation: [3399] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50
+
+[ 16.432 ] : New allocation: 83948 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 578.
+	 Max Allocation: [83948] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 578
+
+[ 16.432 ] : New allocation: 316528 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 62.
+	 Max Allocation: [316528] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 62
+
+[ 16.437 ] : New allocation: 1259220 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 63.
+	 Max Allocation: [1259220] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 63
+
+[ 16.439 ] : New allocation: 188928 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 65.
+	 Max Allocation: [1259220] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 63
+
+[ 16.442 ] : New allocation: 2248 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 68.
+	 Max Allocation: [1259220] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 63
+
+[ 16.871 ] : New allocation: 251844 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\obj.cpp" at line: 1546.
+	 Max Allocation: [1259220] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 63
+
+[ 17.178 ] : New allocation: 811 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [1259220] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 63
+
+[ 17.188 ] : New allocation: 1822 IN: "c:\users\k1ngp1n\desktop\engine\cod sursa\hardware\video\opengl\glshader.cpp" at line: 50.
+	 Max Allocation: [1259220] in file: "c:\users\k1ngp1n\desktop\engine\cod sursa\importer\objimporter.cpp" at line: 63
+

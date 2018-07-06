@@ -1,0 +1,31 @@
+<!-- DEBUG: General purpose settings needed while the application is loading -->
+<debug>
+	<!-- showPhysXErrors: Should the nVidia PhysX engine print warnings/errors in the log file? -->
+    <showPhysXErrors>true</showPhysXErrors>
+	<!-- logFile / memFile: file names that the application should use to write output / memory allocation info -->
+	<!-- leave empty for none! -->
+	<logFile>console.log</logFile>
+	<memFile>mem.log</memFile>
+</debug>
+
+<!-- RUNTIME: Values use by the application after loading is complete -->
+<runtime>
+	<!-- This value sets the y-position (height) of the "safety-net" for PhysX actors -->
+	<groundPos>-100</groundPos>
+	<!-- PhysX simulation speed multiplayer. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
+	<simSpeed>1</simSpeed>
+	<windowWidth>1024</windowWidth>
+	<windowHeight>768</windowHeight>
+</runtime>	
+
+<vegetation>
+	<grassVisibility>40000</grassVisibility>
+	<treeVisibility>40000</treeVisibility>
+</vegetation>
+
+<wind>
+	<windDirX>1</windDirX>
+	<windDirZ>-1</windDirZ>
+	<windSpeed>1</windSpeed>
+</wind>
+    

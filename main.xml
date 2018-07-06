@@ -1,0 +1,5 @@
+<!-- Enter the folder name where all of the xml files are located -->
+<scriptLocation>XML</scriptLocation>
+<config>config.xml</config>
+<level>terrain.xml</level>
+<scene>maintScene.xml</scene>
