@@ -35,7 +35,6 @@
 /// Add this include here so that any FrameListner derived class only needs to
 /// include the manager
 #include "Rendering/Headers/FrameListener.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 

@@ -35,7 +35,6 @@
 #include "BoundingBox.h"
 
 #include "Core/Math/Headers/Ray.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 

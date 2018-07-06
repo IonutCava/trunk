@@ -37,7 +37,6 @@
 #ifndef TRACKED_OBJECT_H_
 #define TRACKED_OBJECT_H_
 #include <list>
-#include "Platform/Threading/Headers/SharedMutex.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
 namespace Divide {

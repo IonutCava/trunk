@@ -89,9 +89,6 @@ class Scene : public Resource {
     friend class Attorney::SceneLoadSave;
     friend class Attorney::SceneGUI;
 
-   public:
-    static const char* g_DefaultSceneName;
-
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
     static bool initStaticData();

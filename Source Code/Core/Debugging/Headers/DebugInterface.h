@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Headers/PlatformDefines.h"
 #include "Utility/Headers/GUIDWrapper.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 

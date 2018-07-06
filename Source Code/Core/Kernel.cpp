@@ -521,7 +521,6 @@ void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
 
     // release the scene
-    _sceneMgr.unloadCurrentScene();
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     SceneManager::destroyInstance();
     GUI::destroyInstance();  /// Deactivate GUI

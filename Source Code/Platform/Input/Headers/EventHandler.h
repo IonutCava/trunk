@@ -33,7 +33,6 @@
 #define _INPUT_EVENT_HANDLER_H_
 //'index' and 'arg' in OISJoyStick.h and 'n' in OISMultiTouch.h are unreferenced
 #include "InputAggregatorInterface.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 

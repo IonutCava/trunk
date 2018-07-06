@@ -35,7 +35,6 @@
 #include "Console.h"
 #include "cdigginsAny.h"
 #include "Utility/Headers/Localization.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {

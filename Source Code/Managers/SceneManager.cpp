@@ -1,6 +1,5 @@
 #include "Headers/SceneManager.h"
 
-#include "SceneList.h"
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Scenes/Headers/ScenePool.h"
@@ -23,8 +22,6 @@ namespace Divide {
     - Cleanup load flags and use ResourceState enum instead
     - Sort out camera loading/unloading issues with parameteres (position, orientation, etc)
 */
-
-INIT_SCENE_FACTORY
 
 namespace {
     // if culled count exceeds this limit, culling becomes multithreaded in the next frame
@@ -66,8 +63,6 @@ SceneManager::SceneManager()
       _saveTimer(0ULL),
       _sceneGraphCullTimer(Time::ADD_TIMER("SceneGraph cull timer"))
 {
-    assert(!g_sceneFactory.empty());
-
     ADD_FILE_DEBUG_GROUP();
     ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER, false);
     AI::Navigation::DivideRecast::createInstance();
@@ -84,18 +79,17 @@ SceneManager::~SceneManager()
     Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
     MemoryManager::DELETE(_scenePool);
     MemoryManager::DELETE(_sceneData);
-    MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE(_renderPassCuller);
     MemoryManager::DELETE(_renderer);
     AI::Navigation::DivideRecast::destroyInstance();
 }
 
 Scene& SceneManager::getActiveScene() {
-    return _scenePool->getActiveScene();
+    return _scenePool->activeScene();
 }
 
 const Scene& SceneManager::getActiveScene() const {
-    return _scenePool->getActiveScene();
+    return _scenePool->activeScene();
 }
 
 void SceneManager::idle() {
@@ -130,147 +124,106 @@ bool SceneManager::init(GUI* const gui) {
 }
 
 Scene* SceneManager::load(stringImpl sceneName) {
-    Scene* loadingScene = nullptr;
-    if (sceneName.empty()) {
-        sceneName = Scene::g_DefaultSceneName;
-    } else {
-        for (Scene* scene : _scenePool->_loadedScenes) {
-            if (scene->getName().compare(sceneName) == 0) {
-                loadingScene = scene;
-                break;
-            }
-        }
-    }
-
-    if (loadingScene == nullptr) {
-        if (sceneName.compare(Scene::g_DefaultSceneName) == 0) {
-            loadingScene = _scenePool->_defaultScene;
-        } else {
-            loadingScene = createScene(sceneName);
-        }
-    }
+    bool foundInCache = false;
+    Scene* loadingScene = _scenePool->getOrCreateScene(sceneName, foundInCache);
 
     if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return nullptr;
     }
 
-    bool sceneInCache = loadingScene->getState() == ResourceState::RES_LOADED;
-
     ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
 
-    bool state = true;
-    if (!sceneInCache) {
+    bool state = false;
+    bool sceneNotLoaded = loadingScene->getState() != ResourceState::RES_LOADED;
+
+    if (sceneNotLoaded) {
         XML::loadScene(sceneName, loadingScene);
         state = Attorney::SceneManager::load(*loadingScene, sceneName);
+        if (state) {
+            Attorney::SceneManager::postLoad(*loadingScene);
+        }
+    } else {
+        state = true;
     }
 
     if (state) {
         state = LoadSave::loadScene(*loadingScene);
     }
 
-    if (state && !sceneInCache) {
-        Attorney::SceneManager::postLoad(*loadingScene);
-    }
-
-    if (state && !sceneInCache && loadingScene->getGUID() != _scenePool->_defaultScene->getGUID()) {
-        _scenePool->_loadedScenes.push_back(loadingScene);
-    }
-
     return state ? loadingScene : nullptr;
 }
 
-bool SceneManager::unloadScene(Scene*& scene) {
+bool SceneManager::unloadScene(Scene* scene) {
     assert(scene != nullptr);
-    I64 targetGUID = scene->getGUID();
-
-    bool isDefaultScene = scene->getGUID() == _scenePool->_defaultScene->getGUID();
-
-    bool state = Attorney::SceneManager::deinitializeAI(*scene);
-    if (state) {
-        if (!isDefaultScene) {
-            _scenePool->_loadedScenes.erase(
-                std::find_if(std::cbegin(_scenePool->_loadedScenes),
-                             std::cend(_scenePool->_loadedScenes),
-                    [&targetGUID](Scene* scene) -> bool
-                    {
-                        return scene->getGUID() == targetGUID;
-                    }));
-        }
-
+    
+    if (Attorney::SceneManager::deinitializeAI(*scene)) {
         _GUI->onUnloadScene(scene);
-        state = Attorney::SceneManager::unload(*scene);
-
-        if (!isDefaultScene) {
-            _sceneMap.erase(_sceneMap.find(scene->getName()));
-        }
-
-        if (!isDefaultScene && scene != nullptr) {
-            delete scene;
-            scene = nullptr;
-        } else {
-            MemoryManager::DELETE(_scenePool->_defaultScene);
+        if (Attorney::SceneManager::unload(*scene)) {
+            return _scenePool->deleteScene(scene);
         }
     }
 
-    return state;
+    return false;
 }
 
-bool SceneManager::unloadCurrentScene() {
-    return unloadScene(_scenePool->_activeScene);
-}
+void SceneManager::setActiveScene(Scene* const scene) {
+    assert(scene != nullptr);
 
-void SceneManager::setActiveScene(Scene& scene) {
-    if (_scenePool->_activeScene) {
+    if (!_scenePool->defaultSceneActive()) {
         Attorney::SceneManager::onRemoveActive(getActiveScene());
     }
-    Attorney::SceneManager::onSetActive(scene);
-    _scenePool->_activeScene = &scene;
-    _GUI->onChangeScene(_scenePool->_activeScene);
-    ParamHandler::instance().setParam(_ID("activeScene"), scene.getName());
+    Attorney::SceneManager::onSetActive(*scene);
+    _scenePool->activeScene(*scene);
+    _GUI->onChangeScene(scene);
+    ParamHandler::instance().setParam(_ID("activeScene"), scene->getName());
 }
 
 bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool threaded) {
-    Scene* sceneToUnload = _scenePool->_activeScene;
-    // We always need an active scene. Default is a decent placeholder
-    _scenePool->_activeScene = _scenePool->_defaultScene;
+    assert(!name.empty());
+
+    Scene* sceneToUnload = nullptr;
+    if (!_scenePool->defaultSceneActive()) {
+        sceneToUnload = &_scenePool->activeScene();
+    }
 
     CreateTask(
         [this, name, unloadPrevious, &sceneToUnload](const std::atomic_bool& stopRequested)
         {
-            if (unloadPrevious && sceneToUnload) {
-                Attorney::SceneManager::onRemoveActive(*sceneToUnload);
-                unloadScene(sceneToUnload);
-            }
-
-            _scenePool->_loadedScene = load(name);
-        },
-        [this]()
-        {
-            if (_scenePool->_loadedScene != nullptr) {
-                if(_scenePool->_loadedScene->getState() == ResourceState::RES_LOADING) {
-                    Attorney::SceneManager::postLoadMainThread(*_scenePool->_loadedScene);
-                        if (_scenePool->_loadedScene->getGUID() != _scenePool->_defaultScene->getGUID())
-                        {
-                            SceneGUIElements* gui = Attorney::SceneManager::gui(*_scenePool->_loadedScene);
-                            gui->addButton(_ID_RT("Back"),
-                                "Back",
-                                vec2<I32>(15, 15),
-                                vec2<U32>(50, 25),
-                                [this](I64 btnGUID)
-                            {
-                                _sceneSwitchTarget.set(Scene::g_DefaultSceneName, true, false);
-                            });
-                        }
-                    assert(_scenePool->_loadedScene->getState() == ResourceState::RES_LOADED);
+            // Load first, unload after to make sure we don't reload common resources
+            if (load(name) != nullptr) {
+                if (unloadPrevious && sceneToUnload) {
+                    Attorney::SceneManager::onRemoveActive(*sceneToUnload);
+                    unloadScene(sceneToUnload);
                 }
-                SceneManager::instance().setActiveScene(*_scenePool->_loadedScene);
-
-                _reflectiveNodesCache.clear();
-                _renderPassCuller->clear();
-                _scenePool->_loadedScene = nullptr;
             }
+        },
+        [this, name]()
+        {
+            bool foundInCache = false;
+            Scene* loadedScene = _scenePool->getOrCreateScene(name, foundInCache);
+            assert(loadedScene != nullptr && foundInCache);
+            if(loadedScene->getState() == ResourceState::RES_LOADING) {
+                Attorney::SceneManager::postLoadMainThread(*loadedScene);
+                if (loadedScene->getGUID() != _scenePool->defaultScene().getGUID())
+                {
+                    SceneGUIElements* gui = Attorney::SceneManager::gui(*loadedScene);
+                    gui->addButton(_ID_RT("Back"),
+                        "Back",
+                        vec2<I32>(15, 15),
+                        vec2<U32>(50, 25),
+                        [this](I64 btnGUID)
+                    {
+                        _sceneSwitchTarget.set(_scenePool->defaultScene().getName(), true, false);
+                    });
+                }
+            }
+            assert(loadedScene->getState() == ResourceState::RES_LOADED);
+            setActiveScene(loadedScene);
 
+            _reflectiveNodesCache.clear();
+            _renderPassCuller->clear();
+            
         })._task->startTask(threaded ? Task::TaskPriority::HIGH
                                      : Task::TaskPriority::REALTIME_WITH_CALLBACK,
                             to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
@@ -280,27 +233,8 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
     return true;
 }
 
-vectorImpl<stringImpl> SceneManager::sceneNameList() const {
-    vectorImpl<stringImpl> scenes;
-    for (SceneFactory::value_type it : g_sceneFactory) {
-        scenes.push_back(it.first);
-    }
-    std::sort(std::begin(scenes), std::end(scenes));
-    return scenes;
-}
-
-Scene* SceneManager::createScene(const stringImpl& name) {
-    Scene* scene = nullptr;
-    
-    if (!name.empty()) {
-        scene = g_sceneFactory[name](name);
-    }
-
-    if (scene != nullptr) {
-        hashAlg::emplace(_sceneMap, name, scene);
-    }
-
-    return scene;
+vectorImpl<stringImpl> SceneManager::sceneNameList(bool sorted) const {
+    return _scenePool->sceneNameList(sorted);
 }
 
 void SceneManager::initPostLoadState() {

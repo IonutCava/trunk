@@ -41,6 +41,7 @@
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 #include "ConditionalWait.h"
 

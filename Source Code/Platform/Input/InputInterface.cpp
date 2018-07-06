@@ -245,16 +245,13 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
         return JoystickElement(JoystickElementType::SLIDER_MOVE);
     } else if (Util::CompareIgnoreCase(elementName, "VECTOR")) {
         return JoystickElement(JoystickElementType::VECTOR_MOVE);
-    } else {
-        vectorImpl<stringImpl> buttonElements = Util::Split(elementName, '_');
-        assert(buttonElements.size() == 2 && "Invalid joystick element name!");
-        assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
+    } 
+    vectorImpl<stringImpl> buttonElements = Util::Split(elementName, '_');
+    assert(buttonElements.size() == 2 && "Invalid joystick element name!");
+    assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
 
-        I32 buttonId = Util::ConvertData<I32, std::string>(buttonElements[1].c_str());
-        return JoystickElement(JoystickElementType::BUTTON_PRESS, to_ubyte(buttonId));
-    }
-
-    return JoystickElement(JoystickElementType::COUNT);
+    I32 buttonId = Util::ConvertData<I32, std::string>(buttonElements[1].c_str());
+    return JoystickElement(JoystickElementType::BUTTON_PRESS, to_ubyte(buttonId));
 }
 
 KeyCode InputInterface::keyCodeByName(const stringImpl& name) {

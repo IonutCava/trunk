@@ -235,7 +235,7 @@ stringImpl loadScripts(const stringImpl &file) {
              pt.get("startupScene", "scenes.xml"),
              pt);
 
-    return pt.get<stringImpl>("StartupScene", "");;
+    return pt.get<stringImpl>("StartupScene", "DefaultScene");
 }
 
 void loadConfig(const stringImpl &file) {

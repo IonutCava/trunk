@@ -34,7 +34,6 @@
 
 #include "ResourceLoader.h"
 #include "Platform/Threading/Headers/Thread.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 
 #include "Utility/Headers/Localization.h"
 

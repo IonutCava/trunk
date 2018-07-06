@@ -59,12 +59,12 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
 
     void idle();
 
-    vectorImpl<stringImpl> sceneNameList() const;
+    vectorImpl<stringImpl> sceneNameList(bool sorted = true) const;
 
     Scene& getActiveScene();
     const Scene& getActiveScene() const;
 
-    void setActiveScene(Scene& scene);
+    void setActiveScene(Scene* const scene);
 
     bool init(GUI* const gui);
 
@@ -81,7 +81,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
 
     void onLostFocus();
-    bool unloadCurrentScene();
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(getActiveScene());
@@ -142,11 +141,8 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
   protected:
     friend class ScenePool;
     void initPostLoadState();
-    /// Lookup the factory methods table and return the pointer to a newly
-    /// constructed scene bound to that name
-    Scene* createScene(const stringImpl& name);
     Scene* load(stringImpl name);
-    bool   unloadScene(Scene*& scene);
+    bool   unloadScene(Scene* scene);
 
   protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -160,7 +156,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     ~SceneManager();
 
   private:
-    typedef hashMapImpl<stringImpl, Scene*> SceneMap;
     bool _init;
     bool _processInput;
     /// Pointer to the GUI interface
@@ -170,8 +165,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     RenderPassCuller* _renderPassCuller;
     /// Pointer to the render pass manager
     RenderPassManager* _renderPassManager;
-    /// Scene pool
-    SceneMap _sceneMap;
     ScenePool* _scenePool;
     SceneShaderData* _sceneData;
     U64 _elapsedTime;

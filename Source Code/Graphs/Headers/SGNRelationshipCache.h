@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SCENE_GRAPH_NODE_RELATIONSHIP_CACHE_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 

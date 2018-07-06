@@ -32,7 +32,6 @@
 #ifndef _TASKS_H_
 #define _TASKS_H_
 
-#include "SharedMutex.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
 namespace Divide {

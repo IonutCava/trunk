@@ -35,7 +35,6 @@
 #include "TransformInterface.h"
 
 #include "Utility/Headers/GUIDWrapper.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 

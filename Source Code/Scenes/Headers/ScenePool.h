@@ -44,17 +44,31 @@ protected:
     ScenePool(SceneManager& parentMgr);
     ~ScenePool();
 
-    Scene& getActiveScene();
+    Scene* getOrCreateScene(const stringImpl& name, bool& foundInCache);
+    bool   deleteScene(Scene*& scene);
+
+    bool   defaultSceneActive() const;
+
+    Scene&       defaultScene();
+    const Scene& defaultScene() const;
+    Scene&       activeScene();
+    const Scene& activeScene() const;
+    void         activeScene(Scene& scene);
+
     void init();
 
+    vectorImpl<stringImpl> sceneNameList(bool sorted) const;
+
+private:
     /// Pointer to the currently active scene
     Scene* _activeScene;
     Scene* _loadedScene;
     Scene* _defaultScene;
-    vectorImpl<Scene*> _loadedScenes;
+    vectorImpl<Scene*> _createdScenes;
 
-private:
     SceneManager& _parentMgr;
+
+    mutable SharedLock _sceneLock;
 };
 }; //namespace Divide
 

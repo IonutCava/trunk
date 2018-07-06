@@ -45,8 +45,6 @@ struct selectionQueueDistanceFrontToBack {
 };
 };
 
-const char* Scene::g_DefaultSceneName = "DefaultScene";
-
 Scene::Scene(const stringImpl& name)
     : Resource(name),
       _GFX(GFX_DEVICE),
