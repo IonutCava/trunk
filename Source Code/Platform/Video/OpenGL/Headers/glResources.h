@@ -45,13 +45,19 @@
 #define GLFW_INCLUDE_NONE
 #endif
 
+//#define GL_VERSION_4_5
+
+#ifdef GL_VERSION_4_5
 #include <glbinding/gl/gl45.h>
+using namespace gl45;
+#else
+#include <glbinding/gl/gl44.h>
+using namespace gl44;
+#endif
 
 #include <glbinding/Binding.h>
 #include <GL/glfw3.h>
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
-
-using namespace gl45;
 
 #if defined(_MSC_VER)
 #pragma warning(push)

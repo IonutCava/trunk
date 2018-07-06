@@ -182,7 +182,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
   public:
     /// Enable or disable primitive restart and ensure that the correct index size
     /// is used
-    static void togglePrimitiveRestart(bool state, bool smallIndices);
+    static void togglePrimitiveRestart(bool state);
     /// Set the currently active texture unit
     static bool setActiveTextureUnit(GLuint unit);
     /// Switch the currently active vertex array object

@@ -68,15 +68,16 @@ glFramebuffer::glFramebuffer(bool useResolveBuffer)
       _hasDepth(false),
       _hasColor(false),
       _resolved(false),
-      _isLayeredDepth(false)
-{
+      _isLayeredDepth(false) {
     for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
         _mipMapLevel[i].set(0);
         _attOffset[i] = 0;
     }
 }
 
-glFramebuffer::~glFramebuffer() { Destroy(); }
+glFramebuffer::~glFramebuffer() {
+    Destroy();
+}
 
 void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
                                    const TextureDescriptor& texDescriptor) {
@@ -175,8 +176,14 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
 
     // Attach to frame buffer
     if (type == TextureDescriptor::AttachmentType::Depth) {
-        gl45ext::glNamedFramebufferTextureEXT(
-            _framebufferHandle, GL_DEPTH_ATTACHMENT, tex->getHandle(), 0);
+#ifdef GL_VERSION_4_5
+        glNamedFramebufferTexture(_framebufferHandle, GL_DEPTH_ATTACHMENT,
+                                  tex->getHandle(), 0);
+#else
+        gl44ext::glNamedFramebufferTextureEXT(_framebufferHandle, GL_DEPTH_ATTACHMENT,
+                                     tex->getHandle(), 0);
+#endif
+
         _isLayeredDepth = isLayeredTexture;
     } else {
         GLint offset = 0;
@@ -187,27 +194,46 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
         if (texDescriptor.isCubeTexture() && !_layeredRendering) {
             for (GLuint i = 0; i < 6; ++i) {
                 GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
-                gl45ext::glNamedFramebufferTexture2DEXT(
+#ifdef GL_VERSION_4_5
+                glNamedFramebufferTexture2D(_framebufferHandle, attachPoint,
+                                            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                                            tex->getHandle(), 0);
+#else
+                gl44ext::glNamedFramebufferTexture2DEXT(
                     _framebufferHandle, attachPoint,
                     GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, tex->getHandle(), 0);
+#endif
                 _colorBuffers.push_back(attachPoint);
             }
             _attOffset[slot] = _attOffset[slot - 1] + 6;
         } else if (texDescriptor._layerCount > 1 && !_layeredRendering) {
             for (GLuint i = 0; i < texDescriptor._layerCount; ++i) {
                 GLenum attachPoint = GL_COLOR_ATTACHMENT0 + (i + offset);
-                gl45ext::glNamedFramebufferTextureLayerEXT(
+#ifdef GL_VERSION_4_5
+                glNamedFramebufferTextureLayer(_framebufferHandle, attachPoint,
+                                               tex->getHandle(), 0, i);
+#else
+                gl44ext::glNamedFramebufferTextureLayerEXT(
                     _framebufferHandle, attachPoint, tex->getHandle(), 0, i);
+#endif
                 _colorBuffers.push_back(attachPoint);
             }
             _attOffset[slot] = _attOffset[slot - 1] + texDescriptor._layerCount;
             // If we require layered rendering, or have a non-layered /
             // non-cubemap texture, attach it to a single binding point
         } else {
-            gl45ext::glNamedFramebufferTextureEXT(
+#ifdef GL_VERSION_4_5
+            glNamedFramebufferTexture(
                 _framebufferHandle,
                 GL_COLOR_ATTACHMENT0 + static_cast<GLuint>(slot),
                 tex->getHandle(), 0);
+#else
+            gl44ext::glNamedFramebufferTextureEXT(
+                _framebufferHandle,
+                GL_COLOR_ATTACHMENT0 + static_cast<GLuint>(slot),
+                tex->getHandle(), 0);
+#endif
+
             _colorBuffers.push_back(GL_COLOR_ATTACHMENT0 +
                                     static_cast<GLuint>(slot));
         }
@@ -248,8 +274,7 @@ void glFramebuffer::AddDepthBuffer() {
     screenSampler._cmpFunc =
         ComparisonFunction::CMP_FUNC_LEQUAL;  //< Use less or equal
     depthDescriptor.setSampler(screenSampler);
-    _attachmentDirty[to_uint(TextureDescriptor::AttachmentType::Depth)] =
-        true;
+    _attachmentDirty[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
     _attachment[to_uint(TextureDescriptor::AttachmentType::Depth)] =
         depthDescriptor;
     InitAttachment(TextureDescriptor::AttachmentType::Depth, depthDescriptor);
@@ -303,14 +328,25 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
     }
     // If color writes are disabled, draw only depth info
     if (_disableColorWrites) {
-        gl45ext::glFramebufferDrawBufferEXT(_framebufferHandle, GL_NONE);
-        gl45ext::glFramebufferReadBufferEXT(_framebufferHandle, GL_NONE);
+#ifdef GL_VERSION_4_5
+        glFramebufferDrawBuffer(_framebufferHandle, GL_NONE);
+        glFramebufferReadBuffer(_framebufferHandle, GL_NONE);
+#else
+        gl44ext::glFramebufferDrawBufferEXT(_framebufferHandle, GL_NONE);
+        gl44ext::glFramebufferReadBufferEXT(_framebufferHandle, GL_NONE);
+#endif
         _hasColor = false;
     } else {
         if (!_colorBuffers.empty()) {
-            gl45ext::glFramebufferDrawBuffersEXT(_framebufferHandle,
-                                                 static_cast<GLsizei>(_colorBuffers.size()),
-                                                 _colorBuffers.data());
+#ifdef GL_VERSION_4_5
+            glFramebufferDrawBuffers(_framebufferHandle,
+                                     static_cast<GLsizei>(_colorBuffers.size()),
+                                     _colorBuffers.data());
+#else
+            gl44ext::glFramebufferDrawBuffersEXT(
+                _framebufferHandle, static_cast<GLsizei>(_colorBuffers.size()),
+                _colorBuffers.data());
+#endif
         }
     }
 
@@ -353,7 +389,8 @@ void glFramebuffer::resolve() {
 
 void glFramebuffer::BlitFrom(Framebuffer* inputFB,
                              TextureDescriptor::AttachmentType slot,
-                             bool blitColor, bool blitDepth) {
+                             bool blitColor,
+                             bool blitDepth) {
     if (!inputFB || (!blitColor && !blitDepth)) {
         return;
     }
@@ -435,9 +472,8 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
         _attachmentTexture[to_uint(TextureDescriptor::AttachmentType::Depth)]
             ->refreshMipMaps();
     } else {
-        for (U8 i = 0; 
-             i < to_uint(TextureDescriptor::AttachmentType::COUNT) - 1;
-             ++i) {
+        for (U8 i = 0;
+             i < to_uint(TextureDescriptor::AttachmentType::COUNT) - 1; ++i) {
             if (_attachmentTexture[i]) {
                 _attachmentTexture[i]->refreshMipMaps();
             }
@@ -467,10 +503,10 @@ void glFramebuffer::End() {
 }
 
 void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
-                                U8 layer, bool includeDepth) {
-    DIVIDE_ASSERT(
-        slot < TextureDescriptor::AttachmentType::COUNT,
-        "glFrameBuffer::DrawToLayer Error: invalid slot received!");
+                                U8 layer,
+                                bool includeDepth) {
+    DIVIDE_ASSERT(slot < TextureDescriptor::AttachmentType::COUNT,
+                  "glFrameBuffer::DrawToLayer Error: invalid slot received!");
 
     GLenum textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[to_uint(
         _attachmentTexture[to_uint(slot)]->getTextureType())];
@@ -519,7 +555,8 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
     }
 }
 
-void glFramebuffer::SetMipLevel(GLushort mipLevel, GLushort mipMaxLevel,
+void glFramebuffer::SetMipLevel(GLushort mipLevel,
+                                GLushort mipMaxLevel,
                                 GLushort writeLevel,
                                 TextureDescriptor::AttachmentType slot) {
     GLenum textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[to_uint(
@@ -537,12 +574,14 @@ void glFramebuffer::SetMipLevel(GLushort mipLevel, GLushort mipMaxLevel,
 }
 
 void glFramebuffer::ResetMipLevel(TextureDescriptor::AttachmentType slot) {
-    SetMipLevel(_mipMapLevel[to_uint(slot)].x,
-                _mipMapLevel[to_uint(slot)].y, 0, slot);
+    SetMipLevel(_mipMapLevel[to_uint(slot)].x, _mipMapLevel[to_uint(slot)].y, 0,
+                slot);
 }
 
-void glFramebuffer::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
-                             GFXDataFormat dataType, void* outData) {
+void glFramebuffer::ReadData(const vec4<U16>& rect,
+                             GFXImageFormat imageFormat,
+                             GFXDataFormat dataType,
+                             void* outData) {
     if (_resolveBuffer) {
         resolve();
         _resolveBuffer->ReadData(rect, imageFormat, dataType, outData);
@@ -552,16 +591,20 @@ void glFramebuffer::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                             Framebuffer::FramebufferUsage::FB_READ_ONLY);
         glReadPixels(
             rect.x, rect.y, rect.z, rect.w,
-            GLUtil::GL_ENUM_TABLE::glImageFormatTable[to_uint(
-                imageFormat)],
-            GLUtil::GL_ENUM_TABLE::glDataFormat[to_uint(dataType)],
-            outData);
+            GLUtil::GL_ENUM_TABLE::glImageFormatTable[to_uint(imageFormat)],
+            GLUtil::GL_ENUM_TABLE::glDataFormat[to_uint(dataType)], outData);
     }
 }
 
 bool glFramebuffer::checkStatus() const {
-    // check FB status
-    GLenum status = gl45ext::glCheckNamedFramebufferStatusEXT(_framebufferHandle, GL_FRAMEBUFFER);
+// check FB status
+#ifdef GL_VERSION_4_5
+    GLenum status =
+        glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER);
+#else
+    GLenum status =
+        gl44ext::glCheckNamedFramebufferStatusEXT(_framebufferHandle, GL_FRAMEBUFFER);
+#endif
     switch (status) {
         case GL_FRAMEBUFFER_COMPLETE: {
             return true;

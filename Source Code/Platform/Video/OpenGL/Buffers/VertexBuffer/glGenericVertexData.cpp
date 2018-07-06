@@ -149,6 +149,9 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries) {
     // Persistently mapped data (array of void* pointers)
     _bufferPersistentData =
         (GLUtil::bufferPtr*)malloc(sizeof(GLUtil::bufferPtr) * numBuffers);
+    for (U8 i = 0; i < numBuffers; ++i) {
+        _bufferPersistentData[i] = nullptr;
+    }
 }
 
 /// Called at the beginning of each frame to update the currently used queries
@@ -222,12 +225,13 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 
         if (_indexBuffer > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-            glDrawElementsIndirect(
+            glMultiDrawElementsIndirect(
                 type, GL_UNSIGNED_INT,
-                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)));
+                (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)), 1, 0);
         } else {
-            glDrawArraysIndirect(
-                type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)));
+            glMultiDrawArraysIndirect(
+                type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)),
+                1, 0);
         }
     }
 
@@ -251,7 +255,7 @@ void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
                               : GL_STATIC_DRAW;
         if (_indexBuffer == 0) {
             // Generate an "Index Buffer Object"
-            GLUtil::allocBuffer(
+            GLUtil::createAndAllocBuffer(
                 static_cast<GLsizeiptr>(indices.size() * sizeof(GLuint)), mask,
                 _indexBuffer, (GLUtil::bufferPtr)indices.data());
         }

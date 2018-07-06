@@ -15,7 +15,8 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 //
-// Modified by Ionut Cava: Updated rendering for compatibility with OpenGL 3.3+ Core Context
+// Modified by Ionut Cava: Updated rendering for compatibility with OpenGL 3.3+
+// Core Context
 
 #ifndef GLFONTSTASH_H
 #define GLFONTSTASH_H
@@ -36,9 +37,10 @@ struct GLFONScontext {
     int width, height;
 };
 
-static int glfons__renderCreate(void* userPtr, int width, int height)
-{
-    Divide::DIVIDE_ASSERT(width > 0 && height > 0, "glfons__renderCreate error: invalid texture dimensions!");
+static int glfons__renderCreate(void* userPtr, int width, int height) {
+    Divide::DIVIDE_ASSERT(
+        width > 0 && height > 0,
+        "glfons__renderCreate error: invalid texture dimensions!");
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     glGenTextures(1, &gl->tex);
     glGenVertexArrays(1, &gl->glfons_vaoID);
@@ -48,17 +50,23 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
     }
     gl->width = width;
     gl->height = height;
-    gl45ext::glTextureImage2DEXT(gl->tex, GL_TEXTURE_2D, 0,
-                                 static_cast<GLint>(GL_R8), gl->width,
-                                 gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
-    gl45ext::glTextureParameteriEXT(gl->tex, GL_TEXTURE_2D,
-                                    GL_TEXTURE_MIN_FILTER,
-                                    static_cast<GLint>(GL_LINEAR));
+#ifdef GL_VERSION_4_5
+    glTextureImage2D(gl->tex, GL_TEXTURE_2D, 0, static_cast<GLint>(GL_R8),
+                     gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+    glTextureParameteri(gl->tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                        static_cast<GLint>(GL_LINEAR));
+#else
+    gl44ext::glTextureImage2DEXT(gl->tex, GL_TEXTURE_2D, 0, static_cast<GLint>(GL_R8),
+                        gl->width, gl->height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+    gl44ext::glTextureParameteriEXT(gl->tex, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                           static_cast<GLint>(GL_LINEAR));
+#endif
     return 1;
 }
 
-static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* data)
-{
+static void glfons__renderUpdate(void* userPtr,
+                                 int* rect,
+                                 const unsigned char* data) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     int w = rect[2] - rect[0];
     int h = rect[3] - rect[1];
@@ -68,12 +76,20 @@ static void glfons__renderUpdate(void* userPtr, int* rect, const unsigned char* 
     }
 
     Divide::GL_API::setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
-    gl45ext::glTextureSubImage2DEXT(gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1],
-                                    w, h, GL_RED, GL_UNSIGNED_BYTE, data);
+#ifdef GL_VERSION_4_5
+    glTextureSubImage2D(gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1], w, h,
+                        GL_RED, GL_UNSIGNED_BYTE, data);
+#else
+    gl44ext::glTextureSubImage2DEXT(gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1], w, h,
+                           GL_RED, GL_UNSIGNED_BYTE, data);
+#endif
 }
 
-static void glfons__renderDraw(void* userPtr, const float* verts, const float* tcoords, const unsigned char* colors, int nverts)
-{
+static void glfons__renderDraw(void* userPtr,
+                               const float* verts,
+                               const float* tcoords,
+                               const unsigned char* colors,
+                               int nverts) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex == 0) {
         return;
@@ -97,21 +113,24 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
 
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (void*)(0));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,
+                          (void*)(0));
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 2,GL_FLOAT,GL_FALSE, sizeof(float)*2, (char *)0 + (vertDataSize));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,
+                          (char*)0 + (vertDataSize));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char *)0 + (2 * vertDataSize));
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE,
+                          sizeof(unsigned char) * 4,
+                          (char*)0 + (2 * vertDataSize));
 
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 }
 
-static void glfons__renderDelete(void* userPtr)
-{
+static void glfons__renderDelete(void* userPtr) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex)
         glDeleteTextures(1, &gl->tex);
-    if(gl->glfons_vaoID)
+    if (gl->glfons_vaoID)
         glDeleteVertexArrays(1, &gl->glfons_vaoID);
     gl->tex = 0;
     gl->glfons_vaoID = 0;
@@ -120,14 +139,13 @@ static void glfons__renderDelete(void* userPtr)
     free(gl);
 }
 
-
-struct FONScontext* glfonsCreate(int width, int height, int flags)
-{
+struct FONScontext* glfonsCreate(int width, int height, int flags) {
     struct FONSparams params;
     struct GLFONScontext* gl;
 
     gl = (struct GLFONScontext*)malloc(sizeof(struct GLFONScontext));
-    if (gl == nullptr) goto error;
+    if (gl == nullptr)
+        goto error;
     memset(gl, 0, sizeof(struct GLFONScontext));
 
     memset(&params, 0, sizeof(params));
@@ -136,19 +154,19 @@ struct FONScontext* glfonsCreate(int width, int height, int flags)
     params.flags = flags;
     params.renderCreate = glfons__renderCreate;
     params.renderUpdate = glfons__renderUpdate;
-    params.renderDraw = glfons__renderDraw; 
+    params.renderDraw = glfons__renderDraw;
     params.renderDelete = glfons__renderDelete;
     params.userPtr = gl;
 
     return fonsCreateInternal(&params);
 
 error:
-    if (gl != nullptr) free(gl);
+    if (gl != nullptr)
+        free(gl);
     return nullptr;
 }
 
-void glfonsDelete(struct FONScontext* ctx)
-{
+void glfonsDelete(struct FONScontext* ctx) {
     fonsDeleteInternal(ctx);
 }
 

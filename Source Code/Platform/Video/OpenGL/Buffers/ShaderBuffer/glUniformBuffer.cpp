@@ -6,12 +6,7 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
-#include <iomanip>
-
 namespace Divide {
-
-glUniformBuffer::bindIndexMap glUniformBuffer::_bindIndexMap;
-glUniformBuffer::bindRangeIndexMap glUniformBuffer::_bindRangeIndexMap;
 
 glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
                                  bool persistentMapped)
@@ -44,14 +39,14 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
         BufferAccessMask access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
                                   GL_MAP_COHERENT_BIT;
 
-        _mappedBuffer = GLUtil::allocPersistentBuffer(_bufferSize, usage, access, _UBOid);
+        _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(_bufferSize, usage, access, _UBOid);
 
         DIVIDE_ASSERT(_mappedBuffer != nullptr,
                         "glUniformBuffer::Create error: "
                         "Can't mapped persistent buffer!");
         
     } else {
-        GLUtil::allocBuffer(_bufferSize, GL_DYNAMIC_DRAW, _UBOid);
+        GLUtil::createAndAllocBuffer(_bufferSize, GL_DYNAMIC_DRAW, _UBOid);
     }
 }
 
@@ -97,26 +92,12 @@ bool glUniformBuffer::BindRange(U32 bindIndex,
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
-    vec3<U32> bindConfiguration(_UBOid, offsetElementCount, rangeElementCount);
-
-    bindRangeIndexMap::iterator it1 = _bindRangeIndexMap.find(bindIndex);
-    if (it1 == std::end(_bindRangeIndexMap)) {
-        hashAlg::emplace(_bindRangeIndexMap, bindIndex, bindConfiguration);
-    } else {
-        // Prevent double bind only if the range is identical
-        if (it1->second == bindConfiguration) {
-            return false;
-        } else {
-            // Remember the new binding state for future reference
-            it1->second = bindConfiguration;
-        }
+    vec3<U32> bindConfiguration(bindIndex, offsetElementCount, rangeElementCount);
+    if (_currentBindConfig == bindConfiguration) {
+        return false;
     }
 
-   // Remove default bind check cache
-    bindIndexMap::const_iterator it2 = _bindIndexMap.find(bindIndex);
-    if (it2 != std::end(_bindIndexMap)) {
-        _bindIndexMap.erase(it2);
-    }
+    _currentBindConfig.set(bindConfiguration);
 
     glBindBufferRange(_target, bindIndex, _UBOid,
                       _primitiveSize * offsetElementCount,
@@ -125,31 +106,7 @@ bool glUniformBuffer::BindRange(U32 bindIndex,
 }
 
 bool glUniformBuffer::Bind(U32 bindIndex) {
-    DIVIDE_ASSERT(_UBOid != 0,
-                  "glUniformBuffer error: Tried to bind an uninitialized UBO");
-
-    bindIndexMap::iterator it1 = _bindIndexMap.find(bindIndex);
-    if (it1 == std::end(_bindIndexMap)) {
-        hashAlg::emplace(_bindIndexMap, bindIndex, _UBOid);
-    } else {
-        // Prevent double bind
-        if (it1->second == _UBOid) {
-            return false;
-        } else {
-            // Remember the new binding state for future reference
-            it1->second = _UBOid;
-        }
-    }
-
-    // Remove ranged bind check cache
-    bindRangeIndexMap::const_iterator it2 = _bindRangeIndexMap.find(bindIndex);
-    if (it2 != std::end(_bindRangeIndexMap)) {
-        _bindRangeIndexMap.erase(it2);
-    }
-
-    glBindBufferBase(_target, bindIndex, _UBOid);
-
-    return true;
+    return BindRange(bindIndex, 0, _primitiveCount);
 }
 
 void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,

@@ -8,6 +8,7 @@
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "GUI/Headers/GUIText.h"
 #include "Core/Headers/ParamHandler.h"
@@ -416,10 +417,11 @@ void GL_API::drawPoints(GLuint numPoints) {
 
 void GL_API::uploadDrawCommands(
     const vectorImpl<IndirectDrawCommand>& drawCommands) const {
-    // glNamedBufferData(
-    gl45ext::glNamedBufferDataEXT(
-        _indirectDrawBuffer, sizeof(IndirectDrawCommand) * drawCommands.size(),
-        drawCommands.data(), GL_DYNAMIC_COPY);
+    GLUtil::allocBuffer(_indirectDrawBuffer,
+                        static_cast<GLsizeiptr>(sizeof(IndirectDrawCommand) *
+                                                drawCommands.size()),
+                        GL_DYNAMIC_COPY, 
+                        const_cast<vectorImpl<IndirectDrawCommand>::pointer>(drawCommands.data()));
 }
 
 /// Verify if we have a sampler object created and available for the given

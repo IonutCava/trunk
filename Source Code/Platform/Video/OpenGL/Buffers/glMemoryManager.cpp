@@ -12,14 +12,14 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
                                 BufferAccessMask accessMask,
                                 const bufferPtr data) {
     STUBBED("Remove this hack when proper OpenGL4.5 support is available!")
-
-    // glNamedBufferStorage(bufferId, bufferSize, NULL, usageMask);
-    // return glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
-
-    gl45ext::glNamedBufferStorageEXT(bufferId, bufferSize, data, usageMask);
+#ifdef GL_VERSION_4_5
+    glNamedBufferStorage(bufferId, bufferSize, data, usageMask);
+    bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
+#else
+    gl44ext::glNamedBufferStorageEXT(bufferId, bufferSize, data, usageMask);
     bufferPtr ptr =
-        gl45ext::glMapNamedBufferRangeEXT(bufferId, 0, bufferSize, accessMask);
-
+        gl44ext::glMapNamedBufferRangeEXT(bufferId, 0, bufferSize, accessMask);
+#endif
     if (!ptr) {
         GLuint previousBufferID = 0;
         GL_API::setActiveBuffer(GL_ARRAY_BUFFER, bufferId, previousBufferID);
@@ -31,11 +31,11 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
     return ptr;
 }
 
-bufferPtr allocPersistentBuffer(GLsizeiptr bufferSize,
-                                MapBufferUsageMask usageMask,
-                                BufferAccessMask accessMask,
-                                GLuint& bufferIdOut,
-                                bufferPtr const data) {
+bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
+                                         MapBufferUsageMask usageMask,
+                                         BufferAccessMask accessMask,
+                                         GLuint& bufferIdOut,
+                                         bufferPtr const data) {
     glGenBuffers(1, &bufferIdOut);
     DIVIDE_ASSERT(
         bufferIdOut != 0,
@@ -49,14 +49,17 @@ void allocBuffer(GLuint bufferId,
                  GLsizeiptr bufferSize,
                  GLenum usageMask,
                  const bufferPtr data) {
-    // glNamedBufferData(bufferId, bufferSize, NULL, usageMask);
-    gl45ext::glNamedBufferDataEXT(bufferId, bufferSize, data, usageMask);
+#ifdef GL_VERSION_4_5
+    glNamedBufferData(bufferId, bufferSize, data, usageMask);
+#else
+    gl44ext::glNamedBufferDataEXT(bufferId, bufferSize, data, usageMask);
+#endif
 }
 
-void allocBuffer(GLsizeiptr bufferSize,
-                 GLenum usageMask,
-                 GLuint& bufferIdOut,
-                 const bufferPtr data) {
+void createAndAllocBuffer(GLsizeiptr bufferSize,
+                          GLenum usageMask,
+                          GLuint& bufferIdOut,
+                          const bufferPtr data) {
     glGenBuffers(1, &bufferIdOut);
     DIVIDE_ASSERT(bufferIdOut != 0,
                   "GLUtil::allocBuffer error: buffer creation failed");
@@ -67,14 +70,22 @@ void updateBuffer(GLuint bufferId,
                   GLintptr offset,
                   GLsizeiptr size,
                   const bufferPtr data) {
-    //glNamedBufferSubData(bufferId, offset, size, data);
-    gl45ext::glNamedBufferSubDataEXT(bufferId, offset, size, data);
+#ifdef GL_VERSION_4_5
+    glNamedBufferSubData(bufferId, offset, size, data);
+#else
+    gl44ext::glNamedBufferSubDataEXT(bufferId, offset, size, data);
+#endif
 }
 
 void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
     if (bufferId > 0) {
         if (mappedPtr != nullptr) {
-            if (gl45ext::glUnmapNamedBufferEXT(bufferId) == GL_FALSE) {
+#ifdef GL_VERSION_4_5
+            GLboolean result = glUnmapNamedBuffer(bufferId);
+#else
+            GLboolean result = gl44ext::glUnmapNamedBufferEXT(bufferId);
+#endif
+            if (result == GL_FALSE) {
                 GLuint previousBufferID = 0;
                 GL_API::setActiveBuffer(GL_ARRAY_BUFFER, bufferId,
                                         previousBufferID);
@@ -92,5 +103,5 @@ void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
     }
 }
 
-}; //namespace GLUtil
-}; //namespace Divide
+};  // namespace GLUtil
+};  // namespace Divide

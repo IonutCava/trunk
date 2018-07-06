@@ -52,6 +52,20 @@ class Texture : public HardwareResource {
              _textureHandle(0)
        {
        }
+
+       TextureData(const TextureData& old)
+       {
+           _textureType = old._textureType;
+           _textureHandle.store(old._textureHandle);
+           _samplerDescriptor = old._samplerDescriptor;
+       }
+
+       void operator=(const TextureData& old) {
+           _textureType = old._textureType;
+           _textureHandle.store(old._textureHandle);
+           _samplerDescriptor = old._samplerDescriptor;
+       }
+
        TextureType _textureType;
        std::atomic<U32> _textureHandle;
        SamplerDescriptor _samplerDescriptor;

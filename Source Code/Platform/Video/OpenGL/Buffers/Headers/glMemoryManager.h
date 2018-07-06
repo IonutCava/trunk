@@ -41,10 +41,10 @@ namespace GLUtil {
                      GLenum usageMask,
                      const bufferPtr data = NULL);
 
-    void allocBuffer(GLsizeiptr bufferSize,
-                     GLenum usageMask,
-                     GLuint& bufferIdOut,
-                     const bufferPtr data = NULL);
+    void createAndAllocBuffer(GLsizeiptr bufferSize,
+                              GLenum usageMask,
+                              GLuint& bufferIdOut,
+                              const bufferPtr data = NULL);
 
     bufferPtr allocPersistentBuffer(GLuint bufferId,
                                     GLsizeiptr bufferSize,
@@ -52,11 +52,11 @@ namespace GLUtil {
                                     BufferAccessMask accessMask,
                                     const bufferPtr data = NULL);
 
-    bufferPtr allocPersistentBuffer(GLsizeiptr bufferSize,
-                                    MapBufferUsageMask usageMask,
-                                    BufferAccessMask accessMask,
-                                    GLuint& bufferIdOut,
-                                    const bufferPtr data = NULL);
+    bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
+                                             MapBufferUsageMask usageMask,
+                                             BufferAccessMask accessMask,
+                                             GLuint& bufferIdOut,
+                                             const bufferPtr data = NULL);
 
     void updateBuffer(GLuint bufferId,
                       GLintptr offset,

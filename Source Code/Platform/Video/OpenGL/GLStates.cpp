@@ -139,7 +139,7 @@ bool GL_API::setPixelUnpackAlignment(GLint unpackAlignment, GLint rowLength,
 
 /// Enable or disable primitive restart and ensure that the correct index size
 /// is used
-void GL_API::togglePrimitiveRestart(bool state, bool smallIndices) {
+void GL_API::togglePrimitiveRestart(bool state) {
     // Toggle primitive restart on or off
     if (_primitiveRestartEnabled != state) {
         _primitiveRestartEnabled = state;
@@ -274,7 +274,12 @@ bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type,
         /*GL_API::setActiveTextureUnit(unit);
         // Bind the texture to the current unit
         glBindTexture(type, handle);*/
-        gl45ext::glBindMultiTextureEXT(GL_TEXTURE0 + unit, type, handle);
+#ifdef GL_VERSION_4_5
+        glBindMultiTexture(GL_TEXTURE0 + unit, type, handle);
+#else
+        gl44ext::glBindMultiTextureEXT(GL_TEXTURE0 + unit, type, handle);
+#endif
+        
         return true;
     }
 

@@ -733,6 +733,13 @@ void GFXDevice::buildDrawCommands(
             drawCommands[cmd.drawID()] = cmd.cmd();
         }
     }
+
+    drawCommands.erase(
+        std::remove_if(std::begin(drawCommands), std::end(drawCommands),
+                       [](IndirectDrawCommand& indirectCommand)
+                       -> bool { return indirectCommand.count == 0; }),
+        std::end(drawCommands));
+
     uploadDrawCommands(drawCommands);
 }
 
