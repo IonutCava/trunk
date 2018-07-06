@@ -32,6 +32,7 @@
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Platform/Compute/Headers/OpenCLInterface.h"
 
+#include <ECS.h>
 #include <AntTweakBar/include/AntTweakBar.h>
 
 namespace Divide {
@@ -643,6 +644,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Paths::updatePaths(*_platformContext);
 
     Locale::changeLanguage(config.language.c_str());
+    ECS::Initialize();
 
     _platformContext->gfx().shadowDetailLevel(config.rendering.shadowDetailLevel);
     _platformContext->gfx().renderDetailLevel(config.rendering.renderDetailLevel);
@@ -766,6 +768,7 @@ void Kernel::shutdown() {
     _platformContext->gfx().closeRenderingAPI();
     _platformContext->terminate();
     _resCache->clear();
+    ECS::Terminate();
     FrameListenerManager::destroyInstance();
     Camera::destroyPool();
 }

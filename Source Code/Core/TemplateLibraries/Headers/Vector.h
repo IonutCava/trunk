@@ -110,4 +110,34 @@ inline typename vectorImpl<T, A> erase_indices(const typename vectorImpl<T, A>& 
     return ret;
 }
 
+template<typename T>
+inline vectorImpl<T> erase_indices(const vectorImpl<T>& data, vectorImpl<vectorAlg::vecSize>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+{
+    if (indicesToDelete.empty()) {
+        return data;
+    }
+
+    vectorImpl<T> ret;
+    ret.reserve(data.size() - indicesToDelete.size());
+
+    std::sort(std::begin(indicesToDelete), std::end(indicesToDelete));
+
+    // new we can assume there is at least 1 element to delete. copy blocks at a time.
+    vectorImpl<T>::const_iterator itBlockBegin = std::cbegin(data);
+    for (vectorImpl<size_t>::const_iterator it = std::cbegin(indicesToDelete); it != std::cend(indicesToDelete); ++it) {
+        vectorImpl<T>::const_iterator itBlockEnd = std::cbegin(data) + *it;
+        if (itBlockBegin != itBlockEnd) {
+            std::copy(itBlockBegin, itBlockEnd, std::back_inserter(ret));
+        }
+        itBlockBegin = itBlockEnd + 1;
+    }
+
+    // copy last block.
+    if (itBlockBegin != data.end()) {
+        std::copy(itBlockBegin, std::cend(data), std::back_inserter(ret));
+    }
+
+    return ret;
+}
+
 #endif

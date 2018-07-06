@@ -9,6 +9,8 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Geometry/Material/Headers/Material.h"
 
+#include <ECS.h>
+
 namespace Divide {
 
 namespace {
@@ -160,6 +162,9 @@ bool SceneGraph::removeNode(SceneGraphNode_wptr node) {
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
+
+    ECS::ECS_Engine->Update(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
+
     // Gather all nodes in order
     _orderedNodeList.resize(0);
     _root->getOrderedNodeList(_orderedNodeList);

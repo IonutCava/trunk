@@ -125,7 +125,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -185,7 +185,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -236,7 +236,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>

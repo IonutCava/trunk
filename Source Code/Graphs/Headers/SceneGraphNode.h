@@ -45,10 +45,14 @@
 #include "Graphs/Components/Headers/NavigationComponent.h"
 #include "Graphs/Components/Headers/NetworkingComponent.h"
 
+#include <ECS.h>
+
 namespace Divide {
 class Transform;
 class SceneGraph;
 class SceneState;
+struct TransformDirty;
+struct TransformClean;
 
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
@@ -88,7 +92,9 @@ class SceneTransform : public SceneNode {
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneTransform);
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
-class SceneGraphNode : public GUIDWrapper,
+class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
+                       protected ECS::Event::IEventListener,
+                       public GUIDWrapper,
                        private NonCopyable,
                        public std::enable_shared_from_this<SceneGraphNode> {
     static const size_t INITIAL_CHILD_COUNT = 128;
@@ -331,6 +337,11 @@ class SceneGraphNode : public GUIDWrapper,
     inline SGNComponent* getComponent(SGNComponent::ComponentType type) const {
         return _components[getComponentIdx(type)].get();
     }
+
+    void RegisterEventCallbacks();
+    void OnTransformDirty(const TransformDirty* event);
+    void OnTransformClean(const TransformClean* event);
+
    private:
     friend class SGNRelationshipCache;
     inline const SGNRelationshipCache& relationshipCache() const {

@@ -15,6 +15,9 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
+#include "ECS/Events/Headers/TransformEvents.h"
+#include "ECS/Components/Headers/TransformComponent.h"
+
 namespace Divide {
 
 SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
@@ -36,6 +39,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
 {
     assert(_node != nullptr);
     _children.reserve(INITIAL_CHILD_COUNT);
+
+    RegisterEventCallbacks();
 
     for (std::atomic_bool& flag : _updateFlags) {
         flag = false;
@@ -95,6 +100,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
 /// If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode()
 {
+    UnregisterAllEventCallbacks();
+
     if (getParent().lock()) {
         Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
     }
@@ -111,6 +118,34 @@ SceneGraphNode::~SceneGraphNode()
 
     if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
         _node.reset();
+    }
+}
+
+void SceneGraphNode::RegisterEventCallbacks()
+{
+    RegisterEventCallback(&SceneGraphNode::OnTransformDirty);
+    RegisterEventCallback(&SceneGraphNode::OnTransformClean);
+}
+
+void SceneGraphNode::OnTransformDirty(const TransformDirty* event) {
+    // are we targeted by the event?
+    if (GetEntityID() == event->ownerID) {
+        ReadLock r_lock(_childLock);
+        U32 childCount = getChildCountLocked();
+        for (U32 i = 0; i < childCount; ++i) {
+            ECS::ECS_Engine->SendEvent<ParentTransformDirty>(_children[i]->GetEntityID(), event->type);
+        }
+    }
+}
+
+void SceneGraphNode::OnTransformClean(const TransformClean* event) {
+    // are we targeted by the event?
+    if (GetEntityID() == event->ownerID) {
+        ReadLock r_lock(_childLock);
+        U32 childCount = getChildCountLocked();
+        for (U32 i = 0; i < childCount; ++i) {
+            ECS::ECS_Engine->SendEvent<ParentTransformClean>(_children[i]->GetEntityID());
+        }
     }
 }
 
@@ -668,4 +703,5 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const Sc
 
     return true;
 }
+
 };
