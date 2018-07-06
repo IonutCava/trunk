@@ -18,12 +18,12 @@ class PreRenderBatch {
     void execute(const FilterStack& stack, GFX::CommandBuffer& buffer);
     void reshape(U16 width, U16 height);
 
-    void bindOutput(U8 slot);
+    TextureData getOutput(U32 binding);
 
     RenderTargetHandle inputRT() const;
     RenderTargetHandle& outputRT();
 
-    inline void toggleAdaptivExposure(const bool state) {
+    inline void toggleAdaptiveExposure(const bool state) {
         _adaptiveExposureControl = state;
     }
 

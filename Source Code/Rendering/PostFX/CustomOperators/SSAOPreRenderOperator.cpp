@@ -244,8 +244,10 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 }
 
-void SSAOPreRenderOperator::debugPreview(U8 slot) const {
-    _ssaoOutputBlurred._rt->bind(slot, RTAttachmentType::Colour, 0);
+TextureData SSAOPreRenderOperator::getDebugOutput() const {
+    TextureData ret;
+    ret = _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    return ret;
 }
 
 };

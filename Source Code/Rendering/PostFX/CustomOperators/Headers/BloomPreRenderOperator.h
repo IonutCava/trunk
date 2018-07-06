@@ -47,7 +47,7 @@ class BloomPreRenderOperator : public PreRenderOperator {
     void idle(const Configuration& config) override;
     void execute(GFX::CommandBuffer& bufferInOut) override;
     void reshape(U16 width, U16 height) override;
-    void debugPreview(U8 slot) const;
+    TextureData getDebugOutput() const;
 
    private:
     RenderTargetHandle _bloomOutput;

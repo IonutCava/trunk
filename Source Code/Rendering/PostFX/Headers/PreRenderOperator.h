@@ -59,7 +59,7 @@ class NOINITVTABLE PreRenderOperator {
 
     inline FilterType operatorType() const { return _operatorType; }
 
-    virtual void debugPreview(U8 slot) const;
+    virtual TextureData getDebugOutput() const;
 
     static void cacheDisplaySettings(const GFXDevice& context);
 

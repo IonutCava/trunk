@@ -110,7 +110,16 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
 
         _previousLuminance = _context.renderTargetPool().allocateRT(desc);
     }
-
+    _toneMapConstants.set("luminanceMipLevel",
+                          PushConstantType::INT,
+                          to_I32(_currentLuminance
+                          ._rt
+                          ->getAttachment(RTAttachmentType::Colour, 0)
+                          .texture()
+                          ->getMaxMipLevel()));
+    _toneMapConstants.set("exposureMipLevel",
+                          PushConstantType::INT,
+                          0);
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_context, *this, _resCache));
@@ -136,12 +145,15 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     //_debugOperator = hdrBatch[0];
 }
 
-void PreRenderBatch::bindOutput(U8 slot) {
+TextureData PreRenderBatch::getOutput(U32 binding) {
+    TextureData ret;
     if (_debugOperator != nullptr) {
-        _debugOperator->debugPreview(slot);
+        ret = _debugOperator->getDebugOutput();
     } else {
-        _postFXOutput._rt->bind(slot, RTAttachmentType::Colour, 0);
+        ret = _postFXOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
     }
+    ret.setBinding(binding);
+    return ret;
 }
 
 void PreRenderBatch::idle(const Configuration& config) {
@@ -174,11 +186,12 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
 
+    TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
+    data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-        data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
         TextureData data1 = _previousLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
         data1.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT1));
 
@@ -221,11 +234,8 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(buffer, pipelineCmd);
 
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    TextureData data0 = inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
-    data0.setBinding(to_U32(ShaderProgram::TextureUsage::UNIT0));
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.addTexture(data0);
 
     if (_adaptiveExposureControl) {

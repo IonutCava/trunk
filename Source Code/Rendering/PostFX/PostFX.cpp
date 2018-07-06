@@ -159,8 +159,8 @@ void PostFX::apply() {
     GFX::SetCamera(buffer, setCameraCommand);
 
     _preRenderBatch->execute(_filterStackCount, buffer);
-    _preRenderBatch->bindOutput(to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
 
+    TextureData output = _preRenderBatch->getOutput(to_U32(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
     TextureData data0 = _underwaterTexture->getData();
     data0.setBinding(to_U32(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     TextureData data1 = _noise->getData();
@@ -169,8 +169,8 @@ void PostFX::apply() {
     data2.setBinding(to_U32(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
     RenderTarget& screenRT = _gfx->renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    Texture_ptr depth = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture();
-    depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
+    TextureData depthData = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
+    depthData.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
@@ -186,6 +186,8 @@ void PostFX::apply() {
     GFX::SendPushConstants(buffer, sendPushConstantsCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    bindDescriptorSetsCmd._set._textureData.addTexture(depthData);
+    bindDescriptorSetsCmd._set._textureData.addTexture(output);
     bindDescriptorSetsCmd._set._textureData.addTexture(data0);
     bindDescriptorSetsCmd._set._textureData.addTexture(data1);
     bindDescriptorSetsCmd._set._textureData.addTexture(data2);

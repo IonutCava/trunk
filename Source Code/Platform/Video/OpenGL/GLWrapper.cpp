@@ -1061,6 +1061,18 @@ void GL_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
 }
 
 bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
+    STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
+    if (false) {
+        constexpr vectorAlg::vecSize k_textureThreshold = 3;
+        if (textureData.textures().size() > k_textureThreshold) {
+            GLushort offset = 0;
+            vectorImpl<GLuint> handles;
+            vectorImpl<GLuint> samplers;
+            ///etc
+
+            GL_API::bindTextures(offset, handles.size(), handles.data(), samplers.data());
+        }
+    }
     for (const TextureData& data : textureData.textures()) {
         makeTextureResident(data);
     }

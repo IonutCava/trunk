@@ -39,7 +39,8 @@ void PreRenderOperator::reshape(U16 width, U16 height) {
     }
 }
 
-void PreRenderOperator::debugPreview(U8 slot) const {
+TextureData PreRenderOperator::getDebugOutput() const {
+    return TextureData();
 };
 
 }; //namespace Divide

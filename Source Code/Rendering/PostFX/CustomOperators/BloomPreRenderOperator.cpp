@@ -192,7 +192,8 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 }
 
-void BloomPreRenderOperator::debugPreview(U8 slot) const {
+TextureData BloomPreRenderOperator::getDebugOutput() const {
+    return TextureData();
 }
 
 };
