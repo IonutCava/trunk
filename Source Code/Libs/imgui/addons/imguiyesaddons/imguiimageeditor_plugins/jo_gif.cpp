@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#undef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui_internal.h"
+
 /* public domain, Simple, Minimalistic GIF writer - http://jonolick.com
  *
  * Quick Notes:
@@ -43,10 +47,6 @@
 #define JO_INCLUDE_GIF_H
 
 #include <stdio.h>
-
-#undef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui_internal.h"
 
 // To get a header file for this, either cut and paste the header,
 // or create jo_gif.h, #define JO_GIF_HEADER_FILE_ONLY, and

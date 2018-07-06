@@ -161,7 +161,7 @@ inline static void GetVerticalGradientTopAndBottomColors(ImU32 c,float fillColor
 
     // New code:
     //#define IM_COL32(R,G,B,A)    (((ImU32)(A)<<IM_COL32_A_SHIFT) | ((ImU32)(B)<<IM_COL32_B_SHIFT) | ((ImU32)(G)<<IM_COL32_G_SHIFT) | ((ImU32)(R)<<IM_COL32_R_SHIFT))
-    const int fcgi = (int)(fillColorGradientDeltaIn0_05*255.0f);
+    const int fcgi = fillColorGradientDeltaIn0_05*255.0f;
     const int R = (unsigned char) (c>>IM_COL32_R_SHIFT);    // The cast should reset upper bits (as far as I hope)
     const int G = (unsigned char) (c>>IM_COL32_G_SHIFT);
     const int B = (unsigned char) (c>>IM_COL32_B_SHIFT);
@@ -209,7 +209,7 @@ void ImDrawListAddConvexPolyFilledWithVerticalGradient(ImDrawList *dl, const ImV
     const ImVec2 uv = GImGui->DrawListSharedData.TexUvWhitePixel;
     const bool anti_aliased = GImGui->Style.AntiAliasedFill;
 
-    float height=0;
+    int height=0;
     if (miny<=0 || maxy<=0) {
         const float max_float = 999999999999999999.f;
         miny=max_float;maxy=-max_float;

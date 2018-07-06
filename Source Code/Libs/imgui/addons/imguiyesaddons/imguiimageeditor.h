@@ -108,7 +108,7 @@ NOTES:
  *                                            IMGUIIMAGEEDITOR_NO_STB_IMAGE_WRITE_PLUGIN (if you don't need .tga and .bmp support,
  *                                            and you use other plugins for .png and .jpg). However, since tiny_ico.h needs a png
  *                                            encoder, and it currently supports only <stb_image_write.h>, this is currently possible
- *                                            only if you disable .ico support with IMGUIIMAGEEDITOR_NO_TINY_ICON_PLUGIN too.
+ *                                            only if you disable .ico support with IMGUIIMAGEEDITOR_NO_TINY_ICO_PLUGIN too.
  *                                            A modification of tiny_ico.h that use the lodePng encoder can be added, if somebody requests it.
  *
  * IMGUIIMAGEEDITOR_LOAD_ONLY_SAVABLE_FORMATS - does what it says
@@ -128,6 +128,20 @@ NOTES:
 */
 
 /* CHANGELOG:
+ IMGUIIMAGEEDITOR_VERSION 0.32
+ * Updated stb_image_write.h
+ * Now if stb_image_write.h is used to save .png files
+ * (that is: IMGUIIMAGEEDITOR_ENABLE_NON_STB_PLUGINS is not defined OR IMGUIIMAGEEDITOR_NO_LODEPNG_PLUGIN is defined)
+ * and ZLIB is used (that is: the program links to -lz and IMGUI_USE_ZLIB OR IMGUI_USE_MINIZIP is defined)
+ * than ZLib is used to improve png compression.
+ * The result can sometimes be better than lodePng, but I haven't made many tests.
+ *
+ * NOTE: I think lodePng "could" work with full ZLib too, but it's to tough for me to make it work
+ * (considering that in some code paths I can use lodePng to decode pngs too, and that I've already
+ * spent a couple of hours without understanding where I can change the encoder settings to
+ * override the zlib compression). It's not even clear how much gain (if any) we can get with the replacement.
+
+
  IMGUIIMAGEEDITOR_VERSION 0.31
  * Updated stb_image.h, stb_image_write.h, stb_image_resize.h. Added lodepng.h/cpp.
  *

@@ -68,7 +68,17 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
     _menuBar = std::make_unique<MenuBar>(context, true);
     _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
     
-    _mainWindow = nullptr;
+    ResourceDescriptor shaderDescriptor("IMGUI");
+    shaderDescriptor.setThreadedLoading(false);
+    _imguiProgram = CreateResource<ShaderProgram>(_context.gfx().parent().resourceCache(), shaderDescriptor);
+
+    _mainWindow = &_context.app().windowManager().getWindow(0u);
+    _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
+    _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
+    _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
+    _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
+    _activeWindowGUID = _mainWindow->getGUID();
+
     REGISTER_FRAME_LISTENER(this, 99999);
 }
 
@@ -94,6 +104,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         // double init
         return false;
     }
+    ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pPixels;
     int iWidth;
@@ -128,17 +139,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.Fonts->ClearTexData();
 
 
-    ResourceDescriptor shaderDescriptor("IMGUI");
-    shaderDescriptor.setThreadedLoading(false);
-    _imguiProgram = CreateResource<ShaderProgram>(_context.gfx().parent().resourceCache(), shaderDescriptor);
-
-    _mainWindow = &context().app().windowManager().getWindow(0u);
-    _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
-    _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
-    _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
-    _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
-    _activeWindowGUID = _mainWindow->getGUID();
-
+    
     io.KeyMap[ImGuiKey_Tab] = Input::KeyCode::KC_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = Input::KeyCode::KC_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = Input::KeyCode::KC_RIGHT;
@@ -152,6 +153,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.KeyMap[ImGuiKey_Backspace] = Input::KeyCode::KC_BACK;
     io.KeyMap[ImGuiKey_Enter] = Input::KeyCode::KC_RETURN;
     io.KeyMap[ImGuiKey_Escape] = Input::KeyCode::KC_ESCAPE;
+    io.KeyMap[ImGuiKey_Space] = Input::KeyCode::KC_SPACE;
     io.KeyMap[ImGuiKey_A] = Input::KeyCode::KC_A;
     io.KeyMap[ImGuiKey_C] = Input::KeyCode::KC_C;
     io.KeyMap[ImGuiKey_V] = Input::KeyCode::KC_V;
@@ -176,11 +178,10 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 }
 
 void Editor::close() {
-    Console::unbindConsoleOutput(_consoleCallbackIndex);
-    _panelManager.reset();
-    ImGui::Shutdown();
     _fontTexture.reset();
-    _imguiProgram.reset();
+    Console::unbindConsoleOutput(_consoleCallbackIndex);
+    _panelManager->destroy();
+    ImGui::DestroyContext();
 }
 
 void Editor::toggle(const bool state) {

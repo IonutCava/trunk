@@ -326,12 +326,8 @@ void TabContentProvider(ImGui::TabWindow::TabLabel* tab,ImGui::TabWindow& parent
                 tab->setModified(false);
                 fileNotPresent = !ImGuiFs::FileExists(chosenPath);
                 if (!fileNotPresent) {
-                    ImVector<char> tmp;
-                    ImGuiFs::FileGetContent(chosenPath,tmp);
-                    if (tmp.size()) {
-                        codeEditorText = &tmp[0];
-                        codeEditorText[tmp.size()]='\0';
-                    }
+                    ImVector<char> tmp;ImGuiFs::FileGetContent(chosenPath,tmp,true);
+                    if (tmp.size()>0) codeEditorText = &tmp[0];
                     ImGuiFs::PathGetExtension(chosenPath,relativePath); // relativePath now is ".cpp" or something like that
                     tab->userInt=500+(int)ImGuiCe::GetLanguageFromExtension(relativePath);
                     codeEditorFlags = ImGuiInputTextFlags_ResetText;

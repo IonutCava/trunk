@@ -85,6 +85,7 @@ HEADERS+=  $$IMGUI_BASE_PATH"/imgui.h"						    \
 	   $$IMGUI_BASE_PATH"/addons/imguibindings/ImImpl_Binding_WinAPI.h"	    \
 	   $$IMGUI_BASE_PATH"/addons/imguibindings/ImImpl_Binding_Direct3D9.h"	    \
 	   $$IMGUI_BASE_PATH"/addons/imguibindings/imguibindings.h"		    \
+	   $$IMGUI_BASE_PATH"/addons/imguibindings/stb_image.h"			    \
 	   $$IMGUI_BASE_PATH"/addons/imguibindings/imguistring/imguistring.h"	    \
 	   $$IMGUI_BASE_PATH"/addons/imguifilesystem/imguifilesystem.h"		    \
 	   $$IMGUI_BASE_PATH"/addons/imguifilesystem/dirent_portable.h"		    \
@@ -265,5 +266,5 @@ LIBS+= -ld3d9 -luser32 -lkernel32 -static-libgcc -static-libstdc++
 #DEFINES+=NO_IMGUIDATECHOOSER
 #DEFINES+=IMGUICODEEDITOR_DEBUG
 #DEFINES+=IMGUISTRING_STL_FALLBACK
-
+#DEFINES+=IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON # It's now mandatory for Software Cursors
 

@@ -1,12 +1,15 @@
 // ImGui GLFW binding with Vulkan + shaders
-// FIXME: Changes of ImTextureID aren't supported by this binding! Please, someone add it!
+
+// Missing features:
+//  [ ] User texture binding. Changes of ImTextureID aren't supported by this binding! See https://github.com/ocornut/imgui/pull/914
 
 // You can copy and use unmodified imgui_impl_* files in your project. See main.cpp for an example of using this.
 // If you use this binding you'll need to call 5 functions: ImGui_ImplXXXX_Init(), ImGui_ImplXXX_CreateFontsTexture(), ImGui_ImplXXXX_NewFrame(), ImGui_ImplXXXX_Render() and ImGui_ImplXXXX_Shutdown().
 // If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
-#include <imgui.h>
+#include "imgui.h"
+#include "imgui_impl_glfw_vulkan.h"
 
 // GLFW
 #define GLFW_INCLUDE_NONE
@@ -18,8 +21,6 @@
 #define GLFW_EXPOSE_NATIVE_WGL
 #include <GLFW/glfw3native.h>
 #endif
-
-#include "imgui_impl_glfw_vulkan.h"
 
 // GLFW Data
 static GLFWwindow*  g_Window = NULL;
@@ -36,7 +37,7 @@ static VkDescriptorPool       g_DescriptorPool = VK_NULL_HANDLE;
 static void (*g_CheckVkResult)(VkResult err) = NULL;
 
 static VkCommandBuffer        g_CommandBuffer = VK_NULL_HANDLE;
-static size_t                 g_BufferMemoryAlignment = 256;
+static VkDeviceSize           g_BufferMemoryAlignment = 256;
 static VkPipelineCreateFlags  g_PipelineCreateFlags = 0;
 static int                    g_FrameIndex = 0;
 
@@ -52,8 +53,8 @@ static VkImageView            g_FontView = VK_NULL_HANDLE;
 
 static VkDeviceMemory         g_VertexBufferMemory[IMGUI_VK_QUEUED_FRAMES] = {};
 static VkDeviceMemory         g_IndexBufferMemory[IMGUI_VK_QUEUED_FRAMES] = {};
-static size_t                 g_VertexBufferSize[IMGUI_VK_QUEUED_FRAMES] = {};
-static size_t                 g_IndexBufferSize[IMGUI_VK_QUEUED_FRAMES] = {};
+static VkDeviceSize           g_VertexBufferSize[IMGUI_VK_QUEUED_FRAMES] = {};
+static VkDeviceSize           g_IndexBufferSize[IMGUI_VK_QUEUED_FRAMES] = {};
 static VkBuffer               g_VertexBuffer[IMGUI_VK_QUEUED_FRAMES] = {};
 static VkBuffer               g_IndexBuffer[IMGUI_VK_QUEUED_FRAMES] = {};
 
@@ -164,7 +165,7 @@ void ImGui_ImplGlfwVulkan_RenderDrawLists(ImDrawData* draw_data)
             vkDestroyBuffer(g_Device, g_VertexBuffer[g_FrameIndex], g_Allocator);
         if (g_VertexBufferMemory[g_FrameIndex])
             vkFreeMemory(g_Device, g_VertexBufferMemory[g_FrameIndex], g_Allocator);
-        size_t vertex_buffer_size = ((vertex_size-1) / g_BufferMemoryAlignment+1) * g_BufferMemoryAlignment;
+        VkDeviceSize vertex_buffer_size = ((vertex_size-1) / g_BufferMemoryAlignment+1) * g_BufferMemoryAlignment;
         VkBufferCreateInfo buffer_info = {};
         buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_info.size = vertex_buffer_size;
@@ -194,7 +195,7 @@ void ImGui_ImplGlfwVulkan_RenderDrawLists(ImDrawData* draw_data)
             vkDestroyBuffer(g_Device, g_IndexBuffer[g_FrameIndex], g_Allocator);
         if (g_IndexBufferMemory[g_FrameIndex])
             vkFreeMemory(g_Device, g_IndexBufferMemory[g_FrameIndex], g_Allocator);
-        size_t index_buffer_size = ((index_size-1) / g_BufferMemoryAlignment+1) * g_BufferMemoryAlignment;
+        VkDeviceSize index_buffer_size = ((index_size-1) / g_BufferMemoryAlignment+1) * g_BufferMemoryAlignment;
         VkBufferCreateInfo buffer_info = {};
         buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_info.size = index_buffer_size;
@@ -754,6 +755,7 @@ bool    ImGui_ImplGlfwVulkan_Init(GLFWwindow* window, bool install_callbacks, Im
     io.KeyMap[ImGuiKey_Insert] = GLFW_KEY_INSERT;
     io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
     io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
+    io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
     io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
     io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
     io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
@@ -787,7 +789,6 @@ bool    ImGui_ImplGlfwVulkan_Init(GLFWwindow* window, bool install_callbacks, Im
 void ImGui_ImplGlfwVulkan_Shutdown()
 {
     ImGui_ImplGlfwVulkan_InvalidateDeviceObjects();
-    ImGui::Shutdown();
 }
 
 void ImGui_ImplGlfwVulkan_NewFrame()

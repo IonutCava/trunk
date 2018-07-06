@@ -198,12 +198,14 @@ IMIMPL_BUILD_SDF				# builds Signed Distance Fonts for ImGui. To display them co
 						# Warning: ARTIFACTS will appear when displaying any user ImTextureID fragment with ALPHA inside the range (0,255) (edges excluded).
 						# This also affects all the images displayed in the imguiimageeditor addon, when their ALPHA is not 0 or 255.
 						# (This happens because we use a single shader to display everything).
+						# Warning: I'm not sure this works with the imguifreetype addon (YES_IMGUIFREETYPE).
 
-IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON:	# Normally ImGui::GetIO()->Fonts->ClearInputData() and ImGui::GetIO()->Fonts->ClearTexData() are called as soon as possible saving some memory.
+IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON:	# Normally ImGui::GetIO()->Fonts->ClearInputData() and ImGui::GetIO()->Fonts->ClearTexData() are called as soon as possible to save some memory.
 						# However this prevents you from appending new fonts later (e.g. in InitGL() instead of in the main() method).
-						# This definition fixes this problem.
+						# And this also prevents you from using SOFTWARE CURSORS.
+						# If you want to use software cursors or to append fonts later, please define this definition.
 						# Possible future ImGui dynamic atlas support will require input data anyway, so this definition will be made enabled by default.
-						# The input data is cleaned up before the delation of the font texture if IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON is not defined.
+						# The input data is cleaned up before the delation of the font texture if IMGUIBINDINGS_DONT_CLEAR_INPUT_DATA_SOON is defined.
 						# This definition is available for the Direct3D binding as well.
 
 4 -> OPTIONALLY you can use other definitions at the project level:

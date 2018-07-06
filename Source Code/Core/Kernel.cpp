@@ -753,7 +753,7 @@ void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
     WaitForAllTasks(_taskPool, true, true, true);
     if (Config::Build::ENABLE_EDITOR) {
-        _platformContext->editor().close();
+        _platformContext->editor().toggle(false);
     }
     SceneManager::onShutdown();
     Script::onShutdown();

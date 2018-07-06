@@ -265,21 +265,21 @@ public:
         IMGUI_API Style();
 
         IMGUI_API static bool Edit(Style& style);
-        static void Reset(Style& style_) {style_ = Style();}
+        static void Reset(Style& style) {style = Style();}
 
 #       if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
         IMGUI_API static bool Save(const Style& style,ImGuiHelper::Serializer& s);
-        static inline bool Save(const Style &style_, const char *filename)    {
+        static inline bool Save(const Style &style, const char *filename)    {
             ImGuiHelper::Serializer s(filename);
-            return Save(style_,s);
+            return Save(style,s);
         }
 #       endif //NO_IMGUIHELPER_SERIALIZATION_SAVE
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_LOAD
         IMGUI_API static bool Load(Style& style, ImGuiHelper::Deserializer& d, const char ** pOptionalBufferStart=NULL);
-        static inline bool Load(Style& style_,const char* filename) {
+        static inline bool Load(Style& style,const char* filename) {
             ImGuiHelper::Deserializer d(filename);
-            return Load(style_,d);
+            return Load(style,d);
         }
 #       endif //NO_IMGUIHELPER_SERIALIZATION_LOAD
 #       endif //NO_IMGUIHELPER_SERIALIZATION

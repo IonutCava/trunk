@@ -228,6 +228,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
     io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
     io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
+    io.KeyMap[ImGuiKey_Space] = VK_SPACE;
 
     io.KeyMap[ImGuiKey_A] = 'A';
     io.KeyMap[ImGuiKey_C] = 'C';
@@ -321,6 +322,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
     gImGuiInverseFPSClampOutsideImGui = pOptionalInitParams ? ((pOptionalInitParams->gFpsClampOutsideImGui!=0) ? (1.0f/pOptionalInitParams->gFpsClampOutsideImGui) : 1.0f) : -1.0f;
     gImGuiDynamicFPSInsideImGui = pOptionalInitParams ? pOptionalInitParams->gFpsDynamicInsideImGui : false;
 
+    ImGui::CreateContext();
     InitImGui(pOptionalInitParams);
     InitGL();
     if (gImGuiPostInitGLCallback) gImGuiPostInitGLCallback();
@@ -481,7 +483,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
 
 
     DestroyGL();
-    ImGui::Shutdown();
+    ImGui::DestroyContext();
     DestroyImGuiFontTexture();
     //DestroyImGuiProgram();
     //DestroyImGuiBuffer();

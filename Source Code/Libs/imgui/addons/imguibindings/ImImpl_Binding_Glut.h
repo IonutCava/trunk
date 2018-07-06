@@ -335,6 +335,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)    {
     io.KeyMap[ImGuiKey_Insert] =        specialCharMapAddend + GLUT_KEY_INSERT;
     // -----------------------------------------
 
+    io.KeyMap[ImGuiKey_Space] =     32;       // Space  (ascii)
     io.KeyMap[ImGuiKey_Delete] =    127;      // Delete  (ascii) (0x006F)
     io.KeyMap[ImGuiKey_Backspace] = 8;        // Backspace  (ascii)
     io.KeyMap[ImGuiKey_Enter] = 13;           // Enter  (ascii)
@@ -487,6 +488,7 @@ static void ImImplMainLoopFrame()	{
 int ImImpl_Main(const ImImpl_InitParams* pOptionalInitParams,int argc, char** argv)
 {
     if (!InitBinding(pOptionalInitParams,argc,argv)) return -1;	
+    ImGui::CreateContext();
     InitImGui(pOptionalInitParams);
     ImGuiIO& io = ImGui::GetIO();        
 
@@ -510,7 +512,7 @@ int ImImpl_Main(const ImImpl_InitParams* pOptionalInitParams,int argc, char** ar
 
 
 
-    ImGui::Shutdown();
+    ImGui::DestroyContext();
     DestroyGL();
     DestroyImGuiFontTexture();
     DestroyImGuiProgram();

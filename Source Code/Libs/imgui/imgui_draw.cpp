@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-// dear imgui, v1.54 WIP
+// dear imgui, v1.60 WIP
 // (drawing and font code)
 
 // Contains implementation for
@@ -177,6 +177,8 @@ void ImGui::StyleColorsClassic(ImGuiStyle* dst)
     colors[ImGuiCol_TextSelectedBg]         = ImVec4(0.00f, 0.00f, 1.00f, 0.35f);
     colors[ImGuiCol_ModalWindowDarkening]   = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
     colors[ImGuiCol_DragDropTarget]         = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+    colors[ImGuiCol_NavHighlight]           = colors[ImGuiCol_HeaderHovered];
+    colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 }
 
 void ImGui::StyleColorsDark(ImGuiStyle* dst)
@@ -227,6 +229,8 @@ void ImGui::StyleColorsDark(ImGuiStyle* dst)
     colors[ImGuiCol_TextSelectedBg]         = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
     colors[ImGuiCol_ModalWindowDarkening]   = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     colors[ImGuiCol_DragDropTarget]         = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+    colors[ImGuiCol_NavHighlight]           = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 }
 
 // Those light colors are better suited with a thicker font than the default one + FrameBorder
@@ -280,6 +284,8 @@ void ImGui::StyleColorsLight(ImGuiStyle* dst)
     colors[ImGuiCol_TextSelectedBg]         = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
     colors[ImGuiCol_ModalWindowDarkening]   = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
     colors[ImGuiCol_DragDropTarget]         = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+    colors[ImGuiCol_NavHighlight]           = colors[ImGuiCol_HeaderHovered];
+    colors[ImGuiCol_NavWindowingHighlight]  = ImVec4(0.70f, 0.70f, 0.70f, 0.70f);
 }
 
 //-----------------------------------------------------------------------------
@@ -1486,7 +1492,7 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg)
     return new_font_cfg.DstFont;
 }
 
-// Default font TTF is compressed with stb_compress then base85 encoded (see extra_fonts/binary_to_compressed_c.cpp for encoder)
+// Default font TTF is compressed with stb_compress then base85 encoded (see misc/fonts/binary_to_compressed_c.cpp for encoder)
 static unsigned int stb_decompress_length(unsigned char *input);
 static unsigned int stb_decompress(unsigned char *output, unsigned char *i, unsigned int length);
 static const char*  GetDefaultCompressedFontDataTTFBase85();
@@ -2700,7 +2706,7 @@ void ImGui::RenderRectFilledRangeH(ImDrawList* draw_list, const ImRect& rect, Im
 // DEFAULT FONT DATA
 //-----------------------------------------------------------------------------
 // Compressed with stb_compress() then converted to a C array.
-// Use the program in extra_fonts/binary_to_compressed_c.cpp to create the array from a TTF file.
+// Use the program in misc/fonts/binary_to_compressed_c.cpp to create the array from a TTF file.
 // Decompression from stb.h (public domain) by Sean Barrett https://github.com/nothings/stb/blob/master/stb.h
 //-----------------------------------------------------------------------------
 

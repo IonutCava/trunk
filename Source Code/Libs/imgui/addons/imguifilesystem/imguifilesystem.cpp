@@ -1355,7 +1355,7 @@ void PathGetAbsoluteWithZipSupport(const char* path,char* rv)   {
 }
 
 #endif //IMGUI_USE_MINIZIP
-template <typename CharType> bool FileGetContentBase(const char* path,ImVector<CharType>& bufferOut,const char* password) {
+template <typename CharType> bool FileGetContentBase(const char* path,ImVector<CharType>& bufferOut,bool openInTextMode,const char* password) {
     bufferOut.clear();
     char mainPath[MAX_PATH_BYTES];
 #   ifdef IMGUI_USE_MINIZIP
@@ -1369,7 +1369,7 @@ template <typename CharType> bool FileGetContentBase(const char* path,ImVector<C
 #   else //IMGUI_USE_MINIZIP
     strcpy(mainPath,path);
 #   endif //IMGUI_USE_MINIZIP
-    FILE* fin = ImFileOpen(mainPath,"rb");
+    FILE* fin = ImFileOpen(mainPath,openInTextMode?"rt":"rb");
     if (!fin) return false;
     fseek(fin,0,SEEK_END);
     const long szl = ftell(fin);
@@ -1380,9 +1380,10 @@ template <typename CharType> bool FileGetContentBase(const char* path,ImVector<C
         return false;
     }
     fseek(fin,0,SEEK_SET);
+    if (openInTextMode) {bufferOut.resize(sz+1);bufferOut[sz]='\0';}
+    else bufferOut.resize(sz);
     if (sz>0)   {
-        bufferOut.resize(sz);
-        if (bufferOut.size()==(int)sz) fread(&bufferOut[0],(size_t)sz,1,fin);
+	if (bufferOut.size()>=(int)sz) fread(&bufferOut[0],(size_t)sz,1,fin);
         else {
             fprintf(stderr,"Error in: FileGetContent(\"%s\"): file too big.\n",mainPath);
             bufferOut.clear();
@@ -1393,8 +1394,8 @@ template <typename CharType> bool FileGetContentBase(const char* path,ImVector<C
     fclose(fin);fin=NULL;
     return true;
 }
-bool FileGetContent(const char* path,ImVector<unsigned char>& bufferOut,const char* password) {return FileGetContentBase<unsigned char>(path,bufferOut,password);}
-bool FileGetContent(const char* path,ImVector<char>& bufferOut,const char* password) {return FileGetContentBase<char>(path,bufferOut,password);}
+bool FileGetContent(const char* path,ImVector<unsigned char>& bufferOut,bool openInTextMode,const char* password) {return FileGetContentBase<unsigned char>(path,bufferOut,openInTextMode,password);}
+bool FileGetContent(const char* path,ImVector<char>& bufferOut,bool openInTextMode,const char* password) {return FileGetContentBase<char>(path,bufferOut,openInTextMode,password);}
 #endif // IMGUIFS_NO_EXTRA_METHODS
 // End definitions of some helper classes----------------------------------------------------------------------------------------
 

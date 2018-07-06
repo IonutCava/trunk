@@ -247,7 +247,6 @@ static void ImDrawListAddRectWithVerticalGradient(ImDrawList *dl, const ImVec2 &
 }
 } // namespace
 
-NodeGraphEditor::Style NodeGraphEditor::style;  // static variable initialization
 inline static bool EditColorImU32(const char* label,ImU32& color) {
     static ImVec4 tmp;
     tmp = ImColor(color);
@@ -567,7 +566,8 @@ void NodeGraphEditor::render()
             if (ImGui::CollapsingHeader("Style Editor##styleEditor",NULL,false))   {
                 ImGui::Separator();
                 //ImGui::ColorEditMode(colorEditMode);
-                Style::Edit(this->style);
+                Style& thisStyle = GetStyle();
+                Style::Edit(thisStyle);
                 ImGui::Separator();
 #if             (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
                 const char* saveName = "nodeGraphEditor.nge.style";
@@ -578,7 +578,7 @@ void NodeGraphEditor::render()
 #                   ifdef YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
                     pSaveName = saveNamePersistent;
 #                   endif //YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
-                    if (Style::Save(this->style,pSaveName)) {
+                    if (Style::Save(thisStyle,pSaveName)) {
 #                   ifdef YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
                         ImGui::EmscriptenFileSystemHelper::Sync();
 #                   endif //YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
@@ -591,14 +591,14 @@ void NodeGraphEditor::render()
 #                   ifdef YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
                     if (ImGuiHelper::FileExists(saveNamePersistent)) pSaveName = saveNamePersistent;
 #                   endif //YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
-                    Style::Load(this->style,pSaveName);
+                    Style::Load(thisStyle,pSaveName);
                 }
                 ImGui::SameLine();
 #               endif //NO_IMGUIHELPER_SERIALIZATION_LOAD
 #               endif //NO_IMGUIHELPER_SERIALIZATION
 
                 if (ImGui::SmallButton("Reset##resetGNEStyle")) {
-                    Style::Reset(this->style);
+                    Style::Reset(thisStyle);
                 }
             }
             ImGui::Separator();
@@ -709,6 +709,7 @@ void NodeGraphEditor::render()
 	gNodeGraphEditorWindowPadding = ImGui::GetStyle().WindowPadding;
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1,1));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+    const Style& style = GetStyle();
         ImGui::PushStyleColor(ImGuiCol_ChildBg, style.color_background);
         if (ImGui::BeginChild("scrolling_region", ImVec2(0,0), true, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollWithMouse))  {
 

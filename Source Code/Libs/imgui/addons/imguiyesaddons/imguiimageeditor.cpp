@@ -127,6 +127,65 @@ SOFTWARE.
 #ifndef IMGUIIMAGEEDITOR_NO_STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_STATIC
 #endif //IMGUIIMAGEEDITOR_NO_STB_IMAGE_WRITE_STATIC
+#if (defined(IMGUI_USE_ZLIB) || defined(IMGUI_USE_MINIZIP))
+#   include <zlib.h>    // Optimization: MUCH better compression using the zlib library (it might be better than lodePng... make some tests and see)
+// We need STBIW_MALLOC to be defined before the inclusion of stb_image_write.h:
+#ifndef STBIW_MALLOC
+#define STBIW_MALLOC(sz)        malloc(sz)
+#define STBIW_REALLOC(p,newsz)  realloc(p,newsz)
+#define STBIW_FREE(p)           free(p)
+#endif
+# define STBIW_ZLIB_COMPRESS ImGuiZLib::ZlibCompressFromMemoryStbWrite
+namespace ImGuiZLib {
+   /* You can #define STBIW_ZLIB_COMPRESS to use a custom zlib-style compress function
+   for PNG compression (instead of the builtin one), it must have the following signature:
+   unsigned char * my_compress(unsigned char *data, int data_len, int *out_len, int quality);
+   The returned data will be freed with STBIW_FREE() (free() by default),
+   so it must be heap allocated with STBIW_MALLOC() (malloc() by default),*/
+// quality defaults to 8, but can be set to 9 too (see stb_image_write.h)
+static unsigned char* ZlibCompressFromMemoryStbWrite(const unsigned char* memoryBuffer,int memoryBufferSize,int *outLen,int quality)  {
+    if (memoryBufferSize == 0  || !memoryBuffer || !outLen) return NULL;
+    int& rvSize = *outLen;
+    const int memoryChunk = memoryBufferSize/3 > (16*1024) ? (16*1024) : memoryBufferSize/3;
+    rvSize = memoryChunk;  // we start using the memoryChunk length
+    unsigned char* rv = (unsigned char*) STBIW_MALLOC(rvSize);
+
+    z_stream myZStream;
+    myZStream.next_in =  (Bytef *) memoryBuffer;
+    myZStream.avail_in = memoryBufferSize;
+    myZStream.total_out = 0;
+    myZStream.zalloc = Z_NULL;
+    myZStream.zfree = Z_NULL;
+
+    bool done = false;
+    if (deflateInit2(&myZStream,quality,Z_DEFLATED,MAX_WBITS,8,Z_DEFAULT_STRATEGY) == Z_OK) {
+        int err = Z_OK;
+        while (!done) {
+            if (myZStream.total_out >= (uLong)(rvSize)) {
+                // not enough space: we add the full memoryChunk each step
+                rvSize+= memoryChunk;
+                rv = (unsigned char*) STBIW_REALLOC(rv,rvSize);
+            }
+
+            myZStream.next_out = (Bytef *) (rv + myZStream.total_out);
+            myZStream.avail_out = rvSize - myZStream.total_out;
+
+            if ((err = deflate (&myZStream, Z_FINISH))==Z_STREAM_END) done = true;
+            else if (err != Z_OK)  break;
+        }
+        if ((err=deflateEnd(&myZStream))!= Z_OK) done=false;
+    }
+    if (done)   {
+        // clipping extra unused size
+        rvSize = myZStream.total_out;
+        rv = (unsigned char*) STBIW_REALLOC(rv,rvSize);
+    }
+    else {STBIW_FREE(rv);rv=NULL;rvSize=0;} // failed: delete it all
+
+    return rv;
+}
+}   // namespace ImGuiZLib
+#endif // IMGUI_USE_ZLIB
 #ifndef IMGUIIMAGEEDITOR_NO_STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #endif //IMGUIIMAGEEDITOR_NO_STB_IMAGE_WRITE_IMPLEMENTATION
@@ -168,12 +227,6 @@ SOFTWARE.
     }
 */
 
-// LodePng plugin has been removed (commented out)! Reason:
-// When it saves some (all?) RGBA image (as LCT_RGBA), it seems to work (I can open it in my file browser),
-// but when I load it back (with stb_image(...) or with lodePng as well) it's detected as RGB
-// and thus it does not display correctly.
-// BTW: Now, if you activate it, it still works, because it's not used (png saves go through stb_image_write.h)
-// It's only used in the Undo stack
 
 #if (!defined(IMGUIIMAGEEDITOR_NO_LODEPNG_PLUGIN) && !defined(IMGUIIMAGEEDITOR_NO_LODE_PNG_PLUGIN))
 #ifndef LODEPNG_H

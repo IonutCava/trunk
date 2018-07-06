@@ -218,9 +218,9 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
             window->RootWindow = parent_window->RootWindow;
         if (parent_window && !(flags & ImGuiWindowFlags_Modal) && (flags & (ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_Popup)))
             window->RootNonPopupWindow = parent_window->RootNonPopupWindow;
-        //window->RootNavWindow = window;
-        //while (window->RootNavWindow->Flags & ImGuiWindowFlags_NavFlattened)
-        //    window->RootNavWindow = window->RootNavWindow->ParentWindow;
+        //window->NavRootWindow = window;
+        //while (window->NavRootWindow->Flags & ImGuiWindowFlags_NavFlattened)
+        //    window->NavRootWindow = window->NavRootWindow->ParentWindow;
 
         window->Active = true;
         window->BeginOrderWithinParent = 0;
@@ -234,7 +234,7 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         window->DrawList->Clear();
         window->DrawList->Flags = (g.Style.AntiAliasedLines ? ImDrawListFlags_AntiAliasedLines : 0) | (g.Style.AntiAliasedFill ? ImDrawListFlags_AntiAliasedFill : 0);
         window->DrawList->PushTextureID(g.Font->ContainerAtlas->TexID);
-        ImRect fullscreen_rect(GetVisibleRect());
+        ImRect fullscreen_rect(GetViewportRect());
         if ((flags & ImGuiWindowFlags_ChildWindow) && !(flags & ImGuiWindowFlags_Popup) && !window_is_child_tooltip)
             PushClipRect(parent_window->ClipRect.Min, parent_window->ClipRect.Max, true);
         else
@@ -429,8 +429,10 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         // Position tooltip (always follows mouse)
         if ((flags & ImGuiWindowFlags_Tooltip) != 0 && !window_pos_set_by_api && !window_is_child_tooltip)
         {
+            float sc = g.Style.MouseCursorScale;
             ImVec2 ref_pos = g.IO.MousePos;
-            ImRect rect_to_avoid(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24, ref_pos.y + 24); // FIXME: Completely hard-coded. Store boxes in mouse cursor data? Scale? Center on cursor hit-point?
+            //ImRect rect_to_avoid(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24, ref_pos.y + 24); // FIXME: Completely hard-coded. Store boxes in mouse cursor data? Scale? Center on cursor hit-point?
+            ImRect rect_to_avoid(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24 * sc, ref_pos.y + 24 * sc); // FIXME: Hard-coded based on mouse cursor shape expectation. Exact dimension not very important.
             window->PosFloat = FindBestWindowPosForPopup(ref_pos, window->Size, &window->AutoPosLastDirection, rect_to_avoid);
             if (window->AutoPosLastDirection == ImGuiDir_None)
                 window->PosFloat = ref_pos + ImVec2(2,2); // If there's not enough room, for tooltip we prefer avoiding the cursor at all cost even if it means that part of the tooltip won't be visible.
@@ -477,12 +479,13 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
         // Draw window + handle manual resize
         ImRect title_bar_rect = window->TitleBarRect();
         const bool window_is_focused = want_focus || (g.NavWindow && window->RootNonPopupWindow == g.NavWindow->RootNonPopupWindow);
+        ImU32 title_bar_col = GetColorU32(window->Collapsed ? ImGuiCol_TitleBgCollapsed : window_is_focused ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBg);
         if (window->Collapsed)
         {
             // Title bar only
             float backup_border_size = style.FrameBorderSize;
             g.Style.FrameBorderSize = window->WindowBorderSize;
-            RenderFrame(title_bar_rect.Min, title_bar_rect.Max, GetColorU32(ImGuiCol_TitleBgCollapsed), true, window_rounding);
+            RenderFrame(title_bar_rect.Min, title_bar_rect.Max, title_bar_col, true, window_rounding);
             g.Style.FrameBorderSize = backup_border_size;
         }
         else
@@ -585,16 +588,15 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
                 //const bool window_is_focused = g.NavWindow && window->RootNonPopupWindow == g.NavWindow->RootNonPopupWindow;
 #               if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_DRAW_METHODS))
                 if (gImGuiDockpanelManagerExtendedStyle)    {
-                    ImU32 col = GetColorU32(window_is_focused ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBg);
                     ImGui::ImDrawListAddRectWithVerticalGradient(window->DrawList,
-                        title_bar_rect.GetTL(), title_bar_rect.GetBR(),col,0.15f,0,
+                        title_bar_rect.GetTL(), title_bar_rect.GetBR(),title_bar_col,0.15f,0,
                         window_rounding, ImDrawCornerFlags_TopLeft|ImDrawCornerFlags_TopRight,1.f
                     );
                 }
                 else
 #               endif // (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_DRAW_METHODS))
                 {
-                    window->DrawList->AddRectFilled(title_bar_rect.GetTL(), title_bar_rect.GetBR(), GetColorU32(window_is_focused ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBg), window_rounding, ImDrawCornerFlags_TopLeft|ImDrawCornerFlags_TopRight);
+                    window->DrawList->AddRectFilled(title_bar_rect.GetTL(), title_bar_rect.GetBR(), title_bar_col, window_rounding, ImDrawCornerFlags_TopLeft|ImDrawCornerFlags_TopRight);
                 }
             }
 
@@ -757,8 +759,8 @@ static bool DockWindowBegin(const char* name, bool* p_opened,bool* p_undocked, c
 
         // After Begin() we fill the last item / hovered data using the title bar data. Make that a standard behavior (to allow usage of context menus on title bar only, etc.).
         window->DC.LastItemId = window->MoveId;
+        window->DC.LastItemStatusFlags = IsMouseHoveringRect(title_bar_rect.Min, title_bar_rect.Max, false) ? ImGuiItemStatusFlags_HoveredRect : 0;
         window->DC.LastItemRect = title_bar_rect;
-        window->DC.LastItemRectHoveredRect = IsMouseHoveringRect(title_bar_rect.Min, title_bar_rect.Max, false);
     }
 
     // Inner clipping rectangle

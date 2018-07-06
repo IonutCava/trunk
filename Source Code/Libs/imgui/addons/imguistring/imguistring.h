@@ -300,11 +300,18 @@ public:
 
     IMGUI_FORCE_INLINE  void                 push_back(const value_type& v)  {
         if (Size == Capacity) {
+            if ((&v >= Data) && (&v < (Data+Size)))  {
 			const value_type v_val = v;	// Now v can point to old Data field
 			reserve(_grow_capacity(Size+1));
         	IMIMPL_PLACEMENT_NEW(&Data[Size]) T();
         	Data[Size++] = v_val;
 		}
+		else {
+                reserve(_grow_capacity(Size+1));
+                IMIMPL_PLACEMENT_NEW(&Data[Size]) T();
+                Data[Size++] = v;
+            }
+        }
 		else {
         	IMIMPL_PLACEMENT_NEW(&Data[Size]) T();
         	Data[Size++] = v;

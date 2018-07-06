@@ -231,7 +231,7 @@ IMGUI_API TabLabelStyle();
 void reset() {Reset(*this);}
 IMGUI_API static bool Edit(TabLabelStyle& style=TabLabelStyle::Get());
 IMGUI_API static bool EditFast(TabLabelStyle &s=TabLabelStyle::Get());
-static void Reset(TabLabelStyle& style_=TabLabelStyle::Get()) {style_ = TabLabelStyle();}
+static void Reset(TabLabelStyle& style=TabLabelStyle::Get()) {style = TabLabelStyle();}
 
 // These modify the style: some operation are not loseless!
 IMGUI_API static void InvertSelectedLook(TabLabelStyle& style=TabLabelStyle::Get());
@@ -244,16 +244,16 @@ IMGUI_API static void DarkenBackground(TabLabelStyle& style=TabLabelStyle::Get()
 #if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
 IMGUI_API static bool Save(const TabLabelStyle& style,ImGuiHelper::Serializer& s);
-static inline bool Save(const TabLabelStyle &style_, const char *filename)    {
+static inline bool Save(const TabLabelStyle &style, const char *filename)    {
     ImGuiHelper::Serializer s(filename);
-    return Save(style_,s);
+    return Save(style,s);
 }
 #endif //NO_IMGUIHELPER_SERIALIZATION_SAVE
 #ifndef NO_IMGUIHELPER_SERIALIZATION_LOAD
 IMGUI_API static bool Load(TabLabelStyle& style, ImGuiHelper::Deserializer& d, const char ** pOptionalBufferStart=NULL);
-static inline bool Load(TabLabelStyle& style_,const char* filename) {
+static inline bool Load(TabLabelStyle& style,const char* filename) {
     ImGuiHelper::Deserializer d(filename);
-    return Load(style_,d);
+    return Load(style,d);
 }
 #endif //NO_IMGUIHELPER_SERIALIZATION_LOAD
 #endif //NO_IMGUIHELPER_SERIALIZATION

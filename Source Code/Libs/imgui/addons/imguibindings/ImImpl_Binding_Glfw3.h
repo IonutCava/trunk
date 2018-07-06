@@ -229,6 +229,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
     io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
     io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
+    io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
     io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
     io.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
     io.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
@@ -520,6 +521,7 @@ static void ImImplMainLoopFrame(void* userPtr)	{
 int ImImpl_Main(const ImImpl_InitParams* pOptionalInitParams,int argc, char** argv)
 {
     if (!InitBinding(pOptionalInitParams,argc,argv)) return -1;
+    ImGui::CreateContext();
     InitImGui(pOptionalInitParams);
     ImGuiIO& io = ImGui::GetIO();        
 
@@ -571,7 +573,7 @@ ImImplMainLoopFrameStruct mainLoopFrameStruct;
 
 
     DestroyGL();
-    ImGui::Shutdown();
+    ImGui::DestroyContext();
     DestroyImGuiFontTexture();
     DestroyImGuiProgram();
     DestroyImGuiBuffer();
