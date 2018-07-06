@@ -38,7 +38,7 @@ ShaderProgram* GL_API::_activeShaderProgram = nullptr;
 /// Reset as much of the GL default state as possible within the limitations
 /// given
 void GL_API::clearStates(const bool skipShader, const bool skipTextures,
-                         const bool skipBuffers) {
+                         const bool skipBuffers, const bool skipScissor) {
     if (!skipShader) {
         setActiveProgram(nullptr);
     }
@@ -65,6 +65,10 @@ void GL_API::clearStates(const bool skipShader, const bool skipTextures,
         setActiveTransformFeedback(0);
     }
 
+    if (!skipScissor)
+    {
+        glDisable(GL_SCISSOR_TEST);
+    }
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
 }
 

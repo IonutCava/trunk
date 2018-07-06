@@ -173,7 +173,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Reset as much of the GL default state as possible within the limitations
     /// given
     void clearStates(const bool skipShader, const bool skipTextures,
-                     const bool skipBuffers);
+                     const bool skipBuffers, const bool skipScissor);
     /// Return the glsl optimisation context (created by the glsl-optimizer library)
     inline glslopt_ctx* getGLSLOptContext() const { return _GLSLOptContex; }
     void uploadDrawCommands(

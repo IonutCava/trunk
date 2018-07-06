@@ -87,12 +87,14 @@ void GL_API::beginFrame() {
 /// Finish rendering the current frame
 void GL_API::endFrame() {
     // Revert back to the default OpenGL states
-    clearStates(false, false, false);
+    clearStates(false, false, false, true);
     // CEGUI handles its own states, so render it after we clear our states but
     // before we swap buffers
     if (_enableCEGUIRendering) {
         CEGUI::System::getSingleton().renderAllGUIContexts();
     }
+    // CEGUI does not clear the scissor test properly (yet)
+    clearStates(true, true, true, false);
     // Swap buffers
     glfwSwapBuffers(GLUtil::_mainWindow);
     // Poll for new events

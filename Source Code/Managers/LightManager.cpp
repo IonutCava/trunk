@@ -91,8 +91,8 @@ bool LightManager::clear() {
 
     // Lights are removed by the sceneGraph 
     // (range_based for-loops will fail due to iterator invalidation
-    U32 lightCount = _lights.size();
-    for (U32 i = 0; i < lightCount; i++) {
+    size_t lightCount = _lights.size();
+    for (size_t i = 0; i < lightCount; i++) {
         // in case we had some light hanging
         RemoveResource(_lights[i]);
     }
