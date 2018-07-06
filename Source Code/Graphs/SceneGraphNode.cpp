@@ -46,6 +46,14 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
     _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
     _components[SGNComponent::SGN_COMP_PHYSICS]    = New PhysicsComponent(this);
     _instanceID = node->getReferenceCount();
+#   ifdef _DEBUG
+        // Red X-axis
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255)));
+        // Green Y-axis
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255))); 
+        // Blue Z-axis
+        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
+#   endif
 }
 
 ///If we are destroying the current graph node

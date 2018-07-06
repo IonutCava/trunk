@@ -242,7 +242,7 @@ void Kernel::renderScene() {
     RenderPassManager::getInstance().lock();
     // Z-prePass
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
-        SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
+        _sceneMgr.render(Z_PRE_PASS_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
 
     _GFX.ConstructHIZ();
@@ -251,7 +251,7 @@ void Kernel::renderScene() {
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(Framebuffer::defaultPolicy());
     }
 
-    SceneManager::getInstance().render(stage, *this);
+    _sceneMgr.render(stage, *this);
 
     if (postProcessing) {
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->End();
@@ -368,13 +368,6 @@ void Kernel::firstLoop() {
 void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK& sceneRenderCallback) const {
     _GFX.setRenderStage(stage);
     _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
-
-    if (_GFX.isCurrentRenderStage(DISPLAY_STAGE)) {
-        // Draw bounding boxes, skeletons, axis gizmo, etc.
-        _GFX.debugDraw(sceneRenderState);
-        // Show NavMeshes
-        AIManager::getInstance().debugDraw(false);
-    }
 }
 
 I8 Kernel::initialize(const std::string& entryPoint) {
@@ -514,6 +507,8 @@ void Kernel::shutdown(){
 void Kernel::updateResolutionCallback(I32 w, I32 h){
     Application& APP = Application::getInstance();
     APP.setResolution(w, h);
+    // Update internal resolution tracking (used for joysticks and mouse)
+    InputInterface::getInstance().updateResolution(w,h);
     //Update the graphical user interface
     vec2<U16> newResolution(w, h);
     GUI::getInstance().onResize(newResolution);
@@ -525,12 +520,16 @@ void Kernel::updateResolutionCallback(I32 w, I32 h){
         LightManager::getInstance().updateResolution(w, h);
         // Cache resolution for faster access
         SceneManager::getInstance().cacheResolution(newResolution);
-        // Update internal resolution tracking (used for joysticks and mouse)
-        InputInterface::getInstance().updateResolution(w,h);
     }
 }
 
 ///--------------------------Input Management-------------------------------------///
+
+bool Kernel::setCursorPosition(U16 x, U16 y) const {
+    _GFX.setCursorPosition(x, y);
+    return true;
+}
+
 bool Kernel::onKeyDown(const OIS::KeyEvent& key) {
     if(!_sceneMgr.onKeyDown(key)) {
     }

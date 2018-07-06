@@ -316,7 +316,7 @@ protected:
 protected:
     friend class Kernel;
     friend class Application;
-    inline void setMousePosition(U16 x, U16 y) const {_api.setMousePosition(x,y);}
+    inline void setCursorPosition(U16 x, U16 y) const {_api.setCursorPosition(x,y);}
     inline void changeResolutionInternal(U16 width, U16 height)       { _api.changeResolutionInternal(width, height); }
     inline void changeViewport(const vec4<I32>& newViewport)    const { _api.changeViewport(newViewport); }
     inline void createLoaderThread()                                  { _api.createLoaderThread(); }

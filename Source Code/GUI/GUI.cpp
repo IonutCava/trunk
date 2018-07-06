@@ -255,7 +255,7 @@ GUIText* GUI::addText(const std::string& id,const vec2<I32> &position, const std
     char *text = new char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-    SAFE_DELETE_ARRAY(text);
+    delete [] text;
     va_end(args);
 
     GUIText *t = New GUIText(id,fmt_text,position,font,color,_rootSheet);
@@ -285,7 +285,7 @@ GUIText* GUI::modifyText(const std::string& id, char* format, ...){
     char * text = new char[len];
     vsprintf_s(text, len, format, args);
     fmt_text.append(text);
-    SAFE_DELETE_ARRAY(text);
+    delete [] text;
     va_end(args);
 
     GUIElement* element = _guiStack[id];

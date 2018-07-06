@@ -314,6 +314,7 @@
     <ClInclude Include="..\..\Source Code\Hardware\Audio\openAl\Headers\ALWrapper.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Audio\sdl_mixer\Headers\SDLWrapper.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\AutoKeyRepeat.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EffectManager.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EventHandler.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputInterface.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputVariables.h" />
@@ -380,6 +381,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\AutoKeyRepeat.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Input\EffectManager.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\InputInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp" />

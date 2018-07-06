@@ -453,3 +453,23 @@ TerrainDescriptor* Scene::getTerrainInfo(const std::string& terrainName) {
     DIVIDE_ASSERT(false, "Scene error: INVALID TERRAIN NAME FOR INFO LOOKUP"); // not found;
     return _terrainInfoArray[0];
 }
+
+void Scene::debugDraw(const RenderStage& stage) {
+#ifdef _DEBUG
+    const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
+
+    GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::NO_GIZMO);
+
+    if (currentGizmoState == SceneRenderState::SELECTED_GIZMO) {
+        if (_currentSelection != nullptr) {
+            _currentSelection->drawDebugAxis();
+        }
+    } 
+#endif
+    if (GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) {
+        // Draw bounding boxes, skeletons, axis gizmo, etc.
+        GFX_DEVICE.debugDraw(renderState());
+        // Show NavMeshes
+        AIManager::getInstance().debugDraw(false);
+    }
+}

@@ -93,15 +93,6 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     if (!drawDebugAxis()) {
         return;
     }
-    // Deferred line creation
-    if (_axisLines.empty()) {
-        // Red X-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS, vec4<U8>(255, 0, 0, 255)));
-        // Green Y-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS, vec4<U8>(0, 255, 0, 255))); 
-        // Blue Z-axis
-        _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS, vec4<U8>(0, 0, 255, 255)));
-    }
     // We need to transform the gizmo so that it always remains axis aligned
     const Camera& cam = sceneRenderState.getCameraConst();
     // Create a world matrix using a look at function with the eye position backed up from the camera's view direction

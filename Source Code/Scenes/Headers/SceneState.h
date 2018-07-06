@@ -41,14 +41,22 @@ struct FogDescriptor{
 
 ///Contains all the information needed to render the scene:
 ///camera position, render state, etc
-class SceneRenderState{
+class SceneRenderState {
 public:
+    enum GizmoState {
+        NO_GIZMO       = toBit(0),
+        SCENE_GIZMO    = toBit(1),
+        SELECTED_GIZMO = toBit(2),
+        ALL_GIZMO      = SCENE_GIZMO | SELECTED_GIZMO
+    };
+
     SceneRenderState(): _drawBB(false),
                         _drawSkeletons(false),
                         _drawObjects(true),
                         _debugDrawLines(false),
                         _cameraMgr(nullptr)
     {
+        _gizmoState = NO_GIZMO;
     }
 
     inline bool drawBBox()                const {return _drawBB;}
@@ -58,23 +66,36 @@ public:
     inline void drawSkeletons(bool visibility)  {_drawSkeletons = visibility;}
     inline void drawObjects(bool visibility)    {_drawObjects = visibility;}
     inline void drawDebugLines(bool visibility) {_debugDrawLines = visibility;}
+    inline GizmoState gizmoState()      const   { return _gizmoState; }
+    inline void gizmoState(GizmoState newState) { _gizmoState = newState; }
     ///Render skeletons for animated geometry
     inline void toggleSkeletons() { D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS")); drawSkeletons(!drawSkeletons()); }
     ///Show/hide bounding boxes
     inline void toggleBoundingBoxes(){
         D_PRINT_FN(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
-        if(!drawBBox() && drawObjects())	{
+        if (!drawBBox() && drawObjects()){
             drawBBox(true);
-            drawObjects(true);
         }else if (drawBBox() && drawObjects()){
             drawBBox(true);
             drawObjects(false);
         }else if (drawBBox() && !drawObjects()){
             drawBBox(false);
-            drawObjects(false);
-        }else{
+        } else {
             drawBBox(false);
             drawObjects(true);
+        }
+    }
+
+    inline void toggleAxisLines() {
+        D_PRINT_FN(Locale::get("TOGGLE_SCENE_AXIS_GIZMO"));
+        if (gizmoState() == NO_GIZMO) {
+            gizmoState(SELECTED_GIZMO);
+        } else if (gizmoState() == SELECTED_GIZMO) {
+            gizmoState(ALL_GIZMO);
+        } else if (gizmoState() == ALL_GIZMO) {
+            gizmoState(SCENE_GIZMO);
+        } else {
+            gizmoState(NO_GIZMO);
         }
     }
 
@@ -83,13 +104,14 @@ public:
     inline const Camera& getCameraConst() const { return *_cameraMgr->getActiveCamera(); }
     inline vec2<U16>& cachedResolution() {return _cachedResolution;}
 
-   
 protected:
+
     friend class Scene;
     bool _drawBB;
     bool _drawObjects;
     bool _drawSkeletons;
     bool _debugDrawLines;
+    GizmoState _gizmoState;
     CameraManager*  _cameraMgr;
     ///cached resolution
     vec2<U16> _cachedResolution;

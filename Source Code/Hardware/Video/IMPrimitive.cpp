@@ -17,4 +17,5 @@ IMPrimitive::IMPrimitive() : GUIDWrapper(),
 
 IMPrimitive::~IMPrimitive()
 {
+    clear();
 }

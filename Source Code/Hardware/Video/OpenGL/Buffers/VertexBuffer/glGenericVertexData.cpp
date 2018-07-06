@@ -41,12 +41,12 @@ glGenericVertexData::~glGenericVertexData()
         // If we have persistently mapped buffers, we need to unmap them first
         for (U8 i = 0; i < _bufferObjects.size(); ++i) {
             if (_bufferPersistent[i]) {
-                glBindBuffer(GL_ARRAY_BUFFER, _bufferObjects[i]);
+                GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[i]);
                 glUnmapBuffer(GL_ARRAY_BUFFER);
             }
         }
         // Make sure we don't have any of our buffers still bound
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
         // Delete the buffer objects
         glDeleteBuffers((GLsizei)_bufferObjects.size(), &_bufferObjects[0]);
     }

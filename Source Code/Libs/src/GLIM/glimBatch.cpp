@@ -107,7 +107,7 @@ namespace NS_GLIM
     {
         if (!BeginRender ())
             return;
-
+    
         bWireframe |= GLIM_Interface::s_bForceWireframe;
 
         if (!bWireframe)
@@ -144,6 +144,7 @@ namespace NS_GLIM
         }
 
         GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
         EndRender ();
     }
 

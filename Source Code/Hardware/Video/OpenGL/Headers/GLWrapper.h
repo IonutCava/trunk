@@ -65,7 +65,7 @@ protected:
     /// Window positioning is handled by GLFW
     void setWindowPos(GLushort w, GLushort h) const;
     /// Mouse positioning is handled by GLFW
-    void setMousePosition(GLushort x, GLushort y) const;
+    void setCursorPosition(GLushort x, GLushort y) const;
     /// Prepare the GPU for rendering a frame
     void beginFrame();
     /// Finish rendering the current frame

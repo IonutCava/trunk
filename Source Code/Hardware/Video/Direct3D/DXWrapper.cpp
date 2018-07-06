@@ -30,7 +30,7 @@ void DX_API::setWindowPos(U16 w, U16 h) const
 {
 }
 
-void DX_API::setMousePosition(U16 x, U16 y) const
+void DX_API::setCursorPosition(U16 x, U16 y) const
 {
 }
 

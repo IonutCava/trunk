@@ -197,6 +197,10 @@ public:
     inline const mat4<F32>& getMaterialColorMatrix()    const { return _materialColorMatrix; }
     inline const mat4<F32>& getMaterialPropertyMatrix() const { return _materialPropertyMatrix; }
 
+#ifdef _DEBUG
+    void drawDebugAxis();
+#endif
+
 protected:
     friend class RenderPassCuller;
     inline void inView(const bool isInView) { _inView = isInView; isInViewCallback(); }
@@ -207,9 +211,9 @@ private:
            void isInViewCallback();
 
     /// Called if the current node is in view and is about to be rendered
-    bool onDraw(RenderStage renderStage); 
+    bool onDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage); 
     /// Called after the current node was rendered
-    void postDraw(RenderStage renderStage);
+    void postDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage);
 
 private:
     SceneNode* _node;
@@ -260,6 +264,9 @@ private:
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
 
+#ifdef _DEBUG
+    vectorImpl<Line > _axisLines;
+#endif
 };
 
 #endif

@@ -40,10 +40,10 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
     //Unbind all shaders after every render pass
     ShaderManager::getInstance().unbind();
 
-    if (isDisplayStage){
-        for(U16 i = 0; i < renderBinCount; i++)
+    if (isDisplayStage) {
+        for (U16 i = 0; i < renderBinCount; ++i) {
             renderQueue.getBinSorted(i)->postRender(currentStage);
-        
+        }
         SceneGraphNode* root = activeSceneGraph->getRoot();
         root->getNode()->preFrameDrawEnd(root);
     }

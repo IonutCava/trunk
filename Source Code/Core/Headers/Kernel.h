@@ -86,6 +86,7 @@ public:
 
     CameraManager& getCameraMgr() { return *_cameraMgr; }
 
+    bool setCursorPosition(U16 x, U16 y) const;
     ///Key pressed
     bool onKeyDown(const OIS::KeyEvent& key);
     ///Key released

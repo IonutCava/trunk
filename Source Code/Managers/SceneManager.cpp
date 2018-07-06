@@ -133,6 +133,7 @@ void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
 
     _activeScene->renderState().getCamera().renderLookAt();
     kernel.submitRenderCall(stage, _activeScene->renderState(), renderFunction);
+    _activeScene->debugDraw(stage);
 }
 
 void SceneManager::postRender(){

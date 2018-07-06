@@ -44,6 +44,7 @@ public:
     inline void setResolutionWidth(U16 w)           {_resolution.width = w; _screenCenter.x = w / 2;}
     inline void setResolutionHeight(U16 h)          {_resolution.height = h; _screenCenter.y = h / 2;}
     inline void setResolution(U16 w, U16 h)         {_resolution.set(w,h); _screenCenter.set(_resolution / 2);}
+
     inline void RequestShutdown()                   {_requestShutdown = true;}
     inline void CancelShutdown()                    {_requestShutdown = false;}
     inline bool ShutdownRequested()           const {return _requestShutdown;}
@@ -65,9 +66,12 @@ public:
 
     inline bool mainLoopActive()           const { return _mainLoopActive; }
     inline void mainLoopActive(bool state)       { _mainLoopActive = state; }
-protected:
-    friend class InputInterface;
-    void setMousePosition(U16 x, U16 y) const;
+
+    void snapCursorToPosition(U16 x, U16 y) const;
+
+    inline void snapCursorToCenter() const {
+        snapCursorToPosition(_screenCenter.x, _screenCenter.y);
+    }
 
 private:
     Application();

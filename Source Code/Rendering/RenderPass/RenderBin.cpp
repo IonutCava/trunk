@@ -124,10 +124,8 @@ void RenderBin::preRender(const RenderStage& currentRenderStage){
 }
 
 void RenderBin::render(const SceneRenderState& renderState, const RenderStage& currentRenderStage){
-    U16  binSize = getBinSize();
-
     //We need to apply different materials for each stage. As nodes are sorted, this should be very fast
-    for(U16 j = 0; j < binSize; ++j){
+    for(U16 j = 0; j < getBinSize(); ++j){
         //Call render and the stage exclusion mask should do the rest
         getItem(j)._node->render(renderState, currentRenderStage);
     }

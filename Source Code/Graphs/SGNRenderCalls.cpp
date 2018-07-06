@@ -102,16 +102,16 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 void SceneGraphNode::render(const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
     //Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
-    if(!onDraw(currentRenderStage))
+    if(!onDraw(sceneRenderState, currentRenderStage))
         return; //< If the SGN isn't ready for rendering, skip it this frame
     
     _node->bindTextures();
     _node->render(this, sceneRenderState, currentRenderStage);
 
-    postDraw(currentRenderStage);
+    postDraw(sceneRenderState, currentRenderStage);
 }
 
-bool SceneGraphNode::onDraw(RenderStage renderStage){
+bool SceneGraphNode::onDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage){
     if (_drawReset[renderStage]){
         _drawReset[renderStage] = false;
         if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)){
@@ -140,9 +140,18 @@ bool SceneGraphNode::onDraw(RenderStage renderStage){
     return false;
 }
 
-void SceneGraphNode::postDraw(RenderStage renderStage){
+void SceneGraphNode::postDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage){
     // Perform any post draw operations regardless of the draw state
     _node->postDraw(this, renderStage);
+#ifdef _DEBUG
+    if (sceneRenderState.gizmoState() == SceneRenderState::ALL_GIZMO) {
+        if (_node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            if (dynamic_cast<Object3D*>(_node)->getObjectType() == Object3D::MESH) {
+                drawDebugAxis();
+            }
+        }
+    }
+#endif
 }
 
 void SceneGraphNode::isInViewCallback(){
@@ -163,3 +172,16 @@ void SceneGraphNode::isInViewCallback(){
     }
 
 }
+
+#ifdef _DEBUG
+/// Draw the axis arrow gizmo
+void SceneGraphNode::drawDebugAxis() {
+    if (getTransform()) {
+        mat4<F32> tempOffset(::getMatrix(getTransform()->getOrientation()));
+        tempOffset.setTranslation(getTransform()->getPosition());
+        GFX_DEVICE.drawLines(_axisLines, tempOffset, vec4<I32>(), false, true);
+    } else {
+        GFX_DEVICE.drawLines(_axisLines, mat4<F32>(), vec4<I32>(), false, true);
+    }
+}
+#endif

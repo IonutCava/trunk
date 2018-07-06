@@ -23,8 +23,9 @@
 #ifndef _INPUT_MANAGER_H_
 #define _INPUT_MANAGER_H_
 
-#include "JoystickInterface.h"
+#include "EffectManager.h"
 #include "Core/Headers/Application.h"
+
 #if defined OIS_WIN32_PLATFORM
     #include <windows.h>
 LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
@@ -43,51 +44,6 @@ LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 //////////// Event handler class declaration ////////////////////////////////////////////////
 class InputInterface;
-class JoystickInterface;
-class EffectManager;
-
-void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect);
-void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect);
-//////////// Effect manager class //////////////////////////////////////////////////////////
-
-class EffectManager{
-  protected:
-
-    // The joystick manager
-    JoystickInterface* _pJoystickInterface;
-
-    // vector to hold variable effects
-    vectorImpl<VariableEffect*> _vecEffects;
-
-    // Selected effect
-    I8 _nCurrEffectInd;
-
-    // Update frequency (Hz)
-    U32 _nUpdateFreq;
-
-    // Indices (in _vecEffects) of the variable effects that are playable by the selected joystick.
-    vectorImpl<size_t> _vecPlayableEffectInd;
-
-public:
-    enum EWhichEffect { ePrevious = -1, eNone = 0, eNext = +1 };
-
-    EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateFreq);
-    ~EffectManager();
-
-    void updateActiveEffects();
-    void checkPlayableEffects();
-    void selectEffect(EWhichEffect eWhich);
-
-    inline void printEffect(size_t nEffInd){
-        PRINT_FN(Locale::get("INPUT_PRINT_EFFECT"),nEffInd,_vecEffects[nEffInd]->getDescription());
-    }
-
-    inline void printEffects(){
-        for (size_t nEffInd = 0; nEffInd < _vecEffects.size(); nEffInd++){
-          printEffect(nEffInd);
-        }
-    }
-};
 
 DEFINE_SINGLETON( InputInterface )
 
@@ -147,20 +103,7 @@ public:
 
     U8 init(Kernel* const kernel, const std::string& windowTitle);
 
-    inline bool setMousePosition(const vec2<U16>& pos) const {
-        return setMousePosition(pos.x, pos.y);
-    }
-
-    inline bool setMousePosition(U16 x, U16 y) const {
-        Application::getInstance().setMousePosition(x, y);
-        return true;
-    }
-
-    inline void updateResolution(U16 w,U16 h){
-        const OIS::MouseState &ms = _pMouse->getMouseState(); //width and height are mutable
-        ms.width = w;
-        ms.height = h;
-    }
+    void updateResolution(U16 w,U16 h);
 
 #if defined OIS_LINUX_PLATFORM
 

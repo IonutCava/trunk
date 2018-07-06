@@ -169,7 +169,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
             _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
             break;
         case OIS::KC_F5:
-            GFX_DEVICE.drawDebugAxis(!GFX_DEVICE.drawDebugAxis());
+            renderState().toggleAxisLines();
             break;
         case OIS::KC_F6: {
             static bool state = true;

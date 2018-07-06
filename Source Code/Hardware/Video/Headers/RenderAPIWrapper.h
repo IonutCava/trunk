@@ -145,7 +145,7 @@ protected:
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
-    virtual void setMousePosition(U16 x, U16 y) const = 0;
+    virtual void setCursorPosition(U16 x, U16 y) const = 0;
     virtual IMPrimitive*        newIMP() const = 0;
     virtual Framebuffer*        newFB(bool multisampled) const = 0;
     virtual VertexBuffer*       newVB() const = 0;

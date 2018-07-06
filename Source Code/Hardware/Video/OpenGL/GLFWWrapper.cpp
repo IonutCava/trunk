@@ -303,7 +303,7 @@ void GL_API::setWindowPos(GLushort w, GLushort h) const {
 }
 
 /// Mouse positioning is handled by GLFW
-void GL_API::setMousePosition(GLushort x, GLushort y) const {
+void GL_API::setCursorPosition(GLushort x, GLushort y) const {
     glfwSetCursorPos(Divide::GLUtil::_mainWindow, (GLdouble)x, (GLdouble)y);
 }
 
