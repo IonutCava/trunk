@@ -311,7 +311,11 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
     U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
 
+    const vec3<F32>& pos = transform->getPosition();
+    const Quaternion<F32>& rot = transform->getOrientation();
+
     for (std::shared_ptr<ParticleSource>& source : _sources) {
+        source->updateTransform(pos, rot);
         source->emit(deltaTime, _particles);
     }
             

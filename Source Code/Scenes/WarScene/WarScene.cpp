@@ -195,6 +195,15 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         _resetUnits = false;
     }
 
+    SceneGraphNode_ptr particles = _particleEmitter.lock();
+    if (particles.get()) {
+        PhysicsComponent* pComp = particles->getComponent<PhysicsComponent>();
+        pComp->translateY(0.001);
+        pComp->translateZ(0.005);
+        pComp->translateX(0.025);
+        pComp->rotate(vec3<F32>(0.3, 0.4, 0.5), 0.75, true);
+    }
+
     if (!AI::AIManager::getInstance().getNavMesh(
             _army[0][0]->getAgentRadiusCategory())) {
         return;
@@ -419,8 +428,8 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     timeGenerator->_maxTime = 20.5f;
     particleSource->addGenerator(timeGenerator);
 
-    SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
-
+    _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
+    SceneGraphNode_ptr testSGN = _particleEmitter.lock();
     ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(10);
     test->setDrawImpostor(true);

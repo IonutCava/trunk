@@ -8,8 +8,8 @@ void ParticleBoxGenerator::generate(vectorImpl<std::future<void>>& packagedTasks
                                     std::shared_ptr<ParticleData> p,
                                     U32 startIndex,
                                     U32 endIndex) {
-    vec3<F32> min(_posMin);
-    vec3<F32> max(_posMax);
+    vec3<F32> min(_posMin + _sourcePosition);
+    vec3<F32> max(_posMax + _sourcePosition);
 
     typedef decltype(std::begin(p->_position)) iter_t;
     for_each_interval<iter_t>(std::begin(p->_position) + startIndex,

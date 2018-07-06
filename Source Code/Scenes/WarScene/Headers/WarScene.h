@@ -88,6 +88,7 @@ class WarScene : public Scene {
     vectorImpl<NPC*> _armyNPCs[2];
     IMPrimitive* _targetLines;
     SceneGraphNode_wptr _flag[2];
+    SceneGraphNode_wptr _particleEmitter;
     /// Teams are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam* _faction[2];
 };

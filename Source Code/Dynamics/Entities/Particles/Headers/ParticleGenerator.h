@@ -33,6 +33,7 @@
 #define _PARTICLE_GENERATOR_H_
 
 #include "ParticleData.h"
+#include "Core/Math/Headers/Quaternion.h"
 #include <future>
 
 namespace Divide {
@@ -47,6 +48,11 @@ class NOINITVTABLE ParticleGenerator {
                           std::shared_ptr<ParticleData> p,
                           U32 startIndex,
                           U32 endIndex) = 0;
+        void updateTransform(const vec3<F32>& position, const Quaternion<F32>& orientation);
+
+    protected:
+     vec3<F32> _sourcePosition;
+     Quaternion<F32> _sourceOrientation;
 };
 };
 #endif

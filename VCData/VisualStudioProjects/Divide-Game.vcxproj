@@ -57,6 +57,7 @@
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleVelocityColorUpdater.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleData.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleGenerator.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleSource.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Character.cpp" />

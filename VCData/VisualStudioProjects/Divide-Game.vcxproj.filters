@@ -442,6 +442,9 @@
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIProcessor.cpp">
       <Filter>Scenes\WarScene</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleGenerator.cpp">
+      <Filter>Dynamics\Entities\Particles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h">

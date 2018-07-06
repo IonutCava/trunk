@@ -77,7 +77,7 @@ vec4 SSAO(in vec4 colorIn){
 
 subroutine(ScreenRoutineType)
 vec4 screenUnderwater(){
-    float time2 = dvd_time * 0.0001;
+    float time2 = float(dvd_time) * 0.0001;
     vec2 noiseUV = _texCoord * _noiseTile;
     vec2 uvNormal0 = noiseUV + time2;
     vec2 uvNormal1 = noiseUV;

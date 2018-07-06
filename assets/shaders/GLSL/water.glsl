@@ -52,7 +52,7 @@ void main (void)
     uvReflection *= vec4(0.5);
     uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));
 
-    float time2 = dvd_time * 0.00001;
+    float time2 = float(dvd_time) * 0.00001;
     vec2 uvNormal0 = _texCoord * _noiseTile;
     uvNormal0.s += time2;
     uvNormal0.t += time2;
