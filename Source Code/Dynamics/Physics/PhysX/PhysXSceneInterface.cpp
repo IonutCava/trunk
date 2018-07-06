@@ -136,6 +136,8 @@ void PhysXSceneInterface::process(F32 timeStep){
 }
 
 void PhysXSceneInterface::addRigidStaticActor(physx::PxRigidStatic* const actor) {
+    if(!actor)
+        return;
     WriteLock w_lock(_queueLock);
     _sceneRigidStaticQueue.push_back(actor);
     w_lock.unlock();
@@ -143,6 +145,8 @@ void PhysXSceneInterface::addRigidStaticActor(physx::PxRigidStatic* const actor)
 }
 
 void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* const actor) {
+    if(!actor)
+        return;
     WriteLock w_lock(_queueLock);
     _sceneRigidDynamicQueue.push_back(actor);
     w_lock.unlock();

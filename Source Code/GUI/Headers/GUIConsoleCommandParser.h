@@ -45,6 +45,7 @@ private:
     void handleShaderRecompileCommand(const std::string& args);
     void handleFOVCommand(const std::string& args);
     void handleInvalidCommand(const std::string& args);
+    void handleAddObject(const std::string& args/*type or name,size or scale*/);
 
 private:
     ///Help text for every command

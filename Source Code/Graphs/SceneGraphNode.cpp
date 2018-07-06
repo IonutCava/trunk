@@ -3,6 +3,7 @@
 
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Water/Headers/Water.h"
@@ -29,6 +30,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _bbAddExclusionList(0),
                                                   _usageContext(NODE_DYNAMIC),
                                                   _navigationContext(NODE_IGNORE),
+                                                  _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
                                                   _overrideNavMeshDetail(false)
 {
     _animationTransforms.clear();
@@ -295,4 +297,25 @@ void  SceneGraphNode::setNavigationDetailOverride(const bool detailOverride){
     for_each(NodeChildren::value_type& it, _children){
         it.second->setNavigationDetailOverride(detailOverride);
     }
+}
+
+void  SceneGraphNode::cookCollisionMesh() {
+    for_each(NodeChildren::value_type& it, _children){
+        it.second->cookCollisionMesh();
+    }
+
+    SceneNodeType nodeType = _node->getType();
+
+    if(!bitCompare(TYPE_WATER | TYPE_TERRAIN | TYPE_OBJECT3D, nodeType))
+        return;
+    
+    if(nodeType == TYPE_OBJECT3D) {
+        if(bitCompare(Object3D::TEXT_3D | Object3D::FLYWEIGHT, dynamic_cast<Object3D*>(_node)->getType()))
+            return;
+    }
+
+    PHYSICS_DEVICE.createActor(this,
+                               _usageContext == NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC, 
+                               _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE : 
+                               (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE));
 }

@@ -124,6 +124,9 @@ void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,
         if(tree.navigationUsage){
             treeNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
         }
+        if(tree.physicsUsage){
+            treeNode->setPhysicsGroup(SceneGraphNode::NODE_COLLIDE_NO_PUSH);
+        }
     }else{
         ERROR_FN(Locale::get("ERROR_ADD_TREE"),tree.ModelName.c_str());
     }

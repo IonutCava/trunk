@@ -336,6 +336,11 @@ namespace XML {
         }else{
             par.setParam("options.cameraStartPositionOverride",false);
         }
+        if(boost::optional<ptree &> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")){
+            par.setParam("options.autoCookPhysicsAssets", pt.get<bool>("options.autoCookPhysicsAssets",false));
+        }else{
+            par.setParam("options.autoCookPhysicsAssets", false);
+        }
         if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")){
             par.setParam("options.cameraSpeed.move",pt.get("options.cameraSpeed.<xmlattr>.move",1.0f));
             par.setParam("options.cameraSpeed.turn",pt.get("options.cameraSpeed.<xmlattr>.turn",1.0f));
@@ -405,7 +410,9 @@ namespace XML {
 
             ter->setActive(pt.get<bool>(name + ".active"));
             ter->setChunkSize(pt.get<U32>(name + ".nodeChunkSize"));
-
+            if(boost::optional<ptree &> physics = pt.get_child_optional(name + ".addToPhysics")){
+                ter->setCreatePXActor(pt.get<bool>(name + ".addToPhysics", false));
+            }
             scene->addTerrain(ter);
             count++;
         }
@@ -453,6 +460,13 @@ namespace XML {
             }else{
                 model.useHighDetailNavMesh = false;
             }
+            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")){
+                model.physicsUsage = pt.get<bool>(name + ".addToPhysics",false);
+                model.physicsPushable = pt.get<bool>(name + ".addToPhysicsGroupPushable",false);
+            }else{
+                model.physicsUsage = false;
+            }
+
             scene->addModel(model);
         }
 
@@ -489,6 +503,11 @@ namespace XML {
                 model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
             }else{
                 model.useHighDetailNavMesh = false;
+            }
+             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")){
+                model.physicsUsage = pt.get<bool>(name + ".addToPhysics",false);
+            }else{
+                model.physicsUsage = false;
             }
             scene->addModel(model);
         }

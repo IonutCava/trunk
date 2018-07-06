@@ -25,7 +25,7 @@
 
 #include "DetourTileCache/Include/DetourTileCache.h"
 #include "DetourTileCache/Include/DetourTileCacheBuilder.h"
-
+#include "Detour/Include/DetourCommon.h"
 /**
   * Allows a custom memory allocation technique to be implemented
   * for storing compressed tiles. This implementation does a linear

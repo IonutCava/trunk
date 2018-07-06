@@ -30,6 +30,7 @@ class TerrainDescriptor : public Resource {
 public:
     TerrainDescriptor() :  Resource(),
                            _active(false),
+                           _addToPhysics(false),
                            _normalMapScale(0.0f),
                            _diffuseScale(0.0f),
                            _grassDensity(0),
@@ -57,6 +58,7 @@ public:
     void setGrassScale(F32 grassScale)          {_grassScale = grassScale;}
     void setTreeScale(F32 treeScale)            {_treeScale = treeScale;}
     void setActive(bool active)                 {_active = active;}
+    void setCreatePXActor(bool create)          {_addToPhysics = create;}
     void setChunkSize(U32 size)                 {_chunkSize = size;}
 
     U32   getGrassDensity()  {return _grassDensity;}
@@ -64,6 +66,7 @@ public:
     F32   getGrassScale()    {return _grassScale;}
     F32   getTreeScale()     {return _treeScale;}
     bool  getActive()        {return _active;}
+    bool  getCreatePXActor() {return _addToPhysics;}
     U32   getChunkSize()     {return _chunkSize;}
     F32   getDiffuseScale()  {return _diffuseScale;}
     F32   getNormalMapScale(){return _normalMapScale;}
@@ -85,6 +88,7 @@ private:
     F32    _normalMapScale;
     F32    _diffuseScale;
     bool   _active;
+    bool   _addToPhysics;
     vec3<F32>   _position;
     vec2<F32>   _scale;
 };

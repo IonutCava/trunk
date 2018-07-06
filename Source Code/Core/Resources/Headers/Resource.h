@@ -113,6 +113,8 @@ struct FileData {
     F32 version;
     bool staticUsage; //<Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
     bool navigationUsage; //< Used to determine if the object should be added to the nav mesh generation process or not
+    bool physicsUsage;   //< Used to determine if the object should be added to physics simulations
+    bool physicsPushable; //< If physicsUsage is true, this determines if the node can be pushed around by other actors or if it is a static(fixed in space) actor
     bool useHighDetailNavMesh; //< Used to force a geometry level parsing for nav mesh creation instead of the default bounding-box level
 };
 

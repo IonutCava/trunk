@@ -13,6 +13,7 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     for_each(SceneGraphNode::NodeChildren::value_type& s, sgn->getChildren()){
         sgn->addBoundingBox(s.second->getBoundingBoxTransformed(), s.second->getNode<SceneNode>()->getType());
     }
+    sgn->getBoundingBox().setComputed(true);
     return true;
 }
 
@@ -32,6 +33,10 @@ void SceneGraphNode::checkBoundingBoxes(){
     if(!_boundingBox.isComputed()){
         _node->computeBoundingBox(this);
         _boundingSphere.fromBoundingBox(_boundingBox);
+        
+        if(_parent)
+           _parent->getBoundingBox().setComputed(false);
+        _updateBB = false;
     }
 
     //Recreate bounding boxes for current frame

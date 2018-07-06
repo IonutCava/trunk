@@ -499,7 +499,6 @@ namespace Navigation {
          _debugDrawInterface->endBatch();
     }
 
-#pragma message("ToDo: Enable file support for navMeshes! - Ionut")
     bool NavigationMesh::load(SceneGraphNode* const sgn){
         if(!_fileName.length()) return false;
         std::string file = _fileName;

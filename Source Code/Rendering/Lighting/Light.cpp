@@ -207,16 +207,15 @@ F32 Light::getFProperty(const LightPropertiesF& key) const {
 
 void Light::updateBBatCurrentFrame(SceneGraphNode* const sgn){
     ///Check if range changed
-    if(getRange() != sgn->getBoundingBox().getMax().x){
-        sgn->getBoundingBox().setComputed(false);
-    }
+    if(FLOAT_COMPARE(getRange() * 0.5f, sgn->getBoundingBox().getMax().x))
+        return;
+
+    sgn->getBoundingBox().setComputed(false);
+    
     return SceneNode::updateBBatCurrentFrame(sgn);
 }
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
-    if(sgn->getBoundingBox().isComputed())
-        return true;
-
     F32 range = getRange() * 0.5f; //diameter to radius
     sgn->getBoundingBox().set(vec3<F32>(-range), vec3<F32>(range));
     return SceneNode::computeBoundingBox(sgn);

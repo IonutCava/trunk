@@ -55,30 +55,9 @@ bool Scene::idle(){ //Called when application is idle
         _sceneGraph->idle();
     }
 
-    bool _updated = false;
-    if(!_pendingDataArray.empty())
-    for(vectorImpl<FileData>::iterator iter = _pendingDataArray.begin(); iter != _pendingDataArray.end(); ++iter) {
-        if(!loadModel(*iter)){
-            WorldPacket p(CMSG_REQUEST_GEOMETRY);
-            p << (*iter).ModelName;
-            ASIOImpl::getInstance().sendPacket(p);
-            while(!loadModel(*iter)){
-                PRINT_FN(Locale::get("AWAITING_FILE"));
-            }
-        }else{
-            vectorImpl<FileData>::iterator iter2;
-            for(iter2 = _modelDataArray.begin(); iter2 != _modelDataArray.end(); ++iter2)	{
-                if((*iter2).ItemName.compare((*iter).ItemName) == 0){
-                    _modelDataArray.erase(iter2);
-                    _modelDataArray.push_back(*iter);
-                    _pendingDataArray.erase(iter);
-                    _updated = true;
-                    break;
-                }
-            }
-            if(_updated) break;
-        }
-    }
+    if(!_modelDataArray.empty())
+        loadXMLAssets(true);
+
     return true;
 }
 
@@ -92,21 +71,26 @@ void Scene::postRender(){
 void Scene::addPatch(vectorImpl<FileData>& data){
 }
 
-void Scene::loadXMLAssets(){
-    for(vectorImpl<FileData>::iterator it = _modelDataArray.begin(); it != _modelDataArray.end();){
+void Scene::loadXMLAssets(bool singleStep){
+    while(!_modelDataArray.empty()){
+        FileData& it = _modelDataArray.top();
         //vegetation is loaded elsewhere
-        if((*it).type == VEGETATION){
-            _vegetationDataArray.push_back(*it);
-            it = _modelDataArray.erase(it);
+        if(it.type == VEGETATION){
+            _vegetationDataArray.push_back(it);
         }else{
-            loadModel(*it);
-            ++it;
+            loadModel(it);
+        }
+        _modelDataArray.pop();
+        
+        if(singleStep){
+            return;
         }
     }
 }
 
 bool Scene::loadModel(const FileData& data){
-    if(data.type == PRIMITIVE)	return loadGeometry(data);
+    if(data.type == PRIMITIVE)	
+        return loadGeometry(data);
 
     ResourceDescriptor model(data.ItemName);
     model.setResourceLocation(data.ModelName);
@@ -126,6 +110,9 @@ bool Scene::loadModel(const FileData& data){
     }
     if(data.navigationUsage){
         meshNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+    }
+    if(data.physicsUsage){
+        meshNode->setPhysicsGroup(data.physicsPushable ? SceneGraphNode::NODE_COLLIDE : SceneGraphNode::NODE_COLLIDE_NO_PUSH);
     }
     if(data.useHighDetailNavMesh){
         meshNode->setNavigationDetailOverride(true);
@@ -178,6 +165,9 @@ bool Scene::loadGeometry(const FileData& data){
     }
     if(data.navigationUsage){
         thisObjSGN->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+    }
+    if(data.physicsUsage){
+        thisObjSGN->setPhysicsGroup(data.physicsPushable ? SceneGraphNode::NODE_COLLIDE : SceneGraphNode::NODE_COLLIDE_NO_PUSH);
     }
     if(data.useHighDetailNavMesh){
         thisObjSGN->setNavigationDetailOverride(true);
@@ -251,6 +241,8 @@ bool Scene::preLoad() {
 bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
     _cameraMgr = cameraMgr;
     addDefaultCamera();
+    preLoad();
+    loadXMLAssets();
     SceneGraphNode* root = _sceneGraph->getRoot();
     //Add terrain from XML
     if(!_terrainInfoArray.empty()){
@@ -263,6 +255,7 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
             terrainTemp->setActive(_terrainInfoArray[i]->getActive());
             terrainTemp->setUsageContext(SceneGraphNode::NODE_STATIC);
             terrainTemp->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+            terrainTemp->setPhysicsGroup(_terrainInfoArray[i]->getCreatePXActor() ? SceneGraphNode::NODE_COLLIDE_NO_PUSH : SceneGraphNode::NODE_COLLIDE_IGNORE);
             temp->initializeVegetation(_terrainInfoArray[i],terrainTemp);
         }
     }
@@ -303,6 +296,9 @@ bool Scene::loadPhysics(bool continueOnErrors){
     PHYSICS_DEVICE.setPhysicsScene(_physicsInterface);
     //Initialize the physics scene
     PHYSICS_DEVICE.initScene();
+    //Cook geometry
+    if(_paramHandler.getParam<bool>("options.autoCookPhysicsAssets"))
+        _sceneGraph->getRoot()->cookCollisionMesh();
     return true;
 }
 
@@ -333,9 +329,9 @@ void Scene::clearObjects(){
     }
     _skiesSGN.clear(); ///< Skies are cleared in the SceneGraph
     _terrainInfoArray.clear();
-    _modelDataArray.clear();
+    while(!_modelDataArray.empty())
+        _modelDataArray.pop();
     _vegetationDataArray.clear();
-    _pendingDataArray.clear();
     assert(_sceneGraph);
 
     SAFE_DELETE(_sceneGraph);

@@ -59,6 +59,8 @@
 	<orientation x="50" y="0" z="0" />
 	<version>1.0</version>
 	<addToNavigation>true</addToNavigation>
+	<addToPhysics>true</addToPhysics>
+	<addToPhysicsGroupPushable>false</addToPhysicsGroupPushable>
 </adi>
 
 <HelloText>

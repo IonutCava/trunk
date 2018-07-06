@@ -52,7 +52,7 @@ class SceneGraphNode{
 public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 
-    ///Usage context affects lighting, navigation,etc
+    ///Usage context affects lighting, navigation, physics, etc
     enum UsageContext {
         NODE_DYNAMIC = 0,
         NODE_STATIC
@@ -61,6 +61,12 @@ public:
     enum NavigationContext {
         NODE_OBSTACLE = 0,
         NODE_IGNORE
+    };
+
+    enum PhysicsGroup {
+        NODE_COLLIDE_IGNORE = 0,
+        NODE_COLLIDE_NO_PUSH,
+        NODE_COLLIDE
     };
 
     SceneGraphNode(SceneNode* const node);
@@ -152,14 +158,18 @@ public:
     inline U32  getChildQueue() const {return _childQueue;}
     inline void incChildQueue()       {_childQueue++;}
     inline void decChildQueue()       {_childQueue--;}
-
+    
+    inline const PhysicsGroup&      getPhysicsGroup()          const {return _physicsCollisionGroup;}
     inline const UsageContext&      getUsageContext()          const {return _usageContext;}
     inline const NavigationContext& getNavigationContext()     const {return _navigationContext;}
     inline       bool               getNavMeshDetailOverride() const {return _overrideNavMeshDetail;}
+
+    inline void  setPhysicsGroup(const PhysicsGroup& newGroup)             {_physicsCollisionGroup = newGroup;}
     inline void  setUsageContext(const UsageContext& newContext)           {_usageContext = newContext;}
            void  setNavigationContext(const NavigationContext& newContext);
            void  setNavigationDetailOverride(const bool detailOverride);
 
+    void cookCollisionMesh();
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
 
@@ -200,6 +210,7 @@ private:
     std::string _name;
     mutable SharedLock _queryLock;
 
+    PhysicsGroup _physicsCollisionGroup;
     UsageContext _usageContext;
     NavigationContext _navigationContext;
     bool              _overrideNavMeshDetail;

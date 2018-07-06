@@ -42,8 +42,6 @@ bool SceneManager::load(const std::string& sceneName, const vec2<U16>& resolutio
 		return false;
 	}
 	cacheResolution(resolution);
-	_activeScene->preLoad();
-	_activeScene->loadXMLAssets();
 	return _activeScene->load(sceneName, cameraMgr);
 }
 

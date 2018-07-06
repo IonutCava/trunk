@@ -204,6 +204,7 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMesh.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp" />

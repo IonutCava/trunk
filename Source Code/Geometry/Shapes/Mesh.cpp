@@ -5,25 +5,22 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 
+
 void Mesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-    if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations")) return;
+    if(!ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"))
+        return;
+
     if(sgn->updateBB()){
         BoundingBox& bb = sgn->getBoundingBox();
-        bb.reset();
-        for_each(childrenNodes::value_type& s, sgn->getChildren()){
-            bb.Add(s.second->getBoundingBox());
-        }
-        SceneNode::computeBoundingBox(sgn);
-        SceneNode::updateBBatCurrentFrame(sgn);
+        bb.setComputed(false);
     }
+
+    SceneNode::updateBBatCurrentFrame(sgn);
 }
 
 /// Mesh bounding box is built from all the SubMesh bounding boxes
 bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
     BoundingBox& bb = sgn->getBoundingBox();
-
-    if(bb.isComputed())
-        return true;
 
     bb.reset();
     for_each(childrenNodes::value_type& s, sgn->getChildren()){

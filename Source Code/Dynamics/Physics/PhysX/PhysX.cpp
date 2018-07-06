@@ -85,6 +85,13 @@ bool PhysX::createActor(SceneGraphNode* const node, PhysicsActorMask mask,Physic
                                  node->getTransform()->getOrientation().getY(),
                                  node->getTransform()->getOrientation().getZ(),
                                  node->getTransform()->getOrientation().getW()));
+    //Load cached version from file first
+    std::string nodeName("collisionMeshes/node_[_" + node->getName() + "_]");
+    nodeName.append(".cm");
+    FILE* fp = fopen(nodeName.c_str(), "rb");
+    if (fp){
+        return true;
+    } 
     switch(mask){
         default:
         case MASK_RIGID_STATIC:

@@ -55,6 +55,7 @@ class TerrainDescriptor;
 ///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
 class PhysicsSceneInterface;
 class Scene : public Resource{
+    typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 public:
 
     Scene();
@@ -75,7 +76,6 @@ public:
     virtual void updateSceneState(const U32 sceneTime);
     inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return NULL;} CLAMP<I32>(index,0,_skiesSGN.size() - 1); return _skiesSGN[index];}
     inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
-    inline vectorImpl<FileData>&           getModelDataArray()      {return _modelDataArray;}
     inline vectorImpl<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}
     inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}
     inline SceneState&                     state()                  {return _sceneState;}
@@ -86,7 +86,7 @@ public:
            void removeTask(Task_ptr taskItem);
            void removeTask(U32 guid);
            void addTask(Task_ptr taskItem);
-    inline void addModel(FileData& model)              {_modelDataArray.push_back(model);}
+    inline void addModel(FileData& model)              {_modelDataArray.push(model);}
     inline void addTerrain(TerrainDescriptor* ter)     {_terrainInfoArray.push_back(ter);}
            void addPatch(vectorImpl<FileData>& data);
            void addLight(Light* const lightItem);
@@ -118,9 +118,8 @@ protected:
     PhysicsSceneInterface*         _physicsInterface;
     ///Datablocks for models,vegetation,terrains,tasks etc
     vectorImpl<F32>                _taskTimers;
-    vectorImpl<FileData>           _modelDataArray;
+    FileDataStack                  _modelDataArray;
     vectorImpl<FileData>           _vegetationDataArray;
-    vectorImpl<FileData>           _pendingDataArray;
     vectorImpl<TerrainDescriptor*> _terrainInfoArray;
     F32                            _FBSpeedFactor;
     F32                            _LRSpeedFactor;
@@ -153,7 +152,9 @@ protected:
     virtual bool loadResources(bool continueOnErrors)  {return true;}
     virtual bool loadTasks(bool continueOnErrors)      {return true;}
     virtual bool loadPhysics(bool continueOnErrors);
-    virtual void loadXMLAssets();
+    //if singleStep is true, only the first model from the modelArray will be loaded. 
+    //Usefull for loading one modle per frame
+    virtual void loadXMLAssets(bool singleStep = false);
     virtual bool load(const std::string& name, CameraManager* const cameraMgr);
             bool loadModel(const FileData& data);
             bool loadGeometry(const FileData& data);

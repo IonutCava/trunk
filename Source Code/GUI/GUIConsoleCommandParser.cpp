@@ -4,7 +4,12 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh creation
+
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 {
@@ -17,6 +22,7 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
     _commandMap.insert(std::make_pair("recompileshader",DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand,this,_1)));
     _commandMap.insert(std::make_pair("setfov",DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand,this,_1)));
     _commandMap.insert(std::make_pair("invalidcommand",DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand,this,_1)));
+    _commandMap.insert(std::make_pair("addobject", DELEGATE_BIND(&GUIConsoleCommandParser::handleAddObject, this, _1)));
 
     _commandHelp.insert(std::make_pair("say",Locale::get("CONSOLE_SAY_COMMAND_HELP")));
     _commandHelp.insert(std::make_pair("quit",Locale::get("CONSOLE_QUIT_COMMAND_HELP")));
@@ -26,6 +32,7 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
     _commandHelp.insert(std::make_pair("createnavmesh",Locale::get("CONSOLE_NAVMESH_COMMAND_HELP")));
     _commandHelp.insert(std::make_pair("recompileshader",Locale::get("CONSOLE_SHADER_RECOMPILE_COMMAND_HELP")));
     _commandHelp.insert(std::make_pair("setfov",Locale::get("CONSOLE_CHANGE_FOV_COMMAND_HELP")));
+    _commandHelp.insert(std::make_pair("addObject",Locale::get("CONSOLE_ADD_OBJECT_COMMAND_HELP")));
     _commandHelp.insert(std::make_pair("invalidhelp",Locale::get("CONSOLE_INVALID_HELP_ARGUMENT")));
 }
 
@@ -161,6 +168,37 @@ void GUIConsoleCommandParser::handleFOVCommand(const std::string& args){
     I32 FoV = (atoi(args.c_str()));
     CLAMP<I32>(FoV,40,140);
     GFX_DEVICE.setHorizontalFoV(FoV);
+}
+
+void GUIConsoleCommandParser::handleAddObject(const std::string& args){
+    std::istringstream ss(args);
+    std::string args1, args2;
+    std::getline(ss, args1, ',');
+    std::getline(ss, args2, ',');
+
+    float scale = 1.0f;
+    if(!Util::isNumber(args2)){
+        ERROR_FN(Locale::get("CONSOLE_INVALID_NUMBER"));
+    }else{
+        scale = (F32)atof(args2.c_str());
+    }
+    std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/";
+
+    FileData model;
+    model.ItemName = args1 + "_console" + args2;
+    model.ModelName  = ((args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0) ? "" : assetLocation) + args1;
+    model.position = GET_ACTIVE_SCENE()->state().getRenderState().getCamera().getEye();
+    model.data = 1.0f;
+    model.scale    = vec3<F32>(scale);
+    model.orientation = GET_ACTIVE_SCENE()->state().getRenderState().getCamera().getEuler();
+    model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0) ? PRIMITIVE : GEOMETRY;
+    model.version = 1.0f;
+    model.staticUsage = false;
+    model.navigationUsage = true;
+    model.useHighDetailNavMesh = true;
+    model.physicsUsage = true;
+    model.physicsPushable = true;
+    GET_ACTIVE_SCENE()->addModel(model);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const std::string& args){

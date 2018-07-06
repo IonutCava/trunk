@@ -119,9 +119,8 @@ void SkinnedSubMesh::updateTransform(SceneGraphNode* const sgn){
     transform = sgn->getParent()->getTransform();
     //a mesh should always have a transform
     assert(transform);
-    //if(transform->isDirty()){
-        sgn->updateBoundingBoxTransform(transform->getGlobalMatrix());
-    //}
+
+    sgn->updateBoundingBoxTransform(transform->getGlobalMatrix());
 }
 
 void SkinnedSubMesh::preFrameDrawEnd(SceneGraphNode* const sgn){

@@ -54,11 +54,11 @@ void NetworkScene::checkPatches(){
     p << std::string("NetworkScene");
     p << _modelDataArray.size();
 
-    for(vectorImpl<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)	{
+    /*for(vectorImpl<FileData>::iterator _iter = _modelDataArray.begin(); _iter != _modelDataArray.end(); ++_iter)	{
         p << (*_iter).ItemName;
         p << (*_iter).ModelName;
         p << (*_iter).version;
-    }
+    }*/
     ASIOImpl::getInstance().sendPacket(p);
 }
 

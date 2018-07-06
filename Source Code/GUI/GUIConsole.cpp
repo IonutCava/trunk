@@ -6,6 +6,16 @@
 
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+
+#if defined(_MSC_VER)
+#	pragma warning( push )
+#		pragma warning( disable: 4324 ) //<structure was padded ...
+#		pragma warning( disable: 4189 ) //<local variable is initialized but not referenced
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic push
+#		pragma GCC diagnostic ignored "-Wall"
+#endif
+
 #include <boost/lockfree/queue.hpp>
 
 namespace {
@@ -34,6 +44,12 @@ namespace {
     /// Used to queue output text to be displayed when '_init' becomes true
     static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<256> >  _outputBuffer;
 };
+
+#if defined(_MSC_VER)
+#	pragma warning( pop )
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic pop
+#endif
 
 GUIConsole::GUIConsole() : _consoleWindow(NULL),
                            _editBox(NULL),
@@ -149,7 +165,7 @@ void GUIConsole::setVisible(bool visible){
        _editBox->setText("");
     }
 
-    OutputText(visible ? "Toggling console display: ON" : "Toggling console display: OFF", CEGUI::Colour(0.4f,0.4f,0.3f));
+    OutputText(visible ? "Toggling console display: ON" : "Toggling console display: OFF", false);
 }
 
 bool GUIConsole::isVisible(){

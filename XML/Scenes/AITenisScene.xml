@@ -21,6 +21,7 @@
 <options>
 	<visibility>1000</visibility>
 	<cameraStartPosition x="14" y="5.5" z="11.5" xOffsetDegrees="10" yOffsetDegrees="-45"/>
+	<autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>
 
 <fog>

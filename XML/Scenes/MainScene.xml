@@ -20,4 +20,5 @@
 <options>
 	<visibility>700</visibility>
 	<cameraStartPosition x="50" y="38" z="-79.3" xOffsetDegrees="15.8" yOffsetDegrees="75.41"/>
+	<autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>

@@ -19,4 +19,5 @@
 
 <options>
 	<visibility>2000</visibility>
+	<autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>

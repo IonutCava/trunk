@@ -21,4 +21,5 @@
 <options>
 	<visibility>1000</visibility>
 	<cameraSpeed move = "0.2" turn = "0.75"/>
+	<autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>
