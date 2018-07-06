@@ -315,12 +315,14 @@ bool SceneGraphNode::updateBoundingBoxPosition(const vec3<F32>& position) {
 }
 
 bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
-    if (_boundingBox.transform(
-            _initialBoundingBox, transform,
-            !_initialBoundingBox.compare(_initialBoundingBoxCache))) {
-        _initialBoundingBoxCache = _initialBoundingBox;
-        _boundingSphere.fromBoundingBox(_boundingBox);
-        return true;
+    if (_boundingBox.isComputed()) {
+        if (_boundingBox.transform(
+                _initialBoundingBox, transform,
+                !_initialBoundingBox.compare(_initialBoundingBoxCache))) {
+            _initialBoundingBoxCache = _initialBoundingBox;
+            _boundingSphere.fromBoundingBox(_boundingBox);
+            return true;
+        }
     }
 
     return false;

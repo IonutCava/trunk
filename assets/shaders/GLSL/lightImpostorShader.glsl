@@ -1,31 +1,38 @@
 -- Vertex
 
+#include "lightInput.cmn"
+
+out float size;
+out flat int lightType;
+out flat int skipLightType;
 
 void main()
 {
-}
+    Light light = dvd_LightSource[gl_VertexID];
+    lightType = int(light._options.x);
+    skipLightType = LIGHT_DIRECTIONAL;
 
+    size = light._positionWV.w;
+    gl_Position = vec4(light._positionWV.xyz, 1.0);
+}
 
 -- Geometry
 
 layout(points) in;
-layout(triangle_strip) out;
-layout(max_vertices = 4) out;
+layout(triangle_strip, max_vertices = 4) out;
 
-#include "lightInput.cmn"
+in float sizeIn[];
+in flat int lightType[];
+in flat int skipLightType[];
 
-out flat int directionalIndex;
-out flat int lightType;
+out flat int skipLight;
 
 void main()
 {
-    directionalIndex = LIGHT_DIRECTIONAL;
+    vec4 pos = gl_in[0].gl_Position;
 
-    Light light = dvd_LightSource[gl_PrimitiveIDIn];
-
-    lightType = light._options.x;
-    float size = light._positionWV.w;
-    vec4 pos = vec4(light._positionWV.xyz, 1.0);
+    skipLight = lightType[0] == skipLightType[0] ? 1 : 0;
+    float size = sizeIn[0];
 
     // a: left-bottom 
     vec2 va = pos.xy + vec2(-0.5, -0.5) * size;
@@ -56,13 +63,12 @@ void main()
 
 -- Fragment
 
-in flat int directionalIndex;
-in flat int lightType;
+in flat int skipLight;
 out vec4 color;
 
 void main()
 {
-    if (lightType == directionalIndex) {
+    if (skipLight == 1) {
         discard;
     }
 

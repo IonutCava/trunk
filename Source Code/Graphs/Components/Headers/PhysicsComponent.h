@@ -130,9 +130,12 @@ class PhysicsComponent : public SGNComponent {
 
     void reset();
 
-    const mat4<F32>& getWorldMatrix(const bool local = false, bool dirty = false);
-    const mat4<F32>& getWorldMatrix(D32 interpolationFactor, bool dirty = false);
+    const mat4<F32>& getLocalMatrix() const;
 
+    const mat4<F32>& getWorldMatrix();
+
+    const mat4<F32>& getWorldMatrix(D32 interpolationFactor);
+    
     /// Component <-> Transform interface
     void setPosition(const vec3<F32>& position);
     void setScale(const vec3<F32>& scale);
@@ -197,8 +200,7 @@ class PhysicsComponent : public SGNComponent {
 
    private:
     void setTransformDirty(TransformType type);
-    void getWorldMatrixNonInterp(mat4<F32>& matOut, const bool local = false, bool dirty = false) const;
-    void getWorldMatrixInterp(mat4<F32>& matOut, D32 interpolationFactor, bool dirty = false) const;
+    bool isParentTransformDirty(bool interp) const;
 
    protected:
     PhysicsAsset* _physicsAsset;
@@ -209,7 +211,7 @@ class PhysicsComponent : public SGNComponent {
     TransformStack _transformStack;
     TransformMask _transformUpdatedMask;
     /// Transform cache values
-    bool _dirty;
+    std::atomic_bool _dirty;
     mat4<F32> _worldMatrix;
     bool _dirtyInterp;
     D32  _prevInterpValue;

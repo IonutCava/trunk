@@ -193,6 +193,7 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
     if (!_enabled) {
         return false;
     }
+
     DIVIDE_ASSERT(_particles.get() != nullptr,
                   "ParticleEmitter::computeBoundingBox error: BoundingBox "
                   "calculation requested without valid particle data "
@@ -205,6 +206,21 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
         bb.add(_particles->_renderingPositions.back());
     }
     return SceneNode::computeBoundingBox(sgn);
+}
+
+bool ParticleEmitter::isInView(const SceneRenderState& sceneRenderState,
+                               const SceneGraphNode& sgn,
+                               Frustum::FrustCollision& collisionType,
+                               const bool distanceCheck) const {
+    bool visible = false;
+    if (_enabled && _impostor) {
+        visible = _impostor->isInView(sceneRenderState, sgn, collisionType, distanceCheck);
+    }
+
+    collisionType = visible ? Frustum::FrustCollision::FRUSTUM_IN
+        : Frustum::FrustCollision::FRUSTUM_OUT;
+
+    return visible;
 }
 
 void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {

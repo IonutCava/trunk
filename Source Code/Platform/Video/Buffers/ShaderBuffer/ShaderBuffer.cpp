@@ -18,7 +18,7 @@ namespace Divide {
                                                         _alignmentRequirement(0),
                                                         _frequency(frequency),
                                                         _unbound(unbound),
-                                                        _persistentMapped(persistentMapped &&
+                                                        _persistentMapped(persistentMapped && false &&
                                                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)
 #  if defined(ENABLE_GPU_VALIDATION)
                                                         ,_bufferName(bufferName)

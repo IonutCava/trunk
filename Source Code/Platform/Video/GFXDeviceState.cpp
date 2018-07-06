@@ -82,7 +82,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
     // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame
-    STUBBED("ToDo: Increase buffer size to handle multiple shadow passes. Round robin with size factor 3 should suffice for shadows -Ionut")
     // Create a shader buffer to hold all of our indirect draw commands
     // Usefull if we need access to the buffer in GLSL/Compute programs
     for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {

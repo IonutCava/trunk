@@ -337,52 +337,53 @@ bool PhysicsComponent::popTransforms() {
     return false;
 }
 
-void PhysicsComponent::getWorldMatrixNonInterp(mat4<F32>& matOut, const bool local, bool dirty) const {
-    if (_transform && dirty) {
-        bool wasRebuilt = false;
-        matOut *= _transform->getMatrix(wasRebuilt);
+bool PhysicsComponent::isParentTransformDirty(bool interp) const {
+    SceneGraphNode_ptr parent = _parentSGN.getParent().lock();
+    while (parent != nullptr) {
+        if(interp ? parent->getComponent<PhysicsComponent>()->_dirtyInterp
+                  : parent->getComponent<PhysicsComponent>()->_dirty) {
+            return true;
+        }
+        parent = parent->getParent().lock();
     }
+    return false;
+}
 
-    if (!local) {
+const mat4<F32>& PhysicsComponent::getLocalMatrix() const {
+    bool wasRebuilt;
+    return _transform->getMatrix(wasRebuilt);
+}
+
+const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
+    bool dirty = (_dirtyInterp ||
+                  _prevInterpValue != interpolationFactor ||
+                  isParentTransformDirty(true));
+    if (dirty) {
+        _worldMatrixInterp = mat4<F32>(getPosition(interpolationFactor, true),
+                                       getScale(interpolationFactor, true),
+                                       GetMatrix(getOrientation(interpolationFactor, true)));
         SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
         if (grandParent) {
-            grandParent->getComponent<PhysicsComponent>()->getWorldMatrixNonInterp(matOut, local, dirty);
+            _worldMatrixInterp *=
+                 grandParent->getComponent<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
         }
-    }
-}
-
-void PhysicsComponent::getWorldMatrixInterp(mat4<F32>& matOut, D32 interpolationFactor, bool dirty) const {
-    if (dirty) {
-        matOut *= mat4<F32>(getPosition(interpolationFactor, true),
-                            getScale(interpolationFactor, true),
-                            GetMatrix(getOrientation(interpolationFactor, true)));
+        _dirtyInterp = false;
     }
 
-    SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
-    if (grandParent) {
-        grandParent->getComponent<PhysicsComponent>()->getWorldMatrixInterp(matOut, interpolationFactor, dirty);
-    }
-}
-
-
-const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor, bool dirty) {
-    dirty |= (_dirtyInterp || _prevInterpValue != interpolationFactor);
-    if (dirty) {
-        _worldMatrixInterp.identity();
-    }
-    getWorldMatrixInterp(_worldMatrixInterp, interpolationFactor, dirty);
-    _dirtyInterp = false;
-
+    
     return _worldMatrixInterp;
 }
 
-const mat4<F32>& PhysicsComponent::getWorldMatrix(const bool local, bool dirty) {
-    dirty |= _dirty;
-    if (dirty) {
-        _worldMatrix.identity();
+const mat4<F32>& PhysicsComponent::getWorldMatrix() {
+    if (_dirty || isParentTransformDirty(false)){
+        _worldMatrix.set(getLocalMatrix());
+        SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+        if (grandParent) {
+            _worldMatrix *=
+                grandParent->getComponent<PhysicsComponent>()->getWorldMatrix();
+        }
+        _dirty = false;
     }
-    getWorldMatrixNonInterp(_worldMatrix, local, dirty);
-    _dirty = true;
 
     return _worldMatrix;
 }
@@ -392,12 +393,9 @@ vec3<F32> PhysicsComponent::getScale(D32 interpolationFactor,
                                      const bool local) const {
     vec3<F32> scale;
     if (_transform) {
-        if (interpolationFactor < 0.975) {
-            scale.set(Lerp(_prevTransformValues._scale, _transform->getScale(),
-                           to_float(interpolationFactor)));
-        } else {
-            scale.set(_transform->getScale());
-        }
+        scale.set(Lerp(_prevTransformValues._scale,
+                       _transform->getScale(),
+                        to_float(interpolationFactor)));
     } else {
         scale.set(1.0f);
     }
@@ -418,13 +416,9 @@ vec3<F32> PhysicsComponent::getPosition(D32 interpolationFactor,
                                         const bool local) const {
     vec3<F32> position;
     if (_transform) {
-        if (interpolationFactor < 0.975) {
-            position.set(Lerp(_prevTransformValues._translation,
-                              _transform->getPosition(),
-                              to_float(interpolationFactor)));
-        } else {
-            position.set(_transform->getPosition());
-        }
+        position.set(Lerp(_prevTransformValues._translation,
+                            _transform->getPosition(),
+                            to_float(interpolationFactor)));
     } else {
         position.set(0.0f);
     }
@@ -445,13 +439,9 @@ Quaternion<F32> PhysicsComponent::getOrientation(D32 interpolationFactor,
     Quaternion<F32> orientation;
     
     if (_transform) {
-        if (interpolationFactor < 0.975) {
-            orientation.set(Slerp(_prevTransformValues._orientation,
-                                  _transform->getOrientation(),
-                                  to_float(interpolationFactor)));
-        } else {
-            orientation.set(_transform->getOrientation());
-        }
+        orientation.set(Slerp(_prevTransformValues._orientation,
+                                _transform->getOrientation(),
+                                to_float(interpolationFactor)));
     } else {
         orientation.identity();
     }

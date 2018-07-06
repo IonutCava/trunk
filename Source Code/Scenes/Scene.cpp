@@ -709,11 +709,12 @@ void Scene::debugDraw(RenderStage stage) {
     }
 #endif
     if (stage == RenderStage::DISPLAY) {
+        LightManager::getInstance().drawLightImpostors();
+
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes
         AI::AIManager::getInstance().debugDraw(false);
-        LightManager::getInstance().drawLightImpostors();
     }
 }
 

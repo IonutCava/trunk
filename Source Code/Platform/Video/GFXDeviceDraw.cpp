@@ -296,7 +296,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         _api->registerCommandBuffer(cmdBuffer);
 
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
-        getNodeBuffer(getRenderStage(), pass).bind(ShaderBufferLocation::NODE_INFO);
+        getNodeBuffer(currentStage, pass).bind(ShaderBufferLocation::NODE_INFO);
     }
 }
 
