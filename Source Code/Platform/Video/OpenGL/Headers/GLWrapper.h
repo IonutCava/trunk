@@ -115,7 +115,7 @@ protected:
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
-    GLuint64 getFrameDurationGPU() override;
+    U32 getFrameDurationGPU() override;
     void pushDebugMessage(const char* message, I32 id) override;
     void popDebugMessage() override;
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
@@ -304,10 +304,10 @@ private:
     /// Current state of all available clipping planes
     std::array<bool, to_base(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
-    vectorImpl<std::shared_ptr<glHardwareQueryRing>> _hardwareQueries;
+    std::shared_ptr<glHardwareQueryRing> _elapsedTimeQuery;
 
-    /// Duration in nanoseconds to render a frame
-    GLuint64 FRAME_DURATION_GPU;
+    /// Duration in milliseconds to render a frame
+    GLuint FRAME_DURATION_GPU;
     /// FontStash's context
     FONScontext* _fonsContext;
     /// /*texture slot*/ /*<texture handle , texture type>*/

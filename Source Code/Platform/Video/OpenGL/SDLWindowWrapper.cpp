@@ -345,12 +345,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
     if (Config::ENABLE_GPU_VALIDATION) {
-        // We have multiple counter buffers, and each can be multi-buffered
-        // (currently, only double-buffered, front and back)
-        // to avoid pipeline stalls
-        for (std::shared_ptr<glHardwareQueryRing>& queryRing : _hardwareQueries) {
-            queryRing->initQueries();
-        }
+        _elapsedTimeQuery->initQueries();
     }
     
     // Once OpenGL is ready for rendering, init CEGUI

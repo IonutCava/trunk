@@ -30,11 +30,14 @@ void glfonsDelete(struct FONScontext* ctx);
 
 #ifdef GLFONTSTASH_IMPLEMENTATION
 
+constexpr GLuint glfons_position_slot = (GLuint)(Divide::AttribLocation::VERTEX_POSITION);
+constexpr GLuint glfons_textcoord_slot = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
+constexpr GLuint glfons_colour_slot = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
+
 struct GLFONScontext {
     GLuint tex;
     GLuint glfons_vaoID;
     GLuint glfons_vboID;
-    GLuint glfons_prevVertDataSize;
     int width, height;
 };
 
@@ -44,6 +47,27 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     glCreateTextures(GL_TEXTURE_2D, 1, &gl->tex);
     glCreateVertexArrays(1, &gl->glfons_vaoID);
     glCreateBuffers(1, &gl->glfons_vboID);
+
+    Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
+    {
+        Divide::U32 prevOffset = 0;
+        glEnableVertexAttribArray(glfons_position_slot);
+        glVertexAttribFormat(glfons_position_slot, 2, GL_FLOAT, GL_FALSE, prevOffset);
+
+        prevOffset += Divide::to_U32(sizeof(float) * 2);
+        glEnableVertexAttribArray(glfons_textcoord_slot);
+        glVertexAttribFormat(glfons_textcoord_slot, 2, GL_FLOAT, GL_FALSE, Divide::to_U32(prevOffset));
+
+        prevOffset += Divide::to_U32(sizeof(float) * 2);
+        glEnableVertexAttribArray(glfons_colour_slot);
+        glVertexAttribFormat(glfons_colour_slot, 4, GL_UNSIGNED_BYTE, GL_TRUE, prevOffset);
+
+        glVertexAttribBinding(glfons_position_slot, 0);
+        glVertexAttribBinding(glfons_textcoord_slot, 0);
+        glVertexAttribBinding(glfons_colour_slot, 0);
+
+        glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID, 0, sizeof(FONSvert));
+    }
 
     if (Divide::Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_BUFFER,
@@ -59,8 +83,6 @@ static int glfons__renderCreate(void* userPtr, int width, int height) {
     if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) {
         return 0;
     }
-
-    gl->glfons_prevVertDataSize = 0;
 
     gl->width = width;
     gl->height = height;
@@ -85,9 +107,7 @@ static void glfons__renderUpdate(void* userPtr,
 }
 
 static void glfons__renderDraw(void* userPtr,
-                               const float* verts,
-                               const float* tcoords,
-                               const unsigned char* colours,
+                               const FONSvert* verts,
                                int nverts) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex == 0) {
@@ -97,29 +117,10 @@ static void glfons__renderDraw(void* userPtr,
     GLuint bufferID = gl->glfons_vboID;
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
-
-    GLuint vertDataSize = sizeof(float) * 2 * nverts;
-    if (vertDataSize != gl->glfons_prevVertDataSize) {
-        gl->glfons_prevVertDataSize = vertDataSize;
-        glNamedBufferData(bufferID,
-                          2 * vertDataSize + sizeof(unsigned char) * 4 * nverts,
-                          NULL,
-                          GL_STREAM_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)(0));
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (char*)0 + (vertDataSize));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(unsigned char) * 4, (char*)0 + (2 * vertDataSize));
-
-    } else {
-        glInvalidateBufferData(bufferID);
-    }
-
-    glNamedBufferSubData(bufferID, 0, vertDataSize, (Divide::bufferPtr)verts);
-    glNamedBufferSubData(bufferID, vertDataSize, vertDataSize, (Divide::bufferPtr)tcoords);
-    glNamedBufferSubData(bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, (Divide::bufferPtr)colours);
     Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
+
+    glInvalidateBufferData(bufferID);
+    glNamedBufferData(bufferID, nverts * sizeof(FONSvert), verts, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 }
 
@@ -131,7 +132,6 @@ static void glfons__renderDelete(void* userPtr) {
         glDeleteVertexArrays(1, &gl->glfons_vaoID);
     gl->tex = 0;
     gl->glfons_vaoID = 0;
-    gl->glfons_prevVertDataSize = 0;
     Divide::GLUtil::freeBuffer(gl->glfons_vboID);
     free(gl);
 }

@@ -382,7 +382,7 @@ public:
     Pipeline           newPipeline(const PipelineDescriptor& descriptor) const;
 
 public:  // Direct API calls
-    inline U64 getFrameDurationGPU() {
+    inline U32 getFrameDurationGPU() {
         return _api->getFrameDurationGPU();
     }
 

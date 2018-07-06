@@ -45,11 +45,12 @@ namespace Divide {
 namespace {
     /// How many frames of delay do we allow between the current read and write queries
     /// The longer the delay, the better the performance but the more out of sync the results
-    const U32 g_performanceQueryRingLength = 2;
-    /// Number of queries
-    const U32 g_performanceQueryCount = 1;
-    /// ID of the frame duration query
-    const U32 g_performanceQueryFrameDurationIndex = 0;
+    U32 g_performanceQueryRingLength = 2;
+    U32 g_performanceQueryRingLengthMax = 6;
+
+    // If this is true, every time a query result isn't available, we increase the 
+    // the query buffer ring length by 1 up to a maximum of g_performanceQueryRingLengthMax
+    bool g_autoAdjustQueryLength = true;
 };
 
 GL_API::GL_API(GFXDevice& context)
@@ -66,22 +67,18 @@ GL_API::GL_API(GFXDevice& context)
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     // Only updated in Debug builds
-    FRAME_DURATION_GPU = 0;
+    FRAME_DURATION_GPU = 0u;
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
     s_samplerBoundMap.fill(0);
     s_textureBoundMap.fill(std::make_pair(0, GL_NONE));
 
-    _hardwareQueries.reserve(g_performanceQueryCount);
-    for (U32 i = 0; i < g_performanceQueryCount; ++i) {
-        _hardwareQueries.emplace_back(std::make_shared<glHardwareQueryRing>(context, g_performanceQueryRingLength));
-    }
+    _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(context, g_performanceQueryRingLength);
 }
 
 GL_API::~GL_API()
 {
-    _hardwareQueries.clear();
 }
 
 /// FontStash library initialization
@@ -101,7 +98,8 @@ void GL_API::deleteFonsContext() {
 void GL_API::beginFrame() {
     // Start a duration query in debug builds
     if (Config::ENABLE_GPU_VALIDATION) {
-        glBeginQuery(GL_TIME_ELAPSED, _hardwareQueries[g_performanceQueryFrameDurationIndex]->writeQuery().getID());
+        GLuint writeQuery = _elapsedTimeQuery->writeQuery().getID();
+        glBeginQuery(GL_TIME_ELAPSED, writeQuery);
     }
     // Clear our buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
@@ -126,16 +124,32 @@ void GL_API::endFrame() {
     // End the timing query started in beginFrame() in debug builds
     if (Config::ENABLE_GPU_VALIDATION) {
         glEndQuery(GL_TIME_ELAPSED);
-        _hardwareQueries[g_performanceQueryFrameDurationIndex]->incQueue();
+        _elapsedTimeQuery->incQueue();
     }
 }
 
-GLuint64 GL_API::getFrameDurationGPU() {
+U32 GL_API::getFrameDurationGPU() {
     if (Config::ENABLE_GPU_VALIDATION) {
-        // The returned results are 'g_performanceQueryFrameDurationIndex' frames old!
-        glGetQueryObjectui64v(_hardwareQueries[g_performanceQueryFrameDurationIndex]->readQuery().getID(),
-                              GL_QUERY_RESULT,
-                              &FRAME_DURATION_GPU);
+        // The returned results are 'g_performanceQueryRingLength - 1' frames old!
+        GLuint readQuery = _elapsedTimeQuery->readQuery().getID();
+        GLint available = 0;
+        glGetQueryObjectiv(readQuery, GL_QUERY_RESULT_AVAILABLE, &available);
+        // See how much time the rendering of object i took in nanoseconds.
+        if (!available) {
+            if (g_autoAdjustQueryLength) {
+                U32 newQueryRingLength = std::min(g_performanceQueryRingLength + 1,
+                                                  g_performanceQueryRingLengthMax);
+                if (newQueryRingLength != g_performanceQueryRingLength) {
+                    g_performanceQueryRingLength = newQueryRingLength;
+                    _elapsedTimeQuery->resize(g_performanceQueryRingLength);
+                }
+            }
+        } else {
+            glGetQueryObjectuiv(readQuery,
+                                GL_QUERY_RESULT,
+                                &FRAME_DURATION_GPU);
+            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<U32>(FRAME_DURATION_GPU);
+        }
     }
 
     return FRAME_DURATION_GPU;

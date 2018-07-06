@@ -60,6 +60,7 @@ typedef int_least64_t  I64x;
 //double is 8 bytes with Microsoft's compiler)
 typedef float F32;
 typedef double D64;
+typedef long double D128;
 
 typedef void* bufferPtr;
 
@@ -85,6 +86,7 @@ enum class CallbackParam : U32 {
     TYPE_STRING,
     TYPE_FLOAT,
     TYPE_DOUBLE,
+    TYPE_LONG_DOUBLE,
     TYPE_CHAR,
     TYPE_BOOL,
     TYPE_VOID,
@@ -153,6 +155,11 @@ D64 to_D64(const T value) {
     return static_cast<D64>(value);
 }
 
+template<typename T>
+D128 to_D128(const T value) {
+    return static_cast<D128>(value);
+}
+
 //ref: http://codereview.stackexchange.com/questions/51235/udp-network-server-client-for-gaming-using-boost-asio
 class counter {
     size_t count;
@@ -165,6 +172,138 @@ public:
     bool operator==(counter const &other) { return count == other.count; }
     bool operator!=(counter const &other) { return count != other.count; }
 };
+
+
+// Type promotion
+// ref: https://janmr.com/blog/2010/08/cpp-templates-usual-arithmetic-conversions/
+
+template <typename T>
+struct promote {
+    typedef T type;
+};
+
+template <>
+struct promote<signed short>
+{
+    typedef I32 type;
+};
+
+template <>
+struct promote<bool>
+{
+    typedef I32 type;
+};
+
+template <bool C, typename T, typename F>
+struct choose_type
+{
+    typedef F type;
+};
+
+template <typename T, typename F>
+struct choose_type<true, T, F>
+{
+    typedef T type;
+};
+
+template <>
+struct promote<unsigned short>
+{
+    typedef choose_type<sizeof(short) < sizeof(I32), I32, U32>::type type;
+};
+
+template <>
+struct promote<signed char>
+{
+    typedef choose_type<sizeof(char) <= sizeof(I32), I32, U32>::type type;
+};
+
+template <>
+struct promote<unsigned char>
+{
+    typedef choose_type<sizeof(char) < sizeof(I32), I32, U32>::type type;
+};
+
+template <>
+struct promote<char>
+    : public promote<choose_type<std::numeric_limits<char>::is_signed,
+    signed char, unsigned char>::type>
+{
+};
+
+template <>
+struct promote<wchar_t>
+{
+    typedef choose_type<
+        std::numeric_limits<wchar_t>::is_signed,
+        choose_type<sizeof(wchar_t) <= sizeof(I32), I32, long>::type,
+        choose_type<sizeof(wchar_t) <= sizeof(I32), U32, unsigned long>::type
+    >::type type;
+};
+
+template <typename T> struct type_rank;
+template <> struct type_rank<I32> { static const I32 rank = 1; };
+template <> struct type_rank<U32> { static const I32 rank = 2; };
+template <> struct type_rank<long> { static const I32 rank = 3; };
+template <> struct type_rank<unsigned long> { static const I32 rank = 4; };
+template <> struct type_rank<I64> { static const I32 rank = 5; };
+template <> struct type_rank<U64> { static const I32 rank = 6; };
+template <> struct type_rank<F32> { static const I32 rank = 7; };
+template <> struct type_rank<D64> { static const I32 rank = 8; };
+template <> struct type_rank<D128> { static const int rank = 9; };
+
+template <typename A, typename B>
+struct resolve_uac2
+{
+    typedef typename choose_type<
+        type_rank<A>::rank >= type_rank<B>::rank, A, B
+    >::type return_type;
+};
+
+template <>
+struct resolve_uac2<long, U32>
+{
+    typedef choose_type<sizeof(long) == sizeof(U32),
+        unsigned long, long>::type return_type;
+};
+
+template <>
+struct resolve_uac2<U32, long> : public resolve_uac2<long, U32>
+{
+};
+
+template <typename A, typename B>
+struct resolve_uac : public resolve_uac2<typename promote<A>::type,
+    typename promote<B>::type>
+{
+};
+
+template <typename A, typename B>
+typename resolve_uac<A, B>::return_type add(const A& a, const B& b)
+{
+    return a + b;
+}
+
+
+template <typename A, typename B>
+typename resolve_uac<A, B>::return_type substract(const A& a, const B& b)
+{
+    return a - b;
+}
+
+
+template <typename A, typename B>
+typename resolve_uac<A, B>::return_type divide(const A& a, const B& b)
+{
+    return a / b;
+}
+
+
+template <typename A, typename B>
+typename resolve_uac<A, B>::return_type multiply(const A& a, const B& b)
+{
+    return a * b;
+}
 
 }; //namespace Divide;
 

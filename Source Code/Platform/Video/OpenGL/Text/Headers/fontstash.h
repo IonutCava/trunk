@@ -38,13 +38,15 @@ enum FONSalign {
     FONS_ALIGN_BASELINE    = 1<<6, // Default
 };
 
+struct FONSvert;
+
 struct FONSparams {
     int width, height;
     unsigned char flags;
     void* userPtr;
     int (*renderCreate)(void* uptr, int width, int height);
     void (*renderUpdate)(void* uptr, int* rect, const unsigned char* data);
-    void (*renderDraw)(void* uptr, const float* verts, const float* tcoords, const unsigned char* colours, int nverts);
+    void (*renderDraw)(void* uptr, const FONSvert* verts, int nverts);
     void (*renderDelete)(void* uptr);
 };
 
@@ -207,6 +209,12 @@ struct FONSatlas
     int cnodes;
 };
 
+struct FONSvert {
+    float pos[2];
+    float tcoords[2];
+    unsigned char colours[4];
+};
+
 struct FONScontext
 {
     struct FONSparams params;
@@ -217,9 +225,7 @@ struct FONScontext
     struct FONSatlas* atlas;
     int cfonts;
     int nfonts;
-    float verts[FONS_VERTEX_COUNT*2];
-    float tcoords[FONS_VERTEX_COUNT*2];
-    unsigned char colours[FONS_VERTEX_COUNT*4];
+    FONSvert verts[FONS_VERTEX_COUNT];
     int nverts;
     unsigned char scratch[FONS_SCRATCH_BUF_SIZE];
     int nscratch;
@@ -921,21 +927,23 @@ static void fons__flush(struct FONScontext* stash)
     // Flush triangles
     if (stash->nverts > 0) {
         if (stash->params.renderDraw != nullptr)
-            stash->params.renderDraw(stash->params.userPtr, stash->verts, stash->tcoords, stash->colours, stash->nverts);
+            stash->params.renderDraw(stash->params.userPtr, stash->verts, stash->nverts);
         stash->nverts = 0;
     }
 }
 
 static __inline void fons__vertex(struct FONScontext* stash, float x, float y, float s, float t, unsigned char cR, unsigned char cG, unsigned char cB, unsigned char cA)
 {
-    stash->verts[stash->nverts*2+0] = x;
-    stash->verts[stash->nverts*2+1] = y;
-    stash->tcoords[stash->nverts*2+0] = s;
-    stash->tcoords[stash->nverts*2+1] = t;
-    stash->colours[stash->nverts*4+0] = cR;
-    stash->colours[stash->nverts*4+1] = cG;
-    stash->colours[stash->nverts*4+2] = cB;
-    stash->colours[stash->nverts*4+3] = cA;
+    stash->verts[stash->nverts].pos[0] = x;
+    stash->verts[stash->nverts].pos[1] = y;
+
+    stash->verts[stash->nverts].tcoords[0] = s;
+    stash->verts[stash->nverts].tcoords[1] = t;
+
+    stash->verts[stash->nverts].colours[0] = cR;
+    stash->verts[stash->nverts].colours[1] = cG;
+    stash->verts[stash->nverts].colours[2] = cB;
+    stash->verts[stash->nverts].colours[3] = cA;
     stash->nverts++;
 }
 

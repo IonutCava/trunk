@@ -219,6 +219,46 @@ constexpr T Nano(const T a);
 /// Base value * 0.000000000001
 template <typename T>
 constexpr T Pico(const T a);
+
+/// Base value * 1000000000000
+template <typename T, typename U>
+constexpr T Tera(const U a);
+/// Base value * 1000000000
+template <typename T, typename U>
+constexpr T Giga(const U a);
+/// Base value * 1000000
+template <typename T, typename U>
+constexpr T Mega(const U a);
+/// Base value * 1000
+template <typename T, typename U>
+constexpr T Kilo(const U a);
+/// Base value * 100
+template <typename T, typename U>
+constexpr T Hecto(const U a);
+/// Base value * 10
+template <typename T, typename U>
+constexpr T Deca(const U a);
+/// Base value
+template <typename T, typename U>
+constexpr T Base(const U a);
+/// Base value * 0.1
+template <typename T, typename U>
+constexpr T Deci(const U a);
+/// Base value * 0.01
+template <typename T, typename U>
+constexpr T Centi(const U a);
+/// Base value * 0.001
+template <typename T, typename U>
+constexpr T Milli(const U a);
+/// Base value * 0.000001
+template <typename T, typename U>
+constexpr T Micro(const U a);
+/// Base value * 0.000000001
+template <typename T, typename U>
+constexpr T Nano(const U a);
+/// Base value * 0.000000000001
+template <typename T, typename U>
+constexpr T Pico(const U a);
 };
 
 namespace Time {
@@ -229,20 +269,47 @@ T Seconds(const T a);
 template <typename T>
 T Milliseconds(const T a);
 template <typename T>
-U64 Microseconds(const T a);
+T Microseconds(const T a);
+template <typename T>
+T Nanoseconds(const T a);
 
-template <typename T>
-T MicrosecondsToSeconds(const U64 a);
-template <typename T>
-T MicrosecondsToMilliseconds(const U64 a);
-template <typename T>
-T MillisecondsToSeconds(const T a);
-template <typename T>
-T SecondsToMilliseconds(const T a);
-template <typename T>
-U64 SecondsToMicroseconds(const T a);
-template <typename T>
-U64 MillisecondsToMicroseconds(const T a);
+template <typename T, typename U>
+T Seconds(const U a);
+template <typename T, typename U>
+T Milliseconds(const U a);
+template <typename T, typename U>
+T Microseconds(const U a);
+template <typename T, typename U>
+T Nanoseconds(const U a);
+
+template <typename T = D64, typename U>
+T NanosecondsToSeconds(const U a);
+template <typename T = D64, typename U>
+T NanosecondsToMilliseconds(const U a);
+template <typename T = U64, typename U>
+T NanosecondsToMicroseconds(const U a);
+
+template <typename T = D64, typename U>
+T MicrosecondsToSeconds(const U a);
+template <typename T = U64, typename U>
+T MicrosecondsToMilliseconds(const U a);
+template <typename T = U64, typename U>
+T MicrosecondsToNanoseconds(const U a);
+
+template <typename T = D64, typename U>
+T MillisecondsToSeconds(const U a);
+template <typename T = U64, typename U>
+T MillisecondsToMicroseconds(const U a);
+template <typename T = U64, typename U>
+T MillisecondsToNanoseconds(const U a);
+
+template <typename T = D64, typename U>
+T SecondsToMilliseconds(const U a);
+template <typename T = U64, typename U>
+T SecondsToMicroseconds(const U a);
+template <typename T = U64, typename U>
+T SecondsToNanoseconds(const U a);
+
 };  // namespace Time
 
 namespace Util {

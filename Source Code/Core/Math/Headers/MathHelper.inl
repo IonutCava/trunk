@@ -468,73 +468,155 @@ constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) {
 };  // namespace Angle
 
 namespace Metric {
+
+/// Base value * 1000000000000
 template <typename T>
 constexpr T Tera(const T a) {
-    return static_cast<T>(a * 1'000'000'000'000.0);
+    return Tera<T, T>(a);
 }
 
+/// Base value * 1000000000
 template <typename T>
 constexpr T Giga(const T a) {
-    return static_cast<T>(a * 1'000'000'000.0);
+    return Giga<T, T>(a);
 }
 
+/// Base value * 1000000
 template <typename T>
 constexpr T Mega(const T a) {
-    return static_cast<T>(a * 1'000'000.0);
+    return Mega<T, T>(a);
 }
 
+/// Base value * 1000
 template <typename T>
 constexpr T Kilo(const T a) {
-    return static_cast<T>(a * 1'000.0);
+    return Kilo<T, T>(a);
 }
 
+/// Base value * 100
 template <typename T>
 constexpr T Hecto(const T a) {
-    return static_cast<T>(a * 100.0);
+    return Hecto<T, T>(a);
 }
 
+/// Base value * 10
 template <typename T>
 constexpr T Deca(const T a) {
-    return static_cast<T>(a * 10.0);
+    return Deca<T, T>(a);
 }
 
+/// Base value
 template <typename T>
 constexpr T Base(const T a) {
-    return a;
+    return Base<T, T>(a);
 }
 
+/// Base value * 0.1
 template <typename T>
 constexpr T Deci(const T a) {
-    return static_cast<T>(a * 0.1);
+    return Deci<T, T>(a);
 }
 
+/// Base value * 0.01
 template <typename T>
 constexpr T Centi(const T a) {
-    return static_cast<T>(a * 0.01);
+    return Centi<T, T>(a);
 }
 
+/// Base value * 0.001
 template <typename T>
 constexpr T Milli(const T a) {
-    return static_cast<T>(a * 0.001);
+    return Milli<T, T>(a);
 }
 
+/// Base value * 0.000001
 template <typename T>
 constexpr T Micro(const T a) {
-    return static_cast<T>(a * 0.000'001);
+    return Micro<T, T>(a);
 }
 
+/// Base value * 0.000000001
 template <typename T>
 constexpr T Nano(const T a) {
-    return static_cast<T>(a * 0.000'000'001);
+    return Nano<T, T>(a);
 }
 
+/// Base value * 0.000000000001
 template <typename T>
 constexpr T Pico(const T a) {
-    return static_cast<T>(a * 0.000'000'000'001);
+    return Pico<T, T>(a);
 }
+
+
+template <typename T, typename U>
+constexpr T Tera(const U a) {
+    return static_cast<T>(multiply(a, 1'000'000'000'000));
+}
+
+template <typename T, typename U>
+constexpr T Giga(const U a) {
+    return static_cast<T>(multiply(a, 1'000'000'000));
+}
+
+template <typename T, typename U>
+constexpr T Mega(const U a) {
+    return static_cast<T>(multiply(a, 1'000'000));
+}
+
+template <typename T, typename U>
+constexpr T Kilo(const U a) {
+    return static_cast<T>(multiply(a, 1'000));
+}
+
+template <typename T, typename U>
+constexpr T Hecto(const U a) {
+    return static_cast<T>(multiply(a, 100));
+}
+
+template <typename T, typename U>
+constexpr T Deca(const U a) {
+    return static_cast<T>(multiply(a, 10));
+}
+
+template <typename T, typename U>
+constexpr T Base(const U a) {
+    return static_cast<T>(a);
+}
+
+template <typename T, typename U>
+constexpr T Deci(const U a) {
+    return static_cast<T>(divide(a, 10.0));
+}
+
+template <typename T, typename U>
+constexpr T Centi(const U a) {
+    return static_cast<T>(divide(a, 100.0));
+}
+
+template <typename T, typename U>
+constexpr T Milli(const U a) {
+    return static_cast<T>(divide(a, 1000.0));
+}
+
+template <typename T, typename U>
+constexpr T Micro(const U a) {
+    return static_cast<T>(divide(a, 1e6));
+}
+
+template <typename T, typename U>
+constexpr T Nano(const U a) {
+    return static_cast<T>(divide(a, 1e9));
+}
+
+template <typename T, typename U>
+constexpr T Pico(const U a) {
+    return static_cast<T>(divide(a,  1e12));
+}
+
 };  // namespace Metric
 
 namespace Time {
+
 template <typename T>
 T Seconds(const T a) {
     return a;
@@ -546,39 +628,95 @@ T Milliseconds(const T a) {
 }
 
 template <typename T>
-U64 Microseconds(const T a) {
-    return static_cast<U64>(a);
+T Microseconds(const T a) {
+    return a;
 }
 
 template <typename T>
-/*constexpr*/ T MicrosecondsToSeconds(const U64 a) {
-    return Metric::Micro(static_cast<T>(a));
+T Nanoseconds(const T a) {
+    return a;
 }
 
-template <typename T>
-/*constexpr*/ T MicrosecondsToMilliseconds(const U64 a) {
-    return Metric::Milli(static_cast<T>(a));
+template <typename T, typename U>
+T Seconds(const U a) {
+    return static_cast<T>(a);
 }
 
-template <typename T>
-/*constexpr*/ T SecondsToMilliseconds(const T a) {
-    return Metric::Kilo(a);
+template <typename T, typename U>
+T Milliseconds(const U a) {
+    return static_cast<T>(a);
 }
 
-template <typename T>
-/*constexpr*/ U64 SecondsToMicroseconds(const T a) {
-    return static_cast<U64>(Metric::Mega(a));
+template <typename T, typename U>
+T Microseconds(const U a) {
+    return static_cast<T>(a);
 }
 
-template <typename T>
-/*constexpr*/ U64 MillisecondsToMicroseconds(const T a) {
-    return static_cast<U64>(Metric::Kilo(a));
+template <typename T, typename U>
+T Nanoseconds(const U a) {
+    return static_cast<T>(a);
 }
 
-template <typename T>
-/*constexpr*/ T MillisecondsToSeconds(const T a) {
-    return Metric::Milli(a);
+template <typename T, typename U>
+T NanosecondsToSeconds(const U a) {
+    return Metric::Nano<T, U>(a);
 }
+
+template <typename T, typename U>
+T NanosecondsToMilliseconds(const U a) {
+    return Metric::Micro<T, U>(a);
+}
+
+template <typename T, typename U>
+T NanosecondsToMicroseconds(const U a) {
+    return Metric::Milli<T, U>(a);
+}
+
+template <typename T, typename U>
+T MicrosecondsToSeconds(const U a) {
+    return Metric::Micro<T, U>(a);
+}
+
+template <typename T, typename U>
+T MicrosecondsToMilliseconds(const U a) {
+    return Metric::Milli<T, U>(a);
+}
+
+template <typename T, typename U>
+T MicrosecondsToNanoseconds(const U a) {
+    return Metric::Kilo<T, U>(a);
+}
+
+template <typename T, typename U>
+T MillisecondsToSeconds(const U a) {
+    return Metric::Milli<T, U>(a);
+}
+
+template <typename T, typename U>
+T MillisecondsToMicroseconds(const U a) {
+    return Metric::Kilo<T, U>(a);
+}
+
+template <typename T, typename U>
+T MillisecondsToNanoseconds(const U a) {
+    return Metric::Mega<T, U>(a);
+}
+
+template <typename T, typename U>
+T SecondsToMilliseconds(const U a) {
+    return Metric::Kilo<T, U>(a);
+}
+
+template <typename T, typename U>
+T SecondsToMicroseconds(const U a) {
+    return Metric::Mega<T, U>(a);
+}
+
+template <typename T, typename U>
+T SecondsToNanoseconds(const U a) {
+    return Metric::Giga<T, U>(a);
+}
+
 };  // namespace Time
 
 namespace Util {

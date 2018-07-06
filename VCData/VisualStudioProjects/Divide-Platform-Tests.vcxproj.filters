@@ -36,5 +36,8 @@
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\HashTests.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\ConversionTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

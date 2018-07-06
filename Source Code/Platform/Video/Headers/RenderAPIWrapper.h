@@ -83,7 +83,10 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void popDebugMessage() = 0;
 
     virtual void updateClipPlanes() = 0;
-    virtual U64  getFrameDurationGPU() = 0;
+
+    // Returns the time in milliseconds that it took to render one frame
+    // Queries are expensive, so this result MAY BE SEVERAL frames out of date!
+    virtual U32 getFrameDurationGPU() = 0;
 
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
     virtual bool draw(const GenericDrawCommand& cmd) = 0;

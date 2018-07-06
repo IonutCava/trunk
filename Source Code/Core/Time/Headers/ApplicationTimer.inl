@@ -73,15 +73,20 @@ inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) {
     return _elapsedTimeUs;
 }
 
+inline U64 ElapsedNanoseconds(bool forceUpdate) {
+    return MicrosecondsToNanoseconds(ElapsedMicroseconds(forceUpdate));
+}
+
 inline U64 ElapsedMicroseconds(bool forceUpdate) {
     return ApplicationTimer::instance().getElapsedTime(forceUpdate);
 }
 
 inline D64 ElapsedMilliseconds(bool forceUpdate) {
-    return MicrosecondsToMilliseconds<D64>(ElapsedMicroseconds(forceUpdate));
+    return MicrosecondsToMilliseconds<D64, U64>(ElapsedMicroseconds(forceUpdate));
 }
+
 inline D64 ElapsedSeconds(bool forceUpdate) {
-    return MicrosecondsToSeconds<D64>(ElapsedMicroseconds(forceUpdate));
+    return MicrosecondsToSeconds(ElapsedMicroseconds(forceUpdate));
 }
 
 };  // namespace Time

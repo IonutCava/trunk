@@ -135,7 +135,7 @@ void DefaultScene::processInput(U8 playerIndex, const U64 deltaTime) {
 }
 
 void DefaultScene::processTasks(const U64 deltaTime) {
-    D64 SpinTimer = Time::Milliseconds(16);
+    D64 SpinTimer = Time::Milliseconds(16.0);
     if (_taskTimers[0] >= SpinTimer) {
         for (hashMapImpl<U8, Angle::DEGREES<F32>>::value_type& it : _camAngle) {
             it.second = 0.25f * ((it.first * 2.0f) + 1.0f) * (it.first % 2 == 0 ? -1 : 1);

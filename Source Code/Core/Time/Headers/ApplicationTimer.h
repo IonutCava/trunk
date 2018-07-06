@@ -42,6 +42,7 @@ namespace Time {
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimeValue;
 
 DEFINE_SINGLETON(ApplicationTimer)
+    typedef std::chrono::nanoseconds  NSec;
     typedef std::chrono::microseconds USec;
     typedef std::chrono::milliseconds MSec;
     typedef std::chrono::seconds Sec;
@@ -56,6 +57,7 @@ DEFINE_SINGLETON(ApplicationTimer)
 
     const stringImpl& benchmarkReport() const;
 
+    // Returns the elapsed time since app startup in microseconds
     U64 getElapsedTime(bool forceUpdate = false);
 
   protected:
@@ -63,6 +65,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     ~ApplicationTimer();
     
     TimeValue getCurrentTicksInternal() const;
+    
     U64 getElapsedTimeInternal(const TimeValue& currentTicks) const;
 
   private:
@@ -82,9 +85,11 @@ END_SINGLETON
 
 /// The following functions force a timer update 
 /// (a call to query performance timer).
-U64 ElapsedMicroseconds(bool forceUpdate = false);
-D64 ElapsedMilliseconds(bool forceUpdate = false);
-D64 ElapsedSeconds(bool forceUpdate = false);
+inline U64 ElapsedNanoseconds(bool forceUpdate = false);
+inline U64 ElapsedMicroseconds(bool forceUpdate = false);
+
+inline D64 ElapsedMilliseconds(bool forceUpdate = false);
+inline D64 ElapsedSeconds(bool forceUpdate = false);
 
 };  // namespace Time
 };  // namespace Divide
