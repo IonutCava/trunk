@@ -133,6 +133,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 }
 
 void DisplayWindow::update() {
+    static int s_KeyMod = 0;
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -165,12 +166,16 @@ void DisplayWindow::update() {
                 if (hasFocus()) {
                     args._key = SDLToOIS(event.key.keysym.sym);
                     if (event.key.type == SDL_KEYUP) {
+                        s_KeyMod = 0;
                         args._flag = false;
                         for (EventListener& listener : _eventListeners[to_base(WindowEvent::KEY_PRESS)]) {
                             listener(args);
                         }
                     } else {
+                        s_KeyMod = event.key.keysym.mod;
+
                         args._flag = true;
+                        args._mod = s_KeyMod;
                         for (EventListener& listener : _eventListeners[to_base(WindowEvent::KEY_PRESS)]) {
                             listener(args);
                         }
@@ -180,6 +185,21 @@ void DisplayWindow::update() {
             case SDL_TEXTINPUT: {
                 if (hasFocus()) {
                     args._char = event.text.text[0];
+                    if (event.text.text[0] != 0 && event.text.text[1] == 0)
+                    {
+                        if (s_KeyMod & TW_KMOD_CTRL && event.text.text[0] < 32) {
+                            args._char = (event.text.text[0] + 'a' - 1);
+                            args._mod = s_KeyMod;
+                        } else {
+                            if (s_KeyMod & KMOD_RALT) {
+                                s_KeyMod &= ~KMOD_CTRL;
+                            }
+
+                            args._char = event.text.text[0];
+                            args._mod = s_KeyMod;
+                        }
+                    }
+                    s_KeyMod = 0;
                     for (EventListener& listener : _eventListeners[to_base(WindowEvent::CHAR)]) {
                         listener(args);
                     }
@@ -196,10 +216,27 @@ void DisplayWindow::update() {
             } break;
             case SDL_MOUSEBUTTONUP: {
                 if (hasFocus()) {
-                    args._flag = false;
-                    args.id = event.button.button;
-                    for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOUSE_BUTTON)]) {
-                        listener(args);
+                    if (event.type == SDL_MOUSEBUTTONDOWN && (event.button.button == 4 || event.button.button == 5))
+                    {
+                        static int s_WheelPos = 0;
+                        if (event.button.button == 4) {
+                            ++s_WheelPos;
+                        } else {
+                            --s_WheelPos;
+                        }
+                        args.x = event.wheel.x;
+                        args.y = event.wheel.y;
+                        args._mod = s_WheelPos;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOUSE_WHEEL)]) {
+                            listener(args);
+                        }
+                    } else {
+
+                        args._flag = false;
+                        args.id = event.button.button;
+                        for (EventListener& listener : _eventListeners[to_base(WindowEvent::MOUSE_BUTTON)]) {
+                            listener(args);
+                        }
                     }
                 }
             } break;

@@ -93,6 +93,7 @@ public:
         bool _flag = false;
         Input::KeyCode _key;
         char _char = ' ';
+        int  _mod = 0;
         I32 x = -1, y = -1;
         I32 id = -1;
 
