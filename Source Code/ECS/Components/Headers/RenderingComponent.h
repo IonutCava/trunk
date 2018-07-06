@@ -176,7 +176,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
 
     void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, RenderStagePass renderStagePass);
     void updateDrawCommands(RenderStage stage, vectorEASTL<IndirectDrawCommand>& drawCmdsInOut);
-    void setDataIndex(U32 dataIndex);
+    void setDataIndex(RenderStage stage, U32 dataIndex);
     bool hasDrawCommands(RenderStage stage);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
@@ -279,8 +279,8 @@ class RenderingCompRenderPass {
             renderable.updateDrawCommands(stage, drawCmdsInOut);
         }
 
-        static void setDataIndex(RenderingComponent& renderable, U32 dataIndex) {
-            renderable.setDataIndex(dataIndex);
+        static void setDataIndex(RenderingComponent& renderable, RenderStage stage, U32 dataIndex) {
+            renderable.setDataIndex(stage, dataIndex);
         }
 
         static bool hasDrawCommands(RenderingComponent& renderable, RenderStage stage) {

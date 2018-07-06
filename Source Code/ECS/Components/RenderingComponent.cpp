@@ -520,11 +520,10 @@ void RenderingComponent::updateDrawCommands(RenderStage stage, vectorEASTL<Indir
     }
 }
 
-void RenderingComponent::setDataIndex(U32 dataIndex) {
-    for (RenderPackagesPerPassType& packagesPerPassType : _renderPackages) {
-        for (std::unique_ptr<RenderPackage>& package : packagesPerPassType) {
-            Attorney::RenderPackageRenderingComponent::setDataIndex(*package, dataIndex);
-        }
+void RenderingComponent::setDataIndex(RenderStage stage, U32 dataIndex) {
+    RenderPackagesPerPassType& packagesPerPassType = _renderPackages[to_base(stage)];
+    for (std::unique_ptr<RenderPackage>& package : packagesPerPassType) {
+        Attorney::RenderPackageRenderingComponent::setDataIndex(*package, dataIndex);
     }
 }
 

@@ -136,6 +136,5 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     stringImpl _name;
 };
 
-
 };  // namespace Divide
 #endif //_SHADER_BUFFER_H_

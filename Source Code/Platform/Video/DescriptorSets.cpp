@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/DescriptorSets.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
     ShaderBufferBinding::ShaderBufferBinding()
@@ -59,11 +60,17 @@ namespace Divide {
             for (const ShaderBufferBinding& otherBinding : rhs._shaderBuffers) {
                 // Make sure the bindings are different
                 if (ourBinding._binding == otherBinding._binding) {
-                    return false;
+                    if (ourBinding._range != otherBinding._range ||
+                        ourBinding._atomicCounter != otherBinding._atomicCounter ||
+                        ourBinding._buffer->getGUID() != otherBinding._buffer->getGUID())
+                    {
+                        return false;
+                    }
                 }
             }
         }
-        auto ourTextureData = lhs._textureData.textures();
+
+        auto& ourTextureData = lhs._textureData.textures();
         auto otherTextureData = rhs._textureData.textures();
 
         for (const eastl::pair<TextureData, U8>& ourTexture : ourTextureData) {
@@ -76,12 +83,21 @@ namespace Divide {
         }
 
         // Merge stage
-        lhs._shaderBuffers.insert(eastl::cend(lhs._shaderBuffers),
-                                  eastl::cbegin(rhs._shaderBuffers),
-                                  eastl::cend(rhs._shaderBuffers));
-
+        insert_unique(lhs._shaderBuffers, rhs._shaderBuffers);
         // The incoming texture data is either identical or new at this point, so only insert unique items
-        insert_unique(lhs._textureData.textures(), rhs._textureData.textures());
+        insert_unique(ourTextureData, otherTextureData);
         return true;
+    }
+
+    bool ShaderBufferBinding::operator==(const ShaderBufferBinding& other) const {
+        return _binding == other._binding &&
+               _range == other._range &&
+               _buffer->getGUID() == other._buffer->getGUID();
+    }
+
+    bool ShaderBufferBinding::operator!=(const ShaderBufferBinding& other) const {
+        return _binding != other._binding ||
+               _range != other._range ||
+               _buffer->getGUID() != other._buffer->getGUID();
     }
 }; //namespace Divide

@@ -72,7 +72,6 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
                        [this, i, &sceneRenderState](const Task& parentTask) {
                            GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
                            buf.clear();
-
                            _renderPasses[i]->render(sceneRenderState, buf);
                            buf.batch();
                        }).startTask(priority);
@@ -232,7 +231,7 @@ void RenderPassManager::refreshNodeData(RenderStage stage, U32 bufferIndex, U32 
     for (const vectorEASTL<SceneGraphNode*>& queue : g_sortedQueues) {
         for (SceneGraphNode* node : queue) {
             RenderingComponent& renderable = *node->get<RenderingComponent>();
-            Attorney::RenderingCompRenderPass::setDataIndex(renderable, to_U32(g_nodeData.size()));
+            Attorney::RenderingCompRenderPass::setDataIndex(renderable, stage, to_U32(g_nodeData.size()));
             if (Attorney::RenderingCompRenderPass::hasDrawCommands(renderable, stage)) {
                 g_nodeData.push_back(processVisibleNode(node, renderable.renderOptionEnabled(RenderingComponent::RenderOptions::IS_OCCLUSION_CULLABLE), playAnimations, viewMatrix));
                 Attorney::RenderingCompRenderPass::updateDrawCommands(renderable, stage, g_drawCommands);

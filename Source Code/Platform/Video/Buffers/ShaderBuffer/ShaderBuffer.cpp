@@ -37,4 +37,5 @@ void ShaderBuffer::writeData(const bufferPtr data) {
 size_t ShaderBuffer::alignmentRequirement(bool unbound) {
     return unbound ? _unboundAlignmentRequirement : _boundAlignmentRequirement;
 }
+
 }; //namespace Divide;

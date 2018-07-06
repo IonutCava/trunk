@@ -65,17 +65,8 @@ namespace Divide {
                  const vec2<U16>& range,
                  const std::pair<bool, vec2<U32>>& atomicCounter);
 
-        FORCE_INLINE bool operator==(const ShaderBufferBinding& other) const {
-            return _binding == other._binding &&
-                   _range == other._range &&
-                   _buffer == other._buffer;
-        }
-
-        FORCE_INLINE bool operator!=(const ShaderBufferBinding& other) const {
-            return _binding != other._binding ||
-                   _range != other._range ||
-                   _buffer != other._buffer;
-        }
+        bool operator==(const ShaderBufferBinding& other) const;
+        bool operator!=(const ShaderBufferBinding& other) const;
     };
 
     typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
