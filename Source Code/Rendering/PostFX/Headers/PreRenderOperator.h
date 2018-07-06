@@ -53,15 +53,13 @@ class NOINITVTABLE PreRenderOperator {
     virtual ~PreRenderOperator();
 
     virtual void idle(const Configuration& config) = 0;
-    virtual void execute(GFX::CommandBuffer& bufferInOut) = 0;
+    virtual void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) = 0;
 
     virtual void reshape(U16 width, U16 height);
 
     inline FilterType operatorType() const { return _operatorType; }
 
     virtual TextureData getDebugOutput() const;
-
-    static void cacheDisplaySettings(const GFXDevice& context, const Camera& camera);
 
    protected:
     GFXDevice& _context;
@@ -71,11 +69,6 @@ class NOINITVTABLE PreRenderOperator {
     RenderTargetHandle _samplerCopy;
     RTDrawDescriptor _screenOnlyDraw;
     FilterType  _operatorType;
-
-    static F32 s_mainCamAspectRatio;
-    static vec2<F32> s_mainCamZPlanes;
-    static mat4<F32> s_mainCamViewMatrixCache;
-    static mat4<F32> s_mainCamProjectionMatrixCache;
 };
 
 };  // namespace Divide

@@ -45,7 +45,7 @@ class PostAAPreRenderOperator : public PreRenderOperator {
     ~PostAAPreRenderOperator();
 
     void idle(const Configuration& config) override;
-    void execute(GFX::CommandBuffer& bufferInOut) override;
+    void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) override;
     void reshape(U16 width, U16 height) override;
 
    private:

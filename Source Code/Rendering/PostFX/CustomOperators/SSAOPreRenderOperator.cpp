@@ -142,7 +142,7 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
                                                                                   1.0f / _ssaoOutput._rt->getHeight()));
 }
 
-void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
+void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
@@ -150,8 +150,8 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
-    _ssaoGenerateConstants.set("projectionMatrix", GFX::PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache);
-    _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, PreRenderOperator::s_mainCamProjectionMatrixCache.getInverse());
+    _ssaoGenerateConstants.set("projectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
+    _ssaoGenerateConstants.set("invProjectionMatrix", GFX::PushConstantType::MAT4, camera.getProjectionMatrix().getInverse());
 
     RenderTargetHandle screen = _parent.inputRT();
 

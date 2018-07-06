@@ -80,7 +80,6 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "ColourPassThrough"));  // 4
 
     _shaderFunctionSelection.resize(_postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
-    
 
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);
@@ -135,7 +134,7 @@ void PostFX::updateResolution(U16 width, U16 height) {
     _preRenderBatch->reshape(width, height);
 }
 
-void PostFX::apply(GFX::CommandBuffer& bufferInOut) {
+void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     if (_filtersDirty) {
         _shaderFunctionSelection[0] = _shaderFunctionList[getFilterState(FilterType::FILTER_VIGNETTE) ? 0 : 4];
         _shaderFunctionSelection[1] = _shaderFunctionList[getFilterState(FilterType::FILTER_NOISE) ? 1 : 4];
@@ -151,7 +150,7 @@ void PostFX::apply(GFX::CommandBuffer& bufferInOut) {
     setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
     GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
-    _preRenderBatch->execute(_filterStackCount, bufferInOut);
+    _preRenderBatch->execute(camera, _filterStackCount, bufferInOut);
 
     TextureData output = _preRenderBatch->getOutput();
     TextureData data0 = _underwaterTexture->getData();

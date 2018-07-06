@@ -84,7 +84,7 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
 }
 
 // Order: luminance calc -> bloom -> tonemap
-void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
+void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 

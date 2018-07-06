@@ -76,13 +76,14 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
                        }).startTask(priority);
         }
 
+        const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
+        GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
         CreateTask(pool,
                    &renderTask,
-                   [this](const Task& parentTask) {
+                   [this, &cam, &buf](const Task& parentTask) {
                       Time::ScopedTimer time(*_postFxRenderTimer);
-                      GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
                       buf.clear();
-                      PostFX::instance().apply(buf);
+                      PostFX::instance().apply(cam, buf);
                       buf.batch();
                    }).startTask(priority);
 
@@ -91,8 +92,8 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::Profile
     {
         Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
         _mainCommandBuffer->clear();
-        for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
-            _mainCommandBuffer->add(*_renderPassCommandBuffer[i]);
+        for (GFX::CommandBuffer* buffer : _renderPassCommandBuffer) {
+            _mainCommandBuffer->add(*buffer);
         }
     }
 

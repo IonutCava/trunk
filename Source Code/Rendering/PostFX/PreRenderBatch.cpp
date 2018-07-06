@@ -178,7 +178,7 @@ RenderTargetHandle& PreRenderBatch::outputRT() {
     return _postFXOutput;
 }
 
-void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffer) {
+void PreRenderBatch::execute(const Camera& camera, const FilterStack& stack, GFX::CommandBuffer& buffer) {
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
 
@@ -229,7 +229,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     // Execute all HDR based operators
     for (PreRenderOperator* op : hdrBatch) {
         if (op != nullptr && stack[to_U32(op->operatorType())] > 0) {
-            op->execute(buffer);
+            op->execute(camera, buffer);
         }
     }
 
@@ -268,7 +268,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {
         if (op != nullptr && stack[to_U32(op->operatorType())] > 0) {
-            op->execute(buffer);
+            op->execute(camera, buffer);
         }
     }
 }

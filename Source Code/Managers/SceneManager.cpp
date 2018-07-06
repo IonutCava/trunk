@@ -467,10 +467,6 @@ void SceneManager::preRender(RenderStagePass stagePass, const Camera& camera, Re
 
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
     gfx.getRenderer().preRender(stagePass, target, *lightPool, bufferInOut);
-
-    if (stagePass._stage == RenderStage::DISPLAY) {
-        PostFX::instance().cacheDisplaySettings(gfx, camera);
-    }
 }
 
 void SceneManager::postRender(RenderStagePass stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {

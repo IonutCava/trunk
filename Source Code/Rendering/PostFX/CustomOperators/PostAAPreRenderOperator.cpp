@@ -65,7 +65,7 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
 }
 
 /// This is tricky as we use our screen as both input and output
-void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
+void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     STUBBED("ToDo: Move PostAA to compute shaders to avoid a blit and RT swap. -Ionut");
     RenderTargetHandle ldrTarget = _parent.outputRT();
 

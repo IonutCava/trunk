@@ -6,11 +6,6 @@
 
 namespace Divide {
 
-F32 PreRenderOperator::s_mainCamAspectRatio;
-vec2<F32> PreRenderOperator::s_mainCamZPlanes;
-mat4<F32> PreRenderOperator::s_mainCamViewMatrixCache;
-mat4<F32> PreRenderOperator::s_mainCamProjectionMatrixCache;
-
 PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache, FilterType operatorType)
     : _context(context),
       _parent(parent),
@@ -25,13 +20,6 @@ PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent,
 PreRenderOperator::~PreRenderOperator()
 {
     _context.renderTargetPool().deallocateRT(_samplerCopy);
-}
-
-void PreRenderOperator::cacheDisplaySettings(const GFXDevice& context, const Camera& camera) {
-    s_mainCamViewMatrixCache = camera.getViewMatrix();
-    s_mainCamProjectionMatrixCache = camera.getProjectionMatrix();
-    s_mainCamAspectRatio = context.renderingData().aspectRatio();
-    s_mainCamZPlanes.set(context.renderingData().currentZPlanes());
 }
 
 void PreRenderOperator::reshape(U16 width, U16 height) {
