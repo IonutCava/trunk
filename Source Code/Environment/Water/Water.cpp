@@ -55,7 +55,7 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
     refractionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     refractionSampler.toggleMipMaps(false);
 
-    TextureDescriptor refractionDescriptor(TEXTURE_2D, RGBA, RGBA8, UNSIGNED_BYTE); //Less precision for reflections
+    TextureDescriptor refractionDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); //Less precision for reflections
     refractionDescriptor.setSampler(refractionSampler);
 
     _refractionTexture = GFX_DEVICE.newFB();

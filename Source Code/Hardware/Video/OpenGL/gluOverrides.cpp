@@ -2,6 +2,7 @@
 #ifndef GLM_MESSAGES
 #undef  GLM_MESSAGES
 #endif
+#define GLM_FORCE_RADIANS
 #include <gtc/matrix_inverse.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
@@ -60,7 +61,7 @@ namespace Divide {
 
         GLfloat* _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar){
             _matrixMode(PROJECTION_MATRIX);
-            _projectionMatrix.top() = glm::perspective(fovy,aspect,zNear,zFar);
+            _projectionMatrix.top() = glm::perspective(glm::radians(fovy), aspect, zNear, zFar);
             GL_API::getInstance().updateProjectionMatrix();
             return glm::value_ptr(_projectionMatrix.top());
         }

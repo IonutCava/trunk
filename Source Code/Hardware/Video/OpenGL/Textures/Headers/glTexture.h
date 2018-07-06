@@ -48,10 +48,8 @@ private:
     void createSampler();
 
 private:
-    GLenum _format;
-    GLenum _internalFormat;
     GLenum _type;
-
+    bool   _allocatedStorage;
     ///We currently only use one sampler per texture. When the texture is destroyed, the sampler is destroyed!!!!
     glSamplerObject  _sampler;
 

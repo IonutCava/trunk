@@ -67,7 +67,7 @@ bool Reflector::build(){
     reflectionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
 
-    TextureDescriptor reflectionDescriptor(TEXTURE_2D, RGBA, RGBA8, UNSIGNED_BYTE); //Less precision for reflections
+    TextureDescriptor reflectionDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); //Less precision for reflections
 
     reflectionDescriptor.setSampler(reflectionSampler);
 

@@ -10,10 +10,7 @@
 CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_CubeMap)
 {
 	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "Single Shadow Map");
-	TextureDescriptor depthMapDescriptor(TEXTURE_CUBE_MAP,
-										 DEPTH_COMPONENT,
-										 DEPTH_COMPONENT,
-										 UNSIGNED_INT); ///Default filters, LINEAR is OK for this
+	TextureDescriptor depthMapDescriptor(TEXTURE_CUBE_MAP, DEPTH_COMPONENT, UNSIGNED_INT); ///Default filters, LINEAR is OK for this
 
 	SamplerDescriptor depthMapSampler;
 	depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);

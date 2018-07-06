@@ -21,10 +21,7 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap
     depthMapSampler._useRefCompare = true; //< Use compare function
     depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
 
-    TextureDescriptor depthMapDescriptor(TEXTURE_2D,
-                                         DEPTH_COMPONENT,
-                                         DEPTH_COMPONENT,
-                                         UNSIGNED_INT); ///Default filters, LINEAR is OK for this
+    TextureDescriptor depthMapDescriptor(TEXTURE_2D, DEPTH_COMPONENT, UNSIGNED_INT); ///Default filters, LINEAR is OK for this
 
     depthMapDescriptor.setSampler(depthMapSampler);
     _depthMap = GFX_DEVICE.newFB();

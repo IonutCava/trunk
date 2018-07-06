@@ -133,7 +133,7 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         _renderTarget[RENDER_TARGET_DEPTH]  = newFB(false);
 
         SamplerDescriptor screenSampler;
-        TextureDescriptor screenDescriptor(TEXTURE_2D_MS, RGBA, RGBA32F, FLOAT_32);
+        TextureDescriptor screenDescriptor(TEXTURE_2D_MS, RGBA16F, FLOAT_16);
         screenSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
         screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
         screenSampler.toggleMipMaps(false);
@@ -153,10 +153,10 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         depthSampler._useRefCompare = true; //< Use compare function
         depthSampler._cmpFunc = CMP_FUNC_GEQUAL; //< Use greater or equal
 
-        TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT, DEPTH_COMPONENT32F, FLOAT_32);
+        TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
         depthDescriptorHiZ.setSampler(depthSamplerHiZ);
 
-        TextureDescriptor depthDescriptor(TEXTURE_2D_MS, DEPTH_COMPONENT, DEPTH_COMPONENT32F, FLOAT_32);
+        TextureDescriptor depthDescriptor(TEXTURE_2D_MS, DEPTH_COMPONENT32F, FLOAT_32);
         depthDescriptor.setSampler(depthSampler);
 
         _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptorHiZ, TextureDescriptor::Depth);

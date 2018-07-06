@@ -21,10 +21,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(FrameBuffer* result,
     _vertBlur = 0;
     _tempBloomFB = GFX_DEVICE.newFB();
 
-    TextureDescriptor tempBloomDescriptor(TEXTURE_2D,
-                                          RGB,
-                                          RGB8,
-                                          UNSIGNED_BYTE);
+    TextureDescriptor tempBloomDescriptor(TEXTURE_2D, RGB8, UNSIGNED_BYTE);
     tempBloomDescriptor.setSampler(*_internalSampler);
 
     _tempBloomFB->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
@@ -125,10 +122,7 @@ void BloomPreRenderOperator::toneMapScreen()
 
     if(!_tempHDRFB){
         _tempHDRFB = GFX_DEVICE.newFB();
-        TextureDescriptor hdrDescriptor(TEXTURE_2D,
-                                        RGBA,
-                                        RGBA16F,
-                                        FLOAT_16);
+        TextureDescriptor hdrDescriptor(TEXTURE_2D, RGBA16F, FLOAT_16);
         hdrDescriptor.setSampler(*_internalSampler);
         _tempHDRFB->AddAttachment(hdrDescriptor, TextureDescriptor::Color0);
         _tempHDRFB->Create(_inputFB[0]->getWidth(), _inputFB[0]->getHeight());
@@ -141,7 +135,7 @@ void BloomPreRenderOperator::toneMapScreen()
         lumaSampler.setMinFilter(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR);
         lumaSampler.toggleMipMaps(true);
 
-        TextureDescriptor lumaDescriptor(TEXTURE_2D, RED, RED16F, FLOAT_16);
+        TextureDescriptor lumaDescriptor(TEXTURE_2D, RED16F, FLOAT_16);
         lumaDescriptor.setSampler(lumaSampler);
         _luminaFB[0]->AddAttachment(lumaDescriptor, TextureDescriptor::Color0);
         U32 lumaRez = nextPOW2(_inputFB[0]->getWidth() / 3);

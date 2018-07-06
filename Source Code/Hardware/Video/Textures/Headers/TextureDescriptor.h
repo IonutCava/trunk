@@ -148,16 +148,14 @@ public:
         Depth
     };
 
-    TextureDescriptor() : TextureDescriptor(TextureType_PLACEHOLDER, IMAGE_FORMAT_PLACEHOLDER, IMAGE_FORMAT_PLACEHOLDER, GDF_PLACEHOLDER)
+    TextureDescriptor() : TextureDescriptor(TextureType_PLACEHOLDER, IMAGE_FORMAT_PLACEHOLDER, GDF_PLACEHOLDER)
     {
     }
 
     TextureDescriptor(TextureType type,
-                      GFXImageFormat format,
                       GFXImageFormat internalFormat,
                       GFXDataFormat dataType) : PropertyDescriptor(DESCRIPTOR_TEXTURE),
                                                 _type(type),
-                                                _format(format),
                                                 _internalFormat(internalFormat),
                                                 _dataType(dataType)
     {
@@ -198,7 +196,6 @@ public:
     U16 _mipMinLevel, _mipMaxLevel;       ///<MipMap interval selection
 
     ///Texture data information
-    GFXImageFormat    _format;
     GFXImageFormat    _internalFormat;
     GFXDataFormat     _dataType;
     TextureType       _type;

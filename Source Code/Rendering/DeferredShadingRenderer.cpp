@@ -34,26 +34,13 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
 
     TextureDescriptor gBuffer[4]; /// 4 Gbuffer elements (mipmaps are ignored for deferredBuffers)
     //Albedo
-    gBuffer[0] = TextureDescriptor(TEXTURE_2D,
-                                   RGBA,
-                                   RGBA8,  //R8G8B8A8, 32bit format for diffuse
-                                   UNSIGNED_BYTE);
-
+    gBuffer[0] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);  //R8G8B8A8, 32bit format for diffuse
     //Position
-    gBuffer[1] = TextureDescriptor(TEXTURE_2D,
-                                   RGBA,
-                                   RGBA32F, //R32G32B32A32, HDR 128bit format for position data
-                                   FLOAT_32);
+    gBuffer[1] = TextureDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32); //R32G32B32A32, HDR 128bit format for position data
     //Normals
-    gBuffer[2] = TextureDescriptor(TEXTURE_2D,
-                                   RGBA,
-                                   RGBA16F, //R16G16B16A16, 64bit format for normals
-                                   FLOAT_32);
+    gBuffer[2] = TextureDescriptor(TEXTURE_2D, RGBA16F, FLOAT_32); //R16G16B16A16, 64bit format for normals
     //Blend (for transparent objects - unused for now)
-    gBuffer[3] = TextureDescriptor(TEXTURE_2D,
-                                   RGBA,
-                                   RGBA8, //R8G8B8A8, 32bit format for blend
-                                   UNSIGNED_BYTE);
+    gBuffer[3] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE); //R8G8B8A8, 32bit format for blend
 
     for(U8 i = 0; i < 4; i++) gBuffer[i].setSampler(gBufferSampler);
 

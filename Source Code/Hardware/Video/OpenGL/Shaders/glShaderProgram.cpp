@@ -315,7 +315,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
                 }
             }
 
-            if (!_shaderStage[type]) D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), shaderCompileName[type].c_str())
+            if (!_shaderStage[type]) PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), shaderCompileName[type].c_str())
         }
     }
 

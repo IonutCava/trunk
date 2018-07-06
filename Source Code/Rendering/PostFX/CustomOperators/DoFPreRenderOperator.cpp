@@ -9,10 +9,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(FrameBuffer* result,
                                            SamplerDescriptor* const sampler) : PreRenderOperator(DOF_STAGE,resolution,sampler),
                                                                                _outputFB(result)
 {
-    TextureDescriptor dofDescriptor(TEXTURE_2D,
-                                    RGBA,
-                                    RGBA8,
-                                    UNSIGNED_BYTE);
+    TextureDescriptor dofDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);
     dofDescriptor.setSampler(*_internalSampler);
 
     _samplerCopy->AddAttachment(dofDescriptor,TextureDescriptor::Color0);

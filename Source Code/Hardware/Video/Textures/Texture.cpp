@@ -52,10 +52,9 @@ bool Texture::LoadFile(U32 target, const std::string& name){
             }
         }
     }
-    foundAlpha:
-    GFXImageFormat texture_format = img.format();
     // Create a new API-dependent texture object
-    loadData(target, img.data(), img.dimensions(), _bitDepth, texture_format);
+    foundAlpha:
+    loadData(target, img.data(), img.dimensions(), _bitDepth, img.format());
 
     return true;
 }

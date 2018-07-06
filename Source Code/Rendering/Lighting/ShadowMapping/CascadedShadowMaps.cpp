@@ -50,7 +50,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 n
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(true);
     depthMapSampler.setAnisotropy(8);
-    TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY, RG, RG32F, FLOAT_32);
+    TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY, RG32F, FLOAT_32);
     depthMapDescriptor.setLayerCount(_numSplits);
     depthMapDescriptor.setSampler(depthMapSampler);
 
@@ -64,7 +64,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 n
     blurMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     blurMapSampler.toggleMipMaps(false);
     depthMapSampler.setAnisotropy(0);
-    TextureDescriptor blurMapDescriptor(TEXTURE_2D_ARRAY, RG, RG32F, FLOAT_32);
+    TextureDescriptor blurMapDescriptor(TEXTURE_2D_ARRAY, RG32F, FLOAT_32);
     blurMapDescriptor.setLayerCount(_numSplits);
     blurMapDescriptor.setSampler(blurMapSampler);
     
@@ -72,15 +72,6 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 n
     _blurBuffer->AddAttachment(blurMapDescriptor, TextureDescriptor::Color0);
     _blurBuffer->toggleDepthBuffer(false);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
-
-    SamplerDescriptor finalSampler;
-    finalSampler.setFilters(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR, TEXTURE_FILTER_LINEAR);
-    finalSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    finalSampler.toggleMipMaps(true);
-    finalSampler.setAnisotropy(8);
-    TextureDescriptor finalTextureDescriptor(TEXTURE_2D_ARRAY, RG, RG32F, FLOAT_32);
-    finalTextureDescriptor.setLayerCount(_numSplits);
-    finalTextureDescriptor.setSampler(finalSampler);
 }
 
 CascadedShadowMaps::~CascadedShadowMaps()

@@ -103,47 +103,38 @@ void glFrameBuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
         glTexParameterf(textureType, GL_TEXTURE_WRAP_R, glWrapTable[sampler.wrapW()]);
     }
 
-    GLenum format = glImageFormatTable[texDescriptor._format];
+    //Generate mipmaps if needed (first call to glGenerateMipMap allocates all levels)
+    I32 maxMipLevel = 1 + (GLint)floorf(log2f(fmaxf((F32)_width, (F32)_height)));
+    _mipMaxLevel[slot] = texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : maxMipLevel;
+    _mipMinLevel[slot] = texDescriptor._mipMinLevel;
+    glTexParameteri(textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel);
+
+    glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, _mipMaxLevel[slot]);
     GLenum internalFormat = glImageFormatTable[texDescriptor._internalFormat];
-    GLenum dataType = glDataFormat[texDescriptor._dataType];
 
     //generate empty texture data using each texture type's specific function
     switch(textureType){
         case GL_TEXTURE_1D:{
-            glTexImage1D(GL_TEXTURE_1D, 0, internalFormat, _width, 0, format, dataType, NULL);
+            glTexStorage1D(GL_TEXTURE_1D, _mipMaxLevel[slot], internalFormat, _width);
         }break;
         case GL_TEXTURE_2D_MULTISAMPLE:{
-            glTexImage2DMultisample(textureType, GFX_DEVICE.MSAASamples(), internalFormat, _width, _height,GL_TRUE);
+            glTexStorage2DMultisample(textureType, GFX_DEVICE.MSAASamples(), internalFormat, _width, _height, GL_TRUE);
         }break;
-        case GL_TEXTURE_2D:{
-            glTexImage2D(textureType, 0, internalFormat, _width, _height, 0, format, dataType, NULL);
-        }break;
+        case GL_TEXTURE_2D:
         case GL_TEXTURE_CUBE_MAP:{
-            for(GLubyte j=0; j<6; j++)
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, 0, internalFormat, _width, _height, 0, format, dataType, NULL);
+            glTexStorage2D(textureType, _mipMaxLevel[slot], internalFormat, _width, _height);
         }break;
         case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:{
-                glTexImage3DMultisample(textureType, GFX_DEVICE.MSAASamples(), internalFormat, _width, _height, texDescriptor._layerCount, GL_TRUE);
+            glTexStorage3DMultisample(textureType, GFX_DEVICE.MSAASamples(), internalFormat, _width, _height, texDescriptor._layerCount, GL_TRUE);
         }break;
         case GL_TEXTURE_2D_ARRAY:
+        case GL_TEXTURE_CUBE_MAP_ARRAY:
         case GL_TEXTURE_3D:{
-                // Use _imageLayers as depth for GL_TEXTURE_3D
-                glTexImage3D(textureType, 0, internalFormat, _width, _height, texDescriptor._layerCount, 0, format, dataType, NULL);
-        }break;
-        case GL_TEXTURE_CUBE_MAP_ARRAY: {
-            assert(false); //not implemented yet
-            for(GLubyte j=0; j<6; j++)
-                glTexImage3D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, 0, internalFormat, _width, _height, texDescriptor._layerCount, 0, format, dataType, NULL);
+            // Use _imageLayers as depth for GL_TEXTURE_3D
+            glTexStorage3D(textureType, _mipMaxLevel[slot], internalFormat, _width, _height, texDescriptor._layerCount);
         }break;
     };
             
-    //Generate mipmaps if needed (first call to glGenerateMipMap allocates all levels)
-    I32 maxMipLevel = (GLint)floorf(log2f(fmaxf((F32)_width, (F32)_height)));
-    _mipMaxLevel[slot] = texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : maxMipLevel;
-    _mipMinLevel[slot] = texDescriptor._mipMinLevel;
-    glTexParameteri(textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel);
-    glTexParameteri(textureType, GL_TEXTURE_MAX_LEVEL, _mipMaxLevel[slot]);
-
     if (_mipMapEnabled[slot]) glGenerateMipmap(textureType);
         
     //unbind the texture
@@ -195,7 +186,6 @@ void glFrameBuffer::AddDepthBuffer(){
     screenSampler.setWrapMode(desc.getSampler().wrapU(), desc.getSampler().wrapV(), desc.getSampler().wrapW());
     screenSampler.toggleMipMaps(false);
     TextureDescriptor depthDescriptor(texType,
-                                      DEPTH_COMPONENT,
                                       fpDepth ? DEPTH_COMPONENT32F : DEPTH_COMPONENT,
                                       fpDepth ? dataType : UNSIGNED_INT);
         
