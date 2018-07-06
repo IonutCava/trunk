@@ -72,16 +72,6 @@ class Trigger : public SceneNode {
     /// SceneNode concrete implementations
     bool unload();
 
-    /// SceneNode test
-    bool isInView(const SceneRenderState& sceneRenderState,
-                  SceneGraphNode& sgn,
-                  Frustum::FrustCollision& collisionType,
-                  const bool distanceCheck = false) {
-        collisionType = _drawImpostor ? Frustum::FrustCollision::FRUSTUM_IN
-                                      : Frustum::FrustCollision::FRUSTUM_OUT;
-        return _drawImpostor;
-    }
-
    protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState) {}

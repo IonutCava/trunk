@@ -73,6 +73,7 @@ class Quad3D : public Object3D {
         computeTangents();
 
         getGeometryVB()->create();
+        computeBoundingBox();
     }
 
     enum class CornerLocation : U32 {
@@ -125,6 +126,7 @@ class Quad3D : public Object3D {
                 break;
         }
         getGeometryVB()->queueRefresh();
+        computeBoundingBox();
     }
 
     void setCorner(CornerLocation corner, const vec3<F32>& value) {
@@ -145,6 +147,7 @@ class Quad3D : public Object3D {
                 break;
         }
         getGeometryVB()->queueRefresh();
+        computeBoundingBox();
     }
 
     // rect.xy = Top Left; rect.zw = Bottom right
@@ -155,18 +158,14 @@ class Quad3D : public Object3D {
         getGeometryVB()->modifyPositionValue(2, rect.x, rect.y, 0);
         getGeometryVB()->modifyPositionValue(3, rect.z, rect.y, 0);
         getGeometryVB()->queueRefresh();
+        computeBoundingBox();
     }
 
-    virtual bool computeBoundingBox(SceneGraphNode& sgn) {
-        if (sgn.getBoundingBoxConst().isComputed()) {
-            return true;
-        }
-        vec3<F32> min = getGeometryVB()->getPosition(2);
-        min.z =
-            +0.0025f;  //<add some depth padding for collision and nav meshes
-        sgn.getBoundingBox().setMax(getGeometryVB()->getPosition(1));
-        sgn.getBoundingBox().setMin(min);
-        return SceneNode::computeBoundingBox(sgn);
+    inline void computeBoundingBox() {
+        // add some depth padding for collision and nav meshes
+        _boundingBox.first.setMax(getGeometryVB()->getPosition(1));
+        _boundingBox.first.setMin(getGeometryVB()->getPosition(2) + vec3<F32>(0.0f, 0.0f, 0.0025f));
+        _boundingBox.second = true;
     }
 };
 

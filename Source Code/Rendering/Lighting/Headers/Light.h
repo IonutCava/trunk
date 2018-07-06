@@ -138,12 +138,7 @@ class Light : public SceneNode {
     /// SceneNode concrete implementations
     bool unload() override;
 
-    bool computeBoundingBox(SceneGraphNode& sgn);
-
-    bool isInView(const SceneRenderState& sceneRenderState,
-                  const SceneGraphNode& sgn,
-                  Frustum::FrustCollision& collisionType,
-                  const bool distanceCheck = true) const override;
+    void computeBoundingBox();
 
     void sceneUpdate(const U64 deltaTime,
                      SceneGraphNode& sgn,

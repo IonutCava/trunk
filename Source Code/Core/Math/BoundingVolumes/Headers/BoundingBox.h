@@ -80,9 +80,6 @@ class BoundingBox : public GUIDWrapper {
 
     void transform(const mat4<F32>& mat);
 
-    void setComputed(bool state);
-    bool isComputed() const;
-
     const vec3<F32>& getMin() const;
     const vec3<F32>& getMax() const;
 
@@ -114,7 +111,6 @@ class BoundingBox : public GUIDWrapper {
     void ComputePoints() const;
 
    private:
-    bool _computed;
     vec3<F32> _min, _max;
 
     // This is is very limited in scope so mutable should be ok

@@ -104,8 +104,7 @@ class WaterPlane : public SceneNode, public Reflector {
     inline const Plane<F32>& getRefractionPlane() { return _refractionPlane; }
 
    private:
-    /// Bounding Box computation overwrite from SceneNode
-    bool computeBoundingBox(SceneGraphNode& sgn) override;
+    void computeBoundingBox();
 
    private:
     /// the hw clip-plane index for the water

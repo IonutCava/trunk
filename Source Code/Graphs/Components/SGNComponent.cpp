@@ -10,7 +10,6 @@ SGNComponent::SGNComponent(ComponentType type, SceneGraphNode& parentSGN)
      _deltaTime(0ULL),
     _parentNodeActive(true)
 {
-    _instanceID = parentSGN.getInstanceID();
 }
 
 SGNComponent::~SGNComponent()

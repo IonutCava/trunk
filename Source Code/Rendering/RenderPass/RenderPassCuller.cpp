@@ -18,18 +18,36 @@ RenderPassCuller::~RenderPassCuller() {
     }
 }
 
+U32 RenderPassCuller::stageToCacheIndex(RenderStage stage) const {
+    switch (stage) {
+        case RenderStage::REFLECTION:  return 1;
+        case RenderStage::SHADOW:  return 2;
+    };
+
+    return 0;
+}
+
 RenderPassCuller::VisibleNodeList&
 RenderPassCuller::getNodeCache(RenderStage stage) {
-    switch (stage) {
-        case RenderStage::REFLECTION:
-            return _visibleNodes[1];
-        case RenderStage::SHADOW:
-            return _visibleNodes[2];
-        default:
-            break;
-    }
+    return _visibleNodes[stageToCacheIndex(stage)];
+}
 
-    return _visibleNodes[0];
+const RenderPassCuller::VisibleNodeList&
+RenderPassCuller::getNodeCache(RenderStage stage) const {
+    return _visibleNodes[stageToCacheIndex(stage)];
+}
+
+bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
+    const VisibleNodeList& cache = getNodeCache(stage);
+
+    VisibleNodeList::const_iterator it;
+    it = std::find_if(std::cbegin(cache), std::cend(cache),
+        [GUID](SceneGraphNode_wptr node) {
+            SceneGraphNode_ptr nodePtr = node.lock();
+            return (nodePtr != nullptr && nodePtr->getGUID() == GUID);
+        });
+
+    return it != std::cend(cache);
 }
 
 void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
@@ -40,6 +58,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 {
     VisibleNodeList& nodeCache = getNodeCache(stage);
     nodeCache.resize(0);
+
     if (sceneState.renderState().drawGeometry()) {
         _cullingFunction = cullingFunction;
         SceneRenderState& renderState = sceneState.renderState();
@@ -87,8 +106,6 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
                 !_cullingFunction(currentNode) &&
                 !currentNode.cullNode(sceneRenderState, collisionResult, currentStage);
 
-    currentNode.setVisibleState(isVisible, currentStage);
-    
     if (isVisible) {
         nodes.push_back(currentNode.shared_from_this());
         U32 childCount = currentNode.getChildCount();
@@ -113,7 +130,6 @@ void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, RenderStage c
     U32 childCount = currentNode.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
         SceneGraphNode_ptr child = currentNode.getChild(i, childCount).shared_from_this();
-        child->setVisibleState(true, currentStage);
         nodes.push_back(child);
         addAllChildren(*child, currentStage, nodes);
     }

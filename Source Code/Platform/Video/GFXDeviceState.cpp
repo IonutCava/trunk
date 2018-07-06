@@ -85,19 +85,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Create a shader buffer to hold all of our indirect draw commands
     // Usefull if we need access to the buffer in GLSL/Compute programs
     for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
-        RenderStageBuffer& cmdBuffers = _indirectCommandBuffers[i];
+        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            cmdBuffers[j].reset(newSB(Util::StringFormat("dvd_GPUCmds%d_%d", i, j), 1, true, false, BufferUpdateFrequency::OFTEN));
-            cmdBuffers[j]->create(to_uint(_drawCommandsCache.size()), sizeof(_drawCommandsCache.front()));
-            cmdBuffers[j]->addAtomicCounter(3);
+            _indirectCommandBuffers[bufferIndex][j].reset(newSB(Util::StringFormat("dvd_GPUCmds%d_%d", i, j), 1, true, false, BufferUpdateFrequency::OFTEN));
+            _indirectCommandBuffers[bufferIndex][j]->create(to_uint(_drawCommandsCache.size()), sizeof(_drawCommandsCache.front()));
+            _indirectCommandBuffers[bufferIndex][j]->addAtomicCounter(3);
         }
     }
     
     for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
-        RenderStageBuffer& nodeBuffers = _nodeBuffers[i];
+        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
         for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            nodeBuffers[j].reset(newSB(Util::StringFormat("dvd_MatrixBlock%d_%d", i, j), 1, true, true, BufferUpdateFrequency::OFTEN));
-            nodeBuffers[j]->create(to_uint(_matricesData.size()), sizeof(_matricesData.front()));
+            _nodeBuffers[bufferIndex][j].reset(newSB(Util::StringFormat("dvd_MatrixBlock%d_%d", i, j), 1, true, true, BufferUpdateFrequency::OFTEN));
+            _nodeBuffers[bufferIndex][j]->create(to_uint(_matricesData.size()), sizeof(_matricesData.front()));
         }
     }
 

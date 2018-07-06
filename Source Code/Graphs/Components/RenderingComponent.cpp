@@ -29,10 +29,10 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
-     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-     _isSubMesh = type == Object3D::ObjectType::SUBMESH;
-    _nodeSkinned = parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
-    if (_materialInstance && !_isSubMesh) {
+    Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+    bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
+    bool nodeSkinned = parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
+    if (_materialInstance && !isSubMesh) {
         _materialInstance->addShaderModifier(RenderStage::SHADOW, "TriangleStrip");
         _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");
     }
@@ -43,15 +43,19 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
 
-    _boundingBoxPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
-    _boundingBoxPrimitive->name("BoundingBox_" + parentSGN.getName());
-    _boundingBoxPrimitive->stateHash(primitiveStateBlock.getHash());
+    _boundingBoxPrimitive[0] = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
+    _boundingBoxPrimitive[0]->stateHash(primitiveStateBlock.getHash());
     
+    _boundingBoxPrimitive[1] = GFX_DEVICE.getOrCreatePrimitive(false);
+    _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.getName());
+    _boundingBoxPrimitive[1]->stateHash(primitiveStateBlock.getHash());
+
     _boundingSpherePrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
     _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
     _boundingSpherePrimitive->stateHash(primitiveStateBlock.getHash());
 
-    if (_nodeSkinned) {
+    if (nodeSkinned) {
         primitiveStateBlock.setZReadWrite(false, true);
         _skeletonPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
         _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
@@ -94,7 +98,8 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
 
 RenderingComponent::~RenderingComponent()
 {
-    _boundingBoxPrimitive->_canZombify = true;
+    _boundingBoxPrimitive[0]->_canZombify = true;
+    _boundingBoxPrimitive[1]->_canZombify = true;
     _boundingSpherePrimitive->_canZombify = true;
     if (_skeletonPrimitive) {
         _skeletonPrimitive->_canZombify = true;
@@ -122,10 +127,16 @@ void RenderingComponent::update(const U64 deltaTime) {
 
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
     // Continue only for skinned submeshes
-    if (type == Object3D::ObjectType::SUBMESH && _nodeSkinned) {
-        _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
-        _skeletonPrimitive->paused(true);
+    if (type == Object3D::ObjectType::SUBMESH)
+    {
+        _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED, false);
+
+        if (_parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+            _parentSGN.getParent().lock()->getTrackedBools().setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
+            _skeletonPrimitive->paused(true);
+        }
     }
+
 }
 
 bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
@@ -216,7 +227,8 @@ void RenderingComponent::renderWireframe(const bool state) {
 void RenderingComponent::renderBoundingBox(const bool state) {
     _renderBoundingBox = state;
     if (!state) {
-        _boundingBoxPrimitive->paused(true);
+        _boundingBoxPrimitive[0]->paused(true);
+        _boundingBoxPrimitive[1]->paused(true);
     }
     U32 childCount = _parentSGN.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
@@ -303,7 +315,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut) const 
                                                                                       ? 1.0f
                                                                                       : 0.0f,
                       receivesShadows() ? 1.0f : 0.0f,
-                      to_float(_lodLevel),
+                      _lodLevel,
                       0.0);
 }
 
@@ -346,24 +358,40 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, Rend
     }
 #endif
 
+    SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
+    StateTracker<bool>& parentStates = grandParent->getTrackedBools();
+
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
         const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
-        if (bb.isComputed()) {
-            GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive, bb.getMin(), bb.getMax(),
-                                 vec4<U8>(0, 0, 255, 255));
+        GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[0], bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 
 
-        }
         node->postDrawBoundingBox(_parentSGN);
         if (_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED) {
             renderBoundingSphere(true);
         } else {
             renderBoundingSphere(false);
         }
+
+        Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+        bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
+        if (isSubMesh) {
+            bool renderParentBBFlagInitialized = false;
+            bool renderParentBB = parentStates.getTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED,
+                                   renderParentBBFlagInitialized);
+            if (!renderParentBB || !renderParentBBFlagInitialized) {
+                const BoundingBox& bbGrandParent = grandParent->getBoundingBoxConst();
+                GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[1],
+                                     bbGrandParent.getMin(),
+                                     bbGrandParent.getMax(),
+                                     vec4<U8>(0, 128, 128, 255));
+            }
+        }
     } else {
-        _boundingBoxPrimitive->paused(true);
+        _boundingBoxPrimitive[0]->paused(true);
+        _boundingBoxPrimitive[1]->paused(true);
         renderBoundingSphere(false);
     }
 
@@ -378,9 +406,10 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, Rend
 
     if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
         // Continue only for skinned submeshes
-        if (_isSubMesh && _nodeSkinned) {
-            SceneGraphNode_ptr grandParent = _parentSGN.getParent().lock();
-            StateTracker<bool>& parentStates = grandParent->getTrackedBools();
+        Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+        bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
+        if (isSubMesh && _parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
+        {
             bool renderSkeletonFlagInitialized = false;
             bool renderSkeleton = parentStates.getTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED,
                                                                renderSkeletonFlagInitialized);
@@ -510,9 +539,6 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
 GFXDevice::RenderPackage& 
 RenderingComponent::getDrawPackage(RenderStage renderStage) {
     return _renderData[to_uint(renderStage)];
-}
-
-void RenderingComponent::boundingBoxUpdatedCallback() {
 }
 
 void RenderingComponent::setActive(const bool state) {

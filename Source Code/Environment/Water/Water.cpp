@@ -69,6 +69,7 @@ WaterPlane::WaterPlane()
                                       TextureDescriptor::AttachmentType::Color0);
     _refractionTexture->toggleDepthBuffer(true);
     _refractionTexture->create(_resolution.x, _resolution.y);
+    computeBoundingBox();
 }
 
 WaterPlane::~WaterPlane()
@@ -77,26 +78,6 @@ WaterPlane::~WaterPlane()
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
     sgn.addNode(*_plane);
-    SceneNode::postLoad(sgn);
-}
-
-bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
-    BoundingBox& bb = sgn.getBoundingBox();
-
-    if (bb.isComputed()) {
-        return true;
-    }
-    U32 temp = 0;
-    SceneGraphNode& planeSGN = sgn.getChild(0, temp);
-    _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
-    _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
-    planeSGN.getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
-    bb.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
-           vec3<F32>(_farPlane, _waterLevel, _farPlane));
-    planeSGN.getBoundingBox().add(bb);
-    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_1")), bb.getMax().y);
-    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_2")), bb.getMin().y);
-
     TextureDescriptor::AttachmentType att = TextureDescriptor::AttachmentType::Color0;
     RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
     TextureData reflectionData = _reflectedTexture->getAttachment(att)->getData();
@@ -106,8 +87,25 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
     renderable->registerTextureDependency(reflectionData);
     renderable->registerTextureDependency(refractionData);
 
+    U32 temp = 0;
+    SceneGraphNode& planeSGN = sgn.getChild(0, temp);
+    _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
+    _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
+    planeSGN.getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
+    
+    SceneNode::postLoad(sgn);
+}
+
+void WaterPlane::computeBoundingBox() {
+    _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
+    _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
+    _boundingBox.first.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
+                           vec3<F32>(_farPlane, _waterLevel, _farPlane));
+    _boundingBox.second = true;
+    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_1")), _boundingBox.first.getMax().y);
+    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_2")), _boundingBox.first.getMin().y);
+    
     _dirty = true;
-    return SceneNode::computeBoundingBox(sgn);
 }
 
 bool WaterPlane::unload() {

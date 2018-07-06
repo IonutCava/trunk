@@ -25,6 +25,7 @@ LightManager::LightManager()
 {
     _activeLightCount.fill(0);
     _lightTypeState.fill(true);
+    _shadowCastingLights.fill(nullptr);
     // shadowPassTimer is used to measure the CPU-duration of shadow map
     // generation step
     s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
@@ -183,13 +184,11 @@ bool LightManager::generateShadowMaps() {
     Time::ScopedTimer timer(*s_shadowPassTimer);
     SceneRenderState& state = GET_ACTIVE_SCENE().renderState();
     // generate shadowmaps for each light
-    for (Light::LightList& lights : _lights) {
-        for (Light* light : lights) {
-            if (light->castsShadows()) {
-                _currentShadowCastingLight = light;
-                light->validateOrCreateShadowMaps(state);
-                light->generateShadowMaps(state);
-            }
+    for (Light* light : _shadowCastingLights) {
+        if (light != nullptr) {
+            _currentShadowCastingLight = light;
+            light->validateOrCreateShadowMaps(state);
+            light->generateShadowMaps(state);
         }
     }
 
@@ -288,13 +287,20 @@ Light* LightManager::getLight(I64 lightGUID, LightType type) {
     return *it;
 }
 
-void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
-    U32 lightShadowCount = std::min(to_uint(_lights.size()), Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-
+void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     _activeLightCount.fill(0);
+    _shadowCastingLights.fill(nullptr);
+    
     U32 totalLightCount = 0;
     U32 lightShadowPropertiesCount = 0;
     for(Light::LightList& lights : _lights) {
+
+        std::sort(std::begin(lights), std::end(lights),
+                 [&eyePos](Light* a, Light* b) -> bool {
+                    return a->getPosition().distanceSquared(eyePos) <
+                           b->getPosition().distanceSquared(eyePos);
+                 });
+
         for (Light* light : lights) {
             LightType type = light->getLightType();
             if (!light->getEnabled() || !_lightTypeState[to_uint(type)]) {
@@ -320,10 +326,14 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
 
             temp._options.x = typeUint;
             temp._options.y = light->castsShadows();
-            if (light->castsShadows() && lightShadowPropertiesCount < lightShadowCount) {
+
+            if (light->castsShadows() &&
+                lightShadowPropertiesCount < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
 
                 temp._options.z = to_int(lightShadowPropertiesCount);
-                _lightShadowProperties[lightShadowPropertiesCount++] = light->getShadowProperties();
+                _lightShadowProperties[lightShadowPropertiesCount] = light->getShadowProperties();
+                _shadowCastingLights[lightShadowPropertiesCount] = light;
+                lightShadowPropertiesCount++;
             }
 
             totalLightCount++;

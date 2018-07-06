@@ -107,41 +107,35 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sc
     dir.normalize();
     _spotProperties.xyz(dir);
     _positionAndRange.xyz(_lightSGN->getComponent<PhysicsComponent>()->getPosition());
-    if (_type != LightType::DIRECTIONAL) {
-        _lightSGN->updateBoundingBoxTransform(_lightSGN->getComponent<PhysicsComponent>()->getWorldMatrix());
-        sgn.getBoundingBox().setComputed(false);
-    }
+    computeBoundingBox();
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Light::computeBoundingBox(SceneGraphNode& sgn) {
+void Light::computeBoundingBox() {
     if (_type == LightType::DIRECTIONAL) {
         vec3<F32> directionalLightPosition =
             _positionAndRange.xyz() * 
-            to_const_float(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE) * -1.0f;
-        sgn.getBoundingBox().set(directionalLightPosition - vec3<F32>(10),
-                                 directionalLightPosition + vec3<F32>(10));
-    } else if (_type == LightType::POINT) {
-        sgn.getBoundingBox().set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
+            (to_const_float(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE) * -1.0f);
+        _boundingBox.first.set(directionalLightPosition - 10.0f,
+                               directionalLightPosition + 10.0f);
     } else {
-        sgn.getBoundingBox().set(vec3<F32>(-getRange()) * 0.5f, vec3<F32>(getRange()) * 0.5f);
+        _boundingBox.first.set(vec3<F32>(-getRange()), vec3<F32>(getRange()));
+        _boundingBox.first.multiply(0.5f);
     }
 
-    return SceneNode::computeBoundingBox(sgn);
-}
+    if (_type == LightType::SPOT) {
+        _boundingBox.first.multiply(0.5f);
+    }
 
-bool Light::isInView(const SceneRenderState& sceneRenderState,
-                     const SceneGraphNode& sgn,
-                     Frustum::FrustCollision& collisionType,
-                     const bool distanceCheck) const {
-    collisionType = _drawImpostor ? Frustum::FrustCollision::FRUSTUM_IN
-                                  : Frustum::FrustCollision::FRUSTUM_OUT;
-    return _drawImpostor;
+    _boundingBox.second = true;
 }
 
 bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
-    // The isInView call should stop impostor rendering if needed
+    if (!_drawImpostor) {
+        return true;
+    }
+
     if (!_impostor) {
         _impostor = CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_positionAndRange.w);

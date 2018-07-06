@@ -38,7 +38,7 @@ namespace Divide {
 
 class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
-    typedef vectorImpl<BoundingBox> BoundingBoxPerFrame;
+    typedef vectorImpl<SceneNode::BoundingBoxPair> BoundingBoxPerFrame;
     typedef vectorImpl<BoundingBoxPerFrame> BoundingBoxPerAnimation;
     typedef vectorImpl<AtomicWrapper<bool>>  BoundingBoxPerAnimationStatus;
 
@@ -51,6 +51,7 @@ class SkinnedSubMesh : public SubMesh {
 
    protected:
     void updateAnimations(SceneGraphNode& sgn);
+    SceneNode::BoundingBoxPair& getBoundingBox(const SceneGraphNode& sgn) override;
 
    private:
     void computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn);

@@ -73,8 +73,9 @@ namespace Attorney {
 
 class NOINITVTABLE SceneNode : public Resource {
     friend class Attorney::SceneNodeSceneGraph;
-
    public:
+    typedef std::pair<BoundingBox, bool> BoundingBoxPair;
+
     SceneNode(const SceneNodeType& type);
     SceneNode(const stringImpl& name, const SceneNodeType& type);
     virtual ~SceneNode();
@@ -104,8 +105,6 @@ class NOINITVTABLE SceneNode : public Resource {
     virtual void setMaterialTpl(Material* const m);
     Material* const getMaterialTpl();
 
-    /// Every SceneNode computes a bounding box in it's own way.
-    virtual bool computeBoundingBox(SceneGraphNode& sgn);
     virtual void postDrawBoundingBox(SceneGraphNode& sgn) const;
 
     inline void setType(const SceneNodeType& type) { _type = type; }
@@ -115,9 +114,20 @@ class NOINITVTABLE SceneNode : public Resource {
 
     inline void incLODcount() { _LODcount++; }
     inline void decLODcount() { _LODcount--; }
-    inline U8 getLODcount() const { return _LODcount; }
+    inline U8   getLODcount() const { return _LODcount; }
+
+    inline BoundingBoxPair& getBoundingBox() {
+        return _boundingBox;
+    }
+
+    inline const BoundingBoxPair& getBoundingBox() const {
+        return _boundingBox;
+    }
 
    protected:
+    virtual BoundingBoxPair& getBoundingBox(const SceneGraphNode& sgn) {
+        return getBoundingBox();
+    }
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
@@ -135,6 +145,8 @@ class NOINITVTABLE SceneNode : public Resource {
     SceneNodeRenderState _renderState;
     /// Maximum available LOD levels
     U8 _LODcount;
+    /// The initial bounding box as it was at object's creation (i.e. no transforms applied)
+    BoundingBoxPair _boundingBox;
 
    private:
     SceneNodeType _type;
@@ -170,6 +182,10 @@ class SceneNodeSceneGraph {
         return node.isInView(sceneRenderState, sgn, collisionType, distanceCheck);
     }
 
+    static SceneNode::BoundingBoxPair& getBoundingBox(SceneNode& node,
+                                                      const SceneGraphNode& sgn) {
+        return node.getBoundingBox(sgn);
+    }
     friend class Divide::SceneGraphNode;
 };
 };  // namespace Attorney

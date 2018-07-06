@@ -125,7 +125,6 @@ bool QuadtreeNode::computeBoundingBox() {
         }
     }
 
-    _boundingBox.setComputed(true);
     _boundingSphere.fromBoundingBox(_boundingBox);
     return true;
 }

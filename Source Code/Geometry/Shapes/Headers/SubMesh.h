@@ -72,8 +72,6 @@ class SubMesh : public Object3D {
 
     bool unload() override { return SceneNode::unload(); }
 
-    bool computeBoundingBox(SceneGraphNode& sgn) override;
-
     inline U32 getID() { return _ID; }
     /// When loading a submesh, the ID is the node index from the imported scene
     /// scene->mMeshes[n] == (SubMesh with _ID == n)
@@ -96,7 +94,6 @@ class SubMesh : public Object3D {
     bool _render;
     U32 _ID;
     Mesh* _parentMesh;
-    BoundingBox _importBB;
 };
 
 namespace Attorney {
@@ -114,7 +111,8 @@ class SubMeshMeshImporter {
     static void setGeometryLimits(SubMesh& submesh,
                                   const vec3<F32>& min,
                                   const vec3<F32>& max) {
-        submesh._importBB.set(min, max);
+        submesh._boundingBox.first.set(min, max);
+        submesh._boundingBox.second = true;
     }
 
     friend class Divide::MeshImporter;

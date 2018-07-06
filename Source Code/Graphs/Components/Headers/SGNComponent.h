@@ -72,8 +72,6 @@ class SGNComponent : private NonCopyable {
     
    protected:
     std::atomic_bool _parentNodeActive;
-    /// The current instance using this component
-    U32 _instanceID;
     /// Pointer to the SGN owning this instance of AnimationComponent
     SceneGraphNode& _parentSGN;
     ComponentType _type;

@@ -77,7 +77,8 @@ bool Sky::load() {
     assert(_skyShader);
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
-
+    _boundingBox.first.set(vec3<F32>(-_farPlane / 4), vec3<F32>(_farPlane / 4));
+    _boundingBox.second = true;
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
     return true;
 }
@@ -142,11 +143,6 @@ void Sky::setSunProperties(const vec3<F32>& sunVect,
                            const vec4<F32>& sunColor) {
     _skyShader->Uniform("sun_vector", sunVect);
     _skyShader->Uniform("sun_color", sunColor.rgb());
-}
-
-bool Sky::computeBoundingBox(SceneGraphNode& sgn) {
-    sgn.getBoundingBox().set(vec3<F32>(-_farPlane / 4), vec3<F32>(_farPlane / 4));
-    return SceneNode::computeBoundingBox(sgn);
 }
 
 };

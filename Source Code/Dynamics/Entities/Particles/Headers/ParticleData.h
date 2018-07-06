@@ -86,7 +86,6 @@ class ParticleData {
     void sort();
 
    protected:
-    U8 _lodLevel;
     U32 _totalCount;
     U32 _aliveCount;
     U32 _optionsMask;

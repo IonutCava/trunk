@@ -78,8 +78,8 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComp
 
     U32 i = 0;
     BoundingBoxPerFrame& currentBBs = _boundingBoxes.at(animationIndex);
-    for (BoundingBox& bb : currentBBs) {
-        bb.reset();
+    for (SceneNode::BoundingBoxPair& bb : currentBBs) {
+        bb.first.reset();
         const vectorImpl<mat4<F32> >& transforms = currentAnimation[i++];
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
@@ -88,13 +88,12 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComp
             const vec4<F32>& wgh = parentVB->getBoneWeights(idx);
             const vec3<F32>& curentVert = parentVB->getPosition(idx);
 
-            bb.add((wgh.x * (transforms[ind.b[0]] * curentVert)) +
-                   (wgh.y * (transforms[ind.b[1]] * curentVert)) +
-                   (wgh.z * (transforms[ind.b[2]] * curentVert)) +
-                   (wgh.w * (transforms[ind.b[3]] * curentVert)));
+            bb.first.add((wgh.x * (transforms[ind.b[0]] * curentVert)) +
+                         (wgh.y * (transforms[ind.b[1]] * curentVert)) +
+                         (wgh.z * (transforms[ind.b[2]] * curentVert)) +
+                         (wgh.w * (transforms[ind.b[3]] * curentVert)));
         }
-
-        bb.setComputed(true);
+        bb.second = true;
     }
 }
 
@@ -118,10 +117,25 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
                 .AddTask(1, 1, buildBB, builBBComplete));
             _bbBuildTasks.back().lock()->startTask(Task::TaskPriority::DONT_CARE);
         }
-    } else {
-        BoundingBox& bb = _boundingBoxes.at(animationIndex).at(animComp->frameIndex());
-        sgn.setInitialBoundingBox(bb);
     }
+}
+
+SceneNode::BoundingBoxPair&
+SkinnedSubMesh::getBoundingBox(const SceneGraphNode& sgn) {
+    AnimationComponent* animComp = sgn.getComponent<AnimationComponent>();
+    // If animations are paused or unavailable, keep the current BB
+    if (animComp->playAnimations()) {
+        // Attempt to get the map of BBs for the current animation
+        U32 animationIndex = animComp->animationIndex();
+        if (_boundingBoxesAvailable.at(animationIndex) == true) {
+            SceneNode::BoundingBoxPair& pair = 
+                _boundingBoxes.at(animationIndex).at(animComp->frameIndex());
+            pair.second = true;
+            return pair;
+        }
+    }
+
+    return SceneNode::getBoundingBox();
 }
 
 };

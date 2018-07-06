@@ -49,7 +49,6 @@ class ParticleEmitter;
 
 namespace Attorney {
     class RenderingCompGFXDevice;
-    class RenderingCompSceneGraph;
     class RenderingCompRenderBin;
     class RenderingCompPassCuller;
     class RenderingCompSceneNode;
@@ -57,14 +56,13 @@ namespace Attorney {
 
 class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompGFXDevice;
-    friend class Attorney::RenderingCompSceneGraph;
     friend class Attorney::RenderingCompRenderBin;
     friend class Attorney::RenderingCompPassCuller;
     friend class Attorney::RenderingCompSceneNode;
 
    public:
-    bool onDraw(RenderStage currentStage);
-    void update(const U64 deltaTime);
+    bool onDraw(RenderStage currentStage) override;
+    void update(const U64 deltaTime) override;
 
     void renderGeometry(const bool state);
     void renderWireframe(const bool state);
@@ -83,7 +81,7 @@ class RenderingComponent : public SGNComponent {
 
     bool castsShadows() const;
     bool receivesShadows() const;
-
+    
     inline U32 drawOrder() const { return _drawOrder; }
 
     inline U32 commandIndex() const { return _commandIndex; }
@@ -115,7 +113,7 @@ class RenderingComponent : public SGNComponent {
     void drawDebugAxis();
 #endif
 
-    void setActive(const bool state);
+    void setActive(const bool state) override;
 
    protected:
     friend class SceneGraphNode;
@@ -124,8 +122,6 @@ class RenderingComponent : public SGNComponent {
     ~RenderingComponent();
 
    protected:
-    void boundingBoxUpdatedCallback();
-
     bool canDraw(const SceneRenderState& sceneRenderState,
                  RenderStage renderStage);
 
@@ -162,12 +158,10 @@ class RenderingComponent : public SGNComponent {
     bool _renderBoundingBox;
     bool _renderBoundingSphere;
     bool _renderSkeleton;
-    bool _nodeSkinned;
-    bool _isSubMesh;
     TextureDataContainer _textureDependencies;
     std::array<GFXDevice::RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
     
-    IMPrimitive* _boundingBoxPrimitive;
+    IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
     IMPrimitive* _skeletonPrimitive;
 
@@ -214,15 +208,6 @@ class RenderingCompGFXDevice {
     }
 
     friend class Divide::GFXDevice;
-};
-
-class RenderingCompSceneGraph {
-   private:
-    static void boundingBoxUpdatedCallback(RenderingComponent& renderable) {
-        renderable.boundingBoxUpdatedCallback();
-    }
-
-    friend class Divide::SceneGraphNode;
 };
 
 class RenderingCompRenderBin {

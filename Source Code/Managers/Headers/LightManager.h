@@ -103,7 +103,7 @@ DEFINE_SINGLETON(LightManager)
     void previewShadowMaps(Light* light = nullptr);
     void togglePreviewShadowMaps();
 
-    void updateAndUploadLightData(const mat4<F32>& viewMatrix);
+    void updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
     void uploadLightData(LightType lightsByType, ShaderBufferLocation location);
 
     /// Get the appropriate shadow bind slot for every light's shadow
@@ -159,8 +159,8 @@ DEFINE_SINGLETON(LightManager)
 
     typedef std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> LightPropertiesArray;
     std::array<LightPropertiesArray, to_const_uint(LightType::COUNT)> _lightProperties;
-
     std::array<Light::ShadowProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightShadowProperties;
+    std::array<Light*, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _shadowCastingLights;
 
 END_SINGLETON
 

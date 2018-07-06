@@ -524,6 +524,8 @@ DEFINE_SINGLETON(GFXDevice)
 
     ShaderBuffer& getCommandBuffer(RenderStage stage, U32 pass) const;
 
+    U32 getNodeBufferIndexForStage(RenderStage stage) const;
+
     ShaderBuffer& getNodeBuffer(RenderStage stage, U32 pass) const;
 
   private:

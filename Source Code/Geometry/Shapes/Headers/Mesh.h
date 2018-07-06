@@ -60,7 +60,7 @@ class Mesh : public Object3D {
 
     virtual ~Mesh();
 
-    bool computeBoundingBox(SceneGraphNode& sgn);
+    void computeBoundingBox();
 
     virtual void postLoad(SceneGraphNode& sgn);
 
@@ -82,15 +82,12 @@ class Mesh : public Object3D {
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
 
-    bool isSubMesh(const SceneGraphNode& node);
-
    protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
     bool _visibleToNetwork;
     /// Animation player to animate the mesh if necessary
     SceneAnimator* _animator;
     vectorImpl<SubMesh*> _subMeshList;
-    BoundingBox _maxBoundingBox;
 };
 
 };  // namespace Divide

@@ -20,14 +20,6 @@ SceneGraph::SceneGraph() : FrameListener(),
                            _root(std::make_shared<SceneGraphNode>(*_rootNode, "ROOT"))
 {
     REGISTER_FRAME_LISTENER(this, 1);
-
-    _root->setBBExclusionMask(
-        to_uint(SceneNodeType::TYPE_SKY) |
-        to_uint(SceneNodeType::TYPE_LIGHT) |
-        to_uint(SceneNodeType::TYPE_TRIGGER) |
-        to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-        to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) |
-        to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
     onNodeAdd(*_root);
     vectorImpl<SceneGraphNode_wptr> objects;
     objects.push_back(_root);

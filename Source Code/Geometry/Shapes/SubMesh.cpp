@@ -50,18 +50,6 @@ void SubMesh::setParentMesh(Mesh* const parentMesh) {
     setGeometryVB(_parentMesh->getGeometryVB());
 }
 
-bool SubMesh::computeBoundingBox(SceneGraphNode& sgn) {
-    BoundingBox& bb = sgn.getBoundingBox();
-    if (bb.isComputed()) {
-        return true;
-    }
-
-    bb.set(_importBB);
-    bb.setComputed(true);
-
-    return SceneNode::computeBoundingBox(sgn);
-}
-
 bool SubMesh::getDrawCommands(SceneGraphNode& sgn,
                               RenderStage renderStage,
                               const SceneRenderState& sceneRenderState,

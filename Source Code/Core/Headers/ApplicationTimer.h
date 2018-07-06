@@ -68,6 +68,33 @@ namespace Time {
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimeValue;
 
+class FrameRateHandler {
+    public:
+        FrameRateHandler();
+        ~FrameRateHandler();
+
+        void tick(const U64 deltaTime);
+        void init(U32 targetFrameRate, const U64 startTime);
+
+        inline F32 minFrameRate() const { return _minFPS; }
+        inline F32 maxFrameRate() const { return _maxFPS; }
+        inline F32 frameRate() const { return _fps; }
+        inline F32 frameTime() const { return 1000.0f / frameRate(); }
+        inline F32 averageFrameRate() const { return _averageFps; }
+
+    private:
+        F32 _fps;
+        U32 _frameCount;
+
+        F32 _averageFps;
+        U64 _averageFpsCount;
+
+        F32 _minFPS;
+        F32 _maxFPS;
+
+        U64 _tickTimeStamp;
+};
+
 class ProfileTimer;
 DEFINE_SINGLETON(ApplicationTimer)
     typedef std::chrono::microseconds USec;
@@ -90,7 +117,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     ApplicationTimer();
     ~ApplicationTimer();
 
-    void benchmarkInternal();
+    void benchmarkInternal(const U64 elapsedTime);
 
     inline TimeValue getCurrentTicksInternal() const;
     inline U64 getElapsedTimeInternal(const TimeValue& currentTicks) const;
@@ -101,8 +128,8 @@ DEFINE_SINGLETON(ApplicationTimer)
     vectorImpl<ProfileTimer*> _profileTimers;
 
   private:
-    F32 _fps;
-    F32 _frameTime;
+    bool _init;
+    FrameRateHandler _frameRateHandler;
     F32 _speedfactor;
     U32 _targetFrameRate;
     // Previous frame's time stamp
@@ -111,8 +138,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     TimeValue _startupTicks;
     // Measure average FPS and output max/min/average fps to console
     bool _benchmark;
-    bool _init;
-
+    U64  _lastBenchmarkTimeStamp;
     std::atomic<U64> _elapsedTimeUs;
 END_SINGLETON
 

@@ -14,29 +14,15 @@
 
 namespace Divide {
 
-bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
-    BoundingBox& bb = sgn.getBoundingBox();
-
-    bb.reset();
-    U32 childCount = sgn.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        bb.add(sgn.getChild(i, childCount).getBoundingBoxConst());
-    }
-    return SceneNode::computeBoundingBox(sgn);
-}
-
 SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
     : GUIDWrapper(),
       _node(&node),
       _elapsedTime(0ULL),
-      _wasActive(true),
       _active(true),
       _isSelectable(false),
-      _sorted(false),
       _boundingBoxDirty(true),
       _lockBBTransforms(false),
       _updateTimer(Time::ElapsedMilliseconds()),
-      _bbAddExclusionList(0),
       _usageContext(UsageContext::NODE_DYNAMIC),
       _selectionFlag(SelectionFlag::SELECTION_NONE)
 {
@@ -45,10 +31,7 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
     _childCount = 0;
     setName(name);
 
-    _instanceID = (_node->GetRef() - 1);
-
     _components[to_uint(SGNComponent::ComponentType::PHYSICS)].reset(new PhysicsComponent(*this));
-
     _components[to_uint(SGNComponent::ComponentType::NAVIGATION)].reset(new NavigationComponent(*this));
 
     Material* const materialTpl = _node->getMaterialTpl();
@@ -58,8 +41,6 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                     : nullptr,
             *this));
-
-    _isVisible.fill(false);
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -89,17 +70,6 @@ SceneGraphNode::~SceneGraphNode()
         MemoryManager::DELETE(_node);
     } else {
         RemoveResource(_node);
-    }
-}
-
-void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
-                                    const SceneNodeType& type) {
-    if (!BitCompare(_bbAddExclusionList, to_uint(type))) {
-        _boundingBox.add(bb);
-        SceneGraphNode_ptr parentPtr = _parent.lock();
-        if (parentPtr) {
-            parentPtr->getBoundingBox().setComputed(false);
-        }
     }
 }
 
@@ -144,20 +114,12 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
     return node;
 }
 
+/// Add a new SceneGraphNode to the current node's child list based on a
+/// SceneNode
 SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, const stringImpl& name) {
-    STUBBED("SceneGraphNode: This add/create node system is an ugly HACK "
-            "so it should probably be removed soon! -Ionut")
-
     if (Attorney::SceneNodeSceneGraph::hasSGNParent(node)) {
         node.AddRef();
     }
-
-    return createNode(node, name);
-}
-
-/// Add a new SceneGraphNode to the current node's child list based on a
-/// SceneNode
-SceneGraphNode_ptr SceneGraphNode::createNode(SceneNode& node, const stringImpl& name) {
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
@@ -282,7 +244,6 @@ void SceneGraphNode::setSelectable(const bool state) {
 }
 
 void SceneGraphNode::setActive(const bool state) {
-    _wasActive = _active;
     _active = state;
     for (std::unique_ptr<SGNComponent>& comp : _components) {
         if (comp) {
@@ -296,49 +257,6 @@ void SceneGraphNode::setActive(const bool state) {
     }
 }
 
-void SceneGraphNode::setVisibleState(bool state, RenderStage currentStage) {
-    _isVisible[to_uint(currentStage)] = state;
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        getChild(i, childCount).setVisibleState(state, currentStage);
-    }
-}
-
-void SceneGraphNode::restoreActive() { 
-    setActive(_wasActive);
-}
-
-bool SceneGraphNode::updateBoundingBoxPosition(const vec3<F32>& position) {
-    vec3<F32> diff(position - _boundingSphere.getCenter());
-    _boundingBox.translate(diff);
-    _boundingSphere.fromBoundingBox(_boundingBox);
-    return true;
-}
-
-bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
-    if (!_boundingBox.isComputed()) {
-        return false;
-    }
-
-    _boundingBoxCache.set(_boundingBox);
-    _boundingBox.transform(_initialBoundingBox, transform);
-    if (_boundingBoxCache == _boundingBox) {
-        return false;
-    }
-
-    _boundingSphere.fromBoundingBox(_boundingBox);
-    
-    return true;
-}
-
-void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox) {
-    if (!initialBoundingBox.compare(getInitialBoundingBox())) {
-        _initialBoundingBox.set(initialBoundingBox);
-        _initialBoundingBox.setComputed(true);
-        _boundingBoxDirty = true;
-    }
-}
-
 void SceneGraphNode::onCameraUpdate(Camera& camera) {
     U32 childCount = getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
@@ -347,6 +265,7 @@ void SceneGraphNode::onCameraUpdate(Camera& camera) {
 
     Attorney::SceneNodeSceneGraph::onCameraUpdate(*_node, *this, camera);
 }
+
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
@@ -376,38 +295,29 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         pComp->transformUpdateMask().clearAllFlags();
     }
 
+    SceneNode::BoundingBoxPair& pair =
+        Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
+
+    if (_boundingBoxDirty || pair.second) {
+        SceneGraphNode_ptr parent = getParent().lock();
+        if (parent) {
+            parent->_boundingBoxDirty = true;
+        }
+
+        _boundingBox.set(pair.first);
+        for (U32 i = 0; i < childCount; ++i) {
+            _boundingBox.add(getChild(i, childCount).getBoundingBoxConst());
+        }
+        if (!_lockBBTransforms) {
+            _boundingBox.transform(getComponent<PhysicsComponent>()->getWorldMatrix());
+        }
+        _boundingSphere.fromBoundingBox(_boundingBox);
+        _boundingBoxDirty = false;
+        pair.second = false;
+    }
+
     assert(_node->getState() == ResourceState::RES_LOADED ||
            _node->getState() == ResourceState::RES_SPECIAL);
-    // Update order is very important! e.g. Mesh BB is composed of SubMesh BB's.
-
-    // Compute the BoundingBox if it isn't already
-    if (!_boundingBox.isComputed()) {
-        _node->computeBoundingBox(*this);
-        assert(_boundingBox.isComputed());
-        _boundingBoxDirty = true;
-    }
-
-    if (_boundingBoxDirty) {
-        bool bbUpdated = false;
-        /*if (transformUpdateMask.getFlag(PhysicsComponent::TransformType::TRANSLATION) &&
-            !transformUpdateMask.getFlag(PhysicsComponent::TransformType::ROTATION) &&
-            transformUpdateMask.getFlag(PhysicsComponent::TransformType::SCALE)) {
-            bbUpdated = updateBoundingBoxPosition(pComp->getPosition());
-        }else {*/
-              bbUpdated = !lockBBTransforms() && updateBoundingBoxTransform(pComp->getWorldMatrix());
-        //}
-        if (bbUpdated) {
-            SceneGraphNode_ptr parentPtr = _parent.lock();
-            if (parentPtr) {
-                parentPtr->getBoundingBox().setComputed(false);
-            }
-        }
-        RenderingComponent* renderComp = getComponent<RenderingComponent>();
-        if (renderComp) {
-            Attorney::RenderingCompSceneGraph::boundingBoxUpdatedCallback(*renderComp);
-        }
-        _boundingBoxDirty = false;
-    }
 
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node,
     		                                   deltaTime,

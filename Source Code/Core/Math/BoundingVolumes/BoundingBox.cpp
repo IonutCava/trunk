@@ -15,8 +15,7 @@ BoundingBox::BoundingBox(const vec3<F32>& min, const vec3<F32>& max)
 }
 
 BoundingBox::BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ)
-    : GUIDWrapper(),
-      _computed(false)
+    : GUIDWrapper()
 {
     set(minX, minY, minZ, maxX, maxY, maxZ);
 }
@@ -33,7 +32,6 @@ BoundingBox::~BoundingBox()
 
 BoundingBox::BoundingBox(const BoundingBox& b) : GUIDWrapper() {
     // WriteLock w_lock(_lock);
-    this->_computed = b._computed;
     this->_min.set(b._min);
     this->_max.set(b._max);
     for (U8 i = 0; i < 8; ++i) {
@@ -44,7 +42,6 @@ BoundingBox::BoundingBox(const BoundingBox& b) : GUIDWrapper() {
 
 void BoundingBox::operator=(const BoundingBox& b) {
     // WriteLock w_lock(_lock);
-    this->_computed = b._computed;
     this->_min.set(b._min);
     this->_max.set(b._max);
     this->_pointsDirty = true;
@@ -133,7 +130,7 @@ bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const {
 }
 
 void BoundingBox::transform(const mat4<F32>& mat) {
-    transform(*this, mat);
+    transform(BoundingBox(*this), mat);
 }
 
 void BoundingBox::transform(const BoundingBox& initialBoundingBox,
@@ -167,16 +164,12 @@ void BoundingBox::transform(const BoundingBox& initialBoundingBox,
 }
 
 F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const {
-    F32 returnValue = 0.0f;
-    if (_computed) {
-        const vec3<F32>& center = getCenter();
-        const vec3<F32>& hextent = getHalfExtent();
-        _cacheVector.set(std::max(0.0f, std::fabsf(pos.x - center.x) - hextent.x),
-                         std::max(0.0f, std::fabsf(pos.y - center.y) - hextent.y),
-                         std::max(0.0f, std::fabsf(pos.z - center.z) - hextent.z));
-        returnValue = _cacheVector.lengthSquared();
-    }
-    return returnValue;
+    const vec3<F32>& center = getCenter();
+    const vec3<F32>& hextent = getHalfExtent();
+    _cacheVector.set(std::max(0.0f, std::fabsf(pos.x - center.x) - hextent.x),
+                        std::max(0.0f, std::fabsf(pos.y - center.y) - hextent.y),
+                        std::max(0.0f, std::fabsf(pos.z - center.z) - hextent.z));
+    return _cacheVector.lengthSquared();
 }
 
 };  // namespace Divide

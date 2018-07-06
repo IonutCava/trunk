@@ -22,36 +22,16 @@ Mesh::~Mesh()
 }
 
 /// Mesh bounding box is built from all the SubMesh bounding boxes
-bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
-    BoundingBox& bb = sgn.getBoundingBox();
-
-    bb.reset();
-    U32 childCount = sgn.getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        SceneGraphNode& child = sgn.getChild(i, childCount);
-        if (isSubMesh(child)) {
-            bb.add(child.getInitialBoundingBox());
-        } else {
-            bb.add(child.getBoundingBoxConst());
-        }
-    }
-    return SceneNode::computeBoundingBox(sgn);
-}
-
-bool Mesh::isSubMesh(const SceneGraphNode& node) {
-    I64 targetGUID = node.getNode()->getGUID();
-    return std::find_if(std::begin(_subMeshList),
-                        std::end(_subMeshList),
-                        [&targetGUID](SubMesh* const submesh) {
-                            return (submesh && submesh->getGUID() == targetGUID);
-                        }) != std::cend(_subMeshList);
+void Mesh::computeBoundingBox() {
+    _boundingBox.first.reset();
+    _boundingBox.second = true;
 }
 
 void Mesh::addSubMesh(SubMesh* const subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
     _subMeshList.push_back(subMesh);
     Attorney::SubMeshMesh::setParentMesh(*subMesh, this);
-    _maxBoundingBox.reset();
+    computeBoundingBox();
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
@@ -62,7 +42,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                                         sgn.getName().c_str(),
                                         submesh->getID()));
     }
-
+    sgn.lockBBTransforms(true);
     Object3D::postLoad(sgn);
 }
 

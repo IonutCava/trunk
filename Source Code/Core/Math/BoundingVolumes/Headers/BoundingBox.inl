@@ -72,12 +72,14 @@ inline void BoundingBox::add(const vec3<F32>& v) {
 
 inline void BoundingBox::add(const BoundingBox& bb) {
     // WriteLock w_lock(_lock);
-    if (bb._max.x > _max.x) _max.x = bb._max.x;
-    if (bb._min.x < _min.x) _min.x = bb._min.x;
-    if (bb._max.y > _max.y) _max.y = bb._max.y;
-    if (bb._min.y < _min.y) _min.y = bb._min.y;
-    if (bb._max.z > _max.z) _max.z = bb._max.z;
-    if (bb._min.z < _min.z) _min.z = bb._min.z;
+    _max.set(std::max(bb._max.x, _max.x),
+             std::max(bb._max.y, _max.y),
+             std::max(bb._max.z, _max.z));
+
+    _min.set(std::min(bb._min.x, _min.x),
+             std::min(bb._min.y, _min.y),
+             std::min(bb._min.z, _min.z));
+
     _pointsDirty = true;
 }
 
@@ -120,13 +122,6 @@ inline void BoundingBox::multiplyMin(const vec3<F32>& v) {
     _min.y *= v.y;
     _min.z *= v.z;
     _pointsDirty = true;
-}
-
-inline void BoundingBox::setComputed(bool state) { _computed = state; }
-
-inline bool BoundingBox::isComputed() const {
-    /*ReadLock r_lock(_lock);*/
-    return _computed;
 }
 
 inline const vec3<F32>& BoundingBox::getMin() const {
@@ -206,8 +201,8 @@ inline void BoundingBox::set(const vec3<F32>& min, const vec3<F32>& max) {
 
 inline void BoundingBox::reset() {
     /*WriteLock w_lock(_lock);*/
-    _min.set(std::numeric_limits<F32>::max());
-    _max.set(std::numeric_limits<F32>::min());
+    _min.set( std::numeric_limits<F32>::max());
+    _max.set(-std::numeric_limits<F32>::max());
     _pointsDirty = true;
 }
 

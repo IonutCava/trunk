@@ -75,6 +75,7 @@ class Box3D : public Object3D {
         }
 
         vb->create(false);
+        computeBoundingBox();
     }
 
     inline void setHalfExtent(const vec3<F32> halfExtent) {
@@ -97,7 +98,7 @@ class Box3D : public Object3D {
         }
 
         vb->queueRefresh();
-        
+        computeBoundingBox();
     }
 
     inline void fromPoints(const std::initializer_list<vec3<F32>>& points,
@@ -107,15 +108,12 @@ class Box3D : public Object3D {
         vb->modifyPositionValues(0, points);
         vb->queueRefresh();
         _halfExtent = halfExtent;
+        computeBoundingBox();
     }
 
-    virtual bool computeBoundingBox(SceneGraphNode& sgn) {
-        if (sgn.getBoundingBoxConst().isComputed()) {
-            return true;
-        }
-        sgn.getBoundingBox().set(-_halfExtent, _halfExtent);
-        sgn.getBoundingBox().multiply(0.5f);
-        return SceneNode::computeBoundingBox(sgn);
+    inline void computeBoundingBox() {
+        _boundingBox.first.set(-_halfExtent * 0.5f, _halfExtent * 0.5f);
+        _boundingBox.second = true;
     }
 
    private:

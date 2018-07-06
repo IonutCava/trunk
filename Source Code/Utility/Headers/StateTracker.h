@@ -52,6 +52,7 @@ class StateTracker {
    public:
     enum class State : U32 {
         SKELETON_RENDERED = 0,
+        BOUNDING_BOX_RENDERED = 1,
         COUNT
     };
 

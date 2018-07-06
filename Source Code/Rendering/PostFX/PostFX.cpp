@@ -119,18 +119,21 @@ void PostFX::init(const vec2<U16>& resolution) {
     textureWaterCaustics.setResourceLocation(
         par.getParam<stringImpl>("assetsLocation") +
         "/misc_images/terrain_water_NM.jpg");
+    textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _underwaterTexture = CreateResource<Texture>(textureWaterCaustics);
 
      ResourceDescriptor noiseTexture("noiseTexture");
      noiseTexture.setResourceLocation(
             par.getParam<stringImpl>("assetsLocation") +
             "/misc_images//bruit_gaussien.jpg");
+     noiseTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _noise = CreateResource<Texture>(noiseTexture);
 
      ResourceDescriptor borderTexture("borderTexture");
      borderTexture.setResourceLocation(
             par.getParam<stringImpl>("assetsLocation") +
             "/misc_images//vignette.jpeg");
+     borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(borderTexture);
 
     _timer = 0;

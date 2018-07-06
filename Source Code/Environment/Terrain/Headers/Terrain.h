@@ -123,9 +123,7 @@ class Terrain : public Object3D {
     }
 
     inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
-
-    bool computeBoundingBox(SceneGraphNode& sgn);
-
+    
    protected:
     bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
@@ -150,7 +148,6 @@ class Terrain : public Object3D {
     bool _alphaTexturePresent;
     bool _drawBBoxes;
     SceneGraphNode_wptr _vegetationGrassNode;
-    BoundingBox _boundingBox;
     Quad3D* _plane;
     F32 _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer*> _terrainTextures;
@@ -208,7 +205,7 @@ class TerrainLoader {
     }
     static void buildQuadtree(Terrain& terrain) { terrain.buildQuadtree(); }
     static BoundingBox& boundingBox(Terrain& terrain) {
-        return terrain._boundingBox;
+        return terrain._boundingBox.first;
     }
     static F32& farPlane(Terrain& terrain) { return terrain._farPlane; }
     static Quad3D* plane(Terrain& terrain) { return terrain._plane; }

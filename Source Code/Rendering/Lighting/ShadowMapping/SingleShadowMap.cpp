@@ -30,9 +30,10 @@ void SingleShadowMap::init(ShadowMapInfo* const smi) {
 
 
 void SingleShadowMap::render(SceneRenderState& renderState) {
-    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getSpotDirection());
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
+
+    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     _shadowCamera->renderLookAt();
 
     getDepthMap()->begin(Framebuffer::defaultPolicy());

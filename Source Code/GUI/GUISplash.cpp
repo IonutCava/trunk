@@ -25,7 +25,7 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
                            ParamHandler::getInstance().getParam<stringImpl>("assetsLocation").c_str(),
                            splashImageName.c_str());
     splashImage.setResourceLocation(splashImageLocation);
-
+    splashImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _splashImage = CreateResource<Texture>(splashImage);
     ResourceDescriptor splashShader("fbPreview");
     splashShader.setThreadedLoading(false);

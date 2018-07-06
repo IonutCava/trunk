@@ -8,13 +8,67 @@
 namespace Divide {
 namespace Time {
 
-//USE THIS: http://gamedev.stackexchange.com/questions/83159/simple-framerate-counter
+FrameRateHandler::FrameRateHandler() : _fps(0.0f),
+                                       _frameCount(0),
+                                       _averageFps(0.0f),
+                                       _averageFpsCount(0UL),
+                                       _minFPS(0.0f),
+                                       _maxFPS(0.0f),
+                                       _tickTimeStamp(0UL)
+{
+}
+
+FrameRateHandler::~FrameRateHandler()
+{
+}
+
+void FrameRateHandler::init(U32 targetFrameRate, const U64 startTime)
+{
+    _tickTimeStamp = startTime;
+    _fps = to_float(targetFrameRate) * 0.5f;
+    _frameCount = 0;
+    _averageFps = 0.0f;
+    _averageFpsCount = 0;
+
+    _minFPS = _maxFPS = _fps;
+}
+
+void FrameRateHandler::tick(const U64 elapsedTime) 
+{
+    static const F32 smoothing = 0.9f;
+    static const F32 fpsLimitDiff = 30.0f;
+
+    _frameCount++;
+    U64 timeDiff = elapsedTime - _tickTimeStamp;
+    if (timeDiff > Time::MillisecondsToMicroseconds(250)) {
+        _tickTimeStamp = elapsedTime;
+        F32 newFPS = _frameCount / Time::MicrosecondsToSeconds<F32>(timeDiff);
+        // Frame rate
+        _fps = (_fps * smoothing) + (newFPS * (1.0f - smoothing));
+        _frameCount = 0;
+
+        // Average frame rate
+        ++_averageFpsCount;
+        _averageFps += (_fps - _averageFps) / _averageFpsCount;
+
+        // Min/max frame rate
+        if (IS_IN_RANGE_INCLUSIVE(_averageFps,
+                                  _minFPS - fpsLimitDiff,
+                                  _maxFPS + fpsLimitDiff)) {
+            _maxFPS = std::max(_averageFps, _maxFPS);
+            _minFPS = std::min(_averageFps, _minFPS);
+        }
+    }
+
+}
+
 ApplicationTimer::ApplicationTimer()
     : _targetFrameRate(Config::TARGET_FRAME_RATE),
       _speedfactor(1.0f),
       _init(false),
       _benchmark(false),
-      _elapsedTimeUs(0UL)
+      _elapsedTimeUs(0UL),
+      _lastBenchmarkTimeStamp(0UL)
 {
 }
 
@@ -43,7 +97,7 @@ void ApplicationTimer::init(U8 targetFrameRate) {
     _targetFrameRate = to_uint(targetFrameRate);
     _startupTicks = getCurrentTicksInternal();
     _frameDelay = _startupTicks;
-
+    _frameRateHandler.init(targetFrameRate, 0);
     _init = true;
 }
 
@@ -56,48 +110,23 @@ void ApplicationTimer::update() {
 
     _frameDelay = currentTicks;
 
-    _fps = _targetFrameRate / _speedfactor;
-    _frameTime = 1000.0f / _fps;
-
-    benchmarkInternal();
+    U64 elapsedTime = getElapsedTimeInternal(currentTicks);
+    _frameRateHandler.tick(elapsedTime);
+    benchmarkInternal(elapsedTime);
 }
 
-namespace {
-
-    static const U32 g_minMaxFPSIntervalSec = Time::Seconds(5);
-    static const U32 g_averageFPSIntervalSec = Time::Seconds(10);
-
-    static U64 g_frameCount = 0;
-    static U32 g_averageCount = 0;
-    static F32 g_averageFps = 0.0f;
-    static F32 g_averageFpsTotal = 0.0f;
-    static F32 g_maxFps = std::numeric_limits<F32>::min();
-    static F32 g_minFps = std::numeric_limits<F32>::max();
-};
-
-void ApplicationTimer::benchmarkInternal() {
-    g_frameCount++;
-
+void ApplicationTimer::benchmarkInternal(const U64 elapsedTime) {
     if (!_benchmark) {
         return;
     }
 
-    // Average FPS
-    g_averageFps += _fps;
-    g_averageCount++;
-
-    // Min/Max FPS (Every 5 seconds (targeted))
-    if (g_frameCount % (_targetFrameRate * g_minMaxFPSIntervalSec) == 0) {
-        g_maxFps = std::max(g_maxFps, _fps);
-        g_minFps = std::min(g_minFps, _fps);
-    }
-
-    // Every 10 seconds (targeted)
-    if (g_frameCount % (_targetFrameRate * g_averageFPSIntervalSec) == 0) {
-        g_averageFpsTotal += g_averageFps;
-
-        F32 avgFPS = g_averageFpsTotal / g_averageCount;
-        Console::printfn(Locale::get(_ID("FRAMERATE_FPS_OUTPUT")), avgFPS, g_maxFps, g_minFps, 1000.0f / avgFPS);
+    if (elapsedTime - _lastBenchmarkTimeStamp > Time::SecondsToMicroseconds(10)) {
+        _lastBenchmarkTimeStamp = elapsedTime;
+        Console::printfn(Locale::get(_ID("FRAMERATE_FPS_OUTPUT")),
+                         _frameRateHandler.averageFrameRate(),
+                         _frameRateHandler.maxFrameRate(),
+                         _frameRateHandler.minFrameRate(),
+                         1000.0f / _frameRateHandler.averageFrameRate());
 
 #if !defined(_RELEASE)
         for (ProfileTimer* const timer : _profileTimers) {
@@ -105,7 +134,6 @@ void ApplicationTimer::benchmarkInternal() {
             timer->reset();
         }
 #endif
-        g_averageFps = 0;
     }
 }
 

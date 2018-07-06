@@ -21,12 +21,18 @@ SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
       _type(type),
       _LODcount(1)  ///<Defaults to 1 LOD level
 {
+    _boundingBox.second = true;
 }
 
-SceneNode::~SceneNode() {}
+SceneNode::~SceneNode()
+{
+}
 
-void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                            SceneState& sceneState) {}
+void SceneNode::sceneUpdate(const U64 deltaTime,
+                            SceneGraphNode& sgn,
+                            SceneState& sceneState)
+{
+}
 
 bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
@@ -42,7 +48,8 @@ bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
                          const SceneGraphNode& sgn,
                          Frustum::FrustCollision& collisionType,
-                         bool distanceCheck) const {
+                         bool distanceCheck) const
+{
     const BoundingBox& boundingBox = sgn.getBoundingBoxConst();
     const BoundingSphere& sphere = sgn.getBoundingSphereConst();
 
@@ -120,12 +127,6 @@ void SceneNode::setMaterialTpl(Material* const mat) {
             RemoveResource(_materialTemplate);
         }
     }
-}
-
-bool SceneNode::computeBoundingBox(SceneGraphNode& sgn) {
-    sgn.setInitialBoundingBox(sgn.getBoundingBoxConst());
-    sgn.getBoundingBox().setComputed(true);
-    return true;
 }
 
 bool SceneNode::unload() {

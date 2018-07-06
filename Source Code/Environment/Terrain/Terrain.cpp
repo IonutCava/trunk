@@ -53,8 +53,6 @@ bool Terrain::unload() {
 void Terrain::postLoad(SceneGraphNode& sgn) {
     SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane));
     planeSGN->setActive(false);
-    _plane->computeBoundingBox(*planeSGN);
-    computeBoundingBox(sgn);
     for (TerrainChunk* chunk : _terrainChunks) {
         sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk));
     }
@@ -65,10 +63,13 @@ void Terrain::buildQuadtree() {
     reserveTriangleCount((_terrainDimensions.x - 1) *
                          (_terrainDimensions.y - 1) * 2);
     _terrainQuadtree.Build(
-        _boundingBox, vec2<U32>(_terrainDimensions.x, _terrainDimensions.y),
+        _boundingBox.first,
+        vec2<U32>(_terrainDimensions.x, _terrainDimensions.y),
         _chunkSize, this);
+
     // The terrain's final bounding box is the QuadTree's root bounding box
-    _boundingBox = _terrainQuadtree.computeBoundingBox();
+    _boundingBox.first = _terrainQuadtree.computeBoundingBox();
+    _boundingBox.second = true;
 
     Material* mat = getMaterialTpl();
     for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
@@ -77,8 +78,8 @@ void Terrain::buildQuadtree() {
         ShaderProgram* const drawShader = mat->getShaderInfo(stage).getProgram();
 
         drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE().state().waterLevel());
-        drawShader->Uniform("bbox_min", _boundingBox.getMin());
-        drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
+        drawShader->Uniform("bbox_min", _boundingBox.first.getMin());
+        drawShader->Uniform("bbox_extent", _boundingBox.first.getExtent());
         drawShader->Uniform("texWaterCaustics", ShaderProgram::TextureUsage::UNIT0);
         drawShader->Uniform("texUnderwaterAlbedo", ShaderProgram::TextureUsage::UNIT1);
         drawShader->Uniform("texUnderwaterDetail", ShaderProgram::TextureUsage::NORMALMAP);
@@ -110,12 +111,6 @@ void Terrain::buildQuadtree() {
                                 textureLayer->getDetailScales());
         }
     }
-}
-
-bool Terrain::computeBoundingBox(SceneGraphNode& sgn) {
-    // Inform the scenegraph of our new BB
-    sgn.getBoundingBox() = _boundingBox;
-    return SceneNode::computeBoundingBox(sgn);
 }
 
 void Terrain::sceneUpdate(const U64 deltaTime,
@@ -186,8 +181,8 @@ void Terrain::postDrawBoundingBox(SceneGraphNode& sgn) const {
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
-    x -= _boundingBox.getCenter().x;
-    z -= _boundingBox.getCenter().z;
+    x -= _boundingBox.first.getCenter().x;
+    z -= _boundingBox.first.getCenter().z;
     F32 xClamp = (0.5f * _terrainDimensions.x) + x;
     F32 zClamp = (0.5f * _terrainDimensions.y) - z;
     xClamp /= _terrainDimensions.x;
@@ -216,11 +211,11 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
            posI.y >= 0 && posI.y < to_int(_terrainDimensions.y) - 1);
 
     vec3<F32> pos(
-        _boundingBox.getMin().x +
-            x_clampf * (_boundingBox.getMax().x - _boundingBox.getMin().x),
+        _boundingBox.first.getMin().x +
+            x_clampf * (_boundingBox.first.getMax().x - _boundingBox.first.getMin().x),
         0.0f,
-        _boundingBox.getMin().z +
-            z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
+        _boundingBox.first.getMin().z +
+            z_clampf * (_boundingBox.first.getMax().z - _boundingBox.first.getMin().z));
 
 
     const VertexBuffer* const vb = getGeometryVB();

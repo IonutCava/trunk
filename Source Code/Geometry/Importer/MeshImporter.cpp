@@ -334,6 +334,7 @@ namespace Import {
                 ResourceDescriptor texture(tex._textureName);
                 texture.setResourceLocation(tex._texturePath);
                 texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
+                texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
                 Texture* textureRes = CreateResource<Texture>(texture);
                 assert(textureRes != nullptr);
 

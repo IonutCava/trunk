@@ -39,9 +39,9 @@ inline void ApplicationTimer::benchmark(bool state) { _benchmark = state; }
 
 inline bool ApplicationTimer::benchmark() const { return _benchmark; }
 
-inline F32 ApplicationTimer::getFps() const { return _fps; }
+inline F32 ApplicationTimer::getFps() const { return _frameRateHandler.frameRate(); }
 
-inline F32 ApplicationTimer::getFrameTime() const { return _frameTime; }
+inline F32 ApplicationTimer::getFrameTime() const { return _frameRateHandler.frameTime(); }
 
 inline F32 ApplicationTimer::getSpeedfactor() const { return _speedfactor; }
 

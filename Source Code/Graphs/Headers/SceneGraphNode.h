@@ -47,9 +47,12 @@ class SceneState;
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
    public:
-    SceneRoot() : SceneNode("root", SceneNodeType::TYPE_ROOT) {
+    SceneRoot() : SceneNode("root", SceneNodeType::TYPE_ROOT)
+    {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_SPECIAL);
+        _boundingBox.first.reset();
+        _boundingBox.second = false;
     }
 
     bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
@@ -57,7 +60,6 @@ class SceneRoot : public SceneNode {
     }
     bool unload() { return true; }
     bool load(const stringImpl& name) { return true; }
-    bool computeBoundingBox(SceneGraphNode& sgn);
 
    protected:
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
@@ -77,7 +79,6 @@ class SceneTransform : public SceneNode {
     void postLoad(SceneGraphNode& sgn) { return; }
     bool unload() { return true; }
     bool load(const stringImpl& name) { return true; }
-    bool computeBoundingBox(SceneGraphNode& sgn) { return true; }
 };
 
 
@@ -102,11 +103,6 @@ class SceneGraphNode : public GUIDWrapper,
         SELECTION_COUNT
     };
 
-    /// Apply current transform to the node's BB. Return true if the bounding
-    /// extents changed
-    bool updateBoundingBoxTransform(const mat4<F32>& transform);
-    /// Apply only position related changes to the node's BB.
-    bool updateBoundingBoxPosition(const vec3<F32>& position);
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
     /// Called when the camera updates the view matrix and/or the projection
@@ -125,9 +121,6 @@ class SceneGraphNode : public GUIDWrapper,
         assert(_node != nullptr);
         return static_cast<T*>(_node);
     }
-    /// Create node never increments the node's ref counter (used for scene
-    /// loading)
-    SceneGraphNode_ptr createNode(SceneNode& node, const stringImpl& name = "");
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
     SceneGraphNode_ptr addNode(SceneNode& node, const stringImpl& name = "");
@@ -167,38 +160,21 @@ class SceneGraphNode : public GUIDWrapper,
     /*Parent <-> Children*/
 
     /*Bounding Box Management*/
-    void setInitialBoundingBox(const BoundingBox& initialBoundingBox);
-
     inline BoundingBox& getBoundingBox() { return _boundingBox; }
-    inline const BoundingBox& getBoundingBoxConst() const {
-        return _boundingBox;
-    }
+    inline const BoundingBox& getBoundingBoxConst() const { return _boundingBox;  }
     inline BoundingSphere& getBoundingSphere() { return _boundingSphere; }
-    inline const BoundingSphere& getBoundingSphereConst() const {
-        return _boundingSphere;
-    }
-    inline const BoundingBox& getInitialBoundingBox() const {
-        return _initialBoundingBox;
-    }
+    inline const BoundingSphere& getBoundingSphereConst() const { return _boundingSphere;  }
+    void computeBoundingBox();
     /*Bounding Box Management*/
 
     void useDefaultTransform(const bool state);
 
     /*Node State*/
     void setActive(const bool state);
-    void restoreActive();
-    
     inline bool isActive() const { return _active; }
-
-    inline U32 getInstanceID() const { return _instanceID; }
 
     inline const UsageContext& usageContext() const { return _usageContext; }
     void usageContext(const UsageContext& newContext);
-
-    void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
-    void setBBExclusionMask(U32 bbExclusionMask) {
-        _bbAddExclusionList = bbExclusionMask;
-    }
 
     inline bool lockBBTransforms() const { return _lockBBTransforms; }
 
@@ -268,18 +244,12 @@ class SceneGraphNode : public GUIDWrapper,
         return getGUID() != rhs.getGUID();
     }
 
-    inline bool getVisibleState(RenderStage currentStage) {
-        return _isVisible[to_uint(currentStage)];
-    }
-
    protected:
     friend class RenderPassCuller;
     // Returns true if the node should be culled (is not visible for the current stage)
     bool cullNode(const SceneRenderState& sceneRenderState,
                   Frustum::FrustCollision& collisionType,
                   RenderStage currentStage) const;
-
-    void setVisibleState(bool state, RenderStage currentStage);
 
    protected:
     friend class RenderingComponent;
@@ -293,38 +263,29 @@ class SceneGraphNode : public GUIDWrapper,
     inline void setName(const stringImpl& name) { _name = name; }
 
    private:
+    D32 _updateTimer;
+    U64 _elapsedTime;
+    stringImpl _name;
     SceneNode* _node;
     SceneGraphNode_wptr _parent;
-    std::atomic<bool> _active;
-    std::atomic<bool> _boundingBoxDirty;
-    U32 _bbAddExclusionList;
-    SelectionFlag _selectionFlag;
-    bool _isSelectable;
-    bool _wasActive;
-    bool _sorted;
-    bool _lockBBTransforms;
-    ///_initialBoundingBox is a copy of the initialy calculate BB for
-    ///transformation
-    /// it should be copied in every computeBoungingBox call;
-    BoundingBox _initialBoundingBox;
-    BoundingBox _boundingBox, _boundingBoxCache;
-    BoundingSphere _boundingSphere;  ///<For faster visibility culling
-
-    U32 _instanceID;
-    D32 _updateTimer;
-    U64 _elapsedTime;  //< the total amount of time that passed since this node
-                       //was created
-    stringImpl _name;
-
     vectorImpl<SceneGraphNode_ptr> _children;
     std::atomic_uint _childCount;
     mutable SharedLock _childLock;
+    std::atomic<bool> _active;
+
+    bool _isSelectable;
+    SelectionFlag _selectionFlag;
+
+    std::atomic<bool> _boundingBoxDirty;
+    bool _lockBBTransforms;
+    BoundingBox _boundingBox;
+    BoundingBox _boundingBoxTransformedCache;
+    BoundingSphere _boundingSphere;
 
     UsageContext _usageContext;
-    std::array<std::unique_ptr<SGNComponent>,
+    std::array<std::unique_ptr<SGNComponent>, 
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
 
-    std::array<bool, to_const_uint(RenderStage::COUNT)> _isVisible;
     StateTracker<bool> _trackedBools;
 };
 

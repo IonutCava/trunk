@@ -144,7 +144,7 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode_ptr meshNode =
-        _sceneGraph.getRoot().createNode(*thisObj, data.ItemName);
+        _sceneGraph.getRoot().addNode(*thisObj, data.ItemName);
     meshNode->getComponent<RenderingComponent>()->castsShadows(
         data.castsShadows);
     meshNode->getComponent<RenderingComponent>()->receivesShadows(
@@ -219,7 +219,7 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().createNode(*thisObj);
+    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().addNode(*thisObj);
     thisObjSGN->getComponent<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN->getComponent<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN->getComponent<PhysicsComponent>()->setPosition(data.position);
@@ -313,7 +313,7 @@ SceneGraphNode_ptr Scene::addSky() {
 }
 
 SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
-    return _sceneGraph.getRoot().createNode(skyItem);
+    return _sceneGraph.getRoot().addNode(skyItem);
 }
 
 bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
@@ -331,7 +331,7 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode_ptr terrainTemp = root.createNode(*temp);
+            SceneGraphNode_ptr terrainTemp = root.addNode(*temp);
             terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 
@@ -709,10 +709,12 @@ void Scene::debugDraw(RenderStage stage) {
     }
 #endif
     if (stage == RenderStage::DISPLAY) {
+        
         LightManager::getInstance().drawLightImpostors();
 
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         GFX_DEVICE.debugDraw(renderState());
+
         // Show NavMeshes
         AI::AIManager::getInstance().debugDraw(false);
     }

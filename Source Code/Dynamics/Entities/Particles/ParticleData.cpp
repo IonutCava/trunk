@@ -9,7 +9,6 @@ ParticleData::ParticleData(U32 particleCount, U32 optionsMask) {
 ParticleData::~ParticleData() { generateParticles(0, _optionsMask); }
 
 void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
-    _lodLevel = 0;
     _totalCount = particleCount;
     _aliveCount = 0;
     _optionsMask = optionsMask;

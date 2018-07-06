@@ -10,20 +10,10 @@ namespace Divide {
 
 template<>
 Texture* ImplResourceLoader<Texture>::operator()() {
-    Texture* ptr = nullptr;
+    assert(_descriptor.getEnumValue() >= to_const_uint(TextureType::TEXTURE_1D) &&
+           _descriptor.getEnumValue() < to_const_uint(TextureType::COUNT));
 
-    if (_descriptor.getEnumValue() ==
-        to_uint(TextureType::TEXTURE_CUBE_MAP)) {
-        ptr = GFX_DEVICE.newTexture(TextureType::TEXTURE_CUBE_MAP);
-    } else if (_descriptor.getEnumValue() ==
-                   to_uint(TextureType::TEXTURE_2D_ARRAY) ||
-               _descriptor.getEnumValue() ==
-                   to_uint(TextureType::TEXTURE_2D_ARRAY_MS)) {
-        ptr = GFX_DEVICE.newTexture(TextureType::TEXTURE_2D_ARRAY);
-        ptr->setNumLayers(to_ubyte(_descriptor.getID()));
-    } else {
-        ptr = GFX_DEVICE.newTexture(TextureType::TEXTURE_2D);
-    }
+    Texture* ptr = GFX_DEVICE.newTexture(static_cast<TextureType>(_descriptor.getEnumValue()));
 
     ptr->enableThreadedLoading(_descriptor.getThreaded());
     ptr->setResourceLocation(_descriptor.getResourceLocation());

@@ -125,7 +125,7 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
             _particles->_textureFileName);
 
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-
+        texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
         _particleTexture = CreateResource<Texture>(texture);
 
         REGISTER_TRACKED_DEPENDENCY(_particleTexture);
@@ -308,15 +308,12 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
 
     _particles->sort();
 
-    BoundingBox& bb = sgn.getBoundingBox();
-    bb.reset();
+    _boundingBox.first.reset();
     U32 aliveCount = _particles->aliveCount();
     for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
-        bb.add(_particles->_position[i]);
+        _boundingBox.first.add(_particles->_position[i]);
     }
-
-    bb.setComputed(true);
-    sgn.setInitialBoundingBox(bb);
+    _boundingBox.second = true;
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }

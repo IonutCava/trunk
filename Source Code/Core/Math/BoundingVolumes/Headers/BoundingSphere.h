@@ -76,7 +76,7 @@ class BoundingSphere {
     bool collision(const BoundingSphere& sphere2) const;
 
    private:
-    bool _computed, _visibility, _dirty;
+    bool _visibility, _dirty;
     vec3<F32> _center;
     F32 _radius;
     //mutable SharedLock _lock;

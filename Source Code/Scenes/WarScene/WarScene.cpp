@@ -413,7 +413,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(25.0f);
-            light->setCastShadows(false);
+            light->setCastShadows(i == 0 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
             lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
@@ -437,7 +437,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(55.0f);
-            light->setCastShadows(false);
+            light->setCastShadows(i == 1 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
             lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));

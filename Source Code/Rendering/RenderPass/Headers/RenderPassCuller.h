@@ -56,11 +56,16 @@ class RenderPassCuller {
     ~RenderPassCuller();
 
     VisibleNodeList& getNodeCache(RenderStage stage);
+    const VisibleNodeList& getNodeCache(RenderStage stage) const;
+
     void frustumCull(SceneGraph& sceneGraph,
                      SceneState& sceneState,
                      RenderStage stage,
                      bool async,
                      const CullingFunction& cullingFunction);
+
+    bool wasNodeInView(I64 GUID, RenderStage stage) const;
+
    protected:
 
     // return true if the node is not currently visible
@@ -71,6 +76,7 @@ class RenderPassCuller {
     void addAllChildren(SceneGraphNode& currentNode,
                         RenderStage currentStage,
                         VisibleNodeList& nodes);
+    U32 stageToCacheIndex(RenderStage stage) const;
    protected:
     CullingFunction _cullingFunction;
     vectorImpl<std::future<void>> _cullingTasks;

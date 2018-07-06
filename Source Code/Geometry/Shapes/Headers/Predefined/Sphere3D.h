@@ -62,17 +62,10 @@ class Sphere3D : public Object3D {
         _radius = radius;
         _dirty = true;
     }
+
     inline void setResolution(U32 resolution) {
         _resolution = resolution;
         _dirty = true;
-    }
-
-    virtual bool computeBoundingBox(SceneGraphNode& sgn) {
-        if (sgn.getBoundingBoxConst().isComputed()) {
-            return true;
-        }
-        sgn.getBoundingBox().set(vec3<F32>(-_radius), vec3<F32>(_radius));
-        return SceneNode::computeBoundingBox(sgn);
     }
 
     bool onDraw(RenderStage currentStage) {
@@ -150,6 +143,8 @@ class Sphere3D : public Object3D {
 
         vb->create();
         vb->queueRefresh();
+        _boundingBox.first.set(vec3<F32>(-_radius), vec3<F32>(_radius));
+        _boundingBox.second = true;
     }
 
    protected:

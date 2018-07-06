@@ -48,6 +48,7 @@ class Text3D : public Object3D {
           _width(1.0f) {
         /// Dummy
         getGeometryVB()->queueRefresh();
+        computeBoundingBox();
     }
 
     inline stringImpl& getText() { return _text; }
@@ -55,15 +56,12 @@ class Text3D : public Object3D {
     inline F32& getWidth() { return _width; }
     inline U32& getHeight() { return _height; }
 
-    virtual bool computeBoundingBox(SceneGraphNode& sgn) {
-        if (sgn.getBoundingBoxConst().isComputed()) {
-            return true;
-        }
+    inline void computeBoundingBox() {
         vec3<F32> min(-_width * 2, 0, -_width * 0.5f);
         vec3<F32> max(_width * 1.5f * _text.length() * 10,
                       _width * _text.length() * 1.5f, _width * 0.5f);
-        sgn.getBoundingBox().set(min, max);
-        return SceneNode::computeBoundingBox(sgn);
+        _boundingBox.first.set(min, max);
+        _boundingBox.second = true;
     }
 
    private:
