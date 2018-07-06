@@ -37,6 +37,8 @@ public:
     Trigger();
     ~Trigger();
 
+    /// Dummy function from SceneNode;
+    void onDraw(const RenderStage& currentStage) {};
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
     bool check(Unit* const unit,const vec3<F32>& camEyePos = VECTOR3_ZERO);
@@ -54,9 +56,6 @@ public:
     /// Just update the callback
     inline void setParams(Task_ptr triggeredTask) {setParams(triggeredTask,_triggerPosition,_radius);}
 
-    ///Dummy function from SceneNode;
-    void onDraw(const RenderStage& currentStage) {};
-
     ///SceneNode concrete implementations
     bool unload();
     void postLoad(SceneGraphNode* const sgn);
@@ -68,6 +67,8 @@ public:
     bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = false) {
         return _drawImpostor;
     }
+protected:
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {}
 
 private:
     /// The Task to be launched when triggered

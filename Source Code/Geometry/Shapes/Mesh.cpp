@@ -62,7 +62,7 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
         bool playAnimation = (_playAnimations && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
         if (playAnimation != _playAnimationsCurrent) {
             FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, sgn->getChildren()){
-                it.second->getAnimationComponent()->playAnimation(playAnimation);
+                it.second->getComponent<AnimationComponent>()->playAnimation(playAnimation);
             }
             _playAnimationsCurrent = playAnimation;
         }

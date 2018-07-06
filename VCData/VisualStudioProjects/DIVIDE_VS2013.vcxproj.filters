@@ -392,6 +392,12 @@
     <Filter Include="Dynamics\Physics\PhysX\Actors\Headers">
       <UniqueIdentifier>{1e7063d4-b392-49bc-a650-7d75a8ba843f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphs\Components">
+      <UniqueIdentifier>{641df06e-21cd-4d1b-a381-fa752da7badf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphs\Components\Headers">
+      <UniqueIdentifier>{e63dac5e-0be9-4591-a66a-3890633302b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp">
@@ -854,8 +860,14 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationComponent.cpp">
-      <Filter>Geometry\Animations</Filter>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\AnimationComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\PhysicsComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp">
+      <Filter>Graphs\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1367,8 +1379,17 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\TextLabel.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationComponent.h">
-      <Filter>Geometry\Animations\Headers</Filter>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\AnimationComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\SGNComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\PhysicsComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NavigationComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

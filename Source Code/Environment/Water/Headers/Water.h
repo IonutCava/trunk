@@ -41,22 +41,13 @@ public:
 
     /// Resource inherited "unload"
     bool unload();
-
     /// General SceneNode stuff
     void onDraw(const RenderStage& currentStage);
-    void postDraw(const RenderStage& currentStage);
-    void render(SceneGraphNode* const sgn);
-    void postLoad(SceneGraphNode* const sgn);
-    void prepareMaterial(SceneGraphNode* const sgn);
-    void releaseMaterial();
-    void prepareDepthMaterial(SceneGraphNode* const sgn){}
-    void releaseDepthMaterial(){}
     bool getDrawState(const RenderStage& currentStage)  const;
-
     bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
-
     void setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency);
-    inline Quad3D*     getQuad()    {return _plane;}
+
+    inline Quad3D* getQuad() const {return _plane;}
 
     /// Reflector overwrite
     void updateReflection();
@@ -66,6 +57,14 @@ public:
     inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
 
 protected:
+    void postDraw(const RenderStage& currentStage);
+    void render(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode* const sgn);
+    void prepareMaterial(SceneGraphNode* const sgn);
+    void releaseMaterial();
+    void prepareDepthMaterial(SceneGraphNode* const sgn){}
+    void releaseDepthMaterial(){}
+
     template<typename T>
     friend class ImplResourceLoader;
     inline void setWaterNormalMap(Texture2D* const waterNM){_texture = waterNM;}

@@ -37,6 +37,8 @@ public:
     inline SceneAnimator* getAnimator() { return _animator; }
 
 protected:
+    /// Called from SceneGraph "sceneUpdate"
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void updateAnimations(SceneGraphNode* const sgn);
 
 private:

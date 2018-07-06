@@ -2,7 +2,6 @@
 
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
@@ -15,13 +14,13 @@
 #pragma message("               - premultiply positions AND normals AND tangents AND bitangets to avoid artifacts")
 #pragma message("               - Ionut")
 
-SceneGraphNode::SceneGraphNode(SceneNode* const node) : GUIDWrapper(),
+SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GUIDWrapper(),
+                                                  _sceneGraph(sg),
                                                   _node(node),
                                                   _elapsedTime(0ULL),
                                                   _parent(nullptr),
                                                   _transform(nullptr),
                                                   _transformPrevious(nullptr),
-                                                  _animationComponent(nullptr),
                                                   _loaded(true),
                                                   _wasActive(true),
                                                   _active(true),
@@ -33,17 +32,18 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : GUIDWrapper(),
                                                   _boundingBoxDirty(true),
                                                   _shouldDelete(false),
                                                   _isReady(false),
-                                                  _overrideNavMeshDetail(false),
                                                   _castsShadows(true),
                                                   _receiveShadows(true),
                                                   _updateTimer(GETMSTIME()),
                                                   _childQueue(0),
                                                   _bbAddExclusionList(0),
-                                                  _usageContext(NODE_DYNAMIC),
-                                                  _navigationContext(NODE_IGNORE),
-                                                  _physicsCollisionGroup(NODE_COLLIDE_IGNORE)
+                                                  _usageContext(NODE_DYNAMIC)
 {
     assert(_node != nullptr);
+
+    _components[SGNComponent::SGN_COMP_ANIMATION]  = nullptr;
+    _components[SGNComponent::SGN_COMP_NAVIGATION] = New NavigationComponent(this);
+    _components[SGNComponent::SGN_COMP_PHYSICS]    = New PhysicsComponent(this);
 }
 
 ///If we are destroyng the current graph node
@@ -55,11 +55,13 @@ SceneGraphNode::~SceneGraphNode(){
     FOR_EACH(NodeChildren::value_type it, _children){
         SAFE_DELETE(it.second);
     }
-
+    FOR_EACH(NodeComponents::value_type it, _components){
+        SAFE_DELETE(it.second);
+    }
     //and delete the transform bound to this node
     SAFE_DELETE(_transform);
-    SAFE_DELETE(_animationComponent);
     _children.clear();
+    _components.clear();
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& type) {
@@ -187,7 +189,7 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
 ///Add a new SceneGraphNode to the current node's child list based on a SceneNode
 SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string& name){
     //Create a new SceneGraphNode with the SceneNode's info
-    SceneGraphNode* sceneGraphNode = New SceneGraphNode(node);
+    SceneGraphNode* sceneGraphNode = New SceneGraphNode(_sceneGraph, node);
     //Validate it to be safe
     assert(sceneGraphNode);
     //We need to name the new SceneGraphNode
@@ -206,7 +208,6 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
     }
     //Set the current node as the new node's parrent
     sceneGraphNode->setParent(this);
-    sceneGraphNode->setSceneGraph(_sceneGraph);
     node->incReferenceCount();
     //Do all the post load operations on the SceneNode
     //Pass a reference to the newly created SceneGraphNode in case we need transforms or bounding boxes
@@ -333,64 +334,7 @@ Transform* const SceneGraphNode::getTransform(){
     return _transform;
 }
 
-void SceneGraphNode::setNavigationContext(const NavigationContext& newContext) {
-    _navigationContext = newContext;
-    FOR_EACH(NodeChildren::value_type& it, _children){
-        it.second->setNavigationContext(_navigationContext);
-    }
+void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component){
+    SAFE_UPDATE(_components[type], component);
 }
 
-void  SceneGraphNode::setNavigationDetailOverride(const bool detailOverride){
-    _overrideNavMeshDetail = detailOverride;
-    FOR_EACH(NodeChildren::value_type& it, _children){
-        it.second->setNavigationDetailOverride(detailOverride);
-    }
-}
-
-#pragma message("ToDo: add terrain heightfield and water cooking support! -Ionut")
-void  SceneGraphNode::cookCollisionMesh(const std::string& sceneName) {
-    SceneNodeType nodeType = _node->getType();
-    if(nodeType != TYPE_SKY && nodeType != TYPE_WATER && nodeType != TYPE_TERRAIN)
-        FOR_EACH(NodeChildren::value_type& it, _children){
-            it.second->cookCollisionMesh(sceneName);
-        }
-
-    if(!bitCompare(/*TYPE_WATER | TYPE_TERRAIN | */TYPE_OBJECT3D, nodeType))
-        return;
-    
-    if(nodeType == TYPE_OBJECT3D) {
-        if(bitCompare(Object3D::TEXT_3D | Object3D::MESH | Object3D::FLYWEIGHT, dynamic_cast<Object3D*>(_node)->getType()))
-            return;
-    }
-
-    PHYSICS_DEVICE.createActor(this,sceneName,
-                               _usageContext == NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC, 
-                               _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE : 
-                                (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE));
-}
-
-const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
-    assert(_node != nullptr);
-
-    if (getNode<Object3D>()->getType() != Object3D::SUBMESH ||
-        (getNode<Object3D>()->getType() == Object3D::SUBMESH &&  getNode<Object3D>()->getFlag() != Object3D::OBJECT_FLAG_SKINNED) ||
-        !_animationComponent || (_animationComponent && _animationComponent->animationTransforms().empty())){
-        assert(getTransform());
-        return getTransform()->getMatrix();
-    }
-
-    return _animationComponent->currentBoneTransform(name);
-}
-
-// update possible animations
-void SceneGraphNode::updateAnimations(){
-    if (!_animationComponent) return;
-
-    _animationComponent->updateAnimations(getElapsedTime());
-    getSceneNode()->updateAnimations(this);
-}
-
-void SceneGraphNode::setAnimationComponent(SceneAnimator* sceneAnimator) { 
-    SAFE_UPDATE(_animationComponent, New AnimationComponent(sceneAnimator, this));
-    _animationComponent->playAnimation(0); //<play the first animation
-}

@@ -54,6 +54,9 @@ public:
     ParticleEmitter();
    ~ParticleEmitter();
 
+    /// Dummy function from SceneNode;
+    void onDraw(const RenderStage& currentStage);
+
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) {_enabled = state;}
 
@@ -62,19 +65,9 @@ public:
     
     inline void setDrawImpostor(const bool state) {_drawImpostor = state;}
 
-    /// preprocess particles here
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-
-    ///Dummy function from SceneNode;
-    void onDraw(const RenderStage& currentStage);
-
     ///SceneNode concrete implementations
     bool initData();
     bool unload();
-    void postLoad(SceneGraphNode* const sgn);
-
-    ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn);
 
     void updateBBatCurrentFrame(SceneGraphNode* const sgn);
     bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -90,6 +83,13 @@ public:
     const ParticleEmitterDescriptor& getDescriptor() const {return _descriptor;}
 
 protected:
+    void postLoad(SceneGraphNode* const sgn);
+
+    /// preprocess particles here
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+
+    ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
+    virtual void render(SceneGraphNode* const sgn);
     void prepareDepthMaterial(SceneGraphNode* const sgn);
     void releaseDepthMaterial();
     void prepareMaterial(SceneGraphNode* const sgn);

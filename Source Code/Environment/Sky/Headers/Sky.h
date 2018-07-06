@@ -42,19 +42,19 @@ public:
     ~Sky();
 
     void onDraw(const RenderStage& currentStage);
-    void render(SceneGraphNode* const sgn);
     void setRenderingOptions(bool drawSun = true, bool drawSky = true) ;
-    void prepareMaterial(SceneGraphNode* const sgn);
-    void releaseMaterial();
-
     void setSunVector(const vec3<F32>& sunVect);
-
     void addToDrawExclusionMask(I32 stageMask);
     void removeFromDrawExclusionMask(I32 stageMask);
     ///Draw states are used to test if the current object should be drawn depending on the current render pass
     bool getDrawState(const RenderStage& currentStage) const;
     ///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
     bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {return true;}
+
+protected:
+    void render(SceneGraphNode* const sgn);
+    void prepareMaterial(SceneGraphNode* const sgn);
+    void releaseMaterial();
     void postLoad(SceneGraphNode* const sgn);
 
 private:

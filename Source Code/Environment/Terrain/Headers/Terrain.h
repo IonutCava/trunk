@@ -57,27 +57,17 @@ public:
 
     bool unload();
 
-    void drawGround() const;
-    void drawInfinitePlain();
-    void render(SceneGraphNode* const sgn);
     void onDraw(const RenderStage& currentStage);
-    void postDraw(const RenderStage& currentStage);
-    void prepareMaterial(SceneGraphNode* const sgn);
-    void releaseMaterial();
-    void prepareDepthMaterial(SceneGraphNode* const sgn);
-    void releaseDepthMaterial();
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void drawBoundingBox(SceneGraphNode* const sgn);
-
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
+
     vec3<F32>  getPositionFromGlobal(F32 x, F32 z) const;
     vec3<F32>  getPosition(F32 x_clampf, F32 z_clampf) const;
     vec3<F32>  getNormal(F32 x_clampf, F32 z_clampf) const;
     vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
-     vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
+    vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
 
            void  terrainSmooth(F32 k);
-           void  postLoad(SceneGraphNode* const sgn);
            void  initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNode* const terrainSGN);
 
     inline VertexBufferObject* const getGeometryVBO() {return _groundVBO;}
@@ -94,6 +84,21 @@ public:
     void toggleVegetation(bool state);
 
 protected:
+
+    void postDraw(const RenderStage& currentStage);
+
+    void drawGround() const;
+    void drawInfinitePlain();
+    void render(SceneGraphNode* const sgn);
+    void prepareMaterial(SceneGraphNode* const sgn);
+    void releaseMaterial();
+    void prepareDepthMaterial(SceneGraphNode* const sgn);
+    void releaseDepthMaterial();
+
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+
+    void  postLoad(SceneGraphNode* const sgn);
+
     template<typename T>
     friend class ImplResourceLoader;
     void loadVisualResources();

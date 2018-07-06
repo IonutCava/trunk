@@ -4,9 +4,8 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 SceneGraph::SceneGraph(){
-    _root = New SceneGraphNode(New SceneRoot);
+    _root = New SceneGraphNode(this, New SceneRoot);
     _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT | TYPE_TRIGGER |TYPE_PARTICLE_EMITTER|TYPE_VEGETATION_GRASS|TYPE_VEGETATION_TREES);
-    _root->setSceneGraph(this);
     _updateRunning = false;
 }
 

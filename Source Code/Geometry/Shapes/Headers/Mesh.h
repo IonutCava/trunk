@@ -49,8 +49,6 @@ public:
 
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
-    /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     virtual void postLoad(SceneGraphNode* const sgn);
     inline  void render(SceneGraphNode* const sgn){};
 
@@ -63,7 +61,10 @@ public:
     inline bool playAnimations()                 const { return _playAnimations; }
 
 protected:
-    
+    /// Called from SceneGraph "sceneUpdate"
+    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+
+protected:
 
     typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;
     typedef Unordered_map<U32, SubMesh*> subMeshRefMap;

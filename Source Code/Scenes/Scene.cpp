@@ -62,7 +62,7 @@ bool Scene::idle(){ //Called when application is idle
 
     if(_cookCollisionMeshesScheduled){
         if(SceneManager::getInstance().getFrameCount() > 1){
-            _sceneGraph->getRoot()->cookCollisionMesh(_name);
+            _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
     }
@@ -126,13 +126,13 @@ bool Scene::loadModel(const FileData& data){
         meshNode->setUsageContext(SceneGraphNode::NODE_STATIC);
     }
     if(data.navigationUsage){
-        meshNode->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+        meshNode->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
     }
     if(data.physicsUsage){
-        meshNode->setPhysicsGroup(data.physicsPushable ? SceneGraphNode::NODE_COLLIDE : SceneGraphNode::NODE_COLLIDE_NO_PUSH);
+        meshNode->getComponent<PhysicsComponent>()->setPhysicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
     }
     if(data.useHighDetailNavMesh){
-        meshNode->setNavigationDetailOverride(true);
+        meshNode->getComponent<NavigationComponent>()->setNavigationDetailOverride(true);
     }
     return true;
 }
@@ -183,13 +183,13 @@ bool Scene::loadGeometry(const FileData& data){
         thisObjSGN->setUsageContext(SceneGraphNode::NODE_STATIC);
     }
     if(data.navigationUsage){
-        thisObjSGN->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
+        thisObjSGN->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
     }
     if(data.physicsUsage){
-        thisObjSGN->setPhysicsGroup(data.physicsPushable ? SceneGraphNode::NODE_COLLIDE : SceneGraphNode::NODE_COLLIDE_NO_PUSH);
+        thisObjSGN->getComponent<PhysicsComponent>()->setPhysicsGroup(data.physicsPushable ? PhysicsComponent::NODE_COLLIDE : PhysicsComponent::NODE_COLLIDE_NO_PUSH);
     }
     if(data.useHighDetailNavMesh){
-        thisObjSGN->setNavigationDetailOverride(true);
+        thisObjSGN->getComponent<NavigationComponent>()->setNavigationDetailOverride(true);
     }
     return true;
 }
@@ -299,8 +299,8 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
             terrainTemp->setTransform(nullptr);
             terrainTemp->setActive(_terrainInfoArray[i]->getActive());
             terrainTemp->setUsageContext(SceneGraphNode::NODE_STATIC);
-            terrainTemp->setNavigationContext(SceneGraphNode::NODE_OBSTACLE);
-            terrainTemp->setPhysicsGroup(_terrainInfoArray[i]->getCreatePXActor() ? SceneGraphNode::NODE_COLLIDE_NO_PUSH : SceneGraphNode::NODE_COLLIDE_IGNORE);
+            terrainTemp->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
+            terrainTemp->getComponent<PhysicsComponent>()->setPhysicsGroup(_terrainInfoArray[i]->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH : PhysicsComponent::NODE_COLLIDE_IGNORE);
             temp->initializeVegetation(_terrainInfoArray[i],terrainTemp);
         }
     }
@@ -396,6 +396,7 @@ void Scene::clearLights(){
 }
 
 void Scene::updateSceneState(const U64 deltaTime){
+    updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, _sceneState);
 }
 

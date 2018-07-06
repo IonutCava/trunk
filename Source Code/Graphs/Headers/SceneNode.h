@@ -60,9 +60,8 @@ public:
     SceneNode(const std::string& name, const SceneNodeType& type);
     virtual ~SceneNode();
 
-    /*Rendering/Processing*/
-    virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
-
+    /// Perform any pre-draw operations (this is after sort and transform updates)
+    virtual void onDraw(const RenderStage& currentStage);
     virtual	bool getDrawState() const {return _renderState.getDrawState();}
     /// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
     virtual	bool getDrawState(const RenderStage& currentStage)  const {return _renderState.getDrawState(currentStage); }
@@ -76,28 +75,12 @@ public:
     /// A custom shader is used if we either don't have a material or we need to render in a special way.
     /// Either way, we are not using the fixed pipeline so a shader is always needed for rendering
     inline void  setCustomShader(ShaderProgram* const shader) {_customShader = shader;}
-    /* Normal material */
-    virtual	void prepareMaterial(SceneGraphNode* const sgn);
-    virtual	void releaseMaterial();
-
-    /* Depth map material */
-    virtual	void prepareDepthMaterial(SceneGraphNode* const sgn);
-    virtual	void releaseDepthMaterial();
 
     /// Every SceneNode computes a bounding box in it's own way.
     virtual	bool computeBoundingBox(SceneGraphNode* const sgn);
     /// Special BB transforms may be required at a certain frame
     virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
-    /// Perform any pre-draw operations (this is after sort and transform updates)
-    virtual void onDraw(const RenderStage& currentStage);
-    /// Perform any post=draw operations (this is after releasing object and shadow states)
-    virtual void postDraw(const RenderStage& currentStage) {/*Nothing yet*/}
-    /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
-    virtual void preFrameDrawEnd(SceneGraphNode* const sgn);
     virtual void drawBoundingBox(SceneGraphNode* const sgn);
-    virtual void postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
-    /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
     inline       void           setType(const SceneNodeType& type)        {_type = type;}
     inline const SceneNodeType& getType()					        const {return _type;}
@@ -110,11 +93,32 @@ public:
     inline U8   getCurrentLOD() const {return (_lodLevel < (_LODcount-1) ? _lodLevel : (_LODcount-1));}
 
 protected:
+    friend class RenderBin;
+    friend class RenderPass;
     friend class SceneGraphNode;
     inline I8   getReferenceCount() const {return _sgnReferenceCount;}
     inline void incReferenceCount()       {_sgnReferenceCount++;}
     inline void decReferenceCount()       {_sgnReferenceCount--;}
-    virtual void updateAnimations(SceneGraphNode* const sgn) {}
+
+    /// Perform any post-draw operations (this is after releasing object and shadow states)
+    virtual void postDraw(const RenderStage& currentStage) {/*Nothing yet*/ }
+    /// Called from SceneGraph "sceneUpdate"
+    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+
+    /*Rendering/Processing*/
+    virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
+
+    /* Normal material */
+    virtual	void prepareMaterial(SceneGraphNode* const sgn);
+    virtual	void releaseMaterial();
+
+    /* Depth map material */
+    virtual	void prepareDepthMaterial(SceneGraphNode* const sgn);
+    virtual	void releaseDepthMaterial();
+
+    /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
+    virtual void preFrameDrawEnd(SceneGraphNode* const sgn);
+    virtual void postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
 
 protected:
     ShaderProgram*        _customShader;

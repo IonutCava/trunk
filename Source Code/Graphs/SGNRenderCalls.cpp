@@ -91,13 +91,17 @@ void SceneGraphNode::setSelected(bool state) {
 
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     FOR_EACH(NodeChildren::value_type& it, _children){
+        assert(it.second);
         it.second->sceneUpdate(deltaTime, sceneState);
     }
     _elapsedTime += deltaTime;
-
-    updateAnimations();
+    
+    FOR_EACH(NodeComponents::value_type& it, _components){
+        if(it.second)
+            it.second->update(deltaTime);
+    }
 
     if(_transform)    _transform->update(deltaTime);
-    if(_node)         _node->sceneUpdate(deltaTime, this, sceneState);
+    if (_node)        _node->sceneUpdate(deltaTime, this, sceneState);
     if(_shouldDelete) GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
 }

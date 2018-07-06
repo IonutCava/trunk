@@ -21,10 +21,10 @@ SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
 {
     U32 i = 0, j = 0;
     for(; i <  Material::TEXTURE_UNIT0; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%ud", Material::TEXTURE_UNIT0 + i);
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
 
     for(i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%ud", j++);
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
 }
 
 SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resource(name),
@@ -39,10 +39,10 @@ SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resour
 {
     U32 i = 0, j = 0;
     for(; i <  Material::TEXTURE_UNIT0; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%ud", Material::TEXTURE_UNIT0 + i);
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
 
     for(i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%ud", j++);
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
 }
 
 SceneNode::~SceneNode() {
@@ -73,8 +73,8 @@ void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
     if(sgn->getBoundingBox().getVisibility() || GET_ACTIVE_SCENE()->renderState().drawBBox()){
         drawBoundingBox(sgn);
     }
-    if (sgn->getAnimationComponent()){
-        sgn->getAnimationComponent()->renderSkeleton(sgn->getElapsedTime());
+    if (sgn->getComponent<AnimationComponent>()){
+        sgn->getComponent<AnimationComponent>()->renderSkeleton();
     }
 }
 
@@ -204,9 +204,9 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     s->Uniform("windDirection",vec2<F32>(activeScene->state().getWindDirX(),activeScene->state().getWindDirZ()));
     s->Uniform("windSpeed", activeScene->state().getWindSpeed());
 
-    if (sgn->getAnimationComponent()){
+    if (sgn->getComponent<AnimationComponent>()){
         s->Uniform("hasAnimations", true);
-        s->Uniform("boneTransforms", sgn->getAnimationComponent()->animationTransforms());
+        s->Uniform("boneTransforms", sgn->getComponent<AnimationComponent>()->animationTransforms());
     }else{
         s->Uniform("hasAnimations", false);
     }
@@ -254,9 +254,9 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
         };
     }
 
-    if (sgn->getAnimationComponent()){
+    if (sgn->getComponent<AnimationComponent>()){
         s->Uniform("hasAnimations", true);
-        s->Uniform("boneTransforms", sgn->getAnimationComponent()->animationTransforms());
+        s->Uniform("boneTransforms", sgn->getComponent<AnimationComponent>()->animationTransforms());
     }else{
         s->Uniform("hasAnimations", false);
     }

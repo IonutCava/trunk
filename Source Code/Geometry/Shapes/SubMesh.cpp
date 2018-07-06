@@ -30,12 +30,3 @@ void SubMesh::postLoad(SceneGraphNode* const sgn){
 	getGeometryVBO()->Create();
 	Object3D::postLoad(sgn);
 }
-
-void SubMesh::onDraw(const RenderStage& currentStage){
-	Object3D::onDraw(currentStage);
-}
-
-/// Called from SceneGraph "sceneUpdate"
-void SubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-	Object3D::sceneUpdate(deltaTime, sgn,sceneState);
-}

@@ -70,14 +70,15 @@ public:
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
     void render(SceneGraphNode* const sgn);
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
+
+protected:
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
 private:
     bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
     bool generateGrass(U32 index, U32 size);     ///< index = current grass type (billboard, vbo etc)
                                                  ///< size = the available vertex count
-
 private:
     //variables
     bool _render; ///< Toggle vegetation rendering On/Off

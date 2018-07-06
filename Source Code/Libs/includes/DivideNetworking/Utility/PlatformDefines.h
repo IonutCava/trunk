@@ -61,12 +61,13 @@
 #endif
 
 namespace DivideNetworking{
-template<class T>
-inline std::string toString(const T& data){
-	std::stringstream s;
-	s << data;
-	return s.str();
-}
+    template<class T>
+    inline std::string toString(const T& data){
+        static std::stringstream _tempStream;
+        _tempStream.str(std::string());
+        _tempStream << data;
+        return _tempStream.str();
+    }
 };
 
 #if defined(_MSC_VER)

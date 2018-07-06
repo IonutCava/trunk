@@ -68,20 +68,20 @@ void WarScene::processTasks(const U64 deltaTime){
     }
     if(_taskTimers[1] >= BobTimer){
         if(_bobNode)
-            _bobNode->getAnimationComponent()->playNextAnimation();
+            _bobNode->getComponent<AnimationComponent>()->playNextAnimation();
 
         _taskTimers[1] = 0.0;
     }
     if(_taskTimers[2] >= DwarfTimer){
         SceneGraphNode* dwarf = _sceneGraph->findNode("Soldier1");
          if(dwarf)
-             dwarf->getAnimationComponent()->playNextAnimation();
+             dwarf->getComponent<AnimationComponent>()->playNextAnimation();
         _taskTimers[2] = 0.0;
     }
     if(_taskTimers[3] >= BullTimer){
         SceneGraphNode* bull = _sceneGraph->findNode("Soldier2");
          if(bull)
-             bull->getAnimationComponent()->playNextAnimation();
+             bull->getComponent<AnimationComponent>()->playNextAnimation();
         _taskTimers[3] = 0.0;
     }
     Scene::processTasks(deltaTime);
@@ -132,7 +132,7 @@ void navMeshCreationCompleteCallback(Navigation::NavigationMesh* navMesh){
     AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 }
 
-void WarScene::updateSceneState(const U64 deltaTime){
+void WarScene::updateSceneStateInternal(const U64 deltaTime){
     if(!_sceneReady) return;
 
     static U64 totalTime = 0;
@@ -155,10 +155,9 @@ void WarScene::updateSceneState(const U64 deltaTime){
         navMeshStarted = true;
     }
 
-    Scene::updateSceneState(deltaTime);
     /*if(_lampLightNode && _bobNodeBody){
         static mat4<F32> position = _lampLightNode->getTransform()->getMatrix(); 
-        const mat4<F32>& fingerPosition = _bobNodeBody->getBoneTransform("fingerstip.R");
+        const mat4<F32>& fingerPosition = _bobNodeBody->getAnimationComponent()->getBoneTransform("fingerstip.R");
         mat4<F32> finalTransform(fingerPosition * position);
         _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());
     }*/
@@ -252,9 +251,9 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
         assert(currentNode);
         currentNode->setSelectable(true);
         currentNode->setUsageContext(baseNode->getUsageContext());
-        currentNode->setPhysicsGroup(baseNode->getPhysicsGroup());
-        currentNode->setNavigationContext(baseNode->getNavigationContext());      
-        currentNode->setNavigationDetailOverride(baseNode->getNavMeshDetailOverride());
+        currentNode->getComponent<PhysicsComponent>()->setPhysicsGroup(baseNode->getComponent<PhysicsComponent>()->getPhysicsGroup());
+        currentNode->getComponent<NavigationComponent>()->setNavigationContext(baseNode->getComponent<NavigationComponent>()->getNavigationContext());
+        currentNode->getComponent<NavigationComponent>()->setNavigationDetailOverride(baseNode->getComponent<NavigationComponent>()->getNavMeshDetailOverride());
         
         currentNode->getTransform()->scale(baseNode->getTransform()->getScale());
         currentNode->getTransform()->setPosition(vec3<F32>(currentPos.first, 0, currentPos.second));

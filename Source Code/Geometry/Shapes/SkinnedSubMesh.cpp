@@ -6,12 +6,11 @@
 #include "Managers/Headers/SceneManager.h"
 
 #include "Geometry/Animations/Headers/AnimationController.h"
-#include "Geometry/Animations/Headers/AnimationComponent.h"
+#include "Graphs/Components/Headers/AnimationComponent.h"
 
 SkinnedSubMesh::SkinnedSubMesh(const std::string& name) : SubMesh(name, Object3D::OBJECT_FLAG_SKINNED),
                                                           _softwareSkinning(false)
 {
-    // Delete old animator if any
    _animator =  New SceneAnimator();
 }
 
@@ -26,14 +25,23 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
     // If the mesh has animation data, use dynamic VBO's if we use software skinning
     _softwareSkinning = ParamHandler::getInstance().getParam<bool>("mesh.useSoftwareSkinning", false);
     getGeometryVBO()->Create(!_softwareSkinning);
-    sgn->setAnimationComponent(_animator);
+    sgn->setComponent(SGNComponent::SGN_COMP_ANIMATION, New AnimationComponent(_animator, sgn));
     Object3D::postLoad(sgn);
+}
+
+/// Called from SceneGraph "sceneUpdate"
+void SkinnedSubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+    updateAnimations(sgn);
+    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 // update possible animations
 void SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
+    AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
+    assert(animComp);
+
     //Software skinning
-    if (!_softwareSkinning || !sgn->getAnimationComponent() || !sgn->getAnimationComponent()->playAnimations()) return;
+    if (!_softwareSkinning || !animComp->playAnimations()) return;
 
     if(_origVerts.empty()){
         for(U32 i = 0; i < _geometry->getPosition().size(); i++){
@@ -44,7 +52,7 @@ void SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
 
     const vectorImpl<vec4<U8>  >& indices = _geometry->getBoneIndices();
     const vectorImpl<vec4<F32> >& weights = _geometry->getBoneWeights();
-    const vectorImpl<mat4<F32> >& trans   = sgn->getAnimationComponent()->animationTransforms();
+    const vectorImpl<mat4<F32> >& trans   = animComp->animationTransforms();
 
     vec4<F32> pos1, pos2, pos3, pos4, finalPos;
     vec4<F32> norm1, norm2, norm3, norm4, finalNorm;
@@ -76,13 +84,11 @@ void SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
 }
 
 void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
+    AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
+    if (!animComp || !animComp->playAnimations()) return;
 
-    if (!sgn->getAnimationComponent() || !sgn->getAnimationComponent()->playAnimations()) return;
-
-    const AnimationComponent* animComponent = sgn->getAnimationComponent();
-
-    U32 currentAnimationID = animComponent->animationIndex();
-    U32 currentFrameIndex = animComponent->frameIndex();
+    U32 currentAnimationID = animComp->animationIndex();
+    U32 currentFrameIndex  = animComp->frameIndex();
 
     if(_boundingBoxes.find(currentAnimationID) == _boundingBoxes.end()){
         _bbsPerFrame.clear();
@@ -94,10 +100,10 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
         vec4<F32> pos1,pos2,pos3,pos4;
         BoundingBox bb;
 
-        for (U16 i = 0; i < animComponent->frameCount(); i++){
+        for (U16 i = 0; i < animComp->frameCount(); i++){
             bb.reset();
 
-            const vectorImpl<mat4<F32> >& transforms = animComponent->transformsByIndex(i);
+            const vectorImpl<mat4<F32> >& transforms = animComp->transformsByIndex(i);
 
             /// loop through all vertex weights of all bones
             for( size_t j = 0; j < verts.size(); ++j) {

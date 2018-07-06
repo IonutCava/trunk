@@ -136,13 +136,9 @@ public:
 
     ///SceneNode concrete implementations
     bool unload();
-    void postLoad(SceneGraphNode* const sgn);
     bool computeBoundingBox(SceneGraphNode* const sgn);
     bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     void updateBBatCurrentFrame(SceneGraphNode* const sgn);
-    ///When the SceneGraph calls the light's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn);
-
     virtual void setCameraToLightView(const vec3<F32>& eyePos) = 0;
             void setCameraToSceneView();
 
@@ -161,6 +157,9 @@ public:
     virtual void generateShadowMaps(const SceneRenderState& sceneRenderState);
 
 protected:
+    ///When the SceneGraph calls the light's render function, we draw the impostor if needed
+    virtual void render(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode* const sgn);
     ///Set light type
     ///@param type Directional/Spot/Omni (see LightType enum)
     inline void  setLightType(const LightType& type) {_type = type;}

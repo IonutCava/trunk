@@ -56,16 +56,19 @@ public:
     inline  ObjectType                getType()         const {return _geometryType;}
     inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
     inline  RenderInstance*     const renderInstance()  const {return _renderInstance;}
-    /// Called from SceneGraph "sceneUpdate"
-    virtual void  sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
-        SceneNode::sceneUpdate(deltaTime,sgn,sceneState);
-    }
+
     virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
-    virtual	void  render(SceneGraphNode* const sgn);
     virtual void  onDraw(const RenderStage& currentStage);
     //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
 
 protected:
+    virtual	void  render(SceneGraphNode* const sgn);
+
+    /// Called from SceneGraph "sceneUpdate"
+    virtual void  sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+        SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+    }
+
     virtual void computeNormals();
     virtual void computeTangents();
 

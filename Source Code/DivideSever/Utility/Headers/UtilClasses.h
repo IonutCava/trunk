@@ -44,7 +44,7 @@ namespace Util
 	template<class T>
 	string toString(T data)
 	{
-        _tempStream.clear();
+        _tempStream.str(std::string());
 		s << data;
 		return s.str();
 	}

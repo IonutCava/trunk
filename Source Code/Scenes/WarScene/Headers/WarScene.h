@@ -55,7 +55,7 @@ public:
     bool deinitializeAI(bool continueOnErrors);
     void processInput(const U64 deltaTime);
     void processTasks(const U64 deltaTime);
-    void updateSceneState(const U64 deltaTime);
+    void updateSceneStateInternal(const U64 deltaTime);
 
     bool onKeyDown(const OIS::KeyEvent& key);
     bool onKeyUp(const OIS::KeyEvent& key);

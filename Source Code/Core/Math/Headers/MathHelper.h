@@ -170,21 +170,21 @@ namespace Util {
         return permutationContainer;
     }
 
+    static std::stringstream _ssBuffer;
+
     inline bool isNumber(const std::string& s){
-        std::stringstream ss;
-        ss << s;
+        _ssBuffer.str(std::string());
+        _ssBuffer << s;
         F32 number;
-        ss >> number;
-        if(ss.good()) return false;
+        _ssBuffer >> number;
+        if (_ssBuffer.good()) return false;
         else if(number == 0 && s[0] != 0) return false;
         return true;
     }
 
-    static std::stringstream _ssBuffer;
-
     template<class T>
     inline std::string toString(const T& data){
-        _ssBuffer.clear();
+        _ssBuffer.str(std::string());
         _ssBuffer << data;
         return _ssBuffer.str();
     }

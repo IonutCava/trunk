@@ -27,7 +27,10 @@
 
 #include "SceneNode.h"
 #include <boost/atomic.hpp>
-#include "Geometry/Animations/Headers/AnimationComponent.h"
+#include "Graphs/Components/Headers/SGNComponent.h"
+#include "Graphs/Components/Headers/PhysicsComponent.h"
+#include "Graphs/Components/Headers/AnimationComponent.h"
+#include "Graphs/Components/Headers/NavigationComponent.h"
 
 class Transform;
 class SceneGraph;
@@ -41,13 +44,16 @@ public:
         setState(RES_LOADED);
     }
 
-    void render(SceneGraphNode* const sgn)             {return;}
-    void postLoad(SceneGraphNode* const sgn)           {return;}
     void onDraw(const RenderStage& currentStage)       {return;}
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
+
+protected:
+    void render(SceneGraphNode* const sgn)             { return; }
+    void postLoad(SceneGraphNode* const sgn)           { return; }
 };
+
 // Add as many SceneTransform nodes are needed as parent nodes for any scenenode to create complex transforms in the scene
 class SceneTransform : public SceneNode {
 public:
@@ -68,6 +74,7 @@ public:
 class SceneGraphNode : public GUIDWrapper, private boost::noncopyable{
 public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
+    typedef Unordered_map<SGNComponent::ComponentType, SGNComponent* > NodeComponents;
 
     ///Usage context affects lighting, navigation, physics, etc
     enum UsageContext {
@@ -75,18 +82,7 @@ public:
         NODE_STATIC
     };
 
-    enum NavigationContext {
-        NODE_OBSTACLE = 0,
-        NODE_IGNORE
-    };
-
-    enum PhysicsGroup {
-        NODE_COLLIDE_IGNORE = 0,
-        NODE_COLLIDE_NO_PUSH,
-        NODE_COLLIDE
-    };
-
-    SceneGraphNode(SceneNode* const node);
+    SceneGraphNode(SceneGraph* const sg, SceneNode* const node);
     ~SceneGraphNode();
 
     bool unload();
@@ -175,36 +171,28 @@ public:
     inline U32  getChildQueue() const {return _childQueue;}
     inline void incChildQueue()       {_childQueue++;}
     inline void decChildQueue()       {_childQueue--;}
-    
-    inline const PhysicsGroup&      getPhysicsGroup()          const {return _physicsCollisionGroup;}
+
     inline const UsageContext&      getUsageContext()          const {return _usageContext;}
-    inline const NavigationContext& getNavigationContext()     const {return _navigationContext;}
-    inline       bool               getNavMeshDetailOverride() const {return _overrideNavMeshDetail;}
-
-    inline void  setPhysicsGroup(const PhysicsGroup& newGroup)             {_physicsCollisionGroup = newGroup;}
     inline void  setUsageContext(const UsageContext& newContext)           {_usageContext = newContext;}
-           void  setNavigationContext(const NavigationContext& newContext);
-           void  setNavigationDetailOverride(const bool detailOverride);
 
-    void cookCollisionMesh(const std::string& sceneName);
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
 
     inline U64 getElapsedTime() const {return _elapsedTime;}
 
-    /// Animation calls
-    void updateAnimations();
-    void setAnimationComponent(SceneAnimator* animator);
+    void setComponent(SGNComponent::ComponentType type, SGNComponent* component);
 
-    inline AnimationComponent* const getAnimationComponent() const { return _animationComponent; }
-    const mat4<F32>& getBoneTransform(const std::string& name);
+    template<class T>
+    inline T* getComponent() { assert(false && "INVALID COMPONENT"); return nullptr; }
+    template<>
+    inline AnimationComponent* getComponent() { return dynamic_cast<AnimationComponent*>(_components[SGNComponent::SGN_COMP_ANIMATION]); }
+    template<>
+    inline NavigationComponent* getComponent() { return dynamic_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); }
+    template<>
+    inline PhysicsComponent* getComponent() { return dynamic_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
 
 private:
     inline void setName(const std::string& name){_name = name;}
-
-protected:
-    friend class SceneGraph;
-    void setSceneGraph(SceneGraph* const sg) {_sceneGraph = sg;}
 
 private:
     SceneNode* _node;
@@ -241,12 +229,8 @@ private:
     std::string _name;
     mutable SharedLock _queryLock;
 
-    PhysicsGroup _physicsCollisionGroup;
     UsageContext _usageContext;
-    NavigationContext _navigationContext;
-    bool              _overrideNavMeshDetail;
-
-    AnimationComponent* _animationComponent;
+    NodeComponents _components;
 };
 
 #endif

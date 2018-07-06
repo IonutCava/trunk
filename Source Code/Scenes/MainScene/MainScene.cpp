@@ -165,7 +165,7 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GU
     _waterGraphNode->useDefaultTransform(false);
     _waterGraphNode->setTransform(nullptr);
     _waterGraphNode->setUsageContext(SceneGraphNode::NODE_STATIC);
-    _waterGraphNode->setNavigationContext(SceneGraphNode::NODE_IGNORE);
+    _waterGraphNode->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_IGNORE);
     ///General rendering callback
     renderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, false));
     ///Render the scene for water reflection FBO generation

@@ -66,11 +66,6 @@ public:
 	inline void setId(U32 id) {_id = id;}
 	virtual void postLoad(SceneGraphNode* const sgn);
 	inline Mesh* getParentMesh() {return _parentMesh;}
-
-	virtual void onDraw(const RenderStage& currentStage);
-	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-
 	inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }
 
 protected:
