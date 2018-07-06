@@ -5,12 +5,13 @@
 #include "Headers/GUIText.h"
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
+#include "Core/Headers/Application.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Hardware/Video/RenderStateBlock.h"
 
-void GUI::onResize(F32 newWidth, F32 newHeight){
+void GUI::onResize(U16 newWidth, U16 newHeight){
 
-	vec2<F32> difDimensions = Application::getInstance().getWindowDimensions() - vec2<F32>(newWidth,newHeight);
+	vec2<U16> difDimensions = Application::getInstance().getResolution() - vec2<U16>(newWidth,newHeight);
 	for_each(guiMap::value_type& guiStackIterator,_guiStack){
 		guiStackIterator.second->onResize(difDimensions);
 	}
@@ -154,7 +155,7 @@ void GUI::clickReleaseCheck() {
 	
 }
 
-void GUI::addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback){
+void GUI::addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<U16>& dimensions,const vec3<F32>& color,ButtonCallback callback){
 
 	_guiStack[id] = New GUIButton(id,text,position,dimensions,color,callback);
 }

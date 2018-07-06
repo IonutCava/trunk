@@ -40,6 +40,7 @@ public:
 	void Uniform(const std::string& ext, I32 value);
 	void Uniform(const std::string& ext, F32 value);
 	void Uniform(const std::string& ext, const vec2<F32>& value);
+	void Uniform(const std::string& ext, const vec2<I32>& value);
 	void Uniform(const std::string& ext, const vec3<F32>& value);
 	void Uniform(const std::string& ext, const vec4<F32>& value);
 	void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false);

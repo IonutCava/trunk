@@ -18,8 +18,14 @@
 #ifndef _GUI_CONSOLE_H_
 #define _GUI_CONSOLE_H_
 #include "GUIElement.h"
-#include "Hardware/Input/InputManager.h"
+
 typedef void (*console_function)(const std::vector<std::string> &); 
+///Input
+namespace OIS {
+	class KeyEvent;
+	class MouseEvent;
+	enum MouseButtonID;
+}
 
 enum console_item_type_t
 {

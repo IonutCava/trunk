@@ -1219,22 +1219,26 @@
 					RelativePath="..\..\Source Code\Hardware\Input\EventHandler.cpp"
 					>
 				</File>
-				<File
-					RelativePath="..\..\Source Code\Hardware\Input\EventHandler.h"
+				<Filter
+					Name="Headers"
 					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Hardware\Input\InputManager.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Hardware\Input\InputVariables.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\Hardware\Input\JoystickManager.h"
-					>
-				</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Input\Headers\EventHandler.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Input\Headers\InputInterface.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Input\Headers\InputVariables.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="Video"

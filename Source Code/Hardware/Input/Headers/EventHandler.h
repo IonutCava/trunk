@@ -22,24 +22,24 @@
 #include "Hardware/Platform/Mutex.h"
 #include "Hardware/Platform/PlatformDefines.h"
 
-class InputManagerInterface;
-class JoystickManager;
+class InputInterface;
+class JoystickInterface;
 class EffectManager;
-class Scene;
-class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,public OIS::MouseListener
-{
+class Kernel;
+
+class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,public OIS::MouseListener {
   protected:
 
-    InputManagerInterface*     _pApplication;
-    JoystickManager*		   _pJoystickMgr;
-	EffectManager*			   _pEffectMgr;
-	Scene*					   _activeScene;
-	Lock                       _mutex;
+    InputInterface*    _pApplication;
+    JoystickInterface* _pJoystickInterface;
+	EffectManager*	   _pEffectMgr;
+	Kernel*			   _kernel;
 
   public:
 
-    EventHandler(InputManagerInterface* pApp);
-    void initialize(JoystickManager* pJoystickMgr, EffectManager* pEffectMgr);
+    EventHandler(InputInterface* pApp, Kernel* const kernel);
+    void initialize(JoystickInterface* pJoystickInterface, EffectManager* pEffectMgr);
+
 	///Keyboard
 	bool keyPressed( const OIS::KeyEvent &arg );
 	bool keyReleased( const OIS::KeyEvent &arg );
@@ -52,7 +52,6 @@ class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,publi
 	bool mouseMoved( const OIS::MouseEvent &arg );
 	bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 	bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-
 };
 
 #endif

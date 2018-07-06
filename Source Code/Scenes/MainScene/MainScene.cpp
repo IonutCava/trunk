@@ -1,7 +1,6 @@
 #include "Headers/MainScene.h"
 
 #include "GUI/Headers/GUI.h"
-#include "Core/Headers/Application.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Camera/Headers/Camera.h"
@@ -60,7 +59,6 @@ void MainScene::renderEnvironment(bool waterReflection){
 }
 
 void MainScene::processInput(){
-	Scene::processInput();
 
 	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor()/5);
 	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor()/5);

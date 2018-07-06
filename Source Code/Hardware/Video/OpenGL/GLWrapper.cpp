@@ -92,14 +92,13 @@ void GLCheckError(const std::string& File, U32 Line,char* operation) {
 	}
 }
 
-void resizeWindowCallback(I32 w, I32 h){
-	GUI::getInstance().onResize(w,h);
-	GFX_DEVICE.resizeWindow(w,h);
+void changeResolutionCallback(I32 w, I32 h){
+	GFX_DEVICE.changeResolution(w,h);
 }
 
 //Let's try and create a  valid OpenGL context.
 //Due to university requirements, backwards compatibility with OpenGL 2.0 had to be added
-I8 GL_API::initHardware(const vec2<F32>& windowDimensions){
+I8 GL_API::initHardware(const vec2<U16>& resolution){
 	ParamHandler& par = ParamHandler::getInstance();
 	I32   argc   = 1; 
 	//The Application's title can be set in the "config.xml" file, so no explanation here needed
@@ -116,8 +115,8 @@ I8 GL_API::initHardware(const vec2<F32>& windowDimensions){
 	//Standard stuff: RGBA window mode, Double buffering (triple from drivers, no problem)
 	//Also, the depth map is a must!
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE/* |  GLUT_MULTISAMPLE*/);
-	//No comments needed. Window dimensions are specified in the external XML files
-	glutInitWindowSize(windowDimensions.width, windowDimensions.height);
+	//No comments needed. Resolution is specified in the external XML files
+	glutInitWindowSize(resolution.width, resolution.height);
 	//Try to offset the window position just slightly. Found it useful
 	glutInitWindowPosition(10,50);
 	//For a posibile multi-window support (as seen the the OBJ PhysX Simulator video
@@ -215,7 +214,7 @@ I8 GL_API::initHardware(const vec2<F32>& windowDimensions){
 	//If we end the render loop, continue processing the engine code found after (glutMainLoop)
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	//Our Resize/Draw/Idle callback setup
-	glutReshapeFunc(resizeWindowCallback);
+	glutReshapeFunc(changeResolutionCallback);
 	glutDisplayFunc(Kernel::MainLoopStatic);
 	glutIdleFunc(Kernel::Idle);
 	//That's it. Everything should be ready for draw calls
@@ -270,7 +269,7 @@ void GL_API::initDevice(U32 targetFPS){
 	exitRenderLoop(false);
 }
 
-void GL_API::resizeWindow(U16 w, U16 h){
+void GL_API::changeResolution(U16 w, U16 h){
 	ParamHandler& par = ParamHandler::getInstance();
 	F32 zNear  = par.getParam<F32>("zNear");
 	F32 zFar   = par.getParam<F32>("zFar");
@@ -288,7 +287,8 @@ void GL_API::resizeWindow(U16 w, U16 h){
 	gluPerspective(fov,ratio,zNear,zFar);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
+	_cachedResolution.width = w;
+	_cachedResolution.height = h;
 }
 
 
@@ -715,12 +715,10 @@ void GL_API::toggle2D(bool state){
 	if(state){ //2D
 		SET_STATE_BLOCK(_state2DRendering);
 
-		F32 width = Application::getInstance().getWindowDimensions().width;
-		F32 height = Application::getInstance().getWindowDimensions().height;
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
-		glOrtho(0,width,height,0,-1,1);
+		glOrtho(0,_cachedResolution.width,_cachedResolution.height,0,-1,1);
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix(); //2
 		glLoadIdentity();

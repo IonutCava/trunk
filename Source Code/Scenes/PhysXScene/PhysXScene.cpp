@@ -36,7 +36,6 @@ void PhysXScene::processEvents(F32 time){
 
 
 void PhysXScene::processInput(){
-	Scene::processInput();
 
 	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
 	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());

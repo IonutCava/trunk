@@ -14,8 +14,8 @@
 	<groundPos>-100</groundPos>
 	<!-- PhysX simulation speed multiplayer. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
 	<simSpeed>1</simSpeed>
-	<windowWidth>1024</windowWidth>
-	<windowHeight>768</windowHeight>
+	<resolutionWidth>1024</resolutionWidth>
+	<resolutionHeight>768</resolutionHeight>
 	<zNear>0.175</zNear>
 	<zFar>1200.0</zFar>
 	<verticalFOV>60</verticalFOV>
@@ -35,6 +35,10 @@
 	<enableSSAO>false</enableSSAO>
 </rendering>
     
+<mesh>
+	<playAnimations>true</playAnimations>
+</mesh>
+
 <title>DIVIDE Framework</title>
 <defaultTextureLocation>textures</defaultTextureLocation>
 <defaultShadersLocation>shaders</defaultShadersLocation>

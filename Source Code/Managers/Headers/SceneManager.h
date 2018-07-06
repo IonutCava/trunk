@@ -24,6 +24,7 @@
 DEFINE_SINGLETON(SceneManager)
 
 public:
+
 	Scene* loadScene(const std::string& name);
 	void   registerScene(Scene* scenePointer);
 
@@ -46,6 +47,7 @@ public:
 	inline void updateCamera(Camera* const camera)  { _scene->updateCamera(camera); }
 	inline void updateSceneState(D32 sceneTime)     { _scene->updateSceneState(sceneTime); }
 	inline void preRender()                         { _scene->preRender(); }
+	///Gather input events and process them in the current scene
 	inline void processInput()                      { _scene->processInput(); }
 	inline void processEvents(F32 time)             { _scene->processEvents(time); }
 	/*Base Scene Operations*/
@@ -64,6 +66,7 @@ public:
 	void findSelection(const vec3<F32>& camOrigin, U32 x, U32 y);
 	void deleteSelection();
 
+	inline void cacheResolution(const vec2<U16>& newResolution) {_cachedResolution = newResolution; _scene->cacheResolution(newResolution);}
 private:
 
 	SceneManager();
@@ -72,6 +75,8 @@ private:
     Object3D* _currentSelection;
 	typedef unordered_map<std::string, Scene*> SceneMap;
 	SceneMap _sceneMap;
+   ///cached resolution
+   vec2<U16> _cachedResolution;
 
 END_SINGLETON
 

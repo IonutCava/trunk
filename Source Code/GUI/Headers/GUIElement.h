@@ -73,7 +73,7 @@ public:
 
 	inline void    addChildElement(GUIElement* child)    {}
 
-	virtual void onResize(const vec2<F32>& newSize){_position -= newSize;}
+	virtual void onResize(const vec2<U16>& newSize){_position.x -= newSize.x;_position.y -= newSize.y;}
 
 	virtual void onMouseMove(const GUIEvent &event){};
 	virtual void onMouseUp(const GUIEvent &event){};

@@ -68,7 +68,6 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
 }
 
 void WarScene::processInput(){
-	Scene::processInput();
 
 	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
 	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
@@ -164,10 +163,10 @@ bool WarScene::deinitializeAI(bool continueOnErrors){
 
 bool WarScene::loadResources(bool continueOnErrors){
 	
-	GUI::getInstance().addButton("Simulate", "Simulate", vec2<F32>(Application::getInstance().getWindowDimensions().width-220 ,
-															 Application::getInstance().getWindowDimensions().height/1.1f),
-													    	 vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
-															 boost::bind(&WarScene::startSimulation,this));
+	GUI::getInstance().addButton("Simulate", "Simulate", vec2<F32>(_cachedResolution.width-220 ,
+																   _cachedResolution.height/1.1f),
+													     vec2<U16>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+														 boost::bind(&WarScene::startSimulation,this));
 
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec3<F32>(60,60,0),          //Position

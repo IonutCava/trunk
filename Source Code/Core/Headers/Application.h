@@ -29,10 +29,10 @@ public:
 	void Deinitialize();
 	void run();
 
-	///Application window dimensions
-	inline const vec2<F32>& getWindowDimensions() const {return _dimensions;}
-	inline void setWindowWidth(U16 w){_dimensions.x = w;}
-	inline void setWindowHeight(U16 h){_dimensions.y = h;}
+	///Application resolution (either fullscreen resolution or window dimensions)
+	inline const vec2<U16>& getResolution() const {return _resolution;}
+	inline void setResolutionWidth(U16 w){_resolution.x = w;}
+	inline void setResolutionHeight(U16 h){_resolution.y = h;}
 
 	///Application window ID
 	inline I8 const&  getMainWindowId() {return _mainWindowId;}
@@ -47,7 +47,7 @@ private:
 
 private:
 	I8 _mainWindowId;
-	vec2<F32> _dimensions;
+	vec2<U16> _resolution;
 	Kernel* _kernel;
 	///buffer to register all of the memory allocations recorded via "New"
 	std::ofstream memLogBuffer;

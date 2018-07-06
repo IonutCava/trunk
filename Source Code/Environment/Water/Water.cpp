@@ -1,11 +1,10 @@
 #include "Headers/Water.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/RenderStateBlock.h"
 
-WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<I32>(2048,2048)), 
+WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(2048,2048)), 
 						   _plane(NULL),_texture(NULL), _shader(NULL),_planeTransform(NULL),
 						   _node(NULL),_planeSGN(NULL),_waterLevel(0){}
 
@@ -49,8 +48,6 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
 	PRINT_FN("Water plane depth level: %f", bb.getMin().y);
 	bool state = SceneNode::computeBoundingBox(sgn);
 	_shader->bind();
-		_shader->Uniform("win_width",  (I32)Application::getInstance().getWindowDimensions().width);
-		_shader->Uniform("win_height", (I32)Application::getInstance().getWindowDimensions().height);
 		_shader->Uniform("water_bb_min",bb.getMin());
 		_shader->Uniform("water_bb_max",bb.getMax());
 	_shader->unbind();

@@ -34,11 +34,11 @@ DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
 private:
 	DX_API() : RenderAPIWrapper() {}
 
-	I8   initHardware(const vec2<F32>& windowDimensions);
+	I8   initHardware(const vec2<U16>& resolution);
 	void exitRenderLoop(bool killCommand = false); 
 	void closeRenderingApi();
 	void initDevice(U32 targetFPS);
-	void resizeWindow(U16 w, U16 h) {}
+	void changeResolution(U16 w, U16 h) {}
 	void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false);
 	void idle();
 

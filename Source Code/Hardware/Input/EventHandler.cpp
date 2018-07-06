@@ -1,128 +1,58 @@
-#include "EventHandler.h"
-#include "InputManager.h"
-#include "Managers/Headers/SceneManager.h"
-#include "GUI/Headers/GUIConsole.h"
+#include "Headers/EventHandler.h"
+#include "Headers/InputInterface.h"
+#include "Core/Headers/Kernel.h"
 
-using namespace OIS;
-
-EventHandler::EventHandler(InputManagerInterface* pApp)
-: _pApplication(pApp), _pJoystickMgr(NULL), _pEffectMgr(NULL)
+EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) :
+												   _kernel(kernel),
+												   _pApplication(pApp),
+												   _pJoystickInterface(NULL),
+												   _pEffectMgr(NULL) 
 {
-	_activeScene = GET_ACTIVE_SCENE();
+	assert(kernel != NULL);
 }
 
-void EventHandler::initialize(JoystickManager* pJoystickMgr, EffectManager* pEffectMgr){
+void EventHandler::initialize(JoystickInterface* pJoystickInterface, EffectManager* pEffectMgr){
 
-  _pJoystickMgr = pJoystickMgr;
+  _pJoystickInterface = pJoystickInterface;
   _pEffectMgr = pEffectMgr;
 }
 
-/// Input events are either handled by the current scene or by the console if it's open
-bool EventHandler::keyPressed( const OIS::KeyEvent &arg ) {
-	//boost::mutex::scoped_lock l(_mutex);
-	if(GUIConsole::getInstance().isConsoleOpen()){
-		GUIConsole::getInstance().onKeyDown(arg);
-	}else{
-		_activeScene->onKeyDown(arg);
-	}
-    return true;
-}
-
-bool EventHandler::keyReleased( const OIS::KeyEvent &arg ) {
-	//boost::mutex::scoped_lock l(_mutex);
-	if(GUIConsole::getInstance().isConsoleOpen()){
-		GUIConsole::getInstance().onKeyUp(arg);
-	}else{
-		_activeScene->onKeyUp(arg);
-	}
-	return true;
-}
-
-bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, I8 button ){
-  //boost::mutex::scoped_lock l(_mutex);
-  _activeScene->OnJoystickButtonDown(arg,button);
-  return true;
-}
-
-bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, I8 button ){
-  //boost::mutex::scoped_lock l(_mutex);
-  _activeScene->OnJoystickButtonUp(arg,button);
-  return true;
-}
-
-bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis ){
-   //boost::mutex::scoped_lock l(_mutex);
-  _activeScene->OnJoystickMoveAxis(arg,axis);
-  return true;
-}
-
-bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, I8 pov ){  
-	//boost::mutex::scoped_lock l(_mutex);
-  _activeScene->OnJoystickMovePOV(arg,pov);
-  return true;
-}
-
-bool EventHandler::mouseMoved( const MouseEvent &arg ){
-	//boost::mutex::scoped_lock l(_mutex);
-	const OIS::MouseState& s = arg.state;
-	if(GUIConsole::getInstance().isConsoleOpen()){
-		GUIConsole::getInstance().onMouseMove(arg);
-	}else{
-		_activeScene->onMouseMove(arg);
-	}
-	return true;
-}
-
-bool EventHandler::mousePressed( const MouseEvent &arg, MouseButtonID id ) {
-	//boost::mutex::scoped_lock l(_mutex);
-	const OIS::MouseState& s = arg.state;
-	if(GUIConsole::getInstance().isConsoleOpen()){
-		GUIConsole::getInstance().onMouseClickDown(arg,id);
-	}else{
-		_activeScene->onMouseClickDown(arg,id);
-	}
-	return true;
-}
-
-bool EventHandler::mouseReleased( const MouseEvent &arg, MouseButtonID id ) {
-	//boost::mutex::scoped_lock l(_mutex);
-	const OIS::MouseState& s = arg.state;
-	if(GUIConsole::getInstance().isConsoleOpen()){
-		GUIConsole::getInstance().onMouseClickUp(arg,id);
-	}else{
-		_activeScene->onMouseClickUp(arg,id);
-	}
-	return true;
-}
+/// Input events are either handled by the kernel
+bool EventHandler::keyPressed( const OIS::KeyEvent &arg )                    {return _kernel->onKeyDown(arg); }
+bool EventHandler::keyReleased( const OIS::KeyEvent &arg )                   {return _kernel->onKeyUp(arg); }
+bool EventHandler::buttonPressed( const OIS::JoyStickEvent &arg, I8 button ) {return _kernel->OnJoystickButtonDown(arg,button); }
+bool EventHandler::buttonReleased( const OIS::JoyStickEvent &arg, I8 button ){return _kernel->OnJoystickButtonUp(arg,button); }
+bool EventHandler::axisMoved( const OIS::JoyStickEvent &arg, I8 axis )       {return _kernel->OnJoystickMoveAxis(arg,axis); }
+bool EventHandler::povMoved( const OIS::JoyStickEvent &arg, I8 pov )         {return _kernel->OnJoystickMovePOV(arg,pov); }
+bool EventHandler::mouseMoved( const OIS::MouseEvent &arg )                            {return _kernel->onMouseMove(arg); }
+bool EventHandler::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )   {return _kernel->onMouseClickDown(arg,id); }
+bool EventHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )  {return _kernel->onMouseClickUp(arg,id); }
 
 //////////// Effect variables applier functions /////////////////////////////////////////////
 // These functions apply the given Variables to the given OIS::Effect
 
 // Variable force "Force" + optional "AttackFactor" constant, on a OIS::ConstantEffect
-void forceVariableApplier(MapVariables& mapVars, Effect* pEffect)
+void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect)
 {
   double dForce = mapVars["Force"]->getValue();
   double dAttackFactor = 1.0;
   if (mapVars.find("AttackFactor") != mapVars.end())
 	dAttackFactor = mapVars["AttackFactor"]->getValue();
 
-  ConstantEffect* pConstForce = dynamic_cast<ConstantEffect*>(pEffect->getForceEffect());
+  OIS::ConstantEffect* pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
   pConstForce->level = (I16)dForce;
   pConstForce->envelope.attackLevel = (U16)fabs(dForce*dAttackFactor);
   pConstForce->envelope.fadeLevel = (U16)fabs(dForce); // Fade never reached, in fact.
 }
 
 // Variable "Period" on an OIS::PeriodicEffect
-void periodVariableApplier(MapVariables& mapVars, Effect* pEffect)
+void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect)
 {
   double dPeriod = mapVars["Period"]->getValue();
 
-  PeriodicEffect* pPeriodForce = dynamic_cast<PeriodicEffect*>(pEffect->getForceEffect());
+  OIS::PeriodicEffect* pPeriodForce = dynamic_cast<OIS::PeriodicEffect*>(pEffect->getForceEffect());
   pPeriodForce->period = (U32)dPeriod;
 }
 
 
-LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-	return FALSE;
-}
+LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ){	return FALSE; }

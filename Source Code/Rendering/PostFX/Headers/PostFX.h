@@ -83,7 +83,7 @@ private:
 	bool _enableSSAO;
 
 public:
-	void init();
+	void init(const vec2<U16>& resolution);
 	void idle();
 	void render(Camera* const camera);
 	void reshapeFBO(int newwidth , int newheight);

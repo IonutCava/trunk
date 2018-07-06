@@ -2,7 +2,6 @@
 
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/Camera/Headers/Camera.h"
-#include "Core/Headers/Application.h"
 #include "GUI/Headers/GUI.h"
 
 void CubeScene::render(){
@@ -141,7 +140,6 @@ void CubeScene::preRender() {
 } 
 
 void CubeScene::processInput(){
-	Scene::processInput();
 
 	if(_angleLR) _camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor());
 	if(_angleUD) _camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor());
@@ -183,11 +181,11 @@ bool CubeScene::loadResources(bool continueOnErrors){
 	ResourceDescriptor deferred("DeferredShadingPass2");
 	_deferredShader = CreateResource<ShaderProgram>(deferred);
 
-	_deferredBuffer->Create(FBO_2D_DEFERRED,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y);
+	_deferredBuffer->Create(FBO_2D_DEFERRED,_cachedResolution.width,_cachedResolution.height);
 	_lightTexture->Create(2,LightManager::getInstance().getLights().size());
 
-	F32 width = Application::getInstance().getWindowDimensions().width;
-	F32 height = Application::getInstance().getWindowDimensions().height;
+	F32 width = _cachedResolution.width;
+	F32 height = _cachedResolution.height;
 	ResourceDescriptor mrt("MRT RenderQuad");
 	mrt.setFlag(true); //no default material
 	_renderQuad = CreateResource<Quad3D>(mrt);
@@ -269,8 +267,8 @@ void CubeScene::onKeyDown(const OIS::KeyEvent& key)
 			_moveLR = -0.75f;
 			break;
 		case OIS::KC_T:{
-			F32 width = Application::getInstance().getWindowDimensions().width;
-			F32 height = Application::getInstance().getWindowDimensions().height;
+			F32 width = _cachedResolution.width;
+			F32 height = _cachedResolution.height;
 			_showTextures = !_showTextures;
 			if(!_showTextures){
 				_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3<F32>(0, height, 0));

@@ -20,7 +20,6 @@
 
 #include "core.h"
 #include "Graphs/Headers/SceneGraph.h"
-#include "Hardware/Input/InputManager.h"
 #include "Utility/Headers/Event.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Hardware/Audio/SFXDevice.h"
@@ -28,16 +27,17 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Managers/Headers/LightManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Hardware/Input/Headers/InputInterface.h"
 
-typedef std::tr1::shared_ptr<Event> Event_ptr;
-typedef unordered_map<std::string, Object3D*> Name_Object_map;
-class SceneGraph;
 class Light;
-
+class SceneGraph;
 class TerrainDescriptor;
+
 class Scene : public Resource{
 
 public:
+	typedef std::tr1::shared_ptr<Event> Event_ptr;
+
 	Scene() :  Resource(),
 	  _GFX(GFX_DEVICE),
 	  _paramHandler(ParamHandler::getInstance()),
@@ -48,7 +48,6 @@ public:
 	  _deferredBuffer(NULL),
 	  _deferredShader(NULL),
 	  _camera(NULL),
-	  _inputManager(InputManagerInterface::getInstance()),
 	  _sceneGraph(New SceneGraph())
 	  {
 		  _white = vec4<F32>(1.0f,1.0f,1.0f,1.0f);
@@ -70,7 +69,7 @@ public:
 	virtual void preRender() = 0;
 	virtual bool load(const std::string& name);
 	
-	virtual void processInput();
+	virtual void processInput() = 0;
 	virtual void processEvents(F32 time) = 0;
 
 	/// Update animations, network data, sounds, triggers etc.
@@ -113,13 +112,12 @@ public:
    inline bool drawObjects() {return _drawObjects;}
    inline void drawObjects(bool visibility) {_drawObjects=visibility;}
 
+   inline void cacheResolution(const vec2<U16>& newResolution) {_cachedResolution = newResolution;}
+
 protected:
 
 	GFXDevice& _GFX;
 	ParamHandler& _paramHandler;
-
-	/*Name_Object_map GeometryArray;
-	Name_Object_map::iterator GeometryIterator;*/
 
 	///Datablocks for models,vegetation and terrains
 	std::vector<FileData>           ModelDataArray;
@@ -133,7 +131,6 @@ protected:
 	boost::mutex _mutex;
 
 	vec4<F32> _white, _black;
-	InputManagerInterface& _inputManager;
 
 	///Deferred rendering
 	FrameBufferObject* _deferredBuffer;
@@ -149,10 +146,11 @@ protected:
 	F32 _moveLR;  ///< left-right move change detected
 	F32 _angleUD; ///< up-down angle change detected
 	F32 _angleLR; ///< left-right angle change detected
+   ///cached resolution
+   vec2<U16> _cachedResolution;
 
 private: 
 	std::vector<Event_ptr> _events;
-	Event_ptr _inputEvent;
 	Event_ptr _aiEvent;
 
 protected:

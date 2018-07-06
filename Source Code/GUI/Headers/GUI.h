@@ -31,12 +31,12 @@ public:
 	void draw();
 	void close();
 	void addText(const std::string& id,const vec3<F32>& position, Font font,const vec3<F32>& color, char* format, ...);
-	void addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<F32>& dimensions,const vec3<F32>& color,ButtonCallback callback);
+	void addButton(const std::string& id, std::string text,const vec2<F32>& position,const vec2<U16>& dimensions,const vec3<F32>& color,ButtonCallback callback);
 	void addFlash(const std::string& id, std::string movie, const vec2<F32>& position, const vec2<F32>& extent);
 	void modifyText(const std::string& id, char* format, ...);
 	void toggleConsole();
 	void createConsole();
-	void onResize(F32 newWidth, F32 newHeight);
+	void onResize(U16 newWidth, U16 newHeight);
 	void clickCheck();
 	void clickReleaseCheck();
 	void checkItem(U16 x, U16 y);

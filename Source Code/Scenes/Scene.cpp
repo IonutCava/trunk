@@ -2,7 +2,6 @@
 
 #include "ASIO.h"
 #include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUIConsole.h"
 #include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h" //Object selection
 #include "Managers/Headers/AIManager.h"
@@ -197,15 +196,10 @@ bool Scene::load(const std::string& name){
 
 bool Scene::unload(){
 	clearEvents();
-	//_inputEvent.get()->stopEvent();
-	//_inputEvent.reset();
 	if(_aiEvent.get()){
 		_aiEvent.get()->stopEvent();
 		_aiEvent.reset();
 	}
-	_inputManager.terminate();
-	_inputManager.DestroyInstance();
-
 	SAFE_DELETE(_lightTexture);
 	SAFE_DELETE(_deferredBuffer);
 
@@ -236,8 +230,7 @@ void Scene::clearLights(){
 	LightManager::getInstance().clear();
 }
 
-void Scene::clearEvents()
-{
+void Scene::clearEvents(){
 	PRINT_FN("Stopping all events ...");
 	_events.clear();
 }
@@ -246,14 +239,7 @@ void Scene::onMouseMove(const OIS::MouseEvent& key){
 	GUI::getInstance().checkItem(key.state.X.abs,key.state.Y.abs);
 }
 
-void Scene::processInput(){
-	_inputManager.tick();
-	//AIManager::getInstance().tick();
-}
-
 bool Scene::loadEvents(bool continueOnErrors){
-	//Running the input manager through a separate thread degrades performance. Enable at your own risk - Ionut
-	//_inputEvent.reset(New Event(1,true,false,boost::bind(&InputManagerInterface::tick, boost::ref(InputManagerInterface::getInstance()))));
 	_aiEvent.reset(New Event(3,false,false,boost::bind(&AIManager::tick,boost::ref(AIManager::getInstance()))));
 	return true;
 }
@@ -340,7 +326,7 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			LightManager::getInstance().togglePreviewDepthMaps();
 			break;
 		case OIS::KC_F12:
-			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
+			GFX_DEVICE.Screenshot("screenshot_",vec4<F32>(0,0,_cachedResolution.x,_cachedResolution.y));
 			break;
 		default:
 			break;

@@ -1,5 +1,5 @@
 <geometry>
-	<item>Fileu</item>
+	<item>Net</item>
 	<item>Player1</item>
 	<item>Player2</item>
 	<item>Player3</item>
@@ -9,16 +9,16 @@
 </geometry>
 
 <primitives>
-	<item>Podea</item>
+	<item>Floor</item>
 </primitives>
 
-<Fileu>
+<Net>
 	<model>models/gardulet.obj</model>
 	<scale x="0.3" y="0.7" z="0.1" />
 	<position x="0" y="-7.5" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
-</Fileu>
+</Net>
 
 
 <Player1>
@@ -55,14 +55,14 @@
 	<version>1.0</version>
 </Player4>
 
-<Podea>
+<Floor>
 	<model>Quad3D</model>
 	<scale x="50" y="50" z="50" />
 	<position x="-25" y="0" z="-25" />
 	<orientation x="0" y="0" z="90" />
 	<color r="0.1" g="0.4" b="0.1"/>
 	<version>1.0</version>
-</Podea>
+</Floor>
 
 <Sponza>
 	<model>models/sponza.obj</model>

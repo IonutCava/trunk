@@ -425,6 +425,9 @@
     <Filter Include="Core\MemoryManagement\Headers">
       <UniqueIdentifier>{a9ba85e3-526e-4399-9e00-713c4e5de039}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hardware\Input\Headers">
+      <UniqueIdentifier>{79e14772-bf5f-475e-bc57-c5a23ca84024}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -1036,18 +1039,6 @@
     <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h">
       <Filter>Scenes\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\EventHandler.h">
-      <Filter>Hardware\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\InputManager.h">
-      <Filter>Hardware\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\InputVariables.h">
-      <Filter>Hardware\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\JoystickManager.h">
-      <Filter>Hardware\Input</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\FrameBufferObject.h">
       <Filter>Hardware\Video</Filter>
     </ClInclude>
@@ -1465,6 +1456,18 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h">
       <Filter>Core\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EventHandler.h">
+      <Filter>Hardware\Input\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputInterface.h">
+      <Filter>Hardware\Input\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputVariables.h">
+      <Filter>Hardware\Input\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h">
+      <Filter>Hardware\Input\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

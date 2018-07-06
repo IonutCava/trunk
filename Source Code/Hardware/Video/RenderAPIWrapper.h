@@ -81,7 +81,7 @@ protected:
 	virtual void getModelViewMatrix(mat4<F32>& mvMat) = 0;
 	virtual void getProjectionMatrix(mat4<F32>& projMat) = 0;
 	
-	virtual void resizeWindow(U16 w, U16 h) = 0;
+	virtual void changeResolution(U16 w, U16 h) = 0;
 
 	virtual FrameBufferObject*  newFBO() = 0;
 	virtual VertexBufferObject* newVBO() = 0;
@@ -91,7 +91,7 @@ protected:
 	virtual ShaderProgram*      newShaderProgram() = 0;
 	virtual Shader*             newShader(const std::string& name, SHADER_TYPE type) = 0;
 	
-	virtual I8   initHardware(const vec2<F32>& windowDimensions) = 0;
+	virtual I8   initHardware(const vec2<U16>& resolution) = 0;
 	virtual void exitRenderLoop(bool killCommand = false) = 0;
 	virtual void closeRenderingApi() = 0;
 	virtual void initDevice(U32 targetFPS) = 0;

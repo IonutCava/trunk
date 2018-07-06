@@ -18,7 +18,7 @@
 #ifndef _INPUT_MANAGER_H_
 #define _INPUT_MANAGER_H_
 
-#include "JoystickManager.h"
+#include "JoystickInterface.h"
 #include "Core/Headers/Application.h"
 
 #if defined OIS_WIN32_PLATFORM
@@ -44,8 +44,8 @@ LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 #endif
 
 //////////// Event handler class declaration ////////////////////////////////////////////////
-class InputManagerInterface;
-class JoystickManager;
+class InputInterface;
+class JoystickInterface;
 class EffectManager;
 
 void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect);
@@ -56,7 +56,7 @@ class EffectManager{
   protected:
 
     // The joystick manager
-    JoystickManager* _pJoystickMgr;
+    JoystickInterface* _pJoystickInterface;
 
     // Vector to hold variable effects
     std::vector<VariableEffect*> _vecEffects;
@@ -73,9 +73,9 @@ class EffectManager{
 
   public:
 
-    EffectManager(JoystickManager* pJoystickMgr, U32 nUpdateFreq) 
-	: _pJoystickMgr(pJoystickMgr), _nUpdateFreq(nUpdateFreq), _nCurrEffectInd(-1)
-    {
+	EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateFreq) : _pJoystickInterface(pJoystickInterface), 
+																			_nUpdateFreq(nUpdateFreq),
+																			_nCurrEffectInd(-1)  {
 	  OIS::Effect* pEffect;
 	  MapVariables mapVars;
 	  OIS::ConstantEffect* pConstForce;
@@ -182,14 +182,14 @@ class EffectManager{
 		if ((*iterEffs)->isActive())
 		{
 		  (*iterEffs)->update();
-		  _pJoystickMgr->getCurrentFFDevice()->modify((*iterEffs)->getFFEffect());
+		  _pJoystickInterface->getCurrentFFDevice()->modify((*iterEffs)->getFFEffect());
 		}
 	}
 
     void checkPlayableEffects()
     {
 	  // Nothing to do if no joystick currently selected
-	  if (!_pJoystickMgr->getCurrentFFDevice())
+	  if (!_pJoystickInterface->getCurrentFFDevice())
 		return;
 
 	  // Get the list of indexes of effects that the selected device can play
@@ -198,7 +198,7 @@ class EffectManager{
 	  {
 		const OIS::Effect::EForce eForce = _vecEffects[nEffInd]->getFFEffect()->force;
 		const OIS::Effect::EType eType = _vecEffects[nEffInd]->getFFEffect()->type;
-		if (_pJoystickMgr->getCurrentFFDevice()->supportsEffect(eForce, eType))
+		if (_pJoystickInterface->getCurrentFFDevice()->supportsEffect(eForce, eType))
 		{
 		  _vecPlayableEffectInd.push_back(nEffInd);
 		}
@@ -207,11 +207,11 @@ class EffectManager{
 	  // Print details about playable effects
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  D_PRINT_FN("InputManager: The device can't play any effect of the test set");
+		  D_PRINT_FN("InputInterface: The device can't play any effect of the test set");
 	  }
 	  else
 	  {
-		  PRINT_FN("InputManager: Selected device can play the following effects :");
+		  PRINT_FN("InputInterface: Selected device can play the following effects :");
 		for (size_t nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); nEffIndInd++)
 			printEffect(_vecPlayableEffectInd[nEffIndInd]);
 		PRINT_FN("");
@@ -224,16 +224,16 @@ class EffectManager{
     {
 
 	  // Nothing to do if no joystick currently selected
-	  if (!_pJoystickMgr->getCurrentFFDevice())
+	  if (!_pJoystickInterface->getCurrentFFDevice())
 	  {
-		  D_PRINT_FN("InputManager: No Joystick selected.");  
+		  D_PRINT_FN("InputInterface: No Joystick selected.");  
 		return;
 	  }
 
 	  // Nothing to do if joystick cannot play any effect
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  D_PRINT_FN("InputManager: No playable effects."); 
+		  D_PRINT_FN("InputInterface: No playable effects."); 
 		return;
 	  }
 
@@ -245,7 +245,7 @@ class EffectManager{
 	  // and then select the requested one if any.
 	  else if (_nCurrEffectInd >= 0)
 	  {
-		_pJoystickMgr->getCurrentFFDevice()
+		_pJoystickInterface->getCurrentFFDevice()
 		  ->remove(_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect());
 		_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(false);
 		_nCurrEffectInd += eWhich;
@@ -263,14 +263,14 @@ class EffectManager{
 	  else if (_nCurrEffectInd >= 0)
 	  {
 		_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->setActive(true);
-		_pJoystickMgr->getCurrentFFDevice()
+		_pJoystickInterface->getCurrentFFDevice()
 		  ->upload(_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect());
 	  }
 	}
 
     inline void printEffect(size_t nEffInd){
 
-		PRINT_FN("InputManager: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
+		PRINT_FN("InputInterface: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
 	}
 
     inline void printEffects(){
@@ -284,15 +284,15 @@ class EffectManager{
 };
 
 
-DEFINE_SINGLETON( InputManagerInterface )
+DEFINE_SINGLETON( InputInterface )
 
   protected:
-    OIS::InputManager* _pInputMgr;
+    OIS::InputManager* _pInputInterface;
     EventHandler*      _pEventHdlr;
     OIS::Keyboard*     _pKeyboard;
 	OIS::Mouse*        _pMouse;
 	OIS::JoyStick*	   _pJoystick;
-    JoystickManager*   _pJoystickMgr;
+    JoystickInterface* _pJoystickInterface;
 	EffectManager*     _pEffectMgr;
 
     bool               _bMustStop;
@@ -309,12 +309,12 @@ DEFINE_SINGLETON( InputManagerInterface )
 
   
 
-    InputManagerInterface()  {
-	  _pInputMgr = NULL;
+    InputInterface()  {
+	  _pInputInterface = NULL;
 	  _pEventHdlr = NULL;
 	  _pKeyboard = NULL;
 	  _pJoystick = NULL;
-	  _pJoystickMgr = NULL;
+	  _pJoystickInterface = NULL;
 	  _pMouse = NULL;
 	  _pEffectMgr = NULL;
 
@@ -325,7 +325,7 @@ DEFINE_SINGLETON( InputManagerInterface )
 	}
 
 public:
-    U8 initialize()
+	U8 initialize(Kernel* const kernel, const std::string& windowTitle)
     {
 		if(_bIsInitialized)
 			return 0;
@@ -333,7 +333,7 @@ public:
 #if defined OIS_WIN32_PLATFORM
 	  // Create OIS input manager
 		HWND hWnd = 0;
-		hWnd = FindWindow("FREEGLUT","DIVIDE Framework");
+		hWnd = FindWindow("FREEGLUT",windowTitle.c_str());
 		std::ostringstream wnd;
 		wnd << (size_t)hWnd;
 		pl.insert(std::make_pair(std::string("WINDOW"), wnd.str() ));
@@ -348,15 +348,15 @@ public:
 		pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
 #endif
 
-	  _pInputMgr = OIS::InputManager::createInputSystem(pl);
-	  PRINT_FN("InputManager: %s created.",_pInputMgr->inputSystemName().c_str());
+	  _pInputInterface = OIS::InputManager::createInputSystem(pl);
+	  PRINT_FN("InputInterface: %s created.",_pInputInterface->inputSystemName().c_str());
 
 	  // Create the event handler.
-	  _pEventHdlr = new EventHandler(this);
+	  _pEventHdlr = new EventHandler(this,kernel);
 
 	  try{
 		// Create a simple keyboard
-		_pKeyboard = (OIS::Keyboard*)_pInputMgr->createInputObject( OIS::OISKeyboard, true );
+		_pKeyboard = (OIS::Keyboard*)_pInputInterface->createInputObject( OIS::OISKeyboard, true );
 		_pKeyboard->setEventCallback( _pEventHdlr );
 	  }
 	  catch(OIS::Exception &ex)
@@ -365,7 +365,7 @@ public:
 	  }
 
 	  try{
-			_pJoystick = (OIS::JoyStick*) _pInputMgr->createInputObject(OIS::OISJoyStick, true);
+			_pJoystick = (OIS::JoyStick*) _pInputInterface->createInputObject(OIS::OISJoyStick, true);
 			if(_pJoystick){
 				_pJoystick->setEventCallback( _pEventHdlr );
 			}
@@ -377,11 +377,11 @@ public:
 
 	  try{
 	  
-		_pMouse = (OIS::Mouse*)_pInputMgr->createInputObject(OIS::OISMouse,true);
+		_pMouse = (OIS::Mouse*)_pInputInterface->createInputObject(OIS::OISMouse,true);
 		_pMouse->setEventCallback( _pEventHdlr );
 		const OIS::MouseState &ms = _pMouse->getMouseState();
-		ms.width = Application::getInstance().getWindowDimensions().width;
-		ms.height = Application::getInstance().getWindowDimensions().height;
+		ms.width = Application::getInstance().getResolution().width;
+		ms.height = Application::getInstance().getResolution().height;
 	  }
 	  catch(OIS::Exception &ex)
 	  {
@@ -389,17 +389,17 @@ public:
 	  }
 	  
 	  // Create the joystick manager.
-	  _pJoystickMgr = new JoystickManager(_pInputMgr, _pEventHdlr);
-	  if( !_pJoystickMgr->wasFFDetected() )
+	  _pJoystickInterface = new JoystickInterface(_pInputInterface, _pEventHdlr);
+	  if( !_pJoystickInterface->wasFFDetected() )
 	  {
-		PRINT_F("InputManager: No Force Feedback device detected.\n");
-		SAFE_DELETE(_pJoystickMgr);
+		PRINT_F("InputInterface: No Force Feedback device detected.\n");
+		SAFE_DELETE(_pJoystickInterface);
 	  }
 	  else
 	  {	  // Create force feedback effect manager.
-	      _pEffectMgr = new EffectManager(_pJoystickMgr, _nEffectUpdateFreq);
+	      _pEffectMgr = new EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
 		  // Initialize the event handler.
-		  _pEventHdlr->initialize(_pJoystickMgr, _pEffectMgr);
+		  _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
 	  }
 
 	  _bIsInitialized = true;
@@ -428,8 +428,6 @@ public:
 	  const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
 	  U8 nEffectUpdateCnt = 0;
 
-	  if (!_bIsInitialized)	initialize();
-
 	  if (!_bIsInitialized)
 		return _nStatus;
 
@@ -444,9 +442,9 @@ public:
 			_pMouse->capture();
 
 		  // This fires off buffered events for each joystick we have
-		  if(_pJoystickMgr != NULL)
+		  if(_pJoystickInterface != NULL)
 		  {
-			_pJoystickMgr->captureEvents();
+			_pJoystickInterface->captureEvents();
 	        // Update currently selected effects if time has come to.
 			if (!nEffectUpdateCnt)
 			{
@@ -468,22 +466,21 @@ public:
 
     inline void stop(){ _bMustStop = true; }
 
-    void terminate()
-    {
-	  if (_pInputMgr)
-	  {
-		_pInputMgr->destroyInputObject( _pKeyboard );
-		_pInputMgr->destroyInputObject( _pMouse );
-		_pInputMgr->destroyInputObject( _pJoystick );
+    void terminate() {
+
+	  if (_pInputInterface) {
+		_pInputInterface->destroyInputObject( _pKeyboard );
+		_pInputInterface->destroyInputObject( _pMouse );
+		_pInputInterface->destroyInputObject( _pJoystick );
 
 		_pKeyboard = NULL;
 		_pMouse = NULL;
 		_pJoystick = NULL;
 
-		SAFE_DELETE(_pJoystickMgr);
+		SAFE_DELETE(_pJoystickInterface);
 
-		OIS::InputManager::destroyInputSystem(_pInputMgr);
-		_pInputMgr = NULL;
+		OIS::InputManager::destroyInputSystem(_pInputInterface);
+		_pInputInterface = NULL;
 	  }
 	 
 	  SAFE_DELETE(_pEffectMgr);
@@ -496,7 +493,7 @@ public:
 #endif
 	}
 
-    inline JoystickManager* getJoystickManager(){ return _pJoystickMgr; }
+    inline JoystickInterface* getJoystickInterface(){ return _pJoystickInterface; }
     inline EffectManager* getEffectManager(){ return _pEffectMgr; }
 
 

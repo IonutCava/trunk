@@ -1,7 +1,6 @@
 #include "Headers/PingPongScene.h"
 
 #include "GUI/Headers/GUI.h"
-#include "Core/Headers/Application.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Environment/Sky/Headers/Sky.h"
 #include "Rendering/Camera/Headers/Camera.h"
@@ -179,7 +178,6 @@ void PingPongScene::test(boost::any a, CallbackParam b){
 }
 
 void PingPongScene::processInput(){
-	Scene::processInput();
 
 	///Move FB = Forward/Back = up/down
 	///Move LR = Left/Right
@@ -236,17 +234,17 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 	_ball->getMaterial()->setSpecular(vec4<F32>(0.774597f,0.774597f,0.774597f,1.0f));
 
 	///Buttons and text labels
-	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(Application::getInstance().getWindowDimensions().width-120 ,
-															 Application::getInstance().getWindowDimensions().height/1.1f),
-													    	 vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
+	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(_cachedResolution.width-120 ,
+															 _cachedResolution.height/1.1f),
+													    	 vec2<U16>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
 															 boost::bind(&PingPongScene::serveBall,this));
 
-	GUI::getInstance().addText("Score",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.3f, 0),
+	GUI::getInstance().addText("Score",vec3<F32>(_cachedResolution.width - 120, _cachedResolution.height/1.3f, 0),
 							   BITMAP_8_BY_13,vec3<F32>(1,0,0), "Score: %d",0);
 
-	GUI::getInstance().addText("Message",vec3<F32>(Application::getInstance().getWindowDimensions().width - 120, Application::getInstance().getWindowDimensions().height/1.5f, 0),
+	GUI::getInstance().addText("Message",vec3<F32>(_cachedResolution.width - 120, _cachedResolution.height/1.5f, 0),
 							   BITMAP_8_BY_13,vec3<F32>(1,0,0), "");
-	GUI::getInstance().addText("insults",vec3<F32>(Application::getInstance().getWindowDimensions().width/4, Application::getInstance().getWindowDimensions().height/3, 0),
+	GUI::getInstance().addText("insults",vec3<F32>(_cachedResolution.width/4, _cachedResolution.height/3, 0),
 							   BITMAP_TIMES_ROMAN_24,vec3<F32>(0,1,0), "");
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec3<F32>(60,60,0),          //Position

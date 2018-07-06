@@ -1,15 +1,16 @@
 #include "Headers/PostFX.h"
-#include "Headers/PreRenderStageBuilder.h"
 #include "Headers/PreRenderStage.h"
 #include "Headers/PreRenderOperator.h"
-#include "Core/Headers/Application.h"
-#include "Rendering/Camera/Headers/Camera.h"
-#include "Hardware/Video/FrameBufferObject.h"
-#include "Hardware/Video/RenderStateBlock.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Headers/PreRenderStageBuilder.h"
+
 #include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/SceneManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+
+#include "Managers/Headers/SceneManager.h"
+#include "Rendering/Camera/Headers/Camera.h"
+#include "Hardware/Video/RenderStateBlock.h"
+#include "Hardware/Video/FrameBufferObject.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 PostFX::PostFX(): _underwaterTexture(NULL),
 	_renderQuad(NULL),
@@ -70,7 +71,7 @@ PostFX::~PostFX(){
 	PreRenderStageBuilder::getInstance().DestroyInstance();
 }
 
-void PostFX::init(){
+void PostFX::init(const vec2<U16>& resolution){
 	ParamHandler& par = ParamHandler::getInstance();
 
 	_enablePostProcessing = par.getParam<bool>("postProcessing.enablePostFX");
@@ -83,13 +84,11 @@ void PostFX::init(){
 	_screenFBO = _gfx.newFBO();
 	_depthFBO  = _gfx.newFBO();
 
-	F32 width = Application::getInstance().getWindowDimensions().width;
-	F32 height = Application::getInstance().getWindowDimensions().height;
 	ResourceDescriptor mrt("PostFX RenderQuad");
 	mrt.setFlag(true); //No default Material;
 	_renderQuad = CreateResource<Quad3D>(mrt);
 	assert(_renderQuad);
-	_renderQuad->setDimensions(vec4<F32>(0,0,width,height));
+	_renderQuad->setDimensions(vec4<F32>(0,0,resolution.width,resolution.height));
 
 	if(_enablePostProcessing){
 		_postProcessingShader = CreateResource<ShaderProgram>(ResourceDescriptor("postProcessing"));
@@ -104,13 +103,13 @@ void PostFX::init(){
 			if(!_blurShader){
 				_blurShader = CreateResource<ShaderProgram>(ResourceDescriptor("blur"));
 			}
-			PreRenderOperator* bloomOp = PreRenderStageBuilder::getInstance().addBloomOperator(_blurShader, _renderQuad,_enableBloom,_bloomFBO);
+			PreRenderOperator* bloomOp = PreRenderStageBuilder::getInstance().addBloomOperator(_blurShader, _renderQuad,_enableBloom,_bloomFBO,resolution);
 			bloomOp->addInputFBO(_screenFBO);
 		}
 		if(_enableSSAO){
 			_SSAO_FBO = _gfx.newFBO();
 			_SSAOShaderPass1 = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass1"));
-			PreRenderOperator* ssaOp = PreRenderStageBuilder::getInstance().addSSAOOperator(_SSAOShaderPass1, _renderQuad,_enableSSAO, _SSAO_FBO);
+			PreRenderOperator* ssaOp = PreRenderStageBuilder::getInstance().addSSAOOperator(_SSAOShaderPass1, _renderQuad,_enableSSAO, _SSAO_FBO,resolution);
 		}
 
 		if(_enableDOF){
@@ -140,7 +139,7 @@ void PostFX::init(){
 	_randomFlashCoefficient = 0;
 
 	par.setParam("postProcessing.enableDepthOfField", false); //enable using keyboard;
-	PostFX::getInstance().reshapeFBO(Application::getInstance().getWindowDimensions().width, Application::getInstance().getWindowDimensions().height);
+	PostFX::getInstance().reshapeFBO(resolution.width, resolution.height);
 }
 
 void PostFX::reshapeFBO(I32 width , I32 height){

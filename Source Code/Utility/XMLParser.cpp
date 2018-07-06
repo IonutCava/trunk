@@ -44,17 +44,17 @@ namespace XML {
 		par.setParam("shadowDetailLevel",pt.get<U8>("rendering.shadowDetailLevel",HIGH));
 		par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","textures/"));
 		par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));
-		I32 winWidth = pt.get("runtime.windowWidth",1024.0f);
-		I32 winHeight = pt.get("runtime.windowHeight",768.0f);
+		I32 resWidth = pt.get("runtime.resolutionWidth",1024.0f);
+		I32 resHeight = pt.get("runtime.resolutionHeight",768.0f);
 		par.setParam("zNear",(F32)pt.get("runtime.zNear",0.1f));
 		par.setParam("zFar",(F32)pt.get("runtime.zFar",1200.0f));
 		par.setParam("verticalFOV",(F32)pt.get("runtime.verticalFOV",60));
-		par.setParam("aspectRatio",1.0f * winWidth / winHeight);
-		par.setParam("windowWidth",winWidth);
-		par.setParam("windowHeight",winHeight);
+		par.setParam("aspectRatio",1.0f * resWidth / resHeight);
+		par.setParam("resolutionWidth",resWidth);
+		par.setParam("resolutionHeight",resHeight);
 		
-		Application::getInstance().setWindowHeight(winHeight);
-		Application::getInstance().setWindowWidth(winWidth);
+		Application::getInstance().setResolutionHeight(resHeight);
+		Application::getInstance().setResolutionWidth(resWidth);
 		bool postProcessing = pt.get("rendering.enablePostFX",false);
 		par.setParam("postProcessing.enablePostFX",postProcessing);
 		if(postProcessing){

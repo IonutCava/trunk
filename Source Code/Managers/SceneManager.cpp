@@ -1,10 +1,10 @@
 #include "Headers/SceneManager.h"
-#include "Core/Headers/Application.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "SceneList.h"
 
-SceneManager::SceneManager() : _scene(NULL), _currentSelection(NULL){}
+SceneManager::SceneManager() : _scene(NULL),
+							   _currentSelection(NULL){}
 
 SceneManager::~SceneManager(){
 	PRINT_FN("Deleting Scene Manager ...");
@@ -88,8 +88,8 @@ void SceneManager::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
 	ParamHandler& par = ParamHandler::getInstance();
     F32 value_fov = 0.7853f;    //this is 45 degrees converted to radians
     F32 value_aspect = par.getParam<F32>("aspectRatio");
-	F32 half_window_width = Application::getInstance().getWindowDimensions().width / 2.0f;
-	F32 half_window_height = Application::getInstance().getWindowDimensions().height / 2.0f;
+	F32 half_resolution_width = _cachedResolution.width / 2.0f;
+	F32 half_resolution_height = _cachedResolution.height / 2.0f;
 
     F32 modifier_x, modifier_y;
         //mathematical handling of the difference between
@@ -114,9 +114,9 @@ void SceneManager::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
     //This is where the mouse position is turned into a mathematical
     //'relative' of 3d space. The conversion to an actual point
     modifier_x = (F32)tan( value_fov * 0.5f )
-        * (( 1.0f - x / half_window_width ) * ( value_aspect ) );
+        * (( 1.0f - x / half_resolution_width ) * ( value_aspect ) );
     modifier_y = (F32)tan( value_fov * 0.5f )
-        * -( 1.0f - y / half_window_height );
+        * -( 1.0f - y / half_resolution_height );
 
     //These 3 take our modifier_x/y values and our 'casting' distance
     //to throw out a point in space that lies on the point_dist plane.

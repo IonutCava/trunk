@@ -35,7 +35,7 @@ public:
      void onMouseMove(const GUIEvent &event);
      void onMouseUp(const GUIEvent &event);
      void onMouseDown(const GUIEvent &event);
-	 void onResize(const vec2<F32>& newSize){}
+	 void onResize(const vec2<U16>& newSize){}
 /*   void onRightMouseUp(const GUIEvent &event);
      void onRightMouseDown(const GUIEvent &event);
      bool onKeyUp(const GUIEvent &event);

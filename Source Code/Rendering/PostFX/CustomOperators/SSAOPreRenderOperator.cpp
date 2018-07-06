@@ -2,18 +2,20 @@
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h" 
 #include "Hardware/Video/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 
-SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader, Quad3D* target, FrameBufferObject* result) : PreRenderOperator(SSAO_STAGE,target),
-												_stage1Shader(SSAOShader),
-												_outputFBO(result)
+SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader, 
+											 Quad3D* target, 
+											 FrameBufferObject* result,
+											 const vec2<U16>& resolution) : PreRenderOperator(SSAO_STAGE,target,resolution),
+																			_stage1Shader(SSAOShader),
+																		    _outputFBO(result)
 {
-	F32 width = Application::getInstance().getWindowDimensions().width;
-	F32 height = Application::getInstance().getWindowDimensions().height;
+	F32 width = _resolution.width;
+	F32 height = _resolution.height;
 	ParamHandler& par = ParamHandler::getInstance();
 	ResourceDescriptor colorNoiseTexture("noiseTexture");
 	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//noise.png");

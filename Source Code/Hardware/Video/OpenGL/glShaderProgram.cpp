@@ -291,6 +291,12 @@ void glShaderProgram::Uniform(const std::string& ext, const vec2<F32>& value){
 	}
 }
 
+void glShaderProgram::Uniform(const std::string& ext, const vec2<I32>& value){
+	I32 loc = cachedLoc(ext);
+	if(loc != -1){
+		GLCheck(glUniform2iv(loc, 1, value));
+	}
+}
 void glShaderProgram::Uniform(const std::string& ext, const vec3<F32>& value){
 	I32 loc = cachedLoc(ext);
 	if(loc != -1){

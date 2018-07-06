@@ -208,7 +208,6 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 }
 
 void AITenisScene::processInput(){
-	Scene::processInput();
 	
 	if(_angleLR)	_camera->RotateX(_angleLR * Framerate::getInstance().getSpeedfactor()/5);
 	if(_angleUD)	_camera->RotateY(_angleUD * Framerate::getInstance().getSpeedfactor()/5);
@@ -334,22 +333,22 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 	_ball->getMaterial()->setShininess(0.2f);
 	_ball->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
 
-	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(Application::getInstance().getWindowDimensions().width-220,
-															 Application::getInstance().getWindowDimensions().height/1.1f),
-													     vec2<F32>(100,25),
+	GUI::getInstance().addButton("Serve", "Serve", vec2<F32>(_cachedResolution.width-220,
+															 _cachedResolution.height/1.1f),
+													     vec2<U16>(100,25),
 														 vec3<F32>(0.65f,0.65f,0.65f),
 														 boost::bind(&AITenisScene::startGame,this));
 
-	GUI::getInstance().addText("Team1Score",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
-												      Application::getInstance().getWindowDimensions().height/1.3f, 0),
+	GUI::getInstance().addText("Team1Score",vec3<F32>(_cachedResolution.width - 250,
+												      _cachedResolution.height/1.3f, 0),
 											 BITMAP_8_BY_13,vec3<F32>(0,0.8f,0.8f), "Team 1 Score:: %d",0);
 
-	GUI::getInstance().addText("Team2Score",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
-													  Application::getInstance().getWindowDimensions().height/1.5f, 0),
+	GUI::getInstance().addText("Team2Score",vec3<F32>(_cachedResolution.width - 250,
+													  _cachedResolution.height/1.5f, 0),
 								             BITMAP_8_BY_13,vec3<F32>(0.2f,0.8f,0), "Team 2 Score:: %d",0);
 
-	GUI::getInstance().addText("Message",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
-		                                           Application::getInstance().getWindowDimensions().height/1.7f, 0),
+	GUI::getInstance().addText("Message",vec3<F32>(_cachedResolution.width - 250,
+		                                           _cachedResolution.height/1.7f, 0),
 									   BITMAP_8_BY_13,vec3<F32>(0,1,0), "");
 
 	GUI::getInstance().addText("fpsDisplay",              //Unique ID

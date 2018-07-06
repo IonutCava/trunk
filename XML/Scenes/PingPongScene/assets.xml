@@ -1,9 +1,9 @@
 <geometry>
-	<item>masa</item>
-	<item>plasa</item>
-	<item>paleta</item>
+	<item>table</item>
+	<item>net</item>
+	<item>paddle</item>
 	<item>test</item>
-	<item>perete</item>
+	<item>opponent</item>
 </geometry>
 
 <primitives>
@@ -11,21 +11,21 @@
 </primitives>
 
 
-<masa>
+<table>
 	<model>models/masa.obj</model>
 	<scale x="0.1" y="0.1" z="0.1" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
-</masa>
+</table>
 
-<plasa>
+<net>
 	<model>models/gardulet.obj</model>
 	<scale x="0.1" y="0.1" z="0.1" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
-</plasa>
+</net>
 
 <test>
 	<model>models/sponza.obj</model>
@@ -35,15 +35,15 @@
 	<version>1.0</version>
 </test>
 
-<paleta>
+<paddle>
 	<model>models/paleta.obj</model>
 	<scale x="0.03" y="0.03" z="0.03" />
 	<position x="0" y="1.5" z="3.5" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
-</paleta>
+</paddle>
 
-<perete>
+<opponent>
 	<!--<model>Box3D</model>-->
 	<!--<scale x="1" y="1" z="0.1" />-->
 	<scale x="0.03" y="0.03" z="0.03" />
@@ -53,4 +53,4 @@
 	<!--<size>6</size>-->
 	<model>models/dwarf.x</model>
 	<version>1.0</version>
-</perete>
+</opponent>

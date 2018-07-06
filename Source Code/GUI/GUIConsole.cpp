@@ -1,16 +1,17 @@
 #include "Headers/GUIConsole.h"
 #include "Core/Headers/Application.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/RenderStateBlock.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Hardware/Input/Headers/InputInterface.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 GUIConsole::GUIConsole() : GUIElement() , _consoleOpen(false), _animationRunning(false), _animationDuration(750.0f) {
 
 	_guiType = GUI_CONSOLE;
 	_screenPercentage = 0.75f;
 
-	F32 width = Application::getInstance().getWindowDimensions().width;
-	F32 height = Application::getInstance().getWindowDimensions().height;
+	F32 width = Application::getInstance().getResolution().width;
+	F32 height = Application::getInstance().getResolution().height;
 	ResourceDescriptor materialDescriptor("consoleMaterial");
 	Material* mat = CreateResource<Material>(materialDescriptor);
 	ResourceDescriptor rectDescriptor("consoleRect");

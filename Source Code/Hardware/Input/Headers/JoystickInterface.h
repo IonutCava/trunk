@@ -22,12 +22,12 @@
 
 //////////// Joystick manager class ////////////////////////////////////////////////////////
 class EventHandler;
-class JoystickManager
-{
+class JoystickInterface {
+
   protected:
 
     // Input manager.
-    OIS::InputManager* _pInputMgr;
+    OIS::InputManager* _pInputInterface;
 
     // Vectors to hold joysticks and associated force feedback devices
     std::vector<OIS::JoyStick*> _vecJoys;
@@ -47,15 +47,15 @@ class JoystickManager
 
   public:
 
-    JoystickManager(OIS::InputManager* pInputMgr, EventHandler* pEventHdlr)
-	: _pInputMgr(pInputMgr), _nCurrJoyInd(-1), _dMasterGain(0.5), _bAutoCenter(true)
-
-    {
+    JoystickInterface(OIS::InputManager* pInputInterface, EventHandler* pEventHdlr) : _pInputInterface(pInputInterface),
+																					  _nCurrJoyInd(-1),
+																					  _dMasterGain(0.5),
+																					  _bAutoCenter(true)  {
 	  _bFFFound = false;
-	  for( U8 nJoyInd = 0; nJoyInd < pInputMgr->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd ) 
+	  for( U8 nJoyInd = 0; nJoyInd < pInputInterface->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd ) 
 	  {
 		//Create the stick
-		OIS::JoyStick* pJoy = (OIS::JoyStick*)pInputMgr->createInputObject( OIS::OISJoyStick, true );
+		OIS::JoyStick* pJoy = (OIS::JoyStick*)pInputInterface->createInputObject( OIS::OISJoyStick, true );
 		PRINT_FN("Created buffered joystick # %d '%s' (Id='%d')",nJoyInd,pJoy->vendor(),pJoy->getID());
 		
 		// Check for FF, and if so, keep the joy and dump FF info
@@ -89,15 +89,15 @@ class JoystickManager
 		/*else
 		{
 		  cout << " (no force feedback support detected) => ignored." << endl << endl;
-		  _pInputMgr->destroyInputObject(pJoy);
+		  _pInputInterface->destroyInputObject(pJoy);
 		}*/
 	  }
 	}
 
-    ~JoystickManager()
+    ~JoystickInterface()
     {
 	  for(size_t nJoyInd = 0; nJoyInd < _vecJoys.size(); ++nJoyInd)
-		_pInputMgr->destroyInputObject( _vecJoys[nJoyInd] );
+		_pInputInterface->destroyInputObject( _vecJoys[nJoyInd] );
 	}
 
     inline size_t getNumberOfJoysticks() const { return _vecJoys.size(); }

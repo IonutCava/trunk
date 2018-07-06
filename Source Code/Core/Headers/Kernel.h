@@ -28,7 +28,14 @@ class GFXDevice;
 class SFXDevice;
 class SceneManager;
 class CameraManager;
-
+///Input
+namespace OIS {
+	class KeyEvent;
+	class MouseEvent;
+	class JoyStickEvent;
+	enum MouseButtonID;
+}
+class InputInterface;
 ///The kernel is the main interface to our engine components:
 ///-video
 ///-audio
@@ -47,18 +54,41 @@ public:
 
 	static void MainLoopStatic();
 	static void Idle();
+	///Cache application data; 
+	///It's an ugly hack, but it reduces singleton dependencies and gives a slight speed boost
+	void refreshAppData();
+public: ///Input
+	///Key pressed
+	bool onKeyDown(const OIS::KeyEvent& key);
+	///Key released
+	bool onKeyUp(const OIS::KeyEvent& key);
+	///Joystic axis change
+	bool OnJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis);
+	///Joystick direction change
+	bool OnJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov);
+	///Joystick button pressed
+	bool OnJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button);
+	///Joystick button released
+	bool OnJoystickButtonUp(const OIS::JoyStickEvent& arg, I8 button);
+	///Mouse moved
+	bool onMouseMove(const OIS::MouseEvent& arg);
+	///Mouse button pressed
+	bool onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+	///Mouse button released
+	bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
 private:
    bool MainLoop();
 
 private:
-	GFXDevice&    _GFX;
-	SFXDevice&    _SFX;
-	PXDevice&     _PFX;
-	GUI&          _GUI;
-	SceneManager& _sceneMgr;
-	Camera*       _camera;
-	
+	GFXDevice&		_GFX;
+	SFXDevice&		_SFX;
+	PXDevice&		_PFX;
+	GUI&			_GUI;
+	SceneManager&	_sceneMgr;
+	Camera*			_camera;
+	InputInterface& _inputInterface;
+
 	static bool   _keepAlive;
 	/// get elapsed time since kernel initialization
 	inline static D32 getCurrentTime() {return _currentTime;}

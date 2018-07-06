@@ -29,7 +29,7 @@ void main(void)
 
 -- Fragment
 
-uniform vec2 screenDimension;
+uniform ivec2 screenDimension;
 uniform float noise_tile;
 uniform float noise_factor;
 uniform float time;

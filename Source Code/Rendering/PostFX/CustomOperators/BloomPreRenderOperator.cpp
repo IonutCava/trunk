@@ -2,18 +2,20 @@
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h" 
 #include "Hardware/Video/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 
-BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader, Quad3D* target, FrameBufferObject* result) : PreRenderOperator(BLOOM_STAGE,target),
-												_blur(bloomShader),
-												_outputFBO(result)
+BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader, 
+											   Quad3D* target, 
+											   FrameBufferObject* result, 
+											   const vec2<U16>& resolution) : PreRenderOperator(BLOOM_STAGE,target,resolution),
+																			 _blur(bloomShader),
+																	         _outputFBO(result)
 {
-	F32 width = Application::getInstance().getWindowDimensions().width;
-	F32 height = Application::getInstance().getWindowDimensions().height;
+	F32 width = _resolution.width;
+	F32 height = _resolution.height;
 	I32 w = width/4, h = height/4;
 	_tempBloomFBO = GFX_DEVICE.newFBO();
 	_tempBloomFBO->Create(FBO_2D_COLOR,w,h);

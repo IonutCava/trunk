@@ -12,13 +12,13 @@ PreRenderStageBuilder::~PreRenderStageBuilder(){
 	SAFE_DELETE(_renderStage);
 }
 
-PreRenderOperator*  PreRenderStageBuilder::addSSAOOperator(ShaderProgram* const SSAOShader, Quad3D* target, bool& state, FrameBufferObject* result) {
-	SSAOPreRenderOperator* ssao = New SSAOPreRenderOperator(SSAOShader,target,result);
+PreRenderOperator*  PreRenderStageBuilder::addSSAOOperator(ShaderProgram* const SSAOShader, Quad3D* target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution) {
+	SSAOPreRenderOperator* ssao = New SSAOPreRenderOperator(SSAOShader,target,result,resolution);
 	return addToStage(ssao, state);
 }
 
-PreRenderOperator*  PreRenderStageBuilder::addBloomOperator(ShaderProgram* const bloomShader, Quad3D* target, bool& state, FrameBufferObject* result) {
-	BloomPreRenderOperator* bloom = New BloomPreRenderOperator(bloomShader,target,result);
+PreRenderOperator*  PreRenderStageBuilder::addBloomOperator(ShaderProgram* const bloomShader, Quad3D* target, bool& state, FrameBufferObject* result, const vec2<U16>& resolution) {
+	BloomPreRenderOperator* bloom = New BloomPreRenderOperator(bloomShader,target,result,resolution);
 	return addToStage(bloom, state);
 }
 

@@ -6,7 +6,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
 
-I8 DX_API::initHardware(const vec2<F32>& windowDimensions){
+I8 DX_API::initHardware(const vec2<U16>& resolution){
 
 	PRINT_FN("Initializing Direct3D rendering API! ");
 	D3D_ENUM_TABLE::fill();
