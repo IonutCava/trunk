@@ -36,10 +36,12 @@
 
 #include <boost/thread/mutex.hpp>
 #include <functional>
+#include <atomic>
 
 namespace Divide {
 
 static const int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
+static const int MAX_CONSOLE_ENTRIES = 5;
 
 class Console : private NonCopyable {
     typedef std::function<void(const char*, bool)> consolePrintCallback;
@@ -67,6 +69,7 @@ class Console : private NonCopyable {
     static const char* output(const char* text, const bool error = false);
 
    private:
+    static std::atomic<int> _bufferEntryCount;
     static boost::mutex io_mutex;
     static consolePrintCallback _guiConsoleCallback;
     static bool _timestamps;

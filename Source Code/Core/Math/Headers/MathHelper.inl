@@ -306,26 +306,26 @@ __forceinline void inverse(const T* in, T* out) {
 }
 
 template <typename T>
-void multiply(const T* a, const T* b, T* r) {
-    //memset(r, 0, sizeof(T) * 16);
-    U32 row, row_offset;
-    for (row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4) {
-        r[row_offset + 0] =
-            (a[row_offset + 0] * b[0 + 0]) + (a[row_offset + 1] * b[0 + 4]) +
-            (a[row_offset + 2] * b[0 + 8]) + (a[row_offset + 3] * b[0 + 12]);
+void multiply(const T a[16], const T b[16], T r[16]) {
+    T rTemp[] = 
+        {(a[0]  * b[0]) + (a[1]  * b[4]) + (a[2]  * b[8] ) + (a[3]  * b[12]),
+         (a[0]  * b[1]) + (a[1]  * b[5]) + (a[2]  * b[9] ) + (a[3]  * b[13]),
+         (a[0]  * b[2]) + (a[1]  * b[6]) + (a[2]  * b[10]) + (a[3]  * b[14]),
+         (a[0]  * b[3]) + (a[1]  * b[7]) + (a[2]  * b[11]) + (a[3]  * b[15]),
+         (a[4]  * b[0]) + (a[5]  * b[4]) + (a[6]  * b[8] ) + (a[7]  * b[12]),
+         (a[4]  * b[1]) + (a[5]  * b[5]) + (a[6]  * b[9] ) + (a[7]  * b[13]),
+         (a[4]  * b[2]) + (a[5]  * b[6]) + (a[6]  * b[10]) + (a[7]  * b[14]),
+         (a[4]  * b[3]) + (a[5]  * b[7]) + (a[6]  * b[11]) + (a[7]  * b[15]),
+         (a[8]  * b[0]) + (a[9]  * b[4]) + (a[10] * b[8] ) + (a[11] * b[12]),
+         (a[8]  * b[1]) + (a[9]  * b[5]) + (a[10] * b[9] ) + (a[11] * b[13]),
+         (a[8]  * b[2]) + (a[9]  * b[6]) + (a[10] * b[10]) + (a[11] * b[14]),
+         (a[8]  * b[3]) + (a[9]  * b[7]) + (a[10] * b[11]) + (a[11] * b[15]),
+         (a[12] * b[0]) + (a[13] * b[4]) + (a[14] * b[8] ) + (a[15] * b[12]),
+         (a[12] * b[1]) + (a[13] * b[5]) + (a[14] * b[9] ) + (a[15] * b[13]),
+         (a[12] * b[2]) + (a[13] * b[6]) + (a[14] * b[10]) + (a[15] * b[14]),
+         (a[12] * b[3]) + (a[13] * b[7]) + (a[14] * b[11]) + (a[15] * b[15])};
 
-        r[row_offset + 1] =
-            (a[row_offset + 0] * b[1 + 0]) + (a[row_offset + 1] * b[1 + 4]) +
-            (a[row_offset + 2] * b[1 + 8]) + (a[row_offset + 3] * b[1 + 12]);
-
-        r[row_offset + 2] =
-            (a[row_offset + 0] * b[2 + 0]) + (a[row_offset + 1] * b[2 + 4]) +
-            (a[row_offset + 2] * b[2 + 8]) + (a[row_offset + 3] * b[2 + 12]);
-
-        r[row_offset + 3] =
-            (a[row_offset + 0] * b[3 + 0]) + (a[row_offset + 1] * b[3 + 4]) +
-            (a[row_offset + 2] * b[3 + 8]) + (a[row_offset + 3] * b[3 + 12]);
-    }
+    memcpy(r, rTemp, 16 * sizeof(T));
 }
 
 };  // namespace Mat4

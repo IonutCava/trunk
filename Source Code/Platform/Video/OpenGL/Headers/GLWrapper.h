@@ -180,8 +180,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                      const bool skipBuffers, const bool skipScissor);
     /// Return the glsl optimisation context (created by the glsl-optimizer library)
     inline glslopt_ctx* getGLSLOptContext() const { return _GLSLOptContex; }
-    void uploadDrawCommands(
-        const vectorImpl<IndirectDrawCommand>& drawCommands) const override;
+    void uploadDrawCommands(const DrawCommandList& drawCommands,
+                            U32 commandCount) const override;
 
     bool makeTexturesResident(const TextureDataContainer& textureData) override;
     bool makeTextureResident(const TextureData& textureData) override;

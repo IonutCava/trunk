@@ -210,15 +210,17 @@ void GUIConsole::update(const U64 deltaTime) {
         return;
     }
     WriteLock w_lock(_outputLock);
-    std::pair<CEGUI::String, bool> message;
     while (!_outputBuffer.empty()) {
-        message = _outputBuffer.front();
-        if (_lastMsgError != message.second) {
-            _lastMsgError = message.second;
+        const std::pair<CEGUI::String, bool>& message = _outputBuffer.front();
+        bool error = message.second;
+        if (_lastMsgError != error) {
+            _lastMsgError = error;
             OutputText(_lastMsg.c_str(), _lastMsgError);
             _lastMsg.clear();
         }
-
+        if (error) {
+            _lastMsg.append("Error: ");
+        }
         _lastMsg.append(message.first.c_str());
         _lastMsg.append("\n");
         _outputBuffer.pop_front();

@@ -64,7 +64,7 @@ void GFXDevice::uploadGlobalBufferData() {
     }
 
     if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)]) {
-        uploadDrawCommands(_drawCommandsCache);
+        uploadDrawCommands(_drawCommandsCache, _lastCmdCount);
         _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
     }
 
@@ -81,29 +81,28 @@ void GFXDevice::uploadGlobalBufferData() {
 bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // We also need a valid draw command ID so we can index the node buffer
     // properly
-    DIVIDE_ASSERT(
-        cmd.drawID() < std::max(static_cast<U32>(_lastNodeCount), 1u) &&
-            cmd.drawID() >= 0,
-        "GFXDevice error: Invalid draw ID encountered!");
-    if (cmd.primCount() == 0 || cmd.drawCount() == 0) {
-        return false;
-    }
+    DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(
+                      cmd.drawID(), 0u,
+                      std::max(static_cast<U32>(_lastNodeCount - 1), 1u)),
+                  "GFXDevice error: Invalid draw ID encountered!");
+    DIVIDE_ASSERT(cmd.primCount() > 0 && cmd.drawCount() > 0,
+                  "GFXDevice error: Invalid draw command!");
     // We need a valid shader as no fixed function pipeline is available
     DIVIDE_ASSERT(cmd.shaderProgram() != nullptr,
                   "GFXDevice error: Draw shader state is not valid for the "
                   "current draw operation!");
+
     // Try to bind the shader program. If it failed to load, or isn't loaded
     // yet, cancel the draw request for this frame
-    if (!cmd.shaderProgram()->bind()) {
-        return false;
+    if (cmd.shaderProgram()->bind()) {
+        cmd.shaderProgram()->Uniform("baseInstance", cmd.drawID());
+        // Finally, set the proper render states
+        setStateBlock(cmd.stateHash());
+        // Continue with the draw call
+        return true;
     }
-    // Finally, set the proper render states
-    setStateBlock(cmd.stateHash());
-    // Bind the valid range for node buffer data
-    _nodeBuffer->BindRange(ShaderBufferLocation::NODE_INFO, cmd.drawID(),
-                           cmd.drawCount());
-    // Continue with the draw call
-    return true;
+
+    return false;
 }
 
 void GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
@@ -155,21 +154,27 @@ void GFXDevice::flushRenderQueue() {
     }
     uploadGlobalBufferData();
     for (RenderPackage& package : _renderQueue) {
-        vectorAlg::vecSize commandCount = package._drawCommands.size();
+        vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
+        vectorAlg::vecSize commandCount = drawCommands.size();
         if (commandCount > 0) {
-            GenericDrawCommand& previousCmd = package._drawCommands[0];
+            GenericDrawCommand& previousCmd = drawCommands[0];
             for (vectorAlg::vecSize i = 1; i < commandCount; i++) {
-                GenericDrawCommand& currentCmd = package._drawCommands[i];
+                GenericDrawCommand& currentCmd = drawCommands[i];
                 if (!batchCommands(previousCmd, currentCmd)) {
                     previousCmd = currentCmd;
                 }
             }
-            package._drawCommands.erase(
-                std::remove_if(std::begin(package._drawCommands),
-                               std::end(package._drawCommands),
-                               [](const GenericDrawCommand& cmd)
-                                   -> bool { return cmd.drawCount() == 0; }),
-                std::end(package._drawCommands));
+            drawCommands.erase(
+                std::remove_if(std::begin(drawCommands), std::end(drawCommands),
+                               [](const GenericDrawCommand& cmd) -> bool {
+                                   return cmd.drawCount() == 0 ||
+                                          cmd.primCount() == 0;
+                               }),
+                std::end(drawCommands));
+
+            std::for_each(std::begin(drawCommands), std::end(drawCommands),
+                          [](GenericDrawCommand& cmd) -> void { cmd.lock(); });
+
             for (ShaderBufferList::value_type& it : package._shaderBuffers) {
                 it._buffer->BindRange(it._slot, it._range.x, it._range.y);
             }
@@ -260,13 +265,12 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         // Generate and upload all lighting data
         LightManager::getInstance().updateAndUploadLightData(
             _gpuBlock._ViewMatrix);
-        _lastNodeCount = 1;
+            _lastNodeCount = 1;
     }
     _renderQueue.reserve(nodeCount);
-    // Reset previously generated commands
-    vectorImpl<GenericDrawCommand> nonBatchedCommands;
-    nonBatchedCommands.reserve(nodeCount + 1);
-    nonBatchedCommands.push_back(_defaultDrawCmd);
+
+    _lastCmdCount = 0;
+    _drawCommandsCache[_lastCmdCount++].set(_defaultDrawCmd.cmd());
 
     U32 drawID = 1;
     // Loop over the list of nodes to generate a new command list
@@ -280,7 +284,9 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         if (!nodeDrawCommands.empty()) {
             for (GenericDrawCommand& cmd : nodeDrawCommands) {
                 cmd.drawID(drawID);
-                nonBatchedCommands.push_back(cmd);
+                // Extract the specific rendering commands from the draw commands
+                // Rendering commands are stored in GPU memory. Draw commands are not.
+                _drawCommandsCache[_lastCmdCount++].set(cmd.cmd());
             }
             if (refreshNodeData) {
                processVisibleNode(node, _matricesData[_lastNodeCount++]);
@@ -288,15 +294,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
             drawID += 1;
         }
     }
-
-    // Extract the specific rendering commands from the draw commands
-    // Rendering commands are stored in GPU memory. Draw commands are not.
-    _drawCommandsCache.resize(0);
-    _drawCommandsCache.reserve(nonBatchedCommands.size());
-    for (const GenericDrawCommand& cmd : nonBatchedCommands) {
-        _drawCommandsCache.push_back(cmd.cmd());
-    }
-
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
 
     Time::STOP_TIMER(_commandBuildTimer);
@@ -304,19 +301,21 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
                               GenericDrawCommand& currentIDC) const {
-    if (!previousIDC.sourceBuffer() || !currentIDC.sourceBuffer()) {
-        return false;
-    }
-    if (!previousIDC.shaderProgram() || !currentIDC.shaderProgram()) {
-        return false;
-    }
+    DIVIDE_ASSERT(previousIDC.sourceBuffer() && currentIDC.sourceBuffer(),
+                  "GFXDevice::batchCommands error: a command with an invalid "
+                  "source buffer was specified!");
+    DIVIDE_ASSERT(previousIDC.shaderProgram() && currentIDC.shaderProgram(),
+                  "GFXDevice::batchCommands error: a command with an invalid "
+                  "shader program was specified!");
+
     if (previousIDC.compatible(currentIDC) &&
         // Batchable commands must share the same buffer
         previousIDC.sourceBuffer()->getGUID() ==
-            currentIDC.sourceBuffer()->getGUID() &&
+        currentIDC.sourceBuffer()->getGUID() &&
         // And the same shader program
         previousIDC.shaderProgram()->getID() ==
-            currentIDC.shaderProgram()->getID()) {
+        currentIDC.shaderProgram()->getID())
+    {
         U32 prevCount = previousIDC.drawCount();
         if (previousIDC.drawID() + prevCount != currentIDC.drawID()) {
             return false;
@@ -336,8 +335,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
 /// This is just a short-circuit system (hack) to send a list of points to the
 /// shader
 /// It's used, mostly, to draw full screen quads using geometry shaders
-void GFXDevice::drawPoints(U32 numPoints,
-                           size_t stateHash,
+void GFXDevice::drawPoints(U32 numPoints, size_t stateHash,
                            ShaderProgram* const shaderProgram) {
     // We need a valid amount of points. Check lower limit
     if (numPoints == 0) {

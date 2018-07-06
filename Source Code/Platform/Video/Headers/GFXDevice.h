@@ -120,7 +120,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
    };
 
    typedef vectorImpl<RenderPassCuller::RenderableNode> VisibleNodeList;
-
    typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
 
    struct RenderPackage {
@@ -394,9 +393,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->getFrameDurationGPU();
     }
 
-    inline void uploadDrawCommands(
-        const vectorImpl<IndirectDrawCommand>& drawCommands) const override {
-        _api->uploadDrawCommands(drawCommands);
+    inline void uploadDrawCommands(const DrawCommandList& drawCommands,
+                                   U32 commandCount) const override {
+        _api->uploadDrawCommands(drawCommands, commandCount);
     }
 
     inline bool makeTexturesResident(const TextureDataContainer& textureData) override {
@@ -544,12 +543,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     GPUBlock _gpuBlock;
 
-    /// This is set to true if the render queue will be submitted in sorted order.
-    /// (e.g.: Z_PRE_PASS is unsorted, DISPLAY is sorted).
-    /// Batching unsorted commands does not work
+    U32 _lastCmdCount;
     vectorAlg::vecSize _lastNodeCount;
-    vectorImpl<NodeData> _matricesData;
-    vectorImpl<IndirectDrawCommand> _drawCommandsCache;
+    std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
+    std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> _drawCommandsCache;
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;

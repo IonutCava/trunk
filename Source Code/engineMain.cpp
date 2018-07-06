@@ -6,9 +6,13 @@
 namespace Divide {
 
 int engineMain(int argc, char** argv) {
-    FILE* output = nullptr;
-    output = freopen(OUTPUT_LOG_FILE, "w", stdout);
-    output = freopen(ERROR_LOG_FILE, "w", stderr);
+    std::ofstream stdConsole(OUTPUT_LOG_FILE,
+                             std::ofstream::out | std::ofstream::trunc);
+    std::ofstream errConsole(ERROR_LOG_FILE,
+                             std::ofstream::out | std::ofstream::trunc);
+    std::cout.rdbuf(stdConsole.rdbuf());
+    std::cerr.rdbuf(errConsole.rdbuf());
+
     // Initialize our application based on XML configuration. Error codes are
     // always less than 0
     ErrorCode returnCode =
@@ -24,9 +28,11 @@ int engineMain(int argc, char** argv) {
     }
 
     // Stop our application
-    // When the application is deleted, the last kernel used gets deleted as
-    // well
+    // When the application is deleted, the last kernel used is deleted as well
     Application::destroyInstance();
+
+    std::cout << std::endl;
+    std::cerr << std::endl;
 
     return to_int(returnCode);
 }

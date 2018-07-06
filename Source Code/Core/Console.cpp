@@ -7,6 +7,7 @@
 
 namespace Divide {
 
+std::atomic<int> Console::_bufferEntryCount = 0;
 bool Console::_timestamps = false;
 boost::mutex Console::io_mutex;
 char Console::_textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE];
@@ -135,7 +136,7 @@ const char* Console::errorfn(const char* format, ...) {
     assert(_vscprintf(format, args) + 3 < CONSOLE_OUTPUT_BUFFER_SIZE);
     vsprintf_s(_textBuffer, sizeof(char) * CONSOLE_OUTPUT_BUFFER_SIZE, format,
                args);
-    strcat(_textBuffer, "\n");
+    strcat(_textBuffer,"\n");
     va_end(args);
     return output(_textBuffer, true);
 }
@@ -158,29 +159,29 @@ void Console::flush() {
 
 const char* Console::output(const char* output, const bool error) {
     if (_guiConsoleCallback) {
-        if (error) {
-            stringImpl outputString("Error: ");
-            outputString.append(output);
-            _guiConsoleCallback(outputString.c_str(), error);
-        } else {
-            _guiConsoleCallback(output, error);
-        }
+        _guiConsoleCallback(output, error);
     }
-
-    boost::mutex::scoped_lock lock(io_mutex);
 
     std::ostream& outputStream = error ? std::cerr : std::cout;
 
+    boost::mutex::scoped_lock lock(io_mutex);
     if (_timestamps) {
-        outputStream << "[ " << std::setprecision(2)
-                     << Time::ElapsedSeconds(true) << " ] ";
+        outputStream << "[ " 
+                     << std::setprecision(2)
+                     << Time::ElapsedSeconds(true) 
+                     << " ] ";
     }
-
     if (error) {
         outputStream << " Error: ";
     }
 
-    outputStream << output/* << std::flush*/;
+    _bufferEntryCount++;
+    outputStream << output;
+
+    if (_bufferEntryCount > MAX_CONSOLE_ENTRIES) {
+        outputStream << std::flush;
+        _bufferEntryCount = 0;
+    }
 
     return output;
 }

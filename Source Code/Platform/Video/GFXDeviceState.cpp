@@ -51,7 +51,6 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
-    _matricesData.resize(Config::MAX_VISIBLE_NODES + 1);
     // Resize our window to the target resolution (usually, the splash screen
     // resolution)
     changeResolution(resolution.width, resolution.height);

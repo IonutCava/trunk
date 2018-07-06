@@ -76,12 +76,23 @@ struct IndirectDrawCommand {
           primCount(1),
           firstIndex(0),
           baseVertex(0),
-          baseInstance(0) {}
+          baseInstance(0)
+    {
+    }
+
     U32 count;
     U32 primCount;
     U32 firstIndex;
     U32 baseVertex;
     U32 baseInstance;
+
+    inline void set(const IndirectDrawCommand& other) {
+        count = other.count;
+        primCount = other.primCount;
+        firstIndex = other.firstIndex;
+        baseVertex = other.baseVertex;
+        baseInstance = other.baseInstance;
+    }
 };
 
 struct GenericDrawCommand {
@@ -97,24 +108,75 @@ struct GenericDrawCommand {
     ShaderProgram* _shaderProgram;
     VertexDataInterface* _sourceBuffer;
 
+    bool _locked;
+
    public:
-    inline void drawCount(U16 count) { _drawCount = count; }
-    inline void drawID(U32 ID) { _cmd.baseInstance = ID; }
-    inline void LoD(U8 lod) { _lodIndex = lod; }
-    inline void queryID(U8 queryID) { _queryID = queryID; }
-    inline void stateHash(size_t hashValue) { _stateHash = hashValue; }
-    inline void drawToBuffer(bool state) { _drawToBuffer = state; }
-    inline void renderWireframe(bool state) { _renderWireframe = state; }
-    inline void primCount(U32 count) { _cmd.primCount = count; }
-    inline void firstIndex(U32 index) { _cmd.firstIndex = index; }
-    inline void indexCount(U32 count) { _cmd.count = count; }
+    inline void lock() { _locked = true; }
+
+    inline void drawCount(U16 count) { 
+        assert(!_locked);
+        _drawCount = count; 
+    }
+
+    inline void drawID(U32 ID) {
+        assert(!_locked);
+        _cmd.baseInstance = ID;
+    }
+
+    inline void LoD(U8 lod) {
+        assert(!_locked);
+        _lodIndex = lod;
+    }
+
+    inline void queryID(U8 queryID) {
+        assert(!_locked);
+        _queryID = queryID;
+    }
+
+    inline void stateHash(size_t hashValue) {
+        assert(!_locked);
+        _stateHash = hashValue;
+    }
+
+    inline void drawToBuffer(bool state) {
+        assert(!_locked);
+        _drawToBuffer = state;
+    }
+
+    inline void renderWireframe(bool state) {
+        assert(!_locked);
+        _renderWireframe = state;
+    }
+
+    inline void primCount(U32 count) {
+        assert(!_locked);
+        _cmd.primCount = count;
+    }
+
+    inline void firstIndex(U32 index) {
+        assert(!_locked);
+        _cmd.firstIndex = index;
+    }
+
+    inline void indexCount(U32 count) {
+        assert(!_locked);
+        _cmd.count = count;
+    }
+
     inline void shaderProgram(ShaderProgram* const program) {
+        assert(!_locked);
         _shaderProgram = program;
     }
+
     inline void sourceBuffer(VertexDataInterface* const sourceBuffer) {
+        assert(!_locked);
         _sourceBuffer = sourceBuffer;
     }
-    inline void primitiveType(PrimitiveType type) { _type = type; }
+
+    inline void primitiveType(PrimitiveType type) {
+        assert(!_locked);
+        _type = type;
+    }
 
     inline U8 LoD() const { return _lodIndex; }
     inline U8 queryID() const { return _queryID; }
@@ -132,7 +194,9 @@ struct GenericDrawCommand {
     inline PrimitiveType primitiveType() const { return _type; }
 
     GenericDrawCommand()
-        : GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 0) {}
+        : GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 0)
+    {
+    }
 
     GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 count,
                        U32 primCount = 1)
@@ -141,17 +205,22 @@ struct GenericDrawCommand {
           _stateHash(0),
           _queryID(0),
           _drawCount(1),
+          _locked(false),
           _drawToBuffer(false),
           _renderWireframe(false),
           _shaderProgram(nullptr),
-          _sourceBuffer(nullptr) {
+          _sourceBuffer(nullptr)
+    {
         _cmd.count = count;
         _cmd.firstIndex = firstIndex;
         _cmd.primCount = primCount;
     }
 
-    inline void set(const GenericDrawCommand& base) {
-        _cmd = base._cmd;
+    inline void set(const GenericDrawCommand& base)
+    {
+        assert(!_locked);
+        _cmd.set(base._cmd);
+
         _queryID = base._queryID;
         _lodIndex = base._lodIndex;
         _drawCount = base._drawCount;
@@ -223,6 +292,7 @@ private:
 };
 
 typedef vectorImpl<TextureData> TextureDataContainer;
+typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
 
 enum class ShaderType : U32;
 class Shader;
@@ -292,8 +362,8 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual void changeResolution(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void threadedLoadCallback() = 0;
-    virtual void uploadDrawCommands(
-        const vectorImpl<IndirectDrawCommand>& drawCommands) const = 0;
+    virtual void uploadDrawCommands(const DrawCommandList& drawCommands,
+                                    U32 commandCount) const = 0;
 
     virtual bool makeTexturesResident(const TextureDataContainer& textureData) = 0;
     virtual bool makeTextureResident(const TextureData& textureData) = 0;

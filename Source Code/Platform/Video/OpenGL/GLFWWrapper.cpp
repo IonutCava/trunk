@@ -332,6 +332,9 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     // Allocate a buffer for indirect draw used to store the query results
     // without a round-trip to the CPU
     glCreateBuffers(1, &_indirectDrawBuffer);
+    glNamedBufferData(_indirectDrawBuffer,
+                      Config::MAX_VISIBLE_NODES * sizeof(IndirectDrawCommand),
+                      NULL, GL_DYNAMIC_DRAW);
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
 #ifdef _DEBUG

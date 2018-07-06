@@ -115,8 +115,8 @@ void ApplicationTimer::benchmarkInternal(U32 frameCount) {
     g_averageFps += _fps;
     g_averageCount++;
 
-    // Min/Max FPS (after every target second)
-    if (frameCount % _targetFrameRate == 0) {
+    // Min/Max FPS (Every 5 seconds (targeted))
+    if (frameCount % (_targetFrameRate * 5) == 0) {
         g_maxFps = std::max(g_maxFps, _fps);
         g_minFps = std::min(g_minFps, _fps);
     }
