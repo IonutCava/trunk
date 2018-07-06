@@ -49,7 +49,7 @@ void main()
     float f = dvd_ZPlanesCombined.y * 0.5;
 #endif
 
-    float depth = textureLod(texDiffuse0, _texCoord, lodLevel).r;
+    float depth = textureLod(texDiffuse0, _texCoord, uint(lodLevel)).r;
     float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }

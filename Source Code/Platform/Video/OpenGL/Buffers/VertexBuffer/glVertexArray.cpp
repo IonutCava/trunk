@@ -9,6 +9,20 @@
 
 namespace Divide {
 
+namespace {
+    vec3<U32> g_currentBindConfig;
+    vec3<U32> g_tempConfig;
+    bool setIfDifferentBindRange(U32 UBOid, U32 offset, U32 size) {
+        g_tempConfig.set(UBOid, offset, size);
+        if (g_tempConfig != g_currentBindConfig) {
+            g_currentBindConfig.set(g_tempConfig);
+            return true;
+        }
+
+        return false;
+    }
+};
+
 glVertexArray::VAOMap glVertexArray::_VAOMap;
 
 GLuint glVertexArray::getVao(size_t hash) {
@@ -362,10 +376,10 @@ bool glVertexArray::setActive() {
     }
 
     // Bind the the vertex buffer and index buffer
-    //GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _VBid);
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
-
-    glBindVertexBuffer(0, _VBid, 0, _bufferEntrySize);
+    if (setIfDifferentBindRange(_VBid, 0, _bufferEntrySize)) {
+        glBindVertexBuffer(0, _VBid, 0, _bufferEntrySize);
+    }
     return true;
 }
 

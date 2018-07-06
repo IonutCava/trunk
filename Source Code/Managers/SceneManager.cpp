@@ -166,15 +166,12 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         for (RenderPassCuller::RenderableNode& node : nodes._visibleNodes) {
             queue.addNodeToQueue(*node._visibleNode, eyePos);
         }
-        queue.sort(stage);
-        sortVisibleNodes(nodes);
 
         // Generate and upload all lighting data
-        if (stage != RenderStage::SHADOW &&
-            stage != RenderStage::DISPLAY) {
-            LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
-        }
+        LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
     }
+    queue.sort(stage);
+    sortVisibleNodes(nodes);
 
     RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
     visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
