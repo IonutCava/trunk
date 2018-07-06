@@ -139,7 +139,7 @@ bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderStat
 
 
 void QuadtreeNode::DrawBBox() const {
-    GFX_DEVICE.drawBox3D(_boundingBox.getMin(), _boundingBox.getMax(), vec4<U8>(0, 128, 255, 255), mat4<F32>());
+    GFX_DEVICE.drawBox3D(_boundingBox.getMin(), _boundingBox.getMax(), vec4<U8>(0, 128, 255, 255));
 
     if (!isALeaf()){
         _children[CHILD_NW]->DrawBBox();

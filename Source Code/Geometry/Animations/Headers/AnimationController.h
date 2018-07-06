@@ -35,6 +35,8 @@ struct aiNode;
 struct aiScene;
 class SceneAnimator{
 public:
+    typedef Unordered_map<U32/*frameIndex*/, vectorImpl<Line >> LineMap;
+    typedef Unordered_map<U32/*animationId*/, LineMap > LineCollection;
 
     SceneAnimator(): _skeleton(0)
     {
@@ -47,8 +49,6 @@ public:
 
     /// this must be called to fill the SceneAnimator with valid data
     bool Init(const aiScene* pScene, U8 meshPointer);
-    ///Only called if the SceneGraph detected a transformation change
-    inline void setGlobalMatrix(const mat4<F32>& matrix) {	_rootTransformRender = matrix; } // update root matrix for mesh;
     /// frees all memory and initializes everything to a default state
     void Release();
     void Save(std::ofstream& file);
@@ -93,7 +93,7 @@ public:
 	inline const mat4<F32>& GetBoneOffsetTransform(const std::string& bname) {
 		I32 bindex=GetBoneIndex(bname);
 		if(bindex != -1) {
-			AnimUtils::TransformMatrix(_cacheIdentity, _bonesByName[bname]->_offsetMatrix);
+			AnimUtils::TransformMatrix(_bonesByName[bname]->_offsetMatrix, _cacheIdentity);
 		}
 		return _cacheIdentity;
 	}
@@ -102,7 +102,7 @@ public:
     Bone* GetBoneByName(const std::string& name) const;
 	///GetBoneIndex will return the index of the bone given its name. The index can be used to index directly into the vector returned from GetTransform
     I32 GetBoneIndex(const std::string& bname) const;
-    I32 RenderSkeleton(I32 animationIndex, const D32 dt);
+    const vectorImpl<Line >& getSkeletonLines(I32 animationIndex, const D32 dt);
 
     size_t GetBoneCount() const { return _bones.size(); }
 
@@ -133,12 +133,8 @@ private:
     vectorImpl<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST REFERENCES!!
     vectorImpl<aiMatrix4x4 > _transforms;// temp array of transforms
 
-    typedef Unordered_map<U32/*frameIndex*/, vectorImpl<Line >> LineMap;
-    typedef Unordered_map<U32/*animationId*/, LineMap > LineCollection;
-
     LineCollection _skeletonLines;
     mat4<F32>      _cacheIdentity;
-    mat4<F32>      _rootTransformRender;
 };
 
 #endif

@@ -152,7 +152,7 @@ public:
     inline bool drawDebugAxis()                           const {return _drawDebugAxis;}
 
     void debugDraw(const SceneRenderState& sceneRenderState);
-    void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const vec4<U8>& color, const mat4<F32>& globalOffset);
+    void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const vec4<U8>& color);
     void drawLines(const vectorImpl<Line >& lines,
                    const mat4<F32>& globalOffset,
                    const vec4<I32>& viewport, //<only for ortho mode

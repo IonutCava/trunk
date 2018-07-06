@@ -352,11 +352,11 @@ void Kernel::firstLoop() {
         par.setParam("rendering.enableShadows", true);
         mainLoopApp();
     }
-    GFX_DEVICE.setWindowPos(150, 350);
+    GFX_DEVICE.setWindowPos(10, 60);
     par.setParam("freezeGUITime", false);
     par.setParam("freezeLoopTime", false);
 
-    GFX_DEVICE.changeResolution(Application::getInstance().getResolution() * 2);
+    GFX_DEVICE.changeResolution(Application::getInstance().getPreviousResolution());
 #if defined(_DEBUG) || defined(_PROFILE)
     ApplicationTimer::getInstance().benchmark(true);
 #endif
@@ -390,9 +390,8 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
     vec2<U16> resolution = _APP.getResolution();
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
-
     _GFX.registerKernel(this);
-    ErrorCodes initError = _GFX.initRenderingApi(resolution/2, _argc, _argv);
+    ErrorCodes initError = _GFX.initRenderingApi(vec2<U16>(400, 300), _argc, _argv);
 
     //If we could not initialize the graphics device, exit
     if(initError != NO_ERR) {
@@ -410,7 +409,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     //Load and render the splash screen
     _GFX.setRenderStage(FINAL_STAGE);
     _GFX.beginFrame();
-    GUISplash("divideLogo.jpg", resolution / 2).render();
+    GUISplash("divideLogo.jpg", vec2<U16>(400, 300)).render();
     _GFX.endFrame();
 
     LightManager::getInstance().init();

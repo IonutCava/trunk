@@ -65,12 +65,12 @@ bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
             vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
             if(GFX_DEVICE.getApi() == Direct3D){
                 for( size_t a = 0; a < _transforms.size(); ++a){
-                    AnimUtils::TransformMatrix(rotationmat, _bones[a]->_offsetMatrix * _bones[a]->_globalTransform);
+                    AnimUtils::TransformMatrix(_bones[a]->_offsetMatrix * _bones[a]->_globalTransform, rotationmat);
                     trans.push_back(rotationmat);
                 }
             }else{
                 for( size_t a = 0; a < _transforms.size(); ++a){
-                    AnimUtils::TransformMatrix(rotationmat, _bones[a]->_globalTransform * _bones[a]->_offsetMatrix);
+                    AnimUtils::TransformMatrix(_bones[a]->_globalTransform * _bones[a]->_offsetMatrix, rotationmat);
                     trans.push_back(rotationmat);
                 }
             }
@@ -171,7 +171,7 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 }
 
 ///Renders the current skeleton pose at time index dt
-I32 SceneAnimator::RenderSkeleton(I32 animationIndex, const D32 dt){
+const vectorImpl<Line >& SceneAnimator::getSkeletonLines(I32 animationIndex, const D32 dt){
     I32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
 
     if (_skeletonLines.find(animationIndex) == _skeletonLines.end())
@@ -183,14 +183,10 @@ I32 SceneAnimator::RenderSkeleton(I32 animationIndex, const D32 dt){
         lines.reserve(_bones.size());
         // Construct skeleton
         Calculate(animationIndex, dt);
-        // Prepare global transform
-        aiMatrix4x4 rootTransform;
-        AnimUtils::TransformMatrix(rootTransform,_rootTransformRender);
-        CreateSkeleton(_skeleton, rootTransform, lines);
+        // Start with identity transform
+        CreateSkeleton(_skeleton, aiMatrix4x4(), lines);
     }
-    // Submit skeleton to gpu
-    GFX_DEVICE.drawLines(_skeletonLines[animationIndex][frameIndex], _rootTransformRender, vec4<I32>(), false, true);
-    return 1;
+    return _skeletonLines[animationIndex][frameIndex];
 }
 
 /// Create animation skeleton

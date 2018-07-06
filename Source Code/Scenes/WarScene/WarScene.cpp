@@ -127,12 +127,15 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     totalTime += deltaTime;
 
     if(getUsToSec(totalTime) > 20 && !navMeshStarted){
-        Navigation::NavigationMesh* navMesh = New Navigation::NavigationMesh();
+        Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
+        if (!navMesh) {
+            navMesh = New Navigation::NavigationMesh();
+        }
         navMesh->setFileName(GET_ACTIVE_SCENE()->getName());
 
-        if(!navMesh->load(nullptr)) //<Start from root for now
+        if (!navMesh->load(nullptr)) {
             navMesh->build(nullptr, DELEGATE_BIND(navMeshCreationCompleteCallback, navMesh));
-        else{
+        } else {
             AIManager::getInstance().addNavMesh(navMesh);
 #ifdef _DEBUG
             AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
@@ -150,8 +153,9 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     }*/
     
 #ifdef _DEBUG
-    if(!AIManager::getInstance().getNavMesh(0))
+    if (!AIManager::getInstance().getNavMesh(0)) {
         return;
+    }
 
     U32 characterCount = (U32)(_army1.size() + _army2.size());
 

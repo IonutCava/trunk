@@ -114,7 +114,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     if (parser->isPropertyPresent("SchemaDefaultResourceGroup")){
         parser->setProperty("SchemaDefaultResourceGroup", "schemas");
     }
-
+    CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12.font");
     _defaultGUIScheme = ParamHandler::getInstance().getParam<std::string>("GUI.defaultScheme");
     CEGUI::SchemeManager::getSingleton().createFromFile(  _defaultGUIScheme + ".scheme") ;
 

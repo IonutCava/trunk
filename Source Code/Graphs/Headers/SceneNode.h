@@ -110,8 +110,6 @@ protected:
     /* Material */
     virtual	void bindTextures();
 
-    /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
-    virtual void preFrameDrawEnd(SceneGraphNode* const sgn);
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode* const sgn) { _nodeReady = (sgn != nullptr); }; 
 

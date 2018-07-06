@@ -2,6 +2,7 @@
 
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
@@ -53,6 +54,26 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
         _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Y_AXIS * 2, vec4<U8>(0, 255, 0, 255))); 
         // Blue Z-axis
         _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255)));
+        _axisGizmo = GFX_DEVICE.getOrCreatePrimitive(false);
+        // Prepare it for line rendering
+        _axisGizmo->_hasLines = true;
+        _axisGizmo->_lineWidth = 5.0f;
+        _axisGizmo->stateHash(GFX_DEVICE.getDefaultStateBlock(true));
+        _axisGizmo->paused(true);
+        // Create the object containing all of the lines
+        _axisGizmo->beginBatch();
+        _axisGizmo->attribute4ub("inColorData", _axisLines[0]._color);
+        // Set the mode to line rendering
+        _axisGizmo->begin(LINES);
+        // Add every line in the list to the batch
+        for (const Line& line : _axisLines) {
+            _axisGizmo->attribute4ub("inColorData", line._color);
+            _axisGizmo->vertex( line._startPoint );
+            _axisGizmo->vertex( line._endPoint );
+        }
+        _axisGizmo->end();
+        // Finish our object
+        _axisGizmo->endBatch();
 #   endif
 }
 
@@ -73,6 +94,9 @@ SceneGraphNode::~SceneGraphNode(){
     SAFE_DELETE(_prevTransformValues);
     _children.clear();
     _components.clear();
+#ifdef _DEBUG
+    _axisGizmo->_canZombify = true;
+#endif
 }
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& type) {

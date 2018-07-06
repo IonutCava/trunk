@@ -25,9 +25,13 @@ void computeData(){
     dvd_BiTangent  = inBiTangentData;
     dvd_Color      = inColorData;
 
-    #if defined(USE_GPU_SKINNING)
-    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
-    #endif
+#   if defined(USE_GPU_SKINNING)
+#       if defined(COMPUTE_TBN)
+            applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, dvd_lodLevel);
+#       else
+            applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
+#       endif
+#   endif
 
     _texCoord = inTexCoordData;
     _vertexW  = dvd_WorldMatrix * dvd_Vertex;

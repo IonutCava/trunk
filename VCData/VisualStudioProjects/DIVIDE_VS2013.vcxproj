@@ -463,9 +463,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIConsoleCommandParser.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp" />
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorAIInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorLightInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorSceneGraphInterface.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIElement.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
@@ -614,10 +611,6 @@
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIKeyRepeat.h" />
     <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h" />
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorAIInterface.h" />
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorInterface.h" />
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorLightInterface.h" />
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorSceneGraphInterface.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIButton.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsole.h" />

@@ -34,8 +34,8 @@
 #include <assimp/types.h>
 
 namespace AnimUtils {
-	void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in);
-	void TransformMatrix(aiMatrix4x4& out,const mat4<F32>& in);
+	void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out);
+	void TransformMatrix(const mat4<F32>& in, aiMatrix4x4& out);
 };
 
 #endif

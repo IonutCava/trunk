@@ -764,15 +764,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp">
       <Filter>GUI\GUIEditor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorAIInterface.cpp">
-      <Filter>GUI\GUIEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorSceneGraphInterface.cpp">
-      <Filter>GUI\GUIEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorLightInterface.cpp">
-      <Filter>GUI\GUIEditor</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp">
       <Filter>AI\PathFinding\Waypoints</Filter>
     </ClCompile>
@@ -1281,18 +1272,6 @@
       <Filter>Utility\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h">
-      <Filter>GUI\GUIEditor\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorAIInterface.h">
-      <Filter>GUI\GUIEditor\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorLightInterface.h">
-      <Filter>GUI\GUIEditor\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorSceneGraphInterface.h">
-      <Filter>GUI\GUIEditor\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorInterface.h">
       <Filter>GUI\GUIEditor\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h">

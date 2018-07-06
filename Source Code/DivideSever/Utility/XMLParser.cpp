@@ -1,5 +1,6 @@
 #include "Headers/XMLParser.h"
 #include "Headers/Patch.h"
+#include <iostream>
 
 namespace XML
 {
@@ -9,7 +10,7 @@ namespace XML
 	void loadScene(const std::string& sceneName)
 	{
 		pt.clear();
-		cout << "XML: Loading scene [ " << sceneName << " ] " << endl;
+		std::cout << "XML: Loading scene [ " << sceneName << " ] " << std::endl;
 		read_xml("Scenes/" + sceneName + ".xml", pt);
 		loadGeometry("Scenes/" + sceneName + "/" + pt.get("assets","assets.xml"));
 	}
@@ -17,7 +18,7 @@ namespace XML
 	void loadGeometry(const std::string &file)
 	{
 		pt.clear();
-		cout << "XML: Loading Geometry: [ " << file << " ] " << endl;
+		std::cout << "XML: Loading Geometry: [ " << file << " ] " << std::endl;
 		read_xml(file,pt);
 		ptree::iterator it;
 		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it )

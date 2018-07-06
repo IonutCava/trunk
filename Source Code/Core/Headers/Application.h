@@ -41,9 +41,10 @@ public:
     ///Application resolution (either fullscreen resolution or window dimensions)
     inline const vec2<U16>& getResolution()   const {return _resolution;}
     inline const vec2<U16>& getScreenCenter() const {return _screenCenter;}
-    inline void setResolutionWidth(U16 w)           {_resolution.width = w; _screenCenter.x = w / 2;}
-    inline void setResolutionHeight(U16 h)          {_resolution.height = h; _screenCenter.y = h / 2;}
-    inline void setResolution(U16 w, U16 h)         {_resolution.set(w,h); _screenCenter.set(_resolution / 2);}
+    inline const vec2<U16>& getPreviousResolution() const { return _prevResolution; }
+    inline void setResolutionWidth(U16 w)           { _prevResolution.set(_resolution); _resolution.width = w; _screenCenter.x = w / 2;}
+    inline void setResolutionHeight(U16 h)          { _prevResolution.set(_resolution); _resolution.height = h; _screenCenter.y = h / 2;}
+    inline void setResolution(U16 w, U16 h)         { _prevResolution.set(_resolution); _resolution.set(w,h); _screenCenter.set(_resolution / 2);}
 
     inline void RequestShutdown()                   {_requestShutdown = true;}
     inline void CancelShutdown()                    {_requestShutdown = false;}
@@ -90,6 +91,7 @@ private:
     size_t    _totalMemoryOcuppied;
     vec2<U16> _resolution;
     vec2<U16> _screenCenter;
+    vec2<U16> _prevResolution;
     Kernel*   _kernel;
     ///buffer to register all of the memory allocations recorded via "New"
     std::ofstream _memLogBuffer;

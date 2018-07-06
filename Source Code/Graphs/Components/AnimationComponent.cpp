@@ -90,10 +90,14 @@ bool AnimationComponent::playNextAnimation() {
 }
 
 void AnimationComponent::renderSkeleton(){
-    if (!_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) return;
+    if (!_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) {
+        return;
+    }
+
     // update possible animation
-    _animator->setGlobalMatrix(_parentSGN->getWorldMatrix());
-    _animator->RenderSkeleton(_currentAnimIndex, _currentTimeStamp);
+    const vectorImpl<Line >& skeletonLines = _animator->getSkeletonLines(_currentAnimIndex, _currentTimeStamp);
+    // Submit skeleton to gpu
+    GFX_DEVICE.drawLines(skeletonLines, _parentSGN->getWorldMatrix(), vec4<I32>(), false, true);
 }
 
 void AnimationComponent::onDraw(RenderStage currentStage) {

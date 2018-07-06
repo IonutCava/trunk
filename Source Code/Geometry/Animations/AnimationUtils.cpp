@@ -3,7 +3,7 @@
 
 namespace AnimUtils {
 	/// there is some type of alignment issue with my mat4 and the aimatrix4x4 class, so the copy must be done manually
-	void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in){
+	void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out){
 		bool colMaj = (GFX_DEVICE.getApi() != Direct3D);
 		out.element(0,0,colMaj)=in.a1;
 		out.element(0,1,colMaj)=in.b1;
@@ -26,7 +26,7 @@ namespace AnimUtils {
 		out.element(3,3,colMaj)=in.d4;
 	}
 
-	void TransformMatrix(aiMatrix4x4& out,const mat4<F32>& in){
+	void TransformMatrix(const mat4<F32>& in, aiMatrix4x4& out){
 		bool colMaj = (GFX_DEVICE.getApi() != Direct3D);
 		out.a1 = in.element(0,0,colMaj);
 		out.b1 = in.element(0,1,colMaj);

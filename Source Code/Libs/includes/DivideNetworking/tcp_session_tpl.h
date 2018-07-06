@@ -17,6 +17,7 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio.hpp>
 #include <deque>
+#include <set>
 
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;

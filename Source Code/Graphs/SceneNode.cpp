@@ -37,20 +37,6 @@ void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Scen
     _material->clean();
 }
 
-void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
-    assert(_nodeReady);
-    if (!sgn->inView()) return;
-
-    //draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
-    //Draw the bounding box if it's always on or if the scene demands it
-    if (sgn->getBoundingBoxConst().getVisibility() || GET_ACTIVE_SCENE()->renderState().drawBBox()){
-        drawBoundingBox(sgn);
-    }
-    if (sgn->getComponent<AnimationComponent>()){
-        sgn->getComponent<AnimationComponent>()->renderSkeleton();
-    }
-}
-
 bool SceneNode::getDrawState(const RenderStage& currentStage)  { 
     Material* mat = getMaterial();
     if (mat && !mat->getShaderInfo(currentStage).getProgram()->isHWInitComplete())
@@ -164,5 +150,5 @@ bool SceneNode::unload(){
 
 void SceneNode::drawBoundingBox(SceneGraphNode* const sgn) const {
     const BoundingBox& bb = sgn->getBoundingBoxConst();
-    GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255), mat4<F32>());
+    GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 }

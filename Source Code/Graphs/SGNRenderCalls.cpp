@@ -150,13 +150,27 @@ void SceneGraphNode::postDraw(const SceneRenderState& sceneRenderState, RenderSt
                 drawDebugAxis();
             }
         }
+    } else {
+        if (!isSelected()) {
+            _axisGizmo->paused(true);   
+        }
     }
 #endif
+    //draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
+    //Draw the bounding box if it's always on or if the scene demands it
+    if (getBoundingBoxConst().getVisibility() || sceneRenderState.drawBBox()) {
+        _node->drawBoundingBox(this);
+    }
+
+    if (getComponent<AnimationComponent>()) {
+        getComponent<AnimationComponent>()->renderSkeleton();
+    }
 }
 
 void SceneGraphNode::isInViewCallback(){
-    if(!_inView)
+    if (!_inView) {
         return;
+    }
 
     _materialColorMatrix.zero();
     _materialPropertyMatrix.zero();
@@ -179,9 +193,10 @@ void SceneGraphNode::drawDebugAxis() {
     if (getTransform()) {
         mat4<F32> tempOffset(::getMatrix(getTransform()->getOrientation()));
         tempOffset.setTranslation(getTransform()->getPosition());
-        GFX_DEVICE.drawLines(_axisLines, tempOffset, vec4<I32>(), false, true);
+        _axisGizmo->worldMatrix(tempOffset);
     } else {
-        GFX_DEVICE.drawLines(_axisLines, mat4<F32>(), vec4<I32>(), false, true);
+        _axisGizmo->resetWorldMatrix();
     }
+    _axisGizmo->paused(false);
 }
 #endif

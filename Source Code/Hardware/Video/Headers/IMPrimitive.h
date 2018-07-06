@@ -96,7 +96,7 @@ public:
 
     inline const mat4<F32>& worldMatrix()                             const { return _worldMatrix;}
     inline void             worldMatrix(const mat4<F32>& worldMatrix)       { _worldMatrix.set(worldMatrix); }
-
+    inline void             resetWorldMatrix()                              { _worldMatrix.identity(); }
 protected:
     IMPrimitive();
 

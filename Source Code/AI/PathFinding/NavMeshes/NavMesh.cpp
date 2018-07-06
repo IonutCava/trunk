@@ -11,11 +11,17 @@
 #include <DebugUtils/Include/RecastDebugDraw.h>
 
 namespace Navigation {
-    NavigationMesh::NavigationMesh() : GUIDWrapper() {
+
+    NavigationMesh::NavigationMesh() : GUIDWrapper() 
+    {
+
         ParamHandler& par = ParamHandler::getInstance();
         std::string path = par.getParam<std::string>("scriptLocation") + "/" +
-                     par.getParam<std::string>("scenesLocation") + "/" +
-                     par.getParam<std::string>("currentScene");
+                           par.getParam<std::string>("scenesLocation") + "/" +
+                           par.getParam<std::string>("currentScene");
+
+        _debugDrawInterface = New NavMeshDebugDraw();
+        assert(_debugDrawInterface != nullptr);
 
         _fileName   =  path + "/navMeshes/";
         _configFile = path + "/navMeshConfig.ini";
@@ -23,8 +29,6 @@ namespace Navigation {
         _debugDraw = false;
         _renderConnections = false;
         _renderMode = RENDER_NAVMESH;
-        _debugDrawInterface = New NavMeshDebugDraw();
-        assert(_debugDrawInterface != nullptr);
         _heightField  = nullptr;
         _compactHeightField = nullptr;
         _countourSet  = nullptr;
@@ -36,23 +40,27 @@ namespace Navigation {
         _building = false;
     }
 
-    NavigationMesh::~NavigationMesh(){
-        if(_buildThread)
+    NavigationMesh::~NavigationMesh()
+    {
+        if (_buildThread) {
             _buildThread->stopTask();
+        }
+
+        if (_navQuery) {
+            dtFreeNavMeshQuery(_navQuery);
+            _navQuery = 0 ;
+        }
 
         freeIntermediates(true);
         dtFreeNavMesh(_navMesh);
         dtFreeNavMesh(_tempNavMesh);
         _navMesh = nullptr;
         _tempNavMesh = nullptr;
-        if(_navQuery){
-            dtFreeNavMeshQuery(_navQuery);
-            _navQuery = 0 ;
-        }
+
         SAFE_DELETE(_debugDrawInterface);
     }
 
-    void NavigationMesh::freeIntermediates(bool freeAll){
+    void NavigationMesh::freeIntermediates(bool freeAll) {
         _navigationMeshLock.lock();
 
         rcFreeHeightField(_heightField);
@@ -60,7 +68,7 @@ namespace Navigation {
         _heightField = nullptr;
         _compactHeightField = nullptr;
 
-        if(!_saveIntermediates || freeAll)	{
+        if (!_saveIntermediates || freeAll)	{
             rcFreeContourSet(_countourSet);
             rcFreePolyMesh(_polyMesh);
             rcFreePolyMeshDetail(_polyMeshDetail);
@@ -72,7 +80,7 @@ namespace Navigation {
         _navigationMeshLock.unlock();
     }
 
-    bool NavigationMesh::loadConfigFromFile(){
+    bool NavigationMesh::loadConfigFromFile() {
         //Use SimpleIni library for cross-platform INI parsing
         CSimpleIniA ini;
         ini.SetUnicode();
@@ -108,8 +116,8 @@ namespace Navigation {
         return true;
     }
 
-    bool NavigationMesh::build(SceneGraphNode* const sgn, CreationCallback creationCompleteCallback, bool threaded){
-        if(!loadConfigFromFile()){
+    bool NavigationMesh::build(SceneGraphNode* const sgn, CreationCallback creationCompleteCallback, bool threaded) {
+        if (!loadConfigFromFile()) {
             ERROR_FN(Locale::get("NAV_MESH_CONFIG_NOT_FOUND"));
             return false;
         }
@@ -117,53 +125,55 @@ namespace Navigation {
         _sgn = (sgn != nullptr) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
         _loadCompleteClbk = creationCompleteCallback;
 
-        if(_buildThreaded && threaded){
+        if (_buildThreaded && threaded) {
             return buildThreaded();
         }
 
         return buildProcess();
     }
 
-    bool NavigationMesh::buildThreaded(){
-        boost::mutex::scoped_lock sl(_buildLock);
-        if(!sl.owns_lock()) 
-            return false;
+    bool NavigationMesh::buildThreaded() {
 
-        if(_buildThread) 
+        boost::mutex::scoped_lock sl(_buildLock);
+
+        if (!sl.owns_lock()) { 
+            return false;
+        }
+
+        if (_buildThread) {
             _buildThread->stopTask();
+        }
 
         _buildThread.reset(Application::getInstance().getKernel()->AddTask(3, true, true, DELEGATE_BIND(&NavigationMesh::buildProcess, this)));
 
         return true;
     }
     
-    bool NavigationMesh::buildProcess(){
+    bool NavigationMesh::buildProcess() {
         _building = true;
         // Create mesh
         D32 timeStart = GETTIME();
         bool success = generateMesh();
-        D32 endTime = GETTIME(true) - timeStart;
-
-        if(success){
-            PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),  endTime);
-        }else{
-            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"),endTime);
+        if (!success) {
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"), GETTIME(true) - timeStart);
+            return false;
         }
 
+        PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),  GETTIME(true) - timeStart);
+
         _navigationMeshLock.lock();
-        // Copy new NavigationMesh into old.
-        dtNavMesh *old = _navMesh;
-        // I am trusting that this is atomic.
-        _navMesh = _tempNavMesh;
-        dtFreeNavMesh(old);
-        _debugDrawInterface->setDirty(true);
-        _tempNavMesh = nullptr;
-#ifdef _DEBUG
-        bool navQueryComplete = createNavigationQuery();
-        assert(navQueryComplete);
-#else
-        createNavigationQuery();
-#endif
+        {
+            // Copy new NavigationMesh into old.
+            dtNavMesh *old = _navMesh;
+            // I am trusting that this is atomic.
+            _navMesh = _tempNavMesh;
+            dtFreeNavMesh(old);
+            _debugDrawInterface->setDirty(true);
+            _tempNavMesh = nullptr;
+
+            bool navQueryComplete = createNavigationQuery();
+            assert(navQueryComplete);
+        }
         _navigationMeshLock.unlock();
 
         // Free structs used during build
@@ -171,16 +181,20 @@ namespace Navigation {
 
         _building = false;
 
-        if(!_loadCompleteClbk.empty())
+        if (!_loadCompleteClbk.empty()) {
             _loadCompleteClbk(this);
+        }
 
         return success;
     }
 
-    bool NavigationMesh::generateMesh(){
+    bool NavigationMesh::generateMesh() {
         assert(_sgn != nullptr);
 
-        std::string nodeName((_sgn->getNode()->getType() != TYPE_ROOT) ? "_node_[_" + _sgn->getName() + "_]" : "_root_node");
+        std::string nodeName((_sgn->getNode()->getType() != TYPE_ROOT) ?
+                             "_node_[_" + _sgn->getName() + "_]" : 
+                             "_root_node");
+
         // Parse objects from level into RC-compatible format
         _fileName.append(nodeName);
         _fileName.append(".nm");
@@ -193,14 +207,14 @@ namespace Navigation {
         data.clear(false);
         data.setName(nodeName);
 
-        if(!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())){
-            if (!NavigationMeshLoader::parse(_sgn->getBoundingBoxConst(), data, _sgn)){
+        if (!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())) {
+            if (!NavigationMeshLoader::parse(_sgn->getBoundingBoxConst(), data, _sgn)) {
                 ERROR_FN(Locale::get("ERROR_NAV_PARSE_FAILED"), nodeName.c_str());
             }
         }
 
         // Check for no geometry
-        if(!data.getVertCount()){
+        if (!data.getVertCount()) {
             data.isValid(false);
             return false;
         }
@@ -232,13 +246,14 @@ namespace Navigation {
         _saveIntermediates = _configParams.getKeepInterResults();
         rcCalcBounds(data.getVerts(), data.getVertCount(), cfg.bmin, cfg.bmax);
         rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
-        PRINT_FN(Locale::get("NAV_MESH_BOUNDS"),cfg.bmax[0],cfg.bmax[1],cfg.bmax[2],cfg.bmin[0],cfg.bmin[1],cfg.bmin[2]);
+        PRINT_FN(Locale::get("NAV_MESH_BOUNDS"), cfg.bmax[0], cfg.bmax[1], cfg.bmax[2],
+                                                 cfg.bmin[0], cfg.bmin[1], cfg.bmin[2]);
 
         _extents = vec3<F32>(cfg.bmax[0] - cfg.bmin[0],
                              cfg.bmax[1] - cfg.bmin[1],
                              cfg.bmax[2] - cfg.bmin[2]);
 
-        if(!createPolyMesh(cfg, data, &ctx)){
+        if (!createPolyMesh(cfg, data, &ctx)) {
             data.isValid(false);
             return false;
         }
@@ -274,7 +289,7 @@ namespace Navigation {
         params.detailTris       = _polyMeshDetail->tris;
         params.detailTriCount   = _polyMeshDetail->ntris;
 
-        if(!createNavigationMesh(params)){
+        if (!createNavigationMesh(params)) {
             data.isValid(false);
             return false;
         }
@@ -284,18 +299,20 @@ namespace Navigation {
         return NavigationMeshLoader::saveMeshFile(data, geometrySaveFile.c_str());//input geometry;
     }
 
-    bool NavigationMesh::createNavigationQuery(U32 maxNodes){
+    bool NavigationMesh::createNavigationQuery(U32 maxNodes) {
         _navQuery = dtAllocNavMeshQuery();
         return (_navQuery->init(_navMesh, maxNodes) == DT_SUCCESS);
     }
 
-    bool NavigationMesh::createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx){
-        if(_fileName.empty())  _fileName = data.getName();
+    bool NavigationMesh::createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx) {
+        if (_fileName.empty()) {
+            _fileName = data.getName();
+        }
 
         // Create a heightfield to voxelise our input geometry
         _heightField = rcAllocHeightfield();
 
-        if(!_heightField){
+        if (!_heightField) {
             ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "rcAllocHeightfield", _fileName.c_str());
             return false;
         }
@@ -308,123 +325,74 @@ namespace Navigation {
         ctx->log(RC_LOG_PROGRESS, " - %d x %d cells", cfg.width, cfg.height);
         ctx->log(RC_LOG_PROGRESS, " - %.1fK verts, %.1fK tris", data.getVertCount()/1000.0f, data.getTriCount()/1000.0f);
 
-        if(!rcCreateHeightfield(ctx, *_heightField, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)){
+        if (!rcCreateHeightfield(ctx, *_heightField, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch)) {
             ERROR_FN(Locale::get("ERROR_NAV_HEIGHTFIELD"), _fileName.c_str());
             return false;
         }
 
         U8* areas = New U8[data.getTriCount()];
 
-        if (!areas){
+        if (!areas) {
             ERROR_FN(Locale::get("ERROR_NAV_OUT_OF_MEMORY"), "areaFlag allocation", _fileName.c_str());
             return false;
         }
 
-        memset(areas, 0, data.getTriCount()*sizeof(U8));
+        memset(areas, 0, data.getTriCount() * sizeof(U8));
 
         // Filter triangles by angle and rasterize
-        rcMarkWalkableTriangles(ctx,
-                                cfg.walkableSlopeAngle,
-                                data.getVerts(),
-                                data.getVertCount(),
-                                data.getTris(),
-                                data.getTriCount(),
-                                areas);
+        rcMarkWalkableTriangles(ctx, cfg.walkableSlopeAngle, data.getVerts(), data.getVertCount(), data.getTris(), data.getTriCount(), areas);
+        rcRasterizeTriangles(ctx, data.getVerts(), data.getVertCount(), data.getTris(), areas, data.getTriCount(), *_heightField, cfg.walkableClimb);
 
-        rcRasterizeTriangles(ctx,
-                             data.getVerts(),
-                             data.getVertCount(),
-                             data.getTris(),
-                             areas,
-                             data.getTriCount(),
-                             *_heightField,
-                             cfg.walkableClimb);
-
-        if(!_saveIntermediates)	SAFE_DELETE_ARRAY(areas);
+        if (!_saveIntermediates) {
+            SAFE_DELETE_ARRAY(areas);
+        }
 
         // Filter out areas with low ceilings and other stuff
-        rcFilterLowHangingWalkableObstacles(ctx,
-                                            cfg.walkableClimb,
-                                            *_heightField);
-
-        rcFilterLedgeSpans(ctx,
-                           cfg.walkableHeight,
-                           cfg.walkableClimb,
-                           *_heightField);
-
-        rcFilterWalkableLowHeightSpans(ctx,
-                                       cfg.walkableHeight,
-                                       *_heightField);
+        rcFilterLowHangingWalkableObstacles(ctx, cfg.walkableClimb, *_heightField);
+        rcFilterLedgeSpans(ctx, cfg.walkableHeight, cfg.walkableClimb, *_heightField);
+        rcFilterWalkableLowHeightSpans(ctx, cfg.walkableHeight, *_heightField);
 
         _compactHeightField = rcAllocCompactHeightfield();
 
-        if(!_compactHeightField || !rcBuildCompactHeightfield(ctx,
-                                                              cfg.walkableHeight,
-                                                              cfg.walkableClimb,
-                                                              *_heightField,
-                                                              *_compactHeightField)){
+        if (!_compactHeightField || !rcBuildCompactHeightfield(ctx, cfg.walkableHeight, cfg.walkableClimb, *_heightField, *_compactHeightField)) {
             ERROR_FN(Locale::get("ERROR_NAV_COMPACT_HEIGHTFIELD"), _fileName.c_str());
             return false;
         }
 
-        bool buildState =  rcErodeWalkableArea(ctx,
-                                               cfg.walkableRadius,
-                                               *_compactHeightField);
-
-        if(!buildState)	{
+        if (!rcErodeWalkableArea(ctx, cfg.walkableRadius, *_compactHeightField)) {
             ERROR_FN(Locale::get("ERROR_NAV_WALKABLE"), _fileName.c_str());
             return false;
         }
 
-        if(false){
-            buildState = rcBuildRegionsMonotone(ctx,
-                                                *_compactHeightField,
-                                                cfg.borderSize,
-                                                cfg.minRegionArea,
-                                                cfg.mergeRegionArea);
-            if(!buildState){
+        if (false) {
+            if (!rcBuildRegionsMonotone(ctx, *_compactHeightField, cfg.borderSize, cfg.minRegionArea, cfg.mergeRegionArea)) {
                 ERROR_FN(Locale::get("ERROR_NAV_REGIONS"), _fileName.c_str());
                 return false;
             }
-        }else{
-            buildState = rcBuildDistanceField(ctx,
-                                              *_compactHeightField);
-            if(!buildState)	return false;
+        } else {
+            if (!rcBuildDistanceField(ctx, *_compactHeightField)) {
+                return false;
+            }
 
-            buildState = rcBuildRegions(ctx,
-                                        *_compactHeightField,
-                                        cfg.borderSize,
-                                        cfg.minRegionArea,
-                                        cfg.mergeRegionArea);
-            if(!buildState)	return false;
+            if (!rcBuildRegions(ctx, *_compactHeightField, cfg.borderSize, cfg.minRegionArea, cfg.mergeRegionArea)) {
+                return false;
+            }
         }
 
         _countourSet = rcAllocContourSet();
-        if(!_countourSet || !rcBuildContours(ctx,
-                                             *_compactHeightField,
-                                             cfg.maxSimplificationError,
-                                             cfg.maxEdgeLen,
-                                             *_countourSet)){
+        if (!_countourSet || !rcBuildContours(ctx, *_compactHeightField, cfg.maxSimplificationError, cfg.maxEdgeLen, *_countourSet)) {
             ERROR_FN(Locale::get("ERROR_NAV_COUNTOUR"), _fileName.c_str());
             return false;
         }
 
         _polyMesh = rcAllocPolyMesh();
-        if(!_polyMesh || !rcBuildPolyMesh(ctx,
-                                          *_countourSet,
-                                          cfg.maxVertsPerPoly,
-                                          *_polyMesh)){
+        if (!_polyMesh || !rcBuildPolyMesh(ctx, *_countourSet, cfg.maxVertsPerPoly, *_polyMesh)) {
             ERROR_FN(Locale::get("ERROR_NAV_POLY_MESH"), _fileName.c_str());
             return false;
         }
 
         _polyMeshDetail = rcAllocPolyMeshDetail();
-        if(!_polyMeshDetail || !rcBuildPolyMeshDetail(ctx,
-                                                      *_polyMesh,
-                                                      *_compactHeightField,
-                                                      cfg.detailSampleDist,
-                                                      cfg.detailSampleMaxError,
-                                                      *_polyMeshDetail)){
+        if(!_polyMeshDetail || !rcBuildPolyMeshDetail(ctx, *_polyMesh, *_compactHeightField, cfg.detailSampleDist, cfg.detailSampleMaxError, *_polyMeshDetail)) {
             ERROR_FN(Locale::get("ERROR_NAV_POLY_MESH_DETAIL"), _fileName.c_str());
             return false;
         }
@@ -433,9 +401,8 @@ namespace Navigation {
         ctx->stopTimer(RC_TIMER_TOTAL);
         duLogBuildTimes(*ctx, ctx->getAccumulatedTime(RC_TIMER_TOTAL));
         ctx->log(RC_LOG_PROGRESS, ">> Polymesh: %d vertices  %d polygons", _polyMesh->nverts, _polyMesh->npolys);
-        F32 totalBuildTimeMs = (F32)ctx->getAccumulatedTime(RC_TIMER_TOTAL)/1000.0f;
 
-        PRINT_FN("[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n", _polyMesh->nverts, _polyMesh->npolys,totalBuildTimeMs);
+        PRINT_FN("[RC_LOG_PROGRESS] Polymesh: %d vertices  %d polygons %5.2f ms\n", _polyMesh->nverts, _polyMesh->npolys, (F32)ctx->getAccumulatedTime(RC_TIMER_TOTAL)/1000.0f);
 
         return true;
     }
@@ -443,32 +410,34 @@ namespace Navigation {
     bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams &params){
         U8 *tileData = nullptr;
         I32 tileDataSize = 0;
-        if(!dtCreateNavMeshData(&params, &tileData, &tileDataSize)){
+        if (!dtCreateNavMeshData(&params, &tileData, &tileDataSize)) {
             ERROR_FN(Locale::get("ERROR_NAV_MESH_DATA"), _fileName.c_str());
             return false;
         }
 
         _tempNavMesh = dtAllocNavMesh();
-        if(!_tempNavMesh){
+        if (!_tempNavMesh) {
             ERROR_FN(Locale::get("ERROR_NAV_DT_OUT_OF_MEMORY"), _fileName.c_str());
             return false;
         }
 
         dtStatus s = _tempNavMesh->init(tileData, tileDataSize, DT_TILE_FREE_DATA);
-        if(dtStatusFailed(s)){
+        if (dtStatusFailed(s)) {
             ERROR_FN(Locale::get("ERROR_NAV_DT_INIT"), _fileName.c_str());
             return false;
         }
 
         // Initialise all flags to something helpful.
-        for(U32 i = 0; i < (U32)_tempNavMesh->getMaxTiles(); ++i){
+        for (U32 i = 0; i < (U32)_tempNavMesh->getMaxTiles(); ++i) {
             const dtMeshTile* tile = ((const dtNavMesh*)_tempNavMesh)->getTile(i);
 
-            if(!tile->header) continue;
+            if (!tile->header) {
+                continue;
+            }
 
             const dtPolyRef base = _tempNavMesh->getPolyRefBase(tile);
 
-            for(U32 j = 0; j < (U32)tile->header->polyCount; ++j) {
+            for (U32 j = 0; j < (U32)tile->header->polyCount; ++j) {
                 const dtPolyRef ref = base | j;
                 U16 f = 0;
                 _tempNavMesh->getPolyFlags(ref, &f);
@@ -486,7 +455,7 @@ namespace Navigation {
     void NavigationMesh::render(){
          RenderMode mode = _renderMode;
 
-         if(_building) {
+         if (_building) {
             mode = RENDER_NAVMESH;
             _debugDrawInterface->overrideColor(duRGBA(255, 0, 0, 80));
          }
@@ -494,27 +463,39 @@ namespace Navigation {
          _debugDrawInterface->beginBatch();
 
          _navigationMeshLock.lock();
-         switch(mode)
-         {
+
+         switch(mode) {
             case RENDER_NAVMESH:
-                if(_navMesh)        duDebugDrawNavMesh        (_debugDrawInterface, *_navMesh, 0);
+                if (_navMesh) {
+                    duDebugDrawNavMesh(_debugDrawInterface, *_navMesh, 0);
+                }
                 break;
             case RENDER_CONTOURS:
-                if(_countourSet)    duDebugDrawContours       (_debugDrawInterface, *_countourSet);
+                if (_countourSet) {
+                   duDebugDrawContours(_debugDrawInterface, *_countourSet);
+                }
                 break;
             case RENDER_POLYMESH:
-                if(_polyMesh)       duDebugDrawPolyMesh       (_debugDrawInterface, *_polyMesh);
+                if (_polyMesh) {
+                   duDebugDrawPolyMesh(_debugDrawInterface, *_polyMesh);
+                }
                 break;
             case RENDER_DETAILMESH:
-                if(_polyMeshDetail) duDebugDrawPolyMeshDetail (_debugDrawInterface, *_polyMeshDetail);
+                if (_polyMeshDetail) {
+                    duDebugDrawPolyMeshDetail(_debugDrawInterface, *_polyMeshDetail);
+                }
                 break;
             case RENDER_PORTALS:
-                if(_navMesh)        duDebugDrawNavMeshPortals (_debugDrawInterface, *_navMesh);
+                if (_navMesh) {
+                   duDebugDrawNavMeshPortals(_debugDrawInterface, *_navMesh);
+                }
                 break;
          }
 
-         if(!_building){
-            if(_countourSet && _renderConnections)   duDebugDrawRegionConnections(_debugDrawInterface, *_countourSet);
+         if (!_building) {
+            if (_countourSet && _renderConnections) {
+                duDebugDrawRegionConnections(_debugDrawInterface, *_countourSet);
+            }
          }
 
          _navigationMeshLock.unlock();
@@ -523,65 +504,69 @@ namespace Navigation {
     }
 
     bool NavigationMesh::load(SceneGraphNode* const sgn){
-        if(!_fileName.length()) 
+        if (!_fileName.length()) {
             return false;
-
+        }
         std::string file = _fileName;
 
-        if(sgn == nullptr){
+        if (sgn == nullptr) {
             file.append("_root_node");
-        }else{
+        } else {
             file.append("_node_[_" + sgn->getName() + "_]");
         }
 
         file.append(".nm");
         // Parse objects from level into RC-compatible format
         FILE* fp = fopen(file.c_str(), "rb");
-        if(!fp)
+        if (!fp) {
             return false;
-
+        }
         // Read header.
         NavMeshSetHeader header;
         fread(&header, sizeof(NavMeshSetHeader), 1, fp);
 
-        if(header.magic != NAVMESHSET_MAGIC){
+        if (header.magic != NAVMESHSET_MAGIC) {
             fclose(fp);
             return false;
         }
 
-        if(header.version != NAVMESHSET_VERSION){
+        if (header.version != NAVMESHSET_VERSION) {
             fclose(fp);
             return false;
         }
 
         boost::mutex::scoped_lock(_navigationMeshLock);
 
-        if(_navMesh) 
+        if (_navMesh) {
             dtFreeNavMesh(_navMesh);
+        }
 
         _navMesh = dtAllocNavMesh();
 
-        if(!_navMesh)	{
+        if (!_navMesh) {
             fclose(fp);
             return false;
         }
 
         dtStatus status = _navMesh->init(&header.params);
 
-        if(dtStatusFailed(status)){
+        if (dtStatusFailed(status)) {
             fclose(fp);
             return false;
         }
 
         // Read tiles.
-        for(U32 i = 0; i < (U32)header.numTiles; ++i){
+        for (U32 i = 0; i < (U32)header.numTiles; ++i) {
             NavMeshTileHeader tileHeader;
             fread(&tileHeader, sizeof(tileHeader), 1, fp);
-            if(!tileHeader.tileRef || !tileHeader.dataSize) return false;//break;
-
+            if (!tileHeader.tileRef || !tileHeader.dataSize) {
+                return false;//break;
+            }
             U8* data = (U8*)dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
 
-            if(!data) return false;//break;
+            if (!data) {
+                return false;//break;
+            }
 
             memset(data, 0, tileHeader.dataSize);
             fread(data, tileHeader.dataSize, 1, fp);
@@ -590,20 +575,20 @@ namespace Navigation {
         }
         fclose(fp);
 
-        _extents.set(header.extents[0],
-                     header.extents[1],
-                     header.extents[2]);
+        _extents.set(header.extents[0], header.extents[1], header.extents[2]);
 
         return createNavigationQuery();
     }
 
     bool NavigationMesh::save(){
-        if(!_fileName.length() || !_navMesh)
+        if (!_fileName.length() || !_navMesh) {
             return false;
-
+        }
         // Save our NavigationMesh into a file to load from next time
         FILE* fp = fopen(_fileName.c_str(), "wb");
-        if(!fp)	return false;
+        if (!fp) {
+            return false;
+        }
 
         boost::mutex::scoped_lock(_navigationMeshLock);
 
@@ -615,10 +600,12 @@ namespace Navigation {
         header.version = NAVMESHSET_VERSION;
         header.numTiles = 0;
 
-        for(U32 i = 0; i < (U32)_navMesh->getMaxTiles(); ++i)	{
+        for (U32 i = 0; i < (U32)_navMesh->getMaxTiles(); ++i) {
             const dtMeshTile* tile = ((const dtNavMesh*)_navMesh)->getTile(i);
 
-            if (!tile || !tile->header || !tile->dataSize) continue;
+            if (!tile || !tile->header || !tile->dataSize) {
+                continue;
+            }
             header.numTiles++;
         }
 
@@ -626,10 +613,12 @@ namespace Navigation {
         fwrite(&header, sizeof(NavMeshSetHeader), 1, fp);
 
         // Store tiles.
-        for(U32 i = 0; i < (U32)_navMesh->getMaxTiles(); ++i)	{
+        for (U32 i = 0; i < (U32)_navMesh->getMaxTiles(); ++i) {
             const dtMeshTile* tile = ((const dtNavMesh*)_navMesh)->getTile(i);
 
-            if(!tile || !tile->header || !tile->dataSize) continue;
+            if (!tile || !tile->header || !tile->dataSize) {
+                continue;
+            }
 
             NavMeshTileHeader tileHeader;
             tileHeader.tileRef = _navMesh->getTileRef(tile);

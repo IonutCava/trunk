@@ -59,6 +59,7 @@ public:
     ///Toggle NavMesh debugDraw
     void toggleNavMeshDebugDraw(bool state);
 	void toggleNavMeshDebugDraw(Navigation::NavigationMesh* navMesh, bool state);
+    inline bool navMeshDebugDraw() const { return _navMeshDebugDraw; }
 
 protected:
     AIManager();

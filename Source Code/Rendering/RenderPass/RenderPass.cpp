@@ -23,18 +23,22 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
     //Sort the render queue by the specified key
     renderQueue.sort(currentStage);
 
-    if (isDisplayStage) _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
+    if (isDisplayStage) {
+        _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
+    }
 
     U16 renderBinCount = renderQueue.getRenderQueueBinSize();
 
     //Draw the entire queue;
     //Limited to 65536 (2^16) items per queue pass!
     if(renderState.drawObjects()) {
-        if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE) && renderBinCount > 0)
+        if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE) && renderBinCount > 0) {
             LightManager::getInstance().bindDepthMaps();
+        }
 
-        for(U16 i = 0; i < renderBinCount; ++i)
+        for(U16 i = 0; i < renderBinCount; ++i) {
             renderQueue.getBinSorted(i)->render(renderState, currentStage);
+        }
     }
 
     //Unbind all shaders after every render pass
@@ -44,8 +48,6 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
         for (U16 i = 0; i < renderBinCount; ++i) {
             renderQueue.getBinSorted(i)->postRender(currentStage);
         }
-        SceneGraphNode* root = activeSceneGraph->getRoot();
-        root->getNode()->preFrameDrawEnd(root);
     }
 
     renderQueue.refresh();

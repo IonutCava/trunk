@@ -144,7 +144,7 @@ void SceneAnimator::Load(std::ifstream& file){
 			_animations[i]._transforms.push_back(vectorImpl<mat4<F32> >());
 			vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
 			for( size_t a = 0; a < _transforms.size(); ++a){
-				AnimUtils::TransformMatrix(rotationmat, aiMatrix4x4(_bones[a]->_globalTransform *  _bones[a]->_offsetMatrix));
+				AnimUtils::TransformMatrix(aiMatrix4x4(_bones[a]->_globalTransform *  _bones[a]->_offsetMatrix), rotationmat);
 				trans.push_back(rotationmat);
 			}
 		}

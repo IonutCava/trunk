@@ -191,7 +191,7 @@ namespace Navigation {
         RenderMode _renderMode;
         ///DebugDraw interface
         NavMeshDebugDraw *_debugDrawInterface;
-		    };
+	};
 };
 
 #endif

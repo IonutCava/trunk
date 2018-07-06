@@ -132,11 +132,5 @@ void RenderBin::render(const SceneRenderState& renderState, const RenderStage& c
 }
 
 void RenderBin::postRender(const RenderStage& currentRenderStage){
-    SceneGraphNode* sgn = nullptr;
 
-    for(U16 j = 0; j < getBinSize(); j++){
-        sgn = getItem(j)._node;
-        //Perform any last updates before the preFrameDrawEnd
-        sgn->getNode()->preFrameDrawEnd(sgn);
-    }
 }

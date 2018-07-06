@@ -717,15 +717,13 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 }
 
 /// Draw the outlines of a box defined by min and max as extents using the specified world matrix
-void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max, const vec4<U8>& color, const mat4<F32>& globalOffset) {
+void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max, const vec4<U8>& color) {
     // Grab an available primitive
     IMPrimitive* priv = getOrCreatePrimitive();
     // Prepare it for rendering lines
     priv->_hasLines = true;
     priv->_lineWidth = 4.0f;
     priv->stateHash(_defaultStateBlockHash);
-    // Set the world matrix
-    priv->worldMatrix(globalOffset);
     // Create the object
     priv->beginBatch();
     // Set it's color

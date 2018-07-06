@@ -73,6 +73,7 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
 };
 
+class IMPrimitive;
 class SceneGraphNode : public GUIDWrapper, private boost::noncopyable{
 public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
@@ -266,6 +267,7 @@ private:
 
 #ifdef _DEBUG
     vectorImpl<Line > _axisLines;
+    IMPrimitive*      _axisGizmo;
 #endif
 };
 

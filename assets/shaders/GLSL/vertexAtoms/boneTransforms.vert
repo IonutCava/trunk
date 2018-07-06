@@ -2,28 +2,33 @@ layout(binding = SHADER_BUFFER_BONE_TRANSFORMS, std140) uniform dvd_BoneTransfor
 {
     mat4 boneTransforms[MAX_BONE_COUNT_PER_NODE];
 };
-
+#if defined(COMPUTE_TBN)
+void applyBoneTransforms(inout vec4 position, inout vec3 normal, inout vec3 tangnet, in int lod){
+#else
 void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
-    if(dvd_boneCount == 0)
+#endif
+    if (dvd_boneCount == 0) {
         return;
+    }
+    mat4 transformMatrix[4] = mat4[]( inBoneWeightData.x * boneTransforms[inBoneIndiceData.x],
+                                      inBoneWeightData.y * boneTransforms[inBoneIndiceData.y],
+                                      inBoneWeightData.z * boneTransforms[inBoneIndiceData.z],
+                                      (1.0 - dot(inBoneWeightData.xyz, vec3(1.0))) * boneTransforms[inBoneIndiceData.w] );
 
-    //w - weight value
-    float boneWeightW = 1.0 - dot(inBoneWeightData.xyz, vec3(1.0));
-    vec4 newPosition  = inBoneWeightData.x * boneTransforms[inBoneIndiceData.x] * position;
-         newPosition += inBoneWeightData.y * boneTransforms[inBoneIndiceData.y] * position;
-         newPosition += inBoneWeightData.z * boneTransforms[inBoneIndiceData.z] * position;
-         newPosition += boneWeightW        * boneTransforms[inBoneIndiceData.w] * position;
-         
-    position = newPosition;
+    position = (transformMatrix[0] * position + transformMatrix[1] * position + 
+                transformMatrix[2] * position + transformMatrix[3] * position);
     
     if (lod >= 2)
         return;
 
-    vec4 newNormalT = vec4(normal,0.0);
-    vec4 newNormal  = inBoneWeightData.x * boneTransforms[inBoneIndiceData.x] * newNormalT;
-         newNormal += inBoneWeightData.y * boneTransforms[inBoneIndiceData.y] * newNormalT;
-         newNormal += inBoneWeightData.z * boneTransforms[inBoneIndiceData.z] * newNormalT;
-         newNormal += boneWeightW        * boneTransforms[inBoneIndiceData.w] * newNormalT;
-      
-    normal = newNormal.xyz;
+    vec4 tempVec = vec4(normal, 0.0);
+    normal = vec4(transformMatrix[0] * tempVec + transformMatrix[1] * tempVec + 
+                  transformMatrix[2] * tempVec + transformMatrix[3] * tempVec).xyz;
+
+#if defined(COMPUTE_TBN)
+    tempVec = vec4(tangnet, 0.0);
+    tangnet = vec4(transformMatrix[0] * tempVec + transformMatrix[1] * tempVec + 
+                   transformMatrix[2] * tempVec + transformMatrix[3] * tempVec).xyz;
+#endif
+    
 }

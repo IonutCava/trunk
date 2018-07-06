@@ -75,9 +75,12 @@ void Scene::onCameraChange(){
 void Scene::postRender(){
 #ifdef _DEBUG
     if(renderState()._debugDrawLines) {
-        for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i)
-            if(!_lines[i].empty())
-                GFX_DEVICE.drawLines(_lines[i], mat4<F32>(), vec4<I32>(), false,  false);
+        if (!_lines[DEBUG_LINE_RAY_PICK].empty()) {
+            GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
+        }
+    }
+    if (!_lines[DEBUG_LINE_OBJECT_TO_TARGET].empty() && AIManager::getInstance().navMeshDebugDraw()) {
+        GFX_DEVICE.drawLines(_lines[DEBUG_LINE_OBJECT_TO_TARGET],  mat4<F32>(), vec4<I32>(), false,  false);
     }
 #endif
 }
