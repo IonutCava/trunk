@@ -50,6 +50,8 @@ class ParticleSource {
 
     inline void updateEmitRate(F32 emitRate) { _emitRate = emitRate; }
 
+    inline F32 emitRate() const { return _emitRate; }
+
     inline void updateTransform(const vec3<F32>& position, const Quaternion<F32>& orientation) {
         for (std::shared_ptr<ParticleGenerator> generator : _particleGenerators) {
             generator->updateTransform(position, orientation);

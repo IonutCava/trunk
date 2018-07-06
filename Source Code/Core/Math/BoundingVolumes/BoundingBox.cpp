@@ -36,7 +36,6 @@ BoundingBox::BoundingBox(const BoundingBox& b) : GUIDWrapper() {
     this->_computed = b._computed;
     this->_min.set(b._min);
     this->_max.set(b._max);
-    this->_oldMatrix.set(b._oldMatrix);
     for (U8 i = 0; i < 8; ++i) {
         this->_points[i].set(b._points[i]);
     }
@@ -48,7 +47,6 @@ void BoundingBox::operator=(const BoundingBox& b) {
     this->_computed = b._computed;
     this->_min.set(b._min);
     this->_max.set(b._max);
-    this->_oldMatrix.set(b._oldMatrix);
     this->_pointsDirty = true;
     memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
 }
@@ -134,21 +132,13 @@ bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const {
     return ((t_min < t1) && (t_max > t0));
 }
 
-bool BoundingBox::transform(const mat4<F32>& mat,
-                            bool force) {
-    BoundingBox copy(*this);
-    return transform(copy, mat, force);
+void BoundingBox::transform(const mat4<F32>& mat) {
+    transform(*this, mat);
 }
 
-bool BoundingBox::transform(const BoundingBox& initialBoundingBox,
-                            const mat4<F32>& mat, bool force) {
+void BoundingBox::transform(const BoundingBox& initialBoundingBox,
+                            const mat4<F32>& mat) {
     // UpgradableReadLock ur_lock(_lock);
-    if (!force && _oldMatrix == mat) {
-        return false;
-    }
-
-    _oldMatrix.set(mat);
-
     const F32* oldMin = &initialBoundingBox._min[0];
     const F32* oldMax = &initialBoundingBox._max[0];
 
@@ -174,7 +164,6 @@ bool BoundingBox::transform(const BoundingBox& initialBoundingBox,
         }
     }
     _pointsDirty = true;
-    return true;
 }
 
 F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const {

@@ -21,7 +21,6 @@ namespace {
 ParticleEmitter::ParticleEmitter()
     : SceneNode(SceneNodeType::TYPE_PARTICLE_EMITTER),
       _drawImpostor(false),
-      _updateParticleEmitterBB(true),
       _particleStateBlockHash(0),
       _enabled(false),
       _uploaded(false),
@@ -71,19 +70,17 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     particleRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _particleStateBlockHash = particleRenderState.getHash();
 
-    ResourceDescriptor particleShaderDescriptor("particles");
+    bool useTexture = _particleTexture != nullptr;
+    ResourceDescriptor particleShaderDescriptor(useTexture ? "particles.WithTexture" : "particles.NoTexture");
+    if (useTexture){
+        particleShaderDescriptor.setPropertyList("HAS_TEXTURE");
+    }
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
-    _particleShader->Uniform("hasTexture", _particleTexture != nullptr);
     REGISTER_TRACKED_DEPENDENCY(_particleShader);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
-
-    _impostor =
-        CreateResource<ImpostorBox>(ResourceDescriptor(_name + "_impostor"));
-    _impostor->renderState().setDrawState(false);
-    _impostor->getMaterialTpl()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
 
     //_renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
@@ -159,9 +156,6 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    sgn.addNode(*_impostor)->setActive(false);
-
-    
     Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH);
     Texture* depthTexture = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     TextureData depthBufferData = depthTexture->getData();
@@ -185,43 +179,11 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
             Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
             pkg._drawCommands.push_back(cmd);
     }
+    sgn.lockBBTransforms(true);
 
     SceneNode::postLoad(sgn);
 }
 
-bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
-    if (!_enabled) {
-        return false;
-    }
-
-    DIVIDE_ASSERT(_particles.get() != nullptr,
-                  "ParticleEmitter::computeBoundingBox error: BoundingBox "
-                  "calculation requested without valid particle data "
-                  "available!");
-    _updateParticleEmitterBB = true;
-    BoundingBox& bb = sgn.getBoundingBox();
-    if (_particles->_renderingPositions.size() > 2) {
-        bb.reset();
-        bb.add(_particles->_renderingPositions.front());
-        bb.add(_particles->_renderingPositions.back());
-    }
-    return SceneNode::computeBoundingBox(sgn);
-}
-
-bool ParticleEmitter::isInView(const SceneRenderState& sceneRenderState,
-                               const SceneGraphNode& sgn,
-                               Frustum::FrustCollision& collisionType,
-                               const bool distanceCheck) const {
-    bool visible = false;
-    if (_enabled && _impostor) {
-        visible = _impostor->isInView(sceneRenderState, sgn, collisionType, distanceCheck);
-    }
-
-    collisionType = visible ? Frustum::FrustCollision::FRUSTUM_IN
-        : Frustum::FrustCollision::FRUSTUM_OUT;
-
-    return visible;
-}
 
 void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
 
@@ -271,8 +233,6 @@ void ParticleEmitter::uploadToGPU() {
     if (_uploaded || getAliveParticleCount() == 0) {
         return;
     }
-
-    _particles->sort();
     
     U32 writeOffset = _writeOffset * to_uint(_particles->totalCount());
     U32 readOffset = _readOffset * to_uint(_particles->totalCount());
@@ -298,7 +258,6 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              RenderStage currentStage) {
     if (_enabled) {
         uploadToGPU();
-        sgn.getBoundingBox().setComputed(false);
         return true;
     }
 
@@ -318,22 +277,21 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
 
     _uploaded = false;
 
-    PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
-    if (_updateParticleEmitterBB) {
-        sgn.updateBoundingBoxTransform(transform->getWorldMatrix());
-        _updateParticleEmitterBB = false;
-    }
-
+    PhysicsComponent* transform = sgn.getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
 
     const vec3<F32>& pos = transform->getPosition();
     const Quaternion<F32>& rot = transform->getOrientation();
 
+    F32 averageEmitRate = 0;
     for (std::shared_ptr<ParticleSource>& source : _sources) {
         source->updateTransform(pos, rot);
         source->emit(deltaTime, _particles);
+        averageEmitRate += source->emitRate();
     }
-            
+
+    averageEmitRate /= _sources.size();
+
     U32 count = _particles->totalCount();
     for (U32 i = 0; i < count; ++i) {
         _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
@@ -347,6 +305,18 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
 
     // const vec3<F32>& origin = transform->getPosition();
     // const Quaternion<F32>& orientation = transform->getOrientation();
+
+    _particles->sort();
+
+    BoundingBox& bb = sgn.getBoundingBox();
+    bb.reset();
+    U32 aliveCount = _particles->aliveCount();
+    for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
+        bb.add(_particles->_position[i]);
+    }
+
+    bb.setComputed(true);
+    sgn.setInitialBoundingBox(bb);
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }

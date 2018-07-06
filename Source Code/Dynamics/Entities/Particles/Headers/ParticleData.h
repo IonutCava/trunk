@@ -90,6 +90,8 @@ class ParticleData {
     U32 _totalCount;
     U32 _aliveCount;
     U32 _optionsMask;
+    vec3<F32> _oldestPosition;
+    vec3<F32> _newestPosition;
 };
 
 };  // namespace Divide

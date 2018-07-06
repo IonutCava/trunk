@@ -200,6 +200,10 @@ class SceneGraphNode : public GUIDWrapper,
         _bbAddExclusionList = bbExclusionMask;
     }
 
+    inline bool lockBBTransforms() const { return _lockBBTransforms; }
+
+    inline void lockBBTransforms(const bool state) { _lockBBTransforms = state; }
+
     inline U64 getElapsedTime() const { return _elapsedTime; }
 
     inline void setComponent(SGNComponent::ComponentType type,
@@ -298,11 +302,12 @@ class SceneGraphNode : public GUIDWrapper,
     bool _isSelectable;
     bool _wasActive;
     bool _sorted;
+    bool _lockBBTransforms;
     ///_initialBoundingBox is a copy of the initialy calculate BB for
     ///transformation
     /// it should be copied in every computeBoungingBox call;
-    BoundingBox _initialBoundingBox, _initialBoundingBoxCache;
-    BoundingBox _boundingBox;
+    BoundingBox _initialBoundingBox;
+    BoundingBox _boundingBox, _boundingBoxCache;
     BoundingSphere _boundingSphere;  ///<For faster visibility culling
 
     U32 _instanceID;

@@ -34,6 +34,7 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
       _isSelectable(false),
       _sorted(false),
       _boundingBoxDirty(true),
+      _lockBBTransforms(false),
       _updateTimer(Time::ElapsedMilliseconds()),
       _bbAddExclusionList(0),
       _usageContext(UsageContext::NODE_DYNAMIC),
@@ -315,22 +316,24 @@ bool SceneGraphNode::updateBoundingBoxPosition(const vec3<F32>& position) {
 }
 
 bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
-    if (_boundingBox.isComputed()) {
-        if (_boundingBox.transform(
-                _initialBoundingBox, transform,
-                !_initialBoundingBox.compare(_initialBoundingBoxCache))) {
-            _initialBoundingBoxCache = _initialBoundingBox;
-            _boundingSphere.fromBoundingBox(_boundingBox);
-            return true;
-        }
+    if (!_boundingBox.isComputed()) {
+        return false;
     }
 
-    return false;
+    _boundingBoxCache.set(_boundingBox);
+    _boundingBox.transform(_initialBoundingBox, transform);
+    if (_boundingBoxCache == _boundingBox) {
+        return false;
+    }
+
+    _boundingSphere.fromBoundingBox(_boundingBox);
+    
+    return true;
 }
 
 void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox) {
     if (!initialBoundingBox.compare(getInitialBoundingBox())) {
-        _initialBoundingBox = initialBoundingBox;
+        _initialBoundingBox.set(initialBoundingBox);
         _initialBoundingBox.setComputed(true);
         _boundingBoxDirty = true;
     }
@@ -391,7 +394,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
             transformUpdateMask.getFlag(PhysicsComponent::TransformType::SCALE)) {
             bbUpdated = updateBoundingBoxPosition(pComp->getPosition());
         }else {*/
-              bbUpdated = updateBoundingBoxTransform(pComp->getWorldMatrix());
+              bbUpdated = !lockBBTransforms() && updateBoundingBoxTransform(pComp->getWorldMatrix());
         //}
         if (bbUpdated) {
             SceneGraphNode_ptr parentPtr = _parent.lock();

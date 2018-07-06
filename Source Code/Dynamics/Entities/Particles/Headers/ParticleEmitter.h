@@ -62,15 +62,7 @@ class ParticleEmitter : public SceneNode {
 
     /// SceneNode concrete implementations
     bool unload();
-
-    bool computeBoundingBox(SceneGraphNode& sgn) override;
-
-    /// SceneNode test
-    bool isInView(const SceneRenderState& sceneRenderState,
-                  const SceneGraphNode& sgn,
-                  Frustum::FrustCollision& collisionType,
-                  const bool distanceCheck = false) const override;
-
+    
     inline void addUpdater(std::shared_ptr<ParticleUpdater> updater) {
         _updaters.push_back(updater);
     }
@@ -111,9 +103,6 @@ class ParticleEmitter : public SceneNode {
     std::atomic_bool _uploaded;
     /// draw the impostor?
     bool _drawImpostor;
-    bool _updateParticleEmitterBB;
-    /// used for debug rendering / editor
-    ImpostorBox* _impostor;
 
     GenericVertexData* _particleGPUBuffer;
 
