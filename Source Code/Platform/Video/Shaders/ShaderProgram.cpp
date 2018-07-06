@@ -309,6 +309,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 }
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
+    ReadLock r_lock(s_programLock);
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         assert(!std::get<0>(shader).expired());
         if (std::get<1>(shader) == shaderHandle) {
@@ -320,6 +321,7 @@ ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
 }
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(size_t shaderHash) {
+    ReadLock r_lock(s_programLock);
     for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
         assert(!std::get<0>(shader).expired());
         if (std::get<2>(shader) == shaderHash) {
