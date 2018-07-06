@@ -724,6 +724,13 @@ FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "") {
     DIVIDE_ASSERT(false, failMessage);
 }
 
+FORCE_INLINE void DIVIDE_ASSERT(const bool expression) {
+    if (Config::Build::IS_DEBUG_BUILD) {
+        assert(expression);
+    }
+    ACKNOWLEDGE_UNUSED(expression);
+}
+
 template <typename... Args>
 #if defined(CPP_14_SUPPORT)
 [[deprecated("Please use lambda expressions instead!")]]

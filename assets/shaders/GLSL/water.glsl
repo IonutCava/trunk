@@ -10,11 +10,7 @@ out vec4 _vertexWVP;
 void main(void)
 {
     computeData();
-
-#if defined(ADD_FOLIAGE) && defined(IS_TREE)
-    computeFoliageMovementTree(dvd_Vertex);
-#endif
-
+    
     computeLightVectors();
 
     _pixToEye  = -VAR._vertexWV.xyz;
@@ -58,7 +54,7 @@ void main (void)
     const float kDistortion = 1.0;// 0.015;
     vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;
 
-    vec4 uvReflection = _vertexWVP * vec4(1.0 / _vertexWVP.w);
+    vec4 uvReflection = _vertexWVP / _vertexWVP.w;
     uvReflection += vec4(1.0);
     uvReflection *= vec4(0.5);
     uvReflection = clamp(uvReflection, vec4(0.001), vec4(0.999));

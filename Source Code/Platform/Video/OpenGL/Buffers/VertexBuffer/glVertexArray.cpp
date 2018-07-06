@@ -433,6 +433,10 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
                              _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                              _effectiveEntrySize);
 
+    if (command.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED)) {
+        GL_API::setPatchVertexCount(command.patchVertexCount());
+    }
+
     GLUtil::submitRenderCommand(command, useCmdBuffer, _formatInternal, _IBid);
 }
 

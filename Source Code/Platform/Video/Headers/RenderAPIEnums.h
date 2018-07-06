@@ -147,6 +147,7 @@ enum class PrimitiveType : U32 {
     TRIANGLE_FAN = 0x0006,
     QUAD_STRIP = 0x0007,
     POLYGON = 0x0008,
+    PATCH = 0x0009,
     COUNT
 };
 

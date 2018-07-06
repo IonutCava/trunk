@@ -340,6 +340,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
         }
     }
     
+    setPatchVertexCount(4);
+
     // Once OpenGL is ready for rendering, init CEGUI
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
     _GUIGLrenderer->enableExtraStateSettings(config.gui.cegui.extraStates);

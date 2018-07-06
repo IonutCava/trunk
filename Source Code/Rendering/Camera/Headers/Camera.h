@@ -54,7 +54,9 @@ class Camera : public Resource {
 
     void updateLookAt();
 
-    void reflect(const Plane<F32>& reflectionPlane);
+    void setReflection(const Plane<F32>& reflectionPlane);
+    void clearReflection();
+
     /// Moves the camera by the specified offsets in each direction
     virtual void move(F32 dx, F32 dy, F32 dz);
     /// Global rotations are applied relative to the world axis, not the camera's
@@ -62,8 +64,10 @@ class Camera : public Resource {
     inline void setGlobalRotation(const vec3<Angle::DEGREES<F32>>& euler) {
         setGlobalRotation(euler.yaw, euler.pitch, euler.roll);
     }
+    const mat4<F32>& lookAt(const mat4<F32>& viewMatrix);
     /// Sets the camera's position, target and up directions
-    const mat4<F32>& lookAt(const vec3<F32>& eye, const vec3<F32>& target,
+    const mat4<F32>& lookAt(const vec3<F32>& eye,
+                            const vec3<F32>& direction = WORLD_Z_NEG_AXIS,
                             const vec3<F32>& up = WORLD_Y_AXIS);
     /// Rotates the camera (changes its orientation) by the specified quaternion
     /// (_orientation *= q)
@@ -215,8 +219,6 @@ class Camera : public Resource {
 
     inline const vec3<Angle::DEGREES<F32>>& getEuler() const { return _euler; }
 
-    inline const vec3<F32>& getTarget() const { return _target; }
-
     inline const mat4<F32>& getProjectionMatrix() const {
         return _projectionMatrix;
     }
@@ -312,7 +314,7 @@ class Camera : public Resource {
     mat4<F32> _viewMatrix;
     mat4<F32> _projectionMatrix;
     Quaternion<F32> _orientation;
-    vec3<F32> _eye, _target, _fixedYawAxis;
+    vec3<F32> _eye, _fixedYawAxis;
     vec2<F32> _zPlanes;
     vec4<F32> _orthoRect;
 
@@ -340,6 +342,12 @@ class Camera : public Resource {
     bool _isOrthoCamera;
     bool _frustumDirty;
     Frustum* _frustum;
+
+
+    // Since quaternion reflection is complicated and not really needed now, 
+    // handle reflections a-la Ogre -Ionut
+    bool _reflectionActive;
+    Plane<F32> _reflectionPlane;
 
     // Camera pool
     public:

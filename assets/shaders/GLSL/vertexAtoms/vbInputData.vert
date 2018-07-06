@@ -16,6 +16,15 @@ vec3 UNPACK_FLOAT(in float value) {
     return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
 }
 
+void computeMinData() {
+    VAR.dvd_drawID = gl_BaseInstanceARB;
+    dvd_Vertex = vec4(inVertexData, 1.0);
+
+    VAR._vertexW = dvd_WorldMatrix(VAR.dvd_drawID) * dvd_Vertex;
+
+    //setClipPlanes(VAR._vertexW);
+}
+
 void computeData(){
     VAR.dvd_drawID  = gl_BaseInstanceARB;
     dvd_Vertex  = vec4(inVertexData, 1.0);

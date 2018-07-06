@@ -423,7 +423,7 @@ bool GL_API::initShaders() {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
+        ShaderType::COUNT,
         "#define TEXTURE_OPACITY " +
             to_stringImpl(to_base(ShaderProgram::TextureUsage::OPACITY)),
         lineOffsets);

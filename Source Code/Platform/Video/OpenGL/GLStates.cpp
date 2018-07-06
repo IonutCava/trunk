@@ -43,6 +43,7 @@ GLuint GL_API::s_activeBufferID[] = {GLUtil::_invalidObjectID,
 VAOBindings GL_API::s_vaoBufferData;
 bool GL_API::s_primitiveRestartEnabled = false;
 bool GL_API::s_rasterizationEnabled = true;
+U32 GL_API::s_patchVertexCount = 0;
 GL_API::textureBoundMapDef GL_API::s_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
 GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
@@ -157,6 +158,12 @@ void GL_API::togglePrimitiveRestart(bool state) {
     }
 }
 
+void GL_API::setPatchVertexCount(U32 count) {
+    if (s_patchVertexCount != count) {
+        s_patchVertexCount = count;
+        glPatchParameteri(GL_PATCH_VERTICES, s_patchVertexCount);
+    }
+}
 /// Enable or disable primitive rasterization
 void GL_API::toggleRasterization(bool state) {
     // Toggle primitive restart on or off

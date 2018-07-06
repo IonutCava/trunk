@@ -233,6 +233,9 @@
     <ClCompile Include="..\..\Source Code\Core\Math\Quaternion.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Patch3DLoaderImpl.cpp">
+      <Filter>Core\Resources\ConcreteLoaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">

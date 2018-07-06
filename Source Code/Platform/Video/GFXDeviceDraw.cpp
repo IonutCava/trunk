@@ -256,7 +256,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                 } else {
                     if (Config::Build::IS_DEBUG_BUILD) {
                         for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                            assert(_drawCommandsCache[cmdCount++] == cmd.cmd());
+                            DIVIDE_ASSERT(_drawCommandsCache[cmdCount++] == cmd.cmd());
                         }
                     }
                 }

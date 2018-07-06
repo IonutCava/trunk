@@ -40,8 +40,17 @@ namespace Divide {
 class ShaderProgram;
 class Quad3D : public Object3D {
    public:
-    explicit Quad3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const bool doubleSided = true)
-        : Object3D(context, parentCache, descriptorHash, name, ObjectType::QUAD_3D, ObjectFlag::OBJECT_FLAG_NONE)
+    explicit Quad3D(GFXDevice& context,
+                    ResourceCache& parentCache,
+                    size_t descriptorHash,
+                    const stringImpl& name,
+                    const bool doubleSided)
+        : Object3D(context,
+                   parentCache,
+                   descriptorHash,
+                   name,
+                   ObjectType::QUAD_3D,
+                   ObjectFlag::OBJECT_FLAG_NONE)
     {
         U16 indices[] = {2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3};
 
@@ -174,4 +183,4 @@ TYPEDEF_SMART_POINTERS_FOR_CLASS(Quad3D);
 
 };  // namespace Divide
 
-#endif
+#endif // _QUAD_3D_H_

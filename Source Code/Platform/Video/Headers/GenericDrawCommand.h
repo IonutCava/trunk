@@ -61,18 +61,20 @@ public:
         RENDER_BOUNDS_SPHERE = toBit(4),
         RENDER_NO_RASTERIZE = toBit(5),
         RENDER_INDIRECT = toBit(6),
+        RENDER_TESSELLATED = toBit(7),
         COUNT = 5
     };
 
 private:
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    IndirectDrawCommand _cmd;           // 60 bytes
-    ShaderProgram* _shaderProgram;      // 40 bytes
-    VertexDataInterface* _sourceBuffer; // 32 bytes
-    U64 _stateHash;                     // 24 bytes
-    PrimitiveType _type;                // 16 bytes
-    U32 _commandOffset;                 // 12 bytes
-    U32 _renderOptions;                 // 8  bytes
+    IndirectDrawCommand _cmd;           // 68 bytes
+    ShaderProgram* _shaderProgram;      // 48 bytes
+    VertexDataInterface* _sourceBuffer; // 40 bytes
+    U64 _stateHash;                     // 32 bytes
+    PrimitiveType _type;                // 24 bytes
+    U32 _commandOffset;                 // 16 bytes
+    U32 _renderOptions;                 // 12 bytes
+    U32 _patchVertexCount;              // 8  bytes
     U16 _drawCount;                     // 4  bytes
     U8  _drawToBuffer;                  // 2  bytes
     U8  _lodIndex;                      // 1  bytes
@@ -100,6 +102,7 @@ public:
     inline void drawToBuffer(U8 index)                                { _drawToBuffer = index; }
     inline void commandOffset(U32 offset)                             { _commandOffset = offset; }
     inline void stateHash(size_t hashValue)                           { _stateHash = static_cast<U64>(hashValue); }
+    inline void patchVertexCount(U32 vertexCount)                     { _patchVertexCount = vertexCount; }
     inline void primitiveType(PrimitiveType type)                     { _type = type; }
     inline void shaderProgram(const ShaderProgram_ptr& program)       { _shaderProgram = program.get(); }
     inline void sourceBuffer(VertexDataInterface* sourceBuffer)       { _sourceBuffer = sourceBuffer; }
@@ -109,6 +112,7 @@ public:
     inline size_t stateHash()                  const { return static_cast<size_t>(_stateHash); }
     inline U8  drawToBuffer()                  const { return _drawToBuffer; }
     inline U32 commandOffset()                 const { return _commandOffset; }
+    inline U32 patchVertexCount()              const { return _patchVertexCount; }
     inline IndirectDrawCommand& cmd()                { return _cmd; }
     inline PrimitiveType primitiveType()       const { return _type; }
     inline ShaderProgram* shaderProgram()      const { return _shaderProgram; }

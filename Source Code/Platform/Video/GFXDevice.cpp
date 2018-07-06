@@ -193,12 +193,12 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                  WORLD_Z_AXIS,     WORLD_Z_NEG_AXIS,
                                  WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS};
     // Get the center and up vectors for each cube face
-    vec3<F32> TabCenter[6] = {vec3<F32>(pos.x + 1.0f, pos.y, pos.z),
-                              vec3<F32>(pos.x - 1.0f, pos.y, pos.z),
-                              vec3<F32>(pos.x, pos.y + 1.0f, pos.z),
-                              vec3<F32>(pos.x, pos.y - 1.0f, pos.z),
-                              vec3<F32>(pos.x, pos.y, pos.z + 1.0f),
-                              vec3<F32>(pos.x, pos.y, pos.z - 1.0f)};
+    vec3<F32> TabCenter[6] = {vec3<F32>( 1.0f,  0.0f,  0.0f),
+                              vec3<F32>(-1.0f,  0.0f,  0.0f),
+                              vec3<F32>( 0.0f,  1.0f,  0.0f),
+                              vec3<F32>( 0.0f, -1.0f,  0.0f),
+                              vec3<F32>( 0.0f,  0.0f,  1.0f),
+                              vec3<F32>( 0.0f,  0.0f, -1.0f)};
 
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
@@ -283,7 +283,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                          0,
                                          i + arrayOffset);
             // Point our camera to the correct face
-            _dualParaboloidCamera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) + pos, WORLD_Y_AXIS);
+            _dualParaboloidCamera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
             // And generated required matrices
             // Pass our render function to the renderer
             params.pass = passIndex + i;

@@ -11,6 +11,7 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
       _movementLocked(false),
       _frustumLocked(false),
       _frustumDirty(true),
+      _reflectionActive(false),
       _mouseSensitivity(1.0f),
       _zoomSpeedFactor(35.0f),
       _moveSpeedFactor(35.0f),
@@ -50,6 +51,8 @@ void Camera::fromCamera(Camera& camera) {
     _cameraMoveSpeed = camera._cameraMoveSpeed;
     _cameraTurnSpeed = camera._cameraTurnSpeed;
     _cameraZoomSpeed = camera._cameraZoomSpeed;
+    _reflectionPlane = camera._reflectionPlane;
+    _reflectionActive = camera._reflectionActive;
 
     lockFrustum(camera._frustumLocked);
     _accumPitchDegrees = camera._accumPitchDegrees;
@@ -202,20 +205,62 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     _viewMatrixDirty = true;
 }
 
+vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
+{
+    // Get the 3 basis vector planes at the camera origin and transform them into model space.
+    //  
+    // NOTE: Planes have to be transformed by the inverse transpose of a matrix
+    //       Nice reference here: http://www.opengl.org/discussion_boards/showthread.php/159564-Clever-way-to-transform-plane-by-matrix
+    //
+    //       So for a transform to model space we need to do:
+    //            inverse(transpose(inverse(MV)))
+    //       This equals : transpose(MV) - see Lemma 5 in http://mathrefresher.blogspot.com.au/2007/06/transpose-of-matrix.html
+    //
+    // As each plane is simply (1,0,0,0), (0,1,0,0), (0,0,1,0) we can pull the data directly from the transpose matrix.
+    //  
+    mat4<F32> modelViewT(a_modelView.getTranspose());
+
+    // Get plane normals 
+    vec4<F32> n1(modelViewT.getRow(0));
+    vec4<F32> n2(modelViewT.getRow(1));
+    vec4<F32> n3(modelViewT.getRow(2));
+
+    // Get plane distances
+    F32 d1(n1.w);
+    F32 d2(n2.w);
+    F32 d3(n3.w);
+
+    // Get the intersection of these 3 planes 
+    // (uisng math from RealTime Collision Detection by Christer Ericson)
+    vec3<F32> n2n3 = Cross(n2.xyz(), n3.xyz());
+    float denom = Dot(n1.xyz(), n2n3);
+
+    vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz(), (d3*n2.xyz()) - (d2*n3.xyz()));
+    return top / -denom;
+}
+const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
+    _eye.set(ExtractCameraPos2(viewMatrix));
+    _orientation.fromMatrix(viewMatrix);
+    _viewMatrixDirty = true;
+    _frustumDirty = true;
+    updateViewMatrix();
+
+    return getViewMatrix();
+}
+
 const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
-                                const vec3<F32>& target,
+                                const vec3<F32>& direction,
                                 const vec3<F32>& up) {
     _eye.set(eye);
-    _target.set(target);
-    _viewMatrix.lookAt(_eye, _target, up);
-    // Extract the pitch angle from the view matrix.
-    _accumPitchDegrees = Angle::to_DEGREES(std::asinf(getForwardDir().y));
-    _orientation.fromLookAt(_eye - _target, up);
+    vec3<F32> target(eye + direction);
 
-    _viewMatrixDirty = false;
+    _orientation.fromLookAt(direction, up);
+    _viewMatrixDirty = true;
     _frustumDirty = true;
 
-    return _viewMatrix;
+    updateViewMatrix();
+
+    return getViewMatrix();
 }
 
 /// Tell the rendering API to set up our desired PoV
@@ -228,13 +273,15 @@ void Camera::updateLookAt() {
     }
 }
 
-void Camera::reflect(const Plane<F32>& reflectionPlane) {
-    mat4<F32> reflectedMatrix;
-    reflectedMatrix.reflect(reflectionPlane);
+void Camera::setReflection(const Plane<F32>& reflectionPlane) {
+    _reflectionPlane = reflectionPlane;
+    _reflectionActive = true;
+    _viewMatrixDirty = true;
+}
 
-    lookAt(reflectedMatrix * getEye(),
-           getTarget(),
-           reflectedMatrix * getUpDir());
+void Camera::clearReflection() {
+    _reflectionActive = false;
+    _viewMatrixDirty = true;
 }
 
 bool Camera::updateProjection() {
@@ -312,12 +359,19 @@ bool Camera::updateViewMatrix() {
     vec3<F32> yAxis = _orientation.yAxis();
     vec3<F32> zAxis = _orientation.zAxis();
 
-    _target = -zAxis + _eye;
+    vec3<F32> target = -zAxis + _eye;
 
     _viewMatrix.set(rotation);
     _viewMatrix.setRow(3, -xAxis.dot(_eye), -yAxis.dot(_eye), -zAxis.dot(_eye), 1.0f);
     _orientation.getEuler(_euler);
     _euler = Angle::to_DEGREES(_euler);
+    // Extract the pitch angle from the view matrix.
+    _accumPitchDegrees = Angle::to_DEGREES(std::asinf(getForwardDir().y));
+
+    if (_reflectionActive) {
+        _viewMatrix.reflect(_reflectionPlane);
+        _eye.set(mat4<F32>(_reflectionPlane).transformNonHomogeneous(_eye));
+    }
 
     _viewMatrixDirty = false;
     _frustumDirty = true;
@@ -334,7 +388,7 @@ bool Camera::updateFrustum() {
         return false;
     }
 
-    _frustum->Extract(_viewMatrix, _projectionMatrix);
+    _frustum->Extract(getViewMatrix(), _projectionMatrix);
 
     _frustumDirty = false;
 

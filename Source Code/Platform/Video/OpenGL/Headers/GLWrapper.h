@@ -136,6 +136,8 @@ public:
     static void togglePrimitiveRestart(bool state);
     /// Enable or disable primitive rasterization
     static void toggleRasterization(bool state);
+    /// Set the number of vertices per patch used in tessellation
+    static void setPatchVertexCount(U32 count);
     /// Switch the currently active vertex array object
     static bool setActiveVAO(GLuint ID);
     /// Switch the currently active vertex array object
@@ -276,6 +278,7 @@ private:
     /// disabled
     static bool s_primitiveRestartEnabled;
     static bool s_rasterizationEnabled;
+    static U32  s_patchVertexCount;
     /// Current state of all available clipping planes
     std::array<bool, to_base(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements

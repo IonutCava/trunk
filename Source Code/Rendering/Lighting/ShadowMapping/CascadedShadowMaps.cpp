@@ -200,7 +200,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
     
         vec3<F32> currentEye = frustumCentroid - (_lightPosition * distFromCentroid);
 
-        const mat4<F32>& viewMatrix = _shadowCamera->lookAt(currentEye, frustumCentroid);
+        const mat4<F32>& viewMatrix = _shadowCamera->lookAt(currentEye, frustumCentroid - currentEye);
         // Determine the position of the frustum corners in light space
         for (U8 i = 0; i < 8; ++i) {
             _frustumCornersLS[i].set(viewMatrix.transformHomogeneous(_frustumCornersWS[i]));

@@ -176,7 +176,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     // Reset reflection cam
     _reflectionCam->fromCamera(*renderParams._camera);
     if (!underwater) {
-        _reflectionCam->reflect(reflectionPlane);
+        _reflectionCam->setReflection(reflectionPlane);
     }
 
     RenderPassManager::PassParams params;

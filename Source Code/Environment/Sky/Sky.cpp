@@ -26,7 +26,9 @@ Sky::Sky(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& na
     _skyboxRenderStateHashPrePass = skyboxRenderState.getHash();
     skyboxRenderState.setZFunc(ComparisonFunction::LEQUAL);
     _skyboxRenderStateHash = skyboxRenderState.getHash();
-    _skyboxRenderStateReflectedHash = _skyboxRenderStateHash;
+
+    skyboxRenderState.setCullMode(CullMode::CW);
+    _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();
 }
 
 Sky::~Sky()
@@ -96,22 +98,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     }
 
     SceneNode::postLoad(sgn);
-}
-
-void Sky::onCameraUpdate(SceneGraphNode& sgn,
-                         const I64 cameraGUID,
-                         const vec3<F32>& posOffset,
-                         const mat4<F32>& rotationOffset) {
-    SceneNode::onCameraUpdate(sgn, cameraGUID, posOffset, rotationOffset);
-
-    sgn.get<PhysicsComponent>()->setPosition(posOffset);
-}
-
-void Sky::onCameraChange(SceneGraphNode& sgn,
-                         const Camera& cam) {
-    SceneNode::onCameraChange(sgn, cam);
-
-    sgn.get<PhysicsComponent>()->setPosition(cam.getEye());
 }
 
 void Sky::sceneUpdate(const U64 deltaTime,

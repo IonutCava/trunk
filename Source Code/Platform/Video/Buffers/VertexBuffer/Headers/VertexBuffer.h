@@ -89,7 +89,9 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                         : GFXDataFormat::UNSIGNED_SHORT;
     }
 
-    inline void setVertexCount(U32 size) { _data.resize(size); }
+    inline void setVertexCount(U32 size) { 
+        _data.resize(size);
+    }
 
     inline size_t getVertexCount() const {
         return _data.size();

@@ -339,6 +339,7 @@ void fillEnumTables() {
     // glPrimitiveTypeTable[to_base(PrimitiveType::QUADS)] = GL_QUADS; //<Deprecated
     glPrimitiveTypeTable[to_base(PrimitiveType::QUAD_STRIP)] = GL_QUAD_STRIP;
     glPrimitiveTypeTable[to_base(PrimitiveType::POLYGON)] = GL_POLYGON;
+    glPrimitiveTypeTable[to_base(PrimitiveType::PATCH)] = GL_PATCHES;
 
     glDataFormat[to_base(GFXDataFormat::UNSIGNED_BYTE)] = GL_UNSIGNED_BYTE;
     glDataFormat[to_base(GFXDataFormat::UNSIGNED_SHORT)] = GL_UNSIGNED_SHORT;

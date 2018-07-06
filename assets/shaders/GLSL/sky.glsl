@@ -4,19 +4,13 @@
 
 void main(void){
     computeData();
+    VAR._vertexW.xyz += dvd_cameraPosition.xyz;
+
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal);
 
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
     gl_Position.z = gl_Position.w - 0.0001;
 }
-
-/*-- Fragment.PrePass
-
-layout(location = 0) out vec4 _skyColour;
-
-void main() {
-    _skyColour = vec4(1.0);
-}*/
 
 -- Fragment.Display
 
@@ -48,7 +42,7 @@ vec3 sunColour(){
 }
 
 void main() {
-    vec3 sky_colour = textureLod(texSky, vec4(VAR._vertexW.xyz, 0), 0).rgb;
+    vec3 sky_colour = textureLod(texSky, vec4(VAR._vertexW.xyz - dvd_cameraPosition.xyz, 0), 0).rgb;
     _skyColour = vec4(ToSRGB(enable_sun ? sky_colour * sunColour() : sky_colour), 1.0);
     _normalOut = packNormal(normalize(VAR._normalWV));
     _velocityOut = vec2(1.0);

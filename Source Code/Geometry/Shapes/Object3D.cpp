@@ -77,6 +77,7 @@ Object3D::~Object3D()
 bool Object3D::isPrimitive() {
     return _geometryType == ObjectType::BOX_3D ||
            _geometryType == ObjectType::QUAD_3D ||
+           _geometryType == ObjectType::PATCH_3D ||
            _geometryType == ObjectType::SPHERE_3D ||
            _geometryType == ObjectType::TEXT_3D;
 }

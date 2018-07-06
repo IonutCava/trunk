@@ -667,7 +667,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
             _context.addDebugView(viewPtr);
         } else {
-            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 5) == 0) {
+            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
                     viewPtr->_shader = _previewRenderTargetDepth;
@@ -746,7 +746,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
             _context.addDebugView(viewPtr);
         } else {
-            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 5) == 0) {
+            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
                     viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
                     viewPtr->_shader = _previewRenderTargetDepth;

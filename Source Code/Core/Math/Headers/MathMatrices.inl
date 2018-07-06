@@ -1334,6 +1334,13 @@ mat4<T>::mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noex
     lookAt(eye, target, up);
 }
 
+template<typename T>
+template<typename U>
+mat4<T>::mat4(const Plane<U>& reflectionPlane) noexcept
+    : mat4()
+{
+    reflect(reflectionPlane);
+}
 
 template<typename T>
 mat4<T>& mat4<T>::operator=(const mat4& other) noexcept {
@@ -2091,13 +2098,13 @@ mat4<T> mat4<T>::getRotation() const {
 
 template<typename T>
 template<typename U>
-void mat4<T>::reflect(U x, U y, U z, U w) {
-    reflect(Plane<U>(x, y, z, w));
+const mat4<T>& mat4<T>::reflect(U x, U y, U z, U w) {
+    return reflect(Plane<U>(x, y, z, w));
 }
 
 template<typename T>
 template<typename U>
-void mat4<T>::reflect(const Plane<U> &plane) {
+const mat4<T>& mat4<T>::reflect(const Plane<U> &plane) {
     const U zero = static_cast<U>(0);
     const U one = static_cast<U>(1);
 
@@ -2108,10 +2115,12 @@ void mat4<T>::reflect(const Plane<U> &plane) {
     U z = eq.z;
     U d = eq.w;
 
-    set( -2 * x * x + 1,  -2 * y * x,      -2 * z * x,      zero,
-         -2 * x * y,      -2 * y * y + 1,  -2 * z * y,      zero,
-         -2 * x * z,      -2 * y * z,      -2 * z * z + 1,  zero,
-         -2 * x * d,      -2 * y * d,      -2 * z * d,      one);
+    *this = mat4( -2 * x * x + 1,  -2 * y * x,      -2 * z * x,      zero,
+                  -2 * x * y,      -2 * y * y + 1,  -2 * z * y,      zero,
+                  -2 * x * z,      -2 * y * z,      -2 * z * z + 1,  zero,
+                  -2 * x * d,      -2 * y * d,      -2 * z * d,      one) * *this;
+
+    return *this;
 }
 
 template<typename T>

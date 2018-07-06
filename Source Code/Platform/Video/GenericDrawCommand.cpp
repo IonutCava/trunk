@@ -45,6 +45,7 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _stateHash(0),
     _type(type),
     _commandOffset(0),
+    _patchVertexCount(4),
     _shaderProgram(nullptr),
     _sourceBuffer(nullptr),
     _renderOptions(to_base(RenderOptions::RENDER_GEOMETRY))
@@ -54,7 +55,7 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _cmd.primCount = primCount;
 
     static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
-    static_assert(sizeof(GenericDrawCommand) == 64, "Size of GenericDrawCommand is incorrect!");
+    static_assert(sizeof(GenericDrawCommand) == 72, "Size of GenericDrawCommand is incorrect!");
 }
 
 void GenericDrawCommand::set(const GenericDrawCommand& base) {

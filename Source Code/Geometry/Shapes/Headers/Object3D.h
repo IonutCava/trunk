@@ -46,11 +46,12 @@ class Object3D : public SceneNode {
         SPHERE_3D = 0,
         BOX_3D = 1,
         QUAD_3D = 2,
-        TEXT_3D = 3,
-        MESH = 4,
-        SUBMESH = 5,
-        TERRAIN = 6,
-        FLYWEIGHT = 7,
+        PATCH_3D = 3,
+        TEXT_3D = 4,
+        MESH = 5,
+        SUBMESH = 6,
+        TERRAIN = 7,
+        FLYWEIGHT = 8,
         COUNT
     };
 

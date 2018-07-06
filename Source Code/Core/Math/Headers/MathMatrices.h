@@ -486,7 +486,9 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     mat4(U x, U y, U z, Angle::RADIANS<U> angle) noexcept;
     template<typename U>
     mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noexcept;
-    
+    template<typename U>
+    mat4(const Plane<U>& reflectionPlane) noexcept;
+
     mat4 &operator=(const mat4& other) noexcept;
     template<typename U>
     mat4 &operator=(const mat4<U>& other) noexcept;
@@ -645,9 +647,9 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     mat4 getRotation(void) const;
 
     template<typename U>
-    void reflect(U x, U y, U z, U w);
+    const mat4& reflect(U x, U y, U z, U w);
     template<typename U>
-    void reflect(const Plane<U> &plane);
+    const mat4& reflect(const Plane<U> &plane);
 
     template<typename U>
     void lookAt(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up);

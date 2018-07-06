@@ -759,6 +759,9 @@
     <ClInclude Include="..\..\Source Code\Scripting\Headers\GameScript.h">
       <Filter>Scripting\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Patch3D.h">
+      <Filter>Geometry\Shapes\Headers\Predefined</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

@@ -73,14 +73,7 @@ class Sky : public SceneNode {
 
     bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
 
-    void onCameraUpdate(SceneGraphNode& sgn,
-                        const I64 cameraGUID,
-                        const vec3<F32>& posOffset,
-                        const mat4<F32>& rotationOffset) override;
-
-    void onCameraChange(SceneGraphNode& sgn,
-                        const Camera& cam) override;
-   private:
+  private:
     U32       _diameter;
     Texture_ptr  _skybox;
     Sphere3D_ptr _sky;

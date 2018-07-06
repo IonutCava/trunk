@@ -390,6 +390,7 @@
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\MeshImporter.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\ShaderComputeQueue.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\ShaderProgramInfo.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Patch3D.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\AnimationComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\BoundsComponent.h" />
