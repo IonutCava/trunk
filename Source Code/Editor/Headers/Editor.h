@@ -95,7 +95,7 @@ class Editor : public PlatformContextComponent,
 
     bool shouldPauseSimulation() const;
 
-    inline const vec4<I32>& getScenePreviewRect() const { return _scenePreviewRect; }
+    inline const Rect<I32>& getScenePreviewRect() const { return _scenePreviewRect; }
 
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt);
@@ -132,7 +132,7 @@ class Editor : public PlatformContextComponent,
     void OnUTF8(const char* text);
     void dim(bool hovered, bool focused);
     bool toggleScenePreview(bool state);
-    void setScenePreviewRect(const vec4<I32>& rect, bool hovered);
+    void setScenePreviewRect(const Rect<I32>& rect, bool hovered);
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
@@ -143,7 +143,7 @@ class Editor : public PlatformContextComponent,
     Theme _currentLostFocusTheme;
     Theme _currentDimmedTheme;
 
-    vec4<I32> _scenePreviewRect;
+    Rect<I32> _scenePreviewRect;
 
     I64 _activeWindowGUID = -1;
     std::unique_ptr<ImwWindowManagerDivide> _windowManager;
@@ -178,7 +178,7 @@ namespace Attorney {
     class EditorPanelManager {
         //private:
         public: //ToDo: fix this -Ionut
-        static void setScenePreviewRect(Editor& editor, const vec4<I32>& rect, bool hovered) {
+        static void setScenePreviewRect(Editor& editor, const Rect<I32>& rect, bool hovered) {
             editor.setScenePreviewRect(rect, hovered);
         }
         static void drawOutputWindow(Editor& editor) {

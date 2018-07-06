@@ -113,16 +113,16 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
 }
 
 void IMPrimitive::fromLines(const vectorImpl<Line>& lines) {
-    fromLines(lines, vec4<I32>(), false);
+    fromLines(lines, Rect<I32>(), false);
 }
 
 void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
-                            const vec4<I32>& viewport) {
+                            const Rect<I32>& viewport) {
     fromLines(lines, viewport, true);
 }
 
 void IMPrimitive::fromLines(const vectorImpl<Line>& lines,
-                            const vec4<I32>& viewport,
+                            const Rect<I32>& viewport,
                             const bool inViewport) {
     static const vec3<F32> vertices[] = {
         vec3<F32>(-1.0f, -1.0f,  1.0f),

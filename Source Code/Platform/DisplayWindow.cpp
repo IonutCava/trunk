@@ -517,14 +517,14 @@ bool DisplayWindow::mouseButtonReleased(const Input::MouseEvent& arg, Input::Mou
     return _context.app().kernel().mouseButtonReleased(arg, button);
 }
 
-void DisplayWindow::warp(bool state, const vec4<I32>& rect) {
+void DisplayWindow::warp(bool state, const Rect<I32>& rect) {
     _warp = state;
     if (_warp) {
         _warpRect.set(rect);
     }
 }
 
-void DisplayWindow::renderingViewport(const vec4<I32>& viewport) {
+void DisplayWindow::renderingViewport(const Rect<I32>& viewport) {
     _renderingViewport.set(viewport);
 }
 

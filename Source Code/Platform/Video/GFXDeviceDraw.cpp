@@ -311,7 +311,7 @@ void GFXDevice::drawFullscreenTexture(TextureData data, GFX::CommandBuffer& buff
     drawTextureInViewport(data, _baseViewport, bufferInOut);
 }
 
-void GFXDevice::drawTextureInViewport(TextureData data, const vec4<I32>& viewport, GFX::CommandBuffer& bufferInOut) const {
+void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = get2DStateBlock();
     pipelineDescriptor._shaderProgram = _displayShader;
@@ -350,7 +350,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const vec4<I32>& viewpor
     GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
 }
 
-void GFXDevice::blitToScreen(const vec4<I32>& targetViewport) {
+void GFXDevice::blitToScreen(const Rect<I32>& targetViewport) {
     GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
     GFX::CommandBuffer& buffer = sBuffer();
 
@@ -359,7 +359,7 @@ void GFXDevice::blitToScreen(const vec4<I32>& targetViewport) {
     flushCommandBuffer(buffer);
 }
 
-void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const vec4<I32>& targetViewport) {
+void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport) {
     GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
     GFX::CommandBuffer& buffer = sBuffer();
 
@@ -376,7 +376,7 @@ void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const vec4<I32>& tar
     flushCommandBuffer(buffer);
 }
 
-void GFXDevice::blitToBuffer(GFX::CommandBuffer& bufferInOut, const vec4<I32>& targetViewport) {
+void GFXDevice::blitToBuffer(GFX::CommandBuffer& bufferInOut, const Rect<I32>& targetViewport) {
     {
         RenderTarget& screen = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
         TextureData texData = screen.getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture()->getData();

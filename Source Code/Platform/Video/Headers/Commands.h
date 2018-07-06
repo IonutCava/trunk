@@ -110,7 +110,7 @@ struct SetViewportCommand : Command {
     {
     }
 
-    vec4<I32> _viewport;
+    Rect<I32> _viewport;
 };
 
 struct BeginRenderPassCommand : Command {
@@ -174,7 +174,7 @@ struct SetScissorCommand : Command {
     {
     }
 
-    vec4<I32> _rect;
+    Rect<I32> _rect;
 };
 
 struct SetBlendCommand : Command {

@@ -104,7 +104,7 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const = 0;
 
    protected:
-    virtual bool changeViewportInternal(const vec4<I32>& newViewport) = 0;
+    virtual bool changeViewportInternal(const Rect<I32>& newViewport) = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
 
     static GFXConfig _config;

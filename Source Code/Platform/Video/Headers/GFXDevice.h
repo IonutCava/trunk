@@ -231,7 +231,7 @@ public:  // GPU interface
     /// Access (Read Only) rendering data used by the GFX
     inline const GFXShaderData::GPUData& renderingData() const;
     /// Returns true if the viewport was changed
-    bool setViewport(const vec4<I32>& viewport);
+    bool setViewport(const Rect<I32>& viewport);
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
     bool restoreViewport();
 
@@ -315,7 +315,7 @@ public:  // Accessors and Mutators
 
     inline void registerDrawCalls(U32 count) { FRAME_DRAW_CALLS += count; }
 
-    inline const vec4<I32>& getCurrentViewport() const { return _viewport; }
+    inline const Rect<I32>& getCurrentViewport() const { return _viewport; }
 
     inline const RenderStagePass& setRenderStagePass(const RenderStagePass& stage);
 
@@ -354,7 +354,7 @@ public:
     // Shortcuts
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
     void drawFullscreenTexture(TextureData data, GFX::CommandBuffer& bufferInOut) const;
-    void drawTextureInViewport(TextureData data, const vec4<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
+    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const;
 
 public:  // Direct API calls
     inline U32 getFrameDurationGPU() {
@@ -374,7 +374,7 @@ protected:
 
     void drawDebugFrustum(GFX::CommandBuffer& bufferInOut);
 
-    void setBaseViewport(const vec4<I32>& viewport);
+    void setBaseViewport(const Rect<I32>& viewport);
 
     void drawText(const TextElementBatch& batch);
 
@@ -390,10 +390,10 @@ protected:
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
 
-    void blitToScreen(const vec4<I32>& targetViewport);
+    void blitToScreen(const Rect<I32>& targetViewport);
 
-    void blitToRenderTarget(RenderTargetID targetID, const vec4<I32>& targetViewport);
-    void blitToBuffer(GFX::CommandBuffer& bufferInOut, const vec4<I32>& targetViewport);
+    void blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& targetViewport);
+    void blitToBuffer(GFX::CommandBuffer& bufferInOut, const Rect<I32>& targetViewport);
 
 protected:
     friend class SceneManager;
@@ -490,9 +490,9 @@ protected:
     vectorImpl<I64> _graphicResources;
 
     /// Current viewport stack
-    vec4<I32> _viewport;
-    vec4<I32> _prevViewport;
-    vec4<I32> _baseViewport;
+    Rect<I32> _viewport;
+    Rect<I32> _prevViewport;
+    Rect<I32> _baseViewport;
 
     vec2<U16> _renderingResolution;
 
@@ -550,11 +550,11 @@ namespace Attorney {
             device.onCameraChange(camera);
         }
 
-        static void blitToScreen(GFXDevice& device, const vec4<I32>& targetViewport) {
+        static void blitToScreen(GFXDevice& device, const Rect<I32>& targetViewport) {
             device.blitToScreen(targetViewport);
         }
 
-        static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const vec4<I32>& targetViewport) {
+        static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const Rect<I32>& targetViewport) {
             device.blitToRenderTarget(targetID, targetViewport);
         }
 

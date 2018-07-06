@@ -383,7 +383,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     return presentToScreen(evt, deltaTimeUS);
 }
 
-void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targetViewports, U8 count) {
+void computeViewports(const Rect<I32>& mainViewport, vectorImpl<Rect<I32>>& targetViewports, U8 count) {
     
     assert(count > 0);
     I32 xOffset = mainViewport.x;
@@ -415,7 +415,7 @@ void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targ
     // to the previous row and add a new entry to the end of the
     // current row
 
-    typedef vectorImpl<vec4<I32>> ViewportRow;
+    typedef vectorImpl<Rect<I32>> ViewportRow;
     typedef vectorImpl<ViewportRow> ViewportRows;
     ViewportRows rows;
 
@@ -467,14 +467,14 @@ void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targ
         I32 screenMidPoint = width / 2;
         I32 rowMidPoint = to_I32((lastRow.size() * playerWidth) / 2);
         I32 slideFactor = screenMidPoint - rowMidPoint;
-        for (vec4<I32>& viewport : lastRow) {
+        for (Rect<I32>& viewport : lastRow) {
             viewport.x += slideFactor;
         }
     }
 
     // Update the system viewports
     for (const ViewportRow& row : rows) {
-        for (const vec4<I32>& viewport : row) {
+        for (const Rect<I32>& viewport : row) {
             targetViewports.push_back(viewport);
         }
     }
@@ -490,7 +490,7 @@ Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorImpl<Time::P
 }
 
 bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
-    static vectorImpl<vec4<I32>> targetViewports;
+    static vectorImpl<Rect<I32>> targetViewports;
 
     Time::ScopedTimer time(_flushToScreenTimer);
 
@@ -516,7 +516,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     }
 
     const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
-    const vec4<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
+    const Rect<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
 
     U8 playerCount = to_U8(activePlayers.size());
     computeViewports(mainViewport, targetViewports, playerCount);

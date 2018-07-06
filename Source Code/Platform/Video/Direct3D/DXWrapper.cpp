@@ -43,7 +43,7 @@ size_t DX_API::setStateBlock(size_t stateBlockHash) {
     return 0;
 }
 
-bool DX_API::changeViewportInternal(const vec4<I32>& viewport) {
+bool DX_API::changeViewportInternal(const Rect<I32>& viewport) {
     ACKNOWLEDGE_UNUSED(viewport);
 
     return true;

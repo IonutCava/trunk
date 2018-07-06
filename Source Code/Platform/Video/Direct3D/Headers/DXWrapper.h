@@ -67,7 +67,7 @@ protected:
 
     U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
 
-    bool changeViewportInternal(const vec4<I32>& viewport) override;
+    bool changeViewportInternal(const Rect<I32>& viewport) override;
 };
 
 };  // namespace Divide

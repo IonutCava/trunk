@@ -352,7 +352,7 @@ void CommandBuffer::toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtI
             append(out, "SET_BLEND", crtIndent);
         }break;
         case GFX::CommandType::SET_VIEWPORT: {
-            vec4<I32> viewport = static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport;
+            Rect<I32> viewport = static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport;
             append(out, "SET_VIEWPORT: " + Util::StringFormat("[%d, %d, %d, %d]", viewport.x, viewport.y, viewport.z, viewport.w), crtIndent);
         }break;
         case GFX::CommandType::SET_CAMERA: {

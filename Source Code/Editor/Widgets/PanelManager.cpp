@@ -223,7 +223,7 @@ namespace Divide {
 
                             window->DrawList->AddImage((void *)(intptr_t)gameView->getHandle(), startPos, endPos, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 
-                            Attorney::EditorPanelManager::setScenePreviewRect(mgr->context().editor(), vec4<I32>(startPos.x, startPos.y, endPos.x, endPos.y), sceneHovered);
+                            Attorney::EditorPanelManager::setScenePreviewRect(mgr->context().editor(), Rect<I32>(startPos.x, startPos.y, endPos.x, endPos.y), sceneHovered);
 
                             ImGui::PopID();
                         }

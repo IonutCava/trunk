@@ -404,7 +404,7 @@ bool Editor::toggleScenePreview(bool state) {
     return _scenePreviewFocused;
 }
 
-void Editor::setScenePreviewRect(const vec4<I32>& rect, bool hovered) {
+void Editor::setScenePreviewRect(const Rect<I32>& rect, bool hovered) {
     if (_sceneWasHovered != hovered) {
         _sceneWasHovered = _sceneHovered;
         _sceneHovered = hovered;

@@ -1297,6 +1297,21 @@ extern vec3<I32> iWORLD_X_NEG_AXIS;
 extern vec3<I32> iWORLD_Y_NEG_AXIS;
 extern vec3<I32> iWORLD_Z_NEG_AXIS;
 
+//ToDo: Move this to its own file
+template<typename T>
+class Rect : public vec4<T> {
+  public:
+    using vec4::vec4;
+
+    inline bool contains(const vec2<T>& coords) const {
+        return contains(coords.x, coords.y);
+    }
+
+    inline bool contains(T _x, T _y) const {
+        return COORDS_IN_RECT(_x, _y, *this);
+    }
+};
+
 };  // namespace Divide
 
 // Inline definitions

@@ -54,6 +54,10 @@ enum class Joystick : U32 {
     COUNT
 };
 
+struct MouseState {
+    OIS::Axis X, Y, Z;
+};
+
 struct JoystickData {
     JoystickData();
     JoystickData(I32 deadZone, I32 max);
@@ -80,10 +84,13 @@ struct MouseEvent : public InputEvent {
     OIS::Axis Y(bool warped = true, bool viewportRelative = false) const;
     OIS::Axis Z(bool warped = true, bool viewportRelative = false) const;
 
+
     vec3<I32> relativePos(bool warped = true, bool viewportRelative = false) const;
     vec3<I32> absolutePos(bool warped = true, bool viewportRelative = false) const;
+    MouseState state(bool warped = true, bool viewportRelative = false) const;
 
  private:
+
     const OIS::MouseEvent& _event;
     const DisplayWindow& _parentWindow;
 };

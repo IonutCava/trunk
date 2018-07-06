@@ -19,64 +19,58 @@ MouseEvent::MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg, const Display
 {
 }
 
-OIS::Axis MouseEvent::X(bool warped, bool viewportRelative) const {
-    D64 slope = 0.0;
-    OIS::Axis newX = _event.state.X;
+MouseState MouseEvent::state(bool warped, bool viewportRelative) const {
+    auto adjust = [](OIS::Axis& inOut, I32 x, I32 y, I32 z, I32 w) -> void {
+        D64 slope = 0.0;
+        inOut.abs = MAP(inOut.abs, x, y, z, w, slope);
+        inOut.rel = static_cast<int>(std::round(inOut.rel * slope));
+    };
+
+    const OIS::MouseState& stateIn = _event.state;
+
+    MouseState ret{ stateIn.X, stateIn.Y, stateIn.Z };
+    
     if (_parentWindow.warp() && warped) {
-        const vec4<I32>& rect = _parentWindow.warpRect();
-        if (COORDS_IN_RECT(newX.abs, _event.state.Y.abs, rect)) {
-            newX.abs = MAP(newX.abs, rect.x, rect.z, 0, _event.state.width, slope);
-            newX.rel = static_cast<int>(std::round(newX.rel * slope));
+        const Rect<I32>& rect = _parentWindow.warpRect();
+        if (rect.contains(stateIn.X.abs, stateIn.Y.abs)) {
+            adjust(ret.X, rect.x, rect.z, 0, _event.state.width);
+            adjust(ret.Y, rect.y, rect.w, 0, _event.state.height);
         }
     }
-
+    
     if (viewportRelative) {
-        const vec4<I32>& rect = _parentWindow.renderingViewport();
-        if (COORDS_IN_RECT(newX.abs, _event.state.Y.abs, rect)) {
-            newX.abs = MAP(newX.abs, 0, _event.state.width, rect.x, rect.z, slope);
-            newX.rel = static_cast<int>(std::round(newX.rel * slope));
+        const Rect<I32>& rect = _parentWindow.renderingViewport();
+        if (rect.contains(stateIn.X.abs, stateIn.Y.abs)) {
+            //adjust(ret.X, 0, _event.state.width, rect.x, rect.z);
+            //adjust(ret.Y, 0, _event.state.height, rect.y, rect.w);
         }
     }
 
-    return newX;
+    return ret;
+}
+
+OIS::Axis MouseEvent::X(bool warped, bool viewportRelative) const {
+    return state(warped, viewportRelative).X;
 }
 
 OIS::Axis MouseEvent::Y(bool warped, bool viewportRelative) const {
-    D64 slope = 0.0;
-    OIS::Axis newY = _event.state.Y;
-
-    if (_parentWindow.warp() && warped) {
-        const vec4<I32>& rect = _parentWindow.warpRect();
-        if (COORDS_IN_RECT(_event.state.X.abs, newY.abs, rect)) {
-            newY.abs = MAP(newY.abs, rect.y, rect.w, 0, _event.state.height, slope);
-            newY.rel = static_cast<int>(std::round(newY.rel * slope));
-        }
-    }
-
-    if (viewportRelative) {
-        const vec4<I32>& rect = _parentWindow.renderingViewport();
-        if (COORDS_IN_RECT(_event.state.X.abs, newY.abs, rect)) {
-            newY.abs = MAP(newY.abs, 0, _event.state.height, rect.y, rect.w, slope);
-            newY.rel = static_cast<int>(std::round(newY.rel * slope));
-        }
-    }
-
-    return newY;
+    return state(warped, viewportRelative).Y;
 }
 
 OIS::Axis MouseEvent::Z(bool warped, bool viewportRelative) const {
-    ACKNOWLEDGE_UNUSED(warped);
-    ACKNOWLEDGE_UNUSED(viewportRelative);
-
-    return _event.state.Z;
+    return state(warped, viewportRelative).Z;
 }
 
 vec3<I32> MouseEvent::relativePos(bool warped, bool viewportRelative) const {
-    return vec3<I32>(X(warped, viewportRelative).rel, Y(warped, viewportRelative).rel, Z(warped, viewportRelative).rel);
+    MouseState crtState = state(warped, viewportRelative);
+
+    return vec3<I32>(crtState.X.rel, crtState.Y.rel, crtState.Z.rel);
 }
 
 vec3<I32> MouseEvent::absolutePos(bool warped, bool viewportRelative) const {
-    return vec3<I32>(X(warped, viewportRelative).abs, Y(warped, viewportRelative).abs, Z(warped, viewportRelative).abs);
+    MouseState crtState = state(warped, viewportRelative);
+
+    return vec3<I32>(crtState.X.abs, crtState.Y.abs, crtState.Z.abs);
 }
 
 JoystickData::JoystickData() 

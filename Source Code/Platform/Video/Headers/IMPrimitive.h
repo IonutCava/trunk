@@ -140,10 +140,10 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
                     const vec4<U8>& colour = DefaultColours::WHITE);
     void fromLines(const vectorImpl<Line>& lines);
     void fromLines(const vectorImpl<Line>& lines,
-                   const vec4<I32>& viewport);
+                   const Rect<I32>& viewport);
    protected:
     void fromLines(const vectorImpl<Line>& lines,
-                   const vec4<I32>& viewport,  //<only for ortho mode
+                   const Rect<I32>& viewport,  //<only for ortho mode
                    const bool inViewport);
    protected:
    GFX::CommandBuffer* _cmdBuffer = nullptr;

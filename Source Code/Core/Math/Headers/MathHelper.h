@@ -42,6 +42,22 @@
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
+template <typename T>
+class mat2;
+template <typename T>
+class mat3;
+template <typename T>
+class mat4;
+template <typename T>
+class vec2;
+template <typename T>
+class vec3;
+template <typename T>
+class vec4;
+template <typename T>
+class Rect;
+template <typename T>
+class Quaternion;
 
 #if !defined(M_PI)
     constexpr D64 M_PI = 3.14159265358979323846;
@@ -130,6 +146,9 @@ template<typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w);
 
 template<typename T>
+bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect);
+
+template<typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect);
 
 U32 nextPOW2(U32 n);
@@ -178,21 +197,6 @@ void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z);
 #define BitMaskClear(arg, mask) ((arg) &= (~(mask)))
 #define BitMaskFlip(arg, mask) ((arg) ^= (mask))
 #define BitMaskCheck(arg, mask) ((arg) & (mask))
-
-template <typename T>
-class mat2;
-template <typename T>
-class mat3;
-template <typename T>
-class mat4;
-template <typename T>
-class vec2;
-template <typename T>
-class vec3;
-template <typename T>
-class vec4;
-template <typename T>
-class Quaternion;
 
 namespace Angle {
 /// Return the radian equivalent of the given degree value

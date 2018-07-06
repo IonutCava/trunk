@@ -190,11 +190,11 @@ public:
 
 
     inline bool warp() const;
-    inline const vec4<I32>& warpRect() const;
-    void warp(bool state, const vec4<I32>& rect = vec4<I32>(-1));
+    inline const Rect<I32>& warpRect() const;
+    void warp(bool state, const Rect<I32>& rect = Rect<I32>(-1));
 
-    inline const vec4<I32>& renderingViewport() const;
-    void renderingViewport(const vec4<I32>& viewport);
+    inline const Rect<I32>& renderingViewport() const;
+    void renderingViewport(const Rect<I32>& viewport);
 
 private:
     void restore();
@@ -251,8 +251,8 @@ private:
     bool _externalResizeEvent;
 
     bool _warp;
-    vec4<I32> _warpRect;
-    vec4<I32> _renderingViewport;
+    Rect<I32> _warpRect;
+    Rect<I32> _renderingViewport;
 
     U8 _opacity;
     vec2<I32> _windowPosition;

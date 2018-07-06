@@ -150,7 +150,7 @@ protected:
     bool makeTexturesResident(const TextureDataContainer& textureData);
     bool makeTextureResident(const TextureData& textureData, U8 binding);
 
-    bool changeViewportInternal(const vec4<I32>& viewport) override;
+    bool changeViewportInternal(const Rect<I32>& viewport) override;
 
 public:
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
@@ -256,7 +256,7 @@ public:
     static void popDebugMessage();
 
     static bool setScissor(I32 x, I32 y, I32 width, I32 height);
-    inline static bool setScissor(const vec4<I32>& newScissorRect) {
+    inline static bool setScissor(const Rect<I32>& newScissorRect) {
         setScissor(newScissorRect.x, newScissorRect.y, newScissorRect.z, newScissorRect.w);
     }
 
@@ -267,7 +267,7 @@ public:
 
     /// Change the current viewport area. Redundancy check is performed in GFXDevice class
     static bool changeViewport(I32 x, I32 y, I32 width, I32 height);
-    inline static bool changeViewport(const vec4<I32>& newViewport) {
+    inline static bool changeViewport(const Rect<I32>& newViewport) {
         changeViewport(newViewport.x, newViewport.y, newViewport.z, newViewport.w);
     }
 
@@ -366,9 +366,9 @@ private:
     static vectorImpl<GLboolean> s_blendEnabled;
 
     static vec4<U8> s_blendColour;
-    static vec4<I32> s_activeViewport;
-    static vec4<I32> s_previousViewport;
-    static vec4<I32> s_activeScissor;
+    static Rect<I32> s_activeViewport;
+    static Rect<I32> s_previousViewport;
+    static Rect<I32> s_activeScissor;
     static vec4<F32> s_activeClearColour;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states

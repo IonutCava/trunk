@@ -300,6 +300,11 @@ bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w
            IS_IN_RANGE_INCLUSIVE(input_y, rect_y, rect_w);
 }
 
+template<typename T>
+bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect) {
+    return COORDS_IN_RECT(input_x, input_y, rect.x, rect.y, rect.z, rect.w);
+}
+
 template <typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) {
     return COORDS_IN_RECT(input_x, input_y, rect.x, rect.y, rect.z, rect.w);

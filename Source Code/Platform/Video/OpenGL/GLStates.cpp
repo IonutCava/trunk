@@ -57,9 +57,9 @@ glFramebuffer* GL_API::s_activeRenderTarget = nullptr;
 glPixelBuffer* GL_API::s_activePixelBuffer = nullptr;
 
 vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
-vec4<I32> GL_API::s_activeViewport = vec4<I32>(-1);
-vec4<I32> GL_API::s_previousViewport = vec4<I32>(-1);
-vec4<I32> GL_API::s_activeScissor = vec4<I32>(-1);
+Rect<I32> GL_API::s_activeViewport = Rect<I32>(-1);
+Rect<I32> GL_API::s_previousViewport = Rect<I32>(-1);
+Rect<I32> GL_API::s_activeScissor = Rect<I32>(-1);
 vec4<F32> GL_API::s_activeClearColour = DefaultColours::DIVIDE_BLUE;
 GLfloat GL_API::s_depthFarVal = 1.0f;
 bool GL_API::s_primitiveRestartEnabled = false;
@@ -724,7 +724,9 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
     if ((GL_API::s_blendEnabled[drawBufferIdx] == GL_TRUE) != enable || force) {
         enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
         GL_API::s_blendEnabled[drawBufferIdx] = (enable ? GL_TRUE : GL_FALSE);
-        GL_API::s_blendEnabledGlobal = GL_FALSE;
+        if (!enable) {
+            GL_API::s_blendEnabledGlobal = GL_FALSE;
+        }
     }
 
     if (enable || force) {
@@ -756,7 +758,7 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
 /// Change the current viewport area. Redundancy check is performed in GFXDevice
 /// class
 bool GL_API::changeViewport(I32 x, I32 y, I32 width, I32 height) {
-    if (vec4<I32>(x, y, width, height) != GL_API::s_activeViewport) {
+    if (Rect<I32>(x, y, width, height) != GL_API::s_activeViewport) {
         // Debugging and profiling the application may require setting a 1x1
          // viewport to exclude fill rate bottlenecks
         if (Config::Profile::USE_1x1_VIEWPORT) {
@@ -791,7 +793,7 @@ bool GL_API::setClearColour(const vec4<F32>& colour) {
 }
 
 bool GL_API::setScissor(I32 x, I32 y, I32 width, I32 height) {
-    if (vec4<I32>(x, y, width, height) != GL_API::s_activeScissor) {
+    if (Rect<I32>(x, y, width, height) != GL_API::s_activeScissor) {
         glScissor(x, y, width, height);
         GL_API::s_activeScissor.set(x, y, width, height);
         return true;

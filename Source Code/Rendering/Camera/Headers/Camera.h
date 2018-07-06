@@ -306,11 +306,11 @@ class Camera : public Resource {
 
     /// Get the world space position from the specified screen coordinates
     /// (use winCoords.z for depth from 0 to 1)
-    inline vec3<F32> unProject(const vec3<F32>& winCoords, const vec4<I32>& viewport) const {
+    inline vec3<F32> unProject(const vec3<F32>& winCoords, const Rect<I32>& viewport) const {
         return unProject(winCoords.x, winCoords.y, winCoords.z, viewport);
     }
 
-    vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const vec4<I32>& viewport) const;
+    vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const;
 
     virtual bool moveRelative(const vec3<I32>& relMovement) { ACKNOWLEDGE_UNUSED(relMovement); return true; }
 

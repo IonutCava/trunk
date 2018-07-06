@@ -457,7 +457,7 @@ void GFXDevice::fitViewportInWindow(U16 w, U16 h) {
         bottom = to_I32((h - newHeight) * 0.5f);
     }
 
-    vec4<I32> renderingViewport(left, bottom, newWidth, newHeight);
+    Rect<I32> renderingViewport(left, bottom, newWidth, newHeight);
     WindowManager& winManager = _parent.platformContext().app().windowManager();
     winManager.getActiveWindow().renderingViewport(renderingViewport);
     setBaseViewport(renderingViewport);
@@ -577,7 +577,7 @@ void GFXDevice::renderFromCamera(Camera& camera) {
 }
 
 /// Update the rendering viewport
-bool GFXDevice::setViewport(const vec4<I32>& viewport) {
+bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     // Change the viewport on the Rendering API level
     if (_api->changeViewportInternal(viewport)) {
     // Update the buffer with the new value
@@ -598,7 +598,7 @@ bool GFXDevice::restoreViewport() {
 }
 
 /// Set a new viewport clearing the previous stack first
-void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
+void GFXDevice::setBaseViewport(const Rect<I32>& viewport) {
     setViewport(viewport);
     _prevViewport.set(viewport);
     _baseViewport.set(viewport);
@@ -681,7 +681,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     bool wasEven = false;
 
     // Store the current width and height of each mip
-    vec4<I32> previousViewport(_prevViewport);
+    Rect<I32> previousViewport(_prevViewport);
 
     // Bind the depth texture to the first texture unit
     Texture_ptr depth = screenTarget.getAttachment(RTAttachmentType::Depth, 0).texture();

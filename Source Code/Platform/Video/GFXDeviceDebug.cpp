@@ -104,7 +104,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 
         I32 viewportWidth = screenWidth / maxViewportColumnCount;
         I32 viewportHeight = to_I32(viewportWidth / aspectRatio);
-        vec4<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
+        Rect<I32> viewport(screenWidth - viewportWidth, 0, viewportWidth, viewportHeight);
 
         PipelineDescriptor pipelineDesc;
         pipelineDesc._stateHash = _defaultStateBlockHash;
@@ -113,9 +113,9 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
 
-        vectorImplFast <std::pair<stringImpl, vec4<I32>>> labelStack;
+        vectorImplFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 
-        vec4<I32> crtViewport = getCurrentViewport();
+        Rect<I32> crtViewport = getCurrentViewport();
         GFX::SetViewportCommand setViewport;
         GFX::SendPushConstantsCommand pushConstants;
         GFX::BindPipelineCommand bindPipeline;
@@ -158,7 +158,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         }
 
         TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));
-        for (const std::pair<stringImpl, vec4<I32>>& entry : labelStack) {
+        for (const std::pair<stringImpl, Rect<I32>>& entry : labelStack) {
             // Draw labels at the end to reduce number of state changes
             setViewport._viewport.set(entry.second);
             GFX::SetViewPort(bufferInOut, setViewport);
@@ -218,7 +218,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // Submit the draw command, rendering it in a tiny viewport in the lower
             // right corner
             U16 windowWidth = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
-            _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
+            _axisGizmo->fromLines(_axisLines, Rect<I32>(windowWidth - 120, 8, 128, 128));
         
             // We need to transform the gizmo so that it always remains axis aligned
             // Create a world matrix using a look at function with the eye position

@@ -399,8 +399,8 @@ bool Camera::updateFrustum() {
     return true;
 }
 
-vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const vec4<I32>& viewport) const {
-    vec4<F32> temp(winCoordsX, winCoordsY, winCoordsZ, 1.0f);
+vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const {
+    Rect<F32> temp(winCoordsX, winCoordsY, winCoordsZ, 1.0f);
     temp.x = (temp.x - F32(viewport[0])) / F32(viewport[2]);
     temp.y = (temp.y - F32(viewport[1])) / F32(viewport[3]);
 

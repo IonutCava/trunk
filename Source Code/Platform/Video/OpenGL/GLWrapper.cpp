@@ -1202,7 +1202,7 @@ bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
         textureData._samplerHash);
 }
 
-bool GL_API::changeViewportInternal(const vec4<I32>& viewport) {
+bool GL_API::changeViewportInternal(const Rect<I32>& viewport) {
     return changeViewport(viewport);
 }
 

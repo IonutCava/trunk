@@ -151,11 +151,11 @@ namespace Divide {
         return _warp;
     }
 
-    inline const vec4<I32>& DisplayWindow::warpRect() const {
+    inline const Rect<I32>& DisplayWindow::warpRect() const {
         return _warpRect;
     }
 
-    inline const vec4<I32>& DisplayWindow::renderingViewport() const {
+    inline const Rect<I32>& DisplayWindow::renderingViewport() const {
         return _renderingViewport;
     }
 }; //namespace Divide

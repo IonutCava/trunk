@@ -1170,7 +1170,7 @@ void Scene::findHoverTarget(PlayerIndex idx) {
     F32 aimX = to_F32(aimPos.x);
     F32 aimY = displaySize.height - to_F32(aimPos.y) - 1;
 
-    const vec4<I32>& viewport = _context.gfx().getCurrentViewport();
+    const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
     vec3<F32> startRay = crtCamera.unProject(aimX, aimY, 0.0f, viewport);
     vec3<F32> endRay = crtCamera.unProject(aimX, aimY, 1.0f, viewport);
     // see if we select another one
