@@ -49,7 +49,7 @@ void Quadtree::Build(BoundingBox& terrainBBox,
     _root->setBoundingBox(terrainBBox);
     _root->setParentShaderProgram(_parentShaderProgram);
 
-    _root->Build(0, vec2<U32>(0,0), HMsize, minHMSize,groundVBO);
+    _root->Build(0, vec2<U32>(0,0), HMsize, minHMSize,groundVBO,_chunkCount);
 
     GenerateIndexBuffer(HMsize, groundVBO);
 }

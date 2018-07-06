@@ -74,8 +74,7 @@ public:
     vec3<F32>  getPosition(F32 x_clampf, F32 z_clampf) const;
     vec3<F32>  getNormal(F32 x_clampf, F32 z_clampf) const;
     vec3<F32>  getTangent(F32 x_clampf, F32 z_clampf) const;
-    vec3<F32>  getBiTangent(F32 x_clampf, F32 z_clampf) const;
-    vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
+     vec2<F32>  getDimensions(){return vec2<F32>((F32)_terrainWidth, (F32)_terrainHeight);}
 
            void  terrainSmooth(F32 k);
            void  postLoad(SceneGraphNode* const sgn);

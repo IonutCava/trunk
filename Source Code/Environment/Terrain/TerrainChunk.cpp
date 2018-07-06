@@ -80,8 +80,9 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 }
 
 void TerrainChunk::GenerateGrassIndexBuffer(U32 bilboardCount) {
-    // get the general VBO offset for the current chunk
-    _grassData._grassChunkOffset = _grassData._grassVBO->getIndexCount();
+	if(_grassData._grassVBO == NULL)
+		return;
+
     // the first offset is always 0;
     _grassData._grassIndexOffset[0] = 0;
     // get the index vector for every billboard texture
@@ -114,8 +115,6 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
     if(lod>0) lod--;
    
-    program->Uniform("LODFactor", 1.0f / (lod+1));
-    
     vbo->setFirstElement(_lodIndOffset[lod] + _chunkIndOffset);
     vbo->setRangeCount(_lodIndCount[lod]);
     GFX_DEVICE.renderBuffer(vbo);
@@ -126,14 +125,15 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
 void  TerrainChunk::DrawGrass(I8 lod, F32 distance, U32 index, Transform* const parentTransform){
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
     if(distance > _grassData._grassVisibility) { //if we go beyond grass visibility limit ...
-        return; // ... do not draw grass
+        return; // ... do not draw grass if the terrain chunk parent is too far away.
     }
 
-    F32 ratio = std::min((1.0f - (distance / _grassData._grassVisibility)) * 2.0f, 1.0f);
-    U32 indicesCount = (U32)( ratio * _grassData._grassIndexSize[index]);
+    U32 indicesCount = _grassData._grassIndexSize[index];
 
     if(indicesCount > 0){
-        _grassData._grassVBO->setFirstElement(_grassData._grassIndexOffset[index] + _grassData._grassChunkOffset);
+		assert(_grassData._grassVBO != NULL);
+		_grassData._grassVBO->currentShader()->Uniform("grassVisibilityRange", _grassData._grassVisibility);
+        _grassData._grassVBO->setFirstElement(_grassData._grassIndexOffset[index]);
         _grassData._grassVBO->setRangeCount(indicesCount);
         GFX_DEVICE.renderBuffer(_grassData._grassVBO, parentTransform);
     }

@@ -7,7 +7,7 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
-void QuadtreeNode::Build(U8 depth,const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO){
+void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO, U32& chunkCount){
     _LOD = 0;
 
     U32 div = (U32)pow(2.0f, (F32)depth);
@@ -19,6 +19,7 @@ void QuadtreeNode::Build(U8 depth,const vec2<U32>& pos, const vec2<U32>& HMsize,
     if(std::max(newsize.x, newsize.y) < minHMSize)	{
         _terrainChunk = New TerrainChunk();
         _terrainChunk->Load(depth, pos, HMsize, groundVBO);
+		chunkCount++;
         _children = NULL;
         return;
     }
@@ -42,10 +43,10 @@ void QuadtreeNode::Build(U8 depth,const vec2<U32>& pos, const vec2<U32>& HMsize,
     tNewHMpos[CHILD_NE] = pos + vec2<U32>(newsize.x, 0);
     tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
     tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
-    _children[CHILD_NW].Build(depth+1, tNewHMpos[CHILD_NW], HMsize, minHMSize, groundVBO);
-    _children[CHILD_NE].Build(depth+1, tNewHMpos[CHILD_NE], HMsize, minHMSize, groundVBO);
-    _children[CHILD_SW].Build(depth+1, tNewHMpos[CHILD_SW], HMsize, minHMSize, groundVBO);
-    _children[CHILD_SE].Build(depth+1, tNewHMpos[CHILD_SE], HMsize, minHMSize, groundVBO);
+    _children[CHILD_NW].Build(depth+1, tNewHMpos[CHILD_NW], HMsize, minHMSize, groundVBO, chunkCount);
+    _children[CHILD_NE].Build(depth+1, tNewHMpos[CHILD_NE], HMsize, minHMSize, groundVBO, chunkCount);
+    _children[CHILD_SW].Build(depth+1, tNewHMpos[CHILD_SW], HMsize, minHMSize, groundVBO, chunkCount);
+    _children[CHILD_SE].Build(depth+1, tNewHMpos[CHILD_SE], HMsize, minHMSize, groundVBO, chunkCount);
 }
 
 bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
@@ -92,7 +93,7 @@ void QuadtreeNode::GenerateGrassIndexBuffer(U32 bilboardCount){
 
 #pragma message("ToDo: Change vegetation rendering and generation system. Stop relying on terrain! -Ionut")
 void QuadtreeNode::DrawGrass(U32 geometryIndex, Transform* const parentTransform){
-    if(_LOD < 0 ) return;
+    if(_LOD < 0  || !isInView(CHUNK_BIT_TESTCHILDREN)) return;
 
     if(!_children){
         assert(_terrainChunk);
@@ -118,44 +119,47 @@ void QuadtreeNode::DrawBBox(){
     }
 }
 
-void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
-    const Frustum& frust = Frustum::getInstance();
+bool QuadtreeNode::isInView(I32 options) {
+	const Frustum& frust = Frustum::getInstance();
     const vec3<F32>& center = _boundingBox.getCenter();
     const vec3<F32>& eyePos = frust.getEyePos();
-    F32 radius = (_boundingBox.getMax()-center).length();
+	   
+    _camDistance = vec3<F32>(center - eyePos).length();
+	_LOD = 0;
+	if(_camDistance > Config::TERRAIN_CHUNK_LOD1)		_LOD = 2;
+    else if(_camDistance > Config::TERRAIN_CHUNK_LOD0)	_LOD = 1;
 
-    if(options & CHUNK_BIT_TESTCHILDREN) {
+    F32 radius = (_boundingBox.getMax()-center).length();
+	if(options & CHUNK_BIT_TESTCHILDREN) {
         if(!_boundingBox.ContainsPoint(eyePos))	{
             switch(frust.ContainsSphere(center, radius)) {
-                case FRUSTUM_OUT:	return;
+                case FRUSTUM_OUT:	return false;
                 case FRUSTUM_IN:	options &= ~CHUNK_BIT_TESTCHILDREN;	break;
                 case FRUSTUM_INTERSECT:	{
                     switch(frust.ContainsBoundingBox(_boundingBox)) {
                         case FRUSTUM_IN: options &= ~CHUNK_BIT_TESTCHILDREN; break;
-                        case FRUSTUM_OUT: return;
+                        case FRUSTUM_OUT: return false;
                     };//inner switch
                 };//case FRUSTUM_INTERSECT
             };//outer case
         }//if
     }//CHUNK_BIT_TESTCHILDREN option
 
-    _LOD = 0;
+	return true;
+}
+
+void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
+  
+	if(!isInView(options))
+		return;
 
     if(!_children) {
         assert(_terrainChunk);
 
-        if(options & CHUNK_BIT_WATERREFLECTION) {
+        if(options & CHUNK_BIT_WATERREFLECTION)
             _terrainChunk->DrawGround(Config::TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVBO);
-            return;
-        }
-
-        vec3<F32> vEyeToChunk = vec3<F32>(center - eyePos);
-        _camDistance = vEyeToChunk.length();
-
-        if(_camDistance > Config::TERRAIN_CHUNK_LOD1)		_LOD = 2;
-        else if(_camDistance > Config::TERRAIN_CHUNK_LOD0)	_LOD = 1;
-
-        _terrainChunk->DrawGround(_LOD,_parentShaderProgram,terrainVBO);
+		else
+			_terrainChunk->DrawGround(_LOD,_parentShaderProgram,terrainVBO);
     }else{
         _children[CHILD_NW].DrawGround(options, terrainVBO);
         _children[CHILD_NE].DrawGround(options, terrainVBO);

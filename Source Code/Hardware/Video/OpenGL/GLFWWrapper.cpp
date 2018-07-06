@@ -195,15 +195,15 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
 #ifdef _DEBUG
     if(GLEW_ARB_debug_output) {
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-        glDebugMessageCallbackARB(&Divide::GL::DebugCallback, (GLvoid*)(0));
+        GLCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB));
+        GLCheck(glDebugMessageCallbackARB(&Divide::GL::DebugCallback, (GLvoid*)(0)));
         ///Disable shader compiler errors (shader class handles that)
-        glDebugMessageControlARB(GL_DEBUG_SOURCE_SHADER_COMPILER_ARB,
-                                 GL_DEBUG_TYPE_ERROR_ARB,
-                                 GL_DONT_CARE,
-                                 0,
-                                 NULL,
-                                 GL_FALSE);
+        GLCheck(glDebugMessageControlARB(GL_DEBUG_SOURCE_SHADER_COMPILER_ARB,
+                                         GL_DEBUG_TYPE_ERROR_ARB,
+                                         GL_DONT_CARE,
+                                         0,
+                                         NULL,
+                                         GL_FALSE));
         Divide::GL::_useDebugOutputCallback = true;
     }else{
         Divide::GL::_useDebugOutputCallback = false;

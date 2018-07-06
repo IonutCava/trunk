@@ -7,12 +7,15 @@
 uniform bool dvd_enableShadowMapping = false;
 uniform mat4 dvd_lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
 
+in  vec3 dvd_cameraPosition;
 out vec3 _lightDirection[MAX_LIGHT_COUNT];
 out vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
 out vec3 _normalWV;
 out vec4 _grassColor;
 
 uniform int dvd_lightCount;
+
+uniform float grassVisibilityRange;
 
 void computeLightVectorsPhong(){
     vec4 tmpVec; 
@@ -31,23 +34,24 @@ void computeLightVectorsPhong(){
 
 void main(void){
     computeData();
-    
     _normalWV = normalize(dvd_Normal);
 
-    computeFoliageMovementGrass(_normalWV, dvd_Vertex);
+	computeFoliageMovementGrass(_normalWV, dvd_Vertex);
 
-    computeLightVectorsPhong();
-    float intensity = dot(_lightDirection[0].xyz, _normalWV);
+	_grassColor.a = clamp(grassVisibilityRange / length(dvd_cameraPosition - dvd_Vertex.xyz), 0.0, 1.0);
+	
+	computeLightVectorsPhong();
+	float intensity = dot(_lightDirection[0].xyz, _normalWV);
 
-    _grassColor = vec4(vec3(intensity), 1.0 - clamp(length(dvd_Vertex)/lod_metric, 0.0, 1.0));
-            
-    if(dvd_enableShadowMapping) {
-        // position multiplied by the light matrix. 
-        //The vertex's position from the light's perspective
-        _shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
-    }
+	_grassColor.rgb = vec3(intensity);
+          
+	if(dvd_enableShadowMapping) {
+		// position multiplied by the light matrix. 
+		//The vertex's position from the light's perspective
+		_shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
+	}
 
-    gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
+	gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
 }
 
 -- Fragment
@@ -79,10 +83,7 @@ void main (void){
     float shadow = 1.0;
     applyShadowDirectional(0, shadow);
     
-    _colorOut.rgb = cAmbient * cBase.rgb + cDiffuse * cBase.rgb *(0.2 + 0.8 * shadow);
-    //_colorOut.rgb = cBase.rgb;
-    //_colorOut.a = min(cBase.a, _grassColor.a);
-    _colorOut.a = cBase.a;
+    _colorOut = vec4(cAmbient * cBase.rgb + cDiffuse * cBase.rgb *(0.2 + 0.8 * shadow), cBase.a * _grassColor.a);
 }
 
 

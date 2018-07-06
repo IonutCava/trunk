@@ -1,7 +1,7 @@
 uniform vec3  scale;
 uniform float grassScale;
 uniform float dvd_time;
-uniform vec2 windDirection;
+uniform vec2  windDirection;
 uniform float windSpeed;
 uniform float lod_metric;
 

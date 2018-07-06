@@ -68,7 +68,7 @@ namespace Config
     const int TERRAIN_CHUNKS_LOD = 3; //< Number of LOD levels for the terrain
     const int TERRAIN_CHUNK_LOD0 = 100; //< Relative distance for LOD0->LOD1 selection
     const int TERRAIN_CHUNK_LOD1 = 180; //< Relative distance for LOD0->LOD2 selection
-
+	const int MAX_GRASS_BATCHES  = 2000000; //< How many grass elements (3 quads p.e.) to add to each terrain element
     /// SceneNode LOD selection
     /// Distance computation is identical to the of the terrain (using SceneNode's bounding box)
     const int SCENE_NODE_LOD = 3;

@@ -253,12 +253,6 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
          + (_groundVBO->getNormal()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ])  *       posD.x  *       posD.y;
 }
 
-vec3<F32>  Terrain::getBiTangent(F32 x_clampf, F32 z_clampf) const{
-    vec3<F32> N = getNormal(x_clampf, z_clampf);
-    vec3<F32> T = getTangent(x_clampf, z_clampf);
-    return Cross(N, T);
-}
-
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
     if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f) return vec3<F32>(1.0f, 0.0f, 0.0f);
 

@@ -48,7 +48,7 @@ class VertexBufferObject;
 class QuadtreeNode {
 public:
     ///recursive node building function
-    void Build(const U8 depth,const vec2<U32>& pos,const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO);
+    void Build(const U8 depth,const vec2<U32>& pos,const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO, U32& chunkCount);
     bool computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
     void Destroy();
 
@@ -67,6 +67,9 @@ public:
 
     QuadtreeNode()  {_children = NULL; _terrainChunk = NULL; _LOD = 0;}
     ~QuadtreeNode() {Destroy();}
+
+protected:
+	bool  isInView(I32 options);
 
 private:
     I8				_LOD;				///< LOD level

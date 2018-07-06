@@ -24,6 +24,7 @@
 #define _TERRAIN_CHUNK_H
 
 #include "core.h"
+#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 class Mesh;
 class Terrain;
@@ -31,14 +32,12 @@ struct FileData;
 class Transform;
 class ShaderProgram;
 class SceneGraphNode;
-class VertexBufferObject;
 
 struct ChunkGrassData{
     vectorImpl<vectorImpl<U32 > > _grassIndices;
     vectorImpl<U32 >              _grassIndexOffset;
     vectorImpl<U32 >              _grassIndexSize;
     VertexBufferObject*           _grassVBO;
-    U32                           _grassChunkOffset;
     F32                           _grassVisibility;
     inline bool empty() {return _grassIndices.empty();}
 
@@ -48,6 +47,7 @@ struct ChunkGrassData{
 
     ~ChunkGrassData()
     {
+		SAFE_DELETE(_grassVBO);
         _grassIndexOffset.clear();
         _grassIndexSize.clear();
     }

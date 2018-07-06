@@ -97,7 +97,6 @@ uniform int   dvd_lightCount;
 uniform int   dvd_lightType[MAX_LIGHT_COUNT];
 uniform float dvd_time;
 
-uniform float LODFactor;
 uniform float detail_scale;
 uniform float diffuse_scale;
 uniform float _waterHeight;

@@ -34,7 +34,6 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 class FrameBufferObject;
-class VertexBufferObject;
 typedef Texture Texture2D;
 
 #define GRASS_STRIP_RESTART_INDEX std::numeric_limits<U32>::max() - 1
@@ -46,7 +45,6 @@ enum RenderStage;
 class Vegetation : public SceneNode {
 public:
     Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, vectorImpl<Texture2D*>& grassBillboards) : SceneNode(TYPE_VEGETATION_GRASS),
-      _grassVBO(NULL),
       _billboardCount(billboardCount),
       _grassDensity(grassDensity),
       _grassScale(grassScale),
@@ -98,8 +96,6 @@ private:
     ShaderProgram*		    _grassShader;
 
     bool _shadowMapped;
-    vectorImpl<U32>     _grassVBOBillboardIndice;
-    VertexBufferObject*	_grassVBO;
     RenderStateBlock*   _grassStateBlock;
 };
 
