@@ -32,7 +32,6 @@ public:
                                               _skeletonAvailable(false),
                                               _softwareSkinning(false),
                                               _playAnimation(true),
-                                              _elapsedTime(0.0),
                                               _currentAnimationID(0),
                                               _currentFrameIndex(0),
                                               _animator(NULL)
@@ -68,7 +67,6 @@ private:
     SceneAnimator* _animator;
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;
-    U64 _elapsedTime;
     bool _skeletonAvailable; ///<Does the mesh have a valid skeleton?
     bool _softwareSkinning;
     bool _playAnimation;

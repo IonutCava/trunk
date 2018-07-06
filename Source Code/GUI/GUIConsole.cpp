@@ -224,14 +224,26 @@ void GUIConsole::update(const U64 deltaTime){
         return;
     }
 
-    //print 5 lines per update call 
-    for(U8 i = 0; i < 5; ++i){
-        MessageStruct* outMsg = NULL;
-        if(_outputBuffer.pop(outMsg)){
-            if(outMsg){
-                OutputText(outMsg->msg(), outMsg->error());
-                SAFE_DELETE(outMsg);
-            }
+    static bool lastMsgError = false;
+    static std::string lastMsg;
+
+    MessageStruct* outMsg = NULL;
+    while(_outputBuffer.pop(outMsg)){
+        if(!outMsg) continue;
+            
+        if(lastMsgError != outMsg->error()){
+            lastMsgError = outMsg->error();
+            OutputText(lastMsg.c_str(), lastMsgError);
+            lastMsg.clear();
         }
+
+        lastMsg.append(outMsg->msg());
+        lastMsg.append("\n");
+        SAFE_DELETE(outMsg);
+    }
+
+    if(!lastMsg.empty()){
+        OutputText(lastMsg.c_str(), lastMsgError);
+        lastMsg.clear();
     }
 }

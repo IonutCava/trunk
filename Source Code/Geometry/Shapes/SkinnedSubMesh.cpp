@@ -22,7 +22,7 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
 void SkinnedSubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     updateAnimations(deltaTime, sgn);
     if(_animator)
-        sgn->animationTransforms(_animator->GetTransforms(_playAnimation ? getUsToSec(_elapsedTime) : 0.0));
+        sgn->animationTransforms(_animator->GetTransforms(_playAnimation ? getUsToSec(sgn->getElapsedTime()) : 0.0));
 
     Object3D::sceneUpdate(deltaTime,sgn,sceneState);
 }
@@ -56,13 +56,11 @@ void SkinnedSubMesh::renderSkeleton(SceneGraphNode* const sgn){
     if(!_animator || !_skeletonAvailable || !GET_ACTIVE_SCENE()->renderState().drawSkeletons()) return;
     // update possible animation
     _animator->setGlobalMatrix(sgn->getTransform()->getGlobalMatrix());
-    _animator->RenderSkeleton(_playAnimation ? getUsToSec(_elapsedTime) : 0.0);
+    _animator->RenderSkeleton(_playAnimation ? getUsToSec(sgn->getElapsedTime()) : 0.0);
 }
 
 // update possible animations
 void SkinnedSubMesh::updateAnimations(const U64 deltaTime, SceneGraphNode* const sgn){
-    if(_playAnimation)
-        _elapsedTime += deltaTime;
 
     _skeletonAvailable = false;
 

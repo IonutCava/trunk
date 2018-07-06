@@ -12,6 +12,7 @@
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
 SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
+                                                  _elapsedTime(0ULL),
                                                   _parent(NULL),
                                                   _transform(NULL),
                                                   _transformPrevious(NULL),

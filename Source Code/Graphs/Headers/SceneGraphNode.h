@@ -152,6 +152,7 @@ public:
 
     inline     void  silentDispose(const bool state)       {_silentDispose = state;}
     inline     void  useDefaultTransform(const bool state) {_noDefaultTransform = !state;}
+
     // Animations (if needed)
     const mat4<F32>& getBoneTransform(const std::string& name);
     inline void animationTransforms(const vectorImpl<mat4<F32> >& animationTransforms)       {_animationTransforms = animationTransforms;}
@@ -184,6 +185,8 @@ public:
     void cookCollisionMesh(const std::string& sceneName);
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
+
+    inline U64 getElapsedTime() const {return _elapsedTime;}
 
 private:
     inline void setName(const std::string& name){_name = name;}
@@ -220,6 +223,7 @@ private:
 
     U32 _childQueue;
     D32 _updateTimer;
+    U64 _elapsedTime;//< the total amount of time that passed since this node was created
     std::string _name;
     mutable SharedLock _queryLock;
 
