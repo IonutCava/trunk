@@ -150,7 +150,10 @@ void RenderPass::render(SceneRenderState& renderState) {
 
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
-            GFX::ScopedDebugMessage msg(_context, "Display Render Stage", 0);
+            GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+            beginDebugScopeCmd._scopeID = 10;
+            beginDebugScopeCmd._scopeName = "Display Render Stage";
+            GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
 
             const RenderTarget& screenRT = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
@@ -163,13 +166,23 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
             params.occlusionCull = true;
             commandBuffer.add(_parent.doCustomPass(params));
+
+            GFX::EndDebugScopeCommand endDebugScopeCmd;
+            GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+
             _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize();
 
         } break;
         case RenderStage::SHADOW: {
-            GFX::ScopedDebugMessage msg(_context, "Shadow Render Stage", 1);
+            GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+            beginDebugScopeCmd._scopeID = 20;
+            beginDebugScopeCmd._scopeName = "Shadow Render Stage";
+            GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
 
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), commandBuffer);
+            GFX::EndDebugScopeCommand endDebugScopeCmd;
+            GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+
         } break;
         case RenderStage::REFLECTION: {
             SceneManager& mgr = _parent.parent().sceneManager();
@@ -178,7 +191,11 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
 
             {
-                GFX::ScopedDebugMessage msg(_context, "Cube Reflection Stage", 2);
+                GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+                beginDebugScopeCmd._scopeID = 30;
+                beginDebugScopeCmd._scopeName = "Cube Reflection Render Stage";
+                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+
                 //Part 1 - update envirnoment maps:
                 /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
                 const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
@@ -191,9 +208,15 @@ void RenderPass::render(SceneRenderState& renderState) {
                     RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
                     Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
                 }*/
+
+                GFX::EndDebugScopeCommand endDebugScopeCmd;
+                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
             }
             {
-                GFX::ScopedDebugMessage msg(_context, "Planar Reflection Stage", 3);
+                GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+                beginDebugScopeCmd._scopeID = 40;
+                beginDebugScopeCmd._scopeName = "Planar Reflection Render Stage";
+                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
 
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
@@ -217,11 +240,12 @@ void RenderPass::render(SceneRenderState& renderState) {
                             ReflectionUtil::updateBudget();
                         }
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, isVisile);
-                    }
-                    else {
+                    } else {
                         Attorney::RenderingCompRenderPass::clearReflection(*rComp);
                     }
                 }
+                GFX::EndDebugScopeCommand endDebugScopeCmd;
+                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
             }
         } break;
         case RenderStage::REFRACTION: {
@@ -232,10 +256,20 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
 
             {
-                GFX::ScopedDebugMessage msg(_context, "Cube Refraction Stage", 4);
+                GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+                beginDebugScopeCmd._scopeID = 50;
+                beginDebugScopeCmd._scopeName = "Cube Refraction Render Stage";
+                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+
+                GFX::EndDebugScopeCommand endDebugScopeCmd;
+                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
             }
             {
-                GFX::ScopedDebugMessage msg(_context, "Planar Refraction Stage", 5);
+                GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+                beginDebugScopeCmd._scopeID = 60;
+                beginDebugScopeCmd._scopeName = "Planar Refraction Render Stage";
+                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+
                 const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
@@ -258,6 +292,9 @@ void RenderPass::render(SceneRenderState& renderState) {
                         Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
                     }
                 }
+
+                GFX::EndDebugScopeCommand endDebugScopeCmd;
+                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
             }
         } break;
     };

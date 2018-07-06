@@ -167,21 +167,26 @@ void DeferredShadingRenderer::preRender(RenderTarget& target,
     _lightTexture->end();
 }
 
-void DeferredShadingRenderer::render(const DELEGATE_CBK<void>& renderCallback,
+void DeferredShadingRenderer::render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                                      const SceneRenderState& sceneRenderState,
                                      GFX::CommandBuffer& bufferInOut) {
     firstPass(renderCallback, sceneRenderState, bufferInOut);
     secondPass(sceneRenderState, bufferInOut);
 }
 
-void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void>& renderCallback,
+void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                                         const SceneRenderState& sceneRenderState,
                                         GFX::CommandBuffer& bufferInOut) {
     // Pass 1
     // Draw the geometry, saving parameters into the buffer
-    _context.gfx().renderTargetPool().drawToTargetBegin(_deferredBuffer._targetID);
-        renderCallback();
-    _context.gfx().renderTargetPool().drawToTargetEnd();
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = _deferredBuffer._targetID;
+    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+
+        renderCallback(bufferInOut);
+
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 }
 
 void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderState,
@@ -223,7 +228,6 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
-    
 
     GenericDrawCommand cmd;
     if (_debugView) {

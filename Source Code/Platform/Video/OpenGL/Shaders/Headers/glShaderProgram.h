@@ -84,20 +84,12 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     /// Make sure this program is ready for deletion
     bool unload() override;
-    /// Bind this shader program
-    bool bind() override;
-    /// Returns true if the shader is currently active
-    bool isBound() const override;
     /// Check every possible combination of flags to make sure this program can
     /// be used for rendering
     bool isValid() const override;
     /// Called once per frame. Used to update internal state
     bool update(const U64 deltaTime) override;
-    /// This is used to set all of the subroutine indices for the specified
-    /// shader stage for this program
-    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;
-    /// This works exactly like SetSubroutines, but for a single index.
-    void SetSubroutine(ShaderType type, U32 index) const override;
+
     /// Get the index of the specified subroutine name for the specified stage.
     /// Not cached!
     U32 GetSubroutineIndex(ShaderType type, const char* name) const override;
@@ -151,6 +143,16 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     inline bool comparePushConstants(const PushConstant& lhs, const PushConstant& rhs) const;
 
+    /// This is used to set all of the subroutine indices for the specified
+    /// shader stage for this program
+    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const;
+    /// This works exactly like SetSubroutines, but for a single index.
+    void SetSubroutine(ShaderType type, U32 index) const;
+    /// Bind this shader program
+    bool bind();
+    static bool unbind();
+    /// Returns true if the shader is currently active
+    bool isBound() const;
    private:
 
     ShaderVarMap _shaderVarLocation;
@@ -176,7 +178,18 @@ namespace Attorney {
         static void addLineOffset(ShaderType stage, U32 offset) {
             glShaderProgram::_lineOffset[to_U32(stage)] += offset;
         }
-
+        static bool bind(glShaderProgram& program) {
+            return program.bind();
+        }
+        static bool unbind() {
+            return glShaderProgram::unbind();
+        }
+        static void SetSubroutines(glShaderProgram& program, ShaderType type, const vectorImpl<U32>& indices) {
+            program.SetSubroutines(type, indices);
+        }
+        static void SetSubroutine(glShaderProgram& program, ShaderType type, U32 index) {
+            program.SetSubroutine(type, index);
+        }
         friend class Divide::GL_API;
     };
 };  // namespace Attorney

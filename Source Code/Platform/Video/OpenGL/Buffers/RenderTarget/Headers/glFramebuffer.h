@@ -60,9 +60,6 @@ class glFramebuffer : public RenderTarget,
 
     void setMipLevel(U16 writeLevel) override;
 
-    void begin(const RTDrawDescriptor& drawPolicy)  override;
-    void end()  override;
-
     void bind(U8 unit,
               RTAttachmentType type,
               U8 index) override;
@@ -129,6 +126,11 @@ class glFramebuffer : public RenderTarget,
     void setDefaultState(const RTDrawDescriptor& drawPolicy);
 
     void toggleAttachments(const RTDrawDescriptor& drawPolicy);
+
+   protected:
+    friend class GL_API;
+    void begin(const RTDrawDescriptor& drawPolicy);
+    void end();
 
    protected:
     bool _resolved;

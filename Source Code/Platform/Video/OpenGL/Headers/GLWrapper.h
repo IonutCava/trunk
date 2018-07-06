@@ -121,8 +121,6 @@ protected:
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
     U32 getFrameDurationGPU() override;
-    void pushDebugMessage(const char* message, I32 id) override;
-    void popDebugMessage() override;
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
         return s_activeFBID[to_U32(usage)];
@@ -217,6 +215,9 @@ public:
         GLintptr offset,
         GLsizei stride);
 
+    static void pushDebugMessage(GFXDevice& context, const char* message, I32 id);
+    static void popDebugMessage(GFXDevice& context);
+
 private:
     /// Prepare our shader loading system
     bool initShaders();
@@ -276,7 +277,7 @@ private:
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
     static Pipeline const* s_activePipeline;
-    static RenderTarget* s_activeRenderTarget;
+    static glFramebuffer* s_activeRenderTarget;
     /// Current active vertex array object's handle
     static GLuint s_activeVAOID;
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer

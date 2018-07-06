@@ -45,13 +45,4 @@ size_t DX_API::setStateBlock(size_t stateBlockHash) {
     return 0;
 }
 
-void DX_API::pushDebugMessage(const char* message, I32 id) {
-    ACKNOWLEDGE_UNUSED(message);
-    ACKNOWLEDGE_UNUSED(id);
-}
-
-void DX_API::popDebugMessage() {
-
-}
-
 };

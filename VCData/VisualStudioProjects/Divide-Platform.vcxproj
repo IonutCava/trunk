@@ -124,7 +124,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderPackage.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStagePass.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStateBlock.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ScopedStates.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\TextureData.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferImpl.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\Headers\glBufferLockManager.h" />
@@ -275,7 +274,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Pipeline.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderPackage.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderStateBlock.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\Video\ScopedStates.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\TextureData.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Textures\Texture.cpp" />

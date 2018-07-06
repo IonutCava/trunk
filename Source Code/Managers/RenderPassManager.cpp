@@ -107,8 +107,12 @@ GFX::CommandBuffer RenderPassManager::prePass(const PassParams& params, const Re
         RenderBinType::RBT_TRANSLUCENT
     };
 
-    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage)), 0);
     GFX::CommandBuffer buffer;
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = 0;
+    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage));
+    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
 
     // PrePass requires a depth buffer
     bool doPrePass = params.doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
@@ -165,10 +169,12 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
     };
     constexpr U32 binCount = to_U32(RenderBinType::COUNT);
 
-
-    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage)), 1);
-
     GFX::CommandBuffer buffer;
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = 1;
+    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage));
+    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
 
     SceneManager& sceneManager = parent().sceneManager();
 
@@ -251,6 +257,9 @@ GFX::CommandBuffer RenderPassManager::mainPass(const PassParams& params, RenderT
             GFX::EndRenderPass(buffer, endRenderPassCommand);
         }
     }
+
+    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EndDebugScope(buffer, endDebugScopeCmd);
 
     return buffer;
 }

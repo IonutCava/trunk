@@ -445,8 +445,6 @@ void GFXDevice::endFrame() {
     
     // Activate the default render states
     _api->setStateBlock(_defaultStateBlockHash);
-    // Unbind shaders
-    ShaderProgram::unbind();
 
     if (Config::USE_ANT_TWEAK_BAR) {
         if (_parent.platformContext().config().gui.enableDebugVariableControls) {
@@ -455,6 +453,7 @@ void GFXDevice::endFrame() {
     }
 
     _api->endFrame();
+
 
     if (Config::ENABLE_GPU_VALIDATION) {
         if (_renderDocManager) {

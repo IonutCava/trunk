@@ -56,7 +56,7 @@ class NOINITVTABLE Renderer {
                            LightPool& lightPool,
                            GFX::CommandBuffer& bufferInOut);
 
-    virtual void render(const DELEGATE_CBK<void>& renderCallback,
+    virtual void render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                         const SceneRenderState& sceneRenderState,
                         GFX::CommandBuffer& bufferInOut) = 0;
 

@@ -41,10 +41,6 @@ namespace Divide {
 
 class GFXRTPool;
 
-namespace Attorney {
-    class RenderTargetRTPool;
-};
-
 struct RenderTargetID {
     RenderTargetID() : RenderTargetID(RenderTargetUsage::COUNT)
     {
@@ -91,8 +87,6 @@ struct RenderTargetDescriptor {
 };
 
 class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
-    friend class Attorney::RenderTargetRTPool;
-
    public:
     enum class RenderTargetUsage : U32 {
         RT_READ_WRITE = 0,
@@ -138,28 +132,9 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     const stringImpl& getName() const;
 
    protected:
-    virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
-    virtual void end() = 0;
-
-   protected:
     RTAttachmentPool* _attachmentPool;
     RenderTargetDescriptor _descriptor;
 };
-
-namespace Attorney {
-    class RenderTargetRTPool {
-    private:
-        static void begin(RenderTarget& rt, const RTDrawDescriptor& drawPolicy) {
-            rt.begin(drawPolicy);
-        }
-
-        static void end(RenderTarget& rt) {
-            rt.end();
-        }
-
-        friend class Divide::GFXRTPool;
-    };
-};  // namespace Attorney
 
 };  // namespace Divide
 

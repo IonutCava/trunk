@@ -68,10 +68,6 @@ public:
         return renderTarget(handle._targetID);
     }
 
-    inline RenderTarget* activeRenderTarget() {
-        return _activeRenderTarget;
-    }
-
     inline RenderTarget& renderTarget(RenderTargetID target) {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
@@ -84,22 +80,6 @@ public:
         return _renderTargets[to_U32(target)];
     }
     
-    inline void drawToTargetBegin(RenderTargetID target, const RTDrawDescriptor& drawPolicy = RenderTarget::defaultPolicy()) {
-        if (target._usage != RenderTargetUsage::COUNT) {
-            _activeRenderTarget = &renderTarget(target);
-            Attorney::RenderTargetRTPool::begin(*_activeRenderTarget, drawPolicy);
-        } else {
-            if (_activeRenderTarget != nullptr) {
-                Attorney::RenderTargetRTPool::end(*_activeRenderTarget);
-                _activeRenderTarget = nullptr;
-            }
-        }
-    }
-
-    inline void drawToTargetEnd() {
-        drawToTargetBegin(RenderTargetID(RenderTargetUsage::COUNT));
-    }
-
     inline RenderTargetHandle allocateRT(const RenderTargetDescriptor& descriptor) {
         return allocateRT(RenderTargetUsage::OTHER, descriptor);
     }
@@ -113,7 +93,6 @@ protected:
 
     GFXDevice& _parent;
     RenderTargets _renderTargets;
-    RenderTarget* _activeRenderTarget;
 };
 }; //namespace Divide
 

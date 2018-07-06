@@ -50,9 +50,6 @@ class d3dRenderTarget : public RenderTarget {
                      bool includeDepth = true) override;
     void setMipLevel(U16 writeLevel) override;
 
-    void begin(const RTDrawDescriptor& drawPolicy) override;
-    void end() override;
-
     void bind(U8 unit,
               RTAttachmentType type,
               U8 index) override;

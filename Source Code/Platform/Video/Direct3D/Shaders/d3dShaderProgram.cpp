@@ -22,25 +22,11 @@ bool d3dShaderProgram::recompileInternal() {
     return true;
 }
 
-bool d3dShaderProgram::bind() {
-    return false;
-}
-
-bool d3dShaderProgram::isBound() const {
-    return false;
-}
-
 bool d3dShaderProgram::isValid() const {
     return false;
 }
 
 // Subroutines
-void d3dShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {
-}
-
-void d3dShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
-}
-
 U32 d3dShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const {
     return 0;
 }

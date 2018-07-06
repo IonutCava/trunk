@@ -50,17 +50,11 @@ class d3dShaderProgram final : public ShaderProgram {
 
     bool unload() override;
 
-    bool bind() override;
-
-    bool isBound() const override;
     bool isValid() const override;
 
     I32 Binding(const char* name) override;
 
     // Subroutines
-    void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const override;
-    void SetSubroutine(ShaderType type, U32 index) const override;
-
     U32 GetSubroutineIndex(ShaderType type, const char* name) const override;
 
     U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;

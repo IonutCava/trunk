@@ -41,6 +41,12 @@ void SendPushConstants(CommandBuffer& buffer, const SendPushConstantsCommand& cm
 void BindDescriptorSets(CommandBuffer& buffer, const BindDescriptorSetsCommand& cmd) {
     buffer.add(cmd);
 }
+void BeginDebugScope(CommandBuffer& buffer, const BeginDebugScopeCommand& cmd) {
+    buffer.add(cmd);
+}
+void EndDebugScope(CommandBuffer& buffer, const EndDebugScopeCommand& cmd) {
+    buffer.add(cmd);
+}
 void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd) {
     buffer.add(cmd);
 }
@@ -61,7 +67,7 @@ void CommandBuffer::rebuildCaches() {
     _pipelineCache.resize(0);
     for (const std::shared_ptr<Command>& cmd : _data) {
         if (cmd->_type == CommandType::BIND_PIPELINE) {
-            Pipeline& pipeline = std::dynamic_pointer_cast<BindPipelineCommand>(cmd)->_pipeline;
+            Pipeline& pipeline = static_cast<BindPipelineCommand*>(cmd.get())->_pipeline;
             _pipelineCache.push_back(&pipeline);
         }
     }
@@ -69,7 +75,7 @@ void CommandBuffer::rebuildCaches() {
     _clipPlanesCache.resize(0);
     for (const std::shared_ptr<Command>& cmd : _data) {
         if (cmd->_type == CommandType::SET_CLIP_PLANES) {
-            ClipPlaneList& planes = std::dynamic_pointer_cast<SetClipPlanesCommand>(cmd)->_clippingPlanes;
+            ClipPlaneList& planes = static_cast<SetClipPlanesCommand*>(cmd.get())->_clippingPlanes;
             _clipPlanesCache.push_back(&planes);
         }
     }
@@ -77,7 +83,7 @@ void CommandBuffer::rebuildCaches() {
     _pushConstantsCache.resize(0);
     for (const std::shared_ptr<Command>& cmd : _data) {
         if (cmd->_type == CommandType::SEND_PUSH_CONSTANTS) {
-            PushConstants& constants = std::dynamic_pointer_cast<SendPushConstantsCommand>(cmd)->_constants;
+            PushConstants& constants = static_cast<SendPushConstantsCommand*>(cmd.get())->_constants;
             _pushConstantsCache.push_back(&constants);
         }
     }
@@ -85,7 +91,7 @@ void CommandBuffer::rebuildCaches() {
     _descriptorSetCache.resize(0);
     for (const std::shared_ptr<Command>& cmd : _data) {
         if (cmd->_type == CommandType::BIND_DESCRIPTOR_SETS) {
-            DescriptorSet& set = std::dynamic_pointer_cast<BindDescriptorSetsCommand>(cmd)->_set;
+            DescriptorSet& set = static_cast<BindDescriptorSetsCommand*>(cmd.get())->_set;
             _descriptorSetCache.push_back(&set);
         }
     }
@@ -93,7 +99,7 @@ void CommandBuffer::rebuildCaches() {
     _drawCommandsCache.resize(0);
     for (const std::shared_ptr<Command>& cmd : _data) {
         if (cmd->_type == CommandType::DRAW_COMMANDS) {
-            vectorImpl<GenericDrawCommand>& drawCommands = std::dynamic_pointer_cast<DrawCommand>(cmd)->_drawCommands;
+            vectorImpl<GenericDrawCommand>& drawCommands = static_cast<DrawCommand*>(cmd.get())->_drawCommands;
             for (GenericDrawCommand& drawCmd : drawCommands) {
                 _drawCommandsCache.push_back(&drawCmd);
             }
@@ -152,7 +158,7 @@ void CommandBuffer::clean() {
 
     for (const std::shared_ptr<Command>& cmd : _data) {
         if (cmd->_type == CommandType::DRAW_COMMANDS) {
-            vectorImpl<GenericDrawCommand>& cmds = std::dynamic_pointer_cast<DrawCommand>(cmd)->_drawCommands;
+            vectorImpl<GenericDrawCommand>& cmds = static_cast<DrawCommand*>(cmd.get())->_drawCommands;
 
             cmds.erase(std::remove_if(std::begin(cmds),
                                       std::end(cmds),
@@ -167,7 +173,7 @@ void CommandBuffer::clean() {
                                std::end(_data),
                                [](const std::shared_ptr<Command>& cmd) -> bool {
         if (cmd->_type == CommandType::DRAW_COMMANDS) {
-            return std::dynamic_pointer_cast<DrawCommand>(cmd)->_drawCommands.empty();
+            return static_cast<DrawCommand*>(cmd.get())->_drawCommands.empty();
         }
         return false;
     }),

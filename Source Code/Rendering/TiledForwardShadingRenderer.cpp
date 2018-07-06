@@ -76,10 +76,10 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
     GFX::AddComputeCommand(bufferInOut, computeCmd);
 }
 
-void TiledForwardShadingRenderer::render(const DELEGATE_CBK<void>& renderCallback,
+void TiledForwardShadingRenderer::render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
                                          const SceneRenderState& sceneRenderState,
                                          GFX::CommandBuffer& bufferInOut) {
-    renderCallback();
+    renderCallback(bufferInOut);
 }
 
 void TiledForwardShadingRenderer::updateResolution(U16 width, U16 height) {

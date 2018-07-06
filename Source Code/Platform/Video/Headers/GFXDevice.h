@@ -37,7 +37,6 @@
 #include "GFXState.h"
 #include "GFXRTPool.h"
 #include "GFXShaderData.h"
-#include "ScopedStates.h"
 #include "RenderPackage.h"
 #include "GenericCommandPool.h"
 #include "Core/Math/Headers/Line.h"
@@ -361,18 +360,6 @@ public:  // Direct API calls
         return _api->getFrameDurationGPU();
     }
 
-    inline void pushDebugMessage(const char* message, I32 id) {
-        if (Config::ENABLE_GPU_VALIDATION && _config._enableDebugMsgGroups) {
-            _api->pushDebugMessage(message, id);
-        }
-    }
-
-    inline void popDebugMessage() {
-        if (Config::ENABLE_GPU_VALIDATION && _config._enableDebugMsgGroups) {
-            _api->popDebugMessage();
-        }
-    }
-
 protected:
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 
@@ -583,6 +570,10 @@ namespace Attorney {
 
     class GFXDeviceAPI {
         private:
+        static const GFXConfig& config(GFXDevice& device) {
+            return device._config;
+        }
+
         static void uploadGPUBlock(GFXDevice& device) {
             device.uploadGPUBlock();
         }

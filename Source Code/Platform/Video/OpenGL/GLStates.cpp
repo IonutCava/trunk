@@ -47,7 +47,7 @@ VAOBindings GL_API::s_vaoBufferData;
 GLfloat GL_API::s_depthNearVal = 0.0f;
 GLboolean GL_API::s_blendEnabled = GL_FALSE;
 Pipeline const* GL_API::s_activePipeline = nullptr;
-RenderTarget* GL_API::s_activeRenderTarget = nullptr;
+glFramebuffer* GL_API::s_activeRenderTarget = nullptr;
 
 vec4<U8> GL_API::s_blendColour = vec4<U8>(0u);
 vec4<I32> GL_API::s_activeViewport = vec4<I32>(-1);
@@ -86,6 +86,8 @@ void GL_API::clearStates() {
     s_activeRenderTarget = nullptr;
     s_activeViewport.set(-1);
     s_activeScissor.set(-1);
+
+    Attorney::GLAPIShaderProgram::unbind();
 
     glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
 

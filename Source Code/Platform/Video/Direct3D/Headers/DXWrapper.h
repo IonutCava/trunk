@@ -63,10 +63,6 @@ protected:
     size_t setStateBlock(size_t stateBlockHash) override;
 
     U32 getFrameDurationGPU() override { return 0u; }
-
-    void pushDebugMessage(const char* message, I32 id) override;
-
-    void popDebugMessage() override;
 };
 
 };  // namespace Divide

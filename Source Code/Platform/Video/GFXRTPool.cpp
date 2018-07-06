@@ -12,8 +12,7 @@ namespace {
 };
 
 GFXRTPool::GFXRTPool(GFXDevice& parent)
-    : _parent(parent),
-      _activeRenderTarget(nullptr)
+    : _parent(parent)
 {
     _renderTargets[to_U32(RenderTargetUsage::SCREEN)].resize(1, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::OIT)].resize(1, nullptr);

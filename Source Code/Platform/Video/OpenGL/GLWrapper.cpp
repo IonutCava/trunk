@@ -155,14 +155,6 @@ U32 GL_API::getFrameDurationGPU() {
     return FRAME_DURATION_GPU;
 }
 
-void GL_API::pushDebugMessage(const char* message, I32 id) {
-    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, id, -1, message);
-}
-
-void GL_API::popDebugMessage() {
-    glPopDebugGroup();
-}
-
 void GL_API::appendToShaderHeader(ShaderType type,
                                   const stringImpl& entry,
                                   ShaderOffsetArray& inOutOffset) {
@@ -798,7 +790,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
         BlendProperty::INV_SRC_ALPHA
     };
 
-    GFX::ScopedDebugMessage(_context, "OpenGL render text start!", 2);
+    pushDebugMessage(_context, "OpenGL render text start!", 2);
 
     GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
     
@@ -844,6 +836,8 @@ void GL_API::drawText(const TextElementBatch& batch) {
         // Register each label rendered as a draw call
         _context.registerDrawCalls(to_U32(drawCount));
     }
+
+    popDebugMessage(_context);
 }
 
 bool GL_API::bindPipeline(const Pipeline& pipeline) {
@@ -855,13 +849,13 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
 
-    ShaderProgram* program = pipeline.shaderProgram();
+    glShaderProgram* program = static_cast<glShaderProgram*>(pipeline.shaderProgram());
     // We need a valid shader as no fixed function pipeline is available
     DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
-    if (program->bind()) {
+    if (Attorney::GLAPIShaderProgram::bind(*program)) {
         for (U32 i = 0; i < to_U32(ShaderType::COUNT); ++i) {
-            program->SetSubroutines(static_cast<ShaderType>(i), pipeline.shaderFunctions()[i]);
+            Attorney::GLAPIShaderProgram::SetSubroutines(*program, static_cast<ShaderType>(i), pipeline.shaderFunctions()[i]);
         }
         return true;
     }
@@ -935,21 +929,35 @@ bool GL_API::draw(const GenericDrawCommand& cmd) {
     return true;
 }
 
+void GL_API::pushDebugMessage(GFXDevice& context, const char* message, I32 id) {
+    if (Config::ENABLE_GPU_VALIDATION && Attorney::GFXDeviceAPI::config(context)._enableDebugMsgGroups) {
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, id, -1, message);
+    }
+}
+
+void GL_API::popDebugMessage(GFXDevice& context) {
+    if (Config::ENABLE_GPU_VALIDATION && Attorney::GFXDeviceAPI::config(context)._enableDebugMsgGroups) {
+        glPopDebugGroup();
+    }
+}
+
 void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
     for (const std::shared_ptr<GFX::Command>& cmd : commandBuffer()) {
         switch (cmd->_type) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 GFX::BeginRenderPassCommand* crtCmd = static_cast<GFX::BeginRenderPassCommand*>(cmd.get());
-                _context.renderTargetPool().drawToTargetBegin(crtCmd->_target, crtCmd->_descriptor);
+                glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd->_target));
+                rt.begin(crtCmd->_descriptor);
             }break;
             case GFX::CommandType::END_RENDER_PASS: {
-                _context.renderTargetPool().drawToTargetEnd();
+                assert(GL_API::s_activeRenderTarget != nullptr);
+                GL_API::s_activeRenderTarget->end();
             }break;
             case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
                 assert(s_activeRenderTarget != nullptr);
                 GFX::BeginRenderSubPassCommand* crtCmd = static_cast<GFX::BeginRenderSubPassCommand*>(cmd.get());
-                s_activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel);
+                GL_API::s_activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel);
             }break;
             case GFX::CommandType::END_RENDER_SUB_PASS: {
             }break;
@@ -992,6 +1000,13 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::SET_CLIP_PLANES: {
                 Attorney::GFXDeviceAPI::setClippingPlanes(_context, static_cast<GFX::SetClipPlanesCommand*>(cmd.get())->_clippingPlanes);
             }break;
+            case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
+                 GFX::BeginDebugScopeCommand* crtCmd = static_cast<GFX::BeginDebugScopeCommand*>(cmd.get());
+                 pushDebugMessage(_context, crtCmd->_scopeName.c_str(), crtCmd->_scopeID);
+            } break;
+            case GFX::CommandType::END_DEBUG_SCOPE: {
+                popDebugMessage(_context);
+            } break;
             case GFX::CommandType::DRAW_COMMANDS : {
                 Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
 
@@ -1070,7 +1085,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer& textureData) {
             vectorImpl<GLuint> samplers;
             ///etc
 
-            GL_API::bindTextures(offset, handles.size(), handles.data(), samplers.data());
+            GL_API::bindTextures(offset, (GLuint)handles.size(), handles.data(), samplers.data());
         }
     }
     for (const TextureData& data : textureData.textures()) {

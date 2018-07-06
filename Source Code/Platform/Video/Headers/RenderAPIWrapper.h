@@ -77,10 +77,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 
-    // a debug message is a marker that should show up in external profiling tools such as RenderDoc or PerfStudio /NSight
-    virtual void pushDebugMessage(const char* message, I32 id) = 0;
-    virtual void popDebugMessage() = 0;
-
     virtual void updateClipPlanes() = 0;
 
     // Returns the time in milliseconds that it took to render one frame

@@ -109,19 +109,12 @@ bool ShaderProgram::recompile() {
         return true;
     }
     _usedAtoms.clear();
-    // Remember bind state
-    bool wasBound = isBound();
-    if (wasBound) {
-        ShaderProgram::unbind();
+    if (recompileInternal()) {
+        _shouldRecompile = false;
+        return true;
     }
-    bool state = recompileInternal();
 
-    // Restore bind state
-    if (wasBound) {
-        bind();
-    }
-    _shouldRecompile = false;
-    return state;
+    return false;
 }
 
 void ShaderProgram::registerAtomFile(const stringImpl& atomFile) {
@@ -295,15 +288,13 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     return false;
 }
 
-/// Bind the NULL shader which should have the same effect as using no shaders at all
-bool ShaderProgram::unbind() {
-    return _nullShader->bind();
-}
-
 const ShaderProgram_ptr& ShaderProgram::defaultShader() {
     return _imShader;
 }
 
+const ShaderProgram_ptr& ShaderProgram::nullShader() {
+    return _nullShader;
+}
 
 void ShaderProgram::rebuildAllShaders() {
     for (ShaderProgramMap::value_type& shader : _shaderPrograms) {

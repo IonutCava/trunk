@@ -55,6 +55,8 @@ enum class CommandType : U8 {
     DRAW_COMMANDS,
     DRAW_TEXT,
     DISPATCH_COMPUTE,
+    BEGIN_DEBUG_SCOPE,
+    END_DEBUG_SCOPE,
     COUNT
 };
 
@@ -64,8 +66,6 @@ struct Command {
     {
     }
 
-    virtual void execute() = 0;
-
     CommandType _type = CommandType::COUNT;
 };
 
@@ -73,8 +73,6 @@ struct BindPipelineCommand : Command {
     BindPipelineCommand() : Command(CommandType::BIND_PIPELINE)
     {
     }
-
-    void execute() override {};
 
     Pipeline _pipeline;
 };
@@ -84,8 +82,6 @@ struct SendPushConstantsCommand : Command {
     {
     }
 
-    void execute() override {};
-
     PushConstants _constants;
 };
 
@@ -93,8 +89,6 @@ struct DrawCommand : Command {
     DrawCommand() : Command(CommandType::DRAW_COMMANDS)
     {
     }
-
-    void execute() override {};
 
     vectorImpl<GenericDrawCommand> _drawCommands;
 };
@@ -104,8 +98,6 @@ struct SetViewportCommand : Command {
     {
     }
 
-    void execute() override {};
-
     vec4<I32> _viewport;
 };
 
@@ -113,8 +105,6 @@ struct BeginRenderPassCommand : Command {
     BeginRenderPassCommand() : Command(CommandType::BEGIN_RENDER_PASS)
     {
     }
-
-    void execute() override {};
 
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
@@ -124,8 +114,6 @@ struct EndRenderPassCommand : Command {
     EndRenderPassCommand() : Command(CommandType::END_RENDER_PASS)
     {
     }
-
-    void execute() override {};
 };
 
 
@@ -134,8 +122,6 @@ struct BeginRenderSubPassCommand : Command {
     {
     }
 
-    void execute() override {};
-
     U16 _mipWriteLevel = 0u;
 };
 
@@ -143,16 +129,12 @@ struct EndRenderSubPassCommand : Command {
     EndRenderSubPassCommand() : Command(CommandType::END_RENDER_SUB_PASS)
     {
     }
-
-    void execute() override {};
 };
 
 struct BlitRenderTargetCommand : Command {
     BlitRenderTargetCommand() : Command(CommandType::BLIT_RT)
     {
     }
-
-    void execute() override {};
 
     bool _blitColour = true;
     bool _blitDepth = false;
@@ -165,8 +147,6 @@ struct SetScissorCommand : Command {
     {
     }
 
-    void execute() override {};
-
     vec4<I32> _rect;
 };
 
@@ -174,8 +154,6 @@ struct SetCameraCommand : Command {
     SetCameraCommand() : Command(CommandType::SET_CAMERA)
     {
     }
-
-    void execute() override {};
 
     Camera* _camera = nullptr;
 };
@@ -187,8 +165,6 @@ struct SetClipPlanesCommand : Command {
     {
     }
 
-    void execute() override {};
-
     ClipPlaneList _clippingPlanes;
 };
 
@@ -198,17 +174,29 @@ struct BindDescriptorSetsCommand : Command {
     {
     }
 
-    void execute() override {};
-
     DescriptorSet _set;
+};
+
+struct BeginDebugScopeCommand : Command {
+    BeginDebugScopeCommand() : Command(CommandType::BEGIN_DEBUG_SCOPE)
+    {
+    }
+
+    stringImpl _scopeName;
+    I32 _scopeID = -1;
+};
+
+
+struct EndDebugScopeCommand : Command {
+    EndDebugScopeCommand() : Command(CommandType::END_DEBUG_SCOPE)
+    {
+    }
 };
 
 struct DrawTextCommand : Command {
     DrawTextCommand() : Command(CommandType::DRAW_TEXT)
     {
     }
-
-    void execute() override {};
 
     TextElementBatch _batch;
 };
@@ -217,8 +205,6 @@ struct DispatchComputeCommand : Command {
     DispatchComputeCommand() : Command(CommandType::DISPATCH_COMPUTE)
     {
     }
-
-    void execute() override {};
 
     ComputeParams _params;
 };
@@ -280,6 +266,8 @@ class CommandBuffer {
     vectorImplFast<BlitRenderTargetCommand> _blitRenderTargetCommands;
     vectorImplFast<SetScissorCommand> _setScissorCommands;
     vectorImplFast<BindDescriptorSetsCommand> _bindDescriptorSetsCommands;
+    vectorImplFast<BeginDebugScopeCommand> _beginDebugScopeCommands;
+    vectorImplFast<EndDebugScopeCommand> _endDebugScopeCommands;
     vectorImplFast<DrawTextCommand> _drawTextCommands;
     vectorImplFast<DispatchComputeCommand> _dispatchComputeCommands;
 };
@@ -296,6 +284,8 @@ void SetClipPlanes(CommandBuffer& buffer, const SetClipPlanesCommand& cmd);
 void BindPipeline(CommandBuffer& buffer, const BindPipelineCommand& cmd);
 void SendPushConstants(CommandBuffer& buffer, const SendPushConstantsCommand& cmd);
 void BindDescriptorSets(CommandBuffer& buffer, const BindDescriptorSetsCommand& cmd);
+void BeginDebugScope(CommandBuffer& buffer, const BeginDebugScopeCommand& cmd);
+void EndDebugScope(CommandBuffer& buffer, const EndDebugScopeCommand& cmd);
 void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd);
 void AddDrawTextCommand(CommandBuffer& buffer, const DrawTextCommand& cmd);
 void AddComputeCommand(CommandBuffer& buffer, const DispatchComputeCommand& cmd);

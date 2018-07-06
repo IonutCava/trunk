@@ -598,8 +598,6 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     static Pipeline pipeline;
     static PushConstants constants;
 
-    GFX::ScopedDebugMessage(*this, "Construct Hi-Z", depthBuffer._index);
-
     if (firstRun) {
         // We use a special shader that downsamples the buffer
         // We will use a state block that disables colour writes as we will render only a depth image,
@@ -644,6 +642,12 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
 
     TextureData texData = depth->getData();
     texData.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
+
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = to_I32(depthBuffer._index);
+    beginDebugScopeCmd._scopeName = "Construct Hi-Z";
+    GFX::BeginDebugScope(cmdBufferInOut, beginDebugScopeCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = depthBuffer;
@@ -699,6 +703,9 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     // Unbind the render target
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EndRenderPass(cmdBufferInOut, endRenderPassCmd);
+
+    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EndDebugScope(cmdBufferInOut, endDebugScopeCmd);
 }
 
 Renderer& GFXDevice::getRenderer() const {

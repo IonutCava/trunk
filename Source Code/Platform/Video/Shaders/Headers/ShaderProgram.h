@@ -94,9 +94,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
                            bool asyncLoad);
     virtual ~ShaderProgram();
 
-    virtual bool bind() = 0;
-    /// Currently active
-    virtual bool isBound() const = 0;
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
     virtual bool update(const U64 deltaTime);
@@ -107,8 +104,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual I32 Binding(const char* name) = 0;
 
     /// Subroutine
-    virtual void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const = 0;
-    virtual void SetSubroutine(ShaderType type, U32 index) const = 0;
     virtual U32 GetSubroutineIndex(ShaderType type, const char* name) const = 0;
     virtual U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const = 0;
     virtual U32 GetSubroutineUniformCount(ShaderType type) const = 0;
@@ -188,10 +183,11 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
     static void registerShaderProgram(const ShaderProgram_ptr& shaderProgram);
-    /// Bind the null shader
-    static bool unbind();
+
     /// Return a default shader used for general purpose rendering
     static const ShaderProgram_ptr& defaultShader();
+
+    static const ShaderProgram_ptr& nullShader();
 
     static void onAtomChange(const char* atomName, FileUpdateEvent evt);
 

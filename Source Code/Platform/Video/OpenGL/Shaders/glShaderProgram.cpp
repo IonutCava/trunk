@@ -510,6 +510,12 @@ void glShaderProgram::reloadShaders(bool reparseShaderSource) {
 }
 
 bool glShaderProgram::recompileInternal() {
+    // Remember bind state
+    bool wasBound = isBound();
+    if (wasBound) {
+        unbind();
+    }
+
     if (_resourceName.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
@@ -522,7 +528,10 @@ bool glShaderProgram::recompileInternal() {
 
     reloadShaders(true);
     threadedLoad(DELEGATE_CBK<void, Resource_wptr>(), true);
-
+    // Restore bind state
+    if (wasBound) {
+        bind();
+    }
     return getState() == ResourceState::RES_LOADED;
 }
 
@@ -561,6 +570,11 @@ I32 glShaderProgram::Binding(const char* name) {
 
     // Return the location
     return location;
+}
+
+/// Bind the NULL shader which should have the same effect as using no shaders at all
+bool glShaderProgram::unbind() {
+    return static_cast<glShaderProgram*>(ShaderProgram::nullShader().get())->bind();
 }
 
 /// Bind this shader program
