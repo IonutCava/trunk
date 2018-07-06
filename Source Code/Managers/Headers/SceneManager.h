@@ -74,7 +74,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     Renderer& getRenderer() const;
     void setRenderer(RendererType rendererType);
 
-
     ShaderComputeQueue& shaderComputeQueue();
     const ShaderComputeQueue& shaderComputeQueue() const;
 
@@ -163,7 +162,7 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     bool populateRenderQueue(RenderStage stage,
                              bool doCulling,
                              U32 passIndex);
-
+    Camera* getDefaultCamera() const;
   private:
     SceneManager();
     ~SceneManager();
@@ -276,6 +275,10 @@ class SceneManagerRenderPass {
 
     static bool generateShadowMaps(Divide::SceneManager& mgr) {
         return mgr.generateShadowMaps();
+    }
+
+    static Camera* getDefaultCamera(Divide::SceneManager& mgr) {
+        return mgr.getDefaultCamera();
     }
 
     friend class Divide::RenderPass;

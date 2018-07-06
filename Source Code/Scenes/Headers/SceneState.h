@@ -165,6 +165,7 @@ class SceneRenderState : public SceneComponent {
     F32 _generalVisibility;
 };
 
+class Camera;
 class SceneState : public SceneComponent {
    public:
        enum class MoveDirection : I32 {
@@ -184,6 +185,7 @@ class SceneState : public SceneComponent {
           _cameraUpdated(false),
           _cameraLockedToMouse(false),
           _saveLoadDisabled(false),
+          _overrideCamera(nullptr),
           _waterHeight(0.0f),
           _waterDepth(0.0f),
           _windSpeed(1.0f),
@@ -262,6 +264,9 @@ class SceneState : public SceneComponent {
     inline void saveLoadDisabled(const bool state) { _saveLoadDisabled = state; }
     inline bool saveLoadDisabled()           const { return _saveLoadDisabled; }
 
+    inline void    overrideCamera(Camera* camera) { _overrideCamera = camera; }
+    inline Camera* overrideCamera()         const { return _overrideCamera; }
+    
 protected:
 
     std::array<MusicPlaylist, to_const_uint(MusicType::COUNT)> _music;
@@ -290,6 +295,8 @@ protected:
     F32 _windSpeed;
     F32 _windDirX;
     F32 _windDirZ;
+
+    Camera* _overrideCamera;
 };
 
 namespace Attorney {

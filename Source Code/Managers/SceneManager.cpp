@@ -350,6 +350,15 @@ bool SceneManager::generateShadowMaps() {
     return lightPool->generateShadowMaps(activeScene.renderState());
 }
 
+Camera* SceneManager::getDefaultCamera() const {
+    Camera* overrideCamera = getActiveScene().state().overrideCamera();
+    if (overrideCamera == nullptr) {
+        return Camera::findCamera(Camera::DefaultCameraHash);
+    }
+
+    return overrideCamera;
+}
+
 const RenderPassCuller::VisibleNodeList&
 SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction) {
     const vec3<F32>& camPos = Camera::activeCamera()->getEye();

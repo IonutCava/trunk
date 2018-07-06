@@ -79,7 +79,7 @@ bool dvd_shadowsEnabled() {
 #if defined(VERT_SHADER)
 
 invariant gl_Position;
-//out float gl_ClipDistance[MAX_CLIP_PLANES];
+out float gl_ClipDistance[MAX_CLIP_PLANES];
 
 void setClipPlanes(in vec4 worldSpaceVertex) {
     for(int i = 0; i < MAX_CLIP_PLANES; ++i) {
