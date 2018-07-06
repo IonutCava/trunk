@@ -355,7 +355,8 @@ void Vegetation::gpuCull() {
     bool draw = false;
     switch (queryID) {
         case 0 /*SHADOW*/: {
-            draw = LightManager::getInstance().currentShadowPass() == 0;
+            draw = GFX_DEVICE.getRenderStage() != 
+                   GFX_DEVICE.getPrevRenderStage();
             _culledFinal = false;
         } break;
         case 1 /*REFLECTION*/: {
@@ -440,7 +441,7 @@ bool Vegetation::onDraw(SceneGraphNode& sgn, RenderStage renderStage) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
              _terrainChunk->getLoD() > 0 ||
-             (LightManager::getInstance().currentShadowPass() > 0 &&
+             (GFX_DEVICE.getRenderStage() == GFX_DEVICE.getPrevRenderStage() &&
               renderStage == RenderStage::SHADOW));
 }
 

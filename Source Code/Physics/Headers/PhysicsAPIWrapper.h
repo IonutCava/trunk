@@ -82,11 +82,11 @@ class NOINITVTABLE PhysicsAPIWrapper {
     virtual void idle() = 0;
     virtual PhysicsSceneInterface* NewSceneInterface(Scene* scene) = 0;
 
-    virtual bool createPlane(const vec3<F32>& position = VECTOR3_ZERO,
+    virtual void createPlane(const vec3<F32>& position = VECTOR3_ZERO,
                              U32 size = 1) = 0;
-    virtual bool createBox(const vec3<F32>& position = VECTOR3_ZERO,
+    virtual void createBox(const vec3<F32>& position = VECTOR3_ZERO,
                            F32 size = 1.0f) = 0;
-    virtual bool createActor(SceneGraphNode& node,
+    virtual void createActor(SceneGraphNode& node,
                              const stringImpl& sceneName, PhysicsActorMask mask,
                              PhysicsCollisionGroup group) = 0;
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;

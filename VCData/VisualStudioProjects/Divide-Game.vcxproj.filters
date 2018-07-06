@@ -664,5 +664,8 @@
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleSource.h">
       <Filter>Dynamics\Entities\Particles\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h">
+      <Filter>Scenes\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -262,7 +262,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     void ConstructHIZ();
     /// Save a screenshot in TGA format
-    void Screenshot(char* filename);
+    void Screenshot(const stringImpl& filename);
 
   public:  // Accessors and Mutators
     inline const GPUState& gpuState() const { return _state; }
@@ -284,6 +284,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline bool drawDebugAxis() const { return _drawDebugAxis; }
 
     inline RenderStage getRenderStage() const { return _renderStage; }
+    inline RenderStage getPrevRenderStage() const { return _prevRenderStage; }
     /// Renders the result of plotting the specified 2D graph
     void plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& color);
     /// Renders the result of plotting the specified 3D graph
@@ -477,6 +478,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     RenderAPIWrapper* _api;
     RenderStage _renderStage;
+    RenderStage _prevRenderStage;
     bool _drawDebugAxis;
     bool _viewportUpdate;
     vectorImpl<Line> _axisLines;

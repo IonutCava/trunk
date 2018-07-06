@@ -55,7 +55,6 @@ class CascadedShadowMaps : public ShadowMap {
     /// Update depth maps
     void resolution(U16 resolution, U8 resolutionFactor);
     void previewShadowMaps();
-    void togglePreviewShadowMaps(bool state);
     void init(ShadowMapInfo* const smi);
 
    protected:

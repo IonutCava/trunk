@@ -34,7 +34,10 @@ F32 _anaglyphIOD = -0.01f;
 };
 
 GFXDevice::GFXDevice()
-    : _api(nullptr), _renderStage(RenderStage::COUNT) {
+    : _api(nullptr), 
+    _renderStage(RenderStage::COUNT),
+    _prevRenderStage(RenderStage::COUNT)
+{
     // Hash values
     _state2DRenderingHash = 0;
     _defaultStateBlockHash = 0;
@@ -670,7 +673,7 @@ void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
 
 /// Extract the pixel data from the main render target's first color attachment
 /// and save it as a TGA image
-void GFXDevice::Screenshot(char* filename) {
+void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
     const vec2<U16>& resolution =
         _renderTarget[to_uint(RenderTarget::SCREEN)]

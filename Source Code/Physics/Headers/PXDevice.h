@@ -65,9 +65,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
     PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
-    bool createPlane(const vec3<F32>& position = VECTOR3_ZERO, U32 size = 1);
-    bool createBox(const vec3<F32>& position = VECTOR3_ZERO, F32 size = 1.0f);
-    bool createActor(SceneGraphNode& node, const stringImpl& sceneName,
+    void createPlane(const vec3<F32>& position = VECTOR3_ZERO, U32 size = 1);
+    void createBox(const vec3<F32>& position = VECTOR3_ZERO, F32 size = 1.0f);
+    void createActor(SceneGraphNode& node, const stringImpl& sceneName,
         PhysicsActorMask mask, PhysicsCollisionGroup group);
 
   private:

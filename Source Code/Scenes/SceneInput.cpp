@@ -1,4 +1,5 @@
 #include "Headers/Scene.h"
+#include "Headers/SceneInput.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
@@ -6,345 +7,280 @@
 
 namespace Divide {
 
-void Scene::onLostFocus() {
-    state().resetMovement();
-#ifndef _DEBUG
-    _paramHandler.setParam("freezeLoopTime", true);
-#endif
+static const I16 axisDeadZone = 256;
+
+SceneInput::SceneInput(Scene& parentScene) 
+    : _parentScene(parentScene)
+{
 }
 
-namespace {
-struct selectionQueueDistanceFrontToBack {
-    selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos)
-        : _eyePos(eyePos) {}
-
-    bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
-        F32 dist_a =
-            a->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
-        F32 dist_b =
-            b->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
-        return dist_a > dist_b;
+SceneInput::InputState SceneInput::getKeyState(Input::KeyCode key) const {
+    KeyState::const_iterator it = _keyStateMap.find(key);
+    if (it != std::end(_keyStateMap)) {
+        return it->second;
     }
 
-   private:
-    vec3<F32> _eyePos;
-};
-static vectorImpl<SceneGraphNode*> _sceneSelectionCandidates;
+    return InputState::COUNT;
 }
 
-void Scene::findSelection(F32 mouseX, F32 mouseY) {
-    mouseY = renderState().cachedResolution().height - mouseY - 1;
-    vec3<F32> startRay = renderState().getCameraConst().unProject(
-        vec3<F32>(mouseX, mouseY, 0.0f));
-    vec3<F32> endRay = renderState().getCameraConst().unProject(
-        vec3<F32>(mouseX, mouseY, 1.0f));
-    const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
-
-    // deselect old node
-    if (_currentSelection) {
-        _currentSelection->setSelected(false);
+SceneInput::InputState SceneInput::getMouseButtonState(Input::MouseButton button) const {
+    MouseBtnState::const_iterator it = _mouseStateMap.find(button);
+    if (it != std::end(_mouseStateMap)) {
+        return it->second;
     }
 
-    _currentSelection = nullptr;
-
-    // see if we select another one
-    _sceneSelectionCandidates.clear();
-    // Cast the picking ray and find items between the nearPlane (with an
-    // offset) and limit the range to half of the far plane
-    _sceneGraph.intersect(Ray(startRay, startRay.direction(endRay)),
-                          zPlanes.x + 0.5f, zPlanes.y * 0.5f,
-                          _sceneSelectionCandidates);
-
-    if (!_sceneSelectionCandidates.empty()) {
-        std::sort(std::begin(_sceneSelectionCandidates),
-                  std::end(_sceneSelectionCandidates),
-                  selectionQueueDistanceFrontToBack(
-                      renderState().getCameraConst().getEye()));
-        _currentSelection = _sceneSelectionCandidates[0];
-        // set it's state to selected
-        _currentSelection->setSelected(true);
-#ifdef _DEBUG
-        _lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].push_back(
-            Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
-#endif
-    }
-
-    for (DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {
-        cbk();
-    }
+    return InputState::COUNT;
 }
 
-bool Scene::mouseButtonPressed(const Input::MouseEvent& key,
-                               Input::MouseButton button) {
-    _mousePressed[button] = true;
-    switch (button) {
-        default:
-            return false;
+SceneInput::InputState SceneInput::getJoystickButtonState(Input::JoystickButton button) const {
+    JoystickBtnState::const_iterator it = _joystickStateMap.find(button);
+    if (it != std::end(_joystickStateMap)) {
+        return it->second;
+    }
 
-        case Input::MouseButton::MB_Left:
-            break;
-        case Input::MouseButton::MB_Right:
-            break;
-        case Input::MouseButton::MB_Middle:
-            break;
-        case Input::MouseButton::MB_Button3:
-            break;
-        case Input::MouseButton::MB_Button4:
-            break;
-        case Input::MouseButton::MB_Button5:
-            break;
-        case Input::MouseButton::MB_Button6:
-            break;
-        case Input::MouseButton::MB_Button7:
-            break;
+    return InputState::COUNT;
+}
+
+bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
+    _keyStateMap[arg._key] = InputState::PRESSED;
+    PressReleaseActions cbks;
+    if (getKeyMapping(arg._key, cbks) && cbks.first){
+        cbks.first();
+    }
+
+    return true;
+}
+
+bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
+    _keyStateMap[arg._key] = InputState::RELEASED;
+    PressReleaseActions cbks;
+    if (getKeyMapping(arg._key, cbks) && cbks.second){
+        cbks.second();
     }
     return true;
 }
 
-bool Scene::mouseButtonReleased(const Input::MouseEvent& key,
-                                Input::MouseButton button) {
-    _mousePressed[button] = false;
-    switch (button) {
-        default:
-            return false;
-
-        case Input::MouseButton::MB_Left: {
-            findSelection(key.state.X.abs, key.state.Y.abs);
-        } break;
-        case Input::MouseButton::MB_Right: {
-            state().angleLR(0);
-            state().angleUD(0);
-        } break;
-        case Input::MouseButton::MB_Middle:
-            break;
-        case Input::MouseButton::MB_Button3:
-            break;
-        case Input::MouseButton::MB_Button4:
-            break;
-        case Input::MouseButton::MB_Button5:
-            break;
-        case Input::MouseButton::MB_Button6:
-            break;
-        case Input::MouseButton::MB_Button7:
-            break;
+bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
+                                       Input::JoystickButton button) {
+    _joystickStateMap[button] = InputState::PRESSED;
+    PressReleaseActions cbks;
+    if (getJoystickMapping(button, cbks) && cbks.first){
+        cbks.first();
     }
     return true;
 }
 
-bool Scene::mouseMoved(const Input::MouseEvent& key) {
-    state().mouseXDelta(_previousMousePos.x - key.state.X.abs);
-    state().mouseYDelta(_previousMousePos.y - key.state.Y.abs);
-    _previousMousePos.set(key.state.X.abs, key.state.Y.abs);
-    if (_mousePressed[Input::MouseButton::MB_Right]) {
-        state().angleLR(-state().mouseXDelta());
-        state().angleUD(-state().mouseYDelta());
+bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
+                                        Input::JoystickButton button) {
+    _joystickStateMap[button] = InputState::RELEASED;
+    PressReleaseActions cbks;
+    if (getJoystickMapping(button, cbks) && cbks.second){
+        cbks.second();
     }
     return true;
 }
 
-using namespace Input;
-bool Scene::onKeyDown(const Input::KeyEvent& key) {
-    switch (key._key) {
-        default:
-            return false;
-        case KeyCode::KC_END: {
-            deleteSelection();
-        } break;
-        case KeyCode::KC_ADD: {
-            Camera& cam = renderState().getCamera();
-            F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-            if (currentCamMoveSpeedFactor < 50) {
-                cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
-                cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() + 1.0f);
-            }
-        } break;
-        case KeyCode::KC_SUBTRACT: {
-            Camera& cam = renderState().getCamera();
-            F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-            if (currentCamMoveSpeedFactor > 1.0f) {
-                cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
-                cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
-            }
-        } break;
-        case KeyCode::KC_W: {
-            state().moveFB(1);
-        } break;
-        case KeyCode::KC_S: {
-            state().moveFB(-1);
-        } break;
-        case KeyCode::KC_A: {
-            state().moveLR(-1);
-        } break;
-        case KeyCode::KC_D: {
-            state().moveLR(1);
-        } break;
-        case KeyCode::KC_Q: {
-            state().roll(1);
-        } break;
-        case KeyCode::KC_E: {
-            state().roll(-1);
-        } break;
-        case KeyCode::KC_RIGHT: {
-            state().angleLR(1);
-        } break;
-        case KeyCode::KC_LEFT: {
-            state().angleLR(-1);
-        } break;
-        case KeyCode::KC_UP: {
-            state().angleUD(-1);
-        } break;
-        case KeyCode::KC_DOWN: {
-            state().angleUD(1);
-        } break;
-    }
-    return true;
-}
+bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
+    STUBBED("ToDo: Store input from multiple joysticks in scene state! - Ionut");
 
-bool Scene::onKeyUp(const Input::KeyEvent& key) {
-    switch (key._key) {
-        case KeyCode::KC_P: {
-            _paramHandler.setParam(
-                "freezeLoopTime",
-                !_paramHandler.getParam("freezeLoopTime", false));
-        } break;
-        case KeyCode::KC_F2: {
-            _paramHandler.setParam("postProcessing.enableDepthOfField",
-                                   !_paramHandler.getParam<bool>(
-                                       "postProcessing.enableDepthOfField"));
-        } break;
-        case KeyCode::KC_F3: {
-            _paramHandler.setParam(
-                "postProcessing.enableBloom",
-                !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
-        } break;
-        case KeyCode::KC_F4: {
-            renderState().toggleSkeletons();
-        } break;
-        case KeyCode::KC_F5: {
-            renderState().toggleAxisLines();
-        } break;
-        case KeyCode::KC_F6: {
-            renderState().toggleWireframe();
-        } break;
-        case KeyCode::KC_F7: {
-            renderState().toggleGeometry();
-        } break;
-        case KeyCode::KC_F8: {
-            renderState().toggleDebugLines();
-        } break;
-        case KeyCode::KC_B: {
-            renderState().toggleBoundingBoxes();
-        } break;
-#ifdef _DEBUG
-        case KeyCode::KC_F9: {
-            for (U32 i = 0;
-                 i < to_uint(DebugLines::COUNT); ++i) {
-                _lines[i].clear();
-            }
-        } break;
-#endif
-        case KeyCode::KC_F10: {
-            ParamHandler& param = ParamHandler::getInstance();
-            LightManager::getInstance().togglePreviewShadowMaps();
-            param.setParam<bool>(
-                "rendering.previewDepthBuffer",
-                !param.getParam<bool>("rendering.previewDepthBuffer", false));
-        } break;
-        case KeyCode::KC_SYSRQ: {
-            GFX_DEVICE.Screenshot("screenshot_");
-        } break;
-        case KeyCode::KC_W:
-        case KeyCode::KC_S: {
-            state().moveFB(0);
-        } break;
-        case KeyCode::KC_A:
-        case KeyCode::KC_D: {
-            state().moveLR(0);
-        } break;
-        case KeyCode::KC_Q:
-        case KeyCode::KC_E: {
-            state().roll(0);
-        } break;
-        case KeyCode::KC_RIGHT:
-        case KeyCode::KC_LEFT: {
-            state().angleLR(0);
-        } break;
-        case KeyCode::KC_UP:
-        case KeyCode::KC_DOWN: {
-            state().angleUD(0);
-        } break;
-        default:
-            return false;
-    }
-    return true;
-}
-
-static I32 axisDeadZone = 256;
-
-bool Scene::joystickAxisMoved(const Input::JoystickEvent& key, I8 axis) {
-    STUBBED(
-        "ToDo: Store input from multiple joysticks in scene state! - Ionut");
-    if (key.device->getID() != to_int(Input::Joystick::JOYSTICK_1)) {
+    SceneState& state = _parentScene.state();
+    if (arg.device->getID() != to_int(Input::Joystick::JOYSTICK_1)) {
         return false;
     }
-    I32 axisABS = key.state.mAxes[axis].abs;
+    I32 axisABS = arg.state.mAxes[axis].abs;
 
     switch (axis) {
         case 0: {
             if (axisABS > axisDeadZone) {
-                state().angleUD(1);
+                state.angleUD(1);
             } else if (axisABS < -axisDeadZone) {
-                state().angleUD(-1);
+                state.angleUD(-1);
             } else {
-                state().angleUD(0);
+                state.angleUD(0);
             }
         } break;
         case 1: {
             if (axisABS > axisDeadZone) {
-                state().angleLR(1);
+                state.angleLR(1);
             } else if (axisABS < -axisDeadZone) {
-                state().angleLR(-1);
+                state.angleLR(-1);
             } else {
-                state().angleLR(0);
+                state.angleLR(0);
             }
         } break;
 
         case 2: {
             if (axisABS < -axisDeadZone) {
-                state().moveFB(1);
+                state.moveFB(1);
             } else if (axisABS > axisDeadZone) {
-                state().moveFB(-1);
+                state.moveFB(-1);
             } else {
-                state().moveFB(0);
+                state.moveFB(0);
             }
         } break;
         case 3: {
             if (axisABS < -axisDeadZone) {
-                state().moveLR(-1);
+                state.moveLR(-1);
             } else if (axisABS > axisDeadZone) {
-                state().moveLR(1);
+                state.moveLR(1);
             } else {
-                state().moveLR(0);
+                state.moveLR(0);
             }
         } break;
     }
     return true;
 }
 
-bool Scene::joystickPovMoved(const Input::JoystickEvent& key, I8 pov) {
-    if (key.state.mPOV[pov].direction & OIS::Pov::North) {  // Going up
-        state().moveFB(1);
-    } else if (key.state.mPOV[pov].direction & OIS::Pov::South) {  // Going down
-        state().moveFB(-1);
-    } else if (key.state.mPOV[pov].direction & OIS::Pov::East) {  // Going right
-        state().moveLR(1);
-    } else if (key.state.mPOV[pov].direction & OIS::Pov::West) {  // Going left
-        state().moveLR(-1);
-    } else /*if (key.state.mPOV[pov].direction == OIS::Pov::Centered)*/ {  // stopped/centered
-                                                                           // out
-        state().moveLR(0);
-        state().moveFB(0);
+bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
+    SceneState& state = _parentScene.state();
+    if (arg.state.mPOV[pov].direction & OIS::Pov::North) {  // Going up
+        state.moveFB(1);
+    }
+    if (arg.state.mPOV[pov].direction & OIS::Pov::South) {  // Going down
+        state.moveFB(-1);
+    }
+    if (arg.state.mPOV[pov].direction & OIS::Pov::East) {  // Going right
+        state.moveLR(1);
+    }
+    if (arg.state.mPOV[pov].direction & OIS::Pov::West) {  // Going left
+        state.moveLR(-1);
+    }
+    if (arg.state.mPOV[pov].direction == OIS::Pov::Centered) {  // stopped/centered out
+        state.moveLR(0);
+        state.moveFB(0);
     }
     return true;
 }
+
+bool SceneInput::joystickSliderMoved(const Input::JoystickEvent&, I8 index) {
+    return true;
+}
+
+bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg,
+                                       I8 index) {
+    return true;
+}
+
+bool SceneInput::mouseMoved(const Input::MouseEvent& arg) {
+    SceneState& state = _parentScene.state();
+    state.mouseXDelta(_mousePos.x - arg.state.X.abs);
+    state.mouseYDelta(_mousePos.y - arg.state.Y.abs);
+    _mousePos.set(arg.state.X.abs, arg.state.Y.abs);
+
+    if (getMouseButtonState(Input::MouseButton::MB_Right) ==
+        InputState::PRESSED) {
+        state.angleLR(-state.mouseXDelta());
+        state.angleUD(-state.mouseYDelta());
+    }
+
+    return true;
+}
+
+bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
+                                    Input::MouseButton id) {
+    _mouseStateMap[id] = InputState::PRESSED;
+    PressReleaseActions cbks;
+    if (getMouseMapping(id, cbks) && cbks.first){
+        cbks.first();
+    }
+    return true;
+}
+
+bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
+                                     Input::MouseButton id) {
+    _mouseStateMap[id] = InputState::RELEASED;
+    PressReleaseActions cbks;
+    if (getMouseMapping(id, cbks) && cbks.second){
+        cbks.second();
+    }
+    return true;
+}
+
+bool SceneInput::addKeyMapping(Input::KeyCode key,
+                               const PressReleaseActions& keyCbks) {
+    hashAlg::pair<KeyMap::iterator, bool> result =
+        hashAlg::emplace(_keyMap, key, keyCbks);
+
+    return result.second;
+}
+
+bool SceneInput::removeKeyMapping(Input::KeyCode key) {
+    KeyMap::const_iterator it = _keyMap.find(key);
+    if (it != std::end(_keyMap)) {
+        _keyMap.erase(it);
+        return false;
+    }
+
+    return false;
+}
+
+bool SceneInput::getKeyMapping(Input::KeyCode key,
+                               PressReleaseActions& keyCbksOut) const {
+    KeyMap::const_iterator it = _keyMap.find(key);
+    if (it != std::end(_keyMap)) {
+        keyCbksOut = it->second;
+        return true;
+    }
+
+    return false;
+}
+
+bool SceneInput::addMouseMapping(Input::MouseButton button,
+                                 const PressReleaseActions& btnCbks) {
+    hashAlg::pair<MouseMap::iterator, bool> result =
+        hashAlg::emplace(_mouseMap, button, btnCbks);
+
+    return result.second;
+}
+
+bool SceneInput::removeMouseMapping(Input::MouseButton button) {
+    MouseMap::const_iterator it = _mouseMap.find(button);
+    if (it != std::end(_mouseMap)) {
+        _mouseMap.erase(it);
+        return false;
+    }
+
+    return false;
+}
+
+bool SceneInput::getMouseMapping(Input::MouseButton button,
+                                 PressReleaseActions& btnCbksOut) const {
+    MouseMap::const_iterator it = _mouseMap.find(button);
+    if (it != std::end(_mouseMap)) {
+        btnCbksOut = it->second;
+        return true;
+    }
+
+    return false;
+}
+
+bool SceneInput::addJoystickMapping(Input::JoystickButton button,
+                                    const PressReleaseActions& btnCbks) {
+    hashAlg::pair<JoystickMap::iterator, bool> result =
+        hashAlg::emplace(_joystickMap, button, btnCbks);
+
+    return result.second;
+}
+
+bool SceneInput::removeJoystickMapping(Input::JoystickButton button) {
+    JoystickMap::const_iterator it = _joystickMap.find(button);
+    if (it != std::end(_joystickMap)) {
+        _joystickMap.erase(it);
+        return false;
+    }
+
+    return false;
+}
+
+bool SceneInput::getJoystickMapping(Input::JoystickButton button,
+                                    PressReleaseActions& btnCbksOut) const {
+    JoystickMap::const_iterator it = _joystickMap.find(button);
+    if (it != std::end(_joystickMap)) {
+        btnCbksOut = it->second;
+        return true;
+    }
+
+    return false;
+}
+
 };

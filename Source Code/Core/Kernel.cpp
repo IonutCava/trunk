@@ -654,7 +654,8 @@ bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     return false;
 }
 
-bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button) {
+bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg,
+                                   Input::JoystickButton button) {
     if (_GUI.joystickButtonPressed(arg, button)) {
         return _sceneMgr.joystickButtonPressed(arg, button);
     }
@@ -663,7 +664,7 @@ bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button) {
 }
 
 bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg,
-                                    I8 button) {
+                                    Input::JoystickButton button) {
     if (_GUI.joystickButtonReleased(arg, button)) {
         return _sceneMgr.joystickButtonReleased(arg, button);
     }

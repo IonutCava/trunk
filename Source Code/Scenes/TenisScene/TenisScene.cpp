@@ -432,17 +432,4 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     return true;
 }
 
-bool TenisScene::onKeyUp(const Input::KeyEvent& key) {
-    return Scene::onKeyUp(key);
-}
-
-bool TenisScene::mouseMoved(const Input::MouseEvent& key) {
-    return Scene::mouseMoved(key);
-}
-
-bool TenisScene::mouseButtonReleased(const Input::MouseEvent& key,
-                                     Input::MouseButton button) {
-    return Scene::mouseButtonReleased(key, button);
-    ;
-}
 };

@@ -78,6 +78,14 @@ void CubeScene::processInput(const U64 deltaTime) {}
 
 bool CubeScene::load(const stringImpl& name, GUI* const gui) {
     GFX_DEVICE.setRenderer(RendererType::RENDERER_DEFERRED_SHADING);
+
+    SceneInput::PressReleaseActions cbks;
+    cbks.second = []() {
+        GFX_DEVICE.getRenderer().toggleDebugView();
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_T, cbks);
+            
+
     // Load scene resources
     return SCENE_LOAD(name, gui, true, true);
 }
@@ -107,13 +115,4 @@ bool CubeScene::loadResources(bool continueOnErrors) {
     return true;
 }
 
-bool CubeScene::onKeyUp(const Input::KeyEvent& key) {
-    bool keyState = Scene::onKeyUp(key);
-    switch (key._key) {
-        case Input::KeyCode::KC_T: {
-            _GFX.getRenderer().toggleDebugView();
-        } break;
-    }
-    return keyState;
-}
 };

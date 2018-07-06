@@ -28,11 +28,13 @@ bool EventHandler::onKeyUp(const KeyEvent &arg) {
     return _kernel->onKeyUp(arg);
 }
 
-bool EventHandler::joystickButtonPressed(const JoystickEvent &arg, I8 button) {
+bool EventHandler::joystickButtonPressed(const JoystickEvent &arg,
+                                         JoystickButton button) {
     return _kernel->joystickButtonPressed(arg, button);
 }
 
-bool EventHandler::joystickButtonReleased(const JoystickEvent &arg, I8 button) {
+bool EventHandler::joystickButtonReleased(const JoystickEvent &arg,
+                                          JoystickButton button) {
     return _kernel->joystickButtonReleased(arg, button);
 }
 

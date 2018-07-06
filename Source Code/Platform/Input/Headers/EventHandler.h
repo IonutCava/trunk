@@ -70,15 +70,19 @@ class EventHandler : public OIS::KeyListener,
     /// Key released - OIS
     bool keyReleased(const OIS::KeyEvent& arg);
     /// Joystick button pressed - Engine
-    bool joystickButtonPressed(const JoystickEvent& arg, I8 button);
+    bool joystickButtonPressed(const JoystickEvent& arg,
+                               JoystickButton button);
     /// Joystick button pressed - OIS
-    inline bool buttonPressed(const OIS::JoyStickEvent& arg, I8 button) {
+    inline bool buttonPressed(const OIS::JoyStickEvent& arg,
+                              JoystickButton button) {
         return joystickButtonPressed(arg, button);
     }
     /// Joystick button released - Engine
-    bool joystickButtonReleased(const JoystickEvent& arg, I8 button);
+    bool joystickButtonReleased(const JoystickEvent& arg,
+                                JoystickButton button);
     /// Joystick button released - OIS
-    inline bool buttonReleased(const OIS::JoyStickEvent& arg, I8 button) {
+    inline bool buttonReleased(const OIS::JoyStickEvent& arg,
+                               JoystickButton button) {
         return joystickButtonReleased(arg, button);
     }
     /// Joystick axis change - Engine

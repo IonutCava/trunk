@@ -60,13 +60,6 @@ class WarScene : public Scene {
     void processGUI(const U64 deltaTime);
     void updateSceneStateInternal(const U64 deltaTime);
 
-    bool onKeyUp(const Input::KeyEvent& key);
-    bool mouseMoved(const Input::MouseEvent& key);
-    bool mouseButtonPressed(const Input::MouseEvent& key,
-                            Input::MouseButton button);
-    bool mouseButtonReleased(const Input::MouseEvent& key,
-                             Input::MouseButton button);
-
    private:
     void startSimulation();
 

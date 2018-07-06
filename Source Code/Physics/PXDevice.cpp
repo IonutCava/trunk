@@ -106,26 +106,26 @@ PhysicsSceneInterface* PXDevice::NewSceneInterface(Scene* scene) {
     return _api->NewSceneInterface(scene);
 }
 
-bool PXDevice::createPlane(const vec3<F32>& position, U32 size) {
+void PXDevice::createPlane(const vec3<F32>& position, U32 size) {
     DIVIDE_ASSERT(_api != nullptr,
         "PXDevice error: createPlane called without init!");
 
-    return _api->createPlane(position, size);
+    _api->createPlane(position, size);
 }
 
-bool PXDevice::createBox(const vec3<F32>& position, F32 size) {
+void PXDevice::createBox(const vec3<F32>& position, F32 size) {
     DIVIDE_ASSERT(_api != nullptr,
         "PXDevice error: createBox called without init!");
 
-    return _api->createBox(position, size);
+    _api->createBox(position, size);
 }
 
-bool PXDevice::createActor(SceneGraphNode& node, const stringImpl& sceneName,
+void PXDevice::createActor(SceneGraphNode& node, const stringImpl& sceneName,
                            PhysicsActorMask mask, PhysicsCollisionGroup group) {
     DIVIDE_ASSERT(_api != nullptr,
         "PXDevice error: createActor called without init!");
 
-    return _api->createActor(node, sceneName, mask, group);
+    _api->createActor(node, sceneName, mask, group);
 }
 
 }; //namespace Divide

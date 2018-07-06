@@ -48,7 +48,10 @@ class MainScene : public Scene {
           _beep(nullptr),
           _freeflyCamera(false),
           _updateLights(true),
-          _sun(nullptr) {}
+          _musicPlaying(false),
+          _sun(nullptr)
+    {
+    }
 
     /*General Scene Requirement*/
     bool load(const stringImpl& name, GUI* const gui);
@@ -62,15 +65,12 @@ class MainScene : public Scene {
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
     void test(cdiggins::any a, CallbackParam b);
-    bool onKeyUp(const Input::KeyEvent& key);
-    bool mouseMoved(const Input::MouseEvent& key);
-    bool mouseButtonReleased(const Input::MouseEvent& key,
-                             Input::MouseButton button);
-
+  
    private:
     vec2<F32> _sunAngle;
     vec4<F32> _sunvector, _sunColor;
     F32 _sun_cosy;
+    bool _musicPlaying;
     bool _freeflyCamera;
     bool _updateLights;
     AudioDescriptor* _beep;

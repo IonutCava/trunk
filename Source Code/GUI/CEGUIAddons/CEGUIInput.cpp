@@ -98,12 +98,12 @@ bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg,
-                                       I8 button) {
+                                       Input::JoystickButton button) {
     return true;
 }
 
 bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg,
-                                        I8 button) {
+                                        Input::JoystickButton button) {
     return true;
 }
 

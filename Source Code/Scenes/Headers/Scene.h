@@ -33,6 +33,7 @@
 #define _SCENE_H_
 
 #include "SceneState.h"
+#include "SceneInput.h"
 #include "Core/Headers/cdigginsAny.h"
 #include "Platform/Threading/Headers/Task.h"
 
@@ -76,7 +77,7 @@ namespace Attorney {
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2
 /// states:
 /// one for game information and one for rendering information
-class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterface {
+class NOINITVTABLE Scene : public Resource {
     friend class Attorney::SceneManager;
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
@@ -112,8 +113,9 @@ class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterfa
     inline const vectorImpl<Task_ptr>& getTasks() { return _tasks; }
     inline SceneState& state() { return _sceneState; }
     inline SceneRenderState& renderState() { return _sceneState.renderState(); }
-    inline SceneGraph& getSceneGraph() { return _sceneGraph; }
+    inline SceneInput& input() { return *_input; }
 
+    inline SceneGraph& getSceneGraph() { return _sceneGraph; }
     void registerTask(Task_ptr taskItem);
     void clearTasks();
     void removeTask(I64 taskGUID);
@@ -142,7 +144,7 @@ class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterfa
     inline SceneGraphNode* getCurrentSelection() const {
         return _currentSelection;
     }
-    void findSelection(F32 mouseX, F32 mouseY);
+    void findSelection();
     void deleteSelection();
     inline void addSelectionCallback(const DELEGATE_CBK<>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -207,7 +209,7 @@ class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterfa
     /// ranges, etc)
     SceneState _sceneState;
     vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
-
+    vectorImpl<SceneGraphNode*> _sceneSelectionCandidates;
    protected:
     virtual bool frameStarted();
     virtual bool frameEnded();
@@ -270,36 +272,8 @@ class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterfa
         return true;
     }
 
-   public:  // Input
-    virtual bool onKeyDown(const Input::KeyEvent& key);
-    virtual bool onKeyUp(const Input::KeyEvent& key);
-    virtual bool joystickAxisMoved(const Input::JoystickEvent& key, I8 axis);
-    virtual bool joystickPovMoved(const Input::JoystickEvent& key, I8 pov);
-    virtual bool joystickButtonPressed(const Input::JoystickEvent& key,
-                                       I8 button) {
-        return true;
-    }
-    virtual bool joystickButtonReleased(const Input::JoystickEvent& key,
-                                        I8 button) {
-        return true;
-    }
-    virtual bool joystickSliderMoved(const Input::JoystickEvent& arg,
-                                     I8 index) {
-        return true;
-    }
-    virtual bool joystickVector3DMoved(const Input::JoystickEvent& arg,
-                                       I8 index) {
-        return true;
-    }
-    virtual bool mouseMoved(const Input::MouseEvent& key);
-    virtual bool mouseButtonPressed(const Input::MouseEvent& key,
-                                    Input::MouseButton button);
-    virtual bool mouseButtonReleased(const Input::MouseEvent& key,
-                                     Input::MouseButton button);
-
-   protected:  // Input
-    vec2<I32> _previousMousePos;
-    bool _mousePressed[8];
+   protected:
+    std::unique_ptr<SceneInput> _input;
 #ifdef _DEBUG
     std::array<vectorImpl<Line>, to_const_uint(DebugLines::COUNT)> _lines;
 #endif

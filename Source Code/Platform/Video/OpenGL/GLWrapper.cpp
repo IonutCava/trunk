@@ -349,7 +349,7 @@ bool GL_API::initShaders() {
         "#define SHADOW_CUBE_START " +
             std::to_string(
                 (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                    LightManager::ShadowSlotType::SHADOW_SLOT_TYPE_CUBE)),
+                    LightManager::ShadowSlotType::CUBE)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -357,7 +357,7 @@ bool GL_API::initShaders() {
         "#define SHADOW_NORMAL_START " +
             std::to_string(
                 (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                    LightManager::ShadowSlotType::SHADOW_SLOT_TYPE_NORMAL)),
+                    LightManager::ShadowSlotType::NORMAL)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -365,7 +365,7 @@ bool GL_API::initShaders() {
         "#define SHADOW_ARRAY_START " +
             std::to_string(
                 (U32)LightManager::getInstance().getShadowBindSlotOffset(
-                    LightManager::ShadowSlotType::SHADOW_SLOT_TYPE_ARRAY)),
+                    LightManager::ShadowSlotType::ARRAY)),
         lineOffsets);
 
     appendToShaderHeader(ShaderType::FRAGMENT,

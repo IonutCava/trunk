@@ -336,11 +336,14 @@ bool Material::computeShader(RenderStage renderStage,
 
     if (Config::Profile::DISABLE_SHADING) {
         shader = "passThrough";
+        setShaderProgramInternal(shader, renderStage, computeOnAdd);
+        return false;;
     }
-    if (depthPassShader) {
-        renderStage == RenderStage::Z_PRE_PASS ? shader += ".PrePass"
-                                               : shader += ".Shadow";
+
+    if (depthPassShader && renderStage == RenderStage::SHADOW) {
+        setShaderDefines(renderStage, "COMPUTE_MOMENTS");
     }
+
     // What kind of effects do we need?
     if (_textures[slot0]) {
         // Bump mapping?

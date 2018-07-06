@@ -53,6 +53,7 @@ typedef OIS::MouseEvent MouseEvent;
 typedef OIS::MouseButtonID MouseButton;
 
 typedef OIS::JoyStickEvent JoystickEvent;
+typedef I8 JoystickButton;
 
 static const U32 KeyCode_PLACEHOLDER = 0xEE;
 
@@ -70,9 +71,9 @@ class NOINITVTABLE InputAggregatorInterface {
     virtual bool onKeyDown(const KeyEvent &arg) = 0;
     virtual bool onKeyUp(const KeyEvent &arg) = 0;
     /// Joystick or Gamepad
-    virtual bool joystickButtonPressed(const JoystickEvent &arg, I8 button) = 0;
+    virtual bool joystickButtonPressed(const JoystickEvent &arg, JoystickButton button) = 0;
     virtual bool joystickButtonReleased(const JoystickEvent &arg,
-                                        I8 button) = 0;
+                                        JoystickButton button) = 0;
     virtual bool joystickAxisMoved(const JoystickEvent &arg, I8 axis) = 0;
     virtual bool joystickPovMoved(const JoystickEvent &arg, I8 pov) = 0;
     virtual bool joystickSliderMoved(const JoystickEvent &, I8 index) = 0;

@@ -26,6 +26,24 @@
 
 namespace Divide {
 
+namespace {
+struct selectionQueueDistanceFrontToBack {
+    selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos)
+        : _eyePos(eyePos) {}
+
+    bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
+        F32 dist_a =
+            a->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+        F32 dist_b =
+            b->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+        return dist_a > dist_b;
+    }
+
+   private:
+    vec3<F32> _eyePos;
+};
+};
+
 Scene::Scene()
     : Resource("temp_scene"),
       _GFX(GFX_DEVICE),
@@ -36,19 +54,13 @@ Scene::Scene()
       _currentSelection(nullptr),
       _currentSky(nullptr)
 {
-    _mousePressed[OIS::MB_Left] = false;
-    _mousePressed[OIS::MB_Right] = false;
-    _mousePressed[OIS::MB_Middle] = false;
-    _mousePressed[OIS::MB_Button3] = false;
-    _mousePressed[OIS::MB_Button4] = false;
-    _mousePressed[OIS::MB_Button5] = false;
-    _mousePressed[OIS::MB_Button6] = false;
-    _mousePressed[OIS::MB_Button7] = false;
-
     _sceneGraph.load();
+    _input.reset(MemoryManager_NEW SceneInput(*this));
 }
 
-Scene::~Scene() {}
+Scene::~Scene()
+{
+}
 
 bool Scene::frameStarted() { return true; }
 
@@ -356,6 +368,137 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::getInstance(), this));
+
+    SceneInput::PressReleaseActions cbks;
+    cbks.second = DELEGATE_BIND(&Scene::findSelection, this);
+    /// Input
+    _input->addMouseMapping(Input::MouseButton::MB_Left, cbks);
+    cbks.second = [this](){ state().angleLR(0); state().angleUD(0); };
+    _input->addMouseMapping(Input::MouseButton::MB_Right, cbks);
+    
+    cbks.first = DELEGATE_BIND(&Scene::deleteSelection, this);
+    cbks.second = [](){};
+    _input->addKeyMapping(Input::KeyCode::KC_END, cbks);
+
+    cbks.first = [this]() {
+        Camera& cam = renderState().getCamera();
+        F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+        if (currentCamMoveSpeedFactor < 50) {
+            cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
+            cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() + 1.0f);
+        }
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_ADD, cbks);
+
+    cbks.first = [this]() {
+        Camera& cam = renderState().getCamera();
+        F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+        if (currentCamMoveSpeedFactor > 1.0f) {
+            cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
+            cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
+        }
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_SUBTRACT, cbks);
+
+    cbks.first = [this]() {state().moveFB(1); };
+    cbks.second = [this]() {state().moveFB(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_W, cbks);
+    cbks.first = [this]() {state().moveFB(-1); };
+    cbks.second = [this]() {state().moveFB(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_S, cbks);
+
+    cbks.first = [this]() {state().moveLR(-1); };
+    cbks.second = [this]() {state().moveLR(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_A, cbks);
+    cbks.first = [this]() {state().moveLR(1); };
+    cbks.second = [this]() {state().moveLR(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_D, cbks);
+
+    cbks.first = [this]() { state().roll(1); };
+    cbks.second = [this]() {state().roll(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_Q, cbks);
+    cbks.first = [this]() { state().roll(-1); };
+    cbks.second = [this]() {state().roll(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_E, cbks);
+
+    cbks.first = [this]() { state().angleLR(1); };
+    cbks.second = [this]() {state().angleLR(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_RIGHT, cbks);
+    cbks.first = [this]() { state().angleLR(-1); };
+    cbks.second = [this]() {state().angleLR(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_LEFT, cbks);
+
+     cbks.first = [this]() { state().angleUD(-1); };
+     cbks.second = [this]() {state().angleUD(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_UP, cbks);
+    cbks.first = [this]() { state().angleUD(1); };
+    cbks.second = [this]() {state().angleUD(0); };
+    _input->addKeyMapping(Input::KeyCode::KC_DOWN, cbks);
+
+    cbks.first = [](){};
+    cbks.second = []() {
+        ParamHandler::getInstance().setParam(
+            "freezeLoopTime",
+            !ParamHandler::getInstance().getParam("freezeLoopTime", false));
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_P, cbks);
+
+    cbks.second = []() {
+        ParamHandler::getInstance().setParam(
+            "postProcessing.enableDepthOfField",
+            !ParamHandler::getInstance().getParam(
+                "postProcessing.enableDepthOfField", false));
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_F2, cbks);
+
+    cbks.second = []() {
+        ParamHandler::getInstance().setParam(
+            "postProcessing.enableBloom",
+            !ParamHandler::getInstance().getParam(
+                "postProcessing.enableBloom", false));
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_F3, cbks);
+
+    cbks.second = [this]() { renderState().toggleSkeletons(); };
+    _input->addKeyMapping(Input::KeyCode::KC_F4, cbks);
+
+    cbks.second = [this]() { renderState().toggleAxisLines(); };
+    _input->addKeyMapping(Input::KeyCode::KC_F5, cbks);
+
+    cbks.second = [this]() { renderState().toggleWireframe(); };
+    _input->addKeyMapping(Input::KeyCode::KC_F6, cbks);
+
+    cbks.second = [this]() { renderState().toggleGeometry(); };
+    _input->addKeyMapping(Input::KeyCode::KC_F7, cbks);
+
+    cbks.second = [this]() { renderState().toggleDebugLines(); };
+    _input->addKeyMapping(Input::KeyCode::KC_F8, cbks);
+
+    cbks.second = [this]() { renderState().toggleBoundingBoxes(); };
+    _input->addKeyMapping(Input::KeyCode::KC_B, cbks);
+
+#ifdef _DEBUG
+    cbks.second =
+        [this]() {
+            for (U32 i = 0; i < to_uint(DebugLines::COUNT); ++i) {
+                _lines[i].clear();
+            }
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_F9, cbks);
+#endif
+
+    cbks.second = []() {
+        ParamHandler& param = ParamHandler::getInstance();
+        LightManager::getInstance().togglePreviewShadowMaps();
+        param.setParam<bool>(
+            "rendering.previewDepthBuffer",
+            !param.getParam<bool>("rendering.previewDepthBuffer", false));
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_F10, cbks);
+
+    cbks.second =
+        DELEGATE_BIND(&GFXDevice::Screenshot, &GFX_DEVICE, "screenshot_");
+    _input->addKeyMapping(Input::KeyCode::KC_SYSRQ, cbks);
     _loadComplete = true;
     return _loadComplete;
 }
@@ -467,6 +610,13 @@ void Scene::deleteSelection() {
     }
 }
 
+void Scene::onLostFocus() {
+    state().resetMovement();
+#ifndef _DEBUG
+    _paramHandler.setParam("freezeLoopTime", true);
+#endif
+}
+
 void Scene::registerTask(Task_ptr taskItem) { _tasks.push_back(taskItem); }
 
 void Scene::clearTasks() {
@@ -531,6 +681,52 @@ void Scene::debugDraw(RenderStage stage) {
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes
         AI::AIManager::getInstance().debugDraw(false);
+    }
+}
+
+void Scene::findSelection() {
+    vec2<I32> mousePos = _input->getMousePosition();
+    F32 mouseX = static_cast<F32>(mousePos.x);
+    F32 mouseY = static_cast<F32>(mousePos.y);
+
+    mouseY = renderState().cachedResolution().height - mouseY - 1;
+    vec3<F32> startRay = renderState().getCameraConst().unProject(
+        vec3<F32>(mouseX, mouseY, 0.0f));
+    vec3<F32> endRay = renderState().getCameraConst().unProject(
+        vec3<F32>(mouseX, mouseY, 1.0f));
+    const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
+
+    // deselect old node
+    if (_currentSelection) {
+        _currentSelection->setSelected(false);
+    }
+
+    _currentSelection = nullptr;
+
+    // see if we select another one
+    _sceneSelectionCandidates.clear();
+    // Cast the picking ray and find items between the nearPlane (with an
+    // offset) and limit the range to half of the far plane
+    _sceneGraph.intersect(Ray(startRay, startRay.direction(endRay)),
+                          zPlanes.x + 0.5f, zPlanes.y * 0.5f,
+                          _sceneSelectionCandidates);
+
+    if (!_sceneSelectionCandidates.empty()) {
+        std::sort(std::begin(_sceneSelectionCandidates),
+                  std::end(_sceneSelectionCandidates),
+                  selectionQueueDistanceFrontToBack(
+                      renderState().getCameraConst().getEye()));
+        _currentSelection = _sceneSelectionCandidates[0];
+        // set it's state to selected
+        _currentSelection->setSelected(true);
+#ifdef _DEBUG
+        _lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].push_back(
+            Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
+#endif
+    }
+
+    for (DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {
+        cbk();
     }
 }
 };

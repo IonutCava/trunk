@@ -38,7 +38,7 @@ namespace Divide {
 
 class PhysXScene : public Scene {
    public:
-    PhysXScene() : Scene() { _sun = nullptr; }
+    PhysXScene() : Scene() { _sun = nullptr; _hasGroundPlane = false; }
 
     void preRender();
 
@@ -48,16 +48,12 @@ class PhysXScene : public Scene {
     void processInput(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
 
-    bool onKeyUp(const Input::KeyEvent& key);
-    bool mouseMoved(const Input::MouseEvent& key);
-    bool mouseButtonReleased(const Input::MouseEvent& key,
-                             Input::MouseButton button);
-
    private:
     void createStack(U32 size = 10);
     void createTower(U32 size = 10);
 
    private:
+    bool _hasGroundPlane;
     vec3<F32> _sunvector;
     DirectionalLight* _sun;
 };

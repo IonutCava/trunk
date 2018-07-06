@@ -78,7 +78,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normal, in vec4 textureColor)
 
     //return vec4(dvd_LightSource[0]._position.xyz, 1.0);
 #if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)
-        switch (dvd_showShadowSplits ? _shadowTempInt : -2){
+        switch (dvd_showShadowDebugInfo ? _shadowTempInt : -2){
         case -2: return vec4(color, alpha);
         case -1: return vec4(1.0);
         case  0: return vec4(color.r + 0.15, color.g, color.b, alpha);

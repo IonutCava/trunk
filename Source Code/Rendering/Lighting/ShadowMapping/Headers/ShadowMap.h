@@ -80,8 +80,6 @@ class NOINITVTABLE ShadowMap {
     virtual bool Bind(U8 offset);
     virtual void previewShadowMaps() = 0;
 
-    virtual void togglePreviewShadowMaps(bool state) {}
-
     virtual void updateResolution(I32 newWidth, I32 newHeight) {}
 
    protected:

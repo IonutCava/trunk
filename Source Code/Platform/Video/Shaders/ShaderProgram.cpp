@@ -59,8 +59,8 @@ bool ShaderProgram::update(const U64 deltaTime) {
     bool enableFog = par.getParam<bool>("rendering.enableFog");
 #ifdef _DEBUG
     // Shadow splits are only visible in debug builds
-    this->Uniform("dvd_showShadowSplits",
-                  par.getParam<bool>("rendering.debug.showSplits"));
+    this->Uniform("dvd_showShadowDebugInfo",
+                  par.getParam<bool>("rendering.debug.displayShadowDebugInfo"));
 #endif
 
     // Time, fog, ambient light

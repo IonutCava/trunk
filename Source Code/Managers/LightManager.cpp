@@ -19,8 +19,8 @@ LightManager::LightManager()
     : FrameListener(),
       _init(false),
       _shadowMapsEnabled(true),
-      _previewShadowMaps(false),
-      _currentShadowPass(0) {
+      _previewShadowMaps(false)
+{
     // shadowPassTimer is used to measure the CPU-duration of shadow map
     // generation step
     s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
@@ -34,14 +34,13 @@ LightManager::LightManager()
     // We bind shadow maps to the last available texture slots that the hardware
     // supports.
     // Starting offsets for each texture type is stored here
-    _cubeShadowLocation = 255;
-    _normShadowLocation = 255;
-    _arrayShadowLocation = 255;
-    ParamHandler::getInstance().setParam<bool>("rendering.debug.showSplits",
-                                               false);
+    _shadowLocation.fill(255);
+    ParamHandler::getInstance().setParam<bool>(
+        "rendering.debug.displayShadowDebugInfo", false);
 }
 
-LightManager::~LightManager() {
+LightManager::~LightManager()
+{
     clear();
     Time::REMOVE_TIMER(s_shadowPassTimer);
     MemoryManager::DELETE(
@@ -55,11 +54,10 @@ void LightManager::init() {
         return;
     }
 
-    STUBBED(
-        "Replace light map bind slots with bindless textures! Max texture "
-        "units is currently used! -Ionut!");
+    STUBBED("Replace light map bind slots with bindless textures! "
+            "Max texture units is currently used! -Ionut!");
 
-    REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
+    REGISTER_FRAME_LISTENER(&(getInstance()), 2);
 
     GFX_DEVICE.add2DRenderFunction(
         DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
@@ -167,30 +165,21 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight) {
 }
 
 U8 LightManager::getShadowBindSlotOffset(ShadowSlotType type) {
-    if (_cubeShadowLocation == _normShadowLocation &&
-        _normShadowLocation == _arrayShadowLocation &&
-        _arrayShadowLocation == 255) {
-        U32 maxTextureStorage = ParamHandler::getInstance().getParam<I32>(
+    if (_shadowLocation.front() == 255) {
+        const I32 maxTextureStorage = ParamHandler::getInstance().getParam<I32>(
             "rendering.maxTextureSlots", 16);
-        _cubeShadowLocation =
-            maxTextureStorage -
-            (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 3);
-        _normShadowLocation =
-            maxTextureStorage -
-            (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 2);
-        _arrayShadowLocation =
-            maxTextureStorage -
-            (Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * 1);
+        const U32 maxShadowSources =
+            Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
+
+        _shadowLocation[to_uint(ShadowSlotType::CUBE)] =
+            maxTextureStorage - (maxShadowSources * 3);
+        _shadowLocation[to_uint(ShadowSlotType::NORMAL)] =
+            maxTextureStorage - (maxShadowSources * 2);
+        _shadowLocation[to_uint(ShadowSlotType::ARRAY)] =
+            maxTextureStorage - (maxShadowSources * 1);
     }
-    switch (type) {
-        default:
-        case ShadowSlotType::SHADOW_SLOT_TYPE_NORMAL:
-            return _normShadowLocation;
-        case ShadowSlotType::SHADOW_SLOT_TYPE_CUBE:
-            return _cubeShadowLocation;
-        case ShadowSlotType::SHADOW_SLOT_TYPE_ARRAY:
-            return _arrayShadowLocation;
-    };
+
+    return _shadowLocation[to_uint(type)];
 }
 
 /// Check light properties for every light (this is bound to the camera change
@@ -218,7 +207,6 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
     RenderStage previousRS = GFX_DEVICE.setRenderStage(RenderStage::SHADOW);
     // generate shadowmaps for each light
     for (Light* light : _lights) {
-        setCurrentLight(light);
         light->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
     }
 
@@ -235,15 +223,13 @@ void LightManager::togglePreviewShadowMaps() {
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled ||
         GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
+        ParamHandler::getInstance().setParam(
+            "rendering.debug.displayShadowDebugInfo", false);
         return;
     }
 
-    for (Light* light : _lights) {
-        if (light->getShadowMapInfo()->getShadowMap()) {
-            light->getShadowMapInfo()->getShadowMap()->togglePreviewShadowMaps(
-                _previewShadowMaps);
-        }
-    }
+    ParamHandler::getInstance().setParam(
+        "rendering.debug.displayShadowDebugInfo", _previewShadowMaps);
 }
 
 void LightManager::previewShadowMaps(Light* light) {
@@ -253,13 +239,13 @@ void LightManager::previewShadowMaps(Light* light) {
         GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
         return;
     }
+
     if (!light) {
         light = _lights.front();
     }
-    if (!light->castsShadows()) {
-        return;
-    }
-    if (light->getShadowMapInfo()->getShadowMap()) {
+
+    if (light->castsShadows()) {
+        assert(light->getShadowMapInfo()->getShadowMap() != nullptr);
         light->getShadowMapInfo()->getShadowMap()->previewShadowMaps();
     }
 #endif
@@ -294,20 +280,15 @@ bool LightManager::shadowMappingEnabled() const {
     if (!_shadowMapsEnabled) {
         return false;
     }
+
     for (Light* const light : _lights) {
         if (!light->castsShadows()) {
             continue;
         }
-        ShadowMapInfo* smi = light->getShadowMapInfo();
-        // no shadow info;
-        if (!smi) {
-            continue;
-        }
-        ShadowMap* sm = smi->getShadowMap();
+        ShadowMap* sm = light->getShadowMapInfo()->getShadowMap();
         // no shadow map;
-        if (!sm) {
-            continue;
-        }
+        assert(sm != nullptr);
+
         if (sm->getDepthMap()) {
             return true;
         }

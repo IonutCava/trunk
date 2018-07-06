@@ -156,7 +156,6 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
         _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
                                true);
         GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
-        LightManager::getInstance().registerShadowPass();
     }
     _depthMap->End();
 
@@ -308,10 +307,6 @@ void CascadedShadowMaps::postRender() {
 bool CascadedShadowMaps::BindInternal(U8 offset) {
     _depthMap->Bind(offset, TextureDescriptor::AttachmentType::Color0);
     return true;
-}
-
-void CascadedShadowMaps::togglePreviewShadowMaps(bool state) {
-    ParamHandler::getInstance().setParam("rendering.debug.showSplits", state);
 }
 
 void CascadedShadowMaps::previewShadowMaps() {

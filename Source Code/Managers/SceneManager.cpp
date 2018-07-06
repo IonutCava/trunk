@@ -23,9 +23,9 @@ SceneManager::SceneManager()
     AI::AIManager::createInstance();
 }
 
-SceneManager::~SceneManager() {
+SceneManager::~SceneManager()
+{
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
-
     Console::printfn(Locale::get("STOP_SCENE_MANAGER"));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
     Console::printfn(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
@@ -90,7 +90,6 @@ bool SceneManager::unloadCurrentScene() {
 }
 
 void SceneManager::initPostLoadState() {
-    Material::serializeShaderLoad(true);
     _processInput = true;
 }
 
@@ -213,7 +212,7 @@ bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->onKeyDown(key);
+    return _activeScene->input().onKeyDown(key);
 }
 
 bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
@@ -221,7 +220,7 @@ bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
         return false;
     }
 
-    return _activeScene->onKeyUp(key);
+    return _activeScene->input().onKeyUp(key);
 }
 
 bool SceneManager::mouseMoved(const Input::MouseEvent& arg) {
@@ -229,7 +228,7 @@ bool SceneManager::mouseMoved(const Input::MouseEvent& arg) {
         return false;
     }
 
-    return _activeScene->mouseMoved(arg);
+    return _activeScene->input().mouseMoved(arg);
 }
 
 bool SceneManager::mouseButtonPressed(const Input::MouseEvent& arg,
@@ -237,7 +236,7 @@ bool SceneManager::mouseButtonPressed(const Input::MouseEvent& arg,
     if (!_processInput) {
         return false;
     }
-    return _activeScene->mouseButtonPressed(arg, button);
+    return _activeScene->input().mouseButtonPressed(arg, button);
 }
 
 bool SceneManager::mouseButtonReleased(const Input::MouseEvent& arg,
@@ -246,37 +245,37 @@ bool SceneManager::mouseButtonReleased(const Input::MouseEvent& arg,
         return false;
     }
 
-    return _activeScene->mouseButtonReleased(arg, button);
+    return _activeScene->input().mouseButtonReleased(arg, button);
 }
 
 bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickAxisMoved(arg, axis);
+    return _activeScene->input().joystickAxisMoved(arg, axis);
 }
 
 bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickPovMoved(arg, pov);
+    return _activeScene->input().joystickPovMoved(arg, pov);
 }
 
 bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg,
-                                         I8 button) {
+                                         Input::JoystickButton button) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickButtonPressed(arg, button);
+    return _activeScene->input().joystickButtonPressed(arg, button);
 }
 
 bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg,
-                                          I8 button) {
+                                          Input::JoystickButton button) {
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickButtonReleased(arg, button);
+    return _activeScene->input().joystickButtonReleased(arg, button);
 }
 
 bool SceneManager::joystickSliderMoved(const Input::JoystickEvent& arg,
@@ -284,7 +283,7 @@ bool SceneManager::joystickSliderMoved(const Input::JoystickEvent& arg,
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickSliderMoved(arg, index);
+    return _activeScene->input().joystickSliderMoved(arg, index);
 }
 
 bool SceneManager::joystickVector3DMoved(const Input::JoystickEvent& arg,
@@ -292,6 +291,6 @@ bool SceneManager::joystickVector3DMoved(const Input::JoystickEvent& arg,
     if (!_processInput) {
         return false;
     }
-    return _activeScene->joystickVector3DMoved(arg, index);
+    return _activeScene->input().joystickVector3DMoved(arg, index);
 }
 };

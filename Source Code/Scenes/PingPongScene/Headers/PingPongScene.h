@@ -63,10 +63,6 @@ class PingPongScene : public Scene {
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
 
-    bool onKeyUp(const Input::KeyEvent& key);
-    bool joystickAxisMoved(const Input::JoystickEvent& key, I8 axis);
-    bool joystickButtonReleased(const Input::JoystickEvent& key, I8 button);
-
    private:
     void test(cdiggins::any a, CallbackParam b);
     void serveBall();

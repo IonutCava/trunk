@@ -45,9 +45,10 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
 
   public:
     enum class ShadowSlotType : U32 {
-        SHADOW_SLOT_TYPE_NORMAL = 0,
-        SHADOW_SLOT_TYPE_CUBE = 1,
-        SHADOW_SLOT_TYPE_ARRAY = 2
+        NORMAL = 0,
+        CUBE = 1,
+        ARRAY = 2,
+        COUNT
     };
 
     void init();
@@ -67,12 +68,6 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     inline Light::LightList& getLights() { return _lights; }
     Light* getLight(I64 lightGUID);
 
-    inline Light* getCurrentLight() const { return _currLight; }
-    inline void setCurrentLight(Light* light) {
-        _currLight = light;
-        _currentShadowPass = 0;
-    }
-
     void updateResolution(I32 newWidth, I32 newHeight);
 
     /// shadow mapping
@@ -83,9 +78,6 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     void previewShadowMaps(Light* light = nullptr);
     void togglePreviewShadowMaps();
 
-    inline U8 currentShadowPass() const { return _currentShadowPass; }
-    inline void registerShadowPass() { _currentShadowPass++; }
-
     void updateAndUploadLightData(const mat4<F32>& viewMatrix);
 
     /// Get the appropriate shadow bind slot for every light's shadow
@@ -95,11 +87,11 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
         switch (lightType) {
             default:
             case LightType::LIGHT_TYPE_SPOT:
-                return getShadowBindSlotOffset(ShadowSlotType::SHADOW_SLOT_TYPE_NORMAL);
+                return getShadowBindSlotOffset(ShadowSlotType::NORMAL);
             case LightType::LIGHT_TYPE_POINT:
-                return getShadowBindSlotOffset(ShadowSlotType::SHADOW_SLOT_TYPE_CUBE);
+                return getShadowBindSlotOffset(ShadowSlotType::CUBE);
             case LightType::LIGHT_TYPE_DIRECTIONAL:
-                return getShadowBindSlotOffset(ShadowSlotType::SHADOW_SLOT_TYPE_ARRAY);
+                return getShadowBindSlotOffset(ShadowSlotType::ARRAY);
         };
     }
 
@@ -133,12 +125,10 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     Light::LightList _lights;
     bool _init;
     bool _previewShadowMaps;
-    Light* _currLight;
     bool _shadowMapsEnabled;
     vec3<F32> _ambientLight;
     vec2<U16> _cachedResolution;
     mat4<F32> _viewMatrixCache;
-    U8 _currentShadowPass;  //<used by CSM. Resets to 0 for every light
 
     vectorImpl<LightProperties> _lightProperties;
     vectorImpl<LightShadowProperties> _lightShadowProperties;
@@ -146,9 +136,7 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>
         _lightShaderBuffer;
 
-    U8 _normShadowLocation;
-    U8 _cubeShadowLocation;
-    U8 _arrayShadowLocation;
+    std::array<U8, to_const_uint(ShadowSlotType::COUNT)> _shadowLocation;
 
 END_SINGLETON
 

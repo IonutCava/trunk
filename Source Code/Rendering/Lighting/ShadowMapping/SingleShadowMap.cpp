@@ -82,7 +82,6 @@ void SingleShadowMap::renderInternal(
     GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
     // unbind the associated depth map
     _depthMap->End();
-    LightManager::getInstance().registerShadowPass();
 }
 
 void SingleShadowMap::previewShadowMaps() {

@@ -48,7 +48,7 @@ float getCubeShadowValue(in uint index, in vec4 coords){
 #if defined(_DEBUG)
 #define DEBUG_SHADOWMAPPING
 
-uniform bool dvd_showShadowSplits = false;
+uniform bool dvd_showShadowDebugInfo = false;
 // set this to whatever (current cascade, current depth comparison result, anything)
 int _shadowTempInt = -1;
 #endif

@@ -43,8 +43,8 @@ inline void GFXDevice::renderInViewport(const vec4<I32>& rect,
 }
 
 inline bool GFXDevice::isDepthStage() const {
-    return _renderStage == RenderStage::SHADOW ||
-           _renderStage == RenderStage::Z_PRE_PASS;
+    return getRenderStage() == RenderStage::SHADOW ||
+           getRenderStage() == RenderStage::Z_PRE_PASS;
 }
 
 /// Change the width of rendered lines to the specified value
@@ -83,7 +83,8 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback,
 ///@param stage Is used to inform the rendering pipeline what we are rendering.
 /// Shadows? reflections? etc
 inline RenderStage GFXDevice::setRenderStage(RenderStage stage) {
-    std::swap(_renderStage, stage);
+    _prevRenderStage = _renderStage;
+    _renderStage = stage;
     return stage;
 }
 /// disable or enable a clip plane by index

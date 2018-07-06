@@ -276,6 +276,18 @@ bool PingPongScene::load(const stringImpl& name, GUI* const gui) {
     _paddleCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
     _freeFlyCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
 
+    SceneInput::PressReleaseActions cbks;
+    cbks.second = DELEGATE_BIND(&PingPongScene::serveBall, this);
+    _input->addJoystickMapping(0, cbks);
+    cbks.second = [this]() {
+        _freeFly = !_freeFly;
+        if (!_freeFly)
+            renderState().getCameraMgr().pushActiveCamera(_paddleCam);
+        else
+            renderState().getCameraMgr().popActiveCamera();
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
+
     return loadState;
 }
 
@@ -338,37 +350,8 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
 
     _guiTimers.push_back(0.0);  // Fps
     _taskTimers.push_back(0.0);  // Light
+
     return true;
 }
 
-bool PingPongScene::onKeyUp(const Input::KeyEvent& key) {
-    bool keyState = Scene::onKeyUp(key);
-    switch (key._key) {
-        default:
-            break;
-        case Input::KeyCode::KC_F: {
-            _freeFly = !_freeFly;
-            if (!_freeFly)
-                renderState().getCameraMgr().pushActiveCamera(_paddleCam);
-            else
-                renderState().getCameraMgr().popActiveCamera();
-        }
-    }
-
-    return keyState;
-}
-
-bool PingPongScene::joystickAxisMoved(const Input::JoystickEvent& key,
-                                      I8 axis) {
-    return Scene::joystickAxisMoved(key, axis);
-}
-
-bool PingPongScene::joystickButtonReleased(const Input::JoystickEvent& key,
-                                           I8 button) {
-    if (button == 0 && 
-        key.device->getID() != to_int(Input::Joystick::JOYSTICK_1)){
-        serveBall();
-    }
-    return Scene::joystickButtonReleased(key, button);
-}
 };

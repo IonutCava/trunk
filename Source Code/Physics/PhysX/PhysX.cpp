@@ -185,7 +185,7 @@ void PhysX::initScene() {
     _targetScene->init();
 }
 
-bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
+void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
                         PhysicsActorMask mask, PhysicsCollisionGroup group) {
     assert(_targetScene != nullptr);
 
@@ -214,7 +214,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         const vectorImpl<vec3<U32> >& triangles = sNode->getTriangles();
 
         if (sNode->getTriangles().empty()) {
-            return false;
+            return;
         }
 
         VertexBuffer* nodeVB = sNode->getGeometryVB();
@@ -237,7 +237,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
         if (!_cooking->cookTriangleMesh(meshDesc, stream)) {
             Console::errorfn(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
-            return false;
+            return;
         }
 
     } else {
@@ -278,7 +278,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
         if (!tempActor->_actor) {
             MemoryManager::DELETE(tempActor);
-            return false;
+            return;
         }
 
         tempActor->_type = physx::PxGeometryType::eTRIANGLEMESH;
@@ -295,7 +295,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
     if (!triangleMesh) {
         Console::errorfn(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
-        return false;
+        return;
     }
 
     const vec3<F32>& scale = tempActor->getComponent()->getScale();
@@ -306,6 +306,6 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
     tempActor->_actor->createShape(
         triangleGeometry, *_gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f));
 
-    return true;
+    return;
 };
 };

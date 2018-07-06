@@ -83,10 +83,6 @@ class TenisScene : public Scene {
     void processInput(const U64 deltaTime);
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
-    bool onKeyUp(const Input::KeyEvent& key);
-    bool mouseMoved(const Input::MouseEvent& key);
-    bool mouseButtonReleased(const Input::MouseEvent& key,
-                             Input::MouseButton button);
 
    private:
     // ToDo: replace with Physics system collision detection

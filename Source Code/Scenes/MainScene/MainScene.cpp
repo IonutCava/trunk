@@ -160,6 +160,44 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water->setRefractionCallback(DELEGATE_BIND(
         &SceneManager::renderVisibleNodes, &SceneManager::getInstance(), true));
 
+    SceneInput::PressReleaseActions cbks;
+    cbks.second = DELEGATE_BIND(&SFXDevice::playSound, &SFX_DEVICE, _beep);
+    _input->addKeyMapping(Input::KeyCode::KC_X, cbks);
+
+    cbks.second = [this]() {
+        _musicPlaying = !_musicPlaying;
+        if (_musicPlaying) {
+            SceneState::MusicPlaylist::const_iterator it;
+            it = state().backgroundMusic().find("generalTheme");
+            if (it != std::end(state().backgroundMusic())) {
+                SFX_DEVICE.playMusic(it->second);
+            }
+        } else {
+            SFX_DEVICE.stopMusic();
+        }
+    };
+
+    _input->addKeyMapping(Input::KeyCode::KC_M, cbks);
+
+    cbks.second = [this]() { _water->togglePreviewReflection(); };
+    _input->addKeyMapping(Input::KeyCode::KC_R, cbks);
+
+    cbks.second = [this]() {
+
+        _freeflyCamera = !_freeflyCamera;
+        renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f
+                                                                    : 10.0f);
+    };
+
+    _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
+    cbks.second = [this]() {
+        for (SceneGraphNode* const ter : _visibleTerrains) {
+            ter->getNode<Terrain>()->toggleBoundingBoxes();
+        }
+    };
+
+    _input->addKeyMapping(Input::KeyCode::KC_T, cbks);
+
     return loadState;
 }
 
@@ -260,49 +298,4 @@ bool MainScene::loadResources(bool continueOnErrors) {
     return true;
 }
 
-bool _playMusic = false;
-bool MainScene::onKeyUp(const Input::KeyEvent& key) {
-    switch (key._key) {
-        default:
-            break;
-        case Input::KeyCode::KC_X:
-            SFX_DEVICE.playSound(_beep);
-            break;
-        case Input::KeyCode::KC_M: {
-            _playMusic = !_playMusic;
-            if (_playMusic) {
-                SceneState::MusicPlaylist::const_iterator it;
-                it = state().backgroundMusic().find("generalTheme");
-                if (it != std::end(state().backgroundMusic())) {
-                    SFX_DEVICE.playMusic(it->second);
-                }
-            } else {
-                SFX_DEVICE.stopMusic();
-            }
-        } break;
-        case Input::KeyCode::KC_R: {
-            _water->togglePreviewReflection();
-        } break;
-        case Input::KeyCode::KC_F: {
-            _freeflyCamera = !_freeflyCamera;
-            renderState().getCamera().setMoveSpeedFactor(
-                _freeflyCamera ? 20.0f : 10.0f);
-        } break;
-        case Input::KeyCode::KC_T:
-            for (SceneGraphNode* const ter : _visibleTerrains) {
-                ter->getNode<Terrain>()->toggleBoundingBoxes();
-            }
-            break;
-    }
-    return Scene::onKeyUp(key);
-}
-
-bool MainScene::mouseMoved(const Input::MouseEvent& key) {
-    return Scene::mouseMoved(key);
-}
-
-bool MainScene::mouseButtonReleased(const Input::MouseEvent& key,
-                                    Input::MouseButton button) {
-    return Scene::mouseButtonReleased(key, button);
-}
 };

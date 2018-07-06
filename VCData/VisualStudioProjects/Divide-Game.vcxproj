@@ -175,6 +175,7 @@
     <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneInput.h" />
     <ClInclude Include="..\..\Source Code\Scenes\Headers\SceneState.h" />
     <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />

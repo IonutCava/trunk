@@ -10,7 +10,7 @@ using namespace physx;
 
 namespace Divide {
 
-bool PhysX::createPlane(const vec3<F32>& position, U32 size) {
+void PhysX::createPlane(const vec3<F32>& position, U32 size) {
     assert(_targetScene != nullptr);
 
     PxRigidStatic* plane = PxCreatePlane(
@@ -21,7 +21,7 @@ bool PhysX::createPlane(const vec3<F32>& position, U32 size) {
 
     if (!plane) {
         Console::errorfn(Locale::get("ERROR_PHYSX_CREATE_PLANE"));
-        return false;
+        return;
     }
 
     PhysXActor* actorWrapper = MemoryManager_NEW PhysXActor();
@@ -31,10 +31,9 @@ bool PhysX::createPlane(const vec3<F32>& position, U32 size) {
     actorWrapper->_userData = (F32)size;
     static_cast<PhysXSceneInterface*>(_targetScene)
         ->addRigidActor(actorWrapper);
-    return true;
 }
 
-bool PhysX::createBox(const vec3<F32>& position, F32 size) {
+void PhysX::createBox(const vec3<F32>& position, F32 size) {
     assert(_targetScene != nullptr);
     PxReal density = 1.0f;
     PxTransform transform(PxVec3(position.x, position.y, position.z),
@@ -50,7 +49,7 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size) {
 
     if (!actor) {
         Console::errorfn(Locale::get("ERROR_PHYSX_CREATE_BOX"));
-        return false;
+        return;
     }
 
     PhysXActor* actorWrapper = MemoryManager_NEW PhysXActor();
@@ -60,6 +59,5 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size) {
     actorWrapper->_userData = size * 2;
     static_cast<PhysXSceneInterface*>(_targetScene)
         ->addRigidActor(actorWrapper);
-    return true;
 }
 };

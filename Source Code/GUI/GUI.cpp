@@ -285,11 +285,13 @@ bool GUI::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     return _ceguiInput.joystickPovMoved(arg, pov);
 }
 
-bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button) {
+bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg,
+                                Input::JoystickButton button) {
     return _ceguiInput.joystickButtonPressed(arg, button);
 }
 
-bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg, I8 button) {
+bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg,
+                                 Input::JoystickButton button) {
     return _ceguiInput.joystickButtonReleased(arg, button);
 }
 

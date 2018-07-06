@@ -53,6 +53,47 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     _sun->setDirection(_sunvector);
     _currentSky =
         &addSky(CreateResource<Sky>(ResourceDescriptor("Default Sky")));
+
+    SceneInput::PressReleaseActions cbks;
+    cbks.second = [this]() {
+        if (!_hasGroundPlane) {
+            PHYSICS_DEVICE.createPlane(vec3<F32>(0, 0, 0),
+                                       random(100.0f, 200.0f));
+            _hasGroundPlane = true;
+        }
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_1, cbks);
+    cbks.second =
+        DELEGATE_BIND(&PXDevice::createBox, &PHYSICS_DEVICE,
+                      vec3<F32>(0, random(10, 30), 0), random(0.5f, 2.0f));
+    _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
+    cbks.second = [this]() {
+        Kernel& kernel = Application::getInstance().getKernel();
+        Task_ptr e(kernel.AddTask(
+            0, 1,
+            DELEGATE_BIND(&PhysXScene::createTower, this, (U32)random(5, 20))));
+        registerTask(e);
+        e->startTask();
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_3, cbks);
+    cbks.second = [this]() {
+        Kernel& kernel = Application::getInstance().getKernel();
+        Task_ptr e(kernel.AddTask(
+            0, 1,
+            DELEGATE_BIND(&PhysXScene::createStack, this, (U32)random(5, 10))));
+        registerTask(e);
+        e->startTask();
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_4, cbks);
+    cbks.second = []() {
+        ParamHandler::getInstance().setParam("simSpeed",
+            IS_ZERO(ParamHandler::getInstance().getParam<F32>("simSpeed"))
+                ? 1.0f
+                : 0.0f);
+        PHYSICS_DEVICE.updateTimeStep();
+    };
+    _input->addKeyMapping(Input::KeyCode::KC_5, cbks);
+
     s_sceneState = PhysXState::STATE_IDLE;
     return loadState;
 }
@@ -114,55 +155,4 @@ void PhysXScene::createTower(U32 size) {
     s_sceneState = PhysXState::STATE_IDLE;
 }
 
-bool PhysXScene::onKeyUp(const Input::KeyEvent& key) {
-    switch (key._key) {
-        default:
-            break;
-        case Input::KeyCode::KC_5: {
-            _paramHandler.setParam(
-                "simSpeed",
-                IS_ZERO(_paramHandler.getParam<F32>("simSpeed")) ? 1.0f : 0.0f);
-            PHYSICS_DEVICE.updateTimeStep();
-        } break;
-        case Input::KeyCode::KC_1: {
-            static bool hasGroundPlane = false;
-            if (!hasGroundPlane) {
-                PHYSICS_DEVICE.createPlane(vec3<F32>(0, 0, 0),
-                                           random(100.0f, 200.0f));
-                hasGroundPlane = true;
-            }
-        } break;
-        case Input::KeyCode::KC_2:
-            PHYSICS_DEVICE.createBox(vec3<F32>(0, random(10, 30), 0),
-                                     random(0.5f, 2.0f));
-            break;
-        case Input::KeyCode::KC_3: {
-            Kernel& kernel = Application::getInstance().getKernel();
-            Task_ptr e(
-                kernel.AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createTower,
-                                                   this, (U32)random(5, 20))));
-            registerTask(e);
-            e->startTask();
-        } break;
-        case Input::KeyCode::KC_4: {
-            Kernel& kernel = Application::getInstance().getKernel();
-            Task_ptr e(
-                kernel.AddTask(0, 1, DELEGATE_BIND(&PhysXScene::createStack,
-                                                   this, (U32)random(5, 10))));
-            registerTask(e);
-            e->startTask();
-        } break;
-    }
-    return Scene::onKeyUp(key);
-}
-
-bool PhysXScene::mouseMoved(const Input::MouseEvent& key) {
-    return Scene::mouseMoved(key);
-}
-
-bool PhysXScene::mouseButtonReleased(const Input::MouseEvent& key,
-                                     Input::MouseButton button) {
-    return Scene::mouseButtonReleased(key, button);
-    ;
-}
 };
