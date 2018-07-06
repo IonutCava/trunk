@@ -50,7 +50,7 @@ void main()
 
 flat in int _arrayLayer;
 layout(location = 0) out vec4 _colorOut;
-layout(location = 1) out vec3 _normalsOut;
+layout(location = 1) out vec3 _normalOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
@@ -61,7 +61,7 @@ void main (void){
     }
     //color = getPixelColor(VAR._texCoord, VAR._normalWV);
     _colorOut = ToSRGB(applyFog(color));
-    _normalsOut = normalize(f_in._normalWV);
+    _normalOut = normalize(f_in._normalWV);
 }
 
 --Fragment.Shadow

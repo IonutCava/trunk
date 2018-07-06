@@ -40,23 +40,6 @@ namespace Divide {
 class Texture;
 class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper {
    public:
-    struct FramebufferDisplaySettings {
-        F32 _aspectRatio;
-        F32 _FoV;
-        F32 _tanHFoV;
-        vec2<F32> _zPlanes;
-        mat4<F32> _projectionMatrix;
-        mat4<F32> _viewMatrix;
-
-        FramebufferDisplaySettings() 
-        {
-            _aspectRatio = 1.0f;
-            _FoV = 90;
-            _tanHFoV = std::tan(_FoV * 0.5f);
-            _zPlanes.set(0.1f, 1.0f);
-        }
-    };
-
     struct FramebufferTarget {
         typedef std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> FBOBufferMask;
 
@@ -124,7 +107,7 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
 
     virtual void begin(const FramebufferTarget& drawPolicy) = 0;
 
-    virtual void end();
+    virtual void end() = 0;
 
     virtual void bind(U8 unit = 0,
                       TextureDescriptor::AttachmentType
@@ -146,11 +129,7 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
                           TextureDescriptor::AttachmentType
                               slot = TextureDescriptor::AttachmentType::Color0,
                           bool blitColor = true, bool blitDepth = false) = 0;
-    // Enable/Disable color writes
-    virtual void toggleColorWrites(const bool state) {
-        _shouldRebuild = (_disableColorWrites == state);
-        _disableColorWrites = !state;
-    }
+
     // Enable/Disable the presence of a depth renderbuffer
     virtual void useAutoDepthBuffer(const bool state) {
         if (_useDepthBuffer != state) {
@@ -160,8 +139,14 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
     }
     
     // Set the color the FB will clear to when drawing to it
-    inline void setClearColor(const vec4<F32>& clearColor) {
-        _clearColor.set(clearColor);
+    inline void setClearColor(const vec4<F32>& clearColor,
+                              TextureDescriptor::AttachmentType
+                                 slot = TextureDescriptor::AttachmentType::COUNT) {
+        if (slot == TextureDescriptor::AttachmentType::COUNT) {
+            _clearColors.fill(clearColor);
+        } else {
+            _clearColors[to_uint(slot)].set(clearColor);
+        }
     }
 
     inline void setClearDepth(F32 depthValue) {
@@ -183,10 +168,6 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
     Framebuffer(GFXDevice& context, bool multiSample);
     virtual ~Framebuffer();
 
-    inline const FramebufferDisplaySettings& displaySettings() const {
-        return _displaySettings;
-    }
-
    protected:
     virtual bool checkStatus() const = 0;
 
@@ -194,18 +175,14 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
     
     bool _shouldRebuild;
     bool _useDepthBuffer;
-    bool _disableColorWrites;
     bool _multisampled;
     U16 _width, _height;
     U32 _framebufferHandle;
     F32 _depthValue;
-    vec4<F32> _clearColor;
+    std::array<vec4<F32>, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _clearColors;
     std::array<TextureDescriptor, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachment;
     std::array<Texture*, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentTexture;
     std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentChanged;
-
-    // Remember some of the settings used to render into this framebuffer
-    FramebufferDisplaySettings _displaySettings;
 };
 
 };  // namespace Divide

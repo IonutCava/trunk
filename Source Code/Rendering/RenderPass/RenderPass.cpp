@@ -29,6 +29,7 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
 
     _noDepthClear._clearDepthBufferOnBind = false;
     _noDepthClear._clearColorBuffersOnBind = true;
+    _noDepthClear._drawMask.fill(true);
 
     _depthOnly._clearColorBuffersOnBind = true;
     _depthOnly._clearDepthBufferOnBind = true;
@@ -41,7 +42,8 @@ RenderPass::~RenderPass()
 }
 
 void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
-    if (anaglyph && !GFX_DEVICE.anaglyphEnabled()) {
+    GFXDevice& GFX = GFX_DEVICE;
+    if (anaglyph && !GFX.anaglyphEnabled()) {
         return;
     }
 
@@ -69,11 +71,11 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
             case RenderStage::REFLECTION: {
                 const vec3<F32>& eyePos = renderState.getCameraConst().getEye();
                 const vec2<F32>& zPlanes= renderState.getCameraConst().getZPlanes();
-                GFX_DEVICE.generateCubeMap(*(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::ENVIRONMENT)),
-                                           0,
-                                           eyePos,
-                                           vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                           stageFlag);
+                GFX.generateCubeMap(*(GFX.getRenderTarget(GFXDevice::RenderTargetID::ENVIRONMENT)._buffer),
+                                    0,
+                                    eyePos,
+                                    vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
+                                    stageFlag);
             } break;
         };
 
@@ -100,7 +102,8 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
             bindShadowMaps = true;
             GFX.occlusionCull(0);
-            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(_noDepthClear);
+            GFX.toggleDepthWrites(false);
+            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_noDepthClear);
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -109,11 +112,10 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
         } break;
         case RenderStage::Z_PRE_PASS: {
             GFX.toggleDepthWrites(true);
-            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->begin(_depthOnly);
+            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_depthOnly);
         } break;
     };
-
-
+    
     if (bindShadowMaps) {
         LightManager::getInstance().bindShadowMaps();
     }
@@ -130,21 +132,20 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
     Attorney::SceneRenderPass::debugDraw(SceneManager::getInstance().getActiveScene(), _stageFlags[pass]);
 
     switch (_stageFlags[pass]) {
-        case RenderStage::DISPLAY: {
-            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->end();
-        } break;
-        case RenderStage::REFLECTION: {
-        } break;
-        case RenderStage::SHADOW: {
-        } break;
+        case RenderStage::DISPLAY:
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->end();
-            GFX.constructHIZ();
-            LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(), 
-                                                                 GFX.getMatrix(MATRIX::VIEW));
-            SceneManager::getInstance().getRenderer().preRender();
-            GFX.toggleDepthWrites(false);
+            GFXDevice::RenderTarget& renderTarget = GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN);
+            renderTarget._buffer->end();
+            if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {
+                GFX.constructHIZ();
+                LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(), GFX.getMatrix(MATRIX::VIEW));
+                SceneManager::getInstance().getRenderer().preRender();
+                renderTarget.cacheSettings();
+            }
         } break;
+
+        default:
+            break;
     };
 
     return true;

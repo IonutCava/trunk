@@ -18,7 +18,6 @@ void d3dRenderTarget::destroy() {}
 void d3dRenderTarget::begin(const FramebufferTarget& drawPolicy) {}
 
 void d3dRenderTarget::end() {
-    Framebuffer::end();
 }
 
 void d3dRenderTarget::bind(U8 unit, TextureDescriptor::AttachmentType slot, bool flushStateOnRequest) {}

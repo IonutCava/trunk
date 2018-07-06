@@ -34,6 +34,7 @@ Terrain::Terrain()
     _normalSampler->setWrapMode(TextureWrap::REPEAT);
     _normalSampler->setAnisotropy(8);
     _normalSampler->toggleMipMaps(true);
+    _albedoSampler->toggleSRGBColorSpace(false);
 
     _terrainStateHash.fill(0);
 }

@@ -44,7 +44,6 @@ void ShadowMap::initShadowMaps() {
 
                 _depthMaps[i] = GFX_DEVICE.newFB();
                 _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
-                _depthMaps[i]->toggleColorWrites(false);
             } break;
 
             case ShadowType::LAYERED: {
@@ -81,7 +80,6 @@ void ShadowMap::initShadowMaps() {
 
                 _depthMaps[i] = GFX_DEVICE.newFB();
                 _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Depth);
-                _depthMaps[i]->toggleColorWrites(false);
             } break;
         };
 

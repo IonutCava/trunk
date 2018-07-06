@@ -178,6 +178,34 @@ DEFINE_SINGLETON(GFXDevice)
        vectorImpl<RenderPackage> _packages;
    };
 
+   struct DisplaySettings {
+       F32 _aspectRatio;
+       F32 _FoV;
+       F32 _tanHFoV;
+       vec2<F32> _zPlanes;
+       mat4<F32> _projectionMatrix;
+       mat4<F32> _viewMatrix;
+
+       DisplaySettings()
+       {
+           _aspectRatio = 1.0f;
+           _FoV = 90;
+           _tanHFoV = std::tan(_FoV * 0.5f);
+           _zPlanes.set(0.1f, 1.0f);
+       }
+   };
+
+   struct RenderTarget {
+       Framebuffer* _buffer;
+       DisplaySettings _renderSettings;
+
+       RenderTarget() : _buffer(nullptr)
+       {
+       }
+
+       void cacheSettings();
+   };
+
    enum class RenderAPI : U32 {
        OpenGL,    ///< 4.x+
        OpenGLES,  ///< 3.x+
@@ -187,7 +215,7 @@ DEFINE_SINGLETON(GFXDevice)
        COUNT
    };
 
-   enum class RenderTarget : U32 {
+   enum class RenderTargetID : U32 {
        SCREEN = 0,
        ANAGLYPH = 1,
        ENVIRONMENT = 2,
@@ -377,7 +405,7 @@ DEFINE_SINGLETON(GFXDevice)
                        : _defaultStateBlockHash;
     }
 
-    inline Framebuffer* getRenderTarget(RenderTarget target) const {
+    inline RenderTarget& getRenderTarget(RenderTargetID target) {
         return _renderTarget[to_uint(target)];
     }
     
@@ -559,7 +587,7 @@ DEFINE_SINGLETON(GFXDevice)
     GPUVendor _GPUVendor;
     GPUState _state;
     /* Rendering buffers*/
-    std::array<Framebuffer*, to_const_uint(RenderTarget::COUNT)> _renderTarget;
+    std::array<RenderTarget, to_const_uint(RenderTargetID::COUNT)> _renderTarget;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
@@ -617,6 +645,7 @@ DEFINE_SINGLETON(GFXDevice)
     std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _indirectCommandBuffers;
     std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
     GenericDrawCommand _defaultDrawCmd;
+
 END_SINGLETON
 
 namespace Attorney {

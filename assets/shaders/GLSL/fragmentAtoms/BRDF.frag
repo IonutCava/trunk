@@ -38,8 +38,9 @@ uint GetNumLightsInThisTile(uint nTileIndex)
 }
 
 vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
-    processedNormal = normalWV;
     parseMaterial();
+
+    processedNormal = normalWV;
 
 #if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_DIFFUSE)
@@ -53,20 +54,22 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
         const float alpha = 1.0;
 #   endif
 
-#if defined (USE_DOUBLE_SIDED)
-        normalWV = gl_FrontFacing ? normalWV : -normalWV;
-#endif
+#   if defined (USE_DOUBLE_SIDED)
+        processedNormal = gl_FrontFacing ? processedNormal : -processedNormal;
+#   endif
 
-#if defined(USE_SHADING_FLAT)
-    vec3 color = dvd_MatDiffuse.rgb;
-#else
+#   if defined(USE_SHADING_FLAT)
+        vec3 color = dvd_MatDiffuse.rgb;
+#   else
     vec3 lightColor = vec3(0.0);
     // Apply all lighting contributions
     uint lightIdx;
     // Directional lights
     for (lightIdx = 0; lightIdx < dvd_lightCountPerType[0]; ++lightIdx) {
-        getBRDFFactors(int(lightIdx), normalWV, lightColor);
+        getBRDFFactors(int(lightIdx), processedNormal, lightColor);
     }
+    return vec4(lightColor, 1.0);
+
     uint offset = dvd_lightCountPerType[0];
     // Point lights
     uint nIndex = uint(dvd_otherData.w) * GetTileIndex(gl_FragCoord.xy);
@@ -76,7 +79,7 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
         uint nLightIndex = nNextLightIndex;
         nNextLightIndex = perTileLightIndices[++nIndex];
 
-        getBRDFFactors(int(nLightIndex - 1 + offset), normalWV, lightColor);
+        getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, lightColor);
     }
 
     offset = dvd_lightCountPerType[1];
@@ -87,14 +90,14 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     {
         uint nLightIndex = nNextLightIndex;
         nNextLightIndex = perTileLightIndices[++nIndex];
-        getBRDFFactors(int(nLightIndex - 1 + offset), normalWV, lightColor);
+        getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, lightColor);
     }
     
     vec3 color = mix(dvd_MatEmissive, lightColor, DIST_TO_ZERO(length(lightColor)));
 #endif
 
 #if defined(USE_REFLECTIVE_CUBEMAP)
-    vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), normalWV);
+    vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
     reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
     color = mix(texture(texEnvironmentCube, vec4(reflectDirection, 0.0)).rgb,
                 color,

@@ -33,11 +33,11 @@ glTexture::~glTexture()
 }
 
 bool glTexture::unload() {
-    if (_lockManager) {
-        _lockManager->Wait(true);
-    }
     U32 textureID = _textureData.getHandleHigh();
     if (textureID > 0) {
+        if (_lockManager) {
+            _lockManager->Wait(false);
+        }
         glDeleteTextures(1, &textureID);
         _textureData.setHandleHigh(0U);
     }
@@ -287,9 +287,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
 
     if (generateMipMaps) {
         glGenerateTextureMipmap(_textureData.getHandleHigh());
+        _mipMapsDirty = false;
     }
-
-    _mipMapsDirty = false;
 
     DIVIDE_ASSERT(_width > 0 && _height > 0,
                   "glTexture error: Invalid texture dimensions!");

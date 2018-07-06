@@ -58,29 +58,9 @@ vec3 getFinalTBN4(const in vec4 blendMap, const in uint index, const in vec4 nor
                blendMap.a);
 }
 
-void getColorAndTBNNormal(inout vec4 color, inout vec3 tbn){
-    vec4 blendMap;
-    color = vec4(0.0);
-    tbn = vec3(0.0);
-    
-    for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
-        blendMap = texture(texBlend[i], VAR._texCoord);
-#if (CURRENT_TEXTURE_COUNT % 4) == 1
-        color += getFinalColor1(blendMap, i, diffuseScale[i]);
-        tbn   += getFinalTBN1(blendMap, i, detailScale[i]);
-#elif (CURRENT_TEXTURE_COUNT % 4) == 2
-        color += getFinalColor2(blendMap, i, diffuseScale[i]);
-        tbn   += getFinalTBN2(blendMap, i, detailScale[i]);
-#elif (CURRENT_TEXTURE_COUNT % 4) == 3
-        color += getFinalColor3(blendMap, i, diffuseScale[i]);
-        tbn   += getFinalTBN3(blendMap, i, detailScale[i]);
-#else//(CURRENT_TEXTURE_COUNT % 4) == 0
-        color += getFinalColor4(blendMap, i, diffuseScale[i]);
-        tbn   += getFinalTBN4(blendMap, i, detailScale[i]);
-#endif
-    }
-    color = clamp(color, vec4(0.0), vec4(1.0));
-    tbn = normalize((2.0 * tbn - 1.0) / MAX_TEXTURE_LAYERS);
+vec3 getTBNNormal(in vec2 uv, in vec3 normal) {
+    mat3 TBN = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
+    return TBN * normal;
 }
 
 void getColorNormal(inout vec4 color){
@@ -99,13 +79,30 @@ void getColorNormal(inout vec4 color){
         color += getFinalColor4(blendMap, i, diffuseScale[i]);
 #endif
     }
-    color = clamp(color, vec4(0.0), vec4(1.0));
+}
+
+void getColorAndTBNNormal(inout vec4 color, inout vec3 tbn) {
+    getColorNormal(color);
+    vec4 blendMap = texture(texBlend[0], VAR._texCoord);
+#if (CURRENT_TEXTURE_COUNT % 4) == 1
+    tbn = getFinalTBN1(blendMap, 0, detailScale[0]);
+#elif (CURRENT_TEXTURE_COUNT % 4) == 2
+    tbn = getFinalTBN2(blendMap, 0, detailScale[0]);
+#elif (CURRENT_TEXTURE_COUNT % 4) == 3
+    tbn = getFinalTBN3(blendMap, 0, detailScale[0]);
+#else//(CURRENT_TEXTURE_COUNT % 4) == 0
+    tbn = getFinalTBN4(blendMap, 0, detailScale[0]);
+#endif
+
+    tbn = normalize(2.0 * tbn - 1.0);
+    tbn = getTBNNormal(VAR._texCoord, tbn);
 }
 
 void getColorAndTBNUnderwater(inout vec4 color, inout vec3 tbn){
     vec2 coords = VAR._texCoord * underwaterDiffuseScale;
     color = texture(texUnderwaterAlbedo, coords);
     tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
+    tbn = getTBNNormal(VAR._texCoord, tbn);
 }
 
 #endif //_TERRAIN_SPLATTING_FRAG_

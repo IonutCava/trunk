@@ -328,7 +328,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     }
 
     RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), false);
-    PostFX::getInstance().apply();
+    //PostFX::getInstance().apply();
 
     if (_GFX.anaglyphEnabled()) {
         // Save previous screen render target as left eye.

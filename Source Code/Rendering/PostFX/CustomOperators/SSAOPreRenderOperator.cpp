@@ -121,7 +121,8 @@ void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
 
 void SSAOPreRenderOperator::execute() {
 
-    const Framebuffer::FramebufferDisplaySettings& settings = _hdrTarget->displaySettings();
+     const GFXDevice::DisplaySettings& settings = 
+        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._renderSettings;
 
     _ssaoGenerateShader->Uniform("projectionMatrix", settings._projectionMatrix);
     _ssaoGenerateShader->Uniform("invProjectionMatrix", settings._projectionMatrix.getInverse());

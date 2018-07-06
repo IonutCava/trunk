@@ -34,6 +34,12 @@
 
 namespace Divide {
 
+#define GFX_DEVICE GFXDevice::getInstance()
+#define GFX_RENDER_BIN_SIZE \
+    RenderPassManager::getInstance().getLastTotalBinSize(RenderStage::DISPLAY)
+#define GFX_HIZ_CULL_COUNT \
+    GFX_DEVICE.getLastCullCount()
+
 inline F32 GFXDevice::GPUBlock::GPUData::aspectRatio() const {
     return _cameraPosition.w;
 }
@@ -153,6 +159,14 @@ GFXDevice::RenderQueue::push_back(const RenderPackage& package) {
 inline void
 GFXDevice::RenderQueue::resize(U16 size) {
     _packages.resize(size);
+}
+
+inline void
+GFXDevice::RenderTarget::cacheSettings() {
+    _renderSettings._aspectRatio = GFX_DEVICE.renderingData().aspectRatio();
+    _renderSettings._zPlanes.set(GFX_DEVICE.renderingData().currentZPlanes());
+    GFX_DEVICE.getMatrix(MATRIX::PROJECTION, _renderSettings._projectionMatrix);
+    GFX_DEVICE.getMatrix(MATRIX::VIEW, _renderSettings._viewMatrix);
 }
 
 inline const GFXDevice::GPUBlock::GPUData&
@@ -305,11 +319,6 @@ inline ShaderBuffer& GFXDevice::getNodeBuffer(RenderStage stage, U32 pass) const
     return *_nodeBuffers[bufferIdx][pass].get();
 }
 
-#define GFX_DEVICE GFXDevice::getInstance()
-#define GFX_RENDER_BIN_SIZE \
-    RenderPassManager::getInstance().getLastTotalBinSize(RenderStage::DISPLAY)
-#define GFX_HIZ_CULL_COUNT \
-    GFX_DEVICE.getLastCullCount()
 };  // namespace Divide
 
 #endif

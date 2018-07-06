@@ -80,8 +80,8 @@ GFXDevice::GFXDevice()
     // Clipping planes
     _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
     // Render targets
-    for (Framebuffer*& renderTarget : _renderTarget) {
-        renderTarget = nullptr;
+    for (RenderTarget& renderTarget : _renderTarget) {
+        renderTarget._buffer = nullptr;
     }
     // To allow calls to "setBaseViewport"
     
@@ -343,16 +343,17 @@ void GFXDevice::toggleFullScreen() {
 /// The main entry point for any resolution change request
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
-    if (_renderTarget[to_uint(RenderTarget::SCREEN)] != nullptr) {
+    if (_renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer != nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
-        if (vec2<U16>(w, h) ==  _renderTarget[to_uint(RenderTarget::SCREEN)]->getResolution() ||  !(w > 1 && h > 1)) {
+        if (vec2<U16>(w, h) ==  _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->getResolution() ||
+           !(w > 1 && h > 1)) {
             return;
         }
         // Update render targets with the new resolution
-        for (U32 i = 0; i < to_uint(RenderTarget::COUNT); ++i) {
-            Framebuffer* renderTarget = _renderTarget[i];
-            if (renderTarget && static_cast<RenderTarget>(i) != RenderTarget::ENVIRONMENT) {
+        for (U32 i = 0; i < to_uint(RenderTargetID::COUNT); ++i) {
+            Framebuffer* renderTarget = _renderTarget[i]._buffer;
+            if (renderTarget && static_cast<RenderTargetID>(i) != RenderTargetID::ENVIRONMENT) {
                 renderTarget->create(w, h);
             }
         }
@@ -631,8 +632,8 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
 void GFXDevice::constructHIZ() {
     // The depth buffer's resolution should be equal to the screen's resolution
-    Framebuffer* screenTarget = _renderTarget[anaglyphEnabled() ? to_uint(RenderTarget::ANAGLYPH)
-                                                                : to_uint(RenderTarget::SCREEN)];
+    Framebuffer* screenTarget = _renderTarget[anaglyphEnabled() ? to_uint(RenderTargetID::ANAGLYPH)
+                                                                : to_uint(RenderTargetID::SCREEN)]._buffer;
     vec2<U16> resolution = screenTarget->getResolution();
     // Bind the depth texture to the first texture unit
     screenTarget->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
@@ -715,13 +716,13 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
     const vec2<U16>& resolution =
-        _renderTarget[to_uint(RenderTarget::SCREEN)]
+        _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer
             ->getResolution();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = resolution.width * resolution.height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->readData(
+    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->readData(
         GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,

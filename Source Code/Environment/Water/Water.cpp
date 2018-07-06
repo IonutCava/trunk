@@ -276,7 +276,8 @@ void WaterPlane::previewReflection() {
         F32 height = _resolution.y * 0.333f;
         _refractionTexture->bind();
         GFX::ScopedViewport viewport(to_int(_resolution.x * 0.333f),
-                                     to_int(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().y - height),
+                                     to_int(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer
+                                        ->getResolution().y - height),
                                      to_int(_resolution.x * 0.666f), 
                                      to_int(height));
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _previewReflectionShader);

@@ -149,7 +149,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         textureNormalMaps.setResourceLocation(arrayLocation);
         textureNormalMaps.setPropertyDescriptor(
             Attorney::TerrainLoader::getNormalSampler(*terrain));
-        textureLayer->setNormalMaps(CreateResource<Texture>(textureTileMaps));
+        textureLayer->setNormalMaps(CreateResource<Texture>(textureNormalMaps));
 
         Attorney::TerrainLoader::addTextureLayer(*terrain, textureLayer);
     }
@@ -165,6 +165,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     terrainMaterial->setShaderDefines("COMPUTE_TBN");
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
+    terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
     terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " +
         std::to_string(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +

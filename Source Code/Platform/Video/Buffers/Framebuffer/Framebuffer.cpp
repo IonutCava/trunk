@@ -10,14 +10,13 @@ Framebuffer::Framebuffer(GFXDevice& context, bool multiSampled)
       GUIDWrapper(),
       _shouldRebuild(true),
       _useDepthBuffer(false),
-      _disableColorWrites(false),
       _multisampled(multiSampled),
       _width(0),
       _height(0),
       _depthValue(1.0),
       _framebufferHandle(0)
 {
-    _clearColor.set(DefaultColors::WHITE());
+    _clearColors.fill(DefaultColors::WHITE());
     _attachmentChanged.fill(false);
     _attachmentTexture.fill(nullptr);
 }
@@ -66,13 +65,6 @@ void Framebuffer::resetMipLevel() {
             resetMipLevel(static_cast<TextureDescriptor::AttachmentType>(i));
         }
     }
-}
-
-void Framebuffer::end() {
-    _displaySettings._aspectRatio = GFX_DEVICE.renderingData().aspectRatio();
-    _displaySettings._zPlanes.set(GFX_DEVICE.renderingData().currentZPlanes());
-    GFX_DEVICE.getMatrix(MATRIX::PROJECTION, _displaySettings._projectionMatrix);
-    GFX_DEVICE.getMatrix(MATRIX::VIEW, _displaySettings._viewMatrix);
 }
 
 };

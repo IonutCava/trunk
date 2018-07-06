@@ -96,7 +96,11 @@ class glFramebuffer : public Framebuffer {
     bool _isLayeredDepth;
     
     static bool _viewportChanged;
-    static bool _bufferBound;
+
+#   if defined(ENABLE_GPU_VALIDATION)
+        static bool _bufferBound;
+#   endif
+
     vectorImpl<GLenum> _colorBuffers;
     vectorImpl<bool>   _colorBufferEnabled;
     const std::unique_ptr<glFramebuffer> _resolveBuffer;

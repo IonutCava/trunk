@@ -31,6 +31,8 @@ void main(void){
 
 -- Fragment
 
+#define USE_CUSTOM_ALBEDO
+
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
 
@@ -45,29 +47,24 @@ layout(location = 1) out vec3 _normalOut;
 
 //subroutine(TerrainMappingType) 
 vec4 computeLightInfoLOD1Frag() {
-    vec4 color = vec4(0.0);
-    getColorNormal(color);
-    _normalOut = VAR._normalWV;
-    return getPixelColor(VAR._texCoord, _normalOut);
+    getColorNormal(dvd_MatDiffuse);
+    return getPixelColor(VAR._texCoord, VAR._normalWV);
 }
 
 //subroutine(TerrainMappingType)
 vec4 computeLightInfoLOD0Frag() {
-    vec4 color = vec4(0.0);
-    getColorAndTBNNormal(color, _normalOut);
-    return getPixelColor(VAR._texCoord, _normalOut);
+    getColorAndTBNNormal(dvd_MatDiffuse, processedNormal);
+    return getPixelColor(VAR._texCoord, processedNormal);
 }
 
-
 vec4 CausticsColor() {
-    return (texture(texWaterCaustics, _uv1) + texture(texWaterCaustics, _uv0)) * 0.5;
+    return (texture(texWaterCaustics, _uv1) + 
+            texture(texWaterCaustics, _uv0)) * 0.5;
 }
 
 vec4 UnderwaterColor() {
-    vec4 color = vec4(0.0);
-
-    getColorAndTBNUnderwater(color, _normalOut);
-    return getPixelColor(VAR._texCoord, _normalOut);
+    getColorAndTBNUnderwater(dvd_MatDiffuse, processedNormal);
+    return getPixelColor(VAR._texCoord, processedNormal);
 }
 
 vec4 UnderwaterMappingRoutine(){
@@ -81,5 +78,6 @@ vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
 }
 
 void main(void) {
-   _colorOut = applyFog(gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine());
+   _colorOut = ToSRGB(applyFog(gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine()));
+   _normalOut = processedNormal;
 }

@@ -10,8 +10,10 @@
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
+#if defined(ENABLE_GPU_VALIDATION)
+    bool glFramebuffer::_bufferBound = false;
+#endif
 
-bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_viewportChanged = false;
 
 namespace {
@@ -208,9 +210,8 @@ void glFramebuffer::addDepthBuffer() {
 bool glFramebuffer::create(U16 width, U16 height) {
     if (_resolveBuffer) {
         _resolveBuffer->_useDepthBuffer = _useDepthBuffer;
-        _resolveBuffer->_disableColorWrites = _disableColorWrites;
-        _resolveBuffer->_clearColor.set(_clearColor);
         for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
+            _resolveBuffer->_clearColors[i].set(_clearColors[i]);
             if (_attachmentChanged[i]) {
                 _resolveBuffer->addAttachment(_attachment[i], static_cast<AttachmentType>(i));
             }
@@ -255,15 +256,10 @@ bool glFramebuffer::create(U16 width, U16 height) {
     }
 
     // If color writes are disabled, draw only depth info
-    if (_disableColorWrites) {
-        glNamedFramebufferDrawBuffer(_framebufferHandle, GL_NONE);
-        glNamedFramebufferReadBuffer(_framebufferHandle, GL_NONE);
-    } else {
-        if (!_colorBuffers.empty()) {
-            glNamedFramebufferDrawBuffers(_framebufferHandle, 
-                                          static_cast<GLsizei>(_colorBuffers.size()),
-                                          _colorBuffers.data());
-        }
+    if (!_colorBuffers.empty()) {
+        glNamedFramebufferDrawBuffers(_framebufferHandle, 
+                                        static_cast<GLsizei>(_colorBuffers.size()),
+                                        _colorBuffers.data());
     }
 
     clear(Framebuffer::defaultPolicy());
@@ -367,13 +363,18 @@ void glFramebuffer::resetMipMaps(const FramebufferTarget& drawPolicy) {
 }
 
 void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
+    static vectorImpl<GLenum> colorBuffers;
+
     DIVIDE_ASSERT(_framebufferHandle != 0,
                   "glFramebuffer error: "
                   "Tried to bind an invalid framebuffer!");
-    DIVIDE_ASSERT(!glFramebuffer::_bufferBound,
-                  "glFramebuffer error: "
-                  "Begin() called without a call to the "
-                  "previous bound buffer's End()");
+
+#   if defined(ENABLE_GPU_VALIDATION)
+        DIVIDE_ASSERT(!glFramebuffer::_bufferBound,
+                      "glFramebuffer error: "
+                      "Begin() called without a call to the "
+                      "previous bound buffer's End()");
+#   endif
 
     if (drawPolicy._changeViewport) {
         _viewportChanged = true;
@@ -388,20 +389,15 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
 
     if (_previousMask != drawPolicy._drawMask) {
         // handle color buffers first
-        vectorImpl<GLenum> colorBuffers;
-        size_t bufferCount = _colorBuffers.size();
-        colorBuffers.reserve(bufferCount);
-            
-        for (size_t i = 0; i < bufferCount; ++i) {
+        colorBuffers.resize(0);
+        GLsizei bufferCount = static_cast<GLsizei>(_colorBuffers.size());
+        for (GLsizei i = 0; i < bufferCount; ++i) {
             _colorBufferEnabled[i] = drawPolicy._drawMask[i];
-            if (_colorBufferEnabled[i]) {
-                colorBuffers.push_back(_colorBuffers[i]);
-            }
+            colorBuffers.push_back(_colorBufferEnabled[i] ? _colorBuffers[i] : GL_NONE);
         }
 
-        glDrawBuffers(static_cast<GLsizei>(colorBuffers.size()), colorBuffers.data());
+        glDrawBuffers(bufferCount, colorBuffers.data());
         
-        // handle depth buffer;
         checkStatus();
         _previousMask = drawPolicy._drawMask;
     }
@@ -410,13 +406,17 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
 
     resetMipMaps(drawPolicy);
 
-    glFramebuffer::_bufferBound = true;
+#   if defined(ENABLE_GPU_VALIDATION)
+        glFramebuffer::_bufferBound = true;
+#   endif
 }
 
 void glFramebuffer::end() {
-    DIVIDE_ASSERT(glFramebuffer::_bufferBound,
-                  "glFramebuffer error: "
-                  "End() called without a previous call to Begin()");
+#   if defined(ENABLE_GPU_VALIDATION)
+        DIVIDE_ASSERT(glFramebuffer::_bufferBound,
+                      "glFramebuffer error: "
+                      "End() called without a previous call to Begin()");
+#   endif
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
     if (_viewportChanged) {
@@ -426,8 +426,10 @@ void glFramebuffer::end() {
 
     setInitialAttachments();
     resolve();
-    Framebuffer::end();
-    glFramebuffer::_bufferBound = false;
+
+#   if defined(ENABLE_GPU_VALIDATION)
+        glFramebuffer::_bufferBound = false;
+#   endif
 }
 
 void glFramebuffer::setInitialAttachments() {
@@ -447,11 +449,10 @@ void glFramebuffer::clear(const FramebufferTarget& drawPolicy) const {
             if (_colorBufferEnabled[index]) {
                 TextureDescriptor desc = _attachment[index];
                 GFXDataFormat dataType = desc.dataType();
-                if(dataType == GFXDataFormat::FLOAT_16 ||
-                   dataType == GFXDataFormat::FLOAT_32) {
-                    glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index, _clearColor._v);
+                if(dataType == GFXDataFormat::FLOAT_16 ||dataType == GFXDataFormat::FLOAT_32) {
+                    glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index, _clearColors[index]._v);
                 } else {
-                    glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, index, Util::ToUIntColor(_clearColor)._v);
+                    glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, index, Util::ToUIntColor(_clearColors[index])._v);
                 }
                 _context.registerDrawCall();
             }
@@ -587,8 +588,8 @@ bool glFramebuffer::checkStatus() const {
             return false;
         }
         case glext::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-            //Console::errorfn(Locale::get(_ID("ERROR_FB_DIMENSIONS")));
-            //return false;
+            Console::errorfn(Locale::get(_ID("ERROR_FB_DIMENSIONS")));
+            return false;
         }
         case glext::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
              Console::errorfn(Locale::get(_ID("ERROR_FB_FORMAT")));

@@ -97,10 +97,12 @@ void parseMaterial() {
     dvd_MatEmissive = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].rgb;
     dvd_MatShininess = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].w;
 
-    #if defined(SKIP_TEXTURES)
-        dvd_MatDiffuse = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[0];
-    #else
-        dvd_MatDiffuse = getTextureColor(VAR._texCoord);
+    #if !defined(USE_CUSTOM_ALBEDO)
+        #if defined(SKIP_TEXTURES)
+            dvd_MatDiffuse = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[0];
+        #else
+            dvd_MatDiffuse = getTextureColor(VAR._texCoord);
+        #endif
     #endif
 
     #if defined(USE_SPECULAR_MAP)

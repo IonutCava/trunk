@@ -120,7 +120,7 @@ void RenderingComponent::update(const U64 deltaTime) {
         if (mat->isReflective()) {
             if (mat->getTexture(ShaderProgram::TextureUsage::REFLECTION) == nullptr) {
                 mat->setTexture(ShaderProgram::TextureUsage::REFLECTION,
-                                GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::ENVIRONMENT)->getAttachment());
+                                GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::ENVIRONMENT)._buffer->getAttachment());
             }
         }
     }
