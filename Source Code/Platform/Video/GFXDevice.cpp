@@ -29,11 +29,10 @@
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 
-/// Force the use of dedicated nVidia GPUs on Optimus enabled systems 
-/// (e.g. laptops with Intel integrated graphics and a dedicated nVidia GPU)
-#ifdef FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+#ifdef FORCE_HIGHPERFORMANCE_GPU
 extern "C" {
     _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+    _declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif
 

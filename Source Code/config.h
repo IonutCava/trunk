@@ -167,9 +167,9 @@ namespace Config {
         #endif //VC_EXTRALEAN
     #endif //WIN32_LEAN_AND_MEAN
     /// If the target machine uses the nVidia Optimus layout (IntelHD + nVidia discreet GPU) 
-    /// this will force the engine to use the nVidia GPU always
-    #ifndef FORCE_NV_OPTIMUS_HIGHPERFORMANCE
-        #define FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+    /// or the AMD PowerXPress system, this forces the client to use the high performance GPU
+    #ifndef FORCE_HIGHPERFORMANCE_GPU
+        #define FORCE_HIGHPERFORMANCE_GPU
     #endif
 #elif defined( __APPLE_CC__ ) // Apple OS X could be supported in the future
     #define OS_APPLE
