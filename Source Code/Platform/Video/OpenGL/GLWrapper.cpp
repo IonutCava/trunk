@@ -490,6 +490,12 @@ bool GL_API::initShaders() {
             std::to_string(to_uint(ShaderBufferLocation::BONE_TRANSFORMS)),
         lineOffsets);
 
+    appendToShaderHeader(
+        ShaderType::VERTEX,
+        "#define DIRECTIONAL_LIGHT_DISTANCE_FACTOR " +
+        std::to_string(to_uint(Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE)),
+        lineOffsets);
+
     // Vertex data has a fixed format
     appendToShaderHeader(
         ShaderType::VERTEX,
