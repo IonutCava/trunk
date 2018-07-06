@@ -19,11 +19,11 @@ void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 void Quadtree::getChunkBufferData(const SceneRenderState& sceneRenderState, 
                                   vectorImpl<vec3<U32>>& chunkBufferData) const {
     assert(_root);
-    U32 options = to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
+    U32 options = to_const_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
     if (GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION) {
-        options |= to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION);
+        options |= to_const_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION);
     } else if (GFX_DEVICE.getRenderStage() == RenderStage::SHADOW) {
-        options |= to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP);
+        options |= to_const_uint(ChunkBit::CHUNK_BIT_SHADOWMAP);
     }
 
     _root->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);

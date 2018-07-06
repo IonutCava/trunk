@@ -56,10 +56,10 @@ void PostFX::init(const vec2<U16>& resolution) {
                        "TEX_BIND_POINT_NOISE %d, "
                        "TEX_BIND_POINT_BORDER %d, "
                        "TEX_BIND_POINT_UNDERWATER %d",
-                        to_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
-                        to_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE),
-                        to_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER),
-                        to_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
+                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
+                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_NOISE),
+                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_BORDER),
+                        to_const_uint(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str());
 
     _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
     _postProcessingShader->Uniform("_noiseTile", 0.05f);
@@ -137,10 +137,10 @@ void PostFX::apply() {
     _postProcessingShader->bind();
     _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT, _shaderFunctionSelection);
 
-    _preRenderBatch.bindOutput(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-    _underwaterTexture->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-    _noise->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-    _screenBorder->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+    _preRenderBatch.bindOutput(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+    _underwaterTexture->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+    _noise->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+    _screenBorder->Bind(to_const_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
 
     _gfx->getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_postFXTarget);
         _gfx->drawTriangle(_gfx->getDefaultStateBlock(true), _postProcessingShader);

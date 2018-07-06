@@ -11,7 +11,7 @@ Vehicle::~Vehicle() {}
 
 void Vehicle::setVehicleTypeMask(U32 mask) {
     assert((mask &
-            ~(to_uint(VehicleType::COUNT) - 1)) == 0);
+            ~(to_const_uint(VehicleType::COUNT) - 1)) == 0);
     _vehicleTypeMask = mask;
 }
 

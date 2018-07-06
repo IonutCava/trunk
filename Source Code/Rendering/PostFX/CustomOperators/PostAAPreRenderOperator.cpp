@@ -47,7 +47,7 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
 /// This is tricky as we use our screen as both input and output
 void PostAAPreRenderOperator::execute() {
     _samplerCopy->blitFrom(_ldrTarget);
-    _samplerCopy->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
 
     // Apply FXAA/SMAA to the specified render target
     _ldrTarget->begin(Framebuffer::defaultPolicy());

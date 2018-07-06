@@ -43,17 +43,23 @@ vec4 mappingFlat(){
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
-    return getPixelColor(VAR._texCoord, getTBNNormal(VAR._texCoord));
+    return mix(getPixelColor(VAR._texCoord, getTBNNormal(VAR._texCoord)),
+               mappingFlat(),
+               dvd_lodLevel > 1);
 }
 
 //subroutine(MappingRoutineType)
 vec4 mappingRelief(){
-    return ReliefMapping(bumpMapLightID, VAR._texCoord);
+    return mix(ReliefMapping(bumpMapLightID, VAR._texCoord),
+               mappingFlat(),
+               dvd_lodLevel > 1);
 }
 
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
-    return ParallaxMapping(bumpMapLightID, VAR._texCoord);
+    return mix(ParallaxMapping(bumpMapLightID, VAR._texCoord),
+               mappingFlat(),
+               dvd_lodLevel > 1);
 }
 #endif
 

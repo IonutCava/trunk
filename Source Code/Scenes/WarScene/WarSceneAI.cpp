@@ -214,23 +214,23 @@ bool WarScene::addUnits() {
     attackAction.setPrecondition(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(false));
     attackAction.setEffect(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(true));
 
-    GOAPGoal recoverOwnFlag("Recover flag", to_uint(WarSceneOrder::WarOrder::RECOVER_FLAG));
+    GOAPGoal recoverOwnFlag("Recover flag", to_const_uint(WarSceneOrder::WarOrder::RECOVER_FLAG));
     recoverOwnFlag.setVariable(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(false));
     
-    GOAPGoal captureFlag("Capture enemy flag", to_uint(WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG));
+    GOAPGoal captureFlag("Capture enemy flag", to_const_uint(WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG));
     captureFlag.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(true));
     captureFlag.setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
 
-    GOAPGoal scoreFlag("Score", to_uint(WarSceneOrder::WarOrder::SCORE_ENEMY_FLAG));
+    GOAPGoal scoreFlag("Score", to_const_uint(WarSceneOrder::WarOrder::SCORE_ENEMY_FLAG));
     scoreFlag.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
 
-    GOAPGoal idle("Idle", to_uint(WarSceneOrder::WarOrder::IDLE));
+    GOAPGoal idle("Idle", to_const_uint(WarSceneOrder::WarOrder::IDLE));
     idle.setVariable(GOAPFact(Fact::IDLING), GOAPValue(true));
 
-    GOAPGoal killEnemy("Kill", to_uint(WarSceneOrder::WarOrder::KILL_ENEMY));
+    GOAPGoal killEnemy("Kill", to_const_uint(WarSceneOrder::WarOrder::KILL_ENEMY));
     killEnemy.setVariable(GOAPFact(Fact::ENEMY_DEAD), AI::GOAPValue(true));
 
-    GOAPGoal protectFlagCarrier("Protect Flag Carrier", to_uint(WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
+    GOAPGoal protectFlagCarrier("Protect Flag Carrier", to_const_uint(WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
     protectFlagCarrier.setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
 
     std::array<GOAPPackage,  to_const_uint(WarSceneAIProcessor::AIType::COUNT)> goapPackages;
@@ -251,8 +251,8 @@ bool WarScene::addUnits() {
         goapPackage._goalList.push_back(recoverOwnFlag);
     }
 
-    GOAPPackage& lightPackage = goapPackages[to_uint(WarSceneAIProcessor::AIType::LIGHT)];
-    GOAPPackage& heavyPackage = goapPackages[to_uint(WarSceneAIProcessor::AIType::HEAVY)];
+    GOAPPackage& lightPackage = goapPackages[to_const_uint(WarSceneAIProcessor::AIType::LIGHT)];
+    GOAPPackage& heavyPackage = goapPackages[to_const_uint(WarSceneAIProcessor::AIType::HEAVY)];
 
     heavyPackage._actionSet.push_back(approachEnemyFlag);
     heavyPackage._actionSet.push_back(captureEnemyFlag);
@@ -361,9 +361,9 @@ bool WarScene::addUnits() {
             brain->registerGOAPPackage(goapPackages[to_uint(type)]);
             aiSoldier->setAIProcessor(brain);
             soldier = MemoryManager_NEW NPC(currentNode, aiSoldier);
-            soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
-            soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);
-            soldier->setAttribute(to_uint(AI::UnitAttributes::ALIVE_FLAG), 1);
+            soldier->setAttribute(to_const_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
+            soldier->setAttribute(to_const_uint(AI::UnitAttributes::DAMAGE), damage);
+            soldier->setAttribute(to_const_uint(AI::UnitAttributes::ALIVE_FLAG), 1);
             soldier->setMovementSpeed(speed);
             soldier->setAcceleration(acc);
 

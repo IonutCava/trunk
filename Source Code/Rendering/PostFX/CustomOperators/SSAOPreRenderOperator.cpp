@@ -49,7 +49,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(noiseSampler);
-    textureAttachment.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+    textureAttachment.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _noiseTexture = CreateResource<Texture>(textureAttachment);
 
     TextureDescriptor noiseDescriptor;
@@ -127,10 +127,10 @@ void SSAOPreRenderOperator::execute() {
     _ssaoGenerateShader->Uniform("projectionMatrix", settings._projectionMatrix);
     _ssaoGenerateShader->Uniform("invProjectionMatrix", settings._projectionMatrix.getInverse());
 
-    _noiseTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0)); // noise texture
-    _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+    _noiseTexture->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); // noise texture
+    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
                       TextureDescriptor::AttachmentType::Depth);  // depth
-    _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
+    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
                       TextureDescriptor::AttachmentType::Color1);  // normals
     
     _ssaoOutput->begin(Framebuffer::defaultPolicy());
@@ -138,16 +138,16 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutput->end();
 
 
-    _ssaoOutput->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+    _ssaoOutput->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
                       TextureDescriptor::AttachmentType::Color0);  // AO texture
     _ssaoOutputBlurred->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoBlurShader);
     _ssaoOutputBlurred->end();
     
     _samplerCopy->blitFrom(_hdrTarget);
-    _samplerCopy->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+    _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
                        TextureDescriptor::AttachmentType::Color0);  // screen
-    _ssaoOutputBlurred->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
+    _ssaoOutputBlurred->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1),
                              TextureDescriptor::AttachmentType::Color0);  // AO texture
 
     _hdrTarget->begin(_screenOnlyDraw);

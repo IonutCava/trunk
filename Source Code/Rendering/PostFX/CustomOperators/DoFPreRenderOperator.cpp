@@ -35,8 +35,8 @@ void DoFPreRenderOperator::execute() {
     return;
     // Copy current screen
     _samplerCopy->blitFrom(_hdrTarget);
-    _samplerCopy->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));  // screenFB
-    _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
+    _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));  // screenFB
+    _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1),
                       TextureDescriptor::AttachmentType::Depth);  // depthFB
         
     _hdrTarget->begin(_screenOnlyDraw);

@@ -83,14 +83,14 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
         ShaderManager::getInstance().unbind();
     }
     // Update refresh flags
-    _refreshStage[to_uint(ShaderType::VERTEX)] = vertex;
-    _refreshStage[to_uint(ShaderType::FRAGMENT)] = fragment;
-    _refreshStage[to_uint(ShaderType::GEOMETRY)] = geometry;
-    _refreshStage[to_uint(ShaderType::TESSELATION_CTRL)] =
+    _refreshStage[to_const_uint(ShaderType::VERTEX)] = vertex;
+    _refreshStage[to_const_uint(ShaderType::FRAGMENT)] = fragment;
+    _refreshStage[to_const_uint(ShaderType::GEOMETRY)] = geometry;
+    _refreshStage[to_const_uint(ShaderType::TESSELATION_CTRL)] =
         tessellation;
-    _refreshStage[to_uint(ShaderType::TESSELATION_EVAL)] =
+    _refreshStage[to_const_uint(ShaderType::TESSELATION_EVAL)] =
         tessellation;
-    _refreshStage[to_uint(ShaderType::COMPUTE)] = compute;
+    _refreshStage[to_const_uint(ShaderType::COMPUTE)] = compute;
     // Recreate all of the needed shaders
     load();
     // Restore bind state

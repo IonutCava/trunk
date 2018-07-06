@@ -32,12 +32,12 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
     _childCount = 0;
     setName(name);
 
-    _components[to_uint(SGNComponent::ComponentType::PHYSICS)].reset(new PhysicsComponent(*this));
-    _components[to_uint(SGNComponent::ComponentType::NAVIGATION)].reset(new NavigationComponent(*this));
+    _components[to_const_uint(SGNComponent::ComponentType::PHYSICS)].reset(new PhysicsComponent(*this));
+    _components[to_const_uint(SGNComponent::ComponentType::NAVIGATION)].reset(new NavigationComponent(*this));
 
     Material* const materialTpl = _node->getMaterialTpl();
 
-    _components[to_uint(SGNComponent::ComponentType::RENDERING)].reset(
+    _components[to_const_uint(SGNComponent::ComponentType::RENDERING)].reset(
         new RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
                                     : nullptr,
@@ -301,7 +301,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _elapsedTime += deltaTime;
 
     // update all of the internal components (animation, physics, etc)
-    for (U8 i = 0; i < to_uint(SGNComponent::ComponentType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_uint(SGNComponent::ComponentType::COUNT); ++i) {
         if (_components[i]) {
             _components[i]->update(deltaTime);
         }
@@ -378,12 +378,13 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     const Frustum& frust = currentCamera.getFrustumConst();
     F32 radius = sphere.getRadius();
     const vec3<F32>& center = sphere.getCenter();
-    F32 cameraDistance = center.distance(eye);
-    F32 visibilityDistance = GET_ACTIVE_SCENE().state().generalVisibility() + radius;
+    F32 cameraDistanceSq = center.distanceSquared(eye);
+    F32 visibilityDistanceSq = GET_ACTIVE_SCENE().state().generalVisibility() + radius;
+    visibilityDistanceSq *= visibilityDistanceSq;
 
-    if (distanceCheck && cameraDistance > visibilityDistance) {
+    if (distanceCheck && cameraDistanceSq > visibilityDistanceSq) {
         if (boundingBox.nearestDistanceFromPointSquared(eye) >
-            std::min(visibilityDistance, currentCamera.getZPlanes().y)) {
+            std::min(visibilityDistanceSq, currentCamera.getZPlanes().y)) {
             return true;
         }
     }

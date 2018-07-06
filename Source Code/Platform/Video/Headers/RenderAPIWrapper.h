@@ -142,18 +142,18 @@ struct GenericDrawCommand {
     }
 
     inline void renderWireframe(bool state) {
-        state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME))
-              : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME));
+        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME))
+              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME));
     }
 
     inline void renderBounds(bool state) {
-        state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS))
-              : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS));
+        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS))
+              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS));
     }
 
     inline void renderGeometry(bool state) {
-        state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY))
-              : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY));
+        state ? SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY))
+              : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
     }
 
     inline void shaderProgram(ShaderProgram* const program) {
@@ -179,13 +179,13 @@ struct GenericDrawCommand {
     inline U32 commandOffset() const { return _commandOffset; }
 
     inline bool renderWireframe() const {
-        return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME));
+        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_WIREFRAME));
     }
     inline bool renderGeometry() const {
-        return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY));
+        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
     }
     inline bool renderBounds() const {
-        return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS));
+        return BitCompare(_renderOptions, to_const_uint(RenderOptions::RENDER_BOUNDS));
     }
 
     inline const IndirectDrawCommand& cmd() const {
@@ -216,7 +216,7 @@ struct GenericDrawCommand {
           _shaderProgram(nullptr),
           _sourceBuffer(nullptr)
     {
-        SetBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY));
+        SetBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
         _cmd.indexCount = indexCount;
         _cmd.firstIndex = firstIndex;
         _cmd.primCount = primCount;
@@ -465,7 +465,8 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
                                 BufferUpdateFrequency frequency =
                                     BufferUpdateFrequency::ONCE) const = 0;
     virtual GenericVertexData* newGVD(GFXDevice& context, 
-                                      const bool persistentMapped = false) const = 0;
+                                      const bool persistentMapped = false,
+                                      const U32 ringBufferLength = 1) const = 0;
     virtual PixelBuffer* newPB(GFXDevice& context,
                                const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
     virtual Texture* newTexture(GFXDevice& context, TextureType type, bool asyncLoad) const = 0;

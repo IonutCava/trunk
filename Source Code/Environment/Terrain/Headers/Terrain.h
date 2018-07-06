@@ -195,10 +195,10 @@ class TerrainLoader {
                                      U32 normalStateHash,
                                      U32 reflectionStateHash,
                                      U32 depthStateHash) {
-        terrain._terrainStateHash[to_uint(RenderStage::DISPLAY)] = normalStateHash;
-        terrain._terrainStateHash[to_uint(RenderStage::Z_PRE_PASS)] = normalStateHash;
-        terrain._terrainStateHash[to_uint(RenderStage::REFLECTION)] = reflectionStateHash;
-        terrain._terrainStateHash[to_uint(RenderStage::SHADOW)] = depthStateHash;
+        terrain._terrainStateHash[to_const_uint(RenderStage::DISPLAY)] = normalStateHash;
+        terrain._terrainStateHash[to_const_uint(RenderStage::Z_PRE_PASS)] = normalStateHash;
+        terrain._terrainStateHash[to_const_uint(RenderStage::REFLECTION)] = reflectionStateHash;
+        terrain._terrainStateHash[to_const_uint(RenderStage::SHADOW)] = depthStateHash;
     }
     static VegetationDetails& vegetationDetails(Terrain& terrain) {
         return terrain._vegDetails;

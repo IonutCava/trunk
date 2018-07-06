@@ -33,16 +33,16 @@ LightManager::LightManager()
     s_shadowPassTimer = Time::ADD_TIMER("ShadowPassTimer");
     // NORMAL holds general info about the currently active
     // lights: position, color, etc.
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] = nullptr;
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = nullptr;
     // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = nullptr;
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = nullptr;
 
-    const U8 startOffset = to_ubyte(ShaderProgram::TextureUsage::COUNT);
-    _shadowLocation[to_uint(ShadowType::CUBEMAP)] = startOffset + 1;
-    _shadowLocation[to_uint(ShadowType::SINGLE)] = startOffset + 2;
-    _shadowLocation[to_uint(ShadowType::LAYERED)] = startOffset + 3;
+    const U8 startOffset = to_const_ubyte(ShaderProgram::TextureUsage::COUNT);
+    _shadowLocation[to_const_uint(ShadowType::CUBEMAP)] = startOffset + 1;
+    _shadowLocation[to_const_uint(ShadowType::SINGLE)] = startOffset + 2;
+    _shadowLocation[to_const_uint(ShadowType::LAYERED)] = startOffset + 3;
 
     ParamHandler::getInstance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
 }
@@ -70,25 +70,25 @@ void LightManager::init() {
         DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
     // NORMAL holds general info about the currently active
     // lights: position, color, etc.
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock",
-                                                                             1,
-                                                                             true,
-                                                                             false,
-                                                                             BufferUpdateFrequency::OCASSIONAL);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock",
+                                                                                    1,
+                                                                                    true,
+                                                                                    false,
+                                                                                    BufferUpdateFrequency::OCASSIONAL);
     // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB("dvd_ShadowBlock",
-                                                                             1,
-                                                                             true,
-                                                                             false,
-                                                                             BufferUpdateFrequency::OCASSIONAL);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB("dvd_ShadowBlock",
+                                                                                    1,
+                                                                                    true,
+                                                                                    false,
+                                                                                    BufferUpdateFrequency::OCASSIONAL);
 
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]
         ->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(LightProperties));
 
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]
         ->create(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, sizeof(Light::ShadowProperties));
 
     ResourceDescriptor lightImpostorShader("lightImpostorShader");
@@ -288,7 +288,7 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
     _lightSortingTasks.resize(0);
     for (Light::LightList& lights : _lights) {
         _lightSortingTasks.push_back(std::async(std::launch::async | std::launch::deferred,
-            [&lights, &eyePos]()
+            [&eyePos](Light::LightList& lights) mutable
             {
                 std::sort(std::begin(lights), std::end(lights),
                           [&eyePos](Light* a, Light* b) -> bool
@@ -296,7 +296,7 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
                     return a->getPosition().distanceSquared(eyePos) <
                            b->getPosition().distanceSquared(eyePos);
                 });
-            })
+            }, std::ref(lights))
         );
     }
 
@@ -304,6 +304,7 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
         task.get();
     }
 
+    vec3<F32> tempColor;
     // Create and upload light data for current pass
     _activeLightCount.fill(0);
     _shadowCastingLights.fill(nullptr);
@@ -312,17 +313,19 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
     for(Light::LightList& lights : _lights) {
         for (Light* light : lights) {
             LightType type = light->getLightType();
-            if (!light->getEnabled() || !_lightTypeState[to_uint(type)]) {
+            U32 typeUint = to_uint(type);
+
+            if (!light->getEnabled() || !_lightTypeState[typeUint]) {
                 continue;
             }
 
             if (totalLightCount >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
-            U32 typeUint = to_uint(type);
 
             LightProperties& temp = _lightProperties[typeUint][_activeLightCount[typeUint]];
-            temp._diffuse.set(light->getDiffuseColor(), light->getSpotCosOuterConeAngle());
+            light->getDiffuseColor(tempColor);
+            temp._diffuse.set(tempColor, light->getSpotCosOuterConeAngle());
             // Non directional lights are positioned at specific point in space
             // So we need W = 1 for a valid positional transform
             // Directional lights use position for the light direction. 
@@ -353,21 +356,21 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
 
     // Passing 0 elements is fine (early out in the buffer code)
     U32 offset = 0;
-    for (U32 type = 0; type < to_uint(LightType::COUNT); ++type) {
+    for (U32 type = 0; type < to_const_uint(LightType::COUNT); ++type) {
         U32 range = _activeLightCount[type];
-        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->updateData(offset, range, _lightProperties[type].data());
+        _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->updateData(offset, range, _lightProperties[type].data());
         offset = range;
     }
 
     uploadLightData(LightType::COUNT, ShaderBufferLocation::LIGHT_NORMAL);
     
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->updateData(0, lightShadowPropertiesCount, _lightShadowProperties.data());
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(ShaderBufferLocation::LIGHT_SHADOW);
 }
 
 void LightManager::uploadLightData(LightType lightsByType, ShaderBufferLocation location) {
     if (lightsByType == LightType::COUNT) {
-        _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bind(location);
+        _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(location);
         return;
     }
 
@@ -377,15 +380,15 @@ void LightManager::uploadLightData(LightType lightsByType, ShaderBufferLocation 
             offset = 0;
             break;
         case LightType::POINT:
-            offset = _activeLightCount[to_uint(LightType::DIRECTIONAL)];
+            offset = _activeLightCount[to_const_uint(LightType::DIRECTIONAL)];
             break;
         case LightType::SPOT:
-            offset = _activeLightCount[to_uint(LightType::POINT)];
+            offset = _activeLightCount[to_const_uint(LightType::POINT)];
             break;
     };
 
     U32 range = _activeLightCount[to_uint(lightsByType)];
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bindRange(location, offset, range);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bindRange(location, offset, range);
 }
 
 void LightManager::drawLightImpostors() const {
@@ -394,11 +397,11 @@ void LightManager::drawLightImpostors() const {
     }
 
     assert(_lightImpostorShader);
-    const U32 directionalLightCount = _activeLightCount[to_uint(LightType::DIRECTIONAL)];
-    const U32 pointLightCount = _activeLightCount[to_uint(LightType::POINT)];
-    const U32 spotLightCount = _activeLightCount[to_uint(LightType::SPOT)];
+    const U32 directionalLightCount = _activeLightCount[to_const_uint(LightType::DIRECTIONAL)];
+    const U32 pointLightCount = _activeLightCount[to_const_uint(LightType::POINT)];
+    const U32 spotLightCount = _activeLightCount[to_const_uint(LightType::SPOT)];
 
-    _lightIconsTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _lightIconsTexture->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     GFX_DEVICE.drawPoints(directionalLightCount + pointLightCount + spotLightCount,
                           GFX_DEVICE.getDefaultStateBlock(false),
                           _lightImpostorShader);

@@ -446,8 +446,8 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->newPB(*this, type);
     }
 
-    inline GenericVertexData* newGVD(const bool persistentMapped) {
-        return _api->newGVD(*this, persistentMapped);
+    inline GenericVertexData* newGVD(const bool persistentMapped, const U32 ringBufferLength) {
+        return _api->newGVD(*this, persistentMapped, ringBufferLength);
     }
 
     inline Texture* newTexture(TextureType type, bool asyncLoad) {

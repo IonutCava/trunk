@@ -364,7 +364,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     aiGetMaterialFloat(source, AI_MATKEY_OPACITY, &data._diffuse.a);
 
     // default shading model
-    I32 shadingModel = to_int(Material::ShadingMode::PHONG);
+    I32 shadingModel = to_const_int(Material::ShadingMode::PHONG);
     // Load shading model
     aiGetMaterialInteger(source, AI_MATKEY_SHADING_MODEL, &shadingModel);
     material._shadingMode = aiShadingModeInternalTable[shadingModel];
@@ -376,7 +376,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // Load shininess strength
     aiGetMaterialFloat(source, AI_MATKEY_SHININESS_STRENGTH, &strength);
     F32 finalValue = shininess * strength;
-    CLAMP<F32>(finalValue, 0.0f, 127.5f);
+    CLAMP<F32>(finalValue, 0.0f, 255.0f);
     data._shininess = finalValue;
 
     // check if material is two sided
@@ -456,7 +456,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         stringImpl path = overridePath + tName.data;
         stringImpl img_name = path.substr(path.find_last_of('/') + 1);
 
-        Import::TextureEntry& texture = material._textures[to_uint(ShaderProgram::TextureUsage::NORMALMAP)];
+        Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)];
 
         if (img_name.rfind('.') != stringImpl::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
@@ -472,7 +472,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture._textureName = img_name;
             texture._texturePath = path;
             texture._operation = aiTextureOperationTable[op];
-            material._textures[to_uint(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
+            material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
             material._bumpMethod = Material::BumpMethod::NORMAL;
         }  // endif
     } // endif
@@ -482,7 +482,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     if (result == AI_SUCCESS) {
         stringImpl path = overridePath + tName.data;
         stringImpl img_name = path.substr(path.find_last_of('/') + 1);
-        Import::TextureEntry& texture = material._textures[to_uint(ShaderProgram::TextureUsage::NORMALMAP)];
+        Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)];
         if (img_name.rfind('.') != stringImpl::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
                                       aiTextureMapMode_Decal) &&
@@ -497,7 +497,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture._textureName = img_name;
             texture._texturePath = path;
             texture._operation = aiTextureOperationTable[op];
-            material._textures[to_uint(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
+            material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
             material._bumpMethod = Material::BumpMethod::NORMAL;
         }  // endif
     } // endif
@@ -512,7 +512,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         if (result == AI_SUCCESS) {
             stringImpl path = overridePath + tName.data;
             stringImpl img_name = path.substr(path.find_last_of('/') + 1);
-            Import::TextureEntry& texture = material._textures[to_uint(ShaderProgram::TextureUsage::OPACITY)];
+            Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)];
 
             if (img_name.rfind('.') != stringImpl::npos) {
                 if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
@@ -528,7 +528,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 texture._textureName = img_name;
                 texture._texturePath = path;
                 texture._operation = aiTextureOperationTable[op];
-                material._textures[to_uint(ShaderProgram::TextureUsage::OPACITY)] = texture;
+                material._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)] = texture;
                 material._doubleSided = true;
             }  // endif
         } 
@@ -539,7 +539,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     if (result == AI_SUCCESS) {
         stringImpl path = overridePath + tName.data;
         stringImpl img_name = path.substr(path.find_last_of('/') + 1);
-        Import::TextureEntry& texture = material._textures[to_uint(ShaderProgram::TextureUsage::SPECULAR)];
+        Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::SPECULAR)];
         if (img_name.rfind('.') != stringImpl::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
                                       aiTextureMapMode_Decal) &&
@@ -554,7 +554,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture._textureName = img_name;
             texture._texturePath = path;
             texture._operation = aiTextureOperationTable[op];
-            material._textures[to_uint(ShaderProgram::TextureUsage::SPECULAR)] = texture;
+            material._textures[to_const_uint(ShaderProgram::TextureUsage::SPECULAR)] = texture;
         }  // endif
     }      // endif
 }

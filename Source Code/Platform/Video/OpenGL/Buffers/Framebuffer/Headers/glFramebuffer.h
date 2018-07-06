@@ -83,7 +83,7 @@ class glFramebuffer : public Framebuffer {
     void toggleAttachment(TextureDescriptor::AttachmentType type, bool state);
 
     inline bool hasDepth() const {
-        return _attachmentTexture[to_uint(TextureDescriptor::AttachmentType::Depth)] != nullptr;
+        return _attachmentTexture[to_const_uint(TextureDescriptor::AttachmentType::Depth)] != nullptr;
     }
 
     inline bool hasColor() const {

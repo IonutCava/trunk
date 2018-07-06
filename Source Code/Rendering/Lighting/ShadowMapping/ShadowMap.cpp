@@ -21,12 +21,12 @@ void ShadowMap::initShadowMaps() {
     if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::ULTRA) {
         // Cap cubemap resolution
         resolutions.fill(2048);
-        resolutions[to_uint(ShadowType::CUBEMAP)] = 1024;
+        resolutions[to_const_uint(ShadowType::CUBEMAP)] = 1024;
     } else if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::HIGH) {
         resolutions.fill(1024);
     }
 
-    for (U32 i = 0; i < to_uint(ShadowType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
         switch (static_cast<ShadowType>(i)) {
             case ShadowType::SINGLE: {
                 SamplerDescriptor depthMapSampler;
@@ -89,7 +89,7 @@ void ShadowMap::initShadowMaps() {
 }
 
 void ShadowMap::clearShadowMaps() {
-    for (U32 i = 0; i < to_uint(ShadowType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
         MemoryManager::DELETE(_depthMaps[i]);
     }
 }
@@ -97,7 +97,7 @@ void ShadowMap::clearShadowMaps() {
 void ShadowMap::bindShadowMaps() {
     LightManager& lightMgr = LightManager::getInstance();
 
-    for (U8 i = 0; i < to_ubyte(ShadowType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
         TextureDescriptor::AttachmentType attachment
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
                                           ? TextureDescriptor::AttachmentType::Color0
@@ -107,7 +107,7 @@ void ShadowMap::bindShadowMaps() {
 }
 
 void ShadowMap::clearShadowMapBuffers() {
-    for (U8 i = 0; i < to_ubyte(ShadowType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
         _depthMaps[i]->clear(Framebuffer::defaultPolicy());
     }
 }

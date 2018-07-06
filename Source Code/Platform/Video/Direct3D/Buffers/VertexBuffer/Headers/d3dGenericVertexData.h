@@ -38,8 +38,8 @@ namespace Divide {
 
 class d3dGenericVertexData : public GenericVertexData {
    public:
-    d3dGenericVertexData(GFXDevice& context, bool persistentMapped)
-        : GenericVertexData(context, persistentMapped)
+    d3dGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength)
+        : GenericVertexData(context, persistentMapped, ringBufferLength)
     {
     }
 
@@ -53,7 +53,7 @@ class d3dGenericVertexData : public GenericVertexData {
     void updateIndexBuffer(const vectorImpl<U32>& indices) {}
 
     void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                   U8 sizeFactor, void* data, bool dynamic, bool stream,
+                   bool useRingBuffer, void* data, bool dynamic, bool stream,
                    bool persistentMapped = false) {}
     void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
                                  size_t elementCount) {}
@@ -61,6 +61,8 @@ class d3dGenericVertexData : public GenericVertexData {
                       void* data) {}
     void setFeedbackBuffer(U32 buffer, U32 bindPoint) {}
     U32 getFeedbackPrimitiveCount(U8 queryID) { return 0; }
+
+    void incQueryQueue() override {}
 
    protected:
     friend class GFXDevice;

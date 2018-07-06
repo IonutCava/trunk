@@ -125,8 +125,14 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
     }
 
     frameIndexAt(pTime);
+    aiVector3D presentPosition(0, 0, 0);
+    aiQuaternion presentRotation(1, 0, 0, 0);
+    aiQuaternion presentRotationDefault(1, 0, 0, 0);
+    aiVector3D presentScaling(1, 1, 1);
+    bool transposeMat = GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D;
     // calculate the transformations for each animation channel
     for (U32 a = 0; a < _channels.size(); a++) {
+        
         const AnimationChannel* channel = &_channels[a];
         Bone* bonenode = skeleton->find(channel->_name);
 
@@ -137,7 +143,6 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
         }
 
         // ******** Position *****
-        aiVector3D presentPosition(0, 0, 0);
         if (channel->_positionKeys.size() > 0) {
             // Look for present frame number. Search from last position if time
             // is after the last time, else from beginning
@@ -166,9 +171,11 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
                 presentPosition = key.mValue;
             }
             _lastPositions[a].x = frame;
+        } else {
+            presentPosition.Set(0.0f, 0.0f, 0.0f);
         }
+
         // ******** Rotation *********
-        aiQuaternion presentRotation(1, 0, 0, 0);
         if (channel->_rotationKeys.size() > 0) {
             U32 frame = (time >= _lastTime) ? _lastPositions[a].y : 0;
             while (frame < channel->_rotationKeys.size() - 1) {
@@ -185,15 +192,18 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
             if (diffTime < 0.0) diffTime += _duration;
             if (diffTime > 0) {
                 F32 factor = F32((time - key.mTime) / diffTime);
+                presentRotation = presentRotationDefault;
                 aiQuaternion::Interpolate(presentRotation, key.mValue,
                                           nextKey.mValue, factor);
-            } else
+            } else {
                 presentRotation = key.mValue;
+            }
             _lastPositions[a].y = frame;
+        } else {
+            presentRotation = presentRotationDefault;
         }
 
         // ******** Scaling **********
-        aiVector3D presentScaling(1, 1, 1);
         if (channel->_scalingKeys.size() > 0) {
             U32 frame = (time >= _lastTime) ? _lastPositions[a].z : 0;
             while (frame < channel->_scalingKeys.size() - 1) {
@@ -203,6 +213,8 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
 
             presentScaling = channel->_scalingKeys[frame].mValue;
             _lastPositions[a].z = frame;
+        } else {
+            presentScaling.Set(1.0f, 1.0f, 1.0f);
         }
 
         aiMatrix4x4& mat = bonenode->_localTransform;
@@ -219,7 +231,7 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
         mat.a4  = presentPosition.x;
         mat.b4  = presentPosition.y;
         mat.c4  = presentPosition.z;
-        if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
+        if (transposeMat) {
             mat.Transpose();
         }
     }

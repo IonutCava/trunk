@@ -343,7 +343,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     // Make the center cylinder reflective
     Material* matInstance = cylinder[0]->getChild(0, temp).getComponent<RenderingComponent>()->getMaterialInstance();
-    matInstance->setShininess(80);
+    matInstance->setShininess(200);
 
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();
     SceneNode* cylinderMeshNE = cylinder[2]->getNode();
@@ -409,7 +409,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
-            tempLight.setEnumValue(to_uint(LightType::POINT));
+            tempLight.setEnumValue(to_const_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(25.0f);
@@ -421,7 +421,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
-            tempLight.setEnumValue(to_uint(LightType::POINT));
+            tempLight.setEnumValue(to_const_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(35.0f);
@@ -433,7 +433,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         }
         {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
-            tempLight.setEnumValue(to_uint(LightType::SPOT));
+            tempLight.setEnumValue(to_const_uint(LightType::SPOT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(55.0f);
@@ -520,11 +520,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     std::shared_ptr<ParticleData> particles = 
         std::make_shared<ParticleData>(particleCount,
-                                       to_uint(ParticleData::Properties::PROPERTIES_POS) |
-                                       to_uint(ParticleData::Properties::PROPERTIES_VEL) |
-                                       to_uint(ParticleData::Properties::PROPERTIES_ACC) | 
-                                       to_uint(ParticleData::Properties::PROPERTIES_COLOR) |
-                                       to_uint(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
+                                       to_const_uint(ParticleData::Properties::PROPERTIES_POS) |
+                                       to_const_uint(ParticleData::Properties::PROPERTIES_VEL) |
+                                       to_const_uint(ParticleData::Properties::PROPERTIES_ACC) |
+                                       to_const_uint(ParticleData::Properties::PROPERTIES_COLOR) |
+                                       to_const_uint(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
     particles->_textureFileName = "particle.DDS";
 
     std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
@@ -574,7 +574,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     for (U8 row = 0; row < 4; row++) {
         for (U8 col = 0; col < 4; col++) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
-            tempLight.setEnumValue(to_uint(LightType::POINT));
+            tempLight.setEnumValue(to_const_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(20.0f);

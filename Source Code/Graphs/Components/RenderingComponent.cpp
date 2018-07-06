@@ -89,12 +89,12 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
     _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2);
-    _axisGizmo->attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(_axisLines[0]._colorStart));
+    _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(_axisLines[0]._colorStart));
     // Set the mode to line rendering
     _axisGizmo->begin(PrimitiveType::LINES);
     // Add every line in the list to the batch
     for (const Line& line : _axisLines) {
-        _axisGizmo->attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(line._colorStart));
+        _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(line._colorStart));
         _axisGizmo->vertex(line._startPoint);
         _axisGizmo->vertex(line._endPoint);
     }
@@ -460,7 +460,7 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
     for (GFXDevice::RenderPackage& pkg : _renderData) {
         GFXDevice::ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
         it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
-            [&slot](const GFXDevice::ShaderBufferBinding& binding)
+            [slot](const GFXDevice::ShaderBufferBinding& binding)
                     -> bool { return binding._slot == slot; });
 
         if (it == itEnd) {

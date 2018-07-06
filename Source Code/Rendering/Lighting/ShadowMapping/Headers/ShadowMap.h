@@ -108,7 +108,7 @@ class ShadowMapInfo {
     inline U8 numLayers() const { return _numLayers; }
 
     inline void numLayers(U8 layerCount) {
-        _numLayers = std::min(layerCount, to_ubyte(Config::Lighting::MAX_SPLITS_PER_LIGHT));
+        _numLayers = std::min(layerCount, to_const_ubyte(Config::Lighting::MAX_SPLITS_PER_LIGHT));
     }
 
    private:

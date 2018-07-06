@@ -45,7 +45,7 @@ glShaderProgram::~glShaderProgram() {
 
 /// Basic OpenGL shader program validation (both in debug and in release)
 void glShaderProgram::validateInternal() {
-    for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
         // Get the shader pointer for that stage
         Shader* shader = _shaderStage[i];
         // If a shader exists for said stage
@@ -219,7 +219,7 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
             // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
         }
         // For every possible stage that the program might use
-        for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
+        for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
             // Get the shader pointer for that stage
             Shader* shader = _shaderStage[i];
             // If a shader exists for said stage
@@ -304,7 +304,7 @@ bool glShaderProgram::load() {
 
     // Check if we need to refresh an existing program, or create a new one
     bool refresh = false;
-    for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
         if (_refreshStage[i]) {
             refresh = true;
             break;
@@ -406,7 +406,7 @@ bool glShaderProgram::load() {
         }
 
         // For every stage
-        for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
+        for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
             // Brute force conversion to an enum
             ShaderType type = static_cast<ShaderType>(i);
             stringImpl shaderCompileName(shaderName + "." + GLUtil::glShaderStageNameTable[to_uint(type)] + vertexProperties);

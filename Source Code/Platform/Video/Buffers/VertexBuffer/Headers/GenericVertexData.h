@@ -33,7 +33,6 @@
 #define _GENERIC_VERTEX_DATA_H
 
 #include "VertexDataInterface.h"
-#include "Managers/Headers/FrameListenerManager.h"
 
 /// This class is used to upload generic VB data to the GPU that can be rendered
 /// directly or instanced.
@@ -44,7 +43,7 @@
 namespace Divide {
 
 class NOINITVTABLE GenericVertexData : public VertexDataInterface,
-                                       public FrameListener {
+                                       public RingBuffer {
    public:
     struct AttributeDescriptor {
         AttributeDescriptor()
@@ -143,13 +142,12 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
         GFXDataFormat _type;
     };
 
-    GenericVertexData(GFXDevice& context, bool persistentMapped)
+    GenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength)
         : VertexDataInterface(context),
-          FrameListener(),
+          RingBuffer(ringBufferLength),
           _persistentMapped(persistentMapped &&
                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)
     {
-        REGISTER_FRAME_LISTENER(this, 4);
         _doubleBufferedQuery = true;
     }
 
@@ -157,7 +155,6 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     {
         _attributeMapDraw.clear();
         _attributeMapFdbk.clear();
-        UNREGISTER_FRAME_LISTENER(this);
     }
 
     virtual void setIndexBuffer(U32 indicesCount, bool dynamic, bool stream) = 0;
@@ -172,7 +169,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     /// approach and
     /// offset the reading and writing to multiple copies of the data
     virtual void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                           U8 sizeFactor, void* data, bool dynamic, bool stream,
+                           bool useRingBuffer, void* data, bool dynamic, bool stream,
                            bool persistentMapped = false) = 0;
 
     virtual void updateBuffer(U32 buffer, U32 elementCount,
@@ -182,8 +179,8 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
                                          size_t elementCount) = 0;
 
     virtual U32 getFeedbackPrimitiveCount(U8 queryID) = 0;
-    /// Just before we render the frame
-    virtual bool frameStarted(const FrameEvent& evt) { return true; }
+
+    virtual void incQueryQueue() = 0;
 
     inline void toggleDoubleBufferedQueries(const bool state) {
         _doubleBufferedQuery = state;

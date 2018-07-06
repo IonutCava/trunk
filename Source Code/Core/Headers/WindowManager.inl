@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 inline const vec2<U16>& WindowManager::getResolution() const {
-    return _windowDimensions[to_uint(WindowType::WINDOW)];
+    return _windowDimensions[to_const_uint(WindowType::WINDOW)];
 }
 
 inline const vec2<U16>& WindowManager::getPreviousResolution() const {
@@ -43,18 +43,18 @@ inline const vec2<U16>& WindowManager::getPreviousResolution() const {
 }
 
 inline void WindowManager::setResolutionWidth(U16 w) {
-    _prevResolution.set(_windowDimensions[to_uint(WindowType::WINDOW)]);
-    _windowDimensions[to_uint(WindowType::WINDOW)].width = w;
+    _prevResolution.set(_windowDimensions[to_const_uint(WindowType::WINDOW)]);
+    _windowDimensions[to_const_uint(WindowType::WINDOW)].width = w;
 }
 
 inline void WindowManager::setResolutionHeight(U16 h) {
-    _prevResolution.set(_windowDimensions[to_uint(WindowType::WINDOW)]);
-    _windowDimensions[to_uint(WindowType::WINDOW)].height = h;
+    _prevResolution.set(_windowDimensions[to_const_uint(WindowType::WINDOW)]);
+    _windowDimensions[to_const_uint(WindowType::WINDOW)].height = h;
 }
 
 inline void WindowManager::setResolution(const vec2<U16>& resolution) {
-    _prevResolution.set(_windowDimensions[to_uint(WindowType::WINDOW)]);
-    _windowDimensions[to_uint(WindowType::WINDOW)].set(resolution);
+    _prevResolution.set(_windowDimensions[to_const_uint(WindowType::WINDOW)]);
+    _windowDimensions[to_const_uint(WindowType::WINDOW)].set(resolution);
 }
 
 inline void WindowManager::setWindowDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY) {

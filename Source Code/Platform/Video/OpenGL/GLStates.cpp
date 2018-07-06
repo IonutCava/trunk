@@ -341,8 +341,8 @@ bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint&
     // Prevent double bind
     if (_activeFBID[to_uint(usage)] == ID) {
         if (usage == Framebuffer::FramebufferUsage::FB_READ_WRITE) {
-            if (_activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] == ID &&
-                _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] == ID) {
+            if (_activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] == ID &&
+                _activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] == ID) {
                 return false;
             }
         } else {
@@ -357,8 +357,8 @@ bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint&
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] = ID;
-            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] = ID;
+            _activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] = ID;
+            _activeFBID[to_const_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] = ID;
         } break;
         case Framebuffer::FramebufferUsage::FB_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);

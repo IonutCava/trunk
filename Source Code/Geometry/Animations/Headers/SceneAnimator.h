@@ -112,7 +112,7 @@ class SceneAnimator {
 
     inline AnimEvaluator& animationByIndex(I32 animationIndex) {
         assert(IS_IN_RANGE_INCLUSIVE(animationIndex, 0, to_int(_animations.size()) - 1));
-        std::shared_ptr<AnimEvaluator> animation = _animations.at(animationIndex);
+        std::shared_ptr<AnimEvaluator> animation = _animations[animationIndex];
         assert(animation != nullptr);
         return *animation;
     }

@@ -251,7 +251,7 @@ namespace Import {
             submeshdesc.setFlag(true);
             submeshdesc.setID(subMeshData._index);
             if (subMeshData._boneCount > 0) {
-                submeshdesc.setEnumValue(to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+                submeshdesc.setEnumValue(to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
             }
 
             tempSubMesh = CreateResource<SubMesh>(submeshdesc);
@@ -314,7 +314,7 @@ namespace Import {
         ResourceDescriptor materialDesc(importData._name);
         if (skinned) {
             materialDesc.setEnumValue(
-                to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+                to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         }
 
         tempMaterial = CreateResource<Material>(materialDesc);
@@ -325,7 +325,7 @@ namespace Import {
         tempMaterial->setDoubleSided(importData._doubleSided);
 
         SamplerDescriptor textureSampler;
-        for (U32 i = 0; i < to_uint(ShaderProgram::TextureUsage::COUNT); ++i) {
+        for (U32 i = 0; i < to_const_uint(ShaderProgram::TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
             if (!tex._textureName.empty()) {
                 textureSampler.toggleSRGBColorSpace(tex._srgbSpace);
@@ -344,7 +344,7 @@ namespace Import {
 
         // If we don't have a valid opacity map, try to find out whether the diffuse texture has any non-opaque pixels.
         // If we find a few, use it as opacity texture
-        if (!importData._ignoreAlpha && importData._textures[to_uint(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
+        if (!importData._ignoreAlpha && importData._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
             Texture* diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0);
             if (diffuse != nullptr && diffuse->hasTransparency()) {
                 Texture* textureRes = CreateResource<Texture>(ResourceDescriptor(diffuse->getName()));

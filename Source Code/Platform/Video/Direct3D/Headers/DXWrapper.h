@@ -84,8 +84,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     }
 
     inline GenericVertexData* newGVD(GFXDevice& context,
-                                     const bool persistentMapped = false) const override {
-        return MemoryManager_NEW d3dGenericVertexData(context, persistentMapped);
+                                     const bool persistentMapped = false,
+                                     const U32 ringBufferLength = 1) const override {
+        return MemoryManager_NEW d3dGenericVertexData(context, persistentMapped, ringBufferLength);
     }
 
     inline VertexBuffer* newVB(GFXDevice& context) const override {

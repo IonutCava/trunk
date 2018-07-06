@@ -74,7 +74,7 @@ void Terrain::buildQuadtree() {
     _boundingBox.second = true;
 
     Material* mat = getMaterialTpl();
-    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         RenderStage stage = static_cast<RenderStage>(i);
 
         ShaderProgram* const drawShader = mat->getShaderInfo(stage).getProgram();
@@ -84,7 +84,7 @@ void Terrain::buildQuadtree() {
         drawShader->Uniform("bbox_extent", _boundingBox.first.getExtent());
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-        U8 textureOffset = to_ubyte(ShaderProgram::TextureUsage::NORMALMAP) + 1;
+        U8 textureOffset = to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP) + 1;
         U8 layerOffset = 0;
         stringImpl layerIndex;
         for (U8 k = 0; k < _terrainTextures.size(); ++k) {

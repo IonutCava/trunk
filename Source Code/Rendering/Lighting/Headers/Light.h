@@ -87,6 +87,10 @@ class Light : public SceneNode {
     void setRange(F32 range);
 
     /// Get light diffuse color
+    inline void getDiffuseColor(vec3<F32>& colorOut) const {
+        Util::ToFloatColor(_color.rgb(), colorOut);
+    }
+
     inline vec3<F32> getDiffuseColor() const {
         return Util::ToFloatColor(_color.rgb());
     }

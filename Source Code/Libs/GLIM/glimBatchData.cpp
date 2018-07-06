@@ -195,14 +195,16 @@ unsigned int glimBatchData::AddVertex(float x, float y, float z) {
     if (z < m_fMinZ) m_fMinZ = z;
     if (z > m_fMaxZ) m_fMaxZ = z;
 
-    m_PositionData.push_back(Glim4ByteData(x));
-    m_PositionData.push_back(Glim4ByteData(y));
-    m_PositionData.push_back(Glim4ByteData(z));
+    vectorAlg::emplace_back(m_PositionData, x);
+    vectorAlg::emplace_back(m_PositionData, y);
+    vectorAlg::emplace_back(m_PositionData, z);
 
-    hashMapImpl<unsigned int, GlimArrayData>::iterator it, itend;
-    itend = m_Attributes.end();
+    hashMapImpl<unsigned int, GlimArrayData>::iterator it;
+    hashMapImpl<unsigned int, GlimArrayData>::const_iterator itend;
+    it = std::begin(m_Attributes);
+    itend = std::cend(m_Attributes);
 
-    for (it = m_Attributes.begin(); it != itend; ++it) {
+    for (; it != itend; ++it) {
         it->second.PushElement();
     }
 

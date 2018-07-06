@@ -290,7 +290,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 void Scene::toggleFlashlight() {
     if (_flashLight.lock() == nullptr) {
         ResourceDescriptor tempLightDesc("MainFlashlight");
-        tempLightDesc.setEnumValue(to_uint(LightType::SPOT));
+        tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
         Light* tempLight = CreateResource<Light>(tempLightDesc);
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);

@@ -34,7 +34,7 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
     _depthOnly._clearColorBuffersOnBind = true;
     _depthOnly._clearDepthBufferOnBind = true;
     _depthOnly._drawMask.fill(false);
-    _depthOnly._drawMask[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
+    _depthOnly._drawMask[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
 }
 
 RenderPass::~RenderPass() 

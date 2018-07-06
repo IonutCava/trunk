@@ -137,7 +137,7 @@ void WarSceneAIProcessor::initInternal() {
 }
 
 bool WarSceneAIProcessor::DIE() {
-    if (_entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) == 0) {
+    if (_entity->getUnitRef()->getAttribute(to_const_uint(UnitAttributes::ALIVE_FLAG)) == 0) {
         return false;
     }
      
@@ -145,7 +145,7 @@ bool WarSceneAIProcessor::DIE() {
     U32 ownTeamID = currentTeam->getTeamID();
     U32 enemyTeamID = 1 - ownTeamID;
 
-    _entity->getUnitRef()->setAttribute(to_uint(UnitAttributes::ALIVE_FLAG), 0);
+    _entity->getUnitRef()->setAttribute(to_const_uint(UnitAttributes::ALIVE_FLAG), 0);
     U8 teamCount = _globalWorkingMemory._teamAliveCount[ownTeamID].value();
     _globalWorkingMemory._teamAliveCount[ownTeamID].value(to_ubyte(std::max(teamCount - 1, 0)));
 
@@ -578,8 +578,8 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
                 state = true;
             } else {
                 NPC* targetNPC = getUnitForNode(g_enemyTeamContainer, enemy)->getUnitRef();
-                state = targetNPC->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) == 0 ||
-                        targetNPC->getAttribute(to_uint(UnitAttributes::HEALTH_POINTS)) == 0;
+                state = targetNPC->getAttribute(to_const_uint(UnitAttributes::ALIVE_FLAG)) == 0 ||
+                        targetNPC->getAttribute(to_const_uint(UnitAttributes::HEALTH_POINTS)) == 0;
                 if (!state) {
                     if (_entity->getPosition().distanceSquared(targetNPC->getPosition()) >= g_ATTACK_RADIUS_SQ) {
                         _entity->updateDestination(targetNPC->getPosition(), true);
@@ -772,7 +772,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
         }
     }
 
-    if (_entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::HEALTH_POINTS)) == 0) {
+    if (_entity->getUnitRef()->getAttribute(to_const_uint(UnitAttributes::HEALTH_POINTS)) == 0) {
         DIE();
         return true;
     }
@@ -786,14 +786,14 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
         AIEntity* targetUnit = getUnitForNode(g_enemyTeamContainer, enemy);
         if (targetUnit != nullptr) {
             NPC* targetNPC = targetUnit->getUnitRef();
-            bool alive = targetNPC->getAttribute(to_uint(UnitAttributes::ALIVE_FLAG)) > 0;
+            bool alive = targetNPC->getAttribute(to_const_uint(UnitAttributes::ALIVE_FLAG)) > 0;
             if (alive && _entity->getPosition().distanceSquared(targetNPC->getPosition()) < g_ATTACK_RADIUS_SQ) {
                 _entity->stop();
                 _entity->getUnitRef()->lookAt(targetNPC->getPosition());
                 if (_attackTimer >= Time::SecondsToMicroseconds(0.5)) {
-                    I32 HP = targetNPC->getAttribute(to_uint(UnitAttributes::HEALTH_POINTS));
-                    I32 Damage = _entity->getUnitRef()->getAttribute(to_uint(UnitAttributes::DAMAGE));
-                    targetNPC->setAttribute(to_uint(UnitAttributes::HEALTH_POINTS), std::max(HP - Damage, 0));
+                    I32 HP = targetNPC->getAttribute(to_const_uint(UnitAttributes::HEALTH_POINTS));
+                    I32 Damage = _entity->getUnitRef()->getAttribute(to_const_uint(UnitAttributes::DAMAGE));
+                    targetNPC->setAttribute(to_const_uint(UnitAttributes::HEALTH_POINTS), std::max(HP - Damage, 0));
                     _entity->sendMessage(*targetUnit, AIMsg::ATTACK, 0);
                     _attackTimer = 0ULL;
                 }

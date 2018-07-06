@@ -150,7 +150,7 @@ class Material : public Resource, public FrameListener {
             _shaderRef = nullptr;
             _shader = "";
             _shaderCompStage = ShaderCompilationStage::UNHANDLED;
-            for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
+            for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
                 _shadingFunction[i].fill(0);
             }
         }
@@ -163,8 +163,8 @@ class Material : public Resource, public FrameListener {
             }
             _shader = other._shader;
             _shaderCompStage = other._shaderCompStage;
-            for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
-                for (U32 j = 0; j < to_uint(BumpMethod::COUNT); ++j) {
+            for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
+                for (U32 j = 0; j < to_const_uint(BumpMethod::COUNT); ++j) {
                     _shadingFunction[i][j] = other._shadingFunction[i][j];
                 }
             }

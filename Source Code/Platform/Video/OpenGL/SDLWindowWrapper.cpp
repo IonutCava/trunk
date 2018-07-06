@@ -432,7 +432,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     }
 
     // Prepare immediate mode emulation rendering
-    NS_GLIM::glim.SetVertexAttribLocation(to_uint(AttribLocation::VERTEX_POSITION));
+    NS_GLIM::glim.SetVertexAttribLocation(to_const_uint(AttribLocation::VERTEX_POSITION));
     // We need a dummy VAO object for point rendering
     glCreateVertexArrays(1, &_dummyVAO);
 

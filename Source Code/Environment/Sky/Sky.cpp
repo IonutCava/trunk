@@ -63,7 +63,7 @@ bool Sky::load() {
         location + "skybox_1.jpg," + location + "skybox_2.jpg," + 
         location + "skybox_3.jpg," + location + "skybox_4.jpg," +
         location + "skybox_5.jpg," + location + "skybox_6.jpg");
-    skyboxTextures.setEnumValue(to_uint(TextureType::TEXTURE_CUBE_MAP));
+    skyboxTextures.setEnumValue(to_const_uint(TextureType::TEXTURE_CUBE_MAP));
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
     skyboxTextures.setThreadedLoading(false);
     _skybox = CreateResource<Texture>(skyboxTextures);
@@ -105,7 +105,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     cmd.sourceBuffer(_sky->getGeometryVB());
     cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
 
-    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         GFXDevice::RenderPackage& pkg = 
             Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
         pkg._drawCommands.push_back(cmd);
@@ -113,7 +113,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     _skybox->flushTextureState();
     TextureData skyTextureData = _skybox->getData();
-    skyTextureData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT0));
+    skyTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
     sgn.getComponent<RenderingComponent>()->registerTextureDependency(skyTextureData);
 
     SceneNode::postLoad(sgn);

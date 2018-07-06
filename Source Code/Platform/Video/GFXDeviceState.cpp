@@ -33,8 +33,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _dualParaboloidCamera = cameraMgr.createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
 
     g_shaderBuffersPerStageCount.fill(1);
-    g_shaderBuffersPerStageCount[to_uint(RenderStage::REFLECTION)] = 6;
-    g_shaderBuffersPerStageCount[to_uint(RenderStage::SHADOW)] = 6;
+    g_shaderBuffersPerStageCount[to_const_uint(RenderStage::REFLECTION)] = 6;
+    g_shaderBuffersPerStageCount[to_const_uint(RenderStage::SHADOW)] = 6;
 
     ErrorCode hardwareState = createAPIInstance();
     if (hardwareState == ErrorCode::NO_ERR) {
@@ -146,10 +146,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer = newFB(true);
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer = newFB(true);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer = newFB(true);
+    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer = newFB(true);
     // This is an environment cube map centered around the camera
-    _renderTarget[to_uint(RenderTargetID::ENVIRONMENT)]._buffer = newFB(false);
+    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -179,34 +179,34 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     normalDescriptor.setSampler(screenSampler);
     
     // Add the attachments to the render targets
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->create(resolution.width, resolution.height);
-    Texture* hizTexture = _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->create(resolution.width, resolution.height);
+    Texture* hizTexture = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     hizTexture->lockAutomaticMipMapGeneration(true);
 
     // If we enabled anaglyph rendering, we need a second target, identical to the screen target
     // used to render the scene at an offset
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->create(resolution.width, resolution.height);
-    hizTexture = _renderTarget[to_uint(RenderTargetID::ANAGLYPH)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
+    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->create(resolution.width, resolution.height);
+    hizTexture = _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     hizTexture->lockAutomaticMipMapGeneration(true);
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
                                             GFXImageFormat::RGBA16F,
                                             GFXDataFormat::FLOAT_16);
     environmentDescriptor.setSampler(screenSampler);
-    _renderTarget[to_uint(RenderTargetID::ENVIRONMENT)]._buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTargetID::ENVIRONMENT)]._buffer->useAutoDepthBuffer(true);
-    _renderTarget[to_uint(RenderTargetID::ENVIRONMENT)]._buffer->create(256, 256);
-    _renderTarget[to_uint(RenderTargetID::ENVIRONMENT)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
+    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->useAutoDepthBuffer(true);
+    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->create(256, 256);
+    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)

@@ -68,7 +68,6 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     for (lightIdx = 0; lightIdx < dvd_lightCountPerType[0]; ++lightIdx) {
         getBRDFFactors(int(lightIdx), processedNormal, lightColor);
     }
-    return vec4(lightColor, 1.0);
 
     uint offset = dvd_lightCountPerType[0];
     // Point lights
@@ -96,12 +95,13 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     vec3 color = mix(dvd_MatEmissive, lightColor, DIST_TO_ZERO(length(lightColor)));
 #endif
 
-    if (dvd_MatShininess > 50) {
+    float reflectance = 1.0 - saturate(dvd_MatShininess / 255.0);
+    if (reflectance > 0.75 && dvd_lodLevel < 1) {
         vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
         reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
         color = mix(texture(texEnvironmentCube, vec4(reflectDirection, 0.0)).rgb,
                     color,
-                    1.0 - saturate(dvd_MatShininess / 255.0));
+                    reflectance);
     }
 
     color *= mix(mix(1.0, 2.0, dvd_isHighlighted), 3.0, dvd_isSelected);

@@ -49,7 +49,7 @@ class glGenericVertexData : public GenericVertexData {
     };
 
    public:
-    glGenericVertexData(GFXDevice& context, bool persistentMapped);
+    glGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength);
     ~glGenericVertexData();
 
     void create(U8 numBuffers = 1, U8 numQueries = 1);
@@ -59,7 +59,7 @@ class glGenericVertexData : public GenericVertexData {
     void updateIndexBuffer(const vectorImpl<U32>& indices);
 
     void setBuffer(U32 buffer, U32 elementCount, size_t elementSize,
-                   U8 sizeFactor, void* data, bool dynamic, bool stream,
+                   bool useRingBuffer, void* data, bool dynamic, bool stream,
                    bool persistentMapped = false);
 
     void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,  void* data);
@@ -100,8 +100,7 @@ class glGenericVertexData : public GenericVertexData {
         return _fdbkBindPoints[0];
     }
 
-    /// Just before we render the frame
-    bool frameStarted(const FrameEvent& evt);
+    void incQueryQueue() override;
 
    private:
     GLuint _indexBuffer;
@@ -111,9 +110,8 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _numQueries;
     bool* _bufferSet;
     bool* _bufferPersistent;
+    bool* _bufferIsRing;
     GLuint* _elementCount;
-    GLuint* _sizeFactor;
-    size_t* _readOffset;
     size_t* _elementSize;
     bufferPtr* _bufferPersistentData;
     GLuint* _prevResult;
@@ -121,7 +119,6 @@ class glGenericVertexData : public GenericVertexData {
     std::array<bool*, 2> _resultAvailable;
     GLuint _currentWriteQuery;
     GLuint _currentReadQuery;
-    size_t* _startDestOffset;
     vectorImpl<U32> _fdbkBindPoints;
     vectorImpl<GLUtil::AllocationHandle> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;

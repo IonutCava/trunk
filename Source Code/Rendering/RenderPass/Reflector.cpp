@@ -85,7 +85,7 @@ void Reflector::previewReflection() {
 #ifdef _DEBUG
     if (_previewReflection) {
         F32 height = _resolution.y * 0.333f;
-        _reflectedTexture->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        _reflectedTexture->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
         GFX::ScopedViewport viewport(0,
                                      to_int(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer
                                                 ->getResolution().y - height),

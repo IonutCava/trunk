@@ -43,14 +43,16 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::LockRange(size_t lockBeginBytes,
                                     size_t lockLength) {
+    BufferRange testRange = { lockBeginBytes, lockLength };
+    for (BufferLock& lock : _bufferLocks) {
+        if (testRange.Overlaps(lock._range)) {
+            // no point in locking the same range multiple times
+            return;
+        }
+    }
 
-    _bufferLocks.push_back({
-                               {
-                                   lockBeginBytes,
-                                   lockLength
-                               },
-                               glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,
-                                           UnusedMask::GL_UNUSED_BIT)
+    _bufferLocks.push_back({testRange,
+                            glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT)
                            });
 }
 

@@ -102,11 +102,11 @@ class PhysicsComponent : public SGNComponent {
            }
 
            inline void setFlags(const TransformMask& other) {
-               _transformFlags[to_uint(TransformType::SCALE)] = 
+               _transformFlags[to_const_uint(TransformType::SCALE)] =
                        other.getFlag(TransformType::SCALE);
-               _transformFlags[to_uint(TransformType::ROTATION)] =
+               _transformFlags[to_const_uint(TransformType::ROTATION)] =
                        other.getFlag(TransformType::ROTATION);
-               _transformFlags[to_uint(TransformType::TRANSLATION)] =
+               _transformFlags[to_const_uint(TransformType::TRANSLATION)] =
                        other.getFlag(TransformType::TRANSLATION);
            }
         private:

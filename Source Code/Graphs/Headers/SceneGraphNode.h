@@ -206,8 +206,9 @@ class SceneGraphNode : public GUIDWrapper,
     inline SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) {
         assert(idx < _childCount);
         updatedChildCount = getChildCount();
-        assert(_children.at(idx));
-        return *_children.at(idx);
+        SceneGraphNode_ptr child = _children.at(idx);
+        assert(child);
+        return *child;
     }
 
     inline const SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) const {
@@ -297,22 +298,22 @@ class SceneGraphNode : public GUIDWrapper,
 template <>
 inline AnimationComponent* SceneGraphNode::getComponent() const {
 	return static_cast<AnimationComponent*>(
-		_components[to_uint(SGNComponent::ComponentType::ANIMATION)].get());
+		_components[to_const_uint(SGNComponent::ComponentType::ANIMATION)].get());
 }
 template <>
 inline NavigationComponent* SceneGraphNode::getComponent() const {
 	return static_cast<NavigationComponent*>(
-		_components[to_uint(SGNComponent::ComponentType::NAVIGATION)].get());
+		_components[to_const_uint(SGNComponent::ComponentType::NAVIGATION)].get());
 }
 template <>
 inline PhysicsComponent* SceneGraphNode::getComponent() const {
 	return static_cast<PhysicsComponent*>(
-		_components[to_uint(SGNComponent::ComponentType::PHYSICS)].get());
+		_components[to_const_uint(SGNComponent::ComponentType::PHYSICS)].get());
 }
 template <>
 inline RenderingComponent* SceneGraphNode::getComponent() const {
 	return static_cast<RenderingComponent*>(
-		_components[to_uint(SGNComponent::ComponentType::RENDERING)].get());
+		_components[to_const_uint(SGNComponent::ComponentType::RENDERING)].get());
 }
 };  // namespace Divide
 #endif

@@ -43,7 +43,7 @@ void ForwardPlusRenderer::preRender() {
     GFX_DEVICE.getRenderTarget(GFX_DEVICE.anaglyphEnabled() 
                                  ? GFXDevice::RenderTargetID::ANAGLYPH 
                                  : GFXDevice::RenderTargetID::SCREEN)._buffer
-        ->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+        ->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
                TextureDescriptor::AttachmentType::Depth);
 
     _flag = getMaxNumLightsPerTile();
@@ -67,7 +67,7 @@ U32 ForwardPlusRenderer::getMaxNumLightsPerTile() const {
     const U32 adjustmentMultipier = 32;
 
     // I haven't tested at greater than 1080p, so cap it
-    U16 height = std::min(_resolution.height, to_ushort(1080));
+    U16 height = std::min(_resolution.height, to_const_ushort(1080));
     // adjust max lights per tile down as height increases
     return (Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
 }

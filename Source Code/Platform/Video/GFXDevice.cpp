@@ -104,10 +104,10 @@ GFXDevice::GFXDevice()
     VertexBuffer::setAttribMasks(flags);
 
     // Don't (currently) need these for shadow passes
-    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
-    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
+    flags[to_const_uint(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
+    flags[to_const_uint(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
     VertexBuffer::setAttribMask(RenderStage::Z_PRE_PASS, flags);
-    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
+    flags[to_const_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
     VertexBuffer::setAttribMask(RenderStage::SHADOW, flags);
 }
 
@@ -345,15 +345,15 @@ void GFXDevice::toggleFullScreen() {
 /// The main entry point for any resolution change request
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
-    if (_renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer != nullptr) {
+    if (_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer != nullptr) {
         // Update resolution only if it's different from the current one.
         // Avoid resolution change on minimize so we don't thrash render targets
-        if (vec2<U16>(w, h) ==  _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->getResolution() ||
+        if (vec2<U16>(w, h) ==  _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getResolution() ||
            !(w > 1 && h > 1)) {
             return;
         }
         // Update render targets with the new resolution
-        for (U32 i = 0; i < to_uint(RenderTargetID::COUNT); ++i) {
+        for (U32 i = 0; i < to_const_uint(RenderTargetID::COUNT); ++i) {
             Framebuffer* renderTarget = _renderTarget[i]._buffer;
             if (renderTarget && static_cast<RenderTargetID>(i) != RenderTargetID::ENVIRONMENT) {
                 renderTarget->create(w, h);
@@ -634,11 +634,11 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
 void GFXDevice::constructHIZ() {
     // The depth buffer's resolution should be equal to the screen's resolution
-    Framebuffer* screenTarget = _renderTarget[anaglyphEnabled() ? to_uint(RenderTargetID::ANAGLYPH)
-                                                                : to_uint(RenderTargetID::SCREEN)]._buffer;
+    Framebuffer* screenTarget = _renderTarget[anaglyphEnabled() ? to_const_uint(RenderTargetID::ANAGLYPH)
+                                                                : to_const_uint(RenderTargetID::SCREEN)]._buffer;
     vec2<U16> resolution = screenTarget->getResolution();
     // Bind the depth texture to the first texture unit
-    screenTarget->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
                        TextureDescriptor::AttachmentType::Depth);
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables color writes as we will render
@@ -650,7 +650,7 @@ void GFXDevice::constructHIZ() {
     depthOnlyTarget._clearDepthBufferOnBind = false;
     depthOnlyTarget._changeViewport = false;
     depthOnlyTarget._drawMask.fill(false);
-    depthOnlyTarget._drawMask[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
+    depthOnlyTarget._drawMask[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
 
     screenTarget->begin(depthOnlyTarget);
     // Calculate the number of mipmap levels we need to generate
@@ -718,13 +718,13 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution
     const vec2<U16>& resolution =
-        _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer
+        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer
             ->getResolution();
     // Allocate sufficiently large buffers to hold the pixel data
     U32 bufferSize = resolution.width * resolution.height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->readData(
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->readData(
         GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, imageData);
     // Save to file
     ImageTools::SaveSeries(filename,

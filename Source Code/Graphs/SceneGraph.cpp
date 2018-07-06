@@ -7,12 +7,12 @@
 namespace Divide {
 
 namespace {
-    U32 ignoredNodeType = to_uint(SceneNodeType::TYPE_ROOT) |
-                          to_uint(SceneNodeType::TYPE_LIGHT) |
-                          to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-                          to_uint(SceneNodeType::TYPE_TRIGGER) |
-                          to_uint(SceneNodeType::TYPE_SKY) |
-                          to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
+    U32 ignoredNodeType = to_const_uint(SceneNodeType::TYPE_ROOT) |
+                          to_const_uint(SceneNodeType::TYPE_LIGHT) |
+                          to_const_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+                          to_const_uint(SceneNodeType::TYPE_TRIGGER) |
+                          to_const_uint(SceneNodeType::TYPE_SKY) |
+                          to_const_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 };
 
 SceneGraph::SceneGraph() : FrameListener(),

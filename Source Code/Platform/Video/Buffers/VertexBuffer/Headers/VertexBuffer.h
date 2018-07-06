@@ -220,7 +220,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
             (it++)->_position.set(value);
        }
 
-       _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
+       _attribDirty[to_const_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
     inline void modifyPositionValue(U32 index, const vec3<F32>& newValue) {
@@ -235,7 +235,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._position.set(x, y, z);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
+        _attribDirty[to_const_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
     inline void modifyColorValue(U32 index, const vec4<U8>& newValue) {
@@ -250,7 +250,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._color.set(r, g, b, a);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
+        _attribDirty[to_const_uint(VertexAttribute::ATTRIB_COLOR)] = true;
     }
 
     inline void modifyNormalValue(U32 index, const vec3<F32>& newValue) {
@@ -265,7 +265,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._normal = Util::PACK_VEC3(x, y, z);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
+        _attribDirty[to_const_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
     }
 
     inline void modifyTangentValue(U32 index, const vec3<F32>& newValue) {
@@ -280,7 +280,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._tangent = Util::PACK_VEC3(x, y, z);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
+        _attribDirty[to_const_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
     }
 
     inline void modifyTexCoordValue(U32 index, const vec2<F32>& newValue) {
@@ -295,7 +295,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._texcoord.set(s, t);
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
+        _attribDirty[to_const_uint(VertexAttribute::ATTRIB_TEXCOORD)] = true;
     }
 
     inline void modifyBoneIndices(U32 index, P32 indices) {
@@ -306,7 +306,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._indices = indices;
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
+        _attribDirty[to_const_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = true;
     }
 
     inline void modifyBoneWeights(U32 index, const vec4<F32>& weights) {
@@ -326,7 +326,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._weights = packedWeights;
-        _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
+        _attribDirty[to_const_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
     }
 
     inline size_t partitionBuffer() {

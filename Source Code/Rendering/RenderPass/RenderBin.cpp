@@ -152,8 +152,8 @@ void RenderBin::preRender(RenderStage renderStage) {}
 void RenderBin::render(const SceneRenderState& renderState,  RenderStage renderStage) {
     GFXDevice& gfx = GFX_DEVICE;
     U32 binPropertyMask = 0;
-    isTranslucent() ? SetBit(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT))
-                    : ClearBit(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT));
+    isTranslucent() ? SetBit(binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT))
+                    : ClearBit(binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
 
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {

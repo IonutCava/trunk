@@ -67,18 +67,19 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         SceneGraphNode& root = sceneGraph.getRoot();
         U32 childCount = root.getChildCount();
         _perThreadNodeList.resize(childCount);
-        const Camera& currentCamera = renderState.getCameraConst();
+        std::reference_wrapper<const Camera> cameraRef = std::cref(renderState.getCameraConst());
         std::launch launchPolicy = async ? std::launch::async | std::launch::deferred :
                                            std::launch::deferred;
 
         _cullingTasks.resize(0);
+        _cullingTasks.reserve(childCount);
         for (U32 i = 0; i < childCount; ++i) {
             SceneGraphNode& child = root.getChild(i, childCount);
             _cullingTasks.push_back(std::async(launchPolicy, 
                 &RenderPassCuller::frustumCullNode, this, 
                 std::ref(child),
                 stage,
-                std::cref(currentCamera),
+                cameraRef,
                 i,
                 true));
         }
@@ -119,21 +120,19 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode& currentNode,
 
     if (isVisible) {
         nodes.push_back(std::make_pair(0, currentNode.shared_from_this()));
-        U32 childCount = currentNode.getChildCount();
-        if (childCount > 0) {
-            if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
-                // Parent node intersects the view, so check children
-                for (U32 i = 0; i < childCount; ++i) {
-                    frustumCullNode(currentNode.getChild(i, childCount),
-                                    currentStage,
-                                    currentCamera,
-                                    nodeListIndex,
-                                    false);
-                }
-            } else {
-                // All nodes are in view entirely
-               addAllChildren(currentNode, currentStage, nodes);
+        if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+            // Parent node intersects the view, so check children
+            U32 childCount = currentNode.getChildCount();
+            for (U32 i = 0; i < childCount; ++i) {
+                frustumCullNode(currentNode.getChild(i, childCount),
+                                currentStage,
+                                currentCamera,
+                                nodeListIndex,
+                                false);
             }
+        } else {
+            // All nodes are in view entirely
+            addAllChildren(currentNode, currentStage, nodes);
         }
     }
 }
@@ -142,12 +141,13 @@ void RenderPassCuller::addAllChildren(SceneGraphNode& currentNode, RenderStage c
     U32 childCount = currentNode.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
         SceneGraphNode_ptr child = currentNode.getChild(i, childCount).shared_from_this();
-        bool isVisible = !(currentStage == RenderStage::SHADOW &&
-                           !currentNode.getComponent<RenderingComponent>()->castsShadows());
-
-        if (isVisible && child->isActive() && !_cullingFunction(*child)) {
-            nodes.push_back(std::make_pair(0, child));
-            addAllChildren(*child, currentStage, nodes);
+        if (!(currentStage == RenderStage::SHADOW &&
+              !currentNode.getComponent<RenderingComponent>()->castsShadows())) {
+        
+            if (child->isActive() && !_cullingFunction(*child)) {
+                nodes.push_back(std::make_pair(0, child));
+                addAllChildren(*child, currentStage, nodes);
+            }
         }
     }
 }

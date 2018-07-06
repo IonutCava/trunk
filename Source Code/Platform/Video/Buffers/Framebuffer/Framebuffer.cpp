@@ -50,7 +50,7 @@ Texture* Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
 
 
 void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
-    for (U32 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
         Texture* tex = _attachmentTexture[i];
         if (tex != nullptr) {
             setMipLevel(mipMinLevel, mipMaxLevel, writeLevel, static_cast<TextureDescriptor::AttachmentType>(i));
@@ -59,7 +59,7 @@ void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) 
 }
 
 void Framebuffer::resetMipLevel() {
-    for (U32 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
         Texture* tex = _attachmentTexture[i];
         if (tex != nullptr) {
             resetMipLevel(static_cast<TextureDescriptor::AttachmentType>(i));

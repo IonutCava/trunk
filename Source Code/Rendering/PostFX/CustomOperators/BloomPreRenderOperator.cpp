@@ -73,7 +73,7 @@ void BloomPreRenderOperator::execute() {
     U32 defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
 
      // Step 1: generate bloom
-    _hdrTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0)); //screen
+    _hdrTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); //screen
     // render all of the "bright spots"
     _bloomOutput->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloomCalc);
@@ -83,22 +83,22 @@ void BloomPreRenderOperator::execute() {
     _blur->bind();
     // Blur horizontally
     _blur->SetSubroutine(ShaderType::FRAGMENT, _horizBlur);
-    _bloomOutput->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _bloomOutput->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     _bloomBlurBuffer[0]->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _blur);
     _bloomBlurBuffer[0]->end();
 
     // Blur vertically (recycle the render target. We have a copy)
     _blur->SetSubroutine(ShaderType::FRAGMENT, _vertBlur);
-    _bloomBlurBuffer[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _bloomBlurBuffer[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     _bloomBlurBuffer[1]->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _blur);
     _bloomBlurBuffer[1]->end();
         
     // Step 3: apply bloom
     _bloomBlurBuffer[0]->blitFrom(_hdrTarget);
-    _bloomBlurBuffer[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0)); //Screen
-    _bloomBlurBuffer[1]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
+    _bloomBlurBuffer[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); //Screen
+    _bloomBlurBuffer[1]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1),
                               TextureDescriptor::AttachmentType::Color0); //Bloom
     _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloomApply);

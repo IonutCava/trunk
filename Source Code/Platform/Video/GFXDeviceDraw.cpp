@@ -143,7 +143,7 @@ void GFXDevice::addToRenderQueue(U32 binPropertyMask, const RenderPackage& packa
         return;
     }
 
-    bool isTranslucent = BitCompare(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT));
+    bool isTranslucent = BitCompare(binPropertyMask, to_const_uint(RenderBitProperty::TRANSLUCENT));
     ACKNOWLEDGE_UNUSED(isTranslucent);
 
     if (!_renderQueue.empty()) {
@@ -253,13 +253,13 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                 NodeData& dataOut = processVisibleNode(*nodeRef, nodeCount);
                 if (isDepthStage()) {
                     for (TextureData& data : pkg._textureData) {
-                        if (data.getHandleLow() == to_uint(ShaderProgram::TextureUsage::UNIT0)) {
+                        if (data.getHandleLow() == to_const_uint(ShaderProgram::TextureUsage::UNIT0)) {
                             textureHandle = data.getHandleHigh();
                             if ((!(lastUnit0Handle == 0 || textureHandle == lastUnit0Handle) &&
                                   (lastUnit1Handle == 0 || textureHandle == lastUnit1Handle))                              
                                 || (lastUsedSlot == 0 && lastUnit0Handle != 0))
                             {
-                                data.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
+                                data.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT1));
                                     // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
                                     dataOut._properties.w = 1;
                                     lastUnit1Handle = textureHandle;
@@ -304,9 +304,9 @@ void GFXDevice::occlusionCull(U32 pass) {
     getCommandBuffer(currentStage, pass).bindAtomicCounter();
 
     Framebuffer* screenTarget = _renderTarget[anaglyphEnabled()
-                                               ? to_uint(RenderTargetID::ANAGLYPH)
-                                               : to_uint(RenderTargetID::SCREEN)]._buffer;
-    screenTarget->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+                                               ? to_const_uint(RenderTargetID::ANAGLYPH)
+                                               : to_const_uint(RenderTargetID::SCREEN)]._buffer;
+    screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
                        TextureDescriptor::AttachmentType::Depth);
 
     _HIZCullProgram->bind();
@@ -402,7 +402,7 @@ void GFXDevice::drawSphere3D(IMPrimitive& primitive,
     primitive.paused(false);
     // Create the object
     primitive.beginBatch(true, stacks * ((slices + 1) * 2));
-    primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
+    primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
     primitive.begin(PrimitiveType::LINE_LOOP);
     for (i = 0; i < stacks; i++) {
         F32 rho = i * drho;
@@ -446,7 +446,7 @@ void GFXDevice::drawBox3D(IMPrimitive& primitive,
     // Create the object
     primitive.beginBatch(true, 16);
     // Set it's color
-    primitive.attribute4f(to_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
+    primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
     // Draw the bottom loop
     primitive.begin(PrimitiveType::LINE_LOOP);
     primitive.vertex(min.x, min.y, min.z);
@@ -559,8 +559,8 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
 
 void GFXDevice::flushDisplay() {
     _displayShader->Uniform("anaglyphEnabled", anaglyphEnabled());
-    getRenderTarget(RenderTargetID::SCREEN)._buffer->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    getRenderTarget(RenderTargetID::ANAGLYPH)._buffer->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+    getRenderTarget(RenderTargetID::SCREEN)._buffer->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    getRenderTarget(RenderTargetID::ANAGLYPH)._buffer->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1));
     drawTriangle(getDefaultStateBlock(true), _displayShader);
 }
 

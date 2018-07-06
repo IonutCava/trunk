@@ -41,7 +41,7 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
             to_uint(GLUtil::glCompareFuncTable[to_uint(descriptor._cmpFunc)]));
 
         glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,
-                            to_uint(GL_COMPARE_REF_TO_TEXTURE));
+                            to_const_uint(GL_COMPARE_REF_TO_TEXTURE));
     }
 
     if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {

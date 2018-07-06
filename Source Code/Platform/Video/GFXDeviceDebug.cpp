@@ -36,9 +36,9 @@ void GFXDevice::previewDepthBuffer() {
         return;
     }
 
-    U16 screenWidth = std::max(_renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->getResolution().width, to_ushort(768));
-    Texture* depthTex = _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    depthTex->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getResolution().width, to_const_ushort(768));
+    Texture* depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    depthTex->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     {
         //HiZ preview
         _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % 
@@ -54,8 +54,8 @@ void GFXDevice::previewDepthBuffer() {
     }
     {
         //Normals preview
-        _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer
-            ->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+        _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer
+            ->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
                    TextureDescriptor::AttachmentType::Color1);
 
         GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
@@ -127,7 +127,7 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Apply the inverse view matrix so that it cancels out in the shader
     // Submit the draw command, rendering it in a tiny viewport in the lower
     // right corner
-    U16 windowWidth = _renderTarget[to_uint(RenderTargetID::SCREEN)]._buffer->getWidth();
+    U16 windowWidth = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getWidth();
     drawLines(*_axisGizmo,
               _axisLines,
               vec4<I32>(windowWidth - 120, 8, 128, 128),

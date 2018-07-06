@@ -94,37 +94,37 @@ void glVertexArray::destroy() {
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
 std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
-    bool useColor     = _useAttribute[to_uint(VertexAttribute::ATTRIB_COLOR)];
-    bool useNormals   = _useAttribute[to_uint(VertexAttribute::ATTRIB_NORMAL)];
-    bool useTangents  = _useAttribute[to_uint(VertexAttribute::ATTRIB_TANGENT)];
-    bool useTexcoords = _useAttribute[to_uint(VertexAttribute::ATTRIB_TEXCOORD)];
-    bool useBoneData  = _useAttribute[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)];
+    bool useColor     = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_COLOR)];
+    bool useNormals   = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_NORMAL)];
+    bool useTangents  = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_TANGENT)];
+    bool useTexcoords = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_TEXCOORD)];
+    bool useBoneData  = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_BONE_INDICE)];
 
     size_t prevOffset = sizeof(vec3<F32>);
     if (useNormals) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_NORMAL)] = to_uint(prevOffset);
+        _attributeOffset[to_const_uint(VertexAttribute::ATTRIB_NORMAL)] = to_uint(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useTangents) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TANGENT)] = to_uint(prevOffset);
+        _attributeOffset[to_const_uint(VertexAttribute::ATTRIB_TANGENT)] = to_uint(prevOffset);
         prevOffset += sizeof(F32);
     }
 
     if (useColor) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_COLOR)] = to_uint(prevOffset);
+        _attributeOffset[to_const_uint(VertexAttribute::ATTRIB_COLOR)] = to_uint(prevOffset);
         prevOffset += sizeof(vec4<U8>);
     }
 
     if (useTexcoords) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = to_uint(prevOffset);
+        _attributeOffset[to_const_uint(VertexAttribute::ATTRIB_TEXCOORD)] = to_uint(prevOffset);
         prevOffset += sizeof(vec2<F32>);
     }
 
     if (useBoneData) {
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = to_uint(prevOffset);
+        _attributeOffset[to_const_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = to_uint(prevOffset);
         prevOffset += sizeof(U32);
-        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = to_uint(prevOffset);
+        _attributeOffset[to_const_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = to_uint(prevOffset);
         prevOffset += sizeof(U32);
     }
 
@@ -206,7 +206,7 @@ bool glVertexArray::refresh() {
     _refreshQueued = indicesChanged;
 
     /// Can only add attributes for now. No removal support. -Ionut
-    for (U8 i = 0; i < to_uint(VertexAttribute::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_uint(VertexAttribute::COUNT); ++i) {
         _useAttribute[i] = _useAttribute[i] || _attribDirty[i];
         if (!_refreshQueued) {
            if (_attribDirty[i]) {
@@ -221,11 +221,11 @@ bool glVertexArray::refresh() {
     std::array<bool, to_const_uint(RenderStage::COUNT)> vaoCachesDirty;
     vaoCachesDirty.fill(false);
     std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> attributesPerStage;
-    for (U8 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         const AttribFlags& stageMask = _attribMaskPerStage[i];
 
         AttribFlags& stageUsage = attributesPerStage[i];
-        for (U8 j = 0; j < to_uint(VertexAttribute::COUNT); ++j) {
+        for (U8 j = 0; j < to_const_uint(VertexAttribute::COUNT); ++j) {
             stageUsage[j] = _useAttribute[j] && stageMask[j];
         }
         U32 crtHash = std::hash<AttribFlags>()(stageUsage);
@@ -291,7 +291,7 @@ bool glVertexArray::refresh() {
         // Update our IB
         glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
     }
-    for (U8 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         if (vaoCachesDirty[i]) {
             // Set vertex attribute pointers
             uploadVBAttributes(i);

@@ -42,7 +42,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         textureBlendMap.setResourceLocation(
             terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
         textureBlendMap.setPropertyDescriptor(blendMapSampler);
-        textureBlendMap.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+        textureBlendMap.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
         textureLayer->setBlendMap(CreateResource<Texture>(textureBlendMap));
 
         arrayLocation.clear();
@@ -93,7 +93,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
 
         ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name +
                                            "_layer_" + layerOffsetStr);
-        textureTileMaps.setEnumValue(to_uint(TextureType::TEXTURE_2D_ARRAY));
+        textureTileMaps.setEnumValue(to_const_uint(TextureType::TEXTURE_2D_ARRAY));
         textureTileMaps.setID(textureCountAlbedo);
         textureTileMaps.setResourceLocation(arrayLocation);
         textureTileMaps.setPropertyDescriptor(
@@ -144,7 +144,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
 
         ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name +
                                              "_layer_" + layerOffsetStr);
-        textureNormalMaps.setEnumValue(to_uint(TextureType::TEXTURE_2D_ARRAY));
+        textureNormalMaps.setEnumValue(to_const_uint(TextureType::TEXTURE_2D_ARRAY));
         textureNormalMaps.setID(textureCountDetail);
         textureNormalMaps.setResourceLocation(arrayLocation);
         textureNormalMaps.setPropertyDescriptor(
@@ -178,14 +178,14 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainDescriptor->getVariable("waterCaustics"));
     textureWaterCaustics.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
-    textureWaterCaustics.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+    textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" +
                                                name);
     underwaterAlbedoTexture.setResourceLocation(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
     underwaterAlbedoTexture.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
-    underwaterAlbedoTexture.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+    underwaterAlbedoTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" +
@@ -194,7 +194,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         terrainDescriptor->getVariable("underwaterDetailTexture"));
     underwaterDetailTexture.setPropertyDescriptor(
         Attorney::TerrainLoader::getNormalSampler(*terrain));
-    underwaterDetailTexture.setEnumValue(to_uint(TextureType::TEXTURE_2D));
+    underwaterDetailTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(underwaterDetailTexture));
 
     terrainMaterial->setShaderLoadThreaded(false);
@@ -509,7 +509,7 @@ void TerrainLoader::initializeVegetation(Terrain* terrain,
     grassSampler.setAnisotropy(0);
     grassSampler.setWrapMode(TextureWrap::CLAMP);
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.setEnumValue(to_uint(TextureType::TEXTURE_2D_ARRAY));
+    textureDetailMaps.setEnumValue(to_const_uint(TextureType::TEXTURE_2D_ARRAY));
     textureDetailMaps.setID(textureCount);
     textureDetailMaps.setResourceLocation(textureLocation);
     textureDetailMaps.setPropertyDescriptor(grassSampler);

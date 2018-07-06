@@ -138,7 +138,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Create and return a new generic vertex data object and, optionally set it as
     /// persistently mapped.
     /// The callee is responsible for it's deletion!
-    GenericVertexData* newGVD(GFXDevice& context, const bool persistentMapped) const override;
+    GenericVertexData* newGVD(GFXDevice& context, const bool persistentMapped, const U32 ringBufferLength = 1) const override;
     /// Create and return a new shader buffer. The callee is responsible for it's
     /// deletion!
     /// The OpenGL implementation creates either an 'Uniform Buffer Object' if

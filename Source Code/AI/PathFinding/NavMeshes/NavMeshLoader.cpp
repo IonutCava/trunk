@@ -330,16 +330,16 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         SceneNode* sn = sgn.getNode();
 
         SceneNodeType nodeType = sn->getType();
-        U32 ignoredNodeType = to_uint(SceneNodeType::TYPE_ROOT) |
-                              to_uint(SceneNodeType::TYPE_LIGHT) |
-                              to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
-                              to_uint(SceneNodeType::TYPE_TRIGGER) |
-                              to_uint(SceneNodeType::TYPE_SKY) |
-                              to_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
+        U32 ignoredNodeType = to_const_uint(SceneNodeType::TYPE_ROOT) |
+                              to_const_uint(SceneNodeType::TYPE_LIGHT) |
+                              to_const_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+                              to_const_uint(SceneNodeType::TYPE_TRIGGER) |
+                              to_const_uint(SceneNodeType::TYPE_SKY) |
+                              to_const_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 
-        U32 allowedNodeType = to_uint(SceneNodeType::TYPE_WATER) |
-                              to_uint(SceneNodeType::TYPE_OBJECT3D) |
-                              to_uint(SceneNodeType::TYPE_VEGETATION_TREES);
+        U32 allowedNodeType = to_const_uint(SceneNodeType::TYPE_WATER) |
+                              to_const_uint(SceneNodeType::TYPE_OBJECT3D) |
+                              to_const_uint(SceneNodeType::TYPE_VEGETATION_TREES);
 
         if (!BitCompare(allowedNodeType, to_uint(nodeType))) {
             if (!BitCompare(ignoredNodeType, to_uint(nodeType))) {

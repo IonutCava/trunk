@@ -26,23 +26,23 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
 
     if (_totalCount > 0) {
         if (BitCompare(_optionsMask,
-                       to_uint(Properties::PROPERTIES_POS))) {
+                       to_const_uint(Properties::PROPERTIES_POS))) {
             _position.resize(_totalCount);
         }
         if (BitCompare(_optionsMask,
-                       to_uint(Properties::PROPERTIES_VEL))) {
+                       to_const_uint(Properties::PROPERTIES_VEL))) {
             _velocity.resize(_totalCount);
         }
         if (BitCompare(_optionsMask,
-                       to_uint(Properties::PROPERTIES_ACC))) {
+                       to_const_uint(Properties::PROPERTIES_ACC))) {
             _acceleration.resize(_totalCount);
         }
         if (BitCompare(_optionsMask,
-                       to_uint(Properties::PROPERTIES_COLOR))) {
+                       to_const_uint(Properties::PROPERTIES_COLOR))) {
             _color.resize(_totalCount);
         }
         if (BitCompare(_optionsMask,
-                       to_uint(Properties::PROPERTIES_COLOR_TRANS))) {
+                       to_const_uint(Properties::PROPERTIES_COLOR_TRANS))) {
             _startColor.resize(_totalCount);
             _endColor.resize(_totalCount);
         }
@@ -97,23 +97,39 @@ void ParticleData::sort(bool invalidateCache) {
         Util::insertion_sort(std::begin(_indices), std::end(_indices), sortFunc);
     }
 
-    auto parsePositions = [&](U32 count) -> void {
+    auto parsePositions = [](U32 count, 
+                             vectorImpl<vec4<F32>>& renderingPositions,
+                             const vectorImpl<vec4<F32>>& positions,
+                             const vectorImpl<std::pair<U32, F32>>& indices) -> void {
         for (U32 i = 0; i < count; ++i) {
-            _renderingPositions[i].set(_position[_indices[i].first]);
+            renderingPositions[i].set(positions[indices[i].first]);
         }
     };
 
-    auto parseColors = [&](U32 count) -> void {
+    auto parseColors = [](U32 count, 
+                          vectorImpl<vec4<U8>>& renderingColors,
+                          const vectorImpl<vec4<F32>>& colors,
+                          const vectorImpl<std::pair<U32, F32>>& indices) -> void {
         for (U32 i = 0; i < count; ++i) {
-            Util::ToByteColor(_color[_indices[i].first], _renderingColors[i]);
+            Util::ToByteColor(colors[indices[i].first], renderingColors[i]);
         }
     };
     
     std::future<void> positionUpdate =
-        std::async(std::launch::async | std::launch::deferred, parsePositions, count);
+        std::async(std::launch::async | std::launch::deferred,
+                   parsePositions,
+                   count,
+                   std::ref(_renderingPositions),
+                   std::cref(_position),
+                   std::cref(_indices));
 
     std::future<void> colorUpdate =
-        std::async(std::launch::async | std::launch::deferred, parseColors, count);
+        std::async(std::launch::async | std::launch::deferred,
+                   parseColors,
+                   count,
+                   std::ref(_renderingColors),
+                   std::cref(_color),
+                   std::cref(_indices));
 
     positionUpdate.get();
     colorUpdate.get();
@@ -121,24 +137,23 @@ void ParticleData::sort(bool invalidateCache) {
 }
 
 void ParticleData::swapData(U32 indexA, U32 indexB) {
-    if (BitCompare(_optionsMask, to_uint(Properties::PROPERTIES_POS))) {
+    if (BitCompare(_optionsMask, to_const_uint(Properties::PROPERTIES_POS))) {
         // std::swap(_position[indexA], _position[indexB]);
         _position[indexA] = _position[indexB];
     }
-    if (BitCompare(_optionsMask, to_uint(Properties::PROPERTIES_VEL))) {
+    if (BitCompare(_optionsMask, to_const_uint(Properties::PROPERTIES_VEL))) {
         // std::swap(_velocity[indexA], _velocity[indexB]);
         _velocity[indexA] = _velocity[indexB];
     }
-    if (BitCompare(_optionsMask, to_uint(Properties::PROPERTIES_ACC))) {
+    if (BitCompare(_optionsMask, to_const_uint(Properties::PROPERTIES_ACC))) {
         // std::swap(_acceleration[indexA], _acceleration[indexB]);
         _acceleration[indexA] = _acceleration[indexB];
     }
-    if (BitCompare(_optionsMask, to_uint(Properties::PROPERTIES_COLOR))) {
+    if (BitCompare(_optionsMask, to_const_uint(Properties::PROPERTIES_COLOR))) {
         // std::swap(_color[indexA], _color[indexB]);
         _color[indexA] = _color[indexB];
     }
-    if (BitCompare(_optionsMask,
-                   to_uint(Properties::PROPERTIES_COLOR_TRANS))) {
+    if (BitCompare(_optionsMask, to_const_uint(Properties::PROPERTIES_COLOR_TRANS))) {
         // std::swap(_startColor[indexA], _startColor[indexB]);
         _startColor[indexA] = _startColor[indexB];
         // std::swap(_endColor[indexA], _endColor[indexB]);

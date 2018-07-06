@@ -14,7 +14,7 @@ SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
     : Object3D(
           name,
           ObjectType::SUBMESH,
-          to_uint(flag) | to_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),
+          to_uint(flag) | to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _visibleToNetwork(true),
       _render(true),
       _ID(0),
@@ -38,7 +38,7 @@ void SubMesh::postLoad(SceneGraphNode& sgn) {
 
     cmd.sourceBuffer(_parentMesh->getGeometryVB());
 
-    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         GFXDevice::RenderPackage& pkg = 
             Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
         pkg._drawCommands.push_back(cmd);

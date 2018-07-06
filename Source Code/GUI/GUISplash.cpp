@@ -41,7 +41,7 @@ GUISplash::~GUISplash()
 
 void GUISplash::render() {
     GFX::ScopedViewport splashViewport(vec4<I32>(0, 0, _dimensions.width, _dimensions.height));
-    _splashImage->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _splashImage->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
                             _splashShader);
 }

@@ -164,7 +164,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
         if (type != AttachmentType::Depth) {
             _colorBuffers.push_back(attachment);
             _colorBufferEnabled.push_back(true);
-            assert(_colorBuffers.size() <= to_uint(AttachmentType::COUNT) - 1);
+            assert(_colorBuffers.size() <= to_const_uint(AttachmentType::COUNT) - 1);
         }
     }
 }
@@ -179,7 +179,7 @@ void glFramebuffer::toggleAttachment(TextureDescriptor::AttachmentType type, boo
 }
 
 void glFramebuffer::addDepthBuffer() {
-    TextureDescriptor desc = _attachment[to_uint(AttachmentType::Color0)];
+    TextureDescriptor desc = _attachment[to_const_uint(AttachmentType::Color0)];
     TextureType texType = desc._type;
 
     GFXDataFormat dataType = desc.dataType();
@@ -204,15 +204,15 @@ void glFramebuffer::addDepthBuffer() {
 
     depthDescriptor.setSampler(screenSampler);
     depthDescriptor.setLayerCount(desc._layerCount);
-    _attachmentChanged[to_uint(AttachmentType::Depth)] = true;
-    _attachment[to_uint(AttachmentType::Depth)] = depthDescriptor;
+    _attachmentChanged[to_const_uint(AttachmentType::Depth)] = true;
+    _attachment[to_const_uint(AttachmentType::Depth)] = depthDescriptor;
     initAttachment(AttachmentType::Depth, depthDescriptor, false);
 }
 
 bool glFramebuffer::create(U16 width, U16 height) {
     if (_resolveBuffer) {
         _resolveBuffer->_useDepthBuffer = _useDepthBuffer;
-        for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
+        for (U8 i = 0; i < to_const_uint(AttachmentType::COUNT); ++i) {
             _resolveBuffer->_clearColors[i].set(_clearColors[i]);
             if (_attachmentChanged[i]) {
                 _resolveBuffer->addAttachment(_attachment[i], static_cast<AttachmentType>(i));
@@ -244,7 +244,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
 
 
     // For every attachment, be it a color or depth attachment ...
-    for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_uint(AttachmentType::COUNT); ++i) {
         initAttachment(static_cast<AttachmentType>(i), _attachment[i], shouldResize);
     }
     
@@ -355,7 +355,7 @@ void glFramebuffer::bind(U8 unit, AttachmentType slot, bool flushStateOnRequest)
 }
 
 void glFramebuffer::resetMipMaps(const FramebufferTarget& drawPolicy) {
-    for (U8 i = 0; i < to_uint(AttachmentType::COUNT); ++i) {
+    for (U8 i = 0; i < to_const_uint(AttachmentType::COUNT); ++i) {
         if (drawPolicy._drawMask[i]) {
             if (_attachmentTexture[i] != nullptr) {
                 _attachmentTexture[i]->refreshMipMaps();
@@ -490,10 +490,10 @@ void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
     if (useDepthLayer && _isLayeredDepth) {
         glNamedFramebufferTextureLayer(_framebufferHandle,
                                        GL_DEPTH_ATTACHMENT,
-                                       _attachmentTexture[to_uint(TextureDescriptor::AttachmentType::Depth)]->getHandle(),
+                                       _attachmentTexture[to_const_uint(TextureDescriptor::AttachmentType::Depth)]->getHandle(),
                                        0,
                                        layer);
-        _attDirty[to_uint(TextureDescriptor::AttachmentType::Depth)] = true;
+        _attDirty[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
     }
 
     if (useColorLayer) {

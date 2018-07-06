@@ -85,12 +85,12 @@ void PreRenderBatch::init(Framebuffer* renderTarget) {
     _previousLuminance->setClearColor(DefaultColors::BLACK());
 
     // Order is very important!
-    OperatorBatch& hdrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_HDR)];
+    OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
     hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_renderTarget, _postFXOutput));
     hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_renderTarget, _postFXOutput));
     hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_renderTarget, _postFXOutput));
 
-    OperatorBatch& ldrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_LDR)];
+    OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
     ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_renderTarget, _postFXOutput));
 
     ResourceDescriptor toneMap("bloom.ToneMap");
@@ -128,14 +128,14 @@ void PreRenderBatch::idle() {
 }
 
 void PreRenderBatch::execute(U32 filterMask) {
-    OperatorBatch& hdrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_HDR)];
-    OperatorBatch& ldrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_LDR)];
+    OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];
+    OperatorBatch& ldrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_LDR)];
 
     if (_adaptiveExposureControl) {
         // Compute Luminance
         // Step 1: Luminance calc
-        _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-        _previousLuminance->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+        _renderTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        _previousLuminance->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1));
 
         _currentLuminance->begin(Framebuffer::defaultPolicy());
             GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _luminanceCalc);
@@ -153,10 +153,10 @@ void PreRenderBatch::execute(U32 filterMask) {
     }
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
-    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _renderTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
 
     if (_adaptiveExposureControl) {
-        _currentLuminance->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+        _currentLuminance->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1));
     }
 
     _postFXOutput->begin(Framebuffer::defaultPolicy());

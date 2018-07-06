@@ -37,13 +37,13 @@ glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(cont
 
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
-            _textureType = to_uint(GL_TEXTURE_1D);
+            _textureType = to_const_uint(GL_TEXTURE_1D);
             break;
         case PBType::PB_TEXTURE_2D:
-            _textureType = to_uint(GL_TEXTURE_2D);
+            _textureType = to_const_uint(GL_TEXTURE_2D);
             break;
         case PBType::PB_TEXTURE_3D:
-            _textureType = to_uint(GL_TEXTURE_3D);
+            _textureType = to_const_uint(GL_TEXTURE_3D);
             break;
         default:
             Console::errorfn(Locale::get(_ID("ERROR_PB_INVALID_TYPE")));
@@ -160,17 +160,17 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
 
     glCreateTextures(textureTypeEnum, 1, &_textureID);
     glTextureParameteri(_textureID, GL_GENERATE_MIPMAP, 0);
-    glTextureParameteri(_textureID, GL_TEXTURE_MIN_FILTER, to_int(GL_NEAREST));
-    glTextureParameteri(_textureID, GL_TEXTURE_MAG_FILTER, to_int(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_MIN_FILTER, to_const_int(GL_NEAREST));
+    glTextureParameteri(_textureID, GL_TEXTURE_MAG_FILTER, to_const_int(GL_NEAREST));
     glTextureParameteri(_textureID, GL_TEXTURE_BASE_LEVEL, 0);
     glTextureParameteri(_textureID, GL_TEXTURE_MAX_LEVEL, 1000);
-    glTextureParameteri(_textureID, GL_TEXTURE_WRAP_S, to_int(GL_REPEAT));
+    glTextureParameteri(_textureID, GL_TEXTURE_WRAP_S, to_const_int(GL_REPEAT));
 
     if (_pbtype != PBType::PB_TEXTURE_1D) {
-        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_T, to_int(GL_REPEAT));
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_T, to_const_int(GL_REPEAT));
     }
     if (_pbtype == PBType::PB_TEXTURE_3D) {
-        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_R, to_int(GL_REPEAT));
+        glTextureParameteri(_textureID, GL_TEXTURE_WRAP_R, to_const_int(GL_REPEAT));
     }
 
     U16 mipLevels = to_ushort(std::floor(std::log2(std::max(_width, _height))) + 1);
