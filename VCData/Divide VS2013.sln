@@ -19,21 +19,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Networking", "Visual
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6A0896ED-7BDF-4AFF-A97F-A2B63D3E466B}"
-	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Platform", "VisualStudioProjects\Divide-Platform.vcxproj", "{CE681ABE-38E0-4445-92A0-0F17EE225473}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Engine", "VisualStudioProjects\Divide-Engine.vcxproj", "{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Game", "VisualStudioProjects\Divide-Game.vcxproj", "{87F22E92-2988-41FA-9E23-00033408A869}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1ED21303-434E-46DA-8050-2DF2684BE74E} = {1ED21303-434E-46DA-8050-2DF2684BE74E}
-		{87F22E92-2988-41FA-9E23-00033408A869} = {87F22E92-2988-41FA-9E23-00033408A869}
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7} = {8FCA6505-8035-4279-9942-F0BBCCF2FDE7}
 		{CE681ABE-38E0-4445-92A0-0F17EE225473} = {CE681ABE-38E0-4445-92A0-0F17EE225473}
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C} = {9D7BBBC8-E5CF-475D-8531-4520B605833C}
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Game", "VisualStudioProjects\Divide-Game.vcxproj", "{87F22E92-2988-41FA-9E23-00033408A869}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

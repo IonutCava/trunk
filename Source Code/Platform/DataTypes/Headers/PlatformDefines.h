@@ -202,6 +202,8 @@ bool preAssert( const bool expression, const char* failMessage );
 inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
 #   if defined(_DEBUG)
     if ( preAssert( expression, failMessage ) )
+#   else
+    ACKNOWLEDGE_UNUSED(failMessage);
 #   endif
     {
         assert( expression && failMessage );

@@ -148,6 +148,57 @@
     <Filter Include="Dynamics\WeaponSystem\Weapons\Headers">
       <UniqueIdentifier>{9278ee80-fccd-4905-a4e5-5da1c6c66461}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI">
+      <UniqueIdentifier>{c7730fd9-9d8d-45ef-b200-ddaa77523042}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\Sensors">
+      <UniqueIdentifier>{53535736-ba0d-4eef-aded-70aa73e1faeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\Sensors\Headers">
+      <UniqueIdentifier>{167abcdb-eb7b-4c7f-8be5-99d5e85d327d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ActionInterface">
+      <UniqueIdentifier>{1ff3f6fa-94ec-438d-80dc-6fa575cc0df8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ActionInterface\Headers">
+      <UniqueIdentifier>{80b3fcb0-5b87-4749-adcf-71a7d9f3152c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ActionInterface\CPPGOAP">
+      <UniqueIdentifier>{9fe37fa9-5d1c-48ee-82f8-cf83817ed366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\Headers">
+      <UniqueIdentifier>{3a4f476e-0a2c-45cb-a02b-c79b826e5b39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding">
+      <UniqueIdentifier>{e4986d41-22b2-47f9-bbde-0d0da50e675e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Waypoints">
+      <UniqueIdentifier>{99391cc6-df25-4bce-ba9b-8a4c5f8e1689}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Waypoints\Headers">
+      <UniqueIdentifier>{4c196130-f113-41da-93a7-2477d65d2ba1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes">
+      <UniqueIdentifier>{22b3f956-d931-4081-968d-c334eb44b7a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes\Headers">
+      <UniqueIdentifier>{fae184a4-a79e-4399-9cb4-56c26ccc5e88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes\DetourTileCaching">
+      <UniqueIdentifier>{fc8fc55d-c3d1-4413-b656-c5217a36c6e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes\DetourTileCaching\Headers">
+      <UniqueIdentifier>{39d084e7-0450-415b-9b05-df5cf17553b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Headers">
+      <UniqueIdentifier>{135895f1-17fb-49c3-9462-26e9978e9a29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{aa13385a-c75e-4357-9c99-74b3548d8152}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\ConcreteLoaders">
+      <UniqueIdentifier>{df553e8d-5100-4d4d-85b7-0d48a61d18ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp">
@@ -251,6 +302,79 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp">
       <Filter>Dynamics\WeaponSystem\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\main.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\Sensors\AudioSensor.cpp">
+      <Filter>AI\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp">
+      <Filter>AI\Sensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\GOAPInterface.cpp">
+      <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp">
+      <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\AStar.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Node.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.cpp">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideRecast.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp">
+      <Filter>AI\PathFinding\Waypoints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\WaypointGraph.cpp">
+      <Filter>AI\PathFinding\Waypoints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMesh.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshLoader.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
+      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainDescriptorLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp">
+      <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -362,6 +486,72 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h">
       <Filter>Dynamics\WeaponSystem\Weapons\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">
+      <Filter>AI\Sensors\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h">
+      <Filter>AI\Sensors\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h">
+      <Filter>AI\Sensors\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\GOAPInterface.h">
+      <Filter>AI\ActionInterface\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AISceneImpl.h">
+      <Filter>AI\ActionInterface\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h">
+      <Filter>AI\ActionInterface\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\AStar.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Node.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.h">
+      <Filter>AI\ActionInterface\CPPGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h">
+      <Filter>AI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h">
+      <Filter>AI\PathFinding\Waypoints\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\WaypointGraph.h">
+      <Filter>AI\PathFinding\Waypoints\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMesh.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshContext.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDebugDraw.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDefines.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h">
+      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideRecast.h">
+      <Filter>AI\PathFinding\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -86,24 +86,6 @@
     <Filter Include="Graphs\Headers">
       <UniqueIdentifier>{f5b8abb4-42be-45fa-b0d2-f4e0e0ca3b4e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AI">
-      <UniqueIdentifier>{7c3b2d31-fb6a-47d0-ad2e-f23481912e51}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\Sensors">
-      <UniqueIdentifier>{a0e87c9f-0d66-4e4b-af10-c17edfacd75d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\Sensors\Headers">
-      <UniqueIdentifier>{4536404d-e8a2-4e77-8d0d-23878ac84fe5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\ActionInterface">
-      <UniqueIdentifier>{d858aff2-bb8a-4708-b76d-6a7628c1d313}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\ActionInterface\Headers">
-      <UniqueIdentifier>{57fad59a-2527-4812-9804-fda2d479b0d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\Headers">
-      <UniqueIdentifier>{2339159b-08a1-4ce7-9bab-93525fc9197d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Rendering\Lighting">
       <UniqueIdentifier>{06ead969-5925-4892-8b91-9839a4c84a5b}</UniqueIdentifier>
     </Filter>
@@ -121,9 +103,6 @@
     </Filter>
     <Filter Include="Rendering\RenderPass\Headers">
       <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding">
-      <UniqueIdentifier>{03c3909f-c64d-42d0-a027-d7e4edbde7aa}</UniqueIdentifier>
     </Filter>
     <Filter Include="Core\Resources">
       <UniqueIdentifier>{a27eb18b-f72b-43c4-beb1-ab4290cac23d}</UniqueIdentifier>
@@ -167,35 +146,11 @@
     <Filter Include="GUI\GUIEditor\Headers">
       <UniqueIdentifier>{76eb6003-dd36-483c-a501-1782735b82a1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AI\PathFinding\Waypoints">
-      <UniqueIdentifier>{d25f0048-5417-4e38-8dfa-0e15b17ee8da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\NavMeshes">
-      <UniqueIdentifier>{3aa3ee32-05f8-4948-9e11-d8f89764029f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\Waypoints\Headers">
-      <UniqueIdentifier>{0bc487a8-1c72-4992-9767-524490b0ecb2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\NavMeshes\Headers">
-      <UniqueIdentifier>{b4e909d0-d0a0-490b-847f-a221e6579611}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\Headers">
-      <UniqueIdentifier>{4bcd89e4-207a-4655-9425-ac5e75cd943d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\NavMeshes\DetourTileCaching">
-      <UniqueIdentifier>{c80de33e-c595-456f-8693-e35e4072b221}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\PathFinding\NavMeshes\DetourTileCaching\Headers">
-      <UniqueIdentifier>{da3cc5f1-cca8-4c6f-9358-b06116ae6bb7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphs\Components">
       <UniqueIdentifier>{641df06e-21cd-4d1b-a381-fa752da7badf}</UniqueIdentifier>
     </Filter>
     <Filter Include="Graphs\Components\Headers">
       <UniqueIdentifier>{e63dac5e-0be9-4591-a66a-3890633302b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AI\ActionInterface\CPPGOAP">
-      <UniqueIdentifier>{754d3403-73ec-4d7b-a26b-c6476270380c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Physics">
       <UniqueIdentifier>{d0b8ecfb-9e07-4f12-83e2-a01d06b7b9d3}</UniqueIdentifier>
@@ -274,16 +229,9 @@
     <ClCompile Include="..\..\Source Code\Graphs\SceneNode.cpp">
       <Filter>Graphs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
-      <Filter>AI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp">
-      <Filter>AI\Sensors</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\main.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\BloomPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
     </ClCompile>
@@ -365,22 +313,10 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SubMeshLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainDescriptorLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Text3DLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TextureLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp">
@@ -388,9 +324,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\MemoryManagement\TrackedObject.cpp">
       <Filter>Core\MemoryManagement</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ParticleEmitterLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp">
       <Filter>Core</Filter>
@@ -479,27 +412,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp">
       <Filter>GUI\GUIEditor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp">
-      <Filter>AI\PathFinding\Waypoints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\WaypointGraph.cpp">
-      <Filter>AI\PathFinding\Waypoints</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMesh.cpp">
-      <Filter>AI\PathFinding\NavMeshes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp">
-      <Filter>AI\PathFinding\NavMeshes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshLoader.cpp">
-      <Filter>AI\PathFinding\NavMeshes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp">
-      <Filter>AI\PathFinding\NavMeshes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
-      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp">
       <Filter>Rendering\Camera</Filter>
     </ClCompile>
@@ -521,12 +433,6 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp">
       <Filter>Core\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideRecast.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\DivideCrowd.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\ApplicationTimer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -541,9 +447,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\Components\NavigationComponent.cpp">
       <Filter>Graphs\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp">
-      <Filter>AI\ActionInterface</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
@@ -563,32 +466,11 @@
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp">
       <Filter>GUI\CEGUIAddons</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\ActionInterface\GOAPInterface.cpp">
-      <Filter>AI\ActionInterface</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Action.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\AStar.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\Node.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.cpp">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\Sensors\AudioSensor.cpp">
-      <Filter>AI\Sensors</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\EASTLImport.cpp">
       <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\SkyLoaderImpl.cpp">
-      <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
@@ -617,6 +499,7 @@
     <ClCompile Include="..\..\Source Code\Physics\PhysX\Actors\pxSimpleShapes.cpp">
       <Filter>Physics\PhysX\Actors</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\engineMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -717,18 +600,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SpatialGraph.h">
       <Filter>Graphs\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">
-      <Filter>AI\Sensors\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h">
-      <Filter>AI\Sensors\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h">
-      <Filter>AI\Sensors\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h">
-      <Filter>AI\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h">
       <Filter>Rendering\Lighting\Headers</Filter>
@@ -903,33 +774,6 @@
     <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditor.h">
       <Filter>GUI\GUIEditor\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h">
-      <Filter>AI\PathFinding\Waypoints\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\WaypointGraph.h">
-      <Filter>AI\PathFinding\Waypoints\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMesh.h">
-      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshContext.h">
-      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDebugDraw.h">
-      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h">
-      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h">
-      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDefines.h">
-      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h">
-      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ScriptedCamera.h">
       <Filter>Rendering\Camera\Headers</Filter>
     </ClInclude>
@@ -938,12 +782,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h">
       <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideCrowd.h">
-      <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\DivideRecast.h">
-      <Filter>AI\PathFinding\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\ApplicationTimer.h">
       <Filter>Core\Headers</Filter>
@@ -966,14 +804,8 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\NavigationComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h">
-      <Filter>AI\ActionInterface\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMaps.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AISceneImpl.h">
-      <Filter>AI\ActionInterface\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Frustum.h">
       <Filter>Rendering\Camera\Headers</Filter>
@@ -992,21 +824,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\GOAPInterface.h">
-      <Filter>AI\ActionInterface\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Action.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\AStar.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\Node.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\src\CPPGoap\WorldState.h">
-      <Filter>AI\ActionInterface\CPPGOAP</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIMessageBox.h">
       <Filter>GUI\Headers</Filter>
@@ -1056,6 +873,7 @@
     <ClInclude Include="..\..\Source Code\Physics\Headers\PXDevice.h">
       <Filter>Physics\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\engineMain.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

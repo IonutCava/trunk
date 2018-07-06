@@ -59,7 +59,7 @@
 #define _DIVIDE_CROWD_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
-#include "ReCast/DetourCrowd/Include/DetourCrowd.h"
+#include "DetourCrowd/Include/DetourCrowd.h"
 #include "../NavMeshes/Headers/NavMesh.h"
 #include <vector>
 
