@@ -226,9 +226,9 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
 
     CEGUI::Sizef size(static_cast<float>(renderResolution.width), static_cast<float>(renderResolution.height));
     // We create a CEGUI texture target and create a GUIContext that will use it.
-    CEGUI::TextureTarget* renderTextureTarget = CEGUI::System::getSingleton().getRenderer()->createTextureTarget();
-    renderTextureTarget->declareRenderSize(size);
-    _ceguiContext = &CEGUI::System::getSingleton().createGUIContext(static_cast<CEGUI::RenderTarget&>(*renderTextureTarget));
+    _ceguiRenderTextureTarget = CEGUI::System::getSingleton().getRenderer()->createTextureTarget();
+    _ceguiRenderTextureTarget->declareRenderSize(size);
+    _ceguiContext = &CEGUI::System::getSingleton().createGUIContext(static_cast<CEGUI::RenderTarget&>(*_ceguiRenderTextureTarget));
 
     getCEGUIContext().setRootWindow(_rootSheet);
     getCEGUIContext().setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
