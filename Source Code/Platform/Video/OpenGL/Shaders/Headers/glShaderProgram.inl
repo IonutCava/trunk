@@ -167,8 +167,7 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<I32>& va
         else {
             it->second.set(value);
         }
-    }
-    else {
+    } else {
         hashAlg::emplace(_shaderVarsVec3I32, location, value);
     }
 

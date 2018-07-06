@@ -90,6 +90,7 @@ class MemoryTracker {
     };
 
     typedef hashMapImpl<void*, Entry>::iterator iterator;
+    typedef hashMapImpl<void*, Entry>::const_iterator citerator;
     friend class Lock;
 
    public:
@@ -143,16 +144,28 @@ class MemoryTracker {
                 msg = "memory leaks detected";
             }
             output.append(Util::StringFormat("%d %s\n", _map.size(), msg.c_str()));
-            for (iterator it = std::begin(_map); it != std::end(_map); ++it) {
+            size_t totalUsage = 0;
+            for (citerator it = std::cbegin(_map); 
+                           it != std::cend(_map);
+                           ++it)
+            {
                 const Entry& entry = it->second;
+                size_t crtSize = entry.Size();
+                totalUsage += crtSize;
+
                 output.append(entry.File());
                 output.append(", ");
                 output.append(to_stringImpl(entry.Line()).c_str());
-                output.append("\n");
+                output.append(Util::StringFormat("( %d bytes / %d bytes (%5.2f Mb)) \n", crtSize, totalUsage, (totalUsage / 1024.0f) / 1024));
                 sizeLeaked += entry.Size();
             }
             leakDetected = true;
             _map.clear();
+        }
+        if (!MemoryTracker::LogAllAllocations && sizeLeaked > 0) {
+            output.append("Total leaked bytes: ");
+            output.append(to_stringImpl(sizeLeaked).c_str());
+            output.append("\n");
         }
         return output;
     }

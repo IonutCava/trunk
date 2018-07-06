@@ -24,7 +24,7 @@ namespace {
         }
 
         bool operator()(const RenderPassCuller::VisibleNode& a,
-            const RenderPassCuller::VisibleNode& b) const {
+                        const RenderPassCuller::VisibleNode& b) const {
             F32 distASQ = a.second.lock()->get<BoundsComponent>()->getBoundingSphere()
                 .getCenter()
                 .distanceSquared(_camPos);
@@ -217,18 +217,19 @@ const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes(
         if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D) {
             return true;
         } else {
-            Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
-            return type == Object3D::ObjectType::FLYWEIGHT;
+            return sgnNode->getNode<Object3D>()->getObjectType() 
+                       == Object3D::ObjectType::FLYWEIGHT;
         }
         return false;
     };
 
-    _reflectiveNodesCache.resize(0);
     const SceneRenderState& renderState = _activeScene->state().renderState();
     const vec3<F32>& camPos = renderState.getCameraConst().getEye();
 
     // Get list of nodes in view from the previous frame
     RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::Z_PRE_PASS);
+
+    _reflectiveNodesCache.resize(0);
     for (RenderPassCuller::VisibleNode& node : nodeCache) {
         _reflectiveNodesCache.push_back(node);
     }

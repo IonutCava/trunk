@@ -15,11 +15,14 @@
 namespace Divide {
 namespace AI {
 
-static const D32 g_ATTACK_RADIUS = 5;
-static const D32 g_ATTACK_RADIUS_SQ = g_ATTACK_RADIUS * g_ATTACK_RADIUS;
-static const U32 g_myTeamContainer = 0;
-static const U32 g_enemyTeamContainer = 1;
-static const U32 g_flagContainer = 2;
+namespace {
+ const D32 g_ATTACK_RADIUS = 5;
+ const D32 g_ATTACK_RADIUS_SQ = g_ATTACK_RADIUS * g_ATTACK_RADIUS;
+ const U32 g_myTeamContainer = 0;
+ const U32 g_enemyTeamContainer = 1;
+ const U32 g_flagContainer = 2;
+};
+
 vec3<F32> WarSceneAIProcessor::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
 DELEGATE_CBK_PARAM_2<U8, const stringImpl&> WarSceneAIProcessor::_scoreCallback;

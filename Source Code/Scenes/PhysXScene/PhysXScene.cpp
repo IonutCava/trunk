@@ -15,7 +15,9 @@ enum class PhysXState : U32 {
     STATE_LOADING = 3
 };
 
-static std::atomic<PhysXState> s_sceneState;
+namespace {
+    std::atomic<PhysXState> s_sceneState;
+};
 
 // begin copy-paste
 void PhysXScene::preRender() {

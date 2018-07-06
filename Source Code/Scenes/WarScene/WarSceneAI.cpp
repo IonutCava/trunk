@@ -10,7 +10,7 @@
 namespace Divide {
 
 namespace {
-    static bool g_navMeshStarted = false;
+    bool g_navMeshStarted = false;
 };
 
 void WarScene::printMessage(U8 eventId, const stringImpl& unitName) {

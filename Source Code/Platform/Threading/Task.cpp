@@ -14,6 +14,7 @@ namespace {
 
 Task::Task() : GUIDWrapper(),
                _tp(nullptr),
+               _poolIndex(0),
                _jobIdentifier(-1),
                _priority(TaskPriority::DONT_CARE)
 {
@@ -30,8 +31,10 @@ Task::~Task()
 }
 
 void Task::reset() {
-    stopTask();
-    wait();
+    if (!_done) {
+        stopTask();
+        wait();
+    }
 
     _stopRequested = false;
     _callback = DELEGATE_CBK_PARAM<bool>();
@@ -113,7 +116,7 @@ void Task::run() {
         }
 
         // task finished. Everything else is bookkeeping
-        _tp->taskCompleted(getGUID());
+        _tp->taskCompleted(poolIndex());
     }
 
     if (_parentTask != nullptr) {

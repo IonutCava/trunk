@@ -35,6 +35,8 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator(
         AnimationChannel& dstChannel = _channels[a];
 
         dstChannel._name = srcChannel->mNodeName.data;
+        dstChannel._nameKey = _ID_RT(dstChannel._name);
+
         for (U32 i(0); i < srcChannel->mNumPositionKeys; i++) {
             dstChannel._positionKeys.push_back(srcChannel->mPositionKeys[i]);
         }
@@ -134,7 +136,7 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
     for (U32 a = 0; a < _channels.size(); a++) {
         
         const AnimationChannel* channel = &_channels[a];
-        Bone* bonenode = skeleton->find(channel->_name);
+        Bone* bonenode = skeleton->find(channel->_nameKey);
 
         if (bonenode == nullptr) {
             Console::d_errorfn(Locale::get(_ID("ERROR_BONE_FIND")),

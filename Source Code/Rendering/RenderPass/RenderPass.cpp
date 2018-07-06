@@ -46,8 +46,6 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
       _useZPrePass(Config::USE_Z_PRE_PASS),
       _stageFlags(passStageFlags)
 {
-    STUBBED("Crimson drivers seem to be having issues with z-prepass at the moment!");
-
     _lastTotalBinSize = 0;
 
     _noDepthClear._clearDepthBufferOnBind = false;

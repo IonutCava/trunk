@@ -49,6 +49,7 @@ Material::Material()
                                             GFXImageFormat::RGBA16F,
                                             GFXDataFormat::FLOAT_16);
     environmentDescriptor.setSampler(screenSampler);
+    STUBBED("ToDo: Have a single reflection render target, with an array texture, and assign a slot for each reflective material! -Ionut");
     _reflectionTarget.reset(GFX_DEVICE.newFB(false));
     _reflectionTarget->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
     _reflectionTarget->useAutoDepthBuffer(true);

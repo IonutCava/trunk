@@ -34,8 +34,8 @@ namespace Divide {
 REGISTER_SCENE(WarScene);
 
 namespace {
-    static vec2<F32> g_sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
-    static bool g_direction = false;
+    vec2<F32> g_sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
+    bool g_direction = false;
     U64 elapsedGameTimeUs = 0;
 };
 
@@ -150,10 +150,10 @@ void WarScene::processTasks(const U64 deltaTime) {
         return;
     }
 
-    D32 SunTimer = Time::Milliseconds(10);
+    D32 SunTimer = Time::Milliseconds(33);
     D32 AnimationTimer1 = Time::SecondsToMilliseconds(5);
     D32 AnimationTimer2 = Time::SecondsToMilliseconds(10);
-    D32 updateLights = Time::Milliseconds(10);
+    D32 updateLights = Time::Milliseconds(16);
 
     if (_taskTimers[0] >= SunTimer) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);

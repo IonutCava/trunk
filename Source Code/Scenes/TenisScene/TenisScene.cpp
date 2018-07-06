@@ -18,7 +18,9 @@ namespace Divide {
 
 REGISTER_SCENE(TenisScene);
 
-static std::atomic_bool s_gameStarted;
+namespace {
+    std::atomic_bool s_gameStarted;
+};
 
 void TenisScene::preRender() {
     vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));

@@ -59,28 +59,29 @@ void AIManager::update() {
 
         _currentTime = Time::ApplicationTimer::instance().getElapsedTime(true);
         if (_currentTime >= _previousTime + updateFreq) {
-
-            /// Lock the entities during update() adding or deleting entities is
-            /// suspended until this returns
-            ReadLock r_lock(_updateMutex);
+            
             /// use internal delta time calculations
             _deltaTime = _currentTime - _previousTime;
 
-            if (!_aiTeams.empty() && !_pauseUpdate) {
-                _updating = true;
-                if (_sceneCallback) {
-                    _sceneCallback();
-                }
-
-                if (processInput(_deltaTime)) {  // sensors
-                    if (processData(_deltaTime)) {  // think
-                        updateEntities(_deltaTime);  // react
+            {
+                /// Lock the entities during update() adding or deleting entities is
+                /// suspended until this returns
+                ReadLock r_lock(_updateMutex);
+                if (!_aiTeams.empty() && !_pauseUpdate) {
+                    _updating = true;
+                    if (_sceneCallback) {
+                        _sceneCallback();
                     }
-                }
-    
-                _updating = false;
-            }
 
+                    if (processInput(_deltaTime)) {  // sensors
+                        if (processData(_deltaTime)) {  // think
+                            updateEntities(_deltaTime);  // react
+                        }
+                    }
+    
+                    _updating = false;
+                }
+            }
             _previousTime = Time::ApplicationTimer::instance().getElapsedTime(true);
 
             if (Config::AI_THREAD_UPDATE_FREQUENCY > Config::MIN_SLEEP_THRESHOLD_MS) {

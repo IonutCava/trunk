@@ -9,10 +9,11 @@ TaskPool::TaskPool()
     assert(isPowerOfTwo(Config::MAX_POOLED_TASKS));
     _allocatedJobs = 0;
 
-    for (Task& task : _tasksPool) {
-        task.setOwningPool(*this);
-        hashAlg::emplace(_taskStates, task.getGUID(), false);
+    for (U32 i = 0; i < Config::MAX_POOLED_TASKS; ++i) {
+        Task& task = _tasksPool[i];
+        task.setOwningPool(*this, i);
     }
+    _taskStates.fill(false);
 }
 
 TaskPool::~TaskPool()
@@ -21,7 +22,6 @@ TaskPool::~TaskPool()
     WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
 
     _mainTaskPool.wait(0);
-    _taskStates.clear();
 }
 
 bool TaskPool::init() {
@@ -40,30 +40,27 @@ bool TaskPool::init() {
 
 void TaskPool::flushCallbackQueue()
 {
-    I64 taskGUID = -1;
-    while (_threadedCallbackBuffer.pop(taskGUID)) {
-        CallbackFunctions::const_iterator it = _taskCallbacks.find(taskGUID);
-        if (it != std::cend(_taskCallbacks) && it->second) {
-            it->second();
-            _taskStates[taskGUID] = false;
+    U32 taskIndex = 0;
+    while (_threadedCallbackBuffer.pop(taskIndex)) {
+        const DELEGATE_CBK<>& cbk = _taskCallbacks[taskIndex];
+        if (cbk) {
+            cbk();
+            _taskStates[taskIndex] = false;
         }
     }
 }
 
 void TaskPool::setTaskCallback(const TaskHandle& handle,
                                const DELEGATE_CBK<>& callback) {
-    if (callback) {
-        hashAlg::emplace(_taskCallbacks, handle._task->getGUID(), callback);
-    }
+    _taskCallbacks[handle._task->poolIndex()] = callback;
 }
 
-void TaskPool::taskCompleted(I64 onExitTaskID) {
-    CallbackFunctions::const_iterator it = _taskCallbacks.find(onExitTaskID);
-    if (it == std::cend(_taskCallbacks)) {
-        _taskStates[onExitTaskID] = false;
+void TaskPool::taskCompleted(U32 poolIndex) {
+    if (!_taskCallbacks[poolIndex]) {
+        _taskStates[poolIndex] = false;
     }
 
-    WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(onExitTaskID));
+    WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
     // Signal main thread to execute callback
 }
 
@@ -78,20 +75,18 @@ TaskHandle TaskPool::getTaskHandle(I64 taskGUID) {
 }
 
 Task& TaskPool::getAvailableTask() {
-    Task* task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
+    U32 taskIndex = (++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u);
     U32 failCount = 0;
-    bool* state = &_taskStates[task->getGUID()];
-    while (*state) {
+    while(_taskStates[taskIndex]) {
         failCount++;
+        taskIndex = (++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u);
         assert(failCount < Config::MAX_POOLED_TASKS * 2);
-        task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
-        state = &_taskStates[task->getGUID()];
     }
 
-    *state = true;
-    task->reset();
+    Task& task = _tasksPool[taskIndex];
+    task.reset();
 
-    return *task;
+    return task;
 }
 
 TaskHandle GetTaskHandle(I64 taskGUID) {
@@ -126,17 +121,17 @@ TaskHandle CreateTask(TaskPool& pool,
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(I64 jobIdentifier,
-                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction)
+                      const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                      const DELEGATE_CBK<>& onCompletionFunction)
 {
     TaskPool& pool = Application::instance().kernel().taskPool();
     return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
-                   I64 jobIdentifier,
-                   const DELEGATE_CBK_PARAM<bool>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction)
+                      I64 jobIdentifier,
+                      const DELEGATE_CBK_PARAM<bool>& threadedFunction,
+                      const DELEGATE_CBK<>& onCompletionFunction)
 {
     Task& freeTask = pool.getAvailableTask();
     TaskHandle handle(&freeTask, jobIdentifier);

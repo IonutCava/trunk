@@ -64,8 +64,9 @@ class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_
 
     void reset();
 
-    inline void setOwningPool(TaskPool& pool) {
+    inline void setOwningPool(TaskPool& pool, U32 poolIndex) {
         _tp = &pool;
+        _poolIndex = poolIndex;
     }
 
     inline bool isRunning() const {
@@ -74,6 +75,10 @@ class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_
 
     inline I64 jobIdentifier() const {
         return _jobIdentifier;
+    }
+
+    inline U32 poolIndex() const {
+        return _poolIndex;
     }
 
     inline void threadedCallback(const DELEGATE_CBK_PARAM<bool>& cbk, I64 jobIdentifier) {
@@ -105,6 +110,7 @@ class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_
     
     TaskPriority _priority;
     TaskPool* _tp;
+    U32 _poolIndex;
 
     Task* _parentTask;
     vectorImpl<Task*> _childTasks;

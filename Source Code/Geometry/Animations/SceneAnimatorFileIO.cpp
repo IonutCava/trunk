@@ -21,6 +21,7 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
     for (vectorAlg::vecSize j(0); j < evaluator._channels.size(); j++) {  
         // the channel name
         dataOut << evaluator._channels[j]._name;
+        dataOut << evaluator._channels[j]._nameKey;
         // the number of position keys
         uint32_t nsize = static_cast<uint32_t>(evaluator._channels[j]._positionKeys.size());
         dataOut << nsize;
@@ -78,46 +79,51 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
     evaluator._lastPositions.resize(nsize, vec3<U32>());
     // for each channel
     for (vectorAlg::vecSize j(0); j < evaluator._channels.size(); j++) {  
+        AnimationChannel& channel = evaluator._channels[j];
         //the channel name
-        dataIn >> evaluator._channels[j]._name;
+        dataIn >> channel._name;
+        dataIn >> channel._nameKey;
         // the number of position keys
         dataIn >> nsize;
-        evaluator._channels[j]._positionKeys.resize(nsize);
+        channel._positionKeys.resize(nsize);
         // for each position key
         for (vectorAlg::vecSize i(0); i < nsize; i++) {  
+            aiVectorKey& pos = channel._positionKeys[i];
             // position key
-            dataIn >> evaluator._channels[j]._positionKeys[i].mTime;
+            dataIn >> pos.mTime;
             // position key
-            dataIn >> evaluator._channels[j]._positionKeys[i].mValue.x;
-            dataIn >> evaluator._channels[j]._positionKeys[i].mValue.y;
-            dataIn >> evaluator._channels[j]._positionKeys[i].mValue.z;
+            dataIn >> pos.mValue.x;
+            dataIn >> pos.mValue.y;
+            dataIn >> pos.mValue.z;
         }
 
         // the number of rotation keys
         dataIn >> nsize;
-        evaluator._channels[j]._rotationKeys.resize(nsize);
+        channel._rotationKeys.resize(nsize);
         // for each rotation key
         for (vectorAlg::vecSize i(0); i < nsize; i++) {  
+            aiQuatKey& rot = channel._rotationKeys[i];
             // rotation key
-            dataIn >> evaluator._channels[j]._rotationKeys[i].mTime;
+            dataIn >> rot.mTime;
             // rotation key
-            dataIn >> evaluator._channels[j]._rotationKeys[i].mValue.x;
-            dataIn >> evaluator._channels[j]._rotationKeys[i].mValue.y;
-            dataIn >> evaluator._channels[j]._rotationKeys[i].mValue.z;
-            dataIn >> evaluator._channels[j]._rotationKeys[i].mValue.w;
+            dataIn >> rot.mValue.x;
+            dataIn >> rot.mValue.y;
+            dataIn >> rot.mValue.z;
+            dataIn >> rot.mValue.w;
         }
 
         // the number of scaling keys
         dataIn >> nsize;
-        evaluator._channels[j]._scalingKeys.resize(nsize);
+        channel._scalingKeys.resize(nsize);
         // for each skaling key
-        for (vectorAlg::vecSize i(0); i < nsize; i++) {  
+        for (vectorAlg::vecSize i(0); i < nsize; i++) { 
+            aiVectorKey& scale = channel._scalingKeys[i]; 
             // scale key
-            dataIn >> evaluator._channels[j]._scalingKeys[i].mTime;
+            dataIn >> scale.mTime;
             // scale key
-            dataIn >> evaluator._channels[j]._scalingKeys[i].mValue.x;
-            dataIn >> evaluator._channels[j]._scalingKeys[i].mValue.y;
-            dataIn >> evaluator._channels[j]._scalingKeys[i].mValue.z;
+            dataIn >> scale.mValue.x;
+            dataIn >> scale.mValue.y;
+            dataIn >> scale.mValue.z;
         }
     }
     evaluator._lastPositions.resize(evaluator._channels.size(), vec3<U32>());

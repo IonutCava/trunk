@@ -53,22 +53,18 @@ class TaskPool {
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend class Task;
-    void taskCompleted(I64 onExitTaskID);
+    void taskCompleted(U32 poolIndex);
     inline ThreadPool& threadPool() {
         return _mainTaskPool;
     }
   private:
     ThreadPool _mainTaskPool;
-
-    typedef hashMapImpl<I64, DELEGATE_CBK<> > CallbackFunctions;
-    CallbackFunctions _taskCallbacks;
-
-    typedef hashMapImpl<I64, bool > TaskState;
-    TaskState _taskStates;
-
-    boost::lockfree::queue<I64> _threadedCallbackBuffer;
+    boost::lockfree::queue<U32> _threadedCallbackBuffer;
 
     std::array<Task, Config::MAX_POOLED_TASKS> _tasksPool;
+    std::array<bool, Config::MAX_POOLED_TASKS> _taskStates;
+    std::array<DELEGATE_CBK<>, Config::MAX_POOLED_TASKS> _taskCallbacks;
+
     std::atomic<U32> _allocatedJobs;
 };
 

@@ -145,6 +145,7 @@ DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
     static physx::PxDefaultAllocator _gDefaultAllocatorCallback;
     static physx::PxDefaultErrorCallback _gDefaultErrorCallback;
 
+    static hashMapImpl<stringImpl, physx::PxTriangleMesh*> _gMeshCache;
 END_SINGLETON
 
 };  // namespace Divide

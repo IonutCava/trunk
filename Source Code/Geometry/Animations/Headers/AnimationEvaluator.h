@@ -47,6 +47,15 @@ class ShaderBuffer;
 
 class AnimationChannel {
    public:
+    AnimationChannel()
+        : _nameKey(0ULL),
+          _numPositionKeys(0U),
+          _numRotationKeys(0U),
+          _numScalingKeys(0U)
+    {
+    }
+
+    ULL _nameKey;
     stringImpl _name;
     vectorImpl<aiVectorKey> _positionKeys;
     vectorImpl<aiQuatKey> _rotationKeys;

@@ -18,6 +18,7 @@ namespace Divide {
 
 physx::PxDefaultAllocator PhysX::_gDefaultAllocatorCallback;
 physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
+hashMapImpl<stringImpl, physx::PxTriangleMesh*> PhysX::_gMeshCache;
 
 physx::PxProfileZone* PhysX::getOrCreateProfileZone(
     physx::PxFoundation& inFoundation) {
@@ -196,24 +197,35 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
     Object3D* sNode = node.getNode<Object3D>();
 
     // Load cached version from file first
-    stringImpl nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" +
-                        sNode->getName() + "_]");
+    stringImpl nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" + sNode->getName() + "_]");
     nodeName.append(".cm");
 
-    FILE* fp = fopen(nodeName.c_str(), "rb");
-    bool ok = false;
-    if (fp) {
-        fseek(fp, 0, SEEK_END);
-        physx::PxU32 filesize = ftell(fp);
-        fclose(fp);
-        ok = (filesize != 0);
+    hashMapImpl<stringImpl, physx::PxTriangleMesh*>::iterator it;
+    it = _gMeshCache.find(nodeName);
+
+    // -1 = not available
+    //  0 = loaded from RAM cache
+    //  1 = loaded from file cache
+    I8 loadState = -1;
+    if (it != std::cend(_gMeshCache)) {
+        loadState = 0;
+    } else {
+        FILE* fp = fopen(nodeName.c_str(), "rb");
+        if (fp) {
+            fseek(fp, 0, SEEK_END);
+            physx::PxU32 filesize = ftell(fp);
+            fclose(fp);
+            if (filesize != 0) {
+                loadState = 1;
+            }
+        }
     }
 
     if (group == PhysicsCollisionGroup::GROUP_NON_COLLIDABLE) {
         // return true;
     }
 
-    if (!ok) {
+    if (loadState == -1) {
         sNode->computeTriangleList();
         const vectorImpl<vec3<U32> >& triangles = sNode->getTriangles();
 
@@ -244,14 +256,13 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
             Console::errorfn(Locale::get(_ID("ERROR_COOK_TRIANGLE_MESH")));
             return;
         }
-
-    } else {
-        Console::printfn(Locale::get(_ID("COLLISION_MESH_LOADED_FROM_FILE")),
-                         nodeName.c_str());
+    } else if (loadState == 0) {
+        Console::printfn(Locale::get(_ID("COLLISION_MESH_LOADED_FROM_RAM")), nodeName.c_str());
+    } else if (loadState == 1) {
+        Console::printfn(Locale::get(_ID("COLLISION_MESH_LOADED_FROM_FILE")), nodeName.c_str());
     }
 
-    PhysXSceneInterface* targetScene =
-        dynamic_cast<PhysXSceneInterface*>(_targetScene);
+    PhysXSceneInterface* targetScene =  dynamic_cast<PhysXSceneInterface*>(_targetScene);
     PhysicsComponent* nodePhysics = node.get<PhysicsComponent>();
 
     PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName());
@@ -291,9 +302,14 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
     assert(tempActor->_actor);
 
-    physx::PxDefaultFileInputData stream(nodeName.c_str());
-    physx::PxTriangleMesh* triangleMesh =
-        _gPhysicsSDK->createTriangleMesh(stream);
+    physx::PxTriangleMesh* triangleMesh = nullptr;
+    if (loadState == 0) {
+        triangleMesh = it->second;
+    } else {
+        physx::PxDefaultFileInputData inData(nodeName.c_str());
+        triangleMesh = _gPhysicsSDK->createTriangleMesh(inData);
+        hashAlg::insert(_gMeshCache, std::make_pair(nodeName, triangleMesh));
+    }
 
     if (!triangleMesh) {
         Console::errorfn(Locale::get(_ID("ERROR_CREATE_TRIANGLE_MESH")));

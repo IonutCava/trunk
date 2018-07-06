@@ -8,7 +8,7 @@
 namespace Divide {
 
 namespace {
-    static const bool g_recordInput = true;
+    const bool g_recordInput = true;
 };
 
 SceneInput::SceneInput(Scene& parentScene) 

@@ -551,8 +551,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     /*Transforms the given 3-D vector by the matrix, projecting the result back
      * into <i>w</i> = 1. (OGRE reference)*/
     inline vec3<T> transformHomogeneous(const vec3<T> &v) const {
-        T fInvW = 1.0f / (this->m[0][3] * v.x + this->m[1][3] * v.y +
-                          this->m[2][3] * v.z + this->m[3][3]);
+        F32 fInvW = 1.0f / (this->m[0][3] * v.x + this->m[1][3] * v.y +
+                            this->m[2][3] * v.z + this->m[3][3]);
 
         return vec3<T>((this->m[0][0] * v.x + this->m[1][1] * v.y +
                         this->m[2][0] * v.z + this->m[3][0]) *
