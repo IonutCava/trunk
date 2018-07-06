@@ -105,10 +105,6 @@ bool SceneManager::frameStarted(const FrameEvent& evt) {
     return Attorney::SceneManager::frameStarted(*_activeScene);
 }
 
-bool SceneManager::framePreRenderStarted(const FrameEvent& evt) {
-    return true;
-}
-
 bool SceneManager::frameEnded(const FrameEvent& evt) {
     _renderPassCuller->refresh();
     return Attorney::SceneManager::frameEnded(*_activeScene);

@@ -85,6 +85,14 @@ inline void WindowManager::hasFocus(const bool state) {
     _hasFocus = state;
 }
 
+inline bool WindowManager::minimized() const {
+    return _minimized;
+}
+
+inline void WindowManager::minimized(const bool state) {
+    _minimized = state;
+}
+
 inline I32 WindowManager::targetDisplay() const {
     return _displayIndex;
 }

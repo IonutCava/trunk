@@ -669,38 +669,6 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 
     return tempPriv;
 }
-/// Renders the result of plotting the specified 2D graph
-void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D,
-                            const vec4<U8>& color) {
-    if (!plot2D.empty()) {
-        Util::GraphPlot3D plot3D(plot2D._plotName);
-        plot3D._coords.reserve(plot2D._coords.size());
-        for (const vec2<F32>& coords : plot2D._coords) {
-            vectorAlg::emplace_back(plot3D._coords, coords, 0.0f);
-        }
-        plot3DGraph(plot3D, color);
-    }
-}
-
-/// Renders the result of plotting the specified 3D graph
-void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D,
-                            const vec4<U8>& color) {
-    if (!plot3D.empty()) {
-        vectorImpl<Line> plotLines;
-        const vectorImpl<vec3<F32>>& coords = plot3D._coords;
-
-        vectorAlg::vecSize coordCount = coords.size();
-        plotLines.reserve(coordCount / 2);
-        vectorImpl<vec3<F32>>::const_iterator it;
-        for (it = std::begin(coords); it != std::end(coords); ++it) {
-            vectorAlg::emplace_back(plotLines, *(it), *(it++), color);
-        }
-
-        IMPrimitive* primitive = GFX_DEVICE.getOrCreatePrimitive();
-        primitive->name("3DGraphPrimitive");
-        drawLines(*primitive, plotLines, mat4<F32>(), vec4<I32>(), false);
-    }
-}
 
 /// Extract the pixel data from the main render target's first color attachment
 /// and save it as a TGA image

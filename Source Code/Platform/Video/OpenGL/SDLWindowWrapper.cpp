@@ -198,6 +198,11 @@ void GL_API::pollWindowEvents() {
                                                      event.window.data1,
                                                      event.window.data2);
                     } break;
+                    case SDL_WINDOWEVENT_RESTORED: {
+                        GFX_DEVICE.handleWindowEvent(WindowEvent::RESTORED,
+                                                     event.window.data1,
+                                                     event.window.data2);
+                    } break;
                 };
             } break;
         }

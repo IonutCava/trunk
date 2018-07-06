@@ -382,7 +382,6 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
     }
 
     tempSubMesh->setGeometryPartitionID(vb->partitionBuffer());
-    vb->shrinkAllDataToFit();
 
     return baseMeshLoading ? tempSubMesh : nullptr;
 }

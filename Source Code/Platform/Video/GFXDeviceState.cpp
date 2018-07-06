@@ -327,28 +327,35 @@ void GFXDevice::endFrame() {
 }
 
 void GFXDevice::handleWindowEvent(WindowEvent event, I32 data1, I32 data2) {
+    Application& app = Application::getInstance();
+
     switch (event) {
         case WindowEvent::HIDDEN:{
         } break;
         case WindowEvent::SHOWN:{
         } break;
         case WindowEvent::MINIMIZED:{
-            Application::getInstance().mainLoopPaused(true);
+            app.mainLoopPaused(true);
+            app.getWindowManager().minimized(true);
         } break;
         case WindowEvent::MAXIMIZED:{
+            app.getWindowManager().minimized(false);
+        } break;
+        case WindowEvent::RESTORED: {
+            app.getWindowManager().minimized(false);
         } break;
         case WindowEvent::LOST_FOCUS:{
-            Application::getInstance().getWindowManager().hasFocus(false);
+            app.getWindowManager().hasFocus(false);
         } break;
         case WindowEvent::GAINED_FOCUS:{
-            Application::getInstance().getWindowManager().hasFocus(true);
+            app.getWindowManager().hasFocus(true);
         } break;
         case WindowEvent::RESIZED_INTERNAL:{
             setBaseViewport(vec4<I32>(0, 0, data1, data2));
             // Update the 2D camera so it matches our new rendering viewport
             _2DCamera->setProjection(vec4<F32>(0, data1, 0, data2),
                                      vec2<F32>(-1, 1));
-            Application::getInstance().getKernel().onChangeWindowSize(to_ushort(data1), to_ushort(data2));
+            app.getKernel().onChangeWindowSize(to_ushort(data1), to_ushort(data2));
         } break;
         case WindowEvent::RESIZED_EXTERNAL:{
         } break;
@@ -364,16 +371,15 @@ Renderer& GFXDevice::getRenderer() const {
 void GFXDevice::setRenderer(RendererType rendererType) {
     DIVIDE_ASSERT(rendererType != RendererType::COUNT,
                   "GFXDevice error: Tried to create an invalid renderer!");
-    Renderer* renderer = nullptr;
+
     switch (rendererType) {
         case RendererType::RENDERER_FORWARD_PLUS: {
-            renderer = new ForwardPlusRenderer();
+            _renderer.reset(new ForwardPlusRenderer());
         } break;
         case RendererType::RENDERER_DEFERRED_SHADING: {
-            renderer = new DeferredShadingRenderer();
+            _renderer.reset(new DeferredShadingRenderer());
         } break;
     }
-    _renderer.reset(renderer);
 }
 
 ErrorCode GFXDevice::createAPIInstance() {

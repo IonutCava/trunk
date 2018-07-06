@@ -58,6 +58,20 @@ enum class RenderStage : U32;
 struct FrameEvent;
 class GUI;
 
+struct LoopTimingData {
+    LoopTimingData();
+
+    bool _keepAlive;
+    bool _freezeLoopTime;
+    bool _freezeGUITime;
+    // both are in ms
+    U64 _currentTime;
+    U64 _currentTimeFrozen;
+    U64 _currentTimeDelta;
+    U64 _previousTime;
+    U64 _nextGameTick;
+};
+
 namespace Attorney {
     class KernelScene;
 };
@@ -165,24 +179,12 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     std::unique_ptr<CameraManager> _cameraMgr;
     Camera* _mainCamera;
 
-    static bool _keepAlive;
-    static bool _renderingPaused;
-    static bool _freezeLoopTime;
-    static bool _freezeGUITime;
+    static LoopTimingData _timingData;
     ThreadPool _mainTaskPool;
-    // both are in ms
-    static U64 _currentTime;
-    static U64 _currentTimeFrozen;
-    static U64 _currentTimeDelta;
-    static U64 _previousTime;
-    static U64 _nextGameTick;
 
     typedef hashMapImpl<I64, DELEGATE_CBK<> > CallbackFunctions;
-
     static boost::lockfree::queue<I64> _threadedCallbackBuffer;
     static CallbackFunctions _threadedCallbackFunctions;
-
-    static Util::GraphPlot2D _appTimeGraph;
 
     vectorImpl<Task_ptr> _tasks;
     // Command line arguments

@@ -114,7 +114,9 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
             _smallData << data._weights.w;
         }
     }
-    
+
+    vectorAlg::shrinkToFit(_data);
+
     return std::make_pair((bufferPtr)_smallData.contents(), _smallData.size());
 }
 

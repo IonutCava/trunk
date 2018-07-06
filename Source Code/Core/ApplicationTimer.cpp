@@ -46,7 +46,7 @@ void ApplicationTimer::init(U8 targetFrameRate) {
     _init = true;
 }
 
-void ApplicationTimer::update(U32 frameCount) {
+void ApplicationTimer::update() {
     TimeValue currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
@@ -58,10 +58,15 @@ void ApplicationTimer::update(U32 frameCount) {
     _fps = _targetFrameRate / _speedfactor;
     _frameTime = 1000.0f / _fps;
 
-    benchmarkInternal(frameCount);
+    benchmarkInternal();
 }
 
 namespace {
+
+    static const U32 g_minMaxFPSIntervalSec = Time::Seconds(5);
+    static const U32 g_averageFPSIntervalSec = Time::Seconds(10);
+
+    static U64 g_frameCount = 0;
     static U32 g_averageCount = 0;
     static F32 g_averageFps = 0.0f;
     static F32 g_averageFpsTotal = 0.0f;
@@ -69,7 +74,9 @@ namespace {
     static F32 g_minFps = std::numeric_limits<F32>::max();
 };
 
-void ApplicationTimer::benchmarkInternal(U32 frameCount) {
+void ApplicationTimer::benchmarkInternal() {
+    g_frameCount++;
+
     if (!_benchmark) {
         return;
     }
@@ -79,20 +86,20 @@ void ApplicationTimer::benchmarkInternal(U32 frameCount) {
     g_averageCount++;
 
     // Min/Max FPS (Every 5 seconds (targeted))
-    if (frameCount % (_targetFrameRate * 5) == 0) {
+    if (g_frameCount % (_targetFrameRate * g_minMaxFPSIntervalSec) == 0) {
         g_maxFps = std::max(g_maxFps, _fps);
         g_minFps = std::min(g_minFps, _fps);
     }
 
     // Every 10 seconds (targeted)
-    if (frameCount % (_targetFrameRate * 10) == 0) {
+    if (g_frameCount % (_targetFrameRate * g_averageFPSIntervalSec) == 0) {
         g_averageFpsTotal += g_averageFps;
 
         F32 avgFPS = g_averageFpsTotal / g_averageCount;
         Console::printfn(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, g_maxFps,
                          g_minFps, 1000.0f / avgFPS);
 
-#if defined(_DEBUG) || defined(_PROFILE)
+#if !defined(_RELEASE)
         for (ProfileTimer* const timer : _profileTimers) {
             timer->print();
             timer->reset();

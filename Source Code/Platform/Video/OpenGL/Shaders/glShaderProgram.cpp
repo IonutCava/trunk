@@ -97,7 +97,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
             // and fill the buffer with the binary code
             glGetProgramBinary(_shaderProgramID, binaryLength, NULL,
                                &_binaryFormat, binary);
-            if (_binaryFormat != GL_ZERO && _binaryFormat != GL_NONE) {
+            if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
                 stringImpl outFileName("shaderCache/Binary/" + getName() + ".bin");
                 FILE* outFile = fopen(outFileName.c_str(), "wb");

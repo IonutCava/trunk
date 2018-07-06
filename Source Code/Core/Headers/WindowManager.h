@@ -49,11 +49,12 @@ enum class WindowEvent : U32 {
     SHOWN = 1,
     MINIMIZED = 2,
     MAXIMIZED = 3,
-    LOST_FOCUS = 4,
-    GAINED_FOCUS = 5,
-    RESIZED_INTERNAL = 6,
-    RESIZED_EXTERNAL = 7,
-    MOVED = 8
+    RESTORED = 4,
+    LOST_FOCUS = 5,
+    GAINED_FOCUS = 6,
+    RESIZED_INTERNAL = 7,
+    RESIZED_EXTERNAL = 8,
+    MOVED = 9
 };
 
 class WindowManager {
@@ -62,6 +63,9 @@ public:
 
     inline bool hasFocus() const;
     inline void hasFocus(const bool state);
+
+    inline bool minimized() const;
+    inline void minimized(const bool state);
 
     inline WindowType mainWindowType() const;
     inline void mainWindowType(WindowType type);
@@ -88,6 +92,7 @@ protected:
     /// this is false if the window/application lost focus (e.g. clicked another
     /// window, alt + tab, etc)
     bool _hasFocus;
+    bool _minimized;
     I32  _displayIndex;
     WindowType _activeWindowType;
     vec2<U16> _prevResolution;

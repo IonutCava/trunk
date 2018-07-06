@@ -300,10 +300,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     inline RenderStage getRenderStage() const { return _renderStage; }
     inline RenderStage getPrevRenderStage() const { return _prevRenderStage; }
-    /// Renders the result of plotting the specified 2D graph
-    void plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& color);
-    /// Renders the result of plotting the specified 3D graph
-    void plot3DGraph(const Util::GraphPlot3D& plot3D, const vec4<U8>& color);
 
     /// Get the entire list of clipping planes
     inline const PlaneList& getClippingPlanes() const { return _clippingPlanes; }

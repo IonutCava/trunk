@@ -306,10 +306,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         _attribDirty[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = true;
     }
 
-    inline void shrinkAllDataToFit() {
-        shrinkToFit(_data);
-    }
-
     inline size_t partitionBuffer() {
         U32 currentIndexCount = getIndexCount();
 
@@ -335,14 +331,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         DIVIDE_ASSERT(partitionID < _partitions.size(),
                       "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionID].first;
-    }
-
-    inline U32 getLastPartitionOffset() {
-        if (_partitions.empty()) {
-            return 0;
-        }
-        if (_partitions.empty()) return 0;
-        return getPartitionOffset(to_ushort(_partitions.size() - 1));
     }
 
     inline void reset() {

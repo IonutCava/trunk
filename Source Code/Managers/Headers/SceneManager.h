@@ -136,9 +136,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     void sortVisibleNodes(RenderPassCuller::VisibleNodeCache& nodes) const;
 
   protected:
-    /// This is inherited from FrameListener and is used to setup cameras before
-    /// rendering the frame
-    bool framePreRenderStarted(const FrameEvent& evt);
     bool frameStarted(const FrameEvent& evt);
     bool frameEnded(const FrameEvent& evt);
 

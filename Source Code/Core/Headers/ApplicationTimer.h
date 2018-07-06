@@ -49,10 +49,11 @@ DEFINE_SINGLETON(ApplicationTimer)
 
   public:
     void init(U8 targetFrameRate);
-    void update(U32 frameCount);
+    void update();
 
     void benchmark(bool state);
     bool benchmark() const;
+
     F32 getFps() const;
     F32 getFrameTime() const;
     F32 getSpeedfactor() const;
@@ -62,7 +63,7 @@ DEFINE_SINGLETON(ApplicationTimer)
     ApplicationTimer();
     ~ApplicationTimer();
 
-    void benchmarkInternal(U32 frameCount);
+    void benchmarkInternal();
 
     inline TimeValue getCurrentTicksInternal() const;
     inline U64 getElapsedTimeInternal(const TimeValue& currentTicks) const;
