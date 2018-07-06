@@ -130,8 +130,8 @@ void DisplayWindow::update(const U64 deltaTimeUS) {
 }
 
 void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& args) {
-    for (EventListener& listener : _eventListeners[to_base(event)]) {
-        listener(args);
+    for (GUID_DELEGATE_CBK<void, WindowEventArgs>& listener : _eventListeners[to_base(event)]) {
+        listener._callback(args);
     }
 }
 

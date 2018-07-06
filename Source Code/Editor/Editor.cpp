@@ -67,17 +67,6 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
     _panelManager = std::make_unique<PanelManager>(context);
     _menuBar = std::make_unique<MenuBar>(context, true);
     _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
-    
-    ResourceDescriptor shaderDescriptor("IMGUI");
-    shaderDescriptor.setThreadedLoading(false);
-    _imguiProgram = CreateResource<ShaderProgram>(_context.gfx().parent().resourceCache(), shaderDescriptor);
-
-    _mainWindow = &_context.app().windowManager().getWindow(0u);
-    _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
-    _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
-    _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
-    _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
-    _activeWindowGUID = _mainWindow->getGUID();
 
     REGISTER_FRAME_LISTENER(this, 99999);
 }
@@ -100,10 +89,26 @@ void Editor::idle() {
 }
 
 bool Editor::init(const vec2<U16>& renderResolution) {
+
     if (_mainWindow != nullptr) {
         // double init
         return false;
     }
+
+    _mainWindow = &_context.app().windowManager().getWindow(0u);
+    if (_activeWindowGUID == 0) {
+        // Only add these once
+        I64 guid = _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
+        _windowListeners[to_base(WindowEvent::CLOSE_REQUESTED)].push_back(guid);
+        guid = _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
+        _windowListeners[to_base(WindowEvent::GAINED_FOCUS)].push_back(guid);
+        guid = _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
+        _windowListeners[to_base(WindowEvent::RESIZED)].push_back(guid);
+        guid = _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
+        _windowListeners[to_base(WindowEvent::TEXT)].push_back(guid);
+    }
+    _activeWindowGUID = _mainWindow->getGUID();
+
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pPixels;
@@ -132,6 +137,10 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     Texture::TextureLoadInfo info;
 
     _fontTexture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
+
+    ResourceDescriptor shaderDescriptor("IMGUI");
+    shaderDescriptor.setThreadedLoading(false);
+    _imguiProgram = CreateResource<ShaderProgram>(_context.gfx().parent().resourceCache(), shaderDescriptor);
 
     // Store our identifier
     io.Fonts->TexID = (void *)(intptr_t)_fontTexture->getHandle();
@@ -178,7 +187,18 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 }
 
 void Editor::close() {
+
+    if (_mainWindow != nullptr) {
+        for (U8 i = 0; i < to_base(WindowEvent::COUNT); ++i) {
+            vectorImpl<I64>& guids = _windowListeners[i];
+            for (I64 guid : guids) {
+                _mainWindow->removeEventlistener(static_cast<WindowEvent>(i), guid);
+            }
+            guids.clear();
+        }
+    }
     _fontTexture.reset();
+    _imguiProgram.reset();
     Console::unbindConsoleOutput(_consoleCallbackIndex);
     _panelManager->destroy();
     ImGui::DestroyContext();

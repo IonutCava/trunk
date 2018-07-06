@@ -647,15 +647,16 @@ auto DELEGATE_CREF(Args&&... args)
 template <typename Ret, typename... Args >
 using DELEGATE_CBK = std::function< Ret(Args...) >;
 
+template <typename Ret, typename... Args >
 class GUID_DELEGATE_CBK : public GUIDWrapper {
   public:
-    GUID_DELEGATE_CBK(const DELEGATE_CBK<void>& cbk)
+    GUID_DELEGATE_CBK(const DELEGATE_CBK<Ret, Args...>& cbk)
         : GUIDWrapper(),
           _callback(cbk)
     {
     }
 
-    DELEGATE_CBK<void> _callback;
+    DELEGATE_CBK<Ret, Args...> _callback;
 };
 
 U32 HARDWARE_THREAD_COUNT();

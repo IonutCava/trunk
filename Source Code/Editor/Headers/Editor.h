@@ -187,6 +187,8 @@ class Editor : public PlatformContextComponent,
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 
+    std::array<vectorImpl<I64>, to_base(WindowEvent::COUNT)> _windowListeners;
+
     size_t _consoleCallbackIndex;
 }; //Editor
 

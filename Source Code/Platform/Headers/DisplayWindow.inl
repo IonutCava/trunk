@@ -135,8 +135,22 @@ namespace Divide {
         return _handle;
     }
 
-    inline void DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
-        _eventListeners[to_base(windowEvent)].push_back(listener);
+    inline I64 DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
+        EventListeners& listeners = _eventListeners[to_base(windowEvent)];
+
+        listeners.push_back(GUID_DELEGATE_CBK<void, WindowEventArgs>(listener));
+        return listeners.back().getGUID();
+    }
+
+    inline void DisplayWindow::removeEventlistener(WindowEvent windowEvent, I64 listenerGUID) {
+        EventListeners& listeners = _eventListeners[to_base(windowEvent)];
+        listeners.erase(
+            std::remove_if(std::begin(listeners), std::end(listeners),
+                           [&listenerGUID](const GUID_DELEGATE_CBK<void, WindowEventArgs>& it)
+                           -> bool { 
+                                listenerGUID == it.getGUID();
+                            }),
+            std::end(listeners));
     }
 
     inline Input::InputInterface& DisplayWindow::inputHandler() {

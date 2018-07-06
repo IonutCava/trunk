@@ -103,6 +103,7 @@ public:
         I32 id = -1;
 
     };
+
     typedef DELEGATE_CBK<void, const WindowEventArgs&> EventListener;
 
 protected:
@@ -179,7 +180,8 @@ public:
     void setCursorStyle(CursorStyle style);
     vec2<I32> getCursorPosition() const;
 
-    inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
+    inline I64 addEventListener(WindowEvent windowEvent, const EventListener& listener);
+    inline void removeEventlistener(WindowEvent windowEvent, I64 listenerGUID);
 
     inline Input::InputInterface& inputHandler();
 
@@ -261,7 +263,7 @@ private:
     vec2<U16> _windowDrawableArea;
     FColour   _clearColour;
     FColour   _clearColourOriginal;
-    typedef vectorImpl<EventListener> EventListeners;
+    typedef vectorImpl<GUID_DELEGATE_CBK<void, WindowEventArgs>> EventListeners;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 
     std::unique_ptr<Input::InputInterface> _inputHandler;
