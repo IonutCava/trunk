@@ -110,7 +110,7 @@ class RenderBin {
                             RenderStage renderStage);
     virtual void refresh();
 
-    virtual void addNodeToBin(SceneGraphNode& sgn,
+    virtual void addNodeToBin(const SceneGraphNode& sgn,
                               RenderStage stage,
                               const vec3<F32>& eyePos);
 

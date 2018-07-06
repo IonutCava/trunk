@@ -128,7 +128,7 @@ void RenderBin::refresh() {
     _renderBinStack.reserve(128);
 }
 
-void RenderBin::addNodeToBin(SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
+void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
     I32 keyA = to_uint(_renderBinStack.size() + 1);
     I32 keyB = keyA;
 

@@ -93,6 +93,7 @@ class glVertexArray : public VertexBuffer {
 
     static void cleanup();
 
+    static bool setIfDifferentBindRange(U32 VBOid, U32 offset, U32 size);
    protected:
     GLenum _formatInternal;
     GLuint _IBid;
@@ -114,6 +115,9 @@ class glVertexArray : public VertexBuffer {
     std::array<GLuint, to_const_uint(RenderStage::COUNT)> _vaoCaches;
     typedef hashMapImpl<U32, GLuint> VAOMap;
     static VAOMap _VAOMap;
+
+    static vec3<U32> _currentBindConfig;
+    static vec3<U32> _tempConfig;
 };
 
 };  // namespace Divide

@@ -12,6 +12,10 @@
 
 namespace Divide {
 
+namespace {
+    const F32 g_MaterialShininessThresholdForReflection = 205.0f;
+};
+
 RenderingComponent::RenderingComponent(Material* const materialInstance,
                                        SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
@@ -19,6 +23,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _drawOrder(0),
       _commandIndex(0),
       _commandOffset(0),
+      _cameraDistanceSQCache(0.0f),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
@@ -37,10 +42,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
         if (!isSubMesh) {
             _materialInstance->addShaderModifier(RenderStage::SHADOW, "TriangleStrip");
             _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");
-        }
-        if (_materialInstance->getTexture(ShaderProgram::TextureUsage::REFLECTION) == nullptr) {
-            _materialInstance->setTexture(ShaderProgram::TextureUsage::REFLECTION,
-                GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::ENVIRONMENT)._buffer->getAttachment());
         }
     }
 
@@ -540,7 +541,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                                   renderStage,
                                                   sceneRenderState,
                                                   pkg._drawCommands)) {
-            F32 cameraDistance = 
+            _cameraDistanceSQCache =
                 _parentSGN
                     .getBoundingSphereConst()
                     .getCenter()
@@ -548,12 +549,13 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                      .getCameraConst()
                                      .getEye());
 
-            U8 lodLevelTemp = cameraDistance > SCENE_NODE_LOD0_SQ
-                                    ? cameraDistance > SCENE_NODE_LOD1_SQ ? 2 : 1
+            U8 lodLevelTemp = _cameraDistanceSQCache > SCENE_NODE_LOD0_SQ
+                                    ? _cameraDistanceSQCache > SCENE_NODE_LOD1_SQ ? 2 : 1
                                     : 0;
-            _lodLevel =
-                std::min(to_ubyte(_parentSGN.getNode()->getLODcount() - 1),
-                    std::max(lodLevelTemp, to_ubyte(0)));
+            U8 minLoD = to_ubyte(_parentSGN.getNode()->getLODcount() - 1);
+            _lodLevel = renderStage == RenderStage::REFLECTION
+                                    ? minLoD
+                                    : std::min(minLoD, std::max(lodLevelTemp, to_ubyte(0)));
 
             U32 offset = commandOffset();
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
@@ -581,6 +583,32 @@ void RenderingComponent::setActive(const bool state) {
         renderBoundingSphere(false);
     }
     SGNComponent::setActive(state);
+}
+
+bool RenderingComponent::updateReflection(const vec3<F32>& camPos, const vec2<F32>& camZPlanes) {
+    // Low lod entities don't need up to date reflections
+    if (_lodLevel > 1) {
+        return false;
+    }
+    // If we lake a material, we don't use reflections
+    Material* mat = getMaterialInstance();
+    if (mat == nullptr) {
+        return false;
+    }
+    // If shininess is below a certain threshold, we don't have any reflections 
+    if (mat->getShaderData()._shininess < g_MaterialShininessThresholdForReflection) {
+        return false;
+    }
+
+    GFXDevice& GFX = GFX_DEVICE;
+
+    GFX.generateCubeMap(mat->reflectionTarget(),
+                        0,
+                        camPos,
+                        vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
+                        RenderStage::REFLECTION);
+
+    return true;
 }
 
 #ifdef _DEBUG

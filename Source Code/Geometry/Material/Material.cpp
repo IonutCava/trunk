@@ -17,6 +17,7 @@ namespace {
 #else
     const U32 g_MaxShadersComputedPerFrame = 3;
 #endif
+    const U32 g_ReflectionResolution = 256;
 };
 
 bool Material::_shadersComputedThisFrame = false;
@@ -38,6 +39,20 @@ Material::Material()
       _bumpMethod(BumpMethod::NONE)
 {
     REGISTER_FRAME_LISTENER(this, 9999);
+
+    SamplerDescriptor screenSampler;
+    screenSampler.setFilters(TextureFilter::NEAREST);
+    screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.toggleMipMaps(false);
+    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
+                                            GFXImageFormat::RGBA16F,
+                                            GFXDataFormat::FLOAT_16);
+    environmentDescriptor.setSampler(screenSampler);
+    _reflectionTarget.reset(GFX_DEVICE.newFB(false));
+    _reflectionTarget->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _reflectionTarget->useAutoDepthBuffer(true);
+    _reflectionTarget->create(g_ReflectionResolution, g_ReflectionResolution);
+    _reflectionTarget->setClearColor(DefaultColors::WHITE());
 
     _textures.resize(to_const_uint(ShaderProgram::TextureUsage::COUNT), nullptr);
 
@@ -67,6 +82,8 @@ Material::Material()
     zPrePassDescriptor.setColorWrites(false, false, false, false);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 1);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 2);
+
+    setTexture(ShaderProgram::TextureUsage::REFLECTION, _reflectionTarget->getAttachment());
 }
 
 Material::~Material()

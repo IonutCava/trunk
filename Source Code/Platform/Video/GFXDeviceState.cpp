@@ -148,8 +148,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Screen FB should use MSAA if available
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer = newFB(true);
     _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer = newFB(true);
-    // This is an environment cube map centered around the camera
-    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer = newFB(false);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -198,15 +196,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->create(resolution.width, resolution.height);
     hizTexture = _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     hizTexture->lockAutomaticMipMapGeneration(true);
-
-    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
-                                            GFXImageFormat::RGBA16F,
-                                            GFXDataFormat::FLOAT_16);
-    environmentDescriptor.setSampler(screenSampler);
-    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->useAutoDepthBuffer(true);
-    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->create(256, 256);
-    _renderTarget[to_const_uint(RenderTargetID::ENVIRONMENT)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)

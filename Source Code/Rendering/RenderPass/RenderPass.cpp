@@ -17,11 +17,36 @@ namespace Divide {
 namespace {
     Framebuffer::FramebufferTarget _noDepthClear;
     Framebuffer::FramebufferTarget _depthOnly;
+
+    struct VisibleNodesFrontToBack {
+        bool operator()(const RenderPassCuller::VisibleNode& a,
+                        const RenderPassCuller::VisibleNode& b) const {
+            return a.second.lock()->getComponent<RenderingComponent>()->cameraDistanceSQ() >
+                   b.second.lock()->getComponent<RenderingComponent>()->cameraDistanceSQ();
+        }
+    };
+
+    // We need a proper, time-based system, to check reflection budget
+    namespace ReflectionUtil {
+        U32 g_reflectionBudget = 0;
+        U32 g_reflectionBudgetLimit = 3;
+
+        inline bool isInBudget() {
+            return g_reflectionBudget < g_reflectionBudgetLimit;
+        }
+
+        inline void resetBudget() {
+            g_reflectionBudget = 0;
+        }
+
+        inline void updateBudget() {
+            ++g_reflectionBudget;
+        }
+    };
 };
 
 RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags)
     : _sortKey(sortKey),
-      _specialFlag(false),
       _name(name),
       _stageFlags(passStageFlags)
 {
@@ -68,13 +93,32 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
                 LightManager::getInstance().generateShadowMaps();
             } break;
             case RenderStage::REFLECTION: {
-                const vec3<F32>& eyePos = renderState.getCameraConst().getEye();
                 const vec2<F32>& zPlanes= renderState.getCameraConst().getZPlanes();
-                GFX.generateCubeMap(*(GFX.getRenderTarget(GFXDevice::RenderTargetID::ENVIRONMENT)._buffer),
-                                    0,
-                                    eyePos,
-                                    vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                    stageFlag);
+                // Get list of nodes in view from the previous frame
+                SceneManager& sceneMgr = SceneManager::getInstance();
+                RenderPassCuller::VisibleNodeList& nodeCache = sceneMgr.getVisibleNodesCache(RenderStage::Z_PRE_PASS);
+                RenderPassCuller::VisibleNodeList reflectiveNodesInView;
+                reflectiveNodesInView.reserve(nodeCache.size());
+                for (RenderPassCuller::VisibleNode& node : nodeCache) {
+                    reflectiveNodesInView.push_back(node);   
+                }
+                // Sort the nodes from front to back
+                std::sort(std::begin(reflectiveNodesInView),
+                          std::end(reflectiveNodesInView),
+                          VisibleNodesFrontToBack());
+                // While in budget, update reflections
+                ReflectionUtil::resetBudget();
+                for (RenderPassCuller::VisibleNode& node : reflectiveNodesInView) {
+                    if (!ReflectionUtil::isInBudget()) {
+                        break;
+                    }
+                    SceneGraphNode_cptr nodePtr = node.second.lock();
+                    RenderingComponent* const rComp = nodePtr->getComponent<RenderingComponent>();
+                    PhysicsComponent* const pComp = nodePtr->getComponent<PhysicsComponent>();
+                    Attorney::RenderingCompRenderPass::updateReflection(*rComp, pComp->getPosition(), zPlanes);
+                    ReflectionUtil::updateBudget();
+                }
+
             } break;
         };
 
@@ -136,7 +180,8 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
             renderTarget._buffer->end();
             if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {
                 GFX.constructHIZ();
-                LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(), GFX.getMatrix(MATRIX::VIEW));
+                LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(),
+                                                                     GFX.getMatrix(MATRIX::VIEW));
                 SceneManager::getInstance().getRenderer().preRender();
                 renderTarget.cacheSettings();
             } else {

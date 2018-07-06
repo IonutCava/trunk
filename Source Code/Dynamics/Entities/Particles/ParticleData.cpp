@@ -82,8 +82,9 @@ void ParticleData::sort(bool invalidateCache) {
     _renderingColors.resize(count);
 
     for (U32 i = 0; i < count; ++i) {
-        _indices[i].first = i;
-        _indices[i].second = _misc[i].w;
+        std::pair<U32, F32>& idx = _indices[i];
+        idx.first = i;
+        idx.second = _misc[i].w;
     }
     
     auto sortFunc = 
@@ -97,7 +98,7 @@ void ParticleData::sort(bool invalidateCache) {
         Util::insertion_sort(std::begin(_indices), std::end(_indices), sortFunc);
     }
 
-    auto parsePositions = [](U32 count, 
+   auto parsePositions = [](U32 count, 
                              vectorImpl<vec4<F32>>& renderingPositions,
                              const vectorImpl<vec4<F32>>& positions,
                              const vectorImpl<std::pair<U32, F32>>& indices) -> void {

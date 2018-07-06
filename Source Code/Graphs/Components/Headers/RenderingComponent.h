@@ -48,6 +48,7 @@ class SceneGraphNode;
 class ParticleEmitter;
 
 namespace Attorney {
+    class RenderingCompRenderPass;
     class RenderingCompGFXDevice;
     class RenderingCompRenderBin;
     class RenderingCompPassCuller;
@@ -55,6 +56,7 @@ namespace Attorney {
 };
 
 class RenderingComponent : public SGNComponent {
+    friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;
     friend class Attorney::RenderingCompPassCuller;
@@ -87,6 +89,8 @@ class RenderingComponent : public SGNComponent {
     inline U32 commandIndex() const { return _commandIndex; }
 
     inline U32 commandOffset() const { return _commandOffset; }
+
+    inline F32 cameraDistanceSQ() const { return _cameraDistanceSQCache; }
 
     ShaderProgram* const getDrawShader(RenderStage renderStage = RenderStage::DISPLAY);
 
@@ -142,6 +146,10 @@ class RenderingComponent : public SGNComponent {
 
     inline void commandOffset(U32 offset) { _commandOffset = offset; }
 
+    // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
+    // and saves it in the appropriate material slot
+    bool updateReflection(const vec3<F32>& camPos, const vec2<F32>& camZPlanes);
+
    protected:
     Material* _materialInstance;
     /// LOD level is updated at every visibility check
@@ -149,6 +157,7 @@ class RenderingComponent : public SGNComponent {
     U32 _drawOrder;
     U32 _commandIndex;
     U32 _commandOffset;
+    F32 _cameraDistanceSQCache;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderGeometry;
@@ -170,6 +179,18 @@ class RenderingComponent : public SGNComponent {
 };
 
 namespace Attorney {
+class RenderingCompRenderPass {
+    private:
+        static bool updateReflection(RenderingComponent& renderable,
+                                     const vec3<F32>& camPos,
+                                     const vec2<F32>& camZPlanes)
+        {
+            return renderable.updateReflection(camPos, camZPlanes);
+        }
+
+        friend class Divide::RenderPass;
+};
+
 class RenderingCompSceneNode {
     private:
         static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,

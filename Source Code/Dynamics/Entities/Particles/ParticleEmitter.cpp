@@ -13,7 +13,12 @@
 
 namespace Divide {
 namespace {
-    static const U32 g_particleBufferSizeFactor = 5;
+    // 3 should always be enough for round-robin GPU updates to avoid stalls:
+    // 1 in ram, 1 in driver and 1 in VRAM
+    static const U32 g_particleBufferSizeFactor = 3;
+    static const U32 g_particleGeometryBuffer = 0;
+    static const U32 g_particlePositionBuffer = 1;
+    static const U32 g_particleColorBuffer = 2;
 };
 
 ParticleEmitter::ParticleEmitter()
@@ -22,7 +27,6 @@ ParticleEmitter::ParticleEmitter()
       _particleStateBlockHash(0),
       _particleStateBlockHashDepth(0),
       _enabled(false),
-      _uploaded(false),
       _particleTexture(nullptr),
       _particleShader(nullptr),
       _particleGPUBuffer(nullptr),
@@ -42,7 +46,6 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     _particleGPUBuffer = GFX_DEVICE.newGVD(true, g_particleBufferSizeFactor);
     _particleGPUBuffer->create(3);
 
-    // Not using Quad3D to improve performance
     static F32 particleQuad[] = {
         -0.5f, -0.5f, 0.0f, 
          0.5f, -0.5f, 0.0f,
@@ -50,9 +53,11 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
          0.5f,  0.5f, 0.0f,
     };
 
-    _particleGPUBuffer->setBuffer(0, 12, sizeof(F32), false, particleQuad, false, false, true);
-    _particleGPUBuffer->getDrawAttribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION))
-        .set(0, 0, 3, false, 0, 0, GFXDataFormat::FLOAT_32);
+    _particleGPUBuffer->setBuffer(g_particleGeometryBuffer, 12, sizeof(F32), false, particleQuad, false, false, true);
+    GenericVertexData::AttributeDescriptor& descriptor = 
+        _particleGPUBuffer->getDrawAttribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
+
+    descriptor.set(g_particleGeometryBuffer, 0, 3, false, 0, 0, GFXDataFormat::FLOAT_32);
 
     updateData(particleData);
 
@@ -86,29 +91,23 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
 }
 
 bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
-    DIVIDE_ASSERT(particleData.get() != nullptr,
-                  "ParticleEmitter::updateData error: Invalid particle data!");
+    static const U32 positionAttribLocation = 13;
+    static const U32 colorAttribLocation = to_const_uint(AttribLocation::VERTEX_COLOR);
+
+    DIVIDE_ASSERT(particleData.get() != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
 
     _particles = particleData;
 
     U32 particleCount = _particles->totalCount();
 
-    _particleGPUBuffer->setBuffer(1,
-                                  particleCount,
-                                  4 * sizeof(F32),
-                                  true,
-                                  NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(g_particlePositionBuffer, particleCount, sizeof(vec4<F32>), true, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(g_particleColorBuffer, particleCount, sizeof(vec4<U8>), true, NULL, true, true, true);
 
-    _particleGPUBuffer->setBuffer(2,
-                                  particleCount,
-                                  4 * sizeof(U8),
-                                  true,
-                                  NULL, true, true, true);
+    _particleGPUBuffer->getDrawAttribDescriptor(positionAttribLocation)
+        .set(g_particlePositionBuffer, 1, 4, false, sizeof(vec4<F32>), 0, GFXDataFormat::FLOAT_32);
 
-    _particleGPUBuffer->getDrawAttribDescriptor(13)
-        .set(1, 1, 4, false, 4 * sizeof(F32), 0, GFXDataFormat::FLOAT_32);
-    _particleGPUBuffer->getDrawAttribDescriptor(to_const_uint(AttribLocation::VERTEX_COLOR))
-        .set(2, 1, 4, true, 4 * sizeof(U8), 0, GFXDataFormat::UNSIGNED_BYTE);
+    _particleGPUBuffer->getDrawAttribDescriptor(colorAttribLocation)
+        .set(g_particleColorBuffer, 1, 4, true, sizeof(vec4<U8>), 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
         // Distance to camera (squared)
@@ -235,41 +234,21 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
     return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
-void ParticleEmitter::uploadToGPU() {
-    if (_uploaded || getAliveParticleCount() == 0) {
-        return;
-    }
-    
-    _particleGPUBuffer->updateBuffer(1, _particles->aliveCount(), 0, _particles->_renderingPositions.data());
-    _particleGPUBuffer->updateBuffer(2, _particles->aliveCount(), 0, _particles->_renderingColors.data());
-    _particleGPUBuffer->incQueue();
-
-    _uploaded = true;
-}
-
 /// The onDraw call will emit particles
-bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
-                             RenderStage currentStage) {
-    if (_enabled) {
-        uploadToGPU();
-        return true;
-    }
-
-    return false;
+bool ParticleEmitter::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+    return _enabled &&  getAliveParticleCount() > 0;
 }
 
 /// Pre-process particles
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
-    if (!_enabled && !_uploaded) {
+    if (!_enabled) {
         return;
     }
 
     bool validCount = getAliveParticleCount() > 0;
     renderState().setDrawState(validCount);
-
-    _uploaded = false;
 
     PhysicsComponent* transform = sgn.getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
@@ -303,8 +282,13 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     // invalidateCache means that the existing particle data is no longer partially sorted
     _particles->sort(true);
 
-    _boundingBox.first.reset();
     U32 aliveCount = _particles->aliveCount();
+    _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
+    _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
+    _particleGPUBuffer->incQueue();
+
+    _boundingBox.first.reset();
+
     for (U32 i = 0; i < aliveCount; i += to_uint(averageEmitRate) / 4) {
         _boundingBox.first.add(_particles->_position[i]);
     }

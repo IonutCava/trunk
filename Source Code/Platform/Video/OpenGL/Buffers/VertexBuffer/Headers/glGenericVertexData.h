@@ -48,6 +48,36 @@ class glGenericVertexData : public GenericVertexData {
         COUNT
     };
 
+    struct BufferBindConfig {
+        BufferBindConfig() : BufferBindConfig(0, 0, 0)
+        {
+        }
+
+        BufferBindConfig(GLuint buffer,
+                         GLintptr offset,
+                         GLsizei stride) : _buffer(buffer),
+                                           _offset(offset),
+                                           _stride(stride)
+        {
+        }
+
+        inline void set(const BufferBindConfig& other) {
+            _buffer = other._buffer;
+            _offset = other._offset;
+            _stride = other._stride;
+        }
+
+        bool operator==(const BufferBindConfig& other) const {
+            return _buffer == other._buffer &&
+                   _offset == other._offset &&
+                   _stride == other._stride;
+        }
+
+        GLuint _buffer;
+        GLintptr _offset;
+        GLsizei _stride;
+    };
+
    public:
     glGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength);
     ~glGenericVertexData();
@@ -102,6 +132,8 @@ class glGenericVertexData : public GenericVertexData {
 
     void incQueryQueue() override;
 
+    static bool setIfDifferentBindRange(GLuint attributeIndex, BufferBindConfig bindConfig);
+
    private:
     GLuint _indexBuffer;
     GLuint _indexBufferSize;
@@ -123,6 +155,8 @@ class glGenericVertexData : public GenericVertexData {
     vectorImpl<GLUtil::AllocationHandle> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
     vectorImpl<std::unique_ptr<glBufferLockManager> > _lockManagers;
+
+    static hashMapImpl<GLuint, BufferBindConfig> _bindConfigs;
 };
 
 };  // namespace Divide

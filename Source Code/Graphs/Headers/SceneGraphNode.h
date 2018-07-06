@@ -88,6 +88,8 @@ class SceneTransform : public SceneNode {
 
 typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
 typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+typedef std::shared_ptr<const SceneGraphNode> SceneGraphNode_cptr;
+typedef std::weak_ptr<const SceneGraphNode> SceneGraphNode_cwptr;
 
 class SceneGraphNode : public GUIDWrapper,
                        private NonCopyable,
@@ -139,7 +141,8 @@ class SceneGraphNode : public GUIDWrapper,
     SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false);
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<SceneGraphNode_wptr>& selectionHits, bool recursive = true);
+                   vectorImpl<SceneGraphNode_cwptr>& selectionHits,
+                   bool recursive = true) const;
 
     /// Selection helper functions
     void setSelectionFlag(SelectionFlag flag);

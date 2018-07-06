@@ -406,7 +406,7 @@ class ShaderProgram;
 class RingBuffer {
     public:
         explicit RingBuffer(U32 queueLength) : 
-            _queueLength(queueLength)
+            _queueLength(std::max(queueLength, 1U))
         {
             _queueReadIndex = 0;
             _queueWriteIndex = _queueLength - 1;
@@ -422,19 +422,19 @@ class RingBuffer {
 
         inline void incQueue() { 
             if (queueLength() > 1) {
-                _queueWriteIndex = (_queueWriteIndex + 1) % _queueLength;
-                _queueReadIndex = (_queueReadIndex + 1) % _queueLength;
+                _queueWriteIndex = ++_queueWriteIndex % _queueLength;
+                _queueReadIndex = ++_queueReadIndex % _queueLength;
             }
         }
 
         inline void decQueue() {
             if (queueLength() > 1) {
-                _queueWriteIndex = (_queueWriteIndex - 1) % _queueLength;
-                _queueReadIndex = (_queueReadIndex - 1) % _queueLength;
+                _queueWriteIndex = --_queueWriteIndex % _queueLength;
+                _queueReadIndex = --_queueReadIndex % _queueLength;
             }
         }
 
-    protected:
+    private:
         const U32 _queueLength;
         U32 _queueReadIndex;
         U32 _queueWriteIndex;

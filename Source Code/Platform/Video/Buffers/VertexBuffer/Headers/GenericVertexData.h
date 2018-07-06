@@ -75,6 +75,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
         inline void attribIndex(U32 index) {
             _index = index;
             _dirty = true;
+            _wasSet = false;
         }
 
         inline void offset(U32 elementCountOffset) {
@@ -85,6 +86,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
         inline void bufferIndex(U32 bufferIndex) {
             _parentBuffer = bufferIndex;
             _dirty = true;
+            _wasSet = false;
         }
 
         inline void instanceDivisor(U32 instanceDivisor) {
@@ -112,7 +114,12 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
             _dirty = true;
         }
 
-        inline void wasSet(bool wasSet) { _wasSet = wasSet; }
+        inline void wasSet(bool wasSet) { 
+            _wasSet = wasSet;
+            if (!_wasSet) {
+                _dirty = true;
+            }
+        }
 
         inline void clean() { _dirty = false; }
 

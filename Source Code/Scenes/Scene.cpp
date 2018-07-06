@@ -733,7 +733,7 @@ void Scene::findHoverTarget() {
     // Cast the picking ray and find items between the nearPlane and far Plane
     Ray mouseRay(startRay, startRay.direction(endRay));
     for (RenderPassCuller::VisibleNode& node : nodes) {
-        SceneGraphNode_ptr nodePtr = node.second.lock();
+        SceneGraphNode_cptr nodePtr = node.second.lock();
         if (nodePtr) {
             nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates, false);                   
         }

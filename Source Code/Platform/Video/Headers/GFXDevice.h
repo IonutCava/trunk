@@ -217,7 +217,6 @@ DEFINE_SINGLETON(GFXDevice)
    enum class RenderTargetID : U32 {
        SCREEN = 0,
        ANAGLYPH = 1,
-       ENVIRONMENT = 2,
        COUNT
    };
 
@@ -555,7 +554,7 @@ DEFINE_SINGLETON(GFXDevice)
     U32 setStateBlock(U32 stateBlockHash);
     ErrorCode createAPIInstance();
 
-    NodeData& processVisibleNode(SceneGraphNode& node, U32 dataIndex);
+    NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex);
 
     ShaderBuffer& getCommandBuffer(RenderStage stage, U32 pass) const;
 

@@ -85,10 +85,6 @@ class ParticleEmitter : public SceneNode {
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
-
-   private:
-    void uploadToGPU();
-
    private:
     vec3<F32> _camUp, _camRight;
     std::shared_ptr<ParticleData> _particles;
@@ -98,7 +94,6 @@ class ParticleEmitter : public SceneNode {
 
     /// create particles
     bool _enabled;
-    std::atomic_bool _uploaded;
     /// draw the impostor?
     bool _drawImpostor;
 

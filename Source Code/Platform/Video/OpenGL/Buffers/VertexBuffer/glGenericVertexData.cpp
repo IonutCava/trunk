@@ -6,6 +6,22 @@
 
 namespace Divide {
 
+hashMapImpl<GLuint, glGenericVertexData::BufferBindConfig> glGenericVertexData::_bindConfigs;
+
+bool glGenericVertexData::setIfDifferentBindRange(GLuint attributeIndex, 
+                                                  BufferBindConfig bindConfig) {
+
+    // If this is a new index, this will just create a default config
+    BufferBindConfig& crtConfig = _bindConfigs[attributeIndex];
+    if (bindConfig == crtConfig) {
+        return false;
+    }
+
+    crtConfig.set(bindConfig);
+    glBindVertexBuffer(attributeIndex, bindConfig._buffer, bindConfig._offset, bindConfig._stride);
+    return true;
+}
+
 glGenericVertexData::glGenericVertexData(GFXDevice& context, bool persistentMapped, const U32 ringBufferLength)
     : GenericVertexData(context, persistentMapped, ringBufferLength),
       _bufferSet(nullptr),
@@ -35,7 +51,7 @@ glGenericVertexData::~glGenericVertexData() {
             if (_persistentMapped) {
                 _lockManagers[i]->WaitForLockedRange(0,
                                                      _elementCount[i] * _elementSize[i] 
-                                                        * _bufferIsRing[i] ? queueLength() : 1,
+                                                        * (_bufferIsRing[i] ? queueLength() : 1),
                                                      true);
             }
             GLUtil::freeBuffer(_bufferObjects[i]._id, _bufferPersistentData[i]);
@@ -293,46 +309,38 @@ void glGenericVertexData::setBuffer(U32 buffer,
     // Remember the element count and size for the current buffer
     _elementCount[buffer] = elementCount;
     _elementSize[buffer] = elementSize;
-    size_t bufferSize = elementCount * elementSize;
     _bufferIsRing[buffer] = useRingBuffer;
 
+    size_t bufferSize = elementCount * elementSize;
     GLuint sizeFactor = useRingBuffer ? queueLength() : 1;
+    size_t totalSize = bufferSize * sizeFactor;
     GLuint currentBuffer = _bufferObjects[buffer]._id;
     if (persistentMapped) {
         // If we requested a persistently mapped buffer, we use glBufferStorage
         // to pin it in memory
-        BufferStorageMask storageMask =
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        BufferAccessMask accessMask =
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        BufferStorageMask storageMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        BufferAccessMask accessMask =   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 
         if (currentBuffer == 0) {
             _bufferPersistentData[buffer] = 
-                GLUtil::createAndAllocPersistentBuffer(bufferSize * sizeFactor,
-                                                       storageMask,
-                                                       accessMask,
-                                                       currentBuffer);
+                GLUtil::createAndAllocPersistentBuffer(totalSize, storageMask, accessMask, currentBuffer);
             _bufferObjects[buffer]._id = currentBuffer;
         } else {
             _bufferPersistentData[buffer] = 
-                GLUtil::allocPersistentBuffer(currentBuffer,
-                                              bufferSize * sizeFactor,
-                                              storageMask,
-                                              accessMask);
+                GLUtil::allocPersistentBuffer(currentBuffer, totalSize, storageMask, accessMask);
         }
         DIVIDE_ASSERT(_bufferPersistentData[buffer] != nullptr,
                       "glGenericVertexData error: persistent mapping failed "
                       "when setting the current buffer!");
-        _lockManagers[buffer]->WaitForLockedRange(0, bufferSize * (useRingBuffer ? queueLength() : 1), true);
+
         // Create sizeFactor copies of the data and store them in the buffer
-        for (U8 i = 0; i < sizeFactor; ++i) {
-            bufferPtr dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
-            if (data != nullptr) {
+        if (data != nullptr) {
+            for (U8 i = 0; i < sizeFactor; ++i) {
+                bufferPtr dst = (U8*)_bufferPersistentData[buffer] + (bufferSize * i);
                 memcpy(dst, data, bufferSize);
-            } else {
-                memset(dst, NULL, bufferSize);
             }
-       }
+        }
+       
     } else {
         GLenum flag =
             isFeedbackBuffer(buffer)
@@ -341,15 +349,17 @@ void glGenericVertexData::setBuffer(U32 buffer,
                 : (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
                            : GL_STATIC_DRAW);
         if (currentBuffer == 0) {
-            GLUtil::createAndAllocBuffer(bufferSize * sizeFactor, flag, currentBuffer);
+            GLUtil::createAndAllocBuffer(totalSize, flag, currentBuffer);
             _bufferObjects[buffer]._id = currentBuffer;
         } else {
             // If the buffer is not persistently mapped, allocate storage the classic way
-            glNamedBufferData(currentBuffer, bufferSize * sizeFactor, NULL, flag);
+            glNamedBufferData(currentBuffer, totalSize, NULL, flag);
         }
         // And upload sizeFactor copies of the data
-        for (U8 i = 0; i < sizeFactor; ++i) {
-            glNamedBufferSubData(currentBuffer, i * bufferSize, bufferSize, data);
+        if (data != nullptr) {
+            for (U8 i = 0; i < sizeFactor; ++i) {
+                glNamedBufferSubData(currentBuffer, i * bufferSize, bufferSize, data);
+            }
         }
     }
     _bufferSet[buffer] = true;
@@ -374,10 +384,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
     if (!_bufferPersistent[buffer]) {
         // Update part of the data in the buffer at the specified buffer in the
         // copy that's ready for writing
-        glNamedBufferSubData(_bufferObjects[buffer]._id,
-                             offset,
-                             dataCurrentSize,
-                             data);
+        glNamedBufferSubData(_bufferObjects[buffer]._id, offset, dataCurrentSize, data);
     } else {
         // Wait for the target part of the buffer to become available for
         // writing
@@ -404,28 +411,27 @@ void glGenericVertexData::setAttributes(bool feedbackPass) {
 /// Update internal attribute data
 void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) {
     U32 bufferIndex = descriptor.bufferIndex();
-    DIVIDE_ASSERT(_elementSize[bufferIndex] != 0,
-                  "glGenericVertexData error: attribute's parent buffer has an "
-                  "invalid element size!");
 
     GLintptr offset = descriptor.offset() * _elementSize[bufferIndex];
     if (_bufferIsRing[bufferIndex]) {
         offset += _elementCount[bufferIndex] * _elementSize[bufferIndex] * queueReadIndex();
     }
 
-    glBindVertexBuffer(bufferIndex,
-                       _bufferObjects[bufferIndex]._id,
-                       offset,
-                       static_cast<GLsizei>(descriptor.componentsPerElement() *
-                                            _elementSize[bufferIndex]));
+    setIfDifferentBindRange(bufferIndex,
+                            BufferBindConfig(_bufferObjects[bufferIndex]._id,
+                                             offset,
+                                             static_cast<GLsizei>(descriptor.componentsPerElement() *
+                                                                  _elementSize[bufferIndex])));
 
     // Early out if the attribute didn't change
     if (!descriptor.dirty()) {
         return;
     }
+
     // If the attribute wasn't activate until now, enable it
     if (!descriptor.wasSet()) {
         glEnableVertexAttribArray(descriptor.attribIndex());
+        glVertexAttribBinding(descriptor.attribIndex(), bufferIndex);
         descriptor.wasSet(true);
     }
     // Update the attribute data
@@ -448,8 +454,6 @@ void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) 
                               0);
     }
 
-    glVertexAttribBinding(descriptor.attribIndex(), bufferIndex);
-    
     if (descriptor.instanceDivisor() > 0) {
         glVertexBindingDivisor(descriptor.attribIndex(), descriptor.instanceDivisor());
     }

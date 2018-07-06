@@ -60,18 +60,12 @@ class RenderPass {
                             }) != std::cend(_stageFlags);
     }
 
-    inline bool specialFlag() const { return _specialFlag; }
-    inline void specialFlag(const bool state) { _specialFlag = state; }
-
    protected:
     bool preRender(SceneRenderState& renderState, bool anaglyph, U32 pass);
     bool postRender(SceneRenderState& renderState, bool anaglyph, U32 pass);
 
    private:
     U8 _sortKey;
-    /// Used if some renderpasses share the same passStageFlag.
-    /// Usefull to differentiate passes
-    bool _specialFlag;
     stringImpl _name;
     U16 _lastTotalBinSize;
     vectorImpl<RenderStage> _stageFlags;

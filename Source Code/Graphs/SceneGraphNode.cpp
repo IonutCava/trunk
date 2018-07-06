@@ -218,8 +218,8 @@ SceneGraphNode_wptr SceneGraphNode::findNode(const stringImpl& name,  bool scene
 void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
-                               vectorImpl<SceneGraphNode_wptr>& selectionHits,
-                               bool recursive) {
+                               vectorImpl<SceneGraphNode_cwptr>& selectionHits,
+                               bool recursive) const {
 
     if (isSelectable() && _boundingBox.intersect(ray, start, end)) {
         selectionHits.push_back(shared_from_this());

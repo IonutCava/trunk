@@ -4,7 +4,6 @@ layout(location = 13) in vec4 particleNormalData;
 // Output data will be interpolated for each fragment.
 out vec4 particleColor;
 
-// Values that stay constant for the whole mesh.
 uniform vec3 CameraRight_worldspace;
 uniform vec3 CameraUp_worldspace;
 

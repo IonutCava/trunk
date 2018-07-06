@@ -68,7 +68,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     ParamHandler::getInstance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-    RenderPassManager::getInstance().addRenderPass("environmentPass", 0, {RenderStage::REFLECTION}).specialFlag(true);
+    RenderPassManager::getInstance().addRenderPass("environmentPass", 0, {RenderStage::REFLECTION});
     RenderPassManager::getInstance().addRenderPass("shadowPass",      1, {RenderStage::SHADOW});
     RenderPassManager::getInstance().addRenderPass("displayStage",    2, {RenderStage::Z_PRE_PASS, RenderStage::DISPLAY});
 

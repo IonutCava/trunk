@@ -9,22 +9,20 @@
 
 namespace Divide {
 
-namespace {
-    vec3<U32> g_currentBindConfig;
-    vec3<U32> g_tempConfig;
-    bool setIfDifferentBindRange(U32 VBOid, U32 offset, U32 size) {
-        g_tempConfig.set(VBOid, offset, size);
-        if (g_tempConfig != g_currentBindConfig) {
-            g_currentBindConfig.set(g_tempConfig);
-            glBindVertexBuffer(0, VBOid, offset, size);
-            return true;
-        }
-
-        return false;
-    }
-};
-
 glVertexArray::VAOMap glVertexArray::_VAOMap;
+vec3<U32> glVertexArray::_currentBindConfig;
+vec3<U32> glVertexArray::_tempConfig;
+
+bool glVertexArray::setIfDifferentBindRange(U32 VBOid, U32 offset, U32 size) {
+    _tempConfig.set(VBOid, offset, size);
+    if (_tempConfig != _currentBindConfig) {
+        _currentBindConfig.set(_tempConfig);
+        glBindVertexBuffer(0, VBOid, offset, size);
+        return true;
+    }
+
+    return false;
+}
 
 void glVertexArray::cleanup() {
     clearVaos();
@@ -352,7 +350,7 @@ void glVertexArray::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
-        g_currentBindConfig.reset();
+        _currentBindConfig.reset();
     }
 
     // Bind the the vertex buffer and index buffer

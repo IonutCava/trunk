@@ -45,10 +45,12 @@ class Camera;
 class SceneGraph;
 class SceneGraphNode;
 typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+typedef std::weak_ptr<const SceneGraphNode> SceneGraphNode_cwptr;
+
 class RenderPassCuller {
    public:
     // draw order, node pointer
-    typedef std::pair<U32, SceneGraphNode_wptr> VisibleNode;
+    typedef std::pair<U32, SceneGraphNode_cwptr> VisibleNode;
     typedef vectorImpl<VisibleNode> VisibleNodeList;
 
     //Should return true if the node is not inside the frustum
@@ -62,7 +64,7 @@ class RenderPassCuller {
     const VisibleNodeList& getNodeCache(RenderStage stage) const;
 
     void frustumCull(SceneGraph& sceneGraph,
-                     SceneState& sceneState,
+                     const SceneState& sceneState,
                      RenderStage stage,
                      bool async,
                      const CullingFunction& cullingFunction);
@@ -72,14 +74,15 @@ class RenderPassCuller {
    protected:
 
     // return true if the node is not currently visible
-    void frustumCullNode(SceneGraphNode& node,
-                         RenderStage currentStage,
+    void frustumCullNode(const SceneGraphNode& node,
                          const Camera& currentCamera,
+                         RenderStage currentStage,
                          U32 nodeListIndex,
                          bool clearList);
-    void addAllChildren(SceneGraphNode& currentNode,
+    void addAllChildren(const SceneGraphNode& currentNode,
                         RenderStage currentStage,
                         VisibleNodeList& nodes);
+
     U32 stageToCacheIndex(RenderStage stage) const;
    protected:
     CullingFunction _cullingFunction;

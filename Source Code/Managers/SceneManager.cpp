@@ -190,7 +190,7 @@ const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderSta
     };
 
     auto meshCullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        SceneGraphNode_ptr sgnNode = node.second.lock();
+        SceneGraphNode_cptr sgnNode = node.second.lock();
         if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
             return (type == Object3D::ObjectType::MESH);

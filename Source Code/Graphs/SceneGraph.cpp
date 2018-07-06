@@ -105,7 +105,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _octree->update(deltaTime);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits) {
+void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_cwptr>& selectionHits) const {
     _root->intersect(ray, start, end, selectionHits);
 }
 

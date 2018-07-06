@@ -71,7 +71,8 @@ class SceneGraph : private NonCopyable, public FrameListener {
 
     void idle();
 
-    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits);
+    void intersect(const Ray& ray, F32 start, F32 end,
+                   vectorImpl<SceneGraphNode_cwptr>& selectionHits) const;
 
     void deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd);
 

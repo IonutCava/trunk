@@ -121,7 +121,7 @@ void glUniformBuffer::getData(GLintptr offsetElementCount,
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
-        offset += _queueWriteIndex * _allignedBufferSize;
+        offset += queueWriteIndex() * _allignedBufferSize;
         offset += _allignedBufferSize * sizeFactorOffset;
 
         glGetNamedBufferSubData(_UBOid, offset, range, result);
@@ -148,7 +148,7 @@ void glUniformBuffer::updateData(GLintptr offsetElementCount,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
-    offset += _queueWriteIndex * _allignedBufferSize;
+    offset += queueWriteIndex() * _allignedBufferSize;
     offset += _allignedBufferSize * sizeFactorOffset;
 
     if (_persistentMapped) {
@@ -170,7 +170,7 @@ bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 range
 
     size_t range = rangeElementCount * _primitiveSize;
     size_t offset = offsetElementCount * _primitiveSize;
-    offset += _queueReadIndex * _allignedBufferSize;
+    offset += queueReadIndex() * _allignedBufferSize;
     offset += _allignedBufferSize * sizeFactorOffset;
     bool success = false;
     if (setIfDifferentBindRange(_UBOid, 

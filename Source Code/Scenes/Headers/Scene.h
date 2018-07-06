@@ -199,7 +199,7 @@ class NOINITVTABLE Scene : public Resource {
     /// ranges, etc)
     SceneState _sceneState;
     vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
-    vectorImpl<SceneGraphNode_wptr> _sceneSelectionCandidates;
+    vectorImpl<SceneGraphNode_cwptr> _sceneSelectionCandidates;
 
    protected:
     void resetSelection();

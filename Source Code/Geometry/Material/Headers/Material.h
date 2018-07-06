@@ -372,6 +372,10 @@ class Material : public Resource, public FrameListener {
 
     bool canDraw(RenderStage renderStage);
 
+    inline Framebuffer& reflectionTarget() {
+        return *_reflectionTarget.get();
+    }
+
    protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
@@ -419,6 +423,8 @@ class Material : public Resource, public FrameListener {
     BumpMethod _bumpMethod;
 
     ShaderData _shaderData;
+
+    std::unique_ptr<Framebuffer> _reflectionTarget;
 
     static bool _shadersComputedThisFrame;
     static U32  _totalShaderComputeCountThisFrame;

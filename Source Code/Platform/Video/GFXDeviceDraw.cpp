@@ -162,7 +162,7 @@ void GFXDevice::addToRenderQueue(U32 binPropertyMask, const RenderPackage& packa
 }
 
 /// Prepare the list of visible nodes for rendering
-GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode& node, U32 dataIndex) {
+GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex) {
     NodeData& dataOut = _matricesData[dataIndex];
 
     RenderingComponent* const renderable = node.getComponent<RenderingComponent>();
@@ -235,7 +235,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     U32 cmdCount = 0;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
         [&](RenderPassCuller::VisibleNode& node) -> void {
-        SceneGraphNode_ptr nodeRef = node.second.lock();
+        SceneGraphNode_cptr nodeRef = node.second.lock();
 
         RenderingComponent* renderable = nodeRef->getComponent<RenderingComponent>();
         RenderPackage& pkg = 
