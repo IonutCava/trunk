@@ -36,49 +36,8 @@ DEFINE_POOL(ExternalCommand, 4096);
 
 CommandBuffer::CommandBuffer()
 {
-#if defined(USE_BOOST_POLY)
-    // Most common command buffer elements
-    _commands.register_types<BindPipelineCommand,
-                             SendPushConstantsCommand,
-                             BindDescriptorSetsCommand,
-                             DrawCommand>();
-#endif
-
     _commands.reserve(4);
 }
-
-#if defined(USE_BOOST_POLY)
-const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
-    switch (type) {
-        case GFX::CommandType::BEGIN_RENDER_PASS:     return typeid(BeginRenderPassCommand);
-        case GFX::CommandType::END_RENDER_PASS:       return typeid(EndRenderPassCommand);
-        case GFX::CommandType::BEGIN_PIXEL_BUFFER:    return typeid(BeginPixelBufferCommand);
-        case GFX::CommandType::END_PIXEL_BUFFER:      return typeid(EndPixelBufferCommand);
-        case GFX::CommandType::BEGIN_RENDER_SUB_PASS: return typeid(BeginRenderSubPassCommand);
-        case GFX::CommandType::END_RENDER_SUB_PASS:   return typeid(EndRenderSubPassCommand);
-        case GFX::CommandType::BLIT_RT:               return typeid(BlitRenderTargetCommand);
-        case GFX::CommandType::BIND_DESCRIPTOR_SETS:  return typeid(BindDescriptorSetsCommand);
-        case GFX::CommandType::BIND_PIPELINE:         return typeid(BindPipelineCommand);
-        case GFX::CommandType::SEND_PUSH_CONSTANTS:   return typeid(SendPushConstantsCommand);
-        case GFX::CommandType::SET_SCISSOR:           return typeid(SetScissorCommand);
-        case GFX::CommandType::SET_BLEND:             return typeid(SetBlendCommand);
-        case GFX::CommandType::SET_VIEWPORT:          return typeid(SetViewportCommand);
-        case GFX::CommandType::SET_CAMERA:            return typeid(SetCameraCommand);
-        case GFX::CommandType::SET_CLIP_PLANES:       return typeid(SetClipPlanesCommand);
-        case GFX::CommandType::BEGIN_DEBUG_SCOPE:     return typeid(BeginDebugScopeCommand);
-        case GFX::CommandType::END_DEBUG_SCOPE:       return typeid(EndDebugScopeCommand);
-        case GFX::CommandType::DRAW_TEXT:             return typeid(DrawTextCommand);
-        case GFX::CommandType::DRAW_IMGUI:            return typeid(DrawIMGUICommand);
-        case GFX::CommandType::DISPATCH_COMPUTE:      return typeid(DispatchComputeCommand);
-        case GFX::CommandType::READ_ATOMIC_COUNTER:   return typeid(ReadAtomicCounterCommand);
-        case GFX::CommandType::SWITCH_WINDOW:         return typeid(SwitchWindowCommand);
-        case GFX::CommandType::EXTERNAL:              return typeid(ExternalCommand);
-            
-    };
-
-    return typeid(DrawCommand);
-}
-#endif
 
 void CommandBuffer::add(const CommandBuffer& other) {
     if (!other.empty()) {
@@ -105,14 +64,14 @@ void CommandBuffer::batch() {
             skip = false;
 
             const CommandEntry& cmd = *it;
-            if (resetMerge(cmd.first)) {
+            if (resetMerge(cmd.type<GFX::CommandType>())) {
                 prevCommands.fill(nullptr);
             }
 
             CommandBase* crtCommand = getCommandInternal<CommandBase>(cmd);
-            CommandBase* prevCommand = prevCommands[to_U16(cmd.first)];
+            CommandBase* prevCommand = prevCommands[to_U16(cmd.type<GFX::CommandType>())];
             
-            if (prevCommand != nullptr && prevCommand->_type == cmd.first) {
+            if (prevCommand != nullptr && prevCommand->_type == cmd.type<GFX::CommandType>()) {
                 if (tryMergeCommands(prevCommand, crtCommand)) {
                     it = _commandOrder.erase(it);
                     skip = true;
@@ -133,7 +92,7 @@ void CommandBuffer::batch() {
             break;
         }
 
-        switch (cmd.first) {
+        switch (cmd.type<GFX::CommandType>()) {
             case GFX::CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear the RT
                 const GFX::BeginRenderPassCommand& crtCmd = getCommand<GFX::BeginRenderPassCommand>(cmd);
@@ -185,7 +144,7 @@ void CommandBuffer::clean() {
         skip = false;
         const CommandEntry& cmd = *it;
 
-        switch (cmd.first) {
+        switch (cmd.type<GFX::CommandType>()) {
             case CommandType::DRAW_COMMANDS :
             {
                 vectorEASTL<GenericDrawCommand>& cmds = getCommandInternal<DrawCommand>(cmd)->_drawCommands;
@@ -268,7 +227,7 @@ void CommandBuffer::clean() {
 
     vector<vec_size> redundantEntries;
     for (vec_size i = 1; i < size; ++i) {
-        if (_commandOrder[i - 1].first== _commandOrder[i].first && _commandOrder[i].first == CommandType::BIND_PIPELINE) {
+        if (_commandOrder[i - 1].type<GFX::CommandType>() == _commandOrder[i].type<GFX::CommandType>() && _commandOrder[i].type<GFX::CommandType>() == CommandType::BIND_PIPELINE) {
             redundantEntries.push_back(i - 1);
         }
     }
@@ -287,7 +246,7 @@ bool CommandBuffer::validate() const {
         U32 pushedDebugScope = 0;
 
         for (const CommandEntry& cmd : _commandOrder) {
-            switch (cmd.first) {
+            switch (cmd.type<GFX::CommandType>()) {
                 case GFX::CommandType::BEGIN_RENDER_PASS: {
                     if (pushedPass) {
                         return false;

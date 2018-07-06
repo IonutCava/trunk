@@ -956,7 +956,7 @@ void GL_API::popDebugMessage() {
 }
 
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
-    switch (entry.first) {
+    switch (entry.type<GFX::CommandType>()) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             const GFX::BeginRenderPassCommand& crtCmd = commandBuffer.getCommand<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd._target));
@@ -1102,7 +1102,7 @@ bool GL_API::makeTextureResident(const TextureData& textureData, U8 binding) {
     return bindTexture(
         static_cast<GLushort>(binding),
         textureData.getHandle(),
-        textureData._samplerHash);
+        textureData._samplerHandle);
 }
 
 bool GL_API::changeViewportInternal(const Rect<I32>& viewport) {
@@ -1111,19 +1111,20 @@ bool GL_API::changeViewportInternal(const Rect<I32>& viewport) {
 
 /// Verify if we have a sampler object created and available for the given
 /// descriptor
-size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
+U32 GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // Get the descriptor's hash value
     size_t hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map
-    UpgradableReadLock ur_lock(s_samplerMapLock);
-    // If we fail to find it, we need to create a new sampler object
-    if (s_samplerMap.find(hashValue) == std::end(s_samplerMap)) {
-        UpgradeToWriteLock w_lock(ur_lock);
+    GLuint sampler = getSamplerHandle(hashValue);
+    if (sampler == 0) {
+        WriteLock w_lock(s_samplerMapLock);
         // Create and store the newly created sample object. GL_API is responsible for deleting these!
-        hashAlg::emplace(s_samplerMap, hashValue, glSamplerObject::construct(descriptor));
+        sampler = glSamplerObject::construct(descriptor);
+        hashAlg::emplace(s_samplerMap, hashValue, sampler);
     }
-    // Return the sampler object's hash value
-    return hashValue;
+
+    // Return the sampler object's handle
+    return to_U32(sampler);
 }
 
 /// Return the OpenGL sampler object's handle for the given hash value
@@ -1138,11 +1139,9 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
             return it->second;
         }
-           
-        Console::errorfn(Locale::get(_ID("ERROR_NO_SAMPLER_OBJECT_FOUND")), samplerHash);
     }
 
-    return 0;
+    return 0u;
 }
 
 U32 GL_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {

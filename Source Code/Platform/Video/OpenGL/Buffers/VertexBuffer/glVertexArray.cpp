@@ -253,7 +253,7 @@ bool glVertexArray::refresh() {
         size_t crtHash = 0;
         // Dirty on a VAO map cache miss
         vaoCachesDirty[i] = !_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash);
-        Console::printfn("      %d : %d (pass: %s)", to_base(RenderStagePass::stage(i)), to_U32(crtHash), (to_base(RenderStagePass::pass(i)) == 0 ? "PrePass" : "FwdPass"));    }
+        Console::printfn("      %s : %zu (pass: %s)", TypeUtil::renderStageToString(RenderStagePass::stage(i)), crtHash, TypeUtil::renderPassTypeToString(RenderStagePass::pass(i)));    }
 
     std::pair<bufferPtr, size_t> bufferData = getMinimalData();
     // If any of the VBO's components changed size, we need to recreate the

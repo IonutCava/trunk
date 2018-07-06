@@ -46,7 +46,7 @@ public:
     TextureData(TextureType type, U32 handle)
       : _textureType(type),
         _textureHandle(handle),
-        _samplerHash(0)
+        _samplerHandle(0u)
     {
     }
 
@@ -62,16 +62,16 @@ public:
     inline bool operator==(const TextureData& other) const {
         return _textureType == other._textureType &&
                _textureHandle == other._textureHandle &&
-               _samplerHash == other._samplerHash;
+               _samplerHandle == other._samplerHandle;
     }
 
     inline bool operator!=(const TextureData& other) const {
         return _textureType != other._textureType ||
                _textureHandle != other._textureHandle ||
-               _samplerHash != other._samplerHash;
+               _samplerHandle != other._samplerHandle;
     }
     
-    size_t _samplerHash = 0;
+    U32 _samplerHandle = 0u;
     U32 _textureHandle = 0u;
     TextureType _textureType = TextureType::COUNT;
 };

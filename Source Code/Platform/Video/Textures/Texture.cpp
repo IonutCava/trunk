@@ -51,7 +51,6 @@ Texture::Texture(GFXDevice& context,
 
     _width = _height = 0;
     _textureData._textureType = _descriptor.type();
-    _textureData._samplerHash = _descriptor._samplerDescriptor.getHash();
 }
 
 Texture::~Texture()
@@ -216,7 +215,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 
         _descriptor.internalFormat(fileData.format());
     } else {
-        DIVIDE_ASSERT(_descriptor._type == _textureData._textureType, "Texture::loadFile error: Texture Layer with diferent type detected!");
+        DIVIDE_ASSERT(_descriptor._type == _textureData._textureType, "Texture::loadFile error: Texture Layer with different type detected!");
     }
     // Uploading to the GPU dependents on the rendering API
     loadData(info, fileData.imageLayers());
@@ -229,7 +228,6 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name, Imag
 void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     // This can be called at any time
     _descriptor.setSampler(descriptor);
-    _textureData._samplerHash = descriptor.getHash();
 }
 
 void Texture::validateDescriptor() {

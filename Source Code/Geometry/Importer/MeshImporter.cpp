@@ -273,8 +273,9 @@ namespace Import {
             mesh->addSubMesh(tempSubMesh);
         }
 
-        mesh->getGeometryVB()->create(!mesh->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
-        
+        mesh->getGeometryVB()->create();
+        mesh->getGeometryVB()->keepData(mesh->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")),
                            dataIn._modelName.c_str(),

@@ -66,17 +66,12 @@ void ProfileTimer::reset() {
 }
 
 void ProfileTimer::addChildTimer(ProfileTimer& child) {
-    U32 childID = child._globalIndex;
     // must not have a parent
     assert(child._parent > Config::Profile::MAX_PROFILE_TIMERS);
     // must be unique child
-    assert(std::find_if(std::cbegin(_children),
-                        std::cend(_children),
-                        [childID](U32 entry) {
-                            return entry == childID;
-                        }) == std::cend(_children));
+    assert(!hasChildTimer(child));
 
-    _children.push_back(childID);
+    _children.push_back(child._globalIndex);
     child._parent = _globalIndex;
 }
 
@@ -91,6 +86,16 @@ void ProfileTimer::removeChildTimer(ProfileTimer& child) {
                         }),
         std::end(_children));
     child._parent = Config::Profile::MAX_PROFILE_TIMERS + 1;
+}
+
+bool ProfileTimer::hasChildTimer(ProfileTimer& child) {
+    U32 childID = child._globalIndex;
+
+    return std::find_if(std::cbegin(_children),
+                        std::cend(_children),
+                        [childID](U32 entry) {
+                            return entry == childID;
+            }) != std::cend(_children);
 }
 
 U64 ProfileTimer::getChildTotal() const {

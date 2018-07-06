@@ -519,8 +519,9 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
         Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
         {
-            Time::ScopedTimer time2(getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer"));
-            _renderPassManager->render(_sceneManager->getActiveScene().renderState());
+            Time::ProfileTimer& timer = getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer");
+            Time::ScopedTimer time2(timer);
+            _renderPassManager->render(_sceneManager->getActiveScene().renderState(), &timer);
         }
 
         if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_END, evt)) {

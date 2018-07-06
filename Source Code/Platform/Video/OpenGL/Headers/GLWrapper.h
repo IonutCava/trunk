@@ -108,7 +108,7 @@ protected:
 
     /// Verify if we have a sampler object created and available for the given
     /// descriptor
-    static size_t getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
+    static U32 getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
     /// Clipping planes are only enabled/disabled if they differ from the current
     /// state
     void updateClipPlanes(const FrustumClipPlanes& list) override;
@@ -215,8 +215,8 @@ public:
     static bool setPixelUnpackAlignment(GLint unpackAlignment = 4, GLint rowLength = 0,
                                         GLint skipRows = 0, GLint skipPixels = 0);
     /// Bind a texture specified by a GL handle and GL type to the specified unit
-    /// using the sampler object defined by hash value
-    static bool bindTexture(GLushort unit, GLuint handle, size_t samplerHash = 0);
+    /// using the sampler object defined by handle value
+    static bool bindTexture(GLushort unit, GLuint handle, GLuint samplerHandle = 0u);
     static bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
         bool layered, GLint layer, GLenum access,
         GLenum format);
@@ -394,8 +394,8 @@ private:
     typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
     static imageBoundMapDef s_imageBoundMap;
 
-    static SharedLock s_mipmapQueueLock;
-    static std::unordered_set<GLuint> s_mipmapQueue;
+    static std::set<GLuint> s_mipmapQueueSet;
+    static moodycamel::ConcurrentQueue<GLuint> s_mipmapQueue;
 
     /// /*texture slot*/ /*sampler handle*/
     typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;

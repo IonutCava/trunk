@@ -29,65 +29,75 @@ RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
      _renderQueue(parent),
      _context(context),
-     _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer"))
+     _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
+     _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
+     _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
+     _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer"))
 {
+    _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
     ResourceDescriptor shaderDesc("OITComposition");
     _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
     _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer(true));
+    _mainCommandBuffer = GFX::allocateCommandBuffer();
 }
 
 RenderPassManager::~RenderPassManager()
 {
+    GFX::deallocateCommandBuffer(_mainCommandBuffer);
     for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
         GFX::deallocateCommandBuffer(buf, true);
     }
 }
 
-void RenderPassManager::render(SceneRenderState& sceneRenderState) {
+void RenderPassManager::render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer) {
+    if (parentTimer != nullptr && !parentTimer->hasChildTimer(*_renderPassTimer)) {
+        parentTimer->addChildTimer(*_renderPassTimer);
+        parentTimer->addChildTimer(*_postFxRenderTimer);
+        parentTimer->addChildTimer(*_flushCommandBufferTimer);
+    }
+
     TaskPriority priority = Config::USE_THREADED_COMMAND_GENERATION ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
 
     TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle renderTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
 
     U8 renderPassCount = to_U8(_renderPasses.size());
+    {
+        Time::ScopedTimer timeAll(*_renderPassTimer);
+        for (U8 i = 0; i < renderPassCount; ++i) {
+            std::shared_ptr<RenderPass>& rp = _renderPasses[i];
+            GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
+            CreateTask(pool,
+                       &renderTask,
+                       [&rp, &buf, &sceneRenderState](const Task& parentTask) {
+                           buf.clear();
+                           rp->render(sceneRenderState, buf);
+                           buf.batch();
+                       }).startTask(priority);
+        }
 
-    for (U8 i = 0; i < renderPassCount; ++i) {
-        std::shared_ptr<RenderPass>& rp = _renderPasses[i];
-        GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
         CreateTask(pool,
                    &renderTask,
-                   [&rp, &buf, &sceneRenderState](const Task& parentTask) {
-                       buf.clear();
-                       rp->render(sceneRenderState, buf);
-                       buf.batch();
+                   [this](const Task& parentTask) {
+                      Time::ScopedTimer time(*_postFxRenderTimer);
+                      GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
+                      buf.clear();
+                      PostFX::instance().apply(buf);
+                      buf.batch();
                    }).startTask(priority);
+
+        renderTask.startTask(priority).wait();
+    }
+    {
+        Time::ScopedTimer timeCommands(*_buildCommandBufferTimer);
+        _mainCommandBuffer->clear();
+        for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
+            _mainCommandBuffer->add(*_renderPassCommandBuffer[i]);
+        }
     }
 
-    CreateTask(pool,
-               &renderTask,
-               [this](const Task& parentTask) {
-                  Time::ScopedTimer time3(*_postFxRenderTimer);
-                  GFX::CommandBuffer& buf = *_renderPassCommandBuffer.back();
-                  buf.clear();
-                  PostFX::instance().apply(buf);
-                  buf.batch();
-               }).startTask(priority);
-
-    renderTask.startTask(priority).wait();
-
-    //ToDo: Maybe handle this differently?
-#if 0 //Direct render and clear
-    for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
-        _context.flushCommandBuffer(*_renderPassCommandBuffer[i]);
-    }
-#else // Maybe better batching and validation?
-    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
-    for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
-        GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
-        sBuffer().add(buf);
-    }
-    _context.flushCommandBuffer(sBuffer());
-#endif
+    Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
+    _context.flushCommandBuffer(*_mainCommandBuffer);
 }
 
 RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
@@ -381,10 +391,11 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
         }
 
+        // We don't need to clear the colour buffers at this stage since ... hopefully, they will be overwritten completely. Right?
         RTDrawDescriptor& drawPolicy = 
             params._drawPolicy ? *params._drawPolicy
-                               : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyKeepDepth()
-                                                             : RenderTarget::defaultPolicy());
+                               : (!Config::DEBUG_HIZ_CULLING ? RenderTarget::defaultPolicyNoClear()
+                                                             : RenderTarget::defaultPolicyKeepColour());
 
         drawPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, drawToDepth);
 

@@ -66,7 +66,7 @@ public:
     ~RenderPassManager();
 
     /// Call every renderqueue's render function in order
-    void render(SceneRenderState& sceneRenderState);
+    void render(SceneRenderState& sceneRenderState, Time::ProfileTimer* parentTimer = nullptr);
     /// Add a new pass that will run once for each of the RenderStages specified
     RenderPass& addRenderPass(const stringImpl& renderPassName,
                               U8 orderKey,
@@ -105,8 +105,12 @@ private:
 
     vectorEASTL<std::shared_ptr<RenderPass>> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
+    GFX::CommandBuffer* _mainCommandBuffer;
 
     ShaderProgram_ptr _OITCompositionShader;
+    Time::ProfileTimer* _renderPassTimer;
+    Time::ProfileTimer* _buildCommandBufferTimer;
+    Time::ProfileTimer* _flushCommandBufferTimer;
     Time::ProfileTimer* _postFxRenderTimer;
     std::array<vectorEASTL<RenderPackage*>, to_base(RenderStage::COUNT)> _renderQueues;
 };

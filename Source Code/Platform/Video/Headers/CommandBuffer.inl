@@ -37,70 +37,33 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
-namespace {
-    template<typename T>
-    struct DeleteCommand {
-        DeleteCommand()
-        {
-        }
-
-        inline void operator()(T* res) {
-            WriteLock w_lock(T::s_PoolMutex);
-            T::s_Pool.deleteElement(res);
-        }
-    };
-};
-
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type
 CommandBuffer::add(const T* command) {
-    GFX::CommandType type = command->_type;
-
-#if defined(USE_BOOST_POLY)
-    _commands.insert(*command);
-    _commandOrder.emplace_back(type, _commands.size(getType(type)) - 1);
-#else
+    T* ptr = nullptr;
     {
         WriteLock w_lock(T::s_PoolMutex);
-        std::shared_ptr<T> ptr(T::s_Pool.newElement(*command), DeleteCommand<T>());
-
-        _commands.insert(static_cast<size_t>(type), ptr);
+        ptr = T::s_Pool.newElement(*command);
     }
-    _commandOrder.emplace_back(type, _commands.size(static_cast<size_t>(type)) - 1);
-#endif
+
+    _commandOrder.emplace_back(_commands.insert(static_cast<vec_size_eastl>(command->_type),
+                                                std::shared_ptr<T>(ptr, [](T* cmd)
+                                                {
+                                                    WriteLock w_lock(T::s_PoolMutex);
+                                                    T::s_Pool.deleteElement(cmd);
+                                                })));
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::getCommandInternal(const CommandEntry& commandEntry) {
-#if defined(USE_BOOST_POLY)
-    const std::type_info& typeInfo = getType(commandEntry.first);
-    return static_cast<T*>(&(*(_commands.begin(typeInfo) + commandEntry.second)));
-#else
-    return static_cast<T*>(&_commands.get(static_cast<size_t>(commandEntry.first), commandEntry.second));
-#endif
+    return static_cast<T*>(&_commands.get(commandEntry));
 }
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const T&>::type
 CommandBuffer::getCommand(const CommandEntry& commandEntry) const {
-#if defined(USE_BOOST_POLY)
-    const std::type_info& typeInfo = getType(commandEntry.first);
-    return static_cast<const T&>(*(_commands.begin(typeInfo) + commandEntry.second));
-#else
-    return static_cast<const T&>(_commands.get(static_cast<size_t>(commandEntry.first), commandEntry.second));
-#endif
-}
-
-template<typename T>
-inline bool CommandBuffer::registerType() {
-#if defined(USE_BOOST_POLY)
-    if (!_commands.is_registered<T>()) {
-        _commands.register_types<T>();
-    }
-#endif
-
-    return true;
+    return static_cast<const T&>(_commands.get(commandEntry));
 }
 
 inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {

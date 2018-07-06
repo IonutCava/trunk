@@ -64,8 +64,8 @@ size_t GL_API::s_currentStateBlockHash = 0;
 size_t GL_API::s_previousStateBlockHash = 0;
 GL_API::textureBoundMapDef GL_API::s_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
-SharedLock GL_API::s_mipmapQueueLock;
-std::unordered_set<GLuint> GL_API::s_mipmapQueue;
+std::set<GLuint> GL_API::s_mipmapQueueSet;
+moodycamel::ConcurrentQueue<GLuint> GL_API::s_mipmapQueue;
 GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::s_samplerMap;
 SharedLock GL_API::s_samplerMapLock;
@@ -442,22 +442,26 @@ bool GL_API::bindTextures(GLushort unitOffset,
                           GLuint textureCount,
                           GLuint* textureHandles,
                           GLuint* samplerHandles) {
+    { //Refresh mipmaps
+        GLuint tempHandle = 0;
+        while (s_mipmapQueue.try_dequeue(tempHandle)) {
+            s_mipmapQueueSet.insert(tempHandle);
+        }
+
+        for (GLuint iter : s_mipmapQueueSet) {
+            glGenerateTextureMipmap(iter);
+        }
+
+        if (!s_mipmapQueueSet.empty()) {
+            s_mipmapQueueSet.clear();
+        }
+    }
+
     if (textureCount > 0 &&
         unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
         GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
 
-        if (textureHandles != nullptr) {
-            UpgradableReadLock ur_lock(s_mipmapQueueLock);
-            for (GLuint i = 0; i < textureCount; ++i) {
-                GLuint handle = textureHandles[i];
-                if (s_mipmapQueue.find(handle) != std::cend(s_mipmapQueue)) {
-                    glGenerateTextureMipmap(handle);
-                    UpgradeToWriteLock w_lock(ur_lock);
-                    s_mipmapQueue.erase(handle);
-                }
-            }
-        }
         if (textureCount == 1) {
             GLuint& crtHandle = s_textureBoundMap[unitOffset];
             GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
@@ -483,20 +487,18 @@ bool GL_API::bindTextures(GLushort unitOffset,
 }
 
 void GL_API::queueComputeMipMap(GLuint textureHandle) {
-    WriteLock w_lock(s_mipmapQueueLock);
-    s_mipmapQueue.insert(textureHandle);
+    WAIT_FOR_CONDITION(s_mipmapQueue.enqueue(textureHandle));
 }
 
-// Bind a texture specified by a GL handle and GL type to the specified unit
+/// Bind a texture specified by a GL handle and GL type to the specified unit
 /// using the sampler object defined by hash value
 bool GL_API::bindTexture(GLushort unit,
                          GLuint handle,
-                         size_t samplerHash) {
+                         GLuint samplerHandle) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
     DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::s_maxTextureUnits),
                   "GLStates error: invalid texture unit specified as a texture binding slot!");
-    GLuint samplerHandle = getSamplerHandle(samplerHash);
     return bindTextures(unit, 1, &handle, &samplerHandle);
 }
 

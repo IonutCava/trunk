@@ -77,9 +77,9 @@ void RenderPackage::drawCommand(I32 index, I32 cmdIndex, const GenericDrawComman
 }
 
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
-    CommandEntry entry;
-    entry._type = GFX::CommandType::DRAW_COMMANDS;
-    entry._index = _drawCommands.size();
+    GFX::CommandBuffer::CommandEntry entry;
+    entry._typeIndex = static_cast<vec_size_eastl>(GFX::CommandType::DRAW_COMMANDS);
+    entry._elementIndex = _drawCommands.size();
     _commandOrdering.push_back(entry);
 
     _drawCommands.push_back(cmd);
@@ -114,9 +114,9 @@ void RenderPackage::pipeline(I32 index, const Pipeline& pipeline) {
 }
 
 void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline) {
-    CommandEntry entry;
-    entry._type = GFX::CommandType::BIND_PIPELINE;
-    entry._index = _pipelines.size();
+    GFX::CommandBuffer::CommandEntry entry;
+    entry._typeIndex = static_cast<vec_size_eastl>(GFX::CommandType::BIND_PIPELINE);
+    entry._elementIndex = _pipelines.size();
     _commandOrdering.push_back(entry);
 
     _pipelines.push_back(pipeline);
@@ -135,9 +135,9 @@ void RenderPackage::clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) {
 }
 
 void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes) {
-    CommandEntry entry;
-    entry._type = GFX::CommandType::SET_CLIP_PLANES;
-    entry._index = _clipPlanes.size();
+    GFX::CommandBuffer::CommandEntry entry;
+    entry._typeIndex = static_cast<vec_size_eastl>(GFX::CommandType::SET_CLIP_PLANES);
+    entry._elementIndex = _clipPlanes.size();
     _commandOrdering.push_back(entry);
 
     _clipPlanes.push_back(clipPlanes);
@@ -156,9 +156,9 @@ void RenderPackage::pushConstants(I32 index, const PushConstants& constants) {
 }
 
 void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants) {
-    CommandEntry entry;
-    entry._type = GFX::CommandType::SEND_PUSH_CONSTANTS;
-    entry._index = _pushConstants.size();
+    GFX::CommandBuffer::CommandEntry entry;
+    entry._typeIndex = static_cast<vec_size_eastl>(GFX::CommandType::SEND_PUSH_CONSTANTS);
+    entry._elementIndex = _pushConstants.size();
     _commandOrdering.push_back(entry);
 
     _pushConstants.push_back(pushConstants);
@@ -180,9 +180,9 @@ void RenderPackage::descriptorSet(I32 index, const DescriptorSet_ptr& descriptor
 }
 
 void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets) {
-    CommandEntry entry;
-    entry._type = GFX::CommandType::BIND_DESCRIPTOR_SETS;
-    entry._index = _descriptorSets.size();
+    GFX::CommandBuffer::CommandEntry entry;
+    entry._typeIndex = static_cast<vec_size_eastl>(GFX::CommandType::BIND_DESCRIPTOR_SETS);
+    entry._elementIndex = _descriptorSets.size();
     _commandOrdering.push_back(entry);
     assert(descriptorSets._set != nullptr);
     _descriptorSets.push_back(descriptorSets);
@@ -192,7 +192,7 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
    const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
-        switch (cmd.first) {
+        switch (cmd.type<GFX::CommandType>()) {
             case GFX::CommandType::DRAW_COMMANDS: {
                 addDrawCommand(commandBuffer.getCommand<GFX::DrawCommand>(cmd));
             } break;
@@ -262,22 +262,22 @@ GFX::CommandBuffer& RenderPackage::buildAndGetCommandBuffer(bool cacheMiss) {
         GFX::CommandBuffer& buffer = *_commands;
 
         buffer.clear();
-        for (const CommandEntry& cmd : _commandOrdering) {
-            switch (cmd._type) {
+        for (const GFX::CommandBuffer::CommandEntry& cmd : _commandOrdering) {
+            switch (cmd.type<GFX::CommandType>()) {
                 case GFX::CommandType::DRAW_COMMANDS: {
-                    GFX::EnqueueCommand(buffer, _drawCommands[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _drawCommands[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::BIND_PIPELINE: {
-                    GFX::EnqueueCommand(buffer, _pipelines[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _pipelines[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::SET_CLIP_PLANES: {
-                    GFX::EnqueueCommand(buffer, _clipPlanes[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _clipPlanes[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                    GFX::EnqueueCommand(buffer, _pushConstants[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _pushConstants[cmd._elementIndex]);
                 } break;
                 case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                    GFX::EnqueueCommand(buffer, _descriptorSets[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _descriptorSets[cmd._elementIndex]);
                 } break;
                 default:
                 case GFX::CommandType::COUNT: {

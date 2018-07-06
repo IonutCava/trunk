@@ -27,8 +27,6 @@ glTexture::glTexture(GFXDevice& context,
       glObject(glObjectType::TYPE_TEXTURE, context),
      _lockManager(MemoryManager_NEW glLockManager())
 {
-    GL_API::getOrCreateSamplerObject(_descriptor.getSampler());
-
     _allocatedStorage = false;
 
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
@@ -38,6 +36,8 @@ glTexture::glTexture(GFXDevice& context,
 
     assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
     _textureData.setHandle(tempHandle);
+    _textureData._samplerHandle = GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
+
     if (Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_TEXTURE, tempHandle, -1, name.c_str());
     }
@@ -397,7 +397,7 @@ void glTexture::copy(const Texture_ptr& other) {
 
 void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
     Texture::setCurrentSampler(descriptor);
-    GL_API::getOrCreateSamplerObject(descriptor);
+    _textureData._samplerHandle = GL_API::getOrCreateSamplerObject(descriptor);
 }
 
 bool glTexture::resourceLoadComplete() {

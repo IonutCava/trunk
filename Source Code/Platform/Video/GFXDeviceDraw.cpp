@@ -45,8 +45,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     }
 
     const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
-    for (auto cmd : commands) {
-        switch (cmd.first) {
+    for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
+        switch (cmd.type<GFX::CommandType>()) {
             case GFX::CommandType::BLIT_RT: {
                 const GFX::BlitRenderTargetCommand& crtCmd = commandBuffer.getCommand<GFX::BlitRenderTargetCommand>(cmd);
                 RenderTarget& source = renderTargetPool().renderTarget(crtCmd._source);
@@ -83,7 +83,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
                 uploadGPUBlock(); /*no break. fall-through*/
 
             default:
-                _api->flushCommand(cmd, commandBuffer); break;
+                _api->flushCommand(cmd, commandBuffer);
+                break;
         }
     }
 }

@@ -407,5 +407,8 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Dimension.h">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\PolyContainer.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

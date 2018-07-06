@@ -33,10 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GFX_COMMAND_H_
 #define _GFX_COMMAND_H_
 
-#ifndef USE_BOOST_POLY
-//#define USE_BOOST_POLY
-#endif
-
 #include "GenericDrawCommand.h"
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
@@ -86,7 +82,7 @@ struct CommandBase
 
     virtual ~CommandBase() = default;
 
-    virtual bool addToBuffer(CommandBuffer& buffer) const = 0;
+    virtual void addToBuffer(CommandBuffer& buffer) const = 0;
 
     virtual const char* toString() const { return _typeName; }
 
@@ -100,13 +96,8 @@ struct Command : public CommandBase {
     
     virtual ~Command() = default;
 
-    virtual bool addToBuffer(CommandBuffer& buffer) const override {
-        if (buffer.registerType<T>()) {
-            buffer.add(reinterpret_cast<const T*>(this));
-            return true;
-        }
-
-        return false;
+    virtual void addToBuffer(CommandBuffer& buffer) const override {
+        buffer.add(reinterpret_cast<const T*>(this));
     }
 };
 

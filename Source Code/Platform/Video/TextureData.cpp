@@ -14,7 +14,7 @@ namespace {
     size_t GetHash(TextureData data) {
         size_t hash = 0;
         Util::Hash_combine(hash, to_U32(data._textureType));
-        Util::Hash_combine(hash, data._samplerHash);
+        Util::Hash_combine(hash, data._samplerHandle);
         Util::Hash_combine(hash, data._textureHandle);
         return hash;
     }

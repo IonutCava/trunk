@@ -25,6 +25,18 @@ RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
     return s_policyKeepDepth;
 }
 
+RTDrawDescriptor& RenderTarget::defaultPolicyKeepColour() {
+    static RTDrawDescriptor s_policyKeepColour;
+    static bool s_policyInitialised = false;
+
+    if (!s_policyInitialised) {
+        s_policyKeepColour.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        s_policyInitialised = true;
+    }
+
+    return s_policyKeepColour;
+}
+
 RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
     static RTDrawDescriptor s_policyDepthOnly;
     static bool s_policyInitialised = false;
@@ -37,6 +49,19 @@ RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
     }
 
     return s_policyDepthOnly;
+}
+
+RTDrawDescriptor& RenderTarget::defaultPolicyNoClear() {
+    static RTDrawDescriptor s_policyNoClear;
+    static bool s_policyInitialised = false;
+
+    if (!s_policyInitialised) {
+        s_policyNoClear.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        s_policyNoClear.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        s_policyInitialised = true;
+    }
+
+    return s_policyNoClear;
 }
 
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)

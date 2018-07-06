@@ -212,6 +212,7 @@
     <ClInclude Include="..\../Source Code/Utility\Headers\TextLabel.h" />
     <ClInclude Include="..\../Source Code/Utility\Headers\XMLParser.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Dimension.h" />
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\PolyContainer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\../Source Code/Core\Headers\ByteBuffer.inl" />

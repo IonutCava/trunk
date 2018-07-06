@@ -67,11 +67,6 @@ public:
         COUNT = 7
     };
 
-    struct CommandEntry {
-        size_t _index = 0;
-        GFX::CommandType _type = GFX::CommandType::COUNT;
-    };
-
 public:
     explicit RenderPackage(bool useSecondaryBuffers);
     ~RenderPackage();
@@ -130,7 +125,7 @@ private:
 
 protected:
     U32 _dirtyFlags = 0;
-    vectorEASTL<CommandEntry> _commandOrdering;
+    vectorEASTL<GFX::CommandBuffer::CommandEntry> _commandOrdering;
     // Cached command buffer
     bool _commandBufferDirty = true;
     GFX::CommandBuffer* _commands;

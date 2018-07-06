@@ -76,6 +76,8 @@ class ProfileTimer {
     void addChildTimer(ProfileTimer& child);
     void removeChildTimer(ProfileTimer& child);
 
+    bool hasChildTimer(ProfileTimer& child);
+
    protected:
      vector<U32> _children;
      U32 _parent;
