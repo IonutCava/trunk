@@ -32,6 +32,38 @@
 #define _CORE_MATH_MATH_VECTORS_H_
 
 namespace Divide {
+
+namespace {
+    //ref: http://stackoverflow.com/questions/6042399/how-to-compare-m128-types
+    bool fneq128_b(__m128 const& a, __m128 const& b, F32 epsilon = 1.e-8f)
+    {
+        // epsilon vector
+        auto eps = _mm_set1_ps(epsilon);
+        // absolute of difference of a and b
+        auto abd = _mm_andnot_ps(_mm_set1_ps(-0.0f), _mm_sub_ps(a, b));
+        // compare abd to eps
+        // returns true if one of the elements in abd is not less than 
+        // epsilon
+        return _mm_movemask_ps(_mm_cmplt_ps(abd, eps)) != 0xF;
+    }
+
+    //ref: https://www.opengl.org/discussion_boards/showthread.php/159586-my-SSE-code-is-slower-than-normal-why
+    inline __m128 DOT_SIMD(const __m128 &a, const __m128 &b)
+    {
+        __m128 r;
+
+        r = _mm_mul_ps(a, b);
+        r = _mm_add_ps(_mm_movehl_ps(r, r), r);
+        r = _mm_add_ss(_mm_shuffle_ps(r, r, 1), r);
+
+        return r;
+    }
+
+    inline void DOT_SIMD(const __m128 &a, const __m128 &b, F32 &dot)
+    {
+        _mm_store_ss(&dot, DOT_SIMD(a, b));
+    }
+}
 /*
 *  useful vector functions
 */
@@ -166,17 +198,12 @@ inline vec4<T> operator*(T fl, const vec4<T> &v) {
 
 /// convert the vector to unit length
 template <typename T>
-inline T vec2<T>::normalize() {
+inline void vec2<T>::normalize() {
     T l = this->length();
 
-    if (l < EPSILON_F32) {
-        return 0;
+    if (l >= EPSILON_F32) {
+        *this *= 1.0f / l;
     }
-
-    T inv = 1.0f / l;
-    this->x *= inv;
-    this->y *= inv;
-    return l;
 }
 
 /// compare 2 vectors
@@ -190,7 +217,7 @@ inline bool vec2<T>::compare(const vec2<U> &v) const {
 /// compare 2 vectors using the given tolerance
 template <typename T>
 template <typename U>
-inline bool vec2<T>::compare(const vec2<U> &v, T epsi) const {
+inline bool vec2<T>::compare(const vec2<U> &v, U epsi) const {
     return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
             COMPARE_TOLERANCE(this->y, v.y, epsi));
 }
@@ -285,7 +312,7 @@ inline bool vec3<T>::compare(const vec3<U> &v) const {
 /// compare 2 vectors within the specified tolerance
 template <typename T>
 template <typename U>
-inline bool vec3<T>::compare(const vec3<U> &v, T epsi) const {
+inline bool vec3<T>::compare(const vec3<U> &v, U epsi) const {
     return COMPARE_TOLERANCE(this->x, v.x, epsi) &&
            COMPARE_TOLERANCE(this->y, v.y, epsi) &&
            COMPARE_TOLERANCE(this->z, v.z, epsi);
@@ -305,15 +332,13 @@ inline T vec3<T>::lengthSquared() const {
 
 /// transform the vector to unit length
 template <typename T>
-inline T vec3<T>::normalize() {
+inline void vec3<T>::normalize() {
     T l = this->length();
 
-    if (l < EPSILON_F32) return 0.0f;
-
-    // multiply by the inverse length
-    *this *= (1.0f / l);
-
-    return l;
+    if (l >= EPSILON_F32) {
+        // multiply by the inverse length
+        *this *= (1.0f / l);
+    }
 }
 
 /// set this vector to be equal to the cross of the 2 specified vectors
@@ -495,6 +520,46 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
 *  vec4 inline definitions
 */
 
+template<>
+const vec4<F32> vec4<F32>::operator-(F32 _f) const {
+    return vec4<F32>(_mm_sub_ps(_reg._reg, _mm_set1_ps(_f)));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator+(F32 _f) const {
+    return vec4<F32>(_mm_add_ps(_reg._reg, _mm_set1_ps(_f)));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator*(F32 _f) const {
+    return vec4<F32>(_mm_mul_ps(_reg._reg, _mm_set1_ps(_f)));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator/(F32 _f) const {
+    return vec4<F32>(_mm_div_ps(_reg._reg, _mm_set1_ps(_f)));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator+(const vec4<F32> &v) const {
+    return vec4<F32>(_mm_add_ps(_reg._reg, v._reg._reg));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator-(const vec4<F32> &v) const {
+    return vec4<F32>(_mm_sub_ps(_reg._reg, v._reg._reg));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator/(const vec4<F32> &v) const {
+    return vec4<F32>(_mm_div_ps(_reg._reg, v._reg._reg));
+}
+
+template<>
+const vec4<F32> vec4<F32>::operator*(const vec4<F32>& v) const {
+    return vec4<F32>(_mm_mul_ps(_reg._reg, v._reg._reg));
+}
+
 /// compare 2 vectors
 template <typename T>
 template <typename U>
@@ -505,15 +570,26 @@ inline bool vec4<T>::compare(const vec4<U> &v) const {
            COMPARE(this->w, v.w);
 }
 
-/// compare this vector with the one specified and see if they match within the
-/// specified amount
+template <>
+template <>
+inline bool vec4<F32>::compare(const vec4<F32> &v) const {
+    // returns true if at least one element in a is not equal to 
+    // the corresponding element in b
+    return compare(v, EPSILON_F32);
+}
+
+/// compare this vector with the one specified and see if they match within the specified amount
 template <typename T>
 template <typename U>
-inline bool vec4<T>::compare(const vec4<U> &v, T epsi) const {
-    return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
-            COMPARE_TOLERANCE(this->y, v.y, epsi) &&
-            COMPARE_TOLERANCE(this->z, v.z, epsi) &&
-            COMPARE_TOLERANCE(this->w, v.w, epsi));
+inline bool vec4<T>::compare(const vec4<U> &v, U epsi) const {
+    if (std::is_same<T, U>::value && std::is_same<U, F32>::value) {
+        return !fneq128_b(_reg._reg, v._reg._reg, epsi);
+    } else {
+        return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+                COMPARE_TOLERANCE(this->y, v.y, epsi) &&
+                COMPARE_TOLERANCE(this->z, v.z, epsi) &&
+                COMPARE_TOLERANCE(this->w, v.w, epsi));
+    }
 }
 
 /// round all four values
@@ -532,13 +608,15 @@ inline void vec4<T>::swap(vec4 *iv) {
     std::swap(this->w, iv->w);
 }
 
+template <>
+inline void vec4<F32>::swap(vec4<F32> *iv) {
+    std::swap(_reg._reg, iv->_reg._reg);
+}
+
 /// swap this vector's values with that of the specified vector
 template <typename T>
 inline void vec4<T>::swap(vec4 &iv) {
-    std::swap(this->x, iv.x);
-    std::swap(this->y, iv.y);
-    std::swap(this->z, iv.z);
-    std::swap(this->w, iv.w);
+    swap(&iv);
 }
 
 /// general vec4 dot product
@@ -547,30 +625,46 @@ inline T Dot(const vec4<T> &a, const vec4<T> &b) {
     return (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
 }
 
+template <>
+inline F32 Dot(const vec4<F32> &a, const vec4<F32> &b) {
+    F32 ret = 0.0f;
+    DOT_SIMD(a._reg._reg, b._reg._reg, ret);
+    return ret;
+}
+
 /// calculate the dot product between this vector and the specified one
 template <typename T>
 inline T vec4<T>::dot(const vec4 &v) const {
     return Divide::Dot(*this, v);
 }
 
+template<>
+inline F32 vec4<F32>::length() const {
+    return Divide::Sqrt<F32>(DOT_SIMD(_reg._reg, _reg._reg));
+}
+
 /// return the squared distance of the vector
 template <typename T>
 inline T vec4<T>::lengthSquared() const {
-    return this->x * this->x + this->y * this->y + this->z * this->z +
-           this->w * this->w;
+    return Dot(*this, *this);
 }
 /// transform the vector to unit length
 template <typename T>
-inline T vec4<T>::normalize() {
+inline void vec4<T>::normalize() {
     T l = this->length();
 
-    if (l < EPSILON_F32) return 0;
-
-    // multiply by the inverse length
-    *this *= (1.0f / l);
-
-    return l;
+    if (l >= EPSILON_F32) {
+        // multiply by the inverse length
+        *this *= (1.0f / l);
+    }
 }
+
+template <>
+inline void vec4<F32>::normalize() {
+    __m128 inverse_norm = _mm_rsqrt_ps(_mm_dp_ps(_reg._reg, _reg._reg, 0x7F));
+    _reg._reg = _mm_mul_ps(_reg._reg, inverse_norm);
+}
+
 /// lerp between this and the specified vector by the specified amount
 template <typename T>
 inline void vec4<T>::lerp(const vec4 &v, T factor) {

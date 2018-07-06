@@ -120,7 +120,7 @@ void Scale(physx::PxCapsuleGeometry &geometry, physx::PxTransform &pose,
     geometry.halfHeight *= scaleMat.column0.magnitude();
     // Bi-directional shape-space approximation
     geometry.radius *=
-        std::sqrt(scaleMat.column1.magnitude() * scaleMat.column2.magnitude());
+        Divide::Sqrt(scaleMat.column1.magnitude() * scaleMat.column2.magnitude());
 
     pose.p = pose.p.multiply(scaling);
 }

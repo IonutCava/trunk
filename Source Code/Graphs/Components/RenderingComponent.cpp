@@ -670,11 +670,14 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
             _context.addDebugView(viewPtr);
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 5) == 0) {
-                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
-                viewPtr->_shader = _previewRenderTargetColour;
-            } else {
-                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
-                viewPtr->_shader = _previewRenderTargetDepth;
+                if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+                    viewPtr->_shader = _previewRenderTargetDepth;
+                } else {
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+                    viewPtr->_shader = _previewRenderTargetColour;
+                }
+                
             }
 
         }
@@ -746,13 +749,14 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
             _context.addDebugView(viewPtr);
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 5) == 0) {
-                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
-                viewPtr->_shader = _previewRenderTargetColour;
-            } else {
-                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
-                viewPtr->_shader = _previewRenderTargetDepth;
-            }
-
+                if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+                    viewPtr->_shader = _previewRenderTargetDepth;
+                } else {
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+                    viewPtr->_shader = _previewRenderTargetColour;
+                }
+            } 
         }
     }
 

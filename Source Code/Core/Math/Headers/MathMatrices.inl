@@ -40,19 +40,16 @@ namespace {
         __m128 row2 = _mm_load_ps(&B[4]);
         __m128 row3 = _mm_load_ps(&B[8]);
         __m128 row4 = _mm_load_ps(&B[12]);
-        for (int i = 0; i<4; i++) {
+        for (U8 i = 0; i < 4; ++i) {
             __m128 brod1 = _mm_set1_ps(A[4 * i + 0]);
             __m128 brod2 = _mm_set1_ps(A[4 * i + 1]);
             __m128 brod3 = _mm_set1_ps(A[4 * i + 2]);
             __m128 brod4 = _mm_set1_ps(A[4 * i + 3]);
-            __m128 row = _mm_add_ps(
-                _mm_add_ps(
-                    _mm_mul_ps(brod1, row1),
-                    _mm_mul_ps(brod2, row2)),
-                _mm_add_ps(
-                    _mm_mul_ps(brod3, row3),
-                    _mm_mul_ps(brod4, row4)));
-            _mm_store_ps(&C[4 * i], row);
+            __m128 row = _mm_add_ps(_mm_add_ps(_mm_mul_ps(brod1, row1),
+                                               _mm_mul_ps(brod2, row2)),
+                                    _mm_add_ps(_mm_mul_ps(brod3, row3),
+                                               _mm_mul_ps(brod4, row4)));
+           _mm_store_ps(&C[4 * i], row);
         }
     }
 };
@@ -1109,7 +1106,7 @@ void mat3<T>::fromRotation(U x, U y, U z, U angle, bool inDegrees = true) {
 
     U c = std::cos(angle);
     U s = std::sin(angle);
-    U l = static_cast<U>(std::sqrt(static_cast<D64>(x * x + y * y + z * z)));
+    U l = static_cast<U>(Divide::Sqrt(static_cast<D64>(x * x + y * y + z * z)));
 
     l = l < EPSILON_F32 ? 1 : 1 / l;
     x *= l;

@@ -112,6 +112,12 @@ U32 minSquareMatrixSize(U32 elementCount);
 template <typename T, typename U>
 T Lerp(const T v1, const T v2, const U t);
 
+template <typename T>
+T Sqrt(T input);
+
+template <typename T, typename U>
+T Sqrt(U input);
+
 ///Helper methods to go from a float to packed char and back
 U8 FLOAT_TO_CHAR(const F32 value);
 U8 FLOAT_TO_CHAR_SNORM(const F32 value);

@@ -161,6 +161,20 @@ inline T Lerp(const T v1, const T v2, const U t) {
     return v1 + (v2 - v1 * t);
 }
 
+template <typename T>
+inline T Sqrt(T input) {
+    return (T)std::sqrt(input);
+}
+
+template <typename T, typename U>
+inline T Sqrt(U input) {
+    return (T)std::sqrt(input);
+}
+
+template <>
+inline F32 Sqrt(__m128 input) {
+    return _mm_cvtss_f32(_mm_sqrt_ss(input));
+}
 ///(thx sqrt[-1] and canuckle of opengl.org forums)
 
 // Helper method to emulate GLSL

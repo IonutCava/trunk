@@ -336,7 +336,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 
     if (fTrace > 0.0) {
         // |w| > 1/2, may as well choose w > 1/2
-        fRoot = (T)std::sqrt(to_float(fTrace) + 1.0f);  // 2w
+        fRoot = (T)Divide::Sqrt(to_float(fTrace) + 1.0f);  // 2w
         W(0.5f * fRoot);
         fRoot = 0.5f / fRoot;  // 1/(4w)
         X((rotationMatrix.m[2][1] - rotationMatrix.m[1][2]) * fRoot);
@@ -355,7 +355,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
         size_t j = s_iNext[i];
         size_t k = s_iNext[j];
 
-        fRoot = static_cast<T>(std::sqrt(
+        fRoot = static_cast<T>(Divide::Sqrt(
                     to_float(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] -
                              rotationMatrix.m[k][k] + 1.0f)));
         T* apkQuat[3] = {&_elements.x, &_elements.y, &_elements.z};
@@ -529,7 +529,7 @@ inline Quaternion<T> RotationFromVToU(
             q.fromAxisAngle(axis, Angle::DegreesToRadians(to_float(M_PI)));
         }
     } else {
-        F32 s = std::sqrt((1 + d) * 2);
+        F32 s = Divide::Sqrt((1 + d) * 2.0f);
         F32 invs = 1 / s;
 
         vec3<T> c(Cross(v0, v1) * invs);

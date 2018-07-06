@@ -189,10 +189,10 @@ class vec2 {
     bool operator>=(const vec2 &v) const { return *this > v || *this == v; }
 
     bool operator==(const vec2 &v) const { return this->compare(v); }
-    bool operator!=(const vec2 &v) const { return !(*this == v); }
+    bool operator!=(const vec2 &v) const { return !this->compare(v); }
 
     template<typename U>
-    bool operator!=(const vec2<U> &v) const { return !(*this == v); }
+    bool operator!=(const vec2<U> &v) const { return !this->compare(v); }
     template<typename U>
     bool operator==(const vec2<T> &v) const { return this->compare(v); }
 
@@ -289,9 +289,7 @@ class vec2 {
     /// set the 2 components of the vector back to 0
     inline void reset() { this->set((T)0); }
     /// return the vector's length
-    inline T length() const {
-        return std::sqrt(this->x * this->x + this->y * this->y);
-    }
+    inline T length() const { return Divide::Sqrt(this->x * this->x + this->y * this->y); }
     /// return the angle defined by the 2 components
     inline T angle() const { return (T)std::atan2(this->y, this->x); }
     /// return the angle defined by the 2 components
@@ -299,7 +297,7 @@ class vec2 {
         return (T)std::atan2(v.y - this->y, v.x - this->x);
     }
     /// convert the vector to unit length
-    inline T normalize();
+    inline void normalize();
     /// round both values
     inline void round();
     /// lerp between this and the specified vector by the specified amount
@@ -322,9 +320,8 @@ class vec2 {
     inline bool compare(const vec2<U> &_v) const;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    inline bool compare(const vec2<U> &_v, T epsi) const;
-    /// export the vector's components in the first 2 positions of the specified
-    /// array
+    inline bool compare(const vec2<U> &_v, U epsi) const;
+    /// export the vector's components in the first 2 positions of the specified array
     inline void get(T *v) const;
 
     union {
@@ -459,11 +456,11 @@ class vec3 {
     bool operator<=(const vec3 &v) const { return *this < v || *this == v; }
     bool operator>=(const vec3 &v) const { return *this > v || *this == v; }
     
-    bool operator!=(const vec3 &v) const { return !(*this == v); }
+    bool operator!=(const vec3 &v) const { return !this->compare(v); }
     bool operator==(const vec3 &v) const { return this->compare(v); }
 
     template<typename U>
-    bool operator!=(const vec3<U> &v) const { return !(*this == v); }
+    bool operator!=(const vec3<U> &v) const { return !this->compare(v); }
     template<typename U>
     bool operator==(const vec3<T> &v) const { return this->compare(v); }
 
@@ -583,7 +580,7 @@ class vec3 {
     /// set all the components back to 0
     inline void reset() { this->set((T)0); }
     /// return the vector's length
-    inline T length() const { return std::sqrt(lengthSquared()); }
+    inline T length() const { return Divide::Sqrt(lengthSquared()); }
     /// return true if length is zero
     inline bool isZeroLength() const { return lengthSquared() < EPSILON_F32; }
     /// compare 2 vectors
@@ -591,7 +588,7 @@ class vec3 {
     inline bool compare(const vec3<U> &v) const;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    inline bool compare(const vec3<U> &v, T epsi) const;
+    inline bool compare(const vec3<U> &v, U epsi) const;
     /// uniform vector: x = y = z
     inline bool isUniform() const;
     /// return the squared distance of the vector
@@ -605,7 +602,7 @@ class vec3 {
     /// compute the vector's squared distance to another specified vector
     inline T distanceSquared(const vec3 &v) const;
     /// transform the vector to unit length
-    inline T normalize();
+    inline void normalize();
     /// round all three values
     inline void round();
     /// project this vector on the line defined by the 2 points(A, B)
@@ -720,9 +717,13 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     {
     }
 
-    //vec4(const simd_vector<T>& reg) noexcept: _reg(reg)
-    //{
-    //}
+    vec4(__m128 reg) noexcept: _reg(reg)
+    {
+    }
+
+    vec4(const simd_vector<T>& reg) noexcept: _reg(reg)
+    {
+    }
 
     vec4(T value) noexcept : vec4(value, value, value, value)
     {
@@ -785,10 +786,10 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     bool operator>=(const vec4 &v) const { return *this > v || *this == v; }
 
     bool operator==(const vec4 &v) const { return this->compare(v); }
-    bool operator!=(const vec4 &v) const { return !(*this == v); }
+    bool operator!=(const vec4 &v) const { return !this->compare(v); }
 
     template<typename U>
-    bool operator!=(const vec4<U> &v) const { return !(*this == v); }
+    bool operator!=(const vec4<U> &v) const { return !this->compare(v); }
     template<typename U>
     bool operator==(const vec4<T> &v) const { return this->compare(v); }
 
@@ -1049,17 +1050,17 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     inline bool compare(const vec4<U> &v) const;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    inline bool compare(const vec4<U> &v, T epsi) const;
+    inline bool compare(const vec4<U> &v, U epsi) const;
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 *iv);
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 &iv);
     /// transform the vector to unit length
-    inline T normalize();
+    inline void normalize();
     /// calculate the dot product between this vector and the specified one
     inline T dot(const vec4 &v) const;
     /// return the vector's length
-    inline T length() const { return std::sqrt(lengthSquared()); }
+    inline T length() const { return Divide::Sqrt(lengthSquared()); }
     /// return the squared distance of the vector
     inline T lengthSquared() const;
     /// round all four values
@@ -1086,7 +1087,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
             T width, height, depth, key;
         };
         T _v[4];
-        //simd_vector<T> _reg;
+        simd_vector<T> _reg;
     };
 };
 //#pragma pack(pop)

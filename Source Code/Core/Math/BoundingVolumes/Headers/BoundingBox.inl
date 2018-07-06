@@ -238,7 +238,7 @@ inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const {
 }
 
 inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const {
-    return std::sqrt(nearestDistanceFromPointSquared(pos));
+    return Divide::Sqrt(nearestDistanceFromPointSquared(pos));
 }
 
 inline vec3<F32> BoundingBox::getPVertex(const vec3<F32>& normal) const {
