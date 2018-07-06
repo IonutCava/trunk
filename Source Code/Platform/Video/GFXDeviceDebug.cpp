@@ -41,7 +41,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
 
             DebugView_ptr HiZ = std::make_shared<DebugView>();
             HiZ->_shader = _previewDepthMapShader;
-            HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+            HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
             HiZ->_name = "Hierarchical-Z";
             HiZ->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
             HiZ->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
@@ -105,6 +105,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             //addDebugView(AlphaRevealageLow);
         }
 
+        RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
         RenderTarget& screenRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
         if (HiZPtr) {
@@ -112,7 +113,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             I32 LoDLevel = 0;
             if (Config::USE_HIZ_CULLING) {
                 LoDLevel = to_I32(std::ceil(Time::ElapsedMilliseconds() / 750.0f)) %
-                    (screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
+                    (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
             }
             HiZPtr->_shaderData.set("lodLevel", GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
         }

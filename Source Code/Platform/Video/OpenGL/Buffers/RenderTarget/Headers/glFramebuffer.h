@@ -107,7 +107,7 @@ class glFramebuffer : public RenderTarget,
 
     /// Bake in all settings and attachments to prepare it for rendering
     bool create();
-    void resolve();
+    void resolve(bool colours, bool depth);
     bool checkStatus() const;
     
     void setBlendState(const RTDrawDescriptor& drawPolicy, const vector<RTAttachment_ptr>& activeAttachments);
@@ -127,7 +127,7 @@ class glFramebuffer : public RenderTarget,
 
     void setDefaultState(const RTDrawDescriptor& drawPolicy) override;
 
-    void toggleAttachments(const RTDrawDescriptor& drawPolicy);
+    void toggleAttachments();
 
    protected:
     void begin(const RTDrawDescriptor& drawPolicy);

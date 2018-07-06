@@ -323,6 +323,10 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         }
         _context->config().rendering.msaaSamples = to_U8(msaaSamples);
 
+        if (msaaSamples == 0 && _context->config().rendering.shadowMapping.msaaSamples > 0) {
+            validate(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
+        }
+
         // OpenGL ES is not yet supported, but when added, it will need to mirror
         // OpenGL functionality 1-to-1
         if (api == RenderAPI::OpenGLES) {

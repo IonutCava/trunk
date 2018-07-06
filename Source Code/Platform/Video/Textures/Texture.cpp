@@ -37,7 +37,7 @@ Texture::Texture(GFXDevice& context,
       _asyncLoad(asyncLoad)
 {
     if (_descriptor.msaaSamples() == -1) {
-        _descriptor.msaaSamples(context.parent().platformContext().config().rendering.msaaSamples);
+        _descriptor.msaaSamples(0);
     }
 
     if (_descriptor.msaaSamples() == 0) {

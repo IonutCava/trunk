@@ -132,42 +132,44 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
+
+    U8 msaaSamples = _parent.platformContext().config().rendering.msaaSamples;
+
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS,
                                        GFXImageFormat::RGBA16F,
                                        GFXDataFormat::FLOAT_16);
 
-    TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D_MS,
-                                    GFXImageFormat::DEPTH_COMPONENT32F,
-                                    GFXDataFormat::FLOAT_32);
+    TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS,
+                                                  GFXImageFormat::RG16F,
+                                                  GFXDataFormat::FLOAT_16);
 
-    SamplerDescriptor hiZSampler;
-    hiZSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST);
-    hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-
-    hiZDescriptor.setSampler(hiZSampler);
-    hiZDescriptor.automaticMipMapGeneration(false);
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS,
+                                      GFXImageFormat::DEPTH_COMPONENT32F,
+                                      GFXDataFormat::FLOAT_32);
 
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenDescriptor.setSampler(screenSampler);
 
-    TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D,
-                                       GFXImageFormat::RG16F,
-                                       GFXDataFormat::FLOAT_16);
-    normalDescriptor.setSampler(screenSampler);
-    
-    TextureDescriptor velocityDescriptor(TextureType::TEXTURE_2D,
-                                         GFXImageFormat::RG16F,
-                                         GFXDataFormat::FLOAT_16);
-    velocityDescriptor.setSampler(screenSampler);
-    
+    SamplerDescriptor depthSampler;
+    depthSampler.setFilters(TextureFilter::NEAREST);
+    depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+
+    screenDescriptor.setSampler(screenSampler);
+    screenDescriptor.msaaSamples(msaaSamples);
+
+    depthDescriptor.setSampler(depthSampler);
+    depthDescriptor.msaaSamples(msaaSamples);
+
+    normalAndVelocityDescriptor.setSampler(screenSampler);
+    normalAndVelocityDescriptor.msaaSamples(msaaSamples);
+
     {
         vector<RTAttachmentDescriptor> attachments = {
-            { screenDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
-            { normalDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS) },
-            { velocityDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY) },
-            { hiZDescriptor,      RTAttachmentType::Depth }
+            { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
+            { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS) },
+            { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY) },
+            { depthDescriptor,               RTAttachmentType::Depth }
         };
 
         RenderTargetDescriptor screenDesc = {};
@@ -182,6 +184,30 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
     
+
+    {
+        TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D,
+                                        GFXImageFormat::DEPTH_COMPONENT32F,
+                                        GFXDataFormat::FLOAT_32);
+        SamplerDescriptor hiZSampler;
+        hiZSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST);
+        hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+        hiZDescriptor.setSampler(hiZSampler);
+        hiZDescriptor.automaticMipMapGeneration(false);
+
+        vector<RTAttachmentDescriptor> attachments = {
+            { hiZDescriptor, RTAttachmentType::Depth }
+        };
+
+        RenderTargetDescriptor hizRTDesc = {};
+        hizRTDesc._name = "HiZ";
+        hizRTDesc._resolution = renderResolution;
+        hizRTDesc._attachmentCount = to_U8(attachments.size());
+        hizRTDesc._attachments = attachments.data();
+
+        _rtPool->allocateRT(RenderTargetUsage::HI_Z, hizRTDesc);
+    }
+
     if (Config::Build::ENABLE_EDITOR) {
         SamplerDescriptor editorSampler;
         editorSampler.setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR);

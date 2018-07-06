@@ -10,17 +10,32 @@ RTDrawMask::RTDrawMask()
 {
 }
 
-bool RTDrawMask::isEnabled(RTAttachmentType type, U8 index) const {
-    assert(index < MAX_RT_COLOUR_ATTACHMENTS);
-
+bool RTDrawMask::isEnabled(RTAttachmentType type) const {
     switch (type) {
-        case RTAttachmentType::Depth   : return !_disabledDepth;
-        case RTAttachmentType::Stencil : return !_disabledStencil;
-        case RTAttachmentType::Colour  : return !_disabledColours[index];
-        default : break;
+        case RTAttachmentType::Depth: return !_disabledDepth;
+        case RTAttachmentType::Stencil: return !_disabledStencil;
+        case RTAttachmentType::Colour: {
+            for (bool state : _disabledColours) {
+                if (!state) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        default: break;
     }
 
     return true;
+}
+
+bool RTDrawMask::isEnabled(RTAttachmentType type, U8 index) const {
+    assert(index < MAX_RT_COLOUR_ATTACHMENTS);
+
+    if (type == RTAttachmentType::Colour) {
+        return !_disabledColours[index];
+    }
+     
+    return isEnabled(type);;
 }
 
 void RTDrawMask::setEnabled(RTAttachmentType type, U8 index, const bool state) {

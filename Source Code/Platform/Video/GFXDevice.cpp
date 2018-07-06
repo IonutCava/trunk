@@ -419,6 +419,7 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
 
         // Update render targets with the new resolution
         _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::HI_Z, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::OIT_FULL_RES, w, h);
         //_rtPool->resizeTargets(RenderTargetUsage::OIT_QUARTER_RES, to_U16(std::ceil(w / 4.0f)), to_U16(std::ceil(h / 4.0f)));
         if (Config::Build::ENABLE_EDITOR) {
@@ -543,7 +544,7 @@ void GFXDevice::setBaseViewport(const Rect<I32>& viewport) {
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
-void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const {
+const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const {
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
     // disables depth testing but allows depth writes
@@ -563,9 +564,9 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getID();
 
     // The depth buffer's resolution should be equal to the screen's resolution
-    RenderTarget& screenTarget = _rtPool->renderTarget(depthBuffer);
-    U16 width = screenTarget.getWidth();
-    U16 height = screenTarget.getHeight();
+    RenderTarget& renderTarget = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
+    U16 width = renderTarget.getWidth();
+    U16 height = renderTarget.getHeight();
     U16 level = 0;
     U16 dim = width > height ? width : height;
     U16 twidth = width;
@@ -576,9 +577,9 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     Rect<I32> previousViewport(_viewport);
 
     // Bind the depth texture to the first texture unit
-    Texture_ptr depth = screenTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
+    const Texture_ptr& depth = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
     if (depth->getDescriptor().automaticMipMapGeneration()) {
-        return;
+        return depth;
     }
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
@@ -586,8 +587,16 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     beginDebugScopeCmd._scopeName = "Construct Hi-Z";
     GFX::EnqueueCommand(cmdBufferInOut, beginDebugScopeCmd);
 
+    // Blit the depth buffer to the HiZ target
+    GFX::BlitRenderTargetCommand blitDepthBufferCmd;
+    blitDepthBufferCmd._source = depthBuffer;
+    blitDepthBufferCmd._destination = RenderTargetID(RenderTargetUsage::HI_Z);
+    blitDepthBufferCmd._blitColour = false;
+    blitDepthBufferCmd._blitDepth = true;
+    GFX::EnqueueCommand(cmdBufferInOut, blitDepthBufferCmd);
+
     GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = depthBuffer;
+    beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::HI_Z);
     beginRenderPassCmd._descriptor = depthOnlyTarget;
     beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
     GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
@@ -645,13 +654,15 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
 
     viewportCommand._viewport.set(previousViewport);
     GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
-
+    
     // Unbind the render target
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
-
+    
     GFX::EndDebugScopeCommand endDebugScopeCmd;
     GFX::EnqueueCommand(cmdBufferInOut, endDebugScopeCmd);
+
+    return depth;
 }
 
 void GFXDevice::updateCullCount(GFX::CommandBuffer& cmdBufferInOut) {

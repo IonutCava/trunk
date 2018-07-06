@@ -51,7 +51,7 @@
 </GUI>
 
 <rendering>
-  <MSAAsamples>0</MSAAsamples>
+  <MSAAsamples>8</MSAAsamples>
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <renderDetailLevel>4</renderDetailLevel>
   <enableFog>true</enableFog>

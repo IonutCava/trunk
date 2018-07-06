@@ -46,16 +46,17 @@ enum class RenderAPI : U8 {
 
 enum class RenderTargetUsage : U8 {
     SCREEN = 0,
-    REFLECTION_PLANAR = 1,
-    REFRACTION_PLANAR = 2,
-    REFLECTION_CUBE = 3,
-    REFRACTION_CUBE = 4,
-    ENVIRONMENT = 5,
-    SHADOW = 6,
-    OIT_FULL_RES = 7,
-    OIT_QUARTER_RES = 8,
-    EDITOR = 9,
-    OTHER = 10,
+    HI_Z = 1,
+    REFLECTION_PLANAR = 2,
+    REFRACTION_PLANAR = 3,
+    REFLECTION_CUBE = 4,
+    REFRACTION_CUBE = 5,
+    ENVIRONMENT = 6,
+    SHADOW = 7,
+    OIT_FULL_RES = 8,
+    OIT_QUARTER_RES = 9,
+    EDITOR = 10,
+    OTHER = 11,
     COUNT
 };
 

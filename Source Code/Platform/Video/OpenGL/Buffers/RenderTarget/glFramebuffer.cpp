@@ -118,6 +118,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
 }
 
 void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state) {
+
     GLenum binding = static_cast<GLenum>(attachment->binding());
 
     BindingState bState{ state,
@@ -161,6 +162,7 @@ bool glFramebuffer::create() {
                     RTAttachmentDescriptor descriptor = {};
                     descriptor._texDescriptor = att->texture()->getDescriptor();
                     descriptor._texDescriptor._type = GetNonMSType(descriptor._texDescriptor._type);
+                    descriptor._texDescriptor._msaaSamples = 0;
                     descriptor._clearColour = att->clearColour();
                     descriptor._index = j;
                     descriptor._type = static_cast<RTAttachmentType>(i);
@@ -181,10 +183,12 @@ bool glFramebuffer::create() {
     setDefaultState(RenderTarget::defaultPolicy());
 
     if (_resolveBuffer) {
-        _resolveBuffer->create();
+        if (!_resolveBuffer->create()) {
+            return false;
+        }
     }
 
-    return true;
+    return checkStatus();
 }
 
 bool glFramebuffer::resize(U16 width, U16 height) {
@@ -205,13 +209,15 @@ bool glFramebuffer::resize(U16 width, U16 height) {
     return create();
 }
 
-void glFramebuffer::resolve() {
-    if (_resolveBuffer && !_resolved) {
-        toggleAttachments(RenderTarget::defaultPolicy());
-        _resolveBuffer->blitFrom(this, hasColour(), hasDepth());
+void glFramebuffer::resolve(bool colours, bool depth) {
+    if (!_resolved) {
+        // Do this first to prevent a stack overflow
+        _resolved = true;
+        if (_resolveBuffer != nullptr) {
+            toggleAttachments();
+            _resolveBuffer->blitFrom(this, colours, depth);
+        }
     }
-    
-    _resolved = true;
 }
 
 void glFramebuffer::blitFrom(RenderTarget* inputFB,
@@ -223,10 +229,11 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
     }
 
     glFramebuffer* input = static_cast<glFramebuffer*>(inputFB);
+    input->resolve(blitColour, blitDepth);
 
-    // prevent stack overflow
-    if (_resolveBuffer && (inputFB->getGUID() != _resolveBuffer->getGUID())) {
-        input->resolve();
+    // If we are not resolving ...
+    if (input->_resolveBuffer != nullptr && input->_resolveBuffer != this) {
+        input = input->_resolveBuffer;
     }
 
     GLuint previousFB = GL_API::getActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE);
@@ -234,7 +241,8 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, this->_framebufferHandle);
 
     ClearBufferMask clearMask = GL_NONE_BIT;
-    if (blitDepth && hasDepth()) {
+    bool setDepthBlitFlag = blitDepth && hasDepth();
+    if (setDepthBlitFlag) {
         clearMask = GL_DEPTH_BUFFER_BIT;
     }
 
@@ -260,7 +268,7 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
             
                 _context.registerDrawCall();
             }
-        } else {
+        } else if (colourCount == 1) {
             glDrawBuffer(static_cast<GLenum>(outputAttachments[0]->binding()));
             glReadBuffer(static_cast<GLenum>(inputAttachments[0]->binding()));
             clearMask |= GL_COLOR_BUFFER_BIT;
@@ -281,7 +289,7 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
                           this->getWidth(),
                           this->getHeight(),
                           clearMask,
-                          GL_NEAREST);
+                          setDepthBlitFlag ? GL_NEAREST : GL_LINEAR);
         _context.registerDrawCall();
         queueMipMapRecomputation();
     }
@@ -293,15 +301,19 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
                              U8 index,
                              bool blitColour,
                              bool blitDepth) {
+
+    STUBBED("glFramebuffer::blitFrom: Add Layered texture support!");
+
     if (!inputFB || (!blitColour && !blitDepth)) {
         return;
     }
     
     glFramebuffer* input = static_cast<glFramebuffer*>(inputFB);
+    input->resolve(blitColour, blitDepth);
 
-    // prevent stack overflow
-    if (_resolveBuffer && (inputFB->getGUID() != _resolveBuffer->getGUID())) {
-        input->resolve();
+    // If we are not resolving ...
+    if (input->_resolveBuffer != nullptr && input->_resolveBuffer != this) {
+        input = input->_resolveBuffer;
     }
 
     GLuint previousFB = GL_API::getActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE);
@@ -319,7 +331,8 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
         }
     }
 
-    if (blitDepth && hasDepth()) {
+    bool setDepthBlitFlag = blitDepth && hasDepth();
+    if (setDepthBlitFlag) {
         flags |= GL_DEPTH_BUFFER_BIT;
     }
 
@@ -333,7 +346,7 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
                           this->getWidth(),
                           this->getHeight(),
                           flags,
-                          GL_NEAREST);
+                          setDepthBlitFlag ? GL_NEAREST : GL_LINEAR);
         queueMipMapRecomputation();
         _context.registerDrawCall();
     }
@@ -402,13 +415,13 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const vec
         _activeDepthBuffer = depthAtt && depthAtt->used();
      }
     
-    if (mask.isEnabled(RTAttachmentType::Depth, 0) != _zWriteEnabled) {
+    if (mask.isEnabled(RTAttachmentType::Depth) != _zWriteEnabled) {
         _zWriteEnabled = !_zWriteEnabled;
         glDepthMask(_zWriteEnabled ? GL_TRUE : GL_FALSE);
     }
 }
 
-void glFramebuffer::toggleAttachments(const RTDrawDescriptor& drawPolicy) {
+void glFramebuffer::toggleAttachments() {
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
         /// Get the attachments in use for each type
         const vector<RTAttachment_ptr>& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
@@ -426,7 +439,7 @@ void glFramebuffer::toggleAttachments(const RTDrawDescriptor& drawPolicy) {
 }
 
 void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
-    toggleAttachments(drawPolicy);
+    toggleAttachments();
 
     const vector<RTAttachment_ptr>& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
 
@@ -484,7 +497,8 @@ void glFramebuffer::end() {
 
     queueMipMapRecomputation();
 
-    resolve();
+    const RTDrawMask& mask = _previousPolicy.drawMask();
+    resolve(mask.isEnabled(RTAttachmentType::Colour), mask.isEnabled(RTAttachmentType::Depth));
 
     if (Config::ENABLE_GPU_VALIDATION) {
         glFramebuffer::_bufferBound = false;
@@ -611,7 +625,7 @@ void glFramebuffer::readData(const vec4<U16>& rect,
                              GFXDataFormat dataType,
                              bufferPtr outData) {
     if (_resolveBuffer) {
-        resolve();
+        resolve(true, false);
         _resolveBuffer->readData(rect, imageFormat, dataType, outData);
     } else {
         GL_API::setPixelPackUnpackAlignment();

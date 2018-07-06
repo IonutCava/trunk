@@ -374,7 +374,8 @@ protected:
                        const vec2<F32>& zPlanes,
                        GFX::CommandBuffer& bufferInOut) const;
 
-    void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const;
+    // Returns the HiZ texture that can be sent directly to occlusionCull
+    const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) const;
 
     void updateCullCount(GFX::CommandBuffer& cmdBufferInOut);
 
