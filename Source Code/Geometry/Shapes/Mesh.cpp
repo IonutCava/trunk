@@ -60,7 +60,8 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
 void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
     if (getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
-        bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
+        bool playAnimations = sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS) &&
+                              _playAnimations;
         U32 childCount = sgn.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
             AnimationComponent* comp = sgn.getChild(i, childCount).get<AnimationComponent>();

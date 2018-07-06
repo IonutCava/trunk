@@ -7,6 +7,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
@@ -405,7 +406,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
-    if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
+    if (renderBoundingBox() || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB)) {
         const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
         _boundingBoxPrimitive[0]->fromBox(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 
@@ -443,7 +444,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         _boundingSpherePrimitive->paused(true);
     }
 
-    if (_renderSkeleton || sceneRenderState.drawSkeletons()) {
+    if (_renderSkeleton || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS)) {
         // Continue only for skinned submeshes
         Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
         bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
@@ -582,7 +583,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
 
             U32 offset = commandOffset();
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
+                cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME));
                 cmd.commandOffset(offset++);
                 cmd.cmd().baseInstance = commandIndex();
                 cmd.LoD(_lodLevel);

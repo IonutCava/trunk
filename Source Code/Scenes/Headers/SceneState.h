@@ -112,78 +112,35 @@ class SceneRenderState : public SceneComponent {
         COUNT = 4
     };
 
+    enum class RenderOptions : U32 {
+        /// Show/hide bounding boxes and/or objects
+        RENDER_AABB = toBit(1),
+        /// Show/hide debug lines
+        RENDER_DEBUG_LINES = toBit(2),
+        RENDER_DEBUG_TARGET_LINES = toBit(3),
+        /// Show/hide geometry
+        RENDER_GEOMETRY = toBit(4),
+        /// Render skeletons for animated geometry
+        RENDER_SKELETONS = toBit(5),
+        /// Render wireframe for all scene geometry
+        RENDER_WIREFRAME = toBit(6),
+        RENDER_OCTREE_REGIONS = toBit(7),
+        PLAY_ANIMATIONS = toBit(8),
+        COUNT = 8
+    };
+
     explicit SceneRenderState(Scene& parentScene);
 
-    /// Render wireframe for all scene geometry
-    void toggleWireframe();
-    /// Render skeletons for animated geometry
-    void toggleSkeletons();
-    /// Show/hide bounding boxes and/or objects
-    void toggleBoundingBoxes();
+    void renderMask(U32 mask);
+    bool isEnabledOption(RenderOptions option) const;
+    void enableOption(RenderOptions option);
+    void disableOption(RenderOptions option);
+    void toggleOption(RenderOptions option);
+    void toggleOption(RenderOptions option, const bool state);
+
     /// Show/hide axis gizmos
     void toggleAxisLines();
-    /// Show/hide debug lines
-    void toggleDebugLines();
-    /// Show/hide geometry
-    void toggleGeometry();
-
-
-    inline void drawGeometry(bool state) {
-        _drawGeometry = state;
-    }
-
-    inline bool drawGeometry() const {
-        return _drawGeometry;
-    }
-
-    inline void drawSkeletons(bool state) {
-        _drawSkeletons = state;
-    }
-
-    inline bool drawSkeletons() const {
-        return _drawSkeletons;
-    }
-
-    inline void drawBoundingBoxes(bool state) {
-        _drawBoundingBoxes = state;
-    }
-
-    inline bool drawBoundingBoxes() const {
-        return _drawBoundingBoxes;
-    }
-
-    inline void drawWireframe(bool state) {
-        _drawWireframe = state;
-    }
-
-    inline bool drawWireframe() const {
-        return _drawWireframe;
-    }
-
-    inline void drawDebugLines(bool visibility) {
-        _debugDrawLines = visibility;
-    }
-
-    inline bool drawDebugLines() const {
-        return _debugDrawLines;
-    }
-
-    inline void drawDebugTargetLines(bool visibility) {
-        _debugDrawTargetLines = visibility;
-    }
-
-    inline bool drawDebugTargetLines() const {
-        return _debugDrawTargetLines;
-    }
-
-    inline void drawOctreeRegions(bool visibility) {
-        _drawOctreeRegions = visibility;
-    }
-
-    inline bool drawOctreeRegions() const {
-        return _drawOctreeRegions;
-    }
-
+    
     inline void gizmoState(GizmoState newState) {
         _gizmoState = newState;
     }
@@ -203,29 +160,9 @@ class SceneRenderState : public SceneComponent {
     inline const Camera& getCameraConst() const {
         return _cameraMgr->getActiveCamera();
     }
-
-    inline bool playAnimations() const {
-        return _playAnimations;
-    }
-
+    
    protected:
-
-    inline void playAnimations(bool state) { 
-        _playAnimations = state; 
-    }
-
-   protected:
-    bool _drawBB;
-    bool _debugDrawLines;
-    bool _debugDrawTargetLines;
-    bool _playAnimations;
-
-    bool _drawGeometry;
-    bool _drawSkeletons;
-    bool _drawBoundingBoxes;
-    bool _drawWireframe;
-    bool _drawOctreeRegions;
-
+    U32 _stateMask;
     GizmoState _gizmoState;
     CameraManager* _cameraMgr;
 };
@@ -377,7 +314,11 @@ class SceneRenderStateScene {
    private:
     static void playAnimations(SceneRenderState& sceneRenderState,
                                bool playAnimations) {
-        sceneRenderState.playAnimations(playAnimations);
+        if (playAnimations) {
+            SetBit(sceneRenderState._stateMask, to_const_uint(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+        } else {
+            ClearBit(sceneRenderState._stateMask, to_const_uint(SceneRenderState::RenderOptions::PLAY_ANIMATIONS));
+        }
     }
     friend class Divide::Scene;
 };

@@ -254,6 +254,8 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         _resetUnits = false;
     }
 
+    _targetLines->paused(!renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES));
+
     SceneGraphNode_ptr particles = _particleEmitter.lock();
     const F32 radius = 20;
     

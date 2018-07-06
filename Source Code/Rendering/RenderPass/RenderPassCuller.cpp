@@ -86,7 +86,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
     vectorImpl<VisibleNodeList>& nodeList = _perThreadNodeList[to_uint(stage)];
     nodeCache.resize(0);
     const SceneRenderState& renderState = sceneState.renderState();
-    if (renderState.drawGeometry()) {
+    if (renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         _cullingFunction[to_uint(stage)] = cullingFunction;
         // No point in updating visual information if the scene disabled object
         // rendering or rendering of their bounding boxes

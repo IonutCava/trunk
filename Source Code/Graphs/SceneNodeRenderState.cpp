@@ -1,9 +1,24 @@
 #include "Headers/SceneNodeRenderState.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 
-SceneNodeRenderState::~SceneNodeRenderState() {}
+SceneNodeRenderState::SceneNodeRenderState()
+  : _hasWaterReflection(true),
+    _drawState(true),
+    _noDefaultMaterial(false),
+    _exclusionMask(0),
+    _depthStateBlockHash(0),
+    _shadowStateBlockHash(0)
+{
+}
+
+
+SceneNodeRenderState::~SceneNodeRenderState()
+{
+}
 
 size_t SceneNodeRenderState::getDepthStateBlock() {
     if (_depthStateBlockHash == 0) {

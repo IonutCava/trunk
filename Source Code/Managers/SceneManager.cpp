@@ -521,7 +521,7 @@ bool SceneManager::populateRenderQueue(RenderStage stage,
 
     updateVisibleNodes(stage, doCulling, isPrePass, passIndex);
 
-    if (getActiveScene().renderState().drawGeometry()) {
+    if (getActiveScene().renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         queue.populateRenderQueues(stage);
     }
 

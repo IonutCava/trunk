@@ -21,6 +21,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 #include "Physics/Headers/PhysicsSceneInterface.h"
 
@@ -123,6 +124,10 @@ bool Scene::idle() {  // Called when application is idle
             _sceneGraph->getRoot().get<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
+    }
+
+    if (Config::Build::IS_DEBUG_BUILD) {
+        _linesPrimitive->paused(!renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES));
     }
 
     _lightPool->idle();
@@ -428,12 +433,12 @@ U16 Scene::registerInputActions() {
         ParamHandler& par = ParamHandler::instance();
         par.setParam(_ID("postProcessing.enableBloom"), !par.getParam(_ID("postProcessing.enableBloom"), false));
     };
-    auto toggleSkeletonRendering = [this](InputParams param) {renderState().toggleSkeletons();};
+    auto toggleSkeletonRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);};
     auto toggleAxisLineRendering = [this](InputParams param) {renderState().toggleAxisLines();};
-    auto toggleWireframeRendering = [this](InputParams param) {renderState().toggleWireframe();};
-    auto toggleGeometryRendering = [this](InputParams param) { renderState().toggleGeometry();};
-    auto toggleDebugLines = [this](InputParams param) {renderState().toggleDebugLines();};
-    auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleBoundingBoxes();};
+    auto toggleWireframeRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);};
+    auto toggleGeometryRendering = [this](InputParams param) { renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);};
+    auto toggleDebugLines = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_DEBUG_LINES);};
+    auto toggleBoundingBoxRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_AABB);};
     auto toggleShadowMapDepthBufferPreview = [](InputParams param) {
         ParamHandler& par = ParamHandler::instance();
         LightPool::togglePreviewShadowMaps();
@@ -444,7 +449,7 @@ U16 Scene::registerInputActions() {
     auto takeScreenshot = [](InputParams param) { GFX_DEVICE.Screenshot("screenshot_"); };
     auto toggleFullScreen = [](InputParams param) { GFX_DEVICE.toggleFullScreen(); };
     auto toggleFlashLight = [this](InputParams param) {toggleFlashlight(); };
-    auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().drawOctreeRegions(!renderState().drawOctreeRegions());};
+    auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
     auto select = [this](InputParams  param) {findSelection(); };
     auto lockCameraToMouse = [this](InputParams  param) {state().cameraLockedToMouse(true); };
     auto releaseCameraFromMouse = [this](InputParams  param) {
@@ -848,7 +853,7 @@ void Scene::debugDraw(RenderStage stage) {
             }
         }
 
-        if (renderState().drawOctreeRegions()) {
+        if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS)) {
             for (IMPrimitive* prim : _octreePrimitives) {
                 prim->paused(true);
             }

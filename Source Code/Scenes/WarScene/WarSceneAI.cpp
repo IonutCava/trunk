@@ -464,7 +464,7 @@ void WarScene::startSimulation(I64 btnGUID) {
                 navMesh->debugDraw(true);
             }
 
-            renderState().drawDebugTargetLines(true);
+            renderState().enableOption(SceneRenderState::RenderOptions::RENDER_DEBUG_TARGET_LINES);
         }
 
         if (previousMesh) {
