@@ -129,6 +129,8 @@ bool GL_API::initShaders() {
         "", "#version 440 core\n/*“Copyright 2009-2015 DIVIDE-Studio”*/");
     glswAddDirectiveToken("",
                           "#extension GL_ARB_shader_draw_parameters : require");
+    glswAddDirectiveToken("",
+                          "#extension GL_ARB_shader_storage_buffer_object : require");
 // Add current build environment information to the shaders
 #if defined(_DEBUG)
     glswAddDirectiveToken("", "#define _DEBUG");

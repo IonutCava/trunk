@@ -33,7 +33,7 @@ void RenderPassCuller::sortVisibleNodes() {
     _visibleNodesSorted = true;
 }
 
-/// This method performs the visibility check on the given node and all of it's
+/// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
 void RenderPassCuller::cullSceneGraph(
     SceneGraphNode& currentNode,
@@ -96,16 +96,17 @@ void RenderPassCuller::cullSceneGraphCPU(
         // Skip all of this for inactive nodes.
         if (currentNode.isActive()) {
             SceneNode* node = currentNode.getNode();
+            RenderingComponent* renderingCmp =
+                    currentNode.getComponent<RenderingComponent>();
             // If this node isn't render-disabled, check if it is visible
             // Skip expensive frustum culling if we shouldn't draw the node in
             // the first place
-            if (!node->renderState().getDrawState(currentStage)) {
+            if (!RenderingCompPassCullerAttorney::canDraw(
+                    *renderingCmp, sceneRenderState, currentStage)) {
                 // If the current SceneGraphNode isn't visible, it's children
                 // aren't visible as well
                 skipChildren = true;
             } else {
-                RenderingComponent* renderingCmp =
-                    currentNode.getComponent<RenderingComponent>();
                 if (currentStage != RenderStage::SHADOW_STAGE ||
                     (currentStage == RenderStage::SHADOW_STAGE &&
                      (renderingCmp ? renderingCmp->castsShadows() : false))) {

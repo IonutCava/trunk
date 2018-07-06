@@ -76,48 +76,48 @@ TextureWrap getWrapMode(const char *wrapMode) {
 }
 
 const char *getBumpMethodName(Material::BumpMethod bumpMethod) {
-    if (bumpMethod == Material::BumpMethod::BUMP_NORMAL) {
-        return "BUMP_NORMAL";
-    } else if (bumpMethod == Material::BumpMethod::BUMP_PARALLAX) {
-        return "BUMP_PARALLAX";
-    } else if (bumpMethod == Material::BumpMethod::BUMP_RELIEF) {
-        return "BUMP_RELIEF";
+    if (bumpMethod == Material::BumpMethod::NORMAL) {
+        return "NORMAL";
+    } else if (bumpMethod == Material::BumpMethod::PARALLAX) {
+        return "PARALLAX";
+    } else if (bumpMethod == Material::BumpMethod::RELIEF) {
+        return "RELIEF";
     }
 
-    return "BUMP_NONE";
+    return "NONE";
 }
 
 Material::BumpMethod getBumpMethod(const char *bumpMethod) {
-    if (strcmp(bumpMethod, "BUMP_NORMAL") == 0) {
-        return Material::BumpMethod::BUMP_NORMAL;
-    } else if (strcmp(bumpMethod, "BUMP_PARALLAX") == 0) {
-        return Material::BumpMethod::BUMP_PARALLAX;
-    } else if (strcmp(bumpMethod, "BUMP_RELIEF") == 0) {
-        return Material::BumpMethod::BUMP_RELIEF;
+    if (strcmp(bumpMethod, "NORMAL") == 0) {
+        return Material::BumpMethod::NORMAL;
+    } else if (strcmp(bumpMethod, "PARALLAX") == 0) {
+        return Material::BumpMethod::PARALLAX;
+    } else if (strcmp(bumpMethod, "RELIEF") == 0) {
+        return Material::BumpMethod::RELIEF;
     }
 
-    return Material::BumpMethod::BUMP_NONE;
+    return Material::BumpMethod::NONE;
 }
 
 const char *getTextureOperationName(Material::TextureOperation textureOp) {
-    if (textureOp == Material::TextureOperation::TextureOperation_Multiply) {
+    if (textureOp == Material::TextureOperation::MULTIPLY) {
         return "TEX_OP_MULTIPLY";
     } else if (textureOp ==
-               Material::TextureOperation::TextureOperation_Decal) {
+               Material::TextureOperation::DECAL) {
         return "TEX_OP_DECAL";
-    } else if (textureOp == Material::TextureOperation::TextureOperation_Add) {
+    } else if (textureOp == Material::TextureOperation::ADD) {
         return "TEX_OP_ADD";
     } else if (textureOp ==
-               Material::TextureOperation::TextureOperation_SmoothAdd) {
+               Material::TextureOperation::SMOOTH_ADD) {
         return "TEX_OP_SMOOTH_ADD";
     } else if (textureOp ==
-               Material::TextureOperation::TextureOperation_SignedAdd) {
+               Material::TextureOperation::SIGNED_ADD) {
         return "TEX_OP_SIGNED_ADD";
     } else if (textureOp ==
-               Material::TextureOperation::TextureOperation_Divide) {
+               Material::TextureOperation::DIVIDE) {
         return "TEX_OP_DIVIDE";
     } else if (textureOp ==
-               Material::TextureOperation::TextureOperation_Subtract) {
+               Material::TextureOperation::SUBTRACT) {
         return "TEX_OP_SUBTRACT";
     }
 
@@ -126,22 +126,22 @@ const char *getTextureOperationName(Material::TextureOperation textureOp) {
 
 Material::TextureOperation getTextureOperation(const char *operation) {
     if (strcmp(operation, "TEX_OP_MULTIPLY") == 0) {
-        return Material::TextureOperation::TextureOperation_Multiply;
+        return Material::TextureOperation::MULTIPLY;
     } else if (strcmp(operation, "TEX_OP_DECAL") == 0) {
-        return Material::TextureOperation::TextureOperation_Decal;
+        return Material::TextureOperation::DECAL;
     } else if (strcmp(operation, "TEX_OP_ADD") == 0) {
-        return Material::TextureOperation::TextureOperation_Add;
+        return Material::TextureOperation::ADD;
     } else if (strcmp(operation, "TEX_OP_SMOOTH_ADD") == 0) {
-        return Material::TextureOperation::TextureOperation_SmoothAdd;
+        return Material::TextureOperation::SMOOTH_ADD;
     } else if (strcmp(operation, "TEX_OP_SIGNED_ADD") == 0) {
-        return Material::TextureOperation::TextureOperation_SignedAdd;
+        return Material::TextureOperation::SIGNED_ADD;
     } else if (strcmp(operation, "TEX_OP_DIVIDE") == 0) {
-        return Material::TextureOperation::TextureOperation_Divide;
+        return Material::TextureOperation::DIVIDE;
     } else if (strcmp(operation, "TEX_OP_SUBTRACT") == 0) {
-        return Material::TextureOperation::TextureOperation_Subtract;
+        return Material::TextureOperation::SUBTRACT;
     }
 
-    return Material::TextureOperation::TextureOperation_Replace;
+    return Material::TextureOperation::REPLACE;
 }
 
 void saveTextureXML(const std::string &textureNode, Texture *texture,
@@ -903,7 +903,7 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
     }
 
     // Skip if the material was cooked by a different renderer
-    mat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
+    mat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
 
     mat->setDiffuse(
         vec4<F32>(pt.get<F32>("material.diffuse.<xmlattr>.r", 0.6f),
@@ -952,7 +952,7 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
         if (boost::optional<ptree &> child =
                 pt.get_child_optional("bumpMap.method")) {
             mat->setBumpMethod(getBumpMethod(
-                pt.get<std::string>("bumpMap.method", "BUMP_NORMAL").c_str()));
+                pt.get<std::string>("bumpMap.method", "NORMAL").c_str()));
         }
     }
 

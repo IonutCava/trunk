@@ -95,12 +95,8 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
     if (mat) {
         if (!mat->computeShader(renderStage, false,
                                 DELEGATE_BIND(&SceneGraphNode::scheduleReset,
-                                              &_parentSGN, renderStage))) {
-            return false;
-        }
-        if (mat->getShaderInfo(renderStage)._shaderCompStage !=
-            Material::ShaderInfo::ShaderCompilationStage::
-                SHADER_STAGE_COMPUTED) {
+                                              &_parentSGN, renderStage)))
+        {
             return false;
         }
     }

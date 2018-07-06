@@ -162,7 +162,7 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
         vec4<F32>(DefaultColors::WHITE().rgb() / 3, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
-    terrainMaterial->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
+    terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     terrainMaterial->setShaderDefines("COMPUTE_TBN");
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
     terrainMaterial->setShaderDefines(

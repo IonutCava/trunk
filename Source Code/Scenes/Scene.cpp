@@ -203,7 +203,7 @@ bool Scene::loadGeometry(const FileData& data) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
         tempMaterial->setDiffuse(data.color);
-        tempMaterial->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
+        tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     }
 
     thisObj->setMaterialTpl(tempMaterial);

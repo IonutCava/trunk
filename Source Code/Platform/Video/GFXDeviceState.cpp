@@ -203,6 +203,8 @@ void GFXDevice::closeRenderingAPI() {
     // Destroy all of the immediate mode emulation primitives created during
     // runtime
     MemoryManager::DELETE_VECTOR(_imInterfaces);
+    _gfxDataBuffer->Destroy();
+    _nodeBuffer->Destroy();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
     // Delete all of our rendering targets

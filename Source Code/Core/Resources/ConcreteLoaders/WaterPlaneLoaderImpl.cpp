@@ -56,7 +56,7 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res,
     res->setMaterialTpl(waterMat);
 
     waterMat->dumpToFile(false);
-    waterMat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
+    waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::TEXTURE_UNIT0, waterNM);
     waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::DISPLAY_STAGE,
                                true);

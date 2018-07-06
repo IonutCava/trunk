@@ -45,6 +45,8 @@ class RenderingComponent : public SGNComponent {
     friend class RenderingCompGFXDeviceAttorney;
     friend class RenderingCompSceneGraphAttorney;
     friend class RenderingCompRenderBinAttorney;
+    friend class RenderingCompPassCullerAttorney;
+
    public:
     RenderingComponent(Material* const materialInstance,
                        SceneGraphNode& parentSGN);
@@ -70,9 +72,7 @@ class RenderingComponent : public SGNComponent {
     U8 lodLevel() const;
     void lodLevel(U8 LoD);
 
-    inline U32 drawOrder() const {
-        return _drawOrder;
-    }
+    inline U32 drawOrder() const { return _drawOrder; }
 
     ShaderProgram* const getDrawShader(
         RenderStage renderStage = RenderStage::DISPLAY_STAGE);
@@ -107,7 +107,7 @@ class RenderingComponent : public SGNComponent {
    protected:
     void inViewCallback();
     bool canDraw(const SceneRenderState& sceneRenderState,
-                RenderStage renderStage);
+                 RenderStage renderStage);
     /// Called after the parent node was rendered
     void postDraw(const SceneRenderState& sceneRenderState,
                   RenderStage renderStage);
@@ -115,9 +115,8 @@ class RenderingComponent : public SGNComponent {
         SceneRenderState& sceneRenderState,
         RenderStage renderStage);
 
-    inline void drawOrder(U32 index) {
-        _drawOrder = index;
-    }
+    inline void drawOrder(U32 index) { _drawOrder = index; }
+
    protected:
     Material* _materialInstance;
     /// LOD level is updated at every visibility check
@@ -150,22 +149,23 @@ class RenderingCompGFXDeviceAttorney {
         renderable._renderingLocked = false;
     }
 
+    static vectorImpl<GenericDrawCommand>& getDrawCommands(
+        RenderingComponent& renderable,
+        SceneRenderState& sceneRenderState,
+        RenderStage renderStage) {
+        return renderable.getDrawCommands(sceneRenderState, renderStage);
+    }
+
     static bool canDraw(RenderingComponent& renderable,
                         const SceneRenderState& sceneRenderState,
                         RenderStage renderStage) {
         return renderable.canDraw(sceneRenderState, renderStage);
     }
-
-    static vectorImpl<GenericDrawCommand>& getDrawCommands(
-        RenderingComponent& renderable, SceneRenderState& sceneRenderState,
-        RenderStage renderStage) {
-        return renderable.getDrawCommands(sceneRenderState, renderStage);
-    }
     friend class GFXDevice;
 };
 
 class RenderingCompSceneGraphAttorney {
-private:
+   private:
     static void inViewCallback(RenderingComponent& renderable) {
         renderable.inViewCallback();
     }
@@ -186,6 +186,17 @@ class RenderingCompRenderBinAttorney {
     }
 
     friend class RenderBin;
+};
+
+class RenderingCompPassCullerAttorney {
+   private:
+    static bool canDraw(RenderingComponent& renderable,
+                        const SceneRenderState& sceneRenderState,
+                        RenderStage renderStage) {
+        return renderable.canDraw(sceneRenderState, renderStage);
+    }
+
+    friend class RenderPassCuller;
 };
 
 };  // namespace Divide

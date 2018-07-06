@@ -115,7 +115,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->setAmbient(DefaultColors::WHITE() / 3);
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
-    vegMaterial->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
+    vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     vegMaterial->setShaderDefines("SKIP_TEXTURES");
     vegMaterial->setShaderProgram(_grassShaderName, RenderStage::DISPLAY_STAGE,
                                   true);

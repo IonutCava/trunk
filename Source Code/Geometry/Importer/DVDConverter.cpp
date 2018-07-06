@@ -39,41 +39,41 @@ DVDConverter::DVDConverter() : _ppsteps(0) {
     aiTextureMapModeTable[aiTextureMapMode_Mirror] =
         TextureWrap::TEXTURE_REPEAT;
     aiShadingModeInternalTable[aiShadingMode_Fresnel] =
-        Material::ShadingMode::SHADING_COOK_TORRANCE;
+        Material::ShadingMode::COOK_TORRANCE;
     aiShadingModeInternalTable[aiShadingMode_NoShading] =
-        Material::ShadingMode::SHADING_FLAT;
+        Material::ShadingMode::FLAT;
     aiShadingModeInternalTable[aiShadingMode_CookTorrance] =
-        Material::ShadingMode::SHADING_COOK_TORRANCE;
+        Material::ShadingMode::COOK_TORRANCE;
     aiShadingModeInternalTable[aiShadingMode_Minnaert] =
-        Material::ShadingMode::SHADING_OREN_NAYAR;
+        Material::ShadingMode::OREN_NAYAR;
     aiShadingModeInternalTable[aiShadingMode_OrenNayar] =
-        Material::ShadingMode::SHADING_OREN_NAYAR;
+        Material::ShadingMode::OREN_NAYAR;
     aiShadingModeInternalTable[aiShadingMode_Toon] =
-        Material::ShadingMode::SHADING_TOON;
+        Material::ShadingMode::TOON;
     aiShadingModeInternalTable[aiShadingMode_Blinn] =
-        Material::ShadingMode::SHADING_BLINN_PHONG;
+        Material::ShadingMode::BLINN_PHONG;
     aiShadingModeInternalTable[aiShadingMode_Phong] =
-        Material::ShadingMode::SHADING_PHONG;
+        Material::ShadingMode::PHONG;
     aiShadingModeInternalTable[aiShadingMode_Gouraud] =
-        Material::ShadingMode::SHADING_BLINN_PHONG;
+        Material::ShadingMode::BLINN_PHONG;
     aiShadingModeInternalTable[aiShadingMode_Flat] =
-        Material::ShadingMode::SHADING_FLAT;
+        Material::ShadingMode::FLAT;
     aiTextureOperationTable[aiTextureOp_Multiply] =
-        Material::TextureOperation::TextureOperation_Multiply;
+        Material::TextureOperation::MULTIPLY;
     aiTextureOperationTable[aiTextureOp_Add] =
-        Material::TextureOperation::TextureOperation_Add;
+        Material::TextureOperation::ADD;
     aiTextureOperationTable[aiTextureOp_Subtract] =
-        Material::TextureOperation::TextureOperation_Subtract;
+        Material::TextureOperation::SUBTRACT;
     aiTextureOperationTable[aiTextureOp_Divide] =
-        Material::TextureOperation::TextureOperation_Divide;
+        Material::TextureOperation::DIVIDE;
     aiTextureOperationTable[aiTextureOp_SmoothAdd] =
-        Material::TextureOperation::TextureOperation_SmoothAdd;
+        Material::TextureOperation::SMOOTH_ADD;
     aiTextureOperationTable[aiTextureOp_SignedAdd] =
-        Material::TextureOperation::TextureOperation_SignedAdd;
+        Material::TextureOperation::SIGNED_ADD;
     aiTextureOperationTable[aiTextureOp_SignedAdd] =
-        Material::TextureOperation::TextureOperation_SignedAdd;
+        Material::TextureOperation::SIGNED_ADD;
     aiTextureOperationTable[/*aiTextureOp_Replace*/ 7] =
-        Material::TextureOperation::TextureOperation_Replace;
+        Material::TextureOperation::REPLACE;
 
     importer = MemoryManager_NEW Assimp::Importer();
 }
@@ -487,7 +487,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
     tempMaterial->setOpacity(opacity);
 
     // default shading model
-    I32 shadingModel = to_int(Material::ShadingMode::SHADING_PHONG);
+    I32 shadingModel = to_int(Material::ShadingMode::PHONG);
     // Load shading model
     aiGetMaterialInteger(source, AI_MATKEY_SHADING_MODEL, &shadingModel);
     tempMaterial->setShadingMode(aiShadingModeInternalTable[shadingModel]);
@@ -565,7 +565,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
                            : ShaderProgram::TextureUsage::TEXTURE_UNIT0,
                 textureRes,
                 count == 0
-                    ? Material::TextureOperation::TextureOperation_Replace
+                    ? Material::TextureOperation::REPLACE
                     : aiTextureOperationTable[op]);
         }  // endif
 
@@ -608,7 +608,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
-            tempMaterial->setBumpMethod(Material::BumpMethod::BUMP_NORMAL);
+            tempMaterial->setBumpMethod(Material::BumpMethod::NORMAL);
         }  // endif
     }      // endif
 
@@ -640,7 +640,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
             Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(ShaderProgram::TextureUsage::TEXTURE_NORMALMAP,
                                      textureRes, aiTextureOperationTable[op]);
-            tempMaterial->setBumpMethod(Material::BumpMethod::BUMP_NORMAL);
+            tempMaterial->setBumpMethod(Material::BumpMethod::NORMAL);
         }  // endif
     }      // endif
     result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping,

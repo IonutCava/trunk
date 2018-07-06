@@ -64,6 +64,7 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
         _bufferSize = primitiveSize * primitiveCount;
     }
 
+    virtual void Destroy() = 0;
     virtual void DiscardAllData() const = 0;
     virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const = 0;
     virtual void UpdateData(ptrdiff_t offset,

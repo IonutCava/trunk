@@ -46,6 +46,7 @@ class glUniformBuffer final : public ShaderBuffer {
                      bool persistentMapped);
     ~glUniformBuffer();
 
+    void Destroy();
     /// Create a new buffer object to hold our uniform shader data
     void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
 

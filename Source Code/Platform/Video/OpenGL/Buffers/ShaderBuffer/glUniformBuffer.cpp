@@ -25,6 +25,14 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
 
 glUniformBuffer::~glUniformBuffer() 
 {
+    Destroy();
+}
+
+void glUniformBuffer::Destroy() {
+    if (_persistentMapped) {
+        _lockManager->WaitForLockedRange(0, _bufferSize);
+        DiscardAllData();
+    }
     GLUtil::freeBuffer(_UBOid, _mappedBuffer);
 }
 

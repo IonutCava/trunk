@@ -270,11 +270,6 @@ void GFXDevice::buildDrawCommands(
         RenderingComponent* renderable =
             node->getComponent<RenderingComponent>();
 
-        if (!RenderingCompGFXDeviceAttorney::canDraw(
-                *renderable, sceneRenderState, currentStage)) {
-            continue;
-        }
-
         vectorImpl<GenericDrawCommand>& nodeDrawCommands =
             RenderingCompGFXDeviceAttorney::getDrawCommands(
                 *renderable, sceneRenderState, currentStage);

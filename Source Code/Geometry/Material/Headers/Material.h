@@ -52,42 +52,42 @@ enum class BlendProperty : U32;
 class Material : public Resource {
    public:
     enum class BumpMethod : U32 {
-        BUMP_NONE = 0,    //<Use phong
-        BUMP_NORMAL = 1,  //<Normal mapping
-        BUMP_PARALLAX = 2,
-        BUMP_RELIEF = 3,
+        NONE = 0,    //<Use phong
+        NORMAL = 1,  //<Normal mapping
+        PARALLAX = 2,
+        RELIEF = 3,
         COUNT
     };
 
     /// How should each texture be added
     enum class TextureOperation : U32 {
-        TextureOperation_Multiply = 0,
-        TextureOperation_Add = 1,
-        TextureOperation_Subtract = 2,
-        TextureOperation_Divide = 3,
-        TextureOperation_SmoothAdd = 4,
-        TextureOperation_SignedAdd = 5,
-        TextureOperation_Decal = 6,
-        TextureOperation_Replace = 7,
+        MULTIPLY = 0,
+        ADD = 1,
+        SUBTRACT = 2,
+        DIVIDE = 3,
+        SMOOTH_ADD = 4,
+        SIGNED_ADD = 5,
+        DECAL = 6,
+        REPLACE = 7,
         COUNT
     };
 
     enum class TranslucencySource : U32 {
-        TRANSLUCENT_DIFFUSE = 0,
-        TRANSLUCENT_OPACITY_MAP,
-        TRANSLUCENT_DIFFUSE_MAP,
-        TRANSLUCENT_NONE,
+        DIFFUSE = 0,
+        OPACITY_MAP,
+        DIFFUSE_MAP,
+        NONE,
         COUNT
     };
     /// Not used yet but implemented for shading model selection in shaders
     /// This enum matches the ASSIMP one on a 1-to-1 basis
     enum class ShadingMode : U32 {
-        SHADING_FLAT = 0x1,
-        SHADING_PHONG = 0x2,
-        SHADING_BLINN_PHONG = 0x3,
-        SHADING_TOON = 0x4,
-        SHADING_OREN_NAYAR = 0x5,
-        SHADING_COOK_TORRANCE = 0x6,
+        FLAT = 0x1,
+        PHONG = 0x2,
+        BLINN_PHONG = 0x3,
+        TOON = 0x4,
+        OREN_NAYAR = 0x5,
+        COOK_TORRANCE = 0x6,
         COUNT
     };
 
@@ -124,17 +124,18 @@ class Material : public Resource {
     /// material
     struct ShaderInfo {
         enum class ShaderCompilationStage : U32 {
-            SHADER_STAGE_REQUESTED = 0,
-            SHADER_STAGE_QUEUED = 1,
-            SHADER_STAGE_COMPUTED = 2,
-            SHADER_STAGE_ERROR = 3,
+            REQUESTED = 0,
+            QUEUED = 1,
+            COMPUTED = 2,
+            UNHANDLED = 3,
+            PENDING = 4,
+            CUSTOM = 5,
             COUNT
         };
 
         ShaderProgram* _shaderRef;
         stringImpl _shader;
         ShaderCompilationStage _shaderCompStage;
-        bool _isCustomShader;
         vectorImpl<stringImpl> _shaderDefines;
 
         ShaderProgram* const getProgram() const;
@@ -145,7 +146,6 @@ class Material : public Resource {
             _shaderRef = nullptr;
             _shader = "";
             _shaderCompStage = ShaderCompilationStage::COUNT;
-            _isCustomShader = false;
             for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
                 memset(_shadingFunction[i], 0,
                        to_uint(BumpMethod::COUNT) * sizeof(U32));
@@ -157,7 +157,6 @@ class Material : public Resource {
             _shaderRef->AddRef();
             _shader = other._shader;
             _shaderCompStage = other._shaderCompStage;
-            _isCustomShader = other._isCustomShader;
             for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
                 for (U32 j = 0; j < to_uint(BumpMethod::COUNT); ++j) {
                     _shadingFunction[i][j] = other._shadingFunction[i][j];
@@ -227,8 +226,7 @@ class Material : public Resource {
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
     void setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                     Texture* const texture,
-                    const TextureOperation& op =
-                        TextureOperation::TextureOperation_Replace);
+                    const TextureOperation& op = TextureOperation::REPLACE);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call
     inline void addCustomTexture(Texture* texture, U8 offset) {
@@ -269,8 +267,12 @@ class Material : public Resource {
     ///#define MAX_SHADOW_CASTERS 2
     inline void setShaderDefines(RenderStage renderStage,
                                  const stringImpl& shaderDefines) {
-        _shaderInfo[to_uint(renderStage)]._shaderDefines.push_back(
-            shaderDefines);
+        vectorImpl<stringImpl>& defines =
+            _shaderInfo[to_uint(renderStage)]._shaderDefines;
+        if (std::find(std::begin(defines), end(defines), shaderDefines) !=
+            std::end(defines)) {
+            defines.push_back(shaderDefines);
+        }
     }
 
     inline void setShaderDefines(const stringImpl& shaderDefines) {
@@ -285,11 +287,13 @@ class Material : public Resource {
         _shaderThreadedLoad = state;
     }
     void setShaderProgram(
-        const stringImpl& shader, RenderStage renderStage,
+        const stringImpl& shader,
+        RenderStage renderStage,
         const bool computeOnAdd,
         const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>());
     inline void setShaderProgram(
-        const stringImpl& shader, const bool computeOnAdd,
+        const stringImpl& shader,
+        const bool computeOnAdd,
         const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()) {
         setShaderProgram(shader, RenderStage::DISPLAY_STAGE, computeOnAdd,
                          shaderCompileCallback);
@@ -346,7 +350,8 @@ class Material : public Resource {
 
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
-    bool computeShader(RenderStage renderStage, const bool computeOnAdd,
+    bool computeShader(RenderStage renderStage,
+                       const bool computeOnAdd,
                        const DELEGATE_CBK<>& shaderCompileCallback);
 
     static void unlockShaderQueue() { _shaderQueueLocked = false; }
