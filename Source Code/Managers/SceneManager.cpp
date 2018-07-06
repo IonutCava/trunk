@@ -147,10 +147,6 @@ Scene* SceneManager::load(stringImpl sceneName) {
         state = true;
     }
 
-    if (state) {
-        state = LoadSave::loadScene(*loadingScene);
-    }
-
     return state ? loadingScene : nullptr;
 }
 
@@ -173,6 +169,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     }
     Attorney::SceneManager::onSetActive(*scene);
     _scenePool->activeScene(*scene);
+    ShadowMap::resetShadowMaps();
     _GUI->onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->getName());
 }
@@ -217,6 +214,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                 }
             }
             assert(loadedScene->getState() == ResourceState::RES_LOADED);
+            LoadSave::loadScene(*loadedScene);
             setActiveScene(loadedScene);
 
             _reflectiveNodesCache.clear();

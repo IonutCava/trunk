@@ -12,13 +12,13 @@
 #include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
-#include "Platform/Video/Buffers/VertexBuffer/Headers/GenericVertexData.h"
+#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
 namespace {
     // 3 should always be enough for round-robin GPU updates to avoid stalls:
     // 1 in ram, 1 in driver and 1 in VRAM
-    static const U32 g_particleBufferSizeFactor = 3;
+    static const U32 g_particleBufferSizeFactor = 1;
     static const U32 g_particleGeometryBuffer = 0;
     static const U32 g_particlePositionBuffer = 1;
     static const U32 g_particleColourBuffer = 2;
@@ -69,7 +69,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                                   false,
                                   false,
                                   g_usePersistentlyMappedBuffers);
-    GenericVertexData::AttributeDescriptor& descriptor = 
+    AttributeDescriptor& descriptor = 
         _particleGPUBuffer->getDrawAttribDescriptor(to_const_uint(AttribLocation::VERTEX_POSITION));
 
     descriptor.set(g_particleGeometryBuffer, 0, 3, false, 0, GFXDataFormat::FLOAT_32);
@@ -99,6 +99,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
 
     //_renderState.addToDrawExclusionMask(RenderStage::SHADOW);
+    //_renderState.addToDrawExclusionMask(RenderStage::REFLECTION);
 
     return (_particleShader != nullptr);
 }
@@ -258,9 +259,10 @@ void ParticleEmitter::postUpdate() {
 void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
-    if (_lastUpdateTimer < g_updateInterval) {
+    _updating = false;
+    /*if (_lastUpdateTimer < g_updateInterval) {
         _lastUpdateTimer += deltaTime;
-    } else {
+    } else */{
         _lastUpdateTimer = 0;
 
         if (_enabled) {
@@ -329,7 +331,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                         postUpdate();
                     //}
                     _updating = false;
-                })._task->startTask(Task::TaskPriority::HIGH);
+                })._task->startTask(Task::TaskPriority::REALTIME_WITH_CALLBACK);
         }
     }
 

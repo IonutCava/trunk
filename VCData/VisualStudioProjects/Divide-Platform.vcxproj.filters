@@ -79,9 +79,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VertexDataInterface.h">
       <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\GenericVertexData.h">
-      <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\Headers\VertexBuffer.h">
       <Filter>Video\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
@@ -313,6 +310,15 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\GenericBuffer\Headers\GenericVertexData.h">
+      <Filter>Video\Buffers\VertexBuffer\GenericBuffer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\GenericBuffer\Headers\AttributeDescriptor.h">
+      <Filter>Video\Buffers\VertexBuffer\GenericBuffer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericBuffer.h">
+      <Filter>Video\OpenGL\Buffers\VertexBuffer\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -524,6 +530,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\GenericCommandPool.cpp">
       <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\GenericBuffer\GenericVertexData.cpp">
+      <Filter>Video\Buffers\VertexBuffer\GenericBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\GenericBuffer\AttributeDescriptor.cpp">
+      <Filter>Video\Buffers\VertexBuffer\GenericBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glGenericBuffer.cpp">
+      <Filter>Video\OpenGL\Buffers\VertexBuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -793,6 +808,12 @@
     </Filter>
     <Filter Include="Video\OpenGL\Buffers\RenderTarget\Headers">
       <UniqueIdentifier>{c90d75a5-ea71-4bcc-9126-3bdf4b6d824f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\Buffers\VertexBuffer\GenericBuffer">
+      <UniqueIdentifier>{e1609cfa-3653-41bc-9371-2eaf80c5286c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Video\Buffers\VertexBuffer\GenericBuffer\Headers">
+      <UniqueIdentifier>{b6f686fa-062d-495d-b408-40ced390b98d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

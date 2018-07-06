@@ -15,6 +15,12 @@ namespace Divide {
 std::array<RenderTarget*, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMaps;
 std::array<ShadowMap::LayerUsageMask, to_const_uint(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
 
+void ShadowMap::resetShadowMaps() {
+    for (U32 i = 0; i < to_const_uint(ShadowType::COUNT); ++i) {
+        _depthMapUsage[i].fill(false);
+    }
+}
+
 void ShadowMap::initShadowMaps() {
     std::array<U16, to_const_uint(ShadowType::COUNT)> resolutions;
     resolutions.fill(512);

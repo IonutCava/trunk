@@ -63,7 +63,6 @@ DEFINE_SINGLETON_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
     void process(const U64 deltaTime);
     void idle();
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
-    void initScene();
 
     PhysicsSceneInterface* NewSceneInterface(Scene& scene);
 

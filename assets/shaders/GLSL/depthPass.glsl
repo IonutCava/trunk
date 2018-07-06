@@ -28,6 +28,7 @@ layout(triangles, invocations = MAX_SPLITS_PER_LIGHT) in;
 
 layout(triangle_strip, max_vertices = 3) out;
 
+out vec4 geom_vertexWVP;
 void main()
 {
     if (gl_InvocationID < dvd_GSInvocationLimit) {
@@ -35,8 +36,9 @@ void main()
         for (int i = 0; i < gl_in.length(); ++i)
         {
             passVertex(i);
+            geom_vertexWVP = gl_in[i].gl_Position;
             gl_Layer = gl_InvocationID + dvd_shadowArrayOffset;
-            gl_Position = vp * gl_in[i].gl_Position;
+            gl_Position = vp * geom_vertexWVP;
             EmitVertex();
         }
         EndPrimitive();
@@ -50,6 +52,7 @@ layout(early_fragment_tests) in;
 
 #if defined(SHADOW_PASS)
 out vec2 _colourOut;
+in vec4 geom_vertexWVP;
 #endif
 
 #include "nodeBufferedInput.cmn"
@@ -100,8 +103,10 @@ void main() {
 
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    //_colourOut = vec4(computeMoments(exp(DEPTH_EXP_WARP * gl_FragCoord.z)), 0.0, alpha);
-    _colourOut = computeMoments(gl_FragCoord.z);
+    float depth = geom_vertexWVP.z / geom_vertexWVP.w;
+    depth = depth * 0.5 + 0.5;
+    //_colourOut = computeMoments(exp(DEPTH_EXP_WARP * depth));
+    _colourOut = computeMoments(depth)
 #endif
 
 }

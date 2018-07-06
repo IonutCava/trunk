@@ -51,6 +51,7 @@ Scene::Scene(const stringImpl& name)
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
+      _pxScene(nullptr),
       _paramHandler(ParamHandler::instance())
 {
     _sceneTimer = 0UL;
@@ -624,6 +625,8 @@ bool Scene::unload() {
     clearTasks();
     _lightPool->clear();
     /// Destroy physics (:D)
+    _pxScene->release();
+    MemoryManager::DELETE(_pxScene);
     PHYSICS_DEVICE.setPhysicsScene(nullptr);
     clearObjects();
     _loadComplete = false;
@@ -647,24 +650,20 @@ void Scene::postLoadMainThread() {
 }
 
 void Scene::onSetActive() {
+    PHYSICS_DEVICE.setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
-
 }
 
 void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
 }
 
-PhysicsSceneInterface* Scene::createPhysicsImplementation() {
-    return PHYSICS_DEVICE.NewSceneInterface(*this);
-}
-
 bool Scene::loadPhysics(bool continueOnErrors) {
-    // Add a new physics scene (can be overridden in each scene for custom
-    // behavior)
-    PHYSICS_DEVICE.setPhysicsScene(createPhysicsImplementation());
-    // Initialize the physics scene
-    PHYSICS_DEVICE.initScene();
+    if (_pxScene == nullptr) {
+        _pxScene = PHYSICS_DEVICE.NewSceneInterface(*this);
+        _pxScene->init();
+    }
+
     // Cook geometry
     if (_paramHandler.getParam<bool>(_ID("options.autoCookPhysicsAssets"), true)) {
         _cookCollisionMeshesScheduled = true;

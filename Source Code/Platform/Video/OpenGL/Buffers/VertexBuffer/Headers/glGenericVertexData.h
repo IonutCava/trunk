@@ -32,7 +32,7 @@
 #ifndef _GL_GENERIC_VERTEX_DATA_H
 #define _GL_GENERIC_VERTEX_DATA_H
 
-#include "Platform/Video/Buffers/VertexBuffer/Headers/GenericVertexData.h"
+#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 #include "Core/Math/Headers/MathHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
@@ -75,8 +75,8 @@ class glGenericVertexData : public GenericVertexData {
                    _stride == other._stride;
         }
 
-        GLsizei _stride;
-        GLuint _buffer;
+        GLsizei  _stride;
+        GLuint   _buffer;
         GLintptr _offset;
     };
 

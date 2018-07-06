@@ -47,7 +47,6 @@ namespace Attorney {
 };
 
 class SceneGraph : private NonCopyable,
-                   public GUIDWrapper,
                    public FrameListener,
                    public SceneComponent
 {

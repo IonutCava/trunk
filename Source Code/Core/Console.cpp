@@ -15,7 +15,7 @@ bool Console::_enabled = true;
 std::thread Console::_printThread;
 
 std::atomic_bool Console::_running;
-Console::consolePrintCallback Console::_guiConsoleCallback;
+Console::ConsolePrintCallback Console::_guiConsoleCallback;
 
 moodycamel::BlockingConcurrentQueue<Console::OutputEntry> Console::_outputBuffer(MAX_CONSOLE_ENTRIES);
 
@@ -93,10 +93,6 @@ void Console::output(std::ostream& outStream, const char* text, const bool newli
 
 void Console::output(const char* text, const bool newline, const bool error) {
     if (_enabled) {
-        if (_guiConsoleCallback) {
-            _guiConsoleCallback(text, error);
-        }
-
         stringstreamImplAligned outStream;
         decorate(outStream, text, newline, error);
 
@@ -117,6 +113,10 @@ void Console::outThread() {
         _outputBuffer.wait_dequeue(/*ctok, */entry);
         std::ostream& outStream = entry._error ? std::cerr : std::cout;
         outStream << entry._text.c_str();
+
+        if (_guiConsoleCallback) {
+            _guiConsoleCallback(entry._text.c_str(), entry._error);
+        }
     }
 }
 

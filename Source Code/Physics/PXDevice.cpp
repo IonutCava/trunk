@@ -72,10 +72,6 @@ void PXDevice::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     _api->setPhysicsScene(targetScene);
 }
 
-void PXDevice::initScene() {
-    _api->initScene();
-}
-
 PhysicsSceneInterface* PXDevice::NewSceneInterface(Scene& scene) {
     return _api->NewSceneInterface(scene);
 }

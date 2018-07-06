@@ -251,10 +251,13 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
             _gpuBlock._data._renderProperties.x = to_float(shadowLight->getShadowProperties()._arrayOffset.x);
             _gpuBlock._updated = true;
         }
-        _gpuBlock._data._renderProperties.y = 
-            to_float(shadowLight->getLightType() == LightType::DIRECTIONAL
-                                                  ? shadowLight->getShadowMapInfo()->numLayers()
-                                                  : 1);
+        U8 shadowPasses = shadowLight->getLightType() == LightType::DIRECTIONAL
+                                                       ? shadowLight->getShadowMapInfo()->numLayers()
+                                                       : 1;
+        if (!COMPARE(_gpuBlock._data._renderProperties.y, to_float(shadowPasses))) {
+            _gpuBlock._data._renderProperties.y = to_float(shadowPasses);
+            _gpuBlock._updated = true;
+        }
     }
 
     U32 nodeCount = 0;

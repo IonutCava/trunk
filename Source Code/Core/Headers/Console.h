@@ -47,7 +47,7 @@ constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
 constexpr int MAX_CONSOLE_ENTRIES = 128;
 
 class Console : private NonCopyable {
-    typedef std::function<void(const char*, bool)> consolePrintCallback;
+    typedef std::function<void(const char*, bool)> ConsolePrintCallback;
 
     struct OutputEntry {
         OutputEntry() : _error(false)
@@ -106,8 +106,7 @@ class Console : private NonCopyable {
     static void togglethreadID(const bool state) { _threadID = state; }
     static void toggle(const bool state) { _enabled = state; }
 
-    static void bindConsoleOutput(
-        const consolePrintCallback& guiConsoleCallback) {
+    static void bindConsoleOutput(const ConsolePrintCallback& guiConsoleCallback) {
         _guiConsoleCallback = guiConsoleCallback;
     }
 
@@ -119,7 +118,7 @@ class Console : private NonCopyable {
     static void outThread();
 
    private:
-    static consolePrintCallback _guiConsoleCallback;
+    static ConsolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
     static bool _threadID;
     static bool _enabled;

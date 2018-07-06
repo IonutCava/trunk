@@ -29,37 +29,26 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _SCENE_COMPONENT_H_
-#define _SCENE_COMPONENT_H_
+#ifndef _GL_GENERIC_BUFFER_H_
+#define _GL_GENERIC_BUFFER_H_
 
-#include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Video/OpenGL/Headers/glResources.h"
 
 namespace Divide {
 
-class Scene;
-class SceneComponent : public GUIDWrapper {
-    public:
-        explicit SceneComponent(Scene& parentScene)
-            : GUIDWrapper(),
-              _parentScene(parentScene)
-        {
-        }
+class glBufferImpl;
+class glGenericBuffer {
+  public:
+      glGenericBuffer(GLenum usage, bool persistentMapped);
+      ~glGenericBuffer();
 
-        virtual ~SceneComponent()
-        {
-        }
-
-        inline Scene& parentScene() {
-            return _parentScene;
-        }
-
-        inline const Scene& parentScene() const {
-            return _parentScene;
-        }
-
-    protected:
-        Scene& _parentScene;
+  protected:
+      GLuint _elementCount;
+      GLuint _elementSize;
+      GLint  _feedbackBindPoint;
+      glBufferImpl* _buffer;
 };
-}; // namespace Divide
 
-#endif //_SCENE_COMPONENT_H_
+}; //namespace Divide
+
+#endif //_GENERIC_BUFFER_H_

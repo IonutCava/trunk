@@ -72,6 +72,7 @@ class NOINITVTABLE ShadowMap {
     virtual void init(ShadowMapInfo* const smi) = 0;
     virtual void previewShadowMaps(U32 rowIndex) = 0;
 
+    static void resetShadowMaps();
     static void initShadowMaps();
     static void clearShadowMaps();
     static void bindShadowMaps();

@@ -147,10 +147,6 @@ class Scene : public Resource {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
-    /// Override this if you need a custom physics implementation
-    /// (idle,update,process,etc)
-    virtual PhysicsSceneInterface* createPhysicsImplementation();
-
     SceneGraphNode_ptr addParticleEmitter(const stringImpl& name,
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
@@ -278,6 +274,7 @@ class Scene : public Resource {
    protected:
        LightPool* _lightPool;
        SceneInput* _input;
+       PhysicsSceneInterface* _pxScene;
 #ifdef _DEBUG
        IMPrimitive* _linesPrimitive;
        vectorImpl<IMPrimitive*> _octreePrimitives;

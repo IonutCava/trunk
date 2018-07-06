@@ -72,7 +72,6 @@ bool PhysXSceneInterface::init() {
 
 void PhysXSceneInterface::release() {
     if (!_gScene) {
-        Console::errorfn(Locale::get(_ID("ERROR_PHYSX_CLOSE_INVALID_INTERFACE")));
         return;
     }
 

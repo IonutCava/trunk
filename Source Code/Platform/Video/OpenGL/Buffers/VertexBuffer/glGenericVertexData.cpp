@@ -138,8 +138,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
 }
 
 void glGenericVertexData::incQueryQueue() {
-    // Queries are double buffered to avoid stalling (should probably be triple
-    // buffered)
+    // Queries are double buffered to avoid stalling (should probably be triple buffered)
     if (!_bufferObjects.empty() && _doubleBufferedQuery) {
         _currentWriteQuery = (_currentWriteQuery + 1) % 2;
         _currentReadQuery = (_currentWriteQuery + 1) % 2;

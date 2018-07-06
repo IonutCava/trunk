@@ -179,16 +179,13 @@ PhysicsSceneInterface* PhysX::NewSceneInterface(Scene& scene) {
 
 void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     if (_targetScene) {
-        MemoryManager::DELETE(_targetScene);
+        if (targetScene) {
+            if (_targetScene->getGUID() == targetScene->getGUID()) {
+                return;
+            }
+        }
     }
     _targetScene = targetScene;
-}
-
-void PhysX::initScene() {
-    DIVIDE_ASSERT(
-        _targetScene != nullptr,
-        "PhysX error: no target scene specified before a call to initScene()");
-    _targetScene->init();
 }
 
 /*void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,

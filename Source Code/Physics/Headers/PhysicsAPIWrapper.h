@@ -66,7 +66,6 @@ class NOINITVTABLE PhysicsAPIWrapper {
     virtual PhysicsSceneInterface* NewSceneInterface(Scene& scene) = 0;
 
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
-    virtual void initScene() = 0;
 
     virtual PhysicsAsset* createRigidActor(const SceneGraphNode& node) = 0;
 };

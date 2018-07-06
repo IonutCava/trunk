@@ -88,7 +88,6 @@ DEFINE_SINGLETON_W_SPECIFIER(PhysX,
 
     inline physx::PxPhysics* const getSDK() { return _gPhysicsSDK; }
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
-    void initScene();
 
     PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
   protected:

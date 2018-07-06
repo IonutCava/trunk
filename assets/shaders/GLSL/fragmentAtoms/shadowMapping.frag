@@ -25,6 +25,8 @@ float getShadowFactor(int lightIndex) {
         //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(light._options.z);
         //case LIGHT_SPOT            : return applyShadowSpot(light._options.z); 
     }
+
+    return 1.0;
 }
 
 float shadow_loop(){
@@ -47,6 +49,6 @@ float shadow_loop(){
         offset += int(dvd_lightCountPerType[i]);
     }
 
-    return clamp(shadow, 0.05, 1.0);
+    return saturate(shadow);
 }
 #endif //_SHADOW_MAPPING_FRAG_

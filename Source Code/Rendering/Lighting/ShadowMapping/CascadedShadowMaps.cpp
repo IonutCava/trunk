@@ -33,9 +33,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _horizBlur = 0;
     _vertBlur = 0;
     _renderPolicy = MemoryManager_NEW RTDrawDescriptor(RenderTarget::defaultPolicy());
-    // We clear the FB on each face draw call, not on Begin()
-    _renderPolicy->_clearDepthBufferOnBind = false;
-    _renderPolicy->_clearColourBuffersOnBind = false;
+    _renderPolicy->_clearDepthBufferOnBind = true;
+    _renderPolicy->_clearColourBuffersOnBind = true;
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
@@ -47,8 +46,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
     _blurDepthMapShader->Uniform("layerTotalCount", (I32)_numSplits);
-    _blurDepthMapShader->Uniform("layerCount", (I32)_numSplits - 1);
-    _blurDepthMapShader->Uniform("layerOffset", (I32)getArrayOffset());
+    _blurDepthMapShader->Uniform("layerCount",  (I32)_numSplits);
 
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(), "EVCSM");
 
@@ -60,7 +58,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                         GFXImageFormat::RG32F,
                                         GFXDataFormat::FLOAT_32);
-    blurMapDescriptor.setLayerCount(_numSplits);
+    blurMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
     blurMapDescriptor.setSampler(blurMapSampler);
     
     _blurBuffer = GFX_DEVICE.newRT(false);
@@ -222,6 +220,7 @@ void CascadedShadowMaps::postRender() {
     if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
         return;
     }
+
     _blurDepthMapShader->bind();
 
     GenericDrawCommand pointsCmd;
@@ -231,6 +230,9 @@ void CascadedShadowMaps::postRender() {
     pointsCmd.shaderProgram(_blurDepthMapShader);
 
     // Blur horizontally
+    _blurDepthMapShader->Uniform("layerOffsetRead", (I32)getArrayOffset());
+    _blurDepthMapShader->Uniform("layerOffsetWrite", 0);
+
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer->begin(RenderTarget::defaultPolicy());
     getDepthMap()->bind(0, RTAttachment::Type::Colour, 0, false);
@@ -238,6 +240,9 @@ void CascadedShadowMaps::postRender() {
     getDepthMap()->end();
 
     // Blur vertically
+    _blurDepthMapShader->Uniform("layerOffsetRead", 0);
+    _blurDepthMapShader->Uniform("layerOffsetWrite", (I32)getArrayOffset());
+
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     getDepthMap()->begin(RenderTarget::defaultPolicy());
     _blurBuffer->bind(0, RTAttachment::Type::Colour, 0);
