@@ -179,6 +179,9 @@
       <Filter>3rdParty/ImGUI\addons\imguiyesaddons\imguiimageeditor_plugins</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\ImguiExtras.cpp" />
+    <ClCompile Include="..\..\Source Code\Editor\Widgets\PanelManager.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwConfig.h">
@@ -384,6 +387,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h">
       <Filter>3rdParty/ImGUI\addons\imguiyesaddons\imguiimageeditor_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\PanelManager.h">
+      <Filter>Widgets\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

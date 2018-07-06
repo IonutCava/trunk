@@ -525,7 +525,11 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         }
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
-            Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), targetViewports[i]);
+            if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
+                Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), targetViewports[i]);
+            } else {
+                Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), targetViewports[i]);
+            }
         }
     }
 

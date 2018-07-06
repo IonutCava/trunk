@@ -93,7 +93,7 @@ public:
 
     inline U32 getWindowCount() const;
 
-    void handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2);
+    void handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2, bool flag = false);
 
     vec2<U16> getFullscreenResolution() const;
 

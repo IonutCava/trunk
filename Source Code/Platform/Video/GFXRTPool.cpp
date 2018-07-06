@@ -14,6 +14,9 @@ namespace {
 GFXRTPool::GFXRTPool(GFXDevice& parent)
     : _parent(parent)
 {
+    if (Config::Build::ENABLE_EDITOR) {
+        _renderTargets[to_U32(RenderTargetUsage::EDITOR)].resize(1, nullptr);
+    }
     _renderTargets[to_U32(RenderTargetUsage::SCREEN)].resize(1, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::OIT)].resize(1, nullptr);
     _renderTargets[to_U32(RenderTargetUsage::SHADOW)].resize(to_base(ShadowType::COUNT), nullptr);

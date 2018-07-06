@@ -45,6 +45,7 @@ namespace Attorney {
     class EditorWindowManager;
 };
 
+class PanelManager;
 class DisplayWindow;
 class PlatformContext;
 class ImwWindowManagerDivide;
@@ -109,6 +110,7 @@ class Editor : public PlatformContextComponent,
   private:
     I64 _activeWindowGUID = -1;
     std::unique_ptr<ImwWindowManagerDivide> _windowManager;
+    std::unique_ptr<PanelManager> _panelManager;
 
     bool              _running;
     DisplayWindow*    _mainWindow;

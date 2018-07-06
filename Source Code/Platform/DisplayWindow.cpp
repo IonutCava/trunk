@@ -171,27 +171,20 @@ void DisplayWindow::handleEvent(SDL_Event event) {
                 event.window.data1,
                 event.window.data2);
         } break;
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
         case SDL_WINDOWEVENT_RESIZED: {
-            _externalResizeEvent = true;
+            _externalResizeEvent = event.window.event == SDL_WINDOWEVENT_RESIZED;
             args.x = event.window.data1;
             args.y = event.window.data2;
-            notifyListeners(WindowEvent::RESIZED_EXTERNAL, args);
+            args._flag = _externalResizeEvent;
+            notifyListeners(WindowEvent::RESIZED, args);
 
-            _parent.handleWindowEvent(WindowEvent::RESIZED_EXTERNAL,
+            _parent.handleWindowEvent(WindowEvent::RESIZED,
                                         getGUID(),
                                         event.window.data1,
-                                        event.window.data2);
+                                        event.window.data2,
+                                        _externalResizeEvent);
             _externalResizeEvent = false;
-        } break;
-        case SDL_WINDOWEVENT_SIZE_CHANGED: {
-            args.x = event.window.data1;
-            args.y = event.window.data2;
-            notifyListeners(WindowEvent::RESIZED_INTERNAL, args);
-
-            _parent.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
-                getGUID(),
-                event.window.data1,
-                event.window.data2);
         } break;
         case SDL_WINDOWEVENT_MOVED: {
             args.x = event.window.data1;

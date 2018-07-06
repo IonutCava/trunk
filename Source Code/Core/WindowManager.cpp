@@ -370,7 +370,7 @@ void WindowManager::snapCursorToCenter() const {
     setCursorPosition(to_I32(center.x * 0.5f), to_I32(center.y * 0.5f));
 }
 
-void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2) {
+void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2, bool flag) {
     switch (event) {
         case WindowEvent::HIDDEN: {
         } break;
@@ -399,15 +399,15 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
             getWindow(winGUID).hasFocus(true);
             _focusedWindowGUID = winGUID;
         } break;
-        case WindowEvent::RESIZED_INTERNAL: {
-            // Only if rendering window
+        case WindowEvent::RESIZED: {
             if (_mainWindowGUID == winGUID) {
+                // Only if rendering window
                 _context->app().onChangeWindowSize(to_U16(data1), to_U16(data2));
             }
-        } break;
-        case WindowEvent::RESIZED_EXTERNAL: {
-            getWindow(winGUID).setDimensions(to_U16(data1),
-                                             to_U16(data2));
+            if (flag) {
+                getWindow(winGUID).setDimensions(to_U16(data1),
+                                                 to_U16(data2));
+            }
         } break;
         case WindowEvent::RESOLUTION_CHANGED: {
             // Only if rendering window

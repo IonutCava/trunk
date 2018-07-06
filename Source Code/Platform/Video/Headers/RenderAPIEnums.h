@@ -54,7 +54,8 @@ enum class RenderTargetUsage : U32 {
     ENVIRONMENT = 5,
     SHADOW = 6,
     OIT = 7,
-    OTHER = 8,
+    EDITOR = 8,
+    OTHER = 9,
     COUNT
 };
 

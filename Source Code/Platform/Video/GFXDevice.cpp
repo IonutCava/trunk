@@ -401,6 +401,9 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     // Update render targets with the new resolution
     _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
     _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
+    if (Config::Build::ENABLE_EDITOR) {
+        _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
+    }
 
     U16 reflectRes = std::max(w, h) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
 

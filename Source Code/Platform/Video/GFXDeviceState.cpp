@@ -189,6 +189,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         // Screen FB should use MSAA if available
         _rtPool->allocateRT(RenderTargetUsage::SCREEN, screenDesc);
     }
+    
+    if (Config::Build::ENABLE_EDITOR) {
+        vectorImpl<RTAttachmentDescriptor> attachments = {
+            { screenDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
+        };
+
+        RenderTargetDescriptor editorDesc = {};
+        editorDesc._name = "Editor";
+        editorDesc._resolution = renderResolution;
+        editorDesc._attachmentCount = to_U8(attachments.size());
+        editorDesc._attachments = attachments.data();
+        _rtPool->allocateRT(RenderTargetUsage::EDITOR, editorDesc);
+    }
+
     {
         TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D,
                                                  GFXImageFormat::RGBA16F,

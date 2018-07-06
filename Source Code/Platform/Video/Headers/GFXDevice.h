@@ -532,6 +532,10 @@ namespace Attorney {
             device.blitToScreen(targetViewport);
         }
 
+        static void blitToRenderTarget(GFXDevice& device, RenderTargetID targetID, const vec4<I32>& targetViewport) {
+            device.blitToRenderTarget(targetID, targetViewport);
+        }
+
         static void onChangeWindowSize(GFXDevice& device, U16 w, U16 h) {
             device.setBaseViewport(vec4<I32>(0, 0, w, h));
         }

@@ -2,6 +2,7 @@
 
 #include "Headers/Editor.h"
 #include "Headers/Sample.h"
+#include "Editor/Widgets/Headers/PanelManager.h"
 #include "Editor/Widgets/Headers/ImWindowManagerDivide.h"
 
 #include "Core/Headers/Kernel.h"
@@ -39,6 +40,7 @@ Editor::Editor(PlatformContext& context)
 #if !defined(DISABLE_IMWINDOW)
     _windowManager = std::make_unique<ImwWindowManagerDivide>(*this);
 #endif
+    _panelManager = std::make_unique<PanelManager>(context);
     _mainWindow = nullptr;
     REGISTER_FRAME_LISTENER(this, 99999);
 }
@@ -125,14 +127,14 @@ bool Editor::init() {
     _mainWindow = &context().app().windowManager().getWindow(0u);
     _mainWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
     _mainWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
-    _mainWindow->addEventListener(WindowEvent::RESIZED_INTERNAL, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
+    _mainWindow->addEventListener(WindowEvent::RESIZED, [this](const DisplayWindow::WindowEventArgs& args) { OnSize(args.x, args.y);});
     _mainWindow->addEventListener(WindowEvent::TEXT, [this](const DisplayWindow::WindowEventArgs& args) { OnUTF8(args._text);});
     _activeWindowGUID = _mainWindow->getGUID();
 
     vec2<I32> size(_mainWindow->getDimensions());
 
-    OnSize(size.width, size.height);
-
+    _panelManager->init();
+    OnSize(size.w, size.h);
 #if !defined(DISABLE_IMWINDOW)
     if (_windowManager->Init()) {
         InitSample();
@@ -146,6 +148,7 @@ bool Editor::init() {
 }
 
 void Editor::close() {
+    _panelManager.reset();
     ImGui::Shutdown();
     _fontTexture.reset();
     _imguiProgram.reset();
@@ -206,6 +209,10 @@ void Editor::update(const U64 deltaTimeUS) {
                     break;
             }
         }
+
+        if (io.WantMoveMouse) {
+            context().app().windowManager().setCursorPosition((int)io.MousePos.x, (int)io.MousePos.y);
+        }
     }
 }
 
@@ -243,6 +250,9 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
 #endif
     {
         ImGui::NewFrame();
+
+        _panelManager->draw();
+
         static float f = 0.0f;
         ImGui::Text("Hello, world!");
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
@@ -554,6 +564,7 @@ void Editor::OnSize(int iWidth, int iHeight) {
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2((float)iWidth, (float)iHeight);
     io.DisplayFramebufferScale = ImVec2(iWidth > 0 ? ((float)display_size.w / iWidth) : 0, iHeight > 0 ? ((float)display_size.h / iHeight) : 0);
+    _panelManager->resize(iWidth, iHeight);
 }
 
 void Editor::OnUTF8(const char* text) {
