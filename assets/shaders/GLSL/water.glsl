@@ -11,7 +11,7 @@ void main(void)
 {
     computeData();
 
-    _pixToLight = -(dvd_LightSourcePhysical[dvd_perNodeLightData[0].x]._position.xyz);
+    _pixToLight = -(dvd_LightSource[dvd_perNodeLightData[0].x]._position.xyz);
     _pixToEye = -vec3(dvd_ViewMatrix * _vertexW);
 
     _vertexWVP = dvd_ViewProjectionMatrix * _vertexW;
@@ -85,7 +85,7 @@ void main (void)
     // add Diffuse
     _colorOut.rgb = mix(texture(texWaterRefraction, uvFinalRefract), texture(texWaterReflection, uvFinalReflect), Fresnel(V, normalize(_normalWV))).rgb;
     // add Specular
-    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSourceVisual[dvd_perNodeLightData[0].x]._specular.rgb * material[2].rgb * iSpecular, vec3(0.0), vec3(1.0));
+    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[dvd_perNodeLightData[0].x]._specular.rgb * material[2].rgb * iSpecular, vec3(0.0), vec3(1.0));
     // shadow mapping
     if (!underwater){
         float shadow = applyShadowDirectional(0, dvd_ShadowSource[0]);

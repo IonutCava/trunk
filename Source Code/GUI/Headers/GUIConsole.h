@@ -31,6 +31,7 @@
 #include "Hardware/Platform/Headers/SharedMutex.h"           //For multi-threading
 #include <deque>
 #include <boost/lockfree/queue.hpp>
+#include <boost/circular_buffer.hpp>
 
     ///Maximum number of lines to display in the console Window
 #ifdef _DEBUG
@@ -94,14 +95,12 @@ class GUIConsole{
         std::string _inputBuffer;            //< Used to check the text we are typing so that we don't close the console in the middle of a sentence/command
         std::deque<std::string >_inputHistory; //< Used to manage the input history
         I16 _inputHistoryIndex;                //< Used to cycle through history
-        static I16 _tempBufferSize;
         static bool _flushing;
         /// Used to queue output text to be displayed when '_init' becomes true
         static I32 _currentItem;
         static U64 _totalTime;
         static const I32 _messageQueueCapacity = 512;
         static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<_messageQueueCapacity> >  _outputBuffer;
-        static vectorImpl<std::pair<std::string, bool > > _outputTempBuffer;
         static SharedLock _outputLock;
 };
 

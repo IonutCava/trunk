@@ -29,7 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 class ShaderProgram;
 class ShaderBuffer : private boost::noncopyable, public GUIDWrapper {
 public:
-    ShaderBuffer(bool unbound) : GUIDWrapper(), _unbound(unbound)
+    ShaderBuffer(bool unbound) : GUIDWrapper(), _unbound(unbound), _primitiveSize(0), _primitiveCount(0)
     {
     }
 
@@ -38,14 +38,25 @@ public:
     }
 
     ///Create a new buffer to hold our shader data
-    virtual void Create(bool dynamic, bool stream, U32 primitiveCount, ptrdiff_t primitiveSize) = 0;
+    virtual void Create(bool dynamic, bool stream, U32 primitiveCount, ptrdiff_t primitiveSize) {
+        _primitiveCount = primitiveCount;
+        _primitiveSize = primitiveSize;
+    }
+
     virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const = 0;
+    virtual void SetData(const void *data) = 0;
+
     virtual bool BindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const = 0;
     virtual bool Bind(U32 bindIndex) const = 0;
     virtual void PrintInfo(const ShaderProgram* shaderProgram, U32 bindIndex) = 0;
 
+    inline size_t getPrimitiveSize()  const { return _primitiveSize; }
+    inline U32    getPrimitiveCount() const { return _primitiveCount; }
+
 protected:
     bool _unbound;
+    size_t _primitiveSize;
+    U32    _primitiveCount;
 };
 
 #endif

@@ -202,7 +202,7 @@ public:
     
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-    void updateShaderData(const mat4<F32>& viewMatrix, const D32 interpolationFactor);
+    void updateShaderData(I32 drawID, const mat4<F32>& viewMatrix, const D32 interpolationFactor);
     inline const NodeShaderData& getShaderData() const { return _nodeShaderData; }
 
 protected:

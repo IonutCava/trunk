@@ -15,6 +15,7 @@ void main(void){
 #endif
     
     computeLightVectors();
+
     //Compute the final vert position
     gl_Position = dvd_ViewProjectionMatrix * _vertexW;
 }

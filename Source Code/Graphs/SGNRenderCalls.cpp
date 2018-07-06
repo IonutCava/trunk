@@ -127,7 +127,7 @@ void SceneGraphNode::postDraw(RenderStage renderStage){
     if (_node) _node->postDraw(this, renderStage);
 }
 
-void SceneGraphNode::updateShaderData(const mat4<F32>& viewMatrix, const D32 interpolationFactor){
+void SceneGraphNode::updateShaderData(I32 drawID, const mat4<F32>& viewMatrix, const D32 interpolationFactor){
     Transform* transform = getTransform();
     if (transform) {
         _nodeShaderData._worldMatrix.set(transform->interpolate(getPrevTransform(), interpolationFactor));

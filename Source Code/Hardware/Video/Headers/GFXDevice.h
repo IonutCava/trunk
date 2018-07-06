@@ -373,6 +373,8 @@ protected:
     mat3<F32> _mat3Cache;
     ///Default camera's cached zPlanes
     vec2<F32> _cachedSceneZPlanes;
+    ///Current zPlanes
+    vec2<F32> _cachedZPlanes;
     /// AA system
     U8        _MSAASamples;
     U8        _FXAASamples;

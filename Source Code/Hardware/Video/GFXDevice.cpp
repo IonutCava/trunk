@@ -47,6 +47,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _2DRendering = false;
    _loaderThread = nullptr;
    _matricesBuffer = nullptr;
+   _nodeDataBuffer = nullptr;
    _drawDebugAxis = false;
    _enablePostProcessing = false;
    _enableAnaglyph = false;
@@ -118,6 +119,12 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         //zPlanes and ClipPlanes[MAX_CLIP_PLANES] 3 x 16 + 4 + 4 + 4 + 4 * MAX_CLIP_PLANES float values
         _matricesBuffer->Create(true, false, 3 * 16 + 4 + 4 + 4 + 4 * Config::MAX_CLIP_PLANES, sizeof(F32)); 
         _matricesBuffer->Bind(Divide::SHADER_BUFFER_CAM_MATRICES);
+
+        _nodeDataBuffer = newSB(true);
+        // 65536/2 sceneNodes visible at the same time. Each node can be instanced!
+        _nodeDataBuffer->Create(true, false, std::numeric_limits<I16>::max(), sizeof(SceneGraphNode::NodeShaderData)); 
+        _nodeDataBuffer->Bind(Divide::SHADER_BUFFER_PER_NODE);
+
         changeResolution(resolution);
 
         RenderStateBlockDescriptor defaultStateDescriptor;
@@ -235,6 +242,7 @@ void GFXDevice::closeRenderingApi(){
 
     SAFE_DELETE(_depthRanges);
     SAFE_DELETE(_matricesBuffer);
+    SAFE_DELETE(_nodeDataBuffer);
 }
 
 void GFXDevice::closeRenderer(){
@@ -282,16 +290,8 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     }
 
     Transform* transform = instance->transform();
-    if (transform) {
-        Transform* prevTransform = instance->prevTransform();
-        if (_interpolationFactor < 0.99 && prevTransform) {
-            pushWorldMatrix(transform->interpolate(prevTransform, _interpolationFactor), transform->isUniformScaled());
-        }
-        else{
-            pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
-        }
-    }
-
+    if (transform) pushWorldMatrix(transform->interpolate(instance->prevTransform(), _interpolationFactor), transform->isUniformScaled());
+  
     VertexBuffer* modelVB = instance->buffer();
     if(!modelVB) modelVB = model->getGeometryVB();
 
@@ -515,6 +515,7 @@ void GFXDevice::updateProjectionMatrix(const vec2<F32>& zPlanes){
     const size_t vec4Size = 4 * sizeof(F32);
     const size_t mat4Size = 4 * vec4Size;
 
+    _cachedZPlanes.set(zPlanes);
     F32 zPlaneData[4]; zPlanes.get(zPlaneData);
     zPlaneData[2] = _cachedSceneZPlanes.x;
     zPlaneData[3] = _cachedSceneZPlanes.y;
@@ -704,13 +705,20 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
 }
 
 void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes){
+    // Generate and upload per node data
     _nodeData.resize(0);
-    _nodeData.reserve(visibleNodes.size());
+    _nodeData.resize(visibleNodes.size());
     for(U16 i = 0; i < visibleNodes.size(); ++i){
         SceneGraphNode* crtNode = visibleNodes[i];
-        crtNode->updateShaderData(_viewMatrix, _interpolationFactor);
-        _nodeData.push_back(crtNode->getShaderData());
+        crtNode->updateShaderData(i, _viewMatrix, _interpolationFactor);
+        _nodeData[i] = crtNode->getShaderData();
     }
+    if(!_nodeData.empty())
+        _nodeDataBuffer->UpdateData(0, _nodeData.size() * sizeof(SceneGraphNode::NodeShaderData), &_nodeData.front(), true);
+
+    // Generate and upload all lighting data
+    //LightManager::getInstance().buildLightGrid(_viewMatrix, _projectionMatrix, _cachedZPlanes);
+    LightManager::getInstance().updateAndUploadLightData(_viewMatrix);
 }
 
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {

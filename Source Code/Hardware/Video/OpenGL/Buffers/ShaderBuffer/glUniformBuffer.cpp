@@ -35,18 +35,20 @@ void glUniformBuffer::Create(bool dynamic, bool stream, U32 primitiveCount, ptrd
     GL_API::setActiveBuffer(_target, _UBOid);
 
     _bufferSize = primitiveSize * primitiveCount;
+
     if(_unbound){
         glBufferStorage(_target, _bufferSize, NULL, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
         _mappedBuffer = glMapBufferRange(_target, 0, _bufferSize, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
     }else
         glBufferData(_target, _bufferSize, NULL, _usage);
+
+    ShaderBuffer::Create(dynamic, stream, primitiveCount, primitiveSize);
 }
 
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer) const {
     GL_API::setActiveBuffer(_target, _UBOid);
     if(!_unbound) {
         if(invalidateBuffer){
-            DIVIDE_ASSERT(size == _bufferSize, "glUniformBuffer error: Buffer orphaning on ChangeSubData is available only if the entire buffer data is replaced!");
             glBufferData(_target, _bufferSize, NULL, _usage);
         }
         DIVIDE_ASSERT(offset + size <= _bufferSize, "glUniformBuffer error: ChangeSubData was called with an invalid range (buffer overflow)!");
@@ -56,6 +58,19 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid 
             void* dst = (U8*) _mappedBuffer + offset;
             memcpy(dst, data, size);
         _lockManager->LockRange(offset, size);
+    }
+}
+
+void glUniformBuffer::SetData(const void *data){
+    DIVIDE_ASSERT(sizeof(data) == _bufferSize, "glUniformBuffer error: SetData needs '_bufferSize' bytes worth of data!");
+
+    GL_API::setActiveBuffer(_target, _UBOid);
+    if(!_unbound) {
+        glBufferData(_target, _bufferSize, data, _usage);
+    }else{
+        _lockManager->WaitForLockedRange(0, _bufferSize);
+            memcpy((U8*)_mappedBuffer, data, _bufferSize);
+        _lockManager->LockRange(0, _bufferSize);
     }
 }
 

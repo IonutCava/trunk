@@ -32,7 +32,7 @@ namespace {
             _lightIndex = crtLight->getSlot();
         }
     };
-    vectorImpl<PerNodeLightData> perNodeLights;
+    vectorImpl<PerNodeLightData> g_perNodeLights;
 }
 
 LightManager::LightManager() : FrameListener(),
@@ -42,10 +42,9 @@ LightManager::LightManager() : FrameListener(),
 {
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
     
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]    = GFX_DEVICE.newSB();
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]  = GFX_DEVICE.newSB();
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]    = GFX_DEVICE.newSB();
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]  = GFX_DEVICE.newSB();
+    _lightShaderBuffer[SHADER_BUFFER_NORMAL]   = GFX_DEVICE.newSB();
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW]   = GFX_DEVICE.newSB();
+    _lightShaderBuffer[SHADER_BUFFER_PER_NODE] = GFX_DEVICE.newSB();
     
     memset(normShadowLocation,  -1, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
     memset(cubeShadowLocation,  -1, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE * sizeof(I32));
@@ -59,8 +58,7 @@ LightManager::~LightManager()
 {
     clear();
     REMOVE_TIMER(s_shadowPassTimer);
-    SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_VISUAL] );
-    SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_PHYSICAL]);
+    SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_NORMAL] );
     SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_SHADOW]);
     SAFE_DELETE(_lightShaderBuffer[SHADER_BUFFER_PER_NODE]);
     SAFE_DELETE(_opaqueGrid);
@@ -70,11 +68,8 @@ LightManager::~LightManager()
 void LightManager::init(){
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightVisualProperties));
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->Bind(Divide::SHADER_BUFFER_LIGHT_COLOR);
-
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightPhysicalProperties));
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->Bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
+    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
+    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
 
     _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Create(true, false, Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
     _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(Divide::SHADER_BUFFER_LIGHT_SHADOW);
@@ -82,7 +77,7 @@ void LightManager::init(){
     _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->Create(true, true, Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE, sizeof(PerNodeLightData));
     _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->Bind(Divide::SHADER_BUFFER_LIGHT_PER_NODE);
 
-    perNodeLights.resize(Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE);
+    g_perNodeLights.resize(Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE);
 
     _cachedResolution.set(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution());
 
@@ -156,16 +151,15 @@ void LightManager::updateResolution(I32 newWidth, I32 newHeight){
 ///Update only if needed. Get projection and view matrices if they changed
 ///Also, search for the dominant light if any
 void LightManager::onCameraChange(){
-    GFX_DEVICE.getMatrix(VIEW_MATRIX, _viewMatrixCache);
-
     for(Light* light : _currLightsPerNode){
         assert(light != nullptr);
         light->onCameraChange();
     }
 }
 
-bool LightManager::buildLightGrid(SceneRenderState& sceneRenderState){
+bool LightManager::buildLightGrid(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix, const vec2<F32>& zPlanes){
     vectorImpl<LightGrid::LightInternal > omniLights;
+    omniLights.reserve(_lights.size());
     FOR_EACH(Light::LightMap::value_type& it, _lights){
         const Light& light = *it.second;
         if (light.getLightType() == LIGHT_TYPE_POINT){
@@ -173,13 +167,12 @@ bool LightManager::buildLightGrid(SceneRenderState& sceneRenderState){
         }
     }
     if (!omniLights.empty()){
-        Camera& cam = sceneRenderState.getCamera();
         _transparentGrid->build(vec2<U16>(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y),
                                 _cachedResolution,
                                 omniLights,
-                                cam.getViewMatrix(),
-                                cam.getProjectionMatrix(),
-                                cam.getZPlanes().x, 
+                                viewMatrix,
+                                projectionMatrix,
+                                zPlanes.x, 
                                 vectorImpl<vec2<F32> >());
 
         {
@@ -189,7 +182,7 @@ bool LightManager::buildLightGrid(SceneRenderState& sceneRenderState){
             // Note that the pruning does not occur if the pre-z pass was not performed (depthRanges is empty in this case).
             _opaqueGrid = _transparentGrid;
             _opaqueGrid->prune(depthRanges);
-            _transparentGrid->pruneFarOnly(cam.getZPlanes().x, depthRanges);
+            _transparentGrid->pruneFarOnly(zPlanes.x, depthRanges);
         }
     }
 
@@ -336,67 +329,58 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     std::sort(_tempLightsPerNode.begin(), _tempLightsPerNode.end(), [](Light* const a, Light* const b) -> bool { return (a)->getScore() >(b)->getScore(); });
 
     // create the light buffer for the specified node
-    size_t maxLights = _tempLightsPerNode.size();
-    CLAMP<size_t>(maxLights, 0, Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE);
+    size_t maxLights = std::min((U32)_tempLightsPerNode.size(), Config::Lighting::MAX_LIGHTS_PER_SCENE_NODE);
     for(i = 0; i < maxLights; i++){
-        PerNodeLightData& data = perNodeLights[i];
         Light* crtLight = _tempLightsPerNode[i];
-        data.fromLight((U32)maxLights, crtLight);
 
-        updatePhysicalLightProperties(crtLight);
-        updateVisualLightProperties(crtLight);
+        g_perNodeLights[i].fromLight((U32)maxLights, crtLight);
 
         _currLightsPerNode.push_back(crtLight);
-        if (crtLight->castsShadows()){
-            updateShadowLightProperties(crtLight);
-        }
     }
 
-    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->UpdateData(0, perNodeLights.size() * sizeof(PerNodeLightData), &perNodeLights.front(), true);
+    _lightShaderBuffer[SHADER_BUFFER_PER_NODE]->UpdateData(0, g_perNodeLights.size() * sizeof(PerNodeLightData), &g_perNodeLights.front(), true);
 
     return (U8)maxLights;
 }
 
 Light* LightManager::getLight(U32 slot) {
-    FOR_EACH(Light::LightMap::value_type it, _lights){
-        if (it.second->getSlot() == slot)
-            return it.second;
-    }
-    
-    assert(false);
-    return nullptr;
+    Light::LightMap::const_iterator it = std::find_if(_lights.begin(), _lights.end(), [&slot](const Light::LightMap::value_type& vt) 
+                                                                                       { return vt.second->getSlot() == slot; });
+    assert(it != _lights.end());
+    return it->second;
 }
 
-void LightManager::updatePhysicalLightProperties(Light* const light){
-    assert(light != nullptr);
-    if (!light->_dirty[Light::PROPERTY_TYPE_PHYSICAL])
-        return;
+void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix){
+    _lightProperties.resize(0);
+    _lightProperties.reserve(_lights.size());
 
-    LightPhysicalProperties temp = light->getPhysicalProperties();
+    _lightShadowProperties.resize(0);
+    _lightShadowProperties.reserve(_lights.size());
 
-    if (light->getLightType() == LIGHT_TYPE_DIRECTIONAL){
-        temp._position.set(vec3<F32>(_viewMatrixCache * temp._position), temp._position.w);
+    FOR_EACH(Light::LightMap::value_type& lightIt, _lights){
+        Light* light = lightIt.second;
+        if (light->_dirty[Light::PROPERTY_TYPE_PHYSICAL]){
+            LightProperties temp = light->getProperties();
+            if (light->getLightType() == LIGHT_TYPE_DIRECTIONAL){
+                temp._position.set(vec3<F32>(viewMatrix * temp._position), temp._position.w);
+            }else if (light->getLightType() == LIGHT_TYPE_SPOT){
+                temp._direction.set(vec3<F32>(viewMatrix * temp._direction), temp._direction.w);
+            }
+            _lightProperties.push_back(temp);
+        }else{
+            _lightProperties.push_back(light->getProperties());
+        }
+        if(light->castsShadows()){
+            _lightShadowProperties.push_back(light->getShadowProperties());
+            light->_dirty[Light::PROPERTY_TYPE_SHADOW] = false;
+        }
+
+        light->_dirty[Light::PROPERTY_TYPE_VISUAL] = false;
+        light->_dirty[Light::PROPERTY_TYPE_PHYSICAL] = false;        
     }
-    else if (light->getLightType() == LIGHT_TYPE_SPOT){
-        temp._direction.set(vec3<F32>(_viewMatrixCache * temp._direction), temp._direction.w);
-    }
-    _lightShaderBuffer[SHADER_BUFFER_PHYSICAL]->UpdateData(light->getSlot() * sizeof(LightPhysicalProperties), sizeof(LightPhysicalProperties), (GLvoid*)&temp);
-    light->_dirty[Light::PROPERTY_TYPE_PHYSICAL] = false;
-}
 
-void LightManager::updateVisualLightProperties(Light* const light){
-    assert(light != nullptr);
-    if (!light->_dirty[Light::PROPERTY_TYPE_VISUAL])
-        return;
-    _lightShaderBuffer[SHADER_BUFFER_VISUAL]->UpdateData(light->getSlot() * sizeof(LightVisualProperties), sizeof(LightVisualProperties), (void*)&light->getVisualProperties());
-    light->_dirty[Light::PROPERTY_TYPE_VISUAL] = false;
-
-}
-
-void LightManager::updateShadowLightProperties(Light* const light){
-    assert(light != nullptr);
-    if (!light->_dirty[Light::PROPERTY_TYPE_SHADOW])
-        return;
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->UpdateData(light->getSlot() * sizeof(LightShadowProperties), sizeof(LightShadowProperties), (void*)&light->getShadowProperties());
-    light->_dirty[Light::PROPERTY_TYPE_SHADOW] = false;
+    if(!_lightProperties.empty())
+        _lightShaderBuffer[SHADER_BUFFER_NORMAL]->UpdateData(0, _lightProperties.size() * sizeof(LightProperties), (void*)&_lightProperties.front(), true);
+    if(!_lightShadowProperties.empty())
+        _lightShaderBuffer[SHADER_BUFFER_SHADOW]->UpdateData(0, _lightShadowProperties.size() * sizeof(LightShadowProperties), (void*)&_lightShadowProperties.front(), true);
 }

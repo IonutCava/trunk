@@ -10,9 +10,14 @@ d3dConstantBuffer::~d3dConstantBuffer()
 }
 
 void d3dConstantBuffer::Create(bool dynamic, bool stream, U32 primitiveCount, ptrdiff_t primitiveSize) {
+    
+    ShaderBuffer::Create(dynamic, stream, primitiveCount, primitiveSize);
 }
 
 void d3dConstantBuffer::UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer) const {
+}
+
+void d3dConstantBuffer::SetData(const void *data){
 }
 
 bool d3dConstantBuffer::BindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const {

@@ -34,6 +34,7 @@ public:
     ///Reserve primitiveCount * implementation specific primitive size of space in the buffer and fill it with NULL values
     virtual void Create(bool dynamic, bool stream, U32 primitiveCount, ptrdiff_t primitiveSize);
     virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const;
+    virtual void SetData(const void *data);
     virtual bool BindRange(U32 bindIndex, ptrdiff_t offset, ptrdiff_t size) const;
     virtual bool Bind(U32 bindIndex) const;
     virtual void PrintInfo(const ShaderProgram* shaderProgram, U32 bindIndex);

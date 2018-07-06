@@ -1,5 +1,6 @@
 #include <CEGUI/CEGUI.h>
 #include "core.h"
+
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
@@ -32,12 +33,14 @@ namespace {
 #endif
 
 bool GUIConsole::_flushing = false;
-I16 GUIConsole::_tempBufferSize = 0;
 U64 GUIConsole::_totalTime = 0ULL;
 I32 GUIConsole::_currentItem = 0;
 boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<GUIConsole::_messageQueueCapacity> >  GUIConsole::_outputBuffer;
-vectorImpl<std::pair<std::string, bool > > GUIConsole::_outputTempBuffer;
 SharedLock GUIConsole::_outputLock;
+
+namespace {
+    boost::circular_buffer<std::pair<std::string, bool >> g_outputTempBuffer(_CEGUI_MAX_CONSOLE_ENTRIES);
+};
 
 GUIConsole::GUIConsole() : _consoleWindow(nullptr),
                            _editBox(nullptr),
@@ -48,7 +51,6 @@ GUIConsole::GUIConsole() : _consoleWindow(nullptr),
 {
     // we need a default command parser, so just create it here
     _cmdParser = New GUIConsoleCommandParser();
-    _outputTempBuffer.reserve(1024 + 512);
 
     for(U16 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES; ++i){
         _newItem.push_back(New CEGUI::FormattedListboxTextItem("",CEGUI::HTF_WORDWRAP_LEFT_ALIGNED));
@@ -76,7 +78,7 @@ GUIConsole::~GUIConsole()
     }
     _newItem.clear();
 
-    _outputTempBuffer.clear();
+    g_outputTempBuffer.clear();
 }
 
 void GUIConsole::CreateCEGUIWindow(){
@@ -189,11 +191,10 @@ bool GUIConsole::isVisible(){
 void GUIConsole::printText(const char* output, bool error){
 
     if (!_init && !_closing){
-        while (_flushing) {}
         std::string outString(output);
         assert(!outString.empty());
         WriteLock w_lock(_outputLock);
-        _outputTempBuffer.push_back(std::make_pair(outString, error));
+        g_outputTempBuffer.push_back(std::make_pair(outString, error));
     }else{
         PushText(New MessageStruct(output, error));
     }
@@ -201,17 +202,8 @@ void GUIConsole::printText(const char* output, bool error){
 
 void GUIConsole::PushText(MessageStruct* msg){
     U64 startTimer = GETUSTIME(true);
-    if (_tempBufferSize > _CEGUI_MAX_CONSOLE_ENTRIES){
-        _flushing = true;
-        WriteLock w_lock(_outputLock);
-        for (I32 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES / 2; ++i)
-            if (!_outputTempBuffer.empty()) _outputTempBuffer.erase(_outputTempBuffer.begin());
-        _flushing = false;
-    }
-    _tempBufferSize++;
     while (!_outputBuffer.push(msg)){
         if (getUsToSec(GETUSTIME(true) - startTimer) > messageQueueTimeoutInSec){
-            _tempBufferSize--;
             break;
         }
     }
@@ -243,9 +235,9 @@ void GUIConsole::update(const U64 deltaTime){
     static std::string lastMsg;
 
     WriteLock w_lock(_outputLock);
-    while(!_outputTempBuffer.empty()){
+    while(!g_outputTempBuffer.empty()){
         _flushing = true;
-        std::pair<std::string, bool> message = _outputTempBuffer.front();
+        std::pair<std::string, bool> message = g_outputTempBuffer.front();
         if (lastMsgError != message.second){
             lastMsgError = message.second;
             assert(!message.first.empty());
@@ -256,10 +248,10 @@ void GUIConsole::update(const U64 deltaTime){
         lastMsg.append(message.first.c_str());
         lastMsg.append("\n");
 
-        _outputTempBuffer.erase(_outputTempBuffer.begin());
+        g_outputTempBuffer.erase(g_outputTempBuffer.begin());
         _flushing = false;
     }
-    _outputTempBuffer.clear();
+    g_outputTempBuffer.clear();
 
     MessageStruct* outMsg = nullptr;
     while(_outputBuffer.pop(outMsg)){

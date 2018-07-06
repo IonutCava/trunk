@@ -1,4 +1,16 @@
 
+struct PerNodeData {
+    mat4  _worldMatrix;
+    mat4  _normalMatrix;
+    uvec4 _lightInfo;     //< x - lightCount; y,z,w - reserved
+    uvec4 _integerValues; //< x - isSelected; y - isShadowMapped; z - boneOffset; w - reserved
+};
+
+layout(binding = SHADER_BUFFER_PER_NODE, std430) buffer dvd_PerNodeBlock
+{
+    PerNodeData dvd_PerNodeData[];
+};
+
 layout(binding = SHADER_BUFFER_CAM_MATRICES, std140) uniform dvd_MatrixBlock
 {
     mat4 dvd_ProjectionMatrix;

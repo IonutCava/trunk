@@ -3,16 +3,17 @@ const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
 
 
-struct LightPhysical {
+struct Light {
+    vec4  _diffuse;      //< rgb = diffuse,  w = ambientFactor;
+    vec4  _specular;     //< rgb = specular color, w = spot cutoff
     vec4  _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
     vec4  _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
     vec4  _direction;   //< xyz = Used by spot lights, w = spotExponent
-    float _spotCutoff;
 };
 
 layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
-    LightPhysical dvd_LightSourcePhysical[MAX_LIGHTS_PER_SCENE];
+    Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
 };
 
 layout(binding = SHADER_BUFFER_LIGHT_PER_NODE, std140) uniform dvd_PerNodeLights
@@ -21,16 +22,6 @@ layout(binding = SHADER_BUFFER_LIGHT_PER_NODE, std140) uniform dvd_PerNodeLights
 };
 
 #if defined(FRAG_SHADER)
-
-struct LightVisual {
-    vec4 _diffuse;     //< rgb = diffuse,  w = ambientFactor;
-    vec3 _specular;    //< rgb = specular color
-};
-
-layout(binding = SHADER_BUFFER_LIGHT_COLOR, std140) uniform dvd_LightBlockColor
-{
-    LightVisual dvd_LightSourceVisual[MAX_LIGHTS_PER_SCENE];
-};
 
 struct Shadow {
     mat4  _lightVP0;

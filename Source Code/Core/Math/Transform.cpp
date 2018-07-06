@@ -76,9 +76,11 @@ const mat4<F32>& Transform::interpolate(Transform* const transform, const D32 fa
         _worldMatrixInterp.setTranslation(translation);
 
         return _worldMatrixInterp;*/
-        return getGlobalMatrix();
+        _worldMatrixInterp.set(getGlobalMatrix());
     }
-    return getGlobalMatrix();
+    _worldMatrixInterp.set(getGlobalMatrix());
+
+    return _worldMatrixInterp;
 }
 
 bool Transform::compare(const Transform* const t){

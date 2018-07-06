@@ -41,16 +41,12 @@ enum LightMode{
     //LIGHT_MODE_DOMINANT = 3   ///< only shadow caster in scene
 };
 
-struct LightVisualProperties {
+struct LightProperties {
     vec4<F32> _diffuse;     //< rgb = diffuse,  w = ambientFactor;
-    vec3<F32> _specular;    //< rgb = specular color
-};
-
-struct LightPhysicalProperties {
+    vec4<F32> _specular;    //< rgb = specular color, w = _spotCutoff;
     vec4<F32> _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
     vec4<F32> _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
     vec4<F32> _direction;   //< xyz = Used by spot lights, w = spotExponent
-    F32       _spotCutoff;
 };
 
 struct LightShadowProperties {
@@ -91,22 +87,22 @@ public:
     ///Is the light a shadow caster?
     inline bool  castsShadows() const {return _castsShadows;}
     ///Get the entire property block
-    inline const LightPhysicalProperties& getPhysicalProperties() const { return _physicalProperties; }
-    inline const LightVisualProperties& getVisualProperties() const { return _visualProperties; }
+    inline const LightProperties& getProperties() const { return _properties; }
     inline const LightShadowProperties& getShadowProperties() const {return _shadowProperties;}
-    inline F32        getRange() const {return _physicalProperties._attenuation.w;}
+
+    inline F32        getRange() const {return _properties._attenuation.w;}
            void       setRange(F32 range);
     ///Get light diffuse color
-    inline vec3<F32>  getDiffuseColor() const { return _visualProperties._diffuse.rgb(); }
+    inline vec3<F32>  getDiffuseColor() const { return _properties._diffuse.rgb(); }
            void       setDiffuseColor(const vec3<F32>& newDiffuseColor);
     ///Get light specular color
-    inline vec3<F32>  getSpecularColor() const { return _visualProperties._specular; }
+    inline vec3<F32>  getSpecularColor() const { return _properties._specular.rgb(); }
            void       setSpecularColor(const vec3<F32>& newSpecularColor);
     ///Get light position for omni and spot or direction for a directional light
-    inline vec3<F32>  getPosition()     const { return _physicalProperties._position.xyz(); }
+    inline vec3<F32>  getPosition()     const { return _properties._position.xyz(); }
            void       setPosition(const vec3<F32>& newPosition);
     ///Get direction for spot lights
-    inline vec3<F32>  getDirection() const { return _physicalProperties._direction.xyz(); }
+    inline vec3<F32>  getDirection() const { return _properties._direction.xyz(); }
            void       setDirection(const vec3<F32>& newDirection);
     ///Light state (on/off)
     inline bool  getEnabled() const {return _enabled;}
@@ -176,9 +172,7 @@ protected:
     inline void  setSlot(const U8 slot) { _slot = slot;}
 
 protected:
-
-    LightPhysicalProperties  _physicalProperties;
-    LightVisualProperties    _visualProperties;
+    LightProperties       _properties;
     LightShadowProperties _shadowProperties;
 
     LightType _type;

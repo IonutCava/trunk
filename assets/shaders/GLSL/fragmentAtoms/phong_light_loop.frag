@@ -10,10 +10,10 @@ struct MaterialProperties {
 
 void phong_omni(in uint lightIndex, in float NdotL, in float iSpecular, float att) {
     //add the lighting contributions
-    materialProp.ambient += dvd_LightSourceVisual[lightIndex]._diffuse.w * material[0] * att;
+    materialProp.ambient += dvd_LightSource[lightIndex]._diffuse.w * material[0] * att;
     if (NdotL > 0.0){
-        materialProp.diffuse  += vec4(dvd_LightSourceVisual[lightIndex]._diffuse.rgb, 1.0)  * material[1] * NdotL * att;
-        materialProp.specular += vec4(dvd_LightSourceVisual[lightIndex]._specular, 1.0) * materialProp.specularValue * iSpecular * att;
+        materialProp.diffuse  += vec4(dvd_LightSource[lightIndex]._diffuse.rgb, 1.0)  * material[1] * NdotL * att;
+        materialProp.specular += vec4(dvd_LightSource[lightIndex]._specular.rgb, 1.0) * materialProp.specularValue * iSpecular * att;
     }
 }
 
@@ -22,9 +22,9 @@ void phong_spotLight(in uint lightIndex, in float NdotL, in float iSpecular) {
     if (NdotL > 0.0){
         float att = _lightInfo._attenuation[lightIndex];
         //add the lighting contributions
-        materialProp.ambient += dvd_LightSourceVisual[lightIndex]._diffuse.w  * material[0] * att;
-        materialProp.diffuse += vec4(dvd_LightSourceVisual[lightIndex]._diffuse.rgb, 1.0)  * material[1] * NdotL * att;
-        materialProp.specular += vec4(dvd_LightSourceVisual[lightIndex]._specular, 1.0) * materialProp.specularValue  * iSpecular * att;
+        materialProp.ambient += dvd_LightSource[lightIndex]._diffuse.w  * material[0] * att;
+        materialProp.diffuse += vec4(dvd_LightSource[lightIndex]._diffuse.rgb, 1.0)  * material[1] * NdotL * att;
+        materialProp.specular += vec4(dvd_LightSource[lightIndex]._specular.rgb, 1.0) * materialProp.specularValue  * iSpecular * att;
     }
 }
 

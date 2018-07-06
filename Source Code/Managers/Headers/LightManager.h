@@ -79,9 +79,7 @@ public:
     inline U8   currentShadowPass()  const { return _currentShadowPass; }
     inline void registerShadowPass()       { _currentShadowPass++; }
 
-    void updateVisualLightProperties(Light* const light);
-    void updatePhysicalLightProperties(Light* const light);
-    void updateShadowLightProperties(Light* const light);
+    void updateAndUploadLightData(const mat4<F32>& viewMatrix);
 
     /// Get the appropriate shadow bind slot for every light's shadow
     inline I32 getShadowBindSlot(ShadowSlotType type, U8 lightIndex) {
@@ -106,7 +104,7 @@ public:
         return getShadowBindSlot(type, lightIndex);
     }
 
-    bool buildLightGrid(SceneRenderState& sceneRenderState);
+    bool buildLightGrid(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix, const vec2<F32>& zPlanes);
 
 protected:
     ///This is inherited from FrameListener and is used to queue up reflection on every frame start
@@ -114,11 +112,10 @@ protected:
 
 private:
     enum ShaderBufferType {
-        SHADER_BUFFER_VISUAL = 0,
-        SHADER_BUFFER_PHYSICAL = 1,
-        SHADER_BUFFER_SHADOW = 2,
-        SHADER_BUFFER_PER_NODE = 3,
-        ShaderBuffer_PLACEHOLDER = 4
+        SHADER_BUFFER_NORMAL     = 0,
+        SHADER_BUFFER_SHADOW     = 1,
+        SHADER_BUFFER_PER_NODE   = 2,
+        ShaderBuffer_PLACEHOLDER = 3
     };
 
     LightManager();
@@ -130,12 +127,13 @@ private:
     Light*    _currLight;
     bool      _shadowMapsEnabled;
     vec4<F32> _ambientLight;
-    mat4<F32> _viewMatrixCache;
     vec2<U16> _cachedResolution;
     U8        _currentShadowPass; //<used by CSM. Resets to 0 for every light
 
     vectorImpl<Light* >     _currLightsPerNode;
     vectorImpl<Light* >     _tempLightsPerNode;
+    vectorImpl<LightProperties >       _lightProperties;
+    vectorImpl<LightShadowProperties > _lightShadowProperties;
 
     ShaderBuffer*           _lightShaderBuffer[ShaderBuffer_PLACEHOLDER];
 

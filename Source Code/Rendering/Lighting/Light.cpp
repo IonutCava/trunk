@@ -38,12 +38,10 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     _shadowCamera->setTurnSpeedFactor(0.0f);
     _shadowCamera->setFixedYawAxis(true);
     
-    _visualProperties._diffuse.set(DefaultColors::WHITE());
-    _visualProperties._specular.set(DefaultColors::WHITE());
-    
-    _physicalProperties._spotCutoff = 35;
-    _physicalProperties._direction.w = 0.0f;
-    _physicalProperties._attenuation = vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f); //constAtt, linearAtt, quadAtt
+    _properties._diffuse.set(DefaultColors::WHITE());
+    _properties._specular.set(DefaultColors::WHITE(), 35);
+    _properties._direction.w = 0.0f;
+    _properties._attenuation = vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f); //constAtt, linearAtt, quadAtt
     
     memset(_dirty, true, PropertyType_PLACEHOLDER * sizeof(bool));
     _enabled = true;
@@ -98,11 +96,11 @@ void Light::onCameraChange(){
 
         if(_mode == LIGHT_MODE_MOVABLE) {  
             const vec3<F32>& newPosition = _lightSGN->getTransform()->getPosition();
-            if (_physicalProperties._position != newPosition){
-                _physicalProperties._position.set(newPosition);
+            if (_properties._position != newPosition){
+                _properties._position.set(newPosition);
             }
         } else {
-            _lightSGN->getTransform()->setPosition(_physicalProperties._position);
+            _lightSGN->getTransform()->setPosition(_properties._position);
         }
 
         if(_updateLightBB)
@@ -120,7 +118,7 @@ void Light::setPosition(const vec3<F32>& newPosition){
         return;
     }
 
-    _physicalProperties._position = vec4<F32>(newPosition, _physicalProperties._position.w);
+    _properties._position = vec4<F32>(newPosition, _properties._position.w);
 
     if(_mode == LIGHT_MODE_MOVABLE)
         _lightSGN->getTransform()->setPosition(newPosition);
@@ -131,17 +129,17 @@ void Light::setPosition(const vec3<F32>& newPosition){
 }
 
 void  Light::setDiffuseColor(const vec3<F32>& newDiffuseColor){
-    _visualProperties._diffuse.set(newDiffuseColor, _visualProperties._diffuse.a);
+    _properties._diffuse.set(newDiffuseColor, _properties._diffuse.a);
     _dirty[PROPERTY_TYPE_VISUAL] = true;
 }
 
 void Light::setSpecularColor(const vec3<F32>& newSpecularColor) {
-    _visualProperties._specular.set(newSpecularColor);
+    _properties._specular.set(newSpecularColor, _properties._specular.w);
     _dirty[PROPERTY_TYPE_VISUAL] = true;
 }
 
 void Light::setRange(F32 range) {
-    _physicalProperties._attenuation.w = range;
+    _properties._attenuation.w = range;
     _dirty[PROPERTY_TYPE_PHYSICAL] = true;
 }
 
@@ -152,12 +150,12 @@ void Light::setDirection(const vec3<F32>& newDirection){
         return;
     }
     if (_type == LIGHT_TYPE_SPOT){
-        _physicalProperties._direction = vec4<F32>(newDirection, 1.0f);
-        _physicalProperties._direction.normalize();
+        _properties._direction = vec4<F32>(newDirection, 1.0f);
+        _properties._direction.normalize();
     }else{
-        _physicalProperties._position = vec4<F32>(newDirection, 1.0f);
-        _physicalProperties._position.normalize();
-        _physicalProperties._position.w = _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f;
+        _properties._position = vec4<F32>(newDirection, 1.0f);
+        _properties._position.normalize();
+        _properties._position.w = _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f;
     }
 
     _updateLightBB = true;
@@ -180,7 +178,7 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneSta
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
     if(_type == LIGHT_TYPE_DIRECTIONAL){
-        vec4<F32> directionalLightPosition = _physicalProperties._position * Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
+        vec4<F32> directionalLightPosition = _properties._position * Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
 
         sgn->getBoundingBox().set(directionalLightPosition.xyz() - vec3<F32>(10), 
                                   directionalLightPosition.xyz() + vec3<F32>(10));
@@ -201,7 +199,7 @@ void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRende
     // The isInView call should stop impostor rendering if needed
     Sphere3D* lightDummy = nullptr;
     if (!_impostor){
-        _impostor = New Impostor(_name, _physicalProperties._attenuation.w);
+        _impostor = New Impostor(_name, _properties._attenuation.w);
         lightDummy = _impostor->getDummy();
         lightDummy->getSceneNodeRenderState().setDrawState(false);
         _impostorSGN = _lightSGN->addNode(lightDummy);

@@ -265,8 +265,8 @@ bool glShaderProgram::generateHWResource(const std::string& name){
             }
         }
 
-        lineCountOffset[VERTEX_SHADER] += 8;
-        lineCountOffset[FRAGMENT_SHADER] += 10;
+        lineCountOffset[VERTEX_SHADER] += 67;
+        lineCountOffset[FRAGMENT_SHADER] += 68;
 
         //Split the shader name to get the effect file name and the effect properties
         std::string shaderName = name.substr(0, name.find_first_of(".,"));

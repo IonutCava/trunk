@@ -39,6 +39,7 @@ public:
     ///(lights might change per frame, so stream will be better in that case)
     virtual void Create(bool dynamic, bool stream, U32 primitiveCount, ptrdiff_t primitiveSize);
     virtual void UpdateData(GLintptr offset,	GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer = false) const;
+    virtual void SetData(const void *data);
     virtual bool BindRange(GLuint bindIndex, GLintptr offset, GLsizeiptr size) const;
     virtual bool Bind(GLuint bindIndex) const;
 

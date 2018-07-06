@@ -6,7 +6,7 @@
 
 PointLight::PointLight(U8 slot, F32 range) : Light(slot,range,LIGHT_TYPE_POINT) 
 {
-	_physicalProperties._position = vec4<F32>(0,0,0,1.0f);
+	_properties._position = vec4<F32>(0,0,0,1.0f);
     // +x
     _direction[0] = vec3<F32>( 1.0f,  0.0f,  0.0f);
     // -x
