@@ -29,21 +29,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _CORE_NON_COPYABLE_H_
-#define _CORE_NON_COPYABLE_H_
+#ifndef _CORE_NON_MOVABLE_H_
+#define _CORE_NON_MOVABLE_H_
 
 namespace Divide {
-/// Inherit from this class to avoid any form of object copying.
-/// (deletes the copy constructor and assignment operator)
-class NonCopyable {
-   protected:
-    /*constexpr */ NonCopyable() = default;
-    ~NonCopyable() = default;
-
-    NonCopyable(const NonCopyable&) = delete;
-    NonCopyable& operator=(const NonCopyable&) = delete;
-};
+    /// Inherit from this class to avoid any form of object moving.
+    /// This isn't needed, generraly, but helps with being specific with certain code
+    class NonMovable {
+    protected:
+        NonMovable(NonMovable&&) = delete;
+        NonMovable& operator=(NonMovable&&) = delete;
+    };
 
 };  // namespace Divide
 
-#endif  //_CORE_NON_COPYABLE_H_
+#endif  //_CORE_NON_MOVABLE_H_

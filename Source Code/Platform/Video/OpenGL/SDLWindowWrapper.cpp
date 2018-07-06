@@ -363,9 +363,10 @@ void GL_API::closeRenderingAPI() {
     CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
     _GUIGLrenderer = nullptr;
     // Destroy sampler objects
-    WriteLock w_lock(_samplerMapLock);
-    MemoryManager::DELETE_HASHMAP(_samplerMap);
-
+    {
+        WriteLock w_lock(_samplerMapLock);
+        MemoryManager::DELETE_HASHMAP(_samplerMap);
+    }
     // Destroy the text rendering system
     deleteFonsContext();
     _fonts.clear();

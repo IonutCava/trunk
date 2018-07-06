@@ -46,7 +46,6 @@ bool RTAttachment::used() const {
     return _texture != nullptr;
 }
 
-
 bool RTAttachment::toggledState() const {
     return _toggledState;
 }
@@ -141,6 +140,12 @@ void RTAttachmentPool::init(U8 colourAttachmentCount) {
 
     _attachment[to_const_uint(RTAttachment::Type::Depth)].emplace_back(std::make_shared<RTAttachment>());
     _attachment[to_const_uint(RTAttachment::Type::Stencil)].emplace_back(std::make_shared<RTAttachment>());
+}
+
+void RTAttachmentPool::destroy() {
+    for (vectorImpl<RTAttachment_ptr>& attachmentEntry : _attachment) {
+        attachmentEntry.clear();
+    }
 }
 
 U8 RTAttachmentPool::attachmentCount(RTAttachment::Type type) const {

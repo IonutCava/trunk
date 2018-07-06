@@ -20,7 +20,6 @@ SceneShaderData::~SceneShaderData()
 {
     if (_sceneShaderData) {
         _sceneShaderData->destroy();
-        MemoryManager::DELETE(_sceneShaderData);
     }
 }
 

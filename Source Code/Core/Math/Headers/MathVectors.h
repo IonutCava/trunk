@@ -90,11 +90,11 @@ class simd_vector;
 template<typename T>
 class simd_vector<T, std::enable_if_t<std::is_same<T, F32>::value>> {
 public:
-    simd_vector() : simd_vector(0)
+    simd_vector()  noexcept : simd_vector(0)
     {
     }
 
-    simd_vector(__m128 reg) : _reg(reg)
+    simd_vector(__m128 reg)  noexcept : _reg(reg)
     {
     }
 
@@ -103,11 +103,11 @@ public:
 
 template<typename T>
 class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
-    simd_vector() : simd_vector(0)
+    simd_vector()  noexcept : simd_vector(0)
     {
     }
 
-    simd_vector(T reg[4]) : _reg(reg)
+    simd_vector(T reg[4])  noexcept : _reg(reg)
     {
     }
 
@@ -124,60 +124,62 @@ class vec2 {
                   !std::is_same<T, bool>::value,
                   "non-arithmetic vector type");
    public:
-    vec2() : vec2((T)0)
+    vec2() noexcept : vec2((T)0)
     {
     }
-    vec2(T value) : vec2(value, value)
+    vec2(T value) noexcept : vec2(value, value)
     {
     }
 
     template<typename U>
-    vec2(U value) : vec2(value, value)
+    vec2(U value) noexcept : vec2(value, value)
     {
     }
 
-    vec2(T _x, T _y) : x(_x), y(_y)
+    vec2(T _x, T _y) noexcept : x(_x), y(_y)
     {
     }
 
     template <typename U>
-    vec2(U _x, U _y) : x(static_cast<T>(_x)),
-                       y(static_cast<T>(_y))
+    vec2(U _x, U _y) noexcept 
+        : x(static_cast<T>(_x)),
+          y(static_cast<T>(_y))
     {
     }
     template <typename U, typename V>
-    vec2(U _x, V _y) : x(static_cast<T>(_x)),
-                       y(static_cast<T>(_y))
+    vec2(U _x, V _y) noexcept 
+        : x(static_cast<T>(_x)),
+          y(static_cast<T>(_y))
     {
     }
-    vec2(const T *_v) : vec2(_v[0], _v[1])
-    {
-    }
-
-    vec2(const vec2 &_v) : vec2(_v._v)
+    vec2(const T *_v) noexcept : vec2(_v[0], _v[1])
     {
     }
 
-    vec2(const vec3<T> &_v) : vec2(_v.xy())
+    vec2(const vec2 &_v) noexcept : vec2(_v._v)
     {
     }
 
-    vec2(const vec4<T> &_v) : vec2(_v.xy())
+    vec2(const vec3<T> &_v) noexcept : vec2(_v.xy())
     {
     }
 
-    template<typename U>
-    vec2(const vec2<U> &v) : vec2(v.x, v.y)
+    vec2(const vec4<T> &_v) noexcept : vec2(_v.xy())
     {
     }
 
     template<typename U>
-    vec2(const vec3<U> &v) : vec2(v.x, v.y)
+    vec2(const vec2<U> &v) noexcept : vec2(v.x, v.y)
     {
     }
 
     template<typename U>
-    vec2(const vec4<U> &v) : vec2(v.x, v.y)
+    vec2(const vec3<U> &v) noexcept : vec2(v.x, v.y)
+    {
+    }
+
+    template<typename U>
+    vec2(const vec4<U> &v) noexcept : vec2(v.x, v.y)
     {
     }
 
@@ -194,10 +196,16 @@ class vec2 {
     template<typename U>
     bool operator==(const vec2<T> &v) const { return this->compare(v); }
 
-    vec2 &operator=(T _f) {
+    vec2 &operator=(T _f) noexcept {
         this->set(_f);
         return (*this);
     }
+
+    vec2 &operator=(const vec2& other) noexcept {
+        this->set(other);
+        return (*this);
+    }
+
     const vec2 operator*(T _f) const {
         return vec2(this->x * _f, this->y * _f);
     }
@@ -368,18 +376,18 @@ class vec3 {
                   !std::is_same<T, bool>::value,
                   "non-arithmetic vector type");
    public:
-    vec3() : vec3((T)0)
+    vec3() noexcept : vec3((T)0)
     {
     }
-    vec3(T value) : vec3(value, value, value) 
+    vec3(T value) noexcept : vec3(value, value, value)
     {
     }
     template<typename U>
-    vec3(U value) : vec3(value, value, value)
+    vec3(U value) noexcept : vec3(value, value, value)
     {
     }
 
-    vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) 
+    vec3(T _x, T _y, T _z) noexcept : x(_x), y(_y), z(_z)
     {
     }
 
@@ -390,51 +398,54 @@ class vec3 {
     {
     }
     template <typename U, typename V>
-    vec3(U _x, U _y, V _z) : x(static_cast<T>(_x)),
-                             y(static_cast<T>(_y)),
-                             z(static_cast<T>(_z))
+    vec3(U _x, U _y, V _z) noexcept
+        : x(static_cast<T>(_x)),
+          y(static_cast<T>(_y)),
+          z(static_cast<T>(_z))
     {
     }
     template <typename U, typename V>
-    vec3(U _x, V _y, V _z) : x(static_cast<T>(_x)),
-                             y(static_cast<T>(_y)),
-                             z(static_cast<T>(_z))
+    vec3(U _x, V _y, V _z) noexcept
+        : x(static_cast<T>(_x)),
+          y(static_cast<T>(_y)),
+          z(static_cast<T>(_z))
     {
     }
     template <typename U, typename V, typename W>
-    vec3(U _x, V _y, W _z) : x(static_cast<T>(_x)),
-                             y(static_cast<T>(_y)),
-                             z(static_cast<T>(_z))
+    vec3(U _x, V _y, W _z) noexcept
+        : x(static_cast<T>(_x)),
+          y(static_cast<T>(_y)),
+          z(static_cast<T>(_z))
     {
     }
-    vec3(const T *v) : vec3(v[0], v[1], v[2])
+    vec3(const T *v) noexcept : vec3(v[0], v[1], v[2])
     {
     }
-    vec3(const vec2<T> &v) : vec3(v, static_cast<T>(0))
+    vec3(const vec2<T> &v) noexcept : vec3(v, static_cast<T>(0))
     {
     }
-    vec3(const vec2<T> &v, T _z) : vec3(v.x, v.y, _z)
+    vec3(const vec2<T> &v, T _z) noexcept : vec3(v.x, v.y, _z)
     {
     }
-    vec3(const vec3 &v) : vec3(v._v)
+    vec3(const vec3 &v) noexcept : vec3(v._v)
     {
     }
-    vec3(const vec4<T> &v) : vec3(v.x, v.y, v.z)
-    {
-    }
-
-    template<typename U>
-    vec3(const vec2<U> &v) : vec3(v.x, v.y, static_cast<U>(0))
+    vec3(const vec4<T> &v) noexcept : vec3(v.x, v.y, v.z)
     {
     }
 
     template<typename U>
-    vec3(const vec3<U> &v) : vec3(v.x, v.y, v.z)
+    vec3(const vec2<U> &v) noexcept : vec3(v.x, v.y, static_cast<U>(0))
     {
     }
 
     template<typename U>
-    vec3(const vec4<U> &v) : vec3(v.x, v.y, v.z)
+    vec3(const vec3<U> &v) noexcept : vec3(v.x, v.y, v.z)
+    {
+    }
+
+    template<typename U>
+    vec3(const vec4<U> &v) noexcept : vec3(v.x, v.y, v.z)
     {
     }
 
@@ -451,10 +462,16 @@ class vec3 {
     template<typename U>
     bool operator==(const vec3<T> &v) const { return this->compare(v); }
 
-    vec3 &operator=(T _f) {
+    vec3 &operator=(T _f) noexcept {
         this->set(_f);
         return (*this);
     }
+
+    vec3 &operator=(const vec3& other) noexcept {
+        this->set(other);
+        return (*this);
+    }
+
     const vec3 operator*(T _f) const {
         return vec3(this->x * _f, this->y * _f, this->z * _f);
     }
@@ -679,74 +696,79 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                   !std::is_same<T, bool>::value,
                   "non-arithmetic vector type");
    public:
-    vec4() : x(0), y(0), z(0), w(1)
+    vec4() noexcept : x(0), y(0), z(0), w(1)
     {
     }
 
-    vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w)
+    vec4(T _x, T _y, T _z, T _w) noexcept 
+        : x(_x), y(_y), z(_z), w(_w)
     {
     }
     template<typename U>
-    vec4(U _x, U _y, U _z, U _w) : x(static_cast<T>(_x)),
-                                   y(static_cast<T>(_y)),
-                                   z(static_cast<T>(_z)),
-                                   w(static_cast<T>(_w))
+    vec4(U _x, U _y, U _z, U _w) noexcept 
+        : x(static_cast<T>(_x)),
+          y(static_cast<T>(_y)),
+          z(static_cast<T>(_z)),
+          w(static_cast<T>(_w))
     {
     }
 
-    vec4(const simd_vector<T>& reg) : _reg(reg)
+    vec4(const simd_vector<T>& reg) noexcept: _reg(reg)
     {
     }
 
-    vec4(T value) : vec4(value, value, value, value)
-    {
-    }
-
-    template<typename U>
-    vec4(U value) : vec4(value, value, value, value)
-    {
-    }
-
-    vec4(const T *v) : vec4(v[0], v[1], v[2], v[3])
-    {
-    }
-
-    vec4(const vec2<T> &v) : vec4(v, static_cast<T>(0))
-    {
-    }
-
-    vec4(const vec2<T> &v, T _z) : vec4(v, _z, static_cast<T>(1))
-    {
-    }
-
-    vec4(const vec2<T> &v, T _z, T _w) : vec4(v.x, v.y, _z, _w)
-    {
-    }
-
-    vec4(const vec3<T> &v) : vec4(v, static_cast<T>(1))
-    {
-    }
-
-    vec4(const vec3<T> &v, T _w) : vec4(v.x, v.y, v.z, _w)
-    {
-    }
-
-    vec4(const vec4 &v) : vec4(v._v)
+    vec4(T value) noexcept : vec4(value, value, value, value)
     {
     }
 
     template<typename U>
-    vec4(const vec2<U> &v) : vec4(v.x, v.y, static_cast<U>(0), static_cast<U>(0))
+    vec4(U value) noexcept : vec4(value, value, value, value)
+    {
+    }
+
+    vec4(const T *v) noexcept : vec4(v[0], v[1], v[2], v[3])
+    {
+    }
+
+    vec4(const vec2<T> &v) noexcept : vec4(v, static_cast<T>(0))
+    {
+    }
+
+    vec4(const vec2<T> &v, T _z) noexcept : vec4(v, _z, static_cast<T>(1))
+    {
+    }
+
+    vec4(const vec2<T> &v, T _z, T _w) noexcept : vec4(v.x, v.y, _z, _w)
+    {
+    }
+
+    vec4(const vec3<T> &v) noexcept : vec4(v, static_cast<T>(1))
+    {
+    }
+
+    vec4(const vec3<T> &v, T _w) noexcept : vec4(v.x, v.y, v.z, _w)
+    {
+    }
+
+    vec4(const vec4 &v) noexcept : vec4(v._v)
     {
     }
 
     template<typename U>
-    vec4(const vec3<U> &v) : vec4(v.x, v.y, v.z, static_cast<U>(0))
+    vec4(const vec2<U> &v) noexcept 
+        : vec4(v.x, v.y, static_cast<U>(0), static_cast<U>(0))
     {
     }
 
     template<typename U>
-    vec4(const vec4<U> &v) : vec4(v.x, v.y, v.z, v.w)
+    vec4(const vec3<U> &v) noexcept 
+        : vec4(v.x, v.y, v.z, static_cast<U>(0))
+    {
+    }
+
+    template<typename U>
+    vec4(const vec4<U> &v) noexcept 
+        : vec4(v.x, v.y, v.z, v.w)
     {
     }
 
@@ -763,8 +785,8 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     bool operator==(const vec4<T> &v) const { return this->compare(v); }
 
-    vec4 &operator=(T _f) { this->set(_f); return *this; }
-    vec4 &operator=(const vec4& other) { this->set(other); return *this; }
+    vec4 &operator=(T _f) noexcept { this->set(_f); return *this; }
+    vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
 
     const vec4 operator-(T _f) const {
         return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f);

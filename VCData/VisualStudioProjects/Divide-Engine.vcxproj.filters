@@ -982,6 +982,9 @@
     <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h">
       <Filter>Core\ArenaAllocator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

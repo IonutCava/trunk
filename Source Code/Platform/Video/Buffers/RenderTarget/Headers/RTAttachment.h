@@ -112,6 +112,7 @@ class RTAttachmentPool {
         U8 attachmentCount(RTAttachment::Type type) const;
 
         void init(U8 colourAttachmentCount);
+        void destroy();
 
     private:
         std::array<vectorImpl<RTAttachment_ptr>, to_const_uint(RTAttachment::Type::COUNT)> _attachment;

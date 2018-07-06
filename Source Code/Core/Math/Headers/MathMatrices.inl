@@ -36,7 +36,7 @@ namespace Divide {
 * mat2
 *********************************/
 template<typename T>
-mat2<T>::mat2()
+mat2<T>::mat2() noexcept
     : mat2(1, 0,
            0, 1)
 {
@@ -45,7 +45,7 @@ mat2<T>::mat2()
 template<typename T>
 template<typename U>
 mat2<T>::mat2(U m0, U m1,
-              U m2, U m3)
+              U m2, U m3) noexcept
     : mat{static_cast<T>(m0), static_cast<T>(m1),
           static_cast<T>(m2), static_cast<T>(m3)}
 {
@@ -53,28 +53,28 @@ mat2<T>::mat2(U m0, U m1,
 
 template<typename T>
 template<typename U>
-mat2<T>::mat2(const U *m)
+mat2<T>::mat2(const U *m) noexcept
     : mat2(m[0], m[1],
            m[2], m[3])
 {
 }
 
 template<typename T>
-mat2<T>::mat2(const mat2 &m)
+mat2<T>::mat2(const mat2 &m) noexcept
     : mat2(m.mat)
 {
 }
 
 template<typename T>
 template<typename U>
-mat2<T>::mat2(const mat2<U> &m)
+mat2<T>::mat2(const mat2<U> &m) noexcept
     : mat2(m.mat)
 {
 }
 
 template<typename T>
 template<typename U>
-mat2<T>::mat2(const mat3<U> &m)
+mat2<T>::mat2(const mat3<U> &m) noexcept
     : mat2(m[0], m[1],
            m[3], m[4])
 {
@@ -82,21 +82,21 @@ mat2<T>::mat2(const mat3<U> &m)
 
 template<typename T>
 template<typename U>
-mat2<T>::mat2(const mat4<U> &m)
+mat2<T>::mat2(const mat4<U> &m) noexcept
     : mat2(m[0], m[1],
            m[4], m[5])
 {
 }
 
 template<typename T>
-mat2<T>& mat2<T>::operator=(const mat2& other) {
+mat2<T>& mat2<T>::operator=(const mat2& other) noexcept {
     set(other);
     return *this;
 }
 
 template<typename T>
 template<typename U>
-mat2<T>& mat2<T>::operator=(const mat2<U>& other) {
+mat2<T>& mat2<T>::operator=(const mat2<U>& other) noexcept {
     set(other);
     return *this;
 }
@@ -484,7 +484,7 @@ void mat2<T>::getInverseTranspose(mat2 &ret) const {
 *********************************/
 
 template<typename T>
-mat3<T>::mat3()
+mat3<T>::mat3() noexcept
     : mat3(1, 0, 0,
            0, 1, 0,
            0, 0, 1)
@@ -495,7 +495,7 @@ template<typename T>
 template<typename U>
 mat3<T>::mat3(U m0, U m1, U m2,
               U m3, U m4, U m5,
-              U m6, U m7, U m8)
+              U m6, U m7, U m8) noexcept
     : mat{static_cast<T>(m0), static_cast<T>(m1), static_cast<T>(m2),
           static_cast<T>(m3), static_cast<T>(m4), static_cast<T>(m5),
           static_cast<T>(m6), static_cast<T>(m7), static_cast<T>(m8)}
@@ -504,7 +504,7 @@ mat3<T>::mat3(U m0, U m1, U m2,
 
 template<typename T>
 template<typename U>
-mat3<T>::mat3(const U *m)
+mat3<T>::mat3(const U *m) noexcept
     : mat3(m[0], m[1], m[2],
            m[3], m[4], m[5],
            m[6], m[7], m[8])
@@ -513,7 +513,7 @@ mat3<T>::mat3(const U *m)
 
 template<typename T>
 template<typename U>
-mat3<T>::mat3(const mat2<U> &m)
+mat3<T>::mat3(const mat2<U> &m) noexcept
     : mat3(m[0], m[1], 0,
            m[2], m[3], 0,
            0,    0,    0) //maybe m[8] should be 1?
@@ -521,21 +521,21 @@ mat3<T>::mat3(const mat2<U> &m)
 }
 
 template<typename T>
-mat3<T>::mat3(const mat3 &m)
+mat3<T>::mat3(const mat3 &m) noexcept
     : mat3(m.mat)
 {
 }
 
 template<typename T>
 template<typename U>
-mat3<T>::mat3(const mat3<U> &m)
+mat3<T>::mat3(const mat3<U> &m) noexcept
     : mat3(m.mat)
 {
 }
 
 template<typename T>
 template<typename U>
-mat3<T>::mat3(const mat4<U> &m)
+mat3<T>::mat3(const mat4<U> &m) noexcept
     : mat3(m[0], m[1], m[2],
            m[4], m[5], m[6],
            m[8], m[9], m[10])
@@ -543,14 +543,14 @@ mat3<T>::mat3(const mat4<U> &m)
 }
 
 template<typename T>
-mat3<T>& mat3<T>::operator=(const mat3& other) {
+mat3<T>& mat3<T>::operator=(const mat3& other) noexcept {
     set(other);
     return *this;
 }
 
 template<typename T>
 template<typename U>
-mat3<T>& mat3<T>::operator=(const mat3<U>& other) {
+mat3<T>& mat3<T>::operator=(const mat3<U>& other) noexcept {
     set(other);
     return *this;
 }
@@ -1113,7 +1113,7 @@ void mat3<T>::orthonormalize(void) {
 ***************/
 
 template<typename T>
-mat4<T>::mat4()
+mat4<T>::mat4() noexcept
     : mat4(1, 0, 0, 0,
            0, 1, 0, 0,
            0, 0, 1, 0,
@@ -1127,7 +1127,7 @@ template<typename U>
 mat4<T>::mat4(U m0, U m1, U m2, U m3,
               U m4, U m5, U m6, U m7,
               U m8, U m9, U m10, U m11,
-              U m12, U m13, U m14, U m15)
+              U m12, U m13, U m14, U m15) noexcept
     : mat{ static_cast<T>(m0),  static_cast<T>(m1),  static_cast<T>(m2),  static_cast<T>(m3),
            static_cast<T>(m4),  static_cast<T>(m5),  static_cast<T>(m6),  static_cast<T>(m7),
            static_cast<T>(m8),  static_cast<T>(m9),  static_cast<T>(m10), static_cast<T>(m11),
@@ -1137,7 +1137,7 @@ mat4<T>::mat4(U m0, U m1, U m2, U m3,
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const U *m)
+mat4<T>::mat4(const U *m) noexcept
     : mat4(m[0], m[1], m[2], m[3],
            m[4], m[5], m[6], m[7],
            m[8], m[9], m[10], m[11],
@@ -1147,7 +1147,7 @@ mat4<T>::mat4(const U *m)
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const mat2<U> &m)
+mat4<T>::mat4(const mat2<U> &m) noexcept
     : mat4(m[0],              m[1],              static_cast<U>(0), static_cast<U>(0),
            m[2],              m[3],              static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
@@ -1157,7 +1157,7 @@ mat4<T>::mat4(const mat2<U> &m)
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const mat3<U> &m)
+mat4<T>::mat4(const mat3<U> &m) noexcept
     : mat4(m[0],              m[1],             m[2],               static_cast<U>(0),
            m[3],              m[4],              m[5]               static_cast<U>(0),
            m[6],              m[7],              m[8],              static_cast<U>(0),
@@ -1166,21 +1166,21 @@ mat4<T>::mat4(const mat3<U> &m)
 }
 
 template<typename T>
-mat4<T>::mat4(const mat4 &m) 
+mat4<T>::mat4(const mat4 &m) noexcept
     : mat4(m.mat)
 {
 }
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const mat4<U> &m)
+mat4<T>::mat4(const mat4<U> &m) noexcept
     : mat4(m.mat)
 {
 }
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale)
+mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept
     : mat4(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
@@ -1190,7 +1190,7 @@ mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale)
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation)
+mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept
     : mat4(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
@@ -1202,14 +1202,14 @@ mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& r
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const vec3<U> &translation)
+mat4<T>::mat4(const vec3<U> &translation) noexcept
     : mat4(translation.x, translation.y, translation.z)
 {
 }
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(U translationX, U translationY, U translationZ)
+mat4<T>::mat4(U translationX, U translationY, U translationZ) noexcept
     : mat4(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
@@ -1219,14 +1219,14 @@ mat4<T>::mat4(U translationX, U translationY, U translationZ)
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const vec3<U> &axis, U angle, bool inDegrees = true)
+mat4<T>::mat4(const vec3<U> &axis, U angle, bool inDegrees = true) noexcept
     : mat4(axis.x, axis.y, axis.z, angle, inDegrees)
 {
 }
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(U x, U y, U z, U angle, bool inDegrees = true)
+mat4<T>::mat4(U x, U y, U z, U angle, bool inDegrees = true) noexcept
     : mat4()
 {
     fromRotation(x, y, z, angle, inDegrees);
@@ -1234,7 +1234,7 @@ mat4<T>::mat4(U x, U y, U z, U angle, bool inDegrees = true)
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up)
+mat4<T>::mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noexcept
     : mat4()
 {
     lookAt(eye, target, up);
@@ -1242,13 +1242,13 @@ mat4<T>::mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up)
 
 
 template<typename T>
-mat4<T>& mat4<T>::operator=(const mat4& other) {
+mat4<T>& mat4<T>::operator=(const mat4& other) noexcept {
     set(other);
     return *this;
 }
 template<typename T>
 template<typename U>
-mat4<T>& mat4<T>::operator=(const mat4<U>& other) {
+mat4<T>& mat4<T>::operator=(const mat4<U>& other) noexcept {
     set(other);
     return *this;
 }

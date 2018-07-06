@@ -54,7 +54,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 
     _isInitialized = true;
     ErrorCode err = ErrorCode::NO_ERR;
-
+    Console::start();
     ParamHandler::createInstance();
     Time::ApplicationTimer::createInstance();
     // Don't log parameter requests
@@ -63,7 +63,6 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
     if (!Locale::init()) {
         err = errorCode();
     } else {
-        Console::start();
         // Print a copyright notice in the log file
         Console::printCopyrightNotice();
         Console::toggleTimeStamps(true);
@@ -90,7 +89,9 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 
 void Application::stop() {
     if (_isInitialized) {
-        Attorney::KernelApplication::shutdown(*_kernel);
+        if (_kernel != nullptr) {
+            Attorney::KernelApplication::shutdown(*_kernel);
+        }
         for (DELEGATE_CBK<>& cbk : _shutdownCallback) {
             cbk();
         }

@@ -123,23 +123,23 @@ class mat2 {
         !std::is_same<T, bool>::value,
         "non-arithmetic matrix type");
 public:
-    mat2();
+    mat2() noexcept;
     template<typename U>
     mat2(U m0, U m1,
-         U m2, U m3);
+         U m2, U m3) noexcept;
     template<typename U>
-    mat2(const U *m);
-    mat2(const mat2 &m);
+    mat2(const U *m) noexcept;
+    mat2(const mat2 &m) noexcept;
     template<typename U>
-    mat2(const mat2<U> &m);
+    mat2(const mat2<U> &m) noexcept;
     template<typename U>
-    mat2(const mat3<U> &m);
+    mat2(const mat3<U> &m) noexcept;
     template<typename U>
-    mat2(const mat4<U> &m);
+    mat2(const mat4<U> &m) noexcept;
 
-    mat2 &operator=(const mat2& other);
+    mat2 &operator=(const mat2& other) noexcept;
     template<typename U>
-    mat2 &operator=(const mat2<U>& other);
+    mat2 &operator=(const mat2<U>& other) noexcept;
 
     template<typename U>
     vec2<T> operator*(const vec2<U> &v) const;
@@ -267,24 +267,24 @@ class mat3 {
                   !std::is_same<T, bool>::value,
                   "non-arithmetic matrix type");
    public:
-    mat3();
+    mat3() noexcept;
     template<typename U>
     mat3(U m0, U m1, U m2,
          U m3, U m4, U m5,
-         U m6, U m7, U m8);
+         U m6, U m7, U m8) noexcept;
     template<typename U>
-    mat3(const U *m);
+    mat3(const U *m) noexcept;
     template<typename U>
-    mat3(const mat2<U> &m);
-    mat3(const mat3 &m);
+    mat3(const mat2<U> &m) noexcept;
+    mat3(const mat3 &m) noexcept;
     template<typename U>
-    mat3(const mat3<U> &m);
+    mat3(const mat3<U> &m) noexcept;
     template<typename U>
-    mat3(const mat4<U> &m);
+    mat3(const mat4<U> &m) noexcept;
 
-    mat3 &operator=(const mat3& other);
+    mat3 &operator=(const mat3& other) noexcept;
     template<typename U>
-    mat3 &operator=(const mat3<U>& other);
+    mat3 &operator=(const mat3<U>& other) noexcept;
 
     template<typename U>
     vec2<U> operator*(const vec2<U> &v) const;
@@ -434,39 +434,39 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                   !std::is_same<T, bool>::value,
                   "non-arithmetic matrix type");
    public:
-    mat4();
+    mat4() noexcept;
     template<typename U>
     mat4(U m0,  U m1,  U m2,  U m3,
          U m4,  U m5,  U m6,  U m7,
          U m8,  U m9,  U m10, U m11,
-         U m12, U m13, U m14, U m15);
+         U m12, U m13, U m14, U m15) noexcept;
     template<typename U>
-    mat4(const U *m);
+    mat4(const U *m) noexcept;
     template<typename U>
-    mat4(const mat2<U> &m);
+    mat4(const mat2<U> &m) noexcept;
     template<typename U>
-    mat4(const mat3<U> &m);
-    mat4(const mat4 &m);
+    mat4(const mat3<U> &m) noexcept;
+    mat4(const mat4 &m) noexcept;
     template<typename U>
-    mat4(const mat4<U> &m);
+    mat4(const mat4<U> &m) noexcept;
     template<typename U>
-    mat4(const vec3<U> &translation, const vec3<U> &scale);
+    mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept;
     template<typename U>
-    mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation);
+    mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept;
     template<typename U>
-    mat4(const vec3<U> &translation);
+    mat4(const vec3<U> &translation) noexcept;
     template<typename U>
-    mat4(U translationX, U translationY, U translationZ);
+    mat4(U translationX, U translationY, U translationZ) noexcept;
     template<typename U>
-    mat4(const vec3<U> &axis, U angle, bool inDegrees = true);
+    mat4(const vec3<U> &axis, U angle, bool inDegrees = true) noexcept;
     template<typename U>
-    mat4(U x, U y, U z, U angle, bool inDegrees = true);
+    mat4(U x, U y, U z, U angle, bool inDegrees = true) noexcept;
     template<typename U>
-    mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up);
+    mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noexcept;
     
-    mat4 &operator=(const mat4& other);
+    mat4 &operator=(const mat4& other) noexcept;
     template<typename U>
-    mat4 &operator=(const mat4<U>& other);
+    mat4 &operator=(const mat4<U>& other) noexcept;
 
     template<typename U>
     vec2<U> operator*(const vec2<U> &v) const;

@@ -119,10 +119,11 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
             tex->resize(NULL, vec2<U16>(_width, _height), attachment->mipMapLevel());
         }
     } else {
-        stringImpl attachmentName = Util::StringFormat(
-            "FBO_%s_Att_%s_%d_%d", _name.c_str(), getAttachmentName(type), index, getGUID());
-
-        ResourceDescriptor textureAttachment(attachmentName);
+        ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
+                                                                _name.c_str(),
+                                                                getAttachmentName(type),
+                                                                index,
+                                                                getGUID()));
         textureAttachment.setThreadedLoading(false);
         textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
         textureAttachment.setEnumValue(to_uint(texDescriptor._type));
@@ -259,6 +260,8 @@ void glFramebuffer::destroy() {
     if (_resolveBuffer) {
         _resolveBuffer->destroy();
     }
+
+    _attachments.destroy();
 }
 
 void glFramebuffer::resolve() {

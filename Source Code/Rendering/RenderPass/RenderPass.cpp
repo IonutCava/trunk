@@ -78,9 +78,7 @@ RenderPass::BufferData::BufferData()
 RenderPass::BufferData::~BufferData()
 {
     _cmdBuffer->destroy();
-    MemoryManager::DELETE(_cmdBuffer);
     _renderData->destroy();
-    MemoryManager::DELETE(_renderData);
 }
 
 RenderPass::BufferDataPool::BufferDataPool(U32 maxBuffers)

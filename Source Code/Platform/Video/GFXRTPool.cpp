@@ -33,7 +33,12 @@ void GFXRTPool::clear() {
 }
 
 void GFXRTPool::set(RenderTargetID target, RenderTarget* newTarget) {
-    _renderTargets[to_uint(target._usage)][target._index] = newTarget;
+    RenderTarget*& oldTarget = _renderTargets[to_uint(target._usage)][target._index];
+    if (oldTarget) {
+        oldTarget->destroy();
+    }
+
+    oldTarget = newTarget;
 }
 
 RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, RenderTarget* newTarget) {

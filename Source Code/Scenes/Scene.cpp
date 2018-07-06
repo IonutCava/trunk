@@ -312,7 +312,7 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
 
 
 SceneGraphNode_ptr Scene::addLight(LightType type,
-                                SceneGraphNode& parentNode) {
+                                   SceneGraphNode& parentNode) {
     static const U32 lightMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                  to_const_uint(SGNComponent::ComponentType::RENDERING);

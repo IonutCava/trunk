@@ -56,7 +56,7 @@ void TaskPool::flushCallbackQueue()
 }
 
 void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) {
-    bool finished = false;
+    bool finished = _workerThreadCount == 0;
     while (!finished) {
         finished = true;
         std::unique_lock<std::mutex> lk(_taskStateLock);
